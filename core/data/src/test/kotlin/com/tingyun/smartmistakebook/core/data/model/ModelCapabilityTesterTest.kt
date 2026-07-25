@@ -36,7 +36,7 @@ class ModelCapabilityTesterTest {
             transport = modelTransport { _, _, body ->
                 requestBodies += body
                 if ("image_url" in body) {
-                    ModelHttpResponse(200, envelope("RED-GREEN-BLUE-YELLOW"))
+                    ModelHttpResponse(200, envelope("Q7M2"))
                 } else {
                     ModelHttpResponse(
                         200,
@@ -73,7 +73,7 @@ class ModelCapabilityTesterTest {
             transport = modelTransport { _, _, body ->
                 if ("image_url" in body) {
                     imageProbeCalls += 1
-                    ModelHttpResponse(200, envelope("RED GREEN BLUE YELLOW"))
+                    ModelHttpResponse(200, envelope("Q7M2"))
                 } else {
                     ModelHttpResponse(400, "")
                 }
@@ -87,6 +87,31 @@ class ModelCapabilityTesterTest {
         assertEquals(1, imageProbeCalls)
         assertTrue(completed.verification.supportsImageInput)
         assertFalse(completed.verification.supportsStructuredOutput)
+    }
+
+    @Test
+    fun imageProbeRejectsAnIncorrectImageCode() = runBlocking {
+        val store = FakeConfigurationStore(configuration())
+        val tester = OpenAiCompatibleModelCapabilityTester(
+            configurationStore = store,
+            transport = modelTransport { _, _, body ->
+                if ("image_url" in body) {
+                    ModelHttpResponse(200, envelope("Q7N2"))
+                } else {
+                    ModelHttpResponse(
+                        200,
+                        envelope("{\"capability_check\":\"SMART_MISTAKE_BOOK_STRUCTURED_V1\"}"),
+                    )
+                }
+            },
+            clock = { 2_000L },
+            probeTimeoutMillis = 1_000L,
+        )
+
+        val completed = tester.testSavedConfiguration() as ModelCapabilityTestResult.Completed
+
+        assertFalse(completed.verification.supportsImageInput)
+        assertTrue(completed.verification.supportsStructuredOutput)
     }
 
     @Test
@@ -104,7 +129,7 @@ class ModelCapabilityTesterTest {
                     )
                 }
                 if ("image_url" in body) {
-                    ModelHttpResponse(200, envelope("RED-GREEN-BLUE-YELLOW"))
+                    ModelHttpResponse(200, envelope("Q7M2"))
                 } else {
                     ModelHttpResponse(
                         200,
@@ -169,7 +194,7 @@ class ModelCapabilityTesterTest {
                     releaseOlderProbe.await()
                 }
                 if ("image_url" in body) {
-                    ModelHttpResponse(200, envelope("RED-GREEN-BLUE-YELLOW"))
+                    ModelHttpResponse(200, envelope("Q7M2"))
                 } else {
                     ModelHttpResponse(
                         200,
