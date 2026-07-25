@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "decisionSetId": "open-teaching-human-review-decisions-2026-v1",
+  "inventoryId": "open-teaching-review-inventory-2026-v1",
+  "inventoryCandidateCount": 666,
+  "reviewState": "NOT_STARTED",
+  "reviewer": null,
+  "reviewedAtEpochMillis": null,
+  "sourceTextAttestation": null,
+  "decisions": [],
+  "automaticKnowledgePackMutationAllowed": false
+}

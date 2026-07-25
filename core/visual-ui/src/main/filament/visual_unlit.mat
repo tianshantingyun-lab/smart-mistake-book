@@ -1,0 +1,21 @@
+material {
+    name : VisualUnlit,
+    shadingModel : unlit,
+    blending : transparent,
+    culling : none,
+    depthWrite : true,
+    depthCulling : true,
+    parameters : [
+        {
+            type : float4,
+            name : baseColor
+        }
+    ]
+}
+
+fragment {
+    void material(inout MaterialInputs material) {
+        prepareMaterial(material);
+        material.baseColor = materialParams.baseColor;
+    }
+}

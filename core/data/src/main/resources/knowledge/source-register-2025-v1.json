@@ -1,0 +1,924 @@
+{
+  "schemaVersion": 1,
+  "registerId": "high-school-knowledge-source-register-2025-v1",
+  "targetBaselineId": "moe-high-school-2017-2025",
+  "reviewedAtEpochMillis": 1784908800000,
+  "requiredSubjects": [
+    "CHINESE",
+    "MATH",
+    "ENGLISH",
+    "POLITICS",
+    "HISTORY",
+    "GEOGRAPHY",
+    "PHYSICS",
+    "CHEMISTRY",
+    "BIOLOGY"
+  ],
+  "sourceRequirements": {
+    "minimumReviewedTeachingReferencesPerSubject": 2,
+    "requireReviewedMethodReferencePerSubject": true,
+    "requireReviewedWorkedExampleReferencePerSubject": true
+  },
+  "sources": [
+    {
+      "sourceId": "registry:moe:2020:high-school-standards-archive",
+      "title": "普通高中课程方案和语文等学科课程标准（2017年版2020年修订）官方附件",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2020",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "COVERAGE_BASELINE"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://www.moe.gov.cn/srcsite/A26/s8001/202006/t20200603_462199.html",
+      "documentUri": "https://www.moe.gov.cn/srcsite/A26/s8001/202006/W020200603315372317586.zip",
+      "contentLengthBytes": 38598043,
+      "sourceLocator": "教育部官方 ZIP，HTTP Content-Length 38598043；尚未完成整包哈希、逐科正文抽取与复核，因此不能作为已审校正文通过当前覆盖门。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "registry:ictr:2025:high-school-revision-interpretation-toc",
+      "title": "课程方案及课程标准日常修订版（2017年版2025年修订）解读专刊目录",
+      "publisher": "教育部课程教材研究所",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "REVISION_INTERPRETATION"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_REVIEWED",
+      "discoveryUri": "https://www.ictr.edu.cn/policy/cheng/p/11.html",
+      "documentUri": "https://www.ictr.edu.cn/Uploads/File/2025/12/01/2025%E5%B9%B412%E6%9C%88%E7%9B%AE%E5%BD%95.20251201190727.pdf",
+      "contentLengthBytes": 205067,
+      "contentFingerprint": "5C5446BCFED2E357910731612BBADBF3603B2923DE67A2767E4124DC24C7D6D5",
+      "sourceLocator": "语文37、数学40、英语43、思想政治46、历史49、地理52、物理55、化学58、生物学61。该文件是解读专刊目录，不是九科课标正文。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "ictr"
+    },
+    {
+      "sourceId": "registry:ictr:2026:revision-implementation-notice",
+      "title": "课程教材研究所组织开展普通高中课程标准日常修订版专题解读活动",
+      "publisher": "教育部课程教材研究所",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "IMPLEMENTATION_NOTICE"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://www.ictr.edu.cn/curriculum_reform/ke.html",
+      "documentUri": "https://www.ictr.edu.cn/curriculum_reform/ke/detail/6142.html",
+      "sourceLocator": "2026-05-22发布；证明日常修订版进入专题解读和实施阶段，不提供逐科完整正文。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "ictr"
+    },
+    {
+      "sourceId": "registry:smartedu:2025:high-school-textbook-catalog",
+      "title": "国家中小学智慧教育平台高中电子教材元数据目录",
+      "publisher": "国家中小学智慧教育平台",
+      "baselineId": "external-textbook-catalog",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEXTBOOK_CATALOG"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_REVIEWED",
+      "discoveryUri": "https://basic.smartedu.cn/tchMaterial",
+      "documentUri": "https://bdcs-file-2.ykt.cbern.com.cn/zxx_secondary/ndrs/resources/tch_material/version/data_version.json",
+      "contentLengthBytes": 433,
+      "contentFingerprint": "92390A2220C63D1A42FE46E07DA185DBB242521F9068293C921E127E400118E8",
+      "sourceLocator": "module_version=987894174；已取得并校验四个分片，共3229条电子教材元数据。高中九科记录数：语文5、数学38、英语56、思想政治8、历史5、地理25、物理36、化学20、生物学30；记录含教材版本、册次、资源ID、更新时间和提供者。该目录只证明教材身份与版本选择范围，不证明教材正文、方法模型或完整例题已经审校；平台可访问也不授予整包复制或模型摄入权。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "smartedu"
+    },
+    {
+      "sourceId": "registry:smartedu:2026:high-school-lesson-activity-catalog",
+      "title": "国家中小学智慧教育平台高中课程活动元数据目录",
+      "publisher": "国家中小学智慧教育平台",
+      "baselineId": "external-lesson-activity-catalog",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "LESSON_ACTIVITY_CATALOG"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_REVIEWED",
+      "discoveryUri": "https://basic.smartedu.cn/syncClassroom",
+      "documentUri": "https://bdcs-file-1.ykt.cbern.com.cn/zxx/api_static/lesson_activities/version/lesson_activity_static_data_version.json",
+      "contentLengthBytes": 1612,
+      "contentFingerprint": "1D13AD66633A40E8393465F2E8387B30D34A64FC8463973F5167E46571E7EC47",
+      "sourceLocator": "module_version=344642008；已取得并校验18个公开元数据分片，共17005条唯一课程活动，其中高中4134条。九科记录数：语文258、数学723、英语1053、思想政治199、历史126、地理200、物理438、化学622、生物学202。目录中的活动名称可用于定位具体讲解、方法课和例题课，但元数据本身不等于课程正文已审校，也不能作为九科教学资料生产门禁的通过证据；后续仍须逐科审阅具体内容、确认权利并独立整理。例题和解法只作为知识讲解支撑，不获得作答、计分或复习队列身份。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "smartedu"
+    },
+    {
+      "sourceId": "candidate:zxxk:high-school-teaching-materials",
+      "title": "学科网高中教学资源",
+      "publisher": "学科网",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://www.zxxk.com/",
+      "documentUri": "https://www.zxxk.com/",
+      "sourceLocator": "九科教案、课件和教学资料候选；只允许逐份审校后独立归纳方法与例题结构，禁止抓取或导入试题、答案库及其可作答身份。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "zxxk"
+    },
+    {
+      "sourceId": "candidate:pep:high-school-review-design",
+      "title": "人教版高中总复习优化设计",
+      "publisher": "人民教育出版社",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "AUTHORIZED_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://www.pep.com.cn/jxzy/ztjf/yhsjzfx/gz/",
+      "sourceLocator": "出版社页面明确列出高中九科一轮、二轮复习用书，并说明其内容重视主干知识整合、方法提炼和规律总结；目前只核对到系列元数据，必须逐科逐册取得、许可核对和审校后才能作为方法或完整例题证据。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "pep"
+    },
+    {
+      "sourceId": "candidate:jyeoo:high-school-preparation-and-analysis",
+      "title": "菁优网高中备课与试题解析资源",
+      "publisher": "深圳市菁优智慧教育股份有限公司",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "CHINESE",
+        "MATH",
+        "ENGLISH",
+        "POLITICS",
+        "HISTORY",
+        "GEOGRAPHY",
+        "PHYSICS",
+        "CHEMISTRY",
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://www.jyeoo.com/history2/report/search?ed=&so=6",
+      "sourceLocator": "平台公开页面列出高中九科、备课、解析版资源和题目相关服务；只能逐份审校后独立归纳知识边界、方法模型和例题解答结构，禁止复制题库内容，也禁止把参考例题接入作答、评分或复习排期。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "jyeoo"
+    },
+    {
+      "sourceId": "candidate:moe:2025:chinese:curriculum-text",
+      "title": "普通高中语文课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "CHINESE"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299292.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/d93f469d86ee49c6b22e1a602c4c8fe6.pdf",
+      "contentLengthBytes": 1873475,
+      "contentFingerprint": "349B50186D42F85FD6E55612A9F4310A50F88E8B726DF730D36B75C07E84C444",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；66页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:math:curriculum-text",
+      "title": "普通高中数学课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "MATH"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299293.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/11c35ff90d464d8baef68bc88c64b25e.pdf",
+      "contentLengthBytes": 9537415,
+      "contentFingerprint": "FC9258BB37ED2E052A4B1BE608865A5481F770AE7E28CE536E835D2354353F86",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；171页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:english:curriculum-text",
+      "title": "普通高中英语课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "ENGLISH"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299294.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/703e450dfc7b4d1d803d4930c928845d.pdf",
+      "contentLengthBytes": 3978785,
+      "contentFingerprint": "4D2D0F33E511DC0D239D2CDC53FE16F38A107AFDE9BD1AE557CEC9CE7BB1BBA0",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；178页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:politics:curriculum-text",
+      "title": "普通高中思想政治课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "POLITICS"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299299.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/4a0a03c5d4584a14bd705771cafac96b.pdf",
+      "contentLengthBytes": 1811969,
+      "contentFingerprint": "5C5F3AEE70D449E1EA12D77A602A102583BA3C8CC6C994FB3294B42AB755B07A",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；61页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:history:curriculum-text",
+      "title": "普通高中历史课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "HISTORY"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299298.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/c2d84cdbe6894d09a1a1345e76aea653.pdf",
+      "contentLengthBytes": 2024503,
+      "contentFingerprint": "736C63390B8EF86919A47115BC26DCE6CEA2861EEE682E37BF34C3331E3DE0CD",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；72页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读所称正式颁布实施的版本交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:geography:curriculum-text",
+      "title": "普通高中地理课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "GEOGRAPHY"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299300.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/3ea28dcd0ec54aaea72b1bb12db8d159.pdf",
+      "contentLengthBytes": 1798326,
+      "contentFingerprint": "1F3DF5ACA5C8D55E8528C6496AB76A7C8C8546424B80402C1F62D2EE88F8DF9E",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；60页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:physics:curriculum-text",
+      "title": "普通高中物理课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "PHYSICS"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299295.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/ab4e33603b33412e8602b95cf503329a.pdf",
+      "contentLengthBytes": 2389263,
+      "contentFingerprint": "044CFB555443C7F31D8296BAEBC4EBDB68E184DCB38E0DE82437C204E310400A",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；74页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:chemistry:curriculum-text",
+      "title": "普通高中化学课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "CHEMISTRY"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299296.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/012a6fa092e64556b9cf19eab62c57ff.pdf",
+      "contentLengthBytes": 2696884,
+      "contentFingerprint": "F731543B5CD3FE3DC95657D410AB92D91FE081B31045EE62693CDAD8EEBEEF7F",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；108页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:moe:2025:biology:curriculum-text",
+      "title": "普通高中生物学课程标准日常修订版（2017年版2025年修订）",
+      "publisher": "中华人民共和国教育部",
+      "baselineId": "moe-high-school-2017-2025",
+      "subjects": [
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "CURRENT_CURRICULUM_TEXT"
+      ],
+      "authorityLevel": "OFFICIAL",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://jnsyz.jinan-edu.cn/colqsy422/art/2025/art_qsy422_qsy299297.html",
+      "documentUri": "https://jnsyz.jinan-edu.cn/cms_files/complat3/3480702/attach/202512/7e8a5ed3b83445f1bdcc530de31c51af.pdf",
+      "contentLengthBytes": 2185395,
+      "contentFingerprint": "F5924AEDF3B776A8031F159C90893384A876891F261D8EB00A5B8B7840199CBF",
+      "sourceLocator": "从山东省济南第十一中学教育站镜像取得；94页。封面、目录及课程性质、核心素养、课程目标、课程内容、学业质量、实施建议章节已核验，且与课程教材研究所官方解读的版本名称交叉核对。镜像不是教育部原始发布地址，全文课程映射和人工审校未完成。",
+      "licenseStatus": "PUBLIC_OFFICIAL",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "moe"
+    },
+    {
+      "sourceId": "candidate:openstax:algebra-and-trigonometry-2e",
+      "title": "Algebra and Trigonometry 2e",
+      "publisher": "OpenStax",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "MATH"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://openstax.org/details/books/algebra-and-trigonometry-2e",
+      "documentUri": "https://assets.openstax.org/oscms-prodcms/media/documents/algebra-and-trigonometry-2e_-_WEB.pdf",
+      "contentLengthBytes": 116281063,
+      "sourceLocator": "OpenStax CMS 记录为 live，当前 Web PDF 于2026-04-21更新。前言明确包含 How To、逐步 Worked Examples、Solution 与 Analysis，许可为 CC BY-NC-SA 4.0；同页同时禁止未经许可把书用于大模型训练或摄入生成式 AI。本项目只能人工参考后独立重写，原文不得进入模型、嵌入或检索上下文；中国高中课程映射、正文哈希和逐节审校未完成。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "licenseExpression": "CC BY-NC-SA 4.0; raw generative-AI ingestion prohibited without permission",
+      "licenseUri": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "attributionText": "Copyright Rice University, OpenStax; access for free at https://openstax.org/books/algebra-and-trigonometry-2e/pages/1-introduction-to-prerequisites",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "openstax"
+    },
+    {
+      "sourceId": "candidate:openstax:college-physics-2e",
+      "title": "College Physics 2e",
+      "publisher": "OpenStax",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "PHYSICS"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://openstax.org/details/books/college-physics-2e",
+      "documentUri": "https://assets.openstax.org/oscms-prodcms/media/documents/college-physics-2e_-_WEB.pdf",
+      "contentLengthBytes": 263463256,
+      "sourceLocator": "OpenStax CMS 记录为 live，当前 Web PDF 于2026-04-22更新。前言明确说明 worked example 具有题意、Strategy、Solution、Discussion 四段和统一的问题解决策略，许可为 CC BY-NC-SA 4.0；同页同时禁止未经许可把书用于大模型训练或摄入生成式 AI。本项目只能人工参考后独立重写，原文不得进入模型、嵌入或检索上下文；中国高中课程映射、正文哈希和逐节审校未完成。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "licenseExpression": "CC BY-NC-SA 4.0; raw generative-AI ingestion prohibited without permission",
+      "licenseUri": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "attributionText": "Copyright Rice University, OpenStax; access for free at https://openstax.org/books/college-physics-2e/pages/1-introduction-to-science-and-the-realm-of-physics-physical-quantities-and-units",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "openstax"
+    },
+    {
+      "sourceId": "candidate:openstax:chemistry-2e",
+      "title": "Chemistry 2e",
+      "publisher": "OpenStax",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "CHEMISTRY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://openstax.org/details/books/chemistry-2e",
+      "documentUri": "https://assets.openstax.org/oscms-prodcms/media/documents/chemistry-2e_-_WEB.pdf",
+      "contentLengthBytes": 217794376,
+      "sourceLocator": "OpenStax CMS 记录为 live，当前 Web PDF 于2026-04-22更新。前言确认示例练习、现实应用、概念解释与准确性审查，许可为 CC BY-NC-SA 4.0；同页同时禁止未经许可把书用于大模型训练或摄入生成式 AI。本项目只能人工参考后独立重写，原文不得进入模型、嵌入或检索上下文；中国高中课程映射、正文哈希和逐节审校未完成。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "licenseExpression": "CC BY-NC-SA 4.0; raw generative-AI ingestion prohibited without permission",
+      "licenseUri": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "attributionText": "Copyright Rice University, OpenStax; access for free at https://openstax.org/books/chemistry-2e/pages/1-introduction",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "openstax"
+    },
+    {
+      "sourceId": "candidate:openstax:biology-2e",
+      "title": "Biology 2e",
+      "publisher": "OpenStax",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "METADATA_VERIFIED",
+      "discoveryUri": "https://openstax.org/details/books/biology-2e",
+      "documentUri": "https://assets.openstax.org/oscms-prodcms/media/documents/Biology-2e_-_WEB.pdf",
+      "contentLengthBytes": 401298122,
+      "sourceLocator": "OpenStax CMS 记录为 live，当前 Web PDF 于2026-06-11更新。前言确认概念解释、科学方法案例、视觉与现实连接及问题解答资源，许可为 CC BY-NC-SA 4.0；同页同时禁止未经许可把书用于大模型训练或摄入生成式 AI。本项目只能人工参考后独立重写，原文不得进入模型、嵌入或检索上下文；中国高中课程映射、正文哈希和逐节审校未完成。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "licenseExpression": "CC BY-NC-SA 4.0; raw generative-AI ingestion prohibited without permission",
+      "licenseUri": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "attributionText": "Copyright Rice University, OpenStax; access for free at https://openstax.org/books/biology-2e/pages/1-introduction",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "openstax"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-10-mathematics-cc-by",
+      "title": "Everything Maths Grade 10（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "MATH"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://www.siyavula.com/read/za/mathematics/grade-10",
+      "documentUri": "https://www.siyavula.com/downloads/books/maths/Gr10_Mathematics_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 49009925,
+      "contentFingerprint": "881F0968936E797A6F0FA4DF305B92641C52ADD3812871AE39A791C2EE1E4A99",
+      "sourceLocator": "2026-07-25 已取得英文无品牌 CC BY EPUB并计算本地 SHA-256；材料按南非 CAPS 编排，含讲解、方法、worked example、solution、练习和章节总结。尚未完成与中国高中数学课标的逐节映射、独立中文改写与人工审校，不贡献正式知识覆盖率，练习内容不获得题库身份。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Everything Maths Grade 10, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-11-mathematics-cc-by",
+      "title": "Everything Maths Grade 11（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "MATH"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://www.siyavula.com/read/za/mathematics/grade-11",
+      "documentUri": "https://www.siyavula.com/downloads/books/maths/Gr11_Mathematics_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 34751539,
+      "contentFingerprint": "45BE47ABFDB209BAD368522C49643DC431D285D6B0A8261DA55D0B597C7DB807",
+      "sourceLocator": "2026-07-25 已取得英文无品牌 CC BY EPUB并计算本地 SHA-256；材料按南非 CAPS 编排，含讲解、方法、worked example、solution、练习和章节总结。尚未完成与中国高中数学课标的逐节映射、独立中文改写与人工审校，不贡献正式知识覆盖率，练习内容不获得题库身份。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Everything Maths Grade 11, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-12-mathematics-cc-by",
+      "title": "Everything Maths Grade 12（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "MATH"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://www.siyavula.com/read/za/mathematics/grade-12",
+      "documentUri": "https://www.siyavula.com/downloads/books/maths/Gr12_Mathematics_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 40361251,
+      "contentFingerprint": "0D7554F2D0DF805133F3BE38A3A5FFE20E5963FD5318E40E77C63490A413ADC8",
+      "sourceLocator": "2026-07-25 已取得英文无品牌 CC BY EPUB并计算本地 SHA-256；材料按南非 CAPS 编排，含讲解、方法、worked example、solution、练习和章节总结。尚未完成与中国高中数学课标的逐节映射、独立中文改写与人工审校，不贡献正式知识覆盖率，练习内容不获得题库身份。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Everything Maths Grade 12, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-10-physical-sciences-cc-by",
+      "title": "Everything Science Grade 10（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://www.siyavula.com/read/za/physical-sciences/grade-10",
+      "documentUri": "https://www.siyavula.com/downloads/books/science/Gr10_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 31675351,
+      "contentFingerprint": "366C2F0BEB5D3C4CF0789E0DC49CD12DD07C20D47CD5C9E3E4DC5D1CA49CE3DB",
+      "sourceLocator": "2026-07-25 已取得英文无品牌 CC BY EPUB并计算本地 SHA-256；材料按南非 CAPS 合并编排物理与化学，含讲解、方法、worked example、solution、练习和章节总结。尚未完成与中国高中物理、化学课标的逐节拆分映射、独立中文改写与人工审校，不贡献正式知识覆盖率，练习内容不获得题库身份。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Everything Science Grade 10, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-11-physical-sciences-cc-by",
+      "title": "Everything Science Grade 11（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://www.siyavula.com/read/za/physical-sciences/grade-11",
+      "documentUri": "https://www.siyavula.com/downloads/books/science/Gr11_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 47417044,
+      "contentFingerprint": "3D893A4364F52EFE1991360302CFCCB06030E03AD67D725867FB48F0F177A0F9",
+      "sourceLocator": "2026-07-25 已取得英文无品牌 CC BY EPUB并计算本地 SHA-256；材料按南非 CAPS 合并编排物理与化学，含讲解、方法、worked example、solution、练习和章节总结。尚未完成与中国高中物理、化学课标的逐节拆分映射、独立中文改写与人工审校，不贡献正式知识覆盖率，练习内容不获得题库身份。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Everything Science Grade 11, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-12-physical-sciences-cc-by",
+      "title": "Everything Science Grade 12（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://www.siyavula.com/read/za/physical-sciences/grade-12",
+      "documentUri": "https://www.siyavula.com/downloads/books/science/Gr12_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 78477236,
+      "contentFingerprint": "FB8824B216007B8310A3EBE2531005C4CDFABB2E6F07157D03173F0864D2C627",
+      "sourceLocator": "2026-07-25 已取得英文无品牌 CC BY EPUB并计算本地 SHA-256；材料按南非 CAPS 合并编排物理与化学，含讲解、方法、worked example、solution、练习和章节总结。尚未完成与中国高中物理、化学课标的逐节拆分映射、独立中文改写与人工审校，不贡献正式知识覆盖率，练习内容不获得题库身份。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Everything Science Grade 12, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-10-life-sciences-cc-by",
+      "title": "Life Sciences Grade 10（无品牌 CC BY EPUB）",
+      "publisher": "Siyavula Education",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "PENDING_ACQUISITION",
+      "discoveryUri": "https://www.siyavula.com/read/za/life-sciences/grade-10",
+      "documentUri": "https://www.siyavula.com/downloads/books/life-science/Gr10_LifeSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 104152423,
+      "sourceLocator": "Siyavula 目录提供英文无品牌 CC BY 下载入口，EPUB 内预期许可为 CC BY 4.0。2026-07-25 下载端点只返回134字节的 Git LFS 指针而非104152423字节正文，指针已隔离到项目内 rejected 目录；取得真实授权载荷前保持待获取状态，不进入模型、检索、覆盖率或教学资料生产。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Siyavula Education, Life Sciences Grade 10, unbranded CC BY edition; https://www.siyavula.com/read",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "siyavula"
+    },
+    {
+      "sourceId": "candidate:uh-pressbooks:english-composition-cc-by",
+      "title": "English Composition: Connect, Collaborate, Communicate（CC BY EPUB）",
+      "publisher": "University of Hawaiʻi at Mānoa",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "ENGLISH"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://open.umn.edu/opentextbooks/textbooks/english-composition-connect-collaborate-communicate",
+      "documentUri": "https://pressbooks.oer.hawaii.edu/englishcomposition/open/download?type=epub",
+      "contentLengthBytes": 1680685,
+      "contentFingerprint": "A5A4A9A3783EF966A6A2F86F12937F6BBFF6CD438CD589DE37E2A1173D1EACA6",
+      "sourceLocator": "2026-07-25 已从 University of Hawaiʻi Pressbooks 取得英文 CC BY 4.0 EPUB并计算本地 SHA-256；材料包含写作过程、篇章结构、写作策略、示例和活动，可作为中国高中英语写作方法的补充参考。它不是中国课标教材，语法、词汇、阅读、听说和高考写作规范覆盖均不完整；逐节课程映射、中文独立归纳与人工审校完成前不贡献正式知识覆盖率，书中活动不获得题库、测评或复习调度权限。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Ann Inoshita, Karyl Garland, Kate Sims, Jeanne K. Tsutsui Keuma, and Tasha Williams, English Composition: Connect, Collaborate, Communicate, University of Hawaiʻi at Mānoa, 2019; https://pressbooks.oer.hawaii.edu/englishcomposition/",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "uh-pressbooks"
+    },
+    {
+      "sourceId": "candidate:uh-pressbooks:journeys-world-history-i-cc-by-sa",
+      "title": "He Huakaʻi Honua: Journeys in World History I, to 1500 CE（CC BY-SA EPUB）",
+      "publisher": "University of Hawaiʻi / Honolulu Community College",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "HISTORY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://pressbooks.oer.hawaii.edu/honcchist151/",
+      "documentUri": "https://pressbooks.oer.hawaii.edu/honcchist151/open/download?type=epub",
+      "contentLengthBytes": 62385990,
+      "contentFingerprint": "18515A27D514B3EDF3F1E4BECEA6CBBD31B4D3AA4551A52CD4E274F74A9F2991",
+      "sourceLocator": "2026-07-25 已取得 CC BY-SA 4.0 EPUB并固定 SHA-256。材料覆盖史前至约1500年的多区域世界史，包含中国与东亚、章节总结、史料引用、历史解释方法和互动活动，可补充历史概念关系、史料辨析和时空比较方法。它不覆盖1500年后的近现代史，也不等同于中国高中统编历史教材；逐节课标映射、事实复核、中文独立归纳和人工审校完成前不贡献正式覆盖率，活动内容不获得题库、测评或复习调度权限。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY-SA 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attributionText": "Mieko Matsumoto et al., He Huakaʻi Honua: Journeys in World History I, to 1500 CE, University of Hawaiʻi / Honolulu Community College, 2023; https://pressbooks.oer.hawaii.edu/honcchist151/",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "uh-pressbooks"
+    },
+    {
+      "sourceId": "candidate:open-oregon:principles-of-biology-cc-by",
+      "title": "Principles of Biology: Biology 211, 212, and 213（CC BY EPUB）",
+      "publisher": "Open Oregon Educational Resources",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://open.umn.edu/opentextbooks/textbooks/principles-of-biology-biology-211-212-and-213",
+      "documentUri": "https://openoregon.pressbooks.pub/mhccmajorsbio/open/download?type=epub",
+      "contentLengthBytes": 21790686,
+      "contentFingerprint": "1367ADD470F33D5D5D642C44DCC7AF98321AC7CA558D228B1FD14A274C2BED88",
+      "sourceLocator": "2026-07-25 已取得 CC BY 4.0 EPUB并固定 SHA-256。材料覆盖科学过程、生物化学、细胞、遗传、进化与生态等板块，含实例、方法、练习和解答，可补充中国高中生物的概念细化与科学探究方法。公开同行评审同时指出它缺少生物多样性、植物和动物解剖生理等约三分之一常见内容，因此只能作为补充来源；逐节中国课标映射、中文独立归纳和人工审校完成前不贡献正式覆盖率，练习与解答不获得题库、测评或复习调度权限。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Lisa Bartee, Walter Shriner, and Catherine Creech, Principles of Biology: Biology 211, 212, and 213, Open Oregon Educational Resources; https://openoregon.pressbooks.pub/mhccmajorsbio/",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "open-oregon"
+    },
+    {
+      "sourceId": "candidate:bccampus:physical-geology-cc-by",
+      "title": "Physical Geology（CC BY EPUB）",
+      "publisher": "BCcampus",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "GEOGRAPHY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://open.umn.edu/opentextbooks/textbooks/physical-geology",
+      "documentUri": "https://ohiostate.pressbooks.pub/durandgeology/open/download?type=epub",
+      "contentLengthBytes": 61936396,
+      "contentFingerprint": "C16A7DDD2528E8F92BF41758BA399DBA58FBCD90D7C75B5C4A3D87A6A8D3674B",
+      "sourceLocator": "2026-07-25 已取得 Steven Earle《Physical Geology》的 CC BY 4.0 Pressbooks EPUB并固定 SHA-256。材料系统覆盖岩石矿物、板块构造、地震火山、流水冰川、地下水、海洋、资源和气候变化，包含实例、练习、复习问题及答案，可补充高中地理的地貌、地质过程和自然灾害方法模型。它不完整覆盖大气、人口、产业、城市、区域发展和中国地理，也不是中国高中地理教材；逐节课标映射、中文独立归纳和人工审校完成前不贡献正式覆盖率，问题与答案不获得题库、测评或复习调度权限。",
+      "licenseStatus": "LICENSED",
+      "licenseExpression": "CC BY 4.0",
+      "licenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "attributionText": "Steven Earle, Physical Geology, BCcampus, 2015; https://opentextbc.ca/geology/",
+      "contentUsePolicy": "ADAPTATION_ALLOWED",
+      "modelUsePolicy": "FULL_CONTENT_ALLOWED",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "bccampus"
+    }
+  ]
+}

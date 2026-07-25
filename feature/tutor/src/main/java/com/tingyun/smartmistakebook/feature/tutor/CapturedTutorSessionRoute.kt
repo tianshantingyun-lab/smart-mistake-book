@@ -1,0 +1,2187 @@
+package com.tingyun.smartmistakebook.feature.tutor
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.LibraryAddCheck
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
+import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
+import com.tingyun.smartmistakebook.core.domain.EndTutorSessionWithoutSaveRequest
+import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
+import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
+import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
+import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
+import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
+import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.toContiguousTutorHistory
+import com.tingyun.smartmistakebook.core.domain.toTutorConversationMemory
+import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
+import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
+import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
+import com.tingyun.smartmistakebook.core.model.requiresModelSettings
+import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
+import com.tingyun.smartmistakebook.core.ui.ErrorWarm
+import com.tingyun.smartmistakebook.core.ui.Ink
+import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.JadeActive
+import com.tingyun.smartmistakebook.core.ui.JadeSoft
+import com.tingyun.smartmistakebook.core.ui.LocalModeLine
+import com.tingyun.smartmistakebook.core.ui.Outline
+import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
+import com.tingyun.smartmistakebook.core.ui.PaperDivider
+import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
+import com.tingyun.smartmistakebook.core.ui.SectionHeader
+import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
+import com.tingyun.smartmistakebook.core.ui.StructuredContentRenderer
+import com.tingyun.smartmistakebook.core.ui.studentSubjectLabel
+import java.util.UUID
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+
+@Composable
+fun CapturedTutorSessionRoute(
+    sessionId: String,
+    autoStartAuthorization: TutorAutoStartAuthorization? = null,
+    onAutoStartAuthorizationConsumed: (String) -> Unit = {},
+    repository: CaptureWorkflowRepository,
+    modelTasks: ModelTaskRepository,
+    interactions: TutorInteractionRepository,
+    profile: StudyProfileOverview,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    onOpenModelSettings: () -> Unit,
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
+    onBack: () -> Unit,
+    onEndedWithoutSave: () -> Unit = onBack,
+    modifier: Modifier = Modifier,
+) {
+    var reloadToken by remember { mutableIntStateOf(0) }
+    var state by remember(sessionId) {
+        mutableStateOf<CapturedTutorSessionUiState>(CapturedTutorSessionUiState.Loading)
+    }
+    var saveInProgress by remember { mutableStateOf(false) }
+    var saveError by rememberSaveable(sessionId) { mutableStateOf<String?>(null) }
+    var saveRequestId by rememberSaveable(sessionId) { mutableStateOf<String?>(null) }
+    var saveOccurredAtEpochMillis by rememberSaveable(sessionId) { mutableStateOf<Long?>(null) }
+    var endInProgress by remember { mutableStateOf(false) }
+    var endError by rememberSaveable(sessionId) { mutableStateOf<String?>(null) }
+    var endOccurredAtEpochMillis by rememberSaveable(sessionId) { mutableStateOf<Long?>(null) }
+    var showEndConfirmation by rememberSaveable(sessionId) { mutableStateOf(false) }
+    var longTermWritesBlocked by rememberSaveable(sessionId) { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(sessionId, reloadToken) {
+        state = if (sessionId.isBlank()) {
+            CapturedTutorSessionUiState.Missing
+        } else {
+            try {
+                repository.readTutorSession(sessionId)
+                    ?.let(CapturedTutorSessionUiState::Ready)
+                    ?: CapturedTutorSessionUiState.Missing
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                CapturedTutorSessionUiState.Unavailable
+            }
+        }
+    }
+
+    fun saveSession(session: ConfirmedTutorSession) {
+        if (longTermWritesBlocked) {
+            saveError = "你已选择这次不写入长期记录。"
+            return
+        }
+        if (saveInProgress || endInProgress || session.disposition != TutorSessionDisposition.ACTIVE) {
+            return
+        }
+        val requestId = saveRequestId ?: UUID.randomUUID().toString().also {
+            saveRequestId = it
+        }
+        val occurredAt = saveOccurredAtEpochMillis ?: System.currentTimeMillis().also {
+            saveOccurredAtEpochMillis = it
+        }
+        saveInProgress = true
+        saveError = null
+        scope.launch {
+            try {
+                repository.saveTutorSession(
+                    SaveTutorSessionRequest(
+                        requestId = requestId,
+                        sessionId = session.sessionId,
+                        occurredAtEpochMillis = occurredAt,
+                    ),
+                )
+                state = repository.readTutorSession(session.sessionId)
+                    ?.let(CapturedTutorSessionUiState::Ready)
+                    ?: CapturedTutorSessionUiState.Missing
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                saveError = "还没有保存完成，请直接重试；不会重复加入错题本。"
+            } finally {
+                saveInProgress = false
+            }
+        }
+    }
+
+    fun endSessionWithoutSaving(session: ConfirmedTutorSession) {
+        if (saveInProgress || endInProgress || session.disposition != TutorSessionDisposition.ACTIVE) {
+            return
+        }
+        val occurredAt = endOccurredAtEpochMillis ?: System.currentTimeMillis().also {
+            endOccurredAtEpochMillis = it
+        }
+        endInProgress = true
+        endError = null
+        scope.launch {
+            try {
+                repository.endTutorSessionWithoutSaving(
+                    EndTutorSessionWithoutSaveRequest(
+                        sessionId = session.sessionId,
+                        occurredAtEpochMillis = occurredAt,
+                    ),
+                )
+                onEndedWithoutSave()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                endError = "还没有结束成功，这道临时题仍保留；你可以直接重试。"
+            } finally {
+                endInProgress = false
+            }
+        }
+    }
+
+    CapturedTutorSessionContent(
+        state = state,
+        saveInProgress = saveInProgress,
+        saveError = saveError,
+        endInProgress = endInProgress,
+        endError = endError,
+        onSave = ::saveSession,
+        onRequestEnd = { showEndConfirmation = true },
+        onRetryLoad = { reloadToken += 1 },
+        modelTasks = modelTasks,
+        interactions = interactions,
+        profile = profile,
+        catalogEntries = catalogEntries,
+        longTermWritesBlocked = longTermWritesBlocked,
+        onLongTermWritesBlocked = { longTermWritesBlocked = true },
+        onOpenModelSettings = onOpenModelSettings,
+        onOpenMistakeNotebook = onOpenMistakeNotebook,
+        onOpenProfile = onOpenProfile,
+        onBack = onBack,
+        autoStartAuthorization = autoStartAuthorization,
+        onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+        modifier = modifier,
+    )
+
+
+    if (showEndConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showEndConfirmation = false },
+            title = { Text("结束这次临时讲题？") },
+            text = {
+                Text("结束后不会加入错题本；题面和原图仍安全保留在本机。返回只表示稍后继续，不会结束。")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val session = (state as? CapturedTutorSessionUiState.Ready)?.session
+                        showEndConfirmation = false
+                        if (session != null) endSessionWithoutSaving(session)
+                    },
+                    modifier = Modifier.testTag("captured_tutor_end_confirm"),
+                ) {
+                    Text("结束且不保存", color = ErrorWarm)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showEndConfirmation = false },
+                    modifier = Modifier.testTag("captured_tutor_end_cancel"),
+                ) {
+                    Text("继续讲题", color = JadeActive)
+                }
+            },
+            containerColor = com.tingyun.smartmistakebook.core.ui.Paper,
+        )
+    }
+}
+
+private sealed interface CapturedTutorSessionUiState {
+    data object Loading : CapturedTutorSessionUiState
+    data class Ready(val session: ConfirmedTutorSession) : CapturedTutorSessionUiState
+    data object Missing : CapturedTutorSessionUiState
+    data object Unavailable : CapturedTutorSessionUiState
+}
+
+@Composable
+private fun CapturedTutorSessionContent(
+    state: CapturedTutorSessionUiState,
+    saveInProgress: Boolean,
+    saveError: String?,
+    endInProgress: Boolean,
+    endError: String?,
+    onSave: (ConfirmedTutorSession) -> Unit,
+    onRequestEnd: () -> Unit,
+    onRetryLoad: () -> Unit,
+    modelTasks: ModelTaskRepository,
+    interactions: TutorInteractionRepository,
+    profile: StudyProfileOverview,
+    catalogEntries: List<StudyCatalogEntry>,
+    longTermWritesBlocked: Boolean,
+    onLongTermWritesBlocked: () -> Unit,
+    onOpenModelSettings: () -> Unit,
+    onOpenMistakeNotebook: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onBack: () -> Unit,
+    autoStartAuthorization: TutorAutoStartAuthorization?,
+    onAutoStartAuthorizationConsumed: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    when (state) {
+        is CapturedTutorSessionUiState.Ready -> ReadyCapturedSession(
+                session = state.session,
+                saveInProgress = saveInProgress,
+                saveError = saveError,
+                endInProgress = endInProgress,
+                endError = endError,
+                onSave = onSave,
+                onRequestEnd = onRequestEnd,
+                modelTasks = modelTasks,
+                interactions = interactions,
+                profile = profile,
+                catalogEntries = catalogEntries,
+                longTermWritesBlocked = longTermWritesBlocked,
+                onLongTermWritesBlocked = onLongTermWritesBlocked,
+                onOpenModelSettings = onOpenModelSettings,
+                onOpenMistakeNotebook = onOpenMistakeNotebook,
+                onOpenProfile = onOpenProfile,
+                onBack = onBack,
+                autoStartAuthorization = autoStartAuthorization,
+                onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+                modifier = modifier.testTag("captured_tutor_session_screen"),
+            )
+
+        else -> TutorConversationFrame(
+            header = {
+                TutorPageHeader(onBack)
+                PaperDivider()
+            },
+            autoScrollVersion = state,
+            modifier = modifier.testTag("captured_tutor_session_screen"),
+        ) {
+            item("captured_tutor_non_ready") {
+                when (state) {
+                    CapturedTutorSessionUiState.Loading -> LoadingTutorQuestion()
+                    CapturedTutorSessionUiState.Missing -> TutorQuestionUnavailable(
+                        title = "没有找到这次讲题",
+                        detail = "这次题面没有保存完整，可返回拍题入口重新上传。",
+                        onRetry = onRetryLoad,
+                    )
+                    CapturedTutorSessionUiState.Unavailable -> TutorQuestionUnavailable(
+                        title = "暂时无法打开这次讲题",
+                        detail = "题面没有完整载入，本机记录仍会保留。请稍后重试。",
+                        onRetry = onRetryLoad,
+                    )
+                    is CapturedTutorSessionUiState.Ready -> Unit
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun TutorPageHeader(onBack: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .size(48.dp)
+                .testTag("captured_tutor_back"),
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = "返回",
+                tint = Ink,
+            )
+        }
+        Spacer(Modifier.size(4.dp))
+        Text(
+            text = "讲题",
+            color = Ink,
+            style = MaterialTheme.typography.headlineSmall,
+        )
+    }
+}
+
+@Composable
+internal fun LoadingTutorQuestion() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 64.dp)
+            .testTag("captured_tutor_loading"),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(32.dp),
+            color = JadeActive,
+        )
+        Text("正在打开这道题…", color = InkSecondary)
+    }
+}
+
+@Composable
+internal fun ReadyCapturedSession(
+    session: ConfirmedTutorSession,
+    saveInProgress: Boolean,
+    saveError: String?,
+    endInProgress: Boolean = false,
+    endError: String? = null,
+    onSave: (ConfirmedTutorSession) -> Unit,
+    onRequestEnd: () -> Unit = {},
+    modelTasks: ModelTaskRepository,
+    interactions: TutorInteractionRepository,
+    profile: StudyProfileOverview,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    longTermWritesBlocked: Boolean = false,
+    onLongTermWritesBlocked: () -> Unit = {},
+    onOpenModelSettings: () -> Unit,
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
+    onBack: () -> Unit = {},
+    autoStartAuthorization: TutorAutoStartAuthorization? = null,
+    onAutoStartAuthorizationConsumed: (String) -> Unit = {},
+    clock: () -> Long = System::currentTimeMillis,
+    modifier: Modifier = Modifier,
+) {
+    var sourceExpanded by rememberSaveable(session.sessionId) { mutableStateOf(false) }
+    TutorModelPanel(
+        question = session.toTutorQuestionContext(),
+        profile = profile,
+        modelTasks = modelTasks,
+        interactions = interactions,
+        catalogEntries = catalogEntries,
+        onLongTermWritesBlocked = onLongTermWritesBlocked,
+        onRequestSave = { onSave(session) },
+        onRequestEnd = onRequestEnd,
+        onOpenMistakeNotebook = onOpenMistakeNotebook,
+        onOpenProfile = onOpenProfile,
+        onOpenModelSettings = onOpenModelSettings,
+        autoStartAuthorization = autoStartAuthorization,
+        onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+        clock = clock,
+        conversationEnabled = !session.isEndedWithoutSave,
+        headerContent = {
+            TutorPageHeader(onBack)
+            PaperDivider()
+        },
+        leadingContent = {
+            LocalModeLine(text = tutorSessionStatusLine(session))
+            SectionHeader(
+                title = session.title,
+                modifier = Modifier.padding(top = 10.dp),
+                action = if (session.disposition == TutorSessionDisposition.ENDED_WITHOUT_SAVE) {
+                    null
+                } else {
+                    {
+                        OutlineActionChip(
+                            text = if (longTermWritesBlocked) {
+                                "本次不记录"
+                            } else {
+                                tutorSessionSaveLabel(
+                                    session.isSaved,
+                                    saveInProgress,
+                                    saveError != null,
+                                )
+                            },
+                            onClick = { onSave(session) },
+                            enabled = session.disposition == TutorSessionDisposition.ACTIVE &&
+                                !saveInProgress && !endInProgress && !longTermWritesBlocked,
+                            icon = Icons.Outlined.LibraryAddCheck,
+                            contentDescription = when {
+                                longTermWritesBlocked -> "本次不会存入错题本"
+                                session.isSaved -> "本题已存入错题本"
+                                else -> "将本题存入错题本"
+                            },
+                            modifier = Modifier.testTag("captured_tutor_save"),
+                        )
+                    }
+                },
+            )
+            Text(
+                text = session.subject.studentSubjectLabel(),
+                modifier = Modifier.padding(top = 4.dp),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(14.dp))
+            StructuredContentRenderer(
+                document = session.questionDocument.document,
+                choicesEnabled = false,
+            )
+            OutlineActionChip(
+                text = if (sourceExpanded) "收起原图" else "查看原图",
+                onClick = { sourceExpanded = !sourceExpanded },
+                icon = Icons.Outlined.Image,
+                contentDescription = if (sourceExpanded) "收起拍题原图" else "查看拍题原图",
+                modifier = Modifier
+                    .padding(top = 14.dp)
+                    .testTag("captured_tutor_source_toggle"),
+            )
+            if (sourceExpanded) {
+                BoundedLocalImage(
+                    imageUri = session.sourceImageUri,
+                    contentDescription = "拍题原图",
+                    expanded = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                        .testTag("captured_tutor_source_image"),
+                )
+            }
+            if (session.isEndedWithoutSave) EndedTutorSessionNotice()
+        },
+        trailingContent = {
+            saveError?.let { message ->
+                Text(
+                    text = message,
+                    modifier = Modifier.testTag("captured_tutor_save_error"),
+                    color = ErrorWarm,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (session.disposition == TutorSessionDisposition.ACTIVE) {
+                OutlineActionChip(
+                    text = if (endInProgress) {
+                        "正在结束"
+                    } else if (endError != null) {
+                        "重试结束且不保存"
+                    } else {
+                        "结束且不保存"
+                    },
+                    onClick = onRequestEnd,
+                    enabled = !saveInProgress && !endInProgress,
+                    icon = Icons.Outlined.DeleteOutline,
+                    contentDescription = "结束本次临时讲题且不存入错题本",
+                    modifier = Modifier.testTag("captured_tutor_end_without_save"),
+                )
+            }
+            endError?.let { message ->
+                Text(
+                    text = message,
+                    modifier = Modifier.testTag("captured_tutor_end_error"),
+                    color = ErrorWarm,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+        },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun EndedTutorSessionNotice() {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 18.dp),
+        color = JadeSoft.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = "本次讲题已结束 · 未存入错题本",
+                color = Ink,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "题面和原图仍保存在本机，但不会生成错题或继续调用模型。",
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+internal fun TutorModelPanel(
+    question: TutorQuestionContext,
+    profile: StudyProfileOverview,
+    modelTasks: ModelTaskRepository,
+    interactions: TutorInteractionRepository,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    onLongTermWritesBlocked: () -> Unit = {},
+    onRequestSave: () -> Unit = {},
+    onRequestEnd: () -> Unit = {},
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
+    onOpenModelSettings: () -> Unit,
+    autoStartAuthorization: TutorAutoStartAuthorization? = null,
+    onAutoStartAuthorizationConsumed: (String) -> Unit = {},
+    conversationEnabled: Boolean = true,
+    headerContent: @Composable () -> Unit = {},
+    leadingContent: @Composable ColumnScope.() -> Unit = {},
+    trailingContent: @Composable ColumnScope.() -> Unit = {},
+    clock: () -> Long = System::currentTimeMillis,
+    modifier: Modifier = Modifier,
+) {
+    if (!conversationEnabled) {
+        TutorConversationFrame(
+            header = headerContent,
+            autoScrollVersion = "${question.sessionId}:${question.revisionNumber}:ended",
+            modifier = modifier,
+        ) {
+            item("tutor_question_context") {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    content = leadingContent,
+                )
+            }
+            item("tutor_session_footer") {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    content = trailingContent,
+                )
+            }
+        }
+        return
+    }
+    var provider by remember(question.sessionId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
+    var providerLoadFailed by remember(question.sessionId) { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val persistedTasks by remember(question.sessionId) {
+        modelTasks.observeBySubject(question.sessionId, ModelTaskKind.TUTOR_PLAN)
+    }.collectAsState(initial = emptyList())
+    val persistedRespondTasks by remember(question.sessionId) {
+        modelTasks.observeBySubject(question.sessionId, ModelTaskKind.TUTOR_RESPOND)
+    }.collectAsState(initial = emptyList())
+    val longTermWritesBlocked = persistedRespondTasks.blocksTutorLongTermWrites()
+    LaunchedEffect(longTermWritesBlocked) {
+        if (longTermWritesBlocked) onLongTermWritesBlocked()
+    }
+    val persistedResponses by remember(question.sessionId, interactions) {
+        interactions.observe(question.sessionId)
+    }.collectAsState(initial = emptyList())
+    var interactionBusy by remember(question.sessionId) { mutableStateOf(false) }
+    var interactionError by remember(question.sessionId) { mutableStateOf<String?>(null) }
+    var chatDraft by rememberSaveable(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+    ) { mutableStateOf("") }
+    var chatSubmitPending by remember(question.sessionId) { mutableStateOf(false) }
+    var locallyStartedRespondRequestId by remember(question.sessionId) {
+        mutableStateOf<String?>(null)
+    }
+    var chatStartError by rememberSaveable(question.sessionId) { mutableStateOf<String?>(null) }
+    var planRecoveryRequestInFlight by remember(question.sessionId) {
+        mutableStateOf<String?>(null)
+    }
+    var pendingEgressState by rememberSaveable(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        stateSaver = pendingTutorEgressStateSaver,
+    ) { mutableStateOf(PendingTutorEgressState()) }
+    val responseActionAwaitingAuthorization =
+        pendingEgressState.action.awaitsResponseAuthorization()
+    var consumedAutoStartAuthorizationId by remember(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+    ) { mutableStateOf<String?>(null) }
+    fun consumeAutoStartAuthorization(authorizationId: String) {
+        if (consumedAutoStartAuthorizationId == authorizationId) return
+        consumedAutoStartAuthorizationId = authorizationId
+        onAutoStartAuthorizationConsumed(authorizationId)
+    }
+
+    LaunchedEffect(question.sessionId) {
+        try {
+            provider = modelTasks.capabilities()
+            providerLoadFailed = false
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            providerLoadFailed = true
+        }
+    }
+    DisposableEffect(lifecycleOwner, question.sessionId, modelTasks) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch {
+                    try {
+                        provider = modelTasks.capabilities()
+                        providerLoadFailed = false
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        providerLoadFailed = true
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val currentProvider = provider
+    val authorizationNow = clock()
+    var externalEgressLease by remember(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        currentProvider?.providerId,
+        currentProvider?.modelId,
+        currentProvider?.providerConfigurationVersion,
+        TUTOR_PROMPT_POLICY_VERSION,
+        TUTOR_RESPOND_PROMPT_POLICY_VERSION,
+    ) { mutableStateOf<TutorCompositionEgressLease?>(null) }
+    var forceResponseDisclosure by remember(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        currentProvider?.providerConfigurationVersion,
+    ) { mutableStateOf(false) }
+    fun grantExternalEgressLease(
+        providerForExecution: ProviderCapabilitySnapshot,
+        approvedAtEpochMillis: Long,
+    ) {
+        if (providerForExecution.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
+            externalEgressLease = TutorCompositionEgressLease.grant(
+                question = question,
+                provider = providerForExecution,
+                approvedAtEpochMillis = approvedAtEpochMillis,
+            )
+        }
+    }
+    val conversationProjection = remember(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        persistedTasks,
+        persistedRespondTasks,
+        persistedResponses,
+    ) {
+        buildTutorConversationProjection(
+            question = question,
+            planTasks = persistedTasks,
+            respondTasks = persistedRespondTasks,
+            responses = persistedResponses,
+        )
+    }
+    val tutorTasks = conversationProjection.planTasks
+    val tutorResponses = conversationProjection.responses
+    val tutorRespondTasks = conversationProjection.respondTasks
+    val timeline = conversationProjection.timeline
+    // Deliberately process-only: an answer is not durably unlocked until its exact bottom is visible.
+    var planSolutionPreviewKeys by remember(
+        question.sessionId,
+        question.questionDocument.document.id,
+        question.revisionNumber,
+    ) { mutableStateOf(emptySet<PlanSolutionPreviewKey>()) }
+    val solutionExposureTracker = rememberTutorSolutionExposureTracker(
+        question = question,
+        timeline = timeline,
+        responses = tutorResponses,
+        previewKeys = planSolutionPreviewKeys,
+        longTermWritesBlocked = longTermWritesBlocked,
+        interactions = interactions,
+        clock = clock,
+    )
+    val answerExposureKeys = solutionExposureTracker.answerExposureKeys
+    val currentCycle = conversationProjection.currentCycle
+    val currentCycleTasks = conversationProjection.currentCyclePlanTasks
+    val currentCycleResponses = conversationProjection.currentCycleResponses
+    val observedTask = conversationProjection.observedPlanTask
+    val executablePlanProvider = currentProvider?.takeIf { candidate ->
+        candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+            candidate.supports(ModelTaskKind.TUTOR_PLAN)
+    }
+    val matchingAutoStartAuthorization = autoStartAuthorization
+        ?.takeUnless { it.authorizationId == consumedAutoStartAuthorizationId }
+        ?.takeIf { authorization ->
+            executablePlanProvider?.let { providerForExecution ->
+                authorization.matches(
+                    sessionId = question.sessionId,
+                    questionDocumentId = question.questionDocument.document.id,
+                    revisionNumber = question.revisionNumber,
+                    provider = providerForExecution,
+                    promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+                    nowEpochMillis = authorizationNow,
+                )
+            } == true
+        }
+    val planLeaseApprovedAt = currentProvider?.let { candidate ->
+        when (candidate.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = candidate,
+                taskKind = ModelTaskKind.TUTOR_PLAN,
+                nowEpochMillis = authorizationNow,
+            )
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
+            ModelExecutionLocation.UNAVAILABLE -> null
+        }
+    }
+    val planFreshApprovalTask = currentProvider
+        ?.takeIf { candidate ->
+            candidate.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+                candidate.supports(ModelTaskKind.TUTOR_PLAN)
+        }
+        ?.let { candidate ->
+            observedTask?.takeIf { task ->
+                task.requiresFreshTutorApproval(candidate) ||
+                    (planLeaseApprovedAt == null &&
+                        (task.status.isTutorExecutionPending() ||
+                            task.status == ModelTaskStatus.RETRYABLE_FAILURE)) ||
+                    (planLeaseApprovedAt == null &&
+                        task.status == ModelTaskStatus.SUCCEEDED &&
+                        task.output !is TutorPlanOutput)
+            }
+        }
+
+    fun executeTurn(
+        cycleOrdinal: Int,
+        priorConversationMemory: TutorConversationMemory?,
+        priorCycleStudentMessages: List<String>,
+        priorTurns: List<TutorTurnHistoryEntry>,
+        oneShotAutoStartAuthorization: TutorAutoStartAuthorization? = null,
+    ) {
+        if (pendingEgressState.action.awaitsResponseAuthorization()) return
+        val providerForExecution = executablePlanProvider ?: return
+        val attempt = tutorTasks.count { task ->
+            val input = task.request.input as? TutorPlanInput
+            input?.cycleOrdinal == cycleOrdinal &&
+                input.priorConversationMemory == priorConversationMemory &&
+                input.priorCycleStudentMessages == priorCycleStudentMessages &&
+                input.priorTurns == priorTurns
+        }
+        val requestId = tutorPlanRequestId(
+            question = question,
+            provider = providerForExecution,
+            attempt = attempt,
+            cycleOrdinal = cycleOrdinal,
+            priorConversationMemory = priorConversationMemory,
+            priorCycleStudentMessages = priorCycleStudentMessages,
+            priorTurns = priorTurns,
+        )
+        val occurredAt = clock()
+        val approvedAt = when (providerForExecution.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = providerForExecution,
+                taskKind = ModelTaskKind.TUTOR_PLAN,
+                nowEpochMillis = occurredAt,
+            ) ?: oneShotAutoStartAuthorization
+                ?.takeIf {
+                    cycleOrdinal == 1 &&
+                        priorConversationMemory == null &&
+                        priorCycleStudentMessages.isEmpty() &&
+                        priorTurns.isEmpty() &&
+                        it.matches(
+                            sessionId = question.sessionId,
+                            questionDocumentId = question.questionDocument.document.id,
+                            revisionNumber = question.revisionNumber,
+                            provider = providerForExecution,
+                            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+                            nowEpochMillis = occurredAt,
+                        )
+                }
+                ?.approvedAtEpochMillis ?: run {
+                externalEgressLease = null
+                pendingEgressState = PendingTutorEgressState(
+                    PendingTutorEgressAction.Plan(
+                        cycleOrdinal = cycleOrdinal,
+                        priorConversationMemory = priorConversationMemory,
+                        priorCycleStudentMessages = priorCycleStudentMessages,
+                        priorTurns = priorTurns,
+                    ),
+                )
+                return
+            }
+            ModelExecutionLocation.LOCAL_NO_EGRESS,
+            ModelExecutionLocation.UNAVAILABLE,
+            -> occurredAt
+        }
+        val request = buildTutorPlanRequest(
+            question = question,
+            profile = profile,
+            provider = providerForExecution,
+            requestId = requestId,
+            occurredAtEpochMillis = occurredAt,
+            approvedAtEpochMillis = approvedAt,
+            cycleOrdinal = cycleOrdinal,
+            priorConversationMemory = priorConversationMemory,
+            priorCycleStudentMessages = priorCycleStudentMessages,
+            priorTurns = priorTurns,
+        )
+        if (pendingEgressState.action is PendingTutorEgressAction.Plan) {
+            pendingEgressState = PendingTutorEgressState()
+        }
+        scope.launch { modelTasks.execute(request).collect() }
+    }
+
+    val recoverableLocalPlanTask = observedTask?.takeIf { task ->
+        currentProvider?.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&
+            task.request.egressManifest == null &&
+            task.status.isTutorExecutionPending()
+    }
+    LaunchedEffect(
+        recoverableLocalPlanTask?.request?.requestId,
+        recoverableLocalPlanTask?.stateVersion,
+    ) {
+        recoverableLocalPlanTask?.let { task -> modelTasks.execute(task.request).collect() }
+    }
+    LaunchedEffect(
+        observedTask?.request?.requestId,
+        executablePlanProvider?.providerId,
+        executablePlanProvider?.modelId,
+        executablePlanProvider?.providerConfigurationVersion,
+        autoStartAuthorization?.authorizationId,
+    ) {
+        val authorization = autoStartAuthorization
+            ?.takeUnless { it.authorizationId == consumedAutoStartAuthorizationId }
+        if (observedTask != null) {
+            authorization?.let { consumeAutoStartAuthorization(it.authorizationId) }
+            return@LaunchedEffect
+        }
+        val providerForExecution = executablePlanProvider ?: run {
+            if (currentProvider != null) {
+                authorization?.let { consumeAutoStartAuthorization(it.authorizationId) }
+            }
+            return@LaunchedEffect
+        }
+        when (providerForExecution.executionLocation) {
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> {
+                executeTurn(1, null, emptyList(), emptyList())
+                authorization?.let { consumeAutoStartAuthorization(it.authorizationId) }
+            }
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> if (authorization != null) {
+                val authorizationMatches = authorization.matches(
+                    sessionId = question.sessionId,
+                    questionDocumentId = question.questionDocument.document.id,
+                    revisionNumber = question.revisionNumber,
+                    provider = providerForExecution,
+                    promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+                    nowEpochMillis = clock(),
+                )
+                if (!authorizationMatches) {
+                    consumeAutoStartAuthorization(authorization.authorizationId)
+                    return@LaunchedEffect
+                }
+                executeTurn(
+                    cycleOrdinal = 1,
+                    priorConversationMemory = null,
+                    priorCycleStudentMessages = emptyList(),
+                    priorTurns = emptyList(),
+                    oneShotAutoStartAuthorization = authorization,
+                )
+                consumeAutoStartAuthorization(authorization.authorizationId)
+            }
+            ModelExecutionLocation.UNAVAILABLE -> Unit
+        }
+    }
+
+    if (observedTask == null) {
+        TutorConversationFrame(
+            header = headerContent,
+            autoScrollVersion = listOf(
+                question.sessionId,
+                question.revisionNumber,
+                currentProvider?.providerConfigurationVersion,
+                providerLoadFailed,
+            ),
+            modifier = modifier,
+        ) {
+            item("tutor_question_context") {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    content = leadingContent,
+                )
+            }
+            item("tutor_model_entry") {
+                when {
+                    currentProvider == null -> TutorModelStatusCard(
+                        title = if (providerLoadFailed) "暂时没准备好" else "正在准备这道题",
+                        detail = if (providerLoadFailed) {
+                            "题目已经保存，检查设置后可以继续。"
+                        } else {
+                            "请稍候。"
+                        },
+                        actionLabel = if (providerLoadFailed) "检查设置" else null,
+                        onAction = onOpenModelSettings,
+                    )
+
+                    executablePlanProvider == null -> TutorModelStatusCard(
+                        title = "需要先连接大模型",
+                        detail = "题目已经保存，配置完成后可以从这里继续。",
+                        actionLabel = "去设置",
+                        onAction = onOpenModelSettings,
+                    )
+
+                    executablePlanProvider.executionLocation ==
+                        ModelExecutionLocation.LOCAL_NO_EGRESS ||
+                        planLeaseApprovedAt != null || matchingAutoStartAuthorization != null ->
+                        TutorModelStatusCard(
+                            title = "正在准备这道题",
+                            detail = "正在整理讲解，请稍候。",
+                        )
+
+                    else -> TutorDisclosureCard(
+                        provider = executablePlanProvider,
+                        onApprove = {
+                            grantExternalEgressLease(executablePlanProvider, clock())
+                            executeTurn(1, null, emptyList(), emptyList())
+                        },
+                    )
+                }
+            }
+            item("tutor_session_footer") {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    content = trailingContent,
+                )
+            }
+        }
+        return
+    }
+
+    val currentInput = observedTask.request.input as TutorPlanInput
+    val currentResponse = conversationProjection.responsesByTurn[
+        TutorTurnKey(currentInput.cycleOrdinal, currentInput.turnOrdinal)
+    ]
+    val currentHistory = currentCycleResponses.toContiguousTutorHistory()
+    val nextTurnExists = currentCycleTasks.any { task ->
+        (task.request.input as? TutorPlanInput)?.turnOrdinal == currentHistory.size + 1
+    }
+    val currentPlanOutput = observedTask.output as? TutorPlanOutput
+    val respondSupported = currentProvider?.let { candidate ->
+        candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+            candidate.supports(ModelTaskKind.TUTOR_RESPOND)
+    } == true
+    val latestRespondTasks = conversationProjection.latestRespondTasks
+    val responseFreshApprovalTask = currentProvider
+        ?.takeIf { candidate ->
+            candidate.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+                candidate.supports(ModelTaskKind.TUTOR_RESPOND)
+        }
+        ?.let { candidate ->
+            latestRespondTasks.lastOrNull()?.takeIf { task ->
+                task.requiresFreshTutorApproval(candidate)
+            }
+        }
+    val responseNeedsFreshAuthorization = responseFreshApprovalTask != null
+    val responseLeaseApprovedAt = currentProvider?.let { candidate ->
+        when (candidate.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = candidate,
+                taskKind = ModelTaskKind.TUTOR_RESPOND,
+                nowEpochMillis = authorizationNow,
+            )
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
+            ModelExecutionLocation.UNAVAILABLE -> null
+        }
+    }
+    val responseDisclosureRequired = currentProvider?.executionLocation ==
+        ModelExecutionLocation.EXTERNAL_PROVIDER &&
+        (forceResponseDisclosure || responseNeedsFreshAuthorization ||
+            responseLeaseApprovedAt == null)
+    val activeConversationApprovalAt = when (currentProvider?.executionLocation) {
+        ModelExecutionLocation.EXTERNAL_PROVIDER ->
+            responseLeaseApprovedAt.takeUnless { responseDisclosureRequired }
+        ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
+        ModelExecutionLocation.UNAVAILABLE,
+        null,
+        -> null
+    }
+    val respondAuthorized = respondSupported && activeConversationApprovalAt != null
+    val chatSending = chatSubmitPending || latestRespondTasks.any { task ->
+        currentProvider?.let(task::matchesTutorProvider) == true &&
+            task.status.isTutorExecutionPending()
+    }
+
+    fun collectTutorRespondRequest(
+        request: ModelTaskRequest,
+        clearDraftOnPersist: Boolean,
+        allowExternalEnvelopeForLocalRecovery: Boolean = false,
+        clearPendingActionOnPersist: PendingTutorEgressAction? = null,
+    ) {
+        val providerForExecution = currentProvider ?: return
+        if (
+            providerForExecution.executionLocation == ModelExecutionLocation.UNAVAILABLE ||
+            !providerForExecution.supports(ModelTaskKind.TUTOR_RESPOND)
+        ) {
+            return
+        }
+        if (
+            providerForExecution.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&
+            request.egressManifest != null && !allowExternalEnvelopeForLocalRecovery
+        ) {
+            return
+        }
+        if (
+            providerForExecution.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+            externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = providerForExecution,
+                taskKind = ModelTaskKind.TUTOR_RESPOND,
+                nowEpochMillis = clock(),
+            ) == null
+        ) {
+            return
+        }
+        if (chatSubmitPending) return
+        chatSubmitPending = true
+        locallyStartedRespondRequestId = request.requestId
+        chatStartError = null
+        scope.launch {
+            var persisted = false
+            try {
+                modelTasks.execute(request).collect {
+                    if (!persisted) {
+                        persisted = true
+                        if (
+                            clearPendingActionOnPersist != null &&
+                            pendingEgressState.action == clearPendingActionOnPersist
+                        ) {
+                            pendingEgressState = PendingTutorEgressState()
+                        }
+                        if (clearDraftOnPersist) chatDraft = ""
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                chatStartError = "这条消息还没有发出，请重试。"
+            } finally {
+                chatSubmitPending = false
+            }
+        }
+    }
+
+    fun executeTutorResponse(
+        message: String,
+        requestedMove: TutorMoveType? = null,
+        clearDraftOnPersist: Boolean = false,
+    ) {
+        val exactMessage = message
+        val pendingResponseAction = pendingEgressState.action
+            as? PendingTutorEgressAction.NewResponse
+        when (val pendingAction = pendingEgressState.action) {
+            is PendingTutorEgressAction.Plan,
+            is PendingTutorEgressAction.RetryResponse -> return
+            is PendingTutorEgressAction.NewResponse -> if (
+                pendingAction.message != exactMessage ||
+                pendingAction.requestedMove != requestedMove ||
+                pendingAction.clearDraftOnPersist != clearDraftOnPersist
+            ) {
+                return
+            }
+            null -> Unit
+        }
+        val visiblePlan = currentPlanOutput ?: return
+        val providerForExecution = currentProvider?.takeIf { candidate ->
+            candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                candidate.supports(ModelTaskKind.TUTOR_RESPOND)
+        } ?: return
+        if (exactMessage.isBlank() || chatSending) return
+        val lastResponseOrdinal = tutorRespondTasks.maxOfOrNull { task ->
+            (task.request.input as? TutorRespondInput)?.responseOrdinal ?: 0
+        } ?: 0
+        val responseOrdinal = lastResponseOrdinal + 1
+        val priorMessages: List<TutorChatHistoryEntry> = tutorChatHistory(
+            tutorRespondTasks,
+            answerExposureKeys = answerExposureKeys,
+        )
+        val visibleContext = visibleTutorContextMarkdown(
+            visiblePlan,
+            currentResponse,
+            answerWasExposed = observedTask.toPlanAnswerExposureKey() in answerExposureKeys,
+        )
+        val responseCycleOrdinal = currentInput.cycleOrdinal
+        val responseTurnOrdinal = currentInput.turnOrdinal
+        val attempt = tutorRespondTasks.count { task ->
+            (task.request.input as? TutorRespondInput)?.responseOrdinal == responseOrdinal
+        }
+        val requestId = tutorRespondRequestId(
+            question = question,
+            provider = providerForExecution,
+            responseOrdinal = responseOrdinal,
+            cycleOrdinal = responseCycleOrdinal,
+            turnOrdinal = responseTurnOrdinal,
+            studentMessage = exactMessage,
+            visibleTutorContextMarkdown = visibleContext,
+            priorMessages = priorMessages,
+            requestedMove = requestedMove,
+            attempt = attempt,
+        )
+        val occurredAt = maxOf(
+            clock(),
+            tutorRespondTasks.maxOfOrNull { it.createdAtEpochMillis + 1 } ?: 0L,
+        )
+        val approvedAt = when (providerForExecution.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = providerForExecution,
+                taskKind = ModelTaskKind.TUTOR_RESPOND,
+                nowEpochMillis = occurredAt,
+            ) ?: run {
+                forceResponseDisclosure = true
+                externalEgressLease = null
+                pendingEgressState = PendingTutorEgressState(
+                    PendingTutorEgressAction.NewResponse(
+                        message = exactMessage,
+                        requestedMove = requestedMove,
+                        clearDraftOnPersist = clearDraftOnPersist,
+                    ),
+                )
+                return
+            }
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> occurredAt
+            ModelExecutionLocation.UNAVAILABLE -> return
+        }
+        val request = try {
+            buildTutorRespondRequest(
+                question = question,
+                profile = profile,
+                provider = providerForExecution,
+                requestId = requestId,
+                occurredAtEpochMillis = occurredAt,
+                approvedAtEpochMillis = approvedAt,
+                responseOrdinal = responseOrdinal,
+                cycleOrdinal = responseCycleOrdinal,
+                turnOrdinal = responseTurnOrdinal,
+                studentMessage = exactMessage,
+                visibleTutorContextMarkdown = visibleContext,
+                priorMessages = priorMessages,
+                requestedMove = requestedMove,
+            )
+        } catch (_: IllegalArgumentException) {
+            chatStartError = "这条消息包含暂时无法发送的字符，请调整后再试。"
+            return
+        }
+        collectTutorRespondRequest(
+            request = request,
+            clearDraftOnPersist = clearDraftOnPersist,
+            clearPendingActionOnPersist = pendingResponseAction,
+        )
+    }
+
+    fun retryTutorResponse(task: ModelTaskSnapshot) {
+        if (!task.canRetryTutorResponse()) return
+        val exactPendingRetry = (pendingEgressState.action as? PendingTutorEgressAction.RetryResponse)
+            ?.takeIf { it.requestId == task.request.requestId }
+        when (val pendingAction = pendingEgressState.action) {
+            null -> Unit
+            is PendingTutorEgressAction.RetryResponse -> if (
+                pendingAction.requestId != task.request.requestId
+            ) {
+                return
+            }
+            is PendingTutorEgressAction.Plan,
+            is PendingTutorEgressAction.NewResponse -> return
+        }
+        val providerForExecution = currentProvider?.takeIf { candidate ->
+            candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                candidate.supports(ModelTaskKind.TUTOR_RESPOND)
+        } ?: return
+        val request = when (providerForExecution.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> {
+                if (
+                    externalEgressLease?.approvedAtFor(
+                        question = question,
+                        provider = providerForExecution,
+                        taskKind = ModelTaskKind.TUTOR_RESPOND,
+                        nowEpochMillis = clock(),
+                    ) == null
+                ) {
+                    externalEgressLease = null
+                    forceResponseDisclosure = true
+                    pendingEgressState = PendingTutorEgressState(
+                        PendingTutorEgressAction.RetryResponse(task.request.requestId),
+                    )
+                    return
+                }
+                task.request
+            }
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> if (
+                task.request.egressManifest == null && task.matchesTutorProvider(providerForExecution)
+            ) {
+                task.request
+            } else if (exactPendingRetry != null) {
+                task.request
+            } else {
+                return
+            }
+            ModelExecutionLocation.UNAVAILABLE -> return
+        }
+        if (chatSubmitPending) return
+        collectTutorRespondRequest(
+            request = request,
+            clearDraftOnPersist = false,
+            allowExternalEnvelopeForLocalRecovery = exactPendingRetry != null,
+            clearPendingActionOnPersist = exactPendingRetry,
+        )
+    }
+
+    val recoverableRespondTask = latestRespondTasks.lastOrNull { task ->
+        currentProvider?.let(task::matchesTutorProvider) == true &&
+            task.status.isTutorExecutionPending()
+    }
+    LaunchedEffect(
+        recoverableRespondTask?.request?.requestId,
+        respondAuthorized,
+        responseFreshApprovalTask?.request?.requestId,
+    ) {
+        if (respondAuthorized && responseFreshApprovalTask == null) {
+            recoverableRespondTask
+                ?.takeUnless { it.request.requestId == locallyStartedRespondRequestId }
+                ?.let { task -> modelTasks.execute(task.request).collect() }
+        }
+    }
+    val pendingLocalRetryTask = (pendingEgressState.action as? PendingTutorEgressAction.RetryResponse)
+        ?.let { pending ->
+            latestRespondTasks.firstOrNull { it.request.requestId == pending.requestId }
+        }
+    LaunchedEffect(
+        currentProvider?.providerId,
+        currentProvider?.modelId,
+        currentProvider?.providerConfigurationVersion,
+        currentProvider?.executionLocation,
+        currentPlanOutput,
+        pendingEgressState.action,
+        pendingLocalRetryTask?.request?.requestId,
+    ) {
+        if (
+            currentProvider?.executionLocation != ModelExecutionLocation.LOCAL_NO_EGRESS ||
+            !respondSupported || currentPlanOutput == null
+        ) {
+            return@LaunchedEffect
+        }
+        when (val pendingAction = pendingEgressState.action) {
+            is PendingTutorEgressAction.NewResponse -> executeTutorResponse(
+                message = pendingAction.message,
+                requestedMove = pendingAction.requestedMove,
+                clearDraftOnPersist = pendingAction.clearDraftOnPersist,
+            )
+            is PendingTutorEgressAction.RetryResponse ->
+                pendingLocalRetryTask?.let(::retryTutorResponse)
+            is PendingTutorEgressAction.Plan,
+            null,
+            -> Unit
+        }
+    }
+
+    fun revealCurrentSolution(afterPreviewed: () -> Unit = {}) {
+        if (interactionBusy || responseActionAwaitingAuthorization) return
+        if (currentResponse?.solutionRevealed != true) {
+            val previewKey = observedTask.toPlanSolutionPreviewKey() ?: return
+            planSolutionPreviewKeys = planSolutionPreviewKeys + previewKey
+        }
+        interactionError = null
+        afterPreviewed()
+    }
+    LaunchedEffect(
+        question.sessionId,
+        currentCycle,
+        currentHistory,
+        currentInput.priorConversationMemory,
+        currentInput.priorCycleStudentMessages,
+        nextTurnExists,
+        executablePlanProvider?.providerConfigurationVersion,
+        externalEgressLease?.approvedAtEpochMillis,
+        responseActionAwaitingAuthorization,
+    ) {
+        if (
+            currentHistory.isNotEmpty() &&
+            currentHistory.size < TutorPlanInput.MAX_TURNS &&
+            !nextTurnExists &&
+            !responseActionAwaitingAuthorization
+        ) {
+            executeTurn(
+                currentInput.cycleOrdinal,
+                currentInput.priorConversationMemory,
+                currentInput.priorCycleStudentMessages,
+                currentHistory,
+            )
+        }
+    }
+    fun retryCurrentPlan() {
+        if (executablePlanProvider == null) {
+            onOpenModelSettings()
+        } else {
+            executeTurn(
+                currentInput.cycleOrdinal,
+                currentInput.priorConversationMemory,
+                currentInput.priorCycleStudentMessages,
+                currentInput.priorTurns,
+            )
+        }
+    }
+
+    fun submitCurrentChoice(choiceId: String) {
+        val output = observedTask.output as? TutorPlanOutput
+        val item = output?.plan?.diagnosticItem
+        val evaluation = item?.evaluateChoice(choiceId)
+        if (
+            output == null || item == null || evaluation == null || interactionBusy ||
+            responseActionAwaitingAuthorization
+        ) {
+            return
+        }
+        interactionError = null
+        interactionBusy = true
+        scope.launch {
+            try {
+                interactions.recordChoice(
+                    RecordTutorChoiceCommand(
+                        sessionId = question.sessionId,
+                        questionDocumentId = question.questionDocument.document.id,
+                        revisionNumber = question.revisionNumber,
+                        cycleOrdinal = currentInput.cycleOrdinal,
+                        turnOrdinal = currentInput.turnOrdinal,
+                        diagnosticStemMarkdown = item.stemMarkdown,
+                        selectedChoiceId = evaluation.choice.id,
+                        selectedChoiceMarkdown = evaluation.choice.markdown,
+                        selectionWasCorrect = evaluation.isCorrect,
+                        feedbackMarkdown = requireNotNull(evaluation.choice.feedbackMarkdown),
+                        occurredAtEpochMillis = System.currentTimeMillis(),
+                    ),
+                )
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                interactionError = "这个选择暂时没有保存，请重试后再继续。"
+            } finally {
+                interactionBusy = false
+            }
+        }
+    }
+
+    fun continueCurrentTurn(requestedMove: TutorMoveType) {
+        if (interactionBusy || responseActionAwaitingAuthorization) return
+        if (executablePlanProvider == null) {
+            onOpenModelSettings()
+            return
+        }
+        interactionBusy = true
+        scope.launch {
+            interactionError = null
+            try {
+                val movedResponse = interactions.recordMove(
+                    RecordTutorMoveCommand(
+                        sessionId = question.sessionId,
+                        questionDocumentId = question.questionDocument.document.id,
+                        revisionNumber = question.revisionNumber,
+                        cycleOrdinal = currentInput.cycleOrdinal,
+                        turnOrdinal = currentInput.turnOrdinal,
+                        requestedMove = requestedMove,
+                        occurredAtEpochMillis = System.currentTimeMillis(),
+                    ),
+                )
+                if (movedResponse.hasChoicePayload) {
+                    val nextHistory = currentCycleResponses
+                        .filterNot { it.turnOrdinal == movedResponse.turnOrdinal }
+                        .plus(movedResponse)
+                        .toContiguousTutorHistory()
+                    if (nextHistory.size < TutorPlanInput.MAX_TURNS) {
+                        executeTurn(
+                            currentInput.cycleOrdinal,
+                            currentInput.priorConversationMemory,
+                            currentInput.priorCycleStudentMessages,
+                            nextHistory,
+                        )
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                interactionError = "下一种讲法没有启动，请再试一次。"
+            } finally {
+                interactionBusy = false
+            }
+        }
+    }
+
+    fun restartCurrentCycle() {
+        if (responseActionAwaitingAuthorization) return
+        if (executablePlanProvider == null) {
+            onOpenModelSettings()
+        } else {
+            tutorResponses.toTutorConversationMemory(answerExposureKeys)?.let { memory ->
+                executeTurn(
+                    currentCycle + 1,
+                    memory,
+                    priorCycleStudentMessages(tutorRespondTasks),
+                    emptyList(),
+                )
+            }
+        }
+    }
+
+    val conversationListState = rememberLazyListState()
+    fun solutionBottomModifier(stableId: String): Modifier = Modifier
+        .testTag("tutor_solution_bottom_$stableId")
+        .onGloballyPositioned { coordinates ->
+            solutionExposureTracker.updateSolutionBottomBounds(
+                stableId = stableId,
+                bounds = coordinates.boundsInWindow(clipBounds = false),
+            )
+        }
+    val tailId = timeline.lastOrNull()?.stableId
+    val autoScrollVersion = timeline.map { timelineItem ->
+        when (timelineItem) {
+            is TutorConversationTimelineItem.Plan -> listOf(
+                timelineItem.stableId,
+                timelineItem.task.stateVersion,
+                timelineItem.task.status,
+            )
+            is TutorConversationTimelineItem.ChoiceFeedback -> listOf(
+                timelineItem.stableId,
+                timelineItem.response.updatedAtEpochMillis,
+                timelineItem.response.requestedMove,
+                timelineItem.response.solutionRevealed,
+            )
+            is TutorConversationTimelineItem.Reply -> listOf(
+                timelineItem.stableId,
+                timelineItem.task.stateVersion,
+                timelineItem.task.status,
+            )
+        }
+    }
+    val composerContent: (@Composable () -> Unit)? = if (
+        respondSupported && currentPlanOutput != null && respondAuthorized &&
+        !responseActionAwaitingAuthorization
+    ) {
+        {
+            TutorChatComposer(
+                value = chatDraft,
+                enabled = !chatSending && !interactionBusy,
+                sending = chatSending,
+                onValueChange = {
+                    chatDraft = it
+                    chatStartError = null
+                },
+                onSend = {
+                    executeTutorResponse(
+                        message = chatDraft,
+                        clearDraftOnPersist = true,
+                    )
+                },
+            )
+            chatStartError?.let { message ->
+                Text(
+                    text = message,
+                    color = ErrorWarm,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .testTag("tutor_chat_start_error"),
+                )
+            }
+        }
+    } else {
+        null
+    }
+
+    TutorConversationFrame(
+        header = headerContent,
+        autoScrollVersion = listOf(autoScrollVersion, respondAuthorized, chatStartError),
+        forceFollowToken = locallyStartedRespondRequestId,
+        blockAutoFollowToken = solutionExposureTracker.blockAutoFollowToken,
+        modifier = modifier,
+        listState = conversationListState,
+        listViewportModifier = Modifier.onGloballyPositioned { coordinates ->
+            solutionExposureTracker.updateViewportBounds(
+                coordinates.boundsInWindow(clipBounds = false),
+            )
+        },
+        composer = composerContent,
+    ) {
+        item("tutor_question_context") {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                content = leadingContent,
+            )
+        }
+        items(timeline, key = TutorConversationTimelineItem::stableId) { timelineItem ->
+            val isTail = timelineItem.stableId == tailId
+            when (timelineItem) {
+                is TutorConversationTimelineItem.Plan -> {
+                    val taskInput = timelineItem.task.request.input as TutorPlanInput
+                    val response = conversationProjection.responsesByTurn[
+                        TutorTurnKey(taskInput.cycleOrdinal, taskInput.turnOrdinal)
+                    ]
+                    val isCurrentTurn = taskInput.cycleOrdinal == currentInput.cycleOrdinal &&
+                        taskInput.turnOrdinal == currentInput.turnOrdinal
+                    val executionMatches = currentProvider?.let(
+                        timelineItem.task::matchesTutorProvider,
+                    ) == true
+                    TutorTaskContent(
+                        task = timelineItem.task,
+                        response = response,
+                        solutionRevealPreviewed = timelineItem.task.toPlanSolutionPreviewKey()
+                            ?.let { it in planSolutionPreviewKeys } == true,
+                        awaitingContinuation = planFreshApprovalTask?.request?.requestId ==
+                            timelineItem.task.request.requestId,
+                        interactionEnabled = isTail && isCurrentTurn &&
+                            planFreshApprovalTask == null &&
+                            !responseActionAwaitingAuthorization,
+                        executionMatchesCurrentProvider = executionMatches,
+                        splitChoiceFeedback = true,
+                        interactionBusy = interactionBusy,
+                        interactionError = interactionError.takeIf { isTail && isCurrentTurn },
+                        onRetry = ::retryCurrentPlan,
+                        onSubmitChoice = ::submitCurrentChoice,
+                        onRequestHint = if (
+                            respondSupported && respondAuthorized && !chatSending &&
+                            !responseActionAwaitingAuthorization
+                        ) {
+                            {
+                                executeTutorResponse(
+                                    message = "我不确定，请给我一点提示",
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                        onContinue = ::continueCurrentTurn,
+                        onRevealSolution = { revealCurrentSolution() },
+                        onRestartCycle = ::restartCurrentCycle,
+                        onOpenModelSettings = onOpenModelSettings,
+                        solutionBottomModifier = solutionBottomModifier(timelineItem.stableId),
+                    )
+                }
+
+                is TutorConversationTimelineItem.ChoiceFeedback -> {
+                    val response = timelineItem.response
+                    val output = timelineItem.planTask?.output as? TutorPlanOutput
+                    val isCurrentTurn = response.cycleOrdinal == currentInput.cycleOrdinal &&
+                        response.turnOrdinal == currentInput.turnOrdinal
+                    if (output != null) {
+                        TutorChoiceFeedbackContent(
+                            output = output,
+                            response = response,
+                            solutionRevealPreviewed = timelineItem.planTask
+                                .toPlanSolutionPreviewKey()
+                                ?.let { it in planSolutionPreviewKeys } == true,
+                            interactionEnabled = isTail && isCurrentTurn &&
+                                !responseActionAwaitingAuthorization,
+                            interactionBusy = interactionBusy,
+                            interactionError = interactionError.takeIf { isTail && isCurrentTurn },
+                            onContinue = ::continueCurrentTurn,
+                            onRevealSolution = { revealCurrentSolution() },
+                            onRestartCycle = ::restartCurrentCycle,
+                            solutionBottomModifier = solutionBottomModifier(timelineItem.stableId),
+                        )
+                    } else {
+                        TutorStoredChoiceFeedback(response)
+                    }
+                }
+
+                is TutorConversationTimelineItem.Reply -> {
+                    val executionMatches = currentProvider?.let(
+                        timelineItem.task::matchesTutorProvider,
+                    ) == true
+                    val taskAllowsInteraction = timelineItem.task.status ==
+                        ModelTaskStatus.SUCCEEDED || timelineItem.task.canRetryTutorResponse()
+                    val opensLocalSettings =
+                        timelineItem.task.failure?.code?.requiresModelSettings() == true
+                    val recoveryEnabled = isTail && executionMatches &&
+                        !chatSending && !interactionBusy &&
+                        (opensLocalSettings ||
+                            (responseFreshApprovalTask == null && respondAuthorized))
+                    TutorChatExchange(
+                        task = timelineItem.task,
+                        awaitingContinuation = !respondAuthorized &&
+                            timelineItem.task.status.isTutorExecutionPending(),
+                        interactionEnabled = isTail && taskAllowsInteraction &&
+                            executionMatches && respondAuthorized &&
+                            !chatSending && !interactionBusy &&
+                            !responseActionAwaitingAuthorization,
+                        recoveryEnabled = recoveryEnabled &&
+                            !responseActionAwaitingAuthorization,
+                        executionMatchesCurrentProvider = executionMatches,
+                        onRetry = { retryTutorResponse(timelineItem.task) },
+                        onOpenModelSettings = onOpenModelSettings,
+                        onMove = { move ->
+                            executeTutorResponse(
+                                message = move.label,
+                                requestedMove = move.type,
+                            )
+                        },
+                        onRevealSolution = { move ->
+                            revealCurrentSolution {
+                                executeTutorResponse(
+                                    message = move.label,
+                                    requestedMove = TutorMoveType.REVEAL_SOLUTION,
+                                )
+                            }
+                        },
+                        localIntentContent = { input, output ->
+                            TutorLocalIntentPanel(
+                                output = output,
+                                studentMessage = input.studentMessage,
+                                catalogEntries = catalogEntries,
+                                profile = profile,
+                                onRequestSave = onRequestSave,
+                                onRequestEnd = onRequestEnd,
+                                onOpenMistakeNotebook = onOpenMistakeNotebook,
+                                onOpenProfile = onOpenProfile,
+                            )
+                        },
+                        assistantBottomModifier = solutionBottomModifier(timelineItem.stableId),
+                    )
+                }
+            }
+        }
+        val pendingPlanAction = pendingEgressState.action as? PendingTutorEgressAction.Plan
+        if (
+            (planFreshApprovalTask != null || pendingPlanAction != null) &&
+            executablePlanProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
+        ) {
+            item("tutor_plan_recovery_disclosure") {
+                TutorDisclosureCard(
+                    provider = requireNotNull(executablePlanProvider),
+                    title = "继续讲这道题",
+                    actionText = "继续讲题",
+                    actionContentDescription = "继续讲解当前题",
+                    onApprove = {
+                        if (planFreshApprovalTask != null && planRecoveryRequestInFlight != null) {
+                            return@TutorDisclosureCard
+                        }
+                        val approvedAt = maxOf(
+                            clock(),
+                            (planFreshApprovalTask?.updatedAtEpochMillis ?: 0L) + 1,
+                        )
+                        val providerForRecovery = requireNotNull(executablePlanProvider)
+                        grantExternalEgressLease(providerForRecovery, approvedAt)
+                        if (planFreshApprovalTask != null) {
+                            val canReuseExactRequest =
+                                !planFreshApprovalTask.requiresFreshTutorApproval(
+                                    providerForRecovery,
+                                ) &&
+                                    planFreshApprovalTask.coversCurrentTutorDisclosure(
+                                        providerForRecovery,
+                                        ModelTaskKind.TUTOR_PLAN,
+                                    ) &&
+                                    planFreshApprovalTask.request.egressManifest
+                                        ?.isModelEgressApprovalFresh(approvedAt) == true
+                            val request = if (canReuseExactRequest) {
+                                planFreshApprovalTask.request
+                            } else {
+                                rebuildTutorRequestAfterApproval(
+                                    failedTask = planFreshApprovalTask,
+                                    provider = providerForRecovery,
+                                    approvedAtEpochMillis = approvedAt,
+                                )
+                            }
+                            planRecoveryRequestInFlight = request.requestId
+                            scope.launch {
+                                try {
+                                    modelTasks.execute(request).collect()
+                                } finally {
+                                    planRecoveryRequestInFlight = null
+                                }
+                            }
+                        } else if (pendingPlanAction != null) {
+                            executeTurn(
+                                cycleOrdinal = pendingPlanAction.cycleOrdinal,
+                                priorConversationMemory =
+                                pendingPlanAction.priorConversationMemory,
+                                priorCycleStudentMessages =
+                                pendingPlanAction.priorCycleStudentMessages,
+                                priorTurns = pendingPlanAction.priorTurns,
+                            )
+                        }
+                    },
+                )
+            }
+        }
+        if (
+            respondSupported && currentPlanOutput != null && !respondAuthorized &&
+            planFreshApprovalTask == null
+        ) {
+            item("tutor_respond_disclosure") {
+                TutorRespondDisclosureCard(
+                    provider = requireNotNull(currentProvider),
+                    onApprove = {
+                        val pendingResponseAction = pendingEgressState.action
+                        val pendingRetryTask =
+                            (pendingResponseAction as? PendingTutorEgressAction.RetryResponse)
+                                ?.let { pending ->
+                                    latestRespondTasks.firstOrNull {
+                                        it.request.requestId == pending.requestId
+                                    }
+                                }
+                        if (
+                            pendingResponseAction is PendingTutorEgressAction.RetryResponse &&
+                            pendingRetryTask == null
+                        ) {
+                            return@TutorRespondDisclosureCard
+                        }
+                        val approvedAt = clock()
+                        grantExternalEgressLease(requireNotNull(currentProvider), approvedAt)
+                        forceResponseDisclosure = false
+                        if (pendingResponseAction is PendingTutorEgressAction.NewResponse) {
+                            executeTutorResponse(
+                                message = pendingResponseAction.message,
+                                requestedMove = pendingResponseAction.requestedMove,
+                                clearDraftOnPersist =
+                                pendingResponseAction.clearDraftOnPersist,
+                            )
+                            return@TutorRespondDisclosureCard
+                        }
+                        val taskToRecover = when (pendingResponseAction) {
+                            is PendingTutorEgressAction.RetryResponse -> pendingRetryTask
+                            else -> responseFreshApprovalTask ?: recoverableRespondTask ?: 
+                                latestRespondTasks.lastOrNull(ModelTaskSnapshot::canRetryTutorResponse)
+                        }
+                        taskToRecover?.let { failedTask ->
+                            val recoveryApprovedAt = maxOf(
+                                approvedAt,
+                                failedTask.updatedAtEpochMillis + 1,
+                            )
+                            val providerForRecovery = requireNotNull(currentProvider)
+                            val canReuseExactRequest =
+                                !failedTask.requiresFreshTutorApproval(providerForRecovery) &&
+                                    failedTask.coversCurrentTutorDisclosure(
+                                        providerForRecovery,
+                                        ModelTaskKind.TUTOR_RESPOND,
+                                    ) &&
+                                    failedTask.request.egressManifest
+                                        ?.isModelEgressApprovalFresh(recoveryApprovedAt) == true
+                            collectTutorRespondRequest(
+                                request = if (canReuseExactRequest) {
+                                    failedTask.request
+                                } else {
+                                    rebuildTutorRequestAfterApproval(
+                                        failedTask = failedTask,
+                                        provider = providerForRecovery,
+                                        approvedAtEpochMillis = recoveryApprovedAt,
+                                    )
+                                },
+                                clearDraftOnPersist = false,
+                                clearPendingActionOnPersist =
+                                    pendingResponseAction as? PendingTutorEgressAction.RetryResponse,
+                            )
+                        }
+                    },
+                )
+            }
+        }
+        if (composerContent == null && chatStartError != null) {
+            item("tutor_chat_start_error") {
+                Text(
+                    text = requireNotNull(chatStartError),
+                    color = ErrorWarm,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("tutor_chat_start_error"),
+                )
+            }
+        }
+        item("tutor_session_footer") {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                content = trailingContent,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TutorStoredChoiceFeedback(
+    response: TutorTurnResponse,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = JadeSoft.copy(alpha = 0.28f),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            Text(
+                text = "你选择了",
+                color = InkSecondary,
+                style = MaterialTheme.typography.labelMedium,
+            )
+            SafeMarkdownText(
+                markdown = requireNotNull(response.diagnosticStemMarkdown),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            SafeMarkdownText(
+                markdown = requireNotNull(response.selectedChoiceMarkdown),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = if (response.selectionWasCorrect == true) {
+                    "判断正确"
+                } else {
+                    "这里暴露了关键分叉"
+                },
+                color = if (response.selectionWasCorrect == true) JadeActive else ErrorWarm,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            SafeMarkdownText(
+                markdown = requireNotNull(response.feedbackMarkdown),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TutorDisclosureCard(
+    provider: ProviderCapabilitySnapshot,
+    onApprove: () -> Unit,
+    modifier: Modifier = Modifier,
+    title: String = "开始讲这道题",
+    actionText: String = "开始讲题",
+    actionContentDescription: String = "开始讲解当前题",
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("captured_tutor_disclosure"),
+        color = JadeSoft.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = title,
+                color = Ink,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "会把当前题、少量同科学习记录，以及你在本题中发送的消息和已显示的讲解发给 ${provider.providerDisplayName}；不包含原图或其他题目。",
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            PrimaryActionButton(
+                text = actionText,
+                onClick = onApprove,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("captured_tutor_start_model"),
+                contentDescription = actionContentDescription,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TutorRespondDisclosureCard(
+    provider: ProviderCapabilitySnapshot,
+    onApprove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("tutor_respond_disclosure"),
+        color = JadeSoft.copy(alpha = 0.32f),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "继续本题对话",
+                color = Ink,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "会把当前题、少量同科学习记录、你发送的消息和已显示讲解发给 ${provider.providerDisplayName}；不包含原图、其他题目或完整学习记录。",
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            PrimaryActionButton(
+                text = "继续对话",
+                onClick = onApprove,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("tutor_respond_disclosure_approve"),
+                contentDescription = "允许与当前模型继续本题对话",
+            )
+        }
+    }
+}
+
+@Composable
+private fun TutorTaskContent(
+    task: ModelTaskSnapshot,
+    response: TutorTurnResponse?,
+    solutionRevealPreviewed: Boolean = false,
+    awaitingContinuation: Boolean = false,
+    interactionEnabled: Boolean,
+    executionMatchesCurrentProvider: Boolean,
+    splitChoiceFeedback: Boolean,
+    interactionBusy: Boolean,
+    interactionError: String?,
+    onRetry: () -> Unit,
+    onSubmitChoice: (String) -> Unit,
+    onRequestHint: (() -> Unit)?,
+    onContinue: (TutorMoveType) -> Unit,
+    onRevealSolution: () -> Unit,
+    onRestartCycle: () -> Unit,
+    onOpenModelSettings: () -> Unit,
+    solutionBottomModifier: Modifier,
+    modifier: Modifier = Modifier,
+) {
+    val requiresModelSettings = task.failure?.code?.requiresModelSettings() == true
+    when (task.status) {
+        ModelTaskStatus.SUCCEEDED -> {
+            val output = task.output as? TutorPlanOutput
+            if (output == null) {
+                TutorModelStatusCard(
+                    title = "这次讲解暂时没准备好",
+                    detail = "题目已经保存，可以再试一次。",
+                    modifier = modifier,
+                    actionLabel = "重新生成".takeIf {
+                        interactionEnabled && executionMatchesCurrentProvider
+                    },
+                    onAction = onRetry,
+                )
+            } else {
+                TutorTurnContent(
+                    output = output,
+                    modifier = modifier,
+                    response = response,
+                    solutionRevealPreviewed = solutionRevealPreviewed,
+                    interactionEnabled = interactionEnabled,
+                    splitChoiceFeedback = splitChoiceFeedback,
+                    interactionBusy = interactionBusy,
+                    interactionError = interactionError,
+                    onSubmitChoice = onSubmitChoice,
+                    onRequestHint = onRequestHint,
+                    onContinue = onContinue,
+                    onRevealSolution = onRevealSolution,
+                    onRestartCycle = onRestartCycle,
+                    solutionBottomModifier = solutionBottomModifier,
+                )
+            }
+        }
+        ModelTaskStatus.PERMANENT_FAILURE,
+        ModelTaskStatus.RETRYABLE_FAILURE,
+        ModelTaskStatus.CANCELLED,
+        -> TutorModelStatusCard(
+            title = if (executionMatchesCurrentProvider) {
+                "这次讲解暂时没完成"
+            } else {
+                "旧配置中的回复未完成"
+            },
+            detail = if (!executionMatchesCurrentProvider) {
+                "之前的内容仍保留，可从当前配置继续这道题。"
+            } else if (requiresModelSettings) {
+                "模型设置需要更新，题目已经保存。"
+            } else {
+                "题目已经保存，可以再试一次。"
+            },
+            modifier = modifier,
+            actionLabel = if (
+                !interactionEnabled || !executionMatchesCurrentProvider ||
+                (task.status != ModelTaskStatus.RETRYABLE_FAILURE && !requiresModelSettings)
+            ) {
+                null
+            } else if (requiresModelSettings) {
+                "检查模型设置"
+            } else {
+                "重新生成"
+            },
+            onAction = if (requiresModelSettings) {
+                onOpenModelSettings
+            } else {
+                onRetry
+            },
+        )
+        else -> if (executionMatchesCurrentProvider && awaitingContinuation) {
+            TutorModelStatusCard(
+                title = "讲解已暂停",
+                detail = "点下面的“继续讲题”后接着完成。",
+                modifier = modifier,
+            )
+        } else if (executionMatchesCurrentProvider) {
+            TutorModelStatusCard(
+                title = "正在准备这道题",
+                detail = "正在整理讲解，请稍候。",
+                modifier = modifier,
+            )
+        } else {
+            TutorModelStatusCard(
+                title = "旧配置中的回复未完成",
+                detail = "之前的内容仍保留，可从当前配置继续这道题。",
+                modifier = modifier,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TutorModelStatusCard(
+    title: String,
+    detail: String,
+    modifier: Modifier = Modifier,
+    actionLabel: String? = null,
+    onAction: () -> Unit = {},
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("captured_tutor_model_status"),
+        color = JadeSoft.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(title, color = Ink, style = MaterialTheme.typography.titleMedium)
+            Text(detail, color = InkSecondary, style = MaterialTheme.typography.bodyMedium)
+            actionLabel?.let { label ->
+                OutlineActionChip(text = label, onClick = onAction)
+            }
+        }
+    }
+}
+
+@Composable
+internal fun TutorQuestionUnavailable(
+    title: String,
+    detail: String,
+    onRetry: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 28.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(title, color = Ink, style = MaterialTheme.typography.titleLarge)
+        Text(detail, color = InkSecondary, style = MaterialTheme.typography.bodyMedium)
+        OutlineActionChip(
+            text = "重新读取",
+            onClick = onRetry,
+            modifier = Modifier.testTag("captured_tutor_retry"),
+        )
+    }
+}
+
+internal fun tutorSessionSaveLabel(
+    isSaved: Boolean,
+    saveInProgress: Boolean,
+    saveFailed: Boolean,
+): String = when {
+    isSaved -> "已存入"
+    saveInProgress -> "保存中"
+    saveFailed -> "重试保存"
+    else -> "存入错题本"
+}
+
+internal fun tutorSessionStatusLine(isSaved: Boolean): String = if (isSaved) {
+    "已存入错题本"
+} else {
+    "临时题目 · 讲完后再决定是否存入"
+}
+
+internal fun tutorSessionStatusLine(session: ConfirmedTutorSession): String =
+    tutorSessionStatusLine(session.disposition)
+
+internal fun tutorSessionStatusLine(disposition: TutorSessionDisposition): String = when (
+    disposition
+) {
+    TutorSessionDisposition.ACTIVE -> "临时题目 · 讲完后再决定是否存入"
+    TutorSessionDisposition.SAVED -> "已存入错题本"
+    TutorSessionDisposition.ENDED_WITHOUT_SAVE -> "本次讲题已结束 · 未存入错题本"
+}

@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "curriculum-coverage-extraction-manifest-2025-v1",
+  "targetBaselineId": "moe-high-school-2017-2025",
+  "sourceRegisterId": "high-school-knowledge-source-register-2025-v1",
+  "updatedAtEpochMillis": 1784908800000,
+  "subjects": [
+    {
+      "subject": "CHINESE",
+      "sourceId": "candidate:moe:2025:chinese:curriculum-text",
+      "pdfFile": "chinese.pdf",
+      "coursePages": [16, 41],
+      "modules": [
+        {"slug":"whole-book-reading","name":"整本书阅读与研讨","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[16,18],"startMarker":"学习任务群1整本书阅读与研讨","endMarker":"学习任务群2当代文化参与","mode":"GOALS"},
+        {"slug":"contemporary-culture","name":"当代文化参与","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[18,19],"startMarker":"学习任务群2当代文化参与","endMarker":"学习任务群3跨媒介阅读与交流","mode":"GOALS"},
+        {"slug":"cross-media-literacy","name":"跨媒介阅读与交流","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[19,21],"startMarker":"学习任务群3跨媒介阅读与交流","endMarker":"学习任务群4语言积累、梳理与探究","mode":"GOALS"},
+        {"slug":"language-accumulation","name":"语言积累、梳理与探究","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED"],"pages":[21,22],"startMarker":"学习任务群4语言积累、梳理与探究","endMarker":"学习任务群5文学阅读与写作","mode":"GOALS"},
+        {"slug":"literary-reading-writing","name":"文学阅读与写作","requirementTypes":["REQUIRED"],"pages":[22,24],"startMarker":"学习任务群5文学阅读与写作","endMarker":"学习任务群6思辨性阅读与表达","mode":"GOALS"},
+        {"slug":"critical-reading-expression","name":"思辨性阅读与表达","requirementTypes":["REQUIRED"],"pages":[24,25],"startMarker":"学习任务群6思辨性阅读与表达","endMarker":"学习任务群7实用性阅读与交流","mode":"GOALS"},
+        {"slug":"practical-reading-communication","name":"实用性阅读与交流","requirementTypes":["REQUIRED"],"pages":[25,26],"startMarker":"学习任务群7实用性阅读与交流","endMarker":"学习任务群8中华传统文化经典研习","mode":"GOALS"},
+        {"slug":"traditional-classics-study","name":"中华传统文化经典研习","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[26,27],"startMarker":"学习任务群8中华传统文化经典研习","endMarker":"学习任务群9中国革命传统作品研习","mode":"GOALS"},
+        {"slug":"revolutionary-works-study","name":"中国革命传统作品研习","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[27,29],"startMarker":"学习任务群9中国革命传统作品研习","endMarker":"学习任务群10中国现当代作家作品研习","mode":"GOALS"},
+        {"slug":"modern-chinese-authors-study","name":"中国现当代作家作品研习","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[29,30],"startMarker":"学习任务群10中国现当代作家作品研习","endMarker":"学习任务群11外国作家作品研习","mode":"GOALS"},
+        {"slug":"foreign-authors-study","name":"外国作家作品研习","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[30,31],"startMarker":"学习任务群11外国作家作品研习","endMarker":"学习任务群12科学与文化论著研习","mode":"GOALS"},
+        {"slug":"science-culture-works-study","name":"科学与文化论著研习","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[31,32],"startMarker":"学习任务群12科学与文化论著研习","endMarker":"学习任务群13汉字汉语专题研讨","mode":"GOALS"},
+        {"slug":"chinese-language-seminar","name":"汉字汉语专题研讨","requirementTypes":["ELECTIVE"],"pages":[32,33],"startMarker":"学习任务群13汉字汉语专题研讨","endMarker":"学习任务群14中华传统文化专题研讨","mode":"GOALS"},
+        {"slug":"traditional-culture-seminar","name":"中华传统文化专题研讨","requirementTypes":["ELECTIVE"],"pages":[33,34],"startMarker":"学习任务群14中华传统文化专题研讨","endMarker":"学习任务群15中国革命传统作品专题研讨","mode":"GOALS"},
+        {"slug":"revolutionary-works-seminar","name":"中国革命传统作品专题研讨","requirementTypes":["ELECTIVE"],"pages":[34,35],"startMarker":"学习任务群15中国革命传统作品专题研讨","endMarker":"学习任务群16中国现当代作家作品专题研讨","mode":"GOALS"},
+        {"slug":"modern-chinese-authors-seminar","name":"中国现当代作家作品专题研讨","requirementTypes":["ELECTIVE"],"pages":[35,36],"startMarker":"学习任务群16中国现当代作家作品专题研讨","endMarker":"学习任务群17跨文化专题研讨","mode":"GOALS"},
+        {"slug":"cross-cultural-seminar","name":"跨文化专题研讨","requirementTypes":["ELECTIVE"],"pages":[36,37],"startMarker":"学习任务群17跨文化专题研讨","endMarker":"学习任务群18学术论著专题研讨","mode":"GOALS"},
+        {"slug":"academic-works-seminar","name":"学术论著专题研讨","requirementTypes":["ELECTIVE"],"pages":[37,37],"startMarker":"学习任务群18学术论著专题研讨","mode":"GOALS"}
+      ]
+    },
+    {
+      "subject": "MATH",
+      "sourceId": "candidate:moe:2025:math:curriculum-text",
+      "pdfFile": "math.pdf",
+      "coursePages": [16, 74],
+      "modules": [
+        {"slug":"required-preparatory-knowledge","name":"必修：预备知识","requirementTypes":["REQUIRED"],"pages":[17,21],"startMarker":"主题一预备知识","endMarker":"主题二函数","mode":"NUMBERED"},
+        {"slug":"required-functions","name":"必修：函数","requirementTypes":["REQUIRED"],"pages":[21,27],"startMarker":"主题二函数","endMarker":"主题三几何与代数","mode":"NUMBERED"},
+        {"slug":"required-geometry-algebra","name":"必修：几何与代数","requirementTypes":["REQUIRED"],"pages":[27,33],"startMarker":"主题三几何与代数","endMarker":"主题四概率与统计","mode":"NUMBERED"},
+        {"slug":"required-probability-statistics","name":"必修：概率与统计","requirementTypes":["REQUIRED"],"pages":[33,36],"startMarker":"主题四概率与统计","endMarker":"主题五数学建模活动与数学探究活动","mode":"NUMBERED"},
+        {"slug":"required-modeling-inquiry","name":"必修：数学建模活动与数学探究活动","requirementTypes":["REQUIRED"],"pages":[36,38],"startMarker":"主题五数学建模活动与数学探究活动","endMarker":"(二)选择性必修课程","mode":"NUMBERED"},
+        {"slug":"selective-functions","name":"选择性必修：函数","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[39,43],"startMarker":"主题一函数","endMarker":"主题二几何与代数","mode":"NUMBERED"},
+        {"slug":"selective-geometry-algebra","name":"选择性必修：几何与代数","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[43,48],"startMarker":"主题二几何与代数","endMarker":"主题三概率与统计","mode":"NUMBERED"},
+        {"slug":"selective-probability-statistics","name":"选择性必修：概率与统计","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[48,52],"startMarker":"主题三概率与统计","endMarker":"主题四数学建模活动与数学探究活动","mode":"NUMBERED"},
+        {"slug":"selective-modeling-inquiry","name":"选择性必修：数学建模活动与数学探究活动","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[52,53],"startMarker":"主题四数学建模活动与数学探究活动","endMarker":"(三)选修课程","mode":"NUMBERED"},
+        {"slug":"elective-a-calculus","name":"选修A：微积分","requirementTypes":["ELECTIVE"],"pages":[53,55],"startMarker":"微积分","endMarker":"空间向量与代数","mode":"NUMBERED"},
+        {"slug":"elective-a-space-vector-algebra","name":"选修A：空间向量与代数","requirementTypes":["ELECTIVE"],"pages":[55,57],"startMarker":"空间向量与代数","endMarker":"概率与统计","mode":"NUMBERED"},
+        {"slug":"elective-a-probability-statistics","name":"选修A：概率与统计","requirementTypes":["ELECTIVE"],"pages":[57,59],"startMarker":"概率与统计","endMarker":"B类课程","mode":"NUMBERED"},
+        {"slug":"elective-b-calculus","name":"选修B：微积分","requirementTypes":["ELECTIVE"],"pages":[59,61],"startMarker":"微积分","endMarker":"空间向量与代数","mode":"NUMBERED"},
+        {"slug":"elective-b-space-vector-algebra","name":"选修B：空间向量与代数","requirementTypes":["ELECTIVE"],"pages":[61,62],"startMarker":"空间向量与代数","endMarker":"应用统计","mode":"NUMBERED"},
+        {"slug":"elective-b-applied-statistics","name":"选修B：应用统计","requirementTypes":["ELECTIVE"],"pages":[62,64],"startMarker":"应用统计","endMarker":"模型","mode":"NUMBERED"},
+        {"slug":"elective-b-models","name":"选修B：模型","requirementTypes":["ELECTIVE"],"pages":[64,65],"startMarker":"模型","endMarker":"C类课程","mode":"NUMBERED"},
+        {"slug":"elective-c-logic","name":"选修C：逻辑推理初步","requirementTypes":["ELECTIVE"],"pages":[65,67],"startMarker":"逻辑推理初步","endMarker":"数学模型","mode":"NUMBERED"},
+        {"slug":"elective-c-mathematical-models","name":"选修C：数学模型","requirementTypes":["ELECTIVE"],"pages":[67,68],"startMarker":"数学模型","endMarker":"社会调查与数据分析","mode":"NUMBERED"},
+        {"slug":"elective-c-social-survey","name":"选修C：社会调查与数据分析","requirementTypes":["ELECTIVE"],"pages":[68,70],"startMarker":"社会调查与数据分析","endMarker":"D类课程","mode":"NUMBERED"},
+        {"slug":"elective-d-beauty-math","name":"选修D：美与数学","requirementTypes":["ELECTIVE"],"pages":[70,71],"startMarker":"美与数学","endMarker":"音乐中的数学","mode":"NUMBERED"},
+        {"slug":"elective-d-music-math","name":"选修D：音乐中的数学","requirementTypes":["ELECTIVE"],"pages":[71,72],"startMarker":"音乐中的数学","endMarker":"美术中的数学","mode":"NUMBERED"},
+        {"slug":"elective-d-art-math","name":"选修D：美术中的数学","requirementTypes":["ELECTIVE"],"pages":[72,73],"startMarker":"美术中的数学","endMarker":"体育运动中的数学","mode":"NUMBERED"},
+        {"slug":"elective-d-sports-math","name":"选修D：体育运动中的数学","requirementTypes":["ELECTIVE"],"pages":[73,74],"startMarker":"体育运动中的数学","endMarker":"E类课程","mode":"NUMBERED"},
+        {"slug":"elective-e-school-developed","name":"选修E：学校自主开发或选用课程","requirementTypes":["ELECTIVE"],"pages":[74,74],"startMarker":"E类课程","mode":"DESCRIPTIVE"}
+      ]
+    },
+    {
+      "subject": "ENGLISH",
+      "sourceId": "candidate:moe:2025:english:curriculum-text",
+      "pdfFile": "english.pdf",
+      "coursePages": [13, 43],
+      "modules": [
+        {"slug":"themes","name":"主题","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[14,17],"startMarker":"(一)主题","endMarker":"(二)语篇","mode":"REQUIREMENTS"},
+        {"slug":"discourses","name":"语篇","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[17,19],"startMarker":"(二)语篇","endMarker":"(三)语言知识","mode":"REQUIREMENTS"},
+        {"slug":"language-knowledge","name":"语言知识","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[19,30],"startMarker":"(三)语言知识","endMarker":"(四)文化知识","mode":"REQUIREMENTS"},
+        {"slug":"cultural-knowledge","name":"文化知识","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[30,34],"startMarker":"(四)文化知识","endMarker":"(五)语言技能","mode":"REQUIREMENTS"},
+        {"slug":"language-skills","name":"语言技能","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[34,39],"startMarker":"(五)语言技能","endMarker":"(六)学习策略","mode":"REQUIREMENTS"},
+        {"slug":"learning-strategies","name":"学习策略","requirementTypes":["REQUIRED","SELECTIVE_REQUIRED","ELECTIVE"],"pages":[39,43],"startMarker":"(六)学习策略","mode":"REQUIREMENTS"}
+      ]
+    },
+    {
+      "subject": "POLITICS",
+      "sourceId": "candidate:moe:2025:politics:curriculum-text",
+      "pdfFile": "politics.pdf",
+      "coursePages": [14, 38],
+      "modules": [
+        {"slug":"required-socialism-with-chinese-characteristics","name":"必修：中国特色社会主义","requirementTypes":["REQUIRED"],"pages":[14,17],"startMarker":"模块1:中国特色社会主义","endMarker":"模块2:经济与社会","mode":"REQUIREMENTS"},
+        {"slug":"required-economy-society","name":"必修：经济与社会","requirementTypes":["REQUIRED"],"pages":[17,20],"startMarker":"模块2:经济与社会","endMarker":"模块3:政治与法治","mode":"REQUIREMENTS"},
+        {"slug":"required-politics-rule-of-law","name":"必修：政治与法治","requirementTypes":["REQUIRED"],"pages":[20,25],"startMarker":"模块3:政治与法治","endMarker":"模块4:哲学与文化","mode":"REQUIREMENTS"},
+        {"slug":"required-philosophy-culture","name":"必修：哲学与文化","requirementTypes":["REQUIRED"],"pages":[25,28],"startMarker":"模块4:哲学与文化","endMarker":"模块1:当代国际政治与经济","mode":"REQUIREMENTS"},
+        {"slug":"selective-international-politics-economy","name":"选择性必修：当代国际政治与经济","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[28,31],"startMarker":"模块1:当代国际政治与经济","endMarker":"模块2:法律与生活","mode":"REQUIREMENTS"},
+        {"slug":"selective-law-life","name":"选择性必修：法律与生活","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[31,33],"startMarker":"模块2:法律与生活","endMarker":"模块3:逻辑与思维","mode":"REQUIREMENTS"},
+        {"slug":"selective-logic-thinking","name":"选择性必修：逻辑与思维","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[33,36],"startMarker":"模块3:逻辑与思维","endMarker":"模块1:财经与生活","mode":"REQUIREMENTS"},
+        {"slug":"elective-finance-life","name":"选修：财经与生活","requirementTypes":["ELECTIVE"],"pages":[36,37],"startMarker":"模块1:财经与生活","endMarker":"模块2:法官与律师","mode":"NUMBERED"},
+        {"slug":"elective-judges-lawyers","name":"选修：法官与律师","requirementTypes":["ELECTIVE"],"pages":[37,38],"startMarker":"模块2:法官与律师","endMarker":"模块3:历史上的哲学家","mode":"NUMBERED"},
+        {"slug":"elective-historical-philosophers","name":"选修：历史上的哲学家","requirementTypes":["ELECTIVE"],"pages":[38,38],"startMarker":"模块3:历史上的哲学家","mode":"NUMBERED"}
+      ]
+    },
+    {
+      "subject": "HISTORY",
+      "sourceId": "candidate:moe:2025:history:curriculum-text",
+      "pdfFile": "history.pdf",
+      "coursePages": [14, 42],
+      "modules": [
+        {"slug":"required-chinese-world-history-outline","name":"必修：中外历史纲要","requirementTypes":["REQUIRED"],"pages":[14,24],"startMarker":"中外历史纲要","endMarker":"(二)选择性必修课程","mode":"REQUIREMENTS"},
+        {"slug":"selective-state-system-governance","name":"选择性必修：国家制度与社会治理","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[24,28],"startMarker":"模块1国家制度与社会治理","endMarker":"模块2经济与社会生活","mode":"REQUIREMENTS"},
+        {"slug":"selective-economy-social-life","name":"选择性必修：经济与社会生活","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[28,32],"startMarker":"模块2经济与社会生活","endMarker":"模块3文化交流与传播","mode":"REQUIREMENTS"},
+        {"slug":"selective-cultural-exchange","name":"选择性必修：文化交流与传播","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[32,35],"startMarker":"模块3文化交流与传播","endMarker":"(三)选修课程","mode":"REQUIREMENTS"},
+        {"slug":"elective-historiography-introduction","name":"选修：史学入门","requirementTypes":["ELECTIVE"],"pages":[35,39],"startMarker":"模块1史学入门","endMarker":"模块2史料研读","mode":"REQUIREMENTS"},
+        {"slug":"elective-historical-materials","name":"选修：史料研读","requirementTypes":["ELECTIVE"],"pages":[39,42],"startMarker":"模块2史料研读","mode":"REQUIREMENTS"}
+      ]
+    },
+    {
+      "subject": "GEOGRAPHY",
+      "sourceId": "candidate:moe:2025:geography:curriculum-text",
+      "pdfFile": "geography.pdf",
+      "coursePages": [13, 30],
+      "modules": [
+        {"slug":"required-geography-1","name":"必修：地理1","requirementTypes":["REQUIRED"],"pages":[13,15],"startMarker":"地理1","endMarker":"地理2","mode":"REQUIREMENTS"},
+        {"slug":"required-geography-2","name":"必修：地理2","requirementTypes":["REQUIRED"],"pages":[15,16],"startMarker":"地理2","endMarker":"(二)选择性必修课程","mode":"REQUIREMENTS"},
+        {"slug":"selective-physical-geography","name":"选择性必修1：自然地理基础","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[16,18],"startMarker":"选择性必修1自然地理基础","endMarker":"选择性必修2区域发展","mode":"REQUIREMENTS"},
+        {"slug":"selective-regional-development","name":"选择性必修2：区域发展","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[18,19],"startMarker":"选择性必修2区域发展","endMarker":"选择性必修3资源、环境与国家安全","mode":"REQUIREMENTS"},
+        {"slug":"selective-resources-environment-security","name":"选择性必修3：资源、环境与国家安全","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[19,20],"startMarker":"选择性必修3资源、环境与国家安全","endMarker":"(三)选修课程","mode":"REQUIREMENTS"},
+        {"slug":"elective-astronomy","name":"选修1：天文学基础","requirementTypes":["ELECTIVE"],"pages":[20,22],"startMarker":"选修1天文学基础","endMarker":"选修2海洋地理","mode":"REQUIREMENTS"},
+        {"slug":"elective-marine-geography","name":"选修2：海洋地理","requirementTypes":["ELECTIVE"],"pages":[22,23],"startMarker":"选修2海洋地理","endMarker":"选修3自然灾害与防治","mode":"REQUIREMENTS"},
+        {"slug":"elective-disaster-prevention","name":"选修3：自然灾害与防治","requirementTypes":["ELECTIVE"],"pages":[23,24],"startMarker":"选修3自然灾害与防治","endMarker":"选修4环境保护","mode":"REQUIREMENTS"},
+        {"slug":"elective-environmental-protection","name":"选修4：环境保护","requirementTypes":["ELECTIVE"],"pages":[24,25],"startMarker":"选修4环境保护","endMarker":"选修5旅游地理","mode":"REQUIREMENTS"},
+        {"slug":"elective-tourism-geography","name":"选修5：旅游地理","requirementTypes":["ELECTIVE"],"pages":[25,26],"startMarker":"选修5旅游地理","endMarker":"选修6城乡规划","mode":"REQUIREMENTS"},
+        {"slug":"elective-urban-rural-planning","name":"选修6：城乡规划","requirementTypes":["ELECTIVE"],"pages":[26,27],"startMarker":"选修6城乡规划","endMarker":"选修7政治地理","mode":"REQUIREMENTS"},
+        {"slug":"elective-political-geography","name":"选修7：政治地理","requirementTypes":["ELECTIVE"],"pages":[27,28],"startMarker":"选修7政治地理","endMarker":"选修8地理信息技术应用","mode":"REQUIREMENTS"},
+        {"slug":"elective-gis-application","name":"选修8：地理信息技术应用","requirementTypes":["ELECTIVE"],"pages":[28,29],"startMarker":"选修8地理信息技术应用","endMarker":"选修9地理野外实习","mode":"REQUIREMENTS"},
+        {"slug":"elective-fieldwork","name":"选修9：地理野外实习","requirementTypes":["ELECTIVE"],"pages":[29,30],"startMarker":"选修9地理野外实习","mode":"REQUIREMENTS"}
+      ]
+    },
+    {
+      "subject": "PHYSICS",
+      "sourceId": "candidate:moe:2025:physics:curriculum-text",
+      "pdfFile": "physics.pdf",
+      "coursePages": [13, 45],
+      "modules": [
+        {"slug":"required-physics-1","name":"必修1","requirementTypes":["REQUIRED"],"pages":[13,16],"startMarker":"1.必修1","endMarker":"2.必修2","mode":"REQUIREMENTS"},
+        {"slug":"required-physics-2","name":"必修2","requirementTypes":["REQUIRED"],"pages":[16,20],"startMarker":"2.必修2","endMarker":"3.必修3","mode":"REQUIREMENTS"},
+        {"slug":"required-physics-3","name":"必修3","requirementTypes":["REQUIRED"],"pages":[20,26],"startMarker":"3.必修3","endMarker":"(二)选择性必修课程","mode":"REQUIREMENTS"},
+        {"slug":"selective-physics-1","name":"选择性必修1","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[26,30],"startMarker":"1.选择性必修1","endMarker":"2.选择性必修2","mode":"REQUIREMENTS"},
+        {"slug":"selective-physics-2","name":"选择性必修2","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[30,34],"startMarker":"2.选择性必修2","endMarker":"3.选择性必修3","mode":"REQUIREMENTS"},
+        {"slug":"selective-physics-3","name":"选择性必修3","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[34,38],"startMarker":"3.选择性必修3","endMarker":"(三)选修课程","mode":"REQUIREMENTS"},
+        {"slug":"elective-physics-1","name":"选修1：物理学与社会发展","requirementTypes":["ELECTIVE"],"pages":[38,40],"startMarker":"1.选修1","endMarker":"2.选修2","mode":"REQUIREMENTS"},
+        {"slug":"elective-physics-2","name":"选修2：物理学与技术应用","requirementTypes":["ELECTIVE"],"pages":[40,42],"startMarker":"2.选修2","endMarker":"3.选修3","mode":"REQUIREMENTS"},
+        {"slug":"elective-physics-3","name":"选修3：近代物理学初步","requirementTypes":["ELECTIVE"],"pages":[42,44],"startMarker":"3.选修3","endMarker":"(四)学生必做实验","mode":"REQUIREMENTS"}
+      ]
+    },
+    {
+      "subject": "CHEMISTRY",
+      "sourceId": "candidate:moe:2025:chemistry:curriculum-text",
+      "pdfFile": "chemistry.pdf",
+      "coursePages": [14, 64],
+      "modules": [
+        {"slug":"required-science-experiment","name":"必修：化学科学与实验探究","requirementTypes":["REQUIRED"],"pages":[14,17],"startMarker":"主题1:化学科学与实验探究","endMarker":"主题2:常见的无机物及其应用","mode":"REQUIREMENTS"},
+        {"slug":"required-inorganic-substances","name":"必修：常见的无机物及其应用","requirementTypes":["REQUIRED"],"pages":[17,21],"startMarker":"主题2:常见的无机物及其应用","endMarker":"主题3:物质结构基础与化学反应规律","mode":"REQUIREMENTS"},
+        {"slug":"required-structure-reaction-laws","name":"必修：物质结构基础与化学反应规律","requirementTypes":["REQUIRED"],"pages":[21,24],"startMarker":"主题3:物质结构基础与化学反应规律","endMarker":"主题4:简单的有机化合物及其应用","mode":"REQUIREMENTS"},
+        {"slug":"required-organic-compounds","name":"必修：简单的有机化合物及其应用","requirementTypes":["REQUIRED"],"pages":[24,26],"startMarker":"主题4:简单的有机化合物及其应用","endMarker":"主题5:化学与社会发展","mode":"REQUIREMENTS"},
+        {"slug":"required-chemistry-social-development","name":"必修：化学与社会发展","requirementTypes":["REQUIRED"],"pages":[26,30],"startMarker":"主题5:化学与社会发展","endMarker":"(二)选择性必修课程","mode":"REQUIREMENTS"},
+        {"slug":"selective-reaction-principles","name":"选择性必修：化学反应原理","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[30,38],"startMarker":"模块1化学反应原理","endMarker":"模块2物质结构与性质","mode":"REQUIREMENTS"},
+        {"slug":"selective-structure-properties","name":"选择性必修：物质结构与性质","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[38,46],"startMarker":"模块2物质结构与性质","endMarker":"模块3有机化学基础","mode":"REQUIREMENTS"},
+        {"slug":"selective-organic-foundations","name":"选择性必修：有机化学基础","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[46,54],"startMarker":"模块3有机化学基础","endMarker":"(三)选修课程","mode":"REQUIREMENTS"},
+        {"slug":"elective-experimental-chemistry","name":"选修：实验化学","requirementTypes":["ELECTIVE"],"pages":[55,58],"startMarker":"系列1实验化学","endMarker":"系列2化学与社会","mode":"NUMBERED"},
+        {"slug":"elective-chemistry-society","name":"选修：化学与社会","requirementTypes":["ELECTIVE"],"pages":[58,62],"startMarker":"系列2化学与社会","endMarker":"系列3发展中的化学科学","mode":"NUMBERED"},
+        {"slug":"elective-developing-chemical-science","name":"选修：发展中的化学科学","requirementTypes":["ELECTIVE"],"pages":[62,64],"startMarker":"系列3发展中的化学科学","mode":"NUMBERED"}
+      ]
+    },
+    {
+      "subject": "BIOLOGY",
+      "sourceId": "candidate:moe:2025:biology:curriculum-text",
+      "pdfFile": "biology.pdf",
+      "coursePages": [15, 52],
+      "modules": [
+        {"slug":"required-molecules-cells","name":"必修：分子与细胞","requirementTypes":["REQUIRED"],"pages":[15,19],"startMarker":"模块1分子与细胞","endMarker":"模块2遗传与进化","mode":"REQUIREMENTS"},
+        {"slug":"required-genetics-evolution","name":"必修：遗传与进化","requirementTypes":["REQUIRED"],"pages":[19,23],"startMarker":"模块2遗传与进化","endMarker":"(二)选择性必修课程","mode":"REQUIREMENTS"},
+        {"slug":"selective-homeostasis-regulation","name":"选择性必修：稳态与调节","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[23,27],"startMarker":"模块1稳态与调节","endMarker":"模块2生物与环境","mode":"REQUIREMENTS"},
+        {"slug":"selective-biology-environment","name":"选择性必修：生物与环境","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[27,30],"startMarker":"模块2生物与环境","endMarker":"模块3生物技术与工程","mode":"REQUIREMENTS"},
+        {"slug":"selective-biotech-engineering","name":"选择性必修：生物技术与工程","requirementTypes":["SELECTIVE_REQUIRED"],"pages":[30,35],"startMarker":"模块3生物技术与工程","endMarker":"(三)选修课程","mode":"REQUIREMENTS"},
+        {"slug":"elective-life-healthy-living","name":"选修·现实生活应用：健康生活","requirementTypes":["ELECTIVE"],"pages":[35,36],"startMarker":"1.“健康生活”模块开设建议","endMarker":"2.“急救措施”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-life-first-aid","name":"选修·现实生活应用：急救措施","requirementTypes":["ELECTIVE"],"pages":[36,36],"startMarker":"2.“急救措施”模块开设建议","endMarker":"3.“传染病与防控”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-life-infectious-disease","name":"选修·现实生活应用：传染病与防控","requirementTypes":["ELECTIVE"],"pages":[36,37],"startMarker":"3.“传染病与防控”模块开设建议","endMarker":"4.“社会热点中的生物学问题”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-life-social-issues","name":"选修·现实生活应用：社会热点中的生物学问题","requirementTypes":["ELECTIVE"],"pages":[37,38],"startMarker":"4.“社会热点中的生物学问题”模块开设建议","endMarker":"5.“动物福利”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-life-animal-welfare","name":"选修·现实生活应用：动物福利","requirementTypes":["ELECTIVE"],"pages":[38,39],"startMarker":"5.“动物福利”模块开设建议","endMarker":"6.“外来生物入侵与防控”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-life-invasive-species","name":"选修·现实生活应用：外来生物入侵与防控","requirementTypes":["ELECTIVE"],"pages":[39,39],"startMarker":"6.“外来生物入侵与防控”模块开设建议","endMarker":"7.“地方特色动植物研究”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-life-local-species","name":"选修·现实生活应用：地方特色动植物研究","requirementTypes":["ELECTIVE"],"pages":[39,40],"startMarker":"7.“地方特色动植物研究”模块开设建议","endMarker":"1.“生物制药”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-biopharma","name":"选修·职业规划前瞻：生物制药","requirementTypes":["ELECTIVE"],"pages":[40,41],"startMarker":"1.“生物制药”模块开设建议","endMarker":"2.“海洋生物学”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-marine-biology","name":"选修·职业规划前瞻：海洋生物学","requirementTypes":["ELECTIVE"],"pages":[41,42],"startMarker":"2.“海洋生物学”模块开设建议","endMarker":"3.“食品安全与检疫”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-food-safety","name":"选修·职业规划前瞻：食品安全与检疫","requirementTypes":["ELECTIVE"],"pages":[42,42],"startMarker":"3.“食品安全与检疫”模块开设建议","endMarker":"4.“职业病与防控”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-occupational-health","name":"选修·职业规划前瞻：职业病与防控","requirementTypes":["ELECTIVE"],"pages":[42,43],"startMarker":"4.“职业病与防控”模块开设建议","endMarker":"5.“园艺与景观生态学”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-horticulture","name":"选修·职业规划前瞻：园艺与景观生态学","requirementTypes":["ELECTIVE"],"pages":[43,44],"startMarker":"5.“园艺与景观生态学”模块开设建议","endMarker":"6.“环境友好与经济作物”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-environmental-crops","name":"选修·职业规划前瞻：环境友好与经济作物","requirementTypes":["ELECTIVE"],"pages":[44,45],"startMarker":"6.“环境友好与经济作物”模块开设建议","endMarker":"7.“生物资源开发与利用”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-bioresources","name":"选修·职业规划前瞻：生物资源开发与利用","requirementTypes":["ELECTIVE"],"pages":[45,45],"startMarker":"7.“生物资源开发与利用”模块开设建议","endMarker":"8.“本地受胁物种保护”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-career-threatened-species","name":"选修·职业规划前瞻：本地受胁物种保护","requirementTypes":["ELECTIVE"],"pages":[45,46],"startMarker":"8.“本地受胁物种保护”模块开设建议","endMarker":"1.“细胞与分子生物学”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-cell-molecular","name":"选修·学业发展基础：细胞与分子生物学","requirementTypes":["ELECTIVE"],"pages":[46,47],"startMarker":"1.“细胞与分子生物学”模块开设建议","endMarker":"2.“生物信息学与人类基因组”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-bioinformatics","name":"选修·学业发展基础：生物信息学与人类基因组","requirementTypes":["ELECTIVE"],"pages":[47,48],"startMarker":"2.“生物信息学与人类基因组”模块开设建议","endMarker":"3.“神经系统与疾病”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-neuroscience","name":"选修·学业发展基础：神经系统与疾病","requirementTypes":["ELECTIVE"],"pages":[48,49],"startMarker":"3.“神经系统与疾病”模块开设建议","endMarker":"4.“干细胞与应用”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-stem-cells","name":"选修·学业发展基础：干细胞与应用","requirementTypes":["ELECTIVE"],"pages":[49,50],"startMarker":"4.“干细胞与应用”模块开设建议","endMarker":"5.“植物组织培养”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-tissue-culture","name":"选修·学业发展基础：植物组织培养","requirementTypes":["ELECTIVE"],"pages":[50,50],"startMarker":"5.“植物组织培养”模块开设建议","endMarker":"6.“生态安全”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-ecological-security","name":"选修·学业发展基础：生态安全","requirementTypes":["ELECTIVE"],"pages":[50,52],"startMarker":"6.“生态安全”模块开设建议","endMarker":"7.“校园动植物分类”模块开设建议","mode":"DESCRIPTIVE"},
+        {"slug":"elective-academic-campus-taxonomy","name":"选修·学业发展基础：校园动植物分类","requirementTypes":["ELECTIVE"],"pages":[52,52],"startMarker":"7.“校园动植物分类”模块开设建议","mode":"DESCRIPTIVE"}
+      ]
+    }
+  ]
+}

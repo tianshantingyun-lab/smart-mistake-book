@@ -1,0 +1,720 @@
+package com.tingyun.smartmistakebook.feature.tutor
+
+import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
+import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
+import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
+import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
+import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.MasteryStatus
+import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
+import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
+import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
+import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorQuestionLearningEvidence
+import com.tingyun.smartmistakebook.core.model.TutorQuestionReviewStatus
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
+import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
+import com.tingyun.smartmistakebook.core.model.requiresEgressAuthorizationRenewal
+import com.tingyun.smartmistakebook.core.model.requiresModelSettings
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+
+internal const val TUTOR_PROMPT_POLICY_VERSION = ModelPromptPolicyVersions.TUTOR_PLAN
+internal const val TUTOR_RESPOND_PROMPT_POLICY_VERSION = ModelPromptPolicyVersions.TUTOR_RESPOND
+
+internal fun ModelTaskStatus.isTutorExecutionPending(): Boolean = when (this) {
+    ModelTaskStatus.WAITING_FOR_MODEL,
+    ModelTaskStatus.QUEUED,
+    ModelTaskStatus.RUNNING,
+    ModelTaskStatus.STREAMING,
+    -> true
+    else -> false
+}
+
+internal fun ModelTaskSnapshot.toPlanAnswerExposureKey(): TutorAnswerExposureKey? {
+    val input = request.input as? TutorPlanInput ?: return null
+    return TutorAnswerExposureKey(
+        sessionId = input.sessionId,
+        questionDocumentId = input.questionDocument.id,
+        revisionNumber = input.draftRevisionNumber,
+        cycleOrdinal = input.cycleOrdinal,
+        turnOrdinal = input.turnOrdinal,
+        surfaceKind = TutorAnswerExposureSurfaceKind.PLAN_SOLUTION,
+        modelTaskRequestId = request.requestId,
+    )
+}
+
+internal fun ModelTaskSnapshot.toRespondAnswerExposureKey(): TutorAnswerExposureKey? {
+    val input = request.input as? TutorRespondInput ?: return null
+    return TutorAnswerExposureKey(
+        sessionId = input.sessionId,
+        questionDocumentId = input.questionDocument.id,
+        revisionNumber = input.draftRevisionNumber,
+        cycleOrdinal = input.cycleOrdinal,
+        turnOrdinal = input.turnOrdinal,
+        surfaceKind = TutorAnswerExposureSurfaceKind.RESPOND_REPLY,
+        modelTaskRequestId = request.requestId,
+        responseOrdinal = input.responseOrdinal,
+    )
+}
+
+/**
+ * A short-lived approval owned by the current tutor composition only.
+ *
+ * Persisted manifests prove exactly what an earlier request contained, but deliberately do not
+ * recreate this lease after the screen or process is rebuilt.
+ */
+internal data class TutorCompositionEgressLease(
+    val sessionId: String,
+    val revisionNumber: Int,
+    val questionDocumentId: String,
+    val providerId: String,
+    val modelId: String,
+    val providerConfigurationVersion: String,
+    val planPromptPolicyVersion: String,
+    val respondPromptPolicyVersion: String,
+    val approvedAtEpochMillis: Long,
+) {
+    fun approvedAtFor(
+        question: TutorQuestionContext,
+        provider: ProviderCapabilitySnapshot,
+        taskKind: ModelTaskKind,
+        nowEpochMillis: Long,
+    ): Long? {
+        val policyMatches = when (taskKind) {
+            ModelTaskKind.TUTOR_PLAN -> planPromptPolicyVersion == TUTOR_PROMPT_POLICY_VERSION
+            ModelTaskKind.TUTOR_RESPOND ->
+                respondPromptPolicyVersion == TUTOR_RESPOND_PROMPT_POLICY_VERSION
+            else -> false
+        }
+        return approvedAtEpochMillis.takeIf {
+            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+                provider.supports(taskKind) &&
+                sessionId == question.sessionId &&
+                revisionNumber == question.revisionNumber &&
+                questionDocumentId == question.questionDocument.document.id &&
+                providerId == provider.providerId &&
+                modelId == provider.modelId &&
+                providerConfigurationVersion == provider.providerConfigurationVersion &&
+                policyMatches &&
+                isModelEgressApprovalFresh(approvedAtEpochMillis, nowEpochMillis)
+        }
+    }
+
+    companion object {
+        fun grant(
+            question: TutorQuestionContext,
+            provider: ProviderCapabilitySnapshot,
+            approvedAtEpochMillis: Long,
+        ): TutorCompositionEgressLease {
+            require(provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER)
+            return TutorCompositionEgressLease(
+                sessionId = question.sessionId,
+                revisionNumber = question.revisionNumber,
+                questionDocumentId = question.questionDocument.document.id,
+                providerId = provider.providerId,
+                modelId = provider.modelId,
+                providerConfigurationVersion = provider.providerConfigurationVersion,
+                planPromptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+                respondPromptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION,
+                approvedAtEpochMillis = approvedAtEpochMillis,
+            )
+        }
+    }
+}
+
+internal fun ModelTaskSnapshot.matchesTutorProvider(
+    provider: ProviderCapabilitySnapshot,
+): Boolean {
+    val approvedProvider = request.egressManifest
+    return if (approvedProvider != null) {
+        approvedProvider.providerId == provider.providerId &&
+            approvedProvider.modelId == provider.modelId &&
+            approvedProvider.providerConfigurationVersion == provider.providerConfigurationVersion
+    } else {
+        this.provider?.let { executedBy ->
+            executedBy.providerId == provider.providerId &&
+                executedBy.modelId == provider.modelId &&
+                executedBy.providerConfigurationVersion == provider.providerConfigurationVersion
+        } == true
+    }
+}
+
+internal fun ModelTaskSnapshot.coversCurrentTutorDisclosure(
+    provider: ProviderCapabilitySnapshot,
+    taskKind: ModelTaskKind,
+): Boolean {
+    if (!matchesTutorProvider(provider)) return false
+    val manifest = request.egressManifest ?: return false
+    val promptPolicyVersion: String
+    val disclosedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
+    val prohibitedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
+    when (taskKind) {
+        ModelTaskKind.TUTOR_PLAN -> {
+            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE
+            prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA
+        }
+        ModelTaskKind.TUTOR_RESPOND -> {
+            promptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
+            prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
+        }
+        else -> return false
+    }
+    return manifest.authorizedTaskKinds == setOf(taskKind) &&
+        manifest.promptPolicyVersion == promptPolicyVersion &&
+        manifest.disclosedData == disclosedData &&
+        manifest.prohibitedData == prohibitedData
+}
+
+internal fun ModelTaskSnapshot.requiresFreshTutorApproval(
+    provider: ProviderCapabilitySnapshot,
+): Boolean {
+    val failureCode = failure?.code ?: return false
+    return !coversCurrentTutorDisclosure(provider, request.input.kind) ||
+        failureCode.requiresEgressAuthorizationRenewal() ||
+        (failureCode.requiresModelSettings() && !matchesTutorProvider(provider))
+}
+
+internal fun tutorRecoveryRequestId(
+    failedRequest: ModelTaskRequest,
+    provider: ProviderCapabilitySnapshot,
+    approvedAtEpochMillis: Long,
+): String {
+    val taskName = when (failedRequest.input.kind) {
+        ModelTaskKind.TUTOR_PLAN -> "plan"
+        ModelTaskKind.TUTOR_RESPOND -> "respond"
+        else -> error("Only tutor tasks can be recovered here")
+    }
+    val promptPolicy = when (failedRequest.input.kind) {
+        ModelTaskKind.TUTOR_PLAN -> TUTOR_PROMPT_POLICY_VERSION
+        ModelTaskKind.TUTOR_RESPOND -> TUTOR_RESPOND_PROMPT_POLICY_VERSION
+        else -> error("Only tutor tasks can be recovered here")
+    }
+    val fingerprint = sha256Hex(
+        buildString {
+            append(ModelTaskFingerprint.of(failedRequest))
+            appendLengthPrefixed(provider.providerId)
+            appendLengthPrefixed(provider.modelId)
+            appendLengthPrefixed(provider.providerConfigurationVersion)
+            appendLengthPrefixed(promptPolicy)
+            append('\n').append(approvedAtEpochMillis)
+        },
+    ).take(32)
+    return "tutor-$taskName:approved-recovery:$fingerprint"
+}
+
+/** Creates a new authorized envelope without changing any persisted tutoring input. */
+internal fun rebuildTutorRequestAfterApproval(
+    failedTask: ModelTaskSnapshot,
+    provider: ProviderCapabilitySnapshot,
+    approvedAtEpochMillis: Long,
+): ModelTaskRequest {
+    val taskKind = failedTask.request.input.kind
+    require(taskKind == ModelTaskKind.TUTOR_PLAN || taskKind == ModelTaskKind.TUTOR_RESPOND)
+    require(provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER)
+    require(provider.supports(taskKind))
+    val requestId = tutorRecoveryRequestId(
+        failedRequest = failedTask.request,
+        provider = provider,
+        approvedAtEpochMillis = approvedAtEpochMillis,
+    )
+    val promptPolicyVersion = if (taskKind == ModelTaskKind.TUTOR_PLAN) {
+        TUTOR_PROMPT_POLICY_VERSION
+    } else {
+        TUTOR_RESPOND_PROMPT_POLICY_VERSION
+    }
+    val disclosedData = if (taskKind == ModelTaskKind.TUTOR_PLAN) {
+        ModelEgressManifest.TUTOR_PLAN_DISCLOSURE
+    } else {
+        ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
+    }
+    val prohibitedData = if (taskKind == ModelTaskKind.TUTOR_PLAN) {
+        ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA
+    } else {
+        ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
+    }
+    val manifest = ModelEgressManifest(
+        authorizationId = "authorization:$requestId",
+        subjectId = failedTask.request.input.subjectId,
+        purpose = ModelEgressPurpose.TUTORING,
+        authorizedTaskKinds = setOf(taskKind),
+        providerId = provider.providerId,
+        modelId = provider.modelId,
+        providerConfigurationVersion = provider.providerConfigurationVersion,
+        promptPolicyVersion = promptPolicyVersion,
+        approvedAtEpochMillis = approvedAtEpochMillis,
+        assets = emptyList(),
+        disclosedData = disclosedData,
+        prohibitedData = prohibitedData,
+    )
+    require(manifest.authorizationId != failedTask.request.egressManifest?.authorizationId) {
+        "Tutor recovery must not reuse the failed authorization"
+    }
+    return ModelTaskRequest(
+        requestId = requestId,
+        input = failedTask.request.input,
+        occurredAtEpochMillis = failedTask.request.occurredAtEpochMillis,
+        egressManifest = manifest,
+    )
+}
+
+internal data class TutorQuestionContext(
+    val sessionId: String,
+    val revisionNumber: Int,
+    val subject: String,
+    val title: String,
+    val questionDocument: com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument,
+    val learningMemory: StudyQuestionMemory? = null,
+    val relatedKnowledgeNodeIds: Set<String> = emptySet(),
+    val reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+) {
+    init {
+        require(sessionId.isNotBlank())
+        require(revisionNumber > 0)
+        require(subject.isNotBlank())
+        require(title.isNotBlank())
+        require(relatedKnowledgeNodeIds.all(String::isNotBlank))
+        require(reviewedTeachingReferences.all { reference ->
+            reference.subject == subject &&
+                reference.knowledgeNodeIds.any(relatedKnowledgeNodeIds::contains)
+        })
+    }
+}
+
+internal fun ConfirmedTutorSession.toTutorQuestionContext() = TutorQuestionContext(
+    sessionId = sessionId,
+    revisionNumber = draftRevisionNumber,
+    subject = subject,
+    title = title,
+    questionDocument = questionDocument,
+    learningMemory = null,
+)
+
+internal fun tutorPlanRequestId(
+    session: ConfirmedTutorSession,
+    provider: ProviderCapabilitySnapshot,
+    attempt: Int,
+    cycleOrdinal: Int = 1,
+    priorConversationMemory: TutorConversationMemory? = null,
+    priorCycleStudentMessages: List<String> = emptyList(),
+    priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+): String = tutorPlanRequestId(
+    question = session.toTutorQuestionContext(),
+    provider = provider,
+    attempt = attempt,
+    cycleOrdinal = cycleOrdinal,
+    priorConversationMemory = priorConversationMemory,
+    priorCycleStudentMessages = priorCycleStudentMessages,
+    priorTurns = priorTurns,
+)
+
+internal fun tutorPlanRequestId(
+    question: TutorQuestionContext,
+    provider: ProviderCapabilitySnapshot,
+    attempt: Int,
+    cycleOrdinal: Int = 1,
+    priorConversationMemory: TutorConversationMemory? = null,
+    priorCycleStudentMessages: List<String> = emptyList(),
+    priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+): String {
+    require(attempt >= 0)
+    val providerVersion = sha256Hex(provider.providerConfigurationVersion).take(16)
+    val sessionFingerprint = sha256Hex(
+        buildString {
+            appendLengthPrefixed(question.sessionId)
+            append('\n').append(cycleOrdinal)
+            question.learningMemory?.let { memory ->
+                append('\n').append(memory.independentRecallCount)
+                append('\n').append(memory.assistedRecallCount)
+                append('\n').append(memory.retrievalFailureCount)
+                append('\n').append(memory.answerRevealCount)
+                append('\n').append(memory.nextReviewAtEpochMillis)
+                append('\n').append(memory.projectionIsCurrent)
+            }
+            question.relatedKnowledgeNodeIds.sorted().forEach { knowledgeNodeId ->
+                appendLengthPrefixed(knowledgeNodeId)
+            }
+            question.reviewedTeachingReferences.forEach { reference ->
+                appendLengthPrefixed(reference.materialId)
+            }
+            priorConversationMemory?.let { memory ->
+                append('\n').append(memory.completedCycleCount)
+                append('\n').append(memory.answeredTurnCount)
+                append('\n').append(memory.correctChoiceCount)
+                append('\n').append(memory.lastFeedbackMarkdown != null)
+                appendLengthPrefixed(memory.lastFeedbackMarkdown)
+                appendLengthPrefixed(memory.lastRequestedMove?.name)
+                append('\n').append(memory.solutionWasRevealed)
+            }
+            priorCycleStudentMessages.forEach { message -> appendLengthPrefixed(message) }
+            priorTurns.forEach { turn ->
+                append('\n').append(turn.turnOrdinal)
+                appendLengthPrefixed(turn.diagnosticStemMarkdown)
+                appendLengthPrefixed(turn.selectedChoiceMarkdown)
+                append('\n').append(turn.selectionWasCorrect)
+                appendLengthPrefixed(turn.feedbackMarkdown)
+                appendLengthPrefixed(turn.requestedMove.name)
+            }
+        },
+    ).take(24)
+    return "tutor-plan:$sessionFingerprint:${question.revisionNumber}:$cycleOrdinal:${priorTurns.size + 1}:$providerVersion:$TUTOR_PROMPT_POLICY_VERSION:$attempt"
+}
+
+internal fun buildTutorPlanRequest(
+    session: ConfirmedTutorSession,
+    profile: StudyProfileOverview,
+    provider: ProviderCapabilitySnapshot,
+    requestId: String,
+    occurredAtEpochMillis: Long,
+    approvedAtEpochMillis: Long,
+    cycleOrdinal: Int = 1,
+    priorConversationMemory: TutorConversationMemory? = null,
+    priorCycleStudentMessages: List<String> = emptyList(),
+    priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+): ModelTaskRequest = buildTutorPlanRequest(
+    question = session.toTutorQuestionContext(),
+    profile = profile,
+    provider = provider,
+    requestId = requestId,
+    occurredAtEpochMillis = occurredAtEpochMillis,
+    approvedAtEpochMillis = approvedAtEpochMillis,
+    cycleOrdinal = cycleOrdinal,
+    priorConversationMemory = priorConversationMemory,
+    priorCycleStudentMessages = priorCycleStudentMessages,
+    priorTurns = priorTurns,
+)
+
+internal fun buildTutorPlanRequest(
+    question: TutorQuestionContext,
+    profile: StudyProfileOverview,
+    provider: ProviderCapabilitySnapshot,
+    requestId: String,
+    occurredAtEpochMillis: Long,
+    approvedAtEpochMillis: Long,
+    cycleOrdinal: Int = 1,
+    priorConversationMemory: TutorConversationMemory? = null,
+    priorCycleStudentMessages: List<String> = emptyList(),
+    priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+): ModelTaskRequest {
+    val evidence = profile.toTutorKnowledgeEvidence(
+        relatedKnowledgeNodeIds = question.relatedKnowledgeNodeIds,
+        subject = question.subject,
+        atEpochMillis = occurredAtEpochMillis,
+    )
+    val input = TutorPlanInput(
+        sessionId = question.sessionId,
+        draftRevisionNumber = question.revisionNumber,
+        subject = question.subject,
+        questionDocument = question.questionDocument.document,
+        relevantLearningEvidence = evidence,
+        projectionIsCurrent = profile.projectionIsCurrent,
+        reviewedTeachingReferences = question.reviewedTeachingReferences,
+        questionLearningEvidence = question.learningMemory?.toTutorEvidence(occurredAtEpochMillis),
+        cycleOrdinal = cycleOrdinal,
+        priorConversationMemory = priorConversationMemory,
+        priorCycleStudentMessages = priorCycleStudentMessages,
+        turnOrdinal = priorTurns.size + 1,
+        priorTurns = priorTurns,
+    )
+    val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
+        ModelEgressManifest(
+            authorizationId = "authorization:$requestId",
+            subjectId = question.sessionId,
+            purpose = ModelEgressPurpose.TUTORING,
+            authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_PLAN),
+            providerId = provider.providerId,
+            modelId = provider.modelId,
+            providerConfigurationVersion = provider.providerConfigurationVersion,
+            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+            approvedAtEpochMillis = approvedAtEpochMillis,
+            assets = emptyList(),
+            disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE,
+            prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
+        )
+    } else {
+        null
+    }
+    return ModelTaskRequest(
+        requestId = requestId,
+        input = input,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        egressManifest = manifest,
+    )
+}
+
+internal fun tutorRespondRequestId(
+    question: TutorQuestionContext,
+    provider: ProviderCapabilitySnapshot,
+    responseOrdinal: Int,
+    cycleOrdinal: Int,
+    turnOrdinal: Int,
+    studentMessage: String,
+    visibleTutorContextMarkdown: String?,
+    priorMessages: List<TutorChatHistoryEntry>,
+    requestedMove: TutorMoveType? = null,
+    attempt: Int,
+): String {
+    require(responseOrdinal > 0)
+    require(cycleOrdinal > 0)
+    require(turnOrdinal in 1..TutorPlanInput.MAX_TURNS)
+    require(attempt >= 0)
+    val conversationFingerprint = sha256Hex(
+        buildString {
+            appendLengthPrefixed(question.sessionId)
+            appendLengthPrefixed(question.questionDocument.document.id)
+            appendLengthPrefixed(question.revisionNumber.toString())
+            appendLengthPrefixed(responseOrdinal.toString())
+            appendLengthPrefixed(cycleOrdinal.toString())
+            appendLengthPrefixed(turnOrdinal.toString())
+            appendLengthPrefixed(studentMessage)
+            appendLengthPrefixed(visibleTutorContextMarkdown)
+            appendLengthPrefixed(requestedMove?.name)
+            priorMessages.forEach { message ->
+                appendLengthPrefixed(message.studentMessage)
+                appendLengthPrefixed(message.assistantMarkdown)
+            }
+            question.reviewedTeachingReferences.forEach { reference ->
+                appendLengthPrefixed(reference.materialId)
+            }
+        },
+    ).take(24)
+    val providerFingerprint = sha256Hex(provider.providerConfigurationVersion).take(12)
+    return "tutor-respond:$conversationFingerprint:${question.revisionNumber}:" +
+        "$responseOrdinal:$providerFingerprint:$TUTOR_RESPOND_PROMPT_POLICY_VERSION:$attempt"
+}
+
+internal fun buildTutorRespondRequest(
+    question: TutorQuestionContext,
+    profile: StudyProfileOverview,
+    provider: ProviderCapabilitySnapshot,
+    requestId: String,
+    occurredAtEpochMillis: Long,
+    approvedAtEpochMillis: Long,
+    responseOrdinal: Int,
+    cycleOrdinal: Int,
+    turnOrdinal: Int,
+    studentMessage: String,
+    visibleTutorContextMarkdown: String?,
+    priorMessages: List<TutorChatHistoryEntry>,
+    requestedMove: TutorMoveType? = null,
+): ModelTaskRequest {
+    val input = TutorRespondInput(
+        sessionId = question.sessionId,
+        draftRevisionNumber = question.revisionNumber,
+        subject = question.subject,
+        questionDocument = question.questionDocument.document,
+        relevantLearningEvidence = profile.toTutorKnowledgeEvidence(
+            relatedKnowledgeNodeIds = question.relatedKnowledgeNodeIds,
+            subject = question.subject,
+            atEpochMillis = occurredAtEpochMillis,
+        ),
+        projectionIsCurrent = profile.projectionIsCurrent,
+        reviewedTeachingReferences = question.reviewedTeachingReferences,
+        questionLearningEvidence = question.learningMemory?.toTutorEvidence(occurredAtEpochMillis),
+        responseOrdinal = responseOrdinal,
+        cycleOrdinal = cycleOrdinal,
+        turnOrdinal = turnOrdinal,
+        studentMessage = studentMessage,
+        visibleTutorContextMarkdown = visibleTutorContextMarkdown,
+        priorMessages = priorMessages,
+        requestedMove = requestedMove,
+    )
+    val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
+        ModelEgressManifest(
+            authorizationId = "authorization:$requestId",
+            subjectId = question.sessionId,
+            purpose = ModelEgressPurpose.TUTORING,
+            authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_RESPOND),
+            providerId = provider.providerId,
+            modelId = provider.modelId,
+            providerConfigurationVersion = provider.providerConfigurationVersion,
+            promptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION,
+            approvedAtEpochMillis = approvedAtEpochMillis,
+            assets = emptyList(),
+            disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE,
+            prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA,
+        )
+    } else {
+        null
+    }
+    return ModelTaskRequest(
+        requestId = requestId,
+        input = input,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        egressManifest = manifest,
+    )
+}
+
+/** Builds only what was already rendered; hidden solutions and alternate methods never leak here. */
+internal fun visibleTutorContextMarkdown(
+    output: TutorPlanOutput,
+    response: TutorTurnResponse?,
+    answerWasExposed: Boolean,
+): String = buildString {
+    append(output.plan.openingMarkdown)
+    output.plan.diagnosticItem?.let { item ->
+        append("\n\n").append(item.stemMarkdown)
+        item.promptMarkdown?.let { append("\n\n").append(it) }
+    }
+    response?.takeIf(TutorTurnResponse::hasChoicePayload)?.let { choice ->
+        append("\n\n学生选择：").append(choice.selectedChoiceMarkdown)
+        append("\n\n已显示反馈：").append(choice.feedbackMarkdown)
+    }
+    val sceneWasVisible = output.plan.diagnosticItem == null || response?.hasChoicePayload == true
+    if (sceneWasVisible) {
+        output.plan.visualScene?.let { scene ->
+            append("\n\n已显示图解：").append(scene.title)
+        }
+    }
+    if (response?.requestedMove == TutorMoveType.CHANGE_REPRESENTATION) {
+        append("\n\n已显示另一种方法：").append(output.plan.alternateMethodMarkdown)
+    }
+    if (answerWasExposed && response?.solutionRevealed == true) {
+        append("\n\n已显示完整讲解：").append(output.plan.solutionMarkdown)
+    }
+}.take(TutorRespondInput.MAX_VISIBLE_CONTEXT_CHARS)
+
+private fun StudyProfileOverview.toTutorKnowledgeEvidence(
+    relatedKnowledgeNodeIds: Set<String>,
+    subject: String,
+    atEpochMillis: Long,
+): List<TutorKnowledgeEvidence> {
+    require(atEpochMillis >= 0)
+    val subjectKind = SubjectKind.entries.firstOrNull { it.name == subject }
+        ?: return emptyList()
+    if (subjectKind == SubjectKind.GENERAL) return emptyList()
+    val allowsSummary: (com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary) -> Boolean =
+        { summary ->
+            summary.subject == subjectKind ||
+                (
+                    relatedKnowledgeNodeIds.isNotEmpty() &&
+                        summary.subject == SubjectKind.GENERAL &&
+                        summary.knowledgeNodeId in relatedKnowledgeNodeIds
+                    )
+        }
+    val questionPriority: (com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary) -> Int =
+        { summary -> if (summary.knowledgeNodeId in relatedKnowledgeNodeIds) 0 else 1 }
+    val weaknessEvidence = weaknesses
+        .filter(allowsSummary)
+        .sortedWith(
+            compareBy<com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary>(
+                questionPriority,
+                ::weaknessPriority,
+            )
+                .thenByDescending { it.lastIndependentErrorAtEpochMillis ?: Long.MIN_VALUE }
+                .thenBy { it.lowerBoundIndependentCorrect }
+                .thenByDescending { it.lastEvidenceAtEpochMillis ?: Long.MIN_VALUE }
+                .thenBy { it.knowledgeNodeId },
+        )
+        .take(MAX_WEAKNESS_EVIDENCE)
+    val strengthEvidence = strengths
+        .takeIf { projectionIsCurrent }
+        .orEmpty()
+        .filter(allowsSummary)
+        .sortedWith(
+            compareBy<com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary>(
+                questionPriority,
+            )
+                .thenByDescending { it.lastEvidenceAtEpochMillis ?: Long.MIN_VALUE }
+                .thenByDescending { it.lowerBoundIndependentCorrect }
+                .thenBy { it.knowledgeNodeId },
+        )
+        .take(MAX_STRENGTH_EVIDENCE)
+    return (weaknessEvidence + strengthEvidence).map { summary ->
+        TutorKnowledgeEvidence(
+            knowledgeNodeId = summary.knowledgeNodeId,
+            displayName = summary.displayName,
+            level = summary.status.toTutorEvidenceLevel(),
+            independentCorrectLowerBound = summary.lowerBoundIndependentCorrect,
+            evidenceMass = summary.evidenceMass
+                .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_EVIDENCE_MASS),
+            independentCorrectObservationCount = summary.independentCorrectObservationCount
+                .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_OBSERVATIONS),
+            latestEvidenceRecency = summary.lastEvidenceAtEpochMillis
+                .toTutorEvidenceRecency(atEpochMillis),
+            latestIndependentErrorRecency = summary.lastIndependentErrorAtEpochMillis
+                .toTutorEvidenceRecency(atEpochMillis),
+        )
+    }
+}
+
+private fun weaknessPriority(
+    summary: com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary,
+): Int = when (summary.status) {
+    MasteryStatus.CONFLICTED -> 0
+    MasteryStatus.LEARNING -> 1
+    MasteryStatus.STALE -> 2
+    MasteryStatus.UNKNOWN -> 3
+    MasteryStatus.MASTERED -> 4
+}
+
+private fun Long?.toTutorEvidenceRecency(atEpochMillis: Long): TutorEvidenceRecency {
+    val eventAt = this ?: return TutorEvidenceRecency.UNKNOWN
+    if (eventAt > atEpochMillis) return TutorEvidenceRecency.UNKNOWN
+    val ageMillis = atEpochMillis - eventAt
+    return when {
+        ageMillis <= 7L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_7_DAYS
+        ageMillis <= 30L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_30_DAYS
+        ageMillis <= 90L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_90_DAYS
+        else -> TutorEvidenceRecency.OLDER
+    }
+}
+
+private fun StringBuilder.appendLengthPrefixed(value: String?) {
+    append('\n')
+    if (value == null) {
+        append("-1:")
+    } else {
+        append(value.length).append(':').append(value)
+    }
+}
+
+private fun sha256Hex(value: String): String = MessageDigest.getInstance("SHA-256")
+    .digest(value.toByteArray(StandardCharsets.UTF_8))
+    .joinToString("") { byte -> "%02x".format(byte) }
+
+private const val MAX_WEAKNESS_EVIDENCE = 8
+private const val MAX_STRENGTH_EVIDENCE = 4
+private const val MILLIS_PER_DAY = 86_400_000L
+
+private fun StudyQuestionMemory.toTutorEvidence(atEpochMillis: Long): TutorQuestionLearningEvidence =
+    TutorQuestionLearningEvidence(
+        independentRecallCount = independentRecallCount,
+        assistedRecallCount = assistedRecallCount,
+        retrievalFailureCount = retrievalFailureCount,
+        answerRevealCount = answerRevealCount,
+        retentionEstimate = retrievabilityAtSnapshot.takeIf { projectionIsCurrent },
+        reviewStatus = when {
+            !projectionIsCurrent -> TutorQuestionReviewStatus.STALE
+            nextReviewAtEpochMillis <= atEpochMillis -> TutorQuestionReviewStatus.DUE
+            else -> TutorQuestionReviewStatus.SCHEDULED
+        },
+    )
+
+private fun MasteryStatus.toTutorEvidenceLevel(): TutorEvidenceLevel = when (this) {
+    MasteryStatus.UNKNOWN -> TutorEvidenceLevel.UNKNOWN
+    MasteryStatus.LEARNING -> TutorEvidenceLevel.LEARNING
+    MasteryStatus.MASTERED -> TutorEvidenceLevel.MASTERED
+    MasteryStatus.CONFLICTED -> TutorEvidenceLevel.CONFLICTED
+    MasteryStatus.STALE -> TutorEvidenceLevel.STALE
+}

@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "packId": "moe-2020-foundation-v1",
+  "taxonomyVersion": "moe-2020-foundation-v1",
+  "sourceNamespace": "moe-2020",
+  "reviewedAtEpochMillis": 1784764800000,
+  "sourceUri": "https://www.moe.gov.cn/srcsite/A26/s8001/202006/W020200603315372317586.zip",
+  "subjects": [
+    {
+      "subject": "CHINESE",
+      "sourceFingerprint": "7A187079F1FFFE8AE834FDEFF25BAC9DD0E7DE6B979DB40FD875786DC0365977",
+      "topicSlug": "informational-reading",
+      "topicName": "信息性阅读",
+      "topicLocator": "学业质量·水平1·1-2（PDF第44页）",
+      "knowledgePoints": [
+        {
+          "slug": "extract-summarize-main-information",
+          "name": "提取并概括语篇主要信息",
+          "aliases": [],
+          "kind": "REASONING",
+          "boundary": "只判断能否从给定语篇中筛选并压缩主要信息，不包含文学形象鉴赏。",
+          "sourceLocator": "学业质量·水平1·1-2（PDF第44页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "distinguish-fact-opinion",
+          "name": "区分事实陈述与观点判断",
+          "aliases": ["区分事实和观点"],
+          "kind": "REASONING",
+          "boundary": "只区分材料中的事实性陈述与观点判断，不评价观点价值取向。",
+          "sourceLocator": "学业质量·水平1·1-2（PDF第44页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "MATH",
+      "sourceFingerprint": "CC4D3A20DAA09F5185037E93FBACD58F7DF1147392E3DAE4BF261C3700BA4195",
+      "topicSlug": "function-properties",
+      "topicName": "函数性质",
+      "topicLocator": "课程内容·函数性质（PDF第27页）",
+      "knowledgePoints": [
+        {
+          "slug": "read-monotonicity-from-graph",
+          "name": "借助函数图象判断单调区间",
+          "aliases": [],
+          "kind": "REPRESENTATION",
+          "boundary": "只依据图象读取增减区间，不包含用导数证明单调性。",
+          "sourceLocator": "课程内容·函数性质（PDF第27页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "express-monotonicity-symbolically",
+          "name": "用符号语言表达函数单调性",
+          "aliases": [],
+          "kind": "EXPRESSION",
+          "boundary": "只评价区间与增减性的符号表达是否准确，不包含图象绘制。",
+          "sourceLocator": "课程内容·函数性质（PDF第27页）",
+          "prerequisiteSlugs": ["read-monotonicity-from-graph"]
+        },
+        {
+          "slug": "read-extrema-from-graph",
+          "name": "从函数图象识别最大值与最小值",
+          "aliases": ["从图象识别函数最值"],
+          "kind": "REPRESENTATION",
+          "boundary": "只读取给定定义域内图象呈现的最值，不包含导数求极值。",
+          "sourceLocator": "课程内容·函数性质（PDF第27页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "ENGLISH",
+      "sourceFingerprint": "8EBD6BB12E9EB1C58E422EE01B540A4A71D2E681A4C4A764A36EE3A34B21C1BE",
+      "topicSlug": "discourse-reading",
+      "topicName": "语篇阅读",
+      "topicLocator": "课程内容·语篇知识与语言技能（PDF第34—35、48页）",
+      "knowledgePoints": [
+        {
+          "slug": "resolve-reference-by-cohesion",
+          "name": "依据衔接手段确定指代关系",
+          "aliases": [],
+          "kind": "REASONING",
+          "boundary": "只处理代词、替代与上下文形成的指代，不包含孤立词汇释义。",
+          "sourceLocator": "课程内容·语篇微观组织结构与衔接手段（PDF第34—35页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "separate-main-idea-details",
+          "name": "区分语篇主旨与事实性信息",
+          "aliases": ["区分主旨与细节"],
+          "kind": "REASONING",
+          "boundary": "只判断主旨与支撑性事实信息，不推断作者未表达的立场。",
+          "sourceLocator": "实施建议·阅读微技能（PDF第48、79页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "POLITICS",
+      "sourceFingerprint": "28533ADF1E2193C9B5DE3056A6A031598209C2BFCA00E65FF89458ECC4481F7B",
+      "topicSlug": "material-analysis-explanation",
+      "topicName": "材料分析与理论阐释",
+      "topicLocator": "课程内容·辨析性情境与学业要求（PDF第23、29页）",
+      "knowledgePoints": [
+        {
+          "slug": "identify-relationship-to-discriminate",
+          "name": "从材料情境识别需要辨析的观点关系",
+          "aliases": [],
+          "kind": "REASONING",
+          "boundary": "只定位材料中的观点及其关系，不代替价值判断与结论论证。",
+          "sourceLocator": "课程内容·辨析性情境（PDF第23、29页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "explain-material-with-disciplinary-view",
+          "name": "用学科观点阐释材料中的现象",
+          "aliases": [],
+          "kind": "EXPRESSION",
+          "boundary": "要求观点与材料证据一一对应，不接受只背诵理论而不联系材料。",
+          "sourceLocator": "课程内容·阐释与论证要求（PDF第19、23、28页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "HISTORY",
+      "sourceFingerprint": "5906E55A4758C4446640DB126564F535C845BA76DF170714E739D97DB6F36B97",
+      "topicSlug": "historical-evidence-interpretation",
+      "topicName": "史料实证与历史解释",
+      "topicLocator": "学科核心素养·史料实证与时空观念（PDF第12—13页）",
+      "knowledgePoints": [
+        {
+          "slug": "evaluate-source-credibility",
+          "name": "辨析史料来源与可信程度",
+          "aliases": [],
+          "kind": "REASONING",
+          "boundary": "只根据史料来源、形成条件与相互印证判断可信程度，不把单一史料直接等同史实。",
+          "sourceLocator": "学科核心素养·史料实证（PDF第13页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "interpret-in-time-space-context",
+          "name": "在特定时空框架中解释历史事物",
+          "aliases": ["依据时空背景解释历史事件"],
+          "kind": "REASONING",
+          "boundary": "必须限定时间、空间及其联系，不作脱离具体背景的泛化判断。",
+          "sourceLocator": "学科核心素养·时空观念（PDF第13页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "GEOGRAPHY",
+      "sourceFingerprint": "32EA1C9F794109CD729351FDBA387C63F812F4F6131182A2370A0F5958FE7A3B",
+      "topicSlug": "weather-systems",
+      "topicName": "天气系统",
+      "topicLocator": "选择性必修课程·自然地理基础·内容要求1.4（PDF第20页）",
+      "knowledgePoints": [
+        {
+          "slug": "identify-front-cyclone-anticyclone",
+          "name": "根据示意图识别锋与高低压系统",
+          "aliases": [],
+          "kind": "REPRESENTATION",
+          "boundary": "只识别锋、低压与高压系统的图示结构，不直接推断完整天气过程。",
+          "sourceLocator": "自然地理基础·内容要求1.4（PDF第20页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "explain-weather-from-simple-map",
+          "name": "结合简易天气图解释天气现象成因",
+          "aliases": [],
+          "kind": "REASONING",
+          "boundary": "只基于图中已有天气系统解释现象，不补造图外气象条件。",
+          "sourceLocator": "自然地理基础·内容要求1.4（PDF第20页）",
+          "prerequisiteSlugs": ["identify-front-cyclone-anticyclone"]
+        }
+      ]
+    },
+    {
+      "subject": "PHYSICS",
+      "sourceFingerprint": "A64204BC3B5532B44FBC82B560945D3DF3C0BB081AA1D69DF028A7591BB983F5",
+      "topicSlug": "interaction-motion-laws",
+      "topicName": "相互作用与运动定律",
+      "topicLocator": "必修1·相互作用与运动定律及学业要求（PDF第20—23页）",
+      "knowledgePoints": [
+        {
+          "slug": "analyze-force-and-motion-state",
+          "name": "分析物体的受力与运动情况",
+          "aliases": ["受力与运动情况分析"],
+          "kind": "REASONING",
+          "boundary": "只分析选定物体受到的相互作用及运动状态，不把施力物体受到的力混入。",
+          "sourceLocator": "必修1·学业要求（PDF第22—23页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "abstract-applicable-particle-model",
+          "name": "把实际物体抽象为适用的质点模型",
+          "aliases": [],
+          "kind": "REPRESENTATION",
+          "boundary": "必须说明忽略形状和大小的条件；条件不成立时不能套用质点模型。",
+          "sourceLocator": "必修1·机械运动与物理模型·1.1.2（PDF第20页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "CHEMISTRY",
+      "sourceFingerprint": "589B296EF47FB3B221A08E616DCB8F19546ED9CF770BD5B5B991BA1D2008274F",
+      "topicSlug": "ionization-ionic-reaction",
+      "topicName": "电离与离子反应",
+      "topicLocator": "必修课程·主题2·2.3（PDF第23—24页）",
+      "knowledgePoints": [
+        {
+          "slug": "judge-ionization-by-substance-state",
+          "name": "判断酸碱盐在给定状态下能否电离",
+          "aliases": [],
+          "kind": "CONCEPT",
+          "boundary": "只判断水溶液或熔融状态下的电离，不等同于判断离子反应一定发生。",
+          "sourceLocator": "必修课程·主题2·2.3（PDF第23页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "infer-ionic-reaction-condition-from-evidence",
+          "name": "依据实验事实判断离子反应发生条件",
+          "aliases": [],
+          "kind": "REASONING",
+          "boundary": "必须依据沉淀、气体、弱电解质生成或实验测量等证据，不只凭化学式猜测。",
+          "sourceLocator": "必修课程·主题2·2.3及学习活动建议（PDF第23—24页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    },
+    {
+      "subject": "BIOLOGY",
+      "sourceFingerprint": "8408986334A8826E6C7E1486C1EF1430CF47AD9E10174FD08F65D590F4D302A4",
+      "topicSlug": "genetic-information-flow",
+      "topicName": "遗传信息传递与表达",
+      "topicLocator": "必修2学业要求与选择性必修3·分子机制（PDF第27、53页）",
+      "knowledgePoints": [
+        {
+          "slug": "transcribe-by-base-pairing",
+          "name": "依据碱基互补配对完成转录信息转换",
+          "aliases": [],
+          "kind": "PROCEDURE",
+          "boundary": "只处理DNA模板到RNA的碱基对应，不混入翻译阶段的密码子与反密码子配对。",
+          "sourceLocator": "选择性必修3·中心法则与碱基互补配对（PDF第53页）",
+          "prerequisiteSlugs": []
+        },
+        {
+          "slug": "distinguish-replication-transcription-translation-flow",
+          "name": "区分复制、转录和翻译中的信息流向",
+          "aliases": [],
+          "kind": "CONCEPT",
+          "boundary": "只区分三类过程的信息载体与方向，不包含具体酶和调控机制。",
+          "sourceLocator": "必修2·学业要求与选择性必修3·中心法则（PDF第27、53页）",
+          "prerequisiteSlugs": []
+        }
+      ]
+    }
+  ]
+}

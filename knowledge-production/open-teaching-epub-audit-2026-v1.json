@@ -1,0 +1,473 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "open-teaching-epub-audit-2026-v1",
+  "manifestId": "open-teaching-epub-manifest-2026-v1",
+  "sourceRegisterId": "high-school-knowledge-source-register-2025-v1",
+  "updatedAtEpochMillis": 1784908800000,
+  "reviewBoundary": {
+    "state": "CONTENT_ACQUIRED_UNREVIEWED",
+    "chinaCurriculumMappingComplete": false,
+    "teachingSynthesisReviewed": false,
+    "formalKnowledgeCoverageContribution": 0
+  },
+  "artifacts": [
+    {
+      "sourceId": "candidate:siyavula:grade-10-mathematics-cc-by",
+      "subjects": [
+        "MATH"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr10_Mathematics_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 49009925,
+      "contentFingerprint": "881F0968936E797A6F0FA4DF305B92641C52ADD3812871AE39A791C2EE1E4A99",
+      "title": "maths10",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "OPS/maths10-package.opf",
+      "archiveEntryCount": 10247,
+      "xhtmlDocumentCount": 99,
+      "totalUncompressedBytes": 54801810,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OPS/xhtml/maths10/front-matter-epubs/copyright_acknowledgements_ccby.html"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 347,
+        "workedExample": 183,
+        "solution": 2612,
+        "method": 40,
+        "strategy": 4,
+        "exercise": 87,
+        "activity": 16,
+        "summary": 69,
+        "chapterSummary": 28,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 0,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 349,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-11-mathematics-cc-by",
+      "subjects": [
+        "MATH"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr11_Mathematics_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 34751539,
+      "contentFingerprint": "45BE47ABFDB209BAD368522C49643DC431D285D6B0A8261DA55D0B597C7DB807",
+      "title": "maths11",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "OPS/maths11-package.opf",
+      "archiveEntryCount": 7255,
+      "xhtmlDocumentCount": 80,
+      "totalUncompressedBytes": 39926295,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OPS/xhtml/maths11/front-matter-epubs/copyright_acknowledgements_ccby.html"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 260,
+        "workedExample": 180,
+        "solution": 1469,
+        "method": 55,
+        "strategy": 5,
+        "exercise": 120,
+        "activity": 37,
+        "summary": 46,
+        "chapterSummary": 0,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 0,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 219,
+        "derivation": 1
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-12-mathematics-cc-by",
+      "subjects": [
+        "MATH"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr12_Mathematics_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 40361251,
+      "contentFingerprint": "0D7554F2D0DF805133F3BE38A3A5FFE20E5963FD5318E40E77C63490A413ADC8",
+      "title": "maths12",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "OPS/maths12-package.opf",
+      "archiveEntryCount": 8121,
+      "xhtmlDocumentCount": 75,
+      "totalUncompressedBytes": 45876601,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OPS/xhtml/maths12/front-matter-epubs/copyright_acknowledgements_ccby.html"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 272,
+        "workedExample": 179,
+        "solution": 1669,
+        "method": 75,
+        "strategy": 0,
+        "exercise": 103,
+        "activity": 17,
+        "summary": 45,
+        "chapterSummary": 0,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 0,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 235,
+        "derivation": 8
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-10-physical-sciences-cc-by",
+      "subjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr10_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 31675351,
+      "contentFingerprint": "366C2F0BEB5D3C4CF0789E0DC49CD12DD07C20D47CD5C9E3E4DC5D1CA49CE3DB",
+      "title": "science10",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "OPS/science10-package.opf",
+      "archiveEntryCount": 2775,
+      "xhtmlDocumentCount": 152,
+      "totalUncompressedBytes": 36941537,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OPS/xhtml/science10/front-matter-epubs/copyright_acknowledgements_ccby.html"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 347,
+        "workedExample": 112,
+        "solution": 566,
+        "method": 58,
+        "strategy": 1,
+        "exercise": 77,
+        "activity": 121,
+        "summary": 50,
+        "chapterSummary": 44,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 1,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 84,
+        "derivation": 4
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-11-physical-sciences-cc-by",
+      "subjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr11_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 47417044,
+      "contentFingerprint": "3D893A4364F52EFE1991360302CFCCB06030E03AD67D725867FB48F0F177A0F9",
+      "title": "science11",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "OPS/science11-package.opf",
+      "archiveEntryCount": 4072,
+      "xhtmlDocumentCount": 82,
+      "totalUncompressedBytes": 53187236,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OPS/xhtml/science11/front-matter-epubs/copyright_acknowledgements_ccby.html"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 324,
+        "workedExample": 138,
+        "solution": 869,
+        "method": 111,
+        "strategy": 2,
+        "exercise": 83,
+        "activity": 82,
+        "summary": 37,
+        "chapterSummary": 26,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 0,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 127,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-12-physical-sciences-cc-by",
+      "subjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr12_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "contentLengthBytes": 78477236,
+      "contentFingerprint": "FB8824B216007B8310A3EBE2531005C4CDFABB2E6F07157D03173F0864D2C627",
+      "title": "science12",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "OPS/science12-package.opf",
+      "archiveEntryCount": 5295,
+      "xhtmlDocumentCount": 89,
+      "totalUncompressedBytes": 85469567,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OPS/xhtml/science12/front-matter-epubs/copyright_acknowledgements_ccby.html"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 405,
+        "workedExample": 158,
+        "solution": 1281,
+        "method": 107,
+        "strategy": 0,
+        "exercise": 95,
+        "activity": 128,
+        "summary": 41,
+        "chapterSummary": 27,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 19,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 139,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:uh-pressbooks:english-composition-cc-by",
+      "subjects": [
+        "ENGLISH"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/English_Composition_Connect_Collaborate_Communicate_CC-BY.epub",
+      "contentLengthBytes": 1680685,
+      "contentFingerprint": "A5A4A9A3783EF966A6A2F86F12937F6BBFF6CD438CD589DE37E2A1173D1EACA6",
+      "title": "English Composition",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "book.opf",
+      "archiveEntryCount": 61,
+      "xhtmlDocumentCount": 34,
+      "totalUncompressedBytes": 2719610,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OEBPS/copyright.html"
+      ],
+      "requiredTeachingMarkers": {
+        "example": 1,
+        "writingProcess": 1,
+        "activity": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 86,
+        "workedExample": 0,
+        "solution": 1,
+        "method": 7,
+        "strategy": 19,
+        "exercise": 19,
+        "activity": 31,
+        "summary": 5,
+        "chapterSummary": 0,
+        "writingProcess": 14,
+        "primarySource": 12,
+        "historicalSource": 0,
+        "scientificMethod": 0,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 12,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:uh-pressbooks:journeys-world-history-i-cc-by-sa",
+      "subjects": [
+        "HISTORY"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/Journeys_in_World_History_I_to_1500_CC-BY-SA.epub",
+      "contentLengthBytes": 62385990,
+      "contentFingerprint": "18515A27D514B3EDF3F1E4BECEA6CBBD31B4D3AA4551A52CD4E274F74A9F2991",
+      "title": "He Huaka'i Honua: Journeys in World History I, to 1500 CE Honolulu CC HIST 151",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "EPUB/book.opf",
+      "archiveEntryCount": 348,
+      "xhtmlDocumentCount": 21,
+      "totalUncompressedBytes": 64502225,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "licenseEvidencePaths": [
+        "EPUB/copyright.xhtml"
+      ],
+      "requiredTeachingMarkers": {
+        "summary": 1,
+        "activity": 1,
+        "primarySource": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 201,
+        "workedExample": 0,
+        "solution": 12,
+        "method": 51,
+        "strategy": 21,
+        "exercise": 122,
+        "activity": 42,
+        "summary": 24,
+        "chapterSummary": 0,
+        "writingProcess": 0,
+        "primarySource": 38,
+        "historicalSource": 3,
+        "scientificMethod": 0,
+        "practiceQuestion": 0,
+        "reviewQuestion": 0,
+        "answer": 169,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:open-oregon:principles-of-biology-cc-by",
+      "subjects": [
+        "BIOLOGY"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/Principles_of_Biology_211_212_213_CC-BY.epub",
+      "contentLengthBytes": 21790686,
+      "contentFingerprint": "1367ADD470F33D5D5D642C44DCC7AF98321AC7CA558D228B1FD14A274C2BED88",
+      "title": "Principles of Biology",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "EPUB/book.opf",
+      "archiveEntryCount": 532,
+      "xhtmlDocumentCount": 187,
+      "totalUncompressedBytes": 25459131,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "EPUB/copyright.xhtml"
+      ],
+      "requiredTeachingMarkers": {
+        "example": 1,
+        "scientificMethod": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 449,
+        "workedExample": 0,
+        "solution": 38,
+        "method": 93,
+        "strategy": 18,
+        "exercise": 13,
+        "activity": 71,
+        "summary": 119,
+        "chapterSummary": 0,
+        "writingProcess": 0,
+        "primarySource": 7,
+        "historicalSource": 0,
+        "scientificMethod": 15,
+        "practiceQuestion": 5,
+        "reviewQuestion": 0,
+        "answer": 27,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    },
+    {
+      "sourceId": "candidate:bccampus:physical-geology-cc-by",
+      "subjects": [
+        "GEOGRAPHY"
+      ],
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/Physical_Geology_CC-BY.epub",
+      "contentLengthBytes": 61936396,
+      "contentFingerprint": "C16A7DDD2528E8F92BF41758BA399DBA58FBCD90D7C75B5C4A3D87A6A8D3674B",
+      "title": "Physical Geology",
+      "mediaType": "application/epub+zip",
+      "language": "en",
+      "rootfilePath": "book.opf",
+      "archiveEntryCount": 484,
+      "xhtmlDocumentCount": 86,
+      "totalUncompressedBytes": 63959373,
+      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseEvidencePaths": [
+        "OEBPS/copyright.html"
+      ],
+      "requiredTeachingMarkers": {
+        "example": 1,
+        "summary": 1,
+        "exercise": 1,
+        "solution": 1
+      },
+      "teachingStructureMarkers": {
+        "example": 133,
+        "workedExample": 0,
+        "solution": 15,
+        "method": 22,
+        "strategy": 3,
+        "exercise": 237,
+        "activity": 27,
+        "summary": 74,
+        "chapterSummary": 0,
+        "writingProcess": 0,
+        "primarySource": 0,
+        "historicalSource": 0,
+        "scientificMethod": 1,
+        "practiceQuestion": 0,
+        "reviewQuestion": 6,
+        "answer": 46,
+        "derivation": 0
+      },
+      "reviewState": "CONTENT_ACQUIRED_UNREVIEWED",
+      "chinaCurriculumMappingComplete": false
+    }
+  ]
+}

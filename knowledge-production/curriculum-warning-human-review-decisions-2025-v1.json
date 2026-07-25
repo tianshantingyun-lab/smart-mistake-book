@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "curriculum-warning-human-review-decisions-2025-v1",
+  "sourceProposalArtifactId": "curriculum-warning-decomposition-proposals-2025-v1",
+  "reviewState": "NOT_STARTED",
+  "reviewer": null,
+  "reviewedAtEpochMillis": null,
+  "decisions": []
+}

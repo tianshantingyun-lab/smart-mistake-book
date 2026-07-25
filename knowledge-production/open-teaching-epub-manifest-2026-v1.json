@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "open-teaching-epub-manifest-2026-v1",
+  "sourceRegisterId": "high-school-knowledge-source-register-2025-v1",
+  "updatedAtEpochMillis": 1784908800000,
+  "artifacts": [
+    {
+      "sourceId": "candidate:siyavula:grade-10-mathematics-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr10_Mathematics_Learner_Eng_CC-BY.epub",
+      "expectedBytes": 49009925,
+      "expectedSha256": "881F0968936E797A6F0FA4DF305B92641C52ADD3812871AE39A791C2EE1E4A99",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "MATH"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-11-mathematics-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr11_Mathematics_Learner_Eng_CC-BY.epub",
+      "expectedBytes": 34751539,
+      "expectedSha256": "45BE47ABFDB209BAD368522C49643DC431D285D6B0A8261DA55D0B597C7DB807",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "MATH"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-12-mathematics-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr12_Mathematics_Learner_Eng_CC-BY.epub",
+      "expectedBytes": 40361251,
+      "expectedSha256": "0D7554F2D0DF805133F3BE38A3A5FFE20E5963FD5318E40E77C63490A413ADC8",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "MATH"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-10-physical-sciences-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr10_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "expectedBytes": 31675351,
+      "expectedSha256": "366C2F0BEB5D3C4CF0789E0DC49CD12DD07C20D47CD5C9E3E4DC5D1CA49CE3DB",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-11-physical-sciences-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr11_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "expectedBytes": 47417044,
+      "expectedSha256": "3D893A4364F52EFE1991360302CFCCB06030E03AD67D725867FB48F0F177A0F9",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:siyavula:grade-12-physical-sciences-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/siyavula/Gr12_PhysicalSciences_Learner_Eng_CC-BY.epub",
+      "expectedBytes": 78477236,
+      "expectedSha256": "FB8824B216007B8310A3EBE2531005C4CDFABB2E6F07157D03173F0864D2C627",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "PHYSICS",
+        "CHEMISTRY"
+      ],
+      "requiredTeachingMarkers": {
+        "workedExample": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:uh-pressbooks:english-composition-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/English_Composition_Connect_Collaborate_Communicate_CC-BY.epub",
+      "expectedBytes": 1680685,
+      "expectedSha256": "A5A4A9A3783EF966A6A2F86F12937F6BBFF6CD438CD589DE37E2A1173D1EACA6",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "ENGLISH"
+      ],
+      "requiredTeachingMarkers": {
+        "example": 1,
+        "writingProcess": 1,
+        "activity": 1
+      }
+    },
+    {
+      "sourceId": "candidate:uh-pressbooks:journeys-world-history-i-cc-by-sa",
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/Journeys_in_World_History_I_to_1500_CC-BY-SA.epub",
+      "expectedBytes": 62385990,
+      "expectedSha256": "18515A27D514B3EDF3F1E4BECEA6CBBD31B4D3AA4551A52CD4E274F74A9F2991",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "HISTORY"
+      ],
+      "requiredTeachingMarkers": {
+        "summary": 1,
+        "activity": 1,
+        "primarySource": 1
+      }
+    },
+    {
+      "sourceId": "candidate:open-oregon:principles-of-biology-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/Principles_of_Biology_211_212_213_CC-BY.epub",
+      "expectedBytes": 21790686,
+      "expectedSha256": "1367ADD470F33D5D5D642C44DCC7AF98321AC7CA558D228B1FD14A274C2BED88",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "BIOLOGY"
+      ],
+      "requiredTeachingMarkers": {
+        "example": 1,
+        "scientificMethod": 1,
+        "solution": 1
+      }
+    },
+    {
+      "sourceId": "candidate:bccampus:physical-geology-cc-by",
+      "localPath": ".artifacts/research/open-teaching-references/pressbooks/Physical_Geology_CC-BY.epub",
+      "expectedBytes": 61936396,
+      "expectedSha256": "C16A7DDD2528E8F92BF41758BA399DBA58FBCD90D7C75B5C4A3D87A6A8D3674B",
+      "expectedMediaType": "application/epub+zip",
+      "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedLanguage": "en",
+      "expectedSubjects": [
+        "GEOGRAPHY"
+      ],
+      "requiredTeachingMarkers": {
+        "example": 1,
+        "summary": 1,
+        "exercise": 1,
+        "solution": 1
+      }
+    }
+  ]
+}

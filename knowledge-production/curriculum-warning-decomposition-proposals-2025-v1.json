@@ -1,0 +1,1341 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "curriculum-warning-decomposition-proposals-2025-v1",
+  "sourceEvidenceArtifactId": "curriculum-warning-source-evidence-2025-v1",
+  "targetBaselineId": "moe-high-school-2017-2025",
+  "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+  "reviewBoundary": {
+    "humanReviewRequired": true,
+    "promotionAllowed": false,
+    "formalLedgerMutationAllowed": false,
+    "formalCoverageContribution": 0,
+    "notes": [
+      "本文件只提出可审校的细分建议，不代表正式知识范围。",
+      "每项建议必须能在来源证据中定位，且须经人工逐项确认后才能进入正式清单。",
+      "未审校建议不能改变学生掌握度、复习计划或题目权限。"
+    ]
+  },
+  "knowledgeBaseBoundary": {
+    "identity": "KNOWLEDGE_AND_TEACHING_SUPPORT_NOT_QUESTION_BANK",
+    "allowedTeachingSupport": [
+      "METHOD_MODEL",
+      "WORKED_EXAMPLE",
+      "COMPLETE_SOLUTION",
+      "DERIVATION"
+    ],
+    "forbiddenAuthorities": [
+      "AUTONOMOUS_QUESTION_GENERATION",
+      "ASSESSMENT_ITEM_GENERATION",
+      "REVIEW_SCHEDULING"
+    ],
+    "notes": [
+      "例题、完整解答和方法模型可以作为讲解与知识归类证据。",
+      "这些材料不能被当作题库，也不能自行触发出题、测评或复习。",
+      "本文件只包含课标范围候选，不代表细化知识点已经人工审校完成。"
+    ]
+  },
+  "subjects": [
+    {
+      "subject": "MATH",
+      "modules": [
+        {
+          "slug": "required-modeling-inquiry",
+          "sourceTextSha256": "E855BE9C17C778F0A63CAF4E4A067DD190AAA961D16294409C80DBF381602EC0",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "math:required-modeling-inquiry:discover-and-pose",
+              "displayName": "从实际情境发现并提出问题",
+              "kind": "PROCESS",
+              "evidencePhrase": "发现问题、提出问题"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:analyze-and-model",
+              "displayName": "分析问题并建立数学模型",
+              "kind": "PROCESS",
+              "evidencePhrase": "分析问题、建立模型"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:parameters-and-solution",
+              "displayName": "确定参数并完成模型求解",
+              "kind": "METHOD",
+              "evidencePhrase": "确定参数、计算求解"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:validate-and-improve",
+              "displayName": "检验结果并改进模型",
+              "kind": "PROCESS",
+              "evidencePhrase": "检验结果、改进模型"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:inquiry-conjecture",
+              "displayName": "提出数学猜想与研究方案",
+              "kind": "METHOD",
+              "evidencePhrase": "猜测合理的数学结论"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:project-cycle",
+              "displayName": "课题研究的选题、开题、实施与结题",
+              "kind": "PROCESS",
+              "evidencePhrase": "选题、开题、做题和结题"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:research-report",
+              "displayName": "开题报告与研究报告的基本表达",
+              "kind": "SKILL",
+              "evidencePhrase": "学会撰写开题报告"
+            },
+            {
+              "candidateId": "math:required-modeling-inquiry:academic-integrity",
+              "displayName": "数学研究中的学术规范与诚信",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "遵守学术规范"
+            }
+          ]
+        },
+        {
+          "slug": "selective-modeling-inquiry",
+          "sourceTextSha256": "5BF0A507A1A2016009EE406BE42D03C49EA81305404E00C456774BF97B8F47E3",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "math:selective-modeling-inquiry:extend-existing-project",
+              "displayName": "延续并完善已有建模课题",
+              "kind": "PROCESS",
+              "evidencePhrase": "完善必修课程中的研究课题"
+            },
+            {
+              "candidateId": "math:selective-modeling-inquiry:clarify-problem",
+              "displayName": "进一步明确研究问题",
+              "kind": "METHOD",
+              "evidencePhrase": "进一步明确研究问题"
+            },
+            {
+              "candidateId": "math:selective-modeling-inquiry:improve-approach",
+              "displayName": "改进解决问题的思路",
+              "kind": "METHOD",
+              "evidencePhrase": "改进解决问题的思路"
+            },
+            {
+              "candidateId": "math:selective-modeling-inquiry:compare-with-needs",
+              "displayName": "把模型结果与实际需求对比",
+              "kind": "METHOD",
+              "evidencePhrase": "将必修中得到的结果与实际需求进行对比"
+            },
+            {
+              "candidateId": "math:selective-modeling-inquiry:written-outcome",
+              "displayName": "撰写研究报告或数学小论文",
+              "kind": "SKILL",
+              "evidencePhrase": "撰写研究报告或小论文"
+            },
+            {
+              "candidateId": "math:selective-modeling-inquiry:present-outcome",
+              "displayName": "用多种方式展示研究成果",
+              "kind": "SKILL",
+              "evidencePhrase": "采用多种方式展示研究成果"
+            },
+            {
+              "candidateId": "math:selective-modeling-inquiry:academic-integrity",
+              "displayName": "课题研究中的学术规范与诚信",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "遵守学术规范"
+            }
+          ]
+        },
+        {
+          "slug": "elective-e-school-developed",
+          "sourceTextSha256": "915BFA05141A29DA2CEBDC41ECB8C865431A16FC2216EE1F6DC93FE2A9489DB2",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "math:elective-e-school-developed:robotics",
+              "displayName": "机器人中的数学",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "机器人与数学"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:symmetry-and-groups",
+              "displayName": "对称与群",
+              "kind": "CONCEPT",
+              "evidencePhrase": "对称与群"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:spherical-geometry",
+              "displayName": "球面几何",
+              "kind": "CONCEPT",
+              "evidencePhrase": "球面上的几何"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:euler-and-surfaces",
+              "displayName": "欧拉公式与闭曲面分类",
+              "kind": "CONCEPT",
+              "evidencePhrase": "欧拉公式与闭曲面分类"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:sequences-and-differences",
+              "displayName": "数列与差分",
+              "kind": "METHOD",
+              "evidencePhrase": "数列与差分"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:elementary-number-theory",
+              "displayName": "初等数论基础",
+              "kind": "CONCEPT",
+              "evidencePhrase": "初等数论初步"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:daily-mathematics",
+              "displayName": "日常生活中的数学",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "生活中的数学"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:personal-finance",
+              "displayName": "家庭理财中的数学",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "家庭理财与数学"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:local-architecture",
+              "displayName": "地方建筑中的数学",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "地方建筑与数学"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:social-data-study",
+              "displayName": "社会调查与数据分析",
+              "kind": "METHOD",
+              "evidencePhrase": "社会调查与数据分析"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:calculus",
+              "displayName": "微积分基础",
+              "kind": "CONCEPT",
+              "evidencePhrase": "微积分"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:analytic-linear",
+              "displayName": "解析几何与线性代数基础",
+              "kind": "CONCEPT",
+              "evidencePhrase": "解析几何与线性代数"
+            },
+            {
+              "candidateId": "math:elective-e-school-developed:probability-statistics",
+              "displayName": "概率论与数理统计基础",
+              "kind": "CONCEPT",
+              "evidencePhrase": "概率论与数理统计"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "BIOLOGY",
+      "modules": [
+        {
+          "slug": "elective-life-healthy-living",
+          "sourceTextSha256": "31CE56DB7B259EFBEA043B129179D7FA3FCB4D7C786E9480CB98D12F3399D9B5",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-healthy-living:health-concepts",
+              "displayName": "健康生活的基本知识与理念",
+              "kind": "CONCEPT",
+              "evidencePhrase": "健康生活的基本知识和理念"
+            },
+            {
+              "candidateId": "biology:elective-life-healthy-living:healthy-behavior",
+              "displayName": "健康生活方式与行为",
+              "kind": "SKILL",
+              "evidencePhrase": "健康生活方式和行为"
+            },
+            {
+              "candidateId": "biology:elective-life-healthy-living:infection-prevention",
+              "displayName": "传染病预防",
+              "kind": "METHOD",
+              "evidencePhrase": "传染病的预防"
+            },
+            {
+              "candidateId": "biology:elective-life-healthy-living:injury-self-help",
+              "displayName": "伤害预防与自救互救",
+              "kind": "SKILL",
+              "evidencePhrase": "伤害预防与自救互救"
+            },
+            {
+              "candidateId": "biology:elective-life-healthy-living:mental-health",
+              "displayName": "心理健康与精神卫生",
+              "kind": "CONCEPT",
+              "evidencePhrase": "心理健康和精神卫生"
+            },
+            {
+              "candidateId": "biology:elective-life-healthy-living:school-hygiene",
+              "displayName": "学校卫生",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "学校卫生"
+            },
+            {
+              "candidateId": "biology:elective-life-healthy-living:oral-hygiene",
+              "displayName": "口腔卫生",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "口腔卫生"
+            }
+          ]
+        },
+        {
+          "slug": "elective-life-first-aid",
+          "sourceTextSha256": "23DBC6CCFFDE22989872C2362F5122927260A28D00256AFD2B6274AD02DC08A9",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-first-aid:medicine-use",
+              "displayName": "常用急救药物的使用",
+              "kind": "SKILL",
+              "evidencePhrase": "常用急救药物的使用"
+            },
+            {
+              "candidateId": "biology:elective-life-first-aid:emergency-call",
+              "displayName": "紧急呼叫与信息表达",
+              "kind": "SKILL",
+              "evidencePhrase": "“120”紧急呼叫"
+            },
+            {
+              "candidateId": "biology:elective-life-first-aid:cpr",
+              "displayName": "心肺复苏",
+              "kind": "SKILL",
+              "evidencePhrase": "心肺复苏"
+            },
+            {
+              "candidateId": "biology:elective-life-first-aid:bleeding-control",
+              "displayName": "外伤止血",
+              "kind": "SKILL",
+              "evidencePhrase": "外伤止血"
+            },
+            {
+              "candidateId": "biology:elective-life-first-aid:swimming-self-rescue",
+              "displayName": "游泳意外自救",
+              "kind": "SKILL",
+              "evidencePhrase": "游泳意外的自救"
+            },
+            {
+              "candidateId": "biology:elective-life-first-aid:animal-bite",
+              "displayName": "动物咬伤后的处理",
+              "kind": "SKILL",
+              "evidencePhrase": "动物咬伤后的处理"
+            },
+            {
+              "candidateId": "biology:elective-life-first-aid:gas-poisoning",
+              "displayName": "煤气中毒后的自救与互救",
+              "kind": "SKILL",
+              "evidencePhrase": "煤气中毒后的自救与互救"
+            }
+          ]
+        },
+        {
+          "slug": "elective-life-infectious-disease",
+          "sourceTextSha256": "7E78C5CD85CCE39BB28473F48A0AE9CB8EFA0D3FCC5A0EB9CA17CF8B01262CE7",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-infectious-disease:source-and-infection",
+              "displayName": "传染源与感染",
+              "kind": "CONCEPT",
+              "evidencePhrase": "传染源与感染"
+            },
+            {
+              "candidateId": "biology:elective-life-infectious-disease:transmission-route",
+              "displayName": "传播途径",
+              "kind": "CONCEPT",
+              "evidencePhrase": "传播途径"
+            },
+            {
+              "candidateId": "biology:elective-life-infectious-disease:infection-mechanism",
+              "displayName": "传染的基本机理",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "传染的机理"
+            },
+            {
+              "candidateId": "biology:elective-life-infectious-disease:prevention-system",
+              "displayName": "全球及我国防疫体系",
+              "kind": "CONCEPT",
+              "evidencePhrase": "全球以及我国防疫体系的组成"
+            },
+            {
+              "candidateId": "biology:elective-life-infectious-disease:personal-protection",
+              "displayName": "流行期间的个人日常防护",
+              "kind": "SKILL",
+              "evidencePhrase": "传染病流行期间的个人日常防护"
+            },
+            {
+              "candidateId": "biology:elective-life-infectious-disease:detection",
+              "displayName": "传染病预防措施与检测",
+              "kind": "METHOD",
+              "evidencePhrase": "传染病预防措施与检测"
+            },
+            {
+              "candidateId": "biology:elective-life-infectious-disease:disinfection",
+              "displayName": "病原体消毒与灭菌",
+              "kind": "SKILL",
+              "evidencePhrase": "病原体的消毒灭菌"
+            }
+          ]
+        },
+        {
+          "slug": "elective-life-social-issues",
+          "sourceTextSha256": "CEE514D1ADA26CA212D4AC5A0DBB2D39B56916B1EEF25DD1C573090EB9EC14D8",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-social-issues:gm-plants",
+              "displayName": "转基因植物相关议题",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "转基因植物"
+            },
+            {
+              "candidateId": "biology:elective-life-social-issues:ivf",
+              "displayName": "试管婴儿相关议题",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "试管婴儿"
+            },
+            {
+              "candidateId": "biology:elective-life-social-issues:cloning",
+              "displayName": "哺乳动物克隆相关议题",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "克隆哺乳动物"
+            },
+            {
+              "candidateId": "biology:elective-life-social-issues:infectious-events",
+              "displayName": "重大传染病公共议题",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "艾滋病、禽流感、SARS以及埃博拉疫情"
+            },
+            {
+              "candidateId": "biology:elective-life-social-issues:policy-and-law",
+              "displayName": "生物学公共议题中的政策与法规",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "国家的政策、法规"
+            },
+            {
+              "candidateId": "biology:elective-life-social-issues:source-evaluation",
+              "displayName": "从可靠渠道获取资料与信息",
+              "kind": "SKILL",
+              "evidencePhrase": "从主流媒体获取正确的资料和信息"
+            },
+            {
+              "candidateId": "biology:elective-life-social-issues:science-technology-society",
+              "displayName": "科学、技术与社会的关系",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "科学、技术、社会相互关系"
+            }
+          ]
+        },
+        {
+          "slug": "elective-life-animal-welfare",
+          "sourceTextSha256": "1B3522B2F124EE3E742F929C5CEED5699A998AAB5B7B6DABF9A68E8D9038388D",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-animal-welfare:human-animal-relationship",
+              "displayName": "动物与人类的关系",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "动物与人类的关系"
+            },
+            {
+              "candidateId": "biology:elective-life-animal-welfare:concept",
+              "displayName": "动物福利的概念",
+              "kind": "CONCEPT",
+              "evidencePhrase": "动物福利的概念"
+            },
+            {
+              "candidateId": "biology:elective-life-animal-welfare:assessment",
+              "displayName": "动物福利的评估",
+              "kind": "METHOD",
+              "evidencePhrase": "动物福利的评估"
+            },
+            {
+              "candidateId": "biology:elective-life-animal-welfare:legislation",
+              "displayName": "动物福利立法",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "动物福利立法"
+            },
+            {
+              "candidateId": "biology:elective-life-animal-welfare:ethics",
+              "displayName": "动物福利与伦理道德",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "动物福利与伦理道德"
+            },
+            {
+              "candidateId": "biology:elective-life-animal-welfare:animal-settings",
+              "displayName": "不同饲养与使用场景中的动物福利",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "伴侣动物、野生动物、农场动物、实验动物和动物园动物的福利"
+            },
+            {
+              "candidateId": "biology:elective-life-animal-welfare:interest-balance",
+              "displayName": "动物利益与人类利益的平衡",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "动物利益和人类利益的平衡"
+            }
+          ]
+        },
+        {
+          "slug": "elective-life-invasive-species",
+          "sourceTextSha256": "86E87F95F0FFAF6EA1112AACE711897D7151BAAE8DC21F889449CF340C7DB036",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-invasive-species:concept",
+              "displayName": "生物入侵的概念",
+              "kind": "CONCEPT",
+              "evidencePhrase": "生物入侵"
+            },
+            {
+              "candidateId": "biology:elective-life-invasive-species:major-species",
+              "displayName": "世界及我国主要入侵物种",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "世界及我国主要入侵物种的种类"
+            },
+            {
+              "candidateId": "biology:elective-life-invasive-species:pathways",
+              "displayName": "外来生物入侵途径",
+              "kind": "PROCESS",
+              "evidencePhrase": "入侵途径"
+            },
+            {
+              "candidateId": "biology:elective-life-invasive-species:ecological-harm",
+              "displayName": "生物入侵对生态系统的危害",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "生物入侵对生物圈和生态系统造成的危害"
+            },
+            {
+              "candidateId": "biology:elective-life-invasive-species:control-measures",
+              "displayName": "生物入侵防控措施",
+              "kind": "METHOD",
+              "evidencePhrase": "应对生物入侵可采取的各种措施"
+            },
+            {
+              "candidateId": "biology:elective-life-invasive-species:risk-assessment",
+              "displayName": "本地入侵危害的初步评估",
+              "kind": "METHOD",
+              "evidencePhrase": "对其危害程度作出初步评估"
+            }
+          ]
+        },
+        {
+          "slug": "elective-life-local-species",
+          "sourceTextSha256": "E76149AEFEC2F036ECF5F05F8C9A4D543E3354D3F70C7EEF950440B56043C26C",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-life-local-species:classification",
+              "displayName": "当地动植物分类",
+              "kind": "METHOD",
+              "evidencePhrase": "当地动植物的分类"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:growth-reproduction",
+              "displayName": "动植物生长与繁殖",
+              "kind": "PROCESS",
+              "evidencePhrase": "动植物的生长与繁殖"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:environment-relationship",
+              "displayName": "动植物与环境的关系",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "动植物与环境的关系"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:development-use",
+              "displayName": "动植物资源开发与利用",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "动植物资源的开发与利用"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:research-method",
+              "displayName": "地方动植物资源研究方法",
+              "kind": "METHOD",
+              "evidencePhrase": "当地动植物资源研究的方法"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:inquiry-process",
+              "displayName": "地方资源调查的科学探究过程",
+              "kind": "PROCESS",
+              "evidencePhrase": "科学探究的基本过程和方法"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:information-processing",
+              "displayName": "调查信息的搜集与处理",
+              "kind": "SKILL",
+              "evidencePhrase": "搜集信息、处理信息"
+            },
+            {
+              "candidateId": "biology:elective-life-local-species:resource-values",
+              "displayName": "地方动植物资源的多重价值",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "生态价值、经济价值和社会价值"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-biopharma",
+          "sourceTextSha256": "729FAF119377AE0EDE5C6322188C43FE326EB551856C056D69C49E272A958B3C",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-biopharma:preparation",
+              "displayName": "常见药物制备",
+              "kind": "METHOD",
+              "evidencePhrase": "常见药物制备"
+            },
+            {
+              "candidateId": "biology:elective-career-biopharma:analysis",
+              "displayName": "药物分析",
+              "kind": "METHOD",
+              "evidencePhrase": "药物分析"
+            },
+            {
+              "candidateId": "biology:elective-career-biopharma:drug-action",
+              "displayName": "药物对机体的作用",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "药物对机体的作用"
+            },
+            {
+              "candidateId": "biology:elective-career-biopharma:clinical-use",
+              "displayName": "药物类型及其临床应用",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "各类药物及其临床应用"
+            },
+            {
+              "candidateId": "biology:elective-career-biopharma:discovery-history",
+              "displayName": "药物发现历史",
+              "kind": "CONCEPT",
+              "evidencePhrase": "药物发现历史"
+            },
+            {
+              "candidateId": "biology:elective-career-biopharma:research-overview",
+              "displayName": "现代药物研发概况",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "当前最活跃的药物研发概况"
+            },
+            {
+              "candidateId": "biology:elective-career-biopharma:quality-standards",
+              "displayName": "药品标准与质量管理",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "药品标准是药品生产和质量管理的重要组成部分"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-marine-biology",
+          "sourceTextSha256": "3AA7F7555BB5C341D3F50B5451B4594D407F1FBE86F790007EEBDA50756C7227",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-marine-biology:groups",
+              "displayName": "海洋生物主要类群及生命特征",
+              "kind": "CONCEPT",
+              "evidencePhrase": "海洋生物的重要类群及其生命特征"
+            },
+            {
+              "candidateId": "biology:elective-career-marine-biology:ecosystem",
+              "displayName": "海洋生态系统的结构与功能",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "海洋生态系统的结构和功能"
+            },
+            {
+              "candidateId": "biology:elective-career-marine-biology:protection-use",
+              "displayName": "海洋生物资源保护与利用",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "海洋生物资源的保护和利用"
+            },
+            {
+              "candidateId": "biology:elective-career-marine-biology:resource-sustainability",
+              "displayName": "海洋资源开发与生态保护的协调",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "保护以及合理开发利用海洋生物资源"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-food-safety",
+          "sourceTextSha256": "974ACA111C506CD4B2FB5EA9E6E6374F066B109B40F2E9AEA9401CE1E70BE9AA",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-food-safety:production",
+              "displayName": "食品生产安全",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "食品生产安全"
+            },
+            {
+              "candidateId": "biology:elective-career-food-safety:operation",
+              "displayName": "食品经营安全",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "食品经营安全"
+            },
+            {
+              "candidateId": "biology:elective-career-food-safety:inspection",
+              "displayName": "食品安全检疫",
+              "kind": "METHOD",
+              "evidencePhrase": "食品安全检疫"
+            },
+            {
+              "candidateId": "biology:elective-career-food-safety:supply-chain",
+              "displayName": "生产、加工、存储与销售环节的安全",
+              "kind": "PROCESS",
+              "evidencePhrase": "生产、加工、存储、销售等环节"
+            },
+            {
+              "candidateId": "biology:elective-career-food-safety:inspection-principle",
+              "displayName": "食品检疫原理与基本操作",
+              "kind": "METHOD",
+              "evidencePhrase": "食品安全检疫的原理和基本操作"
+            },
+            {
+              "candidateId": "biology:elective-career-food-safety:quality-control",
+              "displayName": "食品生产过程质量控制",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "食品生产过程质量控制的重要性"
+            },
+            {
+              "candidateId": "biology:elective-career-food-safety:inspection-system",
+              "displayName": "全球及我国食品检疫体系",
+              "kind": "CONCEPT",
+              "evidencePhrase": "全球以及我国食品检疫体系的组成"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-occupational-health",
+          "sourceTextSha256": "E61418A4C613D9A63129D8C46F220C9F0858AB6B4E4419BD6934E5FB3E6D303A",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-occupational-health:formation",
+              "displayName": "职业病的形成与病因",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "职业病形成的病因"
+            },
+            {
+              "candidateId": "biology:elective-career-occupational-health:features",
+              "displayName": "职业病的主要特点",
+              "kind": "CONCEPT",
+              "evidencePhrase": "职业病的特点"
+            },
+            {
+              "candidateId": "biology:elective-career-occupational-health:prevention",
+              "displayName": "职业病预防对策",
+              "kind": "METHOD",
+              "evidencePhrase": "预防对策"
+            },
+            {
+              "candidateId": "biology:elective-career-occupational-health:control",
+              "displayName": "职业病控制措施",
+              "kind": "METHOD",
+              "evidencePhrase": "控制措施"
+            },
+            {
+              "candidateId": "biology:elective-career-occupational-health:law",
+              "displayName": "职业病防治法律法规",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "国家有关的法律法规"
+            },
+            {
+              "candidateId": "biology:elective-career-occupational-health:classification",
+              "displayName": "职业病构成要件与主要类型",
+              "kind": "CONCEPT",
+              "evidencePhrase": "职业病的构成要件、主要特点、主要类型"
+            },
+            {
+              "candidateId": "biology:elective-career-occupational-health:diagnosis",
+              "displayName": "职业病诊断标准",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "诊断标准"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-horticulture",
+          "sourceTextSha256": "3B322B14A500E96F98C09CDA4EA6604A141284D44DEA63BB651EC2AD79418A18",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-horticulture:germplasm",
+              "displayName": "园艺作物种质资源",
+              "kind": "CONCEPT",
+              "evidencePhrase": "园艺作物的种质资源"
+            },
+            {
+              "candidateId": "biology:elective-career-horticulture:growth",
+              "displayName": "园艺作物生长发育规律",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "生长发育规律"
+            },
+            {
+              "candidateId": "biology:elective-career-horticulture:cultivation-chain",
+              "displayName": "园艺作物繁殖、栽培与育种",
+              "kind": "PROCESS",
+              "evidencePhrase": "繁殖、栽培、育种"
+            },
+            {
+              "candidateId": "biology:elective-career-horticulture:postharvest",
+              "displayName": "园艺作物储藏、加工与病虫害管理",
+              "kind": "PROCESS",
+              "evidencePhrase": "储藏、加工、病虫害"
+            },
+            {
+              "candidateId": "biology:elective-career-horticulture:landscape-structure",
+              "displayName": "景观空间结构及其相互作用",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "空间结构、相互作用、协调功能及动态变化"
+            },
+            {
+              "candidateId": "biology:elective-career-horticulture:landscape-design",
+              "displayName": "景观设计基本原理",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "景观设计的基本原理"
+            },
+            {
+              "candidateId": "biology:elective-career-horticulture:cultivation-management",
+              "displayName": "园艺植物栽培管理技术",
+              "kind": "SKILL",
+              "evidencePhrase": "基本栽培管理技术"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-environmental-crops",
+          "sourceTextSha256": "9B1DC10B25E507C16D7ED6D35DEB1F522E70323FF09E5686EB1562A37BA1F60E",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-environmental-crops:concept",
+              "displayName": "环境友好的实质与内涵",
+              "kind": "CONCEPT",
+              "evidencePhrase": "环境友好的实质和内涵"
+            },
+            {
+              "candidateId": "biology:elective-career-environmental-crops:sustainable-development",
+              "displayName": "环境友好与可持续发展",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "人类社会处于可持续发展状态"
+            },
+            {
+              "candidateId": "biology:elective-career-environmental-crops:economy-environment-balance",
+              "displayName": "经济作物效益与环境保护的平衡",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "在获得较高经济效益和环境保护之间取得适当的平衡"
+            },
+            {
+              "candidateId": "biology:elective-career-environmental-crops:impact-minimization",
+              "displayName": "降低生产对环境的干扰与危害",
+              "kind": "METHOD",
+              "evidencePhrase": "将对环境的干扰和危害降到最低程度"
+            },
+            {
+              "candidateId": "biology:elective-career-environmental-crops:coordinated-cultivation",
+              "displayName": "经济作物高效栽培与环保协同",
+              "kind": "METHOD",
+              "evidencePhrase": "高效栽培经济作物与环境保护协同发展的各种可能措施"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-bioresources",
+          "sourceTextSha256": "09A5207BBC6E1006AA2354CFEEF96C50B06E9B721596223E3BF8614DA79A4BA0",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-bioresources:resource-levels",
+              "displayName": "生物资源的基因、物种与生态系统层次",
+              "kind": "CONCEPT",
+              "evidencePhrase": "生物资源包括基因、物种以及生态系统三个层次"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:wild-resources",
+              "displayName": "野生生物资源",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "野生生物资源"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:crop-resources",
+              "displayName": "农作物资源",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "农作物资源"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:livestock-aquatic",
+              "displayName": "畜牧与水产生物资源",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "畜牧水产资源"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:microbial-resources",
+              "displayName": "微生物资源",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "微生物资源"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:biological-traits",
+              "displayName": "代表物种的基本生物学特征",
+              "kind": "CONCEPT",
+              "evidencePhrase": "基本生物学特征"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:processing",
+              "displayName": "生物资源深加工原理与生产流程",
+              "kind": "PROCESS",
+              "evidencePhrase": "深加工的原理方法、生产工艺流程"
+            },
+            {
+              "candidateId": "biology:elective-career-bioresources:protection-use",
+              "displayName": "生物资源保护与科学利用",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "合理保护并科学利用生物资源"
+            }
+          ]
+        },
+        {
+          "slug": "elective-career-threatened-species",
+          "sourceTextSha256": "4793AD08077E43F72720D55D6BA8A92B46BD266E7DC3D03917C93460BD36EF69",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-career-threatened-species:concept",
+              "displayName": "受胁物种的概念",
+              "kind": "CONCEPT",
+              "evidencePhrase": "受胁物种是指"
+            },
+            {
+              "candidateId": "biology:elective-career-threatened-species:risk-levels",
+              "displayName": "极危、濒危与易危等级",
+              "kind": "CONCEPT",
+              "evidencePhrase": "极危、濒危、易危三个等级"
+            },
+            {
+              "candidateId": "biology:elective-career-threatened-species:keystone-effect",
+              "displayName": "关键物种灭绝对生态系统的影响",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "一个关键物种的灭绝可能破坏当地的食物链"
+            },
+            {
+              "candidateId": "biology:elective-career-threatened-species:climate-impact",
+              "displayName": "全球变暖对物种生存的影响",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "全球持续变暖会导致部分动植物物种"
+            },
+            {
+              "candidateId": "biology:elective-career-threatened-species:protection-network",
+              "displayName": "受胁物种保护与繁育设施",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "国家公园、自然保护区、植物园、动物驯养繁殖中心"
+            },
+            {
+              "candidateId": "biology:elective-career-threatened-species:local-value",
+              "displayName": "本地受胁物种保护的环境与社会意义",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "对地方的环境、社会经济可持续发展的实际意义"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-cell-molecular",
+          "sourceTextSha256": "C099E4A8F1C11B8F5C01B149FA19E90BD0DB06EC8531B44A45333BE28B5968B1",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:central-dogma",
+              "displayName": "中心法则",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "中心法则"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:dna-replication",
+              "displayName": "DNA复制",
+              "kind": "PROCESS",
+              "evidencePhrase": "DNA复制"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:dna-repair",
+              "displayName": "DNA损伤与修复",
+              "kind": "PROCESS",
+              "evidencePhrase": "DNA损伤及其修复"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:mutation",
+              "displayName": "DNA突变",
+              "kind": "CONCEPT",
+              "evidencePhrase": "DNA突变"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:transcription",
+              "displayName": "转录",
+              "kind": "PROCESS",
+              "evidencePhrase": "转录"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:reverse-transcription",
+              "displayName": "逆转录",
+              "kind": "PROCESS",
+              "evidencePhrase": "逆转录"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:translation",
+              "displayName": "翻译",
+              "kind": "PROCESS",
+              "evidencePhrase": "翻译"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:gene-regulation",
+              "displayName": "基因表达调控",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "基因表达调控"
+            },
+            {
+              "candidateId": "biology:elective-academic-cell-molecular:macromolecule-roles",
+              "displayName": "DNA、RNA与蛋白质的功能分工",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "DNA、RNA和蛋白质在细胞内的功能分工和相互关系"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-bioinformatics",
+          "sourceTextSha256": "CF55914979A7AC0E4DDEC135946E43FC97B2A912D639ED495D8BA77A23F2AF72",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:data-lifecycle",
+              "displayName": "生物信息的存储、检索、分析与整合",
+              "kind": "PROCESS",
+              "evidencePhrase": "对生物信息进行存储、检索、分析和整合"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:genome-information",
+              "displayName": "基因组信息的获取与解读",
+              "kind": "PROCESS",
+              "evidencePhrase": "信息的获取、处理、存储、分配和解读"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:gene-location",
+              "displayName": "基因在染色体上的位置与DNA片段功能",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "全部基因在染色体上的确切位置以及各DNA片段的功能"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:expression-data",
+              "displayName": "基因转录与翻译活动信息",
+              "kind": "CONCEPT",
+              "evidencePhrase": "基因的转录和翻译活动信息"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:protein-modeling",
+              "displayName": "蛋白质三维结构模拟与预测",
+              "kind": "METHOD",
+              "evidencePhrase": "蛋白质三维结构模拟和预测"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:sequencing",
+              "displayName": "基因组测序原理",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "基因组测序原理"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:sequence-analysis",
+              "displayName": "DNA与蛋白质序列分析",
+              "kind": "METHOD",
+              "evidencePhrase": "DNA和蛋白质序列分析"
+            },
+            {
+              "candidateId": "biology:elective-academic-bioinformatics:phylogenetic-tree",
+              "displayName": "系统发育树分析",
+              "kind": "METHOD",
+              "evidencePhrase": "系统发育树分析"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-neuroscience",
+          "sourceTextSha256": "61D348FB7AE4DBFF992A0FB9E19704AF842D7AC9849E1E94F62D4AA2811DD805",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-neuroscience:system-coordination",
+              "displayName": "神经系统的协调与调节作用",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "神经系统协调人体内部各器官的功能"
+            },
+            {
+              "candidateId": "biology:elective-academic-neuroscience:neurological-disorder",
+              "displayName": "神经病的主要表现",
+              "kind": "CONCEPT",
+              "evidencePhrase": "以感觉、运动、意识、自主神经功能障碍为主要表现"
+            },
+            {
+              "candidateId": "biology:elective-academic-neuroscience:mental-disorder",
+              "displayName": "精神病的主要表现",
+              "kind": "CONCEPT",
+              "evidencePhrase": "以精神活动障碍为主要表现"
+            },
+            {
+              "candidateId": "biology:elective-academic-neuroscience:causes",
+              "displayName": "神经系统疾病的常见病因",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "感染、外伤、中毒、免疫损伤、遗传缺陷及营养障碍"
+            },
+            {
+              "candidateId": "biology:elective-academic-neuroscience:disease-types",
+              "displayName": "常见精神类与神经类疾病",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "精神类疾病包括强迫症、抑郁症"
+            },
+            {
+              "candidateId": "biology:elective-academic-neuroscience:addiction",
+              "displayName": "药物成瘾对神经系统的影响",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "药物成瘾"
+            },
+            {
+              "candidateId": "biology:elective-academic-neuroscience:prevention",
+              "displayName": "神经系统疾病的预防与健康生活",
+              "kind": "METHOD",
+              "evidencePhrase": "神经系统疾病的发生和预防"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-stem-cells",
+          "sourceTextSha256": "64CDD6BAE92DD96ACB7D1B695C2FCD6A1ACCC04F9A8905A2CBA6B4447478C2E7",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-stem-cells:definition",
+              "displayName": "干细胞的定义与基本特征",
+              "kind": "CONCEPT",
+              "evidencePhrase": "干细胞的定义、基本特征"
+            },
+            {
+              "candidateId": "biology:elective-academic-stem-cells:development-stage",
+              "displayName": "按个体发育阶段分类干细胞",
+              "kind": "METHOD",
+              "evidencePhrase": "胚胎干细胞和成体干细胞"
+            },
+            {
+              "candidateId": "biology:elective-academic-stem-cells:development-potential",
+              "displayName": "按发育潜能分类干细胞",
+              "kind": "METHOD",
+              "evidencePhrase": "全能干细胞、多能干细胞和单能干细胞"
+            },
+            {
+              "candidateId": "biology:elective-academic-stem-cells:differentiation",
+              "displayName": "干细胞生长与分化机制",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "干细胞生长和分化的机制"
+            },
+            {
+              "candidateId": "biology:elective-academic-stem-cells:applications",
+              "displayName": "干细胞的研究与临床应用",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "器官克隆、细胞治疗、组织再生和修复"
+            },
+            {
+              "candidateId": "biology:elective-academic-stem-cells:risk-ethics",
+              "displayName": "干细胞应用的潜在风险与伦理",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "潜在危险,以及产生的伦理问题"
+            },
+            {
+              "candidateId": "biology:elective-academic-stem-cells:ips",
+              "displayName": "诱导多能干细胞",
+              "kind": "CONCEPT",
+              "evidencePhrase": "诱导多能干细胞"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-tissue-culture",
+          "sourceTextSha256": "CB7B3F5A9657025774BF278205B7A837CDF91C170022C36A999C44EE62C82E20",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:medium",
+              "displayName": "培养基配制",
+              "kind": "SKILL",
+              "evidencePhrase": "培养基配制"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:explant-selection",
+              "displayName": "植物外植体选择",
+              "kind": "SKILL",
+              "evidencePhrase": "植物外植体的选择"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:disinfection",
+              "displayName": "外植体消毒",
+              "kind": "SKILL",
+              "evidencePhrase": "外植体的消毒"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:aseptic-cutting",
+              "displayName": "外植体无菌切割",
+              "kind": "SKILL",
+              "evidencePhrase": "外植体无菌切割"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:callus-culture",
+              "displayName": "愈伤组织培养与增殖",
+              "kind": "PROCESS",
+              "evidencePhrase": "愈伤组织培养、愈伤组织增殖"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:differentiation",
+              "displayName": "愈伤组织诱导分化",
+              "kind": "PROCESS",
+              "evidencePhrase": "诱导分化"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:acclimatization",
+              "displayName": "组培苗炼苗",
+              "kind": "PROCESS",
+              "evidencePhrase": "炼苗"
+            },
+            {
+              "candidateId": "biology:elective-academic-tissue-culture:aseptic-principle",
+              "displayName": "组织培养中的无菌操作",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "无菌操作是组织培养贯穿始终的关键因素"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-ecological-security",
+          "sourceTextSha256": "025A5C1763CFCBE9B68288D5BEE95E6E6C09B13AD18A2F0DB35951BD8E615331",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-ecological-security:definition",
+              "displayName": "生态安全的概念",
+              "kind": "CONCEPT",
+              "evidencePhrase": "生态安全是人类在生产、生活和健康等方面"
+            },
+            {
+              "candidateId": "biology:elective-academic-ecological-security:water-food",
+              "displayName": "饮用水与食物安全",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "饮用水与食物安全"
+            },
+            {
+              "candidateId": "biology:elective-academic-ecological-security:air-green",
+              "displayName": "空气质量与绿色环境",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "空气质量与绿色环境"
+            },
+            {
+              "candidateId": "biology:elective-academic-ecological-security:water-sustainability",
+              "displayName": "水资源可持续利用",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "水资源可持续利用"
+            },
+            {
+              "candidateId": "biology:elective-academic-ecological-security:ecosystem-stability",
+              "displayName": "生态系统稳定性",
+              "kind": "PRINCIPLE",
+              "evidencePhrase": "生态系统的稳定性"
+            },
+            {
+              "candidateId": "biology:elective-academic-ecological-security:resource-energy",
+              "displayName": "资源与能源危机",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "资源和能源危机"
+            },
+            {
+              "candidateId": "biology:elective-academic-ecological-security:population-balance",
+              "displayName": "人口危机与生态平衡",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "人口危机和生态平衡"
+            }
+          ]
+        },
+        {
+          "slug": "elective-academic-campus-taxonomy",
+          "sourceTextSha256": "6B8A567AB16EB0C4354E32B94967A5BE3A74CD8436CCC746A591826EA73D6D2B",
+          "proposalState": "AI_DRAFT_REQUIRES_HUMAN_REVIEW",
+          "reviewDecision": "PENDING_HUMAN_REVIEW",
+          "candidates": [
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:resource-survey",
+              "displayName": "校园动植物资源调查",
+              "kind": "METHOD",
+              "evidencePhrase": "调查校园动植物资源"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:classification-process",
+              "displayName": "动植物分类的一般过程与方法",
+              "kind": "METHOD",
+              "evidencePhrase": "动植物分类的过程与一般方法"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:classification-table",
+              "displayName": "动植物分类表的使用",
+              "kind": "SKILL",
+              "evidencePhrase": "使用动植物分类表"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:identification-key",
+              "displayName": "简单检索表的编制",
+              "kind": "SKILL",
+              "evidencePhrase": "编制简单的检索表"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:taxonomic-traits",
+              "displayName": "科、属、种特征及识别方法",
+              "kind": "METHOD",
+              "evidencePhrase": "科、属、种的特征及识别方法"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:specimens",
+              "displayName": "动植物标本采集与制作",
+              "kind": "SKILL",
+              "evidencePhrase": "动植物标本采集及制作"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:resource-database",
+              "displayName": "校园动植物资源数据库",
+              "kind": "APPLICATION_SCOPE",
+              "evidencePhrase": "建立校园动植物资源管理数据库"
+            },
+            {
+              "candidateId": "biology:elective-academic-campus-taxonomy:adaptation",
+              "displayName": "动植物与环境的适应关系",
+              "kind": "RELATIONSHIP",
+              "evidencePhrase": "动植物与环境的适应关系"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

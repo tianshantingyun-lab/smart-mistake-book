@@ -1,0 +1,120 @@
+package com.tingyun.smartmistakebook.core.model
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class TutorLobbyTasksTest {
+    @Test
+    fun lobbyRoundTripsAndValidatesItsExactConversationPosition() {
+        val request = request()
+        val output = TutorLobbyOutput(
+            conversationId = "tutor-lobby",
+            messageOrdinal = 2,
+            messageMarkdown = "你可以把现在卡住的步骤直接发来。",
+            intentDecision = TutorIntentDecision.ambiguousDefault(),
+            modelVersion = "model-v1",
+        )
+
+        val decodedRequest = ModelTaskCodec.decodeRequest(ModelTaskCodec.encodeRequest(request))
+        val decodedOutput = ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(output))
+
+        assertEquals(request, decodedRequest)
+        assertEquals(output, decodedOutput)
+        assertTrue(ModelTaskCompletionValidator.validate(request, output).isEmpty())
+    }
+
+    @Test
+    fun lobbyRejectsContextMismatchAndEveryWriteLikeCapability() {
+        val mismatch = TutorLobbyOutput(
+            conversationId = "tutor-lobby",
+            messageOrdinal = 3,
+            messageMarkdown = "我需要先确认你想问哪一步。",
+            modelVersion = "model-v1",
+        )
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH),
+            ModelTaskCompletionValidator.validate(request(), mismatch).map { it.code },
+        )
+
+        val writeRequest = TutorIntentDecision(
+            intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
+            confidence = 0.98,
+            explicitActionRequest = true,
+            memoryPreference = TutorMemoryPreference.UNCHANGED,
+            requestedLocalCapability = TutorRequestedLocalCapability.OFFER_SAVE_CURRENT_QUESTION,
+        )
+        assertTrue(
+            runCatching {
+                TutorLobbyOutput(
+                    conversationId = "tutor-lobby",
+                    messageOrdinal = 2,
+                    messageMarkdown = "是否保存应由本机界面确认。",
+                    intentDecision = writeRequest,
+                    modelVersion = "model-v1",
+                )
+            }.isFailure,
+        )
+    }
+
+    @Test
+    fun externalLobbyManifestDisclosesOnlyMessageAndRecentConversation() {
+        val provider = provider()
+        val request = request(
+            ModelEgressManifest(
+                authorizationId = "lobby-authorization",
+                subjectId = "tutor-lobby",
+                purpose = ModelEgressPurpose.TUTORING,
+                authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_LOBBY),
+                providerId = provider.providerId,
+                modelId = provider.modelId,
+                providerConfigurationVersion = provider.providerConfigurationVersion,
+                promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_LOBBY,
+                approvedAtEpochMillis = 1_000,
+                assets = emptyList(),
+                disclosedData = ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE,
+                prohibitedData = ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA,
+            ),
+        )
+
+        val execution = ModelEgressPolicy.authorize(request, provider, nowEpochMillis = 1_000)
+
+        assertTrue(execution.permit is ModelExecutionPermit.External)
+        assertEquals(
+            setOf(
+                ModelEgressDataClass.STUDENT_TUTOR_MESSAGE,
+                ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
+            ),
+            request.egressManifest?.disclosedData,
+        )
+    }
+
+    private fun request(manifest: ModelEgressManifest? = null) = ModelTaskRequest(
+        requestId = "tutor-lobby-request",
+        input = TutorLobbyInput(
+            conversationId = "tutor-lobby",
+            messageOrdinal = 2,
+            studentMessage = "我应该从哪里开始？",
+            priorMessages = listOf(
+                TutorChatHistoryEntry(
+                    studentMessage = "你好",
+                    assistantMarkdown = "你好，你现在想讲哪道题？",
+                ),
+            ),
+        ),
+        occurredAtEpochMillis = 1_000,
+        egressManifest = manifest,
+    )
+
+    private fun provider() = ProviderCapabilitySnapshot(
+        providerId = "provider",
+        providerDisplayName = "模型",
+        modelId = "model",
+        supportedTasks = setOf(ModelTaskKind.TUTOR_LOBBY),
+        supportsImageInput = false,
+        supportsStructuredOutput = true,
+        supportsStreaming = false,
+        executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+        providerConfigurationVersion = "configuration-v1",
+    )
+}
