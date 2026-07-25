@@ -34,6 +34,7 @@ enum class ModelEgressDataClass {
     CAPTURE_METADATA,
     STUDENT_TUTOR_MESSAGE,
     TUTOR_CONVERSATION_CONTEXT,
+    MODEL_AUTHORED_VISUAL_CANDIDATE,
 }
 
 /** One source of truth for the prompt whose exact scope the student approved. */
@@ -41,6 +42,8 @@ object ModelPromptPolicyVersions {
     const val CAPTURE_DOCUMENT = "capture-document-policy-v1"
     const val TUTOR_PLAN = "tutor-plan-v10-subject-memory-and-reviewed-teaching"
     const val TUTOR_RESPOND = "tutor-respond-v4-subject-memory-and-reviewed-teaching"
+    const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
+    const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
     const val TUTOR_LOBBY = "tutor-lobby-v1-intent-boundary"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
 
@@ -50,6 +53,8 @@ object ModelPromptPolicyVersions {
         -> CAPTURE_DOCUMENT
         ModelTaskKind.TUTOR_PLAN -> TUTOR_PLAN
         ModelTaskKind.TUTOR_RESPOND -> TUTOR_RESPOND
+        ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE
+        ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW
         ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY
         ModelTaskKind.PROBLEM_CLASSIFY -> PROBLEM_ORGANIZATION
         ModelTaskKind.PROBLEM_RELATE,
@@ -145,11 +150,7 @@ data class ModelEgressManifest(
         require(disclosedData.intersect(prohibitedData).isEmpty()) {
             "Egress data cannot be both disclosed and prohibited"
         }
-        val dataClassUniverse = if (schemaVersion == 1) {
-            SCHEMA_V1_DATA_CLASSES
-        } else {
-            ModelEgressDataClass.entries.toSet()
-        }
+        val dataClassUniverse = dataClassUniverseForSchema(schemaVersion)
         require((disclosedData + prohibitedData).all { it in dataClassUniverse }) {
             "Egress manifest references a data class outside its schema"
         }
@@ -185,20 +186,33 @@ data class ModelEgressManifest(
             require(
                 tutoringKind == ModelTaskKind.TUTOR_PLAN ||
                     schemaVersion >= 2 && tutoringKind == ModelTaskKind.TUTOR_RESPOND ||
-                    schemaVersion >= 4 && tutoringKind == ModelTaskKind.TUTOR_LOBBY,
+                    schemaVersion >= 4 && tutoringKind == ModelTaskKind.TUTOR_LOBBY ||
+                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
             ) {
                 "Tutor egress must authorize exactly one supported tutoring task"
             }
-            require(assets.isEmpty()) { "Tutoring cannot disclose image bytes" }
             val expectedDisclosure = when (tutoringKind) {
                 ModelTaskKind.TUTOR_PLAN -> tutorPlanDisclosureForSchema(schemaVersion)
                 ModelTaskKind.TUTOR_RESPOND -> tutorRespondDisclosureForSchema(schemaVersion)
                 ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY_DISCLOSURE
+                ModelTaskKind.TUTOR_VISUAL_GENERATE ->
+                    tutorVisualGenerateDisclosure(assets.any { it.selectedRegion != null })
+                ModelTaskKind.TUTOR_VISUAL_REVIEW ->
+                    tutorVisualReviewDisclosure(assets.any { it.selectedRegion != null })
+            }
+            if (
+                tutoringKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+                tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW
+            ) {
+                require(assets.isNotEmpty()) { "Tutor visual work requires an exact image scope" }
+            } else {
+                require(assets.isEmpty()) { "Text tutor work cannot disclose image bytes" }
             }
             require(disclosedData == expectedDisclosure) {
                 "Tutor egress disclosure must exactly match the authorized tutoring task"
             }
-            require(prohibitedData == dataClassUniverse - expectedDisclosure) {
+            require(prohibitedData == dataClassUniverseForSchema(schemaVersion) - expectedDisclosure) {
                 "Tutor egress must prohibit every data class outside its bounded context"
             }
         }
@@ -220,7 +234,7 @@ data class ModelEgressManifest(
     }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 4
+        const val CURRENT_SCHEMA_VERSION = 5
         private const val MIN_SUPPORTED_SCHEMA_VERSION = 1
 
         val SCHEMA_V1_DATA_CLASSES = setOf(
@@ -299,6 +313,39 @@ data class ModelEgressManifest(
 
         val TUTOR_LOBBY_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - TUTOR_LOBBY_DISCLOSURE
+
+        private val TUTOR_VISUAL_GENERATE_BASE_DISCLOSURE = setOf(
+            ModelEgressDataClass.SANITIZED_IMAGE_BYTES,
+            ModelEgressDataClass.IMAGE_DIMENSIONS,
+            ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
+            ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
+        )
+
+        fun tutorVisualGenerateDisclosure(
+            includesSelectedRegion: Boolean,
+        ): Set<ModelEgressDataClass> = TUTOR_VISUAL_GENERATE_BASE_DISCLOSURE + if (
+            includesSelectedRegion
+        ) {
+            setOf(ModelEgressDataClass.SELECTED_IMAGE_REGION)
+        } else {
+            emptySet()
+        }
+
+        fun tutorVisualReviewDisclosure(
+            includesSelectedRegion: Boolean,
+        ): Set<ModelEgressDataClass> =
+            tutorVisualGenerateDisclosure(includesSelectedRegion) +
+                ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE
+
+        internal fun dataClassUniverseForSchema(
+            schemaVersion: Int,
+        ): Set<ModelEgressDataClass> = when {
+            schemaVersion == 1 -> SCHEMA_V1_DATA_CLASSES
+            schemaVersion < 5 ->
+                ModelEgressDataClass.entries.toSet() -
+                    ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE
+            else -> ModelEgressDataClass.entries.toSet()
+        }
 
         val PROBLEM_ORGANIZATION_DISCLOSURE = setOf(
             ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
@@ -505,11 +552,7 @@ private fun ModelEgressManifest.requireAuthorizes(
             require(assets.isEmpty()) { "Tutor plan cannot disclose image assets" }
             val expectedDisclosure = ModelEgressManifest.tutorPlanDisclosureForSchema(schemaVersion)
             require(disclosedData == expectedDisclosure)
-            val dataClassUniverse = if (schemaVersion == 1) {
-                ModelEgressManifest.SCHEMA_V1_DATA_CLASSES
-            } else {
-                ModelEgressDataClass.entries.toSet()
-            }
+            val dataClassUniverse = ModelEgressManifest.dataClassUniverseForSchema(schemaVersion)
             require(prohibitedData == dataClassUniverse - expectedDisclosure)
         }
 
@@ -520,7 +563,38 @@ private fun ModelEgressManifest.requireAuthorizes(
             val expectedDisclosure =
                 ModelEgressManifest.tutorRespondDisclosureForSchema(schemaVersion)
             require(disclosedData == expectedDisclosure)
-            require(prohibitedData == ModelEgressDataClass.entries.toSet() - expectedDisclosure)
+            require(
+                prohibitedData ==
+                    ModelEgressManifest.dataClassUniverseForSchema(schemaVersion) - expectedDisclosure,
+            )
+        }
+
+        is TutorVisualGenerateInput -> {
+            require(schemaVersion >= 5) { "Tutor visual generation requires egress schema five" }
+            require(purpose == ModelEgressPurpose.TUTORING)
+            requireVisualAssetScope(input.sourceAssets)
+            val expectedDisclosure = ModelEgressManifest.tutorVisualGenerateDisclosure(
+                includesSelectedRegion = input.sourceAssets.any { it.selectedRegion != null },
+            )
+            require(disclosedData == expectedDisclosure)
+            require(
+                prohibitedData ==
+                    ModelEgressManifest.dataClassUniverseForSchema(schemaVersion) - expectedDisclosure,
+            )
+        }
+
+        is TutorVisualReviewInput -> {
+            require(schemaVersion >= 5) { "Tutor visual review requires egress schema five" }
+            require(purpose == ModelEgressPurpose.TUTORING)
+            requireVisualAssetScope(input.sourceAssets)
+            val expectedDisclosure = ModelEgressManifest.tutorVisualReviewDisclosure(
+                includesSelectedRegion = input.sourceAssets.any { it.selectedRegion != null },
+            )
+            require(disclosedData == expectedDisclosure)
+            require(
+                prohibitedData ==
+                    ModelEgressManifest.dataClassUniverseForSchema(schemaVersion) - expectedDisclosure,
+            )
         }
 
         is TutorLobbyInput -> {
@@ -535,16 +609,28 @@ private fun ModelEgressManifest.requireAuthorizes(
             require(purpose == ModelEgressPurpose.CLASSIFICATION)
             require(assets.isEmpty()) { "Problem organization cannot disclose image assets" }
             require(disclosedData == ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE)
-            val dataClassUniverse = if (schemaVersion == 1) {
-                ModelEgressManifest.SCHEMA_V1_DATA_CLASSES
-            } else {
-                ModelEgressDataClass.entries.toSet()
-            }
+            val dataClassUniverse = ModelEgressManifest.dataClassUniverseForSchema(schemaVersion)
             require(
                 prohibitedData == dataClassUniverse - ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE,
             )
         }
 
+    }
+}
+
+private fun ModelEgressManifest.requireVisualAssetScope(
+    sourceAssets: List<CaptureSourceAssetRef>,
+) {
+    require(sourceAssets.size == assets.size) { "Tutor visual asset scope changed" }
+    sourceAssets.forEach { source ->
+        val grant = assets.singleOrNull { it.assetId == source.assetId }
+            ?: error("Tutor visual image is outside egress scope")
+        require(
+            grant.sha256 == source.sha256 &&
+                grant.width == source.width &&
+                grant.height == source.height &&
+                grant.selectedRegion == source.selectedRegion,
+        ) { "Tutor visual image changed after approval" }
     }
 }
 

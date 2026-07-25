@@ -58,6 +58,8 @@ import com.tingyun.smartmistakebook.core.visual.ui.TutorVisualDocumentContent
 fun TutorVisualSceneRenderer(
     scene: TutorVisualScene,
     modifier: Modifier = Modifier,
+    onOpenOriginal: (() -> Unit)? = null,
+    onReportIncorrect: (() -> Unit)? = null,
 ) {
     SceneFrame(
         scene = scene,
@@ -73,7 +75,11 @@ fun TutorVisualSceneRenderer(
             is TutorSpatialDiagramScene -> SpatialDiagramScene(scene)
             is TutorMotionScene -> TutorMotionSceneContent(scene)
             is TutorVisualProgramScene -> TutorVisualProgramContent(scene)
-            is TutorVisualDocumentScene -> TutorVisualDocumentContent(scene)
+            is TutorVisualDocumentScene -> TutorVisualDocumentContent(
+                scene = scene,
+                onOpenOriginal = onOpenOriginal,
+                onReportIncorrect = onReportIncorrect,
+            )
         }
     }
 }

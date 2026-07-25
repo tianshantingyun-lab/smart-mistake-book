@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
+import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
@@ -31,6 +32,11 @@ import com.tingyun.smartmistakebook.core.model.TutorQuestionReviewStatus
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import com.tingyun.smartmistakebook.core.model.requiresEgressAuthorizationRenewal
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
@@ -39,6 +45,10 @@ import java.security.MessageDigest
 
 internal const val TUTOR_PROMPT_POLICY_VERSION = ModelPromptPolicyVersions.TUTOR_PLAN
 internal const val TUTOR_RESPOND_PROMPT_POLICY_VERSION = ModelPromptPolicyVersions.TUTOR_RESPOND
+internal const val TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION =
+    ModelPromptPolicyVersions.TUTOR_VISUAL_GENERATE
+internal const val TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION =
+    ModelPromptPolicyVersions.TUTOR_VISUAL_REVIEW
 
 internal fun ModelTaskStatus.isTutorExecutionPending(): Boolean = when (this) {
     ModelTaskStatus.WAITING_FOR_MODEL,
@@ -91,6 +101,8 @@ internal data class TutorCompositionEgressLease(
     val providerConfigurationVersion: String,
     val planPromptPolicyVersion: String,
     val respondPromptPolicyVersion: String,
+    val visualGeneratePromptPolicyVersion: String,
+    val visualReviewPromptPolicyVersion: String,
     val approvedAtEpochMillis: Long,
 ) {
     fun approvedAtFor(
@@ -103,6 +115,10 @@ internal data class TutorCompositionEgressLease(
             ModelTaskKind.TUTOR_PLAN -> planPromptPolicyVersion == TUTOR_PROMPT_POLICY_VERSION
             ModelTaskKind.TUTOR_RESPOND ->
                 respondPromptPolicyVersion == TUTOR_RESPOND_PROMPT_POLICY_VERSION
+            ModelTaskKind.TUTOR_VISUAL_GENERATE ->
+                visualGeneratePromptPolicyVersion == TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
+            ModelTaskKind.TUTOR_VISUAL_REVIEW ->
+                visualReviewPromptPolicyVersion == TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
             else -> false
         }
         return approvedAtEpochMillis.takeIf {
@@ -135,6 +151,10 @@ internal data class TutorCompositionEgressLease(
                 providerConfigurationVersion = provider.providerConfigurationVersion,
                 planPromptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
                 respondPromptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION,
+                visualGeneratePromptPolicyVersion =
+                    TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION,
+                visualReviewPromptPolicyVersion =
+                    TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION,
                 approvedAtEpochMillis = approvedAtEpochMillis,
             )
         }
@@ -178,6 +198,28 @@ internal fun ModelTaskSnapshot.coversCurrentTutorDisclosure(
             disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
             prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
         }
+        ModelTaskKind.TUTOR_VISUAL_GENERATE -> {
+            promptPolicyVersion = TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.tutorVisualGenerateDisclosure(
+                includesSelectedRegion = manifest.assets.any { asset ->
+                    asset.selectedRegion != null
+                },
+            )
+            prohibitedData =
+                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
+                    disclosedData
+        }
+        ModelTaskKind.TUTOR_VISUAL_REVIEW -> {
+            promptPolicyVersion = TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.tutorVisualReviewDisclosure(
+                includesSelectedRegion = manifest.assets.any { asset ->
+                    asset.selectedRegion != null
+                },
+            )
+            prohibitedData =
+                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
+                    disclosedData
+        }
         else -> return false
     }
     return manifest.authorizedTaskKinds == setOf(taskKind) &&
@@ -203,11 +245,15 @@ internal fun tutorRecoveryRequestId(
     val taskName = when (failedRequest.input.kind) {
         ModelTaskKind.TUTOR_PLAN -> "plan"
         ModelTaskKind.TUTOR_RESPOND -> "respond"
+        ModelTaskKind.TUTOR_VISUAL_GENERATE -> "visual-generate"
+        ModelTaskKind.TUTOR_VISUAL_REVIEW -> "visual-review"
         else -> error("Only tutor tasks can be recovered here")
     }
     val promptPolicy = when (failedRequest.input.kind) {
         ModelTaskKind.TUTOR_PLAN -> TUTOR_PROMPT_POLICY_VERSION
         ModelTaskKind.TUTOR_RESPOND -> TUTOR_RESPOND_PROMPT_POLICY_VERSION
+        ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
+        ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
         else -> error("Only tutor tasks can be recovered here")
     }
     val fingerprint = sha256Hex(
@@ -230,7 +276,12 @@ internal fun rebuildTutorRequestAfterApproval(
     approvedAtEpochMillis: Long,
 ): ModelTaskRequest {
     val taskKind = failedTask.request.input.kind
-    require(taskKind == ModelTaskKind.TUTOR_PLAN || taskKind == ModelTaskKind.TUTOR_RESPOND)
+    require(
+        taskKind == ModelTaskKind.TUTOR_PLAN ||
+            taskKind == ModelTaskKind.TUTOR_RESPOND ||
+            taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+            taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
+    )
     require(provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER)
     require(provider.supports(taskKind))
     val requestId = tutorRecoveryRequestId(
@@ -238,20 +289,39 @@ internal fun rebuildTutorRequestAfterApproval(
         provider = provider,
         approvedAtEpochMillis = approvedAtEpochMillis,
     )
-    val promptPolicyVersion = if (taskKind == ModelTaskKind.TUTOR_PLAN) {
-        TUTOR_PROMPT_POLICY_VERSION
-    } else {
-        TUTOR_RESPOND_PROMPT_POLICY_VERSION
-    }
-    val disclosedData = if (taskKind == ModelTaskKind.TUTOR_PLAN) {
-        ModelEgressManifest.TUTOR_PLAN_DISCLOSURE
-    } else {
-        ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
-    }
-    val prohibitedData = if (taskKind == ModelTaskKind.TUTOR_PLAN) {
-        ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA
-    } else {
-        ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
+    val assets = failedTask.request.egressManifest?.assets.orEmpty()
+    val promptPolicyVersion: String
+    val disclosedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
+    val prohibitedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
+    when (taskKind) {
+        ModelTaskKind.TUTOR_PLAN -> {
+            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE
+            prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA
+        }
+        ModelTaskKind.TUTOR_RESPOND -> {
+            promptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
+            prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
+        }
+        ModelTaskKind.TUTOR_VISUAL_GENERATE -> {
+            promptPolicyVersion = TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.tutorVisualGenerateDisclosure(
+                includesSelectedRegion = assets.any { asset -> asset.selectedRegion != null },
+            )
+            prohibitedData =
+                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
+                    disclosedData
+        }
+        ModelTaskKind.TUTOR_VISUAL_REVIEW -> {
+            promptPolicyVersion = TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
+            disclosedData = ModelEgressManifest.tutorVisualReviewDisclosure(
+                includesSelectedRegion = assets.any { asset -> asset.selectedRegion != null },
+            )
+            prohibitedData =
+                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
+                    disclosedData
+        }
     }
     val manifest = ModelEgressManifest(
         authorizationId = "authorization:$requestId",
@@ -263,7 +333,7 @@ internal fun rebuildTutorRequestAfterApproval(
         providerConfigurationVersion = provider.providerConfigurationVersion,
         promptPolicyVersion = promptPolicyVersion,
         approvedAtEpochMillis = approvedAtEpochMillis,
-        assets = emptyList(),
+        assets = assets,
         disclosedData = disclosedData,
         prohibitedData = prohibitedData,
     )
@@ -562,6 +632,212 @@ internal fun buildTutorRespondRequest(
         input = input,
         occurredAtEpochMillis = occurredAtEpochMillis,
         egressManifest = manifest,
+    )
+}
+
+internal fun tutorVisualGenerateRequestId(
+    question: TutorQuestionContext,
+    provider: ProviderCapabilitySnapshot,
+    sourceAssets: List<TutorVisualSourceAssetScope>,
+    anchor: TutorVisualTurnAnchor,
+    focusMarkdown: String,
+    explanationMarkdown: String,
+): String {
+    val contentFingerprint = sha256Hex(
+        buildString {
+            appendLengthPrefixed(question.sessionId)
+            appendLengthPrefixed(question.questionDocument.document.id)
+            appendLengthPrefixed(question.revisionNumber.toString())
+            appendLengthPrefixed(question.subject)
+            appendLengthPrefixed(anchor.surface.name)
+            appendLengthPrefixed(anchor.cycleOrdinal.toString())
+            appendLengthPrefixed(anchor.turnOrdinal.toString())
+            appendLengthPrefixed(anchor.responseOrdinal?.toString())
+            appendLengthPrefixed(focusMarkdown)
+            appendLengthPrefixed(explanationMarkdown)
+            sourceAssets.sortedBy(TutorVisualSourceAssetScope::pageIndex).forEach { asset ->
+                appendLengthPrefixed(asset.pageIndex.toString())
+                appendLengthPrefixed(asset.assetId)
+                appendLengthPrefixed(asset.sha256)
+                appendLengthPrefixed(asset.selectedRegion?.let { region ->
+                    "${region.left},${region.top},${region.right},${region.bottom}"
+                })
+            }
+            appendLengthPrefixed(provider.providerId)
+            appendLengthPrefixed(provider.modelId)
+            appendLengthPrefixed(provider.providerConfigurationVersion)
+            appendLengthPrefixed(TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION)
+            appendLengthPrefixed(TutorVisualScene.DOCUMENT_SCHEMA_VERSION.toString())
+        },
+    ).take(32)
+    return "tutor-visual-generate:$contentFingerprint"
+}
+
+internal fun buildTutorVisualGenerateRequest(
+    question: TutorQuestionContext,
+    provider: ProviderCapabilitySnapshot,
+    sourceAssets: List<TutorVisualSourceAssetScope>,
+    anchor: TutorVisualTurnAnchor,
+    focusMarkdown: String,
+    explanationMarkdown: String,
+    occurredAtEpochMillis: Long,
+    approvedAtEpochMillis: Long,
+): ModelTaskRequest {
+    require(provider.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE))
+    val orderedAssets = sourceAssets.sortedBy(TutorVisualSourceAssetScope::pageIndex)
+    require(orderedAssets.map(TutorVisualSourceAssetScope::pageIndex) == orderedAssets.indices.toList())
+    val requestId = tutorVisualGenerateRequestId(
+        question = question,
+        provider = provider,
+        sourceAssets = orderedAssets,
+        anchor = anchor,
+        focusMarkdown = focusMarkdown,
+        explanationMarkdown = explanationMarkdown,
+    )
+    val input = TutorVisualGenerateInput(
+        sessionId = question.sessionId,
+        draftRevisionNumber = question.revisionNumber,
+        subject = question.subject,
+        questionDocument = question.questionDocument.document,
+        sourceAssets = orderedAssets.map(TutorVisualSourceAssetScope::toSourceRef),
+        anchor = anchor,
+        focusMarkdown = focusMarkdown,
+        explanationMarkdown = explanationMarkdown,
+    )
+    return ModelTaskRequest(
+        requestId = requestId,
+        input = input,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        egressManifest = buildTutorVisualManifest(
+            question = question,
+            provider = provider,
+            sourceAssets = orderedAssets,
+            taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            requestId = requestId,
+            approvedAtEpochMillis = approvedAtEpochMillis,
+        ),
+    )
+}
+
+internal fun tutorVisualReviewRequestId(
+    generationRequestId: String,
+    provider: ProviderCapabilitySnapshot,
+    generated: TutorVisualGenerateOutput,
+    reviewReasonCodes: Set<String>,
+): String {
+    val fingerprint = sha256Hex(
+        buildString {
+            appendLengthPrefixed(generationRequestId)
+            appendLengthPrefixed(generated.modelVersion)
+            appendLengthPrefixed(generated.scene?.sceneId)
+            reviewReasonCodes.sorted().forEach(::appendLengthPrefixed)
+            appendLengthPrefixed(provider.providerId)
+            appendLengthPrefixed(provider.modelId)
+            appendLengthPrefixed(provider.providerConfigurationVersion)
+            appendLengthPrefixed(TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION)
+        },
+    ).take(32)
+    return "tutor-visual-review:$fingerprint"
+}
+
+internal fun buildTutorVisualReviewRequest(
+    question: TutorQuestionContext,
+    provider: ProviderCapabilitySnapshot,
+    sourceAssets: List<TutorVisualSourceAssetScope>,
+    generationRequest: ModelTaskRequest,
+    generated: TutorVisualGenerateOutput,
+    reviewReasonCodes: Set<String>,
+    occurredAtEpochMillis: Long,
+    approvedAtEpochMillis: Long,
+): ModelTaskRequest {
+    require(provider.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW))
+    val generationInput = generationRequest.input as? TutorVisualGenerateInput
+        ?: error("Tutor visual review requires the originating generation input")
+    val candidate = requireNotNull(generated.scene) {
+        "Tutor visual review requires a generated candidate"
+    }
+    require(generationInput.sessionId == question.sessionId)
+    require(generationInput.draftRevisionNumber == question.revisionNumber)
+    require(generated.sessionId == question.sessionId)
+    require(generated.draftRevisionNumber == question.revisionNumber)
+    require(generated.questionDocumentId == question.questionDocument.document.id)
+    require(generated.anchor == generationInput.anchor)
+    val orderedAssets = sourceAssets.sortedBy(TutorVisualSourceAssetScope::pageIndex)
+    require(
+        orderedAssets.map(TutorVisualSourceAssetScope::toSourceRef) == generationInput.sourceAssets,
+    ) { "Tutor visual review must reuse the exact generation image scope" }
+    val requestId = tutorVisualReviewRequestId(
+        generationRequestId = generationRequest.requestId,
+        provider = provider,
+        generated = generated,
+        reviewReasonCodes = reviewReasonCodes,
+    )
+    val input = TutorVisualReviewInput(
+        sessionId = generationInput.sessionId,
+        draftRevisionNumber = generationInput.draftRevisionNumber,
+        subject = generationInput.subject,
+        questionDocument = generationInput.questionDocument,
+        sourceAssets = generationInput.sourceAssets,
+        anchor = generationInput.anchor,
+        focusMarkdown = generationInput.focusMarkdown,
+        explanationMarkdown = generationInput.explanationMarkdown,
+        candidateScene = candidate,
+        reviewReasonCodes = reviewReasonCodes,
+    )
+    return ModelTaskRequest(
+        requestId = requestId,
+        input = input,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        egressManifest = buildTutorVisualManifest(
+            question = question,
+            provider = provider,
+            sourceAssets = orderedAssets,
+            taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            requestId = requestId,
+            approvedAtEpochMillis = approvedAtEpochMillis,
+        ),
+    )
+}
+
+private fun buildTutorVisualManifest(
+    question: TutorQuestionContext,
+    provider: ProviderCapabilitySnapshot,
+    sourceAssets: List<TutorVisualSourceAssetScope>,
+    taskKind: ModelTaskKind,
+    requestId: String,
+    approvedAtEpochMillis: Long,
+): ModelEgressManifest? {
+    if (provider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER) return null
+    require(
+        taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+            taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
+    )
+    val grants = sourceAssets.map(TutorVisualSourceAssetScope::toEgressGrant)
+    val includesSelectedRegion = grants.any { grant -> grant.selectedRegion != null }
+    val disclosedData = when (taskKind) {
+        ModelTaskKind.TUTOR_VISUAL_GENERATE ->
+            ModelEgressManifest.tutorVisualGenerateDisclosure(includesSelectedRegion)
+        ModelTaskKind.TUTOR_VISUAL_REVIEW ->
+            ModelEgressManifest.tutorVisualReviewDisclosure(includesSelectedRegion)
+    }
+    return ModelEgressManifest(
+        authorizationId = "authorization:$requestId",
+        subjectId = question.sessionId,
+        purpose = ModelEgressPurpose.TUTORING,
+        authorizedTaskKinds = setOf(taskKind),
+        providerId = provider.providerId,
+        modelId = provider.modelId,
+        providerConfigurationVersion = provider.providerConfigurationVersion,
+        promptPolicyVersion = when (taskKind) {
+            ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
+            ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
+        },
+        approvedAtEpochMillis = approvedAtEpochMillis,
+        assets = grants,
+        disclosedData = disclosedData,
+        prohibitedData =
+            com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
+                disclosedData,
     )
 }
 

@@ -51,6 +51,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
@@ -202,6 +203,7 @@ internal fun priorCycleStudentMessages(tasks: List<ModelTaskSnapshot>): List<Str
 @Composable
 internal fun TutorChatExchange(
     task: ModelTaskSnapshot,
+    resolvedVisualScene: TutorVisualDocumentScene? = null,
     awaitingContinuation: Boolean = false,
     interactionEnabled: Boolean,
     recoveryEnabled: Boolean,
@@ -211,6 +213,8 @@ internal fun TutorChatExchange(
     onMove: (TutorSuggestedMove) -> Unit,
     onRevealSolution: (TutorSuggestedMove) -> Unit,
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit = { _, _ -> },
+    onOpenVisualOriginal: () -> Unit = {},
+    onReportVisualIncorrect: (String) -> Unit = {},
     assistantBottomModifier: Modifier = Modifier,
     modifier: Modifier = Modifier,
 ) {
@@ -234,6 +238,9 @@ internal fun TutorChatExchange(
             onMove = onMove,
             onRevealSolution = onRevealSolution,
             localIntentContent = localIntentContent,
+            resolvedVisualScene = resolvedVisualScene,
+            onOpenVisualOriginal = onOpenVisualOriginal,
+            onReportVisualIncorrect = onReportVisualIncorrect,
             assistantBottomModifier = assistantBottomModifier,
         )
     }
@@ -272,6 +279,9 @@ private fun TutorAssistantReplyBubble(
     onMove: (TutorSuggestedMove) -> Unit,
     onRevealSolution: (TutorSuggestedMove) -> Unit,
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit,
+    resolvedVisualScene: TutorVisualDocumentScene?,
+    onOpenVisualOriginal: () -> Unit,
+    onReportVisualIncorrect: (String) -> Unit,
     assistantBottomModifier: Modifier,
 ) {
     val input = task.request.input as TutorRespondInput
@@ -317,6 +327,15 @@ private fun TutorAssistantReplyBubble(
                                 markdown = output.messageMarkdown,
                                 style = MaterialTheme.typography.bodyMedium,
                             )
+                            resolvedVisualScene?.let { scene ->
+                                TutorVisualSceneRenderer(
+                                    scene = scene,
+                                    onOpenOriginal = onOpenVisualOriginal,
+                                    onReportIncorrect = {
+                                        onReportVisualIncorrect(scene.sceneId)
+                                    },
+                                )
+                            }
                             localIntentContent(input, output)
                             output.visualScene?.let { TutorVisualSceneRenderer(it) }
                             if (output.solutionRevealed) {

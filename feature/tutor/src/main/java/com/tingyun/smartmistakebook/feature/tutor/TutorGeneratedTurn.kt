@@ -25,6 +25,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -44,6 +45,9 @@ internal fun TutorTurnContent(
     splitChoiceFeedback: Boolean = false,
     interactionBusy: Boolean = false,
     interactionError: String? = null,
+    resolvedVisualScene: TutorVisualDocumentScene? = null,
+    onOpenVisualOriginal: () -> Unit = {},
+    onReportVisualIncorrect: (String) -> Unit = {},
     onSubmitChoice: (String) -> Unit = {},
     onRequestHint: (() -> Unit)? = null,
     onContinue: (TutorMoveType) -> Unit = {},
@@ -84,6 +88,13 @@ internal fun TutorTurnContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SafeMarkdownText(plan.openingMarkdown, style = MaterialTheme.typography.bodyLarge)
+        resolvedVisualScene?.let { scene ->
+            TutorVisualSceneRenderer(
+                scene = scene,
+                onOpenOriginal = onOpenVisualOriginal,
+                onReportIncorrect = { onReportVisualIncorrect(scene.sceneId) },
+            )
+        }
         if (item == null) {
             plan.visualScene?.let { scene ->
                 TutorVisualSceneRenderer(scene)

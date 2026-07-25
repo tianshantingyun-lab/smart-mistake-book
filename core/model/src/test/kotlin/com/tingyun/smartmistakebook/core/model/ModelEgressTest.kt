@@ -151,7 +151,7 @@ class ModelEgressTest {
     fun persistedSchemaTwoTutorPlanManifestKeepsItsOriginalDisclosure() {
         val legacyManifest = legacyTutorPlanManifest().copy(
             schemaVersion = 2,
-            prohibitedData = ModelEgressDataClass.entries.toSet() -
+            prohibitedData = ModelEgressManifest.dataClassUniverseForSchema(2) -
                 ModelEgressManifest.LEGACY_TUTOR_PLAN_DISCLOSURE,
         )
         val request = legacyTutorPlanRequest().copy(

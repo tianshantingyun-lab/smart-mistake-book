@@ -114,6 +114,18 @@ private class FilamentVisualController(
     private var destroyed = false
     private var viewportWidth = 1
     private var viewportHeight = 1
+    private val frameCallback = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            if (!started || destroyed) return
+            choreographer.postFrameCallback(this)
+            if (uiHelper.isReadyToRender && swapChain != null) {
+                if (renderer.beginFrame(requireNotNull(swapChain), frameTimeNanos)) {
+                    renderer.render(view)
+                    renderer.endFrame()
+                }
+            }
+        }
+    }
 
     init {
         ensureFilamentInitialized()
@@ -204,7 +216,7 @@ private class FilamentVisualController(
                 scene.addEntity(record.entity)
                 record.inScene = true
             } else if (!shouldShow && record.inScene) {
-                scene.remove(record.entity)
+                scene.removeEntities(intArrayOf(record.entity))
                 record.inScene = false
             }
             if (!shouldShow || state == null) return@forEach
@@ -392,7 +404,7 @@ private class FilamentVisualController(
 
     private fun clearDocument() {
         records.forEach { record ->
-            if (record.inScene) scene.remove(record.entity)
+            if (record.inScene) scene.removeEntities(intArrayOf(record.entity))
             engine.destroyEntity(record.entity)
             EntityManager.get().destroy(record.entity)
         }
@@ -418,19 +430,6 @@ private class FilamentVisualController(
         if (!started) return
         started = false
         choreographer.removeFrameCallback(frameCallback)
-    }
-
-    private val frameCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (!started || destroyed) return
-            choreographer.postFrameCallback(this)
-            if (uiHelper.isReadyToRender && swapChain != null) {
-                if (renderer.beginFrame(requireNotNull(swapChain), frameTimeNanos)) {
-                    renderer.render(view)
-                    renderer.endFrame()
-                }
-            }
-        }
     }
 
     private inner class SurfaceCallback : UiHelper.RendererCallback {
@@ -470,7 +469,7 @@ private class FilamentVisualController(
     private data class RenderableRecord(
         val elementId: String,
         val instanceId: String,
-        @Entity val entity: Int,
+        @param:Entity val entity: Int,
         val baseTransform: TutorVisualTransform3D,
         var inScene: Boolean,
     )

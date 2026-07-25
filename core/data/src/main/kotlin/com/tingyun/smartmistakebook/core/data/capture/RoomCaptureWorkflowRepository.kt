@@ -371,6 +371,39 @@ class RoomCaptureWorkflowRepository internal constructor(
             database.readTutorSession(sessionId)?.toDomainTutorSession()
         }
 
+    override suspend fun readTutorVisualSourceAssets(
+        sessionId: String,
+    ): List<com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope> =
+        withContext(Dispatchers.IO) {
+            require(sessionId.isNotBlank()) { "Tutor session id must not be blank" }
+            val session = database.readTutorSession(sessionId)
+                ?: return@withContext emptyList()
+            val draft = database.readProblemDraft(session.draftId)
+                ?: return@withContext emptyList()
+            val regionsByAsset = session.confirmedRevision.questionDocument.blockEvidence
+                .mapNotNull { evidence ->
+                    evidence.sourceRegion?.let { region -> evidence.sourceAssetId to region }
+                }
+                .groupBy(
+                    keySelector = { it.first },
+                    valueTransform = { it.second },
+                )
+            draft.sourceAssets.map { page ->
+                val asset = page.sourceAsset
+                com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope(
+                    pageIndex = page.pageIndex,
+                    assetId = asset.sourceAssetId,
+                    sha256 = asset.contentSha256,
+                    byteSize = asset.byteSize,
+                    width = asset.width,
+                    height = asset.height,
+                    selectedRegion = regionsByAsset[asset.sourceAssetId]
+                        ?.takeIf(List<NormalizedSourceRegion>::isNotEmpty)
+                        ?.boundingRegion(),
+                )
+            }
+        }
+
     override suspend fun saveTutorSession(
         request: SaveTutorSessionRequest,
     ): CapturedProblemCommitSummary = withContext(Dispatchers.IO) {
@@ -883,6 +916,14 @@ class RoomCaptureWorkflowRepository internal constructor(
         listOf(left, top, right, bottom).joinToString(separator = ",") { coordinate ->
             coordinate.toString()
         }
+
+    private fun List<NormalizedSourceRegion>.boundingRegion(): NormalizedSourceRegion =
+        NormalizedSourceRegion(
+            left = minOf { region -> region.left },
+            top = minOf { region -> region.top },
+            right = maxOf { region -> region.right },
+            bottom = maxOf { region -> region.bottom },
+        )
 
     private fun requestFingerprint(vararg fields: String): String =
         MessageDigest.getInstance("SHA-256")

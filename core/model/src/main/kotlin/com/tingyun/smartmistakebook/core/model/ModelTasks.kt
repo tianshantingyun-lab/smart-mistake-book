@@ -14,6 +14,8 @@ enum class ModelTaskKind {
     PROBLEM_RELATE,
     TUTOR_PLAN,
     TUTOR_RESPOND,
+    TUTOR_VISUAL_GENERATE,
+    TUTOR_VISUAL_REVIEW,
     TUTOR_LOBBY,
     TUTOR_EVALUATE,
     REVIEW_RERANK,
@@ -294,6 +296,10 @@ data class ModelTaskRequest(
             schemaVersion >= CAPTURE_PAGE_RELATION_SCHEMA_VERSION ||
                 (input as? CaptureAssessmentInput)?.followingSourceAssets.isNullOrEmpty(),
         ) { "Legacy capture requests cannot compare adjacent pages" }
+        require(
+            schemaVersion >= TUTOR_VISUAL_SCHEMA_VERSION ||
+                input !is TutorVisualGenerateInput && input !is TutorVisualReviewInput,
+        ) { "Legacy model task requests cannot contain tutor visual work" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -305,7 +311,8 @@ data class ModelTaskRequest(
         const val EGRESS_SCHEMA_VERSION = 2
         const val TUTOR_STUDENT_CONTEXT_SCHEMA_VERSION = 3
         const val CAPTURE_PAGE_RELATION_SCHEMA_VERSION = 4
-        const val CURRENT_SCHEMA_VERSION = CAPTURE_PAGE_RELATION_SCHEMA_VERSION
+        const val TUTOR_VISUAL_SCHEMA_VERSION = 5
+        const val CURRENT_SCHEMA_VERSION = TUTOR_VISUAL_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -587,6 +594,16 @@ object ModelTaskCompletionValidator {
         } else {
             listOf(typeMismatch())
         }
+        is TutorVisualGenerateInput -> if (output is TutorVisualGenerateOutput) {
+            validateTutorVisualGenerate(input, output)
+        } else {
+            listOf(typeMismatch())
+        }
+        is TutorVisualReviewInput -> if (output is TutorVisualReviewOutput) {
+            validateTutorVisualReview(input, output)
+        } else {
+            listOf(typeMismatch())
+        }
         is TutorLobbyInput -> if (output is TutorLobbyOutput) {
             validateTutorLobby(input, output)
         } else {
@@ -778,6 +795,7 @@ object ModelTaskCompletionValidator {
                     (
                         output.solutionRevealed ||
                             output.visualScene != null ||
+                            output.visualRequest != null ||
                             output.suggestedMoves.isNotEmpty()
                         )
                 )
@@ -789,6 +807,36 @@ object ModelTaskCompletionValidator {
             )
         }
     }
+
+    private fun validateTutorVisualGenerate(
+        input: TutorVisualGenerateInput,
+        output: TutorVisualGenerateOutput,
+    ): List<ModelTaskCompletionIssue> =
+        if (
+            output.sessionId == input.sessionId &&
+            output.draftRevisionNumber == input.draftRevisionNumber &&
+            output.questionDocumentId == input.questionDocument.id &&
+            output.anchor == input.anchor
+        ) {
+            emptyList()
+        } else {
+            listOf(ModelTaskCompletionIssue(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH))
+        }
+
+    private fun validateTutorVisualReview(
+        input: TutorVisualReviewInput,
+        output: TutorVisualReviewOutput,
+    ): List<ModelTaskCompletionIssue> =
+        if (
+            output.sessionId == input.sessionId &&
+            output.draftRevisionNumber == input.draftRevisionNumber &&
+            output.questionDocumentId == input.questionDocument.id &&
+            output.anchor == input.anchor
+        ) {
+            emptyList()
+        } else {
+            listOf(ModelTaskCompletionIssue(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH))
+        }
 
     private fun validateTutorLobby(
         input: TutorLobbyInput,
@@ -955,7 +1003,7 @@ sealed interface ModelGatewayEvent {
 }
 
 object ModelTaskCodec {
-    const val MAX_ENCODED_CHARS = 128_000
+    const val MAX_ENCODED_CHARS = 512_000
 
     private val json = Json {
         classDiscriminator = "type"

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.BrokenImage
@@ -68,7 +69,7 @@ fun TutorVisualDocumentContent(
     onReportIncorrect: (() -> Unit)? = null,
 ) {
     val compiledResult = remember(scene) { runCatching { TutorVisualDocumentCompiler.compile(scene) } }
-    val compiled = compiledResult.getOrNull()
+    val compiled = compiledResult.getOrNull()?.takeIf { it.integrity.canRender }
     if (compiled == null) {
         TutorVisualFallback(
             markdown = scene.fallbackMarkdown,
@@ -133,6 +134,13 @@ private fun TutorVisualDocumentPlayer(
         Column(
             modifier = contentModifier
                 .fillMaxWidth()
+                .then(
+                    if (fullscreen) {
+                        Modifier.verticalScroll(rememberScrollState())
+                    } else {
+                        Modifier
+                    },
+                )
                 .semantics { contentDescription = scene.accessibilitySummary },
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -282,7 +290,9 @@ private fun TutorVisualDocumentPlayer(
         }
     }
 
-    content(modifier)
+    if (!fullscreen) {
+        content(modifier)
+    }
     if (fullscreen) {
         Dialog(
             onDismissRequest = { fullscreen = false },
@@ -309,7 +319,19 @@ private fun TutorVisualDocumentPlayer(
                             style = MaterialTheme.typography.titleLarge,
                         )
                     }
-                    content(Modifier.weight(1f))
+                    BoxWithConstraints(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.TopCenter,
+                    ) {
+                        val focusedContentWidth = if (maxWidth > maxHeight) {
+                            maxHeight * 1.2f
+                        } else {
+                            maxWidth
+                        }
+                        content(Modifier.widthIn(max = focusedContentWidth))
+                    }
                 }
             }
         }

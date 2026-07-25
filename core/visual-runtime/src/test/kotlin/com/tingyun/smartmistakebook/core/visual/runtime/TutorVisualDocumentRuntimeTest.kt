@@ -48,6 +48,44 @@ class TutorVisualDocumentRuntimeTest {
     }
 
     @Test
+    fun twelveAdditionalFigureFamiliesCompileWithoutRendererSpecificCode() {
+        assertEquals(
+            TutorVisualBenchmarkFamily.entries.toSet(),
+            TutorVisualFamilyFixtures.all.mapTo(mutableSetOf()) { fixture -> fixture.family },
+        )
+
+        TutorVisualFamilyFixtures.all.forEach { fixture ->
+            val compiled = TutorVisualDocumentCompiler.compile(fixture.scene)
+
+            assertTrue(fixture.family.name, compiled.integrity.canRender)
+            assertFalse(fixture.family.name, fixture.scene.containsVisibleIllustrativeValue())
+        }
+    }
+
+    @Test
+    fun benchmarkScaffoldCoversAtLeastNineHighSchoolSubjects() {
+        val subjects = TutorVisualFamilyFixtures.all
+            .flatMapTo(mutableSetOf()) { fixture -> fixture.subjects }
+
+        assertTrue(subjects.size >= 9)
+        assertTrue(
+            subjects.containsAll(
+                setOf(
+                    "CHINESE",
+                    "MATH",
+                    "ENGLISH",
+                    "PHYSICS",
+                    "CHEMISTRY",
+                    "BIOLOGY",
+                    "HISTORY",
+                    "GEOGRAPHY",
+                    "POLITICS",
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun layoutIsDeterministicAndConnectorsReachTheirNodes() {
         val scene = TutorVisualSeedFixtures.membraneFlowBattery()
         val panel = scene.panels.single()

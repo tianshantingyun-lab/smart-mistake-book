@@ -1,0 +1,228 @@
+package com.tingyun.smartmistakebook.feature.tutor
+
+import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
+import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
+import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationDecision
+import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
+import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualStep
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class TutorVisualModelTaskPolicyTest {
+    @Test
+    fun generationManifestGrantsOnlyTheExactCurrentQuestionImages() {
+        val request = buildTutorVisualGenerateRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = assets,
+            anchor = anchor,
+            focusMarkdown = "聚焦液面高度关系",
+            explanationMarkdown = "先比较两侧液面。",
+            occurredAtEpochMillis = 1_000,
+            approvedAtEpochMillis = 900,
+        )
+        val input = request.input as TutorVisualGenerateInput
+        val manifest = requireNotNull(request.egressManifest)
+
+        assertEquals(ModelTaskKind.TUTOR_VISUAL_GENERATE, input.kind)
+        assertEquals(assets.map { it.toSourceRef() }, input.sourceAssets)
+        assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
+        assertEquals(setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE), manifest.authorizedTaskKinds)
+        assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in manifest.disclosedData)
+        assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in manifest.disclosedData)
+        assertFalse(ModelEgressDataClass.FULL_LEARNING_HISTORY in manifest.disclosedData)
+        assertFalse(ModelEgressDataClass.API_CREDENTIALS in manifest.disclosedData)
+    }
+
+    @Test
+    fun generationRequestIdentityIgnoresRetryTimingButBindsSourceAndModelVersion() {
+        val first = buildTutorVisualGenerateRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = assets,
+            anchor = anchor,
+            focusMarkdown = "聚焦液面高度关系",
+            explanationMarkdown = "先比较两侧液面。",
+            occurredAtEpochMillis = 1_000,
+            approvedAtEpochMillis = 900,
+        )
+        val later = buildTutorVisualGenerateRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = assets,
+            anchor = anchor,
+            focusMarkdown = "聚焦液面高度关系",
+            explanationMarkdown = "先比较两侧液面。",
+            occurredAtEpochMillis = 2_000,
+            approvedAtEpochMillis = 1_900,
+        )
+        val changedSource = buildTutorVisualGenerateRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = assets.map { it.copy(sha256 = "b".repeat(64)) },
+            anchor = anchor,
+            focusMarkdown = "聚焦液面高度关系",
+            explanationMarkdown = "先比较两侧液面。",
+            occurredAtEpochMillis = 2_000,
+            approvedAtEpochMillis = 1_900,
+        )
+
+        assertEquals(first.requestId, later.requestId)
+        assertTrue(first.requestId != changedSource.requestId)
+    }
+
+    @Test
+    fun reviewAddsOnlyTheCandidateAndCannotBroadenTheImageScope() {
+        val generationRequest = buildTutorVisualGenerateRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = assets,
+            anchor = anchor,
+            focusMarkdown = "聚焦液面高度关系",
+            explanationMarkdown = "先比较两侧液面。",
+            occurredAtEpochMillis = 1_000,
+            approvedAtEpochMillis = 900,
+        )
+        val generated = TutorVisualGenerateOutput(
+            sessionId = question.sessionId,
+            draftRevisionNumber = question.revisionNumber,
+            questionDocumentId = question.questionDocument.document.id,
+            anchor = anchor,
+            decision = TutorVisualGenerationDecision.GENERATED,
+            confidence = 0.82,
+            scene = scene,
+            modelVersion = "model-v1",
+        )
+        val reviewRequest = buildTutorVisualReviewRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = assets,
+            generationRequest = generationRequest,
+            generated = generated,
+            reviewReasonCodes = setOf("low_generation_confidence"),
+            occurredAtEpochMillis = 1_100,
+            approvedAtEpochMillis = 900,
+        )
+        val input = reviewRequest.input as TutorVisualReviewInput
+        val manifest = requireNotNull(reviewRequest.egressManifest)
+
+        assertEquals(scene, input.candidateScene)
+        assertEquals(assets.map { it.toSourceRef() }, input.sourceAssets)
+        assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
+        assertTrue(ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE in manifest.disclosedData)
+        assertFalse(ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE in manifest.disclosedData)
+    }
+
+    @Test
+    fun oneCompositionApprovalCoversTextAndOptionalVisualWorkForTheSameQuestion() {
+        val lease = TutorCompositionEgressLease.grant(
+            question = question,
+            provider = provider,
+            approvedAtEpochMillis = 900,
+        )
+
+        listOf(
+            ModelTaskKind.TUTOR_PLAN,
+            ModelTaskKind.TUTOR_RESPOND,
+            ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ModelTaskKind.TUTOR_VISUAL_REVIEW,
+        ).forEach { kind ->
+            assertEquals(
+                900L,
+                lease.approvedAtFor(
+                    question = question,
+                    provider = provider,
+                    taskKind = kind,
+                    nowEpochMillis = 1_000,
+                ),
+            )
+        }
+    }
+
+    private companion object {
+        val anchor = TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.PLAN,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        )
+        val question = TutorQuestionContext(
+            sessionId = "session",
+            revisionNumber = 1,
+            subject = "PHYSICS",
+            title = "液柱题",
+            questionDocument = CapturedQuestionDocument(
+                document = QuestionDocument(
+                    id = "question",
+                    blocks = listOf(ContentBlock.Paragraph("stem", "比较两侧液面")),
+                ),
+                blockEvidence = emptyList(),
+            ),
+        )
+        val provider = ProviderCapabilitySnapshot(
+            providerId = "provider",
+            providerDisplayName = "模型服务",
+            modelId = "model",
+            providerConfigurationVersion = "config-v1",
+            executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+            supportedTasks = setOf(
+                ModelTaskKind.TUTOR_PLAN,
+                ModelTaskKind.TUTOR_RESPOND,
+                ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            ),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+        )
+        val assets = listOf(
+            TutorVisualSourceAssetScope(
+                pageIndex = 0,
+                assetId = "asset",
+                sha256 = "a".repeat(64),
+                byteSize = 128,
+                width = 100,
+                height = 100,
+            ),
+        )
+        val scene = TutorVisualDocumentScene(
+            sceneId = "scene",
+            title = "液面关系",
+            panels = listOf(TutorVisualPanel("panel", TutorVisualPanelKind.DIAGRAM_2D)),
+            elements = listOf(
+                TutorVisual2DNodeElement(
+                    elementId = "level",
+                    panelId = "panel",
+                    kind = TutorVisual2DNodeKind.LIQUID_LEVEL,
+                    label = "液面",
+                ),
+            ),
+            steps = listOf(
+                TutorVisualStep(
+                    stepId = "focus",
+                    label = "比较液面",
+                    focusElementIds = listOf("level"),
+                    primaryRelationElementId = "level",
+                ),
+            ),
+            fallbackMarkdown = "比较两侧液面高度。",
+            accessibilitySummary = "一条表示液面的水平线。",
+        )
+    }
+}

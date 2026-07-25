@@ -57,6 +57,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.domain.toContiguousTutorHistory
 import com.tingyun.smartmistakebook.core.domain.toTutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -72,8 +73,14 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
@@ -222,6 +229,7 @@ fun CapturedTutorSessionRoute(
         onSave = ::saveSession,
         onRequestEnd = { showEndConfirmation = true },
         onRetryLoad = { reloadToken += 1 },
+        repository = repository,
         modelTasks = modelTasks,
         interactions = interactions,
         profile = profile,
@@ -287,6 +295,7 @@ private fun CapturedTutorSessionContent(
     onSave: (ConfirmedTutorSession) -> Unit,
     onRequestEnd: () -> Unit,
     onRetryLoad: () -> Unit,
+    repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
     profile: StudyProfileOverview,
@@ -310,6 +319,9 @@ private fun CapturedTutorSessionContent(
                 endError = endError,
                 onSave = onSave,
                 onRequestEnd = onRequestEnd,
+                visualSourceAssetsReader = {
+                    repository.readTutorVisualSourceAssets(state.session.sessionId)
+                },
                 modelTasks = modelTasks,
                 interactions = interactions,
                 profile = profile,
@@ -409,6 +421,9 @@ internal fun ReadyCapturedSession(
     endError: String? = null,
     onSave: (ConfirmedTutorSession) -> Unit,
     onRequestEnd: () -> Unit = {},
+    visualSourceAssetsReader: suspend () -> List<TutorVisualSourceAssetScope> = {
+        emptyList()
+    },
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
     profile: StudyProfileOverview,
@@ -429,6 +444,7 @@ internal fun ReadyCapturedSession(
         question = session.toTutorQuestionContext(),
         profile = profile,
         modelTasks = modelTasks,
+        visualSourceAssetsReader = visualSourceAssetsReader,
         interactions = interactions,
         catalogEntries = catalogEntries,
         onLongTermWritesBlocked = onLongTermWritesBlocked,
@@ -436,6 +452,7 @@ internal fun ReadyCapturedSession(
         onRequestEnd = onRequestEnd,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
+        onOpenVisualOriginal = { sourceExpanded = true },
         onOpenModelSettings = onOpenModelSettings,
         autoStartAuthorization = autoStartAuthorization,
         onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
@@ -584,6 +601,9 @@ internal fun TutorModelPanel(
     question: TutorQuestionContext,
     profile: StudyProfileOverview,
     modelTasks: ModelTaskRepository,
+    visualSourceAssetsReader: suspend () -> List<TutorVisualSourceAssetScope> = {
+        emptyList()
+    },
     interactions: TutorInteractionRepository,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     onLongTermWritesBlocked: () -> Unit = {},
@@ -591,6 +611,7 @@ internal fun TutorModelPanel(
     onRequestEnd: () -> Unit = {},
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    onOpenVisualOriginal: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
     autoStartAuthorization: TutorAutoStartAuthorization? = null,
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
@@ -632,6 +653,24 @@ internal fun TutorModelPanel(
     val persistedRespondTasks by remember(question.sessionId) {
         modelTasks.observeBySubject(question.sessionId, ModelTaskKind.TUTOR_RESPOND)
     }.collectAsState(initial = emptyList())
+    val persistedVisualGenerationTasks by remember(question.sessionId) {
+        modelTasks.observeBySubject(question.sessionId, ModelTaskKind.TUTOR_VISUAL_GENERATE)
+    }.collectAsState(initial = emptyList())
+    val persistedVisualReviewTasks by remember(question.sessionId) {
+        modelTasks.observeBySubject(question.sessionId, ModelTaskKind.TUTOR_VISUAL_REVIEW)
+    }.collectAsState(initial = emptyList())
+    var visualSourceAssets by remember(question.sessionId, question.revisionNumber) {
+        mutableStateOf<List<TutorVisualSourceAssetScope>>(emptyList())
+    }
+    LaunchedEffect(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+    ) {
+        visualSourceAssets = runCatching { visualSourceAssetsReader() }
+            .getOrDefault(emptyList())
+            .sortedBy(TutorVisualSourceAssetScope::pageIndex)
+    }
     val longTermWritesBlocked = persistedRespondTasks.blocksTutorLongTermWrites()
     LaunchedEffect(longTermWritesBlocked) {
         if (longTermWritesBlocked) onLongTermWritesBlocked()
@@ -651,6 +690,11 @@ internal fun TutorModelPanel(
         mutableStateOf<String?>(null)
     }
     var chatStartError by rememberSaveable(question.sessionId) { mutableStateOf<String?>(null) }
+    var reportedVisualSceneIds by rememberSaveable(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+    ) { mutableStateOf(emptyList<String>()) }
     var planRecoveryRequestInFlight by remember(question.sessionId) {
         mutableStateOf<String?>(null)
     }
@@ -713,6 +757,8 @@ internal fun TutorModelPanel(
         currentProvider?.providerConfigurationVersion,
         TUTOR_PROMPT_POLICY_VERSION,
         TUTOR_RESPOND_PROMPT_POLICY_VERSION,
+        TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION,
+        TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION,
     ) { mutableStateOf<TutorCompositionEgressLease?>(null) }
     var forceResponseDisclosure by remember(
         question.sessionId,
@@ -947,6 +993,10 @@ internal fun TutorModelPanel(
                     consumeAutoStartAuthorization(authorization.authorizationId)
                     return@LaunchedEffect
                 }
+                grantExternalEgressLease(
+                    providerForExecution = providerForExecution,
+                    approvedAtEpochMillis = authorization.approvedAtEpochMillis,
+                )
                 executeTurn(
                     cycleOrdinal = 1,
                     priorConversationMemory = null,
@@ -1077,6 +1127,155 @@ internal fun TutorModelPanel(
     val chatSending = chatSubmitPending || latestRespondTasks.any { task ->
         currentProvider?.let(task::matchesTutorProvider) == true &&
             task.status.isTutorExecutionPending()
+    }
+    val visualWorkSeeds = remember(tutorTasks, tutorRespondTasks) {
+        tutorVisualWorkSeeds(
+            planTasks = tutorTasks,
+            respondTasks = tutorRespondTasks,
+        )
+    }
+    val visualGenerateApprovedAt = currentProvider?.let { candidate ->
+        when (candidate.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = candidate,
+                taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                nowEpochMillis = authorizationNow,
+            )
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
+            ModelExecutionLocation.UNAVAILABLE -> null
+        }
+    }
+    val visualReviewApprovedAt = currentProvider?.let { candidate ->
+        when (candidate.executionLocation) {
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+                question = question,
+                provider = candidate,
+                taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+                nowEpochMillis = authorizationNow,
+            )
+            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
+            ModelExecutionLocation.UNAVAILABLE -> null
+        }
+    }
+    val resolvedVisualScenes = remember(
+        visualWorkSeeds,
+        persistedVisualGenerationTasks,
+        persistedVisualReviewTasks,
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        reportedVisualSceneIds,
+    ) {
+        visualWorkSeeds.mapNotNull { seed ->
+            (resolveTutorVisual(
+                anchor = seed.anchor,
+                question = question,
+                generationTasks = persistedVisualGenerationTasks,
+                reviewTasks = persistedVisualReviewTasks,
+            ) as? TutorVisualResolution.Ready)?.let { ready ->
+                ready.scene
+                    .takeUnless { scene -> scene.sceneId in reportedVisualSceneIds }
+                    ?.let { scene -> seed.anchor to scene }
+            }
+        }.toMap()
+    }
+    fun reportVisualIncorrect(sceneId: String) {
+        if (sceneId !in reportedVisualSceneIds) {
+            reportedVisualSceneIds = reportedVisualSceneIds + sceneId
+            onOpenVisualOriginal()
+        }
+    }
+
+    LaunchedEffect(
+        visualWorkSeeds,
+        visualSourceAssets,
+        currentProvider?.providerId,
+        currentProvider?.modelId,
+        currentProvider?.providerConfigurationVersion,
+        visualGenerateApprovedAt,
+        persistedVisualGenerationTasks,
+    ) {
+        val providerForVisual = currentProvider?.takeIf { candidate ->
+            candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                candidate.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE)
+        } ?: return@LaunchedEffect
+        val approvedAt = visualGenerateApprovedAt ?: return@LaunchedEffect
+        if (visualSourceAssets.isEmpty()) return@LaunchedEffect
+        visualWorkSeeds.takeLast(MAX_AUTO_VISUAL_WORK_ITEMS).forEach { seed ->
+            val request = runCatching {
+                buildTutorVisualGenerateRequest(
+                    question = question,
+                    provider = providerForVisual,
+                    sourceAssets = visualSourceAssets,
+                    anchor = seed.anchor,
+                    focusMarkdown = seed.request.focusMarkdown,
+                    explanationMarkdown = seed.explanationMarkdown,
+                    occurredAtEpochMillis = clock(),
+                    approvedAtEpochMillis = approvedAt,
+                )
+            }.getOrNull() ?: return@forEach
+            val existing = persistedVisualGenerationTasks.lastOrNull { task ->
+                task.request.input == request.input
+            }
+            when {
+                existing == null -> modelTasks.execute(request).collect()
+                existing.status.isTutorExecutionPending() &&
+                    existing.coversCurrentTutorDisclosure(
+                        providerForVisual,
+                        ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                    ) -> modelTasks.execute(existing.request).collect()
+            }
+        }
+    }
+
+    LaunchedEffect(
+        visualWorkSeeds,
+        visualSourceAssets,
+        currentProvider?.providerId,
+        currentProvider?.modelId,
+        currentProvider?.providerConfigurationVersion,
+        visualReviewApprovedAt,
+        persistedVisualGenerationTasks,
+        persistedVisualReviewTasks,
+    ) {
+        val providerForReview = currentProvider?.takeIf { candidate ->
+            candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                candidate.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
+        } ?: return@LaunchedEffect
+        val approvedAt = visualReviewApprovedAt ?: return@LaunchedEffect
+        if (visualSourceAssets.isEmpty()) return@LaunchedEffect
+        visualWorkSeeds.takeLast(MAX_AUTO_VISUAL_WORK_ITEMS).forEach { seed ->
+            val resolution = resolveTutorVisual(
+                anchor = seed.anchor,
+                question = question,
+                generationTasks = persistedVisualGenerationTasks,
+                reviewTasks = persistedVisualReviewTasks,
+            ) as? TutorVisualResolution.NeedsReview ?: return@forEach
+            val request = runCatching {
+                buildTutorVisualReviewRequest(
+                    question = question,
+                    provider = providerForReview,
+                    sourceAssets = visualSourceAssets,
+                    generationRequest = resolution.generationTask.request,
+                    generated = resolution.output,
+                    reviewReasonCodes = resolution.reasonCodes,
+                    occurredAtEpochMillis = clock(),
+                    approvedAtEpochMillis = approvedAt,
+                )
+            }.getOrNull() ?: return@forEach
+            val existing = persistedVisualReviewTasks.lastOrNull { task ->
+                task.request.input == request.input
+            }
+            when {
+                existing == null -> modelTasks.execute(request).collect()
+                existing.status.isTutorExecutionPending() &&
+                    existing.coversCurrentTutorDisclosure(
+                        providerForReview,
+                        ModelTaskKind.TUTOR_VISUAL_REVIEW,
+                    ) -> modelTasks.execute(existing.request).collect()
+            }
+        }
     }
 
     fun collectTutorRespondRequest(
@@ -1596,8 +1795,19 @@ internal fun TutorModelPanel(
                     val executionMatches = currentProvider?.let(
                         timelineItem.task::matchesTutorProvider,
                     ) == true
+                    val planOutput = timelineItem.task.output as? TutorPlanOutput
+                    val resolvedVisualScene = planOutput?.let { output ->
+                        resolvedVisualScenes[
+                            TutorVisualTurnAnchor(
+                                surface = TutorVisualTurnSurface.PLAN,
+                                cycleOrdinal = output.cycleOrdinal,
+                                turnOrdinal = output.turnOrdinal,
+                            )
+                        ]
+                    }
                     TutorTaskContent(
                         task = timelineItem.task,
+                        resolvedVisualScene = resolvedVisualScene,
                         response = response,
                         solutionRevealPreviewed = timelineItem.task.toPlanSolutionPreviewKey()
                             ?.let { it in planSolutionPreviewKeys } == true,
@@ -1628,6 +1838,8 @@ internal fun TutorModelPanel(
                         onRevealSolution = { revealCurrentSolution() },
                         onRestartCycle = ::restartCurrentCycle,
                         onOpenModelSettings = onOpenModelSettings,
+                        onOpenVisualOriginal = onOpenVisualOriginal,
+                        onReportVisualIncorrect = ::reportVisualIncorrect,
                         solutionBottomModifier = solutionBottomModifier(timelineItem.stableId),
                     )
                 }
@@ -1672,6 +1884,18 @@ internal fun TutorModelPanel(
                             (responseFreshApprovalTask == null && respondAuthorized))
                     TutorChatExchange(
                         task = timelineItem.task,
+                        resolvedVisualScene = (
+                            timelineItem.task.request.input as? TutorRespondInput
+                            )?.let { input ->
+                            resolvedVisualScenes[
+                                TutorVisualTurnAnchor(
+                                    surface = TutorVisualTurnSurface.FOLLOW_UP,
+                                    cycleOrdinal = input.cycleOrdinal,
+                                    turnOrdinal = input.turnOrdinal,
+                                    responseOrdinal = input.responseOrdinal,
+                                )
+                            ]
+                        },
                         awaitingContinuation = !respondAuthorized &&
                             timelineItem.task.status.isTutorExecutionPending(),
                         interactionEnabled = isTail && taskAllowsInteraction &&
@@ -1683,6 +1907,8 @@ internal fun TutorModelPanel(
                         executionMatchesCurrentProvider = executionMatches,
                         onRetry = { retryTutorResponse(timelineItem.task) },
                         onOpenModelSettings = onOpenModelSettings,
+                        onOpenVisualOriginal = onOpenVisualOriginal,
+                        onReportVisualIncorrect = ::reportVisualIncorrect,
                         onMove = { move ->
                             executeTutorResponse(
                                 message = move.label,
@@ -1941,7 +2167,7 @@ private fun TutorDisclosureCard(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "会把当前题、少量同科学习记录，以及你在本题中发送的消息和已显示的讲解发给 ${provider.providerDisplayName}；不包含原图或其他题目。",
+                text = "会把当前题、少量同科学习记录，以及你在本题中发送的消息和已显示的讲解发给 ${provider.providerDisplayName}；需要还原题图关系时，只会再使用本题原图，不会发送其他题目。",
                 color = InkSecondary,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -1982,7 +2208,7 @@ private fun TutorRespondDisclosureCard(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = "会把当前题、少量同科学习记录、你发送的消息和已显示讲解发给 ${provider.providerDisplayName}；不包含原图、其他题目或完整学习记录。",
+                text = "会把当前题、少量同科学习记录、你发送的消息和已显示讲解发给 ${provider.providerDisplayName}；需要补充图解时，只会再使用本题原图，不会发送其他题目或完整学习记录。",
                 color = InkSecondary,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -2001,6 +2227,7 @@ private fun TutorRespondDisclosureCard(
 @Composable
 private fun TutorTaskContent(
     task: ModelTaskSnapshot,
+    resolvedVisualScene: TutorVisualDocumentScene? = null,
     response: TutorTurnResponse?,
     solutionRevealPreviewed: Boolean = false,
     awaitingContinuation: Boolean = false,
@@ -2016,6 +2243,8 @@ private fun TutorTaskContent(
     onRevealSolution: () -> Unit,
     onRestartCycle: () -> Unit,
     onOpenModelSettings: () -> Unit,
+    onOpenVisualOriginal: () -> Unit = {},
+    onReportVisualIncorrect: (String) -> Unit = {},
     solutionBottomModifier: Modifier,
     modifier: Modifier = Modifier,
 ) {
@@ -2043,6 +2272,9 @@ private fun TutorTaskContent(
                     splitChoiceFeedback = splitChoiceFeedback,
                     interactionBusy = interactionBusy,
                     interactionError = interactionError,
+                    resolvedVisualScene = resolvedVisualScene,
+                    onOpenVisualOriginal = onOpenVisualOriginal,
+                    onReportVisualIncorrect = onReportVisualIncorrect,
                     onSubmitChoice = onSubmitChoice,
                     onRequestHint = onRequestHint,
                     onContinue = onContinue,
@@ -2185,3 +2417,5 @@ internal fun tutorSessionStatusLine(disposition: TutorSessionDisposition): Strin
     TutorSessionDisposition.SAVED -> "已存入错题本"
     TutorSessionDisposition.ENDED_WITHOUT_SAVE -> "本次讲题已结束 · 未存入错题本"
 }
+
+private const val MAX_AUTO_VISUAL_WORK_ITEMS = 8

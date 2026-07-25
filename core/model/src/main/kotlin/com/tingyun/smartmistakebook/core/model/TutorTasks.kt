@@ -823,6 +823,8 @@ data class TutorTurnPlan(
     val diagnosticItem: TutorAssessmentItem? = null,
     /** Optional single local-rendered scene; the complete Markdown solution remains the fallback. */
     val visualScene: TutorVisualScene? = null,
+    /** Optional asynchronous v2 visual request; text remains immediately usable without it. */
+    val visualRequest: TutorVisualGenerationRequest? = null,
     val solutionMarkdown: String,
     val alternateMethodMarkdown: String,
     val difficultyReasonMarkdown: String,
@@ -831,6 +833,9 @@ data class TutorTurnPlan(
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
 ) {
     init {
+        require(visualScene == null || visualRequest == null) {
+            "A tutor turn cannot return a legacy scene and an asynchronous visual request together"
+        }
         openingMarkdown.requireTutorMarkdown("Tutor opening", MAX_OPENING_CHARS)
         solutionMarkdown.requireTutorMarkdown("Tutor solution", MAX_SOLUTION_CHARS)
         alternateMethodMarkdown.requireTutorMarkdown("Tutor alternate method", MAX_SOLUTION_CHARS)
@@ -935,11 +940,15 @@ data class TutorRespondOutput(
     /** True only when this exact reply displays the current question's answer or full solution. */
     val solutionRevealed: Boolean = false,
     val visualScene: TutorVisualScene? = null,
+    val visualRequest: TutorVisualGenerationRequest? = null,
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {
+        require(visualScene == null || visualRequest == null) {
+            "A tutor response cannot return a legacy scene and an asynchronous visual request together"
+        }
         sessionId.requireSafeModelText("Tutor response output session id", ModelTaskRequest.MAX_ID_CHARS, false)
         require(draftRevisionNumber > 0) {
             "Tutor response output draft revision must be positive"

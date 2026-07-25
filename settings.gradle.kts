@@ -31,4 +31,5 @@ include(
     ":feature:tutor",
     ":feature:library",
     ":feature:profile",
+    ":quality:visual-benchmark",
 )

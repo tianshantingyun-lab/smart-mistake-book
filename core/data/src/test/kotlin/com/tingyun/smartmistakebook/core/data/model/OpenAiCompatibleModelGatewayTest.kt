@@ -73,6 +73,20 @@ import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualProgramScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationDecision
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewDecision
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
+import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualStep
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import java.io.ByteArrayInputStream
 import java.net.InetAddress
@@ -568,17 +582,11 @@ class OpenAiCompatibleModelGatewayTest {
         assertFalse(sentBody.contains("data:image"))
         assertTrue(sentBody.contains("严禁生成新题、同类题、变式题、校准题"))
         assertTrue(sentBody.contains("diagnosticQuestion是可选的当前题内交互块"))
-        assertTrue(sentBody.contains("visualScene可选且最多一个"))
-        assertTrue(sentBody.contains("visual_program"))
-        assertTrue(sentBody.contains("entity{kind,label,shape"))
-        assertTrue(sentBody.contains("link{kind,fromIndex,toIndex"))
-        assertTrue(sentBody.contains("path{kind,targetIndex"))
-        assertTrue(sentBody.contains("vector{kind,label,originIndex"))
-        assertTrue(sentBody.contains("metric{kind,label,value"))
-        assertTrue(sentBody.contains("table{kind,columns,rows"))
-        assertTrue(sentBody.contains("表达式最多6层"))
-        assertTrue(sentBody.contains("本地统一验证、计算、布局、绘制、播放"))
-        assertTrue(sentBody.contains("不得返回id、任何局部ID或schemaVersion"))
+        assertTrue(sentBody.contains("visualRequest可选且最多一个"))
+        assertTrue(sentBody.contains("本次不得返回visualScene"))
+        assertTrue(sentBody.contains("后续视觉任务会另行读取题图"))
+        assertFalse(sentBody.contains("visual_program"))
+        assertTrue(sentBody.contains("ID或未列出的字段"))
         assertTrue(sentBody.contains("不得出现图片、SVG、HTML、CSS、JS、代码"))
         assertTrue(sentBody.contains("inferredKnowledgeLabels给当前题涉及的1到8个知识标签"))
         assertEquals(TUTOR_SESSION_ID, output.sessionId)
@@ -768,10 +776,10 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(sentBody.contains("不要默认给最终答案"))
         assertTrue(sentBody.contains("solutionRevealed是必填的JSON布尔值"))
         assertTrue(sentBody.contains("不得返回diagnosticQuestion、选择题"))
-        assertTrue(sentBody.contains("visual_program"))
-        assertTrue(sentBody.contains("entity{kind,label,shape"))
-        assertTrue(sentBody.contains("TIME{op}"))
-        assertTrue(sentBody.contains("不得返回任何ID或schemaVersion"))
+        assertTrue(sentBody.contains("visualRequest可省略"))
+        assertTrue(sentBody.contains("本次不得返回visualScene"))
+        assertFalse(sentBody.contains("visual_program"))
+        assertTrue(sentBody.contains("不得返回ID或schemaVersion"))
         assertFalse(sentBody.contains(TUTOR_SESSION_ID))
         assertFalse(sentBody.contains("node-derivative"))
         assertFalse(sentBody.contains("data:image"))
@@ -784,6 +792,131 @@ class OpenAiCompatibleModelGatewayTest {
         assertEquals(TutorMessageIntent.CURRENT_QUESTION_HELP, output.intentDecision.intent)
         assertNull(output.visualScene)
         assertTrue(output.suggestedMoves.isEmpty())
+    }
+
+    @Test
+    fun tutorVisualGenerationReadsOnlyGrantedImagesAndParsesTheV2Document() = runBlocking {
+        var openedAssetId: String? = null
+        var sentBody = ""
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, assetId ->
+                openedAssetId = assetId
+                asset()
+            },
+            transport = modelTransport { _, _, body ->
+                sentBody = body
+                ModelHttpResponse(
+                    200,
+                    envelope(
+                        Json.encodeToString(
+                            buildJsonObject {
+                                put("decision", TutorVisualGenerationDecision.GENERATED.name)
+                                put("confidence", 0.96)
+                                put("scene", visualDocumentPayload())
+                            },
+                        ),
+                    ),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val output = gateway.execute(authorizedTutorVisualGenerate(gateway)).toList().last()
+            .let { it as ModelGatewayEvent.Completed }
+            .output as TutorVisualGenerateOutput
+
+        assertEquals(ASSET_ID, openedAssetId)
+        assertTrue(sentBody.contains("为一条已经先展示文字的当前题讲解生成可交互图形"))
+        assertTrue(sentBody.contains("visualDocument固定为"))
+        assertTrue(sentBody.contains("聚焦函数图象中的增减关系"))
+        assertFalse(sentBody.contains(TUTOR_SESSION_ID))
+        assertEquals(TutorVisualGenerationDecision.GENERATED, output.decision)
+        assertEquals("关系图", requireNotNull(output.scene).title)
+        assertTrue(requireNotNull(output.scene).sceneId.startsWith("tutor-visual-"))
+    }
+
+    @Test
+    fun tutorVisualGenerationRejectsUnknownFieldsAndVisibleIllustrativeValues() = runBlocking {
+        val unknownFieldScene = visualDocumentPayload(
+            extra = "imageUrl" to JsonPrimitive("asset.png"),
+        )
+        val illustrativeScene = visualDocumentPayload(
+            variables = buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("variableId", "animation-only")
+                        put("label", "速度")
+                        put("value", 2.0)
+                        put("dimension", "SPEED")
+                        put("source", "ILLUSTRATIVE")
+                        put("display", false)
+                    },
+                )
+            },
+            nodeValueVariableId = "animation-only",
+        )
+
+        listOf(unknownFieldScene, illustrativeScene).forEach { scene ->
+            val gateway = OpenAiCompatibleModelGateway(
+                configurationStore = FakeConfigurationStore(CONFIGURATION),
+                assetSource = assetSource { _, _ -> asset() },
+                transport = modelTransport { _, _, _ ->
+                    ModelHttpResponse(
+                        200,
+                        envelope(
+                            Json.encodeToString(
+                                buildJsonObject {
+                                    put("decision", TutorVisualGenerationDecision.GENERATED.name)
+                                    put("confidence", 0.96)
+                                    put("scene", scene)
+                                },
+                            ),
+                        ),
+                    )
+                },
+                clock = { AUTHORIZATION_NOW },
+            )
+
+            val failed = gateway.execute(authorizedTutorVisualGenerate(gateway)).toList().last()
+                as ModelGatewayEvent.Failed
+
+            assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+            assertFalse(failed.failure.retryable)
+        }
+    }
+
+    @Test
+    fun tutorVisualReviewCanApproveWithoutRepeatingTheCandidate() = runBlocking {
+        var sentBody = ""
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _, _, body ->
+                sentBody = body
+                ModelHttpResponse(
+                    200,
+                    envelope(
+                        Json.encodeToString(
+                            buildJsonObject {
+                                put("decision", TutorVisualReviewDecision.APPROVED.name)
+                                put("confidence", 0.98)
+                            },
+                        ),
+                    ),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val output = gateway.execute(authorizedTutorVisualReview(gateway)).toList().last()
+            .let { it as ModelGatewayEvent.Completed }
+            .output as TutorVisualReviewOutput
+
+        assertTrue(sentBody.contains("唯一一次修复机会"))
+        assertTrue(sentBody.contains("candidateScene"))
+        assertEquals(TutorVisualReviewDecision.APPROVED, output.decision)
+        assertNull(output.scene)
     }
 
     @Test
@@ -1280,6 +1413,113 @@ class OpenAiCompatibleModelGatewayTest {
         return ModelEgressPolicy.authorize(request, capabilities, AUTHORIZATION_NOW)
     }
 
+    private suspend fun authorizedTutorVisualGenerate(
+        gateway: OpenAiCompatibleModelGateway,
+    ): ModelGatewayExecution {
+        val capabilities = gateway.capabilities()
+        val input = tutorVisualGenerateInput()
+        val request = ModelTaskRequest(
+            requestId = "tutor-visual-generate-request",
+            input = input,
+            occurredAtEpochMillis = REQUEST_OCCURRED_AT,
+            egressManifest = tutorVisualManifest(
+                capabilities = capabilities,
+                requestId = "tutor-visual-generate",
+                kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ),
+        )
+        return ModelEgressPolicy.authorize(request, capabilities, AUTHORIZATION_NOW)
+    }
+
+    private suspend fun authorizedTutorVisualReview(
+        gateway: OpenAiCompatibleModelGateway,
+    ): ModelGatewayExecution {
+        val capabilities = gateway.capabilities()
+        val generated = tutorVisualGenerateInput()
+        val input = TutorVisualReviewInput(
+            sessionId = generated.sessionId,
+            draftRevisionNumber = generated.draftRevisionNumber,
+            subject = generated.subject,
+            questionDocument = generated.questionDocument,
+            sourceAssets = generated.sourceAssets,
+            anchor = generated.anchor,
+            focusMarkdown = generated.focusMarkdown,
+            explanationMarkdown = generated.explanationMarkdown,
+            candidateScene = visualDocumentScene(),
+            reviewReasonCodes = setOf("multiple_synchronized_views"),
+        )
+        val request = ModelTaskRequest(
+            requestId = "tutor-visual-review-request",
+            input = input,
+            occurredAtEpochMillis = REQUEST_OCCURRED_AT,
+            egressManifest = tutorVisualManifest(
+                capabilities = capabilities,
+                requestId = "tutor-visual-review",
+                kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            ),
+        )
+        return ModelEgressPolicy.authorize(request, capabilities, AUTHORIZATION_NOW)
+    }
+
+    private fun tutorVisualGenerateInput() = TutorVisualGenerateInput(
+        sessionId = TUTOR_SESSION_ID,
+        draftRevisionNumber = 3,
+        subject = "MATH",
+        questionDocument = tutorInput().questionDocument,
+        sourceAssets = listOf(
+            CaptureSourceAssetRef(
+                assetId = ASSET_ID,
+                sha256 = SHA,
+                width = 100,
+                height = 200,
+                pageIndex = 0,
+            ),
+        ),
+        anchor = TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.PLAN,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        ),
+        focusMarkdown = "聚焦函数图象中的增减关系",
+        explanationMarkdown = "沿横轴从左到右观察函数值的变化。",
+    )
+
+    private fun tutorVisualManifest(
+        capabilities: com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot,
+        requestId: String,
+        kind: ModelTaskKind,
+    ): ModelEgressManifest {
+        val disclosed = when (kind) {
+            ModelTaskKind.TUTOR_VISUAL_GENERATE ->
+                ModelEgressManifest.tutorVisualGenerateDisclosure(false)
+            ModelTaskKind.TUTOR_VISUAL_REVIEW ->
+                ModelEgressManifest.tutorVisualReviewDisclosure(false)
+            else -> error("Visual manifest test helper received a non-visual task")
+        }
+        return ModelEgressManifest(
+            authorizationId = "$requestId-authorization",
+            subjectId = TUTOR_SESSION_ID,
+            purpose = ModelEgressPurpose.TUTORING,
+            authorizedTaskKinds = setOf(kind),
+            providerId = capabilities.providerId,
+            modelId = capabilities.modelId,
+            providerConfigurationVersion = capabilities.providerConfigurationVersion,
+            promptPolicyVersion = requireNotNull(ModelPromptPolicyVersions.currentFor(kind)),
+            approvedAtEpochMillis = AUTHORIZATION_APPROVED_AT,
+            assets = listOf(
+                ModelEgressAssetGrant(
+                    assetId = ASSET_ID,
+                    sha256 = SHA,
+                    byteSize = IMAGE.size.toLong(),
+                    width = 100,
+                    height = 200,
+                ),
+            ),
+            disclosedData = disclosed,
+            prohibitedData = ModelEgressDataClass.entries.toSet() - disclosed,
+        )
+    }
+
     private suspend fun authorizedTutorLobby(
         gateway: OpenAiCompatibleModelGateway,
     ): ModelGatewayExecution {
@@ -1598,6 +1838,84 @@ class OpenAiCompatibleModelGatewayTest {
         put("x", x)
         put("y", y)
     }
+
+    private fun visualDocumentPayload(
+        extra: Pair<String, JsonElement>? = null,
+        variables: JsonElement = buildJsonArray {},
+        nodeValueVariableId: String? = null,
+    ): JsonObject = buildJsonObject {
+        put("kind", "visual_document")
+        put("title", "关系图")
+        put(
+            "panels",
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("panelId", "panel")
+                        put("kind", "DIAGRAM_2D")
+                    },
+                )
+            },
+        )
+        put("variables", variables)
+        put(
+            "elements",
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("type", "node_2d")
+                        put("elementId", "object")
+                        put("panelId", "panel")
+                        put("kind", "RECTANGLE")
+                        put("label", "对象")
+                        nodeValueVariableId?.let { put("valueVariableId", it) }
+                    },
+                )
+            },
+        )
+        put("bindings", buildJsonArray {})
+        put(
+            "steps",
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("stepId", "focus")
+                        put("label", "先看对象")
+                        put("focusElementIds", buildJsonArray { add(JsonPrimitive("object")) })
+                        put("primaryRelationElementId", "object")
+                    },
+                )
+            },
+        )
+        put("durationSeconds", 0.0)
+        put("fallbackMarkdown", "先观察对象之间的关系。")
+        put("accessibilitySummary", "一个标有对象的矩形。")
+        extra?.let { put(it.first, it.second) }
+    }
+
+    private fun visualDocumentScene() = TutorVisualDocumentScene(
+        sceneId = "candidate-scene",
+        title = "关系图",
+        panels = listOf(TutorVisualPanel("panel", TutorVisualPanelKind.DIAGRAM_2D)),
+        elements = listOf(
+            TutorVisual2DNodeElement(
+                elementId = "object",
+                panelId = "panel",
+                kind = TutorVisual2DNodeKind.RECTANGLE,
+                label = "对象",
+            ),
+        ),
+        steps = listOf(
+            TutorVisualStep(
+                stepId = "focus",
+                label = "先看对象",
+                focusElementIds = listOf("object"),
+                primaryRelationElementId = "object",
+            ),
+        ),
+        fallbackMarkdown = "先观察对象之间的关系。",
+        accessibilitySummary = "一个标有对象的矩形。",
+    )
 
     private fun tutorPayload(
         includeDiagnostic: Boolean = true,
