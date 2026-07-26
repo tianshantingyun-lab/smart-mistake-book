@@ -81,8 +81,11 @@ import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.StructuredContentSanitizer
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownChunkChain
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
+import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -193,14 +196,15 @@ fun StreamingSafeMarkdownText(
         provisionalTail = snapshot.provisionalTail,
         contentIdentity = contentIdentity,
     )
-    val fallback = parser.visibleWhileParsing(snapshot, contentIdentity)
+    val parseRequest = parser.prepare(snapshot, contentIdentity)
+    val fallback = parseRequest.fallback
     val parsed = produceState(
         initialValue = StreamingMarkdownParseResult(parseKey, fallback),
         key1 = parseKey,
     ) {
         value = StreamingMarkdownParseResult(
             key = parseKey,
-            state = parser.parse(snapshot, contentIdentity),
+            state = parser.parse(parseRequest),
         )
     }.value
     val visible = streamingMarkdownWhileParsing(
@@ -717,77 +721,149 @@ internal suspend fun parseSafeMarkdown(
 
 internal class IncrementalSafeMarkdownParser(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val chunkParser: (String) -> AnnotatedString = { it.toSafeAnnotatedString() },
 ) {
-    private var contentIdentity: Any? = null
-    private var stableCache = ChunkParseCache()
-    private var provisionalCache = ChunkParseCache()
+    internal data class PublishedState(
+        val key: StreamingMarkdownParseKey?,
+        val stableCache: ChunkParseCache,
+        val provisionalCache: ChunkParseCache,
+    )
 
-    var parsedCharacterCount: Long = 0
-        private set
+    internal data class ParseRequest(
+        val key: StreamingMarkdownParseKey,
+        val fallback: StreamingMarkdownRenderState,
+        internal val capturedState: PublishedState,
+    )
+
+    private val publishedState = AtomicReference(
+        PublishedState(
+            key = null,
+            stableCache = ChunkParseCache(),
+            provisionalCache = ChunkParseCache(),
+        ),
+    )
+    private val parsedCharacterCounter = AtomicLong()
+
+    val parsedCharacterCount: Long
+        get() = parsedCharacterCounter.get()
+
+    fun prepare(
+        snapshot: TutorMarkdownSnapshot,
+        contentIdentity: Any,
+    ): ParseRequest {
+        val key = StreamingMarkdownParseKey(
+            stableContent = snapshot.stableContent,
+            provisionalContent = snapshot.provisionalContent,
+            provisionalTail = snapshot.provisionalTail,
+            contentIdentity = contentIdentity,
+        )
+        while (true) {
+            val current = publishedState.get()
+            val selected = when {
+                current.key == key -> current
+                current.key?.contentIdentity == contentIdentity -> current.copy(key = key)
+                else -> PublishedState(
+                    key = key,
+                    stableCache = ChunkParseCache(),
+                    provisionalCache = ChunkParseCache(),
+                )
+            }
+            if (selected === current || publishedState.compareAndSet(current, selected)) {
+                return ParseRequest(
+                    key = key,
+                    fallback = selected.visibleState(),
+                    capturedState = selected,
+                )
+            }
+        }
+    }
 
     suspend fun parse(
         snapshot: TutorMarkdownSnapshot,
         contentIdentity: Any,
-    ): StreamingMarkdownRenderState = withContext(dispatcher) {
-        synchronized(this@IncrementalSafeMarkdownParser) {
-            ensureIdentity(contentIdentity)
-            val stable = stableCache.parse(snapshot.stableContent, ::parseChunk)
-            val provisional = provisionalCache.parse(
-                snapshot.provisionalContent,
+    ): StreamingMarkdownRenderState = parse(prepare(snapshot, contentIdentity))
+
+    suspend fun parse(request: ParseRequest): StreamingMarkdownRenderState =
+        withContext(dispatcher) {
+            val captured = request.capturedState
+            val stable = captured.stableCache.parse(
+                request.key.stableContent,
                 ::parseChunk,
             )
-            StreamingMarkdownRenderState(
-                stable = stable,
-                provisional = provisional,
-                provisionalTail = parseChunk(snapshot.provisionalTail),
-                contentIdentity = contentIdentity,
+            val provisional = captured.provisionalCache.parse(
+                request.key.provisionalContent,
+                ::parseChunk,
             )
+            val result = StreamingMarkdownRenderState(
+                stable = stable.value,
+                provisional = provisional.value,
+                provisionalTail = parseChunk(request.key.provisionalTail),
+                contentIdentity = request.key.contentIdentity,
+            )
+            publishedState.compareAndSet(
+                captured,
+                captured.copy(
+                    stableCache = stable.cache,
+                    provisionalCache = provisional.cache,
+                ),
+            )
+            result
         }
-    }
 
     fun visibleWhileParsing(
         snapshot: TutorMarkdownSnapshot,
         contentIdentity: Any,
-    ): StreamingMarkdownRenderState = synchronized(this) {
-        if (this.contentIdentity != contentIdentity) {
-            return@synchronized StreamingMarkdownRenderState.empty(contentIdentity)
-        }
-        StreamingMarkdownRenderState(
-            stable = stableCache.closestParsedPrefix(snapshot.stableContent),
-            provisional = provisionalCache.closestParsedPrefix(snapshot.provisionalContent),
+    ): StreamingMarkdownRenderState = prepare(snapshot, contentIdentity).fallback
+
+    private fun PublishedState.visibleState(): StreamingMarkdownRenderState {
+        val visibleKey = checkNotNull(key)
+        return StreamingMarkdownRenderState(
+            stable = stableCache.closestParsedPrefix(visibleKey.stableContent),
+            provisional = provisionalCache.closestParsedPrefix(visibleKey.provisionalContent),
             provisionalTail = AnnotatedString(""),
-            contentIdentity = contentIdentity,
+            contentIdentity = visibleKey.contentIdentity,
         )
     }
 
-    private fun ensureIdentity(nextIdentity: Any) {
-        if (contentIdentity == nextIdentity) return
-        contentIdentity = nextIdentity
-        stableCache = ChunkParseCache()
-        provisionalCache = ChunkParseCache()
-    }
-
     private fun parseChunk(markdown: String): AnnotatedString {
-        parsedCharacterCount += markdown.length
-        return markdown.toSafeAnnotatedString()
+        parsedCharacterCounter.addAndGet(markdown.length.toLong())
+        return chunkParser(markdown)
     }
 }
 
-private class ChunkParseCache {
-    private val values = IdentityHashMap<TutorMarkdownChunkChain, ParsedMarkdownChunkChain>().apply {
-        put(TutorMarkdownChunkChain.EMPTY, ParsedMarkdownChunkChain.EMPTY)
-    }
-    private var latestChain = TutorMarkdownChunkChain.EMPTY
-    private var latestValue = ParsedMarkdownChunkChain.EMPTY
+internal data class ChunkParseResult(
+    val cache: ChunkParseCache,
+    val value: ParsedMarkdownChunkChain,
+)
+
+internal class ChunkParseCache private constructor(
+    private val values: Map<TutorMarkdownChunkChain, ParsedMarkdownChunkChain>,
+    private val latestChain: TutorMarkdownChunkChain,
+    private val latestValue: ParsedMarkdownChunkChain,
+) {
+    constructor() : this(
+        values = Collections.unmodifiableMap(
+            IdentityHashMap<TutorMarkdownChunkChain, ParsedMarkdownChunkChain>().apply {
+                put(TutorMarkdownChunkChain.EMPTY, ParsedMarkdownChunkChain.EMPTY)
+            },
+        ),
+        latestChain = TutorMarkdownChunkChain.EMPTY,
+        latestValue = ParsedMarkdownChunkChain.EMPTY,
+    )
 
     fun parse(
         chain: TutorMarkdownChunkChain,
         parseChunk: (String) -> AnnotatedString,
-    ): ParsedMarkdownChunkChain {
-        values[chain]?.let {
-            latestChain = chain
-            latestValue = it
-            return it
+    ): ChunkParseResult {
+        values[chain]?.let { cached ->
+            return ChunkParseResult(
+                cache = if (chain === latestChain) {
+                    this
+                } else {
+                    ChunkParseCache(values, chain, cached)
+                },
+                value = cached,
+            )
         }
         val appended = chain.appendedChunksSince(latestChain)
         var parsed = if (appended != null) latestValue else ParsedMarkdownChunkChain.EMPTY
@@ -796,10 +872,17 @@ private class ChunkParseCache {
         chunks.forEach { chunk ->
             parsed = parsed.append(parseChunk(chunk))
         }
-        values[chain] = parsed
-        latestChain = chain
-        latestValue = parsed
-        return parsed
+        val nextValues = IdentityHashMap(values).apply {
+            put(chain, parsed)
+        }
+        return ChunkParseResult(
+            cache = ChunkParseCache(
+                values = Collections.unmodifiableMap(nextValues),
+                latestChain = chain,
+                latestValue = parsed,
+            ),
+            value = parsed,
+        )
     }
 
     fun closestParsedPrefix(chain: TutorMarkdownChunkChain): ParsedMarkdownChunkChain {

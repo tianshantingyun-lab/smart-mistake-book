@@ -4,8 +4,14 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import com.tingyun.smartmistakebook.core.model.StreamingMarkdownAssembler
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -273,6 +279,134 @@ class SafeMarkdownParserTest {
             ),
         )
     }
+
+    @Test
+    fun `new identity fallback returns before superseded parse is released`() = runBlocking {
+        val parseEntered = CountDownLatch(1)
+        val releaseParse = CountDownLatch(1)
+        val parser = IncrementalSafeMarkdownParser(
+            dispatcher = Dispatchers.Default,
+            chunkParser = { markdown ->
+                if (markdown == "旧尾") {
+                    parseEntered.countDown()
+                    check(releaseParse.await(5, TimeUnit.SECONDS))
+                }
+                AnnotatedString(markdown)
+            },
+        )
+        val oldParse = async(Dispatchers.Default) {
+            parser.parse(
+                snapshot = TutorMarkdownSnapshot("", "旧尾"),
+                contentIdentity = "old-turn",
+            )
+        }
+        assertTrue(parseEntered.await(5, TimeUnit.SECONDS))
+
+        val currentSnapshot = TutorMarkdownSnapshot("新稳定", "")
+        val readStarted = CountDownLatch(1)
+        val readCompleted = CountDownLatch(1)
+        val readResult = AtomicReference<StreamingMarkdownRenderState?>()
+        val readFailure = AtomicReference<Throwable?>()
+        val reader = thread(name = "new-identity-fallback") {
+            readStarted.countDown()
+            try {
+                readResult.set(
+                    parser.visibleWhileParsing(
+                        snapshot = currentSnapshot,
+                        contentIdentity = "new-turn",
+                    ),
+                )
+            } catch (throwable: Throwable) {
+                readFailure.set(throwable)
+            } finally {
+                readCompleted.countDown()
+            }
+        }
+        assertTrue(readStarted.await(5, TimeUnit.SECONDS))
+
+        val returnedBeforeRelease = try {
+            readCompleted.await(1, TimeUnit.SECONDS)
+        } finally {
+            releaseParse.countDown()
+            reader.join(5_000)
+        }
+        oldParse.await()
+        readFailure.get()?.let { throw it }
+        val initialFallback = checkNotNull(readResult.get())
+
+        assertTrue(
+            "new identity fallback must not wait for a superseded parse",
+            returnedBeforeRelease,
+        )
+        assertEquals("new-turn", initialFallback.contentIdentity)
+        assertEquals("", initialFallback.materialize().text)
+        assertEquals(
+            "",
+            parser.visibleWhileParsing(currentSnapshot, "new-turn").materialize().text,
+        )
+    }
+
+    @Test
+    fun `same identity rollback returns stable prefix before old parse is released`() =
+        runBlocking {
+            val parseEntered = CountDownLatch(1)
+            val releaseParse = CountDownLatch(1)
+            val parser = IncrementalSafeMarkdownParser(
+                dispatcher = Dispatchers.Default,
+                chunkParser = { markdown ->
+                    if (markdown == "A") {
+                        parseEntered.countDown()
+                        check(releaseParse.await(5, TimeUnit.SECONDS))
+                    }
+                    AnnotatedString(markdown)
+                },
+            )
+            val assembler = StreamingMarkdownAssembler()
+            val identity = "same-turn"
+            parser.parse(assembler.append("稳定\n\n"), identity)
+            val oldSnapshot = assembler.append("A")
+            val oldParse = async(Dispatchers.Default) {
+                parser.parse(oldSnapshot, identity)
+            }
+            assertTrue(parseEntered.await(5, TimeUnit.SECONDS))
+
+            val rollbackSnapshot = assembler.append(" | B")
+            val readStarted = CountDownLatch(1)
+            val readCompleted = CountDownLatch(1)
+            val readResult = AtomicReference<StreamingMarkdownRenderState?>()
+            val readFailure = AtomicReference<Throwable?>()
+            val reader = thread(name = "same-identity-rollback") {
+                readStarted.countDown()
+                try {
+                    readResult.set(parser.visibleWhileParsing(rollbackSnapshot, identity))
+                } catch (throwable: Throwable) {
+                    readFailure.set(throwable)
+                } finally {
+                    readCompleted.countDown()
+                }
+            }
+            assertTrue(readStarted.await(5, TimeUnit.SECONDS))
+
+            val returnedBeforeRelease = try {
+                readCompleted.await(1, TimeUnit.SECONDS)
+            } finally {
+                releaseParse.countDown()
+                reader.join(5_000)
+            }
+            oldParse.await()
+            readFailure.get()?.let { throw it }
+            val rollbackFallback = checkNotNull(readResult.get())
+
+            assertTrue(
+                "same identity rollback must not wait for the old parse",
+                returnedBeforeRelease,
+            )
+            assertEquals("稳定\n\n", rollbackFallback.materialize().text)
+            assertEquals(
+                "稳定\n\n",
+                parser.visibleWhileParsing(rollbackSnapshot, identity).materialize().text,
+            )
+        }
 }
 
 private class RecordingDispatcher : CoroutineDispatcher() {
