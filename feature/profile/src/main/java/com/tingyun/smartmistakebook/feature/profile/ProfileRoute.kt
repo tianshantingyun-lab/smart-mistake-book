@@ -71,12 +71,14 @@ fun ProfileRoute(
             summaries = subjectSummaries,
             onOpenLearningMastery = onOpenLearningMastery,
         )
-        PaperDivider(Modifier.padding(vertical = 12.dp))
-        RecentChangesSection(
-            changes = recentChanges,
-            completionStreakDays = review.completionStreakDays,
-            nowEpochMillis = nowEpochMillis,
-        )
+        if (shouldShowProfileRecentChanges(recentChanges, review.completionStreakDays)) {
+            PaperDivider(Modifier.padding(vertical = 12.dp))
+            RecentChangesSection(
+                changes = recentChanges,
+                completionStreakDays = review.completionStreakDays,
+                nowEpochMillis = nowEpochMillis,
+            )
+        }
         if (weaknesses.isNotEmpty()) {
             PaperDivider(Modifier.padding(vertical = 12.dp))
             WeaknessSummarySection(weaknesses)
@@ -131,6 +133,11 @@ internal fun profileRecentChanges(
     }
     .sortedByDescending(ProfileRecentChange::occurredAtEpochMillis)
     .take(MAX_RECENT_CHANGES)
+
+internal fun shouldShowProfileRecentChanges(
+    changes: List<ProfileRecentChange>,
+    completionStreakDays: Int,
+): Boolean = changes.isNotEmpty() || completionStreakDays > 0
 
 internal fun profileRecentActivityLabel(
     occurredAtEpochMillis: Long,

@@ -1,7 +1,6 @@
 package com.tingyun.smartmistakebook.feature.review
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
@@ -48,7 +50,11 @@ fun ReviewRoute(
                     text = state.progressText,
                     color = SmartColors.Ink,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.testTag("review_progress"),
+                    modifier = Modifier
+                        .testTag("review_progress")
+                        .clearAndSetSemantics {
+                            contentDescription = state.progressDescription
+                        },
                 )
             },
         )
@@ -75,7 +81,12 @@ internal data class ReviewLandingState(
 ) {
     val progressText: String
         get() = "$completedCount / $scheduledCount"
-
+    val scheduledCountDescription: String
+        get() = "今日题量，$scheduledCount 道"
+    val estimatedMinutesDescription: String
+        get() = "预计时间，$estimatedMinutes 分钟"
+    val progressDescription: String
+        get() = "今日进度，$progressText"
 }
 
 internal fun reviewLandingState(overview: StudyReviewOverview): ReviewLandingState {
@@ -104,14 +115,17 @@ internal fun reviewLandingState(overview: StudyReviewOverview): ReviewLandingSta
 @Composable
 private fun ReviewSummary(state: ReviewLandingState) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("review_summary"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SummaryValue(
             value = state.scheduledCount.toString(),
             label = "今日题量（道）",
+            contentDescription = state.scheduledCountDescription,
             testTag = "review_scheduled_count",
+            modifier = Modifier.weight(1f),
         )
         Box(
             modifier = Modifier
@@ -122,7 +136,9 @@ private fun ReviewSummary(state: ReviewLandingState) {
         SummaryValue(
             value = state.estimatedMinutes.toString(),
             label = "预计时间（分钟）",
+            contentDescription = state.estimatedMinutesDescription,
             testTag = "review_estimated_minutes",
+            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -131,21 +147,33 @@ private fun ReviewSummary(state: ReviewLandingState) {
 private fun SummaryValue(
     value: String,
     label: String,
+    contentDescription: String,
     testTag: String,
+    modifier: Modifier = Modifier,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = modifier
+            .testTag(testTag)
+            .clearAndSetSemantics {
+                this.contentDescription = contentDescription
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Text(
             text = value,
+            modifier = Modifier.fillMaxWidth(),
             color = SmartColors.Ink,
             fontSize = 42.sp,
             lineHeight = 46.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.testTag(testTag),
+            textAlign = TextAlign.Center,
         )
         Text(
             text = label,
+            modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyMedium,
             color = SmartColors.InkSecondary,
+            textAlign = TextAlign.Center,
         )
     }
 }

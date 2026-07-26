@@ -5,6 +5,8 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProfileLearningStatusTest {
@@ -54,6 +56,23 @@ class ProfileLearningStatusTest {
         )
 
         assertEquals(listOf("one", "two"), profileWeaknessSummaries(overview).map { it.knowledgeNodeId })
+    }
+
+    @Test
+    fun recentChangesSectionOnlyAppearsWhenThereIsDailyActivity() {
+        assertFalse(shouldShowProfileRecentChanges(changes = emptyList(), completionStreakDays = 0))
+        assertTrue(
+            shouldShowProfileRecentChanges(
+                changes = listOf(
+                    ProfileRecentChange(
+                        summary("one", SubjectKind.MATH, MasteryStatus.LEARNING),
+                        occurredAtEpochMillis = 1L,
+                    ),
+                ),
+                completionStreakDays = 0,
+            ),
+        )
+        assertTrue(shouldShowProfileRecentChanges(changes = emptyList(), completionStreakDays = 1))
     }
 
     private fun summary(

@@ -75,12 +75,26 @@ class LearningMasteryScreenInstrumentedTest {
         composeRule.onNodeWithText("今天").assertIsDisplayed()
         composeRule.onNodeWithText("昨天").assertIsDisplayed()
         listOf("%", "个知识点", "有记录科目", "正在巩固").forEach { forbidden ->
-            composeRule.onAllNodesWithText(forbidden, substring = true).assertCountEquals(0)
+            composeRule.onAllNodesWithText(
+                forbidden,
+                substring = true,
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
+            composeRule.onAllNodes(
+                hasContentDescription(forbidden, substring = true),
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
         }
-        composeRule.onAllNodes(hasContentDescription("%", substring = true))
-            .assertCountEquals(0)
         FORBIDDEN_STUDENT_TERMS.forEach { term ->
-            composeRule.onAllNodesWithText(term, substring = true).assertCountEquals(0)
+            composeRule.onAllNodesWithText(
+                term,
+                substring = true,
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
+            composeRule.onAllNodes(
+                hasContentDescription(term, substring = true),
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
         }
         saveAuditScreenshot()
     }

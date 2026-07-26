@@ -107,3 +107,47 @@ Fresh artifacts:
 
 - Connected-device tests, screenshot rendering, large-font rendering, and live TalkBack traversal were intentionally left to Task 6.
 - Android instrumentation sources were compiled and both Android-test APKs were assembled, but not executed on a device in this task.
+
+## Fix round 1/5 — study-surface accessibility gaps
+
+Baseline commit: `ad223f2f96eb99776c315783e41ebb2f3b7053ca`.
+
+Inputs reviewed in full:
+
+- `.superpowers/sdd/ui-rebuild-continuous-response/task-5-spec-review.md`
+- `.superpowers/sdd/ui-rebuild-continuous-response/task-5-ux-review.md`
+
+All six unique Important findings were addressed:
+
+- Empty Profile data with a zero streak now omits the divider and `最近变化` section while retaining the single learning empty state and all settings actions.
+- Library recreation coverage now writes query plus subject/chapter/knowledge/mastery into `SavedStateHandle`, recreates the ViewModel, hydrates the catalog, and checks the exact visible stable-ID order. A separate invalid-hierarchy case proves only downstream values clear and mastery remains independent.
+- All five legacy mastery labels are covered through the Library restoration boundary by a parameterized test.
+- Review, Library, Profile, and Learning Mastery Compose tests now check the complete C4 forbidden list in both visible text and content descriptions with the unmerged semantics tree, including the percentage pattern.
+- Review metrics expose `今日题量，N 道`, `预计时间，M 分钟`, and `今日进度，K / N` as complete semantics without duplicate naked-number semantics. The two metric columns have equal weight, centered wrapping labels, and a 200% font-scale viewport regression.
+- Library facet rows and filter chips now expose the Compose selected semantic state.
+
+Files changed in this fix round:
+
+- `feature/review/src/main/kotlin/com/tingyun/smartmistakebook/feature/review/ReviewRoute.kt`
+- `feature/library/src/main/kotlin/com/tingyun/smartmistakebook/feature/library/LibraryRoute.kt`
+- `feature/profile/src/main/java/com/tingyun/smartmistakebook/feature/profile/ProfileRoute.kt`
+- `feature/review/src/test/kotlin/com/tingyun/smartmistakebook/feature/review/ReviewRoutePolicyTest.kt`
+- `feature/library/src/test/kotlin/com/tingyun/smartmistakebook/feature/library/LibraryCatalogTest.kt`
+- `feature/profile/src/test/java/com/tingyun/smartmistakebook/feature/profile/ProfileLearningStatusTest.kt`
+- `feature/library/src/androidTest/kotlin/com/tingyun/smartmistakebook/feature/library/LibraryBatchExportEntryInstrumentedTest.kt`
+- `app/src/androidTest/kotlin/com/tingyun/smartmistakebook/ReviewContinuityInstrumentedTest.kt`
+- `app/src/androidTest/kotlin/com/tingyun/smartmistakebook/LearningMasteryScreenInstrumentedTest.kt`
+
+Fresh TDD and verification evidence:
+
+- RED: `:feature:profile:compileDebugUnitTestKotlin` failed on the intentionally missing `shouldShowProfileRecentChanges` symbol.
+- Targeted GREEN: `:feature:profile:testDebugUnitTest :feature:review:testDebugUnitTest :feature:library:testDebugUnitTest` passed.
+- Android-test source GREEN: both app flavors and Library compiled with `:app:compileLocalFirstDebugAndroidTestKotlin :app:compileStrictOfflineDebugAndroidTestKotlin :feature:library:compileDebugAndroidTestKotlin`.
+- Final fresh command repeated the original Task 5 five-module JVM suite, Library Android-test compile/assemble, and app local-first compile/assemble with `--rerun-tasks`.
+- Final result: `BUILD SUCCESSFUL in 3m 10s`; `314 actionable tasks: 314 executed`.
+- JUnit XML: 98 tests, 0 failures, 0 errors, 0 skipped (`core:ui` 21, Review 13, Library 44, Profile 5, app local-first 15).
+- C4 production-code scan: 0 hits.
+- Locked-scope changed files: 0.
+- `git diff --check`: passed.
+
+Connected-device execution, screenshots, physical touch-target measurement, and live TalkBack traversal remain explicitly deferred to Task 6.

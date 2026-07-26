@@ -27,6 +27,21 @@ class ReviewRoutePolicyTest {
     }
 
     @Test
+    fun headlineMetricsExposeCompleteStudentFacingDescriptions() {
+        val state = reviewLandingState(
+            StudyReviewOverview(
+                scheduledCount = 5,
+                estimatedSeconds = 600,
+                currentOrdinal = 2,
+            ),
+        )
+
+        assertEquals("今日题量，5 道", state.scheduledCountDescription)
+        assertEquals("预计时间，10 分钟", state.estimatedMinutesDescription)
+        assertEquals("今日进度，2 / 5", state.progressDescription)
+    }
+
+    @Test
     fun completedAndEmptyPlansKeepTheProgressStructure() {
         assertEquals(
             "5 / 5",

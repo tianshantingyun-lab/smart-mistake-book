@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -49,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -334,7 +336,11 @@ private fun LibraryHierarchy(
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 48.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable(role = Role.Button) { onSelectFacet(facet) }
+                    .selectable(
+                        selected = selected,
+                        role = Role.Button,
+                        onClick = { onSelectFacet(facet) },
+                    )
                     .padding(horizontal = 8.dp, vertical = 8.dp)
                     .testTag("library_facet_${facet.id}"),
                 verticalAlignment = Alignment.CenterVertically,
@@ -405,14 +411,18 @@ private fun FacetOptions(
         OutlineActionChip(
             text = "全部",
             onClick = { onSelect(null) },
-            modifier = Modifier.testTag("library_filter_all"),
+            modifier = Modifier
+                .semantics { selected = selectedOptionId == null }
+                .testTag("library_filter_all"),
             selected = selectedOptionId == null,
         )
         options.forEach { option ->
             OutlineActionChip(
                 text = option.label,
                 onClick = { onSelect(option.id) },
-                modifier = Modifier.testTag(filterTag(facet, option)),
+                modifier = Modifier
+                    .semantics { selected = selectedOptionId == option.id }
+                    .testTag(filterTag(facet, option)),
                 selected = selectedOptionId == option.id,
             )
         }

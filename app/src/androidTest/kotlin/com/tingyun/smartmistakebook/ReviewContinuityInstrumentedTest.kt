@@ -1,9 +1,11 @@
 package com.tingyun.smartmistakebook
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -11,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.Density
 import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
@@ -48,15 +51,46 @@ class ReviewContinuityInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("review_scheduled_count").assertTextEquals("5")
-        composeRule.onNodeWithTag("review_estimated_minutes").assertTextEquals("10")
-        composeRule.onNodeWithTag("review_progress").assertTextEquals("5 / 5")
+        composeRule.onNodeWithContentDescription("今日题量，5 道").assertExists()
+        composeRule.onNodeWithContentDescription("预计时间，10 分钟").assertExists()
+        composeRule.onNodeWithContentDescription("今日进度，5 / 5").assertExists()
+        composeRule.onAllNodesWithText("5", substring = false).assertCountEquals(0)
         composeRule.onNodeWithTag("review_start_button").assertIsNotEnabled()
         composeRule.onNodeWithTag("review_capture_button").assertDoesNotExist()
         composeRule.onNodeWithTag("review_capture_shortcut").assertDoesNotExist()
-        listOf("同学", "连续复习", "薄弱", "%").forEach { forbidden ->
-            composeRule.onAllNodesWithText(forbidden, substring = true).assertCountEquals(0)
+        assertNoC4StudentCopy()
+    }
+
+    @Test
+    fun reviewHeadlineMetricsStayEqualAndInsideTheViewportAtTwoHundredPercentFontScale() {
+        composeRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(
+                LocalDensity provides Density(density.density, fontScale = 2f),
+            ) {
+                SmartMistakeBookTheme {
+                    ReviewRoute(
+                        overview = StudyReviewOverview(
+                            scheduledCount = 88,
+                            estimatedSeconds = 59 * 60,
+                        ),
+                        profile = StudyProfileOverview(),
+                        onStartReview = {},
+                    )
+                }
+            }
         }
+
+        val root = composeRule.onNodeWithTag("review_root").fetchSemanticsNode().boundsInRoot
+        val summary = composeRule.onNodeWithTag("review_summary").fetchSemanticsNode().boundsInRoot
+        val scheduled = composeRule.onNodeWithTag("review_scheduled_count")
+            .fetchSemanticsNode().boundsInRoot
+        val estimated = composeRule.onNodeWithTag("review_estimated_minutes")
+            .fetchSemanticsNode().boundsInRoot
+        assertTrue(summary.left >= root.left)
+        assertTrue(summary.right <= root.right)
+        assertEquals(scheduled.width, estimated.width, 1f)
+        assertTrue(scheduled.right <= estimated.left)
     }
 
     @Test
@@ -131,6 +165,48 @@ class ReviewContinuityInstrumentedTest {
         listOf("%", "根据多次独立作答估计", "查看全部知识点").forEach { forbidden ->
             composeRule.onAllNodesWithText(forbidden, substring = true).assertCountEquals(0)
         }
+        assertNoC4StudentCopy()
+    }
+
+    @Test
+    fun emptyProfileShowsOneLearningEmptyStateAndKeepsSettingsReachable() {
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                ProfileRoute(
+                    overview = StudyProfileOverview(),
+                    review = StudyReviewOverview(),
+                    capabilities = AppCapabilitySnapshot(
+                        networkMode = NetworkMode.LOCAL_FIRST,
+                        cameraCaptureAvailable = true,
+                        trustedOcrAvailable = false,
+                        tutorTeachingEnabled = true,
+                        remoteModelConfigured = false,
+                    ),
+                    onOpenCapability = {},
+                    onOpenLearningMastery = {},
+                    onOpenDataPrivacy = {},
+                    onOpenReminder = {},
+                    onOpenStorage = {},
+                )
+            }
+        }
+
+        composeRule.onAllNodesWithText("还没有学习记录", useUnmergedTree = true)
+            .assertCountEquals(1)
+        composeRule.onNodeWithTag("profile_recent_changes", useUnmergedTree = true)
+            .assertDoesNotExist()
+        composeRule.onAllNodesWithText("最近变化", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onNodeWithTag("profile_settings").performScrollTo().assertIsDisplayed()
+        listOf(
+            "profile_capability_setting",
+            "profile_privacy_setting",
+            "profile_reminder_setting",
+            "profile_storage_setting",
+        ).forEach { tag ->
+            composeRule.onNodeWithTag(tag).performScrollTo().assertIsDisplayed()
+        }
+        assertNoC4StudentCopy()
     }
 
     private fun summary(
@@ -145,4 +221,35 @@ class ReviewContinuityInstrumentedTest {
         lastEvidenceAtEpochMillis = lastEvidenceAtEpochMillis,
         subject = SubjectKind.MATH,
     )
+
+    private fun assertNoC4StudentCopy() {
+        (C4_FORBIDDEN_TERMS + "%").forEach { term ->
+            composeRule.onAllNodesWithText(
+                term,
+                substring = true,
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
+            composeRule.onAllNodes(
+                hasContentDescription(term, substring = true),
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
+        }
+    }
+
+    private companion object {
+        val C4_FORBIDDEN_TERMS = listOf(
+            "知识本体",
+            "学习投影",
+            "grounding",
+            "taxonomy",
+            "embedding",
+            "置信度",
+            "分类依据",
+            "资料完整度",
+            "待补齐",
+            "检索召回",
+            "证据不足",
+            "根据多次独立作答估计",
+        )
+    }
 }

@@ -2,7 +2,10 @@ package com.tingyun.smartmistakebook.feature.library
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -81,6 +84,34 @@ class LibraryBatchExportEntryInstrumentedTest {
     }
 
     @Test
+    fun activeFacetAndFilterOptionsExposeTheirSelectedState() {
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                LibraryRoute(
+                    entries = listOf(entry("math-1", SubjectKind.MATH.name, "导数题")),
+                    pendingCaptureCount = 0,
+                    onCapture = {},
+                    onBatchImport = {},
+                    onOpenPendingCaptures = {},
+                    onExportVisible = {},
+                    onOpenItem = {},
+                )
+            }
+        }
+
+        val mathOptionTag =
+            "library_filter_subject_${SubjectKind.MATH.name.hashCode().toUInt()}"
+        composeRule.onNodeWithTag("library_facet_subject").assertIsSelected()
+        composeRule.onNodeWithTag("library_filter_all").assertIsSelected()
+        composeRule.onNodeWithTag(mathOptionTag).assertIsNotSelected().performClick()
+        composeRule.onNodeWithTag("library_facet_chapter").assertIsSelected()
+        composeRule.onNodeWithTag("library_facet_subject").performClick()
+        composeRule.onNodeWithTag(mathOptionTag).assertIsSelected()
+        composeRule.onNodeWithTag("library_filter_all").assertIsNotSelected()
+        assertNoC4StudentCopy()
+    }
+
+    @Test
     fun overflowKeepsAllSecondaryToolsAndOneCompactPendingStatus() {
         var batchCalls = 0
         var pendingCalls = 0
@@ -114,6 +145,7 @@ class LibraryBatchExportEntryInstrumentedTest {
         listOf("错因", "来源", "题型").forEach { forbidden ->
             composeRule.onAllNodesWithText(forbidden, substring = true).assertCountEquals(0)
         }
+        assertNoC4StudentCopy()
     }
 
     private fun entry(
@@ -136,4 +168,35 @@ class LibraryBatchExportEntryInstrumentedTest {
         nextReviewAtEpochMillis = null,
         retrievability = null,
     )
+
+    private fun assertNoC4StudentCopy() {
+        (C4_FORBIDDEN_TERMS + "%").forEach { term ->
+            composeRule.onAllNodesWithText(
+                term,
+                substring = true,
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
+            composeRule.onAllNodes(
+                hasContentDescription(term, substring = true),
+                useUnmergedTree = true,
+            ).assertCountEquals(0)
+        }
+    }
+
+    private companion object {
+        val C4_FORBIDDEN_TERMS = listOf(
+            "知识本体",
+            "学习投影",
+            "grounding",
+            "taxonomy",
+            "embedding",
+            "置信度",
+            "分类依据",
+            "资料完整度",
+            "待补齐",
+            "检索召回",
+            "证据不足",
+            "根据多次独立作答估计",
+        )
+    }
 }

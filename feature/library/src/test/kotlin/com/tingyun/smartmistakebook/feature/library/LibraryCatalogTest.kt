@@ -9,6 +9,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 class LibraryCatalogTest {
     private val mistakes = listOf(
@@ -124,6 +126,76 @@ class LibraryCatalogTest {
 
         assertEquals(MasteryState.MASTERED.id, viewModel.uiState.selections.mastery)
         assertEquals(2, viewModel.uiState.visibleMistakes.size)
+    }
+
+    @Test
+    fun recreationRestoresQueryAndAllSelectionsBeforeHydrationInStableOrder() {
+        val first = mistake(
+            id = "derivative-first",
+            title = "导数单调性第一题",
+            summary = "闭区间最值",
+            mastery = MasteryState.LEARNING,
+            chapter = "函数",
+            knowledge = listOf("导数"),
+        )
+        val second = mistake(
+            id = "derivative-second",
+            title = "导数单调性第二题",
+            summary = "参数范围",
+            mastery = MasteryState.LEARNING,
+            chapter = "函数",
+            knowledge = listOf("导数"),
+        )
+        val entries = listOf(second, first, mistakes[2])
+        val savedStateHandle = SavedStateHandle()
+        LibraryViewModel(savedStateHandle).apply {
+            updateCatalog(entries)
+            updateQuery("导数")
+            toggleFilter(LibraryFacet.SUBJECT, SubjectKind.MATH.name)
+            toggleFilter(LibraryFacet.CHAPTER, "函数")
+            toggleFilter(LibraryFacet.KNOWLEDGE, "导数")
+            toggleFilter(LibraryFacet.MASTERY, MasteryState.LEARNING.id)
+        }
+
+        val recreatedViewModel = LibraryViewModel(savedStateHandle)
+        recreatedViewModel.updateCatalog(entries)
+
+        assertEquals("导数", recreatedViewModel.uiState.query)
+        assertEquals(
+            LibrarySelections(
+                subject = SubjectKind.MATH.name,
+                chapter = "函数",
+                knowledge = "导数",
+                mastery = MasteryState.LEARNING.id,
+            ),
+            recreatedViewModel.uiState.selections,
+        )
+        assertEquals(
+            listOf("derivative-second", "derivative-first"),
+            recreatedViewModel.uiState.visibleMistakes.map { it.id },
+        )
+    }
+
+    @Test
+    fun hydrationOnlyClearsInvalidDownstreamHierarchyAndKeepsMasteryIndependent() {
+        val viewModel = LibraryViewModel(
+            SavedStateHandle(
+                mapOf(
+                    "library_filter_subject" to SubjectKind.CHEMISTRY.name,
+                    "library_filter_chapter" to "函数",
+                    "library_filter_knowledge" to "导数",
+                    "library_filter_mastery" to "已掌握",
+                ),
+            ),
+        )
+
+        viewModel.updateCatalog(mistakes)
+
+        assertEquals(SubjectKind.CHEMISTRY.name, viewModel.uiState.selections.subject)
+        assertNull(viewModel.uiState.selections.chapter)
+        assertNull(viewModel.uiState.selections.knowledge)
+        assertEquals(MasteryState.MASTERED.id, viewModel.uiState.selections.mastery)
+        assertEquals(listOf("chemistry"), viewModel.uiState.visibleMistakes.map { it.id })
     }
 
     @Test
@@ -260,4 +332,43 @@ class LibraryCatalogTest {
         knowledgeLabels = knowledge,
         mastery = mastery,
     )
+}
+
+@RunWith(Parameterized::class)
+internal class LibraryLegacyMasteryRestoreTest(
+    private val legacyLabel: String,
+    private val expectedMastery: MasteryState,
+) {
+    @Test
+    fun legacyMasteryLabelRestoresThroughTheLibraryBoundary() {
+        val entry = LibraryMistake(
+            id = expectedMastery.id,
+            title = expectedMastery.label,
+            summary = "恢复测试",
+            subject = SubjectKind.MATH,
+            chapterLabels = listOf("恢复"),
+            knowledgeLabels = listOf("旧标签"),
+            mastery = expectedMastery,
+        )
+        val viewModel = LibraryViewModel(
+            SavedStateHandle(mapOf("library_filter_mastery" to legacyLabel)),
+        )
+
+        viewModel.updateCatalog(listOf(entry))
+
+        assertEquals(expectedMastery.id, viewModel.uiState.selections.mastery)
+        assertEquals(listOf(entry.id), viewModel.uiState.visibleMistakes.map { it.id })
+    }
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0} -> {1}")
+        fun legacyMasteryLabels(): List<Array<Any>> = listOf(
+            arrayOf("暂无学习记录", MasteryState.UNKNOWN),
+            arrayOf("学习中", MasteryState.LEARNING),
+            arrayOf("已掌握", MasteryState.MASTERED),
+            arrayOf("需巩固", MasteryState.CONFLICTED),
+            arrayOf("待复习", MasteryState.STALE),
+        )
+    }
 }
