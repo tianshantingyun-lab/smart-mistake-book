@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -47,13 +48,36 @@ val ErrorWarm = SmartColors.ErrorWarm
 val OnJade = SmartColors.OnJade
 
 object SmartDimens {
-    val ContentHorizontalPadding = 26.dp
-    val BottomBarHeight = 84.dp
+    val Space8 = 8.dp
+    val Space12 = 12.dp
+    val Space16 = 16.dp
+    val Space24 = 24.dp
+    val SpacingScale = listOf(Space8, Space12, Space16, Space24)
+
+    val PhoneContentHorizontalPadding = 16.dp
+    val LargeScreenContentHorizontalPadding = 24.dp
+    val LargeScreenMinimumWidth = 600.dp
+
+    // Kept as the phone default for screens that do not use the responsive root containers.
+    val ContentHorizontalPadding = PhoneContentHorizontalPadding
+
+    val PrimaryControlHeight = 52.dp
     val MinimumTouchTarget = 48.dp
+    val SmallIconSize = 22.dp
+    val IconSize = 24.dp
+    val ComposerHeight = 52.dp
+    val BottomBarHeight = 64.dp
     val CallToActionRadius = 10.dp
     val SurfaceRadius = 8.dp
     val ChipRadius = 6.dp
     val MaximumContentWidth = 600.dp
+
+    fun contentHorizontalPadding(availableWidth: Dp): Dp =
+        if (availableWidth >= LargeScreenMinimumWidth) {
+            LargeScreenContentHorizontalPadding
+        } else {
+            PhoneContentHorizontalPadding
+        }
 }
 
 val SmartTypography = Typography(

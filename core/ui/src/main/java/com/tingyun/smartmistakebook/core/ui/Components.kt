@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -136,7 +137,7 @@ fun PrimaryActionButton(
     Button(
         onClick = onClick,
         modifier = modifier
-            .defaultMinSize(minHeight = 56.dp)
+            .defaultMinSize(minHeight = SmartDimens.PrimaryControlHeight)
             .semantics {
                 this.contentDescription = contentDescription
                 role = Role.Button
@@ -162,7 +163,7 @@ fun PrimaryActionButton(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(SmartDimens.IconSize),
             )
             Spacer(Modifier.width(10.dp))
         }
@@ -205,7 +206,7 @@ fun OutlineActionChip(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(21.dp),
+                modifier = Modifier.size(SmartDimens.SmallIconSize),
             )
             Spacer(Modifier.width(7.dp))
         }
@@ -249,7 +250,7 @@ fun SubjectIcon(
 ) {
     Box(
         modifier = modifier
-            .size(56.dp)
+            .size(SmartDimens.PrimaryControlHeight)
             .clip(CircleShape)
             .background(containerColor)
             .semantics { this.contentDescription = contentDescription },
@@ -258,7 +259,7 @@ fun SubjectIcon(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(30.dp),
+            modifier = Modifier.size(SmartDimens.IconSize),
             tint = tint,
         )
     }
@@ -279,27 +280,28 @@ fun PaperDivider(
 @Composable
 fun RootPageColumn(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(
-        start = SmartDimens.ContentHorizontalPadding,
-        top = 8.dp,
-        end = SmartDimens.ContentHorizontalPadding,
-        bottom = 12.dp,
-    ),
+    contentPadding: PaddingValues? = null,
     scrollState: ScrollState = rememberScrollState(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(Paper),
         contentAlignment = Alignment.TopCenter,
     ) {
+        val resolvedContentPadding = contentPadding ?: PaddingValues(
+            start = SmartDimens.contentHorizontalPadding(maxWidth),
+            top = SmartDimens.Space8,
+            end = SmartDimens.contentHorizontalPadding(maxWidth),
+            bottom = SmartDimens.Space12,
+        )
         Column(
             modifier = Modifier
                 .widthIn(max = SmartDimens.MaximumContentWidth)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(contentPadding),
+                .padding(resolvedContentPadding),
             verticalArrangement = Arrangement.Top,
             content = content,
         )
@@ -309,27 +311,28 @@ fun RootPageColumn(
 @Composable
 fun RootPageLazyColumn(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(
-        start = SmartDimens.ContentHorizontalPadding,
-        top = 8.dp,
-        end = SmartDimens.ContentHorizontalPadding,
-        bottom = 12.dp,
-    ),
+    contentPadding: PaddingValues? = null,
     listState: LazyListState = rememberLazyListState(),
     content: LazyListScope.() -> Unit,
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(Paper),
         contentAlignment = Alignment.TopCenter,
     ) {
+        val resolvedContentPadding = contentPadding ?: PaddingValues(
+            start = SmartDimens.contentHorizontalPadding(maxWidth),
+            top = SmartDimens.Space8,
+            end = SmartDimens.contentHorizontalPadding(maxWidth),
+            bottom = SmartDimens.Space12,
+        )
         LazyColumn(
             modifier = Modifier
                 .widthIn(max = SmartDimens.MaximumContentWidth)
                 .fillMaxSize(),
             state = listState,
-            contentPadding = contentPadding,
+            contentPadding = resolvedContentPadding,
             verticalArrangement = Arrangement.Top,
             content = content,
         )

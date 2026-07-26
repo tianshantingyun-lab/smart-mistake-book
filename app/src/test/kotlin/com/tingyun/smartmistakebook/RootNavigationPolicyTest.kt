@@ -6,8 +6,21 @@ import org.junit.Test
 
 class RootNavigationPolicyTest {
     @Test
+    fun `root destinations put tutor first and preserve module order`() {
+        assertEquals(
+            listOf(Routes.Tutor, Routes.Review, Routes.Library, Routes.Profile),
+            rootDestinationRoutes,
+        )
+    }
+
+    @Test
+    fun `cold start opens tutor`() {
+        assertEquals(Routes.Tutor, ROOT_START_DESTINATION)
+    }
+
+    @Test
     fun `root destinations select themselves`() {
-        listOf(Routes.Review, Routes.Tutor, Routes.Library, Routes.Profile).forEach { route ->
+        rootDestinationRoutes.forEach { route ->
             assertEquals(route, bottomBarRouteFor(route))
         }
     }

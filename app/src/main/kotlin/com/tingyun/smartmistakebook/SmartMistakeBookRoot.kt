@@ -165,11 +165,14 @@ private data class TeachingArtifactLoad(
 )
 
 private val rootDestinations = listOf(
-    RootDestination(Routes.Review, "复习", Icons.Outlined.EventAvailable, "nav_review"),
     RootDestination(Routes.Tutor, "讲题", Icons.AutoMirrored.Outlined.Chat, "nav_tutor"),
+    RootDestination(Routes.Review, "复习", Icons.Outlined.EventAvailable, "nav_review"),
     RootDestination(Routes.Library, "错题本", Icons.AutoMirrored.Outlined.MenuBook, "nav_library"),
     RootDestination(Routes.Profile, "我的", Icons.Outlined.ManageAccounts, "nav_profile"),
 )
+
+internal val rootDestinationRoutes = rootDestinations.map(RootDestination::route)
+internal const val ROOT_START_DESTINATION = Routes.Tutor
 
 internal fun bottomBarRouteFor(route: String?): String? = when (route) {
     Routes.Review,
@@ -241,7 +244,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
     var pendingLibraryExportCount by rememberSaveable { mutableIntStateOf(0) }
     val reviewOpenRequest by reviewOpenRequests.collectAsStateWithLifecycle()
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route ?: Routes.Review
+    val currentRoute = backStackEntry?.destination?.route ?: ROOT_START_DESTINATION
     val isRootDestination = rootDestinations.any { it.route == currentRoute }
     val selectedBottomRoute = bottomBarRouteFor(currentRoute)
 
@@ -292,7 +295,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             StudyDataStatusLine(experience.status)
             NavHost(
                 navController = navController,
-                startDestination = Routes.Review,
+                startDestination = ROOT_START_DESTINATION,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -855,15 +858,14 @@ private fun SmartBottomBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(SmartDimens.BottomBarHeight)
-            .background(Paper),
+            .background(Paper)
+            .navigationBarsPadding(),
     ) {
         PaperDivider()
         NavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .navigationBarsPadding(),
+                .height(SmartDimens.BottomBarHeight),
             containerColor = Paper,
             tonalElevation = 0.dp,
             windowInsets = WindowInsets(0),
@@ -877,7 +879,7 @@ private fun SmartBottomBar(
                         Icon(
                             imageVector = destination.icon,
                             contentDescription = null,
-                            modifier = Modifier.size(27.dp),
+                            modifier = Modifier.size(SmartDimens.IconSize),
                         )
                     },
                     label = {
