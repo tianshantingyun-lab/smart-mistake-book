@@ -101,6 +101,16 @@ internal fun PendingTutorEgressState.clearVisualRetryIfIdentityChanged(
         this
     }
 
+internal fun PendingTutorEgressState.clearVisualRetryIfExecutionBlocked(
+    expectedRetry: PendingTutorEgressAction.RetryVisual,
+    executionAvailable: Boolean,
+): PendingTutorEgressState =
+    if (!executionAvailable && action == expectedRetry) {
+        PendingTutorEgressState()
+    } else {
+        this
+    }
+
 internal fun PendingTutorEgressState.withoutVisualRetry(): PendingTutorEgressState =
     if (action is PendingTutorEgressAction.RetryVisual) {
         PendingTutorEgressState()

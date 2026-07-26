@@ -1790,21 +1790,24 @@ internal fun TutorModelPanel(
                 executionFailures = latestVisualExecutionFailures.value,
             )
         }.collect { state ->
-            val providerForVisual = state.provider?.takeIf { candidate ->
-                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
-                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE)
-            } ?: run {
-                anchorScheduler.cancelExcept(emptySet())
-                return@collect
-            }
-            if (state.sourceAssets.isEmpty()) {
-                anchorScheduler.cancelExcept(emptySet())
-                return@collect
-            }
             val generationRetry = state.pendingRetry
                 ?.takeIf { retry ->
                     retry.taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE
                 }
+            val providerForVisual = state.provider?.takeIf { candidate ->
+                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE)
+            }
+            if (providerForVisual == null || state.sourceAssets.isEmpty()) {
+                generationRetry?.let { retry ->
+                    pendingEgressState = pendingEgressState.clearVisualRetryIfExecutionBlocked(
+                        expectedRetry = retry,
+                        executionAvailable = false,
+                    )
+                }
+                anchorScheduler.cancelExcept(emptySet())
+                return@collect
+            }
             val workSeeds = state.workSeeds.filter { seed ->
                 seed.anchor in state.autoAnchors || seed.anchor == generationRetry?.anchor
             }
@@ -1969,21 +1972,24 @@ internal fun TutorModelPanel(
                 executionFailures = latestVisualExecutionFailures.value,
             )
         }.collect { state ->
-            val providerForReview = state.provider?.takeIf { candidate ->
-                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
-                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
-            } ?: run {
-                anchorScheduler.cancelExcept(emptySet())
-                return@collect
-            }
-            if (state.sourceAssets.isEmpty()) {
-                anchorScheduler.cancelExcept(emptySet())
-                return@collect
-            }
             val reviewRetry = state.pendingRetry
                 ?.takeIf { retry ->
                     retry.taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW
                 }
+            val providerForReview = state.provider?.takeIf { candidate ->
+                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
+            }
+            if (providerForReview == null || state.sourceAssets.isEmpty()) {
+                reviewRetry?.let { retry ->
+                    pendingEgressState = pendingEgressState.clearVisualRetryIfExecutionBlocked(
+                        expectedRetry = retry,
+                        executionAvailable = false,
+                    )
+                }
+                anchorScheduler.cancelExcept(emptySet())
+                return@collect
+            }
             val workSeeds = state.workSeeds.filter { seed ->
                 seed.anchor in state.autoAnchors || seed.anchor == reviewRetry?.anchor
             }

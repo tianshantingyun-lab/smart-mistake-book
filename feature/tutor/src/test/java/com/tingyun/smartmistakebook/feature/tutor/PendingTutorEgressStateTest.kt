@@ -101,6 +101,33 @@ class PendingTutorEgressStateTest {
     }
 
     @Test
+    fun unavailableVisualExecutionRevokesAnApprovedRetryBeforeEarlyReturn() {
+        val approved = retry().copy(approvedAtEpochMillis = 123)
+        val pending = PendingTutorEgressState(approved)
+
+        assertNull(
+            pending.clearVisualRetryIfExecutionBlocked(
+                expectedRetry = approved,
+                executionAvailable = false,
+            ).action,
+        )
+        assertEquals(
+            pending,
+            pending.clearVisualRetryIfExecutionBlocked(
+                expectedRetry = approved,
+                executionAvailable = true,
+            ),
+        )
+        assertEquals(
+            pending,
+            pending.clearVisualRetryIfExecutionBlocked(
+                expectedRetry = approved.copy(semanticRequestId = "replacement"),
+                executionAvailable = false,
+            ),
+        )
+    }
+
+    @Test
     fun reviewExecutionFailureWithoutAPersistedTaskRemainsRetryable() {
         val retry = retry().copy(
             taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
