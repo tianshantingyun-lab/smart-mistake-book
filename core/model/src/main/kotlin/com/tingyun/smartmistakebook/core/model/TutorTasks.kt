@@ -821,6 +821,8 @@ data class TutorTurnPlan(
     val openingMarkdown: String,
     /** Optional interaction about the confirmed question; explanation-only turns omit it. */
     val diagnosticItem: TutorAssessmentItem? = null,
+    /** Optional v2 interaction contract; absent on legacy cached outputs. */
+    val interactionDirective: TutorInteractionDirective? = null,
     /** Optional single local-rendered scene; the complete Markdown solution remains the fallback. */
     val visualScene: TutorVisualScene? = null,
     /** Optional asynchronous v2 visual request; text remains immediately usable without it. */
@@ -941,6 +943,8 @@ data class TutorRespondOutput(
     val solutionRevealed: Boolean = false,
     val visualScene: TutorVisualScene? = null,
     val visualRequest: TutorVisualGenerationRequest? = null,
+    /** Optional v2 interaction contract; absent on legacy cached outputs. */
+    val interactionDirective: TutorInteractionDirective? = null,
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     val modelVersion: String,

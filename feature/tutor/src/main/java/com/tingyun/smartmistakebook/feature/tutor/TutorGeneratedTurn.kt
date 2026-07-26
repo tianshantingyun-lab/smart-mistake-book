@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
@@ -53,10 +54,18 @@ internal fun TutorTurnContent(
     onContinue: (TutorMoveType) -> Unit = {},
     onRevealSolution: () -> Unit = {},
     onRestartCycle: () -> Unit = {},
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    strugglesObserved: Int = 0,
     solutionBottomModifier: Modifier = Modifier,
 ) {
     val plan = output.plan
-    val item = plan.diagnosticItem
+    val presentation = tutorTurnPresentation(
+        mode = explanationMode,
+        guidedQuestionOrdinal = output.turnOrdinal,
+        strugglesObserved = strugglesObserved,
+        suggestedMoves = plan.suggestedMoves,
+    )
+    val item = plan.diagnosticItem.takeIf { presentation.showDiagnostic }
     // A pending click is process-local UI state. Persisting it without the in-flight coroutine can
     // restore a permanently disabled choice after activity recreation.
     var pendingChoiceId by remember(
@@ -71,7 +80,8 @@ internal fun TutorTurnContent(
     val choiceResponse = response?.takeIf(TutorTurnResponse::hasChoicePayload)
     val submitted = choiceResponse != null
     val selectedId = choiceResponse?.selectedChoiceId ?: pendingChoiceId
-    val showSolution = response?.solutionRevealed == true || solutionRevealPreviewed
+    val showSolution = presentation.showCompleteExplanation ||
+        response?.solutionRevealed == true || solutionRevealPreviewed
     val explanationOnlyAlternateVisible =
         response?.requestedMove == TutorMoveType.CHANGE_REPRESENTATION
 
@@ -149,9 +159,15 @@ internal fun TutorTurnContent(
         }
         if (item == null) {
             TutorMoveButtons(
-                moves = plan.suggestedMoves.filter { move ->
-                    move.type == TutorMoveType.CHANGE_REPRESENTATION ||
+                moves = if (presentation.showCompleteExplanation) {
+                    presentation.followUpMoves.filterNot { move ->
                         move.type == TutorMoveType.REVEAL_SOLUTION
+                    }
+                } else {
+                    plan.suggestedMoves.filter { move ->
+                        move.type == TutorMoveType.CHANGE_REPRESENTATION ||
+                            move.type == TutorMoveType.REVEAL_SOLUTION
+                    }
                 },
                 requestedMove = response?.requestedMove,
                 showSolution = showSolution,
@@ -374,8 +390,7 @@ private fun TutorMoveButtons(
     onContinue: (TutorMoveType) -> Unit,
     onRevealSolution: () -> Unit,
 ) {
-    val hasRevealMove = moves.any { it.type == TutorMoveType.REVEAL_SOLUTION }
-    val visibleMoves = if (hasRevealMove) moves else moves.take(2)
+    val visibleMoves = moves.take(MAX_MODEL_RELEVANT_FOLLOW_UPS)
     if (visibleMoves.isNotEmpty()) {
         Text(
             text = "接下来想怎么看？",
@@ -408,23 +423,5 @@ private fun TutorMoveButtons(
                 .fillMaxWidth()
                 .testTag(tag),
         )
-    }
-    if (!hasRevealMove && !showSolution) {
-        TextButton(
-            onClick = onRevealSolution,
-            enabled = interactionEnabled &&
-                !interactionBusy && (explanationOnly || requestedMove == null),
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(
-                    if (explanationOnly) {
-                        "captured_tutor_reveal_without_choice"
-                    } else {
-                        "captured_tutor_reveal_fallback"
-                    },
-                ),
-        ) {
-            Text("查看完整讲解")
-        }
     }
 }

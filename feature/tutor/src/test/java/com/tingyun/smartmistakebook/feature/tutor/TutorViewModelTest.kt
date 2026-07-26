@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CompletableDeferred
@@ -125,6 +126,40 @@ class TutorViewModelTest {
             assertEquals("可信完整讲解", viewModel.revealedExplanation)
             assertNull(viewModel.submittedChoiceFor(assessmentItem))
             assertEquals(TutorRevealStatus.REVEALED, TutorViewModel(handle).revealStatus)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun switchingGuidedOffCancelsAnAwaitedAnswerBeforeItBecomesEvidence() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val viewModel = TutorViewModel(SavedStateHandle())
+        val release = CompletableDeferred<Unit>()
+        var completedWrites = 0
+
+        try {
+            viewModel.selectChoice(assessmentItem, "A")
+            viewModel.requestSubmit(assessmentItem, "practice:test") {
+                release.await()
+                completedWrites += 1
+                StudyChoiceSubmissionResult(
+                    attemptId = "attempt:cancelled",
+                    created = true,
+                    isCorrect = true,
+                    evidenceReason = LearningEvidenceReason.INDEPENDENT_CORRECT,
+                )
+            }
+            runCurrent()
+
+            viewModel.useExplanationMode(TutorExplanationMode.DIRECT)
+            release.complete(Unit)
+            advanceUntilIdle()
+
+            assertEquals(0, completedWrites)
+            assertNull(viewModel.submittedChoiceFor(assessmentItem))
+            assertEquals(TutorSubmissionStatus.IDLE, viewModel.submissionStatus)
         } finally {
             Dispatchers.resetMain()
         }

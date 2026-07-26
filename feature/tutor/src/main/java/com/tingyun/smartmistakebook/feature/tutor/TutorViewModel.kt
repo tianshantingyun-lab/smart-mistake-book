@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -99,6 +100,23 @@ class TutorViewModel(
     private var revealJob: Job? = null
 
     fun isActivePresentation(key: String): Boolean = activePresentationKey == key
+
+    fun useExplanationMode(mode: TutorExplanationMode) {
+        if (
+            mode == TutorExplanationMode.DIRECT &&
+            submissionStatus == TutorSubmissionStatus.RECORDING
+        ) {
+            submissionJob?.cancel()
+            submissionJob = null
+            savedStateHandle.remove<Any?>(PENDING_SUBMISSION_REQUEST_ID_KEY)
+            savedStateHandle.remove<Any?>(PENDING_SUBMISSION_PRESENTATION_ID_KEY)
+            savedStateHandle.remove<Any?>(PENDING_SUBMISSION_PRACTICE_UNIT_ID_KEY)
+            savedStateHandle.remove<Any?>(PENDING_SUBMISSION_CHOICE_ID_KEY)
+            savedStateHandle.remove<Any?>(PENDING_SUBMISSION_DURATION_SECONDS_KEY)
+            savedStateHandle.remove<Any?>(PENDING_SUBMISSION_OCCURRED_AT_KEY)
+            updateSubmissionStatus(TutorSubmissionStatus.IDLE)
+        }
+    }
 
     /** Binds every answer/reveal state field to one verified teaching turn. */
     fun synchronizePresentation(key: String, isSaved: Boolean) {

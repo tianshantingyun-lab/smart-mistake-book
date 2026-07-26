@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LibraryAddCheck
 import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Tune
@@ -69,6 +70,7 @@ import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.model.TutorChoiceEvaluation
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingFollowUp
 import com.tingyun.smartmistakebook.core.ui.Divider
@@ -108,6 +110,8 @@ fun TutorRoute(
     modelTasks: ModelTaskRepository,
     catalogEntries: List<StudyCatalogEntry>,
     capabilities: AppCapabilitySnapshot,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (practiceUnitId.isBlank() && teachingArtifact == null) {
@@ -120,11 +124,16 @@ fun TutorRoute(
             modelTasks = modelTasks,
             catalogEntries = catalogEntries,
             profile = profile,
+            explanationMode = explanationMode,
+            onExplanationModeChange = onExplanationModeChange,
             modifier = modifier,
         )
         return
     }
     val viewModel: TutorViewModel = viewModel()
+    LaunchedEffect(explanationMode) {
+        viewModel.useExplanationMode(explanationMode)
+    }
 
     when (val decision = TutorCapabilityGate().evaluate(capabilities, teachingArtifact)) {
         is TutorCapabilityDecision.Available -> {
@@ -176,6 +185,7 @@ fun TutorRoute(
                             unverifiedQuestionNoticeVisible = viewModel.unverifiedQuestionNoticeVisible,
                             onSave = { viewModel.requestSave(onSave) },
                             onCapture = onCapture,
+                            onChooseExisting = onChooseExisting,
                             onOpenCapabilitySettings = onOpenCapabilitySettings,
                             onChoice = { choiceId ->
                                 viewModel.selectChoice(assessmentItem, choiceId)
@@ -204,6 +214,8 @@ fun TutorRoute(
                             },
                             onDraftChange = viewModel::updateDraft,
                             onSendDraft = viewModel::submitDraft,
+                            explanationMode = explanationMode,
+                            onExplanationModeChange = onExplanationModeChange,
                             modifier = modifier,
                         )
                     }
@@ -337,6 +349,7 @@ private fun TutorScreen(
     unverifiedQuestionNoticeVisible: Boolean,
     onSave: () -> Unit,
     onCapture: () -> Unit,
+    onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onChoice: (String) -> Unit,
     onSubmit: () -> Unit,
@@ -344,6 +357,8 @@ private fun TutorScreen(
     onFollowUp: (String) -> Unit,
     onDraftChange: (String) -> Unit,
     onSendDraft: () -> Unit,
+    explanationMode: TutorExplanationMode,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -413,37 +428,45 @@ private fun TutorScreen(
             )
         }
 
-        SafeMarkdownText(
-            markdown = assessmentItem.stemMarkdown,
-            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-            color = Ink,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
-        )
-        PaperDivider()
+        if (explanationMode == TutorExplanationMode.DIRECT) {
+            TutorPrompt(
+                text = artifact.explanationMarkdown,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .testTag("tutor_full_explanation"),
+            )
+        } else {
+            SafeMarkdownText(
+                markdown = assessmentItem.stemMarkdown,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                color = Ink,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
+            )
+            PaperDivider()
 
-        TutorPrompt(
-            text = assessmentItem.promptMarkdown ?: artifact.explanationMarkdown,
-            modifier = Modifier.padding(top = 10.dp),
-        )
+            TutorPrompt(
+                text = assessmentItem.promptMarkdown ?: artifact.explanationMarkdown,
+                modifier = Modifier.padding(top = 10.dp),
+            )
 
-        Column(
-            modifier = Modifier.padding(top = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            assessmentItem.choices.forEach { option ->
-                TutorChoiceRow(
-                    option = option,
-                    isCorrect = assessmentItem.evaluateChoice(option.id).isCorrect,
-                    selectedChoiceId = selectedChoiceId,
-                    submittedChoiceId = submittedChoiceId,
-                    enabled = submissionStatus == TutorSubmissionStatus.IDLE &&
-                        revealStatus != TutorRevealStatus.RECORDING,
-                    onClick = { onChoice(option.id) },
-                )
+            Column(
+                modifier = Modifier.padding(top = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                assessmentItem.choices.forEach { option ->
+                    TutorChoiceRow(
+                        option = option,
+                        isCorrect = assessmentItem.evaluateChoice(option.id).isCorrect,
+                        selectedChoiceId = selectedChoiceId,
+                        submittedChoiceId = submittedChoiceId,
+                        enabled = submissionStatus == TutorSubmissionStatus.IDLE &&
+                            revealStatus != TutorRevealStatus.RECORDING,
+                        onClick = { onChoice(option.id) },
+                    )
+                }
             }
-        }
 
-        if (submittedChoiceId == null) {
+            if (submittedChoiceId == null) {
             PrimaryActionButton(
                 text = when {
                     submissionStatus == TutorSubmissionStatus.RECORDING -> "正在提交答案"
@@ -465,7 +488,7 @@ private fun TutorScreen(
                     "提交当前选择"
                 },
             )
-        }
+            }
 
         if (submissionStatus == TutorSubmissionStatus.RECORDING) {
             Text(
@@ -539,12 +562,13 @@ private fun TutorScreen(
             )
         }
 
-        if (selectedFollowUpId != null) {
+            if (selectedFollowUpId != null) {
             FollowUpExplanation(
                 artifact = artifact,
                 actionId = selectedFollowUpId,
                 modifier = Modifier.padding(top = 8.dp),
             )
+            }
         }
 
             if (unverifiedQuestionNoticeVisible) {
@@ -563,7 +587,11 @@ private fun TutorScreen(
                 value = draft,
                 onValueChange = onDraftChange,
                 onCapture = onCapture,
+                onGallery = onCapture,
+                onChooseExisting = onChooseExisting,
                 onSend = onSendDraft,
+                explanationMode = explanationMode,
+                onExplanationModeChange = onExplanationModeChange,
                 modifier = Modifier
                     .widthIn(max = SmartDimens.MaximumContentWidth)
                     .padding(
@@ -776,22 +804,47 @@ internal fun TutorComposer(
     value: String,
     onValueChange: (String) -> Unit,
     onCapture: () -> Unit,
+    onGallery: () -> Unit = onCapture,
+    onChooseExisting: () -> Unit = {},
     onSend: () -> Unit,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
     placeholder: String = "输入你的推导、困惑或新问题",
     enabled: Boolean = true,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(SmartDimens.ComposerHeight)
-            .testTag("tutor_draft_input"),
-        placeholder = { Text(placeholder) },
-        enabled = enabled,
-        singleLine = true,
-        leadingIcon = {
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(SmartDimens.ComposerHeight)
+                .testTag("tutor_draft_input"),
+            placeholder = { Text(placeholder) },
+            enabled = enabled,
+            singleLine = true,
+            trailingIcon = {
+                IconButton(
+                    onClick = onSend,
+                    enabled = enabled && value.isNotBlank(),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .testTag("tutor_send_button"),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "提交输入",
+                        tint = if (value.isBlank()) InkMuted else Jade,
+                    )
+                }
+            },
+            shape = RoundedCornerShape(8.dp),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             IconButton(
                 onClick = onCapture,
                 enabled = enabled,
@@ -805,24 +858,39 @@ internal fun TutorComposer(
                     tint = Jade,
                 )
             }
-        },
-        trailingIcon = {
             IconButton(
-                onClick = onSend,
-                enabled = enabled && value.isNotBlank(),
+                onClick = onGallery,
+                enabled = enabled,
                 modifier = Modifier
                     .size(48.dp)
-                    .testTag("tutor_send_button"),
+                    .testTag("tutor_gallery_button"),
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "提交输入",
-                    tint = if (value.isBlank()) InkMuted else Jade,
+                    imageVector = Icons.Outlined.PhotoLibrary,
+                    contentDescription = "从相册选择题目",
+                    tint = Jade,
                 )
             }
-        },
-        shape = RoundedCornerShape(8.dp),
-    )
+            IconButton(
+                onClick = onChooseExisting,
+                enabled = enabled,
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("tutor_library_button"),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoStories,
+                    contentDescription = "从错题本选择",
+                    tint = Jade,
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            TutorGuidanceModeControl(
+                mode = explanationMode,
+                onModeChange = onExplanationModeChange,
+            )
+        }
+    }
 }
 
 @Composable

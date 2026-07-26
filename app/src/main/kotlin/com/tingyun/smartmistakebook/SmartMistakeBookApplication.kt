@@ -16,6 +16,7 @@ import com.tingyun.smartmistakebook.core.data.study.StudyExperienceRepositoryFac
 import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
+import com.tingyun.smartmistakebook.core.data.settings.DataStoreTutorSettingsRepository
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
@@ -29,6 +30,7 @@ import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.domain.TutorSettingsRepository
 import com.tingyun.smartmistakebook.feature.capture.CaptureCacheMaintenance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
@@ -67,6 +69,9 @@ class SmartMistakeBookApplication : Application() {
     lateinit var reviewReminderRepository: ReviewReminderRepository
         private set
 
+    lateinit var tutorSettingsRepository: TutorSettingsRepository
+        private set
+
     private lateinit var database: StudyDatabasePort
     private lateinit var reviewReminderCoordinator: ReviewReminderCoordinator
 
@@ -85,6 +90,7 @@ class SmartMistakeBookApplication : Application() {
         tutorTeachingReferenceRepository =
             TutorTeachingReferenceRepositoryFactory.create(database)
         reviewReminderRepository = DataStoreReviewReminderRepository(this, applicationScope)
+        tutorSettingsRepository = DataStoreTutorSettingsRepository(this, applicationScope)
         reviewReminderCoordinator = ReviewReminderCoordinator(
             repository = reviewReminderRepository,
             platform = ReviewReminderPlatform(this),

@@ -40,6 +40,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
@@ -70,6 +71,8 @@ internal fun TutorLobbyRoute(
     modelTasks: ModelTaskRepository,
     catalogEntries: List<StudyCatalogEntry>,
     profile: StudyProfileOverview,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -273,7 +276,11 @@ internal fun TutorLobbyRoute(
                     if (pendingDisclosureMessage != null) pendingDisclosureMessage = null
                 },
                 onCapture = onCapture,
+                onGallery = onCapture,
+                onChooseExisting = onChooseExisting,
                 onSend = ::submitDraft,
+                explanationMode = explanationMode,
+                onExplanationModeChange = onExplanationModeChange,
                 placeholder = "输入题目、困惑，或说你现在想做什么",
                 enabled = !hasActiveTask,
                 modifier = Modifier

@@ -33,6 +33,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
@@ -59,6 +60,8 @@ fun SavedMistakeTutorRoute(
     learningMemory: StudyQuestionMemory? = null,
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val stateFlow: Flow<MistakeDetailState> = remember(key, repository) {
@@ -117,6 +120,8 @@ fun SavedMistakeTutorRoute(
                 reviewedTeachingReferences = teachingReferences,
                 onOpenModelSettings = onOpenModelSettings,
                 onBack = onBack,
+                explanationMode = explanationMode,
+                onExplanationModeChange = onExplanationModeChange,
                 modifier = modifier.testTag("saved_mistake_tutor_screen"),
             )
         }
@@ -166,6 +171,8 @@ internal fun SavedMistakeTutorContent(
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit = {},
     clock: () -> Long = System::currentTimeMillis,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val question = remember(
@@ -201,6 +208,8 @@ internal fun SavedMistakeTutorContent(
         interactions = interactions,
         onOpenModelSettings = onOpenModelSettings,
         clock = clock,
+        explanationMode = explanationMode,
+        onExplanationModeChange = onExplanationModeChange,
         headerContent = {
             TutorPageHeader(onBack)
             PaperDivider()

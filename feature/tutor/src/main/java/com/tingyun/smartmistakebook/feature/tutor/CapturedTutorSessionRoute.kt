@@ -55,6 +55,7 @@ import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorGuidancePolicy
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
@@ -69,6 +70,7 @@ import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
@@ -102,6 +104,7 @@ import java.util.UUID
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -121,6 +124,8 @@ fun CapturedTutorSessionRoute(
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit,
     onEndedWithoutSave: () -> Unit = onBack,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var reloadToken by remember { mutableIntStateOf(0) }
@@ -242,6 +247,8 @@ fun CapturedTutorSessionRoute(
         onBack = onBack,
         autoStartAuthorization = autoStartAuthorization,
         onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+        explanationMode = explanationMode,
+        onExplanationModeChange = onExplanationModeChange,
         modifier = modifier,
     )
 
@@ -308,6 +315,8 @@ private fun CapturedTutorSessionContent(
     onBack: () -> Unit,
     autoStartAuthorization: TutorAutoStartAuthorization?,
     onAutoStartAuthorizationConsumed: (String) -> Unit,
+    explanationMode: TutorExplanationMode,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -334,6 +343,8 @@ private fun CapturedTutorSessionContent(
                 onBack = onBack,
                 autoStartAuthorization = autoStartAuthorization,
                 onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+                explanationMode = explanationMode,
+                onExplanationModeChange = onExplanationModeChange,
                 modifier = modifier.testTag("captured_tutor_session_screen"),
             )
 
@@ -437,6 +448,8 @@ internal fun ReadyCapturedSession(
     autoStartAuthorization: TutorAutoStartAuthorization? = null,
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
     clock: () -> Long = System::currentTimeMillis,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var sourceExpanded by rememberSaveable(session.sessionId) { mutableStateOf(false) }
@@ -456,6 +469,8 @@ internal fun ReadyCapturedSession(
         onOpenModelSettings = onOpenModelSettings,
         autoStartAuthorization = autoStartAuthorization,
         onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+        explanationMode = explanationMode,
+        onExplanationModeChange = onExplanationModeChange,
         clock = clock,
         conversationEnabled = !session.isEndedWithoutSave,
         headerContent = {
@@ -616,6 +631,8 @@ internal fun TutorModelPanel(
     autoStartAuthorization: TutorAutoStartAuthorization? = null,
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
     conversationEnabled: Boolean = true,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     headerContent: @Composable () -> Unit = {},
     leadingContent: @Composable ColumnScope.() -> Unit = {},
     trailingContent: @Composable ColumnScope.() -> Unit = {},
@@ -680,6 +697,10 @@ internal fun TutorModelPanel(
     }.collectAsState(initial = emptyList())
     var interactionBusy by remember(question.sessionId) { mutableStateOf(false) }
     var interactionError by remember(question.sessionId) { mutableStateOf<String?>(null) }
+    var pendingEvidenceJob by remember(question.sessionId) { mutableStateOf<Job?>(null) }
+    var previousExplanationMode by remember(question.sessionId) {
+        mutableStateOf(explanationMode)
+    }
     var chatDraft by rememberSaveable(
         question.sessionId,
         question.revisionNumber,
@@ -711,6 +732,19 @@ internal fun TutorModelPanel(
         question.revisionNumber,
         question.questionDocument.document.id,
     ) { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(explanationMode) {
+        if (
+            previousExplanationMode == TutorExplanationMode.GUIDED &&
+            explanationMode == TutorExplanationMode.DIRECT
+        ) {
+            pendingEvidenceJob?.cancel()
+            pendingEvidenceJob = null
+            interactionBusy = false
+            interactionError = null
+        }
+        previousExplanationMode = explanationMode
+    }
     fun consumeAutoStartAuthorization(authorizationId: String) {
         if (consumedAutoStartAuthorizationId == authorizationId) return
         consumedAutoStartAuthorizationId = authorizationId
@@ -1079,6 +1113,14 @@ internal fun TutorModelPanel(
         TutorTurnKey(currentInput.cycleOrdinal, currentInput.turnOrdinal)
     ]
     val currentHistory = currentCycleResponses.toContiguousTutorHistory()
+    val strugglesObserved = currentCycleResponses.count { response ->
+        response.selectionWasCorrect == false
+    }
+    val guidedHintUsed = tutorRespondTasks.any { task ->
+        val input = task.request.input as? TutorRespondInput
+        input?.cycleOrdinal == currentInput.cycleOrdinal &&
+            input.studentMessage == GUIDED_HINT_MESSAGE
+    }
     val nextTurnExists = currentCycleTasks.any { task ->
         (task.request.input as? TutorPlanInput)?.turnOrdinal == currentHistory.size + 1
     }
@@ -1569,10 +1611,14 @@ internal fun TutorModelPanel(
         executablePlanProvider?.providerConfigurationVersion,
         externalEgressLease?.approvedAtEpochMillis,
         responseActionAwaitingAuthorization,
+        explanationMode,
+        strugglesObserved,
     ) {
         if (
+            explanationMode == TutorExplanationMode.GUIDED &&
+            strugglesObserved < TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT &&
             currentHistory.isNotEmpty() &&
-            currentHistory.size < TutorPlanInput.MAX_TURNS &&
+            currentHistory.size < TutorGuidancePolicy.MAX_QUESTIONS &&
             !nextTurnExists &&
             !responseActionAwaitingAuthorization
         ) {
@@ -1602,6 +1648,9 @@ internal fun TutorModelPanel(
         val item = output?.plan?.diagnosticItem
         val evaluation = item?.evaluateChoice(choiceId)
         if (
+            explanationMode != TutorExplanationMode.GUIDED ||
+            strugglesObserved >= TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT ||
+            currentInput.turnOrdinal > TutorGuidancePolicy.MAX_QUESTIONS ||
             output == null || item == null || evaluation == null || interactionBusy ||
             responseActionAwaitingAuthorization
         ) {
@@ -1609,7 +1658,7 @@ internal fun TutorModelPanel(
         }
         interactionError = null
         interactionBusy = true
-        scope.launch {
+        pendingEvidenceJob = scope.launch {
             try {
                 interactions.recordChoice(
                     RecordTutorChoiceCommand(
@@ -1632,12 +1681,19 @@ internal fun TutorModelPanel(
                 interactionError = "这个选择暂时没有保存，请重试后再继续。"
             } finally {
                 interactionBusy = false
+                pendingEvidenceJob = null
             }
         }
     }
 
     fun continueCurrentTurn(requestedMove: TutorMoveType) {
-        if (interactionBusy || responseActionAwaitingAuthorization) return
+        if (
+            explanationMode != TutorExplanationMode.GUIDED ||
+            interactionBusy ||
+            responseActionAwaitingAuthorization
+        ) {
+            return
+        }
         if (executablePlanProvider == null) {
             onOpenModelSettings()
             return
@@ -1662,7 +1718,11 @@ internal fun TutorModelPanel(
                         .filterNot { it.turnOrdinal == movedResponse.turnOrdinal }
                         .plus(movedResponse)
                         .toContiguousTutorHistory()
-                    if (nextHistory.size < TutorPlanInput.MAX_TURNS) {
+                    if (
+                        nextHistory.size < TutorGuidancePolicy.MAX_QUESTIONS &&
+                        nextHistory.count { !it.selectionWasCorrect } <
+                        TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT
+                    ) {
                         executeTurn(
                             currentInput.cycleOrdinal,
                             currentInput.priorConversationMemory,
@@ -1736,6 +1796,8 @@ internal fun TutorModelPanel(
                 value = chatDraft,
                 enabled = !chatSending && !interactionBusy,
                 sending = chatSending,
+                explanationMode = explanationMode,
+                onExplanationModeChange = onExplanationModeChange,
                 onValueChange = {
                     chatDraft = it
                     chatStartError = null
@@ -1755,6 +1817,18 @@ internal fun TutorModelPanel(
                     modifier = Modifier
                         .padding(top = 6.dp)
                         .testTag("tutor_chat_start_error"),
+                )
+            }
+        }
+    } else if (currentPlanOutput != null) {
+        {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TutorGuidanceModeControl(
+                    mode = explanationMode,
+                    onModeChange = onExplanationModeChange,
                 )
             }
         }
@@ -1823,12 +1897,15 @@ internal fun TutorModelPanel(
                         onRetry = ::retryCurrentPlan,
                         onSubmitChoice = ::submitCurrentChoice,
                         onRequestHint = if (
+                            explanationMode == TutorExplanationMode.GUIDED &&
+                            !guidedHintUsed &&
+                            strugglesObserved < TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT &&
                             respondSupported && respondAuthorized && !chatSending &&
                             !responseActionAwaitingAuthorization
                         ) {
                             {
                                 executeTutorResponse(
-                                    message = "我不确定，请给我一点提示",
+                                    message = GUIDED_HINT_MESSAGE,
                                 )
                             }
                         } else {
@@ -1837,6 +1914,8 @@ internal fun TutorModelPanel(
                         onContinue = ::continueCurrentTurn,
                         onRevealSolution = { revealCurrentSolution() },
                         onRestartCycle = ::restartCurrentCycle,
+                        explanationMode = explanationMode,
+                        strugglesObserved = strugglesObserved,
                         onOpenModelSettings = onOpenModelSettings,
                         onOpenVisualOriginal = onOpenVisualOriginal,
                         onReportVisualIncorrect = ::reportVisualIncorrect,
@@ -2242,6 +2321,8 @@ private fun TutorTaskContent(
     onContinue: (TutorMoveType) -> Unit,
     onRevealSolution: () -> Unit,
     onRestartCycle: () -> Unit,
+    explanationMode: TutorExplanationMode,
+    strugglesObserved: Int,
     onOpenModelSettings: () -> Unit,
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
@@ -2280,6 +2361,8 @@ private fun TutorTaskContent(
                     onContinue = onContinue,
                     onRevealSolution = onRevealSolution,
                     onRestartCycle = onRestartCycle,
+                    explanationMode = explanationMode,
+                    strugglesObserved = strugglesObserved,
                     solutionBottomModifier = solutionBottomModifier,
                 )
             }
@@ -2419,3 +2502,4 @@ internal fun tutorSessionStatusLine(disposition: TutorSessionDisposition): Strin
 }
 
 private const val MAX_AUTO_VISUAL_WORK_ITEMS = 8
+private const val GUIDED_HINT_MESSAGE = "我不确定，请给我一点提示"

@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,12 +43,17 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -349,7 +356,9 @@ private fun TutorAssistantReplyBubble(
                                 )
                             }
                             if (showActions) {
-                                output.suggestedMoves.forEach { move ->
+                                output.suggestedMoves
+                                    .take(MAX_MODEL_RELEVANT_FOLLOW_UPS)
+                                    .forEach { move ->
                                     OutlineActionChip(
                                         text = move.label,
                                         onClick = {
@@ -565,6 +574,8 @@ internal fun TutorChatComposer(
     sending: Boolean,
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -622,5 +633,43 @@ internal fun TutorChatComposer(
                 style = MaterialTheme.typography.labelSmall,
             )
         }
+        TutorGuidanceModeControl(
+            mode = explanationMode,
+            onModeChange = onExplanationModeChange,
+        )
+    }
+}
+
+@Composable
+internal fun TutorGuidanceModeControl(
+    mode: TutorExplanationMode,
+    onModeChange: (TutorExplanationMode) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val guided = mode == TutorExplanationMode.GUIDED
+    TextButton(
+        onClick = {
+            onModeChange(
+                if (guided) TutorExplanationMode.DIRECT else TutorExplanationMode.GUIDED,
+            )
+        },
+        modifier = modifier
+            .semantics {
+                role = Role.Switch
+                selected = guided
+            }
+            .testTag("tutor_guidance_toggle"),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Tune,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = if (guided) JadeActive else InkSecondary,
+        )
+        Text(
+            text = "引导",
+            modifier = Modifier.padding(start = 6.dp),
+            color = if (guided) JadeActive else InkSecondary,
+        )
     }
 }
