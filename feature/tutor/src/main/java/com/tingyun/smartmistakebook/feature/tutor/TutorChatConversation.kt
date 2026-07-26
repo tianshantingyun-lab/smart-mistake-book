@@ -65,6 +65,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
@@ -349,7 +350,7 @@ internal fun TutorChatExchange(
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
     onDirectiveResponse: (String) -> Unit = {},
     onRetryVisual: () -> Unit = {},
-    onVisualTargetHit: (String) -> Unit = {},
+    onVisualTargetHit: (TutorVisualHitProof) -> Unit = {},
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit = { _, _ -> },
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
@@ -390,7 +391,7 @@ internal fun TutorChatExchange(
                 localIntentContent = localIntentContent,
                 visualTargetReady = isTutorVisualTargetReady(
                     state = resolvedVisual,
-                    hasInlineScene = output?.visualScene != null,
+                    inlineScene = output?.visualScene,
                 ),
                 assistantBottomModifier = assistantBottomModifier,
             )
@@ -405,19 +406,18 @@ internal fun TutorChatExchange(
                 onRetry = onRetryVisual,
                 onOpenOriginal = onOpenVisualOriginal,
                 onReportIncorrect = onReportVisualIncorrect,
+                ownerModelTaskRequestId = task.request.requestId,
                 onTargetHit = visualTargetHitHandler,
             )
             output?.visualScene?.let { scene ->
                 TutorVisualPresentation(
-                    state = TutorVisualResolution.Ready(
-                        scene = scene,
-                        cacheKey = "legacy:${scene.schemaVersion}:${scene.sceneId}",
-                    ),
+                    state = inlineTutorVisualResolution(scene, task.request.requestId),
                     mode = visualPresentationMode,
                     originalAvailable = visualOriginalAvailable,
                     onRetry = {},
                     onOpenOriginal = onOpenVisualOriginal,
                     onReportIncorrect = onReportVisualIncorrect,
+                    ownerModelTaskRequestId = task.request.requestId,
                     onTargetHit = visualTargetHitHandler,
                 )
             }

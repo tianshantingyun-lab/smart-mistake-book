@@ -55,8 +55,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationStateKey
 import com.tingyun.smartmistakebook.core.visual.runtime.CompiledTutorVisualDocument
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
 import kotlinx.coroutines.isActive
@@ -67,9 +70,13 @@ fun TutorVisualDocumentContent(
     modifier: Modifier = Modifier,
     onOpenOriginal: (() -> Unit)? = null,
     onReportIncorrect: (() -> Unit)? = null,
-    onTargetHit: ((String) -> Unit)? = null,
+    hitPresentation: TutorVisualPresentationIdentity? = null,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)? = null,
+    presentationStateKey: String = TutorVisualPresentationStateKey.of(scene, hitPresentation),
 ) {
-    val compiledResult = remember(scene) { runCatching { TutorVisualDocumentCompiler.compile(scene) } }
+    val compiledResult = remember(presentationStateKey, scene) {
+        runCatching { TutorVisualDocumentCompiler.compile(scene) }
+    }
     val compiled = compiledResult.getOrNull()?.takeIf { it.integrity.canRender }
     if (compiled == null) {
         TutorVisualFallback(
@@ -84,7 +91,9 @@ fun TutorVisualDocumentContent(
         modifier = modifier,
         onOpenOriginal = onOpenOriginal,
         onReportIncorrect = onReportIncorrect,
+        hitPresentation = hitPresentation,
         onTargetHit = onTargetHit,
+        presentationStateKey = presentationStateKey,
     )
 }
 
@@ -94,16 +103,18 @@ private fun TutorVisualDocumentPlayer(
     modifier: Modifier,
     onOpenOriginal: (() -> Unit)?,
     onReportIncorrect: (() -> Unit)?,
-    onTargetHit: ((String) -> Unit)?,
+    hitPresentation: TutorVisualPresentationIdentity?,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)?,
+    presentationStateKey: String,
 ) {
     val scene = compiled.scene
     val context = LocalContext.current
     val profile = remember(context) { TutorVisualRenderProfileResolver.resolve(context) }
-    var stepIndex by rememberSaveable(scene.sceneId) { mutableIntStateOf(0) }
-    var selectedPanelIndex by rememberSaveable(scene.sceneId) { mutableIntStateOf(0) }
-    var timeSeconds by rememberSaveable(scene.sceneId) { mutableDoubleStateOf(0.0) }
-    var playing by rememberSaveable(scene.sceneId) { mutableStateOf(false) }
-    var fullscreen by rememberSaveable(scene.sceneId) { mutableStateOf(false) }
+    var stepIndex by rememberSaveable(presentationStateKey) { mutableIntStateOf(0) }
+    var selectedPanelIndex by rememberSaveable(presentationStateKey) { mutableIntStateOf(0) }
+    var timeSeconds by rememberSaveable(presentationStateKey) { mutableDoubleStateOf(0.0) }
+    var playing by rememberSaveable(presentationStateKey) { mutableStateOf(false) }
+    var fullscreen by rememberSaveable(presentationStateKey) { mutableStateOf(false) }
     val animationsEnabled = remember {
         android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O ||
             ValueAnimator.areAnimatorsEnabled()
@@ -189,6 +200,8 @@ private fun TutorVisualDocumentPlayer(
                 panel = selectedPanel,
                 frame = frame,
                 profile = profile,
+                presentationStateKey = presentationStateKey,
+                hitPresentation = hitPresentation,
                 onTargetHit = onTargetHit,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -368,7 +381,9 @@ private fun TutorVisualPanelContent(
     panel: TutorVisualPanel,
     frame: com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualFrame,
     profile: TutorVisualRenderProfile,
-    onTargetHit: ((String) -> Unit)?,
+    presentationStateKey: String,
+    hitPresentation: TutorVisualPresentationIdentity?,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)?,
     modifier: Modifier,
 ) {
     when (panel.kind) {
@@ -376,6 +391,8 @@ private fun TutorVisualPanelContent(
             compiled = compiled,
             panel = panel,
             frame = frame,
+            presentationStateKey = presentationStateKey,
+            hitPresentation = hitPresentation,
             onTargetHit = onTargetHit,
             modifier = modifier,
         )
@@ -384,6 +401,7 @@ private fun TutorVisualPanelContent(
             panel = panel,
             frame = frame,
             profile = profile,
+            presentationStateKey = presentationStateKey,
             modifier = modifier,
         )
         TutorVisualPanelKind.SCIENTIFIC_CHART -> TutorVisualChartPanel(

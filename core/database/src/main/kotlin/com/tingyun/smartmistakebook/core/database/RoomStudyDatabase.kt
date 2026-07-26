@@ -944,10 +944,6 @@ internal class RoomStudyDatabase(
     ): TutorVisualTargetEvidenceRecord =
         database.tutorInteractionDao().recordVisualTargetEvidence(command)
 
-    override suspend fun discardTutorVisualTargetEvidence(
-        command: PersistTutorVisualTargetEvidenceCommand,
-    ): Boolean = database.tutorInteractionDao().discardVisualTargetEvidence(command)
-
     override suspend fun recordTutorMove(
         command: PersistTutorMoveCommand,
     ): TutorTurnResponseRecord = database.tutorInteractionDao().recordMove(command)

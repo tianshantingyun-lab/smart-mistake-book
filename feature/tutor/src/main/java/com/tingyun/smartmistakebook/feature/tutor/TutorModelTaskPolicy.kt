@@ -38,6 +38,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import com.tingyun.smartmistakebook.core.model.requiresEgressAuthorizationRenewal
@@ -752,7 +753,7 @@ internal fun tutorVisualReviewRequestId(
         buildString {
             appendLengthPrefixed(generationRequestId)
             appendLengthPrefixed(generated.modelVersion)
-            appendLengthPrefixed(generated.scene?.sceneId)
+            appendLengthPrefixed(generated.scene?.let(TutorVisualSceneFingerprint::of))
             reviewReasonCodes.sorted().forEach(::appendLengthPrefixed)
             appendLengthPrefixed(provider.providerId)
             appendLengthPrefixed(provider.modelId)

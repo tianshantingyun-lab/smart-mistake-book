@@ -3,6 +3,8 @@ package com.tingyun.smartmistakebook.feature.tutor
 import android.os.Bundle
 import androidx.compose.runtime.saveable.Saver
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
@@ -32,6 +34,10 @@ internal sealed interface PendingTutorEgressAction {
         val anchor: TutorVisualTurnAnchor,
         val taskKind: ModelTaskKind,
         val failedRequestId: String?,
+        val semanticRequestId: String,
+        val providerId: String,
+        val modelId: String,
+        val providerConfigurationVersion: String,
         val approvedAtEpochMillis: Long? = null,
     ) : PendingTutorEgressAction {
         init {
@@ -40,8 +46,38 @@ internal sealed interface PendingTutorEgressAction {
                     taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
             )
             require(failedRequestId == null || failedRequestId.isNotBlank())
+            require(semanticRequestId.isNotBlank())
+            require(providerId.isNotBlank() && modelId.isNotBlank())
+            require(providerConfigurationVersion.isNotBlank())
             require(approvedAtEpochMillis == null || approvedAtEpochMillis >= 0)
         }
+
+        fun matches(
+            provider: ProviderCapabilitySnapshot,
+            currentSemanticRequestId: String,
+        ): Boolean =
+            semanticRequestId == currentSemanticRequestId &&
+                providerId == provider.providerId &&
+                modelId == provider.modelId &&
+                providerConfigurationVersion == provider.providerConfigurationVersion
+
+        fun restoredWithoutAuthorization(): RetryVisual =
+            copy(approvedAtEpochMillis = null)
+
+        fun approvedAtFor(
+            provider: ProviderCapabilitySnapshot,
+            currentSemanticRequestId: String,
+        ): Long? = approvedAtEpochMillis?.takeIf {
+            matches(provider, currentSemanticRequestId)
+        }
+
+        fun matchesFailedTask(task: ModelTaskSnapshot?): Boolean =
+            if (failedRequestId == null) {
+                task == null
+            } else {
+                task?.request?.requestId == failedRequestId &&
+                    task.request.input.kind == taskKind
+            }
     }
 }
 
@@ -77,7 +113,10 @@ private const val SURFACE = "surface"
 private const val TURN = "turn"
 private const val RESPONSE = "response"
 private const val TASK_KIND = "task_kind"
-private const val APPROVED_AT = "approved_at"
+private const val SEMANTIC_REQUEST_ID = "semantic_request_id"
+private const val PROVIDER_ID = "provider_id"
+private const val MODEL_ID = "model_id"
+private const val PROVIDER_CONFIGURATION_VERSION = "provider_configuration_version"
 
 private fun turnKey(index: Int, field: String) = "turn_${index}_$field"
 
@@ -136,7 +175,10 @@ private fun Bundle.saveRetryVisual(action: PendingTutorEgressAction.RetryVisual)
     action.anchor.responseOrdinal?.let { putInt(RESPONSE, it) }
     putString(TASK_KIND, action.taskKind.name)
     putString(REQUEST_ID, action.failedRequestId)
-    action.approvedAtEpochMillis?.let { putLong(APPROVED_AT, it) }
+    putString(SEMANTIC_REQUEST_ID, action.semanticRequestId)
+    putString(PROVIDER_ID, action.providerId)
+    putString(MODEL_ID, action.modelId)
+    putString(PROVIDER_CONFIGURATION_VERSION, action.providerConfigurationVersion)
 }
 
 private fun Bundle.restoreAction(): PendingTutorEgressAction? = runCatching {
@@ -163,10 +205,12 @@ private fun Bundle.restoreRetryVisual(): PendingTutorEgressAction.RetryVisual {
         ),
         taskKind = ModelTaskKind.valueOf(requireNotNull(getString(TASK_KIND))),
         failedRequestId = getString(REQUEST_ID),
-        approvedAtEpochMillis = getLong(APPROVED_AT).takeIf {
-            containsKey(APPROVED_AT)
-        },
-    )
+        semanticRequestId = requireNotNull(getString(SEMANTIC_REQUEST_ID)),
+        providerId = requireNotNull(getString(PROVIDER_ID)),
+        modelId = requireNotNull(getString(MODEL_ID)),
+        providerConfigurationVersion =
+            requireNotNull(getString(PROVIDER_CONFIGURATION_VERSION)),
+    ).restoredWithoutAuthorization()
 }
 
 private fun Bundle.restoreNewResponse(): PendingTutorEgressAction.NewResponse {

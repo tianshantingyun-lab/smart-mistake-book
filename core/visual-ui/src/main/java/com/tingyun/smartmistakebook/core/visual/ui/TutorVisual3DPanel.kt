@@ -32,19 +32,20 @@ internal fun TutorVisual3DPanel(
     panel: TutorVisualPanel,
     frame: TutorVisualFrame,
     profile: TutorVisualRenderProfile,
+    presentationStateKey: String,
     modifier: Modifier,
 ) {
     val baseCamera = frame.panelCameras.getValue(panel.panelId)
-    var azimuthOffset by remember(compiled.scene.sceneId, panel.panelId) {
+    var azimuthOffset by remember(presentationStateKey, panel.panelId) {
         mutableDoubleStateOf(0.0)
     }
-    var elevationOffset by remember(compiled.scene.sceneId, panel.panelId) {
+    var elevationOffset by remember(presentationStateKey, panel.panelId) {
         mutableDoubleStateOf(0.0)
     }
-    var zoomFactor by remember(compiled.scene.sceneId, panel.panelId) {
+    var zoomFactor by remember(presentationStateKey, panel.panelId) {
         mutableDoubleStateOf(1.0)
     }
-    var filamentReady by remember(compiled.scene.sceneId, panel.panelId) {
+    var filamentReady by remember(presentationStateKey, panel.panelId) {
         mutableStateOf(false)
     }
     val camera = baseCamera.copy(

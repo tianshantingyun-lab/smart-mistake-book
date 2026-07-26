@@ -150,6 +150,63 @@ class TutorVisualPipelineTest {
     }
 
     @Test
+    fun sameSceneIdWithDifferentContentRequiresANewExactReview() {
+        val original = latticeScene()
+        val changed = original.copy(title = "另一份晶胞关系")
+        val originalGeneration = generationTask(scene = original, confidence = 0.99)
+        val changedGeneration = generationTask(scene = changed, confidence = 0.99)
+        val provider = ProviderCapabilitySnapshot(
+            providerId = "review-provider",
+            providerDisplayName = "Review provider",
+            modelId = "review-model",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_REVIEW),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+            providerConfigurationVersion = "review-config-v1",
+        )
+        val originalOutput = originalGeneration.output as TutorVisualGenerateOutput
+        val changedOutput = changedGeneration.output as TutorVisualGenerateOutput
+        val reasons = setOf("lattice")
+        val originalRequestId = tutorVisualReviewRequestId(
+            generationRequestId = originalGeneration.request.requestId,
+            provider = provider,
+            generated = originalOutput,
+            reviewReasonCodes = reasons,
+        )
+        val changedRequestId = tutorVisualReviewRequestId(
+            generationRequestId = changedGeneration.request.requestId,
+            provider = provider,
+            generated = changedOutput,
+            reviewReasonCodes = reasons,
+        )
+        val oldReview = reviewTask(
+            candidate = original,
+            decision = TutorVisualReviewDecision.APPROVED,
+            repairedScene = null,
+            confidence = 0.96,
+        )
+        val forgedRequest = oldReview.request.copy(requestId = changedRequestId)
+        val oldReviewWithCurrentId = oldReview.copy(
+            taskId = changedRequestId,
+            request = forgedRequest,
+            requestFingerprint = ModelTaskFingerprint.of(forgedRequest),
+        )
+
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = listOf(changedGeneration),
+            reviewTasks = listOf(oldReviewWithCurrentId),
+            expectedReviewRequestId = changedRequestId,
+            reviewProvider = provider,
+        )
+
+        assertNotEquals(originalRequestId, changedRequestId)
+        assertTrue(resolved is TutorVisualResolution.Reviewing)
+    }
+
+    @Test
     fun rejectedHighRiskCandidateNeverRenders() {
         val scene = latticeScene()
         val generation = generationTask(scene = scene, confidence = 0.99)

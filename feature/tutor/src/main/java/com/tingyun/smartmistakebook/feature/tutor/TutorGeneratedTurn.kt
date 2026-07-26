@@ -27,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -39,6 +40,7 @@ import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
 @Composable
 internal fun TutorTurnContent(
     output: TutorPlanOutput,
+    ownerModelTaskRequestId: String? = null,
     modifier: Modifier = Modifier,
     response: TutorTurnResponse? = null,
     solutionRevealPreviewed: Boolean = false,
@@ -53,7 +55,7 @@ internal fun TutorTurnContent(
     onRetryVisual: () -> Unit = {},
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
-    onVisualTargetHit: (String) -> Unit = {},
+    onVisualTargetHit: (TutorVisualHitProof) -> Unit = {},
     onSubmitChoice: (String) -> Unit = {},
     onDirectiveResponse: (String) -> Unit = {},
     onRequestHint: (() -> Unit)? = null,
@@ -109,11 +111,7 @@ internal fun TutorTurnContent(
             ?.takeIf {
                 explanationMode == TutorExplanationMode.GUIDED && interactionEnabled
             }
-            ?.let { target ->
-                { hitTargetId: String ->
-                    if (hitTargetId == target.targetId) onVisualTargetHit(hitTargetId)
-                }
-            }
+            ?.let { onVisualTargetHit }
         TutorVisualPresentation(
             state = resolvedVisual,
             mode = visualPresentationMode,
@@ -121,20 +119,24 @@ internal fun TutorTurnContent(
             onRetry = onRetryVisual,
             onOpenOriginal = onOpenVisualOriginal,
             onReportIncorrect = onReportVisualIncorrect,
+            ownerModelTaskRequestId = ownerModelTaskRequestId,
             onTargetHit = visualTargetHitHandler,
         )
         if (item == null) {
             plan.visualScene?.let { scene ->
                 TutorVisualPresentation(
-                    state = TutorVisualResolution.Ready(
+                    state = ownerModelTaskRequestId?.let { requestId ->
+                        inlineTutorVisualResolution(scene, requestId)
+                    } ?: TutorVisualResolution.Ready(
                         scene = scene,
-                        cacheKey = "legacy:${scene.schemaVersion}:${scene.sceneId}",
+                        cacheKey = "display-only",
                     ),
                     mode = visualPresentationMode,
                     originalAvailable = visualOriginalAvailable,
                     onRetry = {},
                     onOpenOriginal = onOpenVisualOriginal,
                     onReportIncorrect = onReportVisualIncorrect,
+                    ownerModelTaskRequestId = ownerModelTaskRequestId,
                     onTargetHit = visualTargetHitHandler,
                 )
             }
@@ -193,7 +195,7 @@ internal fun TutorTurnContent(
                 onResponse = onDirectiveResponse,
                 visualTargetReady = isTutorVisualTargetReady(
                     state = resolvedVisual,
-                    hasInlineScene = plan.visualScene != null,
+                    inlineScene = plan.visualScene,
                 ),
             )
         }

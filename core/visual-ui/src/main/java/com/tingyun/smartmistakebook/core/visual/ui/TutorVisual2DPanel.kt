@@ -31,8 +31,12 @@ import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualBindingProperty
 import com.tingyun.smartmistakebook.core.model.TutorVisualConnectorKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualFrameFingerprint
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProofRegistry
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualParticleGroupElement
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
 import com.tingyun.smartmistakebook.core.visual.runtime.CompiledTutorVisualDocument
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisual2DLayout
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualFrame
@@ -49,7 +53,9 @@ internal fun TutorVisual2DPanel(
     compiled: CompiledTutorVisualDocument,
     panel: TutorVisualPanel,
     frame: TutorVisualFrame,
-    onTargetHit: ((String) -> Unit)?,
+    presentationStateKey: String,
+    hitPresentation: TutorVisualPresentationIdentity?,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)?,
     modifier: Modifier,
 ) {
     val paper = MaterialTheme.colorScheme.surface
@@ -57,7 +63,7 @@ internal fun TutorVisual2DPanel(
     val accent = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
     val outline = MaterialTheme.colorScheme.outline
-    var selectedElementId by remember(compiled.scene.sceneId, panel.panelId) {
+    var selectedElementId by remember(presentationStateKey, panel.panelId) {
         mutableStateOf<String?>(null)
     }
     val panelElements = compiled.scene.elements.filter { it.panelId == panel.panelId }
@@ -86,16 +92,34 @@ internal fun TutorVisual2DPanel(
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(layout, onTargetHit) {
+                .pointerInput(layout, hitPresentation, onTargetHit) {
                     detectTapGestures { offset ->
+                        val eligibleTargetIds = layout.hitTestEligibleElementIds(currentFrame)
                         val hitTargetId = layout.hitTest(
                             TutorVisualPoint(offset.x.toDouble(), offset.y.toDouble()),
-                            eligibleElementIds = layout.hitTestEligibleElementIds(currentFrame),
+                            eligibleElementIds = eligibleTargetIds,
                             connectorProgressById =
                                 layout.visibleConnectorProgressById(currentFrame),
                         )
                         selectedElementId = hitTargetId
-                        hitTargetId?.let { targetId -> onTargetHit?.invoke(targetId) }
+                        if (hitTargetId != null && hitPresentation != null && onTargetHit != null) {
+                            onTargetHit(
+                                TutorVisualHitProofRegistry.issue(
+                                    presentation = hitPresentation,
+                                    panelId = panel.panelId,
+                                    frameFingerprint = TutorVisualFrameFingerprint.of(
+                                        panelId = panel.panelId,
+                                        stepId = currentFrame.step.stepId,
+                                        stepIndex = currentFrame.stepIndex,
+                                        timeSeconds = currentFrame.timeSeconds,
+                                        eligibleTargetIds = eligibleTargetIds,
+                                    ),
+                                    stepIndex = currentFrame.stepIndex,
+                                    selectedTargetId = hitTargetId,
+                                    eligibleTargetIds = eligibleTargetIds,
+                                ),
+                            )
+                        }
                     }
                 },
         ) {

@@ -70,6 +70,32 @@ class TutorMotionSceneInstrumentedTest {
         composeRule.onNodeWithTag("tutor-motion-canvas-oscillation").assertExists()
     }
 
+    @Test
+    fun focusRoundTripKeepsLegacyPlaybackPosition() {
+        val scene = projectileScene()
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                RootPageColumn {
+                    TutorVisualSceneRenderer(scene)
+                }
+            }
+        }
+        val midpointDescription =
+            "抛体运动，时间 0.50 秒，位置 2.00，3.75 米，速度 4.00，-5.00 米每秒"
+
+        composeRule.onNodeWithTag("tutor-motion-slider-projectile")
+            .performSemanticsAction(SemanticsActions.SetProgress) { setProgress ->
+                check(setProgress(0.5f))
+            }
+        composeRule.onNodeWithContentDescription(midpointDescription).assertExists()
+
+        composeRule.onNodeWithContentDescription("专注查看").performClick()
+        composeRule.onNodeWithContentDescription(midpointDescription).assertExists()
+        composeRule.onNodeWithContentDescription("返回").performClick()
+
+        composeRule.onNodeWithContentDescription(midpointDescription).assertExists()
+    }
+
     private fun projectileScene() = TutorProjectileMotionScene(
         sceneId = "projectile",
         title = "平抛运动",

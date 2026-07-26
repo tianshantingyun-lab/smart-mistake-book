@@ -18,6 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationStateKey
+import com.tingyun.smartmistakebook.core.model.TutorVisualScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
@@ -74,8 +81,40 @@ internal fun canSubmitTutorVisualTarget(attempt: VisualTargetAttempt): Boolean =
 
 internal fun isTutorVisualTargetReady(
     state: TutorVisualResolution,
-    hasInlineScene: Boolean,
-): Boolean = state is TutorVisualResolution.Ready || hasInlineScene
+    inlineScene: TutorVisualScene?,
+): Boolean =
+    (inlineScene ?: (state as? TutorVisualResolution.Ready)?.scene) is TutorVisualDocumentScene
+
+internal fun inlineTutorVisualResolution(
+    scene: TutorVisualScene,
+    ownerModelTaskRequestId: String,
+): TutorVisualResolution.Ready {
+    val sceneFingerprint = TutorVisualSceneFingerprint.of(scene)
+    return TutorVisualResolution.Ready(
+        scene = scene,
+        cacheKey = "inline:$ownerModelTaskRequestId:$sceneFingerprint",
+        sourceKind = TutorVisualSceneSourceKind.INLINE,
+        sceneTaskRequestId = ownerModelTaskRequestId,
+        sceneFingerprint = sceneFingerprint,
+    )
+}
+
+internal fun TutorVisualResolution.Ready.hitPresentation(
+    ownerModelTaskRequestId: String?,
+): TutorVisualPresentationIdentity? {
+    if (scene !is TutorVisualDocumentScene) return null
+    val ownerRequestId = ownerModelTaskRequestId?.takeIf(String::isNotBlank) ?: return null
+    val kind = sourceKind ?: return null
+    val sourceRequestId = sceneTaskRequestId ?: return null
+    if (sceneFingerprint != TutorVisualSceneFingerprint.of(scene)) return null
+    return TutorVisualPresentationIdentity(
+        ownerModelTaskRequestId = ownerRequestId,
+        sourceKind = kind,
+        sceneTaskRequestId = sourceRequestId,
+        sceneId = scene.sceneId,
+        sceneFingerprint = sceneFingerprint,
+    )
+}
 
 internal fun canSubmitTutorVisualTarget(
     mode: TutorExplanationMode,
@@ -105,7 +144,8 @@ internal fun TutorVisualPresentation(
     onRetry: () -> Unit,
     onOpenOriginal: () -> Unit,
     onReportIncorrect: (String) -> Unit,
-    onTargetHit: ((String) -> Unit)? = null,
+    ownerModelTaskRequestId: String? = null,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -133,7 +173,14 @@ internal fun TutorVisualPresentation(
             )
         }
         is TutorVisualResolution.Ready -> {
-            var historyExpanded by rememberSaveable(state.cacheKey) { mutableStateOf(false) }
+            val hitPresentation = state.hitPresentation(ownerModelTaskRequestId)
+            val presentationStateKey = TutorVisualPresentationStateKey.of(
+                scene = state.scene,
+                presentation = hitPresentation,
+            )
+            var historyExpanded by rememberSaveable(presentationStateKey) {
+                mutableStateOf(false)
+            }
             if (
                 mode == TutorVisualPresentationMode.CURRENT_EXPANDED ||
                 historyExpanded
@@ -142,7 +189,9 @@ internal fun TutorVisualPresentation(
                     scene = state.scene,
                     onOpenOriginal = onOpenOriginal.takeIf { originalAvailable },
                     onReportIncorrect = { onReportIncorrect(state.scene.sceneId) },
+                    hitPresentation = hitPresentation,
                     onTargetHit = onTargetHit,
+                    presentationStateKey = presentationStateKey,
                     modifier = modifier.testTag("tutor_visual_ready"),
                 )
             } else {

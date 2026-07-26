@@ -992,6 +992,14 @@ data class TutorVisualTargetEvidenceRecord(
     val surfaceKind: String,
     val modelTaskRequestId: String,
     val responseOrdinal: Int?,
+    val sceneSourceKind: String,
+    val sceneTaskRequestId: String,
+    val sceneId: String,
+    val sceneFingerprint: String,
+    val hitProofId: String,
+    val panelId: String,
+    val frameFingerprint: String,
+    val stepIndex: Int,
     val selectedTargetId: String,
     val selectionWasCorrect: Boolean,
     val submittedAtEpochMillis: Long,
@@ -1006,13 +1014,26 @@ data class PersistTutorVisualTargetEvidenceCommand(
     val surfaceKind: String,
     val modelTaskRequestId: String,
     val responseOrdinal: Int?,
+    val sceneSourceKind: String,
+    val sceneTaskRequestId: String,
+    val sceneId: String,
+    val sceneFingerprint: String,
+    val hitProofId: String,
+    val panelId: String,
+    val frameFingerprint: String,
+    val stepIndex: Int,
     val selectedTargetId: String,
     val submittedAtEpochMillis: Long,
 ) {
     init {
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
         require(revisionNumber > 0 && cycleOrdinal > 0 && turnOrdinal > 0)
-        require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(modelTaskRequestId.isNotBlank() && sceneTaskRequestId.isNotBlank())
+        require(sceneSourceKind == "INLINE" || sceneSourceKind == "GENERATED")
+        require(sceneId.isNotBlank() && sceneFingerprint.isSha256Hex())
+        require(hitProofId.isNotBlank() && panelId.isNotBlank() && frameFingerprint.isSha256Hex())
+        require(stepIndex >= 0 && selectedTargetId.isNotBlank())
+        require(sceneSourceKind != "INLINE" || sceneTaskRequestId == modelTaskRequestId)
         require(
             surfaceKind == "PLAN" && responseOrdinal == null ||
                 surfaceKind == "FOLLOW_UP" && responseOrdinal != null && responseOrdinal > 0,
@@ -1020,6 +1041,9 @@ data class PersistTutorVisualTargetEvidenceCommand(
         require(submittedAtEpochMillis >= 0)
     }
 }
+
+private fun String.isSha256Hex(): Boolean =
+    length == 64 && all { character -> character in '0'..'9' || character in 'a'..'f' }
 
 data class PersistTutorMoveCommand(
     val sessionId: String,
@@ -1746,10 +1770,6 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     ): TutorVisualTargetEvidenceRecord = throw UnsupportedOperationException(
         "Tutor visual-target evidence writes are not implemented",
     )
-
-    suspend fun discardTutorVisualTargetEvidence(
-        command: PersistTutorVisualTargetEvidenceCommand,
-    ): Boolean = false
 
     suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord =
         throw UnsupportedOperationException("Tutor move writes are not implemented")

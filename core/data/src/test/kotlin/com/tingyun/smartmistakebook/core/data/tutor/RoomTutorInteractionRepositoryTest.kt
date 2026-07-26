@@ -1,9 +1,19 @@
 package com.tingyun.smartmistakebook.core.data.tutor
 
+import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
+import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
+import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
+import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProofRegistry
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
+import java.lang.reflect.Proxy
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -114,7 +124,34 @@ class RoomTutorInteractionRepositoryTest {
     }
 
     @Test
-    fun `revoked request compensates a non cooperative late persistence completion`() = runBlocking {
+    fun `rolled back visual evidence write accepts a fresh tap and rejects the old payload`() =
+        runBlocking {
+            var attempts = 0
+            val database = visualEvidenceDatabase { command ->
+                attempts += 1
+                if (attempts == 1) error("Room transaction rolled back")
+                command.toVisualEvidenceRecord()
+            }
+            val repository = RoomTutorInteractionRepository(database)
+            val oldCommand = visualEvidenceCommand(frameFingerprint = "b".repeat(64))
+
+            val firstFailure = runCatching {
+                repository.recordVisualTargetEvidence(oldCommand)
+            }.exceptionOrNull()
+            val freshCommand = visualEvidenceCommand(frameFingerprint = "c".repeat(64))
+            val stored = repository.recordVisualTargetEvidence(freshCommand)
+            val oldReplayFailure = runCatching {
+                repository.recordVisualTargetEvidence(oldCommand)
+            }.exceptionOrNull()
+
+            assertTrue(firstFailure is IllegalStateException)
+            assertEquals(freshCommand.hitProof.proofId, stored.hitProofId)
+            assertTrue(oldReplayFailure is TutorEvidenceRejectedException)
+            assertEquals(2, attempts)
+        }
+
+    @Test
+    fun `cancellation cannot revoke evidence after storage authorization`() = runBlocking {
         val gate = TutorEvidenceWriteGate()
         val writeStarted = CompletableDeferred<Unit>()
         val releaseWrite = CompletableDeferred<Unit>()
@@ -130,17 +167,15 @@ class RoomTutorInteractionRepositoryTest {
                         stored = true
                         "stored"
                     },
-                    discard = { stored = false },
                 )
             }
 
             writeStarted.await()
-            assertTrue(gate.cancel("evidence-3"))
+            assertFalse(gate.cancel("evidence-3"))
             releaseWrite.complete(Unit)
 
-            val failure = runCatching { lateWrite.await() }.exceptionOrNull()
-            assertTrue(failure is TutorEvidenceRejectedException)
-            assertFalse(stored)
+            assertEquals("stored", lateWrite.await())
+            assertTrue(stored)
         }
     }
 
@@ -153,7 +188,6 @@ class RoomTutorInteractionRepositoryTest {
             gate.persist(
                 requestId = "evidence-finalized",
                 write = { "stored" },
-                discard = { error("Finalized evidence must not be discarded") },
             ),
         )
 
@@ -163,7 +197,6 @@ class RoomTutorInteractionRepositoryTest {
             gate.persist(
                 requestId = "evidence-never-started",
                 write = { error("Revoked evidence must not start writing") },
-                discard = {},
             )
         }.exceptionOrNull()
         assertTrue(failure is TutorEvidenceRejectedException)
@@ -181,7 +214,6 @@ class RoomTutorInteractionRepositoryTest {
                     attempts += 1
                     error("temporary database failure")
                 },
-                discard = { error("A failed write did not persist evidence") },
             )
         }.exceptionOrNull()
         val retried = gate.persist(
@@ -190,7 +222,6 @@ class RoomTutorInteractionRepositoryTest {
                 attempts += 1
                 "stored"
             },
-            discard = { error("A successful retry must not be discarded") },
         )
 
         assertTrue(firstFailure is IllegalStateException)
@@ -199,7 +230,89 @@ class RoomTutorInteractionRepositoryTest {
     }
 
     @Test
-    fun `cancel winning while a failing write unwinds still discards late evidence`() = runBlocking {
+    fun `authorization evidence is consumed once across an authorized storage retry`() =
+        runBlocking {
+            val gate = TutorEvidenceWriteGate()
+            var authorizationChecks = 0
+
+            val firstFailure = runCatching {
+                gate.persist(
+                    requestId = "evidence-proof-retry",
+                    beforeAuthorization = { authorizationChecks += 1 },
+                    write = { error("temporary database failure") },
+                )
+            }.exceptionOrNull()
+            val retried = gate.persist(
+                requestId = "evidence-proof-retry",
+                beforeAuthorization = { authorizationChecks += 1 },
+                write = { "stored" },
+            )
+
+            assertTrue(firstFailure is IllegalStateException)
+            assertEquals("stored", retried)
+            assertEquals(1, authorizationChecks)
+        }
+
+    @Test
+    fun `authorized retry rejects a different evidence payload`() = runBlocking {
+        val gate = TutorEvidenceWriteGate()
+        val firstFailure = runCatching {
+            gate.persist(
+                requestId = "evidence-payload",
+                authorizationIdentity = "payload-a",
+                write = { error("unknown commit result") },
+            )
+        }.exceptionOrNull()
+
+        val conflictingFailure = runCatching {
+            gate.persist(
+                requestId = "evidence-payload",
+                authorizationIdentity = "payload-b",
+                write = { error("A different payload must never write") },
+            )
+        }.exceptionOrNull()
+        val exactRetry = gate.persist(
+            requestId = "evidence-payload",
+            authorizationIdentity = "payload-a",
+            write = { "stored" },
+        )
+
+        assertTrue(firstFailure is IllegalStateException)
+        assertTrue(conflictingFailure is TutorEvidenceRejectedException)
+        assertEquals("stored", exactRetry)
+    }
+
+    @Test
+    fun `definite no-commit failure releases authorization for a fresh claim`() = runBlocking {
+        val gate = TutorEvidenceWriteGate()
+        var claims = 0
+        var releases = 0
+
+        val firstFailure = runCatching {
+            gate.persist(
+                requestId = "evidence-no-commit",
+                authorizationIdentity = "first-payload",
+                beforeAuthorization = { claims += 1 },
+                onAuthorizationReleased = { releases += 1 },
+                isDefinitelyNotCommitted = { true },
+                write = { error("transaction rolled back") },
+            )
+        }.exceptionOrNull()
+        val retried = gate.persist(
+            requestId = "evidence-no-commit",
+            authorizationIdentity = "fresh-payload",
+            beforeAuthorization = { claims += 1 },
+            write = { "stored" },
+        )
+
+        assertTrue(firstFailure is IllegalStateException)
+        assertEquals("stored", retried)
+        assertEquals(2, claims)
+        assertEquals(1, releases)
+    }
+
+    @Test
+    fun `failed authorized write stays irrevocable and can be replayed`() = runBlocking {
         val gate = TutorEvidenceWriteGate()
         val writeStarted = CompletableDeferred<Unit>()
         val releaseWrite = CompletableDeferred<Unit>()
@@ -215,17 +328,92 @@ class RoomTutorInteractionRepositoryTest {
                         stored = true
                         error("database reported failure after a partial write")
                     },
-                    discard = { stored = false },
                 )
             }
 
             writeStarted.await()
-            assertTrue(gate.cancel("evidence-cancelled-failure"))
+            assertFalse(gate.cancel("evidence-cancelled-failure"))
             releaseWrite.complete(Unit)
 
             val failure = runCatching { failedWrite.await() }.exceptionOrNull()
-            assertTrue(failure is TutorEvidenceRejectedException)
-            assertFalse(stored)
+            assertTrue(failure is IllegalStateException)
+            assertTrue(stored)
+            assertEquals(
+                "stored",
+                gate.persist("evidence-cancelled-failure") { "stored" },
+            )
         }
     }
 }
+
+private fun visualEvidenceCommand(
+    frameFingerprint: String,
+): RecordTutorVisualTargetEvidenceCommand {
+    val requestId = "visual-evidence-room-rollback"
+    val presentation = TutorVisualPresentationIdentity(
+        ownerModelTaskRequestId = requestId,
+        sourceKind = TutorVisualSceneSourceKind.INLINE,
+        sceneTaskRequestId = requestId,
+        sceneId = "scene-room-rollback",
+        sceneFingerprint = "a".repeat(64),
+    )
+    val proof = TutorVisualHitProofRegistry.issue(
+        presentation = presentation,
+        panelId = "panel-room-rollback",
+        frameFingerprint = frameFingerprint,
+        stepIndex = 0,
+        selectedTargetId = "target-room-rollback",
+        eligibleTargetIds = setOf("target-room-rollback"),
+    )
+    return RecordTutorVisualTargetEvidenceCommand(
+        sessionId = "session-room-rollback",
+        questionDocumentId = "question-room-rollback",
+        revisionNumber = 1,
+        anchor = TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.PLAN,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        ),
+        modelTaskRequestId = requestId,
+        hitProof = proof,
+        occurredAtEpochMillis = 1_000,
+    )
+}
+
+private fun visualEvidenceDatabase(
+    write: (PersistTutorVisualTargetEvidenceCommand) -> TutorVisualTargetEvidenceRecord,
+): StudyDatabasePort =
+    Proxy.newProxyInstance(
+        StudyDatabasePort::class.java.classLoader,
+        arrayOf(StudyDatabasePort::class.java),
+    ) { _, method, arguments ->
+        when (method.name) {
+            "recordTutorVisualTargetEvidence" ->
+                write(arguments.orEmpty().first() as PersistTutorVisualTargetEvidenceCommand)
+            "close" -> Unit
+            else -> error("Unexpected database call: ${method.name}")
+        }
+    } as StudyDatabasePort
+
+private fun PersistTutorVisualTargetEvidenceCommand.toVisualEvidenceRecord() =
+    TutorVisualTargetEvidenceRecord(
+        sessionId = sessionId,
+        questionDocumentId = questionDocumentId,
+        revisionNumber = revisionNumber,
+        cycleOrdinal = cycleOrdinal,
+        turnOrdinal = turnOrdinal,
+        surfaceKind = surfaceKind,
+        modelTaskRequestId = modelTaskRequestId,
+        responseOrdinal = responseOrdinal,
+        sceneSourceKind = sceneSourceKind,
+        sceneTaskRequestId = sceneTaskRequestId,
+        sceneId = sceneId,
+        sceneFingerprint = sceneFingerprint,
+        hitProofId = hitProofId,
+        panelId = panelId,
+        frameFingerprint = frameFingerprint,
+        stepIndex = stepIndex,
+        selectedTargetId = selectedTargetId,
+        selectionWasCorrect = true,
+        submittedAtEpochMillis = submittedAtEpochMillis,
+    )

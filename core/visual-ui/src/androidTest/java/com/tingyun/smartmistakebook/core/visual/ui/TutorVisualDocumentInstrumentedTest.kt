@@ -13,6 +13,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
@@ -29,6 +31,9 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGeometry3DElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualGeometry3DKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorVisualValueSource
 import org.junit.Assert.assertEquals
@@ -70,6 +75,42 @@ class TutorVisualDocumentInstrumentedTest {
             "tutor-visual-v2-panel-chart_panel",
             useUnmergedTree = true,
         ).assertExists()
+    }
+
+    @Test
+    fun actualEligibleCanvasHitMintsAnExactPresentationProof() {
+        val scene = multiPanelScene()
+        val presentation = TutorVisualPresentationIdentity(
+            ownerModelTaskRequestId = "plan-request",
+            sourceKind = TutorVisualSceneSourceKind.INLINE,
+            sceneTaskRequestId = "plan-request",
+            sceneId = scene.sceneId,
+            sceneFingerprint = TutorVisualSceneFingerprint.of(scene),
+        )
+        var selectedTargetId: String? = null
+        var selectedPresentation: TutorVisualPresentationIdentity? = null
+        composeRule.setContent {
+            MaterialTheme {
+                TutorVisualDocumentContent(
+                    scene = scene,
+                    hitPresentation = presentation,
+                    onTargetHit = { proof ->
+                        selectedTargetId = proof.selectedTargetId
+                        selectedPresentation = proof.presentation
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(
+            "tutor-visual-v2-panel-diagram_panel",
+            useUnmergedTree = true,
+        ).performTouchInput { click(center) }
+
+        composeRule.runOnIdle {
+            assertEquals("diagram_object", selectedTargetId)
+            assertEquals(presentation, selectedPresentation)
+        }
     }
 
     @Test

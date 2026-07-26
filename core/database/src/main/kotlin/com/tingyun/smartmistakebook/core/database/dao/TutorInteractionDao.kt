@@ -22,6 +22,15 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationDecision
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationRequest
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewDecision
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -90,39 +99,6 @@ internal abstract class TutorInteractionDao {
 
     @Query("SELECT * FROM model_task WHERE request_id = :requestId LIMIT 1")
     protected abstract suspend fun findModelTask(requestId: String): ModelTaskEntity?
-
-    @Query(
-        """
-        DELETE FROM tutor_visual_target_evidence
-        WHERE model_task_request_id = :modelTaskRequestId
-          AND session_id = :sessionId
-          AND question_document_id = :questionDocumentId
-          AND revision_number = :revisionNumber
-          AND cycle_ordinal = :cycleOrdinal
-          AND turn_ordinal = :turnOrdinal
-          AND surface_kind = :surfaceKind
-          AND (
-              response_ordinal = :responseOrdinal OR
-              response_ordinal IS NULL AND :responseOrdinal IS NULL
-          )
-          AND selected_target_id = :selectedTargetId
-          AND selection_was_correct = :selectionWasCorrect
-          AND submitted_at_epoch_millis = :submittedAtEpochMillis
-        """,
-    )
-    protected abstract suspend fun deleteExactVisualEvidence(
-        modelTaskRequestId: String,
-        sessionId: String,
-        questionDocumentId: String,
-        revisionNumber: Int,
-        cycleOrdinal: Int,
-        turnOrdinal: Int,
-        surfaceKind: String,
-        responseOrdinal: Int?,
-        selectedTargetId: String,
-        selectionWasCorrect: Boolean,
-        submittedAtEpochMillis: Long,
-    ): Int
 
     @Query(
         """
@@ -319,33 +295,6 @@ internal abstract class TutorInteractionDao {
         return existing.toRecord()
     }
 
-    @Transaction
-    open suspend fun discardVisualTargetEvidence(
-        command: PersistTutorVisualTargetEvidenceCommand,
-    ): Boolean {
-        val selectionWasCorrect =
-            command.selectedTargetId == validateVisualTargetEvidence(command)
-        val deleted = deleteExactVisualEvidence(
-            modelTaskRequestId = command.modelTaskRequestId,
-            sessionId = command.sessionId,
-            questionDocumentId = command.questionDocumentId,
-            revisionNumber = command.revisionNumber,
-            cycleOrdinal = command.cycleOrdinal,
-            turnOrdinal = command.turnOrdinal,
-            surfaceKind = command.surfaceKind,
-            responseOrdinal = command.responseOrdinal,
-            selectedTargetId = command.selectedTargetId,
-            selectionWasCorrect = selectionWasCorrect,
-            submittedAtEpochMillis = command.submittedAtEpochMillis,
-        )
-        if (deleted == 1) return true
-        val existing = readVisualEvidenceEntity(command.modelTaskRequestId) ?: return false
-        return existing.hasSameVisualEvidencePayload(
-            command.toVisualEvidenceEntity(selectionWasCorrect),
-        ) &&
-            existing.submittedAtEpochMillis != command.submittedAtEpochMillis
-    }
-
     private suspend fun validateVisualTargetEvidence(
         command: PersistTutorVisualTargetEvidenceCommand,
     ): String {
@@ -360,10 +309,14 @@ internal abstract class TutorInteractionDao {
             task.status == ModelTaskStatus.SUCCEEDED.name &&
                 request.requestId == command.modelTaskRequestId &&
                 command.submittedAtEpochMillis >= task.updatedAtEpochMillis
+        var visualRequest: TutorVisualGenerationRequest? = null
+        var inlineScene: TutorVisualDocumentScene? = null
         val expectedTargetId = when (command.surfaceKind) {
             "PLAN" -> {
                 val input = request.input as? TutorPlanInput
                 val planOutput = output as? TutorPlanOutput
+                visualRequest = planOutput?.plan?.visualRequest
+                inlineScene = planOutput?.plan?.visualScene as? TutorVisualDocumentScene
                 val directive = planOutput?.plan?.interactionDirective as?
                     TutorInteractionDirective.VisualTarget
                 directive?.targetId?.takeIf {
@@ -378,6 +331,8 @@ internal abstract class TutorInteractionDao {
             "FOLLOW_UP" -> {
                 val input = request.input as? TutorRespondInput
                 val respondOutput = output as? TutorRespondOutput
+                visualRequest = respondOutput?.visualRequest
+                inlineScene = respondOutput?.visualScene as? TutorVisualDocumentScene
                 val directive = respondOutput?.interactionDirective as?
                     TutorInteractionDirective.VisualTarget
                 directive?.targetId?.takeIf {
@@ -398,7 +353,75 @@ internal abstract class TutorInteractionDao {
                 command.modelTaskRequestId,
             )
         }
+        val scene = when (command.sceneSourceKind) {
+            "INLINE" -> inlineScene?.takeIf {
+                command.sceneTaskRequestId == command.modelTaskRequestId
+            }
+            "GENERATED" -> validateGeneratedVisualScene(
+                command = command,
+                expectedFocusMarkdown = visualRequest?.focusMarkdown,
+            )
+            else -> null
+        }
+        val selectedElement = scene?.elements?.firstOrNull { element ->
+            element.elementId == command.selectedTargetId
+        }
+        if (
+            scene == null ||
+            scene.sceneId != command.sceneId ||
+            TutorVisualSceneFingerprint.of(scene) != command.sceneFingerprint ||
+            scene.steps.getOrNull(command.stepIndex) == null ||
+            scene.elements.none { element -> element.elementId == expectedTargetId } ||
+            selectedElement?.panelId != command.panelId
+        ) {
+            throw ImmutablePayloadConflictException(
+                "tutor_visual_target_evidence_scene",
+                command.modelTaskRequestId,
+            )
+        }
         return expectedTargetId
+    }
+
+    private suspend fun validateGeneratedVisualScene(
+        command: PersistTutorVisualTargetEvidenceCommand,
+        expectedFocusMarkdown: String?,
+    ): TutorVisualDocumentScene? {
+        val focusMarkdown = expectedFocusMarkdown ?: return null
+        val sceneTask = findModelTask(command.sceneTaskRequestId) ?: return null
+        if (
+            sceneTask.status != ModelTaskStatus.SUCCEEDED.name ||
+            sceneTask.updatedAtEpochMillis > command.submittedAtEpochMillis
+        ) {
+            return null
+        }
+        val request = ModelTaskCodec.decodeRequest(sceneTask.requestSnapshot)
+        if (request.requestId != command.sceneTaskRequestId) return null
+        val output = sceneTask.outputSnapshot?.let(ModelTaskCodec::decodeOutput) ?: return null
+        return when (val input = request.input) {
+            is TutorVisualGenerateInput -> {
+                val generated = output as? TutorVisualGenerateOutput ?: return null
+                generated.scene.takeIf {
+                    input.matchesVisualEvidence(command, focusMarkdown) &&
+                        generated.matchesVisualEvidence(command) &&
+                        generated.decision == TutorVisualGenerationDecision.GENERATED &&
+                        generated.confidence >= MIN_GENERATION_READY_CONFIDENCE
+                }
+            }
+            is TutorVisualReviewInput -> {
+                val reviewed = output as? TutorVisualReviewOutput ?: return null
+                val reviewedScene = when (reviewed.decision) {
+                    TutorVisualReviewDecision.APPROVED -> input.candidateScene
+                    TutorVisualReviewDecision.REPAIRED -> reviewed.scene
+                    TutorVisualReviewDecision.REJECTED -> null
+                }
+                reviewedScene.takeIf {
+                    input.matchesVisualEvidence(command, focusMarkdown) &&
+                        reviewed.matchesVisualEvidence(command) &&
+                        reviewed.confidence >= MIN_REVIEW_READY_CONFIDENCE
+                }
+            }
+            else -> null
+        }
     }
 
     @Transaction
@@ -502,6 +525,14 @@ private fun PersistTutorVisualTargetEvidenceCommand.toVisualEvidenceEntity(
         turnOrdinal = turnOrdinal,
         surfaceKind = surfaceKind,
         responseOrdinal = responseOrdinal,
+        sceneSourceKind = sceneSourceKind,
+        sceneTaskRequestId = sceneTaskRequestId,
+        sceneId = sceneId,
+        sceneFingerprint = sceneFingerprint,
+        hitProofId = hitProofId,
+        panelId = panelId,
+        frameFingerprint = frameFingerprint,
+        stepIndex = stepIndex,
         selectedTargetId = selectedTargetId,
         selectionWasCorrect = selectionWasCorrect,
         submittedAtEpochMillis = submittedAtEpochMillis,
@@ -561,6 +592,14 @@ private fun TutorVisualTargetEvidenceEntity.hasSameVisualEvidencePayload(
         turnOrdinal == other.turnOrdinal &&
         surfaceKind == other.surfaceKind &&
         responseOrdinal == other.responseOrdinal &&
+        sceneSourceKind == other.sceneSourceKind &&
+        sceneTaskRequestId == other.sceneTaskRequestId &&
+        sceneId == other.sceneId &&
+        sceneFingerprint == other.sceneFingerprint &&
+        hitProofId == other.hitProofId &&
+        panelId == other.panelId &&
+        frameFingerprint == other.frameFingerprint &&
+        stepIndex == other.stepIndex &&
         selectedTargetId == other.selectedTargetId &&
         selectionWasCorrect == other.selectionWasCorrect
 
@@ -609,9 +648,63 @@ internal fun TutorVisualTargetEvidenceEntity.toRecord() = TutorVisualTargetEvide
     surfaceKind = surfaceKind,
     modelTaskRequestId = modelTaskRequestId,
     responseOrdinal = responseOrdinal,
+    sceneSourceKind = sceneSourceKind,
+    sceneTaskRequestId = sceneTaskRequestId,
+    sceneId = sceneId,
+    sceneFingerprint = sceneFingerprint,
+    hitProofId = hitProofId,
+    panelId = panelId,
+    frameFingerprint = frameFingerprint,
+    stepIndex = stepIndex,
     selectedTargetId = selectedTargetId,
     selectionWasCorrect = selectionWasCorrect,
     submittedAtEpochMillis = submittedAtEpochMillis,
 )
 
+private fun TutorVisualGenerateInput.matchesVisualEvidence(
+    command: PersistTutorVisualTargetEvidenceCommand,
+    expectedFocusMarkdown: String,
+): Boolean =
+    sessionId == command.sessionId &&
+        draftRevisionNumber == command.revisionNumber &&
+        questionDocument.id == command.questionDocumentId &&
+        anchor.matchesVisualEvidence(command) &&
+        focusMarkdown == expectedFocusMarkdown
+
+private fun TutorVisualReviewInput.matchesVisualEvidence(
+    command: PersistTutorVisualTargetEvidenceCommand,
+    expectedFocusMarkdown: String,
+): Boolean =
+    sessionId == command.sessionId &&
+        draftRevisionNumber == command.revisionNumber &&
+        questionDocument.id == command.questionDocumentId &&
+        anchor.matchesVisualEvidence(command) &&
+        focusMarkdown == expectedFocusMarkdown
+
+private fun TutorVisualGenerateOutput.matchesVisualEvidence(
+    command: PersistTutorVisualTargetEvidenceCommand,
+): Boolean =
+    sessionId == command.sessionId &&
+        draftRevisionNumber == command.revisionNumber &&
+        questionDocumentId == command.questionDocumentId &&
+        anchor.matchesVisualEvidence(command)
+
+private fun TutorVisualReviewOutput.matchesVisualEvidence(
+    command: PersistTutorVisualTargetEvidenceCommand,
+): Boolean =
+    sessionId == command.sessionId &&
+        draftRevisionNumber == command.revisionNumber &&
+        questionDocumentId == command.questionDocumentId &&
+        anchor.matchesVisualEvidence(command)
+
+private fun com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor.matchesVisualEvidence(
+    command: PersistTutorVisualTargetEvidenceCommand,
+): Boolean =
+    surface.name == command.surfaceKind &&
+        cycleOrdinal == command.cycleOrdinal &&
+        turnOrdinal == command.turnOrdinal &&
+        responseOrdinal == command.responseOrdinal
+
 private const val INSERT_CONFLICT = -1L
+private const val MIN_GENERATION_READY_CONFIDENCE = 0.90
+private const val MIN_REVIEW_READY_CONFIDENCE = 0.75

@@ -30,7 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,6 +64,9 @@ import com.tingyun.smartmistakebook.core.model.TutorSceneStep
 import com.tingyun.smartmistakebook.core.model.TutorSpatialDiagramScene
 import com.tingyun.smartmistakebook.core.model.TutorStepFlowScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
+import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationStateKey
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualProgramScene
 import com.tingyun.smartmistakebook.core.visual.ui.TutorVisualDocumentContent
@@ -76,11 +81,14 @@ fun TutorVisualSceneRenderer(
     modifier: Modifier = Modifier,
     onOpenOriginal: (() -> Unit)? = null,
     onReportIncorrect: (() -> Unit)? = null,
-    onTargetHit: ((String) -> Unit)? = null,
+    hitPresentation: TutorVisualPresentationIdentity? = null,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)? = null,
+    presentationStateKey: String = TutorVisualPresentationStateKey.of(scene, hitPresentation),
 ) {
     if (scene !is TutorVisualDocumentScene) {
         LegacyTutorVisualSceneRenderer(
             scene = scene,
+            presentationStateKey = presentationStateKey,
             modifier = modifier,
             onOpenOriginal = onOpenOriginal,
             onReportIncorrect = onReportIncorrect,
@@ -93,8 +101,10 @@ fun TutorVisualSceneRenderer(
     ) {
         TutorVisualDocumentContent(
             scene = scene,
+            presentationStateKey = presentationStateKey,
             onOpenOriginal = onOpenOriginal,
             onReportIncorrect = onReportIncorrect,
+            hitPresentation = hitPresentation,
             onTargetHit = onTargetHit,
         )
     }
@@ -103,14 +113,22 @@ fun TutorVisualSceneRenderer(
 @Composable
 private fun LegacyTutorVisualSceneRenderer(
     scene: TutorVisualScene,
+    presentationStateKey: String,
     modifier: Modifier,
     onOpenOriginal: (() -> Unit)?,
     onReportIncorrect: (() -> Unit)?,
 ) {
-    var focused by rememberSaveable(scene.sceneId) { mutableStateOf(false) }
+    var focused by rememberSaveable(presentationStateKey) { mutableStateOf(false) }
+    val sceneContent = remember(presentationStateKey, scene) {
+        movableContentOf {
+            key(presentationStateKey) {
+                LegacyTutorVisualSceneContent(scene)
+            }
+        }
+    }
     if (!focused) {
         SceneFrame(scene = scene, modifier = modifier) {
-            LegacyTutorVisualSceneContent(scene)
+            sceneContent()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -159,7 +177,7 @@ private fun LegacyTutorVisualSceneRenderer(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState()),
                     ) {
-                        LegacyTutorVisualSceneContent(scene)
+                        sceneContent()
                     }
                     if (onOpenOriginal != null || onReportIncorrect != null) {
                         Row(

@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -120,6 +121,14 @@ class TutorInteractionRepositoryTest {
                 responseOrdinal = 2,
             ),
             modelTaskRequestId = "respond:visual:2",
+            sceneSourceKind = TutorVisualSceneSourceKind.GENERATED,
+            sceneTaskRequestId = "visual:2",
+            sceneId = "scene",
+            sceneFingerprint = "a".repeat(64),
+            hitProofId = "proof",
+            panelId = "panel",
+            frameFingerprint = "b".repeat(64),
+            stepIndex = 0,
             selectedTargetId = "wrong-visible-node",
             selectionWasCorrect = false,
             submittedAtEpochMillis = 200,

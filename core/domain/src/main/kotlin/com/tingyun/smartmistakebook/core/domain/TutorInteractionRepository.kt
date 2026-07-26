@@ -4,6 +4,8 @@ import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -132,6 +134,14 @@ data class TutorVisualTargetEvidence(
     val revisionNumber: Int,
     val anchor: TutorVisualTurnAnchor,
     val modelTaskRequestId: String,
+    val sceneSourceKind: TutorVisualSceneSourceKind,
+    val sceneTaskRequestId: String,
+    val sceneId: String,
+    val sceneFingerprint: String,
+    val hitProofId: String,
+    val panelId: String,
+    val frameFingerprint: String,
+    val stepIndex: Int,
     val selectedTargetId: String,
     val selectionWasCorrect: Boolean,
     val submittedAtEpochMillis: Long,
@@ -139,7 +149,10 @@ data class TutorVisualTargetEvidence(
     init {
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
         require(revisionNumber > 0)
-        require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(modelTaskRequestId.isNotBlank() && sceneTaskRequestId.isNotBlank())
+        require(sceneId.isNotBlank() && sceneFingerprint.isNotBlank() && hitProofId.isNotBlank())
+        require(panelId.isNotBlank() && frameFingerprint.isNotBlank() && stepIndex >= 0)
+        require(selectedTargetId.isNotBlank())
         require(submittedAtEpochMillis >= 0)
     }
 }
@@ -150,13 +163,19 @@ data class RecordTutorVisualTargetEvidenceCommand(
     val revisionNumber: Int,
     val anchor: TutorVisualTurnAnchor,
     val modelTaskRequestId: String,
-    val selectedTargetId: String,
+    val hitProof: TutorVisualHitProof,
     val occurredAtEpochMillis: Long,
 ) {
+    val selectedTargetId: String
+        get() = hitProof.selectedTargetId
+
     init {
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
         require(revisionNumber > 0)
         require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(hitProof.presentation.ownerModelTaskRequestId == modelTaskRequestId) {
+            "Tutor visual hit proof belongs to a different tutor task"
+        }
         require(occurredAtEpochMillis >= 0)
     }
 }
@@ -261,7 +280,7 @@ interface TutorInteractionRepository {
         "Tutor visual-target evidence writes are not implemented",
     )
 
-    /** Revokes one exact guided-evidence request, including a write already crossing storage. */
+    /** Revokes one exact guided-evidence request until storage authorization becomes irrevocable. */
     fun cancelEvidence(requestId: String) = Unit
 
     suspend fun recordMove(command: RecordTutorMoveCommand): TutorTurnResponse

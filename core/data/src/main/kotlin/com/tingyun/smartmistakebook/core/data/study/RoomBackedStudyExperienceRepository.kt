@@ -3,7 +3,6 @@ package com.tingyun.smartmistakebook.core.data.study
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.data.tutor.TutorEvidenceWriteGate
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
-import com.tingyun.smartmistakebook.core.database.AttemptCorrectionRecord
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
 import com.tingyun.smartmistakebook.core.database.ConsumedLedgerEventReceipt
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
@@ -270,30 +269,6 @@ class RoomBackedStudyExperienceRepository(
             write = {
                 database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
                 database.recordAttempt(prepared.command)
-            },
-            discard = {
-                database.appendAttemptCorrection(
-                    AttemptCorrectionRecord(
-                        learnerId = learnerId,
-                        submissionId = prepared.command.submissionId,
-                        correctionId = stableId(
-                            namespace = "correction",
-                            requestId = "revoked:${submission.requestId}",
-                        ),
-                        attemptId = prepared.command.attemptId,
-                        replacementEvidence = LearningEvidence(
-                            direction = LearningEvidenceDirection.NONE,
-                            weight = 0.0,
-                            reason = LearningEvidenceReason.ANSWER_REVEALED,
-                        ),
-                        replacementMemoryOutcome = ProblemMemoryOutcome.ANSWER_REVEALED,
-                        reasonMarkdown = "讲解模式已切换；该迟到作答不得作为学习证据。",
-                        occurredAtEpochMillis = maxOf(
-                            submission.occurredAtEpochMillis,
-                            clock.millis(),
-                        ),
-                    ),
-                )
             },
         )
         latestMistakes = database.observeMistakes().first()

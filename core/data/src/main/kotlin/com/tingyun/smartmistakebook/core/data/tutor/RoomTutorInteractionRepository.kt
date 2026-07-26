@@ -22,6 +22,8 @@ import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorVisualTargetEvidence
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorVisualHitProofRegistry
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +34,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
 
 internal class RoomTutorInteractionRepository(
     private val database: StudyDatabasePort,
@@ -69,13 +70,6 @@ internal class RoomTutorInteractionRepository(
                         database.recordTutorChoice(persisted).toDomain()
                     }
                 },
-                discard = {
-                    withContext(Dispatchers.IO) {
-                        check(database.discardTutorChoice(persisted)) {
-                            "A revoked tutor evidence write could not be discarded"
-                        }
-                    }
-                },
             )
         }
     }
@@ -83,22 +77,31 @@ internal class RoomTutorInteractionRepository(
     override suspend fun recordVisualTargetEvidence(
         command: RecordTutorVisualTargetEvidenceCommand,
     ): TutorVisualTargetEvidence {
+        currentCoroutineContext().ensureActive()
         val persisted = command.toPersistedVisualTargetEvidence()
-        return evidenceWriteGate.persist(
+        val stored = evidenceWriteGate.persist(
             requestId = command.modelTaskRequestId,
-            write = {
-                withContext(Dispatchers.IO) {
-                    database.recordTutorVisualTargetEvidence(persisted).toDomain()
+            authorizationIdentity = persisted,
+            beforeAuthorization = {
+                if (!TutorVisualHitProofRegistry.claim(command.hitProof)) {
+                    throw TutorEvidenceRejectedException(command.modelTaskRequestId)
                 }
             },
-            discard = {
+            onAuthorizationCommitted = {
+                TutorVisualHitProofRegistry.finalize(command.hitProof)
+            },
+            onAuthorizationReleased = {
+                TutorVisualHitProofRegistry.release(command.hitProof)
+            },
+            // Room rolls back an @Transaction before surfacing its exception to this adapter.
+            isDefinitelyNotCommitted = { true },
+            write = {
                 withContext(Dispatchers.IO) {
-                    check(database.discardTutorVisualTargetEvidence(persisted)) {
-                        "A revoked tutor visual-target evidence write could not be discarded"
-                    }
+                    database.recordTutorVisualTargetEvidence(persisted)
                 }
             },
         )
+        return stored.toDomain()
     }
 
     override fun cancelEvidence(requestId: String) {
@@ -204,46 +207,101 @@ internal class TutorEvidenceWriteGate {
 
     suspend fun <T> persist(
         requestId: String,
+        authorizationIdentity: Any = requestId,
+        beforeAuthorization: () -> Unit = {},
+        onAuthorizationCommitted: () -> Unit = {},
+        onAuthorizationReleased: () -> Unit = {},
+        isDefinitelyNotCommitted: (Throwable) -> Boolean = { false },
         write: suspend () -> T,
-        discard: suspend () -> Unit,
     ): T {
         currentCoroutineContext().ensureActive()
         val authorization = requests.computeIfAbsent(requestId) { EvidenceWriteAuthorization() }
-        return when (authorization.begin()) {
+        return when (authorization.begin(authorizationIdentity)) {
             EvidenceWriteBegin.REJECTED -> throw TutorEvidenceRejectedException(requestId)
-            EvidenceWriteBegin.REPLAY -> withContext(NonCancellable) { write() }
-            EvidenceWriteBegin.STARTED -> persistStarted(requestId, authorization, write, discard)
+            EvidenceWriteBegin.REPLAY -> persistAuthorized(
+                authorization = authorization,
+                authorizationIdentity = authorizationIdentity,
+                onAuthorizationCommitted = onAuthorizationCommitted,
+                onAuthorizationReleased = onAuthorizationReleased,
+                isDefinitelyNotCommitted = isDefinitelyNotCommitted,
+                write = write,
+            )
+            EvidenceWriteBegin.STARTED ->
+                persistStarted(
+                    requestId = requestId,
+                    authorization = authorization,
+                    authorizationIdentity = authorizationIdentity,
+                    beforeAuthorization = beforeAuthorization,
+                    onAuthorizationCommitted = onAuthorizationCommitted,
+                    onAuthorizationReleased = onAuthorizationReleased,
+                    isDefinitelyNotCommitted = isDefinitelyNotCommitted,
+                    write = write,
+                )
         }
     }
 
     private suspend fun <T> persistStarted(
         requestId: String,
         authorization: EvidenceWriteAuthorization,
+        authorizationIdentity: Any,
+        beforeAuthorization: () -> Unit,
+        onAuthorizationCommitted: () -> Unit,
+        onAuthorizationReleased: () -> Unit,
+        isDefinitelyNotCommitted: (Throwable) -> Boolean,
         write: suspend () -> T,
-        discard: suspend () -> Unit,
     ): T = withContext(NonCancellable) {
-        val value = try {
-            write()
+        try {
+            beforeAuthorization()
         } catch (failure: Throwable) {
-            when (authorization.failWrite()) {
-                EvidenceWriteFailure.RETRYABLE -> throw failure
-                EvidenceWriteFailure.REVOKED -> {
-                    discard()
-                    throw TutorEvidenceRejectedException(requestId)
-                }
-            }
+            authorization.abandonBeforeAuthorization(authorizationIdentity)
+            throw failure
         }
-        if (!authorization.finalizeWrite()) {
-            discard()
+        if (!authorization.authorizeWrite(authorizationIdentity)) {
+            onAuthorizationReleased()
             throw TutorEvidenceRejectedException(requestId)
         }
-        value
+        persistAuthorized(
+            authorization = authorization,
+            authorizationIdentity = authorizationIdentity,
+            onAuthorizationCommitted = onAuthorizationCommitted,
+            onAuthorizationReleased = onAuthorizationReleased,
+            isDefinitelyNotCommitted = isDefinitelyNotCommitted,
+            write = write,
+        )
+    }
+
+    private suspend fun <T> persistAuthorized(
+        authorization: EvidenceWriteAuthorization,
+        authorizationIdentity: Any,
+        onAuthorizationCommitted: () -> Unit,
+        onAuthorizationReleased: () -> Unit,
+        isDefinitelyNotCommitted: (Throwable) -> Boolean,
+        write: suspend () -> T,
+    ): T = withContext(NonCancellable) {
+        try {
+            val value = write()
+            authorization.finishWrite(authorizationIdentity)
+            onAuthorizationCommitted()
+            value
+        } catch (failure: Throwable) {
+            if (
+                authorization.failWrite(
+                    authorizationIdentity = authorizationIdentity,
+                    definitelyNotCommitted = isDefinitelyNotCommitted(failure),
+                )
+            ) {
+                onAuthorizationReleased()
+            }
+            throw failure
+        }
     }
 }
 
 private enum class EvidenceWriteState {
     OPEN,
     WRITING,
+    AUTHORIZED_WRITING,
+    AUTHORIZED_RETRY,
     COMMITTED,
     CANCELLED,
 }
@@ -254,45 +312,112 @@ private enum class EvidenceWriteBegin {
     REJECTED,
 }
 
-private enum class EvidenceWriteFailure {
-    RETRYABLE,
-    REVOKED,
-}
-
 private class EvidenceWriteAuthorization {
-    private val state = AtomicReference(EvidenceWriteState.OPEN)
+    private var state = EvidenceWriteState.OPEN
+    private var authorizationIdentity: Any? = null
 
-    fun begin(): EvidenceWriteBegin = when {
-        state.compareAndSet(EvidenceWriteState.OPEN, EvidenceWriteState.WRITING) ->
+    @Synchronized
+    fun begin(candidateIdentity: Any): EvidenceWriteBegin = when (state) {
+        EvidenceWriteState.OPEN -> {
+            state = EvidenceWriteState.WRITING
+            authorizationIdentity = candidateIdentity
             EvidenceWriteBegin.STARTED
-        state.get() == EvidenceWriteState.COMMITTED -> EvidenceWriteBegin.REPLAY
-        else -> EvidenceWriteBegin.REJECTED
+        }
+        EvidenceWriteState.AUTHORIZED_RETRY -> {
+            if (authorizationIdentity == candidateIdentity) {
+                state = EvidenceWriteState.AUTHORIZED_WRITING
+                EvidenceWriteBegin.REPLAY
+            } else {
+                EvidenceWriteBegin.REJECTED
+            }
+        }
+        EvidenceWriteState.COMMITTED ->
+            if (authorizationIdentity == candidateIdentity) {
+                EvidenceWriteBegin.REPLAY
+            } else {
+                EvidenceWriteBegin.REJECTED
+            }
+        EvidenceWriteState.WRITING,
+        EvidenceWriteState.AUTHORIZED_WRITING,
+        EvidenceWriteState.CANCELLED,
+        -> EvidenceWriteBegin.REJECTED
     }
 
-    fun finalizeWrite(): Boolean =
-        state.compareAndSet(EvidenceWriteState.WRITING, EvidenceWriteState.COMMITTED)
+    @Synchronized
+    fun authorizeWrite(candidateIdentity: Any): Boolean {
+        if (
+            state != EvidenceWriteState.WRITING ||
+            authorizationIdentity != candidateIdentity
+        ) {
+            return false
+        }
+        state = EvidenceWriteState.AUTHORIZED_WRITING
+        return true
+    }
 
-    fun failWrite(): EvidenceWriteFailure =
-        if (state.compareAndSet(EvidenceWriteState.WRITING, EvidenceWriteState.OPEN)) {
-            EvidenceWriteFailure.RETRYABLE
+    @Synchronized
+    fun abandonBeforeAuthorization(candidateIdentity: Any) {
+        when {
+            state == EvidenceWriteState.CANCELLED -> Unit
+            state == EvidenceWriteState.WRITING &&
+                authorizationIdentity == candidateIdentity -> {
+                state = EvidenceWriteState.OPEN
+                authorizationIdentity = null
+            }
+            else -> error("Only an uncommitted evidence write may abandon authorization")
+        }
+    }
+
+    @Synchronized
+    fun finishWrite(candidateIdentity: Any) {
+        when {
+            state == EvidenceWriteState.COMMITTED &&
+                authorizationIdentity == candidateIdentity -> Unit
+            state == EvidenceWriteState.AUTHORIZED_WRITING &&
+                authorizationIdentity == candidateIdentity -> state = EvidenceWriteState.COMMITTED
+            else -> error("Only the exact authorized evidence write may finish")
+        }
+    }
+
+    @Synchronized
+    fun failWrite(
+        authorizationIdentity: Any,
+        definitelyNotCommitted: Boolean,
+    ): Boolean {
+        if (
+            state == EvidenceWriteState.COMMITTED &&
+            this.authorizationIdentity == authorizationIdentity
+        ) {
+            return false
+        }
+        check(
+            state == EvidenceWriteState.AUTHORIZED_WRITING &&
+                this.authorizationIdentity == authorizationIdentity,
+        ) {
+            "Only the exact authorized evidence write may fail"
+        }
+        state = if (definitelyNotCommitted) {
+            this.authorizationIdentity = null
+            EvidenceWriteState.OPEN
         } else {
-            check(state.get() == EvidenceWriteState.CANCELLED) {
-                "Only cancellation may race with an in-flight evidence write"
-            }
-            EvidenceWriteFailure.REVOKED
+            EvidenceWriteState.AUTHORIZED_RETRY
         }
+        return definitelyNotCommitted
+    }
 
-    fun cancel(): Boolean {
-        while (true) {
-            when (val current = state.get()) {
-                EvidenceWriteState.COMMITTED,
-                EvidenceWriteState.CANCELLED,
-                -> return false
-                EvidenceWriteState.OPEN,
-                EvidenceWriteState.WRITING,
-                -> if (state.compareAndSet(current, EvidenceWriteState.CANCELLED)) return true
-            }
+    @Synchronized
+    fun cancel(): Boolean = when (state) {
+        EvidenceWriteState.OPEN,
+        EvidenceWriteState.WRITING,
+        -> {
+            state = EvidenceWriteState.CANCELLED
+            true
         }
+        EvidenceWriteState.AUTHORIZED_WRITING,
+        EvidenceWriteState.AUTHORIZED_RETRY,
+        EvidenceWriteState.COMMITTED,
+        EvidenceWriteState.CANCELLED,
+        -> false
     }
 }
 
@@ -320,6 +445,14 @@ private fun RecordTutorVisualTargetEvidenceCommand.toPersistedVisualTargetEviden
         surfaceKind = anchor.surface.name,
         modelTaskRequestId = modelTaskRequestId,
         responseOrdinal = anchor.responseOrdinal,
+        sceneSourceKind = hitProof.presentation.sourceKind.name,
+        sceneTaskRequestId = hitProof.presentation.sceneTaskRequestId,
+        sceneId = hitProof.presentation.sceneId,
+        sceneFingerprint = hitProof.presentation.sceneFingerprint,
+        hitProofId = hitProof.proofId,
+        panelId = hitProof.panelId,
+        frameFingerprint = hitProof.frameFingerprint,
+        stepIndex = hitProof.stepIndex,
         selectedTargetId = selectedTargetId,
         submittedAtEpochMillis = occurredAtEpochMillis,
     )
@@ -382,6 +515,14 @@ private fun TutorVisualTargetEvidenceRecord.toDomain() = TutorVisualTargetEviden
         responseOrdinal = responseOrdinal,
     ),
     modelTaskRequestId = modelTaskRequestId,
+    sceneSourceKind = TutorVisualSceneSourceKind.valueOf(sceneSourceKind),
+    sceneTaskRequestId = sceneTaskRequestId,
+    sceneId = sceneId,
+    sceneFingerprint = sceneFingerprint,
+    hitProofId = hitProofId,
+    panelId = panelId,
+    frameFingerprint = frameFingerprint,
+    stepIndex = stepIndex,
     selectedTargetId = selectedTargetId,
     selectionWasCorrect = selectionWasCorrect,
     submittedAtEpochMillis = submittedAtEpochMillis,

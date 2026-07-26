@@ -16,6 +16,8 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationDecision
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewDecision
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
@@ -39,7 +41,15 @@ internal sealed interface TutorVisualResolution {
     data class Ready(
         val scene: TutorVisualScene,
         val cacheKey: String,
-    ) : TutorVisualResolution
+        val sourceKind: TutorVisualSceneSourceKind? = null,
+        val sceneTaskRequestId: String? = null,
+        val sceneFingerprint: String = TutorVisualSceneFingerprint.of(scene),
+    ) : TutorVisualResolution {
+        init {
+            require((sourceKind == null) == (sceneTaskRequestId == null))
+            require(sceneTaskRequestId == null || sceneTaskRequestId.isNotBlank())
+        }
+    }
 
     data class Reviewing(
         val generationTask: ModelTaskSnapshot,
@@ -52,6 +62,9 @@ internal sealed interface TutorVisualResolution {
         val canRetry: Boolean = false,
         val failedTask: ModelTaskSnapshot? = null,
         val reviewCandidate: Reviewing? = null,
+        val retryTaskKind: ModelTaskKind? = failedTask?.request?.input?.kind,
+        val retrySemanticRequestId: String? = failedTask?.request?.requestId
+            ?.substringBefore(RETRY_REQUEST_MARKER),
     ) : TutorVisualResolution
 }
 
@@ -242,7 +255,12 @@ internal fun resolveTutorVisual(
     )
     val reasons = generated.reviewReasonCodes()
     if (reasons.isEmpty()) {
-        return TutorVisualResolution.Ready(candidate, generationCacheKey)
+        return TutorVisualResolution.Ready(
+            scene = candidate,
+            cacheKey = generationCacheKey,
+            sourceKind = TutorVisualSceneSourceKind.GENERATED,
+            sceneTaskRequestId = generationTask.request.requestId,
+        )
     }
     if (
         reviewProvider != null &&
@@ -264,7 +282,8 @@ internal fun resolveTutorVisual(
         .firstOrNull { task ->
             val input = task.request.input as? TutorVisualReviewInput
             input?.anchor == anchor &&
-                input.candidateScene.sceneId == candidate.sceneId &&
+                TutorVisualSceneFingerprint.of(input.candidateScene) ==
+                TutorVisualSceneFingerprint.of(candidate) &&
                 input.sessionId == question.sessionId &&
                 input.draftRevisionNumber == question.revisionNumber &&
                 input.questionDocument.id == question.questionDocument.document.id &&
@@ -295,7 +314,14 @@ internal fun resolveTutorVisual(
         TutorVisualReviewDecision.APPROVED -> candidate
             .takeIf { reviewed.confidence >= MIN_REVIEW_CONFIDENCE }
             ?.takeIf(::isLocallyRenderable)
-            ?.let { scene -> TutorVisualResolution.Ready(scene, generationCacheKey) }
+            ?.let { scene ->
+                TutorVisualResolution.Ready(
+                    scene = scene,
+                    cacheKey = generationCacheKey,
+                    sourceKind = TutorVisualSceneSourceKind.GENERATED,
+                    sceneTaskRequestId = reviewOutput.request.requestId,
+                )
+            }
             ?: TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
         TutorVisualReviewDecision.REPAIRED -> reviewed.scene
             ?.takeIf { reviewed.confidence >= MIN_REVIEW_CONFIDENCE }
@@ -313,6 +339,8 @@ internal fun resolveTutorVisual(
                             reviewOutput.visualProviderConfigurationVersion(),
                         requestIdentity = reviewOutput.request.requestId,
                     ),
+                    sourceKind = TutorVisualSceneSourceKind.GENERATED,
+                    sceneTaskRequestId = reviewOutput.request.requestId,
                 )
             }
             ?: TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)

@@ -59,6 +59,7 @@ internal data class TutorTurnResponseEntity(
     indices = [
         Index(value = ["session_id"]),
         Index(value = ["session_id", "cycle_ordinal", "turn_ordinal"]),
+        Index(value = ["hit_proof_id"], unique = true),
     ],
 )
 internal data class TutorVisualTargetEvidenceEntity(
@@ -79,6 +80,22 @@ internal data class TutorVisualTargetEvidenceEntity(
     val surfaceKind: String,
     @ColumnInfo(name = "response_ordinal")
     val responseOrdinal: Int?,
+    @ColumnInfo(name = "scene_source_kind")
+    val sceneSourceKind: String,
+    @ColumnInfo(name = "scene_task_request_id")
+    val sceneTaskRequestId: String,
+    @ColumnInfo(name = "scene_id")
+    val sceneId: String,
+    @ColumnInfo(name = "scene_fingerprint")
+    val sceneFingerprint: String,
+    @ColumnInfo(name = "hit_proof_id")
+    val hitProofId: String,
+    @ColumnInfo(name = "panel_id")
+    val panelId: String,
+    @ColumnInfo(name = "frame_fingerprint")
+    val frameFingerprint: String,
+    @ColumnInfo(name = "step_index")
+    val stepIndex: Int,
     @ColumnInfo(name = "selected_target_id")
     val selectedTargetId: String,
     @ColumnInfo(name = "selection_was_correct")

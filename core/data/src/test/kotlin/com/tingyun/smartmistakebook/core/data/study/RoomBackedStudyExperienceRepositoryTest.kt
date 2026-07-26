@@ -49,7 +49,6 @@ import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
-import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -82,7 +81,7 @@ import org.junit.Test
 
 class RoomBackedStudyExperienceRepositoryTest {
     @Test
-    fun cancelledTutorChoiceNeutralizesANonCooperativeLateWrite() = runBlocking {
+    fun cancellationAfterStorageAuthorizationCannotRevokeTutorChoice() = runBlocking {
         val database = FakeStudyDatabasePort()
         val writeEntered = CompletableDeferred<Unit>()
         val releaseWrite = CompletableDeferred<Unit>()
@@ -117,12 +116,8 @@ class RoomBackedStudyExperienceRepositoryTest {
             repository.cancelChoiceSubmission(submission.requestId)
             releaseWrite.complete(Unit)
 
-            val failure = result.await().exceptionOrNull()
-            assertTrue("Expected revoked evidence failure, got $failure", failure is TutorEvidenceRejectedException)
-            assertEquals(
-                LearningEvidenceReason.ANSWER_REVEALED,
-                database.corrections.single().replacementEvidence.reason,
-            )
+            assertTrue(result.await().isSuccess)
+            assertTrue(database.corrections.isEmpty())
             assertEquals(StudyDataStatus.READY, repository.snapshot.value.status)
         } finally {
             repository.close()

@@ -50,6 +50,53 @@ class TutorVisualIntentTest {
             VisualIntentKind.DIAGRAM,
             VisualIntent.detect("不要只讲文字，请画一个受力图")?.kind,
         )
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect("不要动画，请画一个受力图")?.kind,
+        )
+        assertEquals(
+            VisualIntentKind.THREE_DIMENSIONAL,
+            VisualIntent.detect("Don't draw a diagram; show me a 3D model.")?.kind,
+        )
+        assertNull(VisualIntent.detect("Draw a diagram; but don't use any visuals."))
+    }
+
+    @Test
+    fun englishAndChineseVisualNegationStayLocalToTheRequestedVisual() {
+        assertNull(VisualIntent.detect("Please don't draw a diagram; explain it in words."))
+        assertNull(VisualIntent.detect("Explain it without an animation."))
+        assertNull(VisualIntent.detect("请别用动画解释"))
+        assertNull(VisualIntent.detect("请不要使用动画，只用文字说明"))
+        assertNull(VisualIntent.detect("请别采用动画，请用文字讲"))
+        assertNull(VisualIntent.detect("不要用动态图"))
+        assertNull(VisualIntent.detect("动画不要用来解释，只用文字说明"))
+        assertNull(VisualIntent.detect("请不要给我用图解释"))
+        assertNull(VisualIntent.detect("Please don't use animated diagrams; explain in words."))
+        assertNull(VisualIntent.detect("Please don't use a static diagram; explain in words."))
+        assertNull(VisualIntent.detect("Please do not use animation; explain in words."))
+        assertNull(VisualIntent.detect("A diagram—don't use it; explain in words."))
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect("Don't just explain in words; draw a diagram.")?.kind,
+        )
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect("不要只讲文字，请画一个受力图")?.kind,
+        )
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect("不要使用动画，请画静态受力图")?.kind,
+        )
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect("请不要使用这种动态过程动画，请画静态受力图")?.kind,
+        )
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect(
+                "Please don't use a detailed animated diagram; draw a static force diagram.",
+            )?.kind,
+        )
     }
 
     @Test

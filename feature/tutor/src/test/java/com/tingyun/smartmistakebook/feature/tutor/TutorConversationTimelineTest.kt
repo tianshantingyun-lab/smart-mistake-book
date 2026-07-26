@@ -33,6 +33,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import org.junit.Assert.assertEquals
@@ -426,6 +427,14 @@ class TutorConversationTimelineTest {
                 turnOrdinal = 1,
             ),
             modelTaskRequestId = plan.request.requestId,
+            sceneSourceKind = TutorVisualSceneSourceKind.INLINE,
+            sceneTaskRequestId = plan.request.requestId,
+            sceneId = "scene",
+            sceneFingerprint = "a".repeat(64),
+            hitProofId = "proof",
+            panelId = "panel",
+            frameFingerprint = "b".repeat(64),
+            stepIndex = 0,
             selectedTargetId = "other-visible-node",
             selectionWasCorrect = false,
             submittedAtEpochMillis = 200,

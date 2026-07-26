@@ -20,6 +20,13 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
+import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
+import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
@@ -120,6 +127,14 @@ class TutorInteractionDatabaseInstrumentedTest {
                 surfaceKind = "PLAN",
                 modelTaskRequestId = requestId,
                 responseOrdinal = null,
+                sceneSourceKind = "INLINE",
+                sceneTaskRequestId = requestId,
+                sceneId = "visual-target",
+                sceneFingerprint = TutorVisualSceneFingerprint.of(visualTargetScene()),
+                hitProofId = "proof-correct",
+                panelId = "panel",
+                frameFingerprint = "f".repeat(64),
+                stepIndex = 0,
                 selectedTargetId = "target-node",
                 submittedAtEpochMillis = 1_300,
             )
@@ -170,6 +185,14 @@ class TutorInteractionDatabaseInstrumentedTest {
                 surfaceKind = "PLAN",
                 modelTaskRequestId = requestId,
                 responseOrdinal = null,
+                sceneSourceKind = "INLINE",
+                sceneTaskRequestId = requestId,
+                sceneId = "visual-target",
+                sceneFingerprint = TutorVisualSceneFingerprint.of(visualTargetScene()),
+                hitProofId = "proof-wrong",
+                panelId = "panel",
+                frameFingerprint = "e".repeat(64),
+                stepIndex = 0,
                 selectedTargetId = "wrong-visible-target",
                 submittedAtEpochMillis = 1_300,
             ),
@@ -183,6 +206,46 @@ class TutorInteractionDatabaseInstrumentedTest {
         assertTrue(store.observeTutorTurnResponses(sessionId).first().isEmpty())
         assertNull(store.readTutorAnswerExposure(requestId))
         assertTrue(store.loadLearningLedger(LEARNER_ID).validPrefix.isEmpty())
+    }
+
+    @Test
+    fun visualTargetEvidenceWithoutAnExactReadySceneIsRejected() = runBlocking {
+        val sessionId = "visual-target-missing-scene"
+        val requestId = planRequestId(sessionId)
+        store.persistSucceededPlanTask(
+            sessionId = sessionId,
+            modelTaskRequestId = requestId,
+            visualTargetId = "target-node",
+            includeVisualScene = false,
+        )
+
+        val failure = runCatching {
+            store.recordTutorVisualTargetEvidence(
+                PersistTutorVisualTargetEvidenceCommand(
+                    sessionId = sessionId,
+                    questionDocumentId = EXPOSURE_QUESTION_DOCUMENT_ID,
+                    revisionNumber = 1,
+                    cycleOrdinal = 1,
+                    turnOrdinal = 1,
+                    surfaceKind = "PLAN",
+                    modelTaskRequestId = requestId,
+                    responseOrdinal = null,
+                    sceneSourceKind = "INLINE",
+                    sceneTaskRequestId = requestId,
+                    sceneId = "visual-target",
+                    sceneFingerprint = TutorVisualSceneFingerprint.of(visualTargetScene()),
+                    hitProofId = "proof-missing",
+                    panelId = "panel",
+                    frameFingerprint = "d".repeat(64),
+                    stepIndex = 0,
+                    selectedTargetId = "target-node",
+                    submittedAtEpochMillis = 1_300,
+                ),
+            )
+        }.exceptionOrNull()
+
+        assertTrue(failure is ImmutablePayloadConflictException)
+        assertTrue(store.observeTutorVisualTargetEvidence(sessionId).first().isEmpty())
     }
 
     @Test
@@ -861,6 +924,7 @@ class TutorInteractionDatabaseInstrumentedTest {
         questionDocumentId: String = EXPOSURE_QUESTION_DOCUMENT_ID,
         revisionNumber: Int = 1,
         visualTargetId: String? = null,
+        includeVisualScene: Boolean = true,
     ) {
         val input = TutorPlanInput(
             sessionId = sessionId,
@@ -893,11 +957,54 @@ class TutorInteractionDatabaseInstrumentedTest {
                             targetId = targetId,
                         )
                     },
+                    visualScene = visualTargetId
+                        ?.takeIf { includeVisualScene }
+                        ?.let { visualTargetScene() },
                 ),
                 modelVersion = "instrumented-test-model",
             ),
         )
     }
+
+    private fun visualTargetScene() = TutorVisualDocumentScene(
+        sceneId = "visual-target",
+        title = "目标选择",
+        panels = listOf(TutorVisualPanel("panel", TutorVisualPanelKind.DIAGRAM_2D)),
+        elements = listOf(
+            TutorVisual2DNodeElement(
+                elementId = "target-node",
+                panelId = "panel",
+                kind = TutorVisual2DNodeKind.RECTANGLE,
+                label = "目标",
+            ),
+            TutorVisual2DNodeElement(
+                elementId = "expected-target",
+                panelId = "panel",
+                kind = TutorVisual2DNodeKind.RECTANGLE,
+                label = "预期目标",
+            ),
+            TutorVisual2DNodeElement(
+                elementId = "wrong-visible-target",
+                panelId = "panel",
+                kind = TutorVisual2DNodeKind.RECTANGLE,
+                label = "其他可见目标",
+            ),
+        ),
+        steps = listOf(
+            TutorVisualStep(
+                stepId = "pick",
+                label = "选择目标",
+                focusElementIds = listOf(
+                    "target-node",
+                    "expected-target",
+                    "wrong-visible-target",
+                ),
+                primaryRelationElementId = "target-node",
+            ),
+        ),
+        fallbackMarkdown = "请选择图中的目标。",
+        accessibilitySummary = "三个可选择目标。",
+    )
 
     private suspend fun StudyDatabasePort.persistSucceededRespondTask(
         sessionId: String,
