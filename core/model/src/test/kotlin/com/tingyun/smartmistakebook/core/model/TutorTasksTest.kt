@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.model
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -179,6 +180,49 @@ class TutorTasksTest {
                 solution,
             ).isEmpty(),
         )
+    }
+
+    @Test
+    fun directModeAuthorizesSolutionAcrossCompletionAndExposureBoundaries() {
+        val directInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.DIRECT,
+            studentMessage = "这一步为什么要先判断导数符号？",
+            requestedMove = TutorMoveType.CHANGE_REPRESENTATION,
+        )
+        val solution = respondOutput().copy(
+            solutionRevealed = true,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(directInput),
+                solution,
+            ).isEmpty(),
+        )
+        assertTrue(solution.canExposeSolutionFor(directInput))
+    }
+
+    @Test
+    fun guidedModeWithoutExplicitRequestRejectsSolutionAcrossBothBoundaries() {
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+            studentMessage = "这一步为什么要先判断导数符号？",
+            requestedMove = TutorMoveType.CHANGE_REPRESENTATION,
+        )
+        val solution = respondOutput().copy(
+            solutionRevealed = true,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                solution,
+            ).map { it.code },
+        )
+        assertFalse(solution.canExposeSolutionFor(guidedInput))
     }
 
     @Test

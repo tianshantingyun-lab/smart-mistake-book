@@ -29,6 +29,11 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
+import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
+import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
+import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
+import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import java.util.concurrent.atomic.AtomicInteger
@@ -424,6 +429,133 @@ class ModelTaskRepositoryInstrumentedTest {
     }
 
     @Test
+    fun tutorPreviewsStayEphemeralUntilTheValidatedFinalIsPersisted() = runBlocking {
+        val request = tutorLobbyRequest()
+        val capabilities = tutorCapabilities()
+        val output = TutorLobbyOutput(
+            conversationId = "tutor-stream-conversation",
+            messageOrdinal = 1,
+            messageMarkdown = "先看题目中的已知条件。",
+            modelVersion = capabilities.modelId,
+        )
+        val gatewayExecutions = AtomicInteger()
+        val repository = RoomModelTaskRepository(
+            database = database,
+            gateway = object : ModelGateway {
+                override suspend fun capabilities() = capabilities
+
+                override fun execute(execution: ModelGatewayExecution) = flow {
+                    gatewayExecutions.incrementAndGet()
+                    emit(ModelGatewayEvent.Started(capabilities))
+                    repeat(128) {
+                        emit(
+                            ModelGatewayEvent.TutorPreview(
+                                TutorMarkdownSnapshot(
+                                    stableMarkdown = "",
+                                    provisionalMarkdown = "先看题目中的已知条件。",
+                                ),
+                            ),
+                        )
+                    }
+                    emit(ModelGatewayEvent.Completed(output))
+                }
+            },
+            clock = { 5_000L },
+        )
+        val identity = TutorStreamIdentity(
+            requestId = request.requestId,
+            ownerVersion = 1,
+            turnVersion = 2,
+            modeVersion = 3,
+        )
+
+        val events = repository.executeTutorStream(request, identity).toList()
+
+        assertEquals(1, gatewayExecutions.get())
+        assertTrue(events.first() is TutorStreamEvent.Started)
+        assertTrue(events.any { it is TutorStreamEvent.Preview })
+        val completed = events.last() as TutorStreamEvent.Completed
+        assertEquals(output.messageMarkdown, completed.snapshot.stableMarkdown)
+        val durable = requireNotNull(repository.observe(request.requestId).first())
+        assertEquals(ModelTaskStatus.SUCCEEDED, durable.status)
+        assertEquals(output, durable.output)
+        assertEquals(3L, durable.stateVersion)
+    }
+
+    @Test
+    fun nonTutorTasksRejectTutorPreviewsInsteadOfSilentlyIgnoringThem() = runBlocking {
+        val delegate = FakeModelGateway(stepDelayMillis = 0)
+        val repository = RoomModelTaskRepository(
+            database = database,
+            gateway = object : ModelGateway {
+                override suspend fun capabilities() = delegate.capabilities()
+
+                override fun execute(execution: ModelGatewayExecution) = flow {
+                    delegate.execute(execution).collect { event ->
+                        emit(event)
+                        if (event is ModelGatewayEvent.Started) {
+                            emit(
+                                ModelGatewayEvent.TutorPreview(
+                                    TutorMarkdownSnapshot(
+                                        stableMarkdown = "不应出现",
+                                        provisionalMarkdown = "",
+                                    ),
+                                ),
+                            )
+                        }
+                    }
+                }
+            },
+            clock = { 5_500L },
+        )
+
+        val final = repository.execute(request()).toList().last()
+
+        assertEquals(ModelTaskStatus.PERMANENT_FAILURE, final.status)
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, final.failure?.code)
+    }
+
+    @Test
+    fun cancellingAnActiveTutorStreamMakesSupersessionDurable() = runBlocking {
+        val request = tutorLobbyRequest()
+        val capabilities = tutorCapabilities()
+        val gatewayStarted = CompletableDeferred<Unit>()
+        val repository = RoomModelTaskRepository(
+            database = database,
+            gateway = object : ModelGateway {
+                override suspend fun capabilities() = capabilities
+
+                override fun execute(execution: ModelGatewayExecution) = flow {
+                    emit(ModelGatewayEvent.Started(capabilities))
+                    gatewayStarted.complete(Unit)
+                    awaitCancellation()
+                }
+            },
+            clock = { 5_750L },
+        )
+        val identity = TutorStreamIdentity(
+            requestId = request.requestId,
+            ownerVersion = 1,
+            turnVersion = 2,
+            modeVersion = 3,
+        )
+        val execution = async {
+            repository.executeTutorStream(request, identity).toList()
+        }
+        withTimeout(10_000) { gatewayStarted.await() }
+
+        repository.cancel(request.requestId)
+
+        val cancelled = withTimeout(10_000) {
+            repository.observe(request.requestId).first {
+                it?.status == ModelTaskStatus.CANCELLED
+            }
+        }
+        assertEquals(ModelTaskStatus.CANCELLED, cancelled?.status)
+        execution.cancelAndJoin()
+    }
+
+    @Test
     fun externalProviderNeverReceivesAnImageTaskWithoutStudentApproval() = runBlocking {
         var gatewayCalled = false
         val externalCapabilities = TEST_CAPABILITIES.copy(
@@ -534,6 +666,16 @@ class ModelTaskRepositoryInstrumentedTest {
         occurredAtEpochMillis = 1_000,
     )
 
+    private fun tutorLobbyRequest() = ModelTaskRequest(
+        requestId = "tutor-lobby:repository-stream",
+        input = TutorLobbyInput(
+            conversationId = "tutor-stream-conversation",
+            messageOrdinal = 1,
+            studentMessage = "这一步从哪里开始？",
+        ),
+        occurredAtEpochMillis = 1_000,
+    )
+
     private fun externalRequest(
         requestId: String = "capture-assess:repository-test-external",
         occurredAtEpochMillis: Long = 1_000,
@@ -576,6 +718,18 @@ class ModelTaskRepositoryInstrumentedTest {
         executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
         providerConfigurationVersion = providerConfigurationVersion,
         isDemo = false,
+    )
+
+    private fun tutorCapabilities() = ProviderCapabilitySnapshot(
+        providerId = "tutor-stream-provider",
+        providerDisplayName = "测试模型",
+        modelId = "tutor-stream-v1",
+        supportedTasks = setOf(ModelTaskKind.TUTOR_LOBBY),
+        supportsImageInput = false,
+        supportsStructuredOutput = true,
+        supportsStreaming = true,
+        executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+        providerConfigurationVersion = "tutor-stream-fixture-v1",
     )
 
     private fun parseOutput() = CaptureParseOutput(

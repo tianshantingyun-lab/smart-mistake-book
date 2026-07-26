@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -27,6 +28,17 @@ internal data class TutorSolutionExposureTarget(
     val notBeforeEpochMillis: Long,
     val pendingRevealCommand: RevealTutorSolutionCommand? = null,
 )
+
+internal fun transientDirectPreviewExposureKey(
+    exposureKey: TutorAnswerExposureKey?,
+    explanationMode: TutorExplanationMode?,
+    activeMessage: TutorActiveStreamMessage?,
+): TutorAnswerExposureKey? {
+    if (exposureKey == null || explanationMode != TutorExplanationMode.DIRECT) return null
+    if (activeMessage?.identity?.requestId != exposureKey.modelTaskRequestId) return null
+    if (activeMessage.snapshot?.visibleMarkdown.isNullOrBlank()) return null
+    return exposureKey
+}
 
 private data class TutorTurnIdentity(
     val sessionId: String,

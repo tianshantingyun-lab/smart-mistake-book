@@ -40,6 +40,13 @@ internal class TutorSolutionExposureTracker internal constructor(
     fun updateSolutionBottomBounds(stableId: String, bounds: Rect) {
         solutionBottomBounds[stableId] = bounds
     }
+
+    fun markTransientAnswerExposure(key: TutorAnswerExposureKey): Boolean {
+        val current = answerExposureKeysState.value
+        if (key in current) return false
+        answerExposureKeysState.value = current + key
+        return true
+    }
 }
 
 @Composable

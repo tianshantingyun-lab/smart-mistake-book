@@ -98,6 +98,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -794,6 +795,272 @@ class OpenAiCompatibleModelGatewayTest {
         assertEquals(TutorMessageIntent.CURRENT_QUESTION_HELP, output.intentDecision.intent)
         assertNull(output.visualScene)
         assertTrue(output.suggestedMoves.isEmpty())
+    }
+
+    @Test
+    fun tutorResponseStreamsAllowlistedPreviewAndRequestsStreaming() = runBlocking {
+        val message = "先判断导数符号。\n\n再写出单调区间。"
+        val payload = tutorRespondPayload(messageMarkdown = message)
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(13).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway)).toList()
+
+        val previews = events.filterIsInstance<ModelGatewayEvent.TutorPreview>()
+        assertTrue(previews.isNotEmpty())
+        assertEquals(message, previews.last().snapshot.visibleMarkdown)
+        val completed = events.last() as ModelGatewayEvent.Completed
+        assertEquals(message, (completed.output as TutorRespondOutput).messageMarkdown)
+        assertTrue(transport.streamBodies.single().contains("\"stream\":true"))
+        assertTrue(
+            transport.streamBodies.single().contains(
+                "intentDecision、solutionRevealed、messageMarkdown",
+            ),
+        )
+        assertEquals(1, transport.authorizationChecks)
+        assertEquals(0, transport.postBodies.size)
+        assertFalse(gateway.capabilities().supportsStreaming)
+    }
+
+    @Test
+    fun nonSseSuccessCompletesWithoutLegacyRetry() = runBlocking {
+        val response = ModelHttpResponse(
+            statusCode = 200,
+            body = envelope(tutorRespondPayload()),
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = listOf(ModelHttpStreamEvent.Fallback(response)),
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val completed = gateway.execute(authorizedTutorRespond(gateway)).toList().last()
+
+        assertTrue(completed is ModelGatewayEvent.Completed)
+        assertEquals(1, transport.authorizationChecks)
+        assertEquals(0, transport.postBodies.size)
+    }
+
+    @Test
+    fun unsupportedStreamRetriesLegacyOnceAfterReauthorization() = runBlocking {
+        val transport = RecordingStreamingTransport(
+            streamEvents = listOf(
+                ModelHttpStreamEvent.Fallback(ModelHttpResponse(statusCode = 400, body = "")),
+            ),
+            postResponse = ModelHttpResponse(200, envelope(tutorRespondPayload())),
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val completed = gateway.execute(authorizedTutorRespond(gateway)).toList().last()
+
+        assertTrue(completed is ModelGatewayEvent.Completed)
+        assertEquals(2, transport.authorizationChecks)
+        assertEquals(1, transport.streamBodies.size)
+        assertEquals(1, transport.postBodies.size)
+        assertTrue(transport.streamBodies.single().contains("\"stream\":true"))
+        assertFalse(transport.postBodies.single().contains("\"stream\":true"))
+    }
+
+    @Test
+    fun rateLimitDuringStreamDoesNotRetryLegacyRequest() = runBlocking {
+        val transport = RecordingStreamingTransport(
+            streamEvents = listOf(
+                ModelHttpStreamEvent.Fallback(ModelHttpResponse(statusCode = 429, body = "")),
+            ),
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val failed = gateway.execute(authorizedTutorRespond(gateway)).toList().last()
+            as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.RATE_LIMITED, failed.failure.code)
+        assertEquals(1, transport.authorizationChecks)
+        assertEquals(0, transport.postBodies.size)
+    }
+
+    @Test
+    fun tutorLobbyStreamsRootMessageThroughTheSamePreviewContract() = runBlocking {
+        val message = "把题目发来，我会直接帮你梳理。"
+        val payload = tutorLobbyPayload(message)
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(11).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Lobby must not read image assets") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorLobby(gateway)).toList()
+
+        val previews = events.filterIsInstance<ModelGatewayEvent.TutorPreview>()
+        assertEquals(message, previews.last().snapshot.stableMarkdown)
+        assertEquals("", previews.last().snapshot.provisionalMarkdown)
+        val completed = events.last() as ModelGatewayEvent.Completed
+        assertEquals(message, (completed.output as TutorLobbyOutput).messageMarkdown)
+    }
+
+    @Test
+    fun providerDeclarationsCannotWidenGuidedPreviewAuthority() = runBlocking {
+        val payload = tutorRespondPayload(
+            messageMarkdown = "最终答案是 2。",
+            solutionRevealed = true,
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(9).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway)).toList()
+
+        assertTrue(events.none { it is ModelGatewayEvent.TutorPreview })
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertEquals(0, transport.postBodies.size)
+    }
+
+    @Test
+    fun falseProviderDeclarationCannotNarrowDirectPreviewAuthority() = runBlocking {
+        val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val payload = tutorRespondPayload(
+            messageMarkdown = "最终答案是 2。",
+            solutionRevealed = false,
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(9).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway, input)).toList()
+
+        assertTrue(events.any { it is ModelGatewayEvent.TutorPreview })
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+    @Test
+    fun directModeStreamsAVisibleBlockBeforeCompletion() = runBlocking {
+        val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val message = "先求导并判断符号。\n\n最终答案是先增后减。"
+        val payload = tutorRespondPayload(
+            messageMarkdown = message,
+            solutionRevealed = true,
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(9).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway, input)).toList()
+
+        val previewIndex = events.indexOfFirst { event ->
+            event is ModelGatewayEvent.TutorPreview &&
+                event.snapshot.visibleMarkdown.contains("先求导并判断符号。")
+        }
+        assertTrue(previewIndex in 0 until events.lastIndex)
+        val completed = events.last() as ModelGatewayEvent.Completed
+        assertEquals(message, (completed.output as TutorRespondOutput).messageMarkdown)
+    }
+
+    @Test
+    fun invalidDirectTerminalKeepsTheLastSafePreviewBeforeFailure() = runBlocking {
+        val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val safeBlock = "先求导并判断符号。\n\n"
+        val payload = tutorRespondPayload(
+            messageMarkdown = safeBlock + "再写出单调区间。",
+            solutionRevealed = true,
+            extraTopLevel = "internalTrace" to JsonPrimitive("must be rejected"),
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(9).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway, input)).toList()
+
+        val lastPreview = events.filterIsInstance<ModelGatewayEvent.TutorPreview>().last()
+        assertTrue(lastPreview.snapshot.visibleMarkdown.contains("先求导并判断符号。"))
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+    @Test
+    fun streamedSafeLiteralPreviewCanCompleteWhileRawOutputRemainsValidated() = runBlocking {
+        val message = "参考 ![图](https://example.test/a.png)\n\n"
+        val payload = tutorLobbyPayload(message)
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(9).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Lobby must not read image assets") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorLobby(gateway)).toList()
+
+        val preview = events.filterIsInstance<ModelGatewayEvent.TutorPreview>().last().snapshot
+        assertTrue(preview.visibleMarkdown.contains("图"))
+        assertFalse(preview.visibleMarkdown.contains("![图](https://"))
+        val completed = events.last() as ModelGatewayEvent.Completed
+        assertEquals(message, (completed.output as TutorLobbyOutput).messageMarkdown)
     }
 
     @Test
@@ -1810,6 +2077,24 @@ class OpenAiCompatibleModelGatewayTest {
         },
     )
 
+    private fun streamDelta(content: String): String = Json.encodeToString(
+        buildJsonObject {
+            put(
+                "choices",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put(
+                                "delta",
+                                buildJsonObject { put("content", content) },
+                            )
+                        },
+                    )
+                },
+            )
+        },
+    )
+
     private fun assessmentPayload(): String = Json.encodeToString(
         buildJsonObject {
             put("decision", "PASS")
@@ -2107,11 +2392,18 @@ class OpenAiCompatibleModelGatewayTest {
     ): String = Json.encodeToString(
         buildJsonObject {
             intentDecision?.let { put("intentDecision", it) }
-            put("messageMarkdown", messageMarkdown)
             put("solutionRevealed", solutionRevealed)
+            put("messageMarkdown", messageMarkdown)
             visualScene?.let { put("visualScene", it) }
             nextMoves?.let { put("nextMoves", it) }
             extraTopLevel?.let { (key, value) -> put(key, value) }
+        },
+    )
+
+    private fun tutorLobbyPayload(messageMarkdown: String): String = Json.encodeToString(
+        buildJsonObject {
+            put("intentDecision", tutorIntentPayload(intent = TutorMessageIntent.AMBIGUOUS))
+            put("messageMarkdown", messageMarkdown)
         },
     )
 
@@ -2621,6 +2913,40 @@ class OpenAiCompatibleModelGatewayTest {
             beforeEnqueue()
             networkEnqueueCount += 1
             return response
+        }
+    }
+
+    private class RecordingStreamingTransport(
+        private val streamEvents: List<ModelHttpStreamEvent>,
+        private val postResponse: ModelHttpResponse? = null,
+    ) : StreamingModelHttpTransport {
+        val streamBodies = mutableListOf<String>()
+        val postBodies = mutableListOf<String>()
+        var authorizationChecks = 0
+            private set
+
+        override suspend fun post(
+            baseUrl: String,
+            apiKey: CharArray,
+            requestBody: String,
+            beforeEnqueue: suspend () -> Unit,
+        ): ModelHttpResponse {
+            beforeEnqueue()
+            authorizationChecks += 1
+            postBodies += requestBody
+            return checkNotNull(postResponse) { "Unexpected legacy retry" }
+        }
+
+        override fun stream(
+            baseUrl: String,
+            apiKey: CharArray,
+            requestBody: String,
+            beforeEnqueue: suspend () -> Unit,
+        ): Flow<ModelHttpStreamEvent> = flow {
+            beforeEnqueue()
+            authorizationChecks += 1
+            streamBodies += requestBody
+            streamEvents.forEach { event -> emit(event) }
         }
     }
 

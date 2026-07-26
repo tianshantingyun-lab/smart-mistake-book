@@ -2,7 +2,11 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskStage
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
@@ -48,6 +52,47 @@ class TutorLobbyModelTaskPolicyTest {
         )
 
         assertNull(request.egressManifest)
+    }
+
+    @Test
+    fun navigationRecoverySelectsTheLatestPendingLobbyTask() {
+        val olderPending = lobbyTask(messageOrdinal = 1, status = ModelTaskStatus.QUEUED)
+        val latestPending = lobbyTask(messageOrdinal = 2, status = ModelTaskStatus.STREAMING)
+        val cancelled = lobbyTask(messageOrdinal = 3, status = ModelTaskStatus.CANCELLED)
+
+        assertEquals(
+            latestPending.request.requestId,
+            latestPendingTutorLobbyTask(
+                listOf(olderPending, latestPending, cancelled),
+            )?.request?.requestId,
+        )
+    }
+
+    private fun lobbyTask(
+        messageOrdinal: Int,
+        status: ModelTaskStatus,
+    ): ModelTaskSnapshot {
+        val provider = provider(ModelExecutionLocation.LOCAL_NO_EGRESS)
+        val request = buildTutorLobbyRequest(
+            provider = provider,
+            messageOrdinal = messageOrdinal,
+            studentMessage = "消息$messageOrdinal",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = messageOrdinal.toLong(),
+        )
+        return ModelTaskSnapshot(
+            taskId = "task-$messageOrdinal",
+            request = request,
+            requestFingerprint = ModelTaskFingerprint.of(request),
+            status = status,
+            stateVersion = 1,
+            stage = ModelTaskStage.PREPARING,
+            userMessage = "处理中",
+            attemptCount = 1,
+            provider = provider,
+            createdAtEpochMillis = messageOrdinal.toLong(),
+            updatedAtEpochMillis = messageOrdinal.toLong(),
+        )
     }
 
     private fun provider(location: ModelExecutionLocation) = ProviderCapabilitySnapshot(

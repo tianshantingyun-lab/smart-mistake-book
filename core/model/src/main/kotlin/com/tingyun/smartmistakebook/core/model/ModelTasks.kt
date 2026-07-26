@@ -789,7 +789,7 @@ object ModelTaskCompletionValidator {
             add(ModelTaskCompletionIssue(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH))
         }
         if (
-            (output.solutionRevealed && !input.studentAuthorizedSolutionRequest()) ||
+            (output.solutionRevealed && !input.authorizesSolutionExposure()) ||
             (
                 output.intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP &&
                     (
@@ -996,6 +996,11 @@ sealed interface ModelGatewayEvent {
             )
         }
     }
+
+    /** Ephemeral allowlisted Tutor text; repositories must not persist this high-frequency event. */
+    data class TutorPreview(
+        val snapshot: TutorMarkdownSnapshot,
+    ) : ModelGatewayEvent
 
     data class Completed(val output: ModelTaskOutput) : ModelGatewayEvent
 

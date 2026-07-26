@@ -10,9 +10,17 @@ import java.net.Proxy
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Arrays
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
@@ -30,6 +38,12 @@ internal data class ModelHttpResponse(
     val body: String,
 )
 
+internal sealed interface ModelHttpStreamEvent {
+    data class Data(val value: String) : ModelHttpStreamEvent
+
+    data class Fallback(val response: ModelHttpResponse) : ModelHttpStreamEvent
+}
+
 internal fun interface ModelHttpTransport {
     suspend fun post(
         baseUrl: String,
@@ -37,6 +51,15 @@ internal fun interface ModelHttpTransport {
         requestBody: String,
         beforeEnqueue: suspend () -> Unit,
     ): ModelHttpResponse
+}
+
+internal interface StreamingModelHttpTransport : ModelHttpTransport {
+    fun stream(
+        baseUrl: String,
+        apiKey: CharArray,
+        requestBody: String,
+        beforeEnqueue: suspend () -> Unit,
+    ): Flow<ModelHttpStreamEvent>
 }
 
 internal class UnsafeModelEndpointException : IllegalArgumentException()
@@ -75,7 +98,7 @@ internal fun InetAddress.isPubliclyRoutable(): Boolean {
     }
 }
 
-internal class OkHttpModelTransport : ModelHttpTransport {
+internal class OkHttpModelTransport : StreamingModelHttpTransport {
     override suspend fun post(
         baseUrl: String,
         apiKey: CharArray,
@@ -107,6 +130,39 @@ internal class OkHttpModelTransport : ModelHttpTransport {
             .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
             .build()
         return client.newCall(request).awaitBoundedResponse(beforeEnqueue)
+    }
+
+    override fun stream(
+        baseUrl: String,
+        apiKey: CharArray,
+        requestBody: String,
+        beforeEnqueue: suspend () -> Unit,
+    ): Flow<ModelHttpStreamEvent> = flow {
+        require(
+            requestBody.toByteArray(StandardCharsets.UTF_8).size.toLong() <=
+                MODEL_EXTERNAL_TRANSPORT_REQUEST_LIMIT_BYTES,
+        ) {
+            "Model request exceeds the upload budget"
+        }
+        val endpoint = PublicModelEndpoint.resolve(baseUrl)
+        val client = OkHttpClient.Builder()
+            .dns(FixedDns(endpoint.host, endpoint.addresses))
+            .proxy(Proxy.NO_PROXY)
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .retryOnConnectionFailure(false)
+            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .callTimeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .build()
+        val request = Request.Builder()
+            .url(endpoint.url)
+            .header("Authorization", "Bearer ${String(apiKey)}")
+            .header("Accept", SSE_MEDIA_TYPE)
+            .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
+            .build()
+        emitAll(client.newCall(request).streamBoundedResponse(beforeEnqueue))
     }
 }
 
@@ -183,6 +239,72 @@ private suspend fun Call.awaitBoundedResponse(
     }
 }
 
+internal fun Call.streamBoundedResponse(
+    beforeEnqueue: suspend () -> Unit,
+    maxBytes: Int = MAX_RESPONSE_BYTES,
+): Flow<ModelHttpStreamEvent> {
+    val networkCall = this
+    return callbackFlow {
+        val responseJob = AtomicReference<Job?>()
+        beforeEnqueue()
+        networkCall.enqueue(
+            object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    close(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    responseJob.set(
+                        launch(Dispatchers.IO) {
+                            try {
+                                response.use {
+                                    val body = it.body
+                                    val declaredLength = body.contentLength()
+                                    if (declaredLength > maxBytes) {
+                                        throw InvalidModelResponseException()
+                                    }
+                                    if (
+                                        it.code !in 200..299 ||
+                                        body.contentType()?.let { contentType ->
+                                            contentType.type == "text" &&
+                                                contentType.subtype == "event-stream"
+                                        } != true
+                                    ) {
+                                        val bytes = body.byteStream().readAtMost(maxBytes)
+                                        try {
+                                            send(
+                                                ModelHttpStreamEvent.Fallback(
+                                                    ModelHttpResponse(
+                                                        statusCode = it.code,
+                                                        body = bytes.toString(StandardCharsets.UTF_8),
+                                                    ),
+                                                ),
+                                            )
+                                        } finally {
+                                            Arrays.fill(bytes, 0.toByte())
+                                        }
+                                    } else {
+                                        BoundedSseDecoder(maxBytes).decode(body.byteStream()) { data ->
+                                            send(ModelHttpStreamEvent.Data(data))
+                                        }
+                                    }
+                                }
+                                close()
+                            } catch (failure: Throwable) {
+                                close(failure)
+                            }
+                        },
+                    )
+                }
+            },
+        )
+        awaitClose {
+            networkCall.cancel()
+            responseJob.getAndSet(null)?.cancel()
+        }
+    }
+}
+
 private fun java.io.InputStream.readAtMost(maxBytes: Int): ByteArray {
     val output = ByteArrayOutputStream(minOf(maxBytes, 16 * 1024))
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
@@ -204,6 +326,7 @@ private fun java.io.InputStream.readAtMost(maxBytes: Int): ByteArray {
 private fun ByteArray.toIntOctets(): IntArray = IntArray(size) { this[it].toInt() and 0xff }
 
 private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
+private const val SSE_MEDIA_TYPE = "text/event-stream"
 private const val CONNECT_TIMEOUT_SECONDS = 15L
 private const val READ_TIMEOUT_SECONDS = 90L
 private const val WRITE_TIMEOUT_SECONDS = 45L

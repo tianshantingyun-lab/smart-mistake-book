@@ -25,6 +25,7 @@ import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
+import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
@@ -58,6 +59,18 @@ internal fun ModelTaskStatus.isTutorExecutionPending(): Boolean = when (this) {
     ModelTaskStatus.STREAMING,
     -> true
     else -> false
+}
+
+internal fun ModelTaskSnapshot.isPendingTutorRespondFor(
+    explanationMode: TutorExplanationMode,
+): Boolean =
+    status.isTutorExecutionPending() &&
+        (request.input as? TutorRespondInput)?.explanationMode == explanationMode
+
+internal fun latestPendingTutorLobbyTask(
+    tasks: List<ModelTaskSnapshot>,
+): ModelTaskSnapshot? = tasks.lastOrNull { task ->
+    task.status.isTutorExecutionPending() && task.request.input is TutorLobbyInput
 }
 
 internal fun ModelTaskSnapshot.toPlanAnswerExposureKey(): TutorAnswerExposureKey? {

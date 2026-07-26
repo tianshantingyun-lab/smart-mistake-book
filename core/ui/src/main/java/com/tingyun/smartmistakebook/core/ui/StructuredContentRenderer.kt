@@ -26,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +65,9 @@ import com.tingyun.smartmistakebook.core.model.StructuredChoice
 import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.StructuredContentSanitizer
 import java.util.Locale
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Renders the bounded structured-content contract without WebView, network images, HTML, or an
@@ -124,11 +128,30 @@ fun SafeMarkdownText(
     modifier: Modifier = Modifier,
     color: Color = Ink,
     emptyFallback: String? = null,
+    contentIdentity: Any = markdown,
 ) {
     val displayText = markdown.ifBlank { emptyFallback.orEmpty() }
-    val annotated = remember(displayText) { displayText.toSafeAnnotatedString() }
+    val parsed = produceState(
+        initialValue = SafeMarkdownParseResult(
+            source = "",
+            contentIdentity = contentIdentity,
+            annotated = AnnotatedString(""),
+        ),
+        key1 = displayText,
+        key2 = contentIdentity,
+    ) {
+        value = SafeMarkdownParseResult(
+            source = displayText,
+            contentIdentity = contentIdentity,
+            annotated = parseSafeMarkdown(displayText),
+        )
+    }.value
     Text(
-        text = annotated,
+        text = safeMarkdownWhileParsing(
+            displayText = displayText,
+            contentIdentity = contentIdentity,
+            parsed = parsed,
+        ),
         modifier = modifier,
         color = color,
         style = style,
@@ -567,6 +590,32 @@ private fun SymbolTableRow(
             )
         }
     }
+}
+
+internal suspend fun parseSafeMarkdown(
+    markdown: String,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+): AnnotatedString = withContext(dispatcher) {
+    markdown.toSafeAnnotatedString()
+}
+
+internal data class SafeMarkdownParseResult(
+    val source: String,
+    val contentIdentity: Any,
+    val annotated: AnnotatedString,
+)
+
+internal fun safeMarkdownWhileParsing(
+    displayText: String,
+    contentIdentity: Any,
+    parsed: SafeMarkdownParseResult,
+): AnnotatedString = if (
+    contentIdentity == parsed.contentIdentity &&
+    displayText.startsWith(parsed.source)
+) {
+    parsed.annotated
+} else {
+    AnnotatedString("")
 }
 
 private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedString {

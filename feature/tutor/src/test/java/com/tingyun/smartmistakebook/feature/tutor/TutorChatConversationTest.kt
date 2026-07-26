@@ -20,6 +20,7 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
@@ -102,6 +103,43 @@ class TutorChatConversationTest {
                 (it.request.input as TutorRespondInput).studentMessage
             },
         )
+    }
+
+    @Test
+    fun distinctExplanationModesAtTheSameOrdinalAreNeverCollapsed() {
+        val guided = succeededResponse(
+            responseOrdinal = 1,
+            requestId = "guided-response",
+            explanationMode = TutorExplanationMode.GUIDED,
+        )
+        val direct = succeededResponse(
+            responseOrdinal = 1,
+            requestId = "direct-response",
+            explanationMode = TutorExplanationMode.DIRECT,
+        )
+
+        assertEquals(
+            setOf(TutorExplanationMode.GUIDED, TutorExplanationMode.DIRECT),
+            latestTutorRespondTasks(listOf(direct, guided)).map {
+                (it.request.input as TutorRespondInput).explanationMode
+            }.toSet(),
+        )
+    }
+
+    @Test
+    fun pendingResponseRecoveryRequiresTheCurrentExplanationMode() {
+        val guided = succeededResponse(
+            responseOrdinal = 1,
+            requestId = "guided-pending",
+            explanationMode = TutorExplanationMode.GUIDED,
+        ).copy(
+            status = ModelTaskStatus.STREAMING,
+            stage = ModelTaskStage.PREPARING,
+            output = null,
+        )
+
+        assertTrue(guided.isPendingTutorRespondFor(TutorExplanationMode.GUIDED))
+        assertFalse(guided.isPendingTutorRespondFor(TutorExplanationMode.DIRECT))
     }
 
     @Test
@@ -351,6 +389,7 @@ class TutorChatConversationTest {
         studentMessage: String = "student-$responseOrdinal",
         assistantMarkdown: String = "assistant-$responseOrdinal",
         solutionRevealed: Boolean = false,
+        explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
         createdAtEpochMillis: Long = responseOrdinal.toLong(),
         updatedAtEpochMillis: Long = createdAtEpochMillis,
     ): ModelTaskSnapshot {
@@ -369,6 +408,7 @@ class TutorChatConversationTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
+            explanationMode = explanationMode,
         )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",

@@ -27,9 +27,16 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.StreamingMarkdownAssembler
+import com.tingyun.smartmistakebook.core.model.StreamingMarkdownCompletion
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
+import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
+import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
+import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
@@ -38,6 +45,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
@@ -65,7 +73,110 @@ class RoomModelTaskRepository internal constructor(
         limit: Int,
     ): Flow<List<ModelTaskSnapshot>> = database.observeRecentModelTasks(subjectId, kind, limit)
 
-    override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> = flow {
+    override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
+        executeInternal(request) {}
+
+    override suspend fun cancel(requestId: String) {
+        while (true) {
+            val current = database.readModelTask(requestId) ?: return
+            if (current.status.isTerminal) return
+            try {
+                transition(
+                    current = current,
+                    nextStatus = ModelTaskStatus.CANCELLED,
+                    stage = current.stage,
+                    userMessage = "任务已停止",
+                    provider = current.provider,
+                )
+                return
+            } catch (_: ConcurrentModelTaskTransition) {
+                // Re-read the optimistic state until cancellation wins or another terminal event does.
+            }
+        }
+    }
+
+    override fun executeTutorStream(
+        request: ModelTaskRequest,
+        identity: TutorStreamIdentity,
+    ): Flow<TutorStreamEvent> = channelFlow {
+        require(identity.requestId == request.requestId) {
+            "Tutor stream identity must match its model request"
+        }
+        require(request.input is TutorRespondInput || request.input is TutorLobbyInput) {
+            "Only Tutor response tasks can use the Tutor stream contract"
+        }
+
+        send(TutorStreamEvent.Started(identity))
+        var lastPreview = TutorMarkdownSnapshot.EMPTY
+        var terminalEmitted = false
+        executeInternal(request) { snapshot ->
+            lastPreview = snapshot
+            send(TutorStreamEvent.Preview(identity, snapshot))
+        }.collect { durable ->
+            if (terminalEmitted) return@collect
+            when (durable.status) {
+                ModelTaskStatus.SUCCEEDED -> {
+                    val markdown = when (val output = durable.output) {
+                        is TutorRespondOutput -> output.messageMarkdown
+                        is TutorLobbyOutput -> output.messageMarkdown
+                        else -> null
+                    }
+                    val completion = markdown?.let { value ->
+                        StreamingMarkdownAssembler().run {
+                            append(value)
+                            complete()
+                        }
+                    }
+                    val snapshot =
+                        (completion as? StreamingMarkdownCompletion.Accepted)?.snapshot
+                    if (snapshot == null) {
+                        send(
+                            TutorStreamEvent.Failed(
+                                identity = identity,
+                                snapshot = lastPreview,
+                                retryable = false,
+                            ),
+                        )
+                    } else {
+                        send(TutorStreamEvent.Completed(identity, snapshot))
+                    }
+                    terminalEmitted = true
+                }
+                ModelTaskStatus.RETRYABLE_FAILURE,
+                ModelTaskStatus.PERMANENT_FAILURE,
+                ModelTaskStatus.CANCELLED,
+                -> {
+                    send(
+                        TutorStreamEvent.Failed(
+                            identity = identity,
+                            snapshot = lastPreview,
+                            retryable = durable.failure?.retryable == true,
+                        ),
+                    )
+                    terminalEmitted = true
+                }
+                ModelTaskStatus.WAITING_FOR_MODEL,
+                ModelTaskStatus.QUEUED,
+                ModelTaskStatus.RUNNING,
+                ModelTaskStatus.STREAMING,
+                -> Unit
+            }
+        }
+        if (!terminalEmitted) {
+            send(
+                TutorStreamEvent.Failed(
+                    identity = identity,
+                    snapshot = lastPreview,
+                    retryable = true,
+                ),
+            )
+        }
+    }
+
+    private fun executeInternal(
+        request: ModelTaskRequest,
+        onPreview: suspend (TutorMarkdownSnapshot) -> Unit,
+    ): Flow<ModelTaskSnapshot> = flow {
         val requestFingerprint = ModelTaskFingerprint.of(request)
         val operationFingerprint = ModelTaskLogicalOperationFingerprint.of(request)
         val initial = database.createModelTask(
@@ -186,11 +297,39 @@ class RoomModelTaskRepository internal constructor(
             }
             emit(current)
             var eventCount = 0
+            var previewEventCount = 0
             var terminalEventSeen = false
             var providerStarted = false
             withTimeout(MODEL_TASK_TIMEOUT_MILLIS) {
                 gateway.execute(execution)
                     .onEach { event ->
+                        if (event is ModelGatewayEvent.TutorPreview) {
+                            if (
+                                current.request.input !is TutorRespondInput &&
+                                current.request.input !is TutorLobbyInput
+                            ) {
+                                throw InvalidProviderProtocol(
+                                    "非 Tutor 任务返回了 Tutor 预览内容",
+                                )
+                            }
+                            if (
+                                !providerStarted ||
+                                current.status !in setOf(
+                                    ModelTaskStatus.RUNNING,
+                                    ModelTaskStatus.STREAMING,
+                                )
+                            ) {
+                                throw InvalidProviderProtocol(
+                                    "模型在开始任务前返回了预览内容",
+                                )
+                            }
+                            previewEventCount += 1
+                            if (previewEventCount > MAX_TUTOR_PREVIEW_EVENTS) {
+                                throw InvalidProviderProtocol("模型返回了过多预览事件")
+                            }
+                            onPreview(event.snapshot)
+                            return@onEach
+                        }
                         eventCount += 1
                         if (eventCount > MAX_GATEWAY_EVENTS) {
                             throw InvalidProviderProtocol("模型返回了过多状态事件")
@@ -347,6 +486,8 @@ class RoomModelTaskRepository internal constructor(
                 provider = current.provider,
             )
         }
+        is ModelGatewayEvent.TutorPreview ->
+            throw InvalidProviderProtocol("Tutor preview bypassed ephemeral routing")
         is ModelGatewayEvent.Completed -> {
             if (current.status !in setOf(ModelTaskStatus.RUNNING, ModelTaskStatus.STREAMING)) {
                 throw InvalidProviderProtocol("模型在开始任务前返回了完成内容")
@@ -571,6 +712,7 @@ private class InvalidProviderProtocol(val userMessage: String) : RuntimeExceptio
 
 private const val MODEL_TASK_TIMEOUT_MILLIS = 120_000L
 private const val MAX_GATEWAY_EVENTS = 64
+private const val MAX_TUTOR_PREVIEW_EVENTS = 4_096
 private const val UNCONFIGURED_PROVIDER_ID = "unconfigured"
 private const val DISPATCH_LIMIT_USER_MESSAGE = "这次处理未能完成，请重新开始"
 private val processActiveOperations = ConcurrentHashMap<String, CompletableDeferred<Unit>>()

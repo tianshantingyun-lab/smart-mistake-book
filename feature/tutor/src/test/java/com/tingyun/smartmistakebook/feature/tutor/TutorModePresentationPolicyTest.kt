@@ -1,5 +1,10 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Rect
+import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
+import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
@@ -105,6 +110,41 @@ class TutorModePresentationPolicyTest {
 
         assertEquals(TutorExplanationMode.DIRECT, state.mode)
         assertNull(state.pendingEvidenceRequestId)
+    }
+
+    @Test
+    fun transientDirectPreviewExposureIsIdempotentAndCannotAuthorizeMasteryEvidence() {
+        val tracker = TutorSolutionExposureTracker(
+            viewportBounds = mutableStateOf<Rect?>(null),
+            solutionBottomBounds = mutableStateMapOf(),
+            answerExposureKeysState = mutableStateOf(emptySet()),
+            targets = emptyList(),
+        )
+        val exposureKey = TutorAnswerExposureKey(
+            sessionId = "session-1",
+            questionDocumentId = "document-1",
+            revisionNumber = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            surfaceKind = TutorAnswerExposureSurfaceKind.RESPOND_REPLY,
+            modelTaskRequestId = "request-1",
+            responseOrdinal = 1,
+        )
+
+        assertTrue(tracker.markTransientAnswerExposure(exposureKey))
+        assertFalse(tracker.markTransientAnswerExposure(exposureKey))
+        assertEquals(setOf(exposureKey), tracker.answerExposureKeys)
+
+        val state = replayTutorGuidance(
+            problem = TutorProblemScope("problem-1", 2),
+            requestedMode = TutorExplanationMode.GUIDED,
+            answerWasExposed = tracker.answerExposureKeys.isNotEmpty(),
+            events = listOf(TutorGuidanceEvent.Question("request-1", masteryRelevant = true)),
+        )
+
+        assertEquals(TutorExplanationMode.DIRECT, state.mode)
+        assertNull(state.pendingEvidenceRequestId)
+        assertFalse(state.authorizeEvidence("request-1").mayWriteLearningEvidence)
     }
 
     @Test

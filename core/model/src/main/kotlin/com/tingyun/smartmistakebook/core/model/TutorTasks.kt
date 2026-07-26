@@ -735,10 +735,14 @@ fun TutorRespondInput.studentAuthorizedSolutionRequest(): Boolean {
         SOLUTION_REQUEST_NEGATIONS.none(normalized::contains)
 }
 
+/** Single local authority shared by preview, completion, rendering, exposure, and history. */
+fun TutorRespondInput.authorizesSolutionExposure(): Boolean =
+    explanationMode == TutorExplanationMode.DIRECT || studentAuthorizedSolutionRequest()
+
 /** Shared defense-in-depth boundary for validation, rendering, exposure recording, and history. */
 fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
     solutionRevealed &&
-        input.studentAuthorizedSolutionRequest() &&
+        input.authorizesSolutionExposure() &&
         sessionId == input.sessionId &&
         draftRevisionNumber == input.draftRevisionNumber &&
         questionDocumentId == input.questionDocument.id &&

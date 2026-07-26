@@ -45,6 +45,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -77,6 +78,7 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 
 private data class TutorRespondExchangeKey(
@@ -88,6 +90,7 @@ private data class TutorRespondExchangeKey(
     val visibleTutorContextMarkdown: String?,
     val priorMessages: List<TutorChatHistoryEntry>,
     val requestedMove: TutorMoveType?,
+    val explanationMode: TutorExplanationMode,
 )
 
 private fun TutorRespondInput.exchangeKey() = TutorRespondExchangeKey(
@@ -99,6 +102,7 @@ private fun TutorRespondInput.exchangeKey() = TutorRespondExchangeKey(
     visibleTutorContextMarkdown = visibleTutorContextMarkdown,
     priorMessages = priorMessages,
     requestedMove = requestedMove,
+    explanationMode = explanationMode,
 )
 
 internal fun latestTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<ModelTaskSnapshot> = tasks
@@ -215,6 +219,7 @@ internal fun priorCycleStudentMessages(tasks: List<ModelTaskSnapshot>): List<Str
 @Composable
 internal fun TutorChatExchange(
     task: ModelTaskSnapshot,
+    activeMessage: TutorActiveStreamMessage? = null,
     resolvedVisualScene: TutorVisualDocumentScene? = null,
     awaitingContinuation: Boolean = false,
     interactionEnabled: Boolean,
@@ -241,24 +246,46 @@ internal fun TutorChatExchange(
             message = input.studentMessage,
             modifier = Modifier.testTag("tutor_chat_user_${input.responseOrdinal}"),
         )
-        TutorAssistantReplyBubble(
-            task = task,
-            awaitingContinuation = awaitingContinuation,
-            showActions = interactionEnabled,
-            recoveryEnabled = recoveryEnabled,
-            executionMatchesCurrentProvider = executionMatchesCurrentProvider,
-            onRetry = onRetry,
-            onOpenModelSettings = onOpenModelSettings,
-            onMove = onMove,
-            onRevealSolution = onRevealSolution,
-            explanationMode = explanationMode,
-            onDirectiveResponse = onDirectiveResponse,
-            localIntentContent = localIntentContent,
-            resolvedVisualScene = resolvedVisualScene,
-            onOpenVisualOriginal = onOpenVisualOriginal,
-            onReportVisualIncorrect = onReportVisualIncorrect,
-            assistantBottomModifier = assistantBottomModifier,
-        )
+        if (activeMessage != null) {
+            TutorActiveAssistantReply(
+                message = activeMessage,
+                onRetry = onRetry,
+            )
+        } else {
+            TutorAssistantReplyBubble(
+                task = task,
+                awaitingContinuation = awaitingContinuation,
+                showActions = interactionEnabled,
+                recoveryEnabled = recoveryEnabled,
+                executionMatchesCurrentProvider = executionMatchesCurrentProvider,
+                onRetry = onRetry,
+                onOpenModelSettings = onOpenModelSettings,
+                onMove = onMove,
+                onRevealSolution = onRevealSolution,
+                explanationMode = explanationMode,
+                onDirectiveResponse = onDirectiveResponse,
+                localIntentContent = localIntentContent,
+                resolvedVisualScene = resolvedVisualScene,
+                onOpenVisualOriginal = onOpenVisualOriginal,
+                onReportVisualIncorrect = onReportVisualIncorrect,
+                assistantBottomModifier = assistantBottomModifier,
+            )
+        }
+    }
+}
+
+@Composable
+internal fun TutorActiveChatExchange(
+    message: TutorActiveStreamMessage,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        TutorStudentMessageBubble(message.studentMessage)
+        TutorActiveAssistantReply(message = message, onRetry = onRetry)
     }
 }
 
@@ -279,6 +306,83 @@ private fun TutorStudentMessageBubble(message: String, modifier: Modifier = Modi
                 color = Ink,
                 style = MaterialTheme.typography.bodyMedium,
             )
+        }
+    }
+}
+
+@Composable
+internal fun TutorActiveAssistantReply(
+    message: TutorActiveStreamMessage,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val markdown = message.snapshot?.visibleMarkdown.orEmpty()
+    if (message.activityVisible && markdown.isEmpty() && !message.showPlaceholder) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("tutor_stream_activity"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(14.dp),
+                color = JadeActive,
+                strokeWidth = 2.dp,
+            )
+        }
+        return
+    }
+    Surface(
+        modifier = modifier.fillMaxWidth(0.94f),
+        color = Paper,
+        shape = RoundedCornerShape(14.dp, 14.dp, 14.dp, 4.dp),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (markdown.isNotEmpty()) {
+                SafeMarkdownText(
+                    markdown = markdown,
+                    style = MaterialTheme.typography.bodyMedium,
+                    contentIdentity = message.identity ?: listOf(
+                        message.ownerVersion,
+                        message.turnVersion,
+                        message.modeVersion,
+                    ),
+                )
+            } else if (message.showPlaceholder) {
+                Row(
+                    modifier = Modifier.testTag("tutor_stream_placeholder"),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = JadeActive,
+                        strokeWidth = 2.dp,
+                    )
+                    Text(
+                        "正在回复…",
+                        color = InkSecondary,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+            if (message.phase == TutorActiveStreamPhase.FAILED) {
+                TutorReplyFailure(
+                    detail = if (markdown.isEmpty()) {
+                        "这次回复没有完成。"
+                    } else {
+                        "这次回复没有完成，已保留上面的内容。"
+                    },
+                    actionLabel = "重试".takeIf {
+                        TutorActiveStreamRecovery.RETRY in message.recoveryActions
+                    },
+                    onAction = onRetry,
+                )
+            }
         }
     }
 }
@@ -491,45 +595,12 @@ internal fun TutorConversationFrame(
     composer: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit,
 ) {
-    var initialTailPositioned by remember(listState) { mutableStateOf(false) }
-    var followsTail by remember(listState) { mutableStateOf(true) }
-    var handledForceToken by remember(listState) { mutableStateOf<Any?>(null) }
-    var handledBlockToken by remember(listState) { mutableStateOf<Any?>(null) }
-
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            val layout = listState.layoutInfo
-            val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index
-            val atEnd = layout.totalItemsCount == 0 || lastVisible == layout.totalItemsCount - 1
-            listState.isScrollInProgress to atEnd
-        }.collect { (scrolling, atEnd) ->
-            if (scrolling) {
-                followsTail = atEnd
-            } else if (atEnd) {
-                followsTail = true
-            }
-        }
-    }
-    LaunchedEffect(autoScrollVersion, forceFollowToken, blockAutoFollowToken, listState) {
-        val forceFollow = forceFollowToken != null && forceFollowToken != handledForceToken
-        val blockAutoFollow = initialTailPositioned &&
-            blockAutoFollowToken != null &&
-            blockAutoFollowToken != handledBlockToken
-        val shouldFollow = !initialTailPositioned ||
-            !blockAutoFollow && (followsTail || forceFollow)
-        withFrameNanos { }
-        val itemCount = snapshotFlow { listState.layoutInfo.totalItemsCount }
-            .first { it > 0 }
-        if (shouldFollow) {
-            listState.scrollToItem(itemCount - 1)
-            followsTail = true
-        } else if (blockAutoFollow) {
-            followsTail = false
-        }
-        initialTailPositioned = true
-        if (forceFollowToken != null) handledForceToken = forceFollowToken
-        if (blockAutoFollowToken != null) handledBlockToken = blockAutoFollowToken
-    }
+    TutorConversationAnchorEffect(
+        autoScrollVersion = autoScrollVersion,
+        forceFollowToken = forceFollowToken,
+        blockAutoFollowToken = blockAutoFollowToken,
+        listState = listState,
+    )
 
     Box(
         modifier = modifier
@@ -583,6 +654,133 @@ internal fun TutorConversationFrame(
                 }
             }
         }
+    }
+}
+
+@Composable
+internal fun TutorConversationAnchorEffect(
+    autoScrollVersion: Any?,
+    forceFollowToken: Any? = null,
+    blockAutoFollowToken: Any? = null,
+    listState: LazyListState,
+) {
+    var initialTailPositioned by remember(listState) { mutableStateOf(false) }
+    var followsTail by remember(listState) { mutableStateOf(true) }
+    var handledForceToken by remember(listState) { mutableStateOf<Any?>(null) }
+    var handledBlockToken by remember(listState) { mutableStateOf<Any?>(null) }
+    val nearBottomThresholdPx = with(LocalDensity.current) { 72.dp.roundToPx() }
+
+    LaunchedEffect(listState, nearBottomThresholdPx) {
+        snapshotFlow {
+            val layout = listState.layoutInfo
+            val lastVisible = layout.visibleItemsInfo.lastOrNull()
+            val nearBottom = isTutorConversationNearBottom(
+                totalItemsCount = layout.totalItemsCount,
+                lastVisibleItemIndex = lastVisible?.index,
+                lastVisibleItemBottomPx = lastVisible?.let { it.offset + it.size },
+                viewportEndPx = layout.viewportEndOffset,
+                thresholdPx = nearBottomThresholdPx,
+            )
+            listState.isScrollInProgress to nearBottom
+        }.collect { (scrolling, nearBottom) ->
+            if (scrolling) {
+                followsTail = nearBottom
+            } else if (nearBottom) {
+                followsTail = true
+            }
+        }
+    }
+    LaunchedEffect(listState) {
+        var previousTailLayout: TutorConversationTailLayout? = null
+        snapshotFlow {
+            if (!followsTail || listState.isScrollInProgress) {
+                null
+            } else {
+                val layout = listState.layoutInfo
+                val itemCount = layout.totalItemsCount
+                TutorConversationTailLayout(
+                    totalItemsCount = itemCount,
+                    tailItemSizePx = layout.visibleItemsInfo
+                        .lastOrNull { it.index == itemCount - 1 }
+                        ?.size,
+                )
+            }
+        }.collectLatest { current ->
+            if (current == null) {
+                previousTailLayout = null
+                return@collectLatest
+            }
+            val previous = previousTailLayout
+            previousTailLayout = current
+            if (
+                shouldFollowTutorConversationLayoutGrowth(
+                    followsTail = followsTail,
+                    previous = previous,
+                    current = current,
+                )
+            ) {
+                listState.scrollToTutorConversationTail(current.totalItemsCount)
+            }
+        }
+    }
+    LaunchedEffect(autoScrollVersion, forceFollowToken, blockAutoFollowToken, listState) {
+        val forceFollow = forceFollowToken != null && forceFollowToken != handledForceToken
+        val blockAutoFollow = initialTailPositioned &&
+            blockAutoFollowToken != null &&
+            blockAutoFollowToken != handledBlockToken
+        val mutation = when {
+            forceFollow -> TutorConversationMutation.STUDENT_SEND
+            blockAutoFollow -> TutorConversationMutation.VISUAL_INSERTION
+            else -> TutorConversationMutation.ACTIVE_REPLY_GROWTH
+        }
+        val shouldFollow = !initialTailPositioned || shouldFollowTutorConversationTail(
+            wasNearBottom = followsTail,
+            mutation = mutation,
+        )
+        if (blockAutoFollow) {
+            followsTail = false
+        }
+        withFrameNanos { }
+        val itemCount = snapshotFlow { listState.layoutInfo.totalItemsCount }
+            .first { it > 0 }
+        if (shouldFollow) {
+            listState.scrollToTutorConversationTail(itemCount)
+            followsTail = true
+        }
+        initialTailPositioned = true
+        if (forceFollowToken != null) handledForceToken = forceFollowToken
+        if (blockAutoFollowToken != null) handledBlockToken = blockAutoFollowToken
+    }
+}
+
+internal data class TutorConversationTailLayout(
+    val totalItemsCount: Int,
+    val tailItemSizePx: Int?,
+)
+
+internal fun shouldFollowTutorConversationLayoutGrowth(
+    followsTail: Boolean,
+    previous: TutorConversationTailLayout?,
+    current: TutorConversationTailLayout,
+): Boolean {
+    if (!followsTail || previous == null) return false
+    val previousSize = previous.tailItemSizePx ?: return false
+    val currentSize = current.tailItemSizePx ?: return false
+    return current.totalItemsCount == previous.totalItemsCount &&
+        current.totalItemsCount > 0 &&
+        currentSize > previousSize
+}
+
+private suspend fun LazyListState.scrollToTutorConversationTail(itemCount: Int) {
+    val lastIndex = itemCount - 1
+    scrollToItem(lastIndex)
+    withFrameNanos { }
+    val layout = layoutInfo
+    val lastItem = layout.visibleItemsInfo.lastOrNull { it.index == lastIndex } ?: return
+    val viewportHeight = layout.viewportEndOffset - layout.viewportStartOffset
+    val tailOffset = (lastItem.size - viewportHeight).coerceAtLeast(0)
+    if (tailOffset > 0) {
+        scrollToItem(lastIndex, tailOffset)
     }
 }
 

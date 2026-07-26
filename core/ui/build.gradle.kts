@@ -18,6 +18,7 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:visual-ui"))
+    implementation(libs.kotlinx.coroutines.android)
     api(platform(libs.compose.bom))
     api(libs.compose.ui)
     api(libs.compose.foundation)
