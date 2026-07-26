@@ -5,6 +5,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ReadableMathText
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.ui.masteryStatusFromStoredUiValue
 import com.tingyun.smartmistakebook.core.ui.studentLabel
 
 internal enum class LibraryFacet(
@@ -13,7 +14,7 @@ internal enum class LibraryFacet(
     val visibleOptionLimit: Int,
 ) {
     SUBJECT("subject", "科目", 8),
-    CHAPTER("chapter", "板块", 12),
+    CHAPTER("chapter", "板块/章节", 12),
     KNOWLEDGE("knowledge", "知识点", 12),
     MASTERY("mastery", "掌握程度", 6),
     ;
@@ -25,19 +26,25 @@ internal enum class LibraryFacet(
 
 internal enum class MasteryState(
     val id: String,
-    val label: String,
+    val status: MasteryStatus,
 ) {
-    UNKNOWN("unknown", "暂无学习记录"),
-    LEARNING("learning", "学习中"),
-    MASTERED("mastered", "已掌握"),
-    CONFLICTED("conflicted", "需巩固"),
-    STALE("stale", "待复习"),
+    UNKNOWN("unknown", MasteryStatus.UNKNOWN),
+    LEARNING("learning", MasteryStatus.LEARNING),
+    MASTERED("mastered", MasteryStatus.MASTERED),
+    CONFLICTED("conflicted", MasteryStatus.CONFLICTED),
+    STALE("stale", MasteryStatus.STALE),
     ;
 
+    val label: String
+        get() = status.studentLabel()
+
     companion object {
-        fun normalizeStoredValue(value: String?): String? = entries
-            .firstOrNull { it.id == value || it.label == value }
-            ?.id
+        fun normalizeStoredValue(value: String?): String? {
+            val status = masteryStatusFromStoredUiValue(value)
+            return entries
+                .firstOrNull { it.status == status }
+                ?.id
+        }
     }
 }
 
@@ -134,16 +141,9 @@ internal data class LibraryUiState(
 
 internal enum class LibraryEmptyState(
     val title: String,
-    val supportingText: String,
 ) {
-    CATALOG_EMPTY(
-        title = "还没有错题",
-        supportingText = "拍照或上传第一道错题，之后会自动整理到这里。",
-    ),
-    FILTERED_EMPTY(
-        title = "没有符合条件的错题",
-        supportingText = "换一个关键词，或清除当前筛选。",
-    ),
+    CATALOG_EMPTY(title = "还没有错题"),
+    FILTERED_EMPTY(title = "没有符合条件的错题"),
 }
 
 internal fun resolveLibraryEmptyState(
@@ -154,6 +154,25 @@ internal fun resolveLibraryEmptyState(
     visibleMistakeCount == 0 -> LibraryEmptyState.FILTERED_EMPTY
     else -> null
 }
+
+internal fun nextLibraryFacet(
+    facet: LibraryFacet,
+    selectedOptionId: String?,
+): LibraryFacet {
+    if (selectedOptionId == null) return facet
+    return when (facet) {
+        LibraryFacet.SUBJECT -> LibraryFacet.CHAPTER
+        LibraryFacet.CHAPTER -> LibraryFacet.KNOWLEDGE
+        LibraryFacet.KNOWLEDGE,
+        LibraryFacet.MASTERY,
+        -> LibraryFacet.MASTERY
+    }
+}
+
+internal fun libraryExportIds(visibleMistakes: List<LibraryMistake>): List<String>? =
+    visibleMistakes
+        .takeIf(List<LibraryMistake>::isNotEmpty)
+        ?.map(LibraryMistake::id)
 
 internal class LibraryCatalog(
     private val mistakes: List<LibraryMistake>,

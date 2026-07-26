@@ -163,16 +163,18 @@ class RootExperienceInstrumentedTest {
         waitForText("配置已安全保存在本机")
 
         navigateBackAndWait("root_profile")
-        waitForText("模型配置已保存")
+        waitForText("模型与 API")
+        composeRule.onAllNodesWithText("模型配置已保存", substring = true)
+            .assertCountEquals(0)
         composeRule.onAllNodesWithText("请完成能力测试", substring = true)
-            .assertCountEquals(1)
+            .assertCountEquals(0)
 
         composeRule.onNodeWithTag("profile_capability_setting").performClick()
         waitForTag("capability_screen")
         composeRule.onNodeWithTag("capability_clear").performScrollTo().performClick()
         waitForText("本机配置与密钥已清除。")
         navigateBackAndWait("root_profile")
-        waitForText("配置大模型 API")
+        waitForText("模型与 API")
     }
 
     @Test

@@ -9,38 +9,56 @@ import org.junit.Test
 
 class LearningMasterySubtitleTest {
     @Test
-    fun `empty profile explains that learning history is automatic`() {
-        assertEquals(
-            "做过题后，这里会自动形成你的学习情况",
-            learningMasterySubtitle(StudyProfileOverview()),
-        )
-    }
-
-    @Test
-    fun `summary groups learning records by subject without internal terminology`() {
+    fun recentChangesUseOnlyRealActivityTimesInNewestFirstOrder() {
         val overview = StudyProfileOverview(
-            weaknesses = listOf(summary("函数单调性", SubjectKind.MATH)),
+            weaknesses = listOf(
+                summary("older", lastEvidenceAt = 1_000L),
+                summary("newer", lastEvidenceAt = 3_000L),
+                summary("untimed", lastEvidenceAt = null),
+            ),
             strengths = listOf(
-                summary("牛顿第二定律", SubjectKind.PHYSICS, MasteryStatus.MASTERED),
-                summary("函数零点", SubjectKind.MATH, MasteryStatus.MASTERED),
+                summary("middle", lastEvidenceAt = 2_000L),
+                summary("newer", lastEvidenceAt = 9_000L),
             ),
         )
 
         assertEquals(
-            "2 科 · 3 个知识点有学习记录",
-            learningMasterySubtitle(overview),
+            listOf("newer", "middle", "older"),
+            profileRecentChanges(overview).map { it.summary.knowledgeNodeId },
+        )
+    }
+
+    @Test
+    fun futureActivityIsDescribedAsTodayWithoutInventingAChange() {
+        assertEquals(
+            "今天",
+            profileRecentActivityLabel(
+                occurredAtEpochMillis = 2 * DAY_MILLIS,
+                nowEpochMillis = DAY_MILLIS,
+            ),
+        )
+        assertEquals(
+            "昨天",
+            profileRecentActivityLabel(
+                occurredAtEpochMillis = DAY_MILLIS,
+                nowEpochMillis = 2 * DAY_MILLIS,
+            ),
         )
     }
 
     private fun summary(
-        name: String,
-        subject: SubjectKind,
-        status: MasteryStatus = MasteryStatus.LEARNING,
+        id: String,
+        lastEvidenceAt: Long?,
     ) = StudyKnowledgeSummary(
-        knowledgeNodeId = "$subject:$name",
-        displayName = name,
-        status = status,
+        knowledgeNodeId = id,
+        displayName = id,
+        status = MasteryStatus.LEARNING,
         lowerBoundIndependentCorrect = 0.5,
-        subject = subject,
+        lastEvidenceAtEpochMillis = lastEvidenceAt,
+        subject = SubjectKind.MATH,
     )
+
+    private companion object {
+        const val DAY_MILLIS = 86_400_000L
+    }
 }

@@ -51,7 +51,10 @@ class LibraryCatalogTest {
             ),
             LibraryFacet.entries,
         )
-        assertEquals(listOf("科目", "板块", "知识点", "掌握程度"), LibraryFacet.entries.map { it.label })
+        assertEquals(
+            listOf("科目", "板块/章节", "知识点", "掌握程度"),
+            LibraryFacet.entries.map { it.label },
+        )
     }
 
     @Test
@@ -74,10 +77,8 @@ class LibraryCatalogTest {
 
         assertEquals(LibraryEmptyState.CATALOG_EMPTY, newLibrary)
         assertEquals("还没有错题", newLibrary?.title)
-        assertEquals("拍照或上传第一道错题，之后会自动整理到这里。", newLibrary?.supportingText)
         assertEquals(LibraryEmptyState.FILTERED_EMPTY, filteredResults)
         assertEquals("没有符合条件的错题", filteredResults?.title)
-        assertEquals("换一个关键词，或清除当前筛选。", filteredResults?.supportingText)
         assertNull(
             resolveLibraryEmptyState(
                 totalMistakeCount = mistakes.size,
@@ -99,7 +100,7 @@ class LibraryCatalogTest {
             setOf("geometry", "chemistry"),
             masteredResult.mapTo(mutableSetOf(), LibraryMistake::id),
         )
-        assertEquals("已掌握", MasteryState.MASTERED.label)
+        assertEquals("比较稳", MasteryState.MASTERED.label)
     }
 
     @Test
@@ -144,6 +145,7 @@ class LibraryCatalogTest {
     fun changingSubjectClearsDownstreamHierarchySelections() {
         val viewModel = LibraryViewModel(SavedStateHandle())
         viewModel.updateCatalog(mistakes)
+        viewModel.toggleFilter(LibraryFacet.MASTERY, MasteryState.MASTERED.id)
         viewModel.toggleFilter(LibraryFacet.SUBJECT, SubjectKind.MATH.name)
         viewModel.toggleFilter(LibraryFacet.CHAPTER, "函数")
         viewModel.toggleFilter(LibraryFacet.KNOWLEDGE, "导数")
@@ -153,7 +155,41 @@ class LibraryCatalogTest {
         assertEquals(SubjectKind.CHEMISTRY.name, viewModel.uiState.selections.subject)
         assertNull(viewModel.uiState.selections.chapter)
         assertNull(viewModel.uiState.selections.knowledge)
+        assertEquals(MasteryState.MASTERED.id, viewModel.uiState.selections.mastery)
         assertEquals(listOf("chemistry"), viewModel.uiState.visibleMistakes.map { it.id })
+    }
+
+    @Test
+    fun selectingAHierarchyValueAdvancesToTheNextStep() {
+        assertEquals(
+            LibraryFacet.CHAPTER,
+            nextLibraryFacet(LibraryFacet.SUBJECT, selectedOptionId = SubjectKind.MATH.name),
+        )
+        assertEquals(
+            LibraryFacet.KNOWLEDGE,
+            nextLibraryFacet(LibraryFacet.CHAPTER, selectedOptionId = "函数"),
+        )
+        assertEquals(
+            LibraryFacet.MASTERY,
+            nextLibraryFacet(LibraryFacet.KNOWLEDGE, selectedOptionId = "导数"),
+        )
+        assertEquals(
+            LibraryFacet.MASTERY,
+            nextLibraryFacet(LibraryFacet.MASTERY, selectedOptionId = MasteryState.LEARNING.id),
+        )
+        assertEquals(
+            LibraryFacet.SUBJECT,
+            nextLibraryFacet(LibraryFacet.SUBJECT, selectedOptionId = null),
+        )
+    }
+
+    @Test
+    fun exportSnapshotKeepsTheVisibleStableIdOrderAndRejectsEmptyResults() {
+        assertEquals(
+            listOf("derivative", "geometry"),
+            libraryExportIds(mistakes.take(2)),
+        )
+        assertNull(libraryExportIds(emptyList()))
     }
 
     @Test
@@ -187,7 +223,7 @@ class LibraryCatalogTest {
             assertTrue(legacyCatalog.filter(placeholder, LibrarySelections()).isEmpty())
         }
         assertEquals("数学", entry.contentPath)
-        assertEquals("暂无学习记录", entry.mastery.label)
+        assertEquals("还没学到", entry.mastery.label)
         assertTrue(legacyCatalog.optionsFor(LibraryFacet.CHAPTER).isEmpty())
         assertTrue(legacyCatalog.optionsFor(LibraryFacet.KNOWLEDGE).isEmpty())
     }

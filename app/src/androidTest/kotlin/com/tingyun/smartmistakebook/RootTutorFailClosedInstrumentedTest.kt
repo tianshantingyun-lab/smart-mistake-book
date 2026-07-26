@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook
 
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -178,16 +179,18 @@ class RootTutorFailClosedInstrumentedTest {
         composeRule.onNodeWithTag("profile_learning_mastery").assertExists()
 
         composeRule.onNodeWithTag("nav_review").performClick()
-        waitForText("暂无学习记录")
-        waitForText("暂无待复习题")
+        waitForTag("review_progress")
+        composeRule.onNodeWithTag("review_progress").assertTextEquals("0 / 0")
+        waitForText("今天没有待复习")
     }
 
     @Test
     fun savedCapturedQuestionReviewsTheExactOriginalWithoutInventingAnAnswer() {
         repository.publishCapturedReviewReady()
 
-        waitForText("1")
-        waitForText("道计划复习")
+        waitForTag("review_scheduled_count")
+        composeRule.onNodeWithTag("review_scheduled_count").assertTextEquals("1")
+        waitForText("今日题量（道）")
         composeRule.onNodeWithTag("review_start_button").performClick()
         waitForTag("captured_review_session_root")
         waitForText(CAPTURED_QUESTION_MARKDOWN)

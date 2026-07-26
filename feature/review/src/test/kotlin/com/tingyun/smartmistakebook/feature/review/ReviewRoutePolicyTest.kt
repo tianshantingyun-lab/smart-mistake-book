@@ -3,46 +3,73 @@ package com.tingyun.smartmistakebook.feature.review
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ReviewRoutePolicyTest {
     @Test
-    fun savedQuestionsShowTodaysPlanBeforeAnyLearningEvidenceExists() {
-        assertTrue(
-            shouldShowReviewSummary(
-                scheduledCount = 1,
-                hasLearningEvidence = false,
-            ),
-        )
-    }
-
-    @Test
-    fun aTrulyEmptyNewProfileKeepsTheNoLearningRecordState() {
-        assertFalse(
-            shouldShowReviewSummary(
-                scheduledCount = 0,
-                hasLearningEvidence = false,
-            ),
-        )
-    }
-
-    @Test
-    fun completingThePlanIsTheOnlyActionNeededToRecordContinuity() {
+    fun progressUsesTheClampedCompletedOrdinalWithoutAnOffByOne() {
         assertEquals(
-            "今天已完成 · 连续复习 3 天",
-            reviewContinuityText(
+            "0 / 5",
+            reviewLandingState(StudyReviewOverview(scheduledCount = 5, currentOrdinal = -1))
+                .progressText,
+        )
+        assertEquals(
+            "2 / 5",
+            reviewLandingState(StudyReviewOverview(scheduledCount = 5, currentOrdinal = 2))
+                .progressText,
+        )
+        assertEquals(
+            "5 / 5",
+            reviewLandingState(StudyReviewOverview(scheduledCount = 5, currentOrdinal = 8))
+                .progressText,
+        )
+    }
+
+    @Test
+    fun completedAndEmptyPlansKeepTheProgressStructure() {
+        assertEquals(
+            "5 / 5",
+            reviewLandingState(
                 StudyReviewOverview(
+                    scheduledCount = 5,
+                    currentOrdinal = 2,
                     completedToday = true,
-                    completionStreakDays = 3,
                 ),
-            ),
+            ).progressText,
         )
         assertEquals(
-            "连续复习 3 天 · 完成今天的安排后自动记录",
-            reviewContinuityText(StudyReviewOverview(completionStreakDays = 3)),
+            "0 / 0",
+            reviewLandingState(StudyReviewOverview(currentOrdinal = 4)).progressText,
         )
-        assertNull(reviewContinuityText(StudyReviewOverview()))
+    }
+
+    @Test
+    fun plannedReviewStartsAndActiveReviewResumes() {
+        val planned = reviewLandingState(StudyReviewOverview(scheduledCount = 3))
+        val active = reviewLandingState(
+            StudyReviewOverview(
+                scheduledCount = 3,
+                activeSessionId = "session-1",
+            ),
+        )
+
+        assertEquals("开始今日复习", planned.actionLabel)
+        assertTrue(planned.actionEnabled)
+        assertEquals("继续今日复习", active.actionLabel)
+        assertTrue(active.actionEnabled)
+    }
+
+    @Test
+    fun completedAndEmptyPlansExposeOneDisabledTerminalAction() {
+        val completed = reviewLandingState(
+            StudyReviewOverview(scheduledCount = 3, completedToday = true),
+        )
+        val empty = reviewLandingState(StudyReviewOverview())
+
+        assertEquals("今日复习已完成", completed.actionLabel)
+        assertFalse(completed.actionEnabled)
+        assertEquals("今天没有待复习", empty.actionLabel)
+        assertFalse(empty.actionEnabled)
     }
 }

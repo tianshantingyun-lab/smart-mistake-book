@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -69,8 +70,15 @@ class LearningMasteryScreenInstrumentedTest {
         composeRule.onNodeWithTag("learning_mastery_subject:PHYSICS").assertIsDisplayed()
         composeRule.onAllNodesWithText("牛顿第二定律").assertCountEquals(2)
         composeRule.onNodeWithTag("learning_mastery_recent").assertIsDisplayed()
+        composeRule.onAllNodesWithText("正在熟悉", substring = true).assertCountEquals(2)
+        composeRule.onAllNodesWithText("比较稳", substring = true).assertCountEquals(2)
         composeRule.onNodeWithText("今天").assertIsDisplayed()
         composeRule.onNodeWithText("昨天").assertIsDisplayed()
+        listOf("%", "个知识点", "有记录科目", "正在巩固").forEach { forbidden ->
+            composeRule.onAllNodesWithText(forbidden, substring = true).assertCountEquals(0)
+        }
+        composeRule.onAllNodes(hasContentDescription("%", substring = true))
+            .assertCountEquals(0)
         FORBIDDEN_STUDENT_TERMS.forEach { term ->
             composeRule.onAllNodesWithText(term, substring = true).assertCountEquals(0)
         }
@@ -130,6 +138,10 @@ class LearningMasteryScreenInstrumentedTest {
             "模型候选",
             "前置边",
             "分类依据",
+            "资料完整度",
+            "待补齐",
+            "证据不足",
+            "根据多次独立作答估计",
         )
     }
 }

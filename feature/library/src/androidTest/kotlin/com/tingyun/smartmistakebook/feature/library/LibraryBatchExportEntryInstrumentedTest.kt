@@ -1,7 +1,12 @@
 package com.tingyun.smartmistakebook.feature.library
 
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
@@ -42,6 +47,7 @@ class LibraryBatchExportEntryInstrumentedTest {
         composeRule.onNodeWithTag(
             "library_filter_subject_${SubjectKind.MATH.name.hashCode().toUInt()}",
         ).performClick()
+        composeRule.onNodeWithTag("library_more").performClick()
         composeRule.onNodeWithTag("library_export_visible").performClick()
 
         composeRule.runOnIdle {
@@ -50,7 +56,8 @@ class LibraryBatchExportEntryInstrumentedTest {
     }
 
     @Test
-    fun emptyLibraryDoesNotShowAnExportAction() {
+    fun emptyLibraryKeepsExportDisabledAndDoesNotInvokeIt() {
+        var exportCalls = 0
         composeRule.setContent {
             SmartMistakeBookTheme {
                 LibraryRoute(
@@ -59,13 +66,54 @@ class LibraryBatchExportEntryInstrumentedTest {
                     onCapture = {},
                     onBatchImport = {},
                     onOpenPendingCaptures = {},
+                    onExportVisible = { exportCalls += 1 },
+                    onOpenItem = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("library_more").performClick()
+        composeRule.onNodeWithTag("library_export_visible")
+            .assertIsNotEnabled()
+        composeRule.runOnIdle {
+            assertEquals(0, exportCalls)
+        }
+    }
+
+    @Test
+    fun overflowKeepsAllSecondaryToolsAndOneCompactPendingStatus() {
+        var batchCalls = 0
+        var pendingCalls = 0
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                LibraryRoute(
+                    entries = listOf(entry("math-1", SubjectKind.MATH.name, "导数题")),
+                    pendingCaptureCount = 2,
+                    onCapture = {},
+                    onBatchImport = { batchCalls += 1 },
+                    onOpenPendingCaptures = { pendingCalls += 1 },
                     onExportVisible = {},
                     onOpenItem = {},
                 )
             }
         }
 
-        composeRule.onNodeWithTag("library_export_visible").assertDoesNotExist()
+        composeRule.onNodeWithTag("library_pending_review")
+            .assertTextEquals("2 道待处理")
+            .performClick()
+        composeRule.onAllNodesWithText("2 道待处理").assertCountEquals(1)
+        composeRule.onNodeWithTag("library_more").performClick()
+        composeRule.onNodeWithTag("library_batch_import").performClick()
+        composeRule.onNodeWithTag("library_more").performClick()
+        composeRule.onNodeWithText("图片转文档").performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(1, batchCalls)
+            assertEquals(2, pendingCalls)
+        }
+        listOf("错因", "来源", "题型").forEach { forbidden ->
+            composeRule.onAllNodesWithText(forbidden, substring = true).assertCountEquals(0)
+        }
     }
 
     private fun entry(

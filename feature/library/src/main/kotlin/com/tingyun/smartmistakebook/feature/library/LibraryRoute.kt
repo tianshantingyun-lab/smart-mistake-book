@@ -22,36 +22,47 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
-import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.SmartColors
 import com.tingyun.smartmistakebook.core.ui.SubjectIcon
+import com.tingyun.smartmistakebook.core.ui.studentLabel
 
 @Composable
 fun LibraryRoute(
@@ -109,84 +120,60 @@ private fun LibraryContent(
     ) {
         item(key = "library_header") {
             Column {
-                Text(
-                    text = "错题本",
-                    color = SmartColors.Ink,
-                    fontSize = 34.sp,
-                    lineHeight = 42.sp,
-                    fontWeight = FontWeight.Bold,
+                PrimaryActionButton(
+                    text = "拍照或上传",
+                    onClick = onCapture,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .testTag("library_capture_button"),
+                    icon = Icons.Outlined.PhotoCamera,
                 )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (pendingCaptureCount > 0) {
+                        OutlineActionChip(
+                            text = "$pendingCaptureCount 道待处理",
+                            onClick = onOpenPendingCaptures,
+                            modifier = Modifier.testTag("library_pending_review"),
+                            icon = Icons.Outlined.Schedule,
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    LibraryOverflowMenu(
+                        exportIds = libraryExportIds(uiState.visibleMistakes),
+                        onBatchImport = onBatchImport,
+                        onOpenPendingCaptures = onOpenPendingCaptures,
+                        onExportVisible = onExportVisible,
+                    )
+                }
                 if (emptyState == LibraryEmptyState.CATALOG_EMPTY) {
                     EmptyLibraryResult(
                         state = emptyState,
                         canClear = false,
-                        onCapture = onCapture,
                         onClear = {},
                     )
                 } else {
-                    Spacer(Modifier.height(12.dp))
-                    PrimaryActionButton(
-                        text = "拍照或上传错题",
-                        onClick = onCapture,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(54.dp)
-                            .testTag("library_capture_button"),
-                        icon = Icons.Outlined.PhotoCamera,
-                    )
-                }
-                PaperDivider(Modifier.padding(vertical = 8.dp))
-                BatchImportEntryRow(onClick = onBatchImport)
-                if (pendingCaptureCount > 0) {
                     PaperDivider(Modifier.padding(vertical = 8.dp))
-                    PendingReviewRow(
-                        pendingCaptureCount = pendingCaptureCount,
-                        onClick = onOpenPendingCaptures,
-                    )
-                }
-                PaperDivider(Modifier.padding(vertical = 8.dp))
-                if (emptyState != LibraryEmptyState.CATALOG_EMPTY) {
                     LibrarySearchField(
                         query = uiState.query,
                         onQueryChange = viewModel::updateQuery,
                     )
-                    Spacer(Modifier.height(10.dp))
-                    SectionHeader(
-                        title = "分类筛选",
-                        action = {
-                            Text(
-                                text = "${uiState.visibleMistakes.size} 道题",
-                                modifier = Modifier.testTag("library_result_count"),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = SmartColors.InkSecondary,
-                            )
+                    Spacer(Modifier.height(14.dp))
+                    LibraryHierarchy(
+                        uiState = uiState,
+                        onSelectFacet = viewModel::selectFacet,
+                        onSelectOption = { facet, optionId ->
+                            viewModel.toggleFilter(facet, optionId)
+                            val activeSelection =
+                                viewModel.uiState.selections.selectedOptionId(facet)
+                            viewModel.selectFacet(nextLibraryFacet(facet, activeSelection))
                         },
                     )
-                    Spacer(Modifier.height(4.dp))
-                    FacetTabs(
-                        activeFacet = uiState.activeFacet,
-                        onSelect = viewModel::selectFacet,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    FacetOptions(
-                        facet = uiState.activeFacet,
-                        options = uiState.activeOptions,
-                        selectedOptionId = uiState.selections.selectedOptionId(uiState.activeFacet),
-                        onSelect = { viewModel.toggleFilter(uiState.activeFacet, it) },
-                    )
-                    if (uiState.visibleMistakes.isNotEmpty()) {
-                        Spacer(Modifier.height(10.dp))
-                        OutlineActionChip(
-                            text = "导出当前 ${uiState.visibleMistakes.size} 道",
-                            onClick = {
-                                onExportVisible(uiState.visibleMistakes.map(LibraryMistake::id))
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("library_export_visible"),
-                            icon = Icons.Outlined.PictureAsPdf,
-                        )
-                    }
                 }
             }
         }
@@ -195,7 +182,6 @@ private fun LibraryContent(
                 EmptyLibraryResult(
                     state = emptyState,
                     canClear = uiState.hasActiveFilters,
-                    onCapture = onCapture,
                     onClear = viewModel::clearAll,
                 )
             }
@@ -217,74 +203,67 @@ private fun LibraryContent(
 }
 
 @Composable
-private fun BatchImportEntryRow(onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp)
-            .testTag("library_batch_import"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(Icons.Outlined.Collections, contentDescription = null, tint = SmartColors.Jade)
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                "批量导入试卷照片",
-                style = MaterialTheme.typography.bodySmall,
-                color = SmartColors.Ink,
-                fontWeight = FontWeight.Medium,
+private fun LibraryOverflowMenu(
+    exportIds: List<String>?,
+    onBatchImport: () -> Unit,
+    onOpenPendingCaptures: () -> Unit,
+    onExportVisible: (List<String>) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier
+                .defaultMinSize(minHeight = 48.dp)
+                .semantics { role = Role.Button }
+                .testTag("library_more"),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = null,
             )
-            Text(
-                "一次选择多张，保存后逐张继续",
-                style = MaterialTheme.typography.labelSmall,
-                color = SmartColors.InkSecondary,
+            Text("更多")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("批量录入") },
+                onClick = {
+                    expanded = false
+                    onBatchImport()
+                },
+                leadingIcon = {
+                    Icon(Icons.Outlined.Collections, contentDescription = null)
+                },
+                modifier = Modifier.testTag("library_batch_import"),
+            )
+            DropdownMenuItem(
+                text = { Text("图片转文档") },
+                onClick = {
+                    expanded = false
+                    onOpenPendingCaptures()
+                },
+                leadingIcon = {
+                    Icon(Icons.Outlined.Schedule, contentDescription = null)
+                },
+                modifier = Modifier.testTag("library_image_to_document"),
+            )
+            DropdownMenuItem(
+                text = { Text("导出") },
+                onClick = {
+                    val snapshot = exportIds ?: return@DropdownMenuItem
+                    expanded = false
+                    onExportVisible(snapshot)
+                },
+                enabled = exportIds != null,
+                leadingIcon = {
+                    Icon(Icons.Outlined.PictureAsPdf, contentDescription = null)
+                },
+                modifier = Modifier.testTag("library_export_visible"),
             )
         }
-        Icon(
-            Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = "打开批量导入",
-            tint = SmartColors.InkSecondary,
-        )
-    }
-}
-
-@Composable
-private fun PendingReviewRow(
-    pendingCaptureCount: Int,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp)
-            .testTag("library_pending_review"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Schedule,
-            contentDescription = null,
-            tint = SmartColors.Jade,
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            text = "$pendingCaptureCount 道临时题记录已保留 · 继续处理",
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodySmall,
-            color = SmartColors.Ink,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-        )
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = "打开待处理题目",
-            tint = SmartColors.InkSecondary,
-        )
     }
 }
 
@@ -337,44 +316,77 @@ private fun LibrarySearchField(
 }
 
 @Composable
-private fun FacetTabs(
-    activeFacet: LibraryFacet,
-    onSelect: (LibraryFacet) -> Unit,
+private fun LibraryHierarchy(
+    uiState: LibraryUiState,
+    onSelectFacet: (LibraryFacet) -> Unit,
+    onSelectOption: (LibraryFacet, String?) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(
+            text = "科目 → 板块/章节 → 知识点 → 掌握程度",
+            color = SmartColors.InkSecondary,
+            style = MaterialTheme.typography.bodySmall,
+        )
         LibraryFacet.entries.forEach { facet ->
-            val selected = facet == activeFacet
-            Column(
+            val selected = facet == uiState.activeFacet
+            Row(
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxWidth()
                     .defaultMinSize(minHeight = 48.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable { onSelect(facet) }
-                    .padding(vertical = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(role = Role.Button) { onSelectFacet(facet) }
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
                     .testTag("library_facet_${facet.id}"),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = facet.label,
-                    color = if (selected) SmartColors.Jade else SmartColors.InkSecondary,
-                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                    color = if (selected) SmartColors.Jade else SmartColors.Ink,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                    maxLines = 1,
                 )
-                Spacer(Modifier.height(6.dp))
-                Box(
-                    modifier = Modifier
-                        .width(if (selected) 34.dp else 0.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(if (selected) SmartColors.Jade else SmartColors.Paper),
+                selectedFacetLabel(facet, uiState.selections)?.let { label ->
+                    Text(
+                        text = label,
+                        color = SmartColors.InkSecondary,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = SmartColors.InkSecondary,
+                )
+            }
+            if (selected) {
+                FacetOptions(
+                    facet = facet,
+                    options = uiState.activeOptions,
+                    selectedOptionId = uiState.selections.selectedOptionId(facet),
+                    onSelect = { onSelectOption(facet, it) },
                 )
             }
         }
     }
+}
+
+private fun selectedFacetLabel(
+    facet: LibraryFacet,
+    selections: LibrarySelections,
+): String? = when (facet) {
+    LibraryFacet.SUBJECT -> selections.subject?.let { stored ->
+        runCatching { SubjectKind.valueOf(stored) }
+            .getOrNull()
+            ?.studentLabel()
+            ?: stored
+    }
+    LibraryFacet.CHAPTER -> selections.chapter
+    LibraryFacet.KNOWLEDGE -> selections.knowledge
+    LibraryFacet.MASTERY -> MasteryState.entries
+        .firstOrNull { it.id == selections.mastery }
+        ?.label
 }
 
 @Composable
@@ -482,7 +494,6 @@ private fun masteryColor(mastery: MasteryState) = when (mastery) {
 private fun EmptyLibraryResult(
     state: LibraryEmptyState,
     canClear: Boolean,
-    onCapture: () -> Unit,
     onClear: () -> Unit,
 ) {
     Column(
@@ -508,24 +519,7 @@ private fun EmptyLibraryResult(
             color = SmartColors.Ink,
             fontWeight = FontWeight.SemiBold,
         )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = state.supportingText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = SmartColors.InkSecondary,
-        )
-        if (state == LibraryEmptyState.CATALOG_EMPTY) {
-            Spacer(Modifier.height(16.dp))
-            PrimaryActionButton(
-                text = "拍照或上传",
-                onClick = onCapture,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp)
-                    .testTag("library_capture_button"),
-                icon = Icons.Outlined.PhotoCamera,
-            )
-        } else if (canClear) {
+        if (state == LibraryEmptyState.FILTERED_EMPTY && canClear) {
             Spacer(Modifier.height(16.dp))
             OutlineActionChip(
                 text = "清除搜索与筛选",
