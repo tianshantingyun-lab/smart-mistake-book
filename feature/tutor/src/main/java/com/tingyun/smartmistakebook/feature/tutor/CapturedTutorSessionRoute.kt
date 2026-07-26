@@ -148,6 +148,35 @@ private data class TutorVisualReviewWorkItem(
     val executionKey: TutorVisualExecutionKey,
 )
 
+internal fun applyTutorVisualSchedulingBoundary(
+    taskKind: ModelTaskKind,
+    provider: ProviderCapabilitySnapshot?,
+    sourceAssets: List<TutorVisualSourceAssetScope>,
+    pendingRetry: PendingTutorEgressAction.RetryVisual?,
+    pendingEgressState: PendingTutorEgressState,
+    updatePendingEgress: (PendingTutorEgressState) -> Unit,
+    cancelScheduledWork: () -> Unit,
+): ProviderCapabilitySnapshot? {
+    val providerForExecution = provider?.takeIf { candidate ->
+        candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+            candidate.supports(taskKind)
+    }
+    if (providerForExecution != null && sourceAssets.isNotEmpty()) {
+        return providerForExecution
+    }
+    val matchingRetry = pendingRetry?.takeIf { retry -> retry.taskKind == taskKind }
+    updatePendingEgress(
+        matchingRetry?.let { retry ->
+            pendingEgressState.clearVisualRetryIfExecutionBlocked(
+                expectedRetry = retry,
+                executionAvailable = false,
+            )
+        } ?: pendingEgressState,
+    )
+    cancelScheduledWork()
+    return null
+}
+
 internal data class TutorProviderAuthorityState(
     val provider: ProviderCapabilitySnapshot? = null,
     val loadFailed: Boolean = false,
@@ -183,6 +212,40 @@ internal data class TutorProviderAuthorityState(
         } else {
             this
         }
+}
+
+internal class TutorProviderAuthorityRefreshCoordinator(
+    private val loadCapabilities: suspend () -> ProviderCapabilitySnapshot,
+    private val currentAuthority: () -> TutorProviderAuthorityState,
+    private val updateAuthority: (TutorProviderAuthorityState) -> Unit,
+    private val currentPendingEgress: () -> PendingTutorEgressState,
+    private val updatePendingEgress: (PendingTutorEgressState) -> Unit,
+) {
+    suspend fun refresh() {
+        val refreshingAuthority = currentAuthority().beginRefresh()
+        val refreshGeneration = refreshingAuthority.refreshGeneration
+        updateAuthority(refreshingAuthority)
+        updatePendingEgress(currentPendingEgress().withoutVisualRetry())
+        try {
+            val refreshedProvider = loadCapabilities()
+            val authorityAfterLoad = currentAuthority()
+            if (refreshGeneration == authorityAfterLoad.refreshGeneration) {
+                updateAuthority(
+                    authorityAfterLoad.afterRefreshSuccess(
+                        generation = refreshGeneration,
+                        refreshedProvider = refreshedProvider,
+                    ),
+                )
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            val authorityAfterLoad = currentAuthority()
+            if (refreshGeneration == authorityAfterLoad.refreshGeneration) {
+                updateAuthority(authorityAfterLoad.afterRefreshFailure(refreshGeneration))
+            }
+        }
+    }
 }
 
 @Composable
@@ -908,33 +971,34 @@ internal fun TutorModelPanel(
         onAutoStartAuthorizationConsumed(authorizationId)
     }
 
-    suspend fun refreshProviderAuthority() {
-        val refreshGeneration = providerAuthority.refreshGeneration + 1
-        providerAuthority = providerAuthority.beginRefresh()
-        pendingEgressState =
-            latestPendingEgressForCapabilityRefresh.value.withoutVisualRetry()
-        try {
-            providerAuthority = providerAuthority.afterRefreshSuccess(
-                generation = refreshGeneration,
-                refreshedProvider = modelTasks.capabilities(),
-            )
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (_: Exception) {
-            if (refreshGeneration == providerAuthority.refreshGeneration) {
-                providerAuthority = providerAuthority.afterRefreshFailure(refreshGeneration)
-            }
-        }
+    val providerAuthorityRefreshCoordinator = remember(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        modelTasks,
+    ) {
+        TutorProviderAuthorityRefreshCoordinator(
+            loadCapabilities = modelTasks::capabilities,
+            currentAuthority = { providerAuthority },
+            updateAuthority = { providerAuthority = it },
+            currentPendingEgress = { latestPendingEgressForCapabilityRefresh.value },
+            updatePendingEgress = { pendingEgressState = it },
+        )
     }
 
-    LaunchedEffect(question.sessionId) {
-        refreshProviderAuthority()
+    LaunchedEffect(question.sessionId, providerAuthorityRefreshCoordinator) {
+        providerAuthorityRefreshCoordinator.refresh()
     }
-    DisposableEffect(lifecycleOwner, question.sessionId, modelTasks) {
+    DisposableEffect(
+        lifecycleOwner,
+        question.sessionId,
+        modelTasks,
+        providerAuthorityRefreshCoordinator,
+    ) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 scope.launch {
-                    refreshProviderAuthority()
+                    providerAuthorityRefreshCoordinator.refresh()
                 }
             }
         }
@@ -1814,18 +1878,16 @@ internal fun TutorModelPanel(
                 ?.takeIf { retry ->
                     retry.taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE
                 }
-            val providerForVisual = state.provider?.takeIf { candidate ->
-                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
-                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE)
-            }
-            if (providerForVisual == null || state.sourceAssets.isEmpty()) {
-                generationRetry?.let { retry ->
-                    pendingEgressState = pendingEgressState.clearVisualRetryIfExecutionBlocked(
-                        expectedRetry = retry,
-                        executionAvailable = false,
-                    )
-                }
-                anchorScheduler.cancelExcept(emptySet())
+            val providerForVisual = applyTutorVisualSchedulingBoundary(
+                taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                provider = state.provider,
+                sourceAssets = state.sourceAssets,
+                pendingRetry = generationRetry,
+                pendingEgressState = pendingEgressState,
+                updatePendingEgress = { pendingEgressState = it },
+                cancelScheduledWork = { anchorScheduler.cancelExcept(emptySet()) },
+            )
+            if (providerForVisual == null) {
                 return@collect
             }
             val workSeeds = state.workSeeds.filter { seed ->
@@ -1996,18 +2058,16 @@ internal fun TutorModelPanel(
                 ?.takeIf { retry ->
                     retry.taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW
                 }
-            val providerForReview = state.provider?.takeIf { candidate ->
-                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
-                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
-            }
-            if (providerForReview == null || state.sourceAssets.isEmpty()) {
-                reviewRetry?.let { retry ->
-                    pendingEgressState = pendingEgressState.clearVisualRetryIfExecutionBlocked(
-                        expectedRetry = retry,
-                        executionAvailable = false,
-                    )
-                }
-                anchorScheduler.cancelExcept(emptySet())
+            val providerForReview = applyTutorVisualSchedulingBoundary(
+                taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+                provider = state.provider,
+                sourceAssets = state.sourceAssets,
+                pendingRetry = reviewRetry,
+                pendingEgressState = pendingEgressState,
+                updatePendingEgress = { pendingEgressState = it },
+                cancelScheduledWork = { anchorScheduler.cancelExcept(emptySet()) },
+            )
+            if (providerForReview == null) {
                 return@collect
             }
             val workSeeds = state.workSeeds.filter { seed ->

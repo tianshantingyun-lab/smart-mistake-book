@@ -41,12 +41,21 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.TutorVisualVector3
 import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class TutorVisualPipelineTest {
     @Test
     fun lowRiskLocallyValidSceneCanRenderWithoutASecondModelCall() {
@@ -330,6 +339,160 @@ class TutorVisualPipelineTest {
     }
 
     @Test
+    fun generationSchedulingBoundaryClearsApprovedRetryBeforeProviderBlockedReturn() {
+        val provider = externalVisualProvider(
+            modelId = "review-only-model",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_REVIEW),
+        )
+        val approvedRetry = approvedVisualRetry(
+            taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            provider = provider,
+        )
+        var pendingEgress = PendingTutorEgressState(approvedRetry)
+        var cancellations = 0
+
+        val providerForExecution = applyTutorVisualSchedulingBoundary(
+            taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            provider = provider,
+            sourceAssets = listOf(visualSourceAsset()),
+            pendingRetry = approvedRetry,
+            pendingEgressState = pendingEgress,
+            updatePendingEgress = { pendingEgress = it },
+            cancelScheduledWork = {
+                assertNull(pendingEgress.action)
+                cancellations += 1
+            },
+        )
+
+        assertNull(providerForExecution)
+        assertNull(pendingEgress.action)
+        assertEquals(1, cancellations)
+    }
+
+    @Test
+    fun reviewSchedulingBoundaryClearsApprovedRetryBeforeEmptySourceReturn() {
+        val provider = externalVisualProvider(
+            modelId = "review-model",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_REVIEW),
+        )
+        val approvedRetry = approvedVisualRetry(
+            taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            provider = provider,
+        )
+        var pendingEgress = PendingTutorEgressState(approvedRetry)
+        var cancellations = 0
+
+        val providerForExecution = applyTutorVisualSchedulingBoundary(
+            taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            provider = provider,
+            sourceAssets = emptyList(),
+            pendingRetry = approvedRetry,
+            pendingEgressState = pendingEgress,
+            updatePendingEgress = { pendingEgress = it },
+            cancelScheduledWork = {
+                assertNull(pendingEgress.action)
+                cancellations += 1
+            },
+        )
+
+        assertNull(providerForExecution)
+        assertNull(pendingEgress.action)
+        assertEquals(1, cancellations)
+    }
+
+    @Test
+    fun blockedSchedulingBoundaryPreservesReplacementRetryIdentity() {
+        val provider = externalVisualProvider(
+            modelId = "review-only-model",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_REVIEW),
+        )
+        val approvedRetry = approvedVisualRetry(
+            taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            provider = provider,
+        )
+        val replacement = approvedRetry.copy(semanticRequestId = "replacement-request")
+        var pendingEgress = PendingTutorEgressState(replacement)
+
+        applyTutorVisualSchedulingBoundary(
+            taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            provider = provider,
+            sourceAssets = listOf(visualSourceAsset()),
+            pendingRetry = approvedRetry,
+            pendingEgressState = pendingEgress,
+            updatePendingEgress = { pendingEgress = it },
+            cancelScheduledWork = {},
+        )
+
+        assertEquals(replacement, pendingEgress.action)
+    }
+
+    @Test
+    fun overlappingRefreshKeepsNewAuthorityAfterOlderSuccess() = runTest {
+        val harness = ProviderRefreshHarness()
+
+        val initialRefresh = launch { harness.coordinator.refresh() }
+        runCurrent()
+        harness.assertRevoked()
+        val resumeRefresh = launch { harness.coordinator.refresh() }
+        runCurrent()
+        assertEquals(2, harness.sourceCalls)
+
+        harness.secondResult.complete(harness.newProvider)
+        runCurrent()
+        assertEquals(harness.newProvider, harness.authority.provider)
+        harness.firstResult.complete(harness.oldProvider)
+        advanceUntilIdle()
+
+        harness.assertNewAuthority()
+        initialRefresh.join()
+        resumeRefresh.join()
+    }
+
+    @Test
+    fun overlappingRefreshKeepsNewAuthorityAfterOlderFailure() = runTest {
+        val harness = ProviderRefreshHarness()
+
+        val initialRefresh = launch { harness.coordinator.refresh() }
+        runCurrent()
+        harness.assertRevoked()
+        val resumeRefresh = launch { harness.coordinator.refresh() }
+        runCurrent()
+        assertEquals(2, harness.sourceCalls)
+
+        harness.secondResult.complete(harness.newProvider)
+        runCurrent()
+        assertEquals(harness.newProvider, harness.authority.provider)
+        harness.firstResult.completeExceptionally(IllegalStateException("stale failure"))
+        advanceUntilIdle()
+
+        harness.assertNewAuthority()
+        initialRefresh.join()
+        resumeRefresh.join()
+    }
+
+    @Test
+    fun cancelledRefreshPropagatesAndRemainsFailClosedUntilCurrentSuccess() = runTest {
+        val harness = ProviderRefreshHarness()
+
+        val cancelledRefresh = async { harness.coordinator.refresh() }
+        runCurrent()
+        harness.assertRevoked()
+        cancelledRefresh.cancel(CancellationException("capability refresh cancelled"))
+        val propagatedCancellation = runCatching { cancelledRefresh.await() }.exceptionOrNull()
+
+        assertTrue(propagatedCancellation is CancellationException)
+        harness.assertRevoked()
+
+        val currentRefresh = launch { harness.coordinator.refresh() }
+        runCurrent()
+        harness.secondResult.complete(harness.newProvider)
+        advanceUntilIdle()
+
+        harness.assertNewAuthority()
+        currentRefresh.join()
+    }
+
+    @Test
     fun persistedGenerationFailureBecomesRetryableFallback() {
         val failed = failedGenerationTask()
 
@@ -442,17 +605,84 @@ class TutorVisualPipelineTest {
         assertEquals(TutorVisualResolution.Preparing, resolved)
     }
 
-    private fun externalVisualProvider(modelId: String): ProviderCapabilitySnapshot =
+    private fun externalVisualProvider(
+        modelId: String,
+        supportedTasks: Set<ModelTaskKind> = setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE),
+    ): ProviderCapabilitySnapshot =
         ProviderCapabilitySnapshot(
             providerId = "external-provider",
             providerDisplayName = "External provider",
             modelId = modelId,
-            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE),
+            supportedTasks = supportedTasks,
             supportsImageInput = true,
             supportsStructuredOutput = true,
             supportsStreaming = false,
             providerConfigurationVersion = "config-v1",
         )
+
+    private fun approvedVisualRetry(
+        taskKind: ModelTaskKind,
+        provider: ProviderCapabilitySnapshot,
+    ) = PendingTutorEgressAction.RetryVisual(
+        anchor = anchor,
+        taskKind = taskKind,
+        failedRequestId = "failed-request",
+        semanticRequestId = "semantic-request",
+        providerId = provider.providerId,
+        modelId = provider.modelId,
+        providerConfigurationVersion = provider.providerConfigurationVersion,
+        approvedAtEpochMillis = 123,
+    )
+
+    private fun visualSourceAsset() = TutorVisualSourceAssetScope(
+        pageIndex = 0,
+        assetId = "asset-1",
+        sha256 = "a".repeat(64),
+        byteSize = 100,
+        width = 100,
+        height = 100,
+    )
+
+    private inner class ProviderRefreshHarness {
+        val oldProvider = externalVisualProvider(modelId = "old-model")
+        val newProvider = externalVisualProvider(modelId = "new-model")
+        val firstResult = CompletableDeferred<ProviderCapabilitySnapshot>()
+        val secondResult = CompletableDeferred<ProviderCapabilitySnapshot>()
+        var sourceCalls = 0
+        var authority = TutorProviderAuthorityState()
+            .beginRefresh()
+            .afterRefreshSuccess(generation = 1, refreshedProvider = oldProvider)
+        var pendingEgress = PendingTutorEgressState(
+            approvedVisualRetry(
+                taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                provider = oldProvider,
+            ),
+        )
+        val coordinator = TutorProviderAuthorityRefreshCoordinator(
+            loadCapabilities = {
+                when (sourceCalls++) {
+                    0 -> firstResult.await()
+                    1 -> secondResult.await()
+                    else -> error("Unexpected capability refresh")
+                }
+            },
+            currentAuthority = { authority },
+            updateAuthority = { authority = it },
+            currentPendingEgress = { pendingEgress },
+            updatePendingEgress = { pendingEgress = it },
+        )
+
+        fun assertRevoked() {
+            assertNull(authority.provider)
+            assertNull(pendingEgress.action)
+            assertTrue(!authority.loadFailed)
+        }
+
+        fun assertNewAuthority() {
+            assertEquals(newProvider, authority.provider)
+            assertTrue(!authority.loadFailed)
+        }
+    }
 
     private fun generationTask(
         scene: TutorVisualDocumentScene,

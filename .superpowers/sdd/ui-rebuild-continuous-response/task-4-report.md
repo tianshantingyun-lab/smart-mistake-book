@@ -111,3 +111,23 @@ to `S:\.toolchains\android-sdk`:
 
 Both commands completed with `BUILD SUCCESSFUL`. The full tutor XML results contain 166 tests,
 0 failures, 0 errors, and 0 skipped tests across 17 files. `git diff --check` passed.
+
+## Follow-up review: exercised scheduling and refresh boundaries
+
+- Routed both visual generation and review collectors through one scheduling action. Blocked work
+  now publishes the exact retry-clear result before cancelling scheduled work; replacement retry
+  identities remain untouched.
+- Routed the initial and `ON_RESUME` capability refreshes through one suspend coordinator. Tests use
+  two controlled deferred results to prove newer success survives stale success and stale failure,
+  and that cancellation propagates while authority remains fail-closed.
+- Added boundary tests for a generation provider block, review with empty sources, refresh overlap,
+  completion reordering, immediate authority/retry revocation, and cancellation recovery.
+
+### Verification
+
+- Fresh focused command with `--rerun-tasks`: `BUILD SUCCESSFUL in 1m 8s`; 49 tasks executed,
+  including `TutorVisualPipelineTest`, `PendingTutorEgressStateTest`,
+  `TutorVisualTargetPolicyTest`, and `compileDebugAndroidTestKotlin`.
+- Full `:feature:tutor:testDebugUnitTest`: `BUILD SUCCESSFUL in 17s`.
+- Full XML results: 172 tests, 0 failures, 0 errors, 0 skipped across 17 files.
+- `git diff --check`: passed.
