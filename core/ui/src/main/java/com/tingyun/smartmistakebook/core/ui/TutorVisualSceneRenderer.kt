@@ -60,6 +60,7 @@ fun TutorVisualSceneRenderer(
     modifier: Modifier = Modifier,
     onOpenOriginal: (() -> Unit)? = null,
     onReportIncorrect: (() -> Unit)? = null,
+    onTargetHit: ((String) -> Unit)? = null,
 ) {
     SceneFrame(
         scene = scene,
@@ -79,6 +80,7 @@ fun TutorVisualSceneRenderer(
                 scene = scene,
                 onOpenOriginal = onOpenOriginal,
                 onReportIncorrect = onReportIncorrect,
+                onTargetHit = onTargetHit,
             )
         }
     }

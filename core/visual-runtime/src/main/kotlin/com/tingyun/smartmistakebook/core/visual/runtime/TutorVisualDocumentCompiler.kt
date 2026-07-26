@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.visual.runtime
 
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DConnectorElement
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualBinding
 import com.tingyun.smartmistakebook.core.model.TutorVisualBindingProperty
 import com.tingyun.smartmistakebook.core.model.TutorVisualBindingTarget
@@ -16,6 +17,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGeometry3DElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualLatticeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualParticleGroupElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorVisualValueSource
 import com.tingyun.smartmistakebook.core.model.TutorVisualVariable
@@ -35,6 +37,7 @@ enum class TutorVisualIssueSeverity {
 enum class TutorVisualIssueCode {
     UNIT_MISMATCH,
     INVALID_EXPRESSION_RESULT,
+    UNSUPPORTED_BINDING_PROPERTY,
     INVALID_DIRECTION,
     CHART_AXIS_MISSING,
     EMPTY_FOCUS_STEP,
@@ -77,15 +80,23 @@ data class CompiledTutorVisualDocument(
         val step = scene.steps[stepIndex]
         val variableValues = variables.mapValues { it.value.value }
         val timeProgress = if (scene.durationSeconds > 0.0) time / scene.durationSeconds else 0.0
+        val evaluationIssues = mutableListOf<TutorVisualIntegrityIssue>()
         val elementStates = elements.mapValues { (elementId, element) ->
-            val properties = bindingsByTarget[elementId].orEmpty().mapNotNull { binding ->
-                TutorVisualExpressionEvaluator.evaluate(
-                    expression = binding.expression,
-                    variables = variableValues,
-                    timeSeconds = time,
-                    timeProgress = timeProgress,
-                )?.let { binding.property to it }
-            }.toMap()
+            val properties = buildMap {
+                bindingsByTarget[elementId].orEmpty().forEach { binding ->
+                    val value = TutorVisualExpressionEvaluator.evaluate(
+                        expression = binding.expression,
+                        variables = variableValues,
+                        timeSeconds = time,
+                        timeProgress = timeProgress,
+                    )
+                    if (value == null) {
+                        evaluationIssues += binding.invalidExpressionIssue()
+                    } else {
+                        put(binding.property, value)
+                    }
+                }
+            }
             val explicitlyVisible = elementId in step.visibleElementIds
             val hidden = elementId in step.hiddenElementIds
             val visible = !hidden && (element.initiallyVisible || explicitlyVisible)
@@ -118,6 +129,7 @@ data class CompiledTutorVisualDocument(
                 variables = variableValues,
                 timeSeconds = time,
                 timeProgress = timeProgress,
+                evaluationIssues = evaluationIssues,
             )
         }
         return TutorVisualFrame(
@@ -127,6 +139,7 @@ data class CompiledTutorVisualDocument(
             step = step,
             elements = elementStates,
             panelCameras = cameras,
+            evaluationIssues = evaluationIssues,
         )
     }
 }
@@ -145,16 +158,49 @@ data class TutorVisualFrame(
     val step: TutorVisualStep,
     val elements: Map<String, TutorVisualElementFrame>,
     val panelCameras: Map<String, TutorVisualCamera>,
-)
+    val evaluationIssues: List<TutorVisualIntegrityIssue> = emptyList(),
+) {
+    val canRender: Boolean
+        get() = evaluationIssues.isEmpty()
+}
 
 object TutorVisualDocumentCompiler {
     fun compile(scene: TutorVisualDocumentScene): CompiledTutorVisualDocument {
         val variables = scene.variables.associateBy(TutorVisualVariable::variableId)
         val bindingsByTarget = scene.bindings.groupBy(TutorVisualBinding::targetId)
+        val panels = scene.panels.associateBy(TutorVisualPanel::panelId)
+        val elements = scene.elements.associateBy(TutorVisualDocumentElement::elementId)
+        val variableValues = variables.mapValues { (_, variable) -> variable.value }
+        val evaluationTimes = buildSet {
+            add(0.0)
+            add(scene.durationSeconds)
+            scene.steps.forEach { step ->
+                add(step.animationStartSeconds)
+                add(step.animationEndSeconds)
+                add((step.animationStartSeconds + step.animationEndSeconds) / 2.0)
+            }
+        }
         val issues = buildList {
             scene.bindings.forEach { binding ->
                 val dimension = inferDimension(binding.expression, variables, binding.bindingId, this)
                 requireBindingDimension(binding, dimension, this)
+                requireRendererConsumer(binding, panels, elements, this)
+                if (
+                    evaluationTimes.any { timeSeconds ->
+                        TutorVisualExpressionEvaluator.evaluate(
+                            expression = binding.expression,
+                            variables = variableValues,
+                            timeSeconds = timeSeconds,
+                            timeProgress = if (scene.durationSeconds > 0.0) {
+                                timeSeconds / scene.durationSeconds
+                            } else {
+                                0.0
+                            },
+                        ) == null
+                    }
+                ) {
+                    add(binding.invalidExpressionIssue())
+                }
             }
             scene.elements.filterIsInstance<TutorVisual2DConnectorElement>().forEach { connector ->
                 if (connector.kind in DIRECTED_CONNECTORS && !connector.directed) {
@@ -168,7 +214,6 @@ object TutorVisualDocumentCompiler {
                     )
                 }
             }
-            val panels = scene.panels.associateBy(TutorVisualPanel::panelId)
             scene.elements.filterIsInstance<TutorVisualChartSeriesElement>().forEach { series ->
                 if (
                     series.axis.name == "RIGHT" &&
@@ -223,7 +268,7 @@ object TutorVisualDocumentCompiler {
             scene = scene,
             panels = compiledPanels,
             variables = variables,
-            elements = scene.elements.associateBy(TutorVisualDocumentElement::elementId),
+            elements = elements,
             bindingsByTarget = bindingsByTarget,
             integrity = report,
         )
@@ -352,11 +397,68 @@ object TutorVisualDocumentCompiler {
         }
     }
 
+    private fun requireRendererConsumer(
+        binding: TutorVisualBinding,
+        panels: Map<String, TutorVisualPanel>,
+        elements: Map<String, TutorVisualDocumentElement>,
+        issues: MutableList<TutorVisualIntegrityIssue>,
+    ) {
+        val supported = when (binding.target) {
+            TutorVisualBindingTarget.PANEL -> {
+                panels[binding.targetId]?.kind == TutorVisualPanelKind.SCENE_3D &&
+                    binding.property in CAMERA_PROPERTIES
+            }
+            TutorVisualBindingTarget.ELEMENT -> {
+                val element = elements[binding.targetId]
+                val panelKind = element?.panelId?.let(panels::get)?.kind
+                when {
+                    element is TutorVisual2DConnectorElement ->
+                        binding.property == TutorVisualBindingProperty.PATH_PROGRESS
+                    element is TutorVisual2DNodeElement ->
+                        binding.property in TWO_DIMENSIONAL_NODE_PROPERTIES
+                    element is TutorVisualParticleGroupElement ->
+                        binding.property == TutorVisualBindingProperty.PARTICLE_PROGRESS
+                    panelKind == TutorVisualPanelKind.SCENE_3D &&
+                        (element is TutorVisualGeometry3DElement ||
+                            element is TutorVisualLatticeElement) ->
+                        binding.property in THREE_DIMENSIONAL_PROPERTIES
+                    else -> false
+                }
+            }
+        }
+        if (!supported) {
+            issues += TutorVisualIntegrityIssue(
+                code = TutorVisualIssueCode.UNSUPPORTED_BINDING_PROPERTY,
+                severity = TutorVisualIssueSeverity.ERROR,
+                targetId = binding.bindingId,
+                detail = "The declared binding has no renderer consumer.",
+            )
+        }
+    }
+
     private val DIRECTED_CONNECTORS = setOf(
         TutorVisualConnectorKind.FLOW,
         TutorVisualConnectorKind.VECTOR,
         TutorVisualConnectorKind.RAY,
         TutorVisualConnectorKind.FORCE,
+    )
+    private val CAMERA_PROPERTIES = setOf(
+        TutorVisualBindingProperty.CAMERA_AZIMUTH_DEGREES,
+        TutorVisualBindingProperty.CAMERA_ELEVATION_DEGREES,
+        TutorVisualBindingProperty.CAMERA_DISTANCE,
+    )
+    private val TWO_DIMENSIONAL_NODE_PROPERTIES = setOf(
+        TutorVisualBindingProperty.OPACITY,
+        TutorVisualBindingProperty.LIQUID_LEVEL,
+    )
+    private val THREE_DIMENSIONAL_PROPERTIES = setOf(
+        TutorVisualBindingProperty.X,
+        TutorVisualBindingProperty.Y,
+        TutorVisualBindingProperty.Z,
+        TutorVisualBindingProperty.ROTATION_X_DEGREES,
+        TutorVisualBindingProperty.ROTATION_Y_DEGREES,
+        TutorVisualBindingProperty.ROTATION_Z_DEGREES,
+        TutorVisualBindingProperty.SCALE,
     )
 }
 
@@ -405,6 +507,7 @@ private fun TutorVisualCamera.applyBindings(
     variables: Map<String, Double>,
     timeSeconds: Double,
     timeProgress: Double,
+    evaluationIssues: MutableList<TutorVisualIntegrityIssue>,
 ): TutorVisualCamera {
     var azimuth = azimuthDegrees
     var elevation = elevationDegrees
@@ -415,7 +518,11 @@ private fun TutorVisualCamera.applyBindings(
             variables,
             timeSeconds,
             timeProgress,
-        ) ?: return@forEach
+        )
+        if (value == null) {
+            evaluationIssues += binding.invalidExpressionIssue()
+            return@forEach
+        }
         when (binding.property) {
             TutorVisualBindingProperty.CAMERA_AZIMUTH_DEGREES -> azimuth = value
             TutorVisualBindingProperty.CAMERA_ELEVATION_DEGREES -> elevation = value
@@ -429,6 +536,13 @@ private fun TutorVisualCamera.applyBindings(
         distance = boundDistance.coerceIn(minimumDistance, maximumDistance),
     )
 }
+
+private fun TutorVisualBinding.invalidExpressionIssue() = TutorVisualIntegrityIssue(
+    code = TutorVisualIssueCode.INVALID_EXPRESSION_RESULT,
+    severity = TutorVisualIssueSeverity.ERROR,
+    targetId = bindingId,
+    detail = "The bound expression must produce a finite value within the renderable range.",
+)
 
 enum class TutorVisualRiskLevel {
     LOW,
@@ -470,10 +584,14 @@ object TutorVisualCacheKey {
         sourceImageSha256: String,
         modelVersion: String,
         schemaVersion: Int = 2,
+        providerId: String = "",
+        providerConfigurationVersion: String = "",
     ): String {
         val canonical = listOf(
             questionDocumentFingerprint,
             sourceImageSha256.lowercase(),
+            providerId,
+            providerConfigurationVersion,
             modelVersion,
             schemaVersion.toString(),
         ).joinToString("\n")

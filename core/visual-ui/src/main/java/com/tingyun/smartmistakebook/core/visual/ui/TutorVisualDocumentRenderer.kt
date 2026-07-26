@@ -67,6 +67,7 @@ fun TutorVisualDocumentContent(
     modifier: Modifier = Modifier,
     onOpenOriginal: (() -> Unit)? = null,
     onReportIncorrect: (() -> Unit)? = null,
+    onTargetHit: ((String) -> Unit)? = null,
 ) {
     val compiledResult = remember(scene) { runCatching { TutorVisualDocumentCompiler.compile(scene) } }
     val compiled = compiledResult.getOrNull()?.takeIf { it.integrity.canRender }
@@ -83,6 +84,7 @@ fun TutorVisualDocumentContent(
         modifier = modifier,
         onOpenOriginal = onOpenOriginal,
         onReportIncorrect = onReportIncorrect,
+        onTargetHit = onTargetHit,
     )
 }
 
@@ -92,6 +94,7 @@ private fun TutorVisualDocumentPlayer(
     modifier: Modifier,
     onOpenOriginal: (() -> Unit)?,
     onReportIncorrect: (() -> Unit)?,
+    onTargetHit: ((String) -> Unit)?,
 ) {
     val scene = compiled.scene
     val context = LocalContext.current
@@ -108,6 +111,21 @@ private fun TutorVisualDocumentPlayer(
     val selectedPanel = scene.panels[selectedPanelIndex.coerceIn(scene.panels.indices)]
     val frame = remember(compiled, stepIndex, timeSeconds) {
         compiled.evaluate(timeSeconds, stepIndex)
+    }
+
+    LaunchedEffect(animationsEnabled) {
+        if (!animationsEnabled) playing = false
+    }
+    LaunchedEffect(frame.canRender) {
+        if (!frame.canRender) playing = false
+    }
+    if (!frame.canRender) {
+        TutorVisualFallback(
+            markdown = scene.fallbackMarkdown,
+            accessibilitySummary = scene.accessibilitySummary,
+            modifier = modifier,
+        )
+        return
     }
 
     LaunchedEffect(playing, scene.durationSeconds, animationsEnabled) {
@@ -171,6 +189,7 @@ private fun TutorVisualDocumentPlayer(
                 panel = selectedPanel,
                 frame = frame,
                 profile = profile,
+                onTargetHit = onTargetHit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(if (fullscreen) 1.35f else 1.45f)
@@ -276,7 +295,12 @@ private fun TutorVisualDocumentPlayer(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     onOpenOriginal?.let { open ->
-                        IconButton(onClick = open) {
+                        IconButton(
+                            onClick = {
+                                fullscreen = false
+                                open()
+                            },
+                        ) {
                             Icon(Icons.Rounded.Image, contentDescription = "查看原图")
                         }
                     }
@@ -344,6 +368,7 @@ private fun TutorVisualPanelContent(
     panel: TutorVisualPanel,
     frame: com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualFrame,
     profile: TutorVisualRenderProfile,
+    onTargetHit: ((String) -> Unit)?,
     modifier: Modifier,
 ) {
     when (panel.kind) {
@@ -351,6 +376,7 @@ private fun TutorVisualPanelContent(
             compiled = compiled,
             panel = panel,
             frame = frame,
+            onTargetHit = onTargetHit,
             modifier = modifier,
         )
         TutorVisualPanelKind.SCENE_3D -> TutorVisual3DPanel(

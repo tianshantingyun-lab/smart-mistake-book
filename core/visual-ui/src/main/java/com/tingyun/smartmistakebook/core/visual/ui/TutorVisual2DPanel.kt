@@ -48,6 +48,7 @@ internal fun TutorVisual2DPanel(
     compiled: CompiledTutorVisualDocument,
     panel: TutorVisualPanel,
     frame: TutorVisualFrame,
+    onTargetHit: ((String) -> Unit)?,
     modifier: Modifier,
 ) {
     val paper = MaterialTheme.colorScheme.surface
@@ -83,11 +84,13 @@ internal fun TutorVisual2DPanel(
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(layout) {
+                .pointerInput(layout, onTargetHit) {
                     detectTapGestures { offset ->
-                        selectedElementId = layout.hitTest(
+                        val hitTargetId = layout.hitTest(
                             TutorVisualPoint(offset.x.toDouble(), offset.y.toDouble()),
                         )
+                        selectedElementId = hitTargetId
+                        hitTargetId?.let { targetId -> onTargetHit?.invoke(targetId) }
                     }
                 },
         ) {
@@ -159,7 +162,7 @@ internal fun TutorVisual2DPanel(
                 val region = layout.nodes[particleGroup.regionElementId]?.bounds ?: return@forEach
                 val progress = state.properties[TutorVisualBindingProperty.PARTICLE_PROGRESS]
                     ?: frame.timeProgress
-                val drawCount = particleGroup.instanceCount.coerceAtMost(MAX_DRAWN_PARTICLES)
+                val drawCount = particleGroup.instanceCount
                 repeat(drawCount) { index ->
                     val xFraction = deterministicFraction(particleGroup.deterministicSeed, index * 2)
                     val yBase = deterministicFraction(particleGroup.deterministicSeed, index * 2 + 1)
@@ -314,5 +317,3 @@ private fun deterministicFraction(seed: Int, index: Int): Double {
     value = value xor (value ushr 16)
     return (value and 0xffff).toDouble() / 65535.0
 }
-
-private const val MAX_DRAWN_PARTICLES = 300

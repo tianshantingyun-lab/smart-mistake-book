@@ -4,10 +4,12 @@ import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
@@ -68,8 +70,8 @@ class TutorVisualPipelineTest {
             reviewTasks = emptyList(),
         )
 
-        assertTrue(resolved is TutorVisualResolution.NeedsReview)
-        assertTrue((resolved as TutorVisualResolution.NeedsReview).reasonCodes.contains("lattice"))
+        assertTrue(resolved is TutorVisualResolution.Reviewing)
+        assertTrue((resolved as TutorVisualResolution.Reviewing).reasonCodes.contains("lattice"))
     }
 
     @Test
@@ -83,9 +85,9 @@ class TutorVisualPipelineTest {
             reviewTasks = emptyList(),
         )
 
-        assertTrue(resolved is TutorVisualResolution.NeedsReview)
+        assertTrue(resolved is TutorVisualResolution.Reviewing)
         assertTrue(
-            (resolved as TutorVisualResolution.NeedsReview)
+            (resolved as TutorVisualResolution.Reviewing)
                 .reasonCodes
                 .contains("local_integrity_error"),
         )
@@ -131,7 +133,59 @@ class TutorVisualPipelineTest {
             reviewTasks = listOf(review),
         )
 
-        assertEquals(TutorVisualResolution.Unavailable, resolved)
+        assertTrue(resolved is TutorVisualResolution.Fallback)
+        assertEquals(
+            TutorVisualFallbackReason.REJECTED,
+            (resolved as TutorVisualResolution.Fallback).reason,
+        )
+        assertEquals(false, resolved.canRetry)
+    }
+
+    @Test
+    fun missingGenerationTaskStaysVisibleAsPreparing() {
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = emptyList(),
+            reviewTasks = emptyList(),
+        )
+
+        assertEquals(TutorVisualResolution.Preparing, resolved)
+    }
+
+    @Test
+    fun persistedGenerationFailureBecomesRetryableFallback() {
+        val failed = failedGenerationTask()
+
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = listOf(failed),
+            reviewTasks = emptyList(),
+        )
+
+        assertTrue(resolved is TutorVisualResolution.Fallback)
+        assertEquals(
+            TutorVisualFallbackReason.TASK_FAILURE,
+            (resolved as TutorVisualResolution.Fallback).reason,
+        )
+        assertTrue(resolved.canRetry)
+        assertEquals(failed, resolved.failedTask)
+    }
+
+    @Test
+    fun staleSemanticGenerationRequestDoesNotBecomeReady() {
+        val stale = generationTask(scene = lowRiskScene(), confidence = 0.97)
+
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = listOf(stale),
+            reviewTasks = emptyList(),
+            expectedGenerationRequestId = "visual-generate-current-provider-and-source",
+        )
+
+        assertEquals(TutorVisualResolution.Preparing, resolved)
     }
 
     private fun generationTask(
@@ -195,6 +249,32 @@ class TutorVisualPipelineTest {
                 scene = repairedScene,
                 modelVersion = "review-v1",
             ),
+        )
+    }
+
+    private fun failedGenerationTask(): ModelTaskSnapshot {
+        val input = generateInput()
+        val request = ModelTaskRequest(
+            requestId = "visual-generate",
+            input = input,
+            occurredAtEpochMillis = 1,
+        )
+        return ModelTaskSnapshot(
+            taskId = request.requestId,
+            request = request,
+            requestFingerprint = ModelTaskFingerprint.of(request),
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            stateVersion = 1,
+            stage = ModelTaskStage.PREPARING,
+            userMessage = "稍后重试",
+            attemptCount = 1,
+            failure = ModelTaskFailure(
+                code = ModelFailureCode.NETWORK_UNAVAILABLE,
+                message = "暂时无法完成",
+                retryable = true,
+            ),
+            createdAtEpochMillis = 1,
+            updatedAtEpochMillis = 2,
         )
     }
 

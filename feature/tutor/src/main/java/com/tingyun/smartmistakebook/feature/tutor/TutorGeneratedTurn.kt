@@ -27,7 +27,6 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
-import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -47,9 +46,14 @@ internal fun TutorTurnContent(
     splitChoiceFeedback: Boolean = false,
     interactionBusy: Boolean = false,
     interactionError: String? = null,
-    resolvedVisualScene: TutorVisualDocumentScene? = null,
+    resolvedVisual: TutorVisualResolution = TutorVisualResolution.Hidden,
+    visualPresentationMode: TutorVisualPresentationMode =
+        TutorVisualPresentationMode.CURRENT_EXPANDED,
+    visualOriginalAvailable: Boolean = false,
+    onRetryVisual: () -> Unit = {},
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
+    onVisualTargetHit: (String) -> Unit = {},
     onSubmitChoice: (String) -> Unit = {},
     onDirectiveResponse: (String) -> Unit = {},
     onRequestHint: (() -> Unit)? = null,
@@ -100,16 +104,37 @@ internal fun TutorTurnContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SafeMarkdownText(plan.openingMarkdown, style = MaterialTheme.typography.bodyLarge)
-        resolvedVisualScene?.let { scene ->
-            TutorVisualSceneRenderer(
-                scene = scene,
-                onOpenOriginal = onOpenVisualOriginal,
-                onReportIncorrect = { onReportVisualIncorrect(scene.sceneId) },
-            )
-        }
+        val visualTarget = directive as? TutorInteractionDirective.VisualTarget
+        TutorVisualPresentation(
+            state = resolvedVisual,
+            mode = visualPresentationMode,
+            originalAvailable = visualOriginalAvailable,
+            onRetry = onRetryVisual,
+            onOpenOriginal = onOpenVisualOriginal,
+            onReportIncorrect = onReportVisualIncorrect,
+            onTargetHit = visualTarget
+                ?.takeIf {
+                    explanationMode == TutorExplanationMode.GUIDED && interactionEnabled
+                }
+                ?.let { target ->
+                    { hitTargetId ->
+                        if (hitTargetId == target.targetId) onVisualTargetHit(hitTargetId)
+                    }
+                },
+        )
         if (item == null) {
             plan.visualScene?.let { scene ->
-                TutorVisualSceneRenderer(scene)
+                TutorVisualPresentation(
+                    state = TutorVisualResolution.Ready(
+                        scene = scene,
+                        cacheKey = "legacy:${scene.schemaVersion}:${scene.sceneId}",
+                    ),
+                    mode = visualPresentationMode,
+                    originalAvailable = false,
+                    onRetry = {},
+                    onOpenOriginal = {},
+                    onReportIncorrect = {},
+                )
             }
         }
         item?.let { interaction ->
@@ -164,6 +189,7 @@ internal fun TutorTurnContent(
                 directive = it,
                 enabled = interactionEnabled && !interactionBusy,
                 onResponse = onDirectiveResponse,
+                visualTargetReady = resolvedVisual is TutorVisualResolution.Ready,
             )
         }
         if (item == null) {
@@ -443,6 +469,7 @@ internal fun TutorInteractionDirectiveContent(
     directive: TutorInteractionDirective,
     enabled: Boolean,
     onResponse: (String) -> Unit,
+    visualTargetReady: Boolean = false,
 ) {
     when (directive) {
         TutorInteractionDirective.Continue -> OutlineActionChip(
@@ -488,13 +515,17 @@ internal fun TutorInteractionDirectiveContent(
                 modifier = Modifier.testTag("captured_tutor_directive_visual_target"),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            OutlineActionChip(
-                text = "选择图中位置",
-                onClick = { onResponse("我选择图中位置：${directive.targetId}") },
-                enabled = enabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("captured_tutor_directive_target_${directive.targetId}"),
+            Text(
+                text = if (enabled && visualTargetReady) {
+                    "请直接点选图中的位置。"
+                } else {
+                    "图解准备好后可直接点选。"
+                },
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag(
+                    "captured_tutor_directive_target_${directive.targetId}",
+                ),
             )
         }
     }

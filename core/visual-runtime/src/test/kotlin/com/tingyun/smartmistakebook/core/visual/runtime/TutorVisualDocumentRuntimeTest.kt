@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualBindingProperty
 import com.tingyun.smartmistakebook.core.model.TutorVisualBindingTarget
 import com.tingyun.smartmistakebook.core.model.TutorVisualDimension
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpression
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpressionOperation
 import com.tingyun.smartmistakebook.core.model.TutorVisualLatticeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualValueSource
@@ -157,6 +158,56 @@ class TutorVisualDocumentRuntimeTest {
     }
 
     @Test
+    fun nonFiniteRuntimeExpressionFailsCompilationInsteadOfDroppingTheBinding() {
+        val original = TutorVisualSeedFixtures.uTubeGasColumns()
+        val time = TutorVisualDocumentExpression.timeProgress()
+        val zero = TutorVisualDocumentExpression(
+            operation = TutorVisualDocumentExpressionOperation.SUBTRACT,
+            arguments = listOf(time, time),
+        )
+        val invalidBinding = TutorVisualBinding(
+            bindingId = "utube_non_finite_binding",
+            target = TutorVisualBindingTarget.ELEMENT,
+            targetId = "utube_gas_a",
+            property = TutorVisualBindingProperty.LIQUID_LEVEL,
+            expression = TutorVisualDocumentExpression(
+                operation = TutorVisualDocumentExpressionOperation.DIVIDE,
+                arguments = listOf(TutorVisualDocumentExpression.constant(1.0), zero),
+            ),
+        )
+
+        val result = runCatching {
+            TutorVisualDocumentCompiler.compile(
+                original.copy(bindings = original.bindings + invalidBinding),
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("finite"))
+    }
+
+    @Test
+    fun bindingWithoutRendererConsumerFailsCompilation() {
+        val original = TutorVisualSeedFixtures.uTubeGasColumns()
+        val unsupportedBinding = TutorVisualBinding(
+            bindingId = "utube_unrendered_vector_binding",
+            target = TutorVisualBindingTarget.ELEMENT,
+            targetId = "utube_gas_a",
+            property = TutorVisualBindingProperty.VECTOR_X,
+            expression = TutorVisualDocumentExpression.constant(1.0),
+        )
+
+        val result = runCatching {
+            TutorVisualDocumentCompiler.compile(
+                original.copy(bindings = original.bindings + unsupportedBinding),
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("renderer"))
+    }
+
+    @Test
     fun cacheKeyChangesForEverySemanticInput() {
         val baseline = TutorVisualCacheKey.create("question-a", "ABCD", "model-1")
 
@@ -175,6 +226,36 @@ class TutorVisualDocumentRuntimeTest {
         assertNotEquals(
             baseline,
             TutorVisualCacheKey.create("question-a", "abcd", "model-1", schemaVersion = 3),
+        )
+        assertNotEquals(
+            TutorVisualCacheKey.create(
+                "question-a",
+                "abcd",
+                "model-1",
+                providerId = "provider-a",
+            ),
+            TutorVisualCacheKey.create(
+                "question-a",
+                "abcd",
+                "model-1",
+                providerId = "provider-b",
+            ),
+        )
+        assertNotEquals(
+            TutorVisualCacheKey.create(
+                "question-a",
+                "abcd",
+                "model-1",
+                providerId = "provider-a",
+                providerConfigurationVersion = "config-v1",
+            ),
+            TutorVisualCacheKey.create(
+                "question-a",
+                "abcd",
+                "model-1",
+                providerId = "provider-a",
+                providerConfigurationVersion = "config-v2",
+            ),
         )
     }
 }

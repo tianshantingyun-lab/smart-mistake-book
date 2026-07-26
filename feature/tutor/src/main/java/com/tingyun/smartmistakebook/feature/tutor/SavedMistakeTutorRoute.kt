@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -14,7 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailState
+import com.tingyun.smartmistakebook.core.domain.MistakeSourceLocation
+import com.tingyun.smartmistakebook.core.domain.MistakeSourceSet
+import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
@@ -35,10 +43,12 @@ import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.LocalModeLine
 import com.tingyun.smartmistakebook.core.ui.Outline
+import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.StructuredContentRenderer
@@ -200,6 +210,13 @@ internal fun SavedMistakeTutorContent(
         )
     }
     val identity = state.detail.identity
+    val visualSourceAssets = remember(state.detail.source) {
+        state.detail.source.toTutorVisualSourceAssets()
+    }
+    val originalUri = remember(state.detail.source) {
+        state.detail.source.firstAvailableOriginalUri()
+    }
+    var sourceExpanded by rememberSaveable(question.sessionId) { mutableStateOf(false) }
     LaunchedEffect(question.sessionId, identity.problemRevisionId, identity.practiceUnitId) {
         interactions.anchorSession(
             savedMistakeTutorAnchor(
@@ -214,7 +231,12 @@ internal fun SavedMistakeTutorContent(
         question = question,
         profile = profile,
         modelTasks = modelTasks,
+        visualSourceAssetsReader = { visualSourceAssets },
+        visualOriginalAvailable = originalUri != null,
         interactions = interactions,
+        onOpenVisualOriginal = {
+            if (originalUri != null) sourceExpanded = true
+        },
         onOpenModelSettings = onOpenModelSettings,
         onCameraAttachment = onCameraAttachment,
         onGalleryAttachment = onGalleryAttachment,
@@ -240,6 +262,28 @@ internal fun SavedMistakeTutorContent(
                 document = question.questionDocument.document,
                 choicesEnabled = false,
             )
+            originalUri?.let { uri ->
+                OutlineActionChip(
+                    text = if (sourceExpanded) "收起原图" else "查看原图",
+                    onClick = { sourceExpanded = !sourceExpanded },
+                    icon = Icons.Outlined.Image,
+                    contentDescription = if (sourceExpanded) "收起题目原图" else "查看题目原图",
+                    modifier = Modifier
+                        .padding(top = 14.dp)
+                        .testTag("saved_mistake_tutor_source_toggle"),
+                )
+                if (sourceExpanded) {
+                    BoundedLocalImage(
+                        imageUri = uri,
+                        contentDescription = "题目原图",
+                        expanded = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp)
+                            .testTag("saved_mistake_tutor_source_image"),
+                    )
+                }
+            }
             learningMemory?.let { memory ->
                 TutorQuestionMemoryCard(
                     memory = memory,
@@ -251,6 +295,28 @@ internal fun SavedMistakeTutorContent(
         modifier = modifier,
     )
 }
+
+internal fun MistakeSourceSet.toTutorVisualSourceAssets(): List<TutorVisualSourceAssetScope> =
+    when (this) {
+        MistakeSourceSet.Missing -> emptyList()
+        is MistakeSourceSet.Present -> assets.mapIndexed { pageIndex, asset ->
+            TutorVisualSourceAssetScope(
+                pageIndex = pageIndex,
+                assetId = asset.sourceAssetId,
+                sha256 = asset.contentSha256,
+                byteSize = asset.byteSize,
+                width = asset.width,
+                height = asset.height,
+            )
+        }
+    }
+
+internal fun MistakeSourceSet.firstAvailableOriginalUri(): String? =
+    (this as? MistakeSourceSet.Present)
+        ?.assets
+        ?.firstNotNullOfOrNull { asset ->
+            (asset.location as? MistakeSourceLocation.Available)?.localUri
+        }
 
 internal fun savedMistakeTutorAnchor(
     sessionId: String,

@@ -59,12 +59,12 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
-import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
@@ -79,7 +79,6 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.StreamingSafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
-import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 
@@ -335,7 +334,10 @@ internal fun priorCycleStudentMessages(tasks: List<ModelTaskSnapshot>): List<Str
 internal fun TutorChatExchange(
     task: ModelTaskSnapshot,
     activeMessage: TutorActiveStreamMessage? = null,
-    resolvedVisualScene: TutorVisualDocumentScene? = null,
+    resolvedVisual: TutorVisualResolution = TutorVisualResolution.Hidden,
+    visualPresentationMode: TutorVisualPresentationMode =
+        TutorVisualPresentationMode.CURRENT_EXPANDED,
+    visualOriginalAvailable: Boolean = false,
     awaitingContinuation: Boolean = false,
     interactionEnabled: Boolean,
     recoveryEnabled: Boolean,
@@ -346,6 +348,8 @@ internal fun TutorChatExchange(
     onRevealSolution: (TutorSuggestedMove) -> Unit,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
     onDirectiveResponse: (String) -> Unit = {},
+    onRetryVisual: () -> Unit = {},
+    onVisualTargetHit: (String) -> Unit = {},
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit = { _, _ -> },
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
@@ -353,6 +357,7 @@ internal fun TutorChatExchange(
     modifier: Modifier = Modifier,
 ) {
     val input = task.request.input as TutorRespondInput
+    val output = task.output as? TutorRespondOutput
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -383,11 +388,34 @@ internal fun TutorChatExchange(
                 explanationMode = explanationMode,
                 onDirectiveResponse = onDirectiveResponse,
                 localIntentContent = localIntentContent,
-                resolvedVisualScene = resolvedVisualScene,
-                onOpenVisualOriginal = onOpenVisualOriginal,
-                onReportVisualIncorrect = onReportVisualIncorrect,
+                visualTargetReady = resolvedVisual is TutorVisualResolution.Ready,
                 assistantBottomModifier = assistantBottomModifier,
             )
+            TutorVisualPresentation(
+                state = resolvedVisual,
+                mode = visualPresentationMode,
+                originalAvailable = visualOriginalAvailable,
+                onRetry = onRetryVisual,
+                onOpenOriginal = onOpenVisualOriginal,
+                onReportIncorrect = onReportVisualIncorrect,
+                onTargetHit = onVisualTargetHit.takeIf {
+                    explanationMode == TutorExplanationMode.GUIDED &&
+                        output?.interactionDirective is TutorInteractionDirective.VisualTarget
+                },
+            )
+            output?.visualScene?.let { scene ->
+                TutorVisualPresentation(
+                    state = TutorVisualResolution.Ready(
+                        scene = scene,
+                        cacheKey = "legacy:${scene.schemaVersion}:${scene.sceneId}",
+                    ),
+                    mode = visualPresentationMode,
+                    originalAvailable = false,
+                    onRetry = {},
+                    onOpenOriginal = {},
+                    onReportIncorrect = {},
+                )
+            }
         }
     }
 }
@@ -528,9 +556,7 @@ private fun TutorAssistantReplyBubble(
     explanationMode: TutorExplanationMode,
     onDirectiveResponse: (String) -> Unit,
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit,
-    resolvedVisualScene: TutorVisualDocumentScene?,
-    onOpenVisualOriginal: () -> Unit,
-    onReportVisualIncorrect: (String) -> Unit,
+    visualTargetReady: Boolean,
     assistantBottomModifier: Modifier,
 ) {
     val input = task.request.input as TutorRespondInput
@@ -576,15 +602,6 @@ private fun TutorAssistantReplyBubble(
                                 markdown = output.messageMarkdown,
                                 style = MaterialTheme.typography.bodyMedium,
                             )
-                            resolvedVisualScene?.let { scene ->
-                                TutorVisualSceneRenderer(
-                                    scene = scene,
-                                    onOpenOriginal = onOpenVisualOriginal,
-                                    onReportIncorrect = {
-                                        onReportVisualIncorrect(scene.sceneId)
-                                    },
-                                )
-                            }
                             localIntentContent(input, output)
                             visibleTutorInteractionDirective(
                                 explanationMode,
@@ -594,9 +611,9 @@ private fun TutorAssistantReplyBubble(
                                     directive = directive,
                                     enabled = showActions,
                                     onResponse = onDirectiveResponse,
+                                    visualTargetReady = visualTargetReady,
                                 )
                             }
-                            output.visualScene?.let { TutorVisualSceneRenderer(it) }
                             if (output.solutionRevealed) {
                                 Box(
                                     modifier = Modifier

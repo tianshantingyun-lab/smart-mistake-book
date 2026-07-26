@@ -2,8 +2,12 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskRemoteDispatchPolicy
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
+import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationDecision
@@ -12,6 +16,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewOutput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationRequest
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
@@ -24,18 +29,39 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
 internal sealed interface TutorVisualResolution {
+    data object Hidden : TutorVisualResolution
+
+    data object Preparing : TutorVisualResolution
+
     data class Ready(
-        val scene: TutorVisualDocumentScene,
+        val scene: TutorVisualScene,
         val cacheKey: String,
     ) : TutorVisualResolution
 
-    data class NeedsReview(
+    data class Reviewing(
         val generationTask: ModelTaskSnapshot,
         val output: TutorVisualGenerateOutput,
         val reasonCodes: Set<String>,
     ) : TutorVisualResolution
 
-    data object Unavailable : TutorVisualResolution
+    data class Fallback(
+        val reason: TutorVisualFallbackReason,
+        val canRetry: Boolean = false,
+        val failedTask: ModelTaskSnapshot? = null,
+        val reviewCandidate: Reviewing? = null,
+    ) : TutorVisualResolution
+}
+
+internal enum class TutorVisualFallbackReason {
+    TASK_FAILURE,
+    DECLINED,
+    INVALID_OUTPUT,
+    REJECTED,
+    VALIDATION_FAILED,
+    SOURCE_UNAVAILABLE,
+    PROVIDER_UNAVAILABLE,
+    REPORTED,
+    NOT_STARTED,
 }
 
 internal data class TutorVisualWorkSeed(
@@ -74,8 +100,13 @@ internal fun tutorVisualWorkSeeds(
     }
     respondTasks.forEach { task ->
         val output = task.output as? TutorRespondOutput ?: return@forEach
-        val request = output.visualRequest ?: return@forEach
         if (task.status != ModelTaskStatus.SUCCEEDED) return@forEach
+        val input = task.request.input as? TutorRespondInput ?: return@forEach
+        val request = output.visualRequest
+            ?: VisualIntent.detect(input.studentMessage)
+                ?.takeIf { output.visualScene == null }
+                ?.toGenerationRequest()
+            ?: return@forEach
         add(
             TutorVisualWorkSeed(
                 anchor = TutorVisualTurnAnchor(
@@ -96,6 +127,9 @@ internal fun resolveTutorVisual(
     question: TutorQuestionContext,
     generationTasks: List<ModelTaskSnapshot>,
     reviewTasks: List<ModelTaskSnapshot>,
+    expectedGenerationRequestId: String? = null,
+    expectedReviewRequestId: String? = null,
+    reviewProvider: ProviderCapabilitySnapshot? = null,
 ): TutorVisualResolution {
     val generationTask = generationTasks
         .asReversed()
@@ -105,52 +139,88 @@ internal fun resolveTutorVisual(
                 input.sessionId == question.sessionId &&
                 input.draftRevisionNumber == question.revisionNumber &&
                 input.questionDocument.id == question.questionDocument.document.id &&
-                task.status == ModelTaskStatus.SUCCEEDED
-        } ?: return TutorVisualResolution.Unavailable
-    val generated = generationTask.output as? TutorVisualGenerateOutput
-        ?: return TutorVisualResolution.Unavailable
-    if (generated.decision != TutorVisualGenerationDecision.GENERATED) {
-        return TutorVisualResolution.Unavailable
+                task.request.matchesSemanticRequest(expectedGenerationRequestId)
+        } ?: return TutorVisualResolution.Preparing
+    if (generationTask.status != ModelTaskStatus.SUCCEEDED) {
+        return if (generationTask.status.isVisualFailure()) {
+            TutorVisualResolution.Fallback(
+                reason = TutorVisualFallbackReason.TASK_FAILURE,
+                canRetry = generationTask.canRetryVisualTask(),
+                failedTask = generationTask,
+            )
+        } else {
+            TutorVisualResolution.Preparing
+        }
     }
-    val candidate = generated.scene ?: return TutorVisualResolution.Unavailable
+    val generated = generationTask.output as? TutorVisualGenerateOutput
+        ?: return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
+    if (generated.decision != TutorVisualGenerationDecision.GENERATED) {
+        return TutorVisualResolution.Fallback(TutorVisualFallbackReason.DECLINED)
+    }
+    val candidate = generated.scene
+        ?: return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
     val generationInput = generationTask.request.input as TutorVisualGenerateInput
     val generationCacheKey = visualCacheKey(
         question = question,
         input = generationInput,
         modelVersion = generated.modelVersion,
+        schemaVersion = candidate.schemaVersion,
+        providerId = generationTask.visualProviderId(),
+        providerConfigurationVersion = generationTask.visualProviderConfigurationVersion(),
     )
     val reasons = generated.reviewReasonCodes()
     if (reasons.isEmpty()) {
         return TutorVisualResolution.Ready(candidate, generationCacheKey)
     }
+    val semanticReviewRequestId = expectedReviewRequestId ?: reviewProvider?.let { provider ->
+        tutorVisualReviewRequestId(
+            generationRequestId = generationTask.request.requestId,
+            provider = provider,
+            generated = generated,
+            reviewReasonCodes = reasons,
+        )
+    }
 
     val reviewOutput = reviewTasks
         .asReversed()
-        .firstNotNullOfOrNull { task ->
+        .firstOrNull { task ->
             val input = task.request.input as? TutorVisualReviewInput
-            val output = task.output as? TutorVisualReviewOutput
-            output?.takeIf {
-                task.status == ModelTaskStatus.SUCCEEDED &&
-                    input?.anchor == anchor &&
-                    input.candidateScene.sceneId == candidate.sceneId &&
-                    input.sessionId == question.sessionId &&
-                    input.draftRevisionNumber == question.revisionNumber &&
-                    input.questionDocument.id == question.questionDocument.document.id
-            }
-        } ?: return TutorVisualResolution.NeedsReview(
+            input?.anchor == anchor &&
+                input.candidateScene.sceneId == candidate.sceneId &&
+                input.sessionId == question.sessionId &&
+                input.draftRevisionNumber == question.revisionNumber &&
+                input.questionDocument.id == question.questionDocument.document.id &&
+                task.request.matchesSemanticRequest(semanticReviewRequestId)
+        }
+    val reviewCandidate = TutorVisualResolution.Reviewing(
         generationTask = generationTask,
         output = generated,
         reasonCodes = reasons,
     )
+    if (reviewOutput == null) return reviewCandidate
+    if (reviewOutput.status != ModelTaskStatus.SUCCEEDED) {
+        return if (reviewOutput.status.isVisualFailure()) {
+            TutorVisualResolution.Fallback(
+                reason = TutorVisualFallbackReason.TASK_FAILURE,
+                canRetry = reviewOutput.canRetryVisualTask(),
+                failedTask = reviewOutput,
+                reviewCandidate = reviewCandidate,
+            )
+        } else {
+            reviewCandidate
+        }
+    }
+    val reviewed = reviewOutput.output as? TutorVisualReviewOutput
+        ?: return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
 
-    return when (reviewOutput.decision) {
+    return when (reviewed.decision) {
         TutorVisualReviewDecision.APPROVED -> candidate
-            .takeIf { reviewOutput.confidence >= MIN_REVIEW_CONFIDENCE }
+            .takeIf { reviewed.confidence >= MIN_REVIEW_CONFIDENCE }
             ?.takeIf(::isLocallyRenderable)
             ?.let { scene -> TutorVisualResolution.Ready(scene, generationCacheKey) }
-            ?: TutorVisualResolution.Unavailable
-        TutorVisualReviewDecision.REPAIRED -> reviewOutput.scene
-            ?.takeIf { reviewOutput.confidence >= MIN_REVIEW_CONFIDENCE }
+            ?: TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
+        TutorVisualReviewDecision.REPAIRED -> reviewed.scene
+            ?.takeIf { reviewed.confidence >= MIN_REVIEW_CONFIDENCE }
             ?.takeIf(::isLocallyRenderable)
             ?.let { scene ->
                 TutorVisualResolution.Ready(
@@ -158,14 +228,37 @@ internal fun resolveTutorVisual(
                     cacheKey = visualCacheKey(
                         question = question,
                         input = generationInput,
-                        modelVersion = reviewOutput.modelVersion,
+                        modelVersion = reviewed.modelVersion,
+                        schemaVersion = scene.schemaVersion,
+                        providerId = reviewOutput.visualProviderId(),
+                        providerConfigurationVersion =
+                            reviewOutput.visualProviderConfigurationVersion(),
                     ),
                 )
             }
-            ?: TutorVisualResolution.Unavailable
-        TutorVisualReviewDecision.REJECTED -> TutorVisualResolution.Unavailable
+            ?: TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
+        TutorVisualReviewDecision.REJECTED ->
+            TutorVisualResolution.Fallback(TutorVisualFallbackReason.REJECTED)
     }
 }
+
+private fun ModelTaskRequest.matchesSemanticRequest(expectedRequestId: String?): Boolean =
+    expectedRequestId == null ||
+        requestId == expectedRequestId ||
+        requestId.startsWith("$expectedRequestId:retry:")
+
+internal fun ModelTaskSnapshot.matchesTutorVisualRequest(request: ModelTaskRequest): Boolean =
+    this.request.matchesSemanticRequest(request.requestId)
+
+private fun ModelTaskSnapshot.canRetryVisualTask(): Boolean =
+    status == ModelTaskStatus.RETRYABLE_FAILURE &&
+        failure?.retryable == true &&
+        ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount)
+
+private fun ModelTaskStatus.isVisualFailure(): Boolean =
+    this == ModelTaskStatus.RETRYABLE_FAILURE ||
+        this == ModelTaskStatus.PERMANENT_FAILURE ||
+        this == ModelTaskStatus.CANCELLED
 
 private fun TutorVisualGenerateOutput.reviewReasonCodes(): Set<String> {
     val candidate = scene ?: return emptySet()
@@ -188,6 +281,9 @@ private fun visualCacheKey(
     question: TutorQuestionContext,
     input: TutorVisualGenerateInput,
     modelVersion: String,
+    schemaVersion: Int,
+    providerId: String,
+    providerConfigurationVersion: String,
 ): String {
     val sourceFingerprint = MessageDigest.getInstance("SHA-256")
         .digest(
@@ -203,8 +299,18 @@ private fun visualCacheKey(
         ),
         sourceImageSha256 = sourceFingerprint,
         modelVersion = modelVersion,
+        schemaVersion = schemaVersion,
+        providerId = providerId,
+        providerConfigurationVersion = providerConfigurationVersion,
     )
 }
+
+private fun ModelTaskSnapshot.visualProviderId(): String =
+    provider?.providerId ?: request.egressManifest?.providerId.orEmpty()
+
+private fun ModelTaskSnapshot.visualProviderConfigurationVersion(): String =
+    provider?.providerConfigurationVersion
+        ?: request.egressManifest?.providerConfigurationVersion.orEmpty()
 
 private const val MIN_GENERATION_CONFIDENCE = 0.90
 private const val MIN_REVIEW_CONFIDENCE = 0.75
