@@ -11,14 +11,17 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -52,8 +55,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -69,17 +74,10 @@ fun SectionHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 40.dp),
+            .defaultMinSize(minHeight = SmartDimens.MinimumTouchTarget)
+            .semantics { heading() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .width(5.dp)
-                .height(24.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(JadeActive),
-        )
-        Spacer(Modifier.width(12.dp))
         Text(
             text = title,
             modifier = Modifier.weight(1f),
@@ -275,6 +273,31 @@ fun PaperDivider(
         thickness = 1.dp,
         color = color,
     )
+}
+
+@Composable
+fun RootBottomBarFrame(
+    modifier: Modifier = Modifier,
+    navigationBarInsets: WindowInsets = WindowInsets.navigationBars,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Paper)
+            .testTag("root_bottom_bar")
+            .windowInsetsPadding(navigationBarInsets),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(SmartDimens.BottomBarHeight)
+                .testTag("root_bottom_bar_content"),
+        ) {
+            content()
+            PaperDivider(Modifier.align(Alignment.TopCenter))
+        }
+    }
 }
 
 @Composable

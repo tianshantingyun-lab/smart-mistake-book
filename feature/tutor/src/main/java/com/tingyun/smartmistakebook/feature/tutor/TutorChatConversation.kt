@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -62,6 +63,7 @@ import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.Paper
+import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
@@ -539,17 +541,17 @@ internal fun TutorConversationFrame(
                 content = content,
             )
             composer?.let {
-                Surface(color = Paper, shadowElevation = 4.dp) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal = SmartDimens.ContentHorizontalPadding,
-                                vertical = 8.dp,
-                            ),
-                    ) {
-                        it()
-                    }
+                PaperDivider()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Paper)
+                        .padding(
+                            horizontal = SmartDimens.ContentHorizontalPadding,
+                            vertical = 8.dp,
+                        ),
+                ) {
+                    it()
                 }
             }
         }
@@ -572,11 +574,11 @@ internal fun TutorChatComposer(
         },
         modifier = modifier
             .fillMaxWidth()
+            .height(SmartDimens.ComposerHeight)
             .testTag("tutor_chat_composer"),
         enabled = enabled,
         placeholder = { Text("问这道题，或说出你卡住的步骤") },
-        minLines = 1,
-        maxLines = 4,
+        singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
         keyboardActions = KeyboardActions(
             onSend = { if (enabled && value.isNotBlank() && !sending) onSend() },
@@ -585,7 +587,9 @@ internal fun TutorChatComposer(
             IconButton(
                 onClick = onSend,
                 enabled = enabled && value.isNotBlank() && !sending,
-                modifier = Modifier.testTag("tutor_chat_send"),
+                modifier = Modifier
+                    .size(SmartDimens.MinimumTouchTarget)
+                    .testTag("tutor_chat_send"),
             ) {
                 if (sending) {
                     CircularProgressIndicator(

@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -65,7 +63,7 @@ import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.Paper
-import com.tingyun.smartmistakebook.core.ui.PaperDivider
+import com.tingyun.smartmistakebook.core.ui.RootBottomBarFrame
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.feature.capture.CaptureScreen
 import com.tingyun.smartmistakebook.feature.library.BatchImportRoute
@@ -855,17 +853,9 @@ private fun SmartBottomBar(
     selectedRoute: String,
     onSelect: (RootDestination) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Paper)
-            .navigationBarsPadding(),
-    ) {
-        PaperDivider()
+    RootBottomBarFrame {
         NavigationBar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(SmartDimens.BottomBarHeight),
+            modifier = Modifier.fillMaxSize(),
             containerColor = Paper,
             tonalElevation = 0.dp,
             windowInsets = WindowInsets(0),

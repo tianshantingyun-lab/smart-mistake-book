@@ -43,7 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.stateDescription
@@ -581,11 +583,13 @@ internal fun TutorTopBar(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = "讲题",
-            modifier = Modifier.weight(1f),
-            color = Ink,
-            style = MaterialTheme.typography.headlineLarge,
+        Spacer(
+            modifier = Modifier
+                .weight(1f)
+                .semantics {
+                    heading()
+                    contentDescription = "讲题"
+                },
         )
         IconButton(
             onClick = onOpenCapabilitySettings,
@@ -783,12 +787,11 @@ internal fun TutorComposer(
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 82.dp)
+            .height(SmartDimens.ComposerHeight)
             .testTag("tutor_draft_input"),
         placeholder = { Text(placeholder) },
         enabled = enabled,
-        minLines = 2,
-        maxLines = 3,
+        singleLine = true,
         leadingIcon = {
             IconButton(
                 onClick = onCapture,
