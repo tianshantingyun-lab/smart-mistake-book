@@ -111,6 +111,8 @@ data class RecordTutorChoiceCommand(
     val selectionWasCorrect: Boolean,
     val feedbackMarkdown: String,
     val occurredAtEpochMillis: Long,
+    /** Exact policy-authorized request. Null is retained only for legacy non-guided callers. */
+    val evidenceRequestId: String? = null,
 ) {
     init {
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
@@ -118,8 +120,12 @@ data class RecordTutorChoiceCommand(
         require(diagnosticStemMarkdown.isNotBlank())
         require(selectedChoiceId.isNotBlank() && selectedChoiceMarkdown.isNotBlank())
         require(feedbackMarkdown.isNotBlank() && occurredAtEpochMillis >= 0)
+        require(evidenceRequestId == null || evidenceRequestId.isNotBlank())
     }
 }
+
+class TutorEvidenceRejectedException(requestId: String) :
+    IllegalStateException("Tutor evidence request is no longer authorized: $requestId")
 
 data class RecordTutorMoveCommand(
     val sessionId: String,
@@ -207,6 +213,9 @@ interface TutorInteractionRepository {
     fun observe(sessionId: String): Flow<List<TutorTurnResponse>>
 
     suspend fun recordChoice(command: RecordTutorChoiceCommand): TutorTurnResponse
+
+    /** Revokes one exact guided-evidence request, including a write already crossing storage. */
+    fun cancelEvidence(requestId: String) = Unit
 
     suspend fun recordMove(command: RecordTutorMoveCommand): TutorTurnResponse
 

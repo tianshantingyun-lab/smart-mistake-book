@@ -1697,6 +1697,8 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     suspend fun recordTutorChoice(command: PersistTutorChoiceCommand): TutorTurnResponseRecord =
         throw UnsupportedOperationException("Tutor response writes are not implemented")
 
+    suspend fun discardTutorChoice(command: PersistTutorChoiceCommand): Boolean = false
+
     suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord =
         throw UnsupportedOperationException("Tutor move writes are not implemented")
 

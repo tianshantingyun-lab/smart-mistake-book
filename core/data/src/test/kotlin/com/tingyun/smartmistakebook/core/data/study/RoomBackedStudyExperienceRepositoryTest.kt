@@ -49,9 +49,11 @@ import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
+import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.Attempt
+import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
@@ -61,13 +63,17 @@ import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -75,6 +81,55 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RoomBackedStudyExperienceRepositoryTest {
+    @Test
+    fun cancelledTutorChoiceNeutralizesANonCooperativeLateWrite() = runBlocking {
+        val database = FakeStudyDatabasePort()
+        val writeEntered = CompletableDeferred<Unit>()
+        val releaseWrite = CompletableDeferred<Unit>()
+        database.beforeRecordAttempt = {
+            writeEntered.complete(Unit)
+            withContext(NonCancellable) { releaseWrite.await() }
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+        val practiceUnitId = M1CuratedStudySeed.bundle(includeTutorMistake = false)
+            .practiceUnits
+            .first()
+            .practiceUnitId
+        val assessment = requireNotNull(
+            M1CuratedStudySeed.teachingArtifactForPracticeUnit(practiceUnitId),
+        ).assessmentItems.single()
+        val submission = StudyChoiceSubmission(
+            requestId = "choice-to-revoke",
+            presentationId = "presentation-to-revoke",
+            practiceUnitId = practiceUnitId,
+            selectedChoiceId = assessment.choices.first().id,
+            responseOrdinal = 1,
+            durationSeconds = 5,
+            occurredAtEpochMillis = Instant.parse("2026-01-02T08:00:00Z").toEpochMilli(),
+        )
+
+        try {
+            repository.initialize()
+            val result = async { runCatching { repository.submitChoice(submission) } }
+            writeEntered.await()
+
+            repository.cancelChoiceSubmission(submission.requestId)
+            releaseWrite.complete(Unit)
+
+            val failure = result.await().exceptionOrNull()
+            assertTrue("Expected revoked evidence failure, got $failure", failure is TutorEvidenceRejectedException)
+            assertEquals(
+                LearningEvidenceReason.ANSWER_REVEALED,
+                database.corrections.single().replacementEvidence.reason,
+            )
+            assertEquals(StudyDataStatus.READY, repository.snapshot.value.status)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
     @Test
     fun initializePublishesGroupedKnowledgeCoverageWithoutLearningEvidence() = runBlocking {
         val database = FakeStudyDatabasePort().apply {
@@ -613,6 +668,8 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     var failProjectionReads: Boolean = false
     val savedPlans = mutableListOf<ReviewPlanBundle>()
     val tutorExposureReconcileLearners = mutableListOf<String>()
+    val corrections = mutableListOf<AttemptCorrection>()
+    var beforeRecordAttempt: suspend () -> Unit = {}
 
     val problemCount: Int
         get() = problemIds.size
@@ -790,6 +847,7 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun appendAssessmentEvent(event: AssessmentEventSeedRecord) = Unit
 
     override suspend fun recordAttempt(command: AttemptWriteCommand): AttemptWriteResult {
+        beforeRecordAttempt()
         lastAttemptCommand = command
         attemptsBySubmission[command.submissionId]?.let { return it.copy(created = false) }
         val attempt = Attempt(
@@ -865,7 +923,24 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun appendAttemptCorrection(
         correction: AttemptCorrectionRecord,
-    ): AttemptCorrectionResult = error("appendAttemptCorrection is not used by these focused tests")
+    ): AttemptCorrectionResult {
+        val value = AttemptCorrection(
+            correctionId = correction.correctionId,
+            attemptId = correction.attemptId,
+            replacementEvidence = correction.replacementEvidence,
+            replacementMemoryOutcome = correction.replacementMemoryOutcome,
+            reasonMarkdown = correction.reasonMarkdown,
+            occurredAtEpochMillis = correction.occurredAtEpochMillis,
+            eventSequence = nextEventSequence++,
+        )
+        corrections += value
+        return AttemptCorrectionResult(
+            created = true,
+            correction = value,
+            canonicalFingerprint = "fake:${correction.correctionId}",
+            outboxId = "outbox:${correction.correctionId}",
+        )
+    }
 
     override suspend fun findAttemptPersistence(submissionId: String): AttemptPersistenceRecord? = null
 

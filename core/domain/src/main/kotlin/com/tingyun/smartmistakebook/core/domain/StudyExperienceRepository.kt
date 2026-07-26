@@ -309,6 +309,9 @@ interface StudyExperienceRepository : AutoCloseable {
 
     suspend fun submitChoice(submission: StudyChoiceSubmission): StudyChoiceSubmissionResult
 
+    /** Revokes one exact in-flight tutor submission before it can remain learning evidence. */
+    fun cancelChoiceSubmission(requestId: String) = Unit
+
     /** Atomically records one canonical answer and advances its persisted review queue item. */
     suspend fun submitReviewChoice(
         sessionId: String,

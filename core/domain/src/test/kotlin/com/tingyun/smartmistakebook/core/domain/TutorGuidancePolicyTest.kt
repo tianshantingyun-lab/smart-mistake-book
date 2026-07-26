@@ -132,4 +132,24 @@ class TutorGuidancePolicyTest {
         assertEquals(TutorGuidanceOutcome.REJECTED_STALE, duplicate.outcome)
         assertFalse(duplicate.mayWriteLearningEvidence)
     }
+
+    @Test
+    fun thirdAcceptedAnswerAutomaticallyCompletesTheCurrentSubquestionDirectly() {
+        val awaitingThird = TutorGuidanceState(
+            problem = problem,
+            mode = TutorExplanationMode.GUIDED,
+            questionsAsked = TutorGuidancePolicy.MAX_QUESTIONS,
+            pendingEvidenceRequestId = "evidence-3",
+        )
+
+        val accepted = TutorGuidancePolicy.evaluate(
+            awaitingThird,
+            TutorGuidanceRequest.evidence("evidence-3", problem),
+        )
+
+        assertEquals(TutorGuidanceOutcome.EVIDENCE_ACCEPTED, accepted.outcome)
+        assertTrue(accepted.mayWriteLearningEvidence)
+        assertEquals(TutorExplanationMode.DIRECT, accepted.state.mode)
+        assertNull(accepted.state.pendingEvidenceRequestId)
+    }
 }

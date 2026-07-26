@@ -24,6 +24,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -221,6 +224,8 @@ internal fun TutorChatExchange(
     onOpenModelSettings: () -> Unit,
     onMove: (TutorSuggestedMove) -> Unit,
     onRevealSolution: (TutorSuggestedMove) -> Unit,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    onDirectiveResponse: (String) -> Unit = {},
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit = { _, _ -> },
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
@@ -246,6 +251,8 @@ internal fun TutorChatExchange(
             onOpenModelSettings = onOpenModelSettings,
             onMove = onMove,
             onRevealSolution = onRevealSolution,
+            explanationMode = explanationMode,
+            onDirectiveResponse = onDirectiveResponse,
             localIntentContent = localIntentContent,
             resolvedVisualScene = resolvedVisualScene,
             onOpenVisualOriginal = onOpenVisualOriginal,
@@ -287,6 +294,8 @@ private fun TutorAssistantReplyBubble(
     onOpenModelSettings: () -> Unit,
     onMove: (TutorSuggestedMove) -> Unit,
     onRevealSolution: (TutorSuggestedMove) -> Unit,
+    explanationMode: TutorExplanationMode,
+    onDirectiveResponse: (String) -> Unit,
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit,
     resolvedVisualScene: TutorVisualDocumentScene?,
     onOpenVisualOriginal: () -> Unit,
@@ -346,6 +355,16 @@ private fun TutorAssistantReplyBubble(
                                 )
                             }
                             localIntentContent(input, output)
+                            visibleTutorInteractionDirective(
+                                explanationMode,
+                                output.interactionDirective,
+                            )?.let { directive ->
+                                TutorInteractionDirectiveContent(
+                                    directive = directive,
+                                    enabled = showActions,
+                                    onResponse = onDirectiveResponse,
+                                )
+                            }
                             output.visualScene?.let { TutorVisualSceneRenderer(it) }
                             if (output.solutionRevealed) {
                                 Box(
@@ -576,6 +595,9 @@ internal fun TutorChatComposer(
     onSend: () -> Unit,
     explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
     onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
+    onCameraAttachment: () -> Unit = {},
+    onGalleryAttachment: () -> Unit = {},
+    onLibraryAttachment: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -633,10 +655,36 @@ internal fun TutorChatComposer(
                 style = MaterialTheme.typography.labelSmall,
             )
         }
-        TutorGuidanceModeControl(
-            mode = explanationMode,
-            onModeChange = onExplanationModeChange,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(
+                onClick = onCameraAttachment,
+                enabled = enabled,
+                modifier = Modifier.testTag("tutor_chat_camera"),
+            ) {
+                Icon(Icons.Outlined.PhotoCamera, contentDescription = "拍摄新题")
+            }
+            IconButton(
+                onClick = onGalleryAttachment,
+                enabled = enabled,
+                modifier = Modifier.testTag("tutor_chat_gallery"),
+            ) {
+                Icon(Icons.Outlined.PhotoLibrary, contentDescription = "从相册选择")
+            }
+            IconButton(
+                onClick = onLibraryAttachment,
+                enabled = enabled,
+                modifier = Modifier.testTag("tutor_chat_library"),
+            ) {
+                Icon(Icons.Outlined.AutoStories, contentDescription = "从错题本选择")
+            }
+            TutorGuidanceModeControl(
+                mode = explanationMode,
+                onModeChange = onExplanationModeChange,
+            )
+        }
     }
 }
 

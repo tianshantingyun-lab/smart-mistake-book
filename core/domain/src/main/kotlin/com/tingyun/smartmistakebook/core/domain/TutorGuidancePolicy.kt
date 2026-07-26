@@ -139,7 +139,11 @@ object TutorGuidancePolicy {
             return if (current) {
                 TutorGuidanceDecision(
                     outcome = TutorGuidanceOutcome.EVIDENCE_ACCEPTED,
-                    state = state.copy(pendingEvidenceRequestId = null),
+                    state = if (state.questionsAsked >= MAX_QUESTIONS) {
+                        state.direct().state
+                    } else {
+                        state.copy(pendingEvidenceRequestId = null)
+                    },
                     mayWriteLearningEvidence = true,
                 )
             } else {

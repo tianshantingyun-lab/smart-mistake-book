@@ -663,6 +663,8 @@ data class TutorRespondInput(
     val visibleTutorContextMarkdown: String? = null,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
     val requestedMove: TutorMoveType? = null,
+    /** Local authority selected for this reply; legacy cached requests remain guided. */
+    val explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND

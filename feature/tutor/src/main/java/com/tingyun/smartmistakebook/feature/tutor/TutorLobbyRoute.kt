@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun TutorLobbyRoute(
     onCapture: () -> Unit,
+    onGallery: () -> Unit = onCapture,
     onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
@@ -276,7 +277,7 @@ internal fun TutorLobbyRoute(
                     if (pendingDisclosureMessage != null) pendingDisclosureMessage = null
                 },
                 onCapture = onCapture,
-                onGallery = onCapture,
+                onGallery = onGallery,
                 onChooseExisting = onChooseExisting,
                 onSend = ::submitDraft,
                 explanationMode = explanationMode,

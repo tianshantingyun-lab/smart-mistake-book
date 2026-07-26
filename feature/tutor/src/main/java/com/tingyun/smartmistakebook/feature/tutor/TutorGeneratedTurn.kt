@@ -25,6 +25,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
@@ -50,22 +51,23 @@ internal fun TutorTurnContent(
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
     onSubmitChoice: (String) -> Unit = {},
+    onDirectiveResponse: (String) -> Unit = {},
     onRequestHint: (() -> Unit)? = null,
     onContinue: (TutorMoveType) -> Unit = {},
     onRevealSolution: () -> Unit = {},
     onRestartCycle: () -> Unit = {},
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
-    strugglesObserved: Int = 0,
     solutionBottomModifier: Modifier = Modifier,
 ) {
     val plan = output.plan
     val presentation = tutorTurnPresentation(
         mode = explanationMode,
-        guidedQuestionOrdinal = output.turnOrdinal,
-        strugglesObserved = strugglesObserved,
         suggestedMoves = plan.suggestedMoves,
     )
-    val item = plan.diagnosticItem.takeIf { presentation.showDiagnostic }
+    val directive = visibleTutorInteractionDirective(explanationMode, plan.interactionDirective)
+    val item = plan.diagnosticItem.takeIf {
+        presentation.showDiagnostic && directive == null
+    }
     // A pending click is process-local UI state. Persisting it without the in-flight coroutine can
     // restore a permanently disabled choice after activity recreation.
     var pendingChoiceId by remember(
@@ -156,6 +158,13 @@ internal fun TutorTurnContent(
                     Text("我不确定，给我一点提示")
                 }
             }
+        }
+        directive?.let {
+            TutorInteractionDirectiveContent(
+                directive = it,
+                enabled = interactionEnabled && !interactionBusy,
+                onResponse = onDirectiveResponse,
+            )
         }
         if (item == null) {
             TutorMoveButtons(
@@ -289,6 +298,7 @@ internal fun TutorChoiceFeedbackContent(
     output: TutorPlanOutput,
     response: TutorTurnResponse,
     solutionRevealPreviewed: Boolean = false,
+    showDirectExplanation: Boolean = false,
     interactionEnabled: Boolean,
     interactionBusy: Boolean = false,
     interactionError: String? = null,
@@ -300,6 +310,8 @@ internal fun TutorChoiceFeedbackContent(
 ) {
     require(response.hasChoicePayload)
     val plan = output.plan
+    val showSolution = showDirectExplanation ||
+        response.solutionRevealed || solutionRevealPreviewed
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -324,7 +336,7 @@ internal fun TutorChoiceFeedbackContent(
         TutorMoveButtons(
             moves = plan.suggestedMoves,
             requestedMove = response.requestedMove,
-            showSolution = response.solutionRevealed || solutionRevealPreviewed,
+            showSolution = showSolution,
             alternateVisible = false,
             interactionBusy = interactionBusy,
             interactionEnabled = interactionEnabled,
@@ -333,7 +345,7 @@ internal fun TutorChoiceFeedbackContent(
             onContinue = onContinue,
             onRevealSolution = onRevealSolution,
         )
-        if (response.solutionRevealed || solutionRevealPreviewed) {
+        if (showSolution) {
             Text(
                 text = "规范讲解",
                 color = InkSecondary,
@@ -423,5 +435,67 @@ private fun TutorMoveButtons(
                 .fillMaxWidth()
                 .testTag(tag),
         )
+    }
+}
+
+@Composable
+internal fun TutorInteractionDirectiveContent(
+    directive: TutorInteractionDirective,
+    enabled: Boolean,
+    onResponse: (String) -> Unit,
+) {
+    when (directive) {
+        TutorInteractionDirective.Continue -> OutlineActionChip(
+            text = "继续",
+            onClick = { onResponse("继续") },
+            enabled = enabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("captured_tutor_directive_continue"),
+        )
+        is TutorInteractionDirective.FreeResponse -> {
+            SafeMarkdownText(
+                directive.promptMarkdown,
+                modifier = Modifier.testTag("captured_tutor_directive_free_response"),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "请在下方输入你的想法。",
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        is TutorInteractionDirective.Choices -> {
+            SafeMarkdownText(
+                directive.promptMarkdown,
+                modifier = Modifier.testTag("captured_tutor_directive_choices"),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            directive.choices.forEach { choice ->
+                OutlineActionChip(
+                    text = choice.labelMarkdown,
+                    onClick = { onResponse(choice.labelMarkdown) },
+                    enabled = enabled,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("captured_tutor_directive_choice_${choice.id}"),
+                )
+            }
+        }
+        is TutorInteractionDirective.VisualTarget -> {
+            SafeMarkdownText(
+                directive.promptMarkdown,
+                modifier = Modifier.testTag("captured_tutor_directive_visual_target"),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlineActionChip(
+                text = "选择图中位置",
+                onClick = { onResponse("我选择图中位置：${directive.targetId}") },
+                enabled = enabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("captured_tutor_directive_target_${directive.targetId}"),
+            )
+        }
     }
 }

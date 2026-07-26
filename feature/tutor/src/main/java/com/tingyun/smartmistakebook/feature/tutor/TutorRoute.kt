@@ -101,8 +101,10 @@ fun TutorRoute(
     adaptiveDecision: AdaptiveDecision?,
     profile: StudyProfileOverview,
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyChoiceSubmissionResult,
+    onCancelChoiceSubmission: (String) -> Unit = {},
     onRevealAnswer: suspend (StudyAnswerRevealRequest) -> StudyAnswerRevealResult,
     onCapture: () -> Unit,
+    onGallery: () -> Unit = onCapture,
     onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
@@ -117,6 +119,7 @@ fun TutorRoute(
     if (practiceUnitId.isBlank() && teachingArtifact == null) {
         TutorLobbyRoute(
             onCapture = onCapture,
+            onGallery = onGallery,
             onChooseExisting = onChooseExisting,
             onOpenCapabilitySettings = onOpenCapabilitySettings,
             onOpenMistakeNotebook = onOpenMistakeNotebook,
@@ -132,7 +135,7 @@ fun TutorRoute(
     }
     val viewModel: TutorViewModel = viewModel()
     LaunchedEffect(explanationMode) {
-        viewModel.useExplanationMode(explanationMode)
+        viewModel.useExplanationMode(explanationMode, onCancelChoiceSubmission)
     }
 
     when (val decision = TutorCapabilityGate().evaluate(capabilities, teachingArtifact)) {
@@ -157,8 +160,16 @@ fun TutorRoute(
                         artifactId = decision.artifact.id,
                         assessmentItemId = assessmentItem.id,
                     )
-                    LaunchedEffect(presentationKey, isSaved) {
+                    LaunchedEffect(presentationKey, isSaved, explanationMode) {
                         viewModel.synchronizePresentation(presentationKey, isSaved)
+                        if (explanationMode == TutorExplanationMode.DIRECT) {
+                            viewModel.recordDirectExposure()
+                            viewModel.requestReveal(
+                                assessmentItem = assessmentItem,
+                                practiceUnitId = practiceUnitId,
+                                reveal = onRevealAnswer,
+                            )
+                        }
                     }
                     if (!viewModel.isActivePresentation(presentationKey)) {
                         TutorAdaptivePauseScreen(
@@ -185,6 +196,7 @@ fun TutorRoute(
                             unverifiedQuestionNoticeVisible = viewModel.unverifiedQuestionNoticeVisible,
                             onSave = { viewModel.requestSave(onSave) },
                             onCapture = onCapture,
+                            onGallery = onGallery,
                             onChooseExisting = onChooseExisting,
                             onOpenCapabilitySettings = onOpenCapabilitySettings,
                             onChoice = { choiceId ->
@@ -349,6 +361,7 @@ private fun TutorScreen(
     unverifiedQuestionNoticeVisible: Boolean,
     onSave: () -> Unit,
     onCapture: () -> Unit,
+    onGallery: () -> Unit,
     onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onChoice: (String) -> Unit,
@@ -587,7 +600,7 @@ private fun TutorScreen(
                 value = draft,
                 onValueChange = onDraftChange,
                 onCapture = onCapture,
-                onGallery = onCapture,
+                onGallery = onGallery,
                 onChooseExisting = onChooseExisting,
                 onSend = onSendDraft,
                 explanationMode = explanationMode,

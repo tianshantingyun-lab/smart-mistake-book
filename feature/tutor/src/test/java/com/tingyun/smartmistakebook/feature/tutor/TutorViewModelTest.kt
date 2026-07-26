@@ -138,10 +138,13 @@ class TutorViewModelTest {
         val viewModel = TutorViewModel(SavedStateHandle())
         val release = CompletableDeferred<Unit>()
         var completedWrites = 0
+        var submittedRequestId: String? = null
+        var cancelledRequestId: String? = null
 
         try {
             viewModel.selectChoice(assessmentItem, "A")
-            viewModel.requestSubmit(assessmentItem, "practice:test") {
+            viewModel.requestSubmit(assessmentItem, "practice:test") { submission ->
+                submittedRequestId = submission.requestId
                 release.await()
                 completedWrites += 1
                 StudyChoiceSubmissionResult(
@@ -153,11 +156,40 @@ class TutorViewModelTest {
             }
             runCurrent()
 
-            viewModel.useExplanationMode(TutorExplanationMode.DIRECT)
+            viewModel.useExplanationMode(TutorExplanationMode.DIRECT) { requestId ->
+                cancelledRequestId = requestId
+            }
             release.complete(Unit)
             advanceUntilIdle()
 
             assertEquals(0, completedWrites)
+            assertEquals(submittedRequestId, cancelledRequestId)
+            assertNull(viewModel.submittedChoiceFor(assessmentItem))
+            assertEquals(TutorSubmissionStatus.IDLE, viewModel.submissionStatus)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun directExposurePreventsAChoiceFromBecomingFreshEvidenceAfterGuidedIsReenabled() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val viewModel = TutorViewModel(SavedStateHandle())
+        var submissions = 0
+
+        try {
+            viewModel.synchronizePresentation("presentation:exposed", isSaved = false)
+            viewModel.recordDirectExposure()
+            viewModel.useExplanationMode(TutorExplanationMode.GUIDED)
+            viewModel.selectChoice(assessmentItem, "A")
+            viewModel.requestSubmit(assessmentItem, "practice:test") {
+                submissions += 1
+                error("an exposed answer must not be submitted")
+            }
+            advanceUntilIdle()
+
+            assertEquals(0, submissions)
             assertNull(viewModel.submittedChoiceFor(assessmentItem))
             assertEquals(TutorSubmissionStatus.IDLE, viewModel.submissionStatus)
         } finally {

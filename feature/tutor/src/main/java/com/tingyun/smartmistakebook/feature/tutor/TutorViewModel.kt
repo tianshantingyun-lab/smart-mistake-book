@@ -84,6 +84,10 @@ class TutorViewModel(
     var revealedExplanation by mutableStateOf(savedStateHandle.get<String>(REVEALED_EXPLANATION_KEY))
         private set
 
+    private var directAnswerExposed by mutableStateOf(
+        savedStateHandle.get<Boolean>(DIRECT_ANSWER_EXPOSED_KEY) ?: false,
+    )
+
     private var presentationId: String = savedStateHandle.get<String>(PRESENTATION_ID_KEY)
         ?: "presentation:tutor:${UUID.randomUUID()}".also {
             savedStateHandle[PRESENTATION_ID_KEY] = it
@@ -101,11 +105,19 @@ class TutorViewModel(
 
     fun isActivePresentation(key: String): Boolean = activePresentationKey == key
 
-    fun useExplanationMode(mode: TutorExplanationMode) {
+    fun useExplanationMode(
+        mode: TutorExplanationMode,
+        cancelSubmission: (String) -> Unit = {},
+    ) {
+        if (mode == TutorExplanationMode.DIRECT && activePresentationKey != null) {
+            recordDirectExposure()
+        }
         if (
             mode == TutorExplanationMode.DIRECT &&
             submissionStatus == TutorSubmissionStatus.RECORDING
         ) {
+            savedStateHandle.get<String>(PENDING_SUBMISSION_REQUEST_ID_KEY)
+                ?.let(cancelSubmission)
             submissionJob?.cancel()
             submissionJob = null
             savedStateHandle.remove<Any?>(PENDING_SUBMISSION_REQUEST_ID_KEY)
@@ -116,6 +128,12 @@ class TutorViewModel(
             savedStateHandle.remove<Any?>(PENDING_SUBMISSION_OCCURRED_AT_KEY)
             updateSubmissionStatus(TutorSubmissionStatus.IDLE)
         }
+    }
+
+    fun recordDirectExposure() {
+        if (activePresentationKey == null || directAnswerExposed) return
+        directAnswerExposed = true
+        savedStateHandle[DIRECT_ANSWER_EXPOSED_KEY] = true
     }
 
     /** Binds every answer/reveal state field to one verified teaching turn. */
@@ -130,6 +148,7 @@ class TutorViewModel(
 
     /** Selection is a local, replaceable draft. It is not learning evidence until explicit submit. */
     fun selectChoice(assessmentItem: TutorAssessmentItem, choiceId: String) {
+        if (directAnswerExposed) return
         if (submittedChoiceFor(assessmentItem) != null) return
         if (savedStateHandle.get<String>(PENDING_SUBMISSION_REQUEST_ID_KEY) != null) return
         if (submissionStatus == TutorSubmissionStatus.RECORDING ||
@@ -151,6 +170,7 @@ class TutorViewModel(
         practiceUnitId: String,
         submit: suspend (StudyChoiceSubmission) -> StudyChoiceSubmissionResult,
     ) {
+        if (directAnswerExposed) return
         if (submittedChoiceFor(assessmentItem) != null) return
         if (submissionStatus == TutorSubmissionStatus.RECORDING) return
         if (revealStatus == TutorRevealStatus.RECORDING) return
@@ -311,6 +331,7 @@ class TutorViewModel(
         draft = ""
         unverifiedQuestionNoticeVisible = false
         revealedExplanation = null
+        directAnswerExposed = false
         clearPresentationValues()
 
         presentationId = "presentation:tutor:${UUID.randomUUID()}"
@@ -332,6 +353,7 @@ class TutorViewModel(
             DRAFT_KEY,
             UNVERIFIED_NOTICE_KEY,
             REVEALED_EXPLANATION_KEY,
+            DIRECT_ANSWER_EXPOSED_KEY,
             PENDING_SUBMISSION_REQUEST_ID_KEY,
             PENDING_SUBMISSION_PRESENTATION_ID_KEY,
             PENDING_SUBMISSION_PRACTICE_UNIT_ID_KEY,
@@ -458,6 +480,7 @@ class TutorViewModel(
         const val SUBMISSION_STATUS_KEY = "tutor_submission_status"
         const val REVEAL_STATUS_KEY = "tutor_reveal_status"
         const val REVEALED_EXPLANATION_KEY = "tutor_revealed_explanation"
+        const val DIRECT_ANSWER_EXPOSED_KEY = "tutor_direct_answer_exposed"
         const val ACTIVE_PRESENTATION_KEY = "tutor_active_presentation"
         const val PRESENTATION_ID_KEY = "tutor_presentation_id"
         const val PRESENTATION_STARTED_AT_KEY = "tutor_presentation_started_at"

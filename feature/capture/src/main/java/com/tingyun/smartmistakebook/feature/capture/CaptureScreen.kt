@@ -176,6 +176,7 @@ fun CaptureScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     resumeDraftId: String? = null,
+    initialAction: CaptureInitialAction = CaptureInitialAction.NONE,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -188,6 +189,9 @@ fun CaptureScreen(
     var receivedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
     var receivedInputSource by rememberSaveable { mutableStateOf<String?>(null) }
     var captureError by rememberSaveable { mutableStateOf<String?>(null) }
+    var initialActionConsumed by rememberSaveable(initialAction) {
+        mutableStateOf(initialAction == CaptureInitialAction.NONE)
+    }
     var cameraLaunchInProgress by remember { mutableStateOf(false) }
     var photoImportInProgress by remember { mutableStateOf(false) }
     var workflowInProgress by remember { mutableStateOf(false) }
@@ -1557,6 +1561,25 @@ fun CaptureScreen(
         }
     }
 
+    LaunchedEffect(initialAction, initialActionConsumed, resumeDraftId, receivedImageUri) {
+        if (initialActionConsumed || resumeDraftId != null || receivedImageUri != null) {
+            return@LaunchedEffect
+        }
+        initialActionConsumed = true
+        informedEgressIntentSession.begin(
+            provider = providerCapabilities,
+            purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
+            intentId = UUID.randomUUID().toString(),
+            nowEpochMillis = System.currentTimeMillis(),
+            authorizesInitialTutorPlan = activeEntryOrigin == CaptureEntryOrigin.TUTOR,
+        )
+        when (initialAction) {
+            CaptureInitialAction.CAMERA -> launchCamera()
+            CaptureInitialAction.GALLERY -> launchPhotoPicker()
+            CaptureInitialAction.NONE -> Unit
+        }
+    }
+
     if (
         resumeDraftId != null &&
         resumeLoadState != CaptureResumeLoadState.READY
@@ -1887,6 +1910,12 @@ fun CaptureScreen(
     }
 
 
+}
+
+enum class CaptureInitialAction {
+    NONE,
+    CAMERA,
+    GALLERY,
 }
 
 @Composable

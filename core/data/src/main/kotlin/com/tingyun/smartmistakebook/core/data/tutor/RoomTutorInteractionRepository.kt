@@ -14,6 +14,7 @@ import com.tingyun.smartmistakebook.core.domain.RecordTutorSolutionExposureComma
 import com.tingyun.smartmistakebook.core.domain.RevealTutorSolutionCommand
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
@@ -21,11 +22,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import java.util.concurrent.ConcurrentHashMap
 
 internal class RoomTutorInteractionRepository(
     private val database: StudyDatabasePort,
     private val learnerId: String = "learner:local",
 ) : TutorInteractionRepository {
+    private val evidenceWriteGate = TutorEvidenceWriteGate()
+
     override fun observe(sessionId: String): Flow<List<TutorTurnResponse>> {
         require(sessionId.isNotBlank())
         return database.observeTutorTurnResponses(sessionId).map { records ->
@@ -33,24 +40,33 @@ internal class RoomTutorInteractionRepository(
         }
     }
 
-    override suspend fun recordChoice(command: RecordTutorChoiceCommand): TutorTurnResponse =
-        withContext(Dispatchers.IO) {
-            database.recordTutorChoice(
-                PersistTutorChoiceCommand(
-                    sessionId = command.sessionId,
-                    questionDocumentId = command.questionDocumentId,
-                    revisionNumber = command.revisionNumber,
-                    cycleOrdinal = command.cycleOrdinal,
-                    turnOrdinal = command.turnOrdinal,
-                    diagnosticStemMarkdown = command.diagnosticStemMarkdown,
-                    selectedChoiceId = command.selectedChoiceId,
-                    selectedChoiceMarkdown = command.selectedChoiceMarkdown,
-                    selectionWasCorrect = command.selectionWasCorrect,
-                    feedbackMarkdown = command.feedbackMarkdown,
-                    choiceSubmittedAtEpochMillis = command.occurredAtEpochMillis,
-                ),
-            ).toDomain()
+    override suspend fun recordChoice(command: RecordTutorChoiceCommand): TutorTurnResponse {
+        val persisted = command.toPersistedChoice()
+        val requestId = command.evidenceRequestId
+        return if (requestId == null) {
+            withContext(Dispatchers.IO) { database.recordTutorChoice(persisted).toDomain() }
+        } else {
+            evidenceWriteGate.persist(
+                requestId = requestId,
+                write = {
+                    withContext(Dispatchers.IO) {
+                        database.recordTutorChoice(persisted).toDomain()
+                    }
+                },
+                discard = {
+                    withContext(Dispatchers.IO) {
+                        check(database.discardTutorChoice(persisted)) {
+                            "A revoked tutor evidence write could not be discarded"
+                        }
+                    }
+                },
+            )
         }
+    }
+
+    override fun cancelEvidence(requestId: String) {
+        evidenceWriteGate.cancel(requestId)
+    }
 
     override suspend fun recordMove(command: RecordTutorMoveCommand): TutorTurnResponse =
         withContext(Dispatchers.IO) {
@@ -140,6 +156,46 @@ internal class RoomTutorInteractionRepository(
         }
     }
 }
+
+internal class TutorEvidenceWriteGate {
+    private val revokedRequestIds = ConcurrentHashMap.newKeySet<String>()
+
+    fun cancel(requestId: String) {
+        require(requestId.isNotBlank())
+        revokedRequestIds += requestId
+    }
+
+    suspend fun <T> persist(
+        requestId: String,
+        write: suspend () -> T,
+        discard: suspend () -> Unit,
+    ): T {
+        currentCoroutineContext().ensureActive()
+        return withContext(NonCancellable) {
+            if (requestId in revokedRequestIds) throw TutorEvidenceRejectedException(requestId)
+            val value = write()
+            if (requestId in revokedRequestIds) {
+                discard()
+                throw TutorEvidenceRejectedException(requestId)
+            }
+            value
+        }
+    }
+}
+
+private fun RecordTutorChoiceCommand.toPersistedChoice() = PersistTutorChoiceCommand(
+    sessionId = sessionId,
+    questionDocumentId = questionDocumentId,
+    revisionNumber = revisionNumber,
+    cycleOrdinal = cycleOrdinal,
+    turnOrdinal = turnOrdinal,
+    diagnosticStemMarkdown = diagnosticStemMarkdown,
+    selectedChoiceId = selectedChoiceId,
+    selectedChoiceMarkdown = selectedChoiceMarkdown,
+    selectionWasCorrect = selectionWasCorrect,
+    feedbackMarkdown = feedbackMarkdown,
+    choiceSubmittedAtEpochMillis = occurredAtEpochMillis,
+)
 
 internal fun TutorAnswerExposureRecord.matchesAnswerExposure(
     expectedLearnerId: String,

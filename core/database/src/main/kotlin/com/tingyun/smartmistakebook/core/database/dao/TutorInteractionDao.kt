@@ -82,6 +82,42 @@ internal abstract class TutorInteractionDao {
     @Query(
         """
         UPDATE tutor_turn_response
+        SET diagnostic_stem_markdown = NULL,
+            selected_choice_id = NULL,
+            selected_choice_markdown = NULL,
+            selection_was_correct = NULL,
+            feedback_markdown = NULL,
+            choice_submitted_at_epoch_millis = NULL
+        WHERE session_id = :sessionId
+          AND cycle_ordinal = :cycleOrdinal
+          AND turn_ordinal = :turnOrdinal
+          AND question_document_id = :questionDocumentId
+          AND revision_number = :revisionNumber
+          AND diagnostic_stem_markdown = :diagnosticStemMarkdown
+          AND selected_choice_id = :selectedChoiceId
+          AND selected_choice_markdown = :selectedChoiceMarkdown
+          AND selection_was_correct = :selectionWasCorrect
+          AND feedback_markdown = :feedbackMarkdown
+          AND choice_submitted_at_epoch_millis = :choiceSubmittedAtEpochMillis
+        """,
+    )
+    protected abstract suspend fun clearExactChoicePayload(
+        sessionId: String,
+        questionDocumentId: String,
+        revisionNumber: Int,
+        cycleOrdinal: Int,
+        turnOrdinal: Int,
+        diagnosticStemMarkdown: String,
+        selectedChoiceId: String,
+        selectedChoiceMarkdown: String,
+        selectionWasCorrect: Boolean,
+        feedbackMarkdown: String,
+        choiceSubmittedAtEpochMillis: Long,
+    ): Int
+
+    @Query(
+        """
+        UPDATE tutor_turn_response
         SET requested_move = :requestedMove,
             submitted_at_epoch_millis = CASE
                 WHEN diagnostic_stem_markdown IS NULL
@@ -166,6 +202,22 @@ internal abstract class TutorInteractionDao {
         }
         return stored.toRecord()
     }
+
+    @Transaction
+    open suspend fun discardChoice(command: PersistTutorChoiceCommand): Boolean =
+        clearExactChoicePayload(
+            sessionId = command.sessionId,
+            questionDocumentId = command.questionDocumentId,
+            revisionNumber = command.revisionNumber,
+            cycleOrdinal = command.cycleOrdinal,
+            turnOrdinal = command.turnOrdinal,
+            diagnosticStemMarkdown = command.diagnosticStemMarkdown,
+            selectedChoiceId = command.selectedChoiceId,
+            selectedChoiceMarkdown = command.selectedChoiceMarkdown,
+            selectionWasCorrect = command.selectionWasCorrect,
+            feedbackMarkdown = command.feedbackMarkdown,
+            choiceSubmittedAtEpochMillis = command.choiceSubmittedAtEpochMillis,
+        ) == 1
 
     @Transaction
     open suspend fun recordMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord {

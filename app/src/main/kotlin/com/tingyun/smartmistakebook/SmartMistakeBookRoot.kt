@@ -67,6 +67,7 @@ import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.RootBottomBarFrame
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.feature.capture.CaptureScreen
+import com.tingyun.smartmistakebook.feature.capture.CaptureInitialAction
 import com.tingyun.smartmistakebook.feature.library.BatchImportRoute
 import com.tingyun.smartmistakebook.feature.library.LibraryRoute
 import com.tingyun.smartmistakebook.feature.library.InvalidMistakeExportRoute
@@ -244,6 +245,9 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
     var freshTutorAutoStartAuthorization by remember {
         mutableStateOf<TutorAutoStartAuthorization?>(null)
     }
+    var tutorCaptureInitialAction by rememberSaveable {
+        mutableStateOf(CaptureInitialAction.CAMERA)
+    }
     var pendingLibraryExportEntryIds by rememberSaveable {
         mutableStateOf<List<String>>(emptyList())
     }
@@ -352,10 +356,18 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         experience.status == StudyDataStatus.READY
                     },
                     profile = experience.profile,
-                    onSave = { repository.saveTutorExampleMistake() },
-                    onSubmitChoice = repository::submitChoice,
-                    onRevealAnswer = repository::revealAnswer,
-                    onCapture = { navController.navigate(Routes.CaptureTutor) },
+                      onSave = { repository.saveTutorExampleMistake() },
+                      onSubmitChoice = repository::submitChoice,
+                      onCancelChoiceSubmission = repository::cancelChoiceSubmission,
+                      onRevealAnswer = repository::revealAnswer,
+                    onCapture = {
+                        tutorCaptureInitialAction = CaptureInitialAction.CAMERA
+                        navController.navigate(Routes.CaptureTutor)
+                    },
+                    onGallery = {
+                        tutorCaptureInitialAction = CaptureInitialAction.GALLERY
+                        navController.navigate(Routes.CaptureTutor)
+                    },
                     onChooseExisting = { navController.navigate(Routes.Library) },
                     onOpenCapabilitySettings = { navController.navigate(Routes.Capability) },
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
@@ -574,6 +586,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             composable(Routes.CaptureTutor) {
                 CaptureScreen(
                     entryOrigin = CaptureEntryOrigin.TUTOR,
+                    initialAction = tutorCaptureInitialAction,
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
@@ -717,6 +730,17 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenProfile = {
                         navController.navigate(Routes.Profile) { launchSingleTop = true }
                     },
+                    onCameraAttachment = {
+                        tutorCaptureInitialAction = CaptureInitialAction.CAMERA
+                        navController.navigate(Routes.CaptureTutor)
+                    },
+                    onGalleryAttachment = {
+                        tutorCaptureInitialAction = CaptureInitialAction.GALLERY
+                        navController.navigate(Routes.CaptureTutor)
+                    },
+                    onLibraryAttachment = {
+                        navController.navigate(Routes.Library) { launchSingleTop = true }
+                    },
                     onBack = navController::popBackStack,
                     onEndedWithoutSave = { navController.popBackStack() },
                     explanationMode = tutorExplanationMode,
@@ -772,6 +796,17 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                 catalogEntry.problemRevisionId == key.problemRevisionId
                         }?.questionMemory,
                         onOpenModelSettings = { navController.navigate(Routes.Capability) },
+                        onCameraAttachment = {
+                            tutorCaptureInitialAction = CaptureInitialAction.CAMERA
+                            navController.navigate(Routes.CaptureTutor)
+                        },
+                        onGalleryAttachment = {
+                            tutorCaptureInitialAction = CaptureInitialAction.GALLERY
+                            navController.navigate(Routes.CaptureTutor)
+                        },
+                        onLibraryAttachment = {
+                            navController.navigate(Routes.Library) { launchSingleTop = true }
+                        },
                         onBack = navController::popBackStack,
                         explanationMode = tutorExplanationMode,
                         onExplanationModeChange = setTutorExplanationMode,

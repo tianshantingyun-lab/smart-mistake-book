@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
+import com.tingyun.smartmistakebook.core.database.AttemptCorrectionRecord
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
 import com.tingyun.smartmistakebook.core.database.ConsumedLedgerEventReceipt
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
@@ -54,6 +55,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
+import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
 import com.tingyun.smartmistakebook.core.model.AssessmentSubmissionContext
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
@@ -81,9 +83,13 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -94,6 +100,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /**
  * Application-scoped repository for the curated M1 study loop.
@@ -121,6 +128,7 @@ class RoomBackedStudyExperienceRepository(
     private val forgettingCurve = ForgettingCurve()
     private val reviewPlanner = ReviewPlanner()
     private val learningProjector = LearningProjector()
+    private val revokedTutorChoiceRequestIds = ConcurrentHashMap.newKeySet<String>()
     private var initialized = false
     private var latestMistakes: List<MistakeRecord> = emptyList()
     private var latestPendingCorrectionCount: Int = 0
@@ -261,8 +269,40 @@ class RoomBackedStudyExperienceRepository(
         submission: StudyChoiceSubmission,
     ): StudyChoiceSubmissionResult = runOperation {
         val prepared = prepareChoiceSubmission(submission)
-        database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
-        val writeResult = database.recordAttempt(prepared.command)
+        currentCoroutineContext().ensureActive()
+        val writeResult = withContext(NonCancellable) {
+            if (submission.requestId in revokedTutorChoiceRequestIds) {
+                throw TutorEvidenceRejectedException(submission.requestId)
+            }
+            database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
+            val result = database.recordAttempt(prepared.command)
+            if (submission.requestId in revokedTutorChoiceRequestIds) {
+                database.appendAttemptCorrection(
+                    AttemptCorrectionRecord(
+                        learnerId = learnerId,
+                        submissionId = prepared.command.submissionId,
+                        correctionId = stableId(
+                            namespace = "correction",
+                            requestId = "revoked:${submission.requestId}",
+                        ),
+                        attemptId = result.attempt.attemptId,
+                        replacementEvidence = LearningEvidence(
+                            direction = LearningEvidenceDirection.NONE,
+                            weight = 0.0,
+                            reason = LearningEvidenceReason.ANSWER_REVEALED,
+                        ),
+                        replacementMemoryOutcome = ProblemMemoryOutcome.ANSWER_REVEALED,
+                        reasonMarkdown = "讲解模式已切换；该迟到作答不得作为学习证据。",
+                        occurredAtEpochMillis = maxOf(
+                            submission.occurredAtEpochMillis,
+                            clock.millis(),
+                        ),
+                    ),
+                )
+                throw TutorEvidenceRejectedException(submission.requestId)
+            }
+            result
+        }
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
@@ -272,6 +312,11 @@ class RoomBackedStudyExperienceRepository(
             isCorrect = prepared.isCorrect,
             evidenceReason = writeResult.attempt.evidence.reason,
         )
+    }
+
+    override fun cancelChoiceSubmission(requestId: String) {
+        require(requestId.isNotBlank()) { "Choice request id must not be blank" }
+        revokedTutorChoiceRequestIds += requestId
     }
 
     override suspend fun submitReviewChoice(
@@ -1030,6 +1075,8 @@ class RoomBackedStudyExperienceRepository(
             block()
         } catch (cancelled: CancellationException) {
             throw cancelled
+        } catch (rejected: TutorEvidenceRejectedException) {
+            throw rejected
         } catch (failure: Throwable) {
             publishFailure(failure)
             throw failure

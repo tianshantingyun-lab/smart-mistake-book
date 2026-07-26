@@ -33,6 +33,7 @@ import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
@@ -837,6 +838,37 @@ class TutorModelTaskPolicyTest {
         )
 
         assertFalse(first == changed)
+    }
+
+    @Test
+    fun responseRequestIdentityChangesWhenGuidanceModeChanges() {
+        val question = session().toTutorQuestionContext()
+        val guided = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "继续",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            explanationMode = TutorExplanationMode.GUIDED,
+            attempt = 0,
+        )
+        val direct = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "继续",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            explanationMode = TutorExplanationMode.DIRECT,
+            attempt = 0,
+        )
+
+        assertNotEquals(guided, direct)
     }
 
     @Test

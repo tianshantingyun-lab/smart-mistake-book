@@ -3,10 +3,15 @@ package com.tingyun.smartmistakebook.core.data.tutor
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
+import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.runBlocking
 
 class RoomTutorInteractionRepositoryTest {
     @Test
@@ -106,5 +111,36 @@ class RoomTutorInteractionRepositoryTest {
         )
 
         assertEquals(setOf(exact), matches)
+    }
+
+    @Test
+    fun `revoked request compensates a non cooperative late persistence completion`() = runBlocking {
+        val gate = TutorEvidenceWriteGate()
+        val writeStarted = CompletableDeferred<Unit>()
+        val releaseWrite = CompletableDeferred<Unit>()
+        var stored = false
+
+        supervisorScope {
+            val lateWrite = async {
+                gate.persist(
+                    requestId = "evidence-3",
+                    write = {
+                        writeStarted.complete(Unit)
+                        releaseWrite.await()
+                        stored = true
+                        "stored"
+                    },
+                    discard = { stored = false },
+                )
+            }
+
+            writeStarted.await()
+            gate.cancel("evidence-3")
+            releaseWrite.complete(Unit)
+
+            val failure = runCatching { lateWrite.await() }.exceptionOrNull()
+            assertTrue(failure is TutorEvidenceRejectedException)
+            assertFalse(stored)
+        }
     }
 }

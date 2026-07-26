@@ -56,6 +56,9 @@ import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorGuidancePolicy
+import com.tingyun.smartmistakebook.core.domain.TutorGuidanceOutcome
+import com.tingyun.smartmistakebook.core.domain.TutorGuidanceRequest
+import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
@@ -71,6 +74,8 @@ import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
@@ -78,6 +83,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
@@ -122,6 +128,9 @@ fun CapturedTutorSessionRoute(
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    onCameraAttachment: () -> Unit = {},
+    onGalleryAttachment: () -> Unit = {},
+    onLibraryAttachment: () -> Unit = onOpenMistakeNotebook,
     onBack: () -> Unit,
     onEndedWithoutSave: () -> Unit = onBack,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
@@ -244,6 +253,9 @@ fun CapturedTutorSessionRoute(
         onOpenModelSettings = onOpenModelSettings,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
+        onCameraAttachment = onCameraAttachment,
+        onGalleryAttachment = onGalleryAttachment,
+        onLibraryAttachment = onLibraryAttachment,
         onBack = onBack,
         autoStartAuthorization = autoStartAuthorization,
         onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
@@ -312,6 +324,9 @@ private fun CapturedTutorSessionContent(
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
+    onCameraAttachment: () -> Unit,
+    onGalleryAttachment: () -> Unit,
+    onLibraryAttachment: () -> Unit,
     onBack: () -> Unit,
     autoStartAuthorization: TutorAutoStartAuthorization?,
     onAutoStartAuthorizationConsumed: (String) -> Unit,
@@ -340,6 +355,9 @@ private fun CapturedTutorSessionContent(
                 onOpenModelSettings = onOpenModelSettings,
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
+                onCameraAttachment = onCameraAttachment,
+                onGalleryAttachment = onGalleryAttachment,
+                onLibraryAttachment = onLibraryAttachment,
                 onBack = onBack,
                 autoStartAuthorization = autoStartAuthorization,
                 onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
@@ -444,6 +462,9 @@ internal fun ReadyCapturedSession(
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    onCameraAttachment: () -> Unit = {},
+    onGalleryAttachment: () -> Unit = {},
+    onLibraryAttachment: () -> Unit = onOpenMistakeNotebook,
     onBack: () -> Unit = {},
     autoStartAuthorization: TutorAutoStartAuthorization? = null,
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
@@ -465,6 +486,9 @@ internal fun ReadyCapturedSession(
         onRequestEnd = onRequestEnd,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
+        onCameraAttachment = onCameraAttachment,
+        onGalleryAttachment = onGalleryAttachment,
+        onLibraryAttachment = onLibraryAttachment,
         onOpenVisualOriginal = { sourceExpanded = true },
         onOpenModelSettings = onOpenModelSettings,
         autoStartAuthorization = autoStartAuthorization,
@@ -626,6 +650,9 @@ internal fun TutorModelPanel(
     onRequestEnd: () -> Unit = {},
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    onCameraAttachment: () -> Unit = {},
+    onGalleryAttachment: () -> Unit = {},
+    onLibraryAttachment: () -> Unit = onOpenMistakeNotebook,
     onOpenVisualOriginal: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
     autoStartAuthorization: TutorAutoStartAuthorization? = null,
@@ -698,9 +725,6 @@ internal fun TutorModelPanel(
     var interactionBusy by remember(question.sessionId) { mutableStateOf(false) }
     var interactionError by remember(question.sessionId) { mutableStateOf<String?>(null) }
     var pendingEvidenceJob by remember(question.sessionId) { mutableStateOf<Job?>(null) }
-    var previousExplanationMode by remember(question.sessionId) {
-        mutableStateOf(explanationMode)
-    }
     var chatDraft by rememberSaveable(
         question.sessionId,
         question.revisionNumber,
@@ -733,18 +757,6 @@ internal fun TutorModelPanel(
         question.questionDocument.document.id,
     ) { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(explanationMode) {
-        if (
-            previousExplanationMode == TutorExplanationMode.GUIDED &&
-            explanationMode == TutorExplanationMode.DIRECT
-        ) {
-            pendingEvidenceJob?.cancel()
-            pendingEvidenceJob = null
-            interactionBusy = false
-            interactionError = null
-        }
-        previousExplanationMode = explanationMode
-    }
     fun consumeAutoStartAuthorization(authorizationId: String) {
         if (consumedAutoStartAuthorizationId == authorizationId) return
         consumedAutoStartAuthorizationId = authorizationId
@@ -1113,18 +1125,88 @@ internal fun TutorModelPanel(
         TutorTurnKey(currentInput.cycleOrdinal, currentInput.turnOrdinal)
     ]
     val currentHistory = currentCycleResponses.toContiguousTutorHistory()
-    val strugglesObserved = currentCycleResponses.count { response ->
-        response.selectionWasCorrect == false
-    }
-    val guidedHintUsed = tutorRespondTasks.any { task ->
-        val input = task.request.input as? TutorRespondInput
-        input?.cycleOrdinal == currentInput.cycleOrdinal &&
-            input.studentMessage == GUIDED_HINT_MESSAGE
-    }
     val nextTurnExists = currentCycleTasks.any { task ->
         (task.request.input as? TutorPlanInput)?.turnOrdinal == currentHistory.size + 1
     }
     val currentPlanOutput = observedTask.output as? TutorPlanOutput
+    val guidanceProblem = remember(
+        question.questionDocument.document.id,
+        question.revisionNumber,
+    ) {
+        TutorProblemScope(
+            problemId = question.questionDocument.document.id,
+            revisionNumber = question.revisionNumber,
+        )
+    }
+    val guidanceEvents = remember(
+        currentCycleTasks,
+        currentCycleResponses,
+        tutorRespondTasks,
+    ) {
+        buildList {
+            currentCycleTasks
+                .sortedBy { task -> (task.request.input as TutorPlanInput).turnOrdinal }
+                .forEach { task ->
+                    val input = task.request.input as TutorPlanInput
+                    val output = task.output as? TutorPlanOutput ?: return@forEach
+                    if (output.plan.hasGuidedInteraction()) {
+                        add(
+                            TutorGuidanceEvent.Question(
+                                requestId = task.request.requestId,
+                                masteryRelevant = output.isMasteryRelevantTo(input),
+                            ),
+                        )
+                    }
+                    currentCycleResponses
+                        .firstOrNull { response -> response.turnOrdinal == input.turnOrdinal }
+                        ?.takeIf(TutorTurnResponse::hasChoicePayload)
+                        ?.let { response ->
+                            add(
+                                TutorGuidanceEvent.Evidence(
+                                    requestId = task.request.requestId,
+                                    selectionWasCorrect = response.selectionWasCorrect == true,
+                                ),
+                            )
+                        }
+                }
+            tutorRespondTasks
+                .filter { task ->
+                    val input = task.request.input as? TutorRespondInput
+                    input?.cycleOrdinal == currentInput.cycleOrdinal &&
+                        input.studentMessage.isTutorHintRequest()
+                }
+                .forEach { task -> add(TutorGuidanceEvent.Hint(task.request.requestId)) }
+        }
+    }
+    val replayedGuidedState = remember(
+        guidanceProblem,
+        guidanceEvents,
+    ) {
+        replayTutorGuidance(
+            problem = guidanceProblem,
+            requestedMode = TutorExplanationMode.GUIDED,
+            answerWasExposed = false,
+            events = guidanceEvents,
+        )
+    }
+    val guidanceState = remember(
+        replayedGuidedState,
+        explanationMode,
+        answerExposureKeys,
+    ) {
+        if (
+            explanationMode == TutorExplanationMode.DIRECT ||
+            answerExposureKeys.isNotEmpty()
+        ) {
+            TutorGuidancePolicy.transitionMode(
+                replayedGuidedState,
+                TutorExplanationMode.DIRECT,
+            ).state
+        } else {
+            replayedGuidedState
+        }
+    }
+    val effectiveExplanationMode = guidanceState.mode
     val respondSupported = currentProvider?.let { candidate ->
         candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
             candidate.supports(ModelTaskKind.TUTOR_RESPOND)
@@ -1222,10 +1304,17 @@ internal fun TutorModelPanel(
             }
         }.toMap()
     }
+    fun openVisualReadOnly(requestId: String) {
+        val browse = TutorGuidancePolicy.evaluate(
+            guidanceState,
+            TutorGuidanceRequest.visualBrowse(requestId, guidanceProblem),
+        )
+        if (browse.outcome == TutorGuidanceOutcome.READ_ONLY) onOpenVisualOriginal()
+    }
     fun reportVisualIncorrect(sceneId: String) {
         if (sceneId !in reportedVisualSceneIds) {
             reportedVisualSceneIds = reportedVisualSceneIds + sceneId
-            onOpenVisualOriginal()
+            openVisualReadOnly("visual-report:$sceneId")
         }
     }
 
@@ -1385,6 +1474,21 @@ internal fun TutorModelPanel(
         clearDraftOnPersist: Boolean = false,
     ) {
         val exactMessage = message
+        if (exactMessage.isTutorHintRequest()) {
+            val hint = TutorGuidancePolicy.evaluate(
+                guidanceState,
+                TutorGuidanceRequest.hint(
+                    "hint:${question.sessionId}:${currentInput.cycleOrdinal}:${currentInput.turnOrdinal}",
+                    guidanceProblem,
+                ),
+            )
+            if (hint.outcome == TutorGuidanceOutcome.DIRECT_EXPLANATION) {
+                observedTask.toPlanSolutionPreviewKey()?.let { key ->
+                    planSolutionPreviewKeys = planSolutionPreviewKeys + key
+                }
+                return
+            }
+        }
         val pendingResponseAction = pendingEgressState.action
             as? PendingTutorEgressAction.NewResponse
         when (val pendingAction = pendingEgressState.action) {
@@ -1433,6 +1537,7 @@ internal fun TutorModelPanel(
             visibleTutorContextMarkdown = visibleContext,
             priorMessages = priorMessages,
             requestedMove = requestedMove,
+            explanationMode = effectiveExplanationMode,
             attempt = attempt,
         )
         val occurredAt = maxOf(
@@ -1475,6 +1580,7 @@ internal fun TutorModelPanel(
                 visibleTutorContextMarkdown = visibleContext,
                 priorMessages = priorMessages,
                 requestedMove = requestedMove,
+                explanationMode = effectiveExplanationMode,
             )
         } catch (_: IllegalArgumentException) {
             chatStartError = "这条消息包含暂时无法发送的字符，请调整后再试。"
@@ -1602,6 +1708,29 @@ internal fun TutorModelPanel(
         afterPreviewed()
     }
     LaunchedEffect(
+        effectiveExplanationMode,
+        observedTask.request.requestId,
+    ) {
+        if (effectiveExplanationMode == TutorExplanationMode.DIRECT) {
+            observedTask.toPlanSolutionPreviewKey()?.let { key ->
+                planSolutionPreviewKeys = planSolutionPreviewKeys + key
+            }
+        }
+    }
+    LaunchedEffect(explanationMode, replayedGuidedState.pendingEvidenceRequestId) {
+        if (explanationMode == TutorExplanationMode.DIRECT) {
+            val transition = TutorGuidancePolicy.transitionMode(
+                replayedGuidedState,
+                TutorExplanationMode.DIRECT,
+            )
+            transition.cancelEvidenceRequestId?.let(interactions::cancelEvidence)
+            pendingEvidenceJob?.cancel()
+            pendingEvidenceJob = null
+            interactionBusy = false
+            interactionError = null
+        }
+    }
+    LaunchedEffect(
         question.sessionId,
         currentCycle,
         currentHistory,
@@ -1612,13 +1741,11 @@ internal fun TutorModelPanel(
         externalEgressLease?.approvedAtEpochMillis,
         responseActionAwaitingAuthorization,
         explanationMode,
-        strugglesObserved,
     ) {
         if (
-            explanationMode == TutorExplanationMode.GUIDED &&
-            strugglesObserved < TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT &&
+            effectiveExplanationMode == TutorExplanationMode.GUIDED &&
             currentHistory.isNotEmpty() &&
-            currentHistory.size < TutorGuidancePolicy.MAX_QUESTIONS &&
+            guidanceState.questionsAsked < TutorGuidancePolicy.MAX_QUESTIONS &&
             !nextTurnExists &&
             !responseActionAwaitingAuthorization
         ) {
@@ -1647,10 +1774,9 @@ internal fun TutorModelPanel(
         val output = observedTask.output as? TutorPlanOutput
         val item = output?.plan?.diagnosticItem
         val evaluation = item?.evaluateChoice(choiceId)
+        val evidence = guidanceState.authorizeEvidence(observedTask.request.requestId)
         if (
-            explanationMode != TutorExplanationMode.GUIDED ||
-            strugglesObserved >= TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT ||
-            currentInput.turnOrdinal > TutorGuidancePolicy.MAX_QUESTIONS ||
+            !evidence.mayWriteLearningEvidence ||
             output == null || item == null || evaluation == null || interactionBusy ||
             responseActionAwaitingAuthorization
         ) {
@@ -1673,6 +1799,7 @@ internal fun TutorModelPanel(
                         selectionWasCorrect = evaluation.isCorrect,
                         feedbackMarkdown = requireNotNull(evaluation.choice.feedbackMarkdown),
                         occurredAtEpochMillis = System.currentTimeMillis(),
+                        evidenceRequestId = observedTask.request.requestId,
                     ),
                 )
             } catch (cancelled: CancellationException) {
@@ -1688,7 +1815,7 @@ internal fun TutorModelPanel(
 
     fun continueCurrentTurn(requestedMove: TutorMoveType) {
         if (
-            explanationMode != TutorExplanationMode.GUIDED ||
+            effectiveExplanationMode != TutorExplanationMode.GUIDED ||
             interactionBusy ||
             responseActionAwaitingAuthorization
         ) {
@@ -1718,11 +1845,16 @@ internal fun TutorModelPanel(
                         .filterNot { it.turnOrdinal == movedResponse.turnOrdinal }
                         .plus(movedResponse)
                         .toContiguousTutorHistory()
-                    if (
-                        nextHistory.size < TutorGuidancePolicy.MAX_QUESTIONS &&
-                        nextHistory.count { !it.selectionWasCorrect } <
-                        TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT
-                    ) {
+                    val nextState = replayTutorGuidance(
+                        problem = guidanceProblem,
+                        requestedMode = explanationMode,
+                        answerWasExposed = answerExposureKeys.isNotEmpty(),
+                        events = guidanceEvents + TutorGuidanceEvent.Evidence(
+                            requestId = observedTask.request.requestId,
+                            selectionWasCorrect = movedResponse.selectionWasCorrect == true,
+                        ),
+                    )
+                    if (nextState.mode == TutorExplanationMode.GUIDED) {
                         executeTurn(
                             currentInput.cycleOrdinal,
                             currentInput.priorConversationMemory,
@@ -1798,6 +1930,9 @@ internal fun TutorModelPanel(
                 sending = chatSending,
                 explanationMode = explanationMode,
                 onExplanationModeChange = onExplanationModeChange,
+                onCameraAttachment = onCameraAttachment,
+                onGalleryAttachment = onGalleryAttachment,
+                onLibraryAttachment = onLibraryAttachment,
                 onValueChange = {
                     chatDraft = it
                     chatStartError = null
@@ -1896,10 +2031,12 @@ internal fun TutorModelPanel(
                         interactionError = interactionError.takeIf { isTail && isCurrentTurn },
                         onRetry = ::retryCurrentPlan,
                         onSubmitChoice = ::submitCurrentChoice,
+                        onDirectiveResponse = { response ->
+                            executeTutorResponse(response)
+                        },
                         onRequestHint = if (
-                            explanationMode == TutorExplanationMode.GUIDED &&
-                            !guidedHintUsed &&
-                            strugglesObserved < TutorGuidancePolicy.STRUGGLES_BEFORE_DIRECT &&
+                            effectiveExplanationMode == TutorExplanationMode.GUIDED &&
+                            guidanceState.hintsUsed < TutorGuidancePolicy.MAX_HINTS &&
                             respondSupported && respondAuthorized && !chatSending &&
                             !responseActionAwaitingAuthorization
                         ) {
@@ -1914,10 +2051,20 @@ internal fun TutorModelPanel(
                         onContinue = ::continueCurrentTurn,
                         onRevealSolution = { revealCurrentSolution() },
                         onRestartCycle = ::restartCurrentCycle,
-                        explanationMode = explanationMode,
-                        strugglesObserved = strugglesObserved,
+                        explanationMode = effectiveExplanationMode,
                         onOpenModelSettings = onOpenModelSettings,
-                        onOpenVisualOriginal = onOpenVisualOriginal,
+                        onOpenVisualOriginal = {
+                            val browse = TutorGuidancePolicy.evaluate(
+                                guidanceState,
+                                TutorGuidanceRequest.visualBrowse(
+                                    "visual-open:${timelineItem.task.request.requestId}",
+                                    guidanceProblem,
+                                ),
+                            )
+                            if (browse.outcome == TutorGuidanceOutcome.READ_ONLY) {
+                                onOpenVisualOriginal()
+                            }
+                        },
                         onReportVisualIncorrect = ::reportVisualIncorrect,
                         solutionBottomModifier = solutionBottomModifier(timelineItem.stableId),
                     )
@@ -1935,6 +2082,8 @@ internal fun TutorModelPanel(
                             solutionRevealPreviewed = timelineItem.planTask
                                 .toPlanSolutionPreviewKey()
                                 ?.let { it in planSolutionPreviewKeys } == true,
+                            showDirectExplanation = isCurrentTurn &&
+                                effectiveExplanationMode == TutorExplanationMode.DIRECT,
                             interactionEnabled = isTail && isCurrentTurn &&
                                 !responseActionAwaitingAuthorization,
                             interactionBusy = interactionBusy,
@@ -1986,7 +2135,11 @@ internal fun TutorModelPanel(
                         executionMatchesCurrentProvider = executionMatches,
                         onRetry = { retryTutorResponse(timelineItem.task) },
                         onOpenModelSettings = onOpenModelSettings,
-                        onOpenVisualOriginal = onOpenVisualOriginal,
+                        onOpenVisualOriginal = {
+                            openVisualReadOnly(
+                                "visual-reply:${timelineItem.task.request.requestId}",
+                            )
+                        },
                         onReportVisualIncorrect = ::reportVisualIncorrect,
                         onMove = { move ->
                             executeTutorResponse(
@@ -2002,6 +2155,8 @@ internal fun TutorModelPanel(
                                 )
                             }
                         },
+                        explanationMode = effectiveExplanationMode,
+                        onDirectiveResponse = { response -> executeTutorResponse(response) },
                         localIntentContent = { input, output ->
                             TutorLocalIntentPanel(
                                 output = output,
@@ -2317,12 +2472,12 @@ private fun TutorTaskContent(
     interactionError: String?,
     onRetry: () -> Unit,
     onSubmitChoice: (String) -> Unit,
+    onDirectiveResponse: (String) -> Unit,
     onRequestHint: (() -> Unit)?,
     onContinue: (TutorMoveType) -> Unit,
     onRevealSolution: () -> Unit,
     onRestartCycle: () -> Unit,
     explanationMode: TutorExplanationMode,
-    strugglesObserved: Int,
     onOpenModelSettings: () -> Unit,
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
@@ -2357,12 +2512,12 @@ private fun TutorTaskContent(
                     onOpenVisualOriginal = onOpenVisualOriginal,
                     onReportVisualIncorrect = onReportVisualIncorrect,
                     onSubmitChoice = onSubmitChoice,
+                    onDirectiveResponse = onDirectiveResponse,
                     onRequestHint = onRequestHint,
                     onContinue = onContinue,
                     onRevealSolution = onRevealSolution,
                     onRestartCycle = onRestartCycle,
                     explanationMode = explanationMode,
-                    strugglesObserved = strugglesObserved,
                     solutionBottomModifier = solutionBottomModifier,
                 )
             }
@@ -2421,6 +2576,31 @@ private fun TutorTaskContent(
         }
     }
 }
+
+private fun TutorTurnPlan.hasGuidedInteraction(): Boolean =
+    when (interactionDirective) {
+        is TutorInteractionDirective.Choices,
+        is TutorInteractionDirective.FreeResponse,
+        is TutorInteractionDirective.VisualTarget,
+        -> true
+        TutorInteractionDirective.Continue,
+        -> false
+        null -> diagnosticItem != null
+    }
+
+private fun TutorPlanOutput.isMasteryRelevantTo(input: TutorPlanInput): Boolean {
+    if (plan.targetedEvidenceLabels.isEmpty()) return true
+    val evidenceByLabel = input.relevantLearningEvidence.associateBy { evidence ->
+        evidence.displayName
+    }
+    return plan.targetedEvidenceLabels.all { label ->
+        evidenceByLabel[label]?.level?.let { level -> level != TutorEvidenceLevel.MASTERED } == true
+    }
+}
+
+private fun String.isTutorHintRequest(): Boolean =
+    this == GUIDED_HINT_MESSAGE || contains("提示", ignoreCase = true) ||
+        contains("hint", ignoreCase = true)
 
 @Composable
 private fun TutorModelStatusCard(

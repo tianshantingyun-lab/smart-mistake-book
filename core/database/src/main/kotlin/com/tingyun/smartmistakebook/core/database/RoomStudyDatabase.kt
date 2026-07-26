@@ -928,6 +928,10 @@ internal class RoomStudyDatabase(
         command: PersistTutorChoiceCommand,
     ): TutorTurnResponseRecord = database.tutorInteractionDao().recordChoice(command)
 
+    override suspend fun discardTutorChoice(
+        command: PersistTutorChoiceCommand,
+    ): Boolean = database.tutorInteractionDao().discardChoice(command)
+
     override suspend fun recordTutorMove(
         command: PersistTutorMoveCommand,
     ): TutorTurnResponseRecord = database.tutorInteractionDao().recordMove(command)

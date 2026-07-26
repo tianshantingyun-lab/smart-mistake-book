@@ -21,6 +21,7 @@ import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
@@ -542,6 +543,7 @@ internal fun tutorRespondRequestId(
     visibleTutorContextMarkdown: String?,
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
     attempt: Int,
 ): String {
     require(responseOrdinal > 0)
@@ -559,6 +561,7 @@ internal fun tutorRespondRequestId(
             appendLengthPrefixed(studentMessage)
             appendLengthPrefixed(visibleTutorContextMarkdown)
             appendLengthPrefixed(requestedMove?.name)
+            appendLengthPrefixed(explanationMode.name)
             priorMessages.forEach { message ->
                 appendLengthPrefixed(message.studentMessage)
                 appendLengthPrefixed(message.assistantMarkdown)
@@ -587,6 +590,7 @@ internal fun buildTutorRespondRequest(
     visibleTutorContextMarkdown: String?,
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
+    explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
 ): ModelTaskRequest {
     val input = TutorRespondInput(
         sessionId = question.sessionId,
@@ -608,6 +612,7 @@ internal fun buildTutorRespondRequest(
         visibleTutorContextMarkdown = visibleTutorContextMarkdown,
         priorMessages = priorMessages,
         requestedMove = requestedMove,
+        explanationMode = explanationMode,
     )
     val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
         ModelEgressManifest(
