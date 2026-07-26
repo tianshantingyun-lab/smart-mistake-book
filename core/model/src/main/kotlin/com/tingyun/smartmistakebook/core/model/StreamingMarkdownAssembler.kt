@@ -628,7 +628,16 @@ private fun IncrementalMarkerRun.resolvedOpen(): IncrementalInlineOpen? {
                 start = start,
             )
         } else if (length >= current.delimiterLength) {
-            null
+            val remainder = length - current.delimiterLength
+            if (remainder == 0) {
+                null
+            } else {
+                IncrementalInlineOpen(
+                    marker = marker,
+                    delimiterLength = if (remainder >= 2) 2 else 1,
+                    start = start + current.delimiterLength,
+                )
+            }
         } else {
             current
         }

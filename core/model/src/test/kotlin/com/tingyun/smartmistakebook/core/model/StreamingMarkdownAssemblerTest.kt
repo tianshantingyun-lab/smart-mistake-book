@@ -117,6 +117,38 @@ class StreamingMarkdownAssemblerTest {
     }
 
     @Test
+    fun adjacentEmphasisRunsKeepTheirRemaindersAcrossArbitraryProviderChunks() {
+        val cases = listOf(
+            "*a**b*" to listOf("*a", "**", "b*"),
+            "**a****b**" to listOf("**a", "****", "b**"),
+            "*a***b**" to listOf("*", "a***", "b", "**"),
+            "**a***b*" to listOf("**", "a", "***b", "*"),
+        )
+
+        cases.forEach { (markdown, irregularChunks) ->
+            val chunkings = listOf(
+                listOf(markdown),
+                markdown.map(Char::toString),
+                irregularChunks,
+            )
+            chunkings.forEachIndexed { chunkingIndex, chunks ->
+                val completion = StreamingMarkdownAssembler().run {
+                    chunks.forEach(::append)
+                    complete()
+                }
+
+                assertEquals(
+                    "markdown=$markdown chunking=$chunkingIndex",
+                    StreamingMarkdownCompletion.Accepted(
+                        TutorMarkdownSnapshot(markdown, ""),
+                    ),
+                    completion,
+                )
+            }
+        }
+    }
+
+    @Test
     fun singleCharacterChunkingIsAnalyzedInAmortizedLinearTime() {
         fun workCounts(characterCount: Int): Pair<Long, Long> {
             val assembler = StreamingMarkdownAssembler()

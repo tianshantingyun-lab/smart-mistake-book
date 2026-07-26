@@ -187,15 +187,27 @@ fun StreamingSafeMarkdownText(
     val parser = remember(contentIdentity) {
         IncrementalSafeMarkdownParser()
     }
+    val parseKey = StreamingMarkdownParseKey(
+        stableContent = snapshot.stableContent,
+        provisionalContent = snapshot.provisionalContent,
+        provisionalTail = snapshot.provisionalTail,
+        contentIdentity = contentIdentity,
+    )
+    val fallback = parser.visibleWhileParsing(snapshot, contentIdentity)
     val parsed = produceState(
-        initialValue = parser.visibleWhileParsing(snapshot, contentIdentity),
-        snapshot.stableContent,
-        snapshot.provisionalContent,
-        snapshot.provisionalTail,
-        contentIdentity,
+        initialValue = StreamingMarkdownParseResult(parseKey, fallback),
+        key1 = parseKey,
     ) {
-        value = parser.parse(snapshot, contentIdentity)
+        value = StreamingMarkdownParseResult(
+            key = parseKey,
+            state = parser.parse(snapshot, contentIdentity),
+        )
     }.value
+    val visible = streamingMarkdownWhileParsing(
+        currentKey = parseKey,
+        fallback = fallback,
+        parsed = parsed,
+    )
     AndroidView(
         factory = { context ->
             IncrementalMarkdownTextView(context)
@@ -203,7 +215,7 @@ fun StreamingSafeMarkdownText(
         modifier = modifier,
         update = { textView ->
             textView.applyStyle(style, color)
-            textView.render(parsed)
+            textView.render(visible)
         },
     )
 }
@@ -878,6 +890,25 @@ internal data class StreamingMarkdownRenderState(
         )
     }
 }
+
+internal data class StreamingMarkdownParseKey(
+    val stableContent: TutorMarkdownChunkChain,
+    val provisionalContent: TutorMarkdownChunkChain,
+    val provisionalTail: String,
+    val contentIdentity: Any,
+)
+
+internal data class StreamingMarkdownParseResult(
+    val key: StreamingMarkdownParseKey,
+    val state: StreamingMarkdownRenderState,
+)
+
+internal fun streamingMarkdownWhileParsing(
+    currentKey: StreamingMarkdownParseKey,
+    fallback: StreamingMarkdownRenderState,
+    parsed: StreamingMarkdownParseResult,
+): StreamingMarkdownRenderState =
+    if (parsed.key == currentKey) parsed.state else fallback
 
 internal data class StreamingTextPatch(
     val deleteSuffixCharacterCount: Int,

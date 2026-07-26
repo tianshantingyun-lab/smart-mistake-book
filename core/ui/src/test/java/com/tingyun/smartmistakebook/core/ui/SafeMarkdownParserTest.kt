@@ -3,10 +3,12 @@ package com.tingyun.smartmistakebook.core.ui
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import com.tingyun.smartmistakebook.core.model.StreamingMarkdownAssembler
+import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -217,6 +219,60 @@ class SafeMarkdownParserTest {
             assertTrue(sawRollback)
             assertTrue(planner.appliedCharacterCount <= 10)
         }
+
+    @Test
+    fun `stale provisional result yields stable fallback before current parse completes`() {
+        val identity = "same-turn"
+        val oldSnapshot = TutorMarkdownSnapshot("稳定", "旧尾")
+        val currentSnapshot = TutorMarkdownSnapshot("稳定", "新尾")
+        val oldKey = StreamingMarkdownParseKey(
+            stableContent = oldSnapshot.stableContent,
+            provisionalContent = oldSnapshot.provisionalContent,
+            provisionalTail = oldSnapshot.provisionalTail,
+            contentIdentity = identity,
+        )
+        val currentKey = StreamingMarkdownParseKey(
+            stableContent = oldSnapshot.stableContent,
+            provisionalContent = currentSnapshot.provisionalContent,
+            provisionalTail = currentSnapshot.provisionalTail,
+            contentIdentity = identity,
+        )
+        val oldWhole = StreamingMarkdownRenderState(
+            stable = ParsedMarkdownChunkChain.EMPTY.append(AnnotatedString("稳定")),
+            provisional = ParsedMarkdownChunkChain.EMPTY.append(AnnotatedString("旧尾")),
+            provisionalTail = AnnotatedString(""),
+            contentIdentity = identity,
+        )
+        val stableFallback = StreamingMarkdownRenderState(
+            stable = oldWhole.stable,
+            provisional = ParsedMarkdownChunkChain.EMPTY,
+            provisionalTail = AnnotatedString(""),
+            contentIdentity = identity,
+        )
+        val currentWhole = StreamingMarkdownRenderState(
+            stable = stableFallback.stable,
+            provisional = ParsedMarkdownChunkChain.EMPTY.append(AnnotatedString("新尾")),
+            provisionalTail = AnnotatedString(""),
+            contentIdentity = identity,
+        )
+
+        assertSame(
+            stableFallback,
+            streamingMarkdownWhileParsing(
+                currentKey = currentKey,
+                fallback = stableFallback,
+                parsed = StreamingMarkdownParseResult(oldKey, oldWhole),
+            ),
+        )
+        assertSame(
+            currentWhole,
+            streamingMarkdownWhileParsing(
+                currentKey = currentKey,
+                fallback = stableFallback,
+                parsed = StreamingMarkdownParseResult(currentKey, currentWhole),
+            ),
+        )
+    }
 }
 
 private class RecordingDispatcher : CoroutineDispatcher() {
