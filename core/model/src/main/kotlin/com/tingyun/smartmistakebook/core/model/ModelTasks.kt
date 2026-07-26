@@ -790,6 +790,7 @@ object ModelTaskCompletionValidator {
         }
         if (
             (output.solutionRevealed && !input.authorizesSolutionExposure()) ||
+            output.locallyConstrainedFor(input) != output ||
             (
                 output.intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP &&
                     (

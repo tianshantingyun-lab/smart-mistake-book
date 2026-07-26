@@ -20,6 +20,25 @@ class StructuredContentTest {
     }
 
     @Test
+    fun `escaped markers and paragraph boundaries cannot be reinterpreted by later text`() {
+        assertEquals(
+            listOf(
+                InlineToken.Text("价格 $5"),
+                InlineToken.LineBreak,
+                InlineToken.LineBreak,
+                InlineToken.Text("由 "),
+                InlineToken.Formula("x"),
+                InlineToken.Text(" 得出"),
+            ),
+            SafeInlineMarkdown.parse("价格 \\$5\n\n由 \$x\$ 得出"),
+        )
+        assertFalse(
+            SafeInlineMarkdown.parse("已稳定 *\n\n后续*")
+                .any { it is InlineToken.Emphasis },
+        )
+    }
+
+    @Test
     fun `active content and remote images fall back to inert text`() {
         val candidates = listOf(
             "<b>不能执行</b> **也不解析强调**",

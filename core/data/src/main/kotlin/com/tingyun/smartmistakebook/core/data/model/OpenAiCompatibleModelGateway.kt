@@ -118,6 +118,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualTableCommand
 import com.tingyun.smartmistakebook.core.model.TutorVisualVectorCommand
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.model.authorizesSolutionExposure
+import com.tingyun.smartmistakebook.core.model.locallyConstrainedFor
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -290,6 +291,8 @@ internal class OpenAiCompatibleModelGateway(
                     emit(failure(TIMEOUT))
                 } catch (network: IOException) {
                     emit(failure(NETWORK_UNAVAILABLE))
+                } catch (_: RetryableTutorStreamTerminalException) {
+                    emit(failure(RETRYABLE_STREAM_INVALID_RESPONSE))
                 } catch (invalid: InvalidModelResponseException) {
                     emit(failure(INVALID_RESPONSE))
                 } catch (_: IllegalArgumentException) {
@@ -384,43 +387,51 @@ internal class OpenAiCompatibleModelGateway(
         var previewEmitted = false
         var fallbackResponse: ModelHttpResponse? = null
 
-        transport.stream(
-            baseUrl = configuration.baseUrl,
-            apiKey = apiKey,
-            requestBody = requestBody,
-            beforeEnqueue = {
-                requireCurrentAuthorizationBeforeEnqueue(
-                    execution = execution,
-                    expectedConfiguration = configuration,
-                )
-            },
-        ).collect { event ->
-            when (event) {
-                is ModelHttpStreamEvent.Data -> {
-                    if (fallbackResponse != null) throw InvalidModelResponseException()
-                    val fragment = OpenAiModelProtocol.streamContentDelta(event.value)
-                    if (fragment.isEmpty()) return@collect
-                    if (structuredContent.length + fragment.length > MAX_STREAMED_CONTENT_CHARS) {
-                        throw InvalidModelResponseException()
-                    }
-                    structuredContent.append(fragment)
-                    val decodedDelta = decoder.append(fragment)
-                    if (decodedDelta.isNotEmpty()) {
-                        val snapshot = assembler.append(decodedDelta)
-                        if (snapshot != lastSnapshot) {
-                            lastSnapshot = snapshot
-                            previewEmitted = true
-                            emit(ModelGatewayEvent.TutorPreview(snapshot))
+        try {
+            transport.stream(
+                baseUrl = configuration.baseUrl,
+                apiKey = apiKey,
+                requestBody = requestBody,
+                beforeEnqueue = {
+                    requireCurrentAuthorizationBeforeEnqueue(
+                        execution = execution,
+                        expectedConfiguration = configuration,
+                    )
+                },
+            ).collect { event ->
+                when (event) {
+                    is ModelHttpStreamEvent.Data -> {
+                        if (fallbackResponse != null) throw InvalidModelResponseException()
+                        val fragment = OpenAiModelProtocol.streamContentDelta(event.value)
+                        if (fragment.isEmpty()) return@collect
+                        if (structuredContent.length + fragment.length >
+                            MAX_STREAMED_CONTENT_CHARS
+                        ) {
+                            throw InvalidModelResponseException()
+                        }
+                        structuredContent.append(fragment)
+                        val decodedDelta = decoder.append(fragment)
+                        if (decodedDelta.isNotEmpty()) {
+                            val snapshot = assembler.append(decodedDelta)
+                            if (snapshot != lastSnapshot) {
+                                lastSnapshot = snapshot
+                                previewEmitted = true
+                                emit(ModelGatewayEvent.TutorPreview(snapshot))
+                            }
                         }
                     }
-                }
-                is ModelHttpStreamEvent.Fallback -> {
-                    if (fallbackResponse != null || structuredContent.isNotEmpty()) {
-                        throw InvalidModelResponseException()
+
+                    is ModelHttpStreamEvent.Fallback -> {
+                        if (fallbackResponse != null || structuredContent.isNotEmpty()) {
+                            throw InvalidModelResponseException()
+                        }
+                        fallbackResponse = event.response
                     }
-                    fallbackResponse = event.response
                 }
             }
+        } catch (invalid: InvalidModelResponseException) {
+            if (previewEmitted) throw RetryableTutorStreamTerminalException()
+            throw invalid
         }
 
         fallbackResponse?.let { response ->
@@ -452,21 +463,28 @@ internal class OpenAiCompatibleModelGateway(
         val decoded = decoder.complete()
         val assembled = assembler.complete()
         if (decoded !is TutorStructuredPreviewCompletion.Accepted) {
-            throw InvalidModelResponseException()
+            throwInvalidTutorStreamTerminal(previewEmitted)
         }
         val completedSnapshot =
             (assembled as? StreamingMarkdownCompletion.Accepted)?.snapshot
-                ?: throw InvalidModelResponseException()
+                ?: throwInvalidTutorStreamTerminal(previewEmitted)
         if (completedSnapshot != lastSnapshot) {
+            lastSnapshot = completedSnapshot
+            previewEmitted = true
             emit(ModelGatewayEvent.TutorPreview(completedSnapshot))
+        }
+        val output = try {
+            OpenAiModelProtocol.parseResponse(
+                OpenAiModelProtocol.responseEnvelope(structuredContent.toString()),
+                input,
+                modelVersion,
+            ).applyLocalTutorResponseBoundary(input)
+        } catch (_: IllegalArgumentException) {
+            throwInvalidTutorStreamTerminal(previewEmitted)
         }
         emit(
             ModelGatewayEvent.Completed(
-                OpenAiModelProtocol.parseResponse(
-                    OpenAiModelProtocol.responseEnvelope(structuredContent.toString()),
-                    input,
-                    modelVersion,
-                ),
+                output,
             ),
         )
     }
@@ -1004,6 +1022,15 @@ private object OpenAiModelProtocol {
 private fun com.tingyun.smartmistakebook.core.model.ModelTaskInput.isTutorStreamInput(): Boolean =
     this is TutorRespondInput || this is TutorLobbyInput
 
+private fun ModelTaskOutput.applyLocalTutorResponseBoundary(
+    input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
+): ModelTaskOutput =
+    if (this is TutorRespondOutput && input is TutorRespondInput) {
+        locallyConstrainedFor(input) ?: throw InvalidModelResponseException()
+    } else {
+        this
+    }
+
 private fun ModelHttpResponse.toGatewayEvent(
     execution: ModelGatewayExecution,
     modelVersion: String,
@@ -1036,7 +1063,8 @@ private fun ModelHttpResponse.toGatewayEvent(
     }
     return try {
         ModelGatewayEvent.Completed(
-            OpenAiModelProtocol.parseResponse(body, execution.request.input, modelVersion),
+            OpenAiModelProtocol.parseResponse(body, execution.request.input, modelVersion)
+                .applyLocalTutorResponseBoundary(execution.request.input),
         )
     } catch (_: Exception) {
         failure(INVALID_RESPONSE)
@@ -2292,6 +2320,12 @@ private fun invalidPreEnqueueAuthorization() = ModelEgressAuthorizationException
 )
 
 internal class InvalidModelResponseException : IllegalArgumentException()
+private class RetryableTutorStreamTerminalException : IllegalArgumentException()
+
+private fun throwInvalidTutorStreamTerminal(previewEmitted: Boolean): Nothing {
+    if (previewEmitted) throw RetryableTutorStreamTerminalException()
+    throw InvalidModelResponseException()
+}
 
 private val UNCONFIGURED_CAPABILITIES = ProviderCapabilitySnapshot(
     providerId = "unconfigured",
@@ -2339,6 +2373,11 @@ private val INVALID_RESPONSE = ModelTaskFailure(
     ModelFailureCode.INVALID_RESPONSE,
     "这次没有准备好题面，请重新处理",
     false,
+)
+private val RETRYABLE_STREAM_INVALID_RESPONSE = ModelTaskFailure(
+    ModelFailureCode.INVALID_RESPONSE,
+    "这次回复没有完整生成，已保留可安全显示的内容",
+    true,
 )
 
 private val REQUEST_TOO_LARGE = ModelTaskFailure(

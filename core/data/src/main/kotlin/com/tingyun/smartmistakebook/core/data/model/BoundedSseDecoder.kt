@@ -24,6 +24,8 @@ internal class BoundedSseDecoder(
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         var totalBytes = 0
         var eventCount = 0
+        var firstLine = true
+        var previousWasCarriageReturn = false
 
         suspend fun dispatch(): Boolean {
             if (dataLines.isEmpty()) return false
@@ -44,7 +46,14 @@ internal class BoundedSseDecoder(
             } else {
                 bytes.size
             }
-            val decoded = decodeUtf8(bytes, contentLength)
+            val rawDecoded = decodeUtf8(bytes, contentLength)
+            val decoded = if (firstLine && rawDecoded.startsWith(UTF8_BOM)) {
+                rawDecoded.drop(1)
+            } else {
+                rawDecoded
+            }
+            firstLine = false
+            if (UTF8_BOM in decoded) throw InvalidModelResponseException()
             if (decoded.isEmpty()) return dispatch()
             when {
                 decoded == DATA_FIELD -> dataLines += ""
@@ -61,10 +70,18 @@ internal class BoundedSseDecoder(
             for (index in 0 until read) {
                 totalBytes += 1
                 if (totalBytes > maxBytes) throw InvalidModelResponseException()
-                if (buffer[index] == LINE_FEED) {
-                    if (consumeLine()) return
-                } else {
-                    line.write(buffer[index].toInt())
+                val byte = buffer[index]
+                if (previousWasCarriageReturn) {
+                    previousWasCarriageReturn = false
+                    if (byte == LINE_FEED) continue
+                }
+                when (byte) {
+                    CARRIAGE_RETURN -> {
+                        if (consumeLine()) return
+                        previousWasCarriageReturn = true
+                    }
+                    LINE_FEED -> if (consumeLine()) return
+                    else -> line.write(byte.toInt())
                 }
             }
         }
@@ -91,6 +108,7 @@ internal class BoundedSseDecoder(
         const val DATA_FIELD = "data"
         const val DATA_FIELD_PREFIX = "data:"
         const val DONE_MARKER = "[DONE]"
+        const val UTF8_BOM = "\uFEFF"
         const val MAX_SSE_EVENTS = 4_096
         const val CARRIAGE_RETURN: Byte = '\r'.code.toByte()
         const val LINE_FEED: Byte = '\n'.code.toByte()

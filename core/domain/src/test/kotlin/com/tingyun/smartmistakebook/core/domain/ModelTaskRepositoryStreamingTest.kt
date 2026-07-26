@@ -14,6 +14,8 @@ import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
 import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -92,9 +94,63 @@ class ModelTaskRepositoryStreamingTest {
         assertEquals("", completed.snapshot.provisionalMarkdown)
     }
 
+    @Test
+    fun defaultStreamKeepsDurableSuccessWhenItsValidatedMarkdownIsIncomplete() = runBlocking {
+        val request = request()
+        val output = TutorLobbyOutput(
+            conversationId = "conversation",
+            messageOrdinal = 1,
+            messageMarkdown = "| 表头 | 数值 |\n",
+            modelVersion = "model-v1",
+        )
+        val repository = SnapshotRepository(
+            request = request,
+            snapshots = listOf(snapshot(request, ModelTaskStatus.SUCCEEDED, output)),
+        )
+        val identity = TutorStreamIdentity(
+            requestId = request.requestId,
+            ownerVersion = 2,
+            turnVersion = 3,
+            modeVersion = 4,
+        )
+
+        val events = repository.executeTutorStream(request, identity).toList()
+
+        assertEquals(TutorStreamEvent.Started(identity), events.first())
+        assertTrue(events.last() is TutorStreamEvent.Completed)
+        assertFalse(events.any { it is TutorStreamEvent.Failed })
+        assertEquals(
+            "| 表头 | 数值 |\n",
+            (events.last() as TutorStreamEvent.Completed).snapshot.visibleMarkdown,
+        )
+    }
+
+    @Test
+    fun defaultStreamDoesNotStartBeforeTheFirstDurableSnapshot() = runBlocking {
+        val request = request()
+        val repository = SnapshotRepository(
+            request = request,
+            snapshots = emptyList(),
+            failureBeforeSnapshot = IllegalStateException("storage unavailable"),
+        )
+        val identity = TutorStreamIdentity(
+            requestId = request.requestId,
+            ownerVersion = 2,
+            turnVersion = 3,
+            modeVersion = 4,
+        )
+
+        val events = repository.executeTutorStream(request, identity)
+            .catch { }
+            .toList()
+
+        assertTrue(events.isEmpty())
+    }
+
     private class SnapshotRepository(
         private val request: ModelTaskRequest,
         private val snapshots: List<ModelTaskSnapshot>,
+        private val failureBeforeSnapshot: Exception? = null,
     ) : ModelTaskRepository {
         var executionCount = 0
             private set
@@ -106,7 +162,9 @@ class ModelTaskRepositoryStreamingTest {
         override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> {
             assertEquals(this.request, request)
             executionCount += 1
-            return flowOf(*snapshots.toTypedArray())
+            return failureBeforeSnapshot?.let { failure ->
+                flow { throw failure }
+            } ?: flowOf(*snapshots.toTypedArray())
         }
     }
 

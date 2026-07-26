@@ -213,6 +213,28 @@ class TutorConversationTimelineTest {
     }
 
     @Test
+    fun cancelledLatestReplyAttemptIsAbsentFromProjectionHistoryAndTimeline() {
+        val cancelled = respondTask(
+            requestId = "cancelled-reply",
+            occurredAtEpochMillis = 200,
+        ).copy(
+            status = ModelTaskStatus.CANCELLED,
+            output = null,
+        )
+
+        val projection = buildTutorConversationProjection(
+            question = question,
+            planTasks = emptyList(),
+            respondTasks = listOf(cancelled),
+            responses = emptyList(),
+        )
+
+        assertTrue(projection.respondTasks.isEmpty())
+        assertTrue(projection.latestRespondTasks.isEmpty())
+        assertTrue(projection.timeline.none { it is TutorConversationTimelineItem.Reply })
+    }
+
+    @Test
     fun sameMillisecondItemsHaveDeterministicPlanChoiceReplyOrder() {
         val timestamp = 500L
         val timeline = buildTutorConversationTimeline(
@@ -366,6 +388,8 @@ class TutorConversationTimelineTest {
                 studentMessage = "我不记得这一步，而且我觉得这个答案不对。",
                 solutionRevealed = true,
                 intentDecision = blockLongTermWritesDecision(),
+                explanationMode =
+                    com.tingyun.smartmistakebook.core.model.TutorExplanationMode.GUIDED,
             )
         }
 
@@ -434,6 +458,8 @@ class TutorConversationTimelineTest {
         target: TutorQuestionContext = question,
         solutionRevealed: Boolean = false,
         intentDecision: TutorIntentDecision = TutorIntentDecision.currentQuestionDefault(),
+        explanationMode: com.tingyun.smartmistakebook.core.model.TutorExplanationMode =
+            com.tingyun.smartmistakebook.core.model.TutorExplanationMode.DIRECT,
     ): ModelTaskSnapshot {
         val request = buildTutorRespondRequest(
             question = target,
@@ -448,6 +474,7 @@ class TutorConversationTimelineTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
+            explanationMode = explanationMode,
         )
         val input = request.input as TutorRespondInput
         return ModelTaskSnapshot(

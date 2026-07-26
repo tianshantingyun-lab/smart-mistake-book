@@ -18,17 +18,24 @@ sealed interface TutorStructuredPreviewCompletion {
  * Incrementally extracts the one root JSON field that is safe to route into the Markdown
  * assembler. Provider JSON, nested fields, and every other output field are never returned.
  *
- * Respond previews additionally require the solution guard to appear before `messageMarkdown`.
- * This makes a provider that uses the old/message-first wire order fail closed.
+ * Respond previews additionally require the canonical guard order before `messageMarkdown`.
+ * A complete legacy/message-first document remains eligible for normal terminal validation, but
+ * its free text is never exposed incrementally.
  */
 class TutorStructuredPreviewDecoder(
     private val target: TutorStreamTarget,
     private val solutionPreviewAllowed: Boolean = false,
 ) {
-    private val rawJson = StringBuilder()
-    private var emittedChars = 0
+    private val incrementalScanner = IncrementalStructuredPreviewScanner(
+        target = target,
+        solutionPreviewAllowed = solutionPreviewAllowed,
+    )
+    private var inputChars = 0
     private var rejected = false
     private var completed = false
+
+    internal val incrementalInspectedCharacterCount: Long
+        get() = incrementalScanner.inspectedCharacterCount
 
     init {
         require(target == TutorStreamTarget.RESPOND || !solutionPreviewAllowed) {
@@ -42,42 +49,27 @@ class TutorStructuredPreviewDecoder(
      */
     fun append(fragment: String): String {
         if (fragment.isEmpty() || rejected || completed) return ""
-        if (rawJson.length + fragment.length > MAX_STRUCTURED_PREVIEW_CHARS) {
+        if (inputChars + fragment.length > MAX_STRUCTURED_PREVIEW_CHARS) {
             rejected = true
             return ""
         }
-        rawJson.append(fragment)
+        inputChars += fragment.length
 
-        return when (val scan = StructuredPreviewScanner(rawJson, target, solutionPreviewAllowed).scan()) {
-            ScanResult.Invalid -> {
+        return when (val scan = incrementalScanner.append(fragment)) {
+            IncrementalScan.Invalid -> {
                 rejected = true
                 ""
             }
 
-            is ScanResult.ValidPrefix -> {
-                val markdown = scan.messageMarkdown ?: return ""
-                val safeLength = markdown.safeUnicodePrefixLength()
-                if (!markdown.take(safeLength).isSafeDecodedPreview() || safeLength < emittedChars) {
-                    rejected = true
-                    ""
-                } else {
-                    markdown.substring(emittedChars, safeLength).also {
-                        emittedChars = safeLength
-                    }
-                }
-            }
+            is IncrementalScan.Decoded -> scan.delta
         }
     }
 
     /** Accepts only one complete root object and never flushes an incomplete JSON string. */
     fun complete(): TutorStructuredPreviewCompletion {
         if (rejected) return TutorStructuredPreviewCompletion.Rejected
-        val scan = StructuredPreviewScanner(rawJson, target, solutionPreviewAllowed).scan()
-        val markdown = (scan as? ScanResult.ValidPrefix)
-            ?.takeIf { it.documentComplete && it.messageClosed }
-            ?.messageMarkdown
-            ?: return TutorStructuredPreviewCompletion.Rejected
-        if (markdown.safeUnicodePrefixLength() != markdown.length || !markdown.isSafeDecodedPreview()) {
+        val markdown = incrementalScanner.complete()
+        if (markdown == null) {
             rejected = true
             return TutorStructuredPreviewCompletion.Rejected
         }
@@ -90,382 +82,596 @@ class TutorStructuredPreviewDecoder(
     }
 }
 
-private sealed interface ScanResult {
-    data class ValidPrefix(
-        val messageMarkdown: String?,
-        val messageClosed: Boolean,
-        val documentComplete: Boolean,
-    ) : ScanResult
+private sealed interface IncrementalScan {
+    data class Decoded(val delta: String) : IncrementalScan
 
-    data object Invalid : ScanResult
+    data object Invalid : IncrementalScan
 }
 
-private class StructuredPreviewScanner(
-    private val source: CharSequence,
+/**
+ * A resumable JSON syntax scanner. Each appended code unit enters [consume] exactly once; state
+ * needed at a fragment boundary stays in the scanner instead of being reconstructed from the
+ * accumulated provider response.
+ */
+private class IncrementalStructuredPreviewScanner(
     private val target: TutorStreamTarget,
     private val solutionPreviewAllowed: Boolean,
 ) {
-    private var index = 0
+    private val containers = ArrayDeque<JsonContainer>()
+    private var token: JsonToken? = null
+    private var documentStarted = false
+    private var documentComplete = false
+    private var invalid = false
+
+    private var intentDecisionStarted = false
     private var intentDecisionSeen = false
     private var solutionRevealed: Boolean? = null
-    private var messageMarkdown: String? = null
+    private var messageStarted = false
     private var messageClosed = false
+    private val messageMarkdown = StringBuilder()
+    private var messageDecodedChars = 0
+    private var nextCanonicalPreviewField = 0
+    private var previewEligible = true
+    private var messagePreviewEnabled = false
 
-    fun scan(): ScanResult {
-        skipWhitespace()
-        if (!consume('{')) {
-            return if (atEnd()) prefix() else ScanResult.Invalid
-        }
-        skipWhitespace()
-        if (consume('}')) return finishDocument()
+    var inspectedCharacterCount: Long = 0
+        private set
 
-        while (true) {
-            val key = when (val parsed = parseString()) {
-                is StringParse.Complete -> parsed.value
-                is StringParse.Incomplete -> return prefix()
-                StringParse.Invalid -> return ScanResult.Invalid
-            }
-            skipWhitespace()
-            if (!consume(':')) {
-                return if (atEnd()) prefix() else ScanResult.Invalid
-            }
-            skipWhitespace()
-
-            val valueStatus = when {
-                key == MESSAGE_MARKDOWN -> parseMessageMarkdown()
-                target == TutorStreamTarget.RESPOND && key == INTENT_DECISION ->
-                    parseIntentDecision()
-                target == TutorStreamTarget.RESPOND && key == SOLUTION_REVEALED ->
-                    parseSolutionRevealed()
-                else -> parseValue(depth = 0)
-            }
-            when (valueStatus) {
-                ValueParse.Incomplete -> return prefix()
-                ValueParse.Invalid -> return ScanResult.Invalid
-                ValueParse.Complete -> Unit
-            }
-
-            skipWhitespace()
-            when {
-                consume(',') -> {
-                    skipWhitespace()
-                    if (atEnd()) return prefix()
-                    if (peek() == '}') return ScanResult.Invalid
-                }
-
-                consume('}') -> return finishDocument()
-                atEnd() -> return prefix()
-                else -> return ScanResult.Invalid
-            }
-        }
-    }
-
-    private fun parseMessageMarkdown(): ValueParse {
-        if (messageMarkdown != null) return ValueParse.Invalid
-        if (target == TutorStreamTarget.RESPOND) {
-            val revealed = solutionRevealed ?: return ValueParse.Invalid
-            if (!intentDecisionSeen || (revealed && !solutionPreviewAllowed)) {
-                return ValueParse.Invalid
-            }
-        }
-        return when (val parsed = parseString()) {
-            is StringParse.Complete -> {
-                messageMarkdown = parsed.value
-                messageClosed = true
-                ValueParse.Complete
-            }
-
-            is StringParse.Incomplete -> {
-                messageMarkdown = parsed.value
-                messageClosed = false
-                ValueParse.Incomplete
-            }
-
-            StringParse.Invalid -> ValueParse.Invalid
-        }
-    }
-
-    private fun parseIntentDecision(): ValueParse {
-        if (intentDecisionSeen) return ValueParse.Invalid
-        if (peek() == null) return ValueParse.Incomplete
-        if (peek() != '{') return ValueParse.Invalid
-        return parseValue(depth = 0).also { status ->
-            if (status == ValueParse.Complete) intentDecisionSeen = true
-        }
-    }
-
-    private fun parseSolutionRevealed(): ValueParse {
-        if (!intentDecisionSeen || solutionRevealed != null) return ValueParse.Invalid
-        return when (val parsed = parseBoolean()) {
-            is BooleanParse.Complete -> {
-                solutionRevealed = parsed.value
-                ValueParse.Complete
-            }
-
-            BooleanParse.Incomplete -> ValueParse.Incomplete
-            BooleanParse.Invalid -> ValueParse.Invalid
-        }
-    }
-
-    private fun finishDocument(): ScanResult {
-        skipWhitespace()
-        if (!atEnd()) return ScanResult.Invalid
-        return prefix(documentComplete = true)
-    }
-
-    private fun prefix(documentComplete: Boolean = false) = ScanResult.ValidPrefix(
-        messageMarkdown = messageMarkdown,
-        messageClosed = messageClosed,
-        documentComplete = documentComplete,
-    )
-
-    private fun parseValue(depth: Int): ValueParse {
-        if (depth >= MAX_JSON_DEPTH) return ValueParse.Invalid
-        skipWhitespace()
-        return when (peek()) {
-            null -> ValueParse.Incomplete
-            '"' -> when (parseString()) {
-                is StringParse.Complete -> ValueParse.Complete
-                is StringParse.Incomplete -> ValueParse.Incomplete
-                StringParse.Invalid -> ValueParse.Invalid
-            }
-
-            '{' -> parseObject(depth + 1)
-            '[' -> parseArray(depth + 1)
-            't' -> parseLiteral("true")
-            'f' -> parseLiteral("false")
-            'n' -> parseLiteral("null")
-            '-', in '0'..'9' -> parseNumber()
-            else -> ValueParse.Invalid
-        }
-    }
-
-    private fun parseObject(depth: Int): ValueParse {
-        consume('{')
-        skipWhitespace()
-        if (consume('}')) return ValueParse.Complete
-        while (true) {
-            when (parseString()) {
-                is StringParse.Complete -> Unit
-                is StringParse.Incomplete -> return ValueParse.Incomplete
-                StringParse.Invalid -> return ValueParse.Invalid
-            }
-            skipWhitespace()
-            if (!consume(':')) return if (atEnd()) ValueParse.Incomplete else ValueParse.Invalid
-            when (val value = parseValue(depth)) {
-                ValueParse.Complete -> Unit
-                else -> return value
-            }
-            skipWhitespace()
-            when {
-                consume(',') -> {
-                    skipWhitespace()
-                    if (atEnd()) return ValueParse.Incomplete
-                    if (peek() == '}') return ValueParse.Invalid
-                }
-
-                consume('}') -> return ValueParse.Complete
-                atEnd() -> return ValueParse.Incomplete
-                else -> return ValueParse.Invalid
-            }
-        }
-    }
-
-    private fun parseArray(depth: Int): ValueParse {
-        consume('[')
-        skipWhitespace()
-        if (consume(']')) return ValueParse.Complete
-        while (true) {
-            when (val value = parseValue(depth)) {
-                ValueParse.Complete -> Unit
-                else -> return value
-            }
-            skipWhitespace()
-            when {
-                consume(',') -> {
-                    skipWhitespace()
-                    if (atEnd()) return ValueParse.Incomplete
-                    if (peek() == ']') return ValueParse.Invalid
-                }
-
-                consume(']') -> return ValueParse.Complete
-                atEnd() -> return ValueParse.Incomplete
-                else -> return ValueParse.Invalid
-            }
-        }
-    }
-
-    private fun parseBoolean(): BooleanParse {
-        val start = index
-        return when {
-            source.regionMatchesAt(index, "true") -> {
-                index += 4
-                BooleanParse.Complete(true)
-            }
-
-            source.regionMatchesAt(index, "false") -> {
-                index += 5
-                BooleanParse.Complete(false)
-            }
-
-            "true".startsWith(source.substringFrom(start)) ||
-                "false".startsWith(source.substringFrom(start)) -> BooleanParse.Incomplete
-            else -> BooleanParse.Invalid
-        }
-    }
-
-    private fun parseLiteral(expected: String): ValueParse {
-        val remaining = source.substringFrom(index)
-        return when {
-            remaining.length >= expected.length && remaining.startsWith(expected) -> {
-                index += expected.length
-                ValueParse.Complete
-            }
-
-            expected.startsWith(remaining) -> ValueParse.Incomplete
-            else -> ValueParse.Invalid
-        }
-    }
-
-    private fun parseNumber(): ValueParse {
-        val start = index
-        if (consume('-') && atEnd()) return ValueParse.Incomplete
-        when {
-            consume('0') -> {
-                if (peek() in '0'..'9') return ValueParse.Invalid
-            }
-
-            peek() in '1'..'9' -> {
-                index += 1
-                while (peek() in '0'..'9') index += 1
-            }
-
-            else -> return if (atEnd()) ValueParse.Incomplete else ValueParse.Invalid
-        }
-        if (consume('.')) {
-            if (peek() !in '0'..'9') return if (atEnd()) ValueParse.Incomplete else ValueParse.Invalid
-            while (peek() in '0'..'9') index += 1
-        }
-        if (peek() == 'e' || peek() == 'E') {
-            index += 1
-            if (peek() == '+' || peek() == '-') index += 1
-            if (peek() !in '0'..'9') return if (atEnd()) ValueParse.Incomplete else ValueParse.Invalid
-            while (peek() in '0'..'9') index += 1
-        }
-        if (index == source.length) {
-            index = start
-            return ValueParse.Incomplete
-        }
-        return ValueParse.Complete
-    }
-
-    private fun parseString(): StringParse {
-        if (!consume('"')) return if (atEnd()) StringParse.Incomplete("") else StringParse.Invalid
+    fun append(fragment: String): IncrementalScan {
+        if (invalid) return IncrementalScan.Invalid
         val decoded = StringBuilder()
-        while (!atEnd()) {
-            when (val char = source[index++]) {
-                '"' -> return StringParse.Complete(decoded.toString())
-                '\\' -> when (val escape = parseEscape()) {
-                    is EscapeParse.Complete -> decoded.append(escape.value)
-                    EscapeParse.Incomplete -> return StringParse.Incomplete(decoded.toString())
-                    EscapeParse.Invalid -> return StringParse.Invalid
-                }
+        for (character in fragment) {
+            inspectedCharacterCount += 1
+            if (!consume(character, decoded)) {
+                invalid = true
+                return IncrementalScan.Invalid
+            }
+        }
+        return IncrementalScan.Decoded(decoded.toString())
+    }
 
-                else -> {
-                    if (char < ' ' || char.isLowSurrogate()) return StringParse.Invalid
-                    if (char.isHighSurrogate()) {
-                        if (atEnd()) return StringParse.Incomplete(decoded.toString())
-                        val low = source[index]
-                        if (!low.isLowSurrogate()) return StringParse.Invalid
-                        decoded.append(char).append(low)
-                        index += 1
-                    } else {
-                        decoded.append(char)
+    fun complete(): String? =
+        messageMarkdown.toString().takeIf {
+            !invalid && documentComplete && messageClosed
+        }
+
+    private fun consume(character: Char, decoded: StringBuilder): Boolean {
+        while (true) {
+            when (val activeToken = token) {
+                is StringToken -> return consumeString(activeToken, character, decoded)
+                is LiteralToken -> return consumeLiteral(activeToken, character)
+                is NumberToken -> {
+                    when (consumeNumber(activeToken, character)) {
+                        NumberConsume.Consumed -> return true
+                        NumberConsume.Invalid -> return false
+                        NumberConsume.Reprocess -> continue
                     }
                 }
+
+                null -> return consumeStructural(character)
             }
         }
-        return StringParse.Incomplete(decoded.toString())
     }
 
-    private fun parseEscape(): EscapeParse {
-        if (atEnd()) return EscapeParse.Incomplete
-        return when (val escaped = source[index++]) {
-            '"', '\\', '/' -> EscapeParse.Complete(escaped.toString())
-            'b' -> EscapeParse.Complete("\b")
-            'f' -> EscapeParse.Complete("\u000C")
-            'n' -> EscapeParse.Complete("\n")
-            'r' -> EscapeParse.Complete("\r")
-            't' -> EscapeParse.Complete("\t")
-            'u' -> parseUnicodeEscape()
-            else -> EscapeParse.Invalid
+    private fun consumeStructural(character: Char): Boolean {
+        if (!documentStarted) {
+            if (character.isJsonWhitespace()) return true
+            if (character != '{') return false
+            documentStarted = true
+            return pushObject(ValueRole.ROOT, isRoot = true)
         }
-    }
+        if (documentComplete) return character.isJsonWhitespace()
+        if (character.isJsonWhitespace()) return true
 
-    private fun parseUnicodeEscape(): EscapeParse {
-        val highOrSingle = parseHexCodeUnit() ?: return if (hexPrefixIsValid()) {
-            EscapeParse.Incomplete
-        } else {
-            EscapeParse.Invalid
-        }
-        val char = highOrSingle.toChar()
-        if (char.isLowSurrogate()) return EscapeParse.Invalid
-        if (!char.isHighSurrogate()) return EscapeParse.Complete(char.toString())
-
-        if (source.length - index < 2) {
-            return if (remainingMatchesPrefix("\\u")) EscapeParse.Incomplete else EscapeParse.Invalid
-        }
-        if (source[index] != '\\' || source[index + 1] != 'u') return EscapeParse.Invalid
-        index += 2
-        val lowCodeUnit = parseHexCodeUnit() ?: return if (hexPrefixIsValid()) {
-            EscapeParse.Incomplete
-        } else {
-            EscapeParse.Invalid
-        }
-        val low = lowCodeUnit.toChar()
-        return if (low.isLowSurrogate()) {
-            EscapeParse.Complete("$char$low")
-        } else {
-            EscapeParse.Invalid
+        return when (val container = containers.lastOrNull()) {
+            is ObjectContainer -> consumeObjectStructural(container, character)
+            is ArrayContainer -> consumeArrayStructural(container, character)
+            null -> false
         }
     }
 
-    private fun parseHexCodeUnit(): Int? {
-        if (source.length - index < 4) return null
-        var value = 0
-        repeat(4) {
-            val digit = source[index + it].digitToIntOrNull(16) ?: return null
-            value = value * 16 + digit
+    private fun consumeObjectStructural(
+        container: ObjectContainer,
+        character: Char,
+    ): Boolean = when (container.state) {
+        ObjectState.FIRST_KEY_OR_END -> when (character) {
+            '}' -> closeContainer(container)
+            '"' -> startString(ValueRole.KEY)
+            else -> false
         }
-        index += 4
-        return value
+
+        ObjectState.KEY -> {
+            if (character != '"') {
+                false
+            } else {
+                startString(ValueRole.KEY)
+            }
+        }
+
+        ObjectState.COLON -> {
+            if (character != ':') {
+                false
+            } else {
+                container.state = ObjectState.VALUE
+                true
+            }
+        }
+
+        ObjectState.VALUE -> startValue(
+            character = character,
+            role = container.valueRoleForCurrentKey(),
+        )
+
+        ObjectState.COMMA_OR_END -> when (character) {
+            ',' -> {
+                container.state = ObjectState.KEY
+                true
+            }
+
+            '}' -> closeContainer(container)
+            else -> false
+        }
     }
 
-    private fun hexPrefixIsValid(): Boolean {
-        val remaining = minOf(4, source.length - index)
-        return (0 until remaining).all { offset ->
-            source[index + offset].digitToIntOrNull(16) != null
+    private fun consumeArrayStructural(
+        container: ArrayContainer,
+        character: Char,
+    ): Boolean = when (container.state) {
+        ArrayState.FIRST_VALUE_OR_END -> {
+            if (character == ']') {
+                closeContainer(container)
+            } else {
+                startValue(character, ValueRole.GENERIC)
+            }
+        }
+
+        ArrayState.VALUE -> startValue(character, ValueRole.GENERIC)
+        ArrayState.COMMA_OR_END -> when (character) {
+            ',' -> {
+                container.state = ArrayState.VALUE
+                true
+            }
+
+            ']' -> closeContainer(container)
+            else -> false
         }
     }
 
-    private fun remainingMatchesPrefix(expected: String): Boolean =
-        expected.startsWith(source.substringFrom(index))
+    private fun startValue(
+        character: Char,
+        role: ValueRole,
+    ): Boolean {
+        when (role) {
+            ValueRole.MESSAGE -> {
+                if (messageStarted || character != '"') return false
+                messageStarted = true
+                if (nextCanonicalPreviewField != 2) previewEligible = false
+                messagePreviewEnabled =
+                    target == TutorStreamTarget.LOBBY ||
+                    (solutionPreviewAllowed && previewEligible)
+                return startString(role)
+            }
 
-    private fun skipWhitespace() {
-        while (peek() == ' ' || peek() == '\n' || peek() == '\r' || peek() == '\t') {
-            index += 1
+            ValueRole.INTENT_DECISION -> {
+                if (intentDecisionStarted || character != '{') return false
+                intentDecisionStarted = true
+                if (nextCanonicalPreviewField != 0) previewEligible = false
+                return pushObject(role, isRoot = false)
+            }
+
+            ValueRole.SOLUTION_REVEALED -> {
+                if (solutionRevealed != null) return false
+                if (nextCanonicalPreviewField != 1) previewEligible = false
+                return when (character) {
+                    't' -> startLiteral("true", role, booleanValue = true)
+                    'f' -> startLiteral("false", role, booleanValue = false)
+                    else -> false
+                }
+            }
+
+            ValueRole.GENERIC, ValueRole.ROOT, ValueRole.KEY -> Unit
+        }
+
+        return when (character) {
+            '{' -> pushObject(ValueRole.GENERIC, isRoot = false)
+            '[' -> pushArray(ValueRole.GENERIC)
+            '"' -> startString(ValueRole.GENERIC)
+            't' -> startLiteral("true", ValueRole.GENERIC)
+            'f' -> startLiteral("false", ValueRole.GENERIC)
+            'n' -> startLiteral("null", ValueRole.GENERIC)
+            '-' -> startNumber(ValueRole.GENERIC, NumberState.AFTER_MINUS)
+            '0' -> startNumber(ValueRole.GENERIC, NumberState.ZERO)
+            in '1'..'9' -> startNumber(ValueRole.GENERIC, NumberState.INTEGER)
+            else -> false
         }
     }
 
-    private fun consume(expected: Char): Boolean {
-        if (peek() != expected) return false
-        index += 1
+    private fun startString(role: ValueRole): Boolean {
+        token = StringToken(
+            role = role,
+            decodedKey = if (role == ValueRole.KEY) StringBuilder() else null,
+        )
         return true
     }
 
-    private fun peek(): Char? = source.getOrNull(index)
+    private fun consumeString(
+        activeToken: StringToken,
+        character: Char,
+        decoded: StringBuilder,
+    ): Boolean = when (activeToken.mode) {
+        StringMode.NORMAL -> when {
+            activeToken.pendingLiteralHighSurrogate != null -> {
+                val high = activeToken.pendingLiteralHighSurrogate
+                if (!character.isLowSurrogate()) {
+                    false
+                } else {
+                    activeToken.pendingLiteralHighSurrogate = null
+                    appendDecoded(activeToken, "$high$character", decoded)
+                }
+            }
 
-    private fun atEnd(): Boolean = index >= source.length
+            character == '"' -> finishString(activeToken)
+            character == '\\' -> {
+                activeToken.mode = StringMode.ESCAPE
+                true
+            }
+
+            character < ' ' || character.isLowSurrogate() -> false
+            character.isHighSurrogate() -> {
+                activeToken.pendingLiteralHighSurrogate = character
+                true
+            }
+
+            else -> appendDecoded(activeToken, character.toString(), decoded)
+        }
+
+        StringMode.ESCAPE -> when (character) {
+            '"', '\\', '/' -> {
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, character.toString(), decoded)
+            }
+
+            'b' -> {
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, "\b", decoded)
+            }
+
+            'f' -> {
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, "\u000C", decoded)
+            }
+
+            'n' -> {
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, "\n", decoded)
+            }
+
+            'r' -> {
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, "\r", decoded)
+            }
+
+            't' -> {
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, "\t", decoded)
+            }
+
+            'u' -> {
+                activeToken.mode = StringMode.UNICODE
+                activeToken.unicodeDigits = 0
+                activeToken.unicodeValue = 0
+                true
+            }
+
+            else -> false
+        }
+
+        StringMode.UNICODE, StringMode.LOW_UNICODE ->
+            consumeUnicodeDigit(activeToken, character, decoded)
+
+        StringMode.LOW_BACKSLASH -> {
+            if (character != '\\') {
+                false
+            } else {
+                activeToken.mode = StringMode.LOW_U
+                true
+            }
+        }
+
+        StringMode.LOW_U -> {
+            if (character != 'u') {
+                false
+            } else {
+                activeToken.mode = StringMode.LOW_UNICODE
+                activeToken.unicodeDigits = 0
+                activeToken.unicodeValue = 0
+                true
+            }
+        }
+    }
+
+    private fun consumeUnicodeDigit(
+        activeToken: StringToken,
+        character: Char,
+        decoded: StringBuilder,
+    ): Boolean {
+        val digit = character.digitToIntOrNull(16) ?: return false
+        activeToken.unicodeValue = activeToken.unicodeValue * 16 + digit
+        activeToken.unicodeDigits += 1
+        if (activeToken.unicodeDigits < 4) return true
+
+        val codeUnit = activeToken.unicodeValue.toChar()
+        return if (activeToken.mode == StringMode.LOW_UNICODE) {
+            val high = activeToken.pendingEscapedHighSurrogate
+            if (high == null || !codeUnit.isLowSurrogate()) {
+                false
+            } else {
+                activeToken.pendingEscapedHighSurrogate = null
+                activeToken.mode = StringMode.NORMAL
+                appendDecoded(activeToken, "$high$codeUnit", decoded)
+            }
+        } else {
+            when {
+                codeUnit.isLowSurrogate() -> false
+                codeUnit.isHighSurrogate() -> {
+                    activeToken.pendingEscapedHighSurrogate = codeUnit
+                    activeToken.mode = StringMode.LOW_BACKSLASH
+                    true
+                }
+
+                else -> {
+                    activeToken.mode = StringMode.NORMAL
+                    appendDecoded(activeToken, codeUnit.toString(), decoded)
+                }
+            }
+        }
+    }
+
+    private fun appendDecoded(
+        activeToken: StringToken,
+        value: String,
+        decoded: StringBuilder,
+    ): Boolean = when (activeToken.role) {
+        ValueRole.KEY -> {
+            activeToken.decodedKey?.append(value)
+            true
+        }
+
+        ValueRole.MESSAGE -> {
+            messageDecodedChars += value.length
+            if (
+                messageDecodedChars > TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS ||
+                !value.isSafeDecodedPreview()
+            ) {
+                false
+            } else {
+                messageMarkdown.append(value)
+                if (messagePreviewEnabled) decoded.append(value)
+                true
+            }
+        }
+
+        else -> true
+    }
+
+    private fun finishString(activeToken: StringToken): Boolean {
+        token = null
+        return if (activeToken.role == ValueRole.KEY) {
+            val container = containers.lastOrNull() as? ObjectContainer ?: return false
+            container.currentKey = activeToken.decodedKey?.toString() ?: return false
+            container.state = ObjectState.COLON
+            true
+        } else {
+            finishValue(activeToken.role)
+        }
+    }
+
+    private fun startLiteral(
+        expected: String,
+        role: ValueRole,
+        booleanValue: Boolean? = null,
+    ): Boolean {
+        token = LiteralToken(
+            expected = expected,
+            role = role,
+            booleanValue = booleanValue,
+            consumedChars = 1,
+        )
+        return true
+    }
+
+    private fun consumeLiteral(
+        activeToken: LiteralToken,
+        character: Char,
+    ): Boolean {
+        if (character != activeToken.expected.getOrNull(activeToken.consumedChars)) return false
+        activeToken.consumedChars += 1
+        if (activeToken.consumedChars < activeToken.expected.length) return true
+
+        token = null
+        if (activeToken.role == ValueRole.SOLUTION_REVEALED) {
+            solutionRevealed = activeToken.booleanValue ?: return false
+        }
+        return finishValue(activeToken.role)
+    }
+
+    private fun startNumber(
+        role: ValueRole,
+        state: NumberState,
+    ): Boolean {
+        token = NumberToken(role, state)
+        return true
+    }
+
+    private fun consumeNumber(
+        activeToken: NumberToken,
+        character: Char,
+    ): NumberConsume {
+        when (activeToken.state) {
+            NumberState.AFTER_MINUS -> {
+                activeToken.state = when (character) {
+                    '0' -> NumberState.ZERO
+                    in '1'..'9' -> NumberState.INTEGER
+                    else -> return NumberConsume.Invalid
+                }
+                return NumberConsume.Consumed
+            }
+
+            NumberState.ZERO -> when {
+                character == '.' -> activeToken.state = NumberState.DOT
+                character == 'e' || character == 'E' ->
+                    activeToken.state = NumberState.EXPONENT_MARK
+                character.isJsonValueDelimiter() -> return finishNumber(activeToken)
+                else -> return NumberConsume.Invalid
+            }
+
+            NumberState.INTEGER -> when {
+                character in '0'..'9' -> Unit
+                character == '.' -> activeToken.state = NumberState.DOT
+                character == 'e' || character == 'E' ->
+                    activeToken.state = NumberState.EXPONENT_MARK
+                character.isJsonValueDelimiter() -> return finishNumber(activeToken)
+                else -> return NumberConsume.Invalid
+            }
+
+            NumberState.DOT -> {
+                if (character !in '0'..'9') return NumberConsume.Invalid
+                activeToken.state = NumberState.FRACTION
+            }
+
+            NumberState.FRACTION -> when {
+                character in '0'..'9' -> Unit
+                character == 'e' || character == 'E' ->
+                    activeToken.state = NumberState.EXPONENT_MARK
+                character.isJsonValueDelimiter() -> return finishNumber(activeToken)
+                else -> return NumberConsume.Invalid
+            }
+
+            NumberState.EXPONENT_MARK -> {
+                activeToken.state = when (character) {
+                    '+', '-' -> NumberState.EXPONENT_SIGN
+                    in '0'..'9' -> NumberState.EXPONENT_DIGITS
+                    else -> return NumberConsume.Invalid
+                }
+            }
+
+            NumberState.EXPONENT_SIGN -> {
+                if (character !in '0'..'9') return NumberConsume.Invalid
+                activeToken.state = NumberState.EXPONENT_DIGITS
+            }
+
+            NumberState.EXPONENT_DIGITS -> when {
+                character in '0'..'9' -> Unit
+                character.isJsonValueDelimiter() -> return finishNumber(activeToken)
+                else -> return NumberConsume.Invalid
+            }
+        }
+        return NumberConsume.Consumed
+    }
+
+    private fun finishNumber(activeToken: NumberToken): NumberConsume {
+        token = null
+        return if (finishValue(activeToken.role)) {
+            NumberConsume.Reprocess
+        } else {
+            NumberConsume.Invalid
+        }
+    }
+
+    private fun pushObject(
+        role: ValueRole,
+        isRoot: Boolean,
+    ): Boolean {
+        if (containers.size > MAX_JSON_DEPTH) return false
+        containers.addLast(ObjectContainer(valueRole = role, isRoot = isRoot))
+        return true
+    }
+
+    private fun pushArray(role: ValueRole): Boolean {
+        if (containers.size > MAX_JSON_DEPTH) return false
+        containers.addLast(ArrayContainer(valueRole = role))
+        return true
+    }
+
+    private fun closeContainer(container: JsonContainer): Boolean {
+        if (containers.lastOrNull() !== container) return false
+        containers.removeLast()
+        if (container is ObjectContainer && container.isRoot) {
+            if (
+                !messageClosed ||
+                (
+                    target == TutorStreamTarget.RESPOND &&
+                        (
+                            !intentDecisionSeen ||
+                                solutionRevealed == null ||
+                                (solutionRevealed == true && !solutionPreviewAllowed)
+                            )
+                    )
+            ) {
+                return false
+            }
+            documentComplete = true
+            return true
+        }
+        return finishValue(container.valueRole)
+    }
+
+    private fun finishValue(role: ValueRole): Boolean {
+        when (role) {
+            ValueRole.MESSAGE -> messageClosed = true
+            ValueRole.INTENT_DECISION -> {
+                intentDecisionSeen = true
+                nextCanonicalPreviewField = maxOf(nextCanonicalPreviewField, 1)
+            }
+
+            ValueRole.SOLUTION_REVEALED ->
+                nextCanonicalPreviewField = maxOf(nextCanonicalPreviewField, 2)
+
+            else -> Unit
+        }
+
+        return when (val parent = containers.lastOrNull()) {
+            is ObjectContainer -> {
+                if (parent.state != ObjectState.VALUE) return false
+                parent.currentKey = null
+                parent.state = ObjectState.COMMA_OR_END
+                true
+            }
+
+            is ArrayContainer -> {
+                if (
+                    parent.state != ArrayState.FIRST_VALUE_OR_END &&
+                    parent.state != ArrayState.VALUE
+                ) {
+                    return false
+                }
+                parent.state = ArrayState.COMMA_OR_END
+                true
+            }
+
+            null -> false
+        }
+    }
+
+    private fun ObjectContainer.valueRoleForCurrentKey(): ValueRole {
+        if (!isRoot) return ValueRole.GENERIC
+        return when (currentKey) {
+            MESSAGE_MARKDOWN -> ValueRole.MESSAGE
+            INTENT_DECISION -> if (target == TutorStreamTarget.RESPOND) {
+                ValueRole.INTENT_DECISION
+            } else {
+                ValueRole.GENERIC
+            }
+
+            SOLUTION_REVEALED -> if (target == TutorStreamTarget.RESPOND) {
+                ValueRole.SOLUTION_REVEALED
+            } else {
+                ValueRole.GENERIC
+            }
+
+            else -> ValueRole.GENERIC
+        }
+    }
 
     private companion object {
         const val MESSAGE_MARKDOWN = "messageMarkdown"
@@ -475,40 +681,100 @@ private class StructuredPreviewScanner(
     }
 }
 
-private sealed interface ValueParse {
-    data object Complete : ValueParse
-    data object Incomplete : ValueParse
-    data object Invalid : ValueParse
+private enum class ValueRole {
+    ROOT,
+    KEY,
+    GENERIC,
+    INTENT_DECISION,
+    SOLUTION_REVEALED,
+    MESSAGE,
 }
 
-private sealed interface StringParse {
-    data class Complete(val value: String) : StringParse
-    data class Incomplete(val value: String) : StringParse
-    data object Invalid : StringParse
+private sealed class JsonContainer(
+    val valueRole: ValueRole,
+)
+
+private class ObjectContainer(
+    valueRole: ValueRole,
+    val isRoot: Boolean,
+    var state: ObjectState = ObjectState.FIRST_KEY_OR_END,
+    var currentKey: String? = null,
+) : JsonContainer(valueRole)
+
+private class ArrayContainer(
+    valueRole: ValueRole,
+    var state: ArrayState = ArrayState.FIRST_VALUE_OR_END,
+) : JsonContainer(valueRole)
+
+private enum class ObjectState {
+    FIRST_KEY_OR_END,
+    KEY,
+    COLON,
+    VALUE,
+    COMMA_OR_END,
 }
 
-private sealed interface BooleanParse {
-    data class Complete(val value: Boolean) : BooleanParse
-    data object Incomplete : BooleanParse
-    data object Invalid : BooleanParse
+private enum class ArrayState {
+    FIRST_VALUE_OR_END,
+    VALUE,
+    COMMA_OR_END,
 }
 
-private sealed interface EscapeParse {
-    data class Complete(val value: String) : EscapeParse
-    data object Incomplete : EscapeParse
-    data object Invalid : EscapeParse
+private sealed interface JsonToken
+
+private class StringToken(
+    val role: ValueRole,
+    val decodedKey: StringBuilder?,
+    var mode: StringMode = StringMode.NORMAL,
+    var unicodeDigits: Int = 0,
+    var unicodeValue: Int = 0,
+    var pendingLiteralHighSurrogate: Char? = null,
+    var pendingEscapedHighSurrogate: Char? = null,
+) : JsonToken
+
+private enum class StringMode {
+    NORMAL,
+    ESCAPE,
+    UNICODE,
+    LOW_BACKSLASH,
+    LOW_U,
+    LOW_UNICODE,
 }
 
-private fun CharSequence.substringFrom(startIndex: Int): String =
-    subSequence(startIndex, length).toString()
+private class LiteralToken(
+    val expected: String,
+    val role: ValueRole,
+    val booleanValue: Boolean?,
+    var consumedChars: Int,
+) : JsonToken
 
-private fun CharSequence.regionMatchesAt(startIndex: Int, expected: String): Boolean {
-    if (startIndex + expected.length > length) return false
-    return expected.indices.all { offset -> this[startIndex + offset] == expected[offset] }
+private class NumberToken(
+    val role: ValueRole,
+    var state: NumberState,
+) : JsonToken
+
+private enum class NumberState {
+    AFTER_MINUS,
+    ZERO,
+    INTEGER,
+    DOT,
+    FRACTION,
+    EXPONENT_MARK,
+    EXPONENT_SIGN,
+    EXPONENT_DIGITS,
 }
 
-private fun String.safeUnicodePrefixLength(): Int =
-    if (lastOrNull()?.isHighSurrogate() == true) length - 1 else length
+private enum class NumberConsume {
+    Consumed,
+    Reprocess,
+    Invalid,
+}
+
+private fun Char.isJsonWhitespace(): Boolean =
+    this == ' ' || this == '\n' || this == '\r' || this == '\t'
+
+private fun Char.isJsonValueDelimiter(): Boolean =
+    isJsonWhitespace() || this == ',' || this == '}' || this == ']'
 
 private fun String.isSafeDecodedPreview(): Boolean =
     length <= TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS &&

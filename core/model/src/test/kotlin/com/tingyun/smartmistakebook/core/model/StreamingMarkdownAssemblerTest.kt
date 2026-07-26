@@ -117,6 +117,137 @@ class StreamingMarkdownAssemblerTest {
     }
 
     @Test
+    fun singleCharacterChunkingIsAnalyzedInAmortizedLinearTime() {
+        fun workCounts(characterCount: Int): Pair<Long, Long> {
+            val assembler = StreamingMarkdownAssembler()
+            repeat(characterCount) {
+                assembler.append("a")
+            }
+            assertTrue(assembler.complete() is StreamingMarkdownCompletion.Accepted)
+            return assembler.analysisInspectionCount to
+                assembler.snapshotMaterializationCharacterCount
+        }
+
+        val (analysisN, materializationN) = workCounts(2_048)
+        val (analysisTwoN, materializationTwoN) = workCounts(4_096)
+
+        assertTrue("expected every input character to be inspected", analysisN >= 2_048)
+        assertTrue(
+            "doubling input should at most double analysis work: n=$analysisN, 2n=$analysisTwoN",
+            analysisTwoN <= analysisN * 2 + 4,
+        )
+        assertTrue(
+            "snapshot work must stay bounded by the fixed preview budget: n=$materializationN",
+            materializationN <= 2_048L * 100,
+        )
+        assertTrue(
+            "snapshot work must stay bounded by the fixed preview budget: " +
+                "2n=$materializationTwoN",
+            materializationTwoN <= 4_096L * 100,
+        )
+    }
+
+    @Test
+    fun longFastStreamsKeepMaterializingNearTheLiveTailWithBoundedWork() {
+        val characterCount = TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS
+        val assembler = StreamingMarkdownAssembler(clockNanos = { 0L })
+        repeat(characterCount) {
+            assembler.append("a")
+        }
+
+        assertTrue(
+            "the live preview must not freeze thousands of characters before EOF",
+            assembler.append("").visibleMarkdown.length >= characterCount - 128,
+        )
+        assertTrue(
+            "snapshot work must stay linearly bounded by the hard preview budget",
+            assembler.snapshotMaterializationCharacterCount <= characterCount * 100L,
+        )
+    }
+
+    @Test
+    fun elapsedCoalescingWindowPublishesSlowStreamGrowth() {
+        var nowNanos = 0L
+        val assembler = StreamingMarkdownAssembler(clockNanos = { nowNanos })
+        assembler.append("a".repeat(129))
+        val held = assembler.append("b")
+
+        nowNanos += 64_000_000L
+        val published = assembler.append("c")
+
+        assertEquals(129, held.visibleMarkdown.length)
+        assertEquals(131, published.visibleMarkdown.length)
+    }
+
+    @Test
+    fun aNewFenceOrTableCandidateCanRollProvisionalTextBackToEmpty() {
+        val fence = StreamingMarkdownAssembler()
+        fence.append("~")
+        fence.append("~")
+        assertEquals(TutorMarkdownSnapshot.EMPTY, fence.append("~"))
+
+        val table = StreamingMarkdownAssembler()
+        table.append("A")
+        assertEquals(TutorMarkdownSnapshot.EMPTY, table.append(" | B"))
+    }
+
+    @Test
+    fun activeMarkupSplitAcrossStableAndProvisionalTextIsNeutralizedAsOneSnapshot() {
+        val assembler = StreamingMarkdownAssembler()
+
+        val stable = assembler.append("javascript\n\n")
+        val completedToken = assembler.append(":alert(1) with enough trailing text")
+
+        assertEquals("javascript\n\n", stable.stableMarkdown)
+        assertFalse(SafeInlineMarkdown.requiresPlainTextFallback(completedToken.visibleMarkdown))
+        assertTrue(
+            completedToken.visibleMarkdown,
+            completedToken.visibleMarkdown.contains("javascript\n\n：alert(1)"),
+        )
+    }
+
+    @Test
+    fun activeMarkupCompletedAfterMarkdownStablePrefixPreservesThatPrefix() {
+        val assembler = StreamingMarkdownAssembler()
+
+        val stable = assembler.append("**重点** javascript\n\n")
+        val completedToken = assembler.append(":alert(1) with enough trailing text")
+        val completion = assembler.complete()
+
+        assertEquals("**重点** javascript\n\n", stable.stableMarkdown)
+        assertTrue(completedToken.visibleMarkdown.startsWith(stable.stableMarkdown))
+        assertFalse(SafeInlineMarkdown.requiresPlainTextFallback(completedToken.visibleMarkdown))
+        assertTrue(completedToken.visibleMarkdown.contains("javascript\n\n：alert(1)"))
+        assertTrue(completion is StreamingMarkdownCompletion.Accepted)
+        assertTrue(completion.snapshot.visibleMarkdown.startsWith(stable.stableMarkdown))
+    }
+
+    @Test
+    fun activeMarkupThatStartsInStableTextDoesNotInvalidateTheStream() {
+        val assembler = StreamingMarkdownAssembler()
+
+        assembler.append("![图](\n\n")
+        val snapshot = assembler.append(
+            "https://example.test/a.png) with enough trailing text",
+        )
+        val completion = assembler.complete()
+
+        assertFalse(SafeInlineMarkdown.requiresPlainTextFallback(snapshot.visibleMarkdown))
+        assertTrue(completion is StreamingMarkdownCompletion.Accepted)
+        assertTrue(completion.snapshot.visibleMarkdown.contains("图"))
+    }
+
+    @Test
+    fun unmatchedInlineMarkersStopAtTheRendererLineBoundary() {
+        val assembler = StreamingMarkdownAssembler()
+
+        val snapshot = assembler.append("价格是 \$5\n\n下一步先列式")
+
+        assertEquals("价格是 \$5\n\n", snapshot.stableMarkdown)
+        assertEquals("下一步先列式", snapshot.provisionalMarkdown)
+    }
+
+    @Test
     fun completionWithAnUnclosedDisplayFormulaOrTableKeepsOnlyPreviouslyStableContent() {
         val cases = listOf(
             "已稳定。\n\n\$\$x + y",

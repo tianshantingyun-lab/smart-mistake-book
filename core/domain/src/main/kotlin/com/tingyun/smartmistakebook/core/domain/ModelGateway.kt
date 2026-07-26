@@ -77,10 +77,14 @@ interface ModelTaskRepository {
             "Only Tutor response tasks can use the Tutor stream contract"
         }
 
-        emit(TutorStreamEvent.Started(identity))
+        var startedEmitted = false
         var terminalEmitted = false
         execute(request).collect { snapshot ->
             if (terminalEmitted) return@collect
+            if (!startedEmitted) {
+                emit(TutorStreamEvent.Started(identity))
+                startedEmitted = true
+            }
             when (snapshot.status) {
                 ModelTaskStatus.SUCCEEDED -> {
                     val markdown = when (val output = snapshot.output) {
@@ -89,14 +93,16 @@ interface ModelTaskRepository {
                         else -> null
                     }
                     val completion = markdown?.let { value ->
-                        StreamingMarkdownAssembler().run {
-                            append(value)
-                            complete()
+                        try {
+                            StreamingMarkdownAssembler().run {
+                                append(value)
+                                complete()
+                            }
+                        } catch (_: Exception) {
+                            null
                         }
                     }
-                    val completedSnapshot =
-                        (completion as? StreamingMarkdownCompletion.Accepted)?.snapshot
-                    if (completedSnapshot == null) {
+                    if (markdown == null) {
                         emit(
                             TutorStreamEvent.Failed(
                                 identity = identity,
@@ -105,6 +111,12 @@ interface ModelTaskRepository {
                             ),
                         )
                     } else {
+                        val completedSnapshot = when (completion) {
+                            is StreamingMarkdownCompletion.Accepted -> completion.snapshot
+                            is StreamingMarkdownCompletion.Rejected,
+                            null,
+                            -> TutorMarkdownSnapshot.completedLiteral(markdown)
+                        }
                         emit(
                             TutorStreamEvent.Completed(
                                 identity = identity,

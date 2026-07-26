@@ -18,11 +18,22 @@ sealed interface StreamingMarkdownCompletion {
  * Ambiguous formulas, code spans, fenced blocks, and tables are withheld rather than rendered
  * under a meaning that a later fragment could change.
  */
-class StreamingMarkdownAssembler {
+class StreamingMarkdownAssembler(
+    private val clockNanos: () -> Long = System::nanoTime,
+) {
     private val source = StringBuilder()
+    private val analyzer = IncrementalMarkdownAnalyzer(source)
     private var lastSnapshot = TutorMarkdownSnapshot.EMPTY
+    private var lastVisibleSourceEnd = 0
+    private var nextMaterializationSourceEnd = 1
+    private var lastMaterializationNanos = clockNanos()
     private var rejected = false
     private var completed = false
+
+    internal val analysisInspectionCount: Long
+        get() = analyzer.inspectionCount
+    internal var snapshotMaterializationCharacterCount: Long = 0
+        private set
 
     fun append(fragment: String): TutorMarkdownSnapshot {
         if (fragment.isEmpty() || rejected || completed) return lastSnapshot
@@ -30,24 +41,52 @@ class StreamingMarkdownAssembler {
             rejected = true
             return lastSnapshot
         }
+        val fragmentStart = source.length
         source.append(fragment)
 
-        val analysis = analyzeMarkdown(source, endOfStream = false)
+        val analysis = analyzer.append(fragmentStart, fragment.length)
         if (analysis.invalid) {
             rejected = true
             return lastSnapshot
         }
         val visibleEnd = analysis.heldStart ?: source.length
         val stableEnd = analysis.stableEnd.coerceAtMost(visibleEnd)
+        val mustRollBack = visibleEnd < lastVisibleSourceEnd
+        val nowNanos = clockNanos()
+        val coalescingWindowElapsed =
+            nowNanos - lastMaterializationNanos >= SNAPSHOT_COALESCE_NANOS
+        if (
+            visibleEnd == 0 && !mustRollBack ||
+            (
+                !mustRollBack &&
+                    visibleEnd > IMMEDIATE_PREVIEW_CHARS &&
+                    visibleEnd < nextMaterializationSourceEnd &&
+                    !coalescingWindowElapsed
+                )
+        ) {
+            return lastSnapshot
+        }
+        val visibleMarkdown = source.substring(0, visibleEnd)
+            .toTutorPreviewLiteralPreserving(lastSnapshot.stableMarkdown)
+        snapshotMaterializationCharacterCount += visibleEnd
+        val safeStableEnd = stableEnd.coerceAtMost(visibleMarkdown.length)
         val next = TutorMarkdownSnapshot(
-            stableMarkdown = source.substring(0, stableEnd).toTutorPreviewLiteral(),
-            provisionalMarkdown = source.substring(stableEnd, visibleEnd).toTutorPreviewLiteral(),
+            stableMarkdown = visibleMarkdown.substring(0, safeStableEnd)
+                .toTutorStableLiteral(),
+            provisionalMarkdown = visibleMarkdown.substring(safeStableEnd),
         )
         if (!next.stableMarkdown.startsWith(lastSnapshot.stableMarkdown)) {
             rejected = true
             return lastSnapshot
         }
         lastSnapshot = next
+        lastVisibleSourceEnd = visibleEnd
+        nextMaterializationSourceEnd = if (visibleEnd < IMMEDIATE_PREVIEW_CHARS) {
+            visibleEnd + 1
+        } else {
+            visibleEnd + SNAPSHOT_CHARACTER_INTERVAL
+        }
+        lastMaterializationNanos = nowNanos
         return next
     }
 
@@ -55,22 +94,24 @@ class StreamingMarkdownAssembler {
         if (completed) return StreamingMarkdownCompletion.Accepted(lastSnapshot)
         if (rejected) return rejectedCompletion()
 
-        val analysis = analyzeMarkdown(source, endOfStream = true)
+        val analysis = analyzer.endOfStreamAnalysis()
         if (analysis.invalid) {
             rejected = true
             return rejectedCompletion()
         }
         val completedMarkdown = when {
-            analysis.heldStart == null -> source.toString().toTutorPreviewLiteral()
+            analysis.heldStart == null -> source.toString()
             analysis.literalizableHeldTail -> {
-                source.substring(0, analysis.heldStart).toTutorPreviewLiteral() +
+                source.substring(0, analysis.heldStart) +
                     source.substring(analysis.heldStart).toIncompleteMarkdownLiteral()
             }
             else -> {
                 rejected = true
                 return rejectedCompletion()
             }
-        }
+        }.toTutorPreviewLiteralPreserving(lastSnapshot.stableMarkdown)
+            .toTutorStableLiteral()
+        snapshotMaterializationCharacterCount += source.length
         val snapshot = TutorMarkdownSnapshot(
             stableMarkdown = completedMarkdown,
             provisionalMarkdown = "",
@@ -91,6 +132,508 @@ class StreamingMarkdownAssembler {
                 provisionalMarkdown = "",
             ),
         )
+
+    private companion object {
+        const val IMMEDIATE_PREVIEW_CHARS = 64
+        const val SNAPSHOT_CHARACTER_INTERVAL = 128
+        const val SNAPSHOT_COALESCE_NANOS = 64_000_000L
+    }
+}
+
+private class IncrementalMarkdownAnalyzer(
+    private val source: CharSequence,
+) {
+    var inspectionCount: Long = 0
+        private set
+
+    private val inline = IncrementalInlineAnalyzer()
+    private val tables = IncrementalTableAnalyzer()
+    private var lineStart = 0
+    private var line = IncrementalMarkdownLine()
+    private var lineInlineCheckpoint = inline.checkpoint()
+    private var openFence: FenceDelimiter? = null
+    private var openFenceStart: Int? = null
+    private var pendingHighSurrogateStart: Int? = null
+    private var lastBlankLineEnd = 0
+    private var lastFenceEnd = 0
+    private var invalid = false
+
+    fun append(fragmentStart: Int, fragmentLength: Int): MarkdownAnalysis {
+        val fragmentEnd = fragmentStart + fragmentLength
+        var index = fragmentStart
+        while (index < fragmentEnd && !invalid) {
+            val character = source[index]
+            inspectionCount += 1
+            if (!acceptUnicode(character, index)) {
+                invalid = true
+                break
+            }
+            if (character == '\n') {
+                finishLine(index + 1)
+            } else {
+                line.append(character)
+                if (openFence == null) {
+                    inline.append(character, index)
+                }
+            }
+            index += 1
+        }
+        return analysis(endOfStream = false)
+    }
+
+    fun endOfStreamAnalysis(): MarkdownAnalysis = analysis(endOfStream = true)
+
+    private fun acceptUnicode(character: Char, index: Int): Boolean {
+        val pendingHighSurrogate = pendingHighSurrogateStart
+        if (pendingHighSurrogate != null) {
+            if (!character.isLowSurrogate()) return false
+            pendingHighSurrogateStart = null
+            return true
+        }
+        val allowedControl = character == '\n' || character == '\r' || character == '\t'
+        if ((character.isISOControl() && !allowedControl) ||
+            character == '\u061C' ||
+            character == '\u200E' ||
+            character == '\u200F' ||
+            character in '\u202A'..'\u202E' ||
+            character in '\u2066'..'\u2069' ||
+            character.isLowSurrogate()
+        ) {
+            return false
+        }
+        if (character.isHighSurrogate()) pendingHighSurrogateStart = index
+        return true
+    }
+
+    private fun finishLine(end: Int) {
+        val normalized = line.normalized()
+        val delimiter = openFence
+        val fenced = when {
+            delimiter != null -> {
+                if (normalized.closes(delimiter)) {
+                    openFence = null
+                    openFenceStart = null
+                    lastFenceEnd = maxOf(lastFenceEnd, end)
+                }
+                true
+            }
+
+            else -> {
+                val opening = normalized.openingFence()
+                if (opening != null) {
+                    openFence = opening
+                    openFenceStart = lineStart
+                    inline.restore(lineInlineCheckpoint)
+                    true
+                } else {
+                    inline.finishLine()
+                    false
+                }
+            }
+        }
+        if (lineStart > 0 && normalized.isBlankMarkdownLine) {
+            lastBlankLineEnd = end
+        }
+        val contentEnd = if (end - 2 >= lineStart && source[end - 2] == '\r') {
+            end - 2
+        } else {
+            end - 1
+        }
+        val content = source.subSequence(lineStart, contentEnd).toString()
+        inspectionCount += content.length
+        tables.append(
+            IncrementalTableLine(
+                start = lineStart,
+                end = end,
+                isRow = normalized.isTableRow,
+                isSeparator = content.isTableSeparator(),
+                isExplicitPipeRow = normalized.isExplicitPipeRow,
+                fenced = fenced,
+            ),
+        )
+        lineStart = end
+        line = IncrementalMarkdownLine()
+        lineInlineCheckpoint = inline.checkpoint()
+    }
+
+    private fun analysis(endOfStream: Boolean): MarkdownAnalysis {
+        if (invalid) {
+            return MarkdownAnalysis(
+                stableEnd = 0,
+                heldStart = null,
+                literalizableHeldTail = false,
+                invalid = true,
+            )
+        }
+        val activeLine = line.takeIf { lineStart < source.length }?.normalized()
+        val activeOpening = if (openFence == null) activeLine?.openingFence() else null
+        val closesFenceAtEnd = endOfStream &&
+            openFence != null &&
+            activeLine?.closes(openFence!!) == true
+        val fenceHeldStart = when {
+            closesFenceAtEnd -> null
+            openFenceStart != null -> openFenceStart
+            activeOpening != null -> lineStart
+            else -> null
+        }
+        val effectiveInline = if (activeOpening != null) {
+            lineInlineCheckpoint.open
+        } else {
+            inline.currentOpen()
+        }
+        val activeFenced = openFence != null || activeOpening != null
+        val activeTableLine = activeLine?.let {
+            IncrementalActiveTableLine(
+                start = lineStart,
+                isRow = it.isTableRow,
+                isExplicitPipeRow = it.isExplicitPipeRow,
+                fenced = activeFenced,
+                isSeparator = if (endOfStream && tables.needsActiveSeparator) {
+                    val contentEnd = if (source.lastOrNull() == '\r') {
+                        source.length - 1
+                    } else {
+                        source.length
+                    }
+                    val content = source.subSequence(lineStart, contentEnd).toString()
+                    inspectionCount += content.length
+                    content.isTableSeparator()
+                } else {
+                    false
+                },
+            )
+        }
+        val tableHeldStart = if (endOfStream) {
+            tables.heldStartAtEnd(activeTableLine)
+        } else {
+            tables.heldStartWhileStreaming(activeTableLine)
+        }
+        val inlineHeldStart = effectiveInline?.start
+        val unicodeHeldStart = pendingHighSurrogateStart
+        val literalizableHeldStart = listOfNotNull(
+            fenceHeldStart,
+            inlineHeldStart?.takeIf { effectiveInline.literalizable },
+        ).minOrNull()
+        val nonLiteralizableHeldStart = listOfNotNull(
+            tableHeldStart,
+            inlineHeldStart?.takeUnless { effectiveInline.literalizable },
+            unicodeHeldStart,
+        ).minOrNull()
+        val heldStart = listOfNotNull(
+            literalizableHeldStart,
+            nonLiteralizableHeldStart,
+        ).minOrNull()
+        val literalizableHeldTail = heldStart != null &&
+            literalizableHeldStart == heldStart &&
+            (nonLiteralizableHeldStart == null || heldStart < nonLiteralizableHeldStart)
+        val visibleEnd = heldStart ?: source.length
+        val stableEnd = maxOf(
+            lastBlankLineEnd,
+            maxOf(lastFenceEnd, if (closesFenceAtEnd) source.length else 0),
+            tables.lastStableBoundary,
+        ).coerceAtMost(visibleEnd)
+        return MarkdownAnalysis(
+            stableEnd = stableEnd,
+            heldStart = heldStart,
+            literalizableHeldTail = literalizableHeldTail,
+            invalid = false,
+        )
+    }
+}
+
+private data class IncrementalInlineOpen(
+    val marker: Char,
+    val delimiterLength: Int,
+    val start: Int,
+) {
+    val literalizable: Boolean
+        get() = marker == '`' || delimiterLength == 1
+}
+
+private data class IncrementalMarkerRun(
+    val marker: Char,
+    val start: Int,
+    val length: Int,
+    val baseOpen: IncrementalInlineOpen?,
+)
+
+private data class IncrementalInlineCheckpoint(
+    val open: IncrementalInlineOpen?,
+    val trailingBackslashes: Int,
+)
+
+private class IncrementalInlineAnalyzer {
+    private var open: IncrementalInlineOpen? = null
+    private var pendingRun: IncrementalMarkerRun? = null
+    private var trailingBackslashes = 0
+
+    fun append(character: Char, index: Int) {
+        val pending = pendingRun
+        if (pending != null && pending.marker == character) {
+            pendingRun = pending.copy(length = pending.length + 1)
+            trailingBackslashes = 0
+            return
+        }
+        commitPendingRun()
+        if ((character == '`' || character == '$') && trailingBackslashes % 2 == 0) {
+            pendingRun = IncrementalMarkerRun(
+                marker = character,
+                start = index,
+                length = 1,
+                baseOpen = open,
+            )
+            trailingBackslashes = 0
+        } else {
+            trailingBackslashes = if (character == '\\') trailingBackslashes + 1 else 0
+        }
+    }
+
+    fun checkpoint(): IncrementalInlineCheckpoint {
+        commitPendingRun()
+        return IncrementalInlineCheckpoint(open, trailingBackslashes)
+    }
+
+    fun restore(checkpoint: IncrementalInlineCheckpoint) {
+        open = checkpoint.open
+        pendingRun = null
+        trailingBackslashes = checkpoint.trailingBackslashes
+    }
+
+    fun currentOpen(): IncrementalInlineOpen? =
+        pendingRun?.resolvedOpen() ?: open
+
+    fun finishLine() {
+        pendingRun = null
+        open = null
+        trailingBackslashes = 0
+    }
+
+    private fun commitPendingRun() {
+        val pending = pendingRun ?: return
+        open = pending.resolvedOpen()
+        pendingRun = null
+    }
+}
+
+private fun IncrementalMarkerRun.resolvedOpen(): IncrementalInlineOpen? {
+    val current = baseOpen
+    if (current != null && current.marker != marker) return current
+    if (marker == '`') {
+        if (current == null) {
+            return IncrementalInlineOpen(marker, length, start)
+        }
+        if (current.delimiterLength == 1 && length > 1) return current
+        if (length < current.delimiterLength) return current
+        val remainder = length - current.delimiterLength
+        return if (remainder == 0) {
+            null
+        } else {
+            IncrementalInlineOpen(marker, remainder, start + current.delimiterLength)
+        }
+    }
+    if (current?.delimiterLength == 1) {
+        return if (length == 1) null else current
+    }
+    val remaining = if (current == null) length else {
+        if (length < 2) return current
+        length - 2
+    }
+    val remainingStart = if (current == null) start else start + 2
+    return when (remaining % 4) {
+        0 -> null
+        1 -> IncrementalInlineOpen('$', 1, remainingStart + remaining - 1)
+        2 -> IncrementalInlineOpen('$', 2, remainingStart + remaining - 2)
+        else -> IncrementalInlineOpen('$', 2, remainingStart + remaining - 3)
+    }
+}
+
+private data class IncrementalLineMetrics(
+    var length: Int = 0,
+    var leadingSpaces: Int = 0,
+    var stillLeadingSpaces: Boolean = true,
+    var marker: Char? = null,
+    var markerRunLength: Int = 0,
+    var markerRunEnded: Boolean = false,
+    var backtickAfterRun: Boolean = false,
+    var closingRemainderIsWhitespace: Boolean = true,
+    var allSpacesOrTabs: Boolean = true,
+    var firstTrimmedCharacter: Char? = null,
+    var firstTrimmedCharacterIsUnescapedPipe: Boolean = false,
+    var lastTrimmedCharacter: Char? = null,
+    var lastTrimmedCharacterIsUnescapedPipe: Boolean = false,
+    var unescapedPipeCount: Int = 0,
+    var trailingBackslashes: Int = 0,
+) {
+    fun append(character: Char) {
+        val escaped = trailingBackslashes % 2 == 1
+        length += 1
+        allSpacesOrTabs = allSpacesOrTabs && (character == ' ' || character == '\t')
+        if (stillLeadingSpaces && character == ' ') {
+            leadingSpaces += 1
+        } else if (stillLeadingSpaces) {
+            stillLeadingSpaces = false
+            if (character == '`' || character == '~') {
+                marker = character
+                markerRunLength = 1
+            }
+        } else if (marker != null && !markerRunEnded && character == marker) {
+            markerRunLength += 1
+        } else if (marker != null) {
+            markerRunEnded = true
+            closingRemainderIsWhitespace =
+                closingRemainderIsWhitespace && (character == ' ' || character == '\t')
+            if (marker == '`' && character == '`') backtickAfterRun = true
+        }
+        val unescapedPipe = character == '|' && !escaped
+        if (unescapedPipe) unescapedPipeCount += 1
+        if (!character.isWhitespace()) {
+            if (firstTrimmedCharacter == null) {
+                firstTrimmedCharacter = character
+                firstTrimmedCharacterIsUnescapedPipe = unescapedPipe
+            }
+            lastTrimmedCharacter = character
+            lastTrimmedCharacterIsUnescapedPipe = unescapedPipe
+        }
+        trailingBackslashes = if (character == '\\') trailingBackslashes + 1 else 0
+    }
+
+    fun openingFence(): FenceDelimiter? {
+        val fenceMarker = marker ?: return null
+        if (leadingSpaces > 3 || markerRunLength < 3) return null
+        if (fenceMarker == '`' && backtickAfterRun) return null
+        return FenceDelimiter(fenceMarker, markerRunLength)
+    }
+
+    fun closes(delimiter: FenceDelimiter): Boolean =
+        leadingSpaces <= 3 &&
+            marker == delimiter.marker &&
+            markerRunLength >= delimiter.length &&
+            closingRemainderIsWhitespace
+
+    val isBlankMarkdownLine: Boolean
+        get() = allSpacesOrTabs
+
+    val isExplicitPipeRow: Boolean
+        get() = firstTrimmedCharacter == '|' && lastTrimmedCharacter == '|'
+
+    val isTableRow: Boolean
+        get() {
+            if (firstTrimmedCharacter == null) return false
+            val internalPipes = unescapedPipeCount -
+                if (firstTrimmedCharacterIsUnescapedPipe) 1 else 0 -
+                if (lastTrimmedCharacterIsUnescapedPipe) 1 else 0
+            return internalPipes >= 1
+        }
+}
+
+private class IncrementalMarkdownLine {
+    private var metrics = IncrementalLineMetrics()
+    private var beforeTrailingCarriageReturn: IncrementalLineMetrics? = null
+    private var lastCharacter: Char? = null
+
+    fun append(character: Char) {
+        beforeTrailingCarriageReturn =
+            if (character == '\r') metrics.copy() else null
+        metrics.append(character)
+        lastCharacter = character
+    }
+
+    fun normalized(): IncrementalLineMetrics =
+        if (lastCharacter == '\r') {
+            requireNotNull(beforeTrailingCarriageReturn)
+        } else {
+            metrics
+        }
+}
+
+private data class IncrementalTableLine(
+    val start: Int,
+    val end: Int,
+    val isRow: Boolean,
+    val isSeparator: Boolean,
+    val isExplicitPipeRow: Boolean,
+    val fenced: Boolean,
+)
+
+private data class IncrementalActiveTableLine(
+    val start: Int,
+    val isRow: Boolean,
+    val isSeparator: Boolean,
+    val isExplicitPipeRow: Boolean,
+    val fenced: Boolean,
+)
+
+private data class IncrementalTableHeader(
+    val start: Int,
+    val isExplicitPipeRow: Boolean,
+)
+
+private class IncrementalTableAnalyzer {
+    private var pendingHeader: IncrementalTableHeader? = null
+    private var openTableStart: Int? = null
+    private var lastTableLineEnd = 0
+
+    var lastStableBoundary: Int = 0
+        private set
+
+    val needsActiveSeparator: Boolean
+        get() = pendingHeader != null
+
+    fun append(line: IncrementalTableLine) {
+        if (openTableStart != null) {
+            if (!line.fenced && line.isRow) {
+                lastTableLineEnd = line.end
+                return
+            }
+            lastStableBoundary = maxOf(lastStableBoundary, lastTableLineEnd)
+            openTableStart = null
+            considerHeader(line)
+            return
+        }
+        val header = pendingHeader
+        if (header != null) {
+            pendingHeader = null
+            if (!line.fenced && line.isSeparator) {
+                openTableStart = header.start
+                lastTableLineEnd = line.end
+                return
+            }
+        }
+        considerHeader(line)
+    }
+
+    fun heldStartWhileStreaming(active: IncrementalActiveTableLine?): Int? {
+        val existing = openTableStart ?: pendingHeader?.start
+        if (existing != null) return existing
+        return active
+            ?.takeIf { !it.fenced && it.isRow }
+            ?.start
+    }
+
+    fun heldStartAtEnd(active: IncrementalActiveTableLine?): Int? {
+        if (openTableStart != null) return null
+        val header = pendingHeader
+        if (header != null) {
+            if (active == null) {
+                return header.start.takeIf { header.isExplicitPipeRow }
+            }
+            if (!active.fenced && active.isSeparator) return null
+            return active.start.takeIf {
+                !active.fenced && active.isRow && active.isExplicitPipeRow
+            }
+        }
+        return active?.start?.takeIf {
+            !active.fenced && active.isRow && active.isExplicitPipeRow
+        }
+    }
+
+    private fun considerHeader(line: IncrementalTableLine) {
+        if (!line.fenced && line.isRow) {
+            pendingHeader = IncrementalTableHeader(
+                start = line.start,
+                isExplicitPipeRow = line.isExplicitPipeRow,
+            )
+        }
+    }
 }
 
 private data class MarkdownAnalysis(
@@ -100,247 +643,10 @@ private data class MarkdownAnalysis(
     val invalid: Boolean,
 )
 
-private data class MarkdownLine(
-    val start: Int,
-    val contentEnd: Int,
-    val end: Int,
-    val terminated: Boolean,
-) {
-    fun content(source: CharSequence): String = source.subSequence(start, contentEnd).toString()
-}
-
-private data class FenceAnalysis(
-    val characterMask: BooleanArray,
-    val heldStart: Int?,
-    val stableBoundaries: List<Int>,
-)
-
-private data class TableAnalysis(
-    val heldStart: Int?,
-    val stableBoundaries: List<Int>,
-)
-
-private fun analyzeMarkdown(source: CharSequence, endOfStream: Boolean): MarkdownAnalysis {
-    val unicodeIssue = source.findUnicodeIssue()
-    if (unicodeIssue is UnicodeIssue.Invalid) {
-        return MarkdownAnalysis(
-            stableEnd = 0,
-            heldStart = null,
-            literalizableHeldTail = false,
-            invalid = true,
-        )
-    }
-    val lines = source.markdownLines()
-    val fences = analyzeFences(source, lines, endOfStream)
-    val tables = analyzeTables(source, lines, fences.characterMask, endOfStream)
-    val inlineHeld = findUnclosedInlineConstruct(source, fences.characterMask)
-    val unicodeHeldStart = (unicodeIssue as? UnicodeIssue.Incomplete)?.index
-    val literalizableHeldStart = listOfNotNull(
-        fences.heldStart,
-        inlineHeld?.takeIf(InlineHeld::literalizable)?.start,
-    ).minOrNull()
-    val nonLiteralizableHeldStart = listOfNotNull(
-        tables.heldStart,
-        inlineHeld?.takeUnless(InlineHeld::literalizable)?.start,
-        unicodeHeldStart,
-    ).minOrNull()
-    val heldStart = listOfNotNull(
-        literalizableHeldStart,
-        nonLiteralizableHeldStart,
-    ).minOrNull()
-    val literalizableHeldTail = heldStart != null &&
-        literalizableHeldStart == heldStart &&
-        (nonLiteralizableHeldStart == null || heldStart < nonLiteralizableHeldStart)
-    val visibleEnd = heldStart ?: source.length
-    val stableEnd = (
-        listOf(
-            findLastBlankLineEnd(source, visibleEnd),
-            fences.stableBoundaries.filter { it <= visibleEnd }.maxOrNull() ?: 0,
-            tables.stableBoundaries.filter { it <= visibleEnd }.maxOrNull() ?: 0,
-        ).maxOrNull() ?: 0
-        ).coerceAtMost(visibleEnd)
-    return MarkdownAnalysis(
-        stableEnd = stableEnd,
-        heldStart = heldStart,
-        literalizableHeldTail = literalizableHeldTail,
-        invalid = false,
-    )
-}
-
-private fun CharSequence.markdownLines(): List<MarkdownLine> {
-    if (isEmpty()) return emptyList()
-    val lines = mutableListOf<MarkdownLine>()
-    var lineStart = 0
-    while (lineStart < length) {
-        val newline = indexOf('\n', lineStart)
-        if (newline < 0) {
-            lines += MarkdownLine(
-                start = lineStart,
-                contentEnd = length,
-                end = length,
-                terminated = false,
-            )
-            break
-        }
-        val contentEnd = if (newline > lineStart && this[newline - 1] == '\r') {
-            newline - 1
-        } else {
-            newline
-        }
-        lines += MarkdownLine(
-            start = lineStart,
-            contentEnd = contentEnd,
-            end = newline + 1,
-            terminated = true,
-        )
-        lineStart = newline + 1
-    }
-    return lines
-}
-
-private fun analyzeFences(
-    source: CharSequence,
-    lines: List<MarkdownLine>,
-    endOfStream: Boolean,
-): FenceAnalysis {
-    val mask = BooleanArray(source.length)
-    val stableBoundaries = mutableListOf<Int>()
-    var open: FenceDelimiter? = null
-    var openStart: Int? = null
-
-    lines.forEachIndexed { lineIndex, line ->
-        val content = line.content(source)
-        val current = open
-        if (current == null) {
-            val opening = content.openingFence()
-            if (opening != null) {
-                open = opening
-                openStart = line.start
-                mask.mark(line.start, line.end)
-            }
-            return@forEachIndexed
-        }
-
-        mask.mark(line.start, line.end)
-        if (content.closes(current)) {
-            val closeIsEstablished = line.terminated || (endOfStream && lineIndex == lines.lastIndex)
-            if (closeIsEstablished) {
-                stableBoundaries += line.end
-                open = null
-                openStart = null
-            }
-        }
-    }
-    return FenceAnalysis(
-        characterMask = mask,
-        heldStart = openStart,
-        stableBoundaries = stableBoundaries,
-    )
-}
-
 private data class FenceDelimiter(
     val marker: Char,
     val length: Int,
 )
-
-private fun String.openingFence(): FenceDelimiter? {
-    val leadingSpaces = takeWhile { it == ' ' }.length
-    if (leadingSpaces > 3 || leadingSpaces == length) return null
-    val marker = this[leadingSpaces]
-    if (marker != '`' && marker != '~') return null
-    val run = markerRunLength(leadingSpaces, marker)
-    if (run < 3) return null
-    if (marker == '`' && substring(leadingSpaces + run).contains('`')) return null
-    return FenceDelimiter(marker, run)
-}
-
-private fun String.closes(delimiter: FenceDelimiter): Boolean {
-    val leadingSpaces = takeWhile { it == ' ' }.length
-    if (leadingSpaces > 3 || getOrNull(leadingSpaces) != delimiter.marker) return false
-    val run = markerRunLength(leadingSpaces, delimiter.marker)
-    return run >= delimiter.length && substring(leadingSpaces + run).all { it == ' ' || it == '\t' }
-}
-
-private fun String.markerRunLength(start: Int, marker: Char): Int {
-    var end = start
-    while (getOrNull(end) == marker) end += 1
-    return end - start
-}
-
-private fun BooleanArray.mark(start: Int, end: Int) {
-    for (index in start until minOf(end, size)) this[index] = true
-}
-
-private fun analyzeTables(
-    source: CharSequence,
-    lines: List<MarkdownLine>,
-    fenceMask: BooleanArray,
-    endOfStream: Boolean,
-): TableAnalysis {
-    val stableBoundaries = mutableListOf<Int>()
-    var heldStart: Int? = null
-    var index = 0
-    while (index < lines.size) {
-        val header = lines[index]
-        if (fenceMask.getOrElse(header.start) { false } || !header.content(source).isTableRow()) {
-            index += 1
-            continue
-        }
-        val separatorIndex = index + 1
-        if (separatorIndex >= lines.size) {
-            val trimmedHeader = header.content(source).trim()
-            val explicitPipeHeader =
-                trimmedHeader.startsWith('|') && trimmedHeader.endsWith('|')
-            if (!endOfStream || explicitPipeHeader) {
-                heldStart = minOfNullable(heldStart, header.start)
-            }
-            break
-        }
-        val separator = lines[separatorIndex]
-        if (!separator.terminated && !endOfStream &&
-            !separator.content(source).isTableSeparator()
-        ) {
-            heldStart = minOfNullable(heldStart, header.start)
-            break
-        }
-        if (fenceMask.getOrElse(separator.start) { false } ||
-            !separator.content(source).isTableSeparator()
-        ) {
-            index += 1
-            continue
-        }
-
-        var next = separatorIndex + 1
-        while (next < lines.size &&
-            !fenceMask.getOrElse(lines[next].start) { false } &&
-            lines[next].content(source).isTableRow()
-        ) {
-            next += 1
-        }
-        if (next >= lines.size) {
-            if (!endOfStream) heldStart = minOfNullable(heldStart, header.start)
-            break
-        }
-
-        val boundaryLine = lines[next]
-        if (!boundaryLine.terminated && !endOfStream) {
-            heldStart = minOfNullable(heldStart, header.start)
-            break
-        }
-        stableBoundaries += lines[next - 1].end
-        index = next
-    }
-    return TableAnalysis(
-        heldStart = heldStart,
-        stableBoundaries = stableBoundaries,
-    )
-}
-
-private fun String.isTableRow(): Boolean {
-    val trimmed = trim()
-    if (trimmed.isEmpty() || !trimmed.containsUnescapedPipe()) return false
-    return trimmed.tableCells().size >= 2
-}
 
 private fun String.isTableSeparator(): Boolean {
     val cells = trim().tableCells()
@@ -348,9 +654,6 @@ private fun String.isTableSeparator(): Boolean {
         cell.trim().matches(Regex(":?-{3,}:?"))
     }
 }
-
-private fun String.containsUnescapedPipe(): Boolean =
-    indices.any { index -> this[index] == '|' && !isEscaped(index) }
 
 private fun String.tableCells(): List<String> {
     val value = trim().removePrefix("|").removeSuffix("|")
@@ -376,152 +679,43 @@ private fun String.isEscaped(index: Int): Boolean {
     return slashes % 2 == 1
 }
 
-private data class InlineHeld(
-    val start: Int,
-    val literalizable: Boolean,
-)
-
-private fun findUnclosedInlineConstruct(
-    source: CharSequence,
-    fenceMask: BooleanArray,
-): InlineHeld? {
-    var index = 0
-    while (index < source.length) {
-        if (fenceMask.getOrElse(index) { false }) {
-            index += 1
-            continue
-        }
-        when {
-            source[index] == '`' && !source.isEscaped(index) -> {
-                val delimiterLength = source.markerRunLength(index, '`')
-                val closing = source.findDelimiter(
-                    start = index + delimiterLength,
-                    marker = '`',
-                    length = delimiterLength,
-                    fenceMask = fenceMask,
-                )
-                if (closing < 0) return InlineHeld(index, literalizable = true)
-                index = closing + delimiterLength
-            }
-
-            source[index] == '$' && !source.isEscaped(index) -> {
-                val delimiterLength = minOf(2, source.markerRunLength(index, '$'))
-                val closing = source.findDelimiter(
-                    start = index + delimiterLength,
-                    marker = '$',
-                    length = delimiterLength,
-                    fenceMask = fenceMask,
-                )
-                if (closing < 0) {
-                    return InlineHeld(
-                        start = index,
-                        literalizable = delimiterLength == 1,
-                    )
-                }
-                index = closing + delimiterLength
-            }
-
-            else -> index += 1
-        }
-    }
-    return null
-}
-
-private fun CharSequence.findDelimiter(
-    start: Int,
-    marker: Char,
-    length: Int,
-    fenceMask: BooleanArray,
-): Int {
-    var index = start
-    while (index < this.length) {
-        if (!fenceMask.getOrElse(index) { false } &&
-            this[index] == marker &&
-            !isEscaped(index)
-        ) {
-            val run = markerRunLength(index, marker)
-            if (run >= length && (length > 1 || run == 1)) return index
-            index += run
-        } else {
-            index += 1
-        }
-    }
-    return -1
-}
-
-private fun CharSequence.markerRunLength(start: Int, marker: Char): Int {
-    var end = start
-    while (getOrNull(end) == marker) end += 1
-    return end - start
-}
-
-private fun CharSequence.isEscaped(index: Int): Boolean {
-    var slashes = 0
-    var cursor = index - 1
-    while (cursor >= 0 && this[cursor] == '\\') {
-        slashes += 1
-        cursor -= 1
-    }
-    return slashes % 2 == 1
-}
-
-private fun findLastBlankLineEnd(source: CharSequence, limit: Int): Int {
-    var latest = 0
-    var index = 0
-    while (index < limit) {
-        if (source[index] != '\n') {
-            index += 1
-            continue
-        }
-        var next = index + 1
-        while (next < limit && (source[next] == ' ' || source[next] == '\t')) next += 1
-        if (next < limit && source[next] == '\n') {
-            latest = next + 1
-        } else if (next + 1 < limit && source[next] == '\r' && source[next + 1] == '\n') {
-            latest = next + 2
-        }
-        index += 1
-    }
-    return latest
-}
-
-private sealed interface UnicodeIssue {
-    data object None : UnicodeIssue
-    data class Incomplete(val index: Int) : UnicodeIssue
-    data object Invalid : UnicodeIssue
-}
-
-private fun CharSequence.findUnicodeIssue(): UnicodeIssue {
-    var index = 0
-    while (index < length) {
-        val char = this[index]
-        val allowedControl = char == '\n' || char == '\r' || char == '\t'
-        if ((char.isISOControl() && !allowedControl) ||
-            char == '\u061C' ||
-            char == '\u200E' ||
-            char == '\u200F' ||
-            char in '\u202A'..'\u202E' ||
-            char in '\u2066'..'\u2069'
-        ) {
-            return UnicodeIssue.Invalid
-        }
-        when {
-            char.isLowSurrogate() -> return UnicodeIssue.Invalid
-            char.isHighSurrogate() && index + 1 >= length -> return UnicodeIssue.Incomplete(index)
-            char.isHighSurrogate() && !this[index + 1].isLowSurrogate() -> return UnicodeIssue.Invalid
-            char.isHighSurrogate() -> index += 2
-            else -> index += 1
-        }
-    }
-    return UnicodeIssue.None
-}
-
-private fun minOfNullable(first: Int?, second: Int): Int =
-    if (first == null) second else minOf(first, second)
-
-private fun String.toIncompleteMarkdownLiteral(): String =
+internal fun String.toIncompleteMarkdownLiteral(): String =
     replace('*', '＊')
         .replace('`', '｀')
         .replace('$', '＄')
         .replace("![", "！[")
         .toTutorPreviewLiteral()
+
+private val potentialHtmlTail = Regex(
+    pattern = "<(?:/?[A-Za-z][^>]*|![^>]*)?$",
+    option = RegexOption.DOT_MATCHES_ALL,
+)
+
+private fun String.toTutorStableLiteral(): String {
+    var literal = replace("![", "！[")
+    val potentialHtml = potentialHtmlTail.find(literal) ?: return literal
+    literal = literal.replaceRange(
+        potentialHtml.range.first,
+        potentialHtml.range.first + 1,
+        "＜",
+    )
+    return literal
+}
+
+private val activeSchemeAcrossStablePrefix = Regex("(?i)(?:javascript|data)\\s*:")
+
+private fun String.toTutorPreviewLiteralPreserving(stablePrefix: String): String {
+    require(stablePrefix.length <= length)
+    var literal = stablePrefix + substring(stablePrefix.length).toTutorPreviewLiteral()
+    activeSchemeAcrossStablePrefix.findAll(literal).toList().asReversed().forEach { match ->
+        val colonIndex = match.range.last
+        if (colonIndex >= stablePrefix.length) {
+            literal = literal.replaceRange(colonIndex, colonIndex + 1, "：")
+        }
+    }
+    return if (literal.requiresTutorPlainTextFallback()) {
+        literal.toTutorPreviewLiteral()
+    } else {
+        literal
+    }
+}

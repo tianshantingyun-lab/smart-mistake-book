@@ -103,14 +103,11 @@ internal fun TutorLobbyRoute(
         persistedTasks,
         activeStreamState.supersededRequestIds,
     ) {
-        persistedTasks
-            .filterNot { it.request.requestId in activeStreamState.supersededRequestIds }
-            .mapNotNull { task ->
-                (task.request.input as? TutorLobbyInput)?.let { input -> input.messageOrdinal to task }
-            }
-            .groupBy({ it.first }, { it.second })
-            .mapNotNull { (_, attempts) -> attempts.maxByOrNull(ModelTaskSnapshot::updatedAtEpochMillis) }
-            .sortedBy { task -> (task.request.input as TutorLobbyInput).messageOrdinal }
+        latestTutorLobbyConversationTasks(
+            persistedTasks.filterNot { task ->
+                task.request.requestId in activeStreamState.supersededRequestIds
+            },
+        )
     }
     val visibleTasks = remember(conversationTasks) { conversationTasks.takeLast(MAX_VISIBLE_MESSAGES) }
     var provider by remember { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
@@ -118,6 +115,8 @@ internal fun TutorLobbyRoute(
     var draft by rememberSaveable { mutableStateOf("") }
     var pendingDisclosureMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var sendError by rememberSaveable { mutableStateOf<String?>(null) }
+    var draftToClearOnDurableStart by rememberSaveable { mutableStateOf<String?>(null) }
+    var disclosureToClearOnDurableStart by rememberSaveable { mutableStateOf<String?>(null) }
     val hasActiveTask = activeMessage?.activityVisible == true || conversationTasks.any { task ->
         task.status in setOf(
             ModelTaskStatus.WAITING_FOR_MODEL,
@@ -138,6 +137,22 @@ internal fun TutorLobbyRoute(
         if (durableActiveTask?.status == ModelTaskStatus.SUCCEEDED) {
             activeStreamOwner.acknowledgeDurableSuccess(durableActiveTask.request.requestId)
         }
+    }
+    LaunchedEffect(
+        activeRequestId,
+        activeMessage?.durablyStarted,
+    ) {
+        if (activeMessage?.durablyStarted != true) return@LaunchedEffect
+        draftToClearOnDurableStart?.let { submittedDraft ->
+            if (draft == submittedDraft) draft = ""
+        }
+        disclosureToClearOnDurableStart?.let { submittedMessage ->
+            if (pendingDisclosureMessage == submittedMessage) {
+                pendingDisclosureMessage = null
+            }
+        }
+        draftToClearOnDurableStart = null
+        disclosureToClearOnDurableStart = null
     }
 
     LaunchedEffect(modelTasks) {
@@ -162,8 +177,9 @@ internal fun TutorLobbyRoute(
             return
         }
         val tasksForRequest = conversationTasks
-        pendingDisclosureMessage = null
-        draft = ""
+        draftToClearOnDurableStart = draft
+        disclosureToClearOnDurableStart =
+            pendingDisclosureMessage?.takeIf { it == message }
         sendError = null
         activeStreamOwner.submit(studentMessage = message) {
             val occurredAt = System.currentTimeMillis()
@@ -190,6 +206,41 @@ internal fun TutorLobbyRoute(
 
     fun retryTask(task: ModelTaskSnapshot) {
         val input = task.request.input as? TutorLobbyInput ?: return
+        if (!task.canRetryTutorLobby()) return
+        val taskProvider = task.provider ?: provider ?: return
+        val request = if (
+            taskProvider.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS
+        ) {
+            val nextAttempt = task.nextTutorLobbyRetryAttempt() ?: return
+            val occurredAt = maxOf(
+                System.currentTimeMillis(),
+                task.updatedAtEpochMillis + 1,
+            )
+            buildTutorLobbyRequest(
+                provider = taskProvider,
+                messageOrdinal = input.messageOrdinal,
+                studentMessage = input.studentMessage,
+                priorMessages = input.priorMessages,
+                occurredAtEpochMillis = occurredAt,
+                attempt = nextAttempt,
+            )
+        } else {
+            task.request
+        }
+        activeStreamOwner.submit(
+            studentMessage = input.studentMessage,
+            startsNewTurn = false,
+            retryConsumed = true,
+        ) {
+            TutorPreparedStream(request.requestId) { identity ->
+                modelTasks.executeTutorStream(request, identity)
+            }
+        }
+    }
+
+    fun resumeTask(task: ModelTaskSnapshot) {
+        val input = task.request.input as? TutorLobbyInput ?: return
+        if (!task.canResumeTutorLobby()) return
         activeStreamOwner.submit(
             studentMessage = input.studentMessage,
             startsNewTurn = false,
@@ -206,7 +257,7 @@ internal fun TutorLobbyRoute(
         activeMessage == null,
     ) {
         if (activeMessage == null) {
-            recoverablePendingTask?.let(::retryTask)
+            recoverablePendingTask?.let(::resumeTask)
         }
     }
 
@@ -289,6 +340,7 @@ internal fun TutorLobbyRoute(
             ) { task ->
                 TutorLobbyTask(
                     task = task,
+                    canRetry = task.canRetryTutorLobby(),
                     activeMessage = activeMessage?.takeIf {
                         it.identity?.requestId == task.request.requestId
                     },
@@ -297,9 +349,7 @@ internal fun TutorLobbyRoute(
                     onOpenMistakeNotebook = onOpenMistakeNotebook,
                     onOpenProfile = onOpenProfile,
                     onOpenCapabilitySettings = onOpenCapabilitySettings,
-                    onRetry = {
-                        if (!activeStreamOwner.retry()) retryTask(task)
-                    },
+                    onRetry = { retryTask(task) },
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
@@ -382,6 +432,7 @@ internal fun TutorLobbyRoute(
 @Composable
 private fun TutorLobbyTask(
     task: ModelTaskSnapshot,
+    canRetry: Boolean,
     activeMessage: TutorActiveStreamMessage?,
     catalogEntries: List<StudyCatalogEntry>,
     profile: StudyProfileOverview,
@@ -416,7 +467,9 @@ private fun TutorLobbyTask(
         if (activeMessage != null) {
             TutorActiveAssistantReply(
                 message = activeMessage,
+                durableTask = task,
                 onRetry = onRetry,
+                onOpenModelSettings = onOpenCapabilitySettings,
             )
         } else if (task.status == ModelTaskStatus.SUCCEEDED && output != null) {
             TutorPrompt(
@@ -455,7 +508,7 @@ private fun TutorLobbyTask(
                             onClick = onOpenCapabilitySettings,
                             modifier = Modifier.padding(top = 8.dp),
                         )
-                    } else if (task.status == ModelTaskStatus.RETRYABLE_FAILURE) {
+                    } else if (canRetry) {
                         OutlineActionChip(
                             text = "重试",
                             onClick = onRetry,

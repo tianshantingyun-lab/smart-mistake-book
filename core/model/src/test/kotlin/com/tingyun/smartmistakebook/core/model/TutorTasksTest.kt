@@ -36,7 +36,10 @@ class TutorTasksTest {
     @Test
     fun currentQuestionTextResponseRoundTripsWithoutADiagnosticChoice() {
         val request = respondRequest(
-            input = respondInput().copy(studentMessage = "请直接告诉我这道题的完整答案"),
+            input = respondInput().copy(
+                studentMessage = "请直接告诉我这道题的完整答案",
+                requestedMove = TutorMoveType.REVEAL_SOLUTION,
+            ),
         )
         val output = respondOutput().copy(
             solutionRevealed = true,
@@ -98,6 +101,9 @@ class TutorTasksTest {
 
     @Test
     fun tutorResponseCompletionRequiresExactPersistedContextIdentity() {
+        val directRequest = respondRequest(
+            respondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+        )
         val mismatches = listOf(
             respondOutput().copy(sessionId = "another-session"),
             respondOutput().copy(draftRevisionNumber = 3),
@@ -110,7 +116,7 @@ class TutorTasksTest {
         mismatches.forEach { mismatch ->
             assertEquals(
                 listOf(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH),
-                ModelTaskCompletionValidator.validate(respondRequest(), mismatch).map { it.code },
+                ModelTaskCompletionValidator.validate(directRequest, mismatch).map { it.code },
             )
         }
     }
@@ -163,12 +169,18 @@ class TutorTasksTest {
         )
 
         val explicitTextInput = unauthorizedInput.copy(studentMessage = "请告诉我答案")
-        assertTrue(
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
             ModelTaskCompletionValidator.validate(
                 respondRequest(explicitTextInput),
                 solution,
-            ).isEmpty(),
+            ).map { it.code },
         )
+
+        val quotedTextInput = unauthorizedInput.copy(
+            studentMessage = "我不是在让你给我答案，只是在引用这句话。",
+        )
+        assertFalse(quotedTextInput.authorizesSolutionExposure())
 
         val explicitButtonInput = unauthorizedInput.copy(
             studentMessage = "继续",
@@ -179,6 +191,29 @@ class TutorTasksTest {
                 respondRequest(explicitButtonInput),
                 solution,
             ).isEmpty(),
+        )
+    }
+
+    @Test
+    fun unauthorizedGuidedExplanationIsRejectedEvenWhenProviderDeniesRevealingTheSolution() {
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+            studentMessage = "这一步应该怎么判断？",
+            requestedMove = null,
+        )
+        val untrustedExplanation = respondOutput().copy(
+            solutionRevealed = false,
+            messageMarkdown = "最终答案是 2。完整解法如下。",
+            interactionDirective = null,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                untrustedExplanation,
+            ).map { it.code },
         )
     }
 

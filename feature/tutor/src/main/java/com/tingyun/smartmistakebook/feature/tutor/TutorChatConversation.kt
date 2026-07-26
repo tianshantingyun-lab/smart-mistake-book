@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
@@ -76,6 +77,7 @@ import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
+import com.tingyun.smartmistakebook.core.ui.StreamingSafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
 import kotlinx.coroutines.flow.collectLatest
@@ -105,17 +107,30 @@ private fun TutorRespondInput.exchangeKey() = TutorRespondExchangeKey(
     explanationMode = explanationMode,
 )
 
-internal fun latestTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<ModelTaskSnapshot> = tasks
+private fun visibleTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<ModelTaskSnapshot> = tasks
     .filter { it.request.input is TutorRespondInput }
     .groupBy { (it.request.input as TutorRespondInput).exchangeKey() }
     .values
-    .map { attempts ->
-        attempts.maxWith(
+    .flatMap { attempts ->
+        val latest = attempts.maxWith(
             compareBy<ModelTaskSnapshot>(ModelTaskSnapshot::createdAtEpochMillis)
                 .thenBy(ModelTaskSnapshot::updatedAtEpochMillis)
                 .thenBy { it.request.requestId },
         )
+        if (latest.status == ModelTaskStatus.CANCELLED) emptyList() else attempts
     }
+
+internal fun latestTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<ModelTaskSnapshot> =
+    visibleTutorRespondTasks(tasks)
+        .groupBy { (it.request.input as TutorRespondInput).exchangeKey() }
+        .values
+        .map { attempts ->
+            attempts.maxWith(
+                compareBy<ModelTaskSnapshot>(ModelTaskSnapshot::createdAtEpochMillis)
+                    .thenBy(ModelTaskSnapshot::updatedAtEpochMillis)
+                    .thenBy { it.request.requestId },
+            )
+        }
     .sortedWith(
         compareBy<ModelTaskSnapshot> {
             (it.request.input as TutorRespondInput).responseOrdinal
@@ -123,12 +138,112 @@ internal fun latestTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<Model
             .thenBy { it.request.requestId },
     )
 
+internal fun durableVisibleTutorRespondTasks(
+    tasks: List<ModelTaskSnapshot>,
+): List<ModelTaskSnapshot> = visibleTutorRespondTasks(tasks)
+
 internal fun ModelTaskSnapshot.canRetryTutorResponse(): Boolean =
-    request.input is TutorRespondInput && status == ModelTaskStatus.RETRYABLE_FAILURE
+    request.input is TutorRespondInput &&
+        status == ModelTaskStatus.RETRYABLE_FAILURE &&
+        attemptCount < 2 &&
+        (
+            provider?.executionLocation != ModelExecutionLocation.LOCAL_NO_EGRESS ||
+                request.requestId.tutorEnvelopeAttempt() < 1
+            )
+
+internal fun ModelTaskSnapshot.nextLocalTutorResponseRetryAttempt(): Int? {
+    if (!canRetryTutorResponse()) return null
+    if (provider?.executionLocation != ModelExecutionLocation.LOCAL_NO_EGRESS) return null
+    return (request.requestId.tutorEnvelopeAttempt() + 1).takeIf { it <= 1 }
+}
+
+private fun String.tutorEnvelopeAttempt(): Int =
+    substringAfterLast(':').toIntOrNull() ?: 0
+
+internal fun ModelTaskSnapshot.canRetryTutorResponseFor(
+    explanationMode: TutorExplanationMode,
+): Boolean {
+    if (!canRetryTutorResponse()) return false
+    val input = request.input as TutorRespondInput
+    return input.explanationMode == tutorResponseModeFor(
+        currentMode = explanationMode,
+        studentMessage = input.studentMessage,
+    )
+}
+
+internal fun tutorResponseModeFor(
+    currentMode: TutorExplanationMode,
+    studentMessage: String,
+): TutorExplanationMode =
+    if (
+        currentMode == TutorExplanationMode.GUIDED &&
+        studentMessage.trim() == DIRECT_TUTOR_RESPONSE_INTENT
+    ) {
+        TutorExplanationMode.DIRECT
+    } else {
+        currentMode
+    }
+
+private const val DIRECT_TUTOR_RESPONSE_INTENT = "直接讲"
 
 private fun ModelTaskSnapshot.requiresTutorModelSettings(): Boolean {
     val code = failure?.code ?: return false
     return code.requiresModelSettings()
+}
+
+internal enum class TutorActiveFailureAction {
+    RETRY,
+    MODEL_SETTINGS,
+}
+
+internal data class TutorActiveFailurePresentation(
+    val detail: String,
+    val action: TutorActiveFailureAction?,
+)
+
+internal fun tutorActiveFailurePresentation(
+    message: TutorActiveStreamMessage,
+    durableTask: ModelTaskSnapshot?,
+    currentMode: TutorExplanationMode?,
+): TutorActiveFailurePresentation? {
+    if (message.phase != TutorActiveStreamPhase.FAILED) return null
+    val matchingTask = durableTask?.takeIf { task ->
+        task.request.requestId == message.identity?.requestId &&
+            task.status in setOf(
+                ModelTaskStatus.PERMANENT_FAILURE,
+                ModelTaskStatus.RETRYABLE_FAILURE,
+            )
+    }
+    val action = when {
+        matchingTask?.requiresTutorModelSettings() == true ->
+            TutorActiveFailureAction.MODEL_SETTINGS
+
+        matchingTask?.request?.input is TutorRespondInput &&
+            currentMode != null &&
+            !message.retryConsumed &&
+            matchingTask.canRetryTutorResponseFor(currentMode) ->
+            TutorActiveFailureAction.RETRY
+
+        matchingTask?.request?.input !is TutorRespondInput &&
+            matchingTask?.status == ModelTaskStatus.RETRYABLE_FAILURE &&
+            !message.retryConsumed &&
+            matchingTask.attemptCount < 2 ->
+            TutorActiveFailureAction.RETRY
+
+        matchingTask == null &&
+            TutorActiveStreamRecovery.RETRY in message.recoveryActions ->
+            TutorActiveFailureAction.RETRY
+
+        else -> null
+    }
+    val detail = matchingTask?.failure?.message
+        ?: message.failureDetail
+        ?: if (message.snapshot == null) {
+            "这次回复没有完成。"
+        } else {
+            "这次回复没有完成，已保留上面的内容。"
+        }
+    return TutorActiveFailurePresentation(detail = detail, action = action)
 }
 
 internal fun tutorChatHistory(
@@ -249,7 +364,10 @@ internal fun TutorChatExchange(
         if (activeMessage != null) {
             TutorActiveAssistantReply(
                 message = activeMessage,
+                durableTask = task,
+                currentMode = explanationMode,
                 onRetry = onRetry,
+                onOpenModelSettings = onOpenModelSettings,
             )
         } else {
             TutorAssistantReplyBubble(
@@ -314,9 +432,18 @@ private fun TutorStudentMessageBubble(message: String, modifier: Modifier = Modi
 internal fun TutorActiveAssistantReply(
     message: TutorActiveStreamMessage,
     onRetry: () -> Unit,
+    durableTask: ModelTaskSnapshot? = null,
+    currentMode: TutorExplanationMode? = null,
+    onOpenModelSettings: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val markdown = message.snapshot?.visibleMarkdown.orEmpty()
+    val snapshot = message.snapshot
+    val markdown = snapshot?.visibleMarkdown.orEmpty()
+    val failure = tutorActiveFailurePresentation(
+        message = message,
+        durableTask = durableTask,
+        currentMode = currentMode,
+    )
     if (message.activityVisible && markdown.isEmpty() && !message.showPlaceholder) {
         Row(
             modifier = modifier
@@ -342,9 +469,10 @@ internal fun TutorActiveAssistantReply(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (markdown.isNotEmpty()) {
-                SafeMarkdownText(
-                    markdown = markdown,
+            if (snapshot != null && markdown.isNotEmpty()) {
+                StreamingSafeMarkdownText(
+                    stableMarkdown = snapshot.stableMarkdown,
+                    provisionalMarkdown = snapshot.provisionalMarkdown,
                     style = MaterialTheme.typography.bodyMedium,
                     contentIdentity = message.identity ?: listOf(
                         message.ownerVersion,
@@ -370,17 +498,18 @@ internal fun TutorActiveAssistantReply(
                     )
                 }
             }
-            if (message.phase == TutorActiveStreamPhase.FAILED) {
+            if (failure != null) {
                 TutorReplyFailure(
-                    detail = if (markdown.isEmpty()) {
-                        "这次回复没有完成。"
-                    } else {
-                        "这次回复没有完成，已保留上面的内容。"
+                    detail = failure.detail,
+                    actionLabel = when (failure.action) {
+                        TutorActiveFailureAction.RETRY -> "重试"
+                        TutorActiveFailureAction.MODEL_SETTINGS -> "检查模型设置"
+                        null -> null
                     },
-                    actionLabel = "重试".takeIf {
-                        TutorActiveStreamRecovery.RETRY in message.recoveryActions
+                    onAction = when (failure.action) {
+                        TutorActiveFailureAction.MODEL_SETTINGS -> onOpenModelSettings
+                        else -> onRetry
                     },
-                    onAction = onRetry,
                 )
             }
         }
@@ -508,7 +637,7 @@ private fun TutorAssistantReplyBubble(
                         val actionLabel = when {
                             recoveryEnabled && executionMatchesCurrentProvider && settingsRequired ->
                                 "检查模型设置"
-                            showActions && task.canRetryTutorResponse() -> "重试"
+                            showActions && task.canRetryTutorResponseFor(explanationMode) -> "重试"
                             else -> null
                         }
                         TutorReplyFailure(

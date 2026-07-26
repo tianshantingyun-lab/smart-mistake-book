@@ -722,18 +722,9 @@ data class TutorRespondInput(
     }
 }
 
-/**
- * Local, fail-closed answer authority. A model declaration never grants this permission.
- *
- * Free text must contain an unambiguous request; ambiguous wording is left unanswered until the
- * student asks clearly or taps the dedicated reveal control.
- */
-fun TutorRespondInput.studentAuthorizedSolutionRequest(): Boolean {
-    if (requestedMove == TutorMoveType.REVEAL_SOLUTION) return true
-    val normalized = studentMessage.lowercase()
-    return EXPLICIT_SOLUTION_REQUEST_MARKERS.any(normalized::contains) &&
-        SOLUTION_REQUEST_NEGATIONS.none(normalized::contains)
-}
+/** Local, fail-closed answer authority. Open text and model declarations never grant permission. */
+fun TutorRespondInput.studentAuthorizedSolutionRequest(): Boolean =
+    requestedMove == TutorMoveType.REVEAL_SOLUTION
 
 /** Single local authority shared by preview, completion, rendering, exposure, and history. */
 fun TutorRespondInput.authorizesSolutionExposure(): Boolean =
@@ -750,76 +741,39 @@ fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
         cycleOrdinal == input.cycleOrdinal &&
         turnOrdinal == input.turnOrdinal
 
-private val EXPLICIT_SOLUTION_REQUEST_MARKERS = setOf(
-    "给我答案",
-    "请给答案",
-    "直接给答案",
-    "把答案给我",
-    "告诉我答案",
-    "答案告诉我",
-    "说出答案",
-    "公布答案",
-    "我想看答案",
-    "我要看答案",
-    "让我看答案",
-    "直接看答案",
-    "答案是什么",
-    "答案是多少",
-    "答案是啥",
-    "给我完整答案",
-    "给我完整解法",
-    "看完整解法",
-    "给我完整过程",
-    "写出完整过程",
-    "完整过程写出来",
-    "把解题过程完整写出来",
-    "看完整讲解",
-    "给我完整讲解",
-    "请完整讲解",
-    "完整讲解一下",
-    "直接告诉我",
-    "给出结果",
-    "直接给结果",
-    "直接说结果",
-    "结果是什么",
-    "结果是多少",
-)
-private val SOLUTION_REQUEST_NEGATIONS = setOf(
-    "不要答案",
-    "别给答案",
-    "不用给答案",
-    "不要直接给答案",
-    "别直接给答案",
-    "不用直接给答案",
-    "不直接给答案",
-    "不要告诉我答案",
-    "别告诉我答案",
-    "先别告诉我答案",
-    "不用告诉我答案",
-    "不要公布答案",
-    "别公布答案",
-    "别说答案",
-    "不说答案",
-    "先不说答案",
-    "答案不用说",
-    "不想看答案",
-    "不需要答案",
-    "不看答案",
-    "先不看答案",
-    "不要完整解法",
-    "不用完整解法",
-    "不要完整讲解",
-    "不用完整讲解",
-    "不要完整过程",
-    "不用完整过程",
-    "别写完整过程",
-    "不要结果",
-    "别给结果",
-    "不用给结果",
-    "先不要结果",
-    "结果不用说",
-    "不要直接告诉我",
-)
+/**
+ * Replaces every provider-authored GUIDED explanation with a bounded local interaction. Returning
+ * null means the response cannot be made safe without inventing model authority.
+ */
+fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRespondOutput? {
+    if (input.authorizesSolutionExposure()) return this
+    if (
+        solutionRevealed ||
+        visualScene != null ||
+        visualRequest != null ||
+        suggestedMoves.isNotEmpty() ||
+        intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP
+    ) {
+        return null
+    }
+    val safeDirective = when (interactionDirective) {
+        TutorInteractionDirective.Continue -> TutorInteractionDirective.Continue
+        is TutorInteractionDirective.FreeResponse -> TutorInteractionDirective.FreeResponse(
+            promptMarkdown = GUIDED_FREE_RESPONSE_PROMPT,
+        )
+        is TutorInteractionDirective.Choices,
+        is TutorInteractionDirective.VisualTarget,
+        null,
+        -> return null
+    }
+    return copy(
+        messageMarkdown = GUIDED_INTERACTION_MESSAGE,
+        interactionDirective = safeDirective,
+    )
+}
+
+const val GUIDED_INTERACTION_MESSAGE = "先完成下面这个小步骤。"
+const val GUIDED_FREE_RESPONSE_PROMPT = "写下你认为下一步该做什么。"
 
 /** Model-authored content. This is intentionally not a [VerifiedTeachingArtifact]. */
 @Serializable

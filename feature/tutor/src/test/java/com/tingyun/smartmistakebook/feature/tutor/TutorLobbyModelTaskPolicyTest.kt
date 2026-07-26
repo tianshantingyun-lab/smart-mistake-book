@@ -2,6 +2,8 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelFailureCode
+import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -12,6 +14,7 @@ import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -68,9 +71,60 @@ class TutorLobbyModelTaskPolicyTest {
         )
     }
 
+    @Test
+    fun navigationRecoveryResumesPendingWorkWithoutTreatingItAsARetry() {
+        val pending = lobbyTask(messageOrdinal = 1, status = ModelTaskStatus.STREAMING)
+        val failed = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+        )
+
+        assertTrue(pending.canResumeTutorLobby())
+        assertFalse(failed.canResumeTutorLobby())
+    }
+
+    @Test
+    fun cancelledLobbyMessageIsATombstoneAndDoesNotAdvanceTheNextOrdinal() {
+        val visible = latestTutorLobbyConversationTasks(
+            listOf(
+                lobbyTask(messageOrdinal = 1, status = ModelTaskStatus.QUEUED),
+                lobbyTask(messageOrdinal = 2, status = ModelTaskStatus.CANCELLED),
+            ),
+        )
+
+        assertEquals(
+            listOf(1),
+            visible.map { (it.request.input as TutorLobbyInput).messageOrdinal },
+        )
+        val nextOrdinal = visible
+            .maxOfOrNull { (it.request.input as TutorLobbyInput).messageOrdinal }
+            ?.plus(1)
+            ?: 1
+        assertEquals(2, nextOrdinal)
+    }
+
+    @Test
+    fun aLobbyMessageCanCreateOnlyOneDurableRetryEnvelope() {
+        val initialFailure = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            attempt = 0,
+        )
+        val retryFailure = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            attempt = 1,
+        )
+
+        assertEquals(1, initialFailure.nextTutorLobbyRetryAttempt())
+        assertNull(retryFailure.nextTutorLobbyRetryAttempt())
+        assertFalse(retryFailure.canRetryTutorLobby())
+    }
+
     private fun lobbyTask(
         messageOrdinal: Int,
         status: ModelTaskStatus,
+        attempt: Int = 0,
     ): ModelTaskSnapshot {
         val provider = provider(ModelExecutionLocation.LOCAL_NO_EGRESS)
         val request = buildTutorLobbyRequest(
@@ -79,6 +133,7 @@ class TutorLobbyModelTaskPolicyTest {
             studentMessage = "消息$messageOrdinal",
             priorMessages = emptyList(),
             occurredAtEpochMillis = messageOrdinal.toLong(),
+            attempt = attempt,
         )
         return ModelTaskSnapshot(
             taskId = "task-$messageOrdinal",
@@ -90,6 +145,15 @@ class TutorLobbyModelTaskPolicyTest {
             userMessage = "处理中",
             attemptCount = 1,
             provider = provider,
+            failure = if (status == ModelTaskStatus.RETRYABLE_FAILURE) {
+                ModelTaskFailure(
+                    code = ModelFailureCode.TIMEOUT,
+                    message = "暂时没有完成",
+                    retryable = true,
+                )
+            } else {
+                null
+            },
             createdAtEpochMillis = messageOrdinal.toLong(),
             updatedAtEpochMillis = messageOrdinal.toLong(),
         )

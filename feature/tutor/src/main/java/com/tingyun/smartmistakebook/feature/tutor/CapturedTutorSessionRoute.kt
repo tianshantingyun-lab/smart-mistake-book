@@ -109,10 +109,12 @@ import java.util.UUID
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CapturedTutorSessionRoute(
@@ -770,6 +772,22 @@ internal fun TutorModelPanel(
         question.questionDocument.document.id,
         stateSaver = pendingTutorEgressStateSaver,
     ) { mutableStateOf(PendingTutorEgressState()) }
+    var draftToClearOnDurableStart by rememberSaveable(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+    ) { mutableStateOf<String?>(null) }
+    var actionToClearOnDurableStartState by rememberSaveable(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        stateSaver = pendingTutorEgressStateSaver,
+    ) { mutableStateOf(PendingTutorEgressState()) }
+    var durableStartCleanupRequestId by rememberSaveable(
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+    ) { mutableStateOf<String?>(null) }
     val responseActionAwaitingAuthorization =
         pendingEgressState.action.awaitsResponseAuthorization()
     var consumedAutoStartAuthorizationId by remember(
@@ -1516,6 +1534,7 @@ internal fun TutorModelPanel(
         clearDraftOnPersist: Boolean,
         allowExternalEnvelopeForLocalRecovery: Boolean = false,
         clearPendingActionOnPersist: PendingTutorEgressAction? = null,
+        retryConsumed: Boolean = false,
         prepare: suspend () -> ModelTaskRequest,
     ) {
         val providerForExecution = currentProvider ?: return
@@ -1538,18 +1557,30 @@ internal fun TutorModelPanel(
         }
         if (activeMessage?.activityVisible == true) return
         chatStartError = null
-        if (
-            clearPendingActionOnPersist != null &&
-            pendingEgressState.action == clearPendingActionOnPersist
-        ) {
-            pendingEgressState = PendingTutorEgressState()
+        if (clearDraftOnPersist) {
+            draftToClearOnDurableStart = chatDraft
+            durableStartCleanupRequestId = null
         }
-        if (clearDraftOnPersist) chatDraft = ""
+        clearPendingActionOnPersist?.let { action ->
+            actionToClearOnDurableStartState = PendingTutorEgressState(
+                action.takeIf { pendingEgressState.action == it },
+            )
+            durableStartCleanupRequestId = null
+        }
         activeStreamOwner.submit(
             studentMessage = studentMessage,
             startsNewTurn = startsNewTurn,
+            retryConsumed = retryConsumed,
         ) {
             val request = prepare()
+            withContext(Dispatchers.Main.immediate) {
+                if (
+                    draftToClearOnDurableStart != null ||
+                    actionToClearOnDurableStartState.action != null
+                ) {
+                    durableStartCleanupRequestId = request.requestId
+                }
+            }
             val input = request.input as? TutorRespondInput
                 ?: error("Tutor response stream requires TutorRespondInput")
             require(input.studentMessage == studentMessage) {
@@ -1569,11 +1600,44 @@ internal fun TutorModelPanel(
         }
     }
 
+    fun clearSubmittedStateAfterDurableStart() {
+        draftToClearOnDurableStart?.let { submittedDraft ->
+            if (chatDraft == submittedDraft) chatDraft = ""
+        }
+        actionToClearOnDurableStartState.action?.let { submittedAction ->
+            if (pendingEgressState.action == submittedAction) {
+                pendingEgressState = PendingTutorEgressState()
+            }
+        }
+        draftToClearOnDurableStart = null
+        actionToClearOnDurableStartState = PendingTutorEgressState()
+        durableStartCleanupRequestId = null
+    }
+
+    LaunchedEffect(
+        activeMessage?.identity?.requestId,
+        activeMessage?.durablyStarted,
+    ) {
+        if (activeMessage?.durablyStarted != true) return@LaunchedEffect
+        clearSubmittedStateAfterDurableStart()
+    }
+
+    val durableCleanupTask = durableStartCleanupRequestId?.let { requestId ->
+        persistedRespondTasks.firstOrNull { it.request.requestId == requestId }
+    }
+    LaunchedEffect(
+        durableStartCleanupRequestId,
+        durableCleanupTask?.stateVersion,
+    ) {
+        if (durableCleanupTask != null) clearSubmittedStateAfterDurableStart()
+    }
+
     fun collectTutorRespondRequest(
         request: ModelTaskRequest,
         clearDraftOnPersist: Boolean,
         allowExternalEnvelopeForLocalRecovery: Boolean = false,
         clearPendingActionOnPersist: PendingTutorEgressAction? = null,
+        retryConsumed: Boolean = false,
     ) {
         val input = request.input as? TutorRespondInput ?: return
         startTutorRespondStream(
@@ -1582,6 +1646,7 @@ internal fun TutorModelPanel(
             clearDraftOnPersist = clearDraftOnPersist,
             allowExternalEnvelopeForLocalRecovery = allowExternalEnvelopeForLocalRecovery,
             clearPendingActionOnPersist = clearPendingActionOnPersist,
+            retryConsumed = retryConsumed,
             prepare = { request },
         )
     }
@@ -1656,7 +1721,10 @@ internal fun TutorModelPanel(
         val currentResponseForRequest = currentResponse
         val answerWasExposed = observedTask.toPlanAnswerExposureKey() in
             exposureKeysForRequest
-        val requestMode = effectiveExplanationMode
+        val requestMode = tutorResponseModeFor(
+            currentMode = effectiveExplanationMode,
+            studentMessage = exactMessage,
+        )
         startTutorRespondStream(
             studentMessage = exactMessage,
             startsNewTurn = true,
@@ -1716,7 +1784,7 @@ internal fun TutorModelPanel(
     }
 
     fun retryTutorResponse(task: ModelTaskSnapshot) {
-        if (!task.canRetryTutorResponse()) return
+        if (!task.canRetryTutorResponseFor(effectiveExplanationMode)) return
         val exactPendingRetry = (pendingEgressState.action as? PendingTutorEgressAction.RetryResponse)
             ?.takeIf { it.requestId == task.request.requestId }
         when (val pendingAction = pendingEgressState.action) {
@@ -1755,9 +1823,20 @@ internal fun TutorModelPanel(
             ModelExecutionLocation.LOCAL_NO_EGRESS -> if (
                 task.request.egressManifest == null && task.matchesTutorProvider(providerForExecution)
             ) {
-                task.request
+                val nextAttempt = task.nextLocalTutorResponseRetryAttempt() ?: return
+                task.request.copy(
+                    requestId = task.request.requestId.substringBeforeLast(':') + ":$nextAttempt",
+                    occurredAtEpochMillis = maxOf(clock(), task.updatedAtEpochMillis + 1),
+                )
             } else if (exactPendingRetry != null) {
-                task.request
+                val currentAttempt =
+                    task.request.requestId.substringAfterLast(':').toIntOrNull() ?: 0
+                if (currentAttempt >= 1) return
+                task.request.copy(
+                    requestId = task.request.requestId.substringBeforeLast(':') + ":1",
+                    occurredAtEpochMillis = maxOf(clock(), task.updatedAtEpochMillis + 1),
+                    egressManifest = null,
+                )
             } else {
                 return
             }
@@ -1769,6 +1848,7 @@ internal fun TutorModelPanel(
             clearDraftOnPersist = false,
             allowExternalEnvelopeForLocalRecovery = exactPendingRetry != null,
             clearPendingActionOnPersist = exactPendingRetry,
+            retryConsumed = true,
         )
     }
 
@@ -1790,6 +1870,7 @@ internal fun TutorModelPanel(
                     collectTutorRespondRequest(
                         request = task.request,
                         clearDraftOnPersist = false,
+                        retryConsumed = task.status == ModelTaskStatus.RETRYABLE_FAILURE,
                     )
                 }
         }
@@ -2248,7 +2329,8 @@ internal fun TutorModelPanel(
                         timelineItem.task::matchesTutorProvider,
                     ) == true
                     val taskAllowsInteraction = timelineItem.task.status ==
-                        ModelTaskStatus.SUCCEEDED || timelineItem.task.canRetryTutorResponse()
+                        ModelTaskStatus.SUCCEEDED ||
+                        timelineItem.task.canRetryTutorResponseFor(effectiveExplanationMode)
                     val opensLocalSettings =
                         timelineItem.task.failure?.code?.requiresModelSettings() == true
                     val recoveryEnabled = isTail && executionMatches &&
@@ -2281,11 +2363,7 @@ internal fun TutorModelPanel(
                         recoveryEnabled = recoveryEnabled &&
                             !responseActionAwaitingAuthorization,
                         executionMatchesCurrentProvider = executionMatches,
-                        onRetry = {
-                            if (!activeStreamOwner.retry()) {
-                                retryTutorResponse(timelineItem.task)
-                            }
-                        },
+                        onRetry = { retryTutorResponse(timelineItem.task) },
                         onOpenModelSettings = onOpenModelSettings,
                         onOpenVisualOriginal = {
                             openVisualReadOnly(
@@ -2410,7 +2488,8 @@ internal fun TutorModelPanel(
                             (pendingResponseAction as? PendingTutorEgressAction.RetryResponse)
                                 ?.let { pending ->
                                     latestRespondTasks.firstOrNull {
-                                        it.request.requestId == pending.requestId
+                                        it.request.requestId == pending.requestId &&
+                                            it.canRetryTutorResponseFor(effectiveExplanationMode)
                                     }
                                 }
                         if (
@@ -2434,7 +2513,9 @@ internal fun TutorModelPanel(
                         val taskToRecover = when (pendingResponseAction) {
                             is PendingTutorEgressAction.RetryResponse -> pendingRetryTask
                             else -> responseFreshApprovalTask ?: recoverableRespondTask ?: 
-                                latestRespondTasks.lastOrNull(ModelTaskSnapshot::canRetryTutorResponse)
+                                latestRespondTasks.lastOrNull { task ->
+                                    task.canRetryTutorResponseFor(effectiveExplanationMode)
+                                }
                         }
                         taskToRecover?.let { failedTask ->
                             val recoveryApprovedAt = maxOf(
@@ -2463,6 +2544,8 @@ internal fun TutorModelPanel(
                                 clearDraftOnPersist = false,
                                 clearPendingActionOnPersist =
                                     pendingResponseAction as? PendingTutorEgressAction.RetryResponse,
+                                retryConsumed =
+                                    failedTask.status == ModelTaskStatus.RETRYABLE_FAILURE,
                             )
                         }
                     },

@@ -26,6 +26,8 @@ import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
+import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -58,6 +60,137 @@ class TutorChatConversationTest {
             ).canRetryTutorResponse(),
         )
         assertFalse(response.canRetryTutorResponse())
+    }
+
+    @Test
+    fun retryableResponseCanRetryOnlyInItsCurrentExplanationMode() {
+        val directFailure = succeededResponse(
+            responseOrdinal = 1,
+            explanationMode = TutorExplanationMode.DIRECT,
+        ).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            output = null,
+            failure = retryableFailure(),
+        )
+
+        assertTrue(directFailure.canRetryTutorResponseFor(TutorExplanationMode.DIRECT))
+        assertFalse(directFailure.canRetryTutorResponseFor(TutorExplanationMode.GUIDED))
+    }
+
+    @Test
+    fun exactLocalDirectIntentMakesOnlyThatGuidedTurnDirect() {
+        assertEquals(
+            TutorExplanationMode.DIRECT,
+            tutorResponseModeFor(
+                currentMode = TutorExplanationMode.GUIDED,
+                studentMessage = "  直接讲  ",
+            ),
+        )
+        assertEquals(
+            TutorExplanationMode.GUIDED,
+            tutorResponseModeFor(
+                currentMode = TutorExplanationMode.GUIDED,
+                studentMessage = "请不要直接讲",
+            ),
+        )
+        assertEquals(
+            TutorExplanationMode.GUIDED,
+            tutorResponseModeFor(
+                currentMode = TutorExplanationMode.GUIDED,
+                studentMessage = "“直接讲”是什么意思？",
+            ),
+        )
+        val explicitDirectFailure = succeededResponse(
+            responseOrdinal = 1,
+            studentMessage = "直接讲",
+            explanationMode = TutorExplanationMode.DIRECT,
+        ).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            output = null,
+            failure = retryableFailure(),
+        )
+
+        assertTrue(
+            explicitDirectFailure.canRetryTutorResponseFor(TutorExplanationMode.GUIDED),
+        )
+    }
+
+    @Test
+    fun aTutorResponseOffersOnlyOneDurableRetry() {
+        val exhausted = succeededResponse(responseOrdinal = 1).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            output = null,
+            failure = retryableFailure(),
+            attemptCount = 2,
+        )
+
+        assertFalse(exhausted.canRetryTutorResponse())
+        assertFalse(exhausted.canRetryTutorResponseFor(TutorExplanationMode.DIRECT))
+    }
+
+    @Test
+    fun aLocalTutorResponsePersistsItsOnlyRetryInANewEnvelope() {
+        val initial = succeededResponse(
+            responseOrdinal = 1,
+            requestId = "tutor-respond:fingerprint:1:1:provider:policy:0",
+            executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+        ).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            output = null,
+            failure = retryableFailure(),
+        )
+        val retried = succeededResponse(
+            responseOrdinal = 1,
+            requestId = "tutor-respond:fingerprint:1:1:provider:policy:1",
+            executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+        ).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            output = null,
+            failure = retryableFailure(),
+        )
+
+        assertEquals(1, initial.nextLocalTutorResponseRetryAttempt())
+        assertFalse(retried.canRetryTutorResponse())
+    }
+
+    @Test
+    fun activeFailureUsesTheMatchingDurableErrorAndSettingsRecovery() {
+        val identity = TutorStreamIdentity(
+            requestId = "response-1-attempt-1",
+            ownerVersion = 1,
+            turnVersion = 1,
+            modeVersion = 1,
+        )
+        val active = TutorActiveStreamMessage(
+            studentMessage = "继续",
+            ownerVersion = identity.ownerVersion,
+            turnVersion = identity.turnVersion,
+            modeVersion = identity.modeVersion,
+            identity = identity,
+            snapshot = TutorMarkdownSnapshot("已保留的安全内容", ""),
+            phase = TutorActiveStreamPhase.FAILED,
+        )
+        val durable = succeededResponse(responseOrdinal = 1).copy(
+            status = ModelTaskStatus.PERMANENT_FAILURE,
+            output = null,
+            failure = ModelTaskFailure(
+                code = ModelFailureCode.AUTHENTICATION_FAILED,
+                message = "模型认证失败，请检查 API Key",
+                retryable = false,
+            ),
+        )
+
+        val presentation = requireNotNull(
+            tutorActiveFailurePresentation(
+                message = active,
+                durableTask = durable,
+                currentMode = TutorExplanationMode.DIRECT,
+            ),
+        )
+
+        assertEquals("模型认证失败，请检查 API Key", presentation.detail)
+        assertEquals(TutorActiveFailureAction.MODEL_SETTINGS, presentation.action)
+        assertEquals("已保留的安全内容", active.snapshot?.visibleMarkdown)
     }
 
     @Test
@@ -336,7 +469,7 @@ class TutorChatConversationTest {
         )
 
         assertEquals(
-            listOf(exactFirst, exactSecond),
+            listOf(exactFirst),
             priorCycleStudentMessages(
                 listOf(
                     omittedReply,
@@ -389,12 +522,13 @@ class TutorChatConversationTest {
         studentMessage: String = "student-$responseOrdinal",
         assistantMarkdown: String = "assistant-$responseOrdinal",
         solutionRevealed: Boolean = false,
-        explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+        explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+        executionLocation: ModelExecutionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
         createdAtEpochMillis: Long = responseOrdinal.toLong(),
         updatedAtEpochMillis: Long = createdAtEpochMillis,
     ): ModelTaskSnapshot {
         val question = currentQuestion().toTutorQuestionContext()
-        val provider = provider()
+        val provider = provider(executionLocation)
         val request = buildTutorRespondRequest(
             question = question,
             profile = StudyProfileOverview(),
@@ -425,8 +559,17 @@ class TutorChatConversationTest {
                 draftRevisionNumber = question.revisionNumber,
                 questionDocumentId = question.questionDocument.document.id,
                 responseOrdinal = responseOrdinal,
-                messageMarkdown = assistantMarkdown,
+                messageMarkdown = if (explanationMode == TutorExplanationMode.GUIDED) {
+                    com.tingyun.smartmistakebook.core.model.GUIDED_INTERACTION_MESSAGE
+                } else {
+                    assistantMarkdown
+                },
                 solutionRevealed = solutionRevealed,
+                interactionDirective = if (explanationMode == TutorExplanationMode.GUIDED) {
+                    com.tingyun.smartmistakebook.core.model.TutorInteractionDirective.Continue
+                } else {
+                    null
+                },
                 intentDecision = TutorIntentDecision(
                     intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
                     confidence = 1.0,
@@ -441,7 +584,9 @@ class TutorChatConversationTest {
         )
     }
 
-    private fun provider() = ProviderCapabilitySnapshot(
+    private fun provider(
+        executionLocation: ModelExecutionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+    ) = ProviderCapabilitySnapshot(
         providerId = "provider",
         providerDisplayName = "Compatible model",
         modelId = "model",
@@ -449,7 +594,7 @@ class TutorChatConversationTest {
         supportsImageInput = false,
         supportsStructuredOutput = true,
         supportsStreaming = false,
-        executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+        executionLocation = executionLocation,
         providerConfigurationVersion = "configuration-v1",
     )
 

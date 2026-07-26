@@ -838,41 +838,47 @@ object SafeInlineMarkdown {
                     index += 1
                 }
 
+                bounded[index] == '\\' &&
+                    bounded.getOrNull(index + 1).isEscapableInlineMarker() -> {
+                    tokens.addText(bounded[index + 1].toString())
+                    index += 2
+                }
+
                 bounded.startsWith("**", index) -> {
-                    val closing = bounded.indexOf("**", startIndex = index + 2)
+                    val closing = bounded.findInlineClosing("**", index + 2)
                     if (closing > index + 2) {
                         tokens += InlineToken.Strong(bounded.substring(index + 2, closing))
                         index = closing + 2
                     } else {
-                        tokens += InlineToken.Text("**")
+                        tokens.addText("**")
                         index += 2
                     }
                 }
 
                 bounded[index] == '*' -> {
-                    val closing = bounded.indexOf('*', startIndex = index + 1)
+                    val closing = bounded.findInlineClosing("*", index + 1)
                     if (closing > index + 1) {
                         tokens += InlineToken.Emphasis(bounded.substring(index + 1, closing))
                         index = closing + 1
                     } else {
-                        tokens += InlineToken.Text("*")
+                        tokens.addText("*")
                         index += 1
                     }
                 }
 
                 bounded[index] == '`' -> {
-                    val closing = bounded.indexOf('`', startIndex = index + 1)
+                    val closing = bounded.findInlineClosing("`", index + 1)
                     if (closing > index + 1) {
                         tokens += InlineToken.Code(bounded.substring(index + 1, closing))
                         index = closing + 1
                     } else {
-                        tokens += InlineToken.Text("`")
+                        tokens.addText("`")
                         index += 1
                     }
                 }
 
                 bounded[index] == '$' -> {
-                    val closing = bounded.indexOf('$', startIndex = index + 1)
+                    val closing = bounded.findInlineClosing("$", index + 1)
                     if (closing > index + 1) {
                         tokens += InlineToken.Formula(
                             RestrictedFormulaText.sanitize(
@@ -881,14 +887,14 @@ object SafeInlineMarkdown {
                         )
                         index = closing + 1
                     } else {
-                        tokens += InlineToken.Text("$")
+                        tokens.addText("$")
                         index += 1
                     }
                 }
 
                 else -> {
                     val next = nextMarkerIndex(bounded, index)
-                    tokens += InlineToken.Text(bounded.substring(index, next))
+                    tokens.addText(bounded.substring(index, next))
                     index = next
                 }
             }
@@ -926,11 +932,48 @@ object SafeInlineMarkdown {
             value[index] != '\n' &&
             value[index] != '*' &&
             value[index] != '`' &&
-            value[index] != '$'
+            value[index] != '$' &&
+            !(
+                value[index] == '\\' &&
+                    value.getOrNull(index + 1).isEscapableInlineMarker()
+                )
         ) {
             index += 1
         }
         return index
+    }
+
+    private fun String.findInlineClosing(delimiter: String, start: Int): Int {
+        val paragraphEnd = indexOf('\n', start).let { if (it < 0) length else it }
+        var candidate = indexOf(delimiter, start)
+        while (candidate in start until paragraphEnd) {
+            if (!isInlineEscaped(candidate)) return candidate
+            candidate = indexOf(delimiter, candidate + delimiter.length)
+        }
+        return -1
+    }
+
+    private fun String.isInlineEscaped(index: Int): Boolean {
+        var slashCount = 0
+        var cursor = index - 1
+        while (cursor >= 0 && this[cursor] == '\\') {
+            slashCount += 1
+            cursor -= 1
+        }
+        return slashCount % 2 == 1
+    }
+
+    private fun Char?.isEscapableInlineMarker(): Boolean =
+        this == '*' || this == '`' || this == '$' || this == '\\'
+
+    private fun MutableList<InlineToken>.addText(value: String) {
+        if (value.isEmpty()) return
+        val previous = lastOrNull()
+        if (previous is InlineToken.Text) {
+            this[lastIndex] = InlineToken.Text(previous.value + value)
+        } else {
+            add(InlineToken.Text(value))
+        }
     }
 }
 

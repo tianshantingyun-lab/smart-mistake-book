@@ -159,6 +159,60 @@ fun SafeMarkdownText(
 }
 
 @Composable
+fun StreamingSafeMarkdownText(
+    stableMarkdown: String,
+    provisionalMarkdown: String,
+    contentIdentity: Any,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    color: Color = Ink,
+) {
+    val visibleMarkdown = stableMarkdown + provisionalMarkdown
+    val parsedStable = produceState(
+        initialValue = SafeMarkdownParseResult(
+            source = "",
+            contentIdentity = contentIdentity,
+            annotated = AnnotatedString(""),
+        ),
+        key1 = stableMarkdown,
+        key2 = contentIdentity,
+    ) {
+        value = SafeMarkdownParseResult(
+            source = stableMarkdown,
+            contentIdentity = contentIdentity,
+            annotated = parseSafeMarkdown(stableMarkdown),
+        )
+    }.value
+    val parsedVisible = produceState(
+        initialValue = SafeMarkdownParseResult(
+            source = "",
+            contentIdentity = contentIdentity,
+            annotated = AnnotatedString(""),
+        ),
+        key1 = visibleMarkdown,
+        key2 = contentIdentity,
+    ) {
+        value = SafeMarkdownParseResult(
+            source = visibleMarkdown,
+            contentIdentity = contentIdentity,
+            annotated = parseSafeMarkdown(visibleMarkdown),
+        )
+    }.value
+    Text(
+        text = streamingMarkdownWhileParsing(
+            stableText = stableMarkdown,
+            provisionalText = provisionalMarkdown,
+            contentIdentity = contentIdentity,
+            parsedStable = parsedStable,
+            parsedVisible = parsedVisible,
+        ),
+        modifier = modifier,
+        color = color,
+        style = style,
+    )
+}
+
+@Composable
 private fun FormulaBlock(block: ContentBlock.Formula) {
     val spokenDescription = remember(block.alternativeText, block.latex) {
         block.alternativeText.ifBlank {
@@ -617,6 +671,28 @@ internal fun safeMarkdownWhileParsing(
 } else {
     AnnotatedString("")
 }
+
+internal fun streamingMarkdownWhileParsing(
+    stableText: String,
+    provisionalText: String,
+    contentIdentity: Any,
+    parsedStable: SafeMarkdownParseResult,
+    parsedVisible: SafeMarkdownParseResult,
+): AnnotatedString {
+    val visibleText = stableText + provisionalText
+    return when {
+        parsedVisible.matchesPrefixOf(visibleText, contentIdentity) -> parsedVisible.annotated
+        parsedStable.matchesPrefixOf(stableText, contentIdentity) -> parsedStable.annotated
+        else -> AnnotatedString("")
+    }
+}
+
+private fun SafeMarkdownParseResult.matchesPrefixOf(
+    currentText: String,
+    currentIdentity: Any,
+): Boolean = contentIdentity == currentIdentity &&
+    (source.isNotEmpty() || currentText.isEmpty()) &&
+    currentText.startsWith(source)
 
 private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedString {
     SafeInlineMarkdown.parse(this@toSafeAnnotatedString).forEach { token ->

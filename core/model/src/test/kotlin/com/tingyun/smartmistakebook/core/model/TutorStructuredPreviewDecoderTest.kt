@@ -8,7 +8,7 @@ import org.junit.Test
 
 class TutorStructuredPreviewDecoderTest {
     @Test
-    fun respondDoesNotPreviewMessageMarkdownBeforeTheSolutionGuard() {
+    fun messageFirstRespondWithholdsPreviewButStillAcceptsTheCompleteDocument() {
         val decoder = TutorStructuredPreviewDecoder(
             target = TutorStreamTarget.RESPOND,
             solutionPreviewAllowed = false,
@@ -19,7 +19,10 @@ class TutorStructuredPreviewDecoderTest {
         )
 
         assertEquals("", delta)
-        assertSame(TutorStructuredPreviewCompletion.Rejected, decoder.complete())
+        assertEquals(
+            TutorStructuredPreviewCompletion.Accepted("不能提前显示"),
+            decoder.complete(),
+        )
     }
 
     @Test
@@ -38,7 +41,7 @@ class TutorStructuredPreviewDecoderTest {
     }
 
     @Test
-    fun guardedRespondStreamsOnlyRootMessageMarkdown() {
+    fun unauthorizedRespondNeverPreviewsFreeMessageMarkdown() {
         val decoder = TutorStructuredPreviewDecoder(
             target = TutorStreamTarget.RESPOND,
             solutionPreviewAllowed = false,
@@ -49,8 +52,8 @@ class TutorStructuredPreviewDecoderTest {
         )
         val secondDelta = decoder.append("""条件。"}""")
 
-        assertEquals("先看", firstDelta)
-        assertEquals("条件。", secondDelta)
+        assertEquals("", firstDelta)
+        assertEquals("", secondDelta)
         assertEquals(
             TutorStructuredPreviewCompletion.Accepted("先看条件。"),
             decoder.complete(),
@@ -60,11 +63,11 @@ class TutorStructuredPreviewDecoderTest {
     @Test
     fun respondGuardAndMessageRemainIncrementalWhenEveryTokenIsFragmented() {
         val json =
-            """{"intentDecision":{"intent":"current_question_help"},"solutionRevealed":false,"messageMarkdown":"分片安全"}"""
+            """{"intentDecision":{"intent":"current_question_help"},"solutionRevealed":true,"messageMarkdown":"分片安全"}"""
         for (splitAt in 0..json.length) {
             val splitDecoder = TutorStructuredPreviewDecoder(
                 target = TutorStreamTarget.RESPOND,
-                solutionPreviewAllowed = false,
+                solutionPreviewAllowed = true,
             )
             val splitDecoded = buildString {
                 append(splitDecoder.append(json.substring(0, splitAt)))
@@ -75,7 +78,7 @@ class TutorStructuredPreviewDecoderTest {
 
         val decoder = TutorStructuredPreviewDecoder(
             target = TutorStreamTarget.RESPOND,
-            solutionPreviewAllowed = false,
+            solutionPreviewAllowed = true,
         )
         val decoded = buildString {
             json.forEach { character -> append(decoder.append(character.toString())) }
@@ -89,7 +92,21 @@ class TutorStructuredPreviewDecoderTest {
     }
 
     @Test
-    fun authorizedRespondStillRequiresIntentAndSolutionFieldsBeforeTheMessage() {
+    fun singleCharacterFragmentsAreInspectedOnlyOnceByTheIncrementalScanner() {
+        val message = "分片".repeat(1_000)
+        val json = """{"messageMarkdown":"$message"}"""
+        val decoder = TutorStructuredPreviewDecoder(target = TutorStreamTarget.LOBBY)
+
+        val decoded = buildString {
+            json.forEach { character -> append(decoder.append(character.toString())) }
+        }
+
+        assertEquals(message, decoded)
+        assertEquals(json.length.toLong(), decoder.incrementalInspectedCharacterCount)
+    }
+
+    @Test
+    fun authorizedRespondWithOldFieldOrderWithholdsPreviewButCompletes() {
         val decoder = TutorStructuredPreviewDecoder(
             target = TutorStreamTarget.RESPOND,
             solutionPreviewAllowed = true,
@@ -99,7 +116,10 @@ class TutorStructuredPreviewDecoderTest {
             "",
             decoder.append("""{"solutionRevealed":true,"intentDecision":{},"messageMarkdown":"答案"}"""),
         )
-        assertSame(TutorStructuredPreviewCompletion.Rejected, decoder.complete())
+        assertEquals(
+            TutorStructuredPreviewCompletion.Accepted("答案"),
+            decoder.complete(),
+        )
     }
 
     @Test

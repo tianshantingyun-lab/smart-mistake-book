@@ -12,7 +12,7 @@ internal fun shouldFollowTutorConversationTail(
 ): Boolean = when (mutation) {
     TutorConversationMutation.ACTIVE_REPLY_GROWTH -> wasNearBottom
     TutorConversationMutation.VISUAL_INSERTION -> false
-    TutorConversationMutation.STUDENT_SEND -> true
+    TutorConversationMutation.STUDENT_SEND -> wasNearBottom
 }
 
 internal fun isTutorConversationNearBottom(

@@ -6,6 +6,8 @@ import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
@@ -14,6 +16,42 @@ import java.security.MessageDigest
 
 internal const val TUTOR_LOBBY_CONVERSATION_ID = "tutor-lobby"
 internal const val TUTOR_LOBBY_PROMPT_POLICY_VERSION = ModelPromptPolicyVersions.TUTOR_LOBBY
+
+internal fun latestTutorLobbyConversationTasks(
+    tasks: List<ModelTaskSnapshot>,
+): List<ModelTaskSnapshot> = tasks
+    .filter { it.request.input is TutorLobbyInput }
+    .groupBy { (it.request.input as TutorLobbyInput).messageOrdinal }
+    .values
+    .map { attempts ->
+        attempts.maxWith(
+            compareBy<ModelTaskSnapshot>(ModelTaskSnapshot::updatedAtEpochMillis)
+                .thenBy(ModelTaskSnapshot::createdAtEpochMillis)
+                .thenBy { it.request.requestId },
+        )
+    }
+    .filterNot { it.status == ModelTaskStatus.CANCELLED }
+    .sortedBy { (it.request.input as TutorLobbyInput).messageOrdinal }
+
+internal fun ModelTaskSnapshot.canRetryTutorLobby(): Boolean =
+    request.input is TutorLobbyInput &&
+        status == ModelTaskStatus.RETRYABLE_FAILURE &&
+        attemptCount < 2 &&
+        (
+            provider?.executionLocation != ModelExecutionLocation.LOCAL_NO_EGRESS ||
+                request.tutorLobbyAttempt() < 1
+            )
+
+internal fun ModelTaskSnapshot.canResumeTutorLobby(): Boolean =
+    request.input is TutorLobbyInput && status.isTutorExecutionPending()
+
+internal fun ModelTaskSnapshot.nextTutorLobbyRetryAttempt(): Int? {
+    if (!canRetryTutorLobby()) return null
+    return (request.tutorLobbyAttempt() + 1).takeIf { it <= 1 }
+}
+
+private fun ModelTaskRequest.tutorLobbyAttempt(): Int =
+    requestId.substringAfterLast(':').toIntOrNull() ?: 0
 
 internal fun buildTutorLobbyRequest(
     provider: ProviderCapabilitySnapshot,

@@ -44,13 +44,23 @@ internal data class TutorActiveStreamMessage(
     val phase: TutorActiveStreamPhase = TutorActiveStreamPhase.PREPARING,
     val showPlaceholder: Boolean = false,
     val retryable: Boolean = false,
+    val retryConsumed: Boolean = false,
+    val durablyStarted: Boolean = false,
+    val failureDetail: String? = null,
 ) {
     val activityVisible: Boolean
         get() = phase == TutorActiveStreamPhase.PREPARING ||
             phase == TutorActiveStreamPhase.STREAMING
 
+    val canBeDurablySuperseded: Boolean
+        get() = activityVisible || (phase == TutorActiveStreamPhase.FAILED && retryable)
+
     val recoveryActions: List<TutorActiveStreamRecovery>
-        get() = if (phase == TutorActiveStreamPhase.FAILED && retryable) {
+        get() = if (
+            phase == TutorActiveStreamPhase.FAILED &&
+            retryable &&
+            !retryConsumed
+        ) {
             listOf(TutorActiveStreamRecovery.RETRY)
         } else {
             emptyList()
@@ -62,6 +72,9 @@ internal data class TutorActiveStreamMessage(
             snapshot,
             phase,
             showPlaceholder,
+            retryConsumed,
+            durablyStarted,
+            failureDetail,
         )
 }
 
@@ -118,6 +131,7 @@ internal class TutorActiveStreamOwner(
     fun submit(
         studentMessage: String,
         startsNewTurn: Boolean = true,
+        retryConsumed: Boolean = false,
         prepare: suspend () -> TutorPreparedStream,
     ) {
         require(studentMessage.isNotEmpty()) { "Tutor stream student message must not be empty" }
@@ -129,7 +143,7 @@ internal class TutorActiveStreamOwner(
             previousJob = activeJob
             val current = mutableState.value
             val superseded = current.active
-                ?.takeIf(TutorActiveStreamMessage::activityVisible)
+                ?.takeIf(TutorActiveStreamMessage::canBeDurablySuperseded)
                 ?.identity
                 ?.requestId
             durableRequestIdToCancel = superseded.takeIf { startsNewTurn }
@@ -145,6 +159,7 @@ internal class TutorActiveStreamOwner(
                     turnVersion = submission.turnVersion,
                     modeVersion = submission.modeVersion,
                     snapshot = retainedSnapshot,
+                    retryConsumed = retryConsumed,
                 ),
                 supersededRequestIds = current.supersededRequestIds
                     .plusIfNotNull(superseded),
@@ -176,6 +191,8 @@ internal class TutorActiveStreamOwner(
                         phase = TutorActiveStreamPhase.PREPARING,
                         showPlaceholder = false,
                         retryable = false,
+                        retryConsumed = true,
+                        failureDetail = null,
                     ),
                 )
             }
@@ -195,7 +212,7 @@ internal class TutorActiveStreamOwner(
             job = activeJob
             val current = mutableState.value
             val superseded = current.active
-                ?.takeIf(TutorActiveStreamMessage::activityVisible)
+                ?.takeIf(TutorActiveStreamMessage::canBeDurablySuperseded)
                 ?.identity
                 ?.requestId
             durableRequestIdToCancel = superseded
@@ -275,9 +292,11 @@ internal class TutorActiveStreamOwner(
             var coalesceJob: Job? = null
             var pendingSnapshot: TutorMarkdownSnapshot? = null
             var terminalSeen = false
+            var preparationCompleted = false
             val previewLock = Any()
             try {
                 val resolved = prepared ?: prepare()
+                preparationCompleted = true
                 val identity = TutorStreamIdentity(
                     requestId = resolved.requestId,
                     ownerVersion = submission.ownerVersion,
@@ -299,7 +318,11 @@ internal class TutorActiveStreamOwner(
                     when (event) {
                         is TutorStreamEvent.Started -> {
                             updateActive(submission) {
-                                it.copy(phase = TutorActiveStreamPhase.STREAMING)
+                                it.copy(
+                                    phase = TutorActiveStreamPhase.STREAMING,
+                                    durablyStarted = true,
+                                    failureDetail = null,
+                                )
                             }
                         }
 
@@ -322,9 +345,10 @@ internal class TutorActiveStreamOwner(
                                             updateActive(submission) { active ->
                                                 active.copy(
                                                     snapshot = latest,
-                                                    phase = TutorActiveStreamPhase.STREAMING,
-                                                    showPlaceholder = false,
-                                                )
+                                            phase = TutorActiveStreamPhase.STREAMING,
+                                            showPlaceholder = false,
+                                            failureDetail = null,
+                                        )
                                             }
                                         }
                                     }
@@ -356,6 +380,7 @@ internal class TutorActiveStreamOwner(
                                     phase = TutorActiveStreamPhase.COMPLETED,
                                     showPlaceholder = false,
                                     retryable = false,
+                                    failureDetail = null,
                                 )
                             }
                         }
@@ -374,6 +399,7 @@ internal class TutorActiveStreamOwner(
                                     phase = TutorActiveStreamPhase.FAILED,
                                     showPlaceholder = false,
                                     retryable = event.retryable,
+                                    failureDetail = null,
                                 )
                             }
                         }
@@ -395,24 +421,61 @@ internal class TutorActiveStreamOwner(
                             phase = TutorActiveStreamPhase.FAILED,
                             showPlaceholder = false,
                             retryable = true,
+                            failureDetail = null,
                         )
                     }
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
-            } catch (_: Exception) {
-                synchronized(previewLock) {
-                    terminalSeen = true
-                    pendingSnapshot = null
-                    coalesceJob?.cancel()
-                    coalesceJob = null
+            } catch (_: IllegalArgumentException) {
+                val failureCanWin = synchronized(previewLock) {
+                    if (terminalSeen) {
+                        false
+                    } else {
+                        terminalSeen = true
+                        pendingSnapshot = null
+                        coalesceJob?.cancel()
+                        coalesceJob = null
+                        true
+                    }
                 }
-                updateActive(submission) {
-                    it.copy(
-                        phase = TutorActiveStreamPhase.FAILED,
-                        showPlaceholder = false,
-                        retryable = false,
-                    )
+                if (failureCanWin) {
+                    updateActive(submission) {
+                        it.copy(
+                            phase = TutorActiveStreamPhase.FAILED,
+                            showPlaceholder = false,
+                            retryable = false,
+                            failureDetail = INVALID_STUDENT_MESSAGE_DETAIL,
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+                val failureCanWin = synchronized(previewLock) {
+                    if (terminalSeen) {
+                        false
+                    } else {
+                        terminalSeen = true
+                        pendingSnapshot = null
+                        coalesceJob?.cancel()
+                        coalesceJob = null
+                        true
+                    }
+                }
+                if (failureCanWin) {
+                    updateActive(submission) { active ->
+                        active.copy(
+                            phase = TutorActiveStreamPhase.FAILED,
+                            showPlaceholder = false,
+                            retryable = preparationCompleted,
+                            failureDetail = if (
+                                preparationCompleted && !active.durablyStarted
+                            ) {
+                                STORAGE_FAILURE_DETAIL
+                            } else {
+                                null
+                            },
+                        )
+                    }
                 }
             } finally {
                 placeholderJob.cancel()
@@ -479,6 +542,10 @@ internal class TutorActiveStreamOwner(
         const val MIN_COALESCE_MILLIS = 50L
         const val MAX_COALESCE_MILLIS = 80L
         const val DEFAULT_PLACEHOLDER_DELAY_MILLIS = 300L
+        const val INVALID_STUDENT_MESSAGE_DETAIL =
+            "消息包含暂不支持的字符，请修改后再发送。"
+        const val STORAGE_FAILURE_DETAIL =
+            "暂时无法保存这条消息，请重试。"
         val OWNER_SEQUENCE = AtomicLong(1)
 
         fun nextOwnerVersion(): Long = OWNER_SEQUENCE.getAndIncrement()

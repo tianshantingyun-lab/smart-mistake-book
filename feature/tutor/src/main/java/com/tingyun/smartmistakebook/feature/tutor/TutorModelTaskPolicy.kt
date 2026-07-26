@@ -63,9 +63,14 @@ internal fun ModelTaskStatus.isTutorExecutionPending(): Boolean = when (this) {
 
 internal fun ModelTaskSnapshot.isPendingTutorRespondFor(
     explanationMode: TutorExplanationMode,
-): Boolean =
-    status.isTutorExecutionPending() &&
-        (request.input as? TutorRespondInput)?.explanationMode == explanationMode
+): Boolean {
+    val input = request.input as? TutorRespondInput ?: return false
+    return status.isTutorExecutionPending() &&
+        input.explanationMode == tutorResponseModeFor(
+            currentMode = explanationMode,
+            studentMessage = input.studentMessage,
+        )
+}
 
 internal fun latestPendingTutorLobbyTask(
     tasks: List<ModelTaskSnapshot>,

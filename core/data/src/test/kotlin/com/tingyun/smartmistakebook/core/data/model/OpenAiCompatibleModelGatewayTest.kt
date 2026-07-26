@@ -758,12 +758,20 @@ class OpenAiCompatibleModelGatewayTest {
             },
             transport = modelTransport { _, _, body ->
                 sentBody = body
-                ModelHttpResponse(200, envelope(tutorRespondPayload()))
+                ModelHttpResponse(
+                    200,
+                    envelope(tutorRespondPayload(solutionRevealed = true)),
+                )
             },
             clock = { AUTHORIZATION_NOW },
         )
 
-        val output = gateway.execute(authorizedTutorRespond(gateway)).toList().last()
+        val output = gateway.execute(
+            authorizedTutorRespond(
+                gateway,
+                tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+            ),
+        ).toList().last()
             .let { it as ModelGatewayEvent.Completed }
             .output as TutorRespondOutput
 
@@ -776,7 +784,7 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(sentBody.contains("不得擅自把所有消息都当作讲题要求"))
         assertTrue(sentBody.contains("模型只提出本地动作申请"))
         assertTrue(sentBody.contains("严禁生成新题、同类题、变式题、校准题"))
-        assertTrue(sentBody.contains("不要默认给最终答案"))
+        assertTrue(sentBody.contains("explanationMode：DIRECT"))
         assertTrue(sentBody.contains("solutionRevealed是必填的JSON布尔值"))
         assertTrue(sentBody.contains("不得返回diagnosticQuestion、选择题"))
         assertTrue(sentBody.contains("visualRequest可省略"))
@@ -791,7 +799,7 @@ class OpenAiCompatibleModelGatewayTest {
         assertEquals(4, output.responseOrdinal)
         assertEquals(2, output.cycleOrdinal)
         assertEquals(3, output.turnOrdinal)
-        assertFalse(output.solutionRevealed)
+        assertTrue(output.solutionRevealed)
         assertEquals(TutorMessageIntent.CURRENT_QUESTION_HELP, output.intentDecision.intent)
         assertNull(output.visualScene)
         assertTrue(output.suggestedMoves.isEmpty())
@@ -800,7 +808,10 @@ class OpenAiCompatibleModelGatewayTest {
     @Test
     fun tutorResponseStreamsAllowlistedPreviewAndRequestsStreaming() = runBlocking {
         val message = "先判断导数符号。\n\n再写出单调区间。"
-        val payload = tutorRespondPayload(messageMarkdown = message)
+        val payload = tutorRespondPayload(
+            messageMarkdown = message,
+            solutionRevealed = true,
+        )
         val transport = RecordingStreamingTransport(
             streamEvents = payload.chunked(13).map { fragment ->
                 ModelHttpStreamEvent.Data(streamDelta(fragment))
@@ -813,7 +824,12 @@ class OpenAiCompatibleModelGatewayTest {
             clock = { AUTHORIZATION_NOW },
         )
 
-        val events = gateway.execute(authorizedTutorRespond(gateway)).toList()
+        val events = gateway.execute(
+            authorizedTutorRespond(
+                gateway,
+                tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+            ),
+        ).toList()
 
         val previews = events.filterIsInstance<ModelGatewayEvent.TutorPreview>()
         assertTrue(previews.isNotEmpty())
@@ -835,7 +851,7 @@ class OpenAiCompatibleModelGatewayTest {
     fun nonSseSuccessCompletesWithoutLegacyRetry() = runBlocking {
         val response = ModelHttpResponse(
             statusCode = 200,
-            body = envelope(tutorRespondPayload()),
+            body = envelope(tutorRespondPayload(solutionRevealed = true)),
         )
         val transport = RecordingStreamingTransport(
             streamEvents = listOf(ModelHttpStreamEvent.Fallback(response)),
@@ -847,7 +863,12 @@ class OpenAiCompatibleModelGatewayTest {
             clock = { AUTHORIZATION_NOW },
         )
 
-        val completed = gateway.execute(authorizedTutorRespond(gateway)).toList().last()
+        val completed = gateway.execute(
+            authorizedTutorRespond(
+                gateway,
+                tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+            ),
+        ).toList().last()
 
         assertTrue(completed is ModelGatewayEvent.Completed)
         assertEquals(1, transport.authorizationChecks)
@@ -860,7 +881,10 @@ class OpenAiCompatibleModelGatewayTest {
             streamEvents = listOf(
                 ModelHttpStreamEvent.Fallback(ModelHttpResponse(statusCode = 400, body = "")),
             ),
-            postResponse = ModelHttpResponse(200, envelope(tutorRespondPayload())),
+            postResponse = ModelHttpResponse(
+                200,
+                envelope(tutorRespondPayload(solutionRevealed = true)),
+            ),
         )
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
@@ -869,7 +893,12 @@ class OpenAiCompatibleModelGatewayTest {
             clock = { AUTHORIZATION_NOW },
         )
 
-        val completed = gateway.execute(authorizedTutorRespond(gateway)).toList().last()
+        val completed = gateway.execute(
+            authorizedTutorRespond(
+                gateway,
+                tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+            ),
+        ).toList().last()
 
         assertTrue(completed is ModelGatewayEvent.Completed)
         assertEquals(2, transport.authorizationChecks)
@@ -953,6 +982,94 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
+    fun falseProviderDeclarationCannotExposeAnUnauthorizedGuidedBody() = runBlocking {
+        val payload = tutorRespondPayload(
+            messageMarkdown = "最终答案是 2。完整解法如下。",
+            solutionRevealed = false,
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(7).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway)).toList()
+
+        assertTrue(events.none { it is ModelGatewayEvent.TutorPreview })
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertFalse(failed.failure.retryable)
+    }
+
+    @Test
+    fun guidedDirectiveUsesOnlyLocalStudentFacingText() = runBlocking {
+        val directive = buildJsonObject {
+            put("kind", "FREE_RESPONSE")
+            put("promptMarkdown", "答案是 2，请照抄。")
+        }
+        val payload = tutorRespondPayload(
+            messageMarkdown = "完整解法是先求导再令导数为零。",
+            solutionRevealed = false,
+            extraTopLevel = "interactionDirective" to directive,
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(7).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway)).toList()
+
+        assertTrue(events.none { it is ModelGatewayEvent.TutorPreview })
+        val completed = events.last() as ModelGatewayEvent.Completed
+        val output = completed.output as TutorRespondOutput
+        assertEquals("先完成下面这个小步骤。", output.messageMarkdown)
+        val safeDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
+        assertEquals("写下你认为下一步该做什么。", safeDirective.promptMarkdown)
+    }
+
+    @Test
+    fun messageFirstDirectResponseCompletesWithoutPreview() = runBlocking {
+        val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val payload = Json.encodeToString(
+            buildJsonObject {
+                put("messageMarkdown", "合法旧顺序")
+                put("solutionRevealed", true)
+                put("intentDecision", tutorIntentPayload())
+            },
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(5).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway, input)).toList()
+
+        assertTrue(events.none { it is ModelGatewayEvent.TutorPreview })
+        val completed = events.last() as ModelGatewayEvent.Completed
+        assertEquals("合法旧顺序", (completed.output as TutorRespondOutput).messageMarkdown)
+    }
+
+    @Test
     fun falseProviderDeclarationCannotNarrowDirectPreviewAuthority() = runBlocking {
         val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
         val payload = tutorRespondPayload(
@@ -976,6 +1093,7 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(events.any { it is ModelGatewayEvent.TutorPreview })
         val failed = events.last() as ModelGatewayEvent.Failed
         assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertTrue(failed.failure.retryable)
     }
 
     @Test
@@ -1036,6 +1154,34 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(lastPreview.snapshot.visibleMarkdown.contains("先求导并判断符号。"))
         val failed = events.last() as ModelGatewayEvent.Failed
         assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertTrue(failed.failure.retryable)
+    }
+
+    @Test
+    fun firstSafePreviewAtEofStillMakesAnInvalidTerminalRetryable() = runBlocking {
+        val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val payload = tutorRespondPayload(
+            messageMarkdown = "```kotlin\nunfinished",
+            solutionRevealed = true,
+        )
+        val transport = RecordingStreamingTransport(
+            streamEvents = payload.chunked(7).map { fragment ->
+                ModelHttpStreamEvent.Data(streamDelta(fragment))
+            },
+        )
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = transport,
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutorRespond(gateway, input)).toList()
+
+        assertEquals(1, events.filterIsInstance<ModelGatewayEvent.TutorPreview>().size)
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertTrue(failed.failure.retryable)
     }
 
     @Test
@@ -1067,21 +1213,8 @@ class OpenAiCompatibleModelGatewayTest {
     fun guidedTutorResponsePromptAndParserExposeOnlyTheBoundedDirectiveSchema() = runBlocking {
         var sentBody = ""
         val directive = buildJsonObject {
-            put("kind", "CHOICES")
-            put("promptMarkdown", "下一步先判断什么？")
-            put(
-                "choices",
-                buildJsonArray {
-                    add(buildJsonObject {
-                        put("id", "sign")
-                        put("labelMarkdown", "判断导数符号")
-                    })
-                    add(buildJsonObject {
-                        put("id", "zeros")
-                        put("labelMarkdown", "只找零点")
-                    })
-                },
-            )
+            put("kind", "FREE_RESPONSE")
+            put("promptMarkdown", "答案藏在这里。")
         }
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
@@ -1105,7 +1238,9 @@ class OpenAiCompatibleModelGatewayTest {
 
         assertTrue(sentBody.contains("explanationMode：GUIDED"))
         assertTrue(sentBody.contains("interactionDirective"))
-        assertTrue(output.interactionDirective is TutorInteractionDirective.Choices)
+        val safeDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
+        assertEquals("先完成下面这个小步骤。", output.messageMarkdown)
+        assertEquals("写下你认为下一步该做什么。", safeDirective.promptMarkdown)
     }
 
     @Test
@@ -1345,7 +1480,7 @@ class OpenAiCompatibleModelGatewayTest {
 
     @Test
     fun tutorResponseParsesIntentWithoutGrantingDatabaseAuthority() = runBlocking {
-        val output = parsedTutorResponse(
+        val events = executeTutorRespondPayload(
             tutorRespondPayload(
                 messageMarkdown = "我会把请求交给本机处理，读取前不会改动任何学习记录。",
                 intentDecision = tutorIntentPayload(
@@ -1358,24 +1493,20 @@ class OpenAiCompatibleModelGatewayTest {
             ),
         )
 
-        assertEquals(TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP, output.intentDecision.intent)
-        assertEquals(
-            TutorRequestedLocalCapability.READ_MISTAKE_NOTEBOOK,
-            output.intentDecision.requestedLocalCapability,
-        )
-        assertEquals(listOf("函数", "单调性"), output.intentDecision.lookupTerms)
-        assertFalse(output.solutionRevealed)
-        assertNull(output.visualScene)
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertFalse(failed.failure.retryable)
     }
 
     @Test
     fun missingIntentFailsClosedAsAmbiguousInsteadOfAssumingCurrentQuestionHelp() = runBlocking {
-        val output = parsedTutorResponse(
+        val events = executeTutorRespondPayload(
             tutorRespondPayload(intentDecision = null),
         )
 
-        assertEquals(TutorMessageIntent.AMBIGUOUS, output.intentDecision.intent)
-        assertEquals(0.0, output.intentDecision.confidence, 0.0)
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertFalse(failed.failure.retryable)
     }
 
     @Test
@@ -1413,6 +1544,7 @@ class OpenAiCompatibleModelGatewayTest {
     @Test
     fun tutorResponseReconstructsStableSceneAndMoveIdsLocally() = runBlocking {
         val payload = tutorRespondPayload(
+            solutionRevealed = true,
             visualScene = stepFlowScenePayload(),
             nextMoves = buildJsonArray {
                 add(buildJsonObject {
@@ -2789,7 +2921,10 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     private suspend fun parsedTutorResponse(payload: String): TutorRespondOutput =
-        executeTutorRespondPayload(payload).last()
+        executeTutorRespondPayload(
+            payload = payload,
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+        ).last()
             .let { it as ModelGatewayEvent.Completed }
             .output as TutorRespondOutput
 

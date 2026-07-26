@@ -106,14 +106,21 @@ class RoomModelTaskRepository internal constructor(
             "Only Tutor response tasks can use the Tutor stream contract"
         }
 
-        send(TutorStreamEvent.Started(identity))
+        var startedEmitted = false
         var lastPreview = TutorMarkdownSnapshot.EMPTY
         var terminalEmitted = false
+        val durableStarted = CompletableDeferred<Unit>()
         executeInternal(request) { snapshot ->
+            durableStarted.await()
             lastPreview = snapshot
             send(TutorStreamEvent.Preview(identity, snapshot))
         }.collect { durable ->
             if (terminalEmitted) return@collect
+            if (!startedEmitted) {
+                send(TutorStreamEvent.Started(identity))
+                startedEmitted = true
+                durableStarted.complete(Unit)
+            }
             when (durable.status) {
                 ModelTaskStatus.SUCCEEDED -> {
                     val markdown = when (val output = durable.output) {
@@ -122,14 +129,16 @@ class RoomModelTaskRepository internal constructor(
                         else -> null
                     }
                     val completion = markdown?.let { value ->
-                        StreamingMarkdownAssembler().run {
-                            append(value)
-                            complete()
+                        try {
+                            StreamingMarkdownAssembler().run {
+                                append(value)
+                                complete()
+                            }
+                        } catch (_: Exception) {
+                            null
                         }
                     }
-                    val snapshot =
-                        (completion as? StreamingMarkdownCompletion.Accepted)?.snapshot
-                    if (snapshot == null) {
+                    if (markdown == null) {
                         send(
                             TutorStreamEvent.Failed(
                                 identity = identity,
@@ -138,6 +147,12 @@ class RoomModelTaskRepository internal constructor(
                             ),
                         )
                     } else {
+                        val snapshot = when (completion) {
+                            is StreamingMarkdownCompletion.Accepted -> completion.snapshot
+                            is StreamingMarkdownCompletion.Rejected,
+                            null,
+                            -> TutorMarkdownSnapshot.completedLiteral(markdown)
+                        }
                         send(TutorStreamEvent.Completed(identity, snapshot))
                     }
                     terminalEmitted = true
@@ -163,11 +178,13 @@ class RoomModelTaskRepository internal constructor(
             }
         }
         if (!terminalEmitted) {
+            val latest = database.readModelTask(request.requestId)
             send(
                 TutorStreamEvent.Failed(
                     identity = identity,
                     snapshot = lastPreview,
-                    retryable = true,
+                    retryable = latest?.status != ModelTaskStatus.CANCELLED &&
+                        latest?.failure?.retryable != false,
                 ),
             )
         }

@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -59,6 +60,33 @@ class TutorModelTaskPolicyTest {
         assertTrue(ModelTaskStatus.STREAMING.isTutorExecutionPending())
         assertFalse(ModelTaskStatus.SUCCEEDED.isTutorExecutionPending())
         assertFalse(ModelTaskStatus.RETRYABLE_FAILURE.isTutorExecutionPending())
+    }
+
+    @Test
+    fun exactDirectIntentRemainsRecoverableWhileTheComposerStaysGuided() {
+        val input = respondInput("直接讲").copy(
+            explanationMode = TutorExplanationMode.DIRECT,
+        )
+        val request = ModelTaskRequest(
+            requestId = "tutor-respond:direct-intent:1:1:provider:policy:0",
+            input = input,
+            occurredAtEpochMillis = 1,
+        )
+        val task = ModelTaskSnapshot(
+            taskId = "task-direct-intent",
+            request = request,
+            requestFingerprint = ModelTaskFingerprint.of(request),
+            status = ModelTaskStatus.RUNNING,
+            stateVersion = 1,
+            stage = ModelTaskStage.PREPARING,
+            userMessage = "处理中",
+            attemptCount = 0,
+            provider = provider(),
+            createdAtEpochMillis = 1,
+            updatedAtEpochMillis = 1,
+        )
+
+        assertTrue(task.isPendingTutorRespondFor(TutorExplanationMode.GUIDED))
     }
 
     @Test
@@ -946,11 +974,11 @@ class TutorModelTaskPolicyTest {
         assertFalse(respondInput("这两个答案有什么区别？").studentAuthorizedSolutionRequest())
         assertFalse(respondInput("不要直接给答案，先讲思路").studentAuthorizedSolutionRequest())
         assertFalse(respondInput("不用完整过程，只说下一步").studentAuthorizedSolutionRequest())
-        assertTrue(respondInput("请告诉我答案").studentAuthorizedSolutionRequest())
-        assertTrue(respondInput("答案是什么？").studentAuthorizedSolutionRequest())
-        assertTrue(respondInput("请给我完整解法").studentAuthorizedSolutionRequest())
-        assertTrue(respondInput("把解题过程完整写出来").studentAuthorizedSolutionRequest())
-        assertTrue(respondInput("结果是多少？").studentAuthorizedSolutionRequest())
+        assertFalse(respondInput("请告诉我答案").studentAuthorizedSolutionRequest())
+        assertFalse(respondInput("答案是什么？").studentAuthorizedSolutionRequest())
+        assertFalse(respondInput("请给我完整解法").studentAuthorizedSolutionRequest())
+        assertFalse(respondInput("把解题过程完整写出来").studentAuthorizedSolutionRequest())
+        assertFalse(respondInput("结果是多少？").studentAuthorizedSolutionRequest())
         assertTrue(
             respondInput(
                 message = "继续",

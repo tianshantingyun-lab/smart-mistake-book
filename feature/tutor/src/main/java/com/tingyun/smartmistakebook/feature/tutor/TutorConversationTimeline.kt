@@ -114,9 +114,11 @@ internal fun buildTutorConversationProjection(
     val exactPlanTasks = planTasks.filter { task ->
         task.matches(question) && task.request.input is TutorPlanInput
     }
-    val exactRespondTasks = respondTasks.filter { task ->
-        task.matches(question) && task.request.input is TutorRespondInput
-    }
+    val exactRespondTasks = durableVisibleTutorRespondTasks(
+        respondTasks.filter { task ->
+            task.matches(question) && task.request.input is TutorRespondInput
+        },
+    )
     val exactResponses = responses.filter { response -> response.matches(question) }
     val latestPlans = latestExactTutorPlanTasks(exactPlanTasks)
     val latestResponses = latestTutorRespondTasks(exactRespondTasks)

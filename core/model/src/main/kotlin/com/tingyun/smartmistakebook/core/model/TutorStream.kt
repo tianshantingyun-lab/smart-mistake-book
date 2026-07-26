@@ -56,12 +56,25 @@ data class TutorMarkdownSnapshot(
             stableMarkdown = "",
             provisionalMarkdown = "",
         )
+
+        /**
+         * Preserves a validated durable result when its Markdown is not stream-complete.
+         *
+         * Incomplete delimiters are rendered inert so a durable success never becomes an active
+         * failure or silently loses otherwise valid text during stream-state reconstruction.
+         */
+        fun completedLiteral(markdown: String): TutorMarkdownSnapshot =
+            TutorMarkdownSnapshot(
+                stableMarkdown = markdown.toIncompleteMarkdownLiteral(),
+                provisionalMarkdown = "",
+            )
     }
 }
 
 /**
- * Ephemeral UI events. Durable completion and detailed failures continue to use the existing model
- * task snapshots; this contract intentionally contains neither raw provider data nor Throwables.
+ * Ephemeral UI events. [Started] is emitted only after the first durable task snapshot exists.
+ * Durable completion and detailed failures continue to use the existing model task snapshots; this
+ * contract intentionally contains neither raw provider data nor Throwables.
  */
 sealed interface TutorStreamEvent {
     val identity: TutorStreamIdentity
@@ -116,9 +129,6 @@ internal fun String.requiresTutorPlainTextFallback(): Boolean =
 
 internal fun String.toTutorPreviewLiteral(): String {
     if (!requiresTutorPlainTextFallback()) return this
-    if (length <= StructuredContentLimits.MAX_TEXT_CHARS) {
-        return SafeInlineMarkdown.literal(this)
-    }
     val escapedMarkers = replace('*', '＊')
         .replace('`', '｀')
         .replace('$', '＄')

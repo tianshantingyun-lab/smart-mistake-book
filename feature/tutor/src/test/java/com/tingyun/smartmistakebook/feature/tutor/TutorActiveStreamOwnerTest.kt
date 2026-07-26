@@ -586,6 +586,154 @@ class TutorActiveStreamOwnerTest {
         owner.close()
     }
 
+    @Test
+    fun modeChangeCancelsRetryableFailedRequestAndRemovesItsRecovery() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val cancelled = mutableListOf<String>()
+        val owner = owner(
+            dispatcher = dispatcher,
+            cancelDurableRequest = cancelled::add,
+        )
+        owner.submit(studentMessage = "直接讲") {
+            prepared("request-direct-failed") { identity ->
+                flow {
+                    emit(TutorStreamEvent.Started(identity))
+                    emit(
+                        TutorStreamEvent.Failed(
+                            identity = identity,
+                            snapshot = TutorMarkdownSnapshot("已显示的安全内容", ""),
+                            retryable = true,
+                        ),
+                    )
+                }
+            }
+        }
+        runCurrent()
+
+        owner.updateMode(TutorExplanationMode.GUIDED)
+        runCurrent()
+
+        assertEquals(listOf("request-direct-failed"), cancelled)
+        assertTrue("request-direct-failed" in owner.state.value.supersededRequestIds)
+        assertNull(owner.state.value.active)
+        assertFalse(owner.retry())
+        owner.close()
+    }
+
+    @Test
+    fun completedTerminalSurvivesLateUpstreamCleanupFailure() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+        owner.submit(studentMessage = "继续") {
+            prepared("request-completed") { identity ->
+                flow {
+                    emit(
+                        TutorStreamEvent.Completed(
+                            identity,
+                            TutorMarkdownSnapshot("最终可信讲解", ""),
+                        ),
+                    )
+                    throw IllegalStateException("late upstream cleanup failure")
+                }
+            }
+        }
+        runCurrent()
+
+        val completed = requireNotNull(owner.state.value.active)
+        assertEquals(TutorActiveStreamPhase.COMPLETED, completed.phase)
+        assertEquals("最终可信讲解", completed.snapshot?.visibleMarkdown)
+        assertTrue(completed.recoveryActions.isEmpty())
+        owner.close()
+    }
+
+    @Test
+    fun validationFailureKeepsTheMessageEditableAndDoesNotOfferRetry() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+
+        owner.submit(studentMessage = "含有\u202E字符") {
+            throw IllegalArgumentException("unsafe bidi control")
+        }
+        runCurrent()
+
+        val failed = requireNotNull(owner.state.value.active)
+        assertEquals("含有\u202E字符", failed.studentMessage)
+        assertEquals(TutorActiveStreamPhase.FAILED, failed.phase)
+        assertFalse(failed.durablyStarted)
+        assertFalse(failed.retryable)
+        assertTrue(failed.failureDetail?.contains("修改") == true)
+        assertTrue(failed.recoveryActions.isEmpty())
+        owner.close()
+    }
+
+    @Test
+    fun storageFailureBeforeDurableStartKeepsOneRetry() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+
+        owner.submit(studentMessage = "继续") {
+            prepared("request-storage-failure") {
+                flow {
+                    throw IllegalStateException("database unavailable")
+                }
+            }
+        }
+        runCurrent()
+
+        val failed = requireNotNull(owner.state.value.active)
+        assertEquals(TutorActiveStreamPhase.FAILED, failed.phase)
+        assertFalse(failed.durablyStarted)
+        assertTrue(failed.retryable)
+        assertEquals(
+            listOf(TutorActiveStreamRecovery.RETRY),
+            failed.recoveryActions,
+        )
+        owner.close()
+    }
+
+    @Test
+    fun storageFailureRetryIsConsumedOnlyOnce() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+        owner.submit(studentMessage = "继续") {
+            prepared("request-storage-failure") {
+                flow {
+                    throw IllegalStateException("database unavailable")
+                }
+            }
+        }
+        runCurrent()
+
+        assertTrue(owner.retry())
+        runCurrent()
+
+        val failedAgain = requireNotNull(owner.state.value.active)
+        assertEquals(TutorActiveStreamPhase.FAILED, failedAgain.phase)
+        assertTrue(failedAgain.recoveryActions.isEmpty())
+        assertFalse(owner.retry())
+        owner.close()
+    }
+
+    @Test
+    fun durableStartIsPublishedOnlyAfterTheStartedEvent() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val events = MutableSharedFlow<TutorStreamEvent>(extraBufferCapacity = 2)
+        val owner = owner(dispatcher)
+        owner.submit(studentMessage = "继续") {
+            prepared("request-1") { events }
+        }
+        runCurrent()
+
+        val identity = requireNotNull(owner.state.value.active?.identity)
+        assertFalse(owner.state.value.active?.durablyStarted == true)
+
+        events.tryEmit(TutorStreamEvent.Started(identity))
+        runCurrent()
+
+        assertTrue(owner.state.value.active?.durablyStarted == true)
+        owner.close()
+    }
+
     private fun TestScope.owner(
         dispatcher: CoroutineDispatcher,
         ownerScope: CoroutineScope = this,
