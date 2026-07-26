@@ -151,17 +151,38 @@ private data class TutorVisualReviewWorkItem(
 internal data class TutorProviderAuthorityState(
     val provider: ProviderCapabilitySnapshot? = null,
     val loadFailed: Boolean = false,
+    val refreshGeneration: Long = 0,
 ) {
     init {
         require(!loadFailed || provider == null)
+        require(refreshGeneration >= 0)
     }
 
-    fun afterRefreshSuccess(
-        refreshedProvider: ProviderCapabilitySnapshot,
-    ): TutorProviderAuthorityState = TutorProviderAuthorityState(provider = refreshedProvider)
+    fun beginRefresh(): TutorProviderAuthorityState =
+        TutorProviderAuthorityState(refreshGeneration = refreshGeneration + 1)
 
-    fun afterRefreshFailure(): TutorProviderAuthorityState =
-        TutorProviderAuthorityState(loadFailed = true)
+    fun afterRefreshSuccess(
+        generation: Long,
+        refreshedProvider: ProviderCapabilitySnapshot,
+    ): TutorProviderAuthorityState =
+        if (generation == refreshGeneration) {
+            TutorProviderAuthorityState(
+                provider = refreshedProvider,
+                refreshGeneration = refreshGeneration,
+            )
+        } else {
+            this
+        }
+
+    fun afterRefreshFailure(generation: Long): TutorProviderAuthorityState =
+        if (generation == refreshGeneration) {
+            TutorProviderAuthorityState(
+                loadFailed = true,
+                refreshGeneration = refreshGeneration,
+            )
+        } else {
+            this
+        }
 }
 
 @Composable
@@ -887,34 +908,33 @@ internal fun TutorModelPanel(
         onAutoStartAuthorizationConsumed(authorizationId)
     }
 
-    LaunchedEffect(question.sessionId) {
+    suspend fun refreshProviderAuthority() {
+        val refreshGeneration = providerAuthority.refreshGeneration + 1
+        providerAuthority = providerAuthority.beginRefresh()
+        pendingEgressState =
+            latestPendingEgressForCapabilityRefresh.value.withoutVisualRetry()
         try {
             providerAuthority = providerAuthority.afterRefreshSuccess(
-                modelTasks.capabilities(),
+                generation = refreshGeneration,
+                refreshedProvider = modelTasks.capabilities(),
             )
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            providerAuthority = providerAuthority.afterRefreshFailure()
-            pendingEgressState =
-                latestPendingEgressForCapabilityRefresh.value.withoutVisualRetry()
+            if (refreshGeneration == providerAuthority.refreshGeneration) {
+                providerAuthority = providerAuthority.afterRefreshFailure(refreshGeneration)
+            }
         }
+    }
+
+    LaunchedEffect(question.sessionId) {
+        refreshProviderAuthority()
     }
     DisposableEffect(lifecycleOwner, question.sessionId, modelTasks) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 scope.launch {
-                    try {
-                        providerAuthority = providerAuthority.afterRefreshSuccess(
-                            modelTasks.capabilities(),
-                        )
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (_: Exception) {
-                        providerAuthority = providerAuthority.afterRefreshFailure()
-                        pendingEgressState =
-                            latestPendingEgressForCapabilityRefresh.value.withoutVisualRetry()
-                    }
+                    refreshProviderAuthority()
                 }
             }
         }

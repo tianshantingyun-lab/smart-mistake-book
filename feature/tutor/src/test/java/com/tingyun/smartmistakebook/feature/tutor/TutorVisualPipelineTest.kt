@@ -256,9 +256,13 @@ class TutorVisualPipelineTest {
             supportsStreaming = false,
             providerConfigurationVersion = "config-v1",
         )
+        val refreshGeneration = 1L
         val available = TutorProviderAuthorityState()
-            .afterRefreshSuccess(provider)
-        val failedAuthority = available.afterRefreshFailure()
+            .beginRefresh()
+            .afterRefreshSuccess(refreshGeneration, provider)
+        val failedAuthority = available
+            .beginRefresh()
+            .afterRefreshFailure(refreshGeneration + 1)
 
         assertEquals(provider, available.provider)
         assertNull(failedAuthority.provider)
@@ -272,6 +276,57 @@ class TutorVisualPipelineTest {
             providerLoadFailed = failedAuthority.loadFailed,
         ) as TutorVisualResolution.Fallback
         assertEquals(TutorVisualFallbackReason.PROVIDER_UNAVAILABLE, failed.reason)
+    }
+
+    @Test
+    fun refreshingProviderImmediatelyRevokesPriorAuthority() {
+        val provider = externalVisualProvider(modelId = "old-model")
+        val available = TutorProviderAuthorityState()
+            .beginRefresh()
+            .afterRefreshSuccess(generation = 1, refreshedProvider = provider)
+
+        val refreshing = available.beginRefresh()
+
+        assertNull(refreshing.provider)
+        assertTrue(!refreshing.loadFailed)
+        assertEquals(2, refreshing.refreshGeneration)
+    }
+
+    @Test
+    fun staleRefreshSuccessCannotRestoreRevokedProviderAuthority() {
+        val oldProvider = externalVisualProvider(modelId = "old-model")
+        val newProvider = externalVisualProvider(modelId = "new-model")
+        val firstRefresh = TutorProviderAuthorityState().beginRefresh()
+        val secondRefresh = firstRefresh.beginRefresh()
+
+        val afterStaleSuccess = secondRefresh.afterRefreshSuccess(
+            generation = firstRefresh.refreshGeneration,
+            refreshedProvider = oldProvider,
+        )
+        val afterCurrentSuccess = afterStaleSuccess.afterRefreshSuccess(
+            generation = secondRefresh.refreshGeneration,
+            refreshedProvider = newProvider,
+        )
+
+        assertNull(afterStaleSuccess.provider)
+        assertEquals(newProvider, afterCurrentSuccess.provider)
+        assertTrue(!afterCurrentSuccess.loadFailed)
+    }
+
+    @Test
+    fun staleRefreshFailureCannotOverrideNewerProviderAuthority() {
+        val oldRefresh = TutorProviderAuthorityState().beginRefresh()
+        val currentRefresh = oldRefresh.beginRefresh()
+        val currentProvider = externalVisualProvider(modelId = "new-model")
+        val available = currentRefresh.afterRefreshSuccess(
+            generation = currentRefresh.refreshGeneration,
+            refreshedProvider = currentProvider,
+        )
+
+        val afterStaleFailure = available.afterRefreshFailure(oldRefresh.refreshGeneration)
+
+        assertEquals(currentProvider, afterStaleFailure.provider)
+        assertTrue(!afterStaleFailure.loadFailed)
     }
 
     @Test
@@ -386,6 +441,18 @@ class TutorVisualPipelineTest {
 
         assertEquals(TutorVisualResolution.Preparing, resolved)
     }
+
+    private fun externalVisualProvider(modelId: String): ProviderCapabilitySnapshot =
+        ProviderCapabilitySnapshot(
+            providerId = "external-provider",
+            providerDisplayName = "External provider",
+            modelId = modelId,
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+            providerConfigurationVersion = "config-v1",
+        )
 
     private fun generationTask(
         scene: TutorVisualDocumentScene,
