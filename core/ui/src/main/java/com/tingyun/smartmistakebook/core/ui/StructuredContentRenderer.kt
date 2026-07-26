@@ -81,9 +81,8 @@ import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.StructuredContentSanitizer
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownChunkChain
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
-import java.util.Collections
-import java.util.IdentityHashMap
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineDispatcher
@@ -738,14 +737,18 @@ internal class IncrementalSafeMarkdownParser(
     private val publishedState = AtomicReference(
         PublishedState(
             key = null,
-            stableCache = ChunkParseCache(),
-            provisionalCache = ChunkParseCache(),
+            stableCache = newChunkParseCache(),
+            provisionalCache = newChunkParseCache(),
         ),
     )
     private val parsedCharacterCounter = AtomicLong()
+    private val cacheMaintenanceWorkCounter = AtomicLong()
 
     val parsedCharacterCount: Long
         get() = parsedCharacterCounter.get()
+
+    val cacheMaintenanceWorkCount: Long
+        get() = cacheMaintenanceWorkCounter.get()
 
     fun prepare(
         snapshot: TutorMarkdownSnapshot,
@@ -764,8 +767,8 @@ internal class IncrementalSafeMarkdownParser(
                 current.key?.contentIdentity == contentIdentity -> current.copy(key = key)
                 else -> PublishedState(
                     key = key,
-                    stableCache = ChunkParseCache(),
-                    provisionalCache = ChunkParseCache(),
+                    stableCache = newChunkParseCache(),
+                    provisionalCache = newChunkParseCache(),
                 )
             }
             if (selected === current || publishedState.compareAndSet(current, selected)) {
@@ -800,13 +803,17 @@ internal class IncrementalSafeMarkdownParser(
                 provisionalTail = parseChunk(request.key.provisionalTail),
                 contentIdentity = request.key.contentIdentity,
             )
-            publishedState.compareAndSet(
+            val published = publishedState.compareAndSet(
                 captured,
                 captured.copy(
                     stableCache = stable.cache,
                     provisionalCache = provisional.cache,
                 ),
             )
+            if (published) {
+                stable.publishCacheEntry()
+                provisional.publishCacheEntry()
+            }
             result
         }
 
@@ -829,24 +836,26 @@ internal class IncrementalSafeMarkdownParser(
         parsedCharacterCounter.addAndGet(markdown.length.toLong())
         return chunkParser(markdown)
     }
+
+    private fun newChunkParseCache(): ChunkParseCache =
+        ChunkParseCache(cacheMaintenanceWorkCounter::addAndGet)
 }
 
-internal data class ChunkParseResult(
+internal class ChunkParseResult(
     val cache: ChunkParseCache,
     val value: ParsedMarkdownChunkChain,
-)
+    private val publishCacheEntryAction: () -> Unit = {},
+) {
+    fun publishCacheEntry() = publishCacheEntryAction()
+}
 
 internal class ChunkParseCache private constructor(
-    private val values: Map<TutorMarkdownChunkChain, ParsedMarkdownChunkChain>,
+    private val registry: ChunkParseRegistry,
     private val latestChain: TutorMarkdownChunkChain,
     private val latestValue: ParsedMarkdownChunkChain,
 ) {
-    constructor() : this(
-        values = Collections.unmodifiableMap(
-            IdentityHashMap<TutorMarkdownChunkChain, ParsedMarkdownChunkChain>().apply {
-                put(TutorMarkdownChunkChain.EMPTY, ParsedMarkdownChunkChain.EMPTY)
-            },
-        ),
+    constructor(recordMaintenanceWork: (Long) -> Unit) : this(
+        registry = ChunkParseRegistry(recordMaintenanceWork),
         latestChain = TutorMarkdownChunkChain.EMPTY,
         latestValue = ParsedMarkdownChunkChain.EMPTY,
     )
@@ -855,12 +864,12 @@ internal class ChunkParseCache private constructor(
         chain: TutorMarkdownChunkChain,
         parseChunk: (String) -> AnnotatedString,
     ): ChunkParseResult {
-        values[chain]?.let { cached ->
+        registry[chain]?.let { cached ->
             return ChunkParseResult(
                 cache = if (chain === latestChain) {
                     this
                 } else {
-                    ChunkParseCache(values, chain, cached)
+                    ChunkParseCache(registry, chain, cached)
                 },
                 value = cached,
             )
@@ -872,27 +881,60 @@ internal class ChunkParseCache private constructor(
         chunks.forEach { chunk ->
             parsed = parsed.append(parseChunk(chunk))
         }
-        val nextValues = IdentityHashMap(values).apply {
-            put(chain, parsed)
-        }
         return ChunkParseResult(
             cache = ChunkParseCache(
-                values = Collections.unmodifiableMap(nextValues),
+                registry = registry,
                 latestChain = chain,
                 latestValue = parsed,
             ),
             value = parsed,
+            publishCacheEntryAction = {
+                registry.putIfAbsent(chain, parsed)
+            },
         )
     }
 
     fun closestParsedPrefix(chain: TutorMarkdownChunkChain): ParsedMarkdownChunkChain {
-        values[chain]?.let { return it }
+        registry[chain]?.let { return it }
         return if (chain.appendedChunksSince(latestChain) != null) {
             latestValue
         } else {
             ParsedMarkdownChunkChain.EMPTY
         }
     }
+}
+
+private class ChunkParseRegistry(
+    private val recordMaintenanceWork: (Long) -> Unit,
+) {
+    private val values =
+        ConcurrentHashMap<ReferentialIdentityKey<TutorMarkdownChunkChain>, ParsedMarkdownChunkChain>()
+            .apply {
+                put(
+                    ReferentialIdentityKey(TutorMarkdownChunkChain.EMPTY),
+                    ParsedMarkdownChunkChain.EMPTY,
+                )
+            }
+
+    operator fun get(chain: TutorMarkdownChunkChain): ParsedMarkdownChunkChain? =
+        values[ReferentialIdentityKey(chain)]
+
+    fun putIfAbsent(
+        chain: TutorMarkdownChunkChain,
+        parsed: ParsedMarkdownChunkChain,
+    ): ParsedMarkdownChunkChain {
+        recordMaintenanceWork(1)
+        return values.putIfAbsent(ReferentialIdentityKey(chain), parsed) ?: parsed
+    }
+}
+
+private class ReferentialIdentityKey<T : Any>(
+    private val value: T,
+) {
+    override fun equals(other: Any?): Boolean =
+        other is ReferentialIdentityKey<*> && value === other.value
+
+    override fun hashCode(): Int = System.identityHashCode(value)
 }
 
 internal class ParsedMarkdownChunkChain private constructor(

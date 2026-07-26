@@ -137,7 +137,7 @@ class SafeMarkdownParserTest {
 
     @Test
     fun `streaming parser retains parsed chunks when preview input doubles`() = runBlocking {
-        suspend fun parseWork(characterCount: Int): Pair<Long, String> {
+        suspend fun parseWork(characterCount: Int): Triple<Long, Long, String> {
             var nowNanos = 0L
             val assembler = StreamingMarkdownAssembler(clockNanos = { nowNanos })
             val parser = IncrementalSafeMarkdownParser()
@@ -155,22 +155,48 @@ class SafeMarkdownParserTest {
                 patch.appendedChunks.forEach { carrier.append(it.text) }
             }
             val visible = carrier.toString()
+            val cacheWork = parser.cacheMaintenanceWorkCount
             val work = parser.parsedCharacterCount +
+                cacheWork +
                 planner.appliedCharacterCount +
                 visible.length
-            return work to visible
+            return Triple(work, cacheWork, visible)
         }
 
-        val (workAt2k, visibleAt2k) = parseWork(2_048)
-        val (workAt4k, visibleAt4k) = parseWork(4_096)
+        val (workAt2k, cacheWorkAt2k, visibleAt2k) = parseWork(2_048)
+        val (workAt4k, cacheWorkAt4k, visibleAt4k) = parseWork(4_096)
 
         assertEquals(2_048, visibleAt2k.length)
         assertEquals(4_096, visibleAt4k.length)
+        org.junit.Assert.assertTrue(cacheWorkAt2k >= 2_048)
+        org.junit.Assert.assertTrue(cacheWorkAt4k >= 4_096)
         org.junit.Assert.assertTrue(
             "doubling input must keep UI parse work near-linear: " +
-                "2k=$workAt2k, 4k=$workAt4k",
+                "2k=$workAt2k (cache=$cacheWorkAt2k), " +
+                "4k=$workAt4k (cache=$cacheWorkAt4k)",
             workAt4k * 10 <= workAt2k * 22,
         )
+    }
+
+    @Test
+    fun `stale same identity parses do not publish cache entries`() = runBlocking {
+        var nowNanos = 0L
+        val assembler = StreamingMarkdownAssembler(clockNanos = { nowNanos })
+        val parser = IncrementalSafeMarkdownParser()
+        val requests = List(32) {
+            nowNanos += 64_000_000L
+            parser.prepare(
+                snapshot = assembler.append("a"),
+                contentIdentity = "same-turn",
+            )
+        }
+
+        val finalResult = requests.fold(
+            StreamingMarkdownRenderState.empty("same-turn"),
+        ) { _, request -> parser.parse(request) }
+
+        assertEquals("a".repeat(32), finalResult.materialize().text)
+        assertEquals(1L, parser.cacheMaintenanceWorkCount)
     }
 
     @Test
