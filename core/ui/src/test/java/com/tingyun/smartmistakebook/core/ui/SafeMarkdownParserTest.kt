@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -197,6 +198,128 @@ class SafeMarkdownParserTest {
 
         assertEquals("a".repeat(32), finalResult.materialize().text)
         assertEquals(1L, parser.cacheMaintenanceWorkCount)
+    }
+
+    @Test
+    fun `published cache state makes its rollback entry visible atomically`() = runBlocking {
+        val publishEntered = CountDownLatch(1)
+        val releasePublish = CountDownLatch(1)
+        val bParsed = CountDownLatch(1)
+        val bCompleted = CountDownLatch(1)
+        val blockedKey = AtomicReference<StreamingMarkdownParseKey?>()
+        val parser = IncrementalSafeMarkdownParser(
+            dispatcher = Dispatchers.Default,
+            chunkParser = { markdown ->
+                if (markdown == "B") bParsed.countDown()
+                AnnotatedString(markdown)
+            },
+            afterStatePublished = { key ->
+                if (key == blockedKey.get()) {
+                    publishEntered.countDown()
+                    check(releasePublish.await(5, TimeUnit.SECONDS))
+                }
+            },
+        )
+        val assembler = StreamingMarkdownAssembler()
+        val identity = "same-turn"
+        parser.parse(assembler.append("稳定\n\n"), identity)
+
+        val snapshotA = assembler.append("A")
+        val requestA = parser.prepare(snapshotA, identity)
+        blockedKey.set(requestA.key)
+        val parseA = async(Dispatchers.Default) {
+            parser.parse(requestA)
+        }
+        assertTrue(publishEntered.await(5, TimeUnit.SECONDS))
+        assertEquals(
+            "稳定\n\nA",
+            parser.visibleWhileParsing(snapshotA, identity).materialize().text,
+        )
+
+        val snapshotB = assembler.append("B")
+        val requestB = parser.prepare(snapshotB, identity)
+        val parseB = async(Dispatchers.Default) {
+            try {
+                parser.parse(requestB)
+            } finally {
+                bCompleted.countDown()
+            }
+        }
+        assertTrue(bParsed.await(5, TimeUnit.SECONDS))
+
+        val bCompletedBeforeRelease: Boolean
+        val rollbackBeforeRelease: StreamingMarkdownRenderState
+        try {
+            bCompletedBeforeRelease = bCompleted.await(1, TimeUnit.SECONDS)
+            rollbackBeforeRelease = parser.visibleWhileParsing(snapshotA, identity)
+        } finally {
+            releasePublish.countDown()
+        }
+        parseA.await()
+        parseB.await()
+
+        assertEquals("稳定\n\nA", rollbackBeforeRelease.materialize().text)
+        assertFalse(
+            "B must not publish through A's incomplete publication",
+            bCompletedBeforeRelease,
+        )
+        assertEquals(
+            "稳定\n\nA",
+            parser.visibleWhileParsing(snapshotA, identity).materialize().text,
+        )
+        assertEquals(2L, parser.cacheMaintenanceWorkCount)
+    }
+
+    @Test
+    fun `cache hit reasserts an entry removed by a losing staged publisher`() = runBlocking {
+        val entriesStaged = CountDownLatch(1)
+        val releaseStagedEntries = CountDownLatch(1)
+        val bParsed = CountDownLatch(1)
+        val blockedKey = AtomicReference<StreamingMarkdownParseKey?>()
+        val parser = IncrementalSafeMarkdownParser(
+            dispatcher = Dispatchers.Default,
+            chunkParser = { markdown ->
+                if (markdown == "\\") bParsed.countDown()
+                AnnotatedString(markdown)
+            },
+            afterCacheEntriesStaged = { key ->
+                if (key == blockedKey.get()) {
+                    entriesStaged.countDown()
+                    check(releaseStagedEntries.await(5, TimeUnit.SECONDS))
+                }
+            },
+        )
+        var nowNanos = 0L
+        val assembler = StreamingMarkdownAssembler(clockNanos = { nowNanos })
+        val identity = "same-turn"
+        parser.parse(assembler.append("稳定\n\n"), identity)
+
+        nowNanos += 64_000_000L
+        val snapshotA = assembler.append("A")
+        val requestA = parser.prepare(snapshotA, identity)
+        blockedKey.set(requestA.key)
+        val parseA = async(Dispatchers.Default) {
+            parser.parse(requestA)
+        }
+        assertTrue(entriesStaged.await(5, TimeUnit.SECONDS))
+
+        val snapshotB = assembler.append("\\")
+        assertSame(snapshotA.provisionalContent, snapshotB.provisionalContent)
+        val parseB = async(Dispatchers.Default) {
+            parser.parse(parser.prepare(snapshotB, identity))
+        }
+        assertTrue(bParsed.await(5, TimeUnit.SECONDS))
+
+        releaseStagedEntries.countDown()
+        parseA.await()
+        parseB.await()
+
+        val snapshotC = assembler.append("x")
+        parser.parse(snapshotC, identity)
+        assertEquals(
+            "稳定\n\nA",
+            parser.visibleWhileParsing(snapshotA, identity).materialize().text,
+        )
     }
 
     @Test

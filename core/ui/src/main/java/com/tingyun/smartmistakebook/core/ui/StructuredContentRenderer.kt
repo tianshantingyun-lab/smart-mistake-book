@@ -721,6 +721,8 @@ internal suspend fun parseSafeMarkdown(
 internal class IncrementalSafeMarkdownParser(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val chunkParser: (String) -> AnnotatedString = { it.toSafeAnnotatedString() },
+    private val afterStatePublished: (StreamingMarkdownParseKey) -> Unit = {},
+    private val afterCacheEntriesStaged: (StreamingMarkdownParseKey) -> Unit = {},
 ) {
     internal data class PublishedState(
         val key: StreamingMarkdownParseKey?,
@@ -743,6 +745,7 @@ internal class IncrementalSafeMarkdownParser(
     )
     private val parsedCharacterCounter = AtomicLong()
     private val cacheMaintenanceWorkCounter = AtomicLong()
+    private val publisherLock = Any()
 
     val parsedCharacterCount: Long
         get() = parsedCharacterCounter.get()
@@ -803,17 +806,7 @@ internal class IncrementalSafeMarkdownParser(
                 provisionalTail = parseChunk(request.key.provisionalTail),
                 contentIdentity = request.key.contentIdentity,
             )
-            val published = publishedState.compareAndSet(
-                captured,
-                captured.copy(
-                    stableCache = stable.cache,
-                    provisionalCache = provisional.cache,
-                ),
-            )
-            if (published) {
-                stable.publishCacheEntry()
-                provisional.publishCacheEntry()
-            }
+            publishIfCurrent(request.key, captured, stable, provisional)
             result
         }
 
@@ -839,14 +832,64 @@ internal class IncrementalSafeMarkdownParser(
 
     private fun newChunkParseCache(): ChunkParseCache =
         ChunkParseCache(cacheMaintenanceWorkCounter::addAndGet)
+
+    private fun publishIfCurrent(
+        key: StreamingMarkdownParseKey,
+        captured: PublishedState,
+        stable: ChunkParseResult,
+        provisional: ChunkParseResult,
+    ) {
+        synchronized(publisherLock) {
+            if (publishedState.get() !== captured) return
+
+            val stableEntry = stable.stageCacheEntry()
+            val provisionalEntry = provisional.stageCacheEntry()
+            afterCacheEntriesStaged(key)
+            val published = publishedState.compareAndSet(
+                captured,
+                captured.copy(
+                    stableCache = stable.cache,
+                    provisionalCache = provisional.cache,
+                ),
+            )
+            if (published) {
+                stableEntry.commit()
+                provisionalEntry.commit()
+                afterStatePublished(key)
+            } else {
+                provisionalEntry.rollback()
+                stableEntry.rollback()
+            }
+        }
+    }
 }
 
 internal class ChunkParseResult(
     val cache: ChunkParseCache,
     val value: ParsedMarkdownChunkChain,
-    private val publishCacheEntryAction: () -> Unit = {},
+    private val stageCacheEntryAction: () -> CacheEntryPublication = {
+        CacheEntryPublication.NONE
+    },
 ) {
-    fun publishCacheEntry() = publishCacheEntryAction()
+    fun stageCacheEntry(): CacheEntryPublication = stageCacheEntryAction()
+}
+
+internal class CacheEntryPublication private constructor(
+    private val commitAction: () -> Unit,
+    private val rollbackAction: () -> Unit,
+) {
+    fun commit() = commitAction()
+
+    fun rollback() = rollbackAction()
+
+    companion object {
+        val NONE = CacheEntryPublication({}, {})
+
+        fun inserted(
+            commit: () -> Unit,
+            rollback: () -> Unit,
+        ) = CacheEntryPublication(commit, rollback)
+    }
 }
 
 internal class ChunkParseCache private constructor(
@@ -872,6 +915,9 @@ internal class ChunkParseCache private constructor(
                     ChunkParseCache(registry, chain, cached)
                 },
                 value = cached,
+                stageCacheEntryAction = {
+                    registry.stagePutIfAbsent(chain, cached)
+                },
             )
         }
         val appended = chain.appendedChunksSince(latestChain)
@@ -888,8 +934,8 @@ internal class ChunkParseCache private constructor(
                 latestValue = parsed,
             ),
             value = parsed,
-            publishCacheEntryAction = {
-                registry.putIfAbsent(chain, parsed)
+            stageCacheEntryAction = {
+                registry.stagePutIfAbsent(chain, parsed)
             },
         )
     }
@@ -919,12 +965,16 @@ private class ChunkParseRegistry(
     operator fun get(chain: TutorMarkdownChunkChain): ParsedMarkdownChunkChain? =
         values[ReferentialIdentityKey(chain)]
 
-    fun putIfAbsent(
+    fun stagePutIfAbsent(
         chain: TutorMarkdownChunkChain,
         parsed: ParsedMarkdownChunkChain,
-    ): ParsedMarkdownChunkChain {
-        recordMaintenanceWork(1)
-        return values.putIfAbsent(ReferentialIdentityKey(chain), parsed) ?: parsed
+    ): CacheEntryPublication {
+        val key = ReferentialIdentityKey(chain)
+        if (values.putIfAbsent(key, parsed) != null) return CacheEntryPublication.NONE
+        return CacheEntryPublication.inserted(
+            commit = { recordMaintenanceWork(1) },
+            rollback = { values.remove(key, parsed) },
+        )
     }
 }
 
