@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.model.TutorDiagramAnchor
@@ -21,6 +22,7 @@ import com.tingyun.smartmistakebook.core.model.TutorDiagramNodeShape
 import com.tingyun.smartmistakebook.core.model.TutorSpatialDiagramScene
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -65,6 +67,25 @@ class TutorSpatialDiagramInstrumentedTest {
         composeRule.onNodeWithTag("tutor-spatial-node-circuit-resistor").assertExists()
         composeRule.onNodeWithContentDescription("图中上方：电阻").assertExists()
         capture("tutor-spatial-circuit-current.png")
+    }
+
+    @Test
+    fun legacyVisualUsesFocusedViewAndClosesItBeforeOpeningOriginal() {
+        var originalOpened = false
+        composeRule.setContent {
+            MaterialTheme {
+                TutorVisualSceneRenderer(
+                    scene = physicsScene(),
+                    onOpenOriginal = { originalOpened = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("专注查看").performClick()
+        composeRule.onNodeWithContentDescription("返回").assertExists()
+        composeRule.onNodeWithContentDescription("查看原图").performClick()
+        composeRule.onNodeWithContentDescription("返回").assertDoesNotExist()
+        composeRule.runOnIdle { assertTrue(originalOpened) }
     }
 
     private fun physicsScene() = TutorSpatialDiagramScene(

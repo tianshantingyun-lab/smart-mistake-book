@@ -983,6 +983,44 @@ data class PersistTutorChoiceCommand(
     }
 }
 
+data class TutorVisualTargetEvidenceRecord(
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val cycleOrdinal: Int,
+    val turnOrdinal: Int,
+    val surfaceKind: String,
+    val modelTaskRequestId: String,
+    val responseOrdinal: Int?,
+    val selectedTargetId: String,
+    val selectionWasCorrect: Boolean,
+    val submittedAtEpochMillis: Long,
+)
+
+data class PersistTutorVisualTargetEvidenceCommand(
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val cycleOrdinal: Int,
+    val turnOrdinal: Int,
+    val surfaceKind: String,
+    val modelTaskRequestId: String,
+    val responseOrdinal: Int?,
+    val selectedTargetId: String,
+    val submittedAtEpochMillis: Long,
+) {
+    init {
+        require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
+        require(revisionNumber > 0 && cycleOrdinal > 0 && turnOrdinal > 0)
+        require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(
+            surfaceKind == "PLAN" && responseOrdinal == null ||
+                surfaceKind == "FOLLOW_UP" && responseOrdinal != null && responseOrdinal > 0,
+        ) { "Persisted tutor visual-target evidence identity is inconsistent" }
+        require(submittedAtEpochMillis >= 0)
+    }
+}
+
 data class PersistTutorMoveCommand(
     val sessionId: String,
     val questionDocumentId: String,
@@ -1362,6 +1400,10 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     fun observeTutorTurnResponses(sessionId: String): Flow<List<TutorTurnResponseRecord>> =
         flowOf(emptyList())
 
+    fun observeTutorVisualTargetEvidence(
+        sessionId: String,
+    ): Flow<List<TutorVisualTargetEvidenceRecord>> = flowOf(emptyList())
+
     fun observePendingCaptureDrafts(): Flow<List<PendingCaptureDraftRecord>> =
         throw UnsupportedOperationException("Pending capture reads are not implemented")
 
@@ -1698,6 +1740,16 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
         throw UnsupportedOperationException("Tutor response writes are not implemented")
 
     suspend fun discardTutorChoice(command: PersistTutorChoiceCommand): Boolean = false
+
+    suspend fun recordTutorVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): TutorVisualTargetEvidenceRecord = throw UnsupportedOperationException(
+        "Tutor visual-target evidence writes are not implemented",
+    )
+
+    suspend fun discardTutorVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): Boolean = false
 
     suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord =
         throw UnsupportedOperationException("Tutor move writes are not implemented")

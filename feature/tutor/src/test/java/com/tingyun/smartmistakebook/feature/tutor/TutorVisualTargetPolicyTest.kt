@@ -19,10 +19,22 @@ class TutorVisualTargetPolicyTest {
                 sceneReported = false,
             ),
         )
+        assertTrue(
+            isTutorVisualTargetReady(
+                state = TutorVisualResolution.Hidden,
+                hasInlineScene = true,
+            ),
+        )
+        assertFalse(
+            isTutorVisualTargetReady(
+                state = TutorVisualResolution.Hidden,
+                hasInlineScene = false,
+            ),
+        )
     }
 
     @Test
-    fun staleMissingDirectReportedAndWrongHitsFailClosed() {
+    fun staleMissingDirectReportedAndBlankHitsFailClosedWhileOtherVisibleHitsSubmit() {
         val valid = VisualTargetAttempt(
             mode = TutorExplanationMode.GUIDED,
             pendingEvidenceRequestId = "request-1",
@@ -37,7 +49,8 @@ class TutorVisualTargetPolicyTest {
         assertFalse(canSubmitTutorVisualTarget(valid.copy(visualReady = false)))
         assertFalse(canSubmitTutorVisualTarget(valid.copy(mode = TutorExplanationMode.DIRECT)))
         assertFalse(canSubmitTutorVisualTarget(valid.copy(sceneReported = true)))
-        assertFalse(canSubmitTutorVisualTarget(valid.copy(hitTargetId = "node-2")))
+        assertTrue(canSubmitTutorVisualTarget(valid.copy(hitTargetId = "node-2")))
+        assertFalse(canSubmitTutorVisualTarget(valid.copy(hitTargetId = "")))
         assertFalse(canSubmitTutorVisualTarget(valid.copy(pendingEvidenceRequestId = null)))
     }
 }

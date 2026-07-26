@@ -388,9 +388,16 @@ internal fun TutorChatExchange(
                 explanationMode = explanationMode,
                 onDirectiveResponse = onDirectiveResponse,
                 localIntentContent = localIntentContent,
-                visualTargetReady = resolvedVisual is TutorVisualResolution.Ready,
+                visualTargetReady = isTutorVisualTargetReady(
+                    state = resolvedVisual,
+                    hasInlineScene = output?.visualScene != null,
+                ),
                 assistantBottomModifier = assistantBottomModifier,
             )
+            val visualTargetHitHandler = onVisualTargetHit.takeIf {
+                explanationMode == TutorExplanationMode.GUIDED &&
+                    output?.interactionDirective is TutorInteractionDirective.VisualTarget
+            }
             TutorVisualPresentation(
                 state = resolvedVisual,
                 mode = visualPresentationMode,
@@ -398,10 +405,7 @@ internal fun TutorChatExchange(
                 onRetry = onRetryVisual,
                 onOpenOriginal = onOpenVisualOriginal,
                 onReportIncorrect = onReportVisualIncorrect,
-                onTargetHit = onVisualTargetHit.takeIf {
-                    explanationMode == TutorExplanationMode.GUIDED &&
-                        output?.interactionDirective is TutorInteractionDirective.VisualTarget
-                },
+                onTargetHit = visualTargetHitHandler,
             )
             output?.visualScene?.let { scene ->
                 TutorVisualPresentation(
@@ -410,10 +414,11 @@ internal fun TutorChatExchange(
                         cacheKey = "legacy:${scene.schemaVersion}:${scene.sceneId}",
                     ),
                     mode = visualPresentationMode,
-                    originalAvailable = false,
+                    originalAvailable = visualOriginalAvailable,
                     onRetry = {},
-                    onOpenOriginal = {},
-                    onReportIncorrect = {},
+                    onOpenOriginal = onOpenVisualOriginal,
+                    onReportIncorrect = onReportVisualIncorrect,
+                    onTargetHit = visualTargetHitHandler,
                 )
             }
         }

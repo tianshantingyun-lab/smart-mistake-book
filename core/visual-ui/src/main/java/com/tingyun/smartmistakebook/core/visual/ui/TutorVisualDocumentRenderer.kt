@@ -73,8 +73,8 @@ fun TutorVisualDocumentContent(
     val compiled = compiledResult.getOrNull()?.takeIf { it.integrity.canRender }
     if (compiled == null) {
         TutorVisualFallback(
-            markdown = scene.fallbackMarkdown,
-            accessibilitySummary = scene.accessibilitySummary,
+            markdown = LOCAL_VISUAL_FAILURE_MESSAGE,
+            accessibilitySummary = LOCAL_VISUAL_FAILURE_SUMMARY,
             modifier = modifier,
         )
         return
@@ -121,8 +121,8 @@ private fun TutorVisualDocumentPlayer(
     }
     if (!frame.canRender) {
         TutorVisualFallback(
-            markdown = scene.fallbackMarkdown,
-            accessibilitySummary = scene.accessibilitySummary,
+            markdown = LOCAL_VISUAL_FAILURE_MESSAGE,
+            accessibilitySummary = LOCAL_VISUAL_FAILURE_SUMMARY,
             modifier = modifier,
         )
         return
@@ -416,6 +416,10 @@ private fun TutorVisualFallback(
         )
     }
 }
+
+internal const val LOCAL_VISUAL_FAILURE_MESSAGE =
+    "图解暂时无法显示，请继续查看文字讲解或原图。"
+private const val LOCAL_VISUAL_FAILURE_SUMMARY = "图解暂时无法显示"
 
 private fun defaultPanelLabel(kind: TutorVisualPanelKind): String = when (kind) {
     TutorVisualPanelKind.DIAGRAM_2D -> "装置"

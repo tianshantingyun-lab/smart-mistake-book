@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualDimension
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpression
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpressionOperation
 import com.tingyun.smartmistakebook.core.model.TutorVisualLatticeElement
+import com.tingyun.smartmistakebook.core.model.TutorVisualParticleGroupElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualValueSource
 import com.tingyun.smartmistakebook.core.model.TutorVisualVariable
@@ -100,6 +101,31 @@ class TutorVisualDocumentRuntimeTest {
         assertTrue(first.connectors.values.all { it.points.size >= 2 })
         val regionCenter = first.nodes.getValue("battery_region_two").bounds.center
         assertEquals("battery_region_two", first.hitTest(regionCenter))
+        assertEquals(
+            null,
+            first.hitTest(
+                point = regionCenter,
+                eligibleElementIds = emptySet(),
+            ),
+        )
+        val connector = first.connectors.values.first()
+        val connectorId = connector.element.elementId
+        assertEquals(
+            connectorId,
+            first.hitTest(
+                point = connector.points.first(),
+                eligibleElementIds = setOf(connectorId),
+                connectorProgressById = mapOf(connectorId to 0.25),
+            ),
+        )
+        assertEquals(
+            null,
+            first.hitTest(
+                point = connector.points.last(),
+                eligibleElementIds = setOf(connectorId),
+                connectorProgressById = mapOf(connectorId to 0.25),
+            ),
+        )
     }
 
     @Test
@@ -187,6 +213,40 @@ class TutorVisualDocumentRuntimeTest {
     }
 
     @Test
+    fun denominatorThatCanCrossZeroBetweenSamplesFailsStaticValidation() {
+        val original = TutorVisualSeedFixtures.uTubeGasColumns()
+        val denominator = TutorVisualDocumentExpression(
+            operation = TutorVisualDocumentExpressionOperation.SUBTRACT,
+            arguments = listOf(
+                TutorVisualDocumentExpression.timeProgress(),
+                TutorVisualDocumentExpression.constant(0.25),
+            ),
+        )
+        val invalidBinding = TutorVisualBinding(
+            bindingId = "utube_between_samples_binding",
+            target = TutorVisualBindingTarget.ELEMENT,
+            targetId = "utube_gas_a",
+            property = TutorVisualBindingProperty.LIQUID_LEVEL,
+            expression = TutorVisualDocumentExpression(
+                operation = TutorVisualDocumentExpressionOperation.DIVIDE,
+                arguments = listOf(
+                    TutorVisualDocumentExpression.constant(1.0),
+                    denominator,
+                ),
+            ),
+        )
+
+        val result = runCatching {
+            TutorVisualDocumentCompiler.compile(
+                original.copy(bindings = original.bindings + invalidBinding),
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("finite"))
+    }
+
+    @Test
     fun bindingWithoutRendererConsumerFailsCompilation() {
         val original = TutorVisualSeedFixtures.uTubeGasColumns()
         val unsupportedBinding = TutorVisualBinding(
@@ -205,6 +265,54 @@ class TutorVisualDocumentRuntimeTest {
 
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("renderer"))
+    }
+
+    @Test
+    fun liquidLevelBindingRequiresALiquidLevelNode() {
+        val original = TutorVisualSeedFixtures.uTubeGasColumns()
+        val nonLiquidNode = original.elements
+            .filterIsInstance<TutorVisual2DNodeElement>()
+            .first { node ->
+                node.kind != com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind.LIQUID_LEVEL
+            }
+        val unsupportedBinding = TutorVisualBinding(
+            bindingId = "utube_non_liquid_level_binding",
+            target = TutorVisualBindingTarget.ELEMENT,
+            targetId = nonLiquidNode.elementId,
+            property = TutorVisualBindingProperty.LIQUID_LEVEL,
+            expression = TutorVisualDocumentExpression.constant(0.5),
+        )
+
+        val result = runCatching {
+            TutorVisualDocumentCompiler.compile(
+                original.copy(bindings = original.bindings + unsupportedBinding),
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("renderer"))
+    }
+
+    @Test
+    fun canvasParticleBudgetFailsClosedInsteadOfSilentlyCappingDraws() {
+        val original = TutorVisualSeedFixtures.membraneFlowBattery()
+        val particles = original.elements
+            .filterIsInstance<TutorVisualParticleGroupElement>()
+            .first()
+        val overBudget = particles.copy(instanceCount = 301)
+
+        val result = runCatching {
+            TutorVisualDocumentCompiler.compile(
+                original.copy(
+                    elements = original.elements.map { element ->
+                        if (element.elementId == particles.elementId) overBudget else element
+                    },
+                ),
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("particle budget"))
     }
 
     @Test
@@ -255,6 +363,20 @@ class TutorVisualDocumentRuntimeTest {
                 "model-1",
                 providerId = "provider-a",
                 providerConfigurationVersion = "config-v2",
+            ),
+        )
+        assertNotEquals(
+            TutorVisualCacheKey.create(
+                "question-a",
+                "abcd",
+                "model-1",
+                requestIdentity = "plan:1:1:focus-a",
+            ),
+            TutorVisualCacheKey.create(
+                "question-a",
+                "abcd",
+                "model-1",
+                requestIdentity = "plan:1:1:focus-b",
             ),
         )
     }

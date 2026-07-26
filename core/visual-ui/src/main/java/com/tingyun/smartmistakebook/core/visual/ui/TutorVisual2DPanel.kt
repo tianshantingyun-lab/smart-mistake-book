@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -81,6 +82,7 @@ internal fun TutorVisual2DPanel(
                 height = heightPx,
             )
         }
+        val currentFrame by rememberUpdatedState(frame)
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
@@ -88,6 +90,9 @@ internal fun TutorVisual2DPanel(
                     detectTapGestures { offset ->
                         val hitTargetId = layout.hitTest(
                             TutorVisualPoint(offset.x.toDouble(), offset.y.toDouble()),
+                            eligibleElementIds = layout.hitTestEligibleElementIds(currentFrame),
+                            connectorProgressById =
+                                layout.visibleConnectorProgressById(currentFrame),
                         )
                         selectedElementId = hitTargetId
                         hitTargetId?.let { targetId -> onTargetHit?.invoke(targetId) }
@@ -310,6 +315,24 @@ private fun List<TutorVisualPoint>.takeByProgress(progress: Double): List<TutorV
     return result
 }
 
+private fun com.tingyun.smartmistakebook.core.visual.runtime.TutorVisual2DLayout
+    .hitTestEligibleElementIds(frame: TutorVisualFrame): Set<String> =
+    (nodes.keys + connectors.keys).filterTo(hashSetOf()) { elementId ->
+        val state = frame.elements[elementId] ?: return@filterTo false
+        state.visible &&
+            state.properties[TutorVisualBindingProperty.OPACITY]
+                ?.let { opacity -> opacity > MIN_INTERACTIVE_OPACITY } != false
+    }
+
+private fun com.tingyun.smartmistakebook.core.visual.runtime.TutorVisual2DLayout
+    .visibleConnectorProgressById(frame: TutorVisualFrame): Map<String, Double> =
+    connectors.keys.associateWith { elementId ->
+        frame.elements[elementId]
+            ?.properties
+            ?.get(TutorVisualBindingProperty.PATH_PROGRESS)
+            ?: 1.0
+    }
+
 private fun deterministicFraction(seed: Int, index: Int): Double {
     var value = seed.toLong() xor (index.toLong() * 0x9E3779B9L)
     value = (value xor (value ushr 16)) * 0x45d9f3b
@@ -317,3 +340,5 @@ private fun deterministicFraction(seed: Int, index: Int): Double {
     value = value xor (value ushr 16)
     return (value and 0xffff).toDouble() / 65535.0
 }
+
+private const val MIN_INTERACTIVE_OPACITY = 0.01

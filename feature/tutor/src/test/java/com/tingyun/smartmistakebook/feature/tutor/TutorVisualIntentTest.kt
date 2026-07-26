@@ -43,6 +43,13 @@ class TutorVisualIntentTest {
     fun visualWordsWithoutARequestDoNotStartIndependentWork() {
         assertNull(VisualIntent.detect("题目里已经有一张受力图"))
         assertNull(VisualIntent.detect("这不是一个 3D 问题"))
+        assertNull(VisualIntent.detect("请不要给我画一个受力图，用文字解释"))
+        assertNull(VisualIntent.detect("不用帮我生成动画，直接讲就好"))
+        assertNull(VisualIntent.detect("别给我画流程图"))
+        assertEquals(
+            VisualIntentKind.DIAGRAM,
+            VisualIntent.detect("不要只讲文字，请画一个受力图")?.kind,
+        )
     }
 
     @Test
@@ -92,5 +99,69 @@ class TutorVisualIntentTest {
 
         assertEquals("请画一个受力图解释", seed.request.focusMarkdown)
         assertEquals(output.messageMarkdown, seed.explanationMarkdown)
+    }
+
+    @Test
+    fun newerUnfinishedAttemptSuppressesAnOlderSuccessfulVisualSeed() {
+        val input = TutorRespondInput(
+            sessionId = "session",
+            draftRevisionNumber = 1,
+            subject = "PHYSICS",
+            questionDocument = QuestionDocument(
+                id = "question",
+                blocks = listOf(ContentBlock.Paragraph("stem", "判断受力")),
+            ),
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            responseOrdinal = 1,
+            studentMessage = "请画一个受力图解释",
+            explanationMode = TutorExplanationMode.DIRECT,
+        )
+        val succeededRequest = ModelTaskRequest(
+            requestId = "respond-old",
+            input = input,
+            occurredAtEpochMillis = 1,
+        )
+        val succeeded = ModelTaskSnapshot(
+            taskId = succeededRequest.requestId,
+            request = succeededRequest,
+            requestFingerprint = ModelTaskFingerprint.of(succeededRequest),
+            status = ModelTaskStatus.SUCCEEDED,
+            stateVersion = 1,
+            stage = ModelTaskStage.COMPLETE,
+            userMessage = "完成",
+            attemptCount = 1,
+            output = TutorRespondOutput(
+                sessionId = input.sessionId,
+                draftRevisionNumber = input.draftRevisionNumber,
+                questionDocumentId = input.questionDocument.id,
+                responseOrdinal = input.responseOrdinal,
+                messageMarkdown = "旧讲解",
+                modelVersion = "model-v1",
+            ),
+            createdAtEpochMillis = 1,
+            updatedAtEpochMillis = 2,
+        )
+        val pendingRequest = succeededRequest.copy(
+            requestId = "respond-current",
+            occurredAtEpochMillis = 3,
+        )
+        val pending = ModelTaskSnapshot(
+            taskId = pendingRequest.requestId,
+            request = pendingRequest,
+            requestFingerprint = ModelTaskFingerprint.of(pendingRequest),
+            status = ModelTaskStatus.RUNNING,
+            stateVersion = 2,
+            stage = ModelTaskStage.PREPARING,
+            userMessage = "正在生成",
+            attemptCount = 1,
+            createdAtEpochMillis = 3,
+            updatedAtEpochMillis = 4,
+        )
+
+        assertEquals(
+            emptyList<TutorVisualWorkSeed>(),
+            tutorVisualWorkSeeds(emptyList(), listOf(succeeded, pending)),
+        )
     }
 }

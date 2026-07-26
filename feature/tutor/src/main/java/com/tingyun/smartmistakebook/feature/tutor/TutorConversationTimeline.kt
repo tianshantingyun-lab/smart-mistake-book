@@ -1,9 +1,17 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.TutorVisualTargetEvidence
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 
 internal sealed interface TutorConversationTimelineItem {
     val occurredAtEpochMillis: Long
@@ -170,6 +178,103 @@ internal fun buildTutorConversationTimeline(
     respondTasks = respondTasks,
     responses = responses,
 ).timeline
+
+internal fun tutorContiguousHistory(
+    planTasks: List<ModelTaskSnapshot>,
+    respondTasks: List<ModelTaskSnapshot>,
+    responses: List<TutorTurnResponse>,
+    visualTargetEvidence: List<TutorVisualTargetEvidence>,
+): List<TutorTurnHistoryEntry> {
+    val visualAnswersByTurn = visualTargetEvidence
+        .mapNotNull { evidence ->
+            val directive = (planTasks + respondTasks)
+                .firstOrNull { task ->
+                    task.status == ModelTaskStatus.SUCCEEDED &&
+                        task.request.requestId == evidence.modelTaskRequestId &&
+                        task.visualAnchor() == evidence.anchor
+                }
+                ?.visualTargetDirective()
+                ?: return@mapNotNull null
+            TutorTurnKey(
+                cycleOrdinal = evidence.anchor.cycleOrdinal,
+                turnOrdinal = evidence.anchor.turnOrdinal,
+            ) to VisualTutorAnswer(evidence, directive)
+        }
+        .groupBy(keySelector = Pair<TutorTurnKey, VisualTutorAnswer>::first)
+        .mapValues { (_, candidates) ->
+            candidates.maxBy { (_, answer) -> answer.evidence.submittedAtEpochMillis }.second
+        }
+    val responsesByTurn = responses.associateBy(TutorTurnResponse::turnKey)
+    val cycleOrdinal = responses.minOfOrNull(TutorTurnResponse::cycleOrdinal)
+        ?: visualTargetEvidence.minOfOrNull { evidence -> evidence.anchor.cycleOrdinal }
+        ?: return emptyList()
+    return buildList {
+        while (size < TutorPlanInput.MAX_TURNS) {
+            val turnOrdinal = size + 1
+            val turnKey = TutorTurnKey(cycleOrdinal, turnOrdinal)
+            val response = responsesByTurn[turnKey] ?: return@buildList
+            val requestedMove = response.requestedMove ?: return@buildList
+            if (response.hasChoicePayload) {
+                add(
+                    TutorTurnHistoryEntry(
+                        turnOrdinal = turnOrdinal,
+                        diagnosticStemMarkdown = requireNotNull(
+                            response.diagnosticStemMarkdown,
+                        ),
+                        selectedChoiceMarkdown = requireNotNull(
+                            response.selectedChoiceMarkdown,
+                        ),
+                        selectionWasCorrect = requireNotNull(response.selectionWasCorrect),
+                        feedbackMarkdown = requireNotNull(response.feedbackMarkdown),
+                        requestedMove = requestedMove,
+                    ),
+                )
+                continue
+            }
+            val visualAnswer = visualAnswersByTurn[turnKey] ?: return@buildList
+            add(
+                TutorTurnHistoryEntry(
+                    turnOrdinal = turnOrdinal,
+                    diagnosticStemMarkdown = visualAnswer.directive.promptMarkdown,
+                    selectedChoiceMarkdown = "图中指定位置",
+                    selectionWasCorrect = visualAnswer.evidence.selectionWasCorrect,
+                    feedbackMarkdown = "已在图中选中目标位置。",
+                    requestedMove = requestedMove,
+                ),
+            )
+        }
+    }
+}
+
+private data class VisualTutorAnswer(
+    val evidence: TutorVisualTargetEvidence,
+    val directive: TutorInteractionDirective.VisualTarget,
+)
+
+private fun ModelTaskSnapshot.visualTargetDirective(): TutorInteractionDirective.VisualTarget? =
+    when (val taskOutput = output) {
+        is TutorPlanOutput -> taskOutput.plan.interactionDirective as?
+            TutorInteractionDirective.VisualTarget
+        is TutorRespondOutput -> taskOutput.interactionDirective as?
+            TutorInteractionDirective.VisualTarget
+        else -> null
+    }
+
+private fun ModelTaskSnapshot.visualAnchor(): TutorVisualTurnAnchor? =
+    when (val taskInput = request.input) {
+        is TutorPlanInput -> TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.PLAN,
+            cycleOrdinal = taskInput.cycleOrdinal,
+            turnOrdinal = taskInput.turnOrdinal,
+        )
+        is TutorRespondInput -> TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.FOLLOW_UP,
+            cycleOrdinal = taskInput.cycleOrdinal,
+            turnOrdinal = taskInput.turnOrdinal,
+            responseOrdinal = taskInput.responseOrdinal,
+        )
+        else -> null
+    }
 
 private fun buildExactTutorConversationTimeline(
     planTasks: List<ModelTaskSnapshot>,

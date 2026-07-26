@@ -7,18 +7,32 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.BrokenImage
+import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -28,6 +42,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.tingyun.smartmistakebook.core.model.ReadableMathText
 import com.tingyun.smartmistakebook.core.model.TutorComparisonRow
 import com.tingyun.smartmistakebook.core.model.TutorComparisonScene
@@ -62,27 +78,135 @@ fun TutorVisualSceneRenderer(
     onReportIncorrect: (() -> Unit)? = null,
     onTargetHit: ((String) -> Unit)? = null,
 ) {
+    if (scene !is TutorVisualDocumentScene) {
+        LegacyTutorVisualSceneRenderer(
+            scene = scene,
+            modifier = modifier,
+            onOpenOriginal = onOpenOriginal,
+            onReportIncorrect = onReportIncorrect,
+        )
+        return
+    }
     SceneFrame(
         scene = scene,
         modifier = modifier,
     ) {
-        when (scene) {
-            is TutorStepFlowScene -> StepFlowScene(scene)
-            is TutorComparisonScene -> ComparisonScene(scene)
-            is TutorEvidenceChainScene -> EvidenceChainScene(scene)
-            is TutorProcessTimelineScene -> ProcessTimelineScene(scene)
-            is TutorConceptMapScene -> ConceptMapScene(scene)
-            is TutorFormulaDerivationScene -> FormulaDerivationScene(scene)
-            is TutorSpatialDiagramScene -> SpatialDiagramScene(scene)
-            is TutorMotionScene -> TutorMotionSceneContent(scene)
-            is TutorVisualProgramScene -> TutorVisualProgramContent(scene)
-            is TutorVisualDocumentScene -> TutorVisualDocumentContent(
-                scene = scene,
-                onOpenOriginal = onOpenOriginal,
-                onReportIncorrect = onReportIncorrect,
-                onTargetHit = onTargetHit,
-            )
+        TutorVisualDocumentContent(
+            scene = scene,
+            onOpenOriginal = onOpenOriginal,
+            onReportIncorrect = onReportIncorrect,
+            onTargetHit = onTargetHit,
+        )
+    }
+}
+
+@Composable
+private fun LegacyTutorVisualSceneRenderer(
+    scene: TutorVisualScene,
+    modifier: Modifier,
+    onOpenOriginal: (() -> Unit)?,
+    onReportIncorrect: (() -> Unit)?,
+) {
+    var focused by rememberSaveable(scene.sceneId) { mutableStateOf(false) }
+    if (!focused) {
+        SceneFrame(scene = scene, modifier = modifier) {
+            LegacyTutorVisualSceneContent(scene)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                IconButton(onClick = { focused = true }) {
+                    Icon(Icons.Rounded.Fullscreen, contentDescription = "专注查看")
+                }
+            }
         }
+    }
+    if (focused) {
+        Dialog(
+            onDismissRequest = { focused = false },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = Paper,
+                contentColor = Ink,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { focused = false }) {
+                            Icon(
+                                Icons.AutoMirrored.Rounded.ArrowBack,
+                                contentDescription = "返回",
+                            )
+                        }
+                        Text(
+                            text = scene.title,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        LegacyTutorVisualSceneContent(scene)
+                    }
+                    if (onOpenOriginal != null || onReportIncorrect != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            onOpenOriginal?.let { open ->
+                                IconButton(
+                                    onClick = {
+                                        focused = false
+                                        open()
+                                    },
+                                ) {
+                                    Icon(Icons.Rounded.Image, contentDescription = "查看原图")
+                                }
+                            }
+                            onReportIncorrect?.let { report ->
+                                IconButton(
+                                    onClick = {
+                                        focused = false
+                                        report()
+                                    },
+                                ) {
+                                    Icon(Icons.Rounded.BrokenImage, contentDescription = "图不对")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegacyTutorVisualSceneContent(scene: TutorVisualScene) {
+    when (scene) {
+        is TutorStepFlowScene -> StepFlowScene(scene)
+        is TutorComparisonScene -> ComparisonScene(scene)
+        is TutorEvidenceChainScene -> EvidenceChainScene(scene)
+        is TutorProcessTimelineScene -> ProcessTimelineScene(scene)
+        is TutorConceptMapScene -> ConceptMapScene(scene)
+        is TutorFormulaDerivationScene -> FormulaDerivationScene(scene)
+        is TutorSpatialDiagramScene -> SpatialDiagramScene(scene)
+        is TutorMotionScene -> TutorMotionSceneContent(scene)
+        is TutorVisualProgramScene -> TutorVisualProgramContent(scene)
+        is TutorVisualDocumentScene -> Unit
     }
 }
 

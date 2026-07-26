@@ -93,6 +93,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorSessionEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorTurnResponseEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorVisualTargetEvidenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorSessionProblemAnchorEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureOutcomeEntity
@@ -100,7 +101,7 @@ import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExpos
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 28
+internal const val STUDY_DATABASE_VERSION = 29
 
 @Database(
     entities = [
@@ -166,6 +167,7 @@ internal const val STUDY_DATABASE_VERSION = 28
         ModelTaskEventEntity::class,
         TutorSessionEntity::class,
         TutorTurnResponseEntity::class,
+        TutorVisualTargetEvidenceEntity::class,
         TutorSessionProblemAnchorEntity::class,
         TutorAnswerExposureEntity::class,
         TutorAnswerExposureOutcomeEntity::class,
@@ -260,6 +262,7 @@ object StudyDatabaseFactory {
             KNOWLEDGE_TEACHING_MATERIAL_MIGRATION_25_26,
             MODEL_TASK_RECENT_INDEX_MIGRATION_26_27,
             KNOWLEDGE_SOURCE_REUSE_RIGHTS_MIGRATION_27_28,
+            TUTOR_VISUAL_TARGET_EVIDENCE_MIGRATION_28_29,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

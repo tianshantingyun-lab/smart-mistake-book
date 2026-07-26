@@ -70,6 +70,13 @@ internal class RoomStudyDatabase(
         return database.tutorInteractionDao().observe(sessionId)
     }
 
+    override fun observeTutorVisualTargetEvidence(
+        sessionId: String,
+    ): Flow<List<TutorVisualTargetEvidenceRecord>> {
+        require(sessionId.isNotBlank())
+        return database.tutorInteractionDao().observeVisualEvidence(sessionId)
+    }
+
     override fun observePendingCaptureDrafts(): Flow<List<PendingCaptureDraftRecord>> =
         database.invalidationTracker.createFlow(*PENDING_CAPTURE_TABLES).mapLatest {
             loadPendingCaptureBatch()
@@ -931,6 +938,15 @@ internal class RoomStudyDatabase(
     override suspend fun discardTutorChoice(
         command: PersistTutorChoiceCommand,
     ): Boolean = database.tutorInteractionDao().discardChoice(command)
+
+    override suspend fun recordTutorVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): TutorVisualTargetEvidenceRecord =
+        database.tutorInteractionDao().recordVisualTargetEvidence(command)
+
+    override suspend fun discardTutorVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): Boolean = database.tutorInteractionDao().discardVisualTargetEvidence(command)
 
     override suspend fun recordTutorMove(
         command: PersistTutorMoveCommand,

@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
+import com.tingyun.smartmistakebook.core.model.ModelEgressPolicy
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
@@ -36,7 +37,7 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 1_000,
-            approvedAtEpochMillis = 900,
+            approvedAtEpochMillis = 1_000,
         )
         val input = request.input as TutorVisualGenerateInput
         val manifest = requireNotNull(request.egressManifest)
@@ -49,6 +50,7 @@ class TutorVisualModelTaskPolicyTest {
         assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in manifest.disclosedData)
         assertFalse(ModelEgressDataClass.FULL_LEARNING_HISTORY in manifest.disclosedData)
         assertFalse(ModelEgressDataClass.API_CREDENTIALS in manifest.disclosedData)
+        ModelEgressPolicy.authorize(request, provider, nowEpochMillis = 1_000)
     }
 
     @Test
@@ -61,7 +63,7 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 1_000,
-            approvedAtEpochMillis = 900,
+            approvedAtEpochMillis = 1_000,
         )
         val later = buildTutorVisualGenerateRequest(
             question = question,
@@ -71,7 +73,7 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 2_000,
-            approvedAtEpochMillis = 1_900,
+            approvedAtEpochMillis = 2_000,
         )
         val changedSource = buildTutorVisualGenerateRequest(
             question = question,
@@ -81,7 +83,7 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 2_000,
-            approvedAtEpochMillis = 1_900,
+            approvedAtEpochMillis = 2_000,
         )
 
         assertEquals(first.requestId, later.requestId)
@@ -98,7 +100,7 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 1_000,
-            approvedAtEpochMillis = 900,
+            approvedAtEpochMillis = 1_000,
         )
         val generated = TutorVisualGenerateOutput(
             sessionId = question.sessionId,
@@ -118,7 +120,7 @@ class TutorVisualModelTaskPolicyTest {
             generated = generated,
             reviewReasonCodes = setOf("low_generation_confidence"),
             occurredAtEpochMillis = 1_100,
-            approvedAtEpochMillis = 900,
+            approvedAtEpochMillis = 1_100,
         )
         val input = reviewRequest.input as TutorVisualReviewInput
         val manifest = requireNotNull(reviewRequest.egressManifest)
@@ -128,6 +130,7 @@ class TutorVisualModelTaskPolicyTest {
         assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
         assertTrue(ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE in manifest.disclosedData)
         assertFalse(ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE in manifest.disclosedData)
+        ModelEgressPolicy.authorize(reviewRequest, provider, nowEpochMillis = 1_100)
     }
 
     @Test

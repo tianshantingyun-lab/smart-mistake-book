@@ -2,7 +2,9 @@ package com.tingyun.smartmistakebook.core.database.entity
 
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
+import androidx.room3.ForeignKey
 import androidx.room3.Index
+import androidx.room3.PrimaryKey
 
 @Entity(
     tableName = "tutor_turn_response",
@@ -42,4 +44,45 @@ internal data class TutorTurnResponseEntity(
     val submittedAtEpochMillis: Long,
     @ColumnInfo(name = "updated_at_epoch_millis")
     val updatedAtEpochMillis: Long,
+)
+
+@Entity(
+    tableName = "tutor_visual_target_evidence",
+    foreignKeys = [
+        ForeignKey(
+            entity = ModelTaskEntity::class,
+            parentColumns = ["request_id"],
+            childColumns = ["model_task_request_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [
+        Index(value = ["session_id"]),
+        Index(value = ["session_id", "cycle_ordinal", "turn_ordinal"]),
+    ],
+)
+internal data class TutorVisualTargetEvidenceEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "model_task_request_id")
+    val modelTaskRequestId: String,
+    @ColumnInfo(name = "session_id")
+    val sessionId: String,
+    @ColumnInfo(name = "question_document_id")
+    val questionDocumentId: String,
+    @ColumnInfo(name = "revision_number")
+    val revisionNumber: Int,
+    @ColumnInfo(name = "cycle_ordinal")
+    val cycleOrdinal: Int,
+    @ColumnInfo(name = "turn_ordinal")
+    val turnOrdinal: Int,
+    @ColumnInfo(name = "surface_kind")
+    val surfaceKind: String,
+    @ColumnInfo(name = "response_ordinal")
+    val responseOrdinal: Int?,
+    @ColumnInfo(name = "selected_target_id")
+    val selectedTargetId: String,
+    @ColumnInfo(name = "selection_was_correct")
+    val selectionWasCorrect: Boolean,
+    @ColumnInfo(name = "submitted_at_epoch_millis")
+    val submittedAtEpochMillis: Long,
 )

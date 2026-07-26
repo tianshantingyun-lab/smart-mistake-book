@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.TutorVisualTargetEvidence
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -23,12 +24,16 @@ import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
+import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -396,6 +401,50 @@ class TutorConversationTimelineTest {
         assertTrue(failure.message.orEmpty().contains("TUTOR_INTENT_BOUNDARY_VIOLATION"))
     }
 
+    @Test
+    fun visualEvidenceAndActionOnlyPlanSlotRemainContiguousWithoutChoiceDoubleWrite() {
+        val plan = planTask(
+            requestId = "visual-plan",
+            occurredAtEpochMillis = 100,
+            interactionDirective = TutorInteractionDirective.VisualTarget(
+                promptMarkdown = "请点出图中的目标。",
+                targetId = "expected-node",
+            ),
+        )
+        val action = actionResponse(
+            updatedAtEpochMillis = 300,
+            solutionRevealed = false,
+            requestedMove = TutorMoveType.CHANGE_REPRESENTATION,
+        )
+        val evidence = TutorVisualTargetEvidence(
+            sessionId = question.sessionId,
+            questionDocumentId = question.questionDocument.document.id,
+            revisionNumber = question.revisionNumber,
+            anchor = TutorVisualTurnAnchor(
+                surface = TutorVisualTurnSurface.PLAN,
+                cycleOrdinal = 1,
+                turnOrdinal = 1,
+            ),
+            modelTaskRequestId = plan.request.requestId,
+            selectedTargetId = "other-visible-node",
+            selectionWasCorrect = false,
+            submittedAtEpochMillis = 200,
+        )
+
+        val history = tutorContiguousHistory(
+            planTasks = listOf(plan),
+            respondTasks = emptyList(),
+            responses = listOf(action),
+            visualTargetEvidence = listOf(evidence),
+        )
+
+        assertEquals(1, history.size)
+        assertEquals(false, history.single().selectionWasCorrect)
+        assertEquals("请点出图中的目标。", history.single().diagnosticStemMarkdown)
+        assertEquals(TutorMoveType.CHANGE_REPRESENTATION, history.single().requestedMove)
+        assertTrue(!action.hasChoicePayload)
+    }
+
     private fun planTask(
         requestId: String,
         occurredAtEpochMillis: Long,
@@ -404,6 +453,7 @@ class TutorConversationTimelineTest {
         turnOrdinal: Int = 1,
         target: TutorQuestionContext = question,
         diagnosticItem: TutorAssessmentItem? = null,
+        interactionDirective: TutorInteractionDirective? = null,
     ): ModelTaskSnapshot {
         val request = buildTutorPlanRequest(
             question = target,
@@ -429,6 +479,7 @@ class TutorConversationTimelineTest {
                 difficultyReasonMarkdown = "根据当前题说明。",
                 targetedEvidenceLabels = emptyList(),
                 inferredKnowledgeLabels = listOf("函数与导数"),
+                interactionDirective = interactionDirective,
             ),
             modelVersion = "model-v1",
             cycleOrdinal = input.cycleOrdinal,
@@ -534,6 +585,7 @@ class TutorConversationTimelineTest {
     private fun actionResponse(
         updatedAtEpochMillis: Long,
         solutionRevealed: Boolean,
+        requestedMove: TutorMoveType? = null,
     ) = TutorTurnResponse(
         sessionId = question.sessionId,
         questionDocumentId = question.questionDocument.document.id,
@@ -545,6 +597,7 @@ class TutorConversationTimelineTest {
         selectedChoiceMarkdown = null,
         selectionWasCorrect = null,
         feedbackMarkdown = null,
+        requestedMove = requestedMove,
         submittedAtEpochMillis = updatedAtEpochMillis,
         updatedAtEpochMillis = updatedAtEpochMillis,
         solutionRevealed = solutionRevealed,

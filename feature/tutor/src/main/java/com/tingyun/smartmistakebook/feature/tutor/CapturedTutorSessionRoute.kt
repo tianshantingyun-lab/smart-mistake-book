@@ -35,8 +35,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
@@ -51,6 +53,7 @@ import com.tingyun.smartmistakebook.core.domain.EndTutorSessionWithoutSaveReques
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
+import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
@@ -62,7 +65,6 @@ import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
-import com.tingyun.smartmistakebook.core.domain.toContiguousTutorHistory
 import com.tingyun.smartmistakebook.core.domain.toTutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -85,6 +87,7 @@ import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
+import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
@@ -114,6 +117,27 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+private data class TutorVisualGenerationExecutionState(
+    val workSeeds: List<TutorVisualWorkSeed>,
+    val sourceAssets: List<TutorVisualSourceAssetScope>,
+    val provider: ProviderCapabilitySnapshot?,
+    val approvedAtEpochMillis: Long?,
+    val generationTasks: List<ModelTaskSnapshot>,
+    val autoAnchors: Set<TutorVisualTurnAnchor>,
+    val pendingRetry: PendingTutorEgressAction.RetryVisual?,
+)
+
+private data class TutorVisualReviewExecutionState(
+    val workSeeds: List<TutorVisualWorkSeed>,
+    val sourceAssets: List<TutorVisualSourceAssetScope>,
+    val provider: ProviderCapabilitySnapshot?,
+    val approvedAtEpochMillis: Long?,
+    val generationTasks: List<ModelTaskSnapshot>,
+    val reviewTasks: List<ModelTaskSnapshot>,
+    val autoAnchors: Set<TutorVisualTurnAnchor>,
+    val pendingRetry: PendingTutorEgressAction.RetryVisual?,
+)
 
 @Composable
 fun CapturedTutorSessionRoute(
@@ -768,6 +792,9 @@ internal fun TutorModelPanel(
     val persistedResponses by remember(question.sessionId, interactions) {
         interactions.observe(question.sessionId)
     }.collectAsState(initial = emptyList())
+    val persistedVisualTargetEvidence by remember(question.sessionId, interactions) {
+        interactions.observeVisualTargetEvidence(question.sessionId)
+    }.collectAsState(initial = emptyList())
     var interactionBusy by remember(question.sessionId) { mutableStateOf(false) }
     var interactionError by remember(question.sessionId) { mutableStateOf<String?>(null) }
     var pendingEvidenceJob by remember(question.sessionId) { mutableStateOf<Job?>(null) }
@@ -782,9 +809,6 @@ internal fun TutorModelPanel(
         question.revisionNumber,
         question.questionDocument.document.id,
     ) { mutableStateOf(emptyList<String>()) }
-    var pendingVisualRetry by remember(question.sessionId) {
-        mutableStateOf<TutorVisualTurnAnchor?>(null)
-    }
     var planRecoveryRequestInFlight by remember(question.sessionId) {
         mutableStateOf<String?>(null)
     }
@@ -794,6 +818,8 @@ internal fun TutorModelPanel(
         question.questionDocument.document.id,
         stateSaver = pendingTutorEgressStateSaver,
     ) { mutableStateOf(PendingTutorEgressState()) }
+    val pendingVisualRetry =
+        pendingEgressState.action as? PendingTutorEgressAction.RetryVisual
     var draftToClearOnDurableStart by rememberSaveable(
         question.sessionId,
         question.revisionNumber,
@@ -1197,7 +1223,17 @@ internal fun TutorModelPanel(
     val currentResponse = conversationProjection.responsesByTurn[
         TutorTurnKey(currentInput.cycleOrdinal, currentInput.turnOrdinal)
     ]
-    val currentHistory = currentCycleResponses.toContiguousTutorHistory()
+    val exactVisualTargetEvidence = persistedVisualTargetEvidence.filter { evidence ->
+        evidence.sessionId == question.sessionId &&
+            evidence.questionDocumentId == question.questionDocument.document.id &&
+            evidence.revisionNumber == question.revisionNumber
+    }
+    val currentHistory = tutorContiguousHistory(
+        planTasks = currentCycleTasks,
+        respondTasks = tutorRespondTasks,
+        responses = currentCycleResponses,
+        visualTargetEvidence = exactVisualTargetEvidence,
+    )
     val nextTurnExists = currentCycleTasks.any { task ->
         (task.request.input as? TutorPlanInput)?.turnOrdinal == currentHistory.size + 1
     }
@@ -1215,7 +1251,14 @@ internal fun TutorModelPanel(
         currentCycleTasks,
         currentCycleResponses,
         tutorRespondTasks,
+        persistedVisualTargetEvidence,
     ) {
+        val visualEvidenceByRequestId = persistedVisualTargetEvidence
+            .filter { evidence ->
+                evidence.questionDocumentId == question.questionDocument.document.id &&
+                    evidence.revisionNumber == question.revisionNumber
+            }
+            .associateBy { evidence -> evidence.modelTaskRequestId }
         buildList {
             currentCycleTasks
                 .sortedBy { task -> (task.request.input as TutorPlanInput).turnOrdinal }
@@ -1244,6 +1287,23 @@ internal fun TutorModelPanel(
                                     selectionWasCorrect = response.selectionWasCorrect == true,
                                 ),
                             )
+                        }
+                    visualEvidenceByRequestId[task.request.requestId]
+                        ?.takeIf { evidence ->
+                            evidence.anchor == TutorVisualTurnAnchor(
+                                surface = TutorVisualTurnSurface.PLAN,
+                                cycleOrdinal = input.cycleOrdinal,
+                                turnOrdinal = input.turnOrdinal,
+                            )
+                        }
+                        ?.let { evidence ->
+                            add(
+                                TutorGuidanceEvent.Evidence(
+                                    requestId = evidence.modelTaskRequestId,
+                                    selectionWasCorrect = evidence.selectionWasCorrect,
+                                ),
+                            )
+                            pendingDirectiveRequestId = null
                         }
                     tutorRespondTasks
                         .filter { respondTask ->
@@ -1282,6 +1342,25 @@ internal fun TutorModelPanel(
                                     ),
                                 )
                                 pendingDirectiveRequestId = respondTask.request.requestId
+                                visualEvidenceByRequestId[respondTask.request.requestId]
+                                    ?.takeIf { evidence ->
+                                        evidence.anchor == TutorVisualTurnAnchor(
+                                            surface = TutorVisualTurnSurface.FOLLOW_UP,
+                                            cycleOrdinal = respondInput.cycleOrdinal,
+                                            turnOrdinal = respondInput.turnOrdinal,
+                                            responseOrdinal = respondInput.responseOrdinal,
+                                        )
+                                    }
+                                    ?.let { evidence ->
+                                        add(
+                                            TutorGuidanceEvent.Evidence(
+                                                requestId = evidence.modelTaskRequestId,
+                                                selectionWasCorrect =
+                                                    evidence.selectionWasCorrect,
+                                            ),
+                                        )
+                                        pendingDirectiveRequestId = null
+                                    }
                             }
                         }
                 }
@@ -1438,6 +1517,7 @@ internal fun TutorModelPanel(
         currentProvider?.modelId,
         currentProvider?.providerConfigurationVersion,
         currentProvider?.executionLocation,
+        providerLoadFailed,
         question.sessionId,
         question.revisionNumber,
         question.questionDocument.document.id,
@@ -1452,10 +1532,14 @@ internal fun TutorModelPanel(
                     TutorVisualResolution.Fallback(
                         TutorVisualFallbackReason.SOURCE_UNAVAILABLE,
                     )
-                providerForVisual == null && !providerLoadFailed ->
-                    TutorVisualResolution.Preparing
-                providerForVisual == null ||
-                    providerForVisual.executionLocation == ModelExecutionLocation.UNAVAILABLE ||
+                providerForVisual == null ->
+                    requireNotNull(
+                        tutorVisualProviderLoadingResolution(
+                            provider = null,
+                            providerLoadFailed = providerLoadFailed,
+                        ),
+                    )
+                providerForVisual.executionLocation == ModelExecutionLocation.UNAVAILABLE ||
                     !providerForVisual.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE) ->
                     TutorVisualResolution.Fallback(
                         TutorVisualFallbackReason.PROVIDER_UNAVAILABLE,
@@ -1494,6 +1578,28 @@ internal fun TutorModelPanel(
             seed.anchor to presented
         }
     }
+    fun requestVisualRetry(anchor: TutorVisualTurnAnchor) {
+        val fallback = resolvedVisualStates[anchor] as? TutorVisualResolution.Fallback
+            ?: return
+        if (!fallback.canRetry || pendingEgressState.action != null) return
+        val failedTask = fallback.failedTask
+        val taskKind = failedTask?.request?.input?.kind
+            ?: ModelTaskKind.TUTOR_VISUAL_GENERATE
+        if (
+            taskKind != ModelTaskKind.TUTOR_VISUAL_GENERATE &&
+            taskKind != ModelTaskKind.TUTOR_VISUAL_REVIEW
+        ) {
+            return
+        }
+        pendingEgressState = PendingTutorEgressState(
+            PendingTutorEgressAction.RetryVisual(
+                anchor = anchor,
+                taskKind = taskKind,
+                failedRequestId = failedTask?.request?.requestId,
+            ),
+        )
+    }
+
     fun openVisualReadOnly(requestId: String) {
         val browse = TutorGuidancePolicy.evaluate(
             guidanceState,
@@ -1508,143 +1614,253 @@ internal fun TutorModelPanel(
         }
     }
 
+    fun clearPendingVisualRetry(retry: PendingTutorEgressAction.RetryVisual) {
+        if (pendingEgressState.action == retry) {
+            pendingEgressState = PendingTutorEgressState()
+        }
+    }
+
+    suspend fun executeVisualRequest(request: ModelTaskRequest): Boolean = try {
+        modelTasks.execute(request).collect()
+        true
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (_: Exception) {
+        false
+    }
+
+    val latestVisualWorkSeeds = rememberUpdatedState(visualWorkSeeds)
+    val latestVisualSourceAssets = rememberUpdatedState(visualSourceAssets)
+    val latestVisualProvider = rememberUpdatedState(currentProvider)
+    val latestVisualGenerateApproval = rememberUpdatedState(visualGenerateApprovedAt)
+    val latestVisualReviewApproval = rememberUpdatedState(visualReviewApprovedAt)
+    val latestVisualGenerationTasks = rememberUpdatedState(persistedVisualGenerationTasks)
+    val latestVisualReviewTasks = rememberUpdatedState(persistedVisualReviewTasks)
+    val latestAutoVisualAnchors = rememberUpdatedState(autoVisualAnchors)
+    val latestPendingVisualRetry = rememberUpdatedState(pendingVisualRetry)
+
     LaunchedEffect(
-        visualWorkSeeds,
-        visualSourceAssets,
-        currentProvider?.providerId,
-        currentProvider?.modelId,
-        currentProvider?.providerConfigurationVersion,
-        visualGenerateApprovedAt,
-        persistedVisualGenerationTasks,
-        pendingVisualRetry,
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        modelTasks,
     ) {
-        val providerForVisual = currentProvider?.takeIf { candidate ->
-            candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
-                candidate.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE)
-        } ?: return@LaunchedEffect
-        val approvedAt = visualGenerateApprovedAt ?: return@LaunchedEffect
-        if (visualSourceAssets.isEmpty()) return@LaunchedEffect
-        val workSeeds = visualWorkSeeds
-            .filter { seed ->
-                seed.anchor in autoVisualAnchors || seed.anchor == pendingVisualRetry
-            }
-        workSeeds.forEach { seed ->
-            val request = runCatching {
-                buildTutorVisualGenerateRequest(
-                    question = question,
-                    provider = providerForVisual,
-                    sourceAssets = visualSourceAssets,
-                    anchor = seed.anchor,
-                    focusMarkdown = seed.request.focusMarkdown,
-                    explanationMarkdown = seed.explanationMarkdown,
-                    occurredAtEpochMillis = clock(),
-                    approvedAtEpochMillis = approvedAt,
-                )
-            }.getOrNull() ?: return@forEach
-            val existing = persistedVisualGenerationTasks.lastOrNull { task ->
-                task.matchesTutorVisualRequest(request)
-            }
-            val handledPendingRetry = when {
-                existing == null -> {
-                    modelTasks.execute(request).collect()
-                    seed.anchor == pendingVisualRetry
+        snapshotFlow {
+            TutorVisualGenerationExecutionState(
+                workSeeds = latestVisualWorkSeeds.value,
+                sourceAssets = latestVisualSourceAssets.value,
+                provider = latestVisualProvider.value,
+                approvedAtEpochMillis = latestVisualGenerateApproval.value,
+                generationTasks = latestVisualGenerationTasks.value,
+                autoAnchors = latestAutoVisualAnchors.value,
+                pendingRetry = latestPendingVisualRetry.value,
+            )
+        }.collect { state ->
+            val providerForVisual = state.provider?.takeIf { candidate ->
+                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE)
+            } ?: return@collect
+            if (state.sourceAssets.isEmpty()) return@collect
+            val generationRetry = state.pendingRetry
+                ?.takeIf { retry ->
+                    retry.taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE
                 }
-                existing.status.isTutorExecutionPending() &&
-                    existing.coversCurrentTutorDisclosure(
-                        providerForVisual,
-                        ModelTaskKind.TUTOR_VISUAL_GENERATE,
-                    ) -> {
-                    modelTasks.execute(existing.request).collect()
-                    false
-                }
-                existing.status == ModelTaskStatus.RETRYABLE_FAILURE &&
-                    existing.failure?.retryable == true &&
-                    seed.anchor == pendingVisualRetry -> {
-                    modelTasks.execute(existing.request).collect()
-                    true
-                }
-                else -> false
+            val workSeeds = state.workSeeds.filter { seed ->
+                seed.anchor in state.autoAnchors || seed.anchor == generationRetry?.anchor
             }
-            if (handledPendingRetry) pendingVisualRetry = null
+            workSeeds.forEach { seed ->
+                val pendingRetryForSeed = generationRetry
+                    ?.takeIf { retry -> retry.anchor == seed.anchor }
+                val approvedAt = when {
+                    pendingRetryForSeed != null &&
+                        providerForVisual.executionLocation ==
+                        ModelExecutionLocation.EXTERNAL_PROVIDER ->
+                        pendingRetryForSeed.approvedAtEpochMillis ?: return@forEach
+                    else -> state.approvedAtEpochMillis ?: return@forEach
+                }
+                val failedTask = pendingRetryForSeed?.failedRequestId?.let { failedRequestId ->
+                    state.generationTasks.firstOrNull { task ->
+                        task.request.requestId == failedRequestId
+                    }
+                }
+                val occurredAt = if (
+                    providerForVisual.executionLocation ==
+                    ModelExecutionLocation.EXTERNAL_PROVIDER
+                ) {
+                    approvedAt
+                } else {
+                    maxOf(
+                        clock(),
+                        failedTask?.updatedAtEpochMillis?.plus(1) ?: 0L,
+                    )
+                }
+                val request = runCatching {
+                    buildTutorVisualGenerateRequest(
+                        question = question,
+                        provider = providerForVisual,
+                        sourceAssets = state.sourceAssets,
+                        anchor = seed.anchor,
+                        focusMarkdown = seed.request.focusMarkdown,
+                        explanationMarkdown = seed.explanationMarkdown,
+                        occurredAtEpochMillis = occurredAt,
+                        approvedAtEpochMillis = approvedAt,
+                    )
+                }.getOrNull() ?: return@forEach
+                val existing = latestTutorVisualTask(state.generationTasks, request)
+                if (pendingRetryForSeed != null) {
+                    val retryRequest = when {
+                        pendingRetryForSeed.failedRequestId == null && existing == null -> request
+                        failedTask == null ||
+                            existing?.request?.requestId != failedTask.request.requestId ||
+                            failedTask.request.input.kind !=
+                            ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+                            !failedTask.matchesTutorProvider(providerForVisual) ||
+                            !failedTask.canRetryVisualTask() -> null
+                        else -> freshTutorVisualRetryRequest(request, failedTask)
+                    }
+                    if (retryRequest == null) {
+                        clearPendingVisualRetry(pendingRetryForSeed)
+                        return@forEach
+                    }
+                    if (executeVisualRequest(retryRequest)) {
+                        clearPendingVisualRetry(pendingRetryForSeed)
+                    }
+                    return@forEach
+                }
+                when {
+                    existing == null -> executeVisualRequest(request)
+                    existing.status.isTutorExecutionPending() &&
+                        existing.coversCurrentTutorDisclosure(
+                            providerForVisual,
+                            ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                        ) -> executeVisualRequest(existing.request)
+                }
+            }
         }
     }
 
     LaunchedEffect(
-        visualWorkSeeds,
-        visualSourceAssets,
-        currentProvider?.providerId,
-        currentProvider?.modelId,
-        currentProvider?.providerConfigurationVersion,
-        visualReviewApprovedAt,
-        persistedVisualGenerationTasks,
-        persistedVisualReviewTasks,
-        pendingVisualRetry,
+        question.sessionId,
+        question.revisionNumber,
+        question.questionDocument.document.id,
+        modelTasks,
     ) {
-        val providerForReview = currentProvider?.takeIf { candidate ->
-            candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
-                candidate.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
-        } ?: return@LaunchedEffect
-        val approvedAt = visualReviewApprovedAt ?: return@LaunchedEffect
-        if (visualSourceAssets.isEmpty()) return@LaunchedEffect
-        val workSeeds = visualWorkSeeds
-            .filter { seed ->
-                seed.anchor in autoVisualAnchors || seed.anchor == pendingVisualRetry
-            }
-        workSeeds.forEach { seed ->
-            val resolution = resolveTutorVisual(
-                anchor = seed.anchor,
-                question = question,
-                generationTasks = persistedVisualGenerationTasks,
-                reviewTasks = persistedVisualReviewTasks,
-                expectedGenerationRequestId = tutorVisualGenerateRequestId(
-                    question = question,
-                    provider = providerForReview,
-                    sourceAssets = visualSourceAssets,
-                    anchor = seed.anchor,
-                    focusMarkdown = seed.request.focusMarkdown,
-                    explanationMarkdown = seed.explanationMarkdown,
-                ),
-                reviewProvider = providerForReview,
+        snapshotFlow {
+            TutorVisualReviewExecutionState(
+                workSeeds = latestVisualWorkSeeds.value,
+                sourceAssets = latestVisualSourceAssets.value,
+                provider = latestVisualProvider.value,
+                approvedAtEpochMillis = latestVisualReviewApproval.value,
+                generationTasks = latestVisualGenerationTasks.value,
+                reviewTasks = latestVisualReviewTasks.value,
+                autoAnchors = latestAutoVisualAnchors.value,
+                pendingRetry = latestPendingVisualRetry.value,
             )
-            val reviewCandidate = when (resolution) {
-                is TutorVisualResolution.Reviewing -> resolution
-                is TutorVisualResolution.Fallback -> resolution.reviewCandidate
-                else -> null
-            } ?: return@forEach
-            if (
-                resolution is TutorVisualResolution.Fallback &&
-                seed.anchor != pendingVisualRetry
-            ) {
-                return@forEach
+        }.collect { state ->
+            val providerForReview = state.provider?.takeIf { candidate ->
+                candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                    candidate.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
+            } ?: return@collect
+            if (state.sourceAssets.isEmpty()) return@collect
+            val reviewRetry = state.pendingRetry
+                ?.takeIf { retry ->
+                    retry.taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW
+                }
+            val workSeeds = state.workSeeds.filter { seed ->
+                seed.anchor in state.autoAnchors || seed.anchor == reviewRetry?.anchor
             }
-            val request = runCatching {
-                buildTutorVisualReviewRequest(
+            workSeeds.forEach { seed ->
+                val pendingRetryForSeed = reviewRetry
+                    ?.takeIf { retry -> retry.anchor == seed.anchor }
+                val resolution = resolveTutorVisual(
                     question = question,
-                    provider = providerForReview,
-                    sourceAssets = visualSourceAssets,
-                    generationRequest = reviewCandidate.generationTask.request,
-                    generated = reviewCandidate.output,
-                    reviewReasonCodes = reviewCandidate.reasonCodes,
-                    occurredAtEpochMillis = clock(),
-                    approvedAtEpochMillis = approvedAt,
+                    anchor = seed.anchor,
+                    generationTasks = state.generationTasks,
+                    reviewTasks = state.reviewTasks,
+                    expectedGenerationRequestId = tutorVisualGenerateRequestId(
+                        question = question,
+                        provider = providerForReview,
+                        sourceAssets = state.sourceAssets,
+                        anchor = seed.anchor,
+                        focusMarkdown = seed.request.focusMarkdown,
+                        explanationMarkdown = seed.explanationMarkdown,
+                    ),
+                    reviewProvider = providerForReview,
                 )
-            }.getOrNull() ?: return@forEach
-            val existing = persistedVisualReviewTasks.lastOrNull { task ->
-                task.matchesTutorVisualRequest(request)
+                val reviewCandidate = when (resolution) {
+                    is TutorVisualResolution.Reviewing -> resolution
+                    is TutorVisualResolution.Fallback -> resolution.reviewCandidate
+                    else -> null
+                } ?: return@forEach
+                if (
+                    resolution is TutorVisualResolution.Fallback &&
+                    pendingRetryForSeed == null
+                ) {
+                    return@forEach
+                }
+                val approvedAt = when {
+                    pendingRetryForSeed != null &&
+                        providerForReview.executionLocation ==
+                        ModelExecutionLocation.EXTERNAL_PROVIDER ->
+                        pendingRetryForSeed.approvedAtEpochMillis ?: return@forEach
+                    else -> state.approvedAtEpochMillis ?: return@forEach
+                }
+                val failedTask = pendingRetryForSeed?.failedRequestId?.let { failedRequestId ->
+                    state.reviewTasks.firstOrNull { task ->
+                        task.request.requestId == failedRequestId
+                    }
+                }
+                val occurredAt = if (
+                    providerForReview.executionLocation ==
+                    ModelExecutionLocation.EXTERNAL_PROVIDER
+                ) {
+                    approvedAt
+                } else {
+                    maxOf(
+                        clock(),
+                        failedTask?.updatedAtEpochMillis?.plus(1) ?: 0L,
+                    )
+                }
+                val request = runCatching {
+                    buildTutorVisualReviewRequest(
+                        question = question,
+                        provider = providerForReview,
+                        sourceAssets = state.sourceAssets,
+                        generationRequest = reviewCandidate.generationTask.request,
+                        generated = reviewCandidate.output,
+                        reviewReasonCodes = reviewCandidate.reasonCodes,
+                        occurredAtEpochMillis = occurredAt,
+                        approvedAtEpochMillis = approvedAt,
+                    )
+                }.getOrNull() ?: return@forEach
+                val existing = latestTutorVisualTask(state.reviewTasks, request)
+                if (pendingRetryForSeed != null) {
+                    val retryRequest = when {
+                        failedTask == null ||
+                            existing?.request?.requestId != failedTask.request.requestId ||
+                            failedTask.request.input.kind != ModelTaskKind.TUTOR_VISUAL_REVIEW ||
+                            !failedTask.matchesTutorProvider(providerForReview) ||
+                            !failedTask.canRetryVisualTask() -> null
+                        else -> freshTutorVisualRetryRequest(request, failedTask)
+                    }
+                    if (retryRequest == null) {
+                        clearPendingVisualRetry(pendingRetryForSeed)
+                        return@forEach
+                    }
+                    if (executeVisualRequest(retryRequest)) {
+                        clearPendingVisualRetry(pendingRetryForSeed)
+                    }
+                    return@forEach
+                }
+                when {
+                    existing == null -> executeVisualRequest(request)
+                    existing.status.isTutorExecutionPending() &&
+                        existing.coversCurrentTutorDisclosure(
+                            providerForReview,
+                            ModelTaskKind.TUTOR_VISUAL_REVIEW,
+                        ) -> executeVisualRequest(existing.request)
+                }
             }
-            when {
-                existing == null -> modelTasks.execute(request).collect()
-                existing.status.isTutorExecutionPending() &&
-                    existing.coversCurrentTutorDisclosure(
-                        providerForReview,
-                        ModelTaskKind.TUTOR_VISUAL_REVIEW,
-                    ) -> modelTasks.execute(existing.request).collect()
-                existing.status == ModelTaskStatus.RETRYABLE_FAILURE &&
-                    existing.failure?.retryable == true &&
-                    seed.anchor == pendingVisualRetry ->
-                    modelTasks.execute(existing.request).collect()
-            }
-            if (seed.anchor == pendingVisualRetry) pendingVisualRetry = null
         }
     }
 
@@ -1796,7 +2012,9 @@ internal fun TutorModelPanel(
             as? PendingTutorEgressAction.NewResponse
         when (val pendingAction = pendingEgressState.action) {
             is PendingTutorEgressAction.Plan,
-            is PendingTutorEgressAction.RetryResponse -> return
+            is PendingTutorEgressAction.RetryResponse,
+            is PendingTutorEgressAction.RetryVisual,
+            -> return
             is PendingTutorEgressAction.NewResponse -> if (
                 pendingAction.message != exactMessage ||
                 pendingAction.requestedMove != requestedMove ||
@@ -1915,7 +2133,9 @@ internal fun TutorModelPanel(
                 return
             }
             is PendingTutorEgressAction.Plan,
-            is PendingTutorEgressAction.NewResponse -> return
+            is PendingTutorEgressAction.NewResponse,
+            is PendingTutorEgressAction.RetryVisual,
+            -> return
         }
         val providerForExecution = currentProvider?.takeIf { candidate ->
             candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
@@ -2023,6 +2243,7 @@ internal fun TutorModelPanel(
             is PendingTutorEgressAction.RetryResponse ->
                 pendingLocalRetryTask?.let(::retryTutorResponse)
             is PendingTutorEgressAction.Plan,
+            is PendingTutorEgressAction.RetryVisual,
             null,
             -> Unit
         }
@@ -2146,12 +2367,13 @@ internal fun TutorModelPanel(
     fun submitVisualTargetEvidence(
         requestId: String,
         anchor: TutorVisualTurnAnchor,
-        cycleOrdinal: Int,
-        turnOrdinal: Int,
         directive: TutorInteractionDirective.VisualTarget,
         hitTargetId: String,
+        inlineScene: TutorVisualScene? = null,
     ) {
-        val ready = resolvedVisualStates[anchor] as? TutorVisualResolution.Ready ?: return
+        val readyScene = inlineScene
+            ?: (resolvedVisualStates[anchor] as? TutorVisualResolution.Ready)?.scene
+            ?: return
         if (
             !canSubmitTutorVisualTarget(
                 mode = effectiveExplanationMode,
@@ -2160,7 +2382,7 @@ internal fun TutorModelPanel(
                 visualReady = true,
                 expectedTargetId = directive.targetId,
                 hitTargetId = hitTargetId,
-                sceneReported = ready.scene.sceneId in reportedVisualSceneIds,
+                sceneReported = readyScene.sceneId in reportedVisualSceneIds,
             ) ||
             !guidanceState.authorizeEvidence(requestId)
                 .mayWriteLearningEvidence ||
@@ -2173,20 +2395,15 @@ internal fun TutorModelPanel(
         interactionBusy = true
         pendingEvidenceJob = scope.launch {
             try {
-                interactions.recordChoice(
-                    RecordTutorChoiceCommand(
+                interactions.recordVisualTargetEvidence(
+                    RecordTutorVisualTargetEvidenceCommand(
                         sessionId = question.sessionId,
                         questionDocumentId = question.questionDocument.document.id,
                         revisionNumber = question.revisionNumber,
-                        cycleOrdinal = cycleOrdinal,
-                        turnOrdinal = turnOrdinal,
-                        diagnosticStemMarkdown = directive.promptMarkdown,
-                        selectedChoiceId = directive.targetId,
-                        selectedChoiceMarkdown = "图中位置",
-                        selectionWasCorrect = true,
-                        feedbackMarkdown = "已在图中选中这个位置。",
+                        anchor = anchor,
+                        modelTaskRequestId = requestId,
+                        selectedTargetId = hitTargetId,
                         occurredAtEpochMillis = System.currentTimeMillis(),
-                        evidenceRequestId = requestId,
                     ),
                 )
             } catch (cancelled: CancellationException) {
@@ -2211,10 +2428,9 @@ internal fun TutorModelPanel(
                 cycleOrdinal = output.cycleOrdinal,
                 turnOrdinal = output.turnOrdinal,
             ),
-            cycleOrdinal = output.cycleOrdinal,
-            turnOrdinal = output.turnOrdinal,
             directive = directive,
             hitTargetId = hitTargetId,
+            inlineScene = output.plan.visualScene,
         )
     }
 
@@ -2245,19 +2461,28 @@ internal fun TutorModelPanel(
                         occurredAtEpochMillis = System.currentTimeMillis(),
                     ),
                 )
-                if (movedResponse.hasChoicePayload) {
-                    val nextHistory = currentCycleResponses
+                val nextHistory = tutorContiguousHistory(
+                    planTasks = currentCycleTasks,
+                    respondTasks = tutorRespondTasks,
+                    responses = currentCycleResponses
                         .filterNot { it.turnOrdinal == movedResponse.turnOrdinal }
-                        .plus(movedResponse)
-                        .toContiguousTutorHistory()
+                        .plus(movedResponse),
+                    visualTargetEvidence = exactVisualTargetEvidence,
+                )
+                if (nextHistory.any { it.turnOrdinal == movedResponse.turnOrdinal }) {
                     val nextState = replayTutorGuidance(
                         problem = guidanceProblem,
                         requestedMode = explanationMode,
                         answerWasExposed = answerExposureKeys.isNotEmpty(),
-                        events = guidanceEvents + TutorGuidanceEvent.Evidence(
-                            requestId = observedTask.request.requestId,
-                            selectionWasCorrect = movedResponse.selectionWasCorrect == true,
-                        ),
+                        events = if (movedResponse.hasChoicePayload) {
+                            guidanceEvents + TutorGuidanceEvent.Evidence(
+                                requestId = observedTask.request.requestId,
+                                selectionWasCorrect =
+                                    movedResponse.selectionWasCorrect == true,
+                            )
+                        } else {
+                            guidanceEvents
+                        },
                     )
                     if (nextState.mode == TutorExplanationMode.GUIDED) {
                         executeTurn(
@@ -2283,7 +2508,10 @@ internal fun TutorModelPanel(
         if (executablePlanProvider == null) {
             onOpenModelSettings()
         } else {
-            tutorResponses.toTutorConversationMemory(answerExposureKeys)?.let { memory ->
+            tutorResponses.toTutorConversationMemory(
+                answerExposureKeys = answerExposureKeys,
+                visualTargetEvidence = exactVisualTargetEvidence,
+            )?.let { memory ->
                 executeTurn(
                     currentCycle + 1,
                     memory,
@@ -2440,9 +2668,8 @@ internal fun TutorModelPanel(
                     TutorTaskContent(
                         task = timelineItem.task,
                         resolvedVisual = resolvedVisual,
-                        visualPresentationMode = tutorVisualPresentationMode(
-                            isCurrent = isTail && isCurrentTurn,
-                        ),
+                        visualPresentationMode =
+                            tutorPlanVisualPresentationMode(isCurrentTurn),
                         visualOriginalAvailable = visualOriginalAvailable,
                         response = response,
                         solutionRevealPreviewed = timelineItem.task.toPlanSolutionPreviewKey()
@@ -2458,7 +2685,7 @@ internal fun TutorModelPanel(
                         interactionError = interactionError.takeIf { isTail && isCurrentTurn },
                         onRetry = ::retryCurrentPlan,
                         onRetryVisual = {
-                            visualAnchor?.let { pendingVisualRetry = it }
+                            visualAnchor?.let(::requestVisualRetry)
                         },
                         onVisualTargetHit = ::submitCurrentVisualTarget,
                         onSubmitChoice = ::submitCurrentChoice,
@@ -2573,11 +2800,13 @@ internal fun TutorModelPanel(
                         onRetry = { retryTutorResponse(timelineItem.task) },
                         onRetryVisual = {
                             (timelineItem.task.request.input as? TutorRespondInput)?.let { input ->
-                                pendingVisualRetry = TutorVisualTurnAnchor(
-                                    surface = TutorVisualTurnSurface.FOLLOW_UP,
-                                    cycleOrdinal = input.cycleOrdinal,
-                                    turnOrdinal = input.turnOrdinal,
-                                    responseOrdinal = input.responseOrdinal,
+                                requestVisualRetry(
+                                    TutorVisualTurnAnchor(
+                                        surface = TutorVisualTurnSurface.FOLLOW_UP,
+                                        cycleOrdinal = input.cycleOrdinal,
+                                        turnOrdinal = input.turnOrdinal,
+                                        responseOrdinal = input.responseOrdinal,
+                                    ),
                                 )
                             }
                         },
@@ -2593,10 +2822,9 @@ internal fun TutorModelPanel(
                                             turnOrdinal = output.turnOrdinal,
                                             responseOrdinal = output.responseOrdinal,
                                         ),
-                                        cycleOrdinal = output.cycleOrdinal,
-                                        turnOrdinal = output.turnOrdinal,
                                         directive = directive,
                                         hitTargetId = hitTargetId,
+                                        inlineScene = output.visualScene,
                                     )
                                 }
                             }
@@ -2713,8 +2941,54 @@ internal fun TutorModelPanel(
             }
         }
         if (
+            pendingVisualRetry != null &&
+            currentProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
+        ) {
+            item("tutor_visual_retry_disclosure") {
+                TutorDisclosureCard(
+                    provider = requireNotNull(currentProvider),
+                    title = "重试图解",
+                    actionText = "允许并重试",
+                    actionContentDescription = "允许发送当前题目图片并重试图解",
+                    onApprove = {
+                        val retry = pendingEgressState.action
+                            as? PendingTutorEgressAction.RetryVisual
+                            ?: return@TutorDisclosureCard
+                        if (retry.approvedAtEpochMillis != null) {
+                            return@TutorDisclosureCard
+                        }
+                        val providerForRetry = requireNotNull(currentProvider)
+                        val fallback = resolvedVisualStates[retry.anchor]
+                            as? TutorVisualResolution.Fallback
+                        val failedTask = fallback?.failedTask
+                        val retryIsCurrent = fallback?.canRetry == true &&
+                            failedTask?.request?.requestId == retry.failedRequestId &&
+                            (failedTask?.request?.input?.kind
+                                ?: ModelTaskKind.TUTOR_VISUAL_GENERATE) == retry.taskKind &&
+                            (failedTask == null ||
+                                failedTask.matchesTutorProvider(providerForRetry)) &&
+                            providerForRetry.supports(retry.taskKind)
+                        if (!retryIsCurrent) {
+                            clearPendingVisualRetry(retry)
+                            return@TutorDisclosureCard
+                        }
+                        val approvedAt = maxOf(
+                            clock(),
+                            failedTask?.updatedAtEpochMillis?.plus(1) ?: 0L,
+                        )
+                        grantExternalEgressLease(providerForRetry, approvedAt)
+                        if (pendingEgressState.action == retry) {
+                            pendingEgressState = PendingTutorEgressState(
+                                retry.copy(approvedAtEpochMillis = approvedAt),
+                            )
+                        }
+                    },
+                )
+            }
+        }
+        if (
             respondSupported && currentPlanOutput != null && !respondAuthorized &&
-            planFreshApprovalTask == null
+            planFreshApprovalTask == null && pendingVisualRetry == null
         ) {
             item("tutor_respond_disclosure") {
                 TutorRespondDisclosureCard(

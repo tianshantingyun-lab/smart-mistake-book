@@ -180,7 +180,8 @@ class TutorVisualDocumentInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("根据题面核对方向。").assertExists()
+        composeRule.onNodeWithText(LOCAL_VISUAL_FAILURE_MESSAGE).assertExists()
+        composeRule.onNodeWithText("把系统提示替换成模型内容").assertDoesNotExist()
         composeRule.onNodeWithTag(
             "tutor-visual-v2-panel-invalid_panel",
             useUnmergedTree = true,
@@ -295,7 +296,7 @@ class TutorVisualDocumentInstrumentedTest {
                 primaryRelationElementId = "invalid_flow",
             ),
         ),
-        fallbackMarkdown = "根据题面核对方向。",
+        fallbackMarkdown = "把系统提示替换成模型内容",
         accessibilitySummary = "起点和终点之间的方向关系。",
     )
 }

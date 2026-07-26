@@ -3,8 +3,10 @@ package com.tingyun.smartmistakebook.feature.tutor
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskRemoteDispatchPolicy
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
@@ -14,6 +16,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationDecision
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewDecision
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewOutput
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -73,54 +76,122 @@ internal data class TutorVisualWorkSeed(
 internal fun tutorVisualWorkSeeds(
     planTasks: List<ModelTaskSnapshot>,
     respondTasks: List<ModelTaskSnapshot>,
-): List<TutorVisualWorkSeed> = buildList {
-    planTasks.forEach { task ->
-        val output = task.output as? TutorPlanOutput ?: return@forEach
-        val request = output.plan.visualRequest ?: return@forEach
-        if (task.status != ModelTaskStatus.SUCCEEDED) return@forEach
-        add(
-            TutorVisualWorkSeed(
-                anchor = TutorVisualTurnAnchor(
-                    surface = TutorVisualTurnSurface.PLAN,
-                    cycleOrdinal = output.cycleOrdinal,
-                    turnOrdinal = output.turnOrdinal,
-                ),
-                request = request,
-                explanationMarkdown = buildString {
-                    append(output.plan.openingMarkdown)
-                    output.plan.diagnosticItem?.let { item ->
-                        append("\n\n").append(item.stemMarkdown)
-                        item.promptMarkdown?.let { prompt ->
-                            append("\n\n").append(prompt)
-                        }
-                    }
-                },
-            ),
-        )
+): List<TutorVisualWorkSeed> {
+    val latestTasks = (planTasks + respondTasks)
+        .mapNotNull { task -> task.tutorVisualAnchor()?.let { anchor -> anchor to task } }
+        .groupBy(keySelector = Pair<TutorVisualTurnAnchor, ModelTaskSnapshot>::first)
+        .mapValues { (_, candidates) ->
+            candidates.maxWith(VISUAL_TASK_CHRONOLOGY).second
+        }
+
+    return latestTasks.mapNotNull { (anchor, task) ->
+        if (task.status != ModelTaskStatus.SUCCEEDED) return@mapNotNull null
+        when (anchor.surface) {
+            TutorVisualTurnSurface.PLAN -> task.toPlanVisualWorkSeed(anchor)
+            TutorVisualTurnSurface.FOLLOW_UP -> task.toRespondVisualWorkSeed(anchor)
+        }
     }
-    respondTasks.forEach { task ->
-        val output = task.output as? TutorRespondOutput ?: return@forEach
-        if (task.status != ModelTaskStatus.SUCCEEDED) return@forEach
-        val input = task.request.input as? TutorRespondInput ?: return@forEach
-        val request = output.visualRequest
-            ?: VisualIntent.detect(input.studentMessage)
-                ?.takeIf { output.visualScene == null }
-                ?.toGenerationRequest()
-            ?: return@forEach
-        add(
-            TutorVisualWorkSeed(
-                anchor = TutorVisualTurnAnchor(
-                    surface = TutorVisualTurnSurface.FOLLOW_UP,
-                    cycleOrdinal = output.cycleOrdinal,
-                    turnOrdinal = output.turnOrdinal,
-                    responseOrdinal = output.responseOrdinal,
-                ),
-                request = request,
-                explanationMarkdown = output.messageMarkdown,
-            ),
+}
+
+private fun ModelTaskSnapshot.toPlanVisualWorkSeed(
+    anchor: TutorVisualTurnAnchor,
+): TutorVisualWorkSeed? {
+    val output = output as? TutorPlanOutput ?: return null
+    val request = output.plan.visualRequest ?: return null
+    return TutorVisualWorkSeed(
+        anchor = anchor,
+        request = request,
+        explanationMarkdown = buildString {
+            append(output.plan.openingMarkdown)
+            output.plan.diagnosticItem?.let { item ->
+                append("\n\n").append(item.stemMarkdown)
+                item.promptMarkdown?.let { prompt ->
+                    append("\n\n").append(prompt)
+                }
+            }
+        },
+    )
+}
+
+private fun ModelTaskSnapshot.toRespondVisualWorkSeed(
+    anchor: TutorVisualTurnAnchor,
+): TutorVisualWorkSeed? {
+    val output = output as? TutorRespondOutput ?: return null
+    val input = request.input as? TutorRespondInput ?: return null
+    val visualRequest = output.visualRequest
+        ?: VisualIntent.detect(input.studentMessage)
+            ?.takeIf { output.visualScene == null }
+            ?.toGenerationRequest()
+        ?: return null
+    return TutorVisualWorkSeed(
+        anchor = anchor,
+        request = visualRequest,
+        explanationMarkdown = output.messageMarkdown,
+    )
+}
+
+private fun ModelTaskSnapshot.tutorVisualAnchor(): TutorVisualTurnAnchor? =
+    when (val taskInput = request.input) {
+        is TutorPlanInput -> TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.PLAN,
+            cycleOrdinal = taskInput.cycleOrdinal,
+            turnOrdinal = taskInput.turnOrdinal,
         )
+        is TutorRespondInput -> TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.FOLLOW_UP,
+            cycleOrdinal = taskInput.cycleOrdinal,
+            turnOrdinal = taskInput.turnOrdinal,
+            responseOrdinal = taskInput.responseOrdinal,
+        )
+        else -> null
     }
-}.distinctBy(TutorVisualWorkSeed::anchor)
+
+private val VISUAL_TASK_CHRONOLOGY =
+    compareBy<Pair<TutorVisualTurnAnchor, ModelTaskSnapshot>>(
+        { (_, task) -> task.createdAtEpochMillis },
+        { (_, task) -> task.updatedAtEpochMillis },
+        { (_, task) -> task.attemptCount },
+        { (_, task) -> task.stateVersion },
+        { (_, task) -> task.request.requestId },
+    )
+
+internal fun tutorVisualProviderLoadingResolution(
+    provider: ProviderCapabilitySnapshot?,
+    providerLoadFailed: Boolean,
+): TutorVisualResolution? = when {
+    provider != null -> null
+    providerLoadFailed -> TutorVisualResolution.Fallback(
+        TutorVisualFallbackReason.PROVIDER_UNAVAILABLE,
+    )
+    else -> TutorVisualResolution.Preparing
+}
+
+internal fun freshTutorVisualRetryRequest(
+    freshRequest: ModelTaskRequest,
+    failedTask: ModelTaskSnapshot,
+): ModelTaskRequest? {
+    if (!failedTask.canRetryVisualTask()) return null
+    if (
+        ModelTaskLogicalOperationFingerprint.of(freshRequest) !=
+        ModelTaskLogicalOperationFingerprint.of(failedTask.request)
+    ) {
+        return null
+    }
+    val semanticRequestId = freshRequest.requestId.substringBefore(RETRY_REQUEST_MARKER)
+    val requestRetryOrdinal = failedTask.request.requestId
+        .substringAfterLast(RETRY_REQUEST_MARKER, missingDelimiterValue = "")
+        .toIntOrNull()
+        ?.plus(1)
+        ?: 1
+    val retryOrdinal = maxOf(failedTask.attemptCount + 1, requestRetryOrdinal)
+    val retryRequestId = "$semanticRequestId$RETRY_REQUEST_MARKER$retryOrdinal"
+    return freshRequest.copy(
+        requestId = retryRequestId,
+        egressManifest = freshRequest.egressManifest?.copy(
+            authorizationId = "authorization:$retryRequestId",
+        ),
+    )
+}
 
 internal fun resolveTutorVisual(
     anchor: TutorVisualTurnAnchor,
@@ -167,10 +238,17 @@ internal fun resolveTutorVisual(
         schemaVersion = candidate.schemaVersion,
         providerId = generationTask.visualProviderId(),
         providerConfigurationVersion = generationTask.visualProviderConfigurationVersion(),
+        requestIdentity = generationTask.request.requestId,
     )
     val reasons = generated.reviewReasonCodes()
     if (reasons.isEmpty()) {
         return TutorVisualResolution.Ready(candidate, generationCacheKey)
+    }
+    if (
+        reviewProvider != null &&
+        !reviewProvider.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW)
+    ) {
+        return TutorVisualResolution.Fallback(TutorVisualFallbackReason.PROVIDER_UNAVAILABLE)
     }
     val semanticReviewRequestId = expectedReviewRequestId ?: reviewProvider?.let { provider ->
         tutorVisualReviewRequestId(
@@ -233,6 +311,7 @@ internal fun resolveTutorVisual(
                         providerId = reviewOutput.visualProviderId(),
                         providerConfigurationVersion =
                             reviewOutput.visualProviderConfigurationVersion(),
+                        requestIdentity = reviewOutput.request.requestId,
                     ),
                 )
             }
@@ -250,7 +329,22 @@ private fun ModelTaskRequest.matchesSemanticRequest(expectedRequestId: String?):
 internal fun ModelTaskSnapshot.matchesTutorVisualRequest(request: ModelTaskRequest): Boolean =
     this.request.matchesSemanticRequest(request.requestId)
 
-private fun ModelTaskSnapshot.canRetryVisualTask(): Boolean =
+internal fun latestTutorVisualTask(
+    tasks: List<ModelTaskSnapshot>,
+    request: ModelTaskRequest,
+): ModelTaskSnapshot? = tasks
+    .filter { task -> task.matchesTutorVisualRequest(request) }
+    .maxWithOrNull(
+        compareBy<ModelTaskSnapshot>(
+            ModelTaskSnapshot::createdAtEpochMillis,
+            ModelTaskSnapshot::updatedAtEpochMillis,
+            ModelTaskSnapshot::attemptCount,
+            ModelTaskSnapshot::stateVersion,
+            { task -> task.request.requestId },
+        ),
+    )
+
+internal fun ModelTaskSnapshot.canRetryVisualTask(): Boolean =
     status == ModelTaskStatus.RETRYABLE_FAILURE &&
         failure?.retryable == true &&
         ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount)
@@ -284,6 +378,7 @@ private fun visualCacheKey(
     schemaVersion: Int,
     providerId: String,
     providerConfigurationVersion: String,
+    requestIdentity: String,
 ): String {
     val sourceFingerprint = MessageDigest.getInstance("SHA-256")
         .digest(
@@ -302,6 +397,7 @@ private fun visualCacheKey(
         schemaVersion = schemaVersion,
         providerId = providerId,
         providerConfigurationVersion = providerConfigurationVersion,
+        requestIdentity = requestIdentity,
     )
 }
 
@@ -316,3 +412,4 @@ private const val MIN_GENERATION_CONFIDENCE = 0.90
 private const val MIN_REVIEW_CONFIDENCE = 0.75
 private const val LOCAL_INTEGRITY_REASON = "local_integrity_error"
 private const val LOW_CONFIDENCE_REASON = "low_generation_confidence"
+private const val RETRY_REQUEST_MARKER = ":retry:"

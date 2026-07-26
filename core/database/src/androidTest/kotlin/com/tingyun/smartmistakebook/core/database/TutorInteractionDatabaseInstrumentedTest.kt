@@ -14,6 +14,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -97,6 +99,90 @@ class TutorInteractionDatabaseInstrumentedTest {
         assertTrue(revealed.solutionRevealed)
         assertEquals("CHANGE_REPRESENTATION", revealed.requestedMove)
         assertEquals(listOf(revealed), store.observeTutorTurnResponses(choice.sessionId).first())
+    }
+
+    @Test
+    fun visualTargetEvidenceIsExactIdempotentAndIndependentFromChoiceAndExposureLedgers() =
+        runBlocking {
+            val sessionId = "visual-target-session"
+            val requestId = planRequestId(sessionId)
+            store.persistSucceededPlanTask(
+                sessionId = sessionId,
+                modelTaskRequestId = requestId,
+                visualTargetId = "target-node",
+            )
+            val command = PersistTutorVisualTargetEvidenceCommand(
+                sessionId = sessionId,
+                questionDocumentId = EXPOSURE_QUESTION_DOCUMENT_ID,
+                revisionNumber = 1,
+                cycleOrdinal = 1,
+                turnOrdinal = 1,
+                surfaceKind = "PLAN",
+                modelTaskRequestId = requestId,
+                responseOrdinal = null,
+                selectedTargetId = "target-node",
+                submittedAtEpochMillis = 1_300,
+            )
+
+            val recorded = store.recordTutorVisualTargetEvidence(command)
+            val replayed = store.recordTutorVisualTargetEvidence(
+                command.copy(submittedAtEpochMillis = 1_500),
+            )
+
+            assertTrue(recorded.selectionWasCorrect)
+            assertEquals(recorded, replayed)
+            assertEquals(
+                listOf(recorded),
+                store.observeTutorVisualTargetEvidence(sessionId).first(),
+            )
+            assertTrue(store.observeTutorTurnResponses(sessionId).first().isEmpty())
+            assertNull(store.readTutorAnswerExposure(requestId))
+            assertTrue(store.loadLearningLedger(LEARNER_ID).validPrefix.isEmpty())
+            assertTrue(
+                runCatching {
+                    store.recordTutorVisualTargetEvidence(
+                        command.copy(
+                            selectedTargetId = "different-target",
+                            submittedAtEpochMillis = 1_600,
+                        ),
+                    )
+                }.exceptionOrNull() is ImmutablePayloadConflictException,
+            )
+        }
+
+    @Test
+    fun wrongVisibleVisualTargetIsPersistedAsNegativeEvidence() = runBlocking {
+        val sessionId = "visual-target-wrong-session"
+        val requestId = planRequestId(sessionId)
+        store.persistSucceededPlanTask(
+            sessionId = sessionId,
+            modelTaskRequestId = requestId,
+            visualTargetId = "expected-target",
+        )
+
+        val recorded = store.recordTutorVisualTargetEvidence(
+            PersistTutorVisualTargetEvidenceCommand(
+                sessionId = sessionId,
+                questionDocumentId = EXPOSURE_QUESTION_DOCUMENT_ID,
+                revisionNumber = 1,
+                cycleOrdinal = 1,
+                turnOrdinal = 1,
+                surfaceKind = "PLAN",
+                modelTaskRequestId = requestId,
+                responseOrdinal = null,
+                selectedTargetId = "wrong-visible-target",
+                submittedAtEpochMillis = 1_300,
+            ),
+        )
+
+        assertFalse(recorded.selectionWasCorrect)
+        assertEquals(
+            listOf(recorded),
+            store.observeTutorVisualTargetEvidence(sessionId).first(),
+        )
+        assertTrue(store.observeTutorTurnResponses(sessionId).first().isEmpty())
+        assertNull(store.readTutorAnswerExposure(requestId))
+        assertTrue(store.loadLearningLedger(LEARNER_ID).validPrefix.isEmpty())
     }
 
     @Test
@@ -774,6 +860,7 @@ class TutorInteractionDatabaseInstrumentedTest {
         modelTaskRequestId: String,
         questionDocumentId: String = EXPOSURE_QUESTION_DOCUMENT_ID,
         revisionNumber: Int = 1,
+        visualTargetId: String? = null,
     ) {
         val input = TutorPlanInput(
             sessionId = sessionId,
@@ -800,6 +887,12 @@ class TutorInteractionDatabaseInstrumentedTest {
                     difficultyReasonMarkdown = "关键在于识别约束。",
                     targetedEvidenceLabels = emptyList(),
                     inferredKnowledgeLabels = listOf("函数"),
+                    interactionDirective = visualTargetId?.let { targetId ->
+                        TutorInteractionDirective.VisualTarget(
+                            promptMarkdown = "请点出图中的目标。",
+                            targetId = targetId,
+                        )
+                    },
                 ),
                 modelVersion = "instrumented-test-model",
             ),

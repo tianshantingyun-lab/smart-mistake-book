@@ -2,10 +2,13 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import android.os.Bundle
 import androidx.compose.runtime.saveable.Saver
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 
 internal sealed interface PendingTutorEgressAction {
     data class Plan(
@@ -24,6 +27,22 @@ internal sealed interface PendingTutorEgressAction {
     data class RetryResponse(
         val requestId: String,
     ) : PendingTutorEgressAction
+
+    data class RetryVisual(
+        val anchor: TutorVisualTurnAnchor,
+        val taskKind: ModelTaskKind,
+        val failedRequestId: String?,
+        val approvedAtEpochMillis: Long? = null,
+    ) : PendingTutorEgressAction {
+        init {
+            require(
+                taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+                    taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            )
+            require(failedRequestId == null || failedRequestId.isNotBlank())
+            require(approvedAtEpochMillis == null || approvedAtEpochMillis >= 0)
+        }
+    }
 }
 
 internal data class PendingTutorEgressState(
@@ -39,6 +58,7 @@ private const val NONE = "none"
 private const val PLAN = "plan"
 private const val NEW_RESPONSE = "new_response"
 private const val RETRY_RESPONSE = "retry_response"
+private const val RETRY_VISUAL = "retry_visual"
 private const val CYCLE = "cycle"
 private const val MESSAGES = "messages"
 private const val TURN_COUNT = "turn_count"
@@ -53,6 +73,11 @@ private const val MESSAGE = "message"
 private const val REQUESTED_MOVE = "requested_move"
 private const val CLEAR_DRAFT = "clear_draft"
 private const val REQUEST_ID = "request_id"
+private const val SURFACE = "surface"
+private const val TURN = "turn"
+private const val RESPONSE = "response"
+private const val TASK_KIND = "task_kind"
+private const val APPROVED_AT = "approved_at"
 
 private fun turnKey(index: Int, field: String) = "turn_${index}_$field"
 
@@ -72,6 +97,7 @@ internal val pendingTutorEgressStateSaver = Saver<PendingTutorEgressState, Bundl
                     putString(KIND, RETRY_RESPONSE)
                     putString(REQUEST_ID, action.requestId)
                 }
+                is PendingTutorEgressAction.RetryVisual -> saveRetryVisual(action)
             }
         }
     },
@@ -102,6 +128,17 @@ private fun Bundle.savePlan(action: PendingTutorEgressAction.Plan) {
     }
 }
 
+private fun Bundle.saveRetryVisual(action: PendingTutorEgressAction.RetryVisual) {
+    putString(KIND, RETRY_VISUAL)
+    putString(SURFACE, action.anchor.surface.name)
+    putInt(CYCLE, action.anchor.cycleOrdinal)
+    putInt(TURN, action.anchor.turnOrdinal)
+    action.anchor.responseOrdinal?.let { putInt(RESPONSE, it) }
+    putString(TASK_KIND, action.taskKind.name)
+    putString(REQUEST_ID, action.failedRequestId)
+    action.approvedAtEpochMillis?.let { putLong(APPROVED_AT, it) }
+}
+
 private fun Bundle.restoreAction(): PendingTutorEgressAction? = runCatching {
     when (getString(KIND)) {
         NONE -> null
@@ -110,9 +147,27 @@ private fun Bundle.restoreAction(): PendingTutorEgressAction? = runCatching {
         RETRY_RESPONSE -> PendingTutorEgressAction.RetryResponse(
             requestId = requireNotNull(getString(REQUEST_ID)).also { require(it.isNotBlank()) },
         )
+        RETRY_VISUAL -> restoreRetryVisual()
         else -> error("Unknown pending tutor action")
     }
 }.getOrNull()
+
+private fun Bundle.restoreRetryVisual(): PendingTutorEgressAction.RetryVisual {
+    require(containsKey(CYCLE) && containsKey(TURN))
+    return PendingTutorEgressAction.RetryVisual(
+        anchor = TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.valueOf(requireNotNull(getString(SURFACE))),
+            cycleOrdinal = getInt(CYCLE),
+            turnOrdinal = getInt(TURN),
+            responseOrdinal = getInt(RESPONSE).takeIf { containsKey(RESPONSE) },
+        ),
+        taskKind = ModelTaskKind.valueOf(requireNotNull(getString(TASK_KIND))),
+        failedRequestId = getString(REQUEST_ID),
+        approvedAtEpochMillis = getLong(APPROVED_AT).takeIf {
+            containsKey(APPROVED_AT)
+        },
+    )
+}
 
 private fun Bundle.restoreNewResponse(): PendingTutorEgressAction.NewResponse {
     val message = requireNotNull(getString(MESSAGE))

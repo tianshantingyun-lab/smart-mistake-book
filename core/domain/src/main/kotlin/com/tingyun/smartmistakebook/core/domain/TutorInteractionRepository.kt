@@ -3,7 +3,9 @@ package com.tingyun.smartmistakebook.core.domain
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 data class TutorTurnResponse(
     val sessionId: String,
@@ -124,6 +126,41 @@ data class RecordTutorChoiceCommand(
     }
 }
 
+data class TutorVisualTargetEvidence(
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val anchor: TutorVisualTurnAnchor,
+    val modelTaskRequestId: String,
+    val selectedTargetId: String,
+    val selectionWasCorrect: Boolean,
+    val submittedAtEpochMillis: Long,
+) {
+    init {
+        require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
+        require(revisionNumber > 0)
+        require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(submittedAtEpochMillis >= 0)
+    }
+}
+
+data class RecordTutorVisualTargetEvidenceCommand(
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val anchor: TutorVisualTurnAnchor,
+    val modelTaskRequestId: String,
+    val selectedTargetId: String,
+    val occurredAtEpochMillis: Long,
+) {
+    init {
+        require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
+        require(revisionNumber > 0)
+        require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(occurredAtEpochMillis >= 0)
+    }
+}
+
 class TutorEvidenceRejectedException(requestId: String) :
     IllegalStateException("Tutor evidence request is no longer authorized: $requestId")
 
@@ -212,7 +249,17 @@ data class TutorSessionProblemAnchor(
 interface TutorInteractionRepository {
     fun observe(sessionId: String): Flow<List<TutorTurnResponse>>
 
+    fun observeVisualTargetEvidence(
+        sessionId: String,
+    ): Flow<List<TutorVisualTargetEvidence>> = flowOf(emptyList())
+
     suspend fun recordChoice(command: RecordTutorChoiceCommand): TutorTurnResponse
+
+    suspend fun recordVisualTargetEvidence(
+        command: RecordTutorVisualTargetEvidenceCommand,
+    ): TutorVisualTargetEvidence = throw UnsupportedOperationException(
+        "Tutor visual-target evidence writes are not implemented",
+    )
 
     /** Revokes one exact guided-evidence request, including a write already crossing storage. */
     fun cancelEvidence(requestId: String) = Unit
@@ -263,6 +310,7 @@ fun List<TutorTurnResponse>.toContiguousTutorHistory(): List<TutorTurnHistoryEnt
 
 fun List<TutorTurnResponse>.toTutorConversationMemory(
     answerExposureKeys: Set<TutorAnswerExposureKey>,
+    visualTargetEvidence: List<TutorVisualTargetEvidence> = emptyList(),
 ): TutorConversationMemory? {
     val ordered = sortedWith(
         compareBy(TutorTurnResponse::cycleOrdinal).thenBy(TutorTurnResponse::turnOrdinal),
@@ -279,17 +327,55 @@ fun List<TutorTurnResponse>.toTutorConversationMemory(
             response.requestedMove != null ||
             answerWasExposed
     }
-    if (semanticResponses.isEmpty() && exposedRespondReplies.isEmpty()) return null
+    val conversationIdentities = ordered.mapTo(hashSetOf()) { response ->
+        Triple(response.sessionId, response.questionDocumentId, response.revisionNumber)
+    }
+    val exactVisualEvidence = visualTargetEvidence.distinctBy(
+        TutorVisualTargetEvidence::modelTaskRequestId,
+    ).filter { evidence ->
+        conversationIdentities.isEmpty() ||
+            Triple(
+                evidence.sessionId,
+                evidence.questionDocumentId,
+                evidence.revisionNumber,
+            ) in conversationIdentities
+    }
+    if (
+        semanticResponses.isEmpty() &&
+        exposedRespondReplies.isEmpty() &&
+        exactVisualEvidence.isEmpty()
+    ) {
+        return null
+    }
     val choiceResponses = semanticResponses.filter(TutorTurnResponse::hasChoicePayload)
-    val latestChoice = choiceResponses.lastOrNull()
+    val latestChoiceFeedback = choiceResponses
+        .mapNotNull { response ->
+            response.choiceSubmittedAtEpochMillis?.let { submittedAt ->
+                submittedAt to requireNotNull(response.feedbackMarkdown)
+            }
+        }
+        .maxByOrNull(Pair<Long, String>::first)
+    val latestVisualFeedback = exactVisualEvidence
+        .maxByOrNull(TutorVisualTargetEvidence::submittedAtEpochMillis)
+        ?.let { evidence ->
+            evidence.submittedAtEpochMillis to if (evidence.selectionWasCorrect) {
+                "已选中图解目标。"
+            } else {
+                "未选中图解目标，请继续核对。"
+            }
+        }
     return TutorConversationMemory(
         completedCycleCount = maxOf(
             semanticResponses.lastOrNull()?.cycleOrdinal ?: 0,
             exposedRespondReplies.maxOfOrNull(TutorAnswerExposureKey::cycleOrdinal) ?: 0,
+            exactVisualEvidence.maxOfOrNull { evidence -> evidence.anchor.cycleOrdinal } ?: 0,
         ),
-        answeredTurnCount = choiceResponses.size,
-        correctChoiceCount = choiceResponses.count { it.selectionWasCorrect == true },
-        lastFeedbackMarkdown = latestChoice?.feedbackMarkdown,
+        answeredTurnCount = choiceResponses.size + exactVisualEvidence.size,
+        correctChoiceCount = choiceResponses.count { it.selectionWasCorrect == true } +
+            exactVisualEvidence.count(TutorVisualTargetEvidence::selectionWasCorrect),
+        lastFeedbackMarkdown = listOfNotNull(latestChoiceFeedback, latestVisualFeedback)
+            .maxByOrNull(Pair<Long, String>::first)
+            ?.second,
         lastRequestedMove = semanticResponses.asReversed()
             .firstNotNullOfOrNull(TutorTurnResponse::requestedMove),
         solutionWasRevealed = exposedRespondReplies.isNotEmpty() ||

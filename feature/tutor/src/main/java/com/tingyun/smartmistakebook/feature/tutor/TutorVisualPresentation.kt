@@ -37,6 +37,10 @@ internal fun tutorVisualPresentationMode(isCurrent: Boolean): TutorVisualPresent
         TutorVisualPresentationMode.HISTORY_COLLAPSED
     }
 
+internal fun tutorPlanVisualPresentationMode(
+    isCurrentTurn: Boolean,
+): TutorVisualPresentationMode = tutorVisualPresentationMode(isCurrent = isCurrentTurn)
+
 internal enum class TutorVisualFallbackAction {
     RETRY,
     ORIGINAL,
@@ -65,7 +69,13 @@ internal fun canSubmitTutorVisualTarget(attempt: VisualTargetAttempt): Boolean =
         attempt.pendingEvidenceRequestId == attempt.requestId &&
         attempt.visualReady &&
         !attempt.sceneReported &&
-        attempt.hitTargetId == attempt.expectedTargetId
+        attempt.expectedTargetId.isNotBlank() &&
+        attempt.hitTargetId.isNotBlank()
+
+internal fun isTutorVisualTargetReady(
+    state: TutorVisualResolution,
+    hasInlineScene: Boolean,
+): Boolean = state is TutorVisualResolution.Ready || hasInlineScene
 
 internal fun canSubmitTutorVisualTarget(
     mode: TutorExplanationMode,

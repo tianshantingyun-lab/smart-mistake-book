@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.visual.runtime
 
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DConnectorElement
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
+import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualBinding
 import com.tingyun.smartmistakebook.core.model.TutorVisualBindingProperty
 import com.tingyun.smartmistakebook.core.model.TutorVisualBindingTarget
@@ -38,6 +39,7 @@ enum class TutorVisualIssueCode {
     UNIT_MISMATCH,
     INVALID_EXPRESSION_RESULT,
     UNSUPPORTED_BINDING_PROPERTY,
+    PARTICLE_RENDER_BUDGET_EXCEEDED,
     INVALID_DIRECTION,
     CHART_AXIS_MISSING,
     EMPTY_FOCUS_STEP,
@@ -185,6 +187,12 @@ object TutorVisualDocumentCompiler {
                 val dimension = inferDimension(binding.expression, variables, binding.bindingId, this)
                 requireBindingDimension(binding, dimension, this)
                 requireRendererConsumer(binding, panels, elements, this)
+                requireProvablySafeExpression(
+                    binding = binding,
+                    durationSeconds = scene.durationSeconds,
+                    variables = variableValues,
+                    issues = this,
+                )
                 if (
                     evaluationTimes.any { timeSeconds ->
                         TutorVisualExpressionEvaluator.evaluate(
@@ -202,6 +210,25 @@ object TutorVisualDocumentCompiler {
                     add(binding.invalidExpressionIssue())
                 }
             }
+            scene.elements
+                .filterIsInstance<TutorVisualParticleGroupElement>()
+                .groupBy(TutorVisualParticleGroupElement::panelId)
+                .forEach { (panelId, groups) ->
+                    val visibleInstanceBudget = groups.sumOf(
+                        TutorVisualParticleGroupElement::instanceCount,
+                    )
+                    if (visibleInstanceBudget > MAX_CANVAS_PARTICLE_INSTANCES) {
+                        add(
+                            TutorVisualIntegrityIssue(
+                                code = TutorVisualIssueCode.PARTICLE_RENDER_BUDGET_EXCEEDED,
+                                severity = TutorVisualIssueSeverity.ERROR,
+                                targetId = panelId,
+                                detail = "The visible 2D particle budget exceeds " +
+                                    "$MAX_CANVAS_PARTICLE_INSTANCES instances.",
+                            ),
+                        )
+                    }
+                }
             scene.elements.filterIsInstance<TutorVisual2DConnectorElement>().forEach { connector ->
                 if (connector.kind in DIRECTED_CONNECTORS && !connector.directed) {
                     add(
@@ -415,7 +442,11 @@ object TutorVisualDocumentCompiler {
                     element is TutorVisual2DConnectorElement ->
                         binding.property == TutorVisualBindingProperty.PATH_PROGRESS
                     element is TutorVisual2DNodeElement ->
-                        binding.property in TWO_DIMENSIONAL_NODE_PROPERTIES
+                        binding.property == TutorVisualBindingProperty.OPACITY ||
+                            (
+                                binding.property == TutorVisualBindingProperty.LIQUID_LEVEL &&
+                                    element.kind == TutorVisual2DNodeKind.LIQUID_LEVEL
+                                )
                     element is TutorVisualParticleGroupElement ->
                         binding.property == TutorVisualBindingProperty.PARTICLE_PROGRESS
                     panelKind == TutorVisualPanelKind.SCENE_3D &&
@@ -436,6 +467,93 @@ object TutorVisualDocumentCompiler {
         }
     }
 
+    private fun requireProvablySafeExpression(
+        binding: TutorVisualBinding,
+        durationSeconds: Double,
+        variables: Map<String, Double>,
+        issues: MutableList<TutorVisualIntegrityIssue>,
+    ) {
+        if (
+            inferSafeInterval(
+                expression = binding.expression,
+                durationSeconds = durationSeconds,
+                variables = variables,
+            ) == null
+        ) {
+            issues += binding.invalidExpressionIssue()
+        }
+    }
+
+    private fun inferSafeInterval(
+        expression: TutorVisualDocumentExpression,
+        durationSeconds: Double,
+        variables: Map<String, Double>,
+    ): RuntimeInterval? {
+        val arguments = expression.arguments.map { argument ->
+            inferSafeInterval(argument, durationSeconds, variables) ?: return null
+        }
+        val interval = when (expression.operation) {
+            TutorVisualDocumentExpressionOperation.CONSTANT ->
+                expression.value?.let(RuntimeInterval::exact)
+            TutorVisualDocumentExpressionOperation.TIME_SECONDS ->
+                RuntimeInterval(0.0, durationSeconds)
+            TutorVisualDocumentExpressionOperation.TIME_PROGRESS ->
+                RuntimeInterval(0.0, if (durationSeconds > 0.0) 1.0 else 0.0)
+            TutorVisualDocumentExpressionOperation.VARIABLE ->
+                variables[expression.variableId]?.let(RuntimeInterval::exact)
+            TutorVisualDocumentExpressionOperation.ADD ->
+                RuntimeInterval(
+                    arguments[0].minimum + arguments[1].minimum,
+                    arguments[0].maximum + arguments[1].maximum,
+                )
+            TutorVisualDocumentExpressionOperation.SUBTRACT ->
+                RuntimeInterval(
+                    arguments[0].minimum - arguments[1].maximum,
+                    arguments[0].maximum - arguments[1].minimum,
+                )
+            TutorVisualDocumentExpressionOperation.MULTIPLY ->
+                RuntimeInterval.hullOfProducts(arguments[0], arguments[1])
+            TutorVisualDocumentExpressionOperation.DIVIDE -> {
+                val denominator = arguments[1]
+                if (
+                    denominator.minimum <= MIN_PROVABLE_DIVISOR &&
+                    denominator.maximum >= -MIN_PROVABLE_DIVISOR
+                ) {
+                    return null
+                }
+                RuntimeInterval.hullOfQuotients(arguments[0], denominator)
+            }
+            TutorVisualDocumentExpressionOperation.NEGATE ->
+                RuntimeInterval(-arguments[0].maximum, -arguments[0].minimum)
+            TutorVisualDocumentExpressionOperation.SIN,
+            TutorVisualDocumentExpressionOperation.COS,
+            -> RuntimeInterval(-1.0, 1.0)
+            TutorVisualDocumentExpressionOperation.SQRT -> {
+                if (arguments[0].minimum < 0.0) return null
+                RuntimeInterval(
+                    sqrt(arguments[0].minimum),
+                    sqrt(arguments[0].maximum),
+                )
+            }
+            TutorVisualDocumentExpressionOperation.ABS -> arguments[0].absolute()
+            TutorVisualDocumentExpressionOperation.MIN ->
+                RuntimeInterval(
+                    min(arguments[0].minimum, arguments[1].minimum),
+                    min(arguments[0].maximum, arguments[1].maximum),
+                )
+            TutorVisualDocumentExpressionOperation.MAX ->
+                RuntimeInterval(
+                    max(arguments[0].minimum, arguments[1].minimum),
+                    max(arguments[0].maximum, arguments[1].maximum),
+                )
+            TutorVisualDocumentExpressionOperation.CLAMP ->
+                RuntimeInterval.hull(arguments)
+            TutorVisualDocumentExpressionOperation.LERP ->
+                RuntimeInterval.hull(arguments.take(2))
+        } ?: return null
+        return interval.takeIf(RuntimeInterval::isRenderable)
+    }
+
     private val DIRECTED_CONNECTORS = setOf(
         TutorVisualConnectorKind.FLOW,
         TutorVisualConnectorKind.VECTOR,
@@ -447,10 +565,6 @@ object TutorVisualDocumentCompiler {
         TutorVisualBindingProperty.CAMERA_ELEVATION_DEGREES,
         TutorVisualBindingProperty.CAMERA_DISTANCE,
     )
-    private val TWO_DIMENSIONAL_NODE_PROPERTIES = setOf(
-        TutorVisualBindingProperty.OPACITY,
-        TutorVisualBindingProperty.LIQUID_LEVEL,
-    )
     private val THREE_DIMENSIONAL_PROPERTIES = setOf(
         TutorVisualBindingProperty.X,
         TutorVisualBindingProperty.Y,
@@ -460,6 +574,65 @@ object TutorVisualDocumentCompiler {
         TutorVisualBindingProperty.ROTATION_Z_DEGREES,
         TutorVisualBindingProperty.SCALE,
     )
+    private const val MIN_PROVABLE_DIVISOR = 1e-12
+    private const val MAX_CANVAS_PARTICLE_INSTANCES = 300
+}
+
+private data class RuntimeInterval(
+    val minimum: Double,
+    val maximum: Double,
+) {
+    fun isRenderable(): Boolean =
+        minimum.isFinite() &&
+            maximum.isFinite() &&
+            minimum <= maximum &&
+            abs(minimum) <= MAX_ABS_PROVABLE_VALUE &&
+            abs(maximum) <= MAX_ABS_PROVABLE_VALUE
+
+    fun absolute(): RuntimeInterval {
+        val maximumMagnitude = max(abs(minimum), abs(maximum))
+        return if (minimum <= 0.0 && maximum >= 0.0) {
+            RuntimeInterval(0.0, maximumMagnitude)
+        } else {
+            RuntimeInterval(min(abs(minimum), abs(maximum)), maximumMagnitude)
+        }
+    }
+
+    companion object {
+        fun exact(value: Double): RuntimeInterval = RuntimeInterval(value, value)
+
+        fun hull(intervals: List<RuntimeInterval>): RuntimeInterval = RuntimeInterval(
+            minimum = intervals.minOf(RuntimeInterval::minimum),
+            maximum = intervals.maxOf(RuntimeInterval::maximum),
+        )
+
+        fun hullOfProducts(
+            left: RuntimeInterval,
+            right: RuntimeInterval,
+        ): RuntimeInterval = hullOfValues(
+            left.minimum * right.minimum,
+            left.minimum * right.maximum,
+            left.maximum * right.minimum,
+            left.maximum * right.maximum,
+        )
+
+        fun hullOfQuotients(
+            numerator: RuntimeInterval,
+            denominator: RuntimeInterval,
+        ): RuntimeInterval = hullOfValues(
+            numerator.minimum / denominator.minimum,
+            numerator.minimum / denominator.maximum,
+            numerator.maximum / denominator.minimum,
+            numerator.maximum / denominator.maximum,
+        )
+
+        private fun hullOfValues(vararg values: Double): RuntimeInterval = RuntimeInterval(
+            minimum = values.min(),
+            maximum = values.max(),
+        )
+
+        private const val MAX_ABS_PROVABLE_VALUE = 1e15
+    }
 }
 
 object TutorVisualExpressionEvaluator {
@@ -586,12 +759,14 @@ object TutorVisualCacheKey {
         schemaVersion: Int = 2,
         providerId: String = "",
         providerConfigurationVersion: String = "",
+        requestIdentity: String = "",
     ): String {
         val canonical = listOf(
             questionDocumentFingerprint,
             sourceImageSha256.lowercase(),
             providerId,
             providerConfigurationVersion,
+            requestIdentity,
             modelVersion,
             schemaVersion.toString(),
         ).joinToString("\n")

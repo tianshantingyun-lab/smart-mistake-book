@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -102,6 +104,43 @@ class TutorInteractionRepositoryTest {
         assertNull(memory?.lastFeedbackMarkdown)
         assertNull(memory?.lastRequestedMove)
         assertEquals(true, memory?.solutionWasRevealed)
+    }
+
+    @Test
+    fun `visual target evidence is recovered by exact request once and stays in its conversation`() {
+        val response = actionResponse(turnOrdinal = 1)
+        val evidence = TutorVisualTargetEvidence(
+            sessionId = response.sessionId,
+            questionDocumentId = response.questionDocumentId,
+            revisionNumber = response.revisionNumber,
+            anchor = TutorVisualTurnAnchor(
+                surface = TutorVisualTurnSurface.FOLLOW_UP,
+                cycleOrdinal = 1,
+                turnOrdinal = 1,
+                responseOrdinal = 2,
+            ),
+            modelTaskRequestId = "respond:visual:2",
+            selectedTargetId = "wrong-visible-node",
+            selectionWasCorrect = false,
+            submittedAtEpochMillis = 200,
+        )
+
+        val memory = listOf(response).toTutorConversationMemory(
+            answerExposureKeys = emptySet(),
+            visualTargetEvidence = listOf(
+                evidence,
+                evidence.copy(submittedAtEpochMillis = 300),
+                evidence.copy(
+                    modelTaskRequestId = "other-conversation",
+                    questionDocumentId = "other-question",
+                ),
+            ),
+        )
+
+        assertEquals(1, memory?.answeredTurnCount)
+        assertEquals(0, memory?.correctChoiceCount)
+        assertEquals("未选中图解目标，请继续核对。", memory?.lastFeedbackMarkdown)
+        assertEquals(1, memory?.completedCycleCount)
     }
 
     @Test

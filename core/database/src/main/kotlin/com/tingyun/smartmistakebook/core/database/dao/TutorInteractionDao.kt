@@ -9,8 +9,19 @@ import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictExcept
 import com.tingyun.smartmistakebook.core.database.PersistTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorRevealCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
+import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
 import com.tingyun.smartmistakebook.core.database.entity.TutorTurnResponseEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorVisualTargetEvidenceEntity
+import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
+import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -30,6 +41,25 @@ internal abstract class TutorInteractionDao {
 
     @Query(
         """
+        SELECT * FROM tutor_visual_target_evidence
+        WHERE session_id = :sessionId
+        ORDER BY cycle_ordinal ASC, turn_ordinal ASC, response_ordinal ASC,
+            submitted_at_epoch_millis ASC
+        """,
+    )
+    protected abstract fun observeVisualEvidenceEntities(
+        sessionId: String,
+    ): Flow<List<TutorVisualTargetEvidenceEntity>>
+
+    fun observeVisualEvidence(
+        sessionId: String,
+    ): Flow<List<TutorVisualTargetEvidenceRecord>> =
+        observeVisualEvidenceEntities(sessionId).map { rows ->
+            rows.map(TutorVisualTargetEvidenceEntity::toRecord)
+        }
+
+    @Query(
+        """
         SELECT * FROM tutor_turn_response
         WHERE session_id = :sessionId AND cycle_ordinal = :cycleOrdinal AND turn_ordinal = :turnOrdinal
         """,
@@ -42,6 +72,57 @@ internal abstract class TutorInteractionDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insert(entity: TutorTurnResponseEntity): Long
+
+    @Query(
+        """
+        SELECT * FROM tutor_visual_target_evidence
+        WHERE model_task_request_id = :modelTaskRequestId
+        """,
+    )
+    protected abstract suspend fun readVisualEvidenceEntity(
+        modelTaskRequestId: String,
+    ): TutorVisualTargetEvidenceEntity?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertVisualEvidence(
+        entity: TutorVisualTargetEvidenceEntity,
+    ): Long
+
+    @Query("SELECT * FROM model_task WHERE request_id = :requestId LIMIT 1")
+    protected abstract suspend fun findModelTask(requestId: String): ModelTaskEntity?
+
+    @Query(
+        """
+        DELETE FROM tutor_visual_target_evidence
+        WHERE model_task_request_id = :modelTaskRequestId
+          AND session_id = :sessionId
+          AND question_document_id = :questionDocumentId
+          AND revision_number = :revisionNumber
+          AND cycle_ordinal = :cycleOrdinal
+          AND turn_ordinal = :turnOrdinal
+          AND surface_kind = :surfaceKind
+          AND (
+              response_ordinal = :responseOrdinal OR
+              response_ordinal IS NULL AND :responseOrdinal IS NULL
+          )
+          AND selected_target_id = :selectedTargetId
+          AND selection_was_correct = :selectionWasCorrect
+          AND submitted_at_epoch_millis = :submittedAtEpochMillis
+        """,
+    )
+    protected abstract suspend fun deleteExactVisualEvidence(
+        modelTaskRequestId: String,
+        sessionId: String,
+        questionDocumentId: String,
+        revisionNumber: Int,
+        cycleOrdinal: Int,
+        turnOrdinal: Int,
+        surfaceKind: String,
+        responseOrdinal: Int?,
+        selectedTargetId: String,
+        selectionWasCorrect: Boolean,
+        submittedAtEpochMillis: Long,
+    ): Int
 
     @Query(
         """
@@ -220,6 +301,107 @@ internal abstract class TutorInteractionDao {
         ) == 1
 
     @Transaction
+    open suspend fun recordVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): TutorVisualTargetEvidenceRecord {
+        val expectedTargetId = validateVisualTargetEvidence(command)
+        val candidate = command.toVisualEvidenceEntity(
+            selectionWasCorrect = command.selectedTargetId == expectedTargetId,
+        )
+        if (insertVisualEvidence(candidate) != INSERT_CONFLICT) return candidate.toRecord()
+        val existing = checkNotNull(readVisualEvidenceEntity(command.modelTaskRequestId))
+        if (!existing.hasSameVisualEvidencePayload(candidate)) {
+            throw ImmutablePayloadConflictException(
+                "tutor_visual_target_evidence",
+                command.modelTaskRequestId,
+            )
+        }
+        return existing.toRecord()
+    }
+
+    @Transaction
+    open suspend fun discardVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): Boolean {
+        val selectionWasCorrect =
+            command.selectedTargetId == validateVisualTargetEvidence(command)
+        val deleted = deleteExactVisualEvidence(
+            modelTaskRequestId = command.modelTaskRequestId,
+            sessionId = command.sessionId,
+            questionDocumentId = command.questionDocumentId,
+            revisionNumber = command.revisionNumber,
+            cycleOrdinal = command.cycleOrdinal,
+            turnOrdinal = command.turnOrdinal,
+            surfaceKind = command.surfaceKind,
+            responseOrdinal = command.responseOrdinal,
+            selectedTargetId = command.selectedTargetId,
+            selectionWasCorrect = selectionWasCorrect,
+            submittedAtEpochMillis = command.submittedAtEpochMillis,
+        )
+        if (deleted == 1) return true
+        val existing = readVisualEvidenceEntity(command.modelTaskRequestId) ?: return false
+        return existing.hasSameVisualEvidencePayload(
+            command.toVisualEvidenceEntity(selectionWasCorrect),
+        ) &&
+            existing.submittedAtEpochMillis != command.submittedAtEpochMillis
+    }
+
+    private suspend fun validateVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): String {
+        val task = findModelTask(command.modelTaskRequestId)
+            ?: throw ImmutablePayloadConflictException(
+                "tutor_visual_target_evidence_model_task",
+                command.modelTaskRequestId,
+            )
+        val request = ModelTaskCodec.decodeRequest(task.requestSnapshot)
+        val output = task.outputSnapshot?.let(ModelTaskCodec::decodeOutput)
+        val commonIdentityMatches =
+            task.status == ModelTaskStatus.SUCCEEDED.name &&
+                request.requestId == command.modelTaskRequestId &&
+                command.submittedAtEpochMillis >= task.updatedAtEpochMillis
+        val expectedTargetId = when (command.surfaceKind) {
+            "PLAN" -> {
+                val input = request.input as? TutorPlanInput
+                val planOutput = output as? TutorPlanOutput
+                val directive = planOutput?.plan?.interactionDirective as?
+                    TutorInteractionDirective.VisualTarget
+                directive?.targetId?.takeIf {
+                    input != null && command.responseOrdinal == null &&
+                    input.sessionId == command.sessionId &&
+                    input.questionDocument.id == command.questionDocumentId &&
+                    input.draftRevisionNumber == command.revisionNumber &&
+                    input.cycleOrdinal == command.cycleOrdinal &&
+                    input.turnOrdinal == command.turnOrdinal
+                }
+            }
+            "FOLLOW_UP" -> {
+                val input = request.input as? TutorRespondInput
+                val respondOutput = output as? TutorRespondOutput
+                val directive = respondOutput?.interactionDirective as?
+                    TutorInteractionDirective.VisualTarget
+                directive?.targetId?.takeIf {
+                    input != null &&
+                    input.sessionId == command.sessionId &&
+                    input.questionDocument.id == command.questionDocumentId &&
+                    input.draftRevisionNumber == command.revisionNumber &&
+                    input.cycleOrdinal == command.cycleOrdinal &&
+                    input.turnOrdinal == command.turnOrdinal &&
+                    input.responseOrdinal == command.responseOrdinal
+                }
+            }
+            else -> null
+        }
+        if (!commonIdentityMatches || expectedTargetId == null) {
+            throw ImmutablePayloadConflictException(
+                "tutor_visual_target_evidence_surface",
+                command.modelTaskRequestId,
+            )
+        }
+        return expectedTargetId
+    }
+
+    @Transaction
     open suspend fun recordMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord {
         val candidate = command.toActionEntity()
         if (insert(candidate) != INSERT_CONFLICT) return candidate.toRecord()
@@ -308,6 +490,23 @@ private fun PersistTutorChoiceCommand.toEntity() = TutorTurnResponseEntity(
     updatedAtEpochMillis = choiceSubmittedAtEpochMillis,
 )
 
+private fun PersistTutorVisualTargetEvidenceCommand.toVisualEvidenceEntity(
+    selectionWasCorrect: Boolean,
+) =
+    TutorVisualTargetEvidenceEntity(
+        modelTaskRequestId = modelTaskRequestId,
+        sessionId = sessionId,
+        questionDocumentId = questionDocumentId,
+        revisionNumber = revisionNumber,
+        cycleOrdinal = cycleOrdinal,
+        turnOrdinal = turnOrdinal,
+        surfaceKind = surfaceKind,
+        responseOrdinal = responseOrdinal,
+        selectedTargetId = selectedTargetId,
+        selectionWasCorrect = selectionWasCorrect,
+        submittedAtEpochMillis = submittedAtEpochMillis,
+    )
+
 private fun PersistTutorMoveCommand.toActionEntity() = TutorTurnResponseEntity(
     sessionId = sessionId,
     questionDocumentId = questionDocumentId,
@@ -351,6 +550,20 @@ private fun TutorTurnResponseEntity.hasSameChoicePayload(other: TutorTurnRespons
         selectedChoiceId == other.selectedChoiceId && selectedChoiceMarkdown == other.selectedChoiceMarkdown &&
         selectionWasCorrect == other.selectionWasCorrect && feedbackMarkdown == other.feedbackMarkdown
 
+private fun TutorVisualTargetEvidenceEntity.hasSameVisualEvidencePayload(
+    other: TutorVisualTargetEvidenceEntity,
+): Boolean =
+    modelTaskRequestId == other.modelTaskRequestId &&
+        sessionId == other.sessionId &&
+        questionDocumentId == other.questionDocumentId &&
+        revisionNumber == other.revisionNumber &&
+        cycleOrdinal == other.cycleOrdinal &&
+        turnOrdinal == other.turnOrdinal &&
+        surfaceKind == other.surfaceKind &&
+        responseOrdinal == other.responseOrdinal &&
+        selectedTargetId == other.selectedTargetId &&
+        selectionWasCorrect == other.selectionWasCorrect
+
 private val TutorTurnResponseEntity.hasChoicePayload: Boolean
     get() = diagnosticStemMarkdown != null
 
@@ -385,6 +598,20 @@ internal fun TutorTurnResponseEntity.toRecord() = TutorTurnResponseRecord(
     choiceSubmittedAtEpochMillis = choiceSubmittedAtEpochMillis,
     submittedAtEpochMillis = submittedAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
+)
+
+internal fun TutorVisualTargetEvidenceEntity.toRecord() = TutorVisualTargetEvidenceRecord(
+    sessionId = sessionId,
+    questionDocumentId = questionDocumentId,
+    revisionNumber = revisionNumber,
+    cycleOrdinal = cycleOrdinal,
+    turnOrdinal = turnOrdinal,
+    surfaceKind = surfaceKind,
+    modelTaskRequestId = modelTaskRequestId,
+    responseOrdinal = responseOrdinal,
+    selectedTargetId = selectedTargetId,
+    selectionWasCorrect = selectionWasCorrect,
+    submittedAtEpochMillis = submittedAtEpochMillis,
 )
 
 private const val INSERT_CONFLICT = -1L

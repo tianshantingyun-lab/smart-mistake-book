@@ -9,7 +9,10 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
@@ -37,7 +40,10 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.TutorVisualVector3
+import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -72,6 +78,34 @@ class TutorVisualPipelineTest {
 
         assertTrue(resolved is TutorVisualResolution.Reviewing)
         assertTrue((resolved as TutorVisualResolution.Reviewing).reasonCodes.contains("lattice"))
+    }
+
+    @Test
+    fun reviewRequiredSceneFallsBackWhenProviderCannotReview() {
+        val generation = generationTask(scene = latticeScene(), confidence = 0.99)
+        val generateOnlyProvider = ProviderCapabilitySnapshot(
+            providerId = "generate-only",
+            providerDisplayName = "Generate only",
+            modelId = "model-v1",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+        )
+
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = listOf(generation),
+            reviewTasks = emptyList(),
+            reviewProvider = generateOnlyProvider,
+        )
+
+        assertTrue(resolved is TutorVisualResolution.Fallback)
+        assertEquals(
+            TutorVisualFallbackReason.PROVIDER_UNAVAILABLE,
+            (resolved as TutorVisualResolution.Fallback).reason,
+        )
     }
 
     @Test
@@ -154,6 +188,19 @@ class TutorVisualPipelineTest {
     }
 
     @Test
+    fun providerLoadFailureCannotRemainPreparing() {
+        assertEquals(
+            TutorVisualResolution.Preparing,
+            tutorVisualProviderLoadingResolution(provider = null, providerLoadFailed = false),
+        )
+        val failed = tutorVisualProviderLoadingResolution(
+            provider = null,
+            providerLoadFailed = true,
+        ) as TutorVisualResolution.Fallback
+        assertEquals(TutorVisualFallbackReason.PROVIDER_UNAVAILABLE, failed.reason)
+    }
+
+    @Test
     fun persistedGenerationFailureBecomesRetryableFallback() {
         val failed = failedGenerationTask()
 
@@ -171,6 +218,84 @@ class TutorVisualPipelineTest {
         )
         assertTrue(resolved.canRetry)
         assertEquals(failed, resolved.failedTask)
+    }
+
+    @Test
+    fun retryBuildsAFreshEnvelopeForTheSameLogicalOperation() {
+        val provider = ProviderCapabilitySnapshot(
+            providerId = "external-provider",
+            providerDisplayName = "External provider",
+            modelId = "model-v1",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+            providerConfigurationVersion = "config-v1",
+        )
+        val fresh = buildTutorVisualGenerateRequest(
+            question = question,
+            provider = provider,
+            sourceAssets = listOf(
+                TutorVisualSourceAssetScope(
+                    pageIndex = 0,
+                    assetId = "asset-1",
+                    sha256 = "a".repeat(64),
+                    byteSize = 100,
+                    width = 100,
+                    height = 100,
+                ),
+            ),
+            anchor = anchor,
+            focusMarkdown = "聚焦装置中的方向关系",
+            explanationMarkdown = "先核对装置连接，再判断方向。",
+            occurredAtEpochMillis = 100,
+            approvedAtEpochMillis = 100,
+        )
+        val failed = failedGenerationTask().let { task ->
+            val failedRequest = task.request.copy(
+                requestId = "${fresh.requestId}:retry:4",
+            )
+            task.copy(
+                request = failedRequest,
+                requestFingerprint = ModelTaskFingerprint.of(failedRequest),
+            )
+        }
+
+        val retry = requireNotNull(freshTutorVisualRetryRequest(fresh, failed))
+
+        assertEquals("${fresh.requestId}:retry:5", retry.requestId)
+        assertEquals(100L, retry.occurredAtEpochMillis)
+        assertEquals("authorization:${retry.requestId}", retry.egressManifest?.authorizationId)
+        assertEquals(100L, retry.egressManifest?.approvedAtEpochMillis)
+        assertNotEquals(failed.request, retry)
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(failed.request),
+            ModelTaskLogicalOperationFingerprint.of(retry),
+        )
+    }
+
+    @Test
+    fun retryRejectsExhaustedOrDifferentLogicalOperation() {
+        val failed = failedGenerationTask()
+        val fresh = failed.request.copy(
+            requestId = "visual-generate-current",
+            occurredAtEpochMillis = 100,
+        )
+
+        assertNull(
+            freshTutorVisualRetryRequest(
+                freshRequest = fresh,
+                failedTask = failed.copy(attemptCount = 3),
+            ),
+        )
+        assertNull(
+            freshTutorVisualRetryRequest(
+                freshRequest = fresh.copy(
+                    input = generateInput().copy(focusMarkdown = "不同的图解目标"),
+                ),
+                failedTask = failed,
+            ),
+        )
     }
 
     @Test

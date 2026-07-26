@@ -5,19 +5,25 @@ import com.tingyun.smartmistakebook.core.database.PersistTutorAnswerExposureComm
 import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorRevealCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorSessionAnchorCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
+import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
 import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorSolutionExposureCommand
+import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.RevealTutorSolutionCommand
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.TutorVisualTargetEvidence
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -38,6 +44,15 @@ internal class RoomTutorInteractionRepository(
         require(sessionId.isNotBlank())
         return database.observeTutorTurnResponses(sessionId).map { records ->
             records.map(TutorTurnResponseRecord::toDomain)
+        }
+    }
+
+    override fun observeVisualTargetEvidence(
+        sessionId: String,
+    ): Flow<List<TutorVisualTargetEvidence>> {
+        require(sessionId.isNotBlank())
+        return database.observeTutorVisualTargetEvidence(sessionId).map { records ->
+            records.map(TutorVisualTargetEvidenceRecord::toDomain)
         }
     }
 
@@ -63,6 +78,27 @@ internal class RoomTutorInteractionRepository(
                 },
             )
         }
+    }
+
+    override suspend fun recordVisualTargetEvidence(
+        command: RecordTutorVisualTargetEvidenceCommand,
+    ): TutorVisualTargetEvidence {
+        val persisted = command.toPersistedVisualTargetEvidence()
+        return evidenceWriteGate.persist(
+            requestId = command.modelTaskRequestId,
+            write = {
+                withContext(Dispatchers.IO) {
+                    database.recordTutorVisualTargetEvidence(persisted).toDomain()
+                }
+            },
+            discard = {
+                withContext(Dispatchers.IO) {
+                    check(database.discardTutorVisualTargetEvidence(persisted)) {
+                        "A revoked tutor visual-target evidence write could not be discarded"
+                    }
+                }
+            },
+        )
     }
 
     override fun cancelEvidence(requestId: String) {
@@ -274,6 +310,20 @@ private fun RecordTutorChoiceCommand.toPersistedChoice() = PersistTutorChoiceCom
     choiceSubmittedAtEpochMillis = occurredAtEpochMillis,
 )
 
+private fun RecordTutorVisualTargetEvidenceCommand.toPersistedVisualTargetEvidence() =
+    PersistTutorVisualTargetEvidenceCommand(
+        sessionId = sessionId,
+        questionDocumentId = questionDocumentId,
+        revisionNumber = revisionNumber,
+        cycleOrdinal = anchor.cycleOrdinal,
+        turnOrdinal = anchor.turnOrdinal,
+        surfaceKind = anchor.surface.name,
+        modelTaskRequestId = modelTaskRequestId,
+        responseOrdinal = anchor.responseOrdinal,
+        selectedTargetId = selectedTargetId,
+        submittedAtEpochMillis = occurredAtEpochMillis,
+    )
+
 internal fun TutorAnswerExposureRecord.matchesAnswerExposure(
     expectedLearnerId: String,
     expectedKey: TutorAnswerExposureKey,
@@ -319,6 +369,22 @@ private fun TutorTurnResponseRecord.toDomain() = TutorTurnResponse(
     choiceSubmittedAtEpochMillis = choiceSubmittedAtEpochMillis,
     submittedAtEpochMillis = submittedAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
+)
+
+private fun TutorVisualTargetEvidenceRecord.toDomain() = TutorVisualTargetEvidence(
+    sessionId = sessionId,
+    questionDocumentId = questionDocumentId,
+    revisionNumber = revisionNumber,
+    anchor = TutorVisualTurnAnchor(
+        surface = TutorVisualTurnSurface.valueOf(surfaceKind),
+        cycleOrdinal = cycleOrdinal,
+        turnOrdinal = turnOrdinal,
+        responseOrdinal = responseOrdinal,
+    ),
+    modelTaskRequestId = modelTaskRequestId,
+    selectedTargetId = selectedTargetId,
+    selectionWasCorrect = selectionWasCorrect,
+    submittedAtEpochMillis = submittedAtEpochMillis,
 )
 
 object TutorInteractionRepositoryFactory {

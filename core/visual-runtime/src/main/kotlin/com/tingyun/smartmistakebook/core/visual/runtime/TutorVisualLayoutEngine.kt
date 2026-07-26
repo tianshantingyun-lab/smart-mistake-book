@@ -58,17 +58,52 @@ data class TutorVisual2DLayout(
     val nodes: Map<String, TutorVisualNodeLayout>,
     val connectors: Map<String, TutorVisualConnectorLayout>,
 ) {
-    fun hitTest(point: TutorVisualPoint): String? {
+    fun hitTest(
+        point: TutorVisualPoint,
+        eligibleElementIds: Set<String> = nodes.keys + connectors.keys,
+        connectorProgressById: Map<String, Double> = emptyMap(),
+    ): String? {
         nodes.values.reversed().firstOrNull { node ->
-            point.x in node.bounds.left..node.bounds.right &&
+            node.element.elementId in eligibleElementIds &&
+                point.x in node.bounds.left..node.bounds.right &&
                 point.y in node.bounds.top..node.bounds.bottom
         }?.let { return it.element.elementId }
         return connectors.values.firstOrNull { connector ->
-            connector.points.zipWithNext().any { (start, end) ->
-                point.distanceToSegment(start, end) <= 12.0
-            }
+            connector.element.elementId in eligibleElementIds &&
+                connector.hitTestVisiblePath(
+                    point = point,
+                    progress = connectorProgressById[connector.element.elementId] ?: 1.0,
+                )
         }?.element?.elementId
     }
+}
+
+private fun TutorVisualConnectorLayout.hitTestVisiblePath(
+    point: TutorVisualPoint,
+    progress: Double,
+): Boolean {
+    val visibleProgress = progress.coerceIn(0.0, 1.0)
+    if (visibleProgress <= 0.0 || points.size < 2) return false
+    val totalLength = points.zipWithNext().sumOf { (start, end) ->
+        kotlin.math.hypot(end.x - start.x, end.y - start.y)
+    }
+    var remainingLength = totalLength * visibleProgress
+    points.zipWithNext().forEach { (start, end) ->
+        if (remainingLength <= 0.0) return false
+        val segmentLength = kotlin.math.hypot(end.x - start.x, end.y - start.y)
+        val visibleEnd = if (segmentLength <= remainingLength || segmentLength == 0.0) {
+            end
+        } else {
+            val fraction = remainingLength / segmentLength
+            TutorVisualPoint(
+                x = start.x + (end.x - start.x) * fraction,
+                y = start.y + (end.y - start.y) * fraction,
+            )
+        }
+        if (point.distanceToSegment(start, visibleEnd) <= 12.0) return true
+        remainingLength -= segmentLength
+    }
+    return false
 }
 
 object TutorVisualLayoutEngine {

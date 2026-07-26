@@ -105,6 +105,15 @@ internal fun TutorTurnContent(
     ) {
         SafeMarkdownText(plan.openingMarkdown, style = MaterialTheme.typography.bodyLarge)
         val visualTarget = directive as? TutorInteractionDirective.VisualTarget
+        val visualTargetHitHandler = visualTarget
+            ?.takeIf {
+                explanationMode == TutorExplanationMode.GUIDED && interactionEnabled
+            }
+            ?.let { target ->
+                { hitTargetId: String ->
+                    if (hitTargetId == target.targetId) onVisualTargetHit(hitTargetId)
+                }
+            }
         TutorVisualPresentation(
             state = resolvedVisual,
             mode = visualPresentationMode,
@@ -112,15 +121,7 @@ internal fun TutorTurnContent(
             onRetry = onRetryVisual,
             onOpenOriginal = onOpenVisualOriginal,
             onReportIncorrect = onReportVisualIncorrect,
-            onTargetHit = visualTarget
-                ?.takeIf {
-                    explanationMode == TutorExplanationMode.GUIDED && interactionEnabled
-                }
-                ?.let { target ->
-                    { hitTargetId ->
-                        if (hitTargetId == target.targetId) onVisualTargetHit(hitTargetId)
-                    }
-                },
+            onTargetHit = visualTargetHitHandler,
         )
         if (item == null) {
             plan.visualScene?.let { scene ->
@@ -130,10 +131,11 @@ internal fun TutorTurnContent(
                         cacheKey = "legacy:${scene.schemaVersion}:${scene.sceneId}",
                     ),
                     mode = visualPresentationMode,
-                    originalAvailable = false,
+                    originalAvailable = visualOriginalAvailable,
                     onRetry = {},
-                    onOpenOriginal = {},
-                    onReportIncorrect = {},
+                    onOpenOriginal = onOpenVisualOriginal,
+                    onReportIncorrect = onReportVisualIncorrect,
+                    onTargetHit = visualTargetHitHandler,
                 )
             }
         }
@@ -189,7 +191,10 @@ internal fun TutorTurnContent(
                 directive = it,
                 enabled = interactionEnabled && !interactionBusy,
                 onResponse = onDirectiveResponse,
-                visualTargetReady = resolvedVisual is TutorVisualResolution.Ready,
+                visualTargetReady = isTutorVisualTargetReady(
+                    state = resolvedVisual,
+                    hasInlineScene = plan.visualScene != null,
+                ),
             )
         }
         if (item == null) {

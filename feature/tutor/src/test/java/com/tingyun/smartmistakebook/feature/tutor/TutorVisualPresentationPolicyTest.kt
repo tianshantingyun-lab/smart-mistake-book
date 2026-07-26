@@ -14,6 +14,10 @@ class TutorVisualPresentationPolicyTest {
             TutorVisualPresentationMode.HISTORY_COLLAPSED,
             tutorVisualPresentationMode(isCurrent = false),
         )
+        assertEquals(
+            TutorVisualPresentationMode.CURRENT_EXPANDED,
+            tutorPlanVisualPresentationMode(isCurrentTurn = true),
+        )
     }
 
     @Test
