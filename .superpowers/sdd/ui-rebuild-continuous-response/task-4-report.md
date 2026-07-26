@@ -131,3 +131,22 @@ Both commands completed with `BUILD SUCCESSFUL`. The full tutor XML results cont
 - Full `:feature:tutor:testDebugUnitTest`: `BUILD SUCCESSFUL in 17s`.
 - Full XML results: 172 tests, 0 failures, 0 errors, 0 skipped across 17 files.
 - `git diff --check`: passed.
+
+## Follow-up review 2: refresh failure and source cancellation
+
+- Replaced the redundant newer-success/older-success scenario with the required
+  newer-failure/older-success ordering and asserted that the failed, provider-null authority cannot
+  be revived by the stale success.
+- Changed cancellation coverage so the active capability source throws a specific
+  `CancellationException`; the test asserts that exact instance escapes the coordinator and no
+  success/failure authority is published before a later current success.
+- Mutation proof: the prior 22 tests stayed green when failed authority accepted stale success and
+  source cancellation was swallowed. With the revised tests, those mutations produced exactly the
+  two expected failures; restoring production returned the suite to green.
+
+### Verification
+
+- Fresh focused command with `--rerun-tasks`: `BUILD SUCCESSFUL in 1m 7s`; 49 tasks executed.
+- Full `:feature:tutor:testDebugUnitTest`: `BUILD SUCCESSFUL in 11s`.
+- Full XML results: 172 tests, 0 failures, 0 errors, 0 skipped across 17 files.
+- `git diff --check`: passed.

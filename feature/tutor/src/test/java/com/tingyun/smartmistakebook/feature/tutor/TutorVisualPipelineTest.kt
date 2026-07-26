@@ -44,7 +44,6 @@ import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
@@ -52,6 +51,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -427,7 +427,7 @@ class TutorVisualPipelineTest {
     }
 
     @Test
-    fun overlappingRefreshKeepsNewAuthorityAfterOlderSuccess() = runTest {
+    fun overlappingRefreshKeepsNewerFailureAfterOlderSuccess() = runTest {
         val harness = ProviderRefreshHarness()
 
         val initialRefresh = launch { harness.coordinator.refresh() }
@@ -437,13 +437,13 @@ class TutorVisualPipelineTest {
         runCurrent()
         assertEquals(2, harness.sourceCalls)
 
-        harness.secondResult.complete(harness.newProvider)
+        harness.secondResult.completeExceptionally(IllegalStateException("newer failure"))
         runCurrent()
-        assertEquals(harness.newProvider, harness.authority.provider)
+        harness.assertFailedAuthority()
         harness.firstResult.complete(harness.oldProvider)
         advanceUntilIdle()
 
-        harness.assertNewAuthority()
+        harness.assertFailedAuthority()
         initialRefresh.join()
         resumeRefresh.join()
     }
@@ -471,25 +471,21 @@ class TutorVisualPipelineTest {
     }
 
     @Test
-    fun cancelledRefreshPropagatesAndRemainsFailClosedUntilCurrentSuccess() = runTest {
+    fun sourceCancellationPropagatesAndRemainsFailClosedUntilCurrentSuccess() = runTest {
         val harness = ProviderRefreshHarness()
+        val expectedCancellation = CancellationException("capability source cancelled")
+        harness.firstLoadFailure = expectedCancellation
 
-        val cancelledRefresh = async { harness.coordinator.refresh() }
-        runCurrent()
+        val propagatedCancellation =
+            runCatching { harness.coordinator.refresh() }.exceptionOrNull()
+
+        assertSame(expectedCancellation, propagatedCancellation)
         harness.assertRevoked()
-        cancelledRefresh.cancel(CancellationException("capability refresh cancelled"))
-        val propagatedCancellation = runCatching { cancelledRefresh.await() }.exceptionOrNull()
 
-        assertTrue(propagatedCancellation is CancellationException)
-        harness.assertRevoked()
-
-        val currentRefresh = launch { harness.coordinator.refresh() }
-        runCurrent()
         harness.secondResult.complete(harness.newProvider)
-        advanceUntilIdle()
+        harness.coordinator.refresh()
 
         harness.assertNewAuthority()
-        currentRefresh.join()
     }
 
     @Test
@@ -648,6 +644,7 @@ class TutorVisualPipelineTest {
         val newProvider = externalVisualProvider(modelId = "new-model")
         val firstResult = CompletableDeferred<ProviderCapabilitySnapshot>()
         val secondResult = CompletableDeferred<ProviderCapabilitySnapshot>()
+        var firstLoadFailure: Throwable? = null
         var sourceCalls = 0
         var authority = TutorProviderAuthorityState()
             .beginRefresh()
@@ -661,7 +658,8 @@ class TutorVisualPipelineTest {
         val coordinator = TutorProviderAuthorityRefreshCoordinator(
             loadCapabilities = {
                 when (sourceCalls++) {
-                    0 -> firstResult.await()
+                    0 -> firstLoadFailure?.let { failure -> throw failure }
+                        ?: firstResult.await()
                     1 -> secondResult.await()
                     else -> error("Unexpected capability refresh")
                 }
@@ -681,6 +679,11 @@ class TutorVisualPipelineTest {
         fun assertNewAuthority() {
             assertEquals(newProvider, authority.provider)
             assertTrue(!authority.loadFailed)
+        }
+
+        fun assertFailedAuthority() {
+            assertNull(authority.provider)
+            assertTrue(authority.loadFailed)
         }
     }
 
