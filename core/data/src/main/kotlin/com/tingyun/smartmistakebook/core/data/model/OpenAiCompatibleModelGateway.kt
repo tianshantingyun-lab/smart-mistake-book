@@ -413,7 +413,7 @@ internal class OpenAiCompatibleModelGateway(
                         val decodedDelta = decoder.append(fragment)
                         if (decodedDelta.isNotEmpty()) {
                             val snapshot = assembler.append(decodedDelta)
-                            if (snapshot != lastSnapshot) {
+                            if (snapshot !== lastSnapshot) {
                                 lastSnapshot = snapshot
                                 previewEmitted = true
                                 emit(ModelGatewayEvent.TutorPreview(snapshot))

@@ -438,13 +438,12 @@ internal fun TutorActiveAssistantReply(
     modifier: Modifier = Modifier,
 ) {
     val snapshot = message.snapshot
-    val markdown = snapshot?.visibleMarkdown.orEmpty()
     val failure = tutorActiveFailurePresentation(
         message = message,
         durableTask = durableTask,
         currentMode = currentMode,
     )
-    if (message.activityVisible && markdown.isEmpty() && !message.showPlaceholder) {
+    if (message.activityVisible && snapshot?.isEmpty != false && !message.showPlaceholder) {
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -469,10 +468,9 @@ internal fun TutorActiveAssistantReply(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (snapshot != null && markdown.isNotEmpty()) {
+            if (snapshot != null && !snapshot.isEmpty) {
                 StreamingSafeMarkdownText(
-                    stableMarkdown = snapshot.stableMarkdown,
-                    provisionalMarkdown = snapshot.provisionalMarkdown,
+                    snapshot = snapshot,
                     style = MaterialTheme.typography.bodyMedium,
                     contentIdentity = message.identity ?: listOf(
                         message.ownerVersion,

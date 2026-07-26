@@ -23,7 +23,10 @@ class StreamingMarkdownAssembler(
 ) {
     private val source = StringBuilder()
     private val analyzer = IncrementalMarkdownAnalyzer(source)
+    private val previewSafetyIndex = IncrementalPreviewSafetyIndex()
     private var lastSnapshot = TutorMarkdownSnapshot.EMPTY
+    private var stableSourceEnd = 0
+    private var provisionalCommittedSourceEnd = 0
     private var lastVisibleSourceEnd = 0
     private var nextMaterializationSourceEnd = 1
     private var lastMaterializationNanos = clockNanos()
@@ -43,6 +46,8 @@ class StreamingMarkdownAssembler(
         }
         val fragmentStart = source.length
         source.append(fragment)
+        previewSafetyIndex.append(fragment, fragmentStart)
+        snapshotMaterializationCharacterCount += fragment.length
 
         val analysis = analyzer.append(fragmentStart, fragment.length)
         if (analysis.invalid) {
@@ -66,16 +71,8 @@ class StreamingMarkdownAssembler(
         ) {
             return lastSnapshot
         }
-        val visibleMarkdown = source.substring(0, visibleEnd)
-            .toTutorPreviewLiteralPreserving(lastSnapshot.stableMarkdown)
-        snapshotMaterializationCharacterCount += visibleEnd
-        val safeStableEnd = stableEnd.coerceAtMost(visibleMarkdown.length)
-        val next = TutorMarkdownSnapshot(
-            stableMarkdown = visibleMarkdown.substring(0, safeStableEnd)
-                .toTutorStableLiteral(),
-            provisionalMarkdown = visibleMarkdown.substring(safeStableEnd),
-        )
-        if (!next.stableMarkdown.startsWith(lastSnapshot.stableMarkdown)) {
+        val next = incrementalSnapshot(stableEnd = stableEnd, visibleEnd = visibleEnd)
+        if (next == null) {
             rejected = true
             return lastSnapshot
         }
@@ -133,10 +130,198 @@ class StreamingMarkdownAssembler(
             ),
         )
 
+    private fun incrementalSnapshot(
+        stableEnd: Int,
+        visibleEnd: Int,
+    ): TutorMarkdownSnapshot? {
+        if (stableEnd < stableSourceEnd || visibleEnd < stableEnd) return null
+
+        var stableContent = lastSnapshot.stableContent
+        var provisionalContent = lastSnapshot.provisionalContent
+        if (stableEnd > stableSourceEnd) {
+            val stableDelta = sanitizedRange(stableSourceEnd, stableEnd).toTutorStableLiteral()
+            stableContent = stableContent.append(stableDelta)
+            stableSourceEnd = stableEnd
+            provisionalContent = TutorMarkdownChunkChain.EMPTY
+            provisionalCommittedSourceEnd = stableEnd
+        }
+
+        val tailStart = ambiguousPreviewTailStart(
+            minimum = stableEnd,
+            endExclusive = visibleEnd,
+        )
+        if (tailStart < provisionalCommittedSourceEnd) {
+            provisionalContent = provisionalContent.prefix(tailStart - stableEnd)
+            provisionalCommittedSourceEnd = tailStart
+        }
+        val pending = sanitizedRange(provisionalCommittedSourceEnd, visibleEnd)
+        val committedLength = tailStart - provisionalCommittedSourceEnd
+        provisionalContent = provisionalContent.append(
+            pending.substring(0, committedLength),
+        )
+        val provisionalTail = pending.substring(committedLength)
+        provisionalCommittedSourceEnd = tailStart
+        return TutorMarkdownSnapshot.incremental(
+            stableContent = stableContent,
+            provisionalContent = provisionalContent,
+            provisionalTail = provisionalTail,
+        )
+    }
+
+    private fun sanitizedRange(start: Int, endExclusive: Int): String {
+        if (start == endExclusive) return ""
+        val literal = StringBuilder(source.substring(start, endExclusive))
+        snapshotMaterializationCharacterCount += endExclusive - start
+        previewSafetyIndex.replaceUnsafeColons(
+            value = literal,
+            sourceStart = start,
+        )
+        return literal.toString()
+            .replace("![", "！[")
+            .replace("<!--", "＜!--")
+            .toTutorPreviewLiteral()
+    }
+
+    private fun ambiguousPreviewTailStart(
+        minimum: Int,
+        endExclusive: Int,
+    ): Int {
+        if (endExclusive <= minimum) return endExclusive
+        var tailStart = endExclusive
+        val last = source[endExclusive - 1]
+        if (last == '!' || last == '<') tailStart = endExclusive - 1
+        if (
+            endExclusive - minimum >= 2 &&
+            source[endExclusive - 2] == '<' &&
+            (last == '/' || last == '!')
+        ) {
+            tailStart = endExclusive - 2
+        }
+        if (
+            endExclusive - minimum >= 3 &&
+            source.substring(endExclusive - 3, endExclusive) == "<!-"
+        ) {
+            tailStart = endExclusive - 3
+        }
+        if (previewSafetyIndex.hasOddTrailingBackslashRun(minimum, endExclusive)) {
+            tailStart = minOf(tailStart, endExclusive - 1)
+        }
+        return tailStart
+    }
+
     private companion object {
         const val IMMEDIATE_PREVIEW_CHARS = 64
         const val SNAPSHOT_CHARACTER_INTERVAL = 128
         const val SNAPSHOT_COALESCE_NANOS = 64_000_000L
+    }
+}
+
+private class IncrementalPreviewSafetyIndex {
+    private enum class Match {
+        NONE,
+        JAVASCRIPT,
+        DATA,
+        AFTER_KEYWORD,
+    }
+
+    private var match = Match.NONE
+    private var matchedCharacters = 0
+    private val unsafeColonIndices =
+        BooleanArray(TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS)
+    private val trailingBackslashRunLengths =
+        IntArray(TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS + 1)
+
+    fun append(fragment: String, sourceStart: Int) {
+        fragment.forEachIndexed { offset, character ->
+            val sourceIndex = sourceStart + offset
+            trailingBackslashRunLengths[sourceIndex + 1] =
+                if (character == '\\') trailingBackslashRunLengths[sourceIndex] + 1 else 0
+            accept(character, sourceIndex)
+        }
+    }
+
+    fun hasOddTrailingBackslashRun(minimum: Int, endExclusive: Int): Boolean =
+        minOf(
+            trailingBackslashRunLengths[endExclusive],
+            endExclusive - minimum,
+        ) % 2 == 1
+
+    fun replaceUnsafeColons(
+        value: StringBuilder,
+        sourceStart: Int,
+    ) {
+        value.indices.forEach { offset ->
+            if (unsafeColonIndices[sourceStart + offset]) value[offset] = '：'
+        }
+    }
+
+    private fun accept(character: Char, sourceIndex: Int) {
+        when (match) {
+            Match.NONE -> startMatch(character)
+            Match.JAVASCRIPT -> advanceKeyword(
+                character = character,
+                keyword = JAVASCRIPT,
+                matching = Match.JAVASCRIPT,
+            )
+            Match.DATA -> advanceKeyword(
+                character = character,
+                keyword = DATA,
+                matching = Match.DATA,
+            )
+            Match.AFTER_KEYWORD -> when {
+                character.isWhitespace() -> Unit
+                character == ':' -> {
+                    unsafeColonIndices[sourceIndex] = true
+                    reset()
+                }
+                else -> {
+                    reset()
+                    startMatch(character)
+                }
+            }
+        }
+    }
+
+    private fun advanceKeyword(
+        character: Char,
+        keyword: String,
+        matching: Match,
+    ) {
+        if (character.lowercaseChar() != keyword[matchedCharacters]) {
+            reset()
+            startMatch(character)
+            return
+        }
+        matchedCharacters += 1
+        if (matchedCharacters == keyword.length) {
+            match = Match.AFTER_KEYWORD
+            matchedCharacters = 0
+        } else {
+            match = matching
+        }
+    }
+
+    private fun startMatch(character: Char) {
+        when (character.lowercaseChar()) {
+            JAVASCRIPT[0] -> {
+                match = Match.JAVASCRIPT
+                matchedCharacters = 1
+            }
+            DATA[0] -> {
+                match = Match.DATA
+                matchedCharacters = 1
+            }
+        }
+    }
+
+    private fun reset() {
+        match = Match.NONE
+        matchedCharacters = 0
+    }
+
+    private companion object {
+        const val JAVASCRIPT = "javascript"
+        const val DATA = "data"
     }
 }
 
@@ -346,7 +531,7 @@ private data class IncrementalInlineOpen(
     val start: Int,
 ) {
     val literalizable: Boolean
-        get() = marker == '`' || delimiterLength == 1
+        get() = marker == '`' || marker == '*' || delimiterLength == 1
 }
 
 private data class IncrementalMarkerRun(
@@ -374,7 +559,10 @@ private class IncrementalInlineAnalyzer {
             return
         }
         commitPendingRun()
-        if ((character == '`' || character == '$') && trailingBackslashes % 2 == 0) {
+        if (
+            (character == '*' || character == '`' || character == '$') &&
+            trailingBackslashes % 2 == 0
+        ) {
             pendingRun = IncrementalMarkerRun(
                 marker = character,
                 start = index,
@@ -398,8 +586,10 @@ private class IncrementalInlineAnalyzer {
         trailingBackslashes = checkpoint.trailingBackslashes
     }
 
-    fun currentOpen(): IncrementalInlineOpen? =
-        pendingRun?.resolvedOpen() ?: open
+    fun currentOpen(): IncrementalInlineOpen? {
+        val pending = pendingRun
+        return if (pending == null) open else pending.resolvedOpen()
+    }
 
     fun finishLine() {
         pendingRun = null
@@ -428,6 +618,19 @@ private fun IncrementalMarkerRun.resolvedOpen(): IncrementalInlineOpen? {
             null
         } else {
             IncrementalInlineOpen(marker, remainder, start + current.delimiterLength)
+        }
+    }
+    if (marker == '*') {
+        return if (current == null) {
+            IncrementalInlineOpen(
+                marker = marker,
+                delimiterLength = if (length >= 2) 2 else 1,
+                start = start,
+            )
+        } else if (length >= current.delimiterLength) {
+            null
+        } else {
+            current
         }
     }
     if (current?.delimiterLength == 1) {

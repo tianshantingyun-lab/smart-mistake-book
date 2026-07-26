@@ -281,7 +281,7 @@ internal class TutorActiveStreamOwner(
                 updateActive(submission) { active ->
                     if (
                         active.activityVisible &&
-                        active.snapshot?.visibleMarkdown.isNullOrEmpty()
+                        active.snapshot?.isEmpty != false
                     ) {
                         active.copy(showPlaceholder = true)
                     } else {

@@ -25,36 +25,205 @@ data class TutorStreamIdentity(
 }
 
 /**
- * A display-safe snapshot. [stableMarkdown] never changes for a given prefix; provisional text may
- * be replaced by the next coalesced update.
+ * An immutable append-only chunk chain.
+ *
+ * Preview events share prior nodes instead of copying the complete response. Materialization is a
+ * compatibility operation for terminal consumers and tests; streaming UI can consume only the
+ * chunks appended since a chain it already parsed.
  */
-data class TutorMarkdownSnapshot(
-    val stableMarkdown: String,
-    val provisionalMarkdown: String,
+class TutorMarkdownChunkChain private constructor(
+    private val previous: TutorMarkdownChunkChain?,
+    private val chunk: String,
+    val length: Int,
+    val hasNonWhitespace: Boolean,
 ) {
+    @Volatile
+    private var cachedText: String? = if (length == 0) "" else null
+
+    internal fun append(value: String): TutorMarkdownChunkChain =
+        if (value.isEmpty()) this else TutorMarkdownChunkChain(
+            previous = this,
+            chunk = value,
+            length = length + value.length,
+            hasNonWhitespace = hasNonWhitespace || value.any { !it.isWhitespace() },
+        )
+
+    internal fun prefix(endExclusive: Int): TutorMarkdownChunkChain {
+        require(endExclusive in 0..length)
+        if (endExclusive == length) return this
+        if (endExclusive == 0) return EMPTY
+
+        var current = this
+        while (current.length > endExclusive) {
+            val prior = current.previous ?: return EMPTY
+            if (prior.length < endExclusive) {
+                return prior.append(
+                    current.chunk.substring(0, endExclusive - prior.length),
+                )
+            }
+            current = prior
+        }
+        return current
+    }
+
+    /**
+     * Returns only chunks appended after [ancestor], or `null` when this chain is a different
+     * branch. The latter occurs on provisional rollback and tells consumers to reuse an older
+     * cached prefix or rebuild that provisional branch.
+     */
+    fun appendedChunksSince(ancestor: TutorMarkdownChunkChain): List<String>? {
+        if (ancestor === this) return emptyList()
+        if (ancestor.length >= length) return null
+
+        val reversed = mutableListOf<String>()
+        var current: TutorMarkdownChunkChain? = this
+        while (current != null && current !== ancestor) {
+            if (current.length <= ancestor.length) return null
+            reversed += current.chunk
+            current = current.previous
+        }
+        if (current !== ancestor) return null
+        reversed.reverse()
+        return reversed
+    }
+
+    fun materialize(): String {
+        cachedText?.let { return it }
+        val chunks = mutableListOf<String>()
+        var current: TutorMarkdownChunkChain? = this
+        while (current != null && current.length > 0) {
+            chunks += current.chunk
+            current = current.previous
+        }
+        val value = buildString(length) {
+            chunks.asReversed().forEach(::append)
+        }
+        cachedText = value
+        return value
+    }
+
+    companion object {
+        val EMPTY = TutorMarkdownChunkChain(
+            previous = null,
+            chunk = "",
+            length = 0,
+            hasNonWhitespace = false,
+        )
+
+        internal fun of(value: String): TutorMarkdownChunkChain = EMPTY.append(value)
+    }
+}
+
+/**
+ * A display-safe snapshot. Stable chunks form an append-only chain; provisional chunks may branch
+ * back to an earlier prefix, while [provisionalTail] remains a small replaceable suffix.
+ */
+class TutorMarkdownSnapshot private constructor(
+    val stableContent: TutorMarkdownChunkChain,
+    val provisionalContent: TutorMarkdownChunkChain,
+    val provisionalTail: String,
+    trustedIncrementalContent: Boolean,
+) {
+    constructor(
+        stableMarkdown: String,
+        provisionalMarkdown: String,
+    ) : this(
+        stableContent = TutorMarkdownChunkChain.of(stableMarkdown),
+        provisionalContent = TutorMarkdownChunkChain.of(provisionalMarkdown),
+        provisionalTail = "",
+        trustedIncrementalContent = false,
+    )
+
+    val stableMarkdown: String
+        get() = stableContent.materialize()
+
+    val provisionalMarkdown: String
+        get() = provisionalContent.materialize() + provisionalTail
+
     val visibleMarkdown: String
         get() = stableMarkdown + provisionalMarkdown
 
+    val isEmpty: Boolean
+        get() = stableContent.length == 0 &&
+            provisionalContent.length == 0 &&
+            provisionalTail.isEmpty()
+
+    val hasVisibleNonWhitespace: Boolean
+        get() = stableContent.hasNonWhitespace ||
+            provisionalContent.hasNonWhitespace ||
+            provisionalTail.any { !it.isWhitespace() }
+
     init {
-        require(visibleMarkdown.length <= TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS) {
+        val length = stableContent.length + provisionalContent.length + provisionalTail.length
+        require(length <= TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS) {
             "Tutor stream preview exceeds its text budget"
         }
-        require(visibleMarkdown.none(Char::isUnsafeTutorPreviewCharacter)) {
+        require(provisionalTail.length <= MAX_PROVISIONAL_TAIL_CHARS) {
+            "Tutor stream provisional tail exceeds its bounded budget"
+        }
+        if (!trustedIncrementalContent) validateMaterializedContent()
+    }
+
+    private fun validateMaterializedContent() {
+        val visible = visibleMarkdown
+        require(visible.none(Char::isUnsafeTutorPreviewCharacter)) {
             "Tutor stream preview contains unsafe control characters"
         }
-        require(!visibleMarkdown.requiresTutorPlainTextFallback()) {
+        require(!visible.requiresTutorPlainTextFallback()) {
             "Tutor stream preview contains active markup"
         }
-        val normalized = visibleMarkdown.lowercase()
+        val normalized = visible.lowercase()
         require("<script" !in normalized && "javascript:" !in normalized) {
             "Tutor stream preview contains active content"
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TutorMarkdownSnapshot) return false
+        if (
+            stableContent.length != other.stableContent.length ||
+            provisionalContent.length != other.provisionalContent.length ||
+            provisionalTail != other.provisionalTail
+        ) {
+            return false
+        }
+        val stableMatches = stableContent === other.stableContent ||
+            stableMarkdown == other.stableMarkdown
+        val provisionalMatches = provisionalContent === other.provisionalContent ||
+            provisionalContent.materialize() == other.provisionalContent.materialize()
+        return stableMatches && provisionalMatches
+    }
+
+    override fun hashCode(): Int {
+        var result = stableMarkdown.hashCode()
+        result = 31 * result + provisionalMarkdown.hashCode()
+        return result
+    }
+
+    override fun toString(): String =
+        "TutorMarkdownSnapshot(stableMarkdown=$stableMarkdown, " +
+            "provisionalMarkdown=$provisionalMarkdown)"
+
     companion object {
+        internal const val MAX_PROVISIONAL_TAIL_CHARS = 3
+
         val EMPTY = TutorMarkdownSnapshot(
-            stableMarkdown = "",
-            provisionalMarkdown = "",
+            stableContent = TutorMarkdownChunkChain.EMPTY,
+            provisionalContent = TutorMarkdownChunkChain.EMPTY,
+            provisionalTail = "",
+            trustedIncrementalContent = true,
+        )
+
+        internal fun incremental(
+            stableContent: TutorMarkdownChunkChain,
+            provisionalContent: TutorMarkdownChunkChain,
+            provisionalTail: String,
+        ): TutorMarkdownSnapshot = TutorMarkdownSnapshot(
+            stableContent = stableContent,
+            provisionalContent = provisionalContent,
+            provisionalTail = provisionalTail,
+            trustedIncrementalContent = true,
         )
 
         /**

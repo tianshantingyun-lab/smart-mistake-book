@@ -36,7 +36,7 @@ internal fun transientDirectPreviewExposureKey(
 ): TutorAnswerExposureKey? {
     if (exposureKey == null || explanationMode != TutorExplanationMode.DIRECT) return null
     if (activeMessage?.identity?.requestId != exposureKey.modelTaskRequestId) return null
-    if (activeMessage.snapshot?.visibleMarkdown.isNullOrBlank()) return null
+    if (activeMessage.snapshot?.hasVisibleNonWhitespace != true) return null
     return exposureKey
 }
 

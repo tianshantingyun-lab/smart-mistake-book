@@ -1,6 +1,18 @@
 package com.tingyun.smartmistakebook.core.ui
 
+import android.content.Context
 import android.graphics.Paint
+import android.graphics.Typeface
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.text.style.TypefaceSpan
+import android.util.TypedValue
+import android.view.View
+import android.widget.TextView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,9 +61,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.FigureAxis
 import com.tingyun.smartmistakebook.core.model.FigureCoordinate
@@ -64,6 +79,9 @@ import com.tingyun.smartmistakebook.core.model.SafeInlineMarkdown
 import com.tingyun.smartmistakebook.core.model.StructuredChoice
 import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.StructuredContentSanitizer
+import com.tingyun.smartmistakebook.core.model.TutorMarkdownChunkChain
+import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
+import java.util.IdentityHashMap
 import java.util.Locale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -155,6 +173,38 @@ fun SafeMarkdownText(
         modifier = modifier,
         color = color,
         style = style,
+    )
+}
+
+@Composable
+fun StreamingSafeMarkdownText(
+    snapshot: TutorMarkdownSnapshot,
+    contentIdentity: Any,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    color: Color = Ink,
+) {
+    val parser = remember(contentIdentity) {
+        IncrementalSafeMarkdownParser()
+    }
+    val parsed = produceState(
+        initialValue = parser.visibleWhileParsing(snapshot, contentIdentity),
+        snapshot.stableContent,
+        snapshot.provisionalContent,
+        snapshot.provisionalTail,
+        contentIdentity,
+    ) {
+        value = parser.parse(snapshot, contentIdentity)
+    }.value
+    AndroidView(
+        factory = { context ->
+            IncrementalMarkdownTextView(context)
+        },
+        modifier = modifier,
+        update = { textView ->
+            textView.applyStyle(style, color)
+            textView.render(parsed)
+        },
     )
 }
 
@@ -651,6 +701,381 @@ internal suspend fun parseSafeMarkdown(
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): AnnotatedString = withContext(dispatcher) {
     markdown.toSafeAnnotatedString()
+}
+
+internal class IncrementalSafeMarkdownParser(
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+) {
+    private var contentIdentity: Any? = null
+    private var stableCache = ChunkParseCache()
+    private var provisionalCache = ChunkParseCache()
+
+    var parsedCharacterCount: Long = 0
+        private set
+
+    suspend fun parse(
+        snapshot: TutorMarkdownSnapshot,
+        contentIdentity: Any,
+    ): StreamingMarkdownRenderState = withContext(dispatcher) {
+        synchronized(this@IncrementalSafeMarkdownParser) {
+            ensureIdentity(contentIdentity)
+            val stable = stableCache.parse(snapshot.stableContent, ::parseChunk)
+            val provisional = provisionalCache.parse(
+                snapshot.provisionalContent,
+                ::parseChunk,
+            )
+            StreamingMarkdownRenderState(
+                stable = stable,
+                provisional = provisional,
+                provisionalTail = parseChunk(snapshot.provisionalTail),
+                contentIdentity = contentIdentity,
+            )
+        }
+    }
+
+    fun visibleWhileParsing(
+        snapshot: TutorMarkdownSnapshot,
+        contentIdentity: Any,
+    ): StreamingMarkdownRenderState = synchronized(this) {
+        if (this.contentIdentity != contentIdentity) {
+            return@synchronized StreamingMarkdownRenderState.empty(contentIdentity)
+        }
+        StreamingMarkdownRenderState(
+            stable = stableCache.closestParsedPrefix(snapshot.stableContent),
+            provisional = provisionalCache.closestParsedPrefix(snapshot.provisionalContent),
+            provisionalTail = AnnotatedString(""),
+            contentIdentity = contentIdentity,
+        )
+    }
+
+    private fun ensureIdentity(nextIdentity: Any) {
+        if (contentIdentity == nextIdentity) return
+        contentIdentity = nextIdentity
+        stableCache = ChunkParseCache()
+        provisionalCache = ChunkParseCache()
+    }
+
+    private fun parseChunk(markdown: String): AnnotatedString {
+        parsedCharacterCount += markdown.length
+        return markdown.toSafeAnnotatedString()
+    }
+}
+
+private class ChunkParseCache {
+    private val values = IdentityHashMap<TutorMarkdownChunkChain, ParsedMarkdownChunkChain>().apply {
+        put(TutorMarkdownChunkChain.EMPTY, ParsedMarkdownChunkChain.EMPTY)
+    }
+    private var latestChain = TutorMarkdownChunkChain.EMPTY
+    private var latestValue = ParsedMarkdownChunkChain.EMPTY
+
+    fun parse(
+        chain: TutorMarkdownChunkChain,
+        parseChunk: (String) -> AnnotatedString,
+    ): ParsedMarkdownChunkChain {
+        values[chain]?.let {
+            latestChain = chain
+            latestValue = it
+            return it
+        }
+        val appended = chain.appendedChunksSince(latestChain)
+        var parsed = if (appended != null) latestValue else ParsedMarkdownChunkChain.EMPTY
+        val chunks = appended ?: chain.appendedChunksSince(TutorMarkdownChunkChain.EMPTY)
+            ?: listOf(chain.materialize())
+        chunks.forEach { chunk ->
+            parsed = parsed.append(parseChunk(chunk))
+        }
+        values[chain] = parsed
+        latestChain = chain
+        latestValue = parsed
+        return parsed
+    }
+
+    fun closestParsedPrefix(chain: TutorMarkdownChunkChain): ParsedMarkdownChunkChain {
+        values[chain]?.let { return it }
+        return if (chain.appendedChunksSince(latestChain) != null) {
+            latestValue
+        } else {
+            ParsedMarkdownChunkChain.EMPTY
+        }
+    }
+}
+
+internal class ParsedMarkdownChunkChain private constructor(
+    private val previous: ParsedMarkdownChunkChain?,
+    private val chunk: AnnotatedString,
+    val length: Int,
+) {
+    fun append(value: AnnotatedString): ParsedMarkdownChunkChain =
+        if (value.isEmpty()) this else ParsedMarkdownChunkChain(
+            previous = this,
+            chunk = value,
+            length = length + value.length,
+        )
+
+    fun appendedChunksSince(ancestor: ParsedMarkdownChunkChain): List<AnnotatedString>? {
+        if (ancestor === this) return emptyList()
+        if (ancestor.length >= length) return null
+
+        val reversed = mutableListOf<AnnotatedString>()
+        var current: ParsedMarkdownChunkChain? = this
+        while (current != null && current !== ancestor) {
+            if (current.length <= ancestor.length) return null
+            reversed += current.chunk
+            current = current.previous
+        }
+        if (current !== ancestor) return null
+        reversed.reverse()
+        return reversed
+    }
+
+    fun commonAncestor(other: ParsedMarkdownChunkChain): ParsedMarkdownChunkChain {
+        var left = this
+        var right = other
+        while (left !== right) {
+            when {
+                left.length > right.length -> left = left.previous ?: EMPTY
+                right.length > left.length -> right = right.previous ?: EMPTY
+                else -> {
+                    left = left.previous ?: EMPTY
+                    right = right.previous ?: EMPTY
+                }
+            }
+        }
+        return left
+    }
+
+    fun appendTo(builder: AnnotatedString.Builder) {
+        appendedChunksSince(EMPTY)?.forEach(builder::append)
+    }
+
+    companion object {
+        val EMPTY = ParsedMarkdownChunkChain(
+            previous = null,
+            chunk = AnnotatedString(""),
+            length = 0,
+        )
+    }
+}
+
+internal data class StreamingMarkdownRenderState(
+    val stable: ParsedMarkdownChunkChain,
+    val provisional: ParsedMarkdownChunkChain,
+    val provisionalTail: AnnotatedString,
+    val contentIdentity: Any,
+) {
+    fun materialize(): AnnotatedString = buildAnnotatedString {
+        stable.appendTo(this)
+        provisional.appendTo(this)
+        append(provisionalTail)
+    }
+
+    companion object {
+        fun empty(contentIdentity: Any) = StreamingMarkdownRenderState(
+            stable = ParsedMarkdownChunkChain.EMPTY,
+            provisional = ParsedMarkdownChunkChain.EMPTY,
+            provisionalTail = AnnotatedString(""),
+            contentIdentity = contentIdentity,
+        )
+    }
+}
+
+internal data class StreamingTextPatch(
+    val deleteSuffixCharacterCount: Int,
+    val appendedChunks: List<AnnotatedString>,
+)
+
+internal class IncrementalTextPatchPlanner {
+    private var contentIdentity: Any? = null
+    private var stable = ParsedMarkdownChunkChain.EMPTY
+    private var provisional = ParsedMarkdownChunkChain.EMPTY
+    private var provisionalTailLength = 0
+    private var renderedLength = 0
+
+    var appliedCharacterCount: Long = 0
+        private set
+
+    fun plan(next: StreamingMarkdownRenderState): StreamingTextPatch {
+        var deleteSuffix = provisionalTailLength
+        val appended = mutableListOf<AnnotatedString>()
+        if (contentIdentity != next.contentIdentity) {
+            deleteSuffix = renderedLength
+            stable = ParsedMarkdownChunkChain.EMPTY
+            provisional = ParsedMarkdownChunkChain.EMPTY
+            provisionalTailLength = 0
+        }
+
+        if (stable === next.stable) {
+            val commonProvisional = provisional.commonAncestor(next.provisional)
+            deleteSuffix += provisional.length - commonProvisional.length
+            appended += next.provisional.appendedChunksSince(commonProvisional).orEmpty()
+        } else {
+            val commonStable = stable.commonAncestor(next.stable)
+            deleteSuffix += provisional.length + stable.length - commonStable.length
+            appended += next.stable.appendedChunksSince(commonStable).orEmpty()
+            appended += next.provisional.appendedChunksSince(ParsedMarkdownChunkChain.EMPTY).orEmpty()
+        }
+        if (next.provisionalTail.isNotEmpty()) appended += next.provisionalTail
+
+        val appendedLength = appended.sumOf(AnnotatedString::length)
+        require(deleteSuffix <= renderedLength) {
+            "Streaming text patch cannot delete beyond the rendered prefix"
+        }
+        renderedLength = renderedLength - deleteSuffix + appendedLength
+        appliedCharacterCount += deleteSuffix + appendedLength
+        contentIdentity = next.contentIdentity
+        stable = next.stable
+        provisional = next.provisional
+        provisionalTailLength = next.provisionalTail.length
+        return StreamingTextPatch(
+            deleteSuffixCharacterCount = deleteSuffix,
+            appendedChunks = appended,
+        )
+    }
+}
+
+private class IncrementalMarkdownTextView(
+    context: Context,
+) : TextView(context) {
+    private val planner = IncrementalTextPatchPlanner()
+    private val buffer = SpannableStringBuilder()
+
+    init {
+        setSpannableFactory(
+            object : Spannable.Factory() {
+                override fun newSpannable(source: CharSequence): Spannable =
+                    if (source === buffer) buffer else SpannableStringBuilder(source)
+            },
+        )
+        setText(buffer, BufferType.SPANNABLE)
+        includeFontPadding = false
+        setPadding(0, 0, 0, 0)
+        background = null
+        isFocusable = false
+        isClickable = false
+        isLongClickable = false
+        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+    }
+
+    fun render(state: StreamingMarkdownRenderState) {
+        val patch = planner.plan(state)
+        if (patch.deleteSuffixCharacterCount > 0) {
+            buffer.delete(
+                buffer.length - patch.deleteSuffixCharacterCount,
+                buffer.length,
+            )
+        }
+        patch.appendedChunks.forEach(buffer::appendAnnotated)
+    }
+}
+
+private fun TextView.applyStyle(style: TextStyle, color: Color) {
+    val resolvedColor = if (color != Color.Unspecified) color else style.color
+    if (resolvedColor != Color.Unspecified) setTextColor(resolvedColor.toArgb())
+    if (style.fontSize != TextUnit.Unspecified) {
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, style.fontSize.value)
+    }
+    val baseTypeface = when (style.fontFamily) {
+        FontFamily.Monospace -> Typeface.MONOSPACE
+        FontFamily.Serif -> Typeface.SERIF
+        FontFamily.SansSerif -> Typeface.SANS_SERIF
+        else -> Typeface.DEFAULT
+    }
+    val typefaceStyle = when {
+        style.fontWeight?.weight?.let { it >= FontWeight.SemiBold.weight } == true &&
+            style.fontStyle == FontStyle.Italic -> Typeface.BOLD_ITALIC
+        style.fontWeight?.weight?.let { it >= FontWeight.SemiBold.weight } == true -> Typeface.BOLD
+        style.fontStyle == FontStyle.Italic -> Typeface.ITALIC
+        else -> Typeface.NORMAL
+    }
+    typeface = Typeface.create(baseTypeface, typefaceStyle)
+    letterSpacing = if (
+        style.letterSpacing != TextUnit.Unspecified &&
+        style.fontSize != TextUnit.Unspecified &&
+        style.fontSize.value > 0f
+    ) {
+        style.letterSpacing.value / style.fontSize.value
+    } else {
+        0f
+    }
+    if (style.lineHeight != TextUnit.Unspecified) {
+        val targetLineHeight = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP,
+            style.lineHeight.value,
+            resources.displayMetrics,
+        )
+        val fontMetrics = paint.fontMetricsInt
+        setLineSpacing(
+            targetLineHeight - (fontMetrics.descent - fontMetrics.ascent),
+            1f,
+        )
+    } else {
+        setLineSpacing(0f, 1f)
+    }
+    textAlignment = when (style.textAlign) {
+        TextAlign.Center -> View.TEXT_ALIGNMENT_CENTER
+        TextAlign.End,
+        TextAlign.Right,
+        -> View.TEXT_ALIGNMENT_TEXT_END
+        else -> View.TEXT_ALIGNMENT_TEXT_START
+    }
+}
+
+private fun SpannableStringBuilder.appendAnnotated(value: AnnotatedString) {
+    val offset = length
+    append(value.text)
+    value.spanStyles.forEach { range ->
+        val start = offset + range.start
+        val end = offset + range.end
+        if (start >= end) return@forEach
+        val style = range.item
+        val typefaceStyle = when {
+            style.fontWeight?.weight?.let { it >= FontWeight.SemiBold.weight } == true &&
+                style.fontStyle == FontStyle.Italic -> Typeface.BOLD_ITALIC
+            style.fontWeight?.weight?.let { it >= FontWeight.SemiBold.weight } == true ->
+                Typeface.BOLD
+            style.fontStyle == FontStyle.Italic -> Typeface.ITALIC
+            else -> Typeface.NORMAL
+        }
+        if (typefaceStyle != Typeface.NORMAL) {
+            setSpan(
+                StyleSpan(typefaceStyle),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+        when (style.fontFamily) {
+            FontFamily.Monospace -> setSpan(
+                TypefaceSpan("monospace"),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+            FontFamily.Serif -> setSpan(
+                TypefaceSpan("serif"),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+            else -> Unit
+        }
+        if (style.color != Color.Unspecified) {
+            setSpan(
+                ForegroundColorSpan(style.color.toArgb()),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+        if (style.background != Color.Unspecified) {
+            setSpan(
+                BackgroundColorSpan(style.background.toArgb()),
+                start,
+                end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
+            )
+        }
+    }
 }
 
 internal data class SafeMarkdownParseResult(

@@ -148,6 +148,48 @@ class StreamingMarkdownAssemblerTest {
     }
 
     @Test
+    fun fastPreviewMaterializationScalesLinearlyWhenInputDoubles() {
+        fun previewWork(characterCount: Int): Long {
+            val assembler = StreamingMarkdownAssembler(clockNanos = { 0L })
+            repeat(characterCount) {
+                assembler.append("\\")
+            }
+            return assembler.snapshotMaterializationCharacterCount
+        }
+
+        val workAt2k = previewWork(2_048)
+        val workAt4k = previewWork(4_096)
+
+        assertTrue(
+            "doubling fast input must keep preview work near-linear: " +
+                "2k=$workAt2k, 4k=$workAt4k",
+            workAt4k * 10 <= workAt2k * 22,
+        )
+    }
+
+    @Test
+    fun elapsedWindowPreviewMaterializationScalesLinearlyWhenInputDoubles() {
+        fun previewWork(characterCount: Int): Long {
+            var nowNanos = 0L
+            val assembler = StreamingMarkdownAssembler(clockNanos = { nowNanos })
+            repeat(characterCount) {
+                nowNanos += 64_000_000L
+                assembler.append("\\")
+            }
+            return assembler.snapshotMaterializationCharacterCount
+        }
+
+        val workAt2k = previewWork(2_048)
+        val workAt4k = previewWork(4_096)
+
+        assertTrue(
+            "doubling elapsed-window input must keep preview work near-linear: " +
+                "2k=$workAt2k, 4k=$workAt4k",
+            workAt4k * 10 <= workAt2k * 22,
+        )
+    }
+
+    @Test
     fun longFastStreamsKeepMaterializingNearTheLiveTailWithBoundedWork() {
         val characterCount = TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS
         val assembler = StreamingMarkdownAssembler(clockNanos = { 0L })
