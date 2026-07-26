@@ -246,13 +246,30 @@ class TutorVisualPipelineTest {
 
     @Test
     fun providerLoadFailureCannotRemainPreparing() {
+        val provider = ProviderCapabilitySnapshot(
+            providerId = "external-provider",
+            providerDisplayName = "External provider",
+            modelId = "model-v1",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+            providerConfigurationVersion = "config-v1",
+        )
+        val available = TutorProviderAuthorityState()
+            .afterRefreshSuccess(provider)
+        val failedAuthority = available.afterRefreshFailure()
+
+        assertEquals(provider, available.provider)
+        assertNull(failedAuthority.provider)
+        assertTrue(failedAuthority.loadFailed)
         assertEquals(
             TutorVisualResolution.Preparing,
             tutorVisualProviderLoadingResolution(provider = null, providerLoadFailed = false),
         )
         val failed = tutorVisualProviderLoadingResolution(
-            provider = null,
-            providerLoadFailed = true,
+            provider = failedAuthority.provider,
+            providerLoadFailed = failedAuthority.loadFailed,
         ) as TutorVisualResolution.Fallback
         assertEquals(TutorVisualFallbackReason.PROVIDER_UNAVAILABLE, failed.reason)
     }

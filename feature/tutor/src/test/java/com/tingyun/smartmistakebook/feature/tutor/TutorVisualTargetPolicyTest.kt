@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorSceneStep
 import com.tingyun.smartmistakebook.core.model.TutorStepFlowScene
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -87,6 +88,16 @@ class TutorVisualTargetPolicyTest {
                 ),
                 inlineScene = null,
             ),
+        )
+        assertNotEquals(
+            inlineTutorVisualResolution(
+                scene = legacyScene,
+                ownerModelTaskRequestId = "plan-request-a",
+            ).presentationStateKey("plan-request-a"),
+            inlineTutorVisualResolution(
+                scene = legacyScene,
+                ownerModelTaskRequestId = "plan-request-b",
+            ).presentationStateKey("plan-request-b"),
         )
     }
 

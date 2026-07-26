@@ -148,6 +148,22 @@ private data class TutorVisualReviewWorkItem(
     val executionKey: TutorVisualExecutionKey,
 )
 
+internal data class TutorProviderAuthorityState(
+    val provider: ProviderCapabilitySnapshot? = null,
+    val loadFailed: Boolean = false,
+) {
+    init {
+        require(!loadFailed || provider == null)
+    }
+
+    fun afterRefreshSuccess(
+        refreshedProvider: ProviderCapabilitySnapshot,
+    ): TutorProviderAuthorityState = TutorProviderAuthorityState(provider = refreshedProvider)
+
+    fun afterRefreshFailure(): TutorProviderAuthorityState =
+        TutorProviderAuthorityState(loadFailed = true)
+}
+
 @Composable
 fun CapturedTutorSessionRoute(
     sessionId: String,
@@ -724,8 +740,11 @@ internal fun TutorModelPanel(
         }
         return
     }
-    var provider by remember(question.sessionId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
-    var providerLoadFailed by remember(question.sessionId) { mutableStateOf(false) }
+    var providerAuthority by remember(question.sessionId) {
+        mutableStateOf(TutorProviderAuthorityState())
+    }
+    val provider = providerAuthority.provider
+    val providerLoadFailed = providerAuthority.loadFailed
     val scope = rememberCoroutineScope()
     val activeStreamOwner = remember(
         question.sessionId,
@@ -837,6 +856,7 @@ internal fun TutorModelPanel(
     ) { mutableStateOf(PendingTutorEgressState()) }
     val pendingVisualRetry =
         pendingEgressState.action as? PendingTutorEgressAction.RetryVisual
+    val latestPendingEgressForCapabilityRefresh = rememberUpdatedState(pendingEgressState)
     var draftToClearOnDurableStart by rememberSaveable(
         question.sessionId,
         question.revisionNumber,
@@ -869,12 +889,15 @@ internal fun TutorModelPanel(
 
     LaunchedEffect(question.sessionId) {
         try {
-            provider = modelTasks.capabilities()
-            providerLoadFailed = false
+            providerAuthority = providerAuthority.afterRefreshSuccess(
+                modelTasks.capabilities(),
+            )
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            providerLoadFailed = true
+            providerAuthority = providerAuthority.afterRefreshFailure()
+            pendingEgressState =
+                latestPendingEgressForCapabilityRefresh.value.withoutVisualRetry()
         }
     }
     DisposableEffect(lifecycleOwner, question.sessionId, modelTasks) {
@@ -882,12 +905,15 @@ internal fun TutorModelPanel(
             if (event == Lifecycle.Event.ON_RESUME) {
                 scope.launch {
                     try {
-                        provider = modelTasks.capabilities()
-                        providerLoadFailed = false
+                        providerAuthority = providerAuthority.afterRefreshSuccess(
+                            modelTasks.capabilities(),
+                        )
                     } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (_: Exception) {
-                        providerLoadFailed = true
+                        providerAuthority = providerAuthority.afterRefreshFailure()
+                        pendingEgressState =
+                            latestPendingEgressForCapabilityRefresh.value.withoutVisualRetry()
                     }
                 }
             }
@@ -1699,6 +1725,24 @@ internal fun TutorModelPanel(
         }
     }
 
+    fun rejectStalePendingVisualRetry(
+        retry: PendingTutorEgressAction.RetryVisual,
+        providerForRetry: ProviderCapabilitySnapshot?,
+        semanticRequestId: String?,
+    ): Boolean {
+        val identityChanged = providerForRetry == null ||
+            semanticRequestId == null ||
+            !retry.matches(providerForRetry, semanticRequestId)
+        if (identityChanged) {
+            pendingEgressState = pendingEgressState.clearVisualRetryIfIdentityChanged(
+                expectedRetry = retry,
+                provider = providerForRetry,
+                semanticRequestId = semanticRequestId,
+            )
+        }
+        return identityChanged
+    }
+
     suspend fun executeVisualRequest(
         anchor: TutorVisualTurnAnchor,
         request: ModelTaskRequest,
@@ -1779,6 +1823,21 @@ internal fun TutorModelPanel(
                     semanticRequestId = semanticRequestId,
                 )
             }
+            generationRetry?.let { retry ->
+                val currentRetryKey = workItems
+                    .firstOrNull { (seed, _) -> seed.anchor == retry.anchor }
+                    ?.second
+                if (
+                    rejectStalePendingVisualRetry(
+                        retry = retry,
+                        providerForRetry = providerForVisual,
+                        semanticRequestId = currentRetryKey?.semanticRequestId,
+                    )
+                ) {
+                    anchorScheduler.cancelExcept(emptySet())
+                    return@collect
+                }
+            }
             anchorScheduler.cancelExcept(
                 workItems.mapTo(hashSetOf()) { (_, schedulerKey) -> schedulerKey },
             )
@@ -1787,6 +1846,16 @@ internal fun TutorModelPanel(
                     run seedExecution@ {
                             val pendingRetryForSeed = generationRetry
                                 ?.takeIf { retry -> retry.anchor == seed.anchor }
+                            if (
+                                pendingRetryForSeed != null &&
+                                rejectStalePendingVisualRetry(
+                                    retry = pendingRetryForSeed,
+                                    providerForRetry = providerForVisual,
+                                    semanticRequestId = schedulerKey.semanticRequestId,
+                                )
+                            ) {
+                                return@seedExecution
+                            }
                             val approvedAt = when {
                                 pendingRetryForSeed != null &&
                                     providerForVisual.executionLocation ==
@@ -1963,6 +2032,21 @@ internal fun TutorModelPanel(
                     ),
                 )
             }
+            reviewRetry?.let { retry ->
+                val currentRetryKey = workItems
+                    .firstOrNull { workItem -> workItem.seed.anchor == retry.anchor }
+                    ?.executionKey
+                if (
+                    rejectStalePendingVisualRetry(
+                        retry = retry,
+                        providerForRetry = providerForReview,
+                        semanticRequestId = currentRetryKey?.semanticRequestId,
+                    )
+                ) {
+                    anchorScheduler.cancelExcept(emptySet())
+                    return@collect
+                }
+            }
             anchorScheduler.cancelExcept(
                 workItems.mapTo(hashSetOf(), TutorVisualReviewWorkItem::executionKey),
             )
@@ -1972,6 +2056,17 @@ internal fun TutorModelPanel(
                     run seedExecution@ {
                             val pendingRetryForSeed = reviewRetry
                                 ?.takeIf { retry -> retry.anchor == seed.anchor }
+                            if (
+                                pendingRetryForSeed != null &&
+                                rejectStalePendingVisualRetry(
+                                    retry = pendingRetryForSeed,
+                                    providerForRetry = providerForReview,
+                                    semanticRequestId =
+                                        workItem.executionKey.semanticRequestId,
+                                )
+                            ) {
+                                return@seedExecution
+                            }
                             val reviewCandidate = workItem.candidate
                             val approvedAt = when {
                                 pendingRetryForSeed != null &&

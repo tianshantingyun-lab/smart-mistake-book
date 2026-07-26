@@ -103,6 +103,19 @@ internal fun TutorVisualResolution.Ready.hitPresentation(
     ownerModelTaskRequestId: String?,
 ): TutorVisualPresentationIdentity? {
     if (scene !is TutorVisualDocumentScene) return null
+    return presentationIdentity(ownerModelTaskRequestId)
+}
+
+internal fun TutorVisualResolution.Ready.presentationStateKey(
+    ownerModelTaskRequestId: String?,
+): String = TutorVisualPresentationStateKey.of(
+    scene = scene,
+    presentation = presentationIdentity(ownerModelTaskRequestId),
+)
+
+private fun TutorVisualResolution.Ready.presentationIdentity(
+    ownerModelTaskRequestId: String?,
+): TutorVisualPresentationIdentity? {
     val ownerRequestId = ownerModelTaskRequestId?.takeIf(String::isNotBlank) ?: return null
     val kind = sourceKind ?: return null
     val sourceRequestId = sceneTaskRequestId ?: return null
@@ -174,10 +187,7 @@ internal fun TutorVisualPresentation(
         }
         is TutorVisualResolution.Ready -> {
             val hitPresentation = state.hitPresentation(ownerModelTaskRequestId)
-            val presentationStateKey = TutorVisualPresentationStateKey.of(
-                scene = state.scene,
-                presentation = hitPresentation,
-            )
+            val presentationStateKey = state.presentationStateKey(ownerModelTaskRequestId)
             var historyExpanded by rememberSaveable(presentationStateKey) {
                 mutableStateOf(false)
             }

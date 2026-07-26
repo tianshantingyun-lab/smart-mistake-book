@@ -52,6 +52,55 @@ class PendingTutorEgressStateTest {
     }
 
     @Test
+    fun staleApprovedVisualRetryIsClearedBeforeAReplacementCanBeDisclosed() {
+        val approved = retry().copy(approvedAtEpochMillis = 123)
+        val pending = PendingTutorEgressState(approved)
+        val changedIdentities = listOf(
+            provider().copy(providerId = "other-provider") to "semantic-request",
+            provider().copy(modelId = "other-model") to "semantic-request",
+            provider().copy(providerConfigurationVersion = "configuration-v2") to
+                "semantic-request",
+            provider() to "semantic-request-for-changed-source",
+        )
+
+        changedIdentities.forEach { (currentProvider, currentSemanticRequestId) ->
+            assertNull(
+                pending.clearVisualRetryIfIdentityChanged(
+                    expectedRetry = approved,
+                    provider = currentProvider,
+                    semanticRequestId = currentSemanticRequestId,
+                ).action,
+            )
+        }
+        assertEquals(
+            pending,
+            pending.clearVisualRetryIfIdentityChanged(
+                expectedRetry = approved,
+                provider = provider(),
+                semanticRequestId = "semantic-request",
+            ),
+        )
+        assertNull(
+            retry().copy(
+                semanticRequestId = "semantic-request-for-changed-source",
+            ).approvedAtEpochMillis,
+        )
+    }
+
+    @Test
+    fun providerAuthorityFailureClearsOnlyPendingVisualRetry() {
+        val visualPending = PendingTutorEgressState(
+            retry().copy(approvedAtEpochMillis = 123),
+        )
+        val responsePending = PendingTutorEgressState(
+            PendingTutorEgressAction.RetryResponse("response-request"),
+        )
+
+        assertNull(visualPending.withoutVisualRetry().action)
+        assertEquals(responsePending, responsePending.withoutVisualRetry())
+    }
+
+    @Test
     fun reviewExecutionFailureWithoutAPersistedTaskRemainsRetryable() {
         val retry = retry().copy(
             taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,

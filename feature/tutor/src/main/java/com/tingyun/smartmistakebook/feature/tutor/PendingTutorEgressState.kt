@@ -85,6 +85,29 @@ internal data class PendingTutorEgressState(
     val action: PendingTutorEgressAction? = null,
 )
 
+internal fun PendingTutorEgressState.clearVisualRetryIfIdentityChanged(
+    expectedRetry: PendingTutorEgressAction.RetryVisual,
+    provider: ProviderCapabilitySnapshot?,
+    semanticRequestId: String?,
+): PendingTutorEgressState =
+    if (
+        action == expectedRetry &&
+        (provider == null ||
+            semanticRequestId == null ||
+            !expectedRetry.matches(provider, semanticRequestId))
+    ) {
+        PendingTutorEgressState()
+    } else {
+        this
+    }
+
+internal fun PendingTutorEgressState.withoutVisualRetry(): PendingTutorEgressState =
+    if (action is PendingTutorEgressAction.RetryVisual) {
+        PendingTutorEgressState()
+    } else {
+        this
+    }
+
 internal fun PendingTutorEgressAction?.awaitsResponseAuthorization(): Boolean =
     this is PendingTutorEgressAction.NewResponse ||
         this is PendingTutorEgressAction.RetryResponse
