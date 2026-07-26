@@ -186,7 +186,17 @@ internal class TutorEvidenceWriteGate {
         write: suspend () -> T,
         discard: suspend () -> Unit,
     ): T = withContext(NonCancellable) {
-        val value = write()
+        val value = try {
+            write()
+        } catch (failure: Throwable) {
+            when (authorization.failWrite()) {
+                EvidenceWriteFailure.RETRYABLE -> throw failure
+                EvidenceWriteFailure.REVOKED -> {
+                    discard()
+                    throw TutorEvidenceRejectedException(requestId)
+                }
+            }
+        }
         if (!authorization.finalizeWrite()) {
             discard()
             throw TutorEvidenceRejectedException(requestId)
@@ -208,6 +218,11 @@ private enum class EvidenceWriteBegin {
     REJECTED,
 }
 
+private enum class EvidenceWriteFailure {
+    RETRYABLE,
+    REVOKED,
+}
+
 private class EvidenceWriteAuthorization {
     private val state = AtomicReference(EvidenceWriteState.OPEN)
 
@@ -220,6 +235,16 @@ private class EvidenceWriteAuthorization {
 
     fun finalizeWrite(): Boolean =
         state.compareAndSet(EvidenceWriteState.WRITING, EvidenceWriteState.COMMITTED)
+
+    fun failWrite(): EvidenceWriteFailure =
+        if (state.compareAndSet(EvidenceWriteState.WRITING, EvidenceWriteState.OPEN)) {
+            EvidenceWriteFailure.RETRYABLE
+        } else {
+            check(state.get() == EvidenceWriteState.CANCELLED) {
+                "Only cancellation may race with an in-flight evidence write"
+            }
+            EvidenceWriteFailure.REVOKED
+        }
 
     fun cancel(): Boolean {
         while (true) {

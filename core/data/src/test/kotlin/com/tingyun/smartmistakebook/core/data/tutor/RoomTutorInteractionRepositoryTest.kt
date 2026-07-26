@@ -168,4 +168,64 @@ class RoomTutorInteractionRepositoryTest {
         }.exceptionOrNull()
         assertTrue(failure is TutorEvidenceRejectedException)
     }
+
+    @Test
+    fun `transient write failure allows the same evidence request to retry`() = runBlocking {
+        val gate = TutorEvidenceWriteGate()
+        var attempts = 0
+
+        val firstFailure = runCatching {
+            gate.persist(
+                requestId = "evidence-retry",
+                write = {
+                    attempts += 1
+                    error("temporary database failure")
+                },
+                discard = { error("A failed write did not persist evidence") },
+            )
+        }.exceptionOrNull()
+        val retried = gate.persist(
+            requestId = "evidence-retry",
+            write = {
+                attempts += 1
+                "stored"
+            },
+            discard = { error("A successful retry must not be discarded") },
+        )
+
+        assertTrue(firstFailure is IllegalStateException)
+        assertEquals("stored", retried)
+        assertEquals(2, attempts)
+    }
+
+    @Test
+    fun `cancel winning while a failing write unwinds still discards late evidence`() = runBlocking {
+        val gate = TutorEvidenceWriteGate()
+        val writeStarted = CompletableDeferred<Unit>()
+        val releaseWrite = CompletableDeferred<Unit>()
+        var stored = false
+
+        supervisorScope {
+            val failedWrite = async {
+                gate.persist(
+                    requestId = "evidence-cancelled-failure",
+                    write = {
+                        writeStarted.complete(Unit)
+                        releaseWrite.await()
+                        stored = true
+                        error("database reported failure after a partial write")
+                    },
+                    discard = { stored = false },
+                )
+            }
+
+            writeStarted.await()
+            assertTrue(gate.cancel("evidence-cancelled-failure"))
+            releaseWrite.complete(Unit)
+
+            val failure = runCatching { failedWrite.await() }.exceptionOrNull()
+            assertTrue(failure is TutorEvidenceRejectedException)
+            assertFalse(stored)
+        }
+    }
 }
