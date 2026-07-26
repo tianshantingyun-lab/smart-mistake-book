@@ -580,17 +580,16 @@ internal fun TutorTopBar(
     onOpenCapabilitySettings: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = SmartDimens.MinimumTouchTarget)
+            .semantics {
+                heading()
+                contentDescription = "讲题"
+            },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(
-            modifier = Modifier
-                .weight(1f)
-                .semantics {
-                    heading()
-                    contentDescription = "讲题"
-                },
-        )
+        Spacer(Modifier.weight(1f))
         IconButton(
             onClick = onOpenCapabilitySettings,
             modifier = Modifier.testTag("tutor_capability_settings_button"),

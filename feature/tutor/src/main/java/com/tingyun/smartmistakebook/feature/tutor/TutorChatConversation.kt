@@ -567,50 +567,60 @@ internal fun TutorChatComposer(
     onSend: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { changed ->
-            onValueChange(changed.take(TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS))
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .height(SmartDimens.ComposerHeight)
-            .testTag("tutor_chat_composer"),
-        enabled = enabled,
-        placeholder = { Text("问这道题，或说出你卡住的步骤") },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-        keyboardActions = KeyboardActions(
-            onSend = { if (enabled && value.isNotBlank() && !sending) onSend() },
-        ),
-        trailingIcon = {
-            IconButton(
-                onClick = onSend,
-                enabled = enabled && value.isNotBlank() && !sending,
-                modifier = Modifier
-                    .size(SmartDimens.MinimumTouchTarget)
-                    .testTag("tutor_chat_send"),
-            ) {
-                if (sending) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = JadeActive,
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Send,
-                        contentDescription = "发送这条消息",
-                        tint = JadeActive,
-                    )
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.End,
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = { changed ->
+                onValueChange(changed.take(TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS))
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(SmartDimens.ComposerHeight)
+                .testTag("tutor_chat_composer"),
+            enabled = enabled,
+            placeholder = { Text("问这道题，或说出你卡住的步骤") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+            keyboardActions = KeyboardActions(
+                onSend = { if (enabled && value.isNotBlank() && !sending) onSend() },
+            ),
+            trailingIcon = {
+                IconButton(
+                    onClick = onSend,
+                    enabled = enabled && value.isNotBlank() && !sending,
+                    modifier = Modifier
+                        .size(SmartDimens.MinimumTouchTarget)
+                        .testTag("tutor_chat_send"),
+                ) {
+                    if (sending) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = JadeActive,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.Send,
+                            contentDescription = "发送这条消息",
+                            tint = JadeActive,
+                        )
+                    }
                 }
-            }
-        },
-        supportingText = if (value.length >= 1_000) {
-            { Text("${value.length}/${TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS}") }
-        } else {
-            null
-        },
-        shape = RoundedCornerShape(14.dp),
-    )
+            },
+            shape = RoundedCornerShape(14.dp),
+        )
+        if (value.length >= 1_000) {
+            Text(
+                text = "${value.length}/${TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS}",
+                modifier = Modifier
+                    .padding(top = 4.dp, end = 12.dp)
+                    .testTag("tutor_chat_character_count"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
+    }
 }

@@ -14,6 +14,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -21,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootBottomBarFrame
@@ -28,6 +31,7 @@ import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -85,7 +89,43 @@ class DesignFoundationInstrumentedTest {
         composeRule.onNodeWithTag("tutor_chat_send")
             .assertHeightIsAtLeast(SmartDimens.MinimumTouchTarget)
         composeRule.onAllNodesWithText("讲题").assertCountEquals(0)
-        composeRule.onNodeWithContentDescription("讲题").assertExists()
+        composeRule.onNodeWithContentDescription("讲题")
+            .assertExists()
+            .assertHeightIsAtLeast(SmartDimens.MinimumTouchTarget)
+    }
+
+    @Test
+    fun longMessageCounterRendersBelowTheFixedChatComposer() {
+        val boundaryMessage = "字".repeat(1_000)
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                TutorChatComposer(
+                    value = boundaryMessage,
+                    enabled = true,
+                    sending = false,
+                    onValueChange = {},
+                    onSend = {},
+                    modifier = Modifier.width(360.dp),
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_composer")
+            .assertHeightIsEqualTo(SmartDimens.ComposerHeight)
+        composeRule.onNodeWithTag("tutor_chat_character_count")
+            .assertTextEquals(
+                "${boundaryMessage.length}/${TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS}",
+            )
+            .assertIsDisplayed()
+
+        val fieldBounds = composeRule.onNodeWithTag("tutor_chat_composer")
+            .fetchSemanticsNode().boundsInRoot
+        val counterBounds = composeRule.onNodeWithTag("tutor_chat_character_count")
+            .fetchSemanticsNode().boundsInRoot
+        assertTrue(
+            "Character count overlaps the fixed-height composer",
+            counterBounds.top >= fieldBounds.bottom,
+        )
     }
 
     @Test
