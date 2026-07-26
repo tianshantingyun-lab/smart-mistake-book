@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
+import com.tingyun.smartmistakebook.core.data.tutor.TutorEvidenceWriteGate
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
 import com.tingyun.smartmistakebook.core.database.AttemptCorrectionRecord
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
@@ -83,13 +84,9 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -100,7 +97,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
 /**
  * Application-scoped repository for the curated M1 study loop.
@@ -128,7 +124,7 @@ class RoomBackedStudyExperienceRepository(
     private val forgettingCurve = ForgettingCurve()
     private val reviewPlanner = ReviewPlanner()
     private val learningProjector = LearningProjector()
-    private val revokedTutorChoiceRequestIds = ConcurrentHashMap.newKeySet<String>()
+    private val tutorChoiceWriteGate = TutorEvidenceWriteGate()
     private var initialized = false
     private var latestMistakes: List<MistakeRecord> = emptyList()
     private var latestPendingCorrectionCount: Int = 0
@@ -269,14 +265,13 @@ class RoomBackedStudyExperienceRepository(
         submission: StudyChoiceSubmission,
     ): StudyChoiceSubmissionResult = runOperation {
         val prepared = prepareChoiceSubmission(submission)
-        currentCoroutineContext().ensureActive()
-        val writeResult = withContext(NonCancellable) {
-            if (submission.requestId in revokedTutorChoiceRequestIds) {
-                throw TutorEvidenceRejectedException(submission.requestId)
-            }
-            database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
-            val result = database.recordAttempt(prepared.command)
-            if (submission.requestId in revokedTutorChoiceRequestIds) {
+        val writeResult = tutorChoiceWriteGate.persist(
+            requestId = submission.requestId,
+            write = {
+                database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
+                database.recordAttempt(prepared.command)
+            },
+            discard = {
                 database.appendAttemptCorrection(
                     AttemptCorrectionRecord(
                         learnerId = learnerId,
@@ -285,7 +280,7 @@ class RoomBackedStudyExperienceRepository(
                             namespace = "correction",
                             requestId = "revoked:${submission.requestId}",
                         ),
-                        attemptId = result.attempt.attemptId,
+                        attemptId = prepared.command.attemptId,
                         replacementEvidence = LearningEvidence(
                             direction = LearningEvidenceDirection.NONE,
                             weight = 0.0,
@@ -299,10 +294,8 @@ class RoomBackedStudyExperienceRepository(
                         ),
                     ),
                 )
-                throw TutorEvidenceRejectedException(submission.requestId)
-            }
-            result
-        }
+            },
+        )
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
@@ -316,7 +309,7 @@ class RoomBackedStudyExperienceRepository(
 
     override fun cancelChoiceSubmission(requestId: String) {
         require(requestId.isNotBlank()) { "Choice request id must not be blank" }
-        revokedTutorChoiceRequestIds += requestId
+        tutorChoiceWriteGate.cancel(requestId)
     }
 
     override suspend fun submitReviewChoice(

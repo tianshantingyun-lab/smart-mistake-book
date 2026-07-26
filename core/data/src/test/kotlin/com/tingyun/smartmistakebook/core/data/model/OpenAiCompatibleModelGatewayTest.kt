@@ -45,6 +45,8 @@ import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorComparisonScene
 import com.tingyun.smartmistakebook.core.model.TutorCircularMotionScene
 import com.tingyun.smartmistakebook.core.model.TutorConceptMapScene
@@ -792,6 +794,112 @@ class OpenAiCompatibleModelGatewayTest {
         assertEquals(TutorMessageIntent.CURRENT_QUESTION_HELP, output.intentDecision.intent)
         assertNull(output.visualScene)
         assertTrue(output.suggestedMoves.isEmpty())
+    }
+
+    @Test
+    fun guidedTutorResponsePromptAndParserExposeOnlyTheBoundedDirectiveSchema() = runBlocking {
+        var sentBody = ""
+        val directive = buildJsonObject {
+            put("kind", "CHOICES")
+            put("promptMarkdown", "下一步先判断什么？")
+            put(
+                "choices",
+                buildJsonArray {
+                    add(buildJsonObject {
+                        put("id", "sign")
+                        put("labelMarkdown", "判断导数符号")
+                    })
+                    add(buildJsonObject {
+                        put("id", "zeros")
+                        put("labelMarkdown", "只找零点")
+                    })
+                },
+            )
+        }
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = modelTransport { _, _, body ->
+                sentBody = body
+                ModelHttpResponse(
+                    200,
+                    envelope(tutorRespondPayload(extraTopLevel = "interactionDirective" to directive)),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val output = gateway.execute(
+            authorizedTutorRespond(
+                gateway,
+                tutorRespondInput().copy(explanationMode = TutorExplanationMode.GUIDED),
+            ),
+        ).toList().last().let { it as ModelGatewayEvent.Completed }.output as TutorRespondOutput
+
+        assertTrue(sentBody.contains("explanationMode：GUIDED"))
+        assertTrue(sentBody.contains("interactionDirective"))
+        assertTrue(output.interactionDirective is TutorInteractionDirective.Choices)
+    }
+
+    @Test
+    fun tutorPlanParserAcceptsOneBoundedDirectiveWithoutALegacyDiagnostic() = runBlocking {
+        val directive = buildJsonObject {
+            put("kind", "FREE_RESPONSE")
+            put("promptMarkdown", "先说说导数符号怎样决定单调性。")
+        }
+
+        val completed = executeTutorPayload(
+            tutorPayload(
+                includeDiagnostic = false,
+                extraTopLevel = "interactionDirective" to directive,
+            ),
+        ).last() as ModelGatewayEvent.Completed
+        val output = completed.output as TutorPlanOutput
+
+        assertTrue(output.plan.interactionDirective is TutorInteractionDirective.FreeResponse)
+        assertNull(output.plan.diagnosticItem)
+    }
+
+    @Test
+    fun directTutorResponseRequiresACompleteAnswerAndRejectsInteractionDirectives() = runBlocking {
+        var sentBody = ""
+        val directInput = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Tutor response must not open images") },
+            transport = modelTransport { _, _, body ->
+                sentBody = body
+                ModelHttpResponse(
+                    200,
+                    envelope(
+                        tutorRespondPayload(
+                            messageMarkdown = "完整解法是先求导，再由符号写出全部单调区间。",
+                            solutionRevealed = true,
+                        ),
+                    ),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val completed = gateway.execute(authorizedTutorRespond(gateway, directInput)).toList().last()
+            as ModelGatewayEvent.Completed
+        assertTrue(sentBody.contains("explanationMode：DIRECT"))
+        assertTrue(sentBody.contains("不得返回interactionDirective"))
+        assertTrue((completed.output as TutorRespondOutput).solutionRevealed)
+
+        val directive = buildJsonObject {
+            put("kind", "FREE_RESPONSE")
+            put("promptMarkdown", "你准备先做哪一步？")
+        }
+        val failed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                solutionRevealed = true,
+                extraTopLevel = "interactionDirective" to directive,
+            ),
+            input = directInput,
+        ).last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
     }
 
     @Test
@@ -2393,14 +2501,17 @@ class OpenAiCompatibleModelGatewayTest {
             .let { it as ModelGatewayEvent.Completed }
             .output as TutorRespondOutput
 
-    private suspend fun executeTutorRespondPayload(payload: String): List<ModelGatewayEvent> {
+    private suspend fun executeTutorRespondPayload(
+        payload: String,
+        input: TutorRespondInput = tutorRespondInput(),
+    ): List<ModelGatewayEvent> {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Tutor response must not open image assets") },
             transport = modelTransport { _, _, _ -> ModelHttpResponse(200, envelope(payload)) },
             clock = { AUTHORIZATION_NOW },
         )
-        return gateway.execute(authorizedTutorRespond(gateway)).toList()
+        return gateway.execute(authorizedTutorRespond(gateway, input)).toList()
     }
 
     private fun stableTutorSuffix(input: TutorPlanInput): String =

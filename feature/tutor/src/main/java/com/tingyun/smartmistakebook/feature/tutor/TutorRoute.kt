@@ -134,6 +134,18 @@ fun TutorRoute(
         return
     }
     val viewModel: TutorViewModel = viewModel()
+    val requestExplanationModeChange: (TutorExplanationMode) -> Unit = { mode ->
+        requestTutorExplanationModeChange(
+            mode = mode,
+            cancelPendingEvidence = {
+                viewModel.useExplanationMode(
+                    TutorExplanationMode.DIRECT,
+                    onCancelChoiceSubmission,
+                )
+            },
+            persistMode = onExplanationModeChange,
+        )
+    }
     LaunchedEffect(explanationMode) {
         viewModel.useExplanationMode(explanationMode, onCancelChoiceSubmission)
     }
@@ -227,7 +239,7 @@ fun TutorRoute(
                             onDraftChange = viewModel::updateDraft,
                             onSendDraft = viewModel::submitDraft,
                             explanationMode = explanationMode,
-                            onExplanationModeChange = onExplanationModeChange,
+                            onExplanationModeChange = requestExplanationModeChange,
                             modifier = modifier,
                         )
                     }

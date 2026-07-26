@@ -74,7 +74,6 @@ import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
-import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
@@ -1149,6 +1148,7 @@ internal fun TutorModelPanel(
                 .forEach { task ->
                     val input = task.request.input as TutorPlanInput
                     val output = task.output as? TutorPlanOutput ?: return@forEach
+                    var pendingDirectiveRequestId: String? = null
                     if (output.plan.hasGuidedInteraction()) {
                         add(
                             TutorGuidanceEvent.Question(
@@ -1156,6 +1156,9 @@ internal fun TutorModelPanel(
                                 masteryRelevant = output.isMasteryRelevantTo(input),
                             ),
                         )
+                    }
+                    if (output.plan.interactionDirective.isEvidencePrompt()) {
+                        pendingDirectiveRequestId = task.request.requestId
                     }
                     currentCycleResponses
                         .firstOrNull { response -> response.turnOrdinal == input.turnOrdinal }
@@ -1168,14 +1171,46 @@ internal fun TutorModelPanel(
                                 ),
                             )
                         }
+                    tutorRespondTasks
+                        .filter { respondTask ->
+                            val respondInput = respondTask.request.input as? TutorRespondInput
+                            respondInput?.cycleOrdinal == input.cycleOrdinal &&
+                                respondInput.turnOrdinal == input.turnOrdinal
+                        }
+                        .sortedBy { respondTask ->
+                            (respondTask.request.input as TutorRespondInput).responseOrdinal
+                        }
+                        .forEach { respondTask ->
+                            val respondInput = respondTask.request.input as TutorRespondInput
+                            if (respondInput.studentMessage.isTutorHintRequest()) {
+                                add(TutorGuidanceEvent.Hint(respondTask.request.requestId))
+                            } else {
+                                pendingDirectiveRequestId?.let { requestId ->
+                                    add(
+                                        TutorGuidanceEvent.Evidence(
+                                            requestId = requestId,
+                                            selectionWasCorrect = true,
+                                        ),
+                                    )
+                                    pendingDirectiveRequestId = null
+                                }
+                            }
+                            val respondOutput =
+                                respondTask.output as? TutorRespondOutput ?: return@forEach
+                            if (respondOutput.solutionRevealed) {
+                                add(TutorGuidanceEvent.Exposure(respondTask.request.requestId))
+                                pendingDirectiveRequestId = null
+                            } else if (respondOutput.interactionDirective.isEvidencePrompt()) {
+                                add(
+                                    TutorGuidanceEvent.Question(
+                                        requestId = respondTask.request.requestId,
+                                        masteryRelevant = output.isMasteryRelevantTo(input),
+                                    ),
+                                )
+                                pendingDirectiveRequestId = respondTask.request.requestId
+                            }
+                        }
                 }
-            tutorRespondTasks
-                .filter { task ->
-                    val input = task.request.input as? TutorRespondInput
-                    input?.cycleOrdinal == currentInput.cycleOrdinal &&
-                        input.studentMessage.isTutorHintRequest()
-                }
-                .forEach { task -> add(TutorGuidanceEvent.Hint(task.request.requestId)) }
         }
     }
     val replayedGuidedState = remember(
@@ -1207,6 +1242,20 @@ internal fun TutorModelPanel(
         }
     }
     val effectiveExplanationMode = guidanceState.mode
+    val requestExplanationModeChange: (TutorExplanationMode) -> Unit = { mode ->
+        requestTutorExplanationModeChange(
+            mode = mode,
+            cancelPendingEvidence = {
+                TutorGuidancePolicy.transitionMode(
+                    guidanceState,
+                    TutorExplanationMode.DIRECT,
+                ).cancelEvidenceRequestId?.let(interactions::cancelEvidence)
+                pendingEvidenceJob?.cancel()
+                pendingEvidenceJob = null
+            },
+            persistMode = onExplanationModeChange,
+        )
+    }
     val respondSupported = currentProvider?.let { candidate ->
         candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
             candidate.supports(ModelTaskKind.TUTOR_RESPOND)
@@ -1929,7 +1978,7 @@ internal fun TutorModelPanel(
                 enabled = !chatSending && !interactionBusy,
                 sending = chatSending,
                 explanationMode = explanationMode,
-                onExplanationModeChange = onExplanationModeChange,
+                onExplanationModeChange = requestExplanationModeChange,
                 onCameraAttachment = onCameraAttachment,
                 onGalleryAttachment = onGalleryAttachment,
                 onLibraryAttachment = onLibraryAttachment,
@@ -1963,7 +2012,7 @@ internal fun TutorModelPanel(
             ) {
                 TutorGuidanceModeControl(
                     mode = explanationMode,
-                    onModeChange = onExplanationModeChange,
+                    onModeChange = requestExplanationModeChange,
                 )
             }
         }
@@ -2588,14 +2637,21 @@ private fun TutorTurnPlan.hasGuidedInteraction(): Boolean =
         null -> diagnosticItem != null
     }
 
+private fun TutorInteractionDirective?.isEvidencePrompt(): Boolean = when (this) {
+    is TutorInteractionDirective.Choices,
+    is TutorInteractionDirective.FreeResponse,
+    is TutorInteractionDirective.VisualTarget,
+    -> true
+    TutorInteractionDirective.Continue,
+    null,
+    -> false
+}
+
 private fun TutorPlanOutput.isMasteryRelevantTo(input: TutorPlanInput): Boolean {
-    if (plan.targetedEvidenceLabels.isEmpty()) return true
-    val evidenceByLabel = input.relevantLearningEvidence.associateBy { evidence ->
-        evidence.displayName
-    }
-    return plan.targetedEvidenceLabels.all { label ->
-        evidenceByLabel[label]?.level?.let { level -> level != TutorEvidenceLevel.MASTERED } == true
-    }
+    return masteryTargetsAreRelevant(
+        targetedEvidenceLabels = plan.targetedEvidenceLabels,
+        relevantLearningEvidence = input.relevantLearningEvidence,
+    )
 }
 
 private fun String.isTutorHintRequest(): Boolean =

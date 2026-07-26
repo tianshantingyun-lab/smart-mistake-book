@@ -26,6 +26,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 
 internal class RoomTutorInteractionRepository(
     private val database: StudyDatabasePort,
@@ -158,11 +159,11 @@ internal class RoomTutorInteractionRepository(
 }
 
 internal class TutorEvidenceWriteGate {
-    private val revokedRequestIds = ConcurrentHashMap.newKeySet<String>()
+    private val requests = ConcurrentHashMap<String, EvidenceWriteAuthorization>()
 
-    fun cancel(requestId: String) {
+    fun cancel(requestId: String): Boolean {
         require(requestId.isNotBlank())
-        revokedRequestIds += requestId
+        return requests.computeIfAbsent(requestId) { EvidenceWriteAuthorization() }.cancel()
     }
 
     suspend fun <T> persist(
@@ -171,14 +172,65 @@ internal class TutorEvidenceWriteGate {
         discard: suspend () -> Unit,
     ): T {
         currentCoroutineContext().ensureActive()
-        return withContext(NonCancellable) {
-            if (requestId in revokedRequestIds) throw TutorEvidenceRejectedException(requestId)
-            val value = write()
-            if (requestId in revokedRequestIds) {
-                discard()
-                throw TutorEvidenceRejectedException(requestId)
+        val authorization = requests.computeIfAbsent(requestId) { EvidenceWriteAuthorization() }
+        return when (authorization.begin()) {
+            EvidenceWriteBegin.REJECTED -> throw TutorEvidenceRejectedException(requestId)
+            EvidenceWriteBegin.REPLAY -> withContext(NonCancellable) { write() }
+            EvidenceWriteBegin.STARTED -> persistStarted(requestId, authorization, write, discard)
+        }
+    }
+
+    private suspend fun <T> persistStarted(
+        requestId: String,
+        authorization: EvidenceWriteAuthorization,
+        write: suspend () -> T,
+        discard: suspend () -> Unit,
+    ): T = withContext(NonCancellable) {
+        val value = write()
+        if (!authorization.finalizeWrite()) {
+            discard()
+            throw TutorEvidenceRejectedException(requestId)
+        }
+        value
+    }
+}
+
+private enum class EvidenceWriteState {
+    OPEN,
+    WRITING,
+    COMMITTED,
+    CANCELLED,
+}
+
+private enum class EvidenceWriteBegin {
+    STARTED,
+    REPLAY,
+    REJECTED,
+}
+
+private class EvidenceWriteAuthorization {
+    private val state = AtomicReference(EvidenceWriteState.OPEN)
+
+    fun begin(): EvidenceWriteBegin = when {
+        state.compareAndSet(EvidenceWriteState.OPEN, EvidenceWriteState.WRITING) ->
+            EvidenceWriteBegin.STARTED
+        state.get() == EvidenceWriteState.COMMITTED -> EvidenceWriteBegin.REPLAY
+        else -> EvidenceWriteBegin.REJECTED
+    }
+
+    fun finalizeWrite(): Boolean =
+        state.compareAndSet(EvidenceWriteState.WRITING, EvidenceWriteState.COMMITTED)
+
+    fun cancel(): Boolean {
+        while (true) {
+            when (val current = state.get()) {
+                EvidenceWriteState.COMMITTED,
+                EvidenceWriteState.CANCELLED,
+                -> return false
+                EvidenceWriteState.OPEN,
+                EvidenceWriteState.WRITING,
+                -> if (state.compareAndSet(current, EvidenceWriteState.CANCELLED)) return true
             }
-            value
         }
     }
 }

@@ -5,6 +5,8 @@ import com.tingyun.smartmistakebook.core.domain.TutorGuidanceRequest
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 
@@ -47,6 +49,8 @@ internal sealed interface TutorGuidanceEvent {
     ) : TutorGuidanceEvent
 
     data class Hint(override val requestId: String) : TutorGuidanceEvent
+
+    data class Exposure(override val requestId: String) : TutorGuidanceEvent
 }
 
 internal fun replayTutorGuidance(
@@ -84,6 +88,10 @@ internal fun replayTutorGuidance(
                 state,
                 TutorGuidanceRequest.hint(event.requestId, problem),
             ).state
+            is TutorGuidanceEvent.Exposure -> TutorGuidancePolicy.evaluate(
+                state,
+                TutorGuidanceRequest.directExplanation(event.requestId, problem),
+            ).state
         }
     }
     if (answerWasExposed || requestedMode == TutorExplanationMode.DIRECT) {
@@ -100,3 +108,23 @@ internal fun TutorGuidanceState.authorizeEvidence(requestId: String) =
         this,
         TutorGuidanceRequest.evidence(requestId, problem),
     )
+
+internal fun masteryTargetsAreRelevant(
+    targetedEvidenceLabels: List<String>,
+    relevantLearningEvidence: List<TutorKnowledgeEvidence>,
+): Boolean {
+    if (targetedEvidenceLabels.isEmpty()) return false
+    val evidenceByLabel = relevantLearningEvidence.associateBy(TutorKnowledgeEvidence::displayName)
+    return targetedEvidenceLabels.all { label ->
+        evidenceByLabel[label]?.level?.let { level -> level != TutorEvidenceLevel.MASTERED } == true
+    }
+}
+
+internal inline fun requestTutorExplanationModeChange(
+    mode: TutorExplanationMode,
+    cancelPendingEvidence: () -> Unit,
+    persistMode: (TutorExplanationMode) -> Unit,
+) {
+    if (mode == TutorExplanationMode.DIRECT) cancelPendingEvidence()
+    persistMode(mode)
+}

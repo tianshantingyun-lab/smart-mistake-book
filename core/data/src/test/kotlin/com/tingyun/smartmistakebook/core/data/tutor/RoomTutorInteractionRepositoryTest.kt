@@ -135,12 +135,37 @@ class RoomTutorInteractionRepositoryTest {
             }
 
             writeStarted.await()
-            gate.cancel("evidence-3")
+            assertTrue(gate.cancel("evidence-3"))
             releaseWrite.complete(Unit)
 
             val failure = runCatching { lateWrite.await() }.exceptionOrNull()
             assertTrue(failure is TutorEvidenceRejectedException)
             assertFalse(stored)
         }
+    }
+
+    @Test
+    fun `cancel reports whether it won the atomic evidence finalization race`() = runBlocking {
+        val gate = TutorEvidenceWriteGate()
+
+        assertEquals(
+            "stored",
+            gate.persist(
+                requestId = "evidence-finalized",
+                write = { "stored" },
+                discard = { error("Finalized evidence must not be discarded") },
+            ),
+        )
+
+        assertFalse(gate.cancel("evidence-finalized"))
+        assertTrue(gate.cancel("evidence-never-started"))
+        val failure = runCatching {
+            gate.persist(
+                requestId = "evidence-never-started",
+                write = { error("Revoked evidence must not start writing") },
+                discard = {},
+            )
+        }.exceptionOrNull()
+        assertTrue(failure is TutorEvidenceRejectedException)
     }
 }

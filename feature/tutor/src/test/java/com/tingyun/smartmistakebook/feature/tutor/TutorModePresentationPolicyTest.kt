@@ -5,6 +5,8 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceOutcome
 import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
 import org.junit.Assert.assertEquals
@@ -103,5 +105,57 @@ class TutorModePresentationPolicyTest {
 
         assertEquals(TutorExplanationMode.DIRECT, state.mode)
         assertNull(state.pendingEvidenceRequestId)
+    }
+
+    @Test
+    fun emptyMasteryTargetsFailClosedInsteadOfAuthorizingAQuestion() {
+        assertFalse(
+            masteryTargetsAreRelevant(
+                targetedEvidenceLabels = emptyList(),
+                relevantLearningEvidence = listOf(
+                    TutorKnowledgeEvidence(
+                        knowledgeNodeId = "node-1",
+                        displayName = "导数符号",
+                        level = TutorEvidenceLevel.LEARNING,
+                        independentCorrectLowerBound = 0.2,
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun directiveAnswersConsumeTheSameThreeQuestionBudgetAndClearPendingIdentity() {
+        val problem = TutorProblemScope("problem-1", 2)
+        val events = buildList {
+            repeat(3) { index ->
+                add(TutorGuidanceEvent.Question("directive-$index", masteryRelevant = true))
+                add(TutorGuidanceEvent.Evidence("directive-$index", selectionWasCorrect = true))
+            }
+        }
+
+        val state = replayTutorGuidance(
+            problem = problem,
+            requestedMode = TutorExplanationMode.GUIDED,
+            answerWasExposed = false,
+            events = events,
+        )
+
+        assertEquals(3, state.questionsAsked)
+        assertEquals(TutorExplanationMode.DIRECT, state.mode)
+        assertNull(state.pendingEvidenceRequestId)
+    }
+
+    @Test
+    fun modeChangeCancelsPendingEvidenceBeforePersistingTheSetting() {
+        val order = mutableListOf<String>()
+
+        requestTutorExplanationModeChange(
+            mode = TutorExplanationMode.DIRECT,
+            cancelPendingEvidence = { order += "cancel" },
+            persistMode = { order += "persist:$it" },
+        )
+
+        assertEquals(listOf("cancel", "persist:DIRECT"), order)
     }
 }
