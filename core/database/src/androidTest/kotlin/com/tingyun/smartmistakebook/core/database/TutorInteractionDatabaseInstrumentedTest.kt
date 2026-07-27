@@ -13,8 +13,10 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
+import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -106,6 +108,25 @@ class TutorInteractionDatabaseInstrumentedTest {
         assertTrue(revealed.solutionRevealed)
         assertEquals("CHANGE_REPRESENTATION", revealed.requestedMove)
         assertEquals(listOf(revealed), store.observeTutorTurnResponses(choice.sessionId).first())
+    }
+
+    @Test
+    fun durableEvidenceCancellationBlocksOnlyTheExactIdentity() = runBlocking {
+        val choice = choiceCommand()
+        val cancellation = PersistTutorEvidenceCancellationCommand(
+            learnerId = LEARNER_ID,
+            sessionId = choice.sessionId,
+            questionDocumentId = choice.questionDocumentId,
+            revisionNumber = choice.revisionNumber,
+            evidenceRequestId = "guided-request-1",
+            cancelledAtEpochMillis = 900,
+        )
+
+        store.recordTutorEvidenceCancellation(cancellation)
+
+        assertTrue(store.isTutorEvidenceCancelled(cancellation))
+        assertNull(store.recordTutorChoiceUnlessCancelled(choice, cancellation))
+        assertFalse(store.isTutorEvidenceCancelled(cancellation.copy(revisionNumber = 3)))
     }
 
     @Test
@@ -966,6 +987,35 @@ class TutorInteractionDatabaseInstrumentedTest {
         )
     }
 
+    @Test
+    fun versionThirtyMigratesAndPersistsEvidenceCancellationAcrossReopen() = runBlocking {
+        store.close()
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "tutor-cancellation-migration-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val cancellation = PersistTutorEvidenceCancellationCommand(
+            learnerId = LEARNER_ID,
+            sessionId = "migration-session",
+            questionDocumentId = "migration-question",
+            revisionNumber = 1,
+            evidenceRequestId = "migration-request",
+            cancelledAtEpochMillis = 500,
+        )
+        try {
+            createDatabaseFromExportedSchema(context, databaseName, version = 30)
+            var migrated = StudyDatabaseFactory.open(context, databaseName)
+            migrated.recordTutorEvidenceCancellation(cancellation)
+            migrated.close()
+
+            migrated = StudyDatabaseFactory.open(context, databaseName)
+            assertTrue(migrated.isTutorEvidenceCancelled(cancellation))
+            migrated.close()
+        } finally {
+            context.deleteDatabase(databaseName)
+            store = StudyDatabaseFactory.openInMemory(context)
+        }
+    }
+
     private fun visualTargetScene() = TutorVisualDocumentScene(
         sceneId = "visual-target",
         title = "目标选择",
@@ -1023,6 +1073,8 @@ class TutorInteractionDatabaseInstrumentedTest {
             cycleOrdinal = 1,
             turnOrdinal = 1,
             studentMessage = if (solutionRevealed) "请告诉我答案。" else "请继续解释。",
+            requestedMove = if (solutionRevealed) TutorMoveType.REVEAL_SOLUTION else null,
+            explanationMode = TutorExplanationMode.DIRECT,
         )
         persistSucceededModelTask(
             request = ModelTaskRequest(

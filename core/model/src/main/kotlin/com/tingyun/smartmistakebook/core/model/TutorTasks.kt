@@ -695,10 +695,9 @@ data class TutorRespondInput(
         require(turnOrdinal in 1..TutorPlanInput.MAX_TURNS) {
             "Tutor response turn ordinal exceeds the conversation budget"
         }
-        studentMessage.requireSafeModelText(
+        studentMessage.requireSafeTutorStudentMessage(
             "Tutor response student message",
             MAX_STUDENT_MESSAGE_CHARS,
-            true,
         )
         visibleTutorContextMarkdown?.requireTutorRespondText(
             "Tutor visible context",
@@ -890,6 +889,13 @@ data class TutorPlanOutput(
 
 /** Persistable model-authored reply to one bounded current-question student message. */
 @Serializable
+enum class TutorFreeResponseEvaluation {
+    CORRECT,
+    INCORRECT,
+    UNKNOWN,
+}
+
+@Serializable
 @SerialName("tutor_respond_output")
 data class TutorRespondOutput(
     val sessionId: String,
@@ -905,6 +911,11 @@ data class TutorRespondOutput(
     val visualRequest: TutorVisualGenerationRequest? = null,
     /** Optional v2 interaction contract; absent on legacy cached outputs. */
     val interactionDirective: TutorInteractionDirective? = null,
+    /**
+     * Structured evaluation of a student answer to the immediately preceding free-response
+     * directive. Legacy output and responses that are not validated answers remain UNKNOWN.
+     */
+    val freeResponseEvaluation: TutorFreeResponseEvaluation = TutorFreeResponseEvaluation.UNKNOWN,
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     val modelVersion: String,

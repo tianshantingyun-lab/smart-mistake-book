@@ -1,8 +1,10 @@
 package com.tingyun.smartmistakebook
 
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertContentDescriptionEquals
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -11,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
@@ -31,6 +34,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -38,6 +42,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assume.assumeTrue
@@ -54,12 +59,16 @@ import org.junit.runners.model.Statement
 class RootTutorFailClosedInstrumentedTest {
     private val repository = ControllableStudyExperienceRepository()
     private val repositoryRule = StudyRepositoryOverrideRule(repository)
-    private val composeRule = createAndroidComposeRule<MainActivity>()
+    private val explanationModeRule = TutorExplanationModeRule()
+    private val composeRule = createEmptyComposeRule()
+    private val activityRule = ActivityScenarioRule(MainActivity::class.java)
 
     @get:Rule
     val rules: RuleChain = RuleChain
         .outerRule(repositoryRule)
+        .around(explanationModeRule)
         .around(composeRule)
+        .around(activityRule)
 
     @Before
     fun requireTutorTeachingCapability() {
@@ -180,7 +189,8 @@ class RootTutorFailClosedInstrumentedTest {
 
         composeRule.onNodeWithTag("nav_review").performClick()
         waitForTag("review_progress")
-        composeRule.onNodeWithTag("review_progress").assertTextEquals("0 / 0")
+        composeRule.onNodeWithTag("review_progress")
+            .assertContentDescriptionEquals("今日进度，0 / 0")
         waitForText("今天没有待复习")
     }
 
@@ -188,9 +198,10 @@ class RootTutorFailClosedInstrumentedTest {
     fun savedCapturedQuestionReviewsTheExactOriginalWithoutInventingAnAnswer() {
         repository.publishCapturedReviewReady()
 
+        composeRule.onNodeWithTag("nav_review").performClick()
         waitForTag("review_scheduled_count")
-        composeRule.onNodeWithTag("review_scheduled_count").assertTextEquals("1")
-        waitForText("今日题量（道）")
+        composeRule.onNodeWithTag("review_scheduled_count")
+            .assertContentDescriptionEquals("今日题量，1 道")
         composeRule.onNodeWithTag("review_start_button").performClick()
         waitForTag("captured_review_session_root")
         waitForText(CAPTURED_QUESTION_MARKDOWN)
@@ -205,14 +216,22 @@ class RootTutorFailClosedInstrumentedTest {
     }
 
     private fun navigateToTutor() {
-        waitForTag("nav_tutor")
-        composeRule.onNodeWithTag("nav_tutor").performClick()
         waitForTag("root_tutor")
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tutor_guidance_toggle").assertIsSelected()
     }
 
     private fun waitForTag(tag: String) {
-        waitUntil {
-            composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        try {
+            waitUntil {
+                composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (failure: Throwable) {
+            throw AssertionError(
+                "Timed out waiting for tag '$tag'. Current semantics:\n" +
+                    composeRule.onRoot(useUnmergedTree = true).printToString(),
+                failure,
+            )
         }
     }
 
@@ -275,6 +294,29 @@ private class StudyRepositoryOverrideRule(
             } finally {
                 repositoryField.set(application, original)
                 replacement.close()
+            }
+        }
+    }
+}
+
+private class TutorExplanationModeRule : TestRule {
+    override fun apply(base: Statement, description: Description): Statement = object : Statement() {
+        override fun evaluate() {
+            val application = InstrumentationRegistry.getInstrumentation()
+                .targetContext
+                .applicationContext as SmartMistakeBookApplication
+            val originalMode = runBlocking {
+                application.tutorSettingsRepository.currentMode()
+            }
+            runBlocking {
+                application.tutorSettingsRepository.setMode(TutorExplanationMode.GUIDED)
+            }
+            try {
+                base.evaluate()
+            } finally {
+                runBlocking {
+                    application.tutorSettingsRepository.setMode(originalMode)
+                }
             }
         }
     }

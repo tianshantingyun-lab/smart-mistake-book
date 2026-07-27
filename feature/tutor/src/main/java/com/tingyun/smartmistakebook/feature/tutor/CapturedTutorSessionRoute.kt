@@ -52,6 +52,7 @@ import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.EndTutorSessionWithoutSaveRequest
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
+import com.tingyun.smartmistakebook.core.domain.CancelTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
@@ -1381,6 +1382,13 @@ internal fun TutorModelPanel(
             revisionNumber = question.revisionNumber,
         )
     }
+    fun evidenceCancellation(requestId: String) = CancelTutorEvidenceCommand(
+        sessionId = question.sessionId,
+        questionDocumentId = question.questionDocument.document.id,
+        revisionNumber = question.revisionNumber,
+        evidenceRequestId = requestId,
+        occurredAtEpochMillis = clock(),
+    )
     val guidanceEvents = remember(
         currentCycleTasks,
         currentCycleResponses,
@@ -1399,7 +1407,7 @@ internal fun TutorModelPanel(
                 .forEach { task ->
                     val input = task.request.input as TutorPlanInput
                     val output = task.output as? TutorPlanOutput ?: return@forEach
-                    var pendingDirectiveRequestId: String? = null
+                    var pendingDirective: Pair<String, TutorInteractionDirective>? = null
                     if (output.plan.hasGuidedInteraction()) {
                         add(
                             TutorGuidanceEvent.Question(
@@ -1409,7 +1417,8 @@ internal fun TutorModelPanel(
                         )
                     }
                     if (output.plan.interactionDirective.isEvidencePrompt()) {
-                        pendingDirectiveRequestId = task.request.requestId
+                        pendingDirective = task.request.requestId to
+                            requireNotNull(output.plan.interactionDirective)
                     }
                     currentCycleResponses
                         .firstOrNull { response -> response.turnOrdinal == input.turnOrdinal }
@@ -1437,7 +1446,7 @@ internal fun TutorModelPanel(
                                     selectionWasCorrect = evidence.selectionWasCorrect,
                                 ),
                             )
-                            pendingDirectiveRequestId = null
+                            pendingDirective = null
                         }
                     tutorRespondTasks
                         .filter { respondTask ->
@@ -1453,21 +1462,24 @@ internal fun TutorModelPanel(
                             if (respondInput.studentMessage.isTutorHintRequest()) {
                                 add(TutorGuidanceEvent.Hint(respondTask.request.requestId))
                             } else {
-                                pendingDirectiveRequestId?.let { requestId ->
-                                    add(
-                                        TutorGuidanceEvent.Evidence(
-                                            requestId = requestId,
-                                            selectionWasCorrect = true,
-                                        ),
-                                    )
-                                    pendingDirectiveRequestId = null
+                                val pending = pendingDirective
+                                val respondOutput =
+                                    respondTask.output as? TutorRespondOutput ?: return@forEach
+                                if (pending?.second is TutorInteractionDirective.FreeResponse) {
+                                    freeResponseEvidenceEvent(
+                                        requestId = pending.first,
+                                        output = respondOutput,
+                                    )?.let {
+                                        add(it)
+                                        pendingDirective = null
+                                    }
                                 }
                             }
                             val respondOutput =
                                 respondTask.output as? TutorRespondOutput ?: return@forEach
                             if (respondOutput.solutionRevealed) {
                                 add(TutorGuidanceEvent.Exposure(respondTask.request.requestId))
-                                pendingDirectiveRequestId = null
+                                pendingDirective = null
                             } else if (respondOutput.interactionDirective.isEvidencePrompt()) {
                                 add(
                                     TutorGuidanceEvent.Question(
@@ -1475,7 +1487,8 @@ internal fun TutorModelPanel(
                                         masteryRelevant = output.isMasteryRelevantTo(input),
                                     ),
                                 )
-                                pendingDirectiveRequestId = respondTask.request.requestId
+                                pendingDirective = respondTask.request.requestId to
+                                    requireNotNull(respondOutput.interactionDirective)
                                 visualEvidenceByRequestId[respondTask.request.requestId]
                                     ?.takeIf { evidence ->
                                         evidence.anchor == TutorVisualTurnAnchor(
@@ -1493,59 +1506,171 @@ internal fun TutorModelPanel(
                                                     evidence.selectionWasCorrect,
                                             ),
                                         )
-                                        pendingDirectiveRequestId = null
+                                        pendingDirective = null
                                     }
                             }
                         }
                 }
         }
     }
-    val replayedGuidedState = remember(
+    val replayedGuidanceTransition = remember(
         guidanceProblem,
         guidanceEvents,
     ) {
-        replayTutorGuidance(
+        replayTutorGuidanceTransition(
             problem = guidanceProblem,
             requestedMode = TutorExplanationMode.GUIDED,
             answerWasExposed = false,
             events = guidanceEvents,
         )
     }
-    val guidanceState = remember(
-        replayedGuidedState,
-        explanationMode,
-        answerExposureKeys,
+    val replayedCancellationRequestId =
+        replayedGuidanceTransition.cancelEvidenceRequestId
+            ?: replayedGuidanceTransition.state.pendingEvidenceRequestId
+    var locallyCancelledEvidenceRequestIds by remember(
+        question.sessionId,
+        question.questionDocument.document.id,
+        question.revisionNumber,
+        interactions,
     ) {
-        if (
-            explanationMode == TutorExplanationMode.DIRECT ||
-            answerExposureKeys.isNotEmpty()
-        ) {
-            TutorGuidancePolicy.transitionMode(
-                replayedGuidedState,
-                TutorExplanationMode.DIRECT,
-            ).state
+        mutableStateOf(emptySet<String>())
+    }
+    var cancellationPendingEvidenceRequestIds by remember(
+        question.sessionId,
+        question.questionDocument.document.id,
+        question.revisionNumber,
+        interactions,
+    ) {
+        mutableStateOf(emptySet<String>())
+    }
+    var replayedPendingIsCancelled by remember(
+        replayedCancellationRequestId,
+        interactions,
+    ) {
+        mutableStateOf<Boolean?>(
+            false.takeIf { replayedCancellationRequestId == null },
+        )
+    }
+    LaunchedEffect(replayedCancellationRequestId, interactions) {
+        val requestId = replayedCancellationRequestId
+        replayedPendingIsCancelled = if (requestId == null) {
+            false
         } else {
-            replayedGuidedState
+            runCatching {
+                interactions.isEvidenceCancelled(evidenceCancellation(requestId))
+            }.getOrNull()
         }
     }
+    val replayedCancellationConfirmed = when {
+        replayedCancellationRequestId in locallyCancelledEvidenceRequestIds -> true
+        else -> replayedPendingIsCancelled
+    }
+    val guidanceResolution = remember(
+        replayedGuidanceTransition,
+        explanationMode,
+        answerExposureKeys,
+        replayedCancellationConfirmed,
+    ) {
+        resolveTutorGuidanceMode(
+            replay = replayedGuidanceTransition,
+            requestedMode = explanationMode,
+            answerWasExposed = answerExposureKeys.isNotEmpty(),
+            cancellationConfirmed = replayedCancellationConfirmed,
+        )
+    }
+    val guidanceState = guidanceResolution.state
     val effectiveExplanationMode = guidanceState.mode
-    LaunchedEffect(activeStreamOwner, effectiveExplanationMode) {
+    val pendingInteractionBlocked =
+        guidanceResolution.blockPendingInteraction ||
+            (
+                replayedCancellationRequestId in cancellationPendingEvidenceRequestIds &&
+                    replayedCancellationConfirmed != true
+                )
+
+    fun cancellationIsConfirmed(requestId: String): Boolean =
+        requestId in locallyCancelledEvidenceRequestIds ||
+            (
+                requestId == replayedCancellationRequestId &&
+                    replayedPendingIsCancelled == true
+                )
+
+    fun pendingInteractionIsCurrentlyBlocked(): Boolean =
+        (
+            guidanceResolution.blockPendingInteraction &&
+                (
+                guidanceResolution.cancelEvidenceRequestId
+                    ?.let { !cancellationIsConfirmed(it) }
+                    ?: true
+                )
+            ) ||
+            (
+                replayedCancellationRequestId in cancellationPendingEvidenceRequestIds &&
+                    replayedCancellationRequestId?.let(::cancellationIsConfirmed) != true
+                )
+
+    fun beginEvidenceCancellation(requestId: String) {
+        cancellationPendingEvidenceRequestIds =
+            cancellationPendingEvidenceRequestIds + requestId
+        pendingEvidenceJob?.cancel()
+        pendingEvidenceJob = null
+        interactionBusy = false
+    }
+
+    suspend fun persistEvidenceCancellation(requestId: String) {
+        beginEvidenceCancellation(requestId)
+        if (!cancellationIsConfirmed(requestId)) {
+            interactions.cancelEvidence(evidenceCancellation(requestId))
+            locallyCancelledEvidenceRequestIds =
+                locallyCancelledEvidenceRequestIds + requestId
+        }
+        cancellationPendingEvidenceRequestIds =
+            cancellationPendingEvidenceRequestIds - requestId
+        if (requestId == replayedCancellationRequestId) {
+            replayedPendingIsCancelled = true
+        }
+        interactionError = null
+    }
+
+    LaunchedEffect(
+        guidanceResolution.cancelEvidenceRequestId,
+        replayedCancellationConfirmed,
+    ) {
+        val requestId = guidanceResolution.cancelEvidenceRequestId
+            ?: return@LaunchedEffect
+        if (!cancellationIsConfirmed(requestId)) {
+            runCatching {
+                persistEvidenceCancellation(requestId)
+            }.onFailure {
+                interactionError = "旧互动暂时没有安全关闭，请重试后再继续。"
+            }
+        }
+    }
+    LaunchedEffect(
+        activeStreamOwner,
+        effectiveExplanationMode,
+    ) {
         activeStreamOwner.updateMode(effectiveExplanationMode)
     }
     val requestExplanationModeChange: (TutorExplanationMode) -> Unit = { mode ->
-        activeStreamOwner.updateMode(mode)
-        requestTutorExplanationModeChange(
-            mode = mode,
-            cancelPendingEvidence = {
-                TutorGuidancePolicy.transitionMode(
-                    guidanceState,
-                    TutorExplanationMode.DIRECT,
-                ).cancelEvidenceRequestId?.let(interactions::cancelEvidence)
-                pendingEvidenceJob?.cancel()
-                pendingEvidenceJob = null
-            },
-            persistMode = onExplanationModeChange,
-        )
+        if (mode == TutorExplanationMode.DIRECT) {
+            val transition = TutorGuidancePolicy.transitionMode(
+                guidanceState,
+                TutorExplanationMode.DIRECT,
+            )
+            transition.cancelEvidenceRequestId?.let(::beginEvidenceCancellation)
+            scope.launch {
+                runCatching {
+                    transition.cancelEvidenceRequestId?.let {
+                        persistEvidenceCancellation(it)
+                    }
+                    onExplanationModeChange(mode)
+                }.onFailure {
+                    interactionError = "旧互动暂时没有安全关闭，请重试后再继续。"
+                }
+            }
+        } else {
+            onExplanationModeChange(mode)
+        }
     }
     val respondSupported = currentProvider?.let { candidate ->
         candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
@@ -2376,6 +2501,14 @@ internal fun TutorModelPanel(
         clearDraftOnPersist: Boolean = false,
     ) {
         val exactMessage = message
+        if (
+            exactMessage.isBlank() ||
+            chatSending ||
+            interactionBusy ||
+            pendingInteractionIsCurrentlyBlocked()
+        ) {
+            return
+        }
         if (exactMessage.isTutorHintRequest()) {
             val hint = TutorGuidancePolicy.evaluate(
                 guidanceState,
@@ -2385,12 +2518,56 @@ internal fun TutorModelPanel(
                 ),
             )
             if (hint.outcome == TutorGuidanceOutcome.DIRECT_EXPLANATION) {
-                observedTask.toPlanSolutionPreviewKey()?.let { key ->
-                    planSolutionPreviewKeys = planSolutionPreviewKeys + key
+                val transition = TutorGuidancePolicy.transitionMode(
+                    guidanceState,
+                    TutorExplanationMode.DIRECT,
+                )
+                val previewKey = observedTask.toPlanSolutionPreviewKey()
+                transition.cancelEvidenceRequestId?.let(::beginEvidenceCancellation)
+                scope.launch {
+                    runCatching {
+                        transition.cancelEvidenceRequestId?.let {
+                            persistEvidenceCancellation(it)
+                        }
+                        previewKey?.let { key ->
+                            planSolutionPreviewKeys = planSolutionPreviewKeys + key
+                        }
+                    }.onFailure {
+                        interactionError = "旧互动暂时没有安全关闭，请重试后再继续。"
+                    }
                 }
                 return
             }
         }
+        val requestTransition = tutorResponseModeTransitionFor(
+            state = guidanceState,
+            studentMessage = exactMessage,
+        )
+        val requestMode = requestTransition.state.mode
+        requestTransition.cancelEvidenceRequestId
+            ?.takeUnless(::cancellationIsConfirmed)
+            ?.let { requestId ->
+                beginEvidenceCancellation(requestId)
+                scope.launch {
+                    runCatching {
+                        continueTutorResponseAfterEvidenceCancellation(
+                            cancelEvidenceRequestId = requestId,
+                            cancellationConfirmed = false,
+                            cancelEvidence = ::persistEvidenceCancellation,
+                            continueResponse = {
+                                executeTutorResponse(
+                                    message = message,
+                                    requestedMove = requestedMove,
+                                    clearDraftOnPersist = clearDraftOnPersist,
+                                )
+                            },
+                        )
+                    }.onFailure {
+                        interactionError = "旧互动暂时没有安全关闭，请重试后再继续。"
+                    }
+                }
+                return
+            }
         val pendingResponseAction = pendingEgressState.action
             as? PendingTutorEgressAction.NewResponse
         when (val pendingAction = pendingEgressState.action) {
@@ -2412,7 +2589,6 @@ internal fun TutorModelPanel(
             candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
                 candidate.supports(ModelTaskKind.TUTOR_RESPOND)
         } ?: return
-        if (exactMessage.isBlank() || chatSending) return
         val responseCycleOrdinal = currentInput.cycleOrdinal
         val responseTurnOrdinal = currentInput.turnOrdinal
         val approvalNow = clock()
@@ -2442,66 +2618,65 @@ internal fun TutorModelPanel(
         val currentResponseForRequest = currentResponse
         val answerWasExposed = observedTask.toPlanAnswerExposureKey() in
             exposureKeysForRequest
-        val requestMode = tutorResponseModeFor(
-            currentMode = effectiveExplanationMode,
-            studentMessage = exactMessage,
-        )
-        startTutorRespondStream(
-            studentMessage = exactMessage,
-            startsNewTurn = true,
-            clearDraftOnPersist = clearDraftOnPersist,
-            clearPendingActionOnPersist = pendingResponseAction,
-        ) {
-            val lastResponseOrdinal = tasksForRequest.maxOfOrNull { task ->
-                (task.request.input as? TutorRespondInput)?.responseOrdinal ?: 0
-            } ?: 0
-            val responseOrdinal = lastResponseOrdinal + 1
-            val priorMessages: List<TutorChatHistoryEntry> = tutorChatHistory(
-                tasksForRequest,
-                answerExposureKeys = exposureKeysForRequest,
-            )
-            val visibleContext = visibleTutorContextMarkdown(
-                visiblePlan,
-                currentResponseForRequest,
-                answerWasExposed = answerWasExposed,
-            )
-            val attempt = tasksForRequest.count { task ->
-                (task.request.input as? TutorRespondInput)?.responseOrdinal == responseOrdinal
+        val startResponse = {
+            startTutorRespondStream(
+                studentMessage = exactMessage,
+                startsNewTurn = true,
+                clearDraftOnPersist = clearDraftOnPersist,
+                clearPendingActionOnPersist = pendingResponseAction,
+            ) {
+                val lastResponseOrdinal = tasksForRequest.maxOfOrNull { task ->
+                    (task.request.input as? TutorRespondInput)?.responseOrdinal ?: 0
+                } ?: 0
+                val responseOrdinal = lastResponseOrdinal + 1
+                val priorMessages: List<TutorChatHistoryEntry> = tutorChatHistory(
+                    tasksForRequest,
+                    answerExposureKeys = exposureKeysForRequest,
+                )
+                val visibleContext = visibleTutorContextMarkdown(
+                    visiblePlan,
+                    currentResponseForRequest,
+                    answerWasExposed = answerWasExposed,
+                )
+                val attempt = tasksForRequest.count { task ->
+                    (task.request.input as? TutorRespondInput)?.responseOrdinal == responseOrdinal
+                }
+                val requestId = tutorRespondRequestId(
+                    question = question,
+                    provider = providerForExecution,
+                    responseOrdinal = responseOrdinal,
+                    cycleOrdinal = responseCycleOrdinal,
+                    turnOrdinal = responseTurnOrdinal,
+                    studentMessage = exactMessage,
+                    visibleTutorContextMarkdown = visibleContext,
+                    priorMessages = priorMessages,
+                    requestedMove = requestedMove,
+                    explanationMode = requestMode,
+                    attempt = attempt,
+                )
+                val occurredAt = maxOf(
+                    clock(),
+                    tasksForRequest.maxOfOrNull { it.createdAtEpochMillis + 1 } ?: 0L,
+                )
+                buildTutorRespondRequest(
+                    question = question,
+                    profile = profile,
+                    provider = providerForExecution,
+                    requestId = requestId,
+                    occurredAtEpochMillis = occurredAt,
+                    approvedAtEpochMillis = externalApprovedAt ?: occurredAt,
+                    responseOrdinal = responseOrdinal,
+                    cycleOrdinal = responseCycleOrdinal,
+                    turnOrdinal = responseTurnOrdinal,
+                    studentMessage = exactMessage,
+                    visibleTutorContextMarkdown = visibleContext,
+                    priorMessages = priorMessages,
+                    requestedMove = requestedMove,
+                    explanationMode = requestMode,
+                )
             }
-            val requestId = tutorRespondRequestId(
-                question = question,
-                provider = providerForExecution,
-                responseOrdinal = responseOrdinal,
-                cycleOrdinal = responseCycleOrdinal,
-                turnOrdinal = responseTurnOrdinal,
-                studentMessage = exactMessage,
-                visibleTutorContextMarkdown = visibleContext,
-                priorMessages = priorMessages,
-                requestedMove = requestedMove,
-                explanationMode = requestMode,
-                attempt = attempt,
-            )
-            val occurredAt = maxOf(
-                clock(),
-                tasksForRequest.maxOfOrNull { it.createdAtEpochMillis + 1 } ?: 0L,
-            )
-            buildTutorRespondRequest(
-                question = question,
-                profile = profile,
-                provider = providerForExecution,
-                requestId = requestId,
-                occurredAtEpochMillis = occurredAt,
-                approvedAtEpochMillis = externalApprovedAt ?: occurredAt,
-                responseOrdinal = responseOrdinal,
-                cycleOrdinal = responseCycleOrdinal,
-                turnOrdinal = responseTurnOrdinal,
-                studentMessage = exactMessage,
-                visibleTutorContextMarkdown = visibleContext,
-                priorMessages = priorMessages,
-                requestedMove = requestedMove,
-                explanationMode = requestMode,
-            )
         }
+        startResponse()
     }
 
     fun retryTutorResponse(task: ModelTaskSnapshot) {
@@ -2633,7 +2808,13 @@ internal fun TutorModelPanel(
     }
 
     fun revealCurrentSolution(afterPreviewed: () -> Unit = {}) {
-        if (interactionBusy || responseActionAwaitingAuthorization) return
+        if (
+            interactionBusy ||
+            pendingInteractionIsCurrentlyBlocked() ||
+            responseActionAwaitingAuthorization
+        ) {
+            return
+        }
         if (currentResponse?.solutionRevealed != true) {
             val previewKey = observedTask.toPlanSolutionPreviewKey() ?: return
             planSolutionPreviewKeys = planSolutionPreviewKeys + previewKey
@@ -2649,19 +2830,6 @@ internal fun TutorModelPanel(
             observedTask.toPlanSolutionPreviewKey()?.let { key ->
                 planSolutionPreviewKeys = planSolutionPreviewKeys + key
             }
-        }
-    }
-    LaunchedEffect(explanationMode, replayedGuidedState.pendingEvidenceRequestId) {
-        if (explanationMode == TutorExplanationMode.DIRECT) {
-            val transition = TutorGuidancePolicy.transitionMode(
-                replayedGuidedState,
-                TutorExplanationMode.DIRECT,
-            )
-            transition.cancelEvidenceRequestId?.let(interactions::cancelEvidence)
-            pendingEvidenceJob?.cancel()
-            pendingEvidenceJob = null
-            interactionBusy = false
-            interactionError = null
         }
     }
     LaunchedEffect(
@@ -2712,6 +2880,7 @@ internal fun TutorModelPanel(
         if (
             !evidence.mayWriteLearningEvidence ||
             output == null || item == null || evaluation == null || interactionBusy ||
+            pendingInteractionIsCurrentlyBlocked() ||
             responseActionAwaitingAuthorization
         ) {
             return
@@ -2774,6 +2943,7 @@ internal fun TutorModelPanel(
             !guidanceState.authorizeEvidence(requestId)
                 .mayWriteLearningEvidence ||
             interactionBusy ||
+            pendingInteractionIsCurrentlyBlocked() ||
             responseActionAwaitingAuthorization
         ) {
             return
@@ -2825,6 +2995,7 @@ internal fun TutorModelPanel(
         if (
             effectiveExplanationMode != TutorExplanationMode.GUIDED ||
             interactionBusy ||
+            pendingInteractionIsCurrentlyBlocked() ||
             responseActionAwaitingAuthorization
         ) {
             return
@@ -2910,14 +3081,24 @@ internal fun TutorModelPanel(
     }
 
     val conversationListState = rememberLazyListState()
-    fun solutionBottomModifier(stableId: String): Modifier = Modifier
-        .testTag("tutor_solution_bottom_$stableId")
-        .onGloballyPositioned { coordinates ->
-            solutionExposureTracker.updateSolutionBottomBounds(
-                stableId = stableId,
-                bounds = coordinates.boundsInWindow(clipBounds = false),
-            )
+    @Composable
+    fun solutionBottomModifier(stableId: String): Modifier {
+        val anchorToken = remember(stableId) { Any() }
+        DisposableEffect(solutionExposureTracker, stableId, anchorToken) {
+            onDispose {
+                solutionExposureTracker.removeSolutionBottomBounds(stableId, anchorToken)
+            }
         }
+        return Modifier
+            .testTag("tutor_solution_bottom_$stableId")
+            .onGloballyPositioned { coordinates ->
+                solutionExposureTracker.updateSolutionBottomBounds(
+                    stableId = stableId,
+                    token = anchorToken,
+                    bounds = coordinates.boundsInWindow(clipBounds = false),
+                )
+            }
+    }
     val activeRequestId = activeMessage?.identity?.requestId
     val activeReplyExists = timeline.any { timelineItem ->
         timelineItem is TutorConversationTimelineItem.Reply &&
@@ -2955,7 +3136,7 @@ internal fun TutorModelPanel(
         {
             TutorChatComposer(
                 value = chatDraft,
-                enabled = !chatSending && !interactionBusy,
+                enabled = !chatSending && !interactionBusy && !pendingInteractionBlocked,
                 sending = chatSending,
                 explanationMode = explanationMode,
                 onExplanationModeChange = requestExplanationModeChange,
@@ -2999,6 +3180,27 @@ internal fun TutorModelPanel(
     } else {
         null
     }
+    val pendingPlanAction = pendingEgressState.action as? PendingTutorEgressAction.Plan
+    val showActiveReply = activeMessage != null && !activeReplyExists
+    val showPlanRecoveryDisclosure =
+        (planFreshApprovalTask != null || pendingPlanAction != null) &&
+            executablePlanProvider?.executionLocation ==
+            ModelExecutionLocation.EXTERNAL_PROVIDER
+    val showVisualRetryDisclosure =
+        pendingVisualRetry != null &&
+            currentProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
+    val showRespondDisclosure =
+        respondSupported && currentPlanOutput != null && !respondAuthorized &&
+            planFreshApprovalTask == null && pendingVisualRetry == null
+    val showChatStartError = composerContent == null && chatStartError != null
+    val expectedConversationItemCount =
+        2 +
+            timeline.size +
+            (if (showActiveReply) 1 else 0) +
+            (if (showPlanRecoveryDisclosure) 1 else 0) +
+            (if (showVisualRetryDisclosure) 1 else 0) +
+            (if (showRespondDisclosure) 1 else 0) +
+            (if (showChatStartError) 1 else 0)
 
     TutorConversationFrame(
         header = headerContent,
@@ -3008,6 +3210,7 @@ internal fun TutorModelPanel(
             chatStartError,
             activeMessage?.renderVersion,
         ),
+        expectedItemCount = expectedConversationItemCount,
         forceFollowToken = activeMessage?.turnVersion,
         blockAutoFollowToken = listOf(
             solutionExposureTracker.blockAutoFollowToken,
@@ -3065,10 +3268,11 @@ internal fun TutorModelPanel(
                             timelineItem.task.request.requestId,
                         interactionEnabled = isTail && isCurrentTurn &&
                             planFreshApprovalTask == null &&
+                            !pendingInteractionBlocked &&
                             !responseActionAwaitingAuthorization,
                         executionMatchesCurrentProvider = executionMatches,
                         splitChoiceFeedback = true,
-                        interactionBusy = interactionBusy,
+                        interactionBusy = interactionBusy || pendingInteractionBlocked,
                         interactionError = interactionError.takeIf { isTail && isCurrentTurn },
                         onRetry = ::retryCurrentPlan,
                         onRetryVisual = {
@@ -3083,6 +3287,7 @@ internal fun TutorModelPanel(
                             effectiveExplanationMode == TutorExplanationMode.GUIDED &&
                             guidanceState.hintsUsed < TutorGuidancePolicy.MAX_HINTS &&
                             respondSupported && respondAuthorized && !chatSending &&
+                            !pendingInteractionBlocked &&
                             !responseActionAwaitingAuthorization
                         ) {
                             {
@@ -3130,8 +3335,9 @@ internal fun TutorModelPanel(
                             showDirectExplanation = isCurrentTurn &&
                                 effectiveExplanationMode == TutorExplanationMode.DIRECT,
                             interactionEnabled = isTail && isCurrentTurn &&
+                                !pendingInteractionBlocked &&
                                 !responseActionAwaitingAuthorization,
-                            interactionBusy = interactionBusy,
+                            interactionBusy = interactionBusy || pendingInteractionBlocked,
                             interactionError = interactionError.takeIf { isTail && isCurrentTurn },
                             onContinue = ::continueCurrentTurn,
                             onRevealSolution = { revealCurrentSolution() },
@@ -3180,6 +3386,7 @@ internal fun TutorModelPanel(
                         interactionEnabled = isTail && taskAllowsInteraction &&
                             executionMatches && respondAuthorized &&
                             !chatSending && !interactionBusy &&
+                            !pendingInteractionBlocked &&
                             !responseActionAwaitingAuthorization,
                         recoveryEnabled = recoveryEnabled &&
                             !responseActionAwaitingAuthorization,
@@ -3256,7 +3463,7 @@ internal fun TutorModelPanel(
                 }
             }
         }
-        if (activeMessage != null && !activeReplyExists) {
+        if (showActiveReply) {
             item("tutor_active_reply_${activeMessage.turnVersion}") {
                 TutorActiveChatExchange(
                     message = activeMessage,
@@ -3264,11 +3471,7 @@ internal fun TutorModelPanel(
                 )
             }
         }
-        val pendingPlanAction = pendingEgressState.action as? PendingTutorEgressAction.Plan
-        if (
-            (planFreshApprovalTask != null || pendingPlanAction != null) &&
-            executablePlanProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
-        ) {
+        if (showPlanRecoveryDisclosure) {
             item("tutor_plan_recovery_disclosure") {
                 TutorDisclosureCard(
                     provider = requireNotNull(executablePlanProvider),
@@ -3327,10 +3530,7 @@ internal fun TutorModelPanel(
                 )
             }
         }
-        if (
-            pendingVisualRetry != null &&
-            currentProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
-        ) {
+        if (showVisualRetryDisclosure) {
             item("tutor_visual_retry_disclosure") {
                 TutorDisclosureCard(
                     provider = requireNotNull(currentProvider),
@@ -3374,10 +3574,7 @@ internal fun TutorModelPanel(
                 )
             }
         }
-        if (
-            respondSupported && currentPlanOutput != null && !respondAuthorized &&
-            planFreshApprovalTask == null && pendingVisualRetry == null
-        ) {
+        if (showRespondDisclosure) {
             item("tutor_respond_disclosure") {
                 TutorRespondDisclosureCard(
                     provider = requireNotNull(currentProvider),
@@ -3451,7 +3648,7 @@ internal fun TutorModelPanel(
                 )
             }
         }
-        if (composerContent == null && chatStartError != null) {
+        if (showChatStartError) {
             item("tutor_chat_start_error") {
                 Text(
                     text = requireNotNull(chatStartError),

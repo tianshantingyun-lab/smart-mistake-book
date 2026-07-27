@@ -983,6 +983,21 @@ data class PersistTutorChoiceCommand(
     }
 }
 
+data class PersistTutorEvidenceCancellationCommand(
+    val learnerId: String,
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val evidenceRequestId: String,
+    val cancelledAtEpochMillis: Long,
+) {
+    init {
+        require(learnerId.isNotBlank() && sessionId.isNotBlank() && questionDocumentId.isNotBlank())
+        require(revisionNumber > 0 && evidenceRequestId.isNotBlank())
+        require(cancelledAtEpochMillis >= 0)
+    }
+}
+
 data class TutorVisualTargetEvidenceRecord(
     val sessionId: String,
     val questionDocumentId: String,
@@ -1763,6 +1778,11 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     suspend fun recordTutorChoice(command: PersistTutorChoiceCommand): TutorTurnResponseRecord =
         throw UnsupportedOperationException("Tutor response writes are not implemented")
 
+    suspend fun recordTutorChoiceUnlessCancelled(
+        command: PersistTutorChoiceCommand,
+        cancellation: PersistTutorEvidenceCancellationCommand,
+    ): TutorTurnResponseRecord? = recordTutorChoice(command)
+
     suspend fun discardTutorChoice(command: PersistTutorChoiceCommand): Boolean = false
 
     suspend fun recordTutorVisualTargetEvidence(
@@ -1770,6 +1790,19 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     ): TutorVisualTargetEvidenceRecord = throw UnsupportedOperationException(
         "Tutor visual-target evidence writes are not implemented",
     )
+
+    suspend fun recordTutorVisualTargetEvidenceUnlessCancelled(
+        command: PersistTutorVisualTargetEvidenceCommand,
+        cancellation: PersistTutorEvidenceCancellationCommand,
+    ): TutorVisualTargetEvidenceRecord? = recordTutorVisualTargetEvidence(command)
+
+    suspend fun recordTutorEvidenceCancellation(
+        command: PersistTutorEvidenceCancellationCommand,
+    ) = Unit
+
+    suspend fun isTutorEvidenceCancelled(
+        command: PersistTutorEvidenceCancellationCommand,
+    ): Boolean = false
 
     suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord =
         throw UnsupportedOperationException("Tutor move writes are not implemented")

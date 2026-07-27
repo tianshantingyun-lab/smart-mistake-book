@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import com.tingyun.smartmistakebook.core.model.InvalidTutorStudentMessageException
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
@@ -652,7 +653,7 @@ class TutorActiveStreamOwnerTest {
         val owner = owner(dispatcher)
 
         owner.submit(studentMessage = "含有\u202E字符") {
-            throw IllegalArgumentException("unsafe bidi control")
+            throw InvalidTutorStudentMessageException("unsafe bidi control")
         }
         runCurrent()
 
@@ -663,6 +664,35 @@ class TutorActiveStreamOwnerTest {
         assertFalse(failed.retryable)
         assertTrue(failed.failureDetail?.contains("修改") == true)
         assertTrue(failed.recoveryActions.isEmpty())
+        owner.close()
+    }
+
+    @Test
+    fun outputContractIllegalArgumentFailureUsesTheNormalRecoveryPath() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+
+        owner.submit(studentMessage = "继续") {
+            prepared("request-output-contract") { identity ->
+                flow {
+                    emit(TutorStreamEvent.Started(identity))
+                    throw IllegalArgumentException(
+                        "Invalid model task completion: TUTOR_INTENT_BOUNDARY_VIOLATION",
+                    )
+                }
+            }
+        }
+        runCurrent()
+
+        val failed = requireNotNull(owner.state.value.active)
+        assertEquals(TutorActiveStreamPhase.FAILED, failed.phase)
+        assertTrue(failed.durablyStarted)
+        assertTrue(failed.retryable)
+        assertEquals(null, failed.failureDetail)
+        assertEquals(
+            listOf(TutorActiveStreamRecovery.RETRY),
+            failed.recoveryActions,
+        )
         owner.close()
     }
 

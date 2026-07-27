@@ -157,6 +157,7 @@ private val END_SESSION_MARKERS = setOf("结束", "暂停", "先到这里", "停
 private val BLOCK_WRITE_MARKERS = setOf(
     "这题不记",
     "这次不记",
+    "这次别记",
     "不要记入",
     "别记入",
     "不记入错题",

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -838,13 +840,18 @@ internal fun TutorComposer(
     placeholder: String = "输入你的推导、困惑或新问题",
     enabled: Boolean = true,
 ) {
+    val composerHeight = if (LocalDensity.current.fontScale <= 1f) {
+        Modifier.height(SmartDimens.ComposerHeight)
+    } else {
+        Modifier.heightIn(min = SmartDimens.ComposerHeight)
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(SmartDimens.ComposerHeight)
+                .then(composerHeight)
                 .testTag("tutor_draft_input"),
             placeholder = { Text(placeholder) },
             enabled = enabled,

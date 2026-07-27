@@ -3,10 +3,12 @@ package com.tingyun.smartmistakebook
 import android.content.ContentValues
 import android.graphics.Bitmap
 import android.provider.MediaStore
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
@@ -30,11 +32,14 @@ class RootVisualCaptureInstrumentedTest {
 
     @Test
     fun captureAllFourCurrentRootDestinations() {
-        waitForTag("root_review")
-        capture("root-review-current.png")
-
-        navigateAndCapture("nav_tutor", "root_tutor", "root-tutor-current.png")
-        navigateAndCapture("nav_library", "root_library", "root-library-current.png")
+        waitForTag("root_tutor")
+        assertTextFieldSupportsConfiguredFontScale("tutor_draft_input")
+        capture("root-tutor-current.png")
+        navigateAndCapture("nav_review", "root_review", "root-review-current.png")
+        composeRule.onNodeWithTag("nav_library").performClick()
+        waitForTag("root_library")
+        assertTextFieldSupportsConfiguredFontScale("library_search_field")
+        capture("root-library-current.png")
         navigateAndCapture("nav_profile", "root_profile", "root-profile-current.png")
     }
 
@@ -49,6 +54,16 @@ class RootVisualCaptureInstrumentedTest {
         composeRule.waitUntil(timeoutMillis = 20_000) {
             composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
         }
+    }
+
+    private fun assertTextFieldSupportsConfiguredFontScale(tag: String) {
+        val fontScale = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .resources
+            .configuration
+            .fontScale
+        val minimumHeight = if (fontScale >= 2f) 72.dp else 48.dp
+        composeRule.onNodeWithTag(tag).assertHeightIsAtLeast(minimumHeight)
     }
 
     private fun capture(displayName: String) {

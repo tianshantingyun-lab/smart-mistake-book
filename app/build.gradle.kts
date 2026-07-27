@@ -3,6 +3,17 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+configurations.configureEach {
+    if (name.contains("Benchmark", ignoreCase = true)) {
+        resolutionStrategy.force(
+            "androidx.tracing:tracing-perfetto:1.0.0",
+            "androidx.tracing:tracing-perfetto-binary:1.0.0",
+            "androidx.tracing:tracing-perfetto-common:1.0.0",
+            "androidx.tracing:tracing-perfetto-handshake:1.0.0",
+        )
+    }
+}
+
 android {
     namespace = "com.tingyun.smartmistakebook"
     compileSdk = 37
@@ -38,6 +49,12 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
         }
     }
 
@@ -80,7 +97,11 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.androidx.profileinstaller)
 
+    add("benchmarkImplementation", platform(libs.compose.bom))
+    add("benchmarkImplementation", libs.compose.runtime.tracing)
+    add("benchmarkImplementation", libs.androidx.tracing.perfetto)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
     androidTestImplementation(platform(libs.compose.bom))

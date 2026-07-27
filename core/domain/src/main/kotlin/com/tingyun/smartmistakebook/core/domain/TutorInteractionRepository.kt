@@ -128,6 +128,21 @@ data class RecordTutorChoiceCommand(
     }
 }
 
+data class CancelTutorEvidenceCommand(
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val evidenceRequestId: String,
+    val occurredAtEpochMillis: Long,
+) {
+    init {
+        require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
+        require(revisionNumber > 0)
+        require(evidenceRequestId.isNotBlank())
+        require(occurredAtEpochMillis >= 0)
+    }
+}
+
 data class TutorVisualTargetEvidence(
     val sessionId: String,
     val questionDocumentId: String,
@@ -282,6 +297,13 @@ interface TutorInteractionRepository {
 
     /** Revokes one exact guided-evidence request until storage authorization becomes irrevocable. */
     fun cancelEvidence(requestId: String) = Unit
+
+    /** Durable exact-identity tombstone; implementations must never resurrect or clear it. */
+    suspend fun cancelEvidence(command: CancelTutorEvidenceCommand) {
+        cancelEvidence(command.evidenceRequestId)
+    }
+
+    suspend fun isEvidenceCancelled(command: CancelTutorEvidenceCommand): Boolean = false
 
     suspend fun recordMove(command: RecordTutorMoveCommand): TutorTurnResponse
 

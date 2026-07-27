@@ -46,6 +46,7 @@ import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorFreeResponseEvaluation
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorComparisonScene
 import com.tingyun.smartmistakebook.core.model.TutorCircularMotionScene
@@ -1039,6 +1040,34 @@ class OpenAiCompatibleModelGatewayTest {
         val safeDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
         assertEquals("写下你认为下一步该做什么。", safeDirective.promptMarkdown)
     }
+
+    @Test
+    fun tutorResponseDecodesExplicitFreeResponseEvaluationAndDefaultsLegacyOutputToUnknown() =
+        runBlocking {
+            val continueDirective = buildJsonObject {
+                put("kind", "CONTINUE")
+            }
+            val incorrect = parsedTutorResponse(
+                tutorRespondPayload(
+                    messageMarkdown = "这一步还不对，请回到符号判断。",
+                    solutionRevealed = false,
+                    freeResponseEvaluation = TutorFreeResponseEvaluation.INCORRECT,
+                    extraTopLevel = "interactionDirective" to continueDirective,
+                ),
+                explanationMode = TutorExplanationMode.GUIDED,
+            )
+            val legacy = parsedTutorResponse(
+                tutorRespondPayload(
+                    messageMarkdown = "继续看当前题。",
+                    solutionRevealed = false,
+                    extraTopLevel = "interactionDirective" to continueDirective,
+                ),
+                explanationMode = TutorExplanationMode.GUIDED,
+            )
+
+            assertEquals(TutorFreeResponseEvaluation.INCORRECT, incorrect.freeResponseEvaluation)
+            assertEquals(TutorFreeResponseEvaluation.UNKNOWN, legacy.freeResponseEvaluation)
+        }
 
     @Test
     fun messageFirstDirectResponseCompletesWithoutPreview() = runBlocking {
@@ -2520,12 +2549,14 @@ class OpenAiCompatibleModelGatewayTest {
         visualScene: JsonElement? = null,
         nextMoves: JsonElement? = null,
         intentDecision: JsonElement? = tutorIntentPayload(),
+        freeResponseEvaluation: TutorFreeResponseEvaluation? = null,
         extraTopLevel: Pair<String, JsonElement>? = null,
     ): String = Json.encodeToString(
         buildJsonObject {
             intentDecision?.let { put("intentDecision", it) }
             put("solutionRevealed", solutionRevealed)
             put("messageMarkdown", messageMarkdown)
+            freeResponseEvaluation?.let { put("freeResponseEvaluation", it.name) }
             visualScene?.let { put("visualScene", it) }
             nextMoves?.let { put("nextMoves", it) }
             extraTopLevel?.let { (key, value) -> put(key, value) }
@@ -2920,10 +2951,13 @@ class OpenAiCompatibleModelGatewayTest {
         return gateway.execute(authorizedTutor(gateway)).toList()
     }
 
-    private suspend fun parsedTutorResponse(payload: String): TutorRespondOutput =
+    private suspend fun parsedTutorResponse(
+        payload: String,
+        explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+    ): TutorRespondOutput =
         executeTutorRespondPayload(
             payload = payload,
-            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+            input = tutorRespondInput().copy(explanationMode = explanationMode),
         ).last()
             .let { it as ModelGatewayEvent.Completed }
             .output as TutorRespondOutput

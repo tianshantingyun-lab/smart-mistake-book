@@ -135,13 +135,12 @@ class TutorVisualDocumentInstrumentedTest {
 
         composeRule.onNodeWithContentDescription("专注查看").performScrollTo().performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithContentDescription("查看原图").performScrollTo().performClick()
         composeRule.onNodeWithContentDescription("图不对").performScrollTo().performClick()
+        composeRule.onNodeWithContentDescription("查看原图").performScrollTo().performClick()
         composeRule.runOnIdle {
             assertEquals(1, originalClicks)
             assertEquals(1, reportClicks)
         }
-        composeRule.onNodeWithContentDescription("返回").performClick()
         composeRule.onNodeWithTag(
             "tutor-visual-v2-panel-diagram_panel",
             useUnmergedTree = true,

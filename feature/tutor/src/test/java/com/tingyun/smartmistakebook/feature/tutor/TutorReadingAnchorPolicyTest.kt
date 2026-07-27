@@ -32,8 +32,8 @@ class TutorReadingAnchorPolicyTest {
     }
 
     @Test
-    fun aStudentSendFollowsOnlyWhenTheReaderWasNearTheBottom() {
-        assertFalse(
+    fun aStudentSendAlwaysReturnsToTheNewMessageAtTheTail() {
+        assertTrue(
             shouldFollowTutorConversationTail(
                 wasNearBottom = false,
                 mutation = TutorConversationMutation.STUDENT_SEND,

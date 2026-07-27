@@ -1,10 +1,12 @@
 package com.tingyun.smartmistakebook.core.data.tutor
 
 import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorEvidenceCancellationCommand
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
 import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
+import com.tingyun.smartmistakebook.core.domain.CancelTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
@@ -24,6 +26,41 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.runBlocking
 
 class RoomTutorInteractionRepositoryTest {
+    @Test
+    fun `durable cancellation survives repository reconstruction with exact identity`() =
+        runBlocking {
+            val cancelled = mutableSetOf<PersistTutorEvidenceCancellationCommand>()
+            val database = Proxy.newProxyInstance(
+                StudyDatabasePort::class.java.classLoader,
+                arrayOf(StudyDatabasePort::class.java),
+            ) { _, method, arguments ->
+                val command = arguments.orEmpty().firstOrNull()
+                    as? PersistTutorEvidenceCancellationCommand
+                when (method.name) {
+                    "recordTutorEvidenceCancellation" -> {
+                        cancelled += requireNotNull(command)
+                        Unit
+                    }
+                    "isTutorEvidenceCancelled" -> requireNotNull(command) in cancelled
+                    "close" -> Unit
+                    else -> error("Unexpected database call: ${method.name}")
+                }
+            } as StudyDatabasePort
+            val command = CancelTutorEvidenceCommand(
+                sessionId = "session-1",
+                questionDocumentId = "question-1",
+                revisionNumber = 2,
+                evidenceRequestId = "request-1",
+                occurredAtEpochMillis = 100,
+            )
+
+            RoomTutorInteractionRepository(database).cancelEvidence(command)
+            val restored = RoomTutorInteractionRepository(database)
+
+            assertTrue(restored.isEvidenceCancelled(command))
+            assertFalse(restored.isEvidenceCancelled(command.copy(revisionNumber = 3)))
+        }
+
     @Test
     fun `answer exposure requires the exact learner question revision and turn`() {
         val key = TutorAnswerExposureKey(
@@ -388,7 +425,9 @@ private fun visualEvidenceDatabase(
         arrayOf(StudyDatabasePort::class.java),
     ) { _, method, arguments ->
         when (method.name) {
-            "recordTutorVisualTargetEvidence" ->
+            "recordTutorVisualTargetEvidence",
+            "recordTutorVisualTargetEvidenceUnlessCancelled",
+            ->
                 write(arguments.orEmpty().first() as PersistTutorVisualTargetEvidenceCommand)
             "close" -> Unit
             else -> error("Unexpected database call: ${method.name}")

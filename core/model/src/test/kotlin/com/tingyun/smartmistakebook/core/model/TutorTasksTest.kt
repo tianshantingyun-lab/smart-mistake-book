@@ -73,6 +73,7 @@ class TutorTasksTest {
         assertEquals(1, decoded.cycleOrdinal)
         assertEquals(1, decoded.turnOrdinal)
         assertEquals(false, decoded.solutionRevealed)
+        assertEquals(TutorFreeResponseEvaluation.UNKNOWN, decoded.freeResponseEvaluation)
     }
 
     @Test
@@ -94,9 +95,10 @@ class TutorTasksTest {
             exact,
             TutorChatHistoryEntry(exact, "仍然只解释当前题。").studentMessage,
         )
-        assertTrue(
-            runCatching { respondInput().copy(studentMessage = "不可见\u202E控制") }.isFailure,
-        )
+        val invalid = runCatching {
+            respondInput().copy(studentMessage = "不可见\u202E控制")
+        }.exceptionOrNull()
+        assertTrue(invalid is InvalidTutorStudentMessageException)
     }
 
     @Test

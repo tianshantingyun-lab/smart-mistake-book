@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualBindingTarget
 import com.tingyun.smartmistakebook.core.model.TutorVisualDimension
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpression
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpressionOperation
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualLatticeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualParticleGroupElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
@@ -244,6 +245,131 @@ class TutorVisualDocumentRuntimeTest {
 
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull()?.message.orEmpty().contains("finite"))
+    }
+
+    @Test
+    fun rendererBindingIntervalsFailClosedOutsideTheirConsumerContracts() {
+        val original = TutorVisualSeedFixtures.rotatingCoil()
+
+        fun compiles(property: TutorVisualBindingProperty, value: Double): Boolean {
+            val binding = TutorVisualBinding(
+                bindingId = "bounded_${property.name.lowercase()}",
+                target = TutorVisualBindingTarget.ELEMENT,
+                targetId = "coil_frame",
+                property = property,
+                expression = TutorVisualDocumentExpression.constant(value),
+            )
+            return runCatching {
+                TutorVisualDocumentCompiler.compile(original.copy(bindings = listOf(binding)))
+            }.isSuccess
+        }
+
+        assertFalse(compiles(TutorVisualBindingProperty.SCALE, -1.0))
+        assertTrue(compiles(TutorVisualBindingProperty.SCALE, 0.0001))
+        assertTrue(compiles(TutorVisualBindingProperty.X, 100_000.0))
+        assertFalse(compiles(TutorVisualBindingProperty.X, 100_001.0))
+    }
+
+    @Test
+    fun clampIntervalsUseTheClampedOutputAndRejectUnprovableBounds() {
+        val doubledProgress = TutorVisualDocumentExpression(
+            operation = TutorVisualDocumentExpressionOperation.MULTIPLY,
+            arguments = listOf(
+                TutorVisualDocumentExpression.timeProgress(),
+                TutorVisualDocumentExpression.constant(2.0),
+            ),
+        )
+
+        fun clamp(
+            input: TutorVisualDocumentExpression,
+            lower: TutorVisualDocumentExpression,
+            upper: TutorVisualDocumentExpression,
+        ) = TutorVisualDocumentExpression(
+            operation = TutorVisualDocumentExpressionOperation.CLAMP,
+            arguments = listOf(input, lower, upper),
+        )
+
+        fun compiles(
+            scene: TutorVisualDocumentScene,
+            targetId: String,
+            property: TutorVisualBindingProperty,
+            expression: TutorVisualDocumentExpression,
+        ): Boolean {
+            val binding = TutorVisualBinding(
+                bindingId = "clamped_${property.name.lowercase()}",
+                target = TutorVisualBindingTarget.ELEMENT,
+                targetId = targetId,
+                property = property,
+                expression = expression,
+            )
+            return runCatching {
+                TutorVisualDocumentCompiler.compile(scene.copy(bindings = listOf(binding)))
+            }.isSuccess
+        }
+
+        val zero = TutorVisualDocumentExpression.constant(0.0)
+        val one = TutorVisualDocumentExpression.constant(1.0)
+        val uTube = TutorVisualSeedFixtures.uTubeGasColumns()
+        assertTrue(
+            compiles(
+                uTube,
+                "utube_gas_a",
+                TutorVisualBindingProperty.OPACITY,
+                clamp(doubledProgress, zero, one),
+            ),
+        )
+        assertTrue(
+            compiles(
+                TutorVisualSeedFixtures.rotatingCoil(),
+                "coil_frame",
+                TutorVisualBindingProperty.SCALE,
+                clamp(
+                    doubledProgress,
+                    TutorVisualDocumentExpression.constant(0.25),
+                    TutorVisualDocumentExpression.constant(1.5),
+                ),
+            ),
+        )
+        assertTrue(
+            compiles(
+                uTube,
+                "utube_left_level",
+                TutorVisualBindingProperty.LIQUID_LEVEL,
+                clamp(doubledProgress, zero, one),
+            ),
+        )
+        assertFalse(
+            compiles(
+                uTube,
+                "utube_gas_a",
+                TutorVisualBindingProperty.OPACITY,
+                clamp(
+                    doubledProgress,
+                    TutorVisualDocumentExpression.timeProgress(),
+                    TutorVisualDocumentExpression.constant(0.5),
+                ),
+            ),
+        )
+        assertFalse(
+            compiles(
+                uTube,
+                "utube_gas_a",
+                TutorVisualBindingProperty.OPACITY,
+                clamp(doubledProgress, one, zero),
+            ),
+        )
+        assertFalse(
+            compiles(
+                uTube,
+                "utube_gas_a",
+                TutorVisualBindingProperty.OPACITY,
+                clamp(
+                    doubledProgress,
+                    zero,
+                    TutorVisualDocumentExpression.constant(2.0),
+                ),
+            ),
+        )
     }
 
     @Test

@@ -86,7 +86,7 @@ class TutorIntentAuthorityTest {
                 explicit = true,
                 memory = TutorMemoryPreference.BLOCK_LONG_TERM_WRITES_FOR_SESSION,
             ),
-            studentMessage = "这次不要记录",
+            studentMessage = "这次别记",
         )
 
         assertEquals(

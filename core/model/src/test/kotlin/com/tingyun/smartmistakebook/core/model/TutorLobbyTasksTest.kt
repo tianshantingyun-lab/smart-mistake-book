@@ -25,6 +25,19 @@ class TutorLobbyTasksTest {
     }
 
     @Test
+    fun lobbyUnsafeStudentMessageUsesTheTypedInputBoundary() {
+        val invalid = runCatching {
+            TutorLobbyInput(
+                conversationId = "tutor-lobby",
+                messageOrdinal = 1,
+                studentMessage = "不可见\u202E控制",
+            )
+        }.exceptionOrNull()
+
+        assertTrue(invalid is InvalidTutorStudentMessageException)
+    }
+
+    @Test
     fun lobbyRejectsContextMismatchAndEveryWriteLikeCapability() {
         val mismatch = TutorLobbyOutput(
             conversationId = "tutor-lobby",

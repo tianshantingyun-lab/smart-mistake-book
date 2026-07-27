@@ -136,6 +136,8 @@ sealed interface ModelTaskInput {
     val subjectId: String
 }
 
+class InvalidTutorStudentMessageException(message: String) : IllegalArgumentException(message)
+
 @Serializable
 @SerialName("capture_assessment")
 data class CaptureAssessmentInput(
@@ -1156,6 +1158,16 @@ internal fun String.requireSafeModelText(
     require(length <= maxChars) { "$label exceeds budget" }
     require(none { it.isForbiddenModelTextCharacter(allowLineBreaks) }) {
         "$label contains unsafe control characters"
+    }
+}
+
+internal fun String.requireSafeTutorStudentMessage(label: String, maxChars: Int) {
+    try {
+        requireSafeModelText(label, maxChars, allowLineBreaks = true)
+    } catch (invalid: IllegalArgumentException) {
+        throw InvalidTutorStudentMessageException(
+            invalid.message ?: "$label is invalid",
+        )
     }
 }
 

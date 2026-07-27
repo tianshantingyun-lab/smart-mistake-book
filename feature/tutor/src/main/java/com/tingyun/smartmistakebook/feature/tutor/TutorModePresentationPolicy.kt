@@ -9,6 +9,8 @@ import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
+import com.tingyun.smartmistakebook.core.model.TutorFreeResponseEvaluation
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 
 internal data class TutorTurnPresentation(
     val showDiagnostic: Boolean,
@@ -53,54 +55,195 @@ internal sealed interface TutorGuidanceEvent {
     data class Exposure(override val requestId: String) : TutorGuidanceEvent
 }
 
-internal fun replayTutorGuidance(
+internal fun freeResponseEvidenceEvent(
+    requestId: String,
+    output: TutorRespondOutput,
+): TutorGuidanceEvent.Evidence? = when (output.freeResponseEvaluation) {
+    TutorFreeResponseEvaluation.CORRECT ->
+        TutorGuidanceEvent.Evidence(requestId, selectionWasCorrect = true)
+    TutorFreeResponseEvaluation.INCORRECT ->
+        TutorGuidanceEvent.Evidence(requestId, selectionWasCorrect = false)
+    TutorFreeResponseEvaluation.UNKNOWN -> null
+}
+
+internal data class TutorGuidanceReplayTransition(
+    val state: TutorGuidanceState,
+    val cancelEvidenceRequestId: String?,
+    val stateBeforePendingCancellation: TutorGuidanceState?,
+)
+
+internal fun replayTutorGuidanceTransition(
     problem: TutorProblemScope,
     requestedMode: TutorExplanationMode,
     answerWasExposed: Boolean,
     events: List<TutorGuidanceEvent>,
-): TutorGuidanceState {
+): TutorGuidanceReplayTransition {
     var state = TutorGuidanceState(problem, TutorExplanationMode.GUIDED)
+    var cancelEvidenceRequestId: String? = null
+    var stateBeforePendingCancellation: TutorGuidanceState? = null
+
+    fun applyUnconsumedTransition(next: TutorGuidanceState) {
+        if (
+            state.mode == TutorExplanationMode.GUIDED &&
+            next.mode == TutorExplanationMode.DIRECT &&
+            state.pendingEvidenceRequestId != null
+        ) {
+            cancelEvidenceRequestId = state.pendingEvidenceRequestId
+            stateBeforePendingCancellation =
+                stateBeforePendingCancellation ?: state
+        }
+        state = next
+    }
+
     events.forEach { event ->
-        state = when (event) {
-            is TutorGuidanceEvent.Question -> TutorGuidancePolicy.evaluate(
-                state,
-                TutorGuidanceRequest.question(
-                    event.requestId,
-                    problem,
-                    event.masteryRelevant,
-                ),
-            ).state
+        when (event) {
+            is TutorGuidanceEvent.Question -> applyUnconsumedTransition(
+                TutorGuidancePolicy.evaluate(
+                    state,
+                    TutorGuidanceRequest.question(
+                        event.requestId,
+                        problem,
+                        event.masteryRelevant,
+                    ),
+                ).state,
+            )
             is TutorGuidanceEvent.Evidence -> {
                 val evidence = TutorGuidancePolicy.evaluate(
                     state,
                     TutorGuidanceRequest.evidence(event.requestId, problem),
                 )
-                if (!evidence.mayWriteLearningEvidence || event.selectionWasCorrect) {
-                    evidence.state
-                } else {
-                    TutorGuidancePolicy.evaluate(
-                        evidence.state,
-                        TutorGuidanceRequest.struggle("${event.requestId}:struggle", problem),
-                    ).state
+                state = evidence.state
+                if (evidence.mayWriteLearningEvidence && !event.selectionWasCorrect) {
+                    applyUnconsumedTransition(
+                        TutorGuidancePolicy.evaluate(
+                            state,
+                            TutorGuidanceRequest.struggle(
+                                "${event.requestId}:struggle",
+                                problem,
+                            ),
+                        ).state,
+                    )
                 }
             }
-            is TutorGuidanceEvent.Hint -> TutorGuidancePolicy.evaluate(
-                state,
-                TutorGuidanceRequest.hint(event.requestId, problem),
-            ).state
-            is TutorGuidanceEvent.Exposure -> TutorGuidancePolicy.evaluate(
-                state,
-                TutorGuidanceRequest.directExplanation(event.requestId, problem),
-            ).state
+            is TutorGuidanceEvent.Hint -> applyUnconsumedTransition(
+                TutorGuidancePolicy.evaluate(
+                    state,
+                    TutorGuidanceRequest.hint(event.requestId, problem),
+                ).state,
+            )
+            is TutorGuidanceEvent.Exposure -> applyUnconsumedTransition(
+                TutorGuidancePolicy.evaluate(
+                    state,
+                    TutorGuidanceRequest.directExplanation(event.requestId, problem),
+                ).state,
+            )
         }
     }
     if (answerWasExposed || requestedMode == TutorExplanationMode.DIRECT) {
-        state = TutorGuidancePolicy.transitionMode(
+        val transition = TutorGuidancePolicy.transitionMode(
             state,
             TutorExplanationMode.DIRECT,
-        ).state
+        )
+        applyUnconsumedTransition(transition.state)
     }
-    return state
+    return TutorGuidanceReplayTransition(
+        state = state,
+        cancelEvidenceRequestId = cancelEvidenceRequestId,
+        stateBeforePendingCancellation = stateBeforePendingCancellation,
+    )
+}
+
+internal fun replayTutorGuidance(
+    problem: TutorProblemScope,
+    requestedMode: TutorExplanationMode,
+    answerWasExposed: Boolean,
+    events: List<TutorGuidanceEvent>,
+): TutorGuidanceState = replayTutorGuidanceTransition(
+    problem = problem,
+    requestedMode = requestedMode,
+    answerWasExposed = answerWasExposed,
+    events = events,
+).state
+
+internal fun tutorResponseModeTransitionFor(
+    state: TutorGuidanceState,
+    studentMessage: String,
+) = TutorGuidancePolicy.transitionMode(
+    state,
+    tutorResponseModeFor(state.mode, studentMessage),
+)
+
+internal data class TutorGuidanceModeResolution(
+    val state: TutorGuidanceState,
+    val cancelEvidenceRequestId: String?,
+    val blockPendingInteraction: Boolean,
+)
+
+internal fun resolveTutorGuidanceMode(
+    replay: TutorGuidanceReplayTransition,
+    requestedMode: TutorExplanationMode,
+    answerWasExposed: Boolean,
+    cancellationConfirmed: Boolean?,
+): TutorGuidanceModeResolution {
+    val replayCancellationPending =
+        replay.cancelEvidenceRequestId != null && cancellationConfirmed != true
+    val replayBaseState = if (replayCancellationPending) {
+        requireNotNull(replay.stateBeforePendingCancellation)
+    } else {
+        replay.state
+    }
+    val baseState = if (
+        replay.cancelEvidenceRequestId == null &&
+        cancellationConfirmed == true
+    ) {
+        replayBaseState.copy(pendingEvidenceRequestId = null)
+    } else {
+        replayBaseState
+    }
+    val targetDirect =
+        replay.cancelEvidenceRequestId != null ||
+            replay.state.mode == TutorExplanationMode.DIRECT ||
+            requestedMode == TutorExplanationMode.DIRECT ||
+            answerWasExposed
+    val transition = if (targetDirect) {
+        TutorGuidancePolicy.transitionMode(baseState, TutorExplanationMode.DIRECT)
+    } else {
+        null
+    }
+    val cancelEvidenceRequestId =
+        replay.cancelEvidenceRequestId ?: transition?.cancelEvidenceRequestId
+    val cancellationAcknowledged =
+        cancelEvidenceRequestId == null || cancellationConfirmed == true
+    val state = if (transition != null && cancellationAcknowledged) {
+        transition.state
+    } else {
+        baseState
+    }
+    return TutorGuidanceModeResolution(
+        state = state,
+        cancelEvidenceRequestId = cancelEvidenceRequestId.takeUnless {
+            cancellationAcknowledged
+        },
+        blockPendingInteraction =
+            !cancellationAcknowledged ||
+                (
+                    !targetDirect &&
+                        state.pendingEvidenceRequestId != null &&
+                        cancellationConfirmed == null
+                    ),
+    )
+}
+
+internal suspend inline fun continueTutorResponseAfterEvidenceCancellation(
+    cancelEvidenceRequestId: String?,
+    cancellationConfirmed: Boolean,
+    crossinline cancelEvidence: suspend (String) -> Unit,
+    crossinline continueResponse: () -> Unit,
+) {
+    if (cancelEvidenceRequestId != null && !cancellationConfirmed) {
+        cancelEvidence(cancelEvidenceRequestId)
+    }
+    continueResponse()
 }
 
 internal fun TutorGuidanceState.authorizeEvidence(requestId: String) =

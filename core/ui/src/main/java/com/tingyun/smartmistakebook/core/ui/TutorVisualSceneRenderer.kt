@@ -119,10 +119,11 @@ private fun LegacyTutorVisualSceneRenderer(
     onReportIncorrect: (() -> Unit)?,
 ) {
     var focused by rememberSaveable(presentationStateKey) { mutableStateOf(false) }
-    val sceneContent = remember(presentationStateKey, scene) {
+    val motionPlaybackState = rememberTutorMotionPlaybackState(presentationStateKey)
+    val sceneContent = remember(presentationStateKey, scene, motionPlaybackState) {
         movableContentOf {
             key(presentationStateKey) {
-                LegacyTutorVisualSceneContent(scene)
+                LegacyTutorVisualSceneContent(scene, motionPlaybackState)
             }
         }
     }
@@ -213,7 +214,10 @@ private fun LegacyTutorVisualSceneRenderer(
 }
 
 @Composable
-private fun LegacyTutorVisualSceneContent(scene: TutorVisualScene) {
+private fun LegacyTutorVisualSceneContent(
+    scene: TutorVisualScene,
+    motionPlaybackState: TutorMotionPlaybackState,
+) {
     when (scene) {
         is TutorStepFlowScene -> StepFlowScene(scene)
         is TutorComparisonScene -> ComparisonScene(scene)
@@ -222,7 +226,7 @@ private fun LegacyTutorVisualSceneContent(scene: TutorVisualScene) {
         is TutorConceptMapScene -> ConceptMapScene(scene)
         is TutorFormulaDerivationScene -> FormulaDerivationScene(scene)
         is TutorSpatialDiagramScene -> SpatialDiagramScene(scene)
-        is TutorMotionScene -> TutorMotionSceneContent(scene)
+        is TutorMotionScene -> TutorMotionSceneContent(scene, motionPlaybackState)
         is TutorVisualProgramScene -> TutorVisualProgramContent(scene)
         is TutorVisualDocumentScene -> Unit
     }

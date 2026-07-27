@@ -77,7 +77,9 @@ internal fun FilamentVisualSurface(
         }
     }
     LaunchedEffect(controller, frame, camera) {
-        controller.update(frame, camera)
+        if (!controller.update(frame, camera)) {
+            onReadyChanged(false)
+        }
     }
     AndroidView(
         factory = { controller.surfaceView },
@@ -206,48 +208,50 @@ private class FilamentVisualController(
         engine.flush()
     }
 
-    fun update(frame: TutorVisualFrame, cameraState: TutorVisualCamera) {
-        if (destroyed) return
-        updateCamera(cameraState)
-        records.forEach { record ->
-            val state = frame.elements[record.elementId]
-            val shouldShow = state?.visible != false
-            if (shouldShow && !record.inScene) {
-                scene.addEntity(record.entity)
-                record.inScene = true
-            } else if (!shouldShow && record.inScene) {
-                scene.removeEntities(intArrayOf(record.entity))
-                record.inScene = false
+    fun update(frame: TutorVisualFrame, cameraState: TutorVisualCamera): Boolean {
+        if (destroyed) return false
+        return runCatching {
+            updateCamera(cameraState)
+            records.forEach { record ->
+                val state = frame.elements[record.elementId]
+                val shouldShow = state?.visible != false
+                if (shouldShow && !record.inScene) {
+                    scene.addEntity(record.entity)
+                    record.inScene = true
+                } else if (!shouldShow && record.inScene) {
+                    scene.removeEntities(intArrayOf(record.entity))
+                    record.inScene = false
+                }
+                if (!shouldShow || state == null) return@forEach
+                val adjusted = record.baseTransform.copy(
+                    translation = TutorVisualVector3(
+                        record.baseTransform.translation.x +
+                            (state.properties[TutorVisualBindingProperty.X] ?: 0.0),
+                        record.baseTransform.translation.y +
+                            (state.properties[TutorVisualBindingProperty.Y] ?: 0.0),
+                        record.baseTransform.translation.z +
+                            (state.properties[TutorVisualBindingProperty.Z] ?: 0.0),
+                    ),
+                    rotationDegrees = TutorVisualVector3(
+                        record.baseTransform.rotationDegrees.x +
+                            (state.properties[TutorVisualBindingProperty.ROTATION_X_DEGREES] ?: 0.0),
+                        record.baseTransform.rotationDegrees.y +
+                            (state.properties[TutorVisualBindingProperty.ROTATION_Y_DEGREES] ?: 0.0),
+                        record.baseTransform.rotationDegrees.z +
+                            (state.properties[TutorVisualBindingProperty.ROTATION_Z_DEGREES] ?: 0.0),
+                    ),
+                    scale = record.baseTransform.scale.let { scale ->
+                        val factor = state.properties[TutorVisualBindingProperty.SCALE] ?: 1.0
+                        TutorVisualVector3(scale.x * factor, scale.y * factor, scale.z * factor)
+                    },
+                )
+                val transformManager = engine.transformManager
+                transformManager.setTransform(
+                    transformManager.getInstance(record.entity),
+                    adjusted.toMatrix(),
+                )
             }
-            if (!shouldShow || state == null) return@forEach
-            val adjusted = record.baseTransform.copy(
-                translation = TutorVisualVector3(
-                    record.baseTransform.translation.x +
-                        (state.properties[TutorVisualBindingProperty.X] ?: 0.0),
-                    record.baseTransform.translation.y +
-                        (state.properties[TutorVisualBindingProperty.Y] ?: 0.0),
-                    record.baseTransform.translation.z +
-                        (state.properties[TutorVisualBindingProperty.Z] ?: 0.0),
-                ),
-                rotationDegrees = TutorVisualVector3(
-                    record.baseTransform.rotationDegrees.x +
-                        (state.properties[TutorVisualBindingProperty.ROTATION_X_DEGREES] ?: 0.0),
-                    record.baseTransform.rotationDegrees.y +
-                        (state.properties[TutorVisualBindingProperty.ROTATION_Y_DEGREES] ?: 0.0),
-                    record.baseTransform.rotationDegrees.z +
-                        (state.properties[TutorVisualBindingProperty.ROTATION_Z_DEGREES] ?: 0.0),
-                ),
-                scale = record.baseTransform.scale.let { scale ->
-                    val factor = state.properties[TutorVisualBindingProperty.SCALE] ?: 1.0
-                    TutorVisualVector3(scale.x * factor, scale.y * factor, scale.z * factor)
-                },
-            )
-            val transformManager = engine.transformManager
-            transformManager.setTransform(
-                transformManager.getInstance(record.entity),
-                adjusted.toMatrix(),
-            )
-        }
+        }.isSuccess
     }
 
     fun destroy() {

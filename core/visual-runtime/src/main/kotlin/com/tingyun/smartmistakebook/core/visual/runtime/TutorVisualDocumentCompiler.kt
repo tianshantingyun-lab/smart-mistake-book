@@ -473,16 +473,43 @@ object TutorVisualDocumentCompiler {
         variables: Map<String, Double>,
         issues: MutableList<TutorVisualIntegrityIssue>,
     ) {
-        if (
-            inferSafeInterval(
-                expression = binding.expression,
-                durationSeconds = durationSeconds,
-                variables = variables,
-            ) == null
-        ) {
+        val interval = inferSafeInterval(
+            expression = binding.expression,
+            durationSeconds = durationSeconds,
+            variables = variables,
+        )
+        if (interval == null || !binding.property.accepts(interval)) {
             issues += binding.invalidExpressionIssue()
         }
     }
+
+    private fun TutorVisualBindingProperty.accepts(interval: RuntimeInterval): Boolean =
+        when (this) {
+            TutorVisualBindingProperty.OPACITY,
+            TutorVisualBindingProperty.PATH_PROGRESS,
+            TutorVisualBindingProperty.LIQUID_LEVEL,
+            TutorVisualBindingProperty.PARTICLE_PROGRESS,
+            TutorVisualBindingProperty.CURVE_HIGHLIGHT,
+            -> interval.minimum >= 0.0 && interval.maximum <= 1.0
+            TutorVisualBindingProperty.SCALE ->
+                interval.minimum > 0.0 && interval.maximum <= MAX_ABS_TRANSFORM_VALUE
+            TutorVisualBindingProperty.X,
+            TutorVisualBindingProperty.Y,
+            TutorVisualBindingProperty.Z,
+            TutorVisualBindingProperty.ROTATION_X_DEGREES,
+            TutorVisualBindingProperty.ROTATION_Y_DEGREES,
+            TutorVisualBindingProperty.ROTATION_Z_DEGREES,
+            -> abs(interval.minimum) <= MAX_ABS_TRANSFORM_VALUE &&
+                abs(interval.maximum) <= MAX_ABS_TRANSFORM_VALUE
+            TutorVisualBindingProperty.CAMERA_AZIMUTH_DEGREES,
+            TutorVisualBindingProperty.CAMERA_ELEVATION_DEGREES,
+            TutorVisualBindingProperty.CAMERA_DISTANCE,
+            -> true // The camera consumer clamps these to its declared camera contract.
+            TutorVisualBindingProperty.VECTOR_X,
+            TutorVisualBindingProperty.VECTOR_Y,
+            TutorVisualBindingProperty.VECTOR_Z,
+            -> false
+        }
 
     private fun inferSafeInterval(
         expression: TutorVisualDocumentExpression,
@@ -546,8 +573,16 @@ object TutorVisualDocumentCompiler {
                     max(arguments[0].minimum, arguments[1].minimum),
                     max(arguments[0].maximum, arguments[1].maximum),
                 )
-            TutorVisualDocumentExpressionOperation.CLAMP ->
-                RuntimeInterval.hull(arguments)
+            TutorVisualDocumentExpressionOperation.CLAMP -> {
+                val input = arguments[0]
+                val lower = arguments[1]
+                val upper = arguments[2]
+                if (lower.maximum > upper.minimum) return null
+                RuntimeInterval(
+                    minimum = min(max(input.minimum, lower.minimum), upper.minimum),
+                    maximum = min(max(input.maximum, lower.maximum), upper.maximum),
+                )
+            }
             TutorVisualDocumentExpressionOperation.LERP ->
                 RuntimeInterval.hull(arguments.take(2))
         } ?: return null
@@ -575,6 +610,7 @@ object TutorVisualDocumentCompiler {
         TutorVisualBindingProperty.SCALE,
     )
     private const val MIN_PROVABLE_DIVISOR = 1e-12
+    private const val MAX_ABS_TRANSFORM_VALUE = 100_000.0
     private const val MAX_CANVAS_PARTICLE_INSTANCES = 300
 }
 
@@ -714,7 +750,7 @@ private fun TutorVisualBinding.invalidExpressionIssue() = TutorVisualIntegrityIs
     code = TutorVisualIssueCode.INVALID_EXPRESSION_RESULT,
     severity = TutorVisualIssueSeverity.ERROR,
     targetId = bindingId,
-    detail = "The bound expression must produce a finite value within the renderable range.",
+    detail = "The bound expression must stay finite and within the renderer consumer range.",
 )
 
 enum class TutorVisualRiskLevel {

@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -63,6 +64,10 @@ class TutorLocalIntentPanelInstrumentedTest {
         composeRule.runOnIdle {
             studentMessage.value = "这次别记"
             output.value = blockMemoryOutput()
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("这次对话不会写入长期学习记录")
+                .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("这次对话不会写入长期学习记录").assertExists()
     }

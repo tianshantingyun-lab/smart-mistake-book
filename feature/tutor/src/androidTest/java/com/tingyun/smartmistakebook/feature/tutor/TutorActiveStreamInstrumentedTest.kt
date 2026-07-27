@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
 import org.junit.Rule
@@ -55,7 +57,9 @@ class TutorActiveStreamInstrumentedTest {
                 retryable = true,
             )
         }
-        composeRule.onNodeWithText("先保留这段讲解。").assertIsDisplayed()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            activeAccessibilityTreeContainsText("先保留这段讲解。")
+        }
         composeRule.onNodeWithTag("tutor_stream_activity").assertDoesNotExist()
         composeRule.onAllNodesWithText("重试").assertCountEquals(1)
     }
@@ -71,4 +75,18 @@ class TutorActiveStreamInstrumentedTest {
         phase = phase,
         showPlaceholder = showPlaceholder,
     )
+
+    private fun activeAccessibilityTreeContainsText(expected: String): Boolean =
+        InstrumentationRegistry.getInstrumentation()
+            .uiAutomation
+            .rootInActiveWindow
+            ?.containsText(expected) == true
+
+    private fun AccessibilityNodeInfo.containsText(expected: String): Boolean {
+        if (text?.toString() == expected) return true
+        for (index in 0 until childCount) {
+            if (getChild(index)?.containsText(expected) == true) return true
+        }
+        return false
+    }
 }

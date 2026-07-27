@@ -7,12 +7,14 @@ import androidx.room3.Query
 import androidx.room3.Transaction
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.PersistTutorChoiceCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorEvidenceCancellationCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorRevealCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
 import com.tingyun.smartmistakebook.core.database.entity.TutorTurnResponseEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorEvidenceCancellationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorVisualTargetEvidenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
@@ -96,6 +98,31 @@ internal abstract class TutorInteractionDao {
     protected abstract suspend fun insertVisualEvidence(
         entity: TutorVisualTargetEvidenceEntity,
     ): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertEvidenceCancellation(
+        entity: TutorEvidenceCancellationEntity,
+    ): Long
+
+    @Query(
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM tutor_evidence_cancellation
+            WHERE learner_id = :learnerId
+              AND session_id = :sessionId
+              AND question_document_id = :questionDocumentId
+              AND revision_number = :revisionNumber
+              AND evidence_request_id = :evidenceRequestId
+        )
+        """,
+    )
+    protected abstract suspend fun hasEvidenceCancellation(
+        learnerId: String,
+        sessionId: String,
+        questionDocumentId: String,
+        revisionNumber: Int,
+        evidenceRequestId: String,
+    ): Boolean
 
     @Query("SELECT * FROM model_task WHERE request_id = :requestId LIMIT 1")
     protected abstract suspend fun findModelTask(requestId: String): ModelTaskEntity?
@@ -261,6 +288,13 @@ internal abstract class TutorInteractionDao {
     }
 
     @Transaction
+    open suspend fun recordChoiceUnlessCancelled(
+        command: PersistTutorChoiceCommand,
+        cancellation: PersistTutorEvidenceCancellationCommand,
+    ): TutorTurnResponseRecord? =
+        if (isEvidenceCancelled(cancellation)) null else recordChoice(command)
+
+    @Transaction
     open suspend fun discardChoice(command: PersistTutorChoiceCommand): Boolean =
         clearExactChoicePayload(
             sessionId = command.sessionId,
@@ -294,6 +328,30 @@ internal abstract class TutorInteractionDao {
         }
         return existing.toRecord()
     }
+
+    @Transaction
+    open suspend fun recordVisualTargetEvidenceUnlessCancelled(
+        command: PersistTutorVisualTargetEvidenceCommand,
+        cancellation: PersistTutorEvidenceCancellationCommand,
+    ): TutorVisualTargetEvidenceRecord? =
+        if (isEvidenceCancelled(cancellation)) null else recordVisualTargetEvidence(command)
+
+    @Transaction
+    open suspend fun recordEvidenceCancellation(
+        command: PersistTutorEvidenceCancellationCommand,
+    ) {
+        insertEvidenceCancellation(command.toEntity())
+    }
+
+    suspend fun isEvidenceCancelled(
+        command: PersistTutorEvidenceCancellationCommand,
+    ): Boolean = hasEvidenceCancellation(
+        learnerId = command.learnerId,
+        sessionId = command.sessionId,
+        questionDocumentId = command.questionDocumentId,
+        revisionNumber = command.revisionNumber,
+        evidenceRequestId = command.evidenceRequestId,
+    )
 
     private suspend fun validateVisualTargetEvidence(
         command: PersistTutorVisualTargetEvidenceCommand,
@@ -638,6 +696,16 @@ internal fun TutorTurnResponseEntity.toRecord() = TutorTurnResponseRecord(
     submittedAtEpochMillis = submittedAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
 )
+
+private fun PersistTutorEvidenceCancellationCommand.toEntity() =
+    TutorEvidenceCancellationEntity(
+        learnerId = learnerId,
+        sessionId = sessionId,
+        questionDocumentId = questionDocumentId,
+        revisionNumber = revisionNumber,
+        evidenceRequestId = evidenceRequestId,
+        cancelledAtEpochMillis = cancelledAtEpochMillis,
+    )
 
 internal fun TutorVisualTargetEvidenceEntity.toRecord() = TutorVisualTargetEvidenceRecord(
     sessionId = sessionId,

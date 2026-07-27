@@ -103,3 +103,31 @@ internal data class TutorVisualTargetEvidenceEntity(
     @ColumnInfo(name = "submitted_at_epoch_millis")
     val submittedAtEpochMillis: Long,
 )
+
+@Entity(
+    tableName = "tutor_evidence_cancellation",
+    primaryKeys = [
+        "learner_id",
+        "session_id",
+        "question_document_id",
+        "revision_number",
+        "evidence_request_id",
+    ],
+    indices = [
+        Index(value = ["session_id", "question_document_id", "revision_number"]),
+    ],
+)
+internal data class TutorEvidenceCancellationEntity(
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    @ColumnInfo(name = "session_id")
+    val sessionId: String,
+    @ColumnInfo(name = "question_document_id")
+    val questionDocumentId: String,
+    @ColumnInfo(name = "revision_number")
+    val revisionNumber: Int,
+    @ColumnInfo(name = "evidence_request_id")
+    val evidenceRequestId: String,
+    @ColumnInfo(name = "cancelled_at_epoch_millis")
+    val cancelledAtEpochMillis: Long,
+)

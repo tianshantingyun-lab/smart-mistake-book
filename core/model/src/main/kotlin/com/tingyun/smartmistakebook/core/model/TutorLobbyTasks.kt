@@ -31,10 +31,9 @@ data class TutorLobbyInput(
             false,
         )
         require(messageOrdinal > 0) { "Tutor lobby message ordinal must be positive" }
-        studentMessage.requireSafeModelText(
+        studentMessage.requireSafeTutorStudentMessage(
             "Tutor lobby student message",
             TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS,
-            true,
         )
         require(priorMessages.size <= TutorRespondInput.MAX_PRIOR_MESSAGES) {
             "Tutor lobby contains too many prior messages"

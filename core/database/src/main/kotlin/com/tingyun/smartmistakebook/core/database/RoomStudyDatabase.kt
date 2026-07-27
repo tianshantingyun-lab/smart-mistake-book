@@ -935,6 +935,12 @@ internal class RoomStudyDatabase(
         command: PersistTutorChoiceCommand,
     ): TutorTurnResponseRecord = database.tutorInteractionDao().recordChoice(command)
 
+    override suspend fun recordTutorChoiceUnlessCancelled(
+        command: PersistTutorChoiceCommand,
+        cancellation: PersistTutorEvidenceCancellationCommand,
+    ): TutorTurnResponseRecord? =
+        database.tutorInteractionDao().recordChoiceUnlessCancelled(command, cancellation)
+
     override suspend fun discardTutorChoice(
         command: PersistTutorChoiceCommand,
     ): Boolean = database.tutorInteractionDao().discardChoice(command)
@@ -943,6 +949,23 @@ internal class RoomStudyDatabase(
         command: PersistTutorVisualTargetEvidenceCommand,
     ): TutorVisualTargetEvidenceRecord =
         database.tutorInteractionDao().recordVisualTargetEvidence(command)
+
+    override suspend fun recordTutorVisualTargetEvidenceUnlessCancelled(
+        command: PersistTutorVisualTargetEvidenceCommand,
+        cancellation: PersistTutorEvidenceCancellationCommand,
+    ): TutorVisualTargetEvidenceRecord? =
+        database.tutorInteractionDao()
+            .recordVisualTargetEvidenceUnlessCancelled(command, cancellation)
+
+    override suspend fun recordTutorEvidenceCancellation(
+        command: PersistTutorEvidenceCancellationCommand,
+    ) {
+        database.tutorInteractionDao().recordEvidenceCancellation(command)
+    }
+
+    override suspend fun isTutorEvidenceCancelled(
+        command: PersistTutorEvidenceCancellationCommand,
+    ): Boolean = database.tutorInteractionDao().isEvidenceCancelled(command)
 
     override suspend fun recordTutorMove(
         command: PersistTutorMoveCommand,

@@ -66,6 +66,24 @@ internal fun TutorTurnContent(
     solutionBottomModifier: Modifier = Modifier,
 ) {
     val plan = output.plan
+    val solutionContentIdentity = listOf(
+        output.sessionId,
+        output.cycleOrdinal,
+        output.turnOrdinal,
+        plan.solutionMarkdown,
+    )
+    val alternateContentIdentity = listOf(
+        output.sessionId,
+        output.cycleOrdinal,
+        output.turnOrdinal,
+        plan.alternateMethodMarkdown,
+    )
+    var solutionContentReady by remember(solutionContentIdentity) {
+        mutableStateOf(false)
+    }
+    var alternateContentReady by remember(alternateContentIdentity) {
+        mutableStateOf(false)
+    }
     val presentation = tutorTurnPresentation(
         mode = explanationMode,
         suggestedMoves = plan.suggestedMoves,
@@ -231,6 +249,8 @@ internal fun TutorTurnContent(
                     plan.alternateMethodMarkdown,
                     modifier = Modifier.testTag("captured_tutor_alternate_method"),
                     style = MaterialTheme.typography.bodyMedium,
+                    contentIdentity = alternateContentIdentity,
+                    onContentReady = { alternateContentReady = true },
                 )
             }
             if (showSolution) {
@@ -243,12 +263,19 @@ internal fun TutorTurnContent(
                     plan.solutionMarkdown,
                     modifier = Modifier.testTag("captured_tutor_solution"),
                     style = MaterialTheme.typography.bodyMedium,
+                    contentIdentity = solutionContentIdentity,
+                    onContentReady = { solutionContentReady = true },
                 )
-                Box(
-                    modifier = Modifier
-                        .size(1.dp)
-                        .then(solutionBottomModifier),
-                )
+                if (
+                    solutionContentReady &&
+                    (!explanationOnlyAlternateVisible || alternateContentReady)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(1.dp)
+                            .then(solutionBottomModifier),
+                    )
+                }
             }
         } else if (submitted && !splitChoiceFeedback) {
             val submittedResponse = requireNotNull(choiceResponse)
@@ -287,7 +314,12 @@ internal fun TutorTurnContent(
                     color = InkSecondary,
                     style = MaterialTheme.typography.labelLarge,
                 )
-                SafeMarkdownText(plan.solutionMarkdown, style = MaterialTheme.typography.bodyMedium)
+                SafeMarkdownText(
+                    markdown = plan.solutionMarkdown,
+                    style = MaterialTheme.typography.bodyMedium,
+                    contentIdentity = solutionContentIdentity,
+                    onContentReady = { solutionContentReady = true },
+                )
                 Text(
                     text = "另一种表征",
                     color = InkSecondary,
@@ -296,12 +328,16 @@ internal fun TutorTurnContent(
                 SafeMarkdownText(
                     plan.alternateMethodMarkdown,
                     style = MaterialTheme.typography.bodyMedium,
+                    contentIdentity = alternateContentIdentity,
+                    onContentReady = { alternateContentReady = true },
                 )
-                Box(
-                    modifier = Modifier
-                        .size(1.dp)
-                        .then(solutionBottomModifier),
-                )
+                if (solutionContentReady && alternateContentReady) {
+                    Box(
+                        modifier = Modifier
+                            .size(1.dp)
+                            .then(solutionBottomModifier),
+                    )
+                }
             }
             if (output.turnOrdinal == TutorPlanInput.MAX_TURNS) {
                 PrimaryActionButton(
@@ -343,6 +379,24 @@ internal fun TutorChoiceFeedbackContent(
 ) {
     require(response.hasChoicePayload)
     val plan = output.plan
+    val solutionContentIdentity = listOf(
+        output.sessionId,
+        output.cycleOrdinal,
+        output.turnOrdinal,
+        plan.solutionMarkdown,
+    )
+    val alternateContentIdentity = listOf(
+        output.sessionId,
+        output.cycleOrdinal,
+        output.turnOrdinal,
+        plan.alternateMethodMarkdown,
+    )
+    var solutionContentReady by remember(solutionContentIdentity) {
+        mutableStateOf(false)
+    }
+    var alternateContentReady by remember(alternateContentIdentity) {
+        mutableStateOf(false)
+    }
     val showSolution = showDirectExplanation ||
         response.solutionRevealed || solutionRevealPreviewed
     Column(
@@ -384,7 +438,12 @@ internal fun TutorChoiceFeedbackContent(
                 color = InkSecondary,
                 style = MaterialTheme.typography.labelLarge,
             )
-            SafeMarkdownText(plan.solutionMarkdown, style = MaterialTheme.typography.bodyMedium)
+            SafeMarkdownText(
+                markdown = plan.solutionMarkdown,
+                style = MaterialTheme.typography.bodyMedium,
+                contentIdentity = solutionContentIdentity,
+                onContentReady = { solutionContentReady = true },
+            )
             Text(
                 text = "另一种表征",
                 color = InkSecondary,
@@ -393,12 +452,16 @@ internal fun TutorChoiceFeedbackContent(
             SafeMarkdownText(
                 plan.alternateMethodMarkdown,
                 style = MaterialTheme.typography.bodyMedium,
+                contentIdentity = alternateContentIdentity,
+                onContentReady = { alternateContentReady = true },
             )
-            Box(
-                modifier = Modifier
-                    .size(1.dp)
-                    .then(solutionBottomModifier),
-            )
+            if (solutionContentReady && alternateContentReady) {
+                Box(
+                    modifier = Modifier
+                        .size(1.dp)
+                        .then(solutionBottomModifier),
+                )
+            }
         }
         if (output.turnOrdinal == TutorPlanInput.MAX_TURNS) {
             PrimaryActionButton(

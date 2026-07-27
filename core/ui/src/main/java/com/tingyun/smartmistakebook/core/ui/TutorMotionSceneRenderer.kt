@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -53,14 +54,50 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.hypot
 
+internal class TutorMotionPlaybackState(
+    timeSeconds: Float = 0f,
+    isPlaying: Boolean = false,
+    speedIndex: Int = DEFAULT_SPEED_INDEX,
+) {
+    val timeSecondsState = mutableFloatStateOf(timeSeconds)
+    val isPlayingState = mutableStateOf(isPlaying)
+    val speedIndexState = mutableIntStateOf(speedIndex)
+}
+
+private val TutorMotionPlaybackStateSaver = listSaver<TutorMotionPlaybackState, Any>(
+    save = { state ->
+        listOf(
+            state.timeSecondsState.floatValue,
+            state.isPlayingState.value,
+            state.speedIndexState.intValue,
+        )
+    },
+    restore = { values ->
+        TutorMotionPlaybackState(
+            timeSeconds = values[0] as Float,
+            isPlaying = values[1] as Boolean,
+            speedIndex = values[2] as Int,
+        )
+    },
+)
+
 @Composable
-internal fun TutorMotionSceneContent(scene: TutorMotionScene) {
+internal fun rememberTutorMotionPlaybackState(key: String): TutorMotionPlaybackState =
+    rememberSaveable(key, saver = TutorMotionPlaybackStateSaver) {
+        TutorMotionPlaybackState()
+    }
+
+@Composable
+internal fun TutorMotionSceneContent(
+    scene: TutorMotionScene,
+    playbackState: TutorMotionPlaybackState,
+) {
     val durationSeconds = remember(scene) {
         TutorMotionEvaluator.playbackDurationSeconds(scene).toFloat()
     }
-    var timeSeconds by rememberSaveable(scene.sceneId) { mutableFloatStateOf(0f) }
-    var isPlaying by rememberSaveable(scene.sceneId) { mutableStateOf(false) }
-    var speedIndex by rememberSaveable(scene.sceneId) { mutableIntStateOf(DEFAULT_SPEED_INDEX) }
+    var timeSeconds by playbackState.timeSecondsState
+    var isPlaying by playbackState.isPlayingState
+    var speedIndex by playbackState.speedIndexState
     val animationsEnabled = rememberSystemAnimationsEnabled()
     val speed = PLAYBACK_SPEEDS[speedIndex]
 

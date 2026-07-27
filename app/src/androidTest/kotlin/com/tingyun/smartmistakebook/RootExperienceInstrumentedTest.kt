@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.provider.MediaStore
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -36,17 +37,17 @@ class RootExperienceInstrumentedTest {
 
     @Test
     fun fourBottomDestinationsExposeTheirOwnRootContent() {
-        waitForTag("root_review")
+        waitForTag("root_tutor")
 
-        navigateAndWait("nav_tutor", "root_tutor")
+        navigateAndWait("nav_review", "root_review")
         navigateAndWait("nav_library", "root_library")
         navigateAndWait("nav_profile", "root_profile")
-        navigateAndWait("nav_review", "root_review")
+        navigateAndWait("nav_tutor", "root_tutor")
     }
 
     @Test
     fun reviewDoesNotExposeAnyCaptureShortcut() {
-        waitForTag("root_review")
+        navigateAndWait("nav_review", "root_review")
 
         composeRule.onAllNodesWithTag("review_capture_shortcut").assertCountEquals(0)
         composeRule.onAllNodesWithTag("review_capture_button").assertCountEquals(0)
@@ -54,15 +55,18 @@ class RootExperienceInstrumentedTest {
 
     @Test
     fun tutorStartsFromAUserProvidedQuestionWithoutBuiltInCalibration() {
-        navigateAndWait("nav_tutor", "root_tutor")
+        waitForTag("root_tutor")
         waitForTag("tutor_empty_state")
         composeRule.onAllNodesWithText("只处理你现在提出的事").assertCountEquals(0)
         composeRule.onAllNodesWithTag("tutor_choice_a").assertCountEquals(0)
         composeRule.onAllNodesWithTag("tutor_reveal_answer").assertCountEquals(0)
 
-        composeRule.onNodeWithTag("tutor_capture_button").performClick()
-        waitForTag("capture_screen")
-        navigateBackAndWait("root_tutor")
+        val exactQuestion = "若 x + 3 = 7，x 等于几？"
+        composeRule.onNodeWithTag("tutor_draft_input").performTextInput(exactQuestion)
+        composeRule.onNodeWithTag("tutor_draft_input").assertTextEquals(exactQuestion)
+        composeRule.onNodeWithTag("tutor_send_button").performClick()
+        waitForTag("tutor_lobby_send_error")
+        composeRule.onNodeWithTag("tutor_draft_input").assertTextEquals(exactQuestion)
 
         composeRule.onNodeWithTag("tutor_choose_existing_button").performClick()
         waitForTag("root_library")
@@ -212,7 +216,7 @@ class RootExperienceInstrumentedTest {
             "The strict-offline diagnostic flavor intentionally has no interactive teaching artifact.",
             application.capabilities.tutorTeachingEnabled,
         )
-        waitForTag("root_review")
+        navigateAndWait("nav_review", "root_review")
         composeRule.onNodeWithTag("review_start_button").performClick()
         waitForTag("review_session_root")
         waitForTag("review_choice_A")

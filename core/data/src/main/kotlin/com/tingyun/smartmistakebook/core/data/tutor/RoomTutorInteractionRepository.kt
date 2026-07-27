@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.tutor
 
 import com.tingyun.smartmistakebook.core.database.PersistTutorChoiceCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorEvidenceCancellationCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorAnswerExposureCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorRevealCommand
@@ -11,6 +12,7 @@ import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
 import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
+import com.tingyun.smartmistakebook.core.domain.CancelTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorSolutionExposureCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
@@ -67,7 +69,10 @@ internal class RoomTutorInteractionRepository(
                 requestId = requestId,
                 write = {
                     withContext(Dispatchers.IO) {
-                        database.recordTutorChoice(persisted).toDomain()
+                        database.recordTutorChoiceUnlessCancelled(
+                            persisted,
+                            command.toPersistedCancellation(learnerId),
+                        )?.toDomain() ?: throw TutorEvidenceRejectedException(requestId)
                     }
                 },
             )
@@ -97,16 +102,31 @@ internal class RoomTutorInteractionRepository(
             isDefinitelyNotCommitted = { true },
             write = {
                 withContext(Dispatchers.IO) {
-                    database.recordTutorVisualTargetEvidence(persisted)
+                    database.recordTutorVisualTargetEvidenceUnlessCancelled(
+                        persisted,
+                        command.toPersistedCancellation(learnerId),
+                    )
                 }
             },
         )
-        return stored.toDomain()
+        return (stored ?: throw TutorEvidenceRejectedException(command.modelTaskRequestId)).toDomain()
     }
 
     override fun cancelEvidence(requestId: String) {
         evidenceWriteGate.cancel(requestId)
     }
+
+    override suspend fun cancelEvidence(command: CancelTutorEvidenceCommand) {
+        withContext(Dispatchers.IO) {
+            database.recordTutorEvidenceCancellation(command.toPersistedCancellation(learnerId))
+        }
+        evidenceWriteGate.cancel(command.evidenceRequestId)
+    }
+
+    override suspend fun isEvidenceCancelled(command: CancelTutorEvidenceCommand): Boolean =
+        withContext(Dispatchers.IO) {
+            database.isTutorEvidenceCancelled(command.toPersistedCancellation(learnerId))
+        }
 
     override suspend fun recordMove(command: RecordTutorMoveCommand): TutorTurnResponse =
         withContext(Dispatchers.IO) {
@@ -196,6 +216,39 @@ internal class RoomTutorInteractionRepository(
         }
     }
 }
+
+private fun CancelTutorEvidenceCommand.toPersistedCancellation(
+    learnerId: String,
+) = PersistTutorEvidenceCancellationCommand(
+    learnerId = learnerId,
+    sessionId = sessionId,
+    questionDocumentId = questionDocumentId,
+    revisionNumber = revisionNumber,
+    evidenceRequestId = evidenceRequestId,
+    cancelledAtEpochMillis = occurredAtEpochMillis,
+)
+
+private fun RecordTutorChoiceCommand.toPersistedCancellation(
+    learnerId: String,
+) = PersistTutorEvidenceCancellationCommand(
+    learnerId = learnerId,
+    sessionId = sessionId,
+    questionDocumentId = questionDocumentId,
+    revisionNumber = revisionNumber,
+    evidenceRequestId = requireNotNull(evidenceRequestId),
+    cancelledAtEpochMillis = occurredAtEpochMillis,
+)
+
+private fun RecordTutorVisualTargetEvidenceCommand.toPersistedCancellation(
+    learnerId: String,
+) = PersistTutorEvidenceCancellationCommand(
+    learnerId = learnerId,
+    sessionId = sessionId,
+    questionDocumentId = questionDocumentId,
+    revisionNumber = revisionNumber,
+    evidenceRequestId = modelTaskRequestId,
+    cancelledAtEpochMillis = occurredAtEpochMillis,
+)
 
 internal class TutorEvidenceWriteGate {
     private val requests = ConcurrentHashMap<String, EvidenceWriteAuthorization>()

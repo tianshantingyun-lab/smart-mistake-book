@@ -177,14 +177,14 @@ internal fun tutorResponseModeFor(
 ): TutorExplanationMode =
     if (
         currentMode == TutorExplanationMode.GUIDED &&
-        studentMessage.trim() == DIRECT_TUTOR_RESPONSE_INTENT
+        studentMessage.trim() in DIRECT_TUTOR_RESPONSE_INTENTS
     ) {
         TutorExplanationMode.DIRECT
     } else {
         currentMode
     }
 
-private const val DIRECT_TUTOR_RESPONSE_INTENT = "直接讲"
+private val DIRECT_TUTOR_RESPONSE_INTENTS = setOf("直接讲", "不要问", "别提问")
 
 private fun ModelTaskSnapshot.requiresTutorModelSettings(): Boolean {
     val code = failure?.code ?: return false
@@ -566,6 +566,14 @@ private fun TutorAssistantReplyBubble(
 ) {
     val input = task.request.input as TutorRespondInput
     val output = task.output as? TutorRespondOutput
+    val assistantContentIdentity = listOf(
+        task.request.requestId,
+        input.responseOrdinal,
+        output?.messageMarkdown,
+    )
+    var assistantContentReady by remember(assistantContentIdentity) {
+        mutableStateOf(false)
+    }
     Surface(
         modifier = Modifier
             .fillMaxWidth(0.94f)
@@ -606,6 +614,8 @@ private fun TutorAssistantReplyBubble(
                             SafeMarkdownText(
                                 markdown = output.messageMarkdown,
                                 style = MaterialTheme.typography.bodyMedium,
+                                contentIdentity = assistantContentIdentity,
+                                onContentReady = { assistantContentReady = true },
                             )
                             localIntentContent(input, output)
                             visibleTutorInteractionDirective(
@@ -619,7 +629,7 @@ private fun TutorAssistantReplyBubble(
                                     visualTargetReady = visualTargetReady,
                                 )
                             }
-                            if (output.solutionRevealed) {
+                            if (output.solutionRevealed && assistantContentReady) {
                                 Box(
                                     modifier = Modifier
                                         .size(1.dp)
@@ -736,6 +746,7 @@ private fun TutorReplyFailure(
 internal fun TutorConversationFrame(
     header: @Composable () -> Unit,
     autoScrollVersion: Any?,
+    expectedItemCount: Int? = null,
     forceFollowToken: Any? = null,
     blockAutoFollowToken: Any? = null,
     modifier: Modifier = Modifier,
@@ -746,6 +757,7 @@ internal fun TutorConversationFrame(
 ) {
     TutorConversationAnchorEffect(
         autoScrollVersion = autoScrollVersion,
+        expectedItemCount = expectedItemCount,
         forceFollowToken = forceFollowToken,
         blockAutoFollowToken = blockAutoFollowToken,
         listState = listState,
@@ -809,6 +821,7 @@ internal fun TutorConversationFrame(
 @Composable
 internal fun TutorConversationAnchorEffect(
     autoScrollVersion: Any?,
+    expectedItemCount: Int? = null,
     forceFollowToken: Any? = null,
     blockAutoFollowToken: Any? = null,
     listState: LazyListState,
@@ -872,7 +885,13 @@ internal fun TutorConversationAnchorEffect(
             }
         }
     }
-    LaunchedEffect(autoScrollVersion, forceFollowToken, blockAutoFollowToken, listState) {
+    LaunchedEffect(
+        autoScrollVersion,
+        expectedItemCount,
+        forceFollowToken,
+        blockAutoFollowToken,
+        listState,
+    ) {
         val forceFollow = forceFollowToken != null && forceFollowToken != handledForceToken
         val blockAutoFollow = initialTailPositioned &&
             blockAutoFollowToken != null &&
@@ -891,7 +910,9 @@ internal fun TutorConversationAnchorEffect(
         }
         withFrameNanos { }
         val itemCount = snapshotFlow { listState.layoutInfo.totalItemsCount }
-            .first { it > 0 }
+            .first { count ->
+                count > 0 && (expectedItemCount == null || count == expectedItemCount)
+            }
         if (shouldFollow) {
             listState.scrollToTutorConversationTail(itemCount)
             followsTail = true

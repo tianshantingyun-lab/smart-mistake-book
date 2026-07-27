@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -149,6 +150,7 @@ fun SafeMarkdownText(
     color: Color = Ink,
     emptyFallback: String? = null,
     contentIdentity: Any = markdown,
+    onContentReady: (() -> Unit)? = null,
 ) {
     val displayText = markdown.ifBlank { emptyFallback.orEmpty() }
     val parsed = produceState(
@@ -166,6 +168,13 @@ fun SafeMarkdownText(
             annotated = parseSafeMarkdown(displayText),
         )
     }.value
+    val readyNotificationSent = remember(displayText, contentIdentity) {
+        mutableStateOf(false)
+    }
+    val currentContentIsParsed =
+        displayText.isNotEmpty() &&
+            parsed.source == displayText &&
+            parsed.contentIdentity == contentIdentity
     Text(
         text = safeMarkdownWhileParsing(
             displayText = displayText,
@@ -175,6 +184,16 @@ fun SafeMarkdownText(
         modifier = modifier,
         color = color,
         style = style,
+        onTextLayout = {
+            if (
+                currentContentIsParsed &&
+                !readyNotificationSent.value &&
+                onContentReady != null
+            ) {
+                readyNotificationSent.value = true
+                onContentReady()
+            }
+        },
     )
 }
 
@@ -1164,6 +1183,7 @@ private class IncrementalMarkdownTextView(
 
     fun render(state: StreamingMarkdownRenderState) {
         val patch = planner.plan(state)
+        if (patch.deleteSuffixCharacterCount == 0 && patch.appendedChunks.isEmpty()) return
         if (patch.deleteSuffixCharacterCount > 0) {
             buffer.delete(
                 buffer.length - patch.deleteSuffixCharacterCount,
@@ -1171,6 +1191,7 @@ private class IncrementalMarkdownTextView(
             )
         }
         patch.appendedChunks.forEach(buffer::appendAnnotated)
+        setText(buffer, BufferType.SPANNABLE)
     }
 }
 

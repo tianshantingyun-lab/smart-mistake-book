@@ -278,11 +278,21 @@ internal fun TutorLobbyRoute(
     }
 
     val listState = rememberLazyListState()
+    val activeItemVisible = activeMessage != null &&
+        visibleTasks.none { it.request.requestId == activeRequestId }
+    val expectedItemCount =
+        1 +
+            (if (visibleTasks.isEmpty()) 1 else 0) +
+            visibleTasks.size +
+            (if (activeItemVisible) 1 else 0) +
+            (if (pendingDisclosureMessage != null) 1 else 0) +
+            (if (sendError != null) 1 else 0)
     TutorConversationAnchorEffect(
         autoScrollVersion = listOf(
             visibleTasks.map { listOf(it.request.requestId, it.stateVersion, it.status) },
             activeMessage?.renderVersion,
         ),
+        expectedItemCount = expectedItemCount,
         forceFollowToken = activeMessage?.turnVersion,
         listState = listState,
     )
@@ -353,10 +363,7 @@ internal fun TutorLobbyRoute(
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
-            if (
-                activeMessage != null &&
-                visibleTasks.none { it.request.requestId == activeRequestId }
-            ) {
+            if (activeItemVisible) {
                 item(key = "lobby-active-${activeMessage.turnVersion}") {
                     TutorActiveChatExchange(
                         message = activeMessage,

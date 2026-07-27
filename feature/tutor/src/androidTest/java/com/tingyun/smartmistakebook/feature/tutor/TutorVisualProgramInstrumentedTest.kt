@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import android.content.ContentValues
 import android.provider.MediaStore
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.captureToImage
@@ -60,6 +61,45 @@ class TutorVisualProgramInstrumentedTest {
             "演示进度 1 秒，共 2 秒",
         ).assertExists()
         capture("tutor-visual-program-current.png")
+    }
+
+    @Test
+    fun readyAndFallbackPresentationsRemainLegibleWithoutAProvider() {
+        val resolution = mutableStateOf<TutorVisualResolution>(
+            inlineTutorVisualResolution(
+                scene = movingObjectScene(),
+                ownerModelTaskRequestId = "deterministic-visual-qa",
+            ),
+        )
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                RootPageColumn {
+                    TutorVisualPresentation(
+                        state = resolution.value,
+                        mode = TutorVisualPresentationMode.CURRENT_EXPANDED,
+                        originalAvailable = true,
+                        onRetry = {},
+                        onOpenOriginal = {},
+                        onReportIncorrect = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_visual_ready").assertExists()
+        composeRule.onNodeWithText("小球的位置怎样变化").assertExists()
+        capture("tutor-visual-ready-current.png")
+
+        composeRule.runOnIdle {
+            resolution.value = TutorVisualResolution.Fallback(
+                reason = TutorVisualFallbackReason.PROVIDER_UNAVAILABLE,
+                canRetry = true,
+            )
+        }
+        composeRule.onNodeWithTag("tutor_visual_fallback").assertExists()
+        composeRule.onNodeWithText("这次先看文字或原图").assertExists()
+        composeRule.onNodeWithText("重试图解").assertExists()
+        capture("tutor-visual-fallback-current.png")
     }
 
     private fun movingObjectScene(): TutorVisualProgramScene {

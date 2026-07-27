@@ -11,6 +11,22 @@ import org.junit.Test
 
 class TutorInteractionRepositoryTest {
     @Test
+    fun `evidence cancellation identity binds session question revision and request`() {
+        val exact = CancelTutorEvidenceCommand(
+            sessionId = "session-1",
+            questionDocumentId = "question-1",
+            revisionNumber = 2,
+            evidenceRequestId = "request-1",
+            occurredAtEpochMillis = 100,
+        )
+
+        assertTrue(exact != exact.copy(sessionId = "session-2"))
+        assertTrue(exact != exact.copy(questionDocumentId = "question-2"))
+        assertTrue(exact != exact.copy(revisionNumber = 3))
+        assertTrue(exact != exact.copy(evidenceRequestId = "request-2"))
+    }
+
+    @Test
     fun `choice fields are either complete or absent`() {
         val choice = choiceResponse(turnOrdinal = 1, selectionWasCorrect = true)
         val action = actionResponse(turnOrdinal = 2)

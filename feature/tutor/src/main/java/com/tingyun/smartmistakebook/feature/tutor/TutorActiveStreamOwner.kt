@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.InvalidTutorStudentMessageException
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
 import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
@@ -427,7 +428,7 @@ internal class TutorActiveStreamOwner(
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
-            } catch (_: IllegalArgumentException) {
+            } catch (_: InvalidTutorStudentMessageException) {
                 val failureCanWin = synchronized(previewLock) {
                     if (terminalSeen) {
                         false
