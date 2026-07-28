@@ -579,6 +579,90 @@ class LearningObservationDatabaseInstrumentedTest {
     }
 
     @Test
+    fun delayedConfirmationFullReplayCommitReloadUsesOccurrenceTimeline() = runBlocking {
+        val positiveOccurredAt = NOW - 43_200_000
+        val negativeOccurredAt = NOW - 86_400_000
+        val positiveConfirmedAt = NOW + 864_000_000
+        val negativeConfirmedAt = NOW + 1_728_000_000
+        val positive = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = ready(
+                    candidate(
+                        candidateId = "candidate-delayed-positive",
+                        occurredAtEpochMillis = positiveOccurredAt,
+                    ),
+                ).candidateId,
+                eventId = "observation-delayed-positive",
+                confirmedAtEpochMillis = positiveConfirmedAt,
+            ),
+        )
+        val negative = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = ready(
+                    candidate(
+                        candidateId = "candidate-delayed-negative",
+                        direction = LearningObservationDirection.NEGATIVE,
+                        occurredAtEpochMillis = negativeOccurredAt,
+                    ),
+                ).candidateId,
+                eventId = "observation-delayed-negative",
+                confirmedAtEpochMillis = negativeConfirmedAt,
+            ),
+        )
+        assertEquals(positiveConfirmedAt, requireNotNull(positive.event).confirmedAtEpochMillis)
+        assertEquals(negativeConfirmedAt, requireNotNull(negative.event).confirmedAtEpochMillis)
+
+        val ledger = store.loadLearningLedger(LEARNER)
+        assertEquals(LearningLedgerReadStatus.COMPLETE, ledger.status)
+        val events = ledger.validPrefix.map(PersistedLearningLedgerEvent::event)
+        val observations = events.filterIsInstance<AttributedLearningObservationEvent>()
+        val projector = LearningProjector()
+        val incremental = projector.project(
+            previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
+            events = observations,
+            knownLedgerHeadSequence = 2,
+            authoritativePresentationStates = emptyMap(),
+        )
+        val replay = projector.replay(LEARNER, events)
+        val mastery = replay.snapshot.knowledgeMasteryStates.getValue("knowledge-math")
+
+        assertEquals(incremental.snapshot, replay.snapshot)
+        assertEquals(positiveOccurredAt, mastery.lastEvidenceAtEpochMillis)
+        assertEquals(negativeOccurredAt, mastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(positiveOccurredAt, replay.snapshot.checkpoint.projectedAtEpochMillis)
+        assertEquals(positiveOccurredAt, replay.snapshot.generatedAtEpochMillis)
+
+        store.commitProjection(
+            ProjectionCommit(
+                projectionName = PROJECTION,
+                learnerId = LEARNER,
+                expectedPreviousCheckpoint = 0,
+                expectedPreviousStateVersion = 0,
+                mode = ProjectionCommitMode.FULL_REPLAY,
+                knownLedgerHeadSequence = 2,
+                consumedLedgerEvents = ledger.validPrefix.map { persisted ->
+                    ConsumedLedgerEventReceipt(
+                        eventKind = EVENT_KIND_LEARNING_OBSERVATION,
+                        eventId = persisted.event.ledgerEventId,
+                        eventSequence = persisted.event.eventSequence,
+                        canonicalFingerprint = persisted.canonicalFingerprint,
+                    )
+                },
+                presentationProjectionStates = replay.presentationProjectionStates,
+                snapshot = replay.snapshot,
+            ),
+        )
+
+        val reloaded = requireNotNull(store.readCurrentLearnerSnapshot(PROJECTION, LEARNER))
+        assertEquals(replay.snapshot, reloaded.snapshot)
+        assertEquals(
+            negativeOccurredAt,
+            reloaded.snapshot.knowledgeMasteryStates.getValue("knowledge-math")
+                .lastIndependentErrorAtEpochMillis,
+        )
+    }
+
+    @Test
     fun loadProjectCommitReloadPreservesMasteryAndAppliesObservationOnce() = runBlocking {
         val candidate = ready(candidate())
         val materialized = store.materializeLearningObservation(
@@ -675,9 +759,11 @@ class LearningObservationDatabaseInstrumentedTest {
         problemRevisionId: String = REVISION,
         bindingId: String = "binding-math",
         knowledgeNodeId: String = "knowledge-math",
+        direction: LearningObservationDirection = LearningObservationDirection.POSITIVE,
         evidenceLevel: LearningObservationEvidenceLevel =
             LearningObservationEvidenceLevel.HIGH_CONFIDENCE,
         evidenceWeight: Double = 0.8,
+        occurredAtEpochMillis: Long = NOW - 10,
     ) = LearningObservationCandidate(
         candidateId = candidateId,
         learnerId = learnerId,
@@ -685,7 +771,7 @@ class LearningObservationDatabaseInstrumentedTest {
         sourceReferenceId = sourceReferenceId,
         practiceUnitId = practiceUnitId,
         problemRevisionId = problemRevisionId,
-        direction = LearningObservationDirection.POSITIVE,
+        direction = direction,
         evidenceLevel = evidenceLevel,
         evidenceWeight = evidenceWeight,
         independence = LearningObservationIndependence.INDEPENDENT,
@@ -700,7 +786,7 @@ class LearningObservationDatabaseInstrumentedTest {
                 certainty = EvidenceAttributionCertainty.DIRECT,
             ),
         ),
-        occurredAtEpochMillis = NOW - 10,
+        occurredAtEpochMillis = occurredAtEpochMillis,
         modelVersion = "model-v1",
         evidenceLocator = "response:$candidateId",
         status = LearningObservationCandidateStatus.PENDING_CONFIRMATION,

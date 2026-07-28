@@ -102,6 +102,57 @@ class LearningObservationProjectorTest {
     }
 
     @Test
+    fun `delayed confirmation preserves occurrence time in incremental and full replay`() {
+        val positive = observation(
+            sequence = 1,
+            direction = LearningObservationDirection.POSITIVE,
+            occurredAtEpochMillis = 2_000,
+            confirmedAtEpochMillis = 1_000_000,
+        )
+        val afterPositive = projector.project(
+            previous = LearnerSnapshot.empty("learner-1", LearningProjector.VERSION),
+            events = listOf(positive),
+            knownLedgerHeadSequence = 1,
+        )
+        val positiveMastery =
+            afterPositive.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
+
+        assertEquals(2_000L, positiveMastery.lastEvidenceAtEpochMillis)
+        assertEquals(null, positiveMastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(2_000L, afterPositive.snapshot.checkpoint.projectedAtEpochMillis)
+        assertEquals(2_000L, afterPositive.snapshot.generatedAtEpochMillis)
+
+        val negative = observation(
+            sequence = 2,
+            direction = LearningObservationDirection.NEGATIVE,
+            eventId = "observation-delayed-negative",
+            candidateId = "candidate-delayed-negative",
+            occurredAtEpochMillis = 1_000,
+            confirmedAtEpochMillis = 2_000_000,
+        )
+        val incremental = projector.project(
+            previous = afterPositive.snapshot,
+            events = listOf(negative),
+            knownLedgerHeadSequence = 2,
+        )
+        val incrementalMastery =
+            incremental.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
+
+        assertEquals(2_000L, incrementalMastery.lastEvidenceAtEpochMillis)
+        assertEquals(1_000L, incrementalMastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(2_000L, incremental.snapshot.checkpoint.projectedAtEpochMillis)
+        assertEquals(2_000L, incremental.snapshot.generatedAtEpochMillis)
+
+        val replay = projector.replay("learner-1", listOf(negative, positive))
+
+        assertEquals(incremental.snapshot, replay.snapshot)
+        assertEquals(
+            incrementalMastery,
+            replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct"),
+        )
+    }
+
+    @Test
     fun `full replay includes observations and is deterministic`() {
         val first = observation(1, LearningObservationDirection.POSITIVE)
         val second = observation(
@@ -224,6 +275,7 @@ class LearningObservationProjectorTest {
         eventId: String = "observation-$sequence",
         candidateId: String = "candidate-$sequence",
         occurredAtEpochMillis: Long = 1_000,
+        confirmedAtEpochMillis: Long = occurredAtEpochMillis,
         attributions: List<LearningObservationKnowledgeAttribution> = listOf(
             attribution(
                 bindingId = "binding-direct",
@@ -243,7 +295,7 @@ class LearningObservationProjectorTest {
         independence = LearningObservationIndependence.INDEPENDENT,
         attributions = attributions,
         occurredAtEpochMillis = occurredAtEpochMillis,
-        confirmedAtEpochMillis = occurredAtEpochMillis,
+        confirmedAtEpochMillis = confirmedAtEpochMillis,
         modelVersion = "model-v1",
         evidenceLocator = "response:$eventId",
         eventSequence = sequence,

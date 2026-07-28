@@ -253,11 +253,7 @@ class LearningProjector(
             }
 
             val (event, fingerprint) = eventsAtSequence.single()
-            val effectiveAt = maxOf(
-                projectedAt,
-                event.occurredAtEpochMillis,
-                (event as? AttributedLearningObservationEvent)?.confirmedAtEpochMillis ?: 0L,
-            )
+            val effectiveAt = maxOf(projectedAt, event.occurredAtEpochMillis)
             when (event) {
                 is Attempt -> {
                     val presentationState = presentationProjectionStates.getValue(event.presentationId)
@@ -333,7 +329,7 @@ class LearningProjector(
                         masteryStates = masteryStates,
                         event = event,
                         ambiguousEventIds = ambiguousObservations,
-                        effectiveAtEpochMillis = effectiveAt,
+                        effectiveAtEpochMillis = event.occurredAtEpochMillis,
                     )
                     observationRecords[event.eventId] = AppliedLearningObservationRecord(
                         observationEventId = event.eventId,
@@ -467,11 +463,7 @@ class LearningProjector(
         var replayAt = 0L
         var correctionWatermark: Long? = null
         ordered.forEach { event ->
-            val effectiveAt = maxOf(
-                replayAt,
-                event.occurredAtEpochMillis,
-                (event as? AttributedLearningObservationEvent)?.confirmedAtEpochMillis ?: 0L,
-            )
+            val effectiveAt = maxOf(replayAt, event.occurredAtEpochMillis)
             when (event) {
                 is Attempt -> {
                     val correction = corrections[event.attemptId]
@@ -560,7 +552,7 @@ class LearningProjector(
                         masteryStates = masteryStates,
                         event = event,
                         ambiguousEventIds = ambiguousObservations,
-                        effectiveAtEpochMillis = effectiveAt,
+                        effectiveAtEpochMillis = event.occurredAtEpochMillis,
                     )
                     observationRecords[event.eventId] = AppliedLearningObservationRecord(
                         observationEventId = event.eventId,
