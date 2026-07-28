@@ -4,6 +4,8 @@ import com.tingyun.smartmistakebook.core.model.AppliedAttemptRecord
 import com.tingyun.smartmistakebook.core.model.AppliedAnswerRevealRecord
 import com.tingyun.smartmistakebook.core.model.AppliedCorrectionRecord
 import com.tingyun.smartmistakebook.core.model.AppliedTutorAnswerExposureRecord
+import com.tingyun.smartmistakebook.core.model.AppliedLearningObservationRecord
+import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
@@ -20,6 +22,9 @@ import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.LearningLedgerEvent
 import com.tingyun.smartmistakebook.core.model.LearningLedgerFingerprint
+import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
+import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
+import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
@@ -46,6 +51,11 @@ data class LearningProjectionResult(
     val ignoredTutorAnswerExposureOutcomeIds: Set<String> = emptySet(),
     val conflictedTutorAnswerExposureOutcomeIds: Set<String> = emptySet(),
     val deferredTutorAnswerExposureOutcomeIds: Set<String> = emptySet(),
+    val appliedLearningObservationEventIds: Set<String> = emptySet(),
+    val ignoredLearningObservationEventIds: Set<String> = emptySet(),
+    val conflictedLearningObservationEventIds: Set<String> = emptySet(),
+    val deferredLearningObservationEventIds: Set<String> = emptySet(),
+    val ambiguousLearningObservationEventIds: Set<String> = emptySet(),
     val presentationProjectionStates: Map<String, PresentationProjectionState> = emptyMap(),
 )
 
@@ -85,11 +95,15 @@ class LearningProjector(
         require(authoritativePresentationStates.all { (id, state) -> id == state.presentationId }) {
             "Authoritative presentation-state keys must match their values"
         }
+        require(events.filterIsInstance<AttributedLearningObservationEvent>().all {
+            it.learnerId == previous.learnerId
+        }) { "Learning observation learner must match the projected snapshot" }
         val incomingPresentationIds = events.mapNotNullTo(linkedSetOf()) { event ->
             when (event) {
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
                 is TutorAnswerExposureOutcome -> null
+                is AttributedLearningObservationEvent -> null
             }
         }
         require(incomingPresentationIds.all(authoritativePresentationStates::containsKey)) {
@@ -104,6 +118,8 @@ class LearningProjector(
             .mapTo(linkedSetOf(), AnswerRevealOutcome::outcomeId)
         val incomingTutorExposureIds = events.filterIsInstance<TutorAnswerExposureOutcome>()
             .mapTo(linkedSetOf(), TutorAnswerExposureOutcome::outcomeId)
+        val incomingObservationIds = events.filterIsInstance<AttributedLearningObservationEvent>()
+            .mapTo(linkedSetOf(), AttributedLearningObservationEvent::eventId)
         val fingerprinted = events.map { it to LearningLedgerFingerprint.event(it) }
         val byEventId = fingerprinted.groupBy { it.first.ledgerEventId }
         val sameIdConflictVariants = byEventId
@@ -140,14 +156,25 @@ class LearningProjector(
                     previous.appliedTutorAnswerExposureRecords[event.outcomeId]?.let {
                         it.eventSequence to it.canonicalFingerprint
                     }
+                is AttributedLearningObservationEvent ->
+                    previous.appliedLearningObservationRecords[event.eventId]?.let {
+                        it.eventSequence to it.canonicalFingerprint
+                    }
             }
             val idExistsAsAnotherType = when (event) {
                 is Attempt -> event.attemptId in previous.appliedAnswerRevealRecords ||
-                    event.attemptId in previous.appliedTutorAnswerExposureRecords
+                    event.attemptId in previous.appliedTutorAnswerExposureRecords ||
+                    event.attemptId in previous.appliedLearningObservationRecords
                 is AnswerRevealOutcome -> event.outcomeId in previous.appliedAttemptRecords ||
-                    event.outcomeId in previous.appliedTutorAnswerExposureRecords
+                    event.outcomeId in previous.appliedTutorAnswerExposureRecords ||
+                    event.outcomeId in previous.appliedLearningObservationRecords
                 is TutorAnswerExposureOutcome -> event.outcomeId in previous.appliedAttemptRecords ||
-                    event.outcomeId in previous.appliedAnswerRevealRecords
+                    event.outcomeId in previous.appliedAnswerRevealRecords ||
+                    event.outcomeId in previous.appliedLearningObservationRecords
+                is AttributedLearningObservationEvent ->
+                    event.eventId in previous.appliedAttemptRecords ||
+                        event.eventId in previous.appliedAnswerRevealRecords ||
+                        event.eventId in previous.appliedTutorAnswerExposureRecords
             }
             when {
                 recorded != null &&
@@ -172,6 +199,7 @@ class LearningProjector(
                 incomingAttemptIds = incomingAttemptIds,
                 incomingRevealIds = incomingRevealIds,
                 incomingTutorExposureIds = incomingTutorExposureIds,
+                incomingObservationIds = incomingObservationIds,
                 knownLedgerHeadSequence = knownLedgerHeadSequence,
                 presentationProjectionStates = authoritativePresentationStates,
             )
@@ -182,11 +210,14 @@ class LearningProjector(
         val attemptRecords = previous.appliedAttemptRecords.toMutableMap()
         val revealRecords = previous.appliedAnswerRevealRecords.toMutableMap()
         val tutorExposureRecords = previous.appliedTutorAnswerExposureRecords.toMutableMap()
+        val observationRecords = previous.appliedLearningObservationRecords.toMutableMap()
         val presentationProjectionStates = authoritativePresentationStates.toMutableMap()
         val appliedAttempts = linkedSetOf<String>()
         val appliedReveals = linkedSetOf<String>()
         val appliedTutorExposures = linkedSetOf<String>()
+        val appliedObservations = linkedSetOf<String>()
         val ambiguous = linkedSetOf<String>()
+        val ambiguousObservations = linkedSetOf<String>()
         val sequenceConflicts = linkedSetOf<String>()
         val deferred = linkedSetOf<String>()
         var expectedSequence = previous.checkpoint.lastSequence + 1
@@ -222,7 +253,11 @@ class LearningProjector(
             }
 
             val (event, fingerprint) = eventsAtSequence.single()
-            val effectiveAt = maxOf(projectedAt, event.occurredAtEpochMillis)
+            val effectiveAt = maxOf(
+                projectedAt,
+                event.occurredAtEpochMillis,
+                (event as? AttributedLearningObservationEvent)?.confirmedAtEpochMillis ?: 0L,
+            )
             when (event) {
                 is Attempt -> {
                     val presentationState = presentationProjectionStates.getValue(event.presentationId)
@@ -293,12 +328,27 @@ class LearningProjector(
                     )
                     appliedTutorExposures += event.outcomeId
                 }
+                is AttributedLearningObservationEvent -> {
+                    applyLearningObservation(
+                        masteryStates = masteryStates,
+                        event = event,
+                        ambiguousEventIds = ambiguousObservations,
+                        effectiveAtEpochMillis = effectiveAt,
+                    )
+                    observationRecords[event.eventId] = AppliedLearningObservationRecord(
+                        observationEventId = event.eventId,
+                        canonicalFingerprint = fingerprint,
+                        eventSequence = event.eventSequence,
+                    )
+                    appliedObservations += event.eventId
+                }
             }
             expectedSequence++
             projectedAt = effectiveAt
         }
 
-        val appliedEventCount = appliedAttempts.size + appliedReveals.size + appliedTutorExposures.size
+        val appliedEventCount = appliedAttempts.size + appliedReveals.size +
+            appliedTutorExposures.size + appliedObservations.size
         val lastSequence = previous.checkpoint.lastSequence + appliedEventCount
         val projectionStatus = when {
             sequenceConflicts.isNotEmpty() -> ProjectionStatus.CONFLICTED
@@ -328,6 +378,7 @@ class LearningProjector(
             appliedAttemptRecords = boundedRecords(attemptRecords),
             appliedAnswerRevealRecords = boundedAnswerRevealRecords(revealRecords),
             appliedTutorAnswerExposureRecords = boundedTutorAnswerExposureRecords(tutorExposureRecords),
+            appliedLearningObservationRecords = boundedLearningObservationRecords(observationRecords),
         )
         val outputPresentationStates = presentationProjectionStates.mapValues { (_, state) ->
             state.copy(asOfLedgerSequence = checkpoint.lastSequence)
@@ -348,6 +399,11 @@ class LearningProjector(
             ignoredTutorAnswerExposureOutcomeIds = ignored intersect incomingTutorExposureIds,
             conflictedTutorAnswerExposureOutcomeIds = sequenceConflicts intersect incomingTutorExposureIds,
             deferredTutorAnswerExposureOutcomeIds = deferred intersect incomingTutorExposureIds,
+            appliedLearningObservationEventIds = appliedObservations,
+            ignoredLearningObservationEventIds = ignored intersect incomingObservationIds,
+            conflictedLearningObservationEventIds = sequenceConflicts intersect incomingObservationIds,
+            deferredLearningObservationEventIds = deferred intersect incomingObservationIds,
+            ambiguousLearningObservationEventIds = ambiguousObservations,
             presentationProjectionStates = outputPresentationStates,
         )
     }
@@ -365,6 +421,9 @@ class LearningProjector(
         require(ordered.map(LearningLedgerEvent::ledgerEventId).distinct().size == ordered.size) {
             "Ledger event ids must be unique"
         }
+        require(ordered.filterIsInstance<AttributedLearningObservationEvent>().all {
+            it.learnerId == learnerId
+        }) { "Learning observation learner must match the replay learner" }
 
         val attemptsById = linkedMapOf<String, Attempt>()
         val corrections = linkedMapOf<String, AttemptCorrection>()
@@ -385,6 +444,7 @@ class LearningProjector(
                     answerRevealSequences.put(event.presentationId, event.eventSequence) == null,
                 ) { "A presentation may have only one terminal answer-reveal outcome" }
                 is TutorAnswerExposureOutcome -> Unit
+                is AttributedLearningObservationEvent -> Unit
                 is AttemptCorrection -> {
                     require(event.attemptId in attemptsById) {
                         "A correction must follow the attempt it replaces"
@@ -399,13 +459,19 @@ class LearningProjector(
         val attemptRecords = mutableMapOf<String, AppliedAttemptRecord>()
         val revealRecords = mutableMapOf<String, AppliedAnswerRevealRecord>()
         val tutorExposureRecords = mutableMapOf<String, AppliedTutorAnswerExposureRecord>()
+        val observationRecords = mutableMapOf<String, AppliedLearningObservationRecord>()
         val correctionRecords = mutableMapOf<String, AppliedCorrectionRecord>()
         val presentationProjectionStates = mutableMapOf<String, PresentationProjectionState>()
         val ambiguous = linkedSetOf<String>()
+        val ambiguousObservations = linkedSetOf<String>()
         var replayAt = 0L
         var correctionWatermark: Long? = null
         ordered.forEach { event ->
-            val effectiveAt = maxOf(replayAt, event.occurredAtEpochMillis)
+            val effectiveAt = maxOf(
+                replayAt,
+                event.occurredAtEpochMillis,
+                (event as? AttributedLearningObservationEvent)?.confirmedAtEpochMillis ?: 0L,
+            )
             when (event) {
                 is Attempt -> {
                     val correction = corrections[event.attemptId]
@@ -489,6 +555,19 @@ class LearningProjector(
                         eventSequence = event.eventSequence,
                     )
                 }
+                is AttributedLearningObservationEvent -> {
+                    applyLearningObservation(
+                        masteryStates = masteryStates,
+                        event = event,
+                        ambiguousEventIds = ambiguousObservations,
+                        effectiveAtEpochMillis = effectiveAt,
+                    )
+                    observationRecords[event.eventId] = AppliedLearningObservationRecord(
+                        observationEventId = event.eventId,
+                        canonicalFingerprint = LearningLedgerFingerprint.learningObservation(event),
+                        eventSequence = event.eventSequence,
+                    )
+                }
                 is AttemptCorrection -> {
                     correctionRecords[event.correctionId] = AppliedCorrectionRecord(
                         correctionId = event.correctionId,
@@ -518,6 +597,7 @@ class LearningProjector(
             appliedCorrectionRecords = boundedCorrectionRecords(correctionRecords),
             appliedAnswerRevealRecords = boundedAnswerRevealRecords(revealRecords),
             appliedTutorAnswerExposureRecords = boundedTutorAnswerExposureRecords(tutorExposureRecords),
+            appliedLearningObservationRecords = boundedLearningObservationRecords(observationRecords),
         )
         val outputPresentationStates = presentationProjectionStates.mapValues { (_, state) ->
             state.copy(asOfLedgerSequence = lastSequence)
@@ -531,6 +611,8 @@ class LearningProjector(
             correctedAttemptIds = corrections.keys.toSet(),
             appliedAnswerRevealOutcomeIds = revealRecords.keys.toSet(),
             appliedTutorAnswerExposureOutcomeIds = tutorExposureRecords.keys.toSet(),
+            appliedLearningObservationEventIds = observationRecords.keys.toSet(),
+            ambiguousLearningObservationEventIds = ambiguousObservations,
             presentationProjectionStates = outputPresentationStates,
         )
     }
@@ -545,7 +627,8 @@ class LearningProjector(
                         previous.appliedAttemptRecords.isEmpty() &&
                         previous.appliedCorrectionRecords.isEmpty() &&
                         previous.appliedAnswerRevealRecords.isEmpty() &&
-                        previous.appliedTutorAnswerExposureRecords.isEmpty()
+                        previous.appliedTutorAnswerExposureRecords.isEmpty() &&
+                        previous.appliedLearningObservationRecords.isEmpty()
                     ),
         ) { "A projector-version change requires replay from an empty snapshot" }
     }
@@ -559,6 +642,7 @@ class LearningProjector(
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
                 is TutorAnswerExposureOutcome -> null
+                is AttributedLearningObservationEvent -> null
             }
         }
         .distinct()
@@ -611,6 +695,7 @@ class LearningProjector(
         incomingAttemptIds: Set<String>,
         incomingRevealIds: Set<String>,
         incomingTutorExposureIds: Set<String>,
+        incomingObservationIds: Set<String>,
         knownLedgerHeadSequence: Long,
         presentationProjectionStates: Map<String, PresentationProjectionState>,
     ): LearningProjectionResult {
@@ -631,6 +716,9 @@ class LearningProjector(
             ignoredTutorAnswerExposureOutcomeIds = ignored intersect incomingTutorExposureIds,
             conflictedTutorAnswerExposureOutcomeIds = conflicts intersect incomingTutorExposureIds,
             deferredTutorAnswerExposureOutcomeIds = deferred intersect incomingTutorExposureIds,
+            ignoredLearningObservationEventIds = ignored intersect incomingObservationIds,
+            conflictedLearningObservationEventIds = conflicts intersect incomingObservationIds,
+            deferredLearningObservationEventIds = deferred intersect incomingObservationIds,
             presentationProjectionStates = presentationProjectionStates,
         )
     }
@@ -704,6 +792,33 @@ class LearningProjector(
         outcome = ProblemMemoryOutcome.ANSWER_REVEALED,
         weight = 0.0,
     )
+
+    private fun applyLearningObservation(
+        masteryStates: MutableMap<String, KnowledgeMasteryState>,
+        event: AttributedLearningObservationEvent,
+        ambiguousEventIds: MutableSet<String>,
+        effectiveAtEpochMillis: Long,
+    ) {
+        if (event.attributions.any {
+                it.certainty == EvidenceAttributionCertainty.AMBIGUOUS
+            }
+        ) {
+            ambiguousEventIds += event.eventId
+        }
+        event.attributions
+            .filter { it.certainty == EvidenceAttributionCertainty.DIRECT }
+            .sortedBy(LearningObservationKnowledgeAttribution::bindingId)
+            .forEach { attribution ->
+                val knowledgeNodeId = attribution.knowledgeNodeId
+                masteryStates[knowledgeNodeId] = projectObservationMastery(
+                    previous = masteryStates[knowledgeNodeId],
+                    knowledgeNodeId = knowledgeNodeId,
+                    event = event,
+                    attribution = attribution,
+                    effectiveAtEpochMillis = effectiveAtEpochMillis,
+                )
+            }
+    }
 
     private fun projectMemory(
         previous: ProblemMemoryState?,
@@ -885,6 +1000,94 @@ class LearningProjector(
         )
     }
 
+    private fun projectObservationMastery(
+        previous: KnowledgeMasteryState?,
+        knowledgeNodeId: String,
+        event: AttributedLearningObservationEvent,
+        attribution: LearningObservationKnowledgeAttribution,
+        effectiveAtEpochMillis: Long,
+    ): KnowledgeMasteryState {
+        require(effectiveAtEpochMillis >= event.occurredAtEpochMillis) {
+            "Effective projection time must not precede the raw observation time"
+        }
+        val probability = previous?.probabilityIndependentCorrect ?: INITIAL_MASTERY_PROBABILITY
+        val weight = event.evidenceWeight * attribution.weight
+        val positive = event.direction == LearningObservationDirection.POSITIVE
+        val updatedProbability = if (positive) {
+            probability + (1.0 - probability) * POSITIVE_LEARNING_RATE * weight
+        } else {
+            probability - probability * NEGATIVE_LEARNING_RATE * weight
+        }.coerceIn(0.0, 1.0)
+        val evidenceMass = (previous?.evidenceMass ?: 0.0) + weight
+        val lowerBound = masteryLowerBound(updatedProbability, evidenceMass)
+        val observations = previous?.independentCorrectObservations.orEmpty()
+        val independentError = !positive &&
+            event.independence == LearningObservationIndependence.INDEPENDENT
+        val lastErrorAt = if (independentError) {
+            maxOf(previous?.lastIndependentErrorAtEpochMillis ?: 0, effectiveAtEpochMillis)
+        } else {
+            previous?.lastIndependentErrorAtEpochMillis
+        }
+        val lastErrorSequence = if (independentError) {
+            maxOf(previous?.lastIndependentErrorSequence ?: 0, event.eventSequence)
+        } else {
+            previous?.lastIndependentErrorSequence
+        }
+        val startsConflict = independentError && previous?.let {
+            it.status == MasteryStatus.MASTERED ||
+                (it.lowerBoundIndependentCorrect >= ClearlyMasteredForSkipPolicy.LOWER_BOUND &&
+                    it.evidenceMass >= ClearlyMasteredForSkipPolicy.EVIDENCE_MASS)
+        } == true
+        val conflictSince = when {
+            startsConflict -> event.eventSequence
+            previous?.status == MasteryStatus.CONFLICTED && independentError -> event.eventSequence
+            previous?.status == MasteryStatus.CONFLICTED -> previous.conflictSinceSequence
+                ?: previous.lastIndependentErrorSequence
+            else -> null
+        }
+        val activeObservations = observations.filter {
+            it.calibrationSupportAt(effectiveAtEpochMillis) == CalibrationSupport.SUPPORTED
+        }
+        val calibration = when {
+            activeObservations.isNotEmpty() -> CalibrationSupport.SUPPORTED
+            observations.any {
+                it.calibrationSupportAt(effectiveAtEpochMillis) == CalibrationSupport.UNSUPPORTED
+            } -> CalibrationSupport.UNSUPPORTED
+            else -> CalibrationSupport.UNKNOWN
+        }
+        val status = when {
+            conflictSince != null -> MasteryStatus.CONFLICTED
+            evidenceMass < 1.0 -> MasteryStatus.UNKNOWN
+            clearlyMastered(
+                lowerBound = lowerBound,
+                evidenceMass = evidenceMass,
+                observations = activeObservations,
+                lastErrorAt = lastErrorAt,
+                lastErrorSequence = lastErrorSequence,
+                atEpochMillis = effectiveAtEpochMillis,
+            ) -> MasteryStatus.MASTERED
+            else -> MasteryStatus.LEARNING
+        }
+        return KnowledgeMasteryState(
+            knowledgeNodeId = knowledgeNodeId,
+            probabilityIndependentCorrect = updatedProbability,
+            lowerBoundIndependentCorrect = lowerBound,
+            evidenceMass = evidenceMass,
+            independentCorrectObservations = observations,
+            lastIndependentErrorAtEpochMillis = lastErrorAt,
+            lastIndependentErrorSequence = lastErrorSequence,
+            status = status,
+            calibrationSupport = calibration,
+            projectorVersion = VERSION,
+            checkpointSequence = event.eventSequence,
+            lastEvidenceAtEpochMillis = maxOf(
+                previous?.lastEvidenceAtEpochMillis ?: 0,
+                effectiveAtEpochMillis,
+            ),
+            conflictSinceSequence = conflictSince,
+        )
+    }
+
     private fun clearlyMastered(
         lowerBound: Double,
         evidenceMass: Double,
@@ -937,6 +1140,14 @@ class LearningProjector(
         .take(MAX_APPLIED_RECORDS)
         .sortedBy(AppliedTutorAnswerExposureRecord::eventSequence)
         .associateBy(AppliedTutorAnswerExposureRecord::outcomeId)
+
+    private fun boundedLearningObservationRecords(
+        records: Map<String, AppliedLearningObservationRecord>,
+    ): Map<String, AppliedLearningObservationRecord> = records.values
+        .sortedByDescending(AppliedLearningObservationRecord::eventSequence)
+        .take(MAX_APPLIED_RECORDS)
+        .sortedBy(AppliedLearningObservationRecord::eventSequence)
+        .associateBy(AppliedLearningObservationRecord::observationEventId)
 
     private fun safeAdd(value: Long, increment: Long): Long =
         if (Long.MAX_VALUE - value < increment) Long.MAX_VALUE else value + increment

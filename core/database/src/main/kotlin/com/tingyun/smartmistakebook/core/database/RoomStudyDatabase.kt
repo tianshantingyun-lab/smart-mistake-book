@@ -1230,6 +1230,31 @@ internal class RoomStudyDatabase(
         )
     }
 
+    override suspend fun submitLearningObservationCandidate(
+        candidate: com.tingyun.smartmistakebook.core.model.LearningObservationCandidate,
+    ): LearningObservationCandidateWriteResult =
+        database.learningObservationDao().submitCandidate(candidate)
+
+    override suspend fun compareAndSetLearningObservationCandidateStatus(
+        command: LearningObservationCandidateStatusChangeCommand,
+    ): LearningObservationCandidateStatusCasResult =
+        database.learningObservationDao().compareAndSetCandidateStatus(command)
+
+    override suspend fun materializeLearningObservation(
+        command: MaterializeLearningObservationCommand,
+    ): LearningObservationMaterializationResult =
+        database.learningObservationDao().materialize(command)
+
+    override suspend fun readLearningObservationCandidate(
+        candidateId: String,
+    ): com.tingyun.smartmistakebook.core.model.LearningObservationCandidate? =
+        database.learningObservationDao().readCandidate(candidateId)
+
+    override suspend fun readAttributedLearningObservation(
+        eventId: String,
+    ): com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent? =
+        database.learningObservationDao().readEvent(eventId)
+
     override suspend fun recordReviewAttempt(
         command: ReviewAttemptWriteCommand,
     ): ReviewAttemptWriteResult = database.withWriteTransaction {

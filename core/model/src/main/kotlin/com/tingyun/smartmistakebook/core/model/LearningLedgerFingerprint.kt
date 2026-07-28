@@ -13,7 +13,48 @@ object LearningLedgerFingerprint {
         is Attempt -> attempt(event)
         is AnswerRevealOutcome -> answerReveal(event)
         is TutorAnswerExposureOutcome -> tutorAnswerExposure(event)
+        is AttributedLearningObservationEvent -> learningObservation(event)
         is AttemptCorrection -> correction(event)
+    }
+
+    fun learningObservation(event: AttributedLearningObservationEvent): String = digest {
+        field("eventType", "ATTRIBUTED_LEARNING_OBSERVATION")
+        field("schemaVersion", LEARNING_OBSERVATION_SCHEMA_VERSION)
+        field("eventId", event.eventId)
+        field("candidateId", event.candidateId)
+        field("learnerId", event.learnerId)
+        field("practiceUnitId", event.practiceUnitId)
+        field("problemRevisionId", event.problemRevisionId)
+        field("direction", event.direction)
+        field("evidenceLevel", event.evidenceLevel)
+        field("evidenceWeight", java.lang.Double.toHexString(event.evidenceWeight))
+        field("independence", event.independence)
+        field("occurredAtEpochMillis", event.occurredAtEpochMillis)
+        field("confirmedAtEpochMillis", event.confirmedAtEpochMillis)
+        field("modelVersion", event.modelVersion)
+        field("evidenceLocator", event.evidenceLocator)
+        field("eventSequence", event.eventSequence)
+        observationAttributions(event.attributions)
+    }
+
+    fun learningObservationCandidate(candidate: LearningObservationCandidate): String = digest {
+        field("payloadType", "LEARNING_OBSERVATION_CANDIDATE")
+        field("schemaVersion", LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION)
+        field("candidateId", candidate.candidateId)
+        field("learnerId", candidate.learnerId)
+        field("source", candidate.source)
+        field("sourceReferenceId", candidate.sourceReferenceId)
+        field("practiceUnitId", candidate.practiceUnitId)
+        field("problemRevisionId", candidate.problemRevisionId)
+        field("direction", candidate.direction)
+        field("evidenceLevel", candidate.evidenceLevel)
+        field("evidenceWeight", java.lang.Double.toHexString(candidate.evidenceWeight))
+        field("independence", candidate.independence)
+        field("occurredAtEpochMillis", candidate.occurredAtEpochMillis)
+        field("modelVersion", candidate.modelVersion)
+        field("evidenceLocator", candidate.evidenceLocator)
+        field("createdAtEpochMillis", candidate.createdAtEpochMillis)
+        observationAttributions(candidate.proposedAttributions)
     }
 
     fun answerReveal(outcome: AnswerRevealOutcome): String = digest {
@@ -128,6 +169,22 @@ object LearningLedgerFingerprint {
         }
     }
 
+    private fun CanonicalDigest.observationAttributions(
+        attributions: List<LearningObservationKnowledgeAttribution>,
+    ) {
+        val canonical = attributions.sortedBy(LearningObservationKnowledgeAttribution::bindingId)
+        field("attributionCount", canonical.size)
+        canonical.forEachIndexed { index, attribution ->
+            field("attribution[$index].bindingId", attribution.bindingId)
+            field("attribution[$index].knowledgeNodeId", attribution.knowledgeNodeId)
+            field("attribution[$index].weight", java.lang.Double.toHexString(attribution.weight))
+            field("attribution[$index].basisRevisionId", attribution.basisRevisionId)
+            field("attribution[$index].taxonomyVersion", attribution.taxonomyVersion)
+            field("attribution[$index].role", attribution.role)
+            field("attribution[$index].certainty", attribution.certainty)
+        }
+    }
+
     private class CanonicalDigest {
         private val digest = MessageDigest.getInstance("SHA-256")
 
@@ -149,4 +206,8 @@ object LearningLedgerFingerprint {
 
     private const val TUTOR_ANSWER_EXPOSURE_SCHEMA_VERSION =
         "learning-ledger-tutor-answer-exposure-canonical-v1"
+    private const val LEARNING_OBSERVATION_SCHEMA_VERSION =
+        "learning-ledger-observation-canonical-v1"
+    private const val LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION =
+        "learning-observation-candidate-canonical-v1"
 }

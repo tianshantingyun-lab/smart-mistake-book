@@ -668,6 +668,7 @@ data class LearnerSnapshot(
     val appliedCorrectionRecords: Map<String, AppliedCorrectionRecord> = emptyMap(),
     val appliedAnswerRevealRecords: Map<String, AppliedAnswerRevealRecord> = emptyMap(),
     val appliedTutorAnswerExposureRecords: Map<String, AppliedTutorAnswerExposureRecord> = emptyMap(),
+    val appliedLearningObservationRecords: Map<String, AppliedLearningObservationRecord> = emptyMap(),
 ) {
     init {
         require(learnerId.isNotBlank()) { "Learner id must not be blank" }
@@ -709,6 +710,9 @@ data class LearnerSnapshot(
         require(appliedTutorAnswerExposureRecords.all { (id, record) ->
             id == record.outcomeId && record.eventSequence <= checkpoint.lastSequence
         }) { "Applied tutor-exposure records must match their keys and checkpoint" }
+        require(appliedLearningObservationRecords.all { (id, record) ->
+            id == record.observationEventId && record.eventSequence <= checkpoint.lastSequence
+        }) { "Applied learning-observation records must match their keys and checkpoint" }
     }
 
     val appliedAttemptIds: Set<String>

@@ -35,6 +35,8 @@ import com.tingyun.smartmistakebook.core.model.AppliedAttemptRecord
 import com.tingyun.smartmistakebook.core.model.AppliedAnswerRevealRecord
 import com.tingyun.smartmistakebook.core.model.AppliedCorrectionRecord
 import com.tingyun.smartmistakebook.core.model.AppliedTutorAnswerExposureRecord
+import com.tingyun.smartmistakebook.core.model.AppliedLearningObservationRecord
+import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -66,6 +68,8 @@ import com.tingyun.smartmistakebook.core.database.entity.AppliedAttemptRecordEnt
 import com.tingyun.smartmistakebook.core.database.entity.AppliedAnswerRevealRecordEntity
 import com.tingyun.smartmistakebook.core.database.entity.AppliedCorrectionRecordEntity
 import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExposureRecordEntity
+import com.tingyun.smartmistakebook.core.database.entity.AppliedLearningObservationRecordEntity
+import com.tingyun.smartmistakebook.core.database.entity.AttributedLearningObservationEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AnswerRevealOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentAnswerRevealEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEventEntity
@@ -82,6 +86,7 @@ import com.tingyun.smartmistakebook.core.database.entity.LearnerKnowledgeMastery
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProblemMemoryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProjectionSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionConsumptionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
@@ -1168,6 +1173,24 @@ internal abstract class ProjectionTransactionDao {
         outcomeId: String,
     ): TutorAnswerExposureOutcomeEntity?
 
+    @Query(
+        "SELECT * FROM attributed_learning_observation_event WHERE event_id = :eventId LIMIT 1",
+    )
+    protected abstract suspend fun findProjectionLearningObservation(
+        eventId: String,
+    ): AttributedLearningObservationEventEntity?
+
+    @Query(
+        """
+        SELECT * FROM learning_observation_event_attribution
+        WHERE event_id = :eventId
+        ORDER BY ordinal ASC
+        """,
+    )
+    protected abstract suspend fun findProjectionLearningObservationAttributions(
+        eventId: String,
+    ): List<LearningObservationEventAttributionEntity>
+
     @Query("SELECT * FROM assessment_evidence_snapshot WHERE snapshot_id = :snapshotId LIMIT 1")
     protected abstract suspend fun findEvidenceSnapshot(
         snapshotId: String,
@@ -1267,6 +1290,18 @@ internal abstract class ProjectionTransactionDao {
         projectionName: String,
         learnerId: String,
     ): List<AppliedTutorAnswerExposureRecordEntity>
+
+    @Query(
+        """
+        SELECT * FROM applied_learning_observation_record
+        WHERE projection_name = :projectionName AND learner_id = :learnerId
+        ORDER BY event_sequence ASC
+        """,
+    )
+    protected abstract suspend fun findAppliedLearningObservations(
+        projectionName: String,
+        learnerId: String,
+    ): List<AppliedLearningObservationRecordEntity>
 
     @Query(
         """
@@ -1385,6 +1420,14 @@ internal abstract class ProjectionTransactionDao {
         learnerId: String,
     )
 
+    @Query(
+        "DELETE FROM applied_learning_observation_record WHERE projection_name = :projectionName AND learner_id = :learnerId",
+    )
+    protected abstract suspend fun deleteAppliedLearningObservations(
+        projectionName: String,
+        learnerId: String,
+    )
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertMemoryStates(states: List<LearnerProblemMemoryStateEntity>)
 
@@ -1410,6 +1453,11 @@ internal abstract class ProjectionTransactionDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertAppliedTutorAnswerExposures(
         records: List<AppliedTutorAnswerExposureRecordEntity>,
+    )
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    protected abstract suspend fun insertAppliedLearningObservations(
+        records: List<AppliedLearningObservationRecordEntity>,
     )
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -1511,6 +1559,13 @@ internal abstract class ProjectionTransactionDao {
                         outbox = row.toRecord(),
                     )
                 }
+                EVENT_KIND_LEARNING_OBSERVATION -> readLearningObservation(row)?.let { event ->
+                    PersistedIncrementalLearningEvent(
+                        event = event,
+                        canonicalFingerprint = row.canonicalFingerprint,
+                        outbox = row.toRecord(),
+                    )
+                }
                 else -> null
             } ?: return batchStop(
                 projectionName,
@@ -1582,6 +1637,7 @@ internal abstract class ProjectionTransactionDao {
                 EVENT_KIND_ATTEMPT -> readAttempt(row)?.let { it.attempt }
                 EVENT_KIND_ANSWER_REVEAL -> readAnswerReveal(row)?.let { it.outcome }
                 EVENT_KIND_TUTOR_ANSWER_EXPOSURE -> readTutorAnswerExposure(row)
+                EVENT_KIND_LEARNING_OBSERVATION -> readLearningObservation(row)
                 EVENT_KIND_CORRECTION -> readCorrection(row)?.let { it.correction }
                 else -> null
             }
@@ -1626,6 +1682,7 @@ internal abstract class ProjectionTransactionDao {
             appliedCorrections = findAppliedCorrections(projectionName, learnerId),
             appliedAnswerReveals = findAppliedAnswerReveals(projectionName, learnerId),
             appliedTutorAnswerExposures = findAppliedTutorAnswerExposures(projectionName, learnerId),
+            appliedLearningObservations = findAppliedLearningObservations(projectionName, learnerId),
         )
     }
 
@@ -1680,6 +1737,7 @@ internal abstract class ProjectionTransactionDao {
             rows.any {
                 it.eventKind != EVENT_KIND_ATTEMPT && it.eventKind != EVENT_KIND_ANSWER_REVEAL
                     && it.eventKind != EVENT_KIND_TUTOR_ANSWER_EXPOSURE
+                    && it.eventKind != EVENT_KIND_LEARNING_OBSERVATION
             }
         ) {
             throw ProjectionCasConflictException("Incremental commit cannot cross a correction")
@@ -1735,6 +1793,7 @@ internal abstract class ProjectionTransactionDao {
         deleteAppliedCorrections(commit.projectionName, commit.learnerId)
         deleteAppliedAnswerReveals(commit.projectionName, commit.learnerId)
         deleteAppliedTutorAnswerExposures(commit.projectionName, commit.learnerId)
+        deleteAppliedLearningObservations(commit.projectionName, commit.learnerId)
         storedSnapshot.toMemoryEntities(commit.projectionName).insertWhenNotEmpty(::insertMemoryStates)
         val mastery = storedSnapshot.toMasteryEntities(commit.projectionName)
         mastery.first.insertWhenNotEmpty(::insertMasteryStates)
@@ -1747,6 +1806,8 @@ internal abstract class ProjectionTransactionDao {
             .insertWhenNotEmpty(::insertAppliedAnswerReveals)
         storedSnapshot.toAppliedTutorAnswerExposureEntities(commit.projectionName)
             .insertWhenNotEmpty(::insertAppliedTutorAnswerExposures)
+        storedSnapshot.toAppliedLearningObservationEntities(commit.projectionName)
+            .insertWhenNotEmpty(::insertAppliedLearningObservations)
         rows.map { row ->
             ProjectionConsumptionEntity(
                 projectionName = commit.projectionName,
@@ -1797,6 +1858,7 @@ internal abstract class ProjectionTransactionDao {
                 }
                 EVENT_KIND_CORRECTION -> null
                 EVENT_KIND_TUTOR_ANSWER_EXPOSURE -> null
+                EVENT_KIND_LEARNING_OBSERVATION -> null
                 else -> throw ProjectionCasConflictException("Unknown presentation authority event kind")
             }
             previous?.let { persistPresentationProjectionState(it) }
@@ -1933,6 +1995,7 @@ internal abstract class ProjectionTransactionDao {
                             findProjectionAnswerReveal(row.eventId)?.presentationId
                         EVENT_KIND_CORRECTION -> null
                         EVENT_KIND_TUTOR_ANSWER_EXPOSURE -> null
+                        EVENT_KIND_LEARNING_OBSERVATION -> null
                         else -> null
                     }
                 }
@@ -2027,12 +2090,28 @@ internal abstract class ProjectionTransactionDao {
                 )
             }
         }
+        snapshot.appliedLearningObservationRecords.values.forEach { applied ->
+            val observation = findProjectionLearningObservation(applied.observationEventId)
+                ?: throw ProjectionCasConflictException(
+                    "Applied learning observation ${applied.observationEventId} is not in the immutable ledger",
+                )
+            if (observation.learnerId != learnerId ||
+                observation.eventSequence != applied.eventSequence ||
+                observation.canonicalFingerprint != applied.canonicalFingerprint ||
+                readLearningObservation(observation.toOutbox()) == null
+            ) {
+                throw ProjectionCasConflictException(
+                    "Applied learning observation ${applied.observationEventId} differs from the immutable ledger",
+                )
+            }
+        }
     }
 
     private suspend fun ProjectionOutboxEntity.hasValidCanonicalEvent(): Boolean = when (eventKind) {
         EVENT_KIND_ATTEMPT -> readAttempt(this) != null
         EVENT_KIND_ANSWER_REVEAL -> readAnswerReveal(this) != null
         EVENT_KIND_TUTOR_ANSWER_EXPOSURE -> readTutorAnswerExposure(this) != null
+        EVENT_KIND_LEARNING_OBSERVATION -> readLearningObservation(this) != null
         EVENT_KIND_CORRECTION -> readCorrection(this) != null
         else -> false
     }
@@ -2107,6 +2186,23 @@ internal abstract class ProjectionTransactionDao {
         return outcome
     }
 
+    private suspend fun readLearningObservation(
+        row: ProjectionOutboxEntity,
+    ): AttributedLearningObservationEvent? {
+        val entity = findProjectionLearningObservation(row.eventId) ?: return null
+        if (entity.learnerId != row.learnerId ||
+            entity.eventSequence != row.outboxSequence ||
+            entity.canonicalFingerprint != row.canonicalFingerprint
+        ) return null
+        val event = runCatching {
+            entity.toModel(findProjectionLearningObservationAttributions(entity.eventId))
+        }.getOrNull() ?: return null
+        if (LearningLedgerFingerprint.learningObservation(event) != row.canonicalFingerprint) {
+            return null
+        }
+        return event
+    }
+
     private suspend fun batchStop(
         projectionName: String,
         learnerId: String,
@@ -2122,6 +2218,7 @@ internal abstract class ProjectionTransactionDao {
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
                 is TutorAnswerExposureOutcome -> null
+                is AttributedLearningObservationEvent -> null
             }
         }
         val persistedStates = if (presentationIds.isEmpty()) {
@@ -2596,6 +2693,19 @@ private fun LearnerSnapshot.toAppliedTutorAnswerExposureEntities(projectionName:
             )
         }
 
+private fun LearnerSnapshot.toAppliedLearningObservationEntities(projectionName: String) =
+    appliedLearningObservationRecords.values
+        .sortedBy(AppliedLearningObservationRecord::eventSequence)
+        .map { record ->
+            AppliedLearningObservationRecordEntity(
+                projectionName = projectionName,
+                learnerId = learnerId,
+                eventId = record.observationEventId,
+                canonicalFingerprint = record.canonicalFingerprint,
+                eventSequence = record.eventSequence,
+            )
+        }
+
 private fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
     memoryStates: List<LearnerProblemMemoryStateEntity>,
     masteryStates: List<LearnerKnowledgeMasteryStateEntity>,
@@ -2604,6 +2714,7 @@ private fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
     appliedCorrections: List<AppliedCorrectionRecordEntity>,
     appliedAnswerReveals: List<AppliedAnswerRevealRecordEntity>,
     appliedTutorAnswerExposures: List<AppliedTutorAnswerExposureRecordEntity>,
+    appliedLearningObservations: List<AppliedLearningObservationRecordEntity>,
 ): PersistedLearnerSnapshot {
     val observationsByKnowledge = observations.groupBy { it.knowledgeNodeId }
     val snapshot = LearnerSnapshot(
@@ -2703,6 +2814,13 @@ private fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
             record.outcomeId to AppliedTutorAnswerExposureRecord(
                 outcomeId = record.outcomeId,
                 exposureId = record.exposureId,
+                canonicalFingerprint = record.canonicalFingerprint,
+                eventSequence = record.eventSequence,
+            )
+        },
+        appliedLearningObservationRecords = appliedLearningObservations.associate { record ->
+            record.eventId to AppliedLearningObservationRecord(
+                observationEventId = record.eventId,
                 canonicalFingerprint = record.canonicalFingerprint,
                 eventSequence = record.eventSequence,
             )

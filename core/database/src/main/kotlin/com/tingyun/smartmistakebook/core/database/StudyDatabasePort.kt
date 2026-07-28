@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.database
 
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
+import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
@@ -10,6 +11,9 @@ import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.LearningEvidence
 import com.tingyun.smartmistakebook.core.model.IncrementalLearningEvent
 import com.tingyun.smartmistakebook.core.model.LearningLedgerEvent
+import com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewCase
+import com.tingyun.smartmistakebook.core.model.LearningObservationCandidate
+import com.tingyun.smartmistakebook.core.model.LearningObservationCandidateStatus
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.PresentationProjectionState
@@ -1225,6 +1229,49 @@ data class AttemptWriteCommand(
     val studyDay: StudyDayContext,
 )
 
+data class LearningObservationCandidateWriteResult(
+    val created: Boolean,
+    val candidate: LearningObservationCandidate,
+)
+
+data class LearningObservationCandidateStatusChangeCommand(
+    val candidateId: String,
+    val expectedStatus: LearningObservationCandidateStatus,
+    val newStatus: LearningObservationCandidateStatus,
+    val expectedRetryCount: Int,
+    val incrementRetry: Boolean,
+    val updatedAtEpochMillis: Long,
+)
+
+data class LearningObservationCandidateStatusCasResult(
+    val updated: Boolean,
+    val candidate: LearningObservationCandidate,
+)
+
+data class MaterializeLearningObservationCommand(
+    val candidateId: String,
+    val eventId: String,
+    val confirmedAtEpochMillis: Long,
+)
+
+data class LearningObservationMaterializationResult(
+    val created: Boolean,
+    val event: AttributedLearningObservationEvent?,
+    val canonicalFingerprint: String?,
+    val outboxId: String?,
+    val reviewCase: LearningEvidenceReviewCase?,
+) {
+    init {
+        require((event == null) != (reviewCase == null)) {
+            "Materialization must return either a ledger event or a review case"
+        }
+        require((event != null) == (canonicalFingerprint != null && outboxId != null)) {
+            "Materialized event metadata must be complete"
+        }
+        require(!created || event != null) { "A review case is never a created ledger event" }
+    }
+}
+
 data class AnswerRevealWriteCommand(
     val learnerId: String,
     val assessmentEventId: String,
@@ -1848,6 +1895,26 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     suspend fun appendAssessmentEvent(event: AssessmentEventSeedRecord)
 
     suspend fun recordAttempt(command: AttemptWriteCommand): AttemptWriteResult
+
+    suspend fun submitLearningObservationCandidate(
+        candidate: LearningObservationCandidate,
+    ): LearningObservationCandidateWriteResult
+
+    suspend fun compareAndSetLearningObservationCandidateStatus(
+        command: LearningObservationCandidateStatusChangeCommand,
+    ): LearningObservationCandidateStatusCasResult
+
+    suspend fun materializeLearningObservation(
+        command: MaterializeLearningObservationCommand,
+    ): LearningObservationMaterializationResult
+
+    suspend fun readLearningObservationCandidate(
+        candidateId: String,
+    ): LearningObservationCandidate?
+
+    suspend fun readAttributedLearningObservation(
+        eventId: String,
+    ): AttributedLearningObservationEvent?
 
     suspend fun recordReviewAttempt(
         command: ReviewAttemptWriteCommand,

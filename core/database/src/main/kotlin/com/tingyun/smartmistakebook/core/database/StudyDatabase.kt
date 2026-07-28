@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.database.dao.KnowledgeNodeRelationDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeResearchReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeTeachingMaterialDao
 import com.tingyun.smartmistakebook.core.database.dao.LearningDao
+import com.tingyun.smartmistakebook.core.database.dao.LearningObservationDao
 import com.tingyun.smartmistakebook.core.database.dao.ModelTaskTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.MistakeDetailDao
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureDao
@@ -64,6 +65,12 @@ import com.tingyun.smartmistakebook.core.database.entity.LearnerKnowledgeMastery
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProblemMemoryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProjectionSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateAttributionEntity
+import com.tingyun.smartmistakebook.core.database.entity.AttributedLearningObservationEventEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningEvidenceReviewCaseEntity
+import com.tingyun.smartmistakebook.core.database.entity.AppliedLearningObservationRecordEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskOperationEntity
@@ -102,7 +109,7 @@ import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExpos
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 31
+internal const val STUDY_DATABASE_VERSION = 32
 
 @Database(
     entities = [
@@ -174,6 +181,12 @@ internal const val STUDY_DATABASE_VERSION = 31
         TutorAnswerExposureEntity::class,
         TutorAnswerExposureOutcomeEntity::class,
         AppliedTutorAnswerExposureRecordEntity::class,
+        LearningObservationCandidateEntity::class,
+        LearningObservationCandidateAttributionEntity::class,
+        AttributedLearningObservationEventEntity::class,
+        LearningObservationEventAttributionEntity::class,
+        LearningEvidenceReviewCaseEntity::class,
+        AppliedLearningObservationRecordEntity::class,
         BatchImportJobEntity::class,
         BatchImportPageEntity::class,
     ],
@@ -196,6 +209,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
     abstract fun mistakeDetailDao(): MistakeDetailDao
 
     abstract fun learningDao(): LearningDao
+
+    abstract fun learningObservationDao(): LearningObservationDao
 
     abstract fun immutableLearningFactDao(): ImmutableLearningFactDao
 
@@ -267,6 +282,7 @@ object StudyDatabaseFactory {
             TUTOR_VISUAL_TARGET_EVIDENCE_MIGRATION_28_29,
             TUTOR_VISUAL_TARGET_EVIDENCE_MIGRATION_29_30,
             TUTOR_EVIDENCE_CANCELLATION_MIGRATION_30_31,
+            LEARNING_OBSERVATION_MIGRATION_31_32,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

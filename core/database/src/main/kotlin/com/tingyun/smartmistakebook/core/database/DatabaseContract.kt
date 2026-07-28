@@ -765,9 +765,10 @@ internal object DatabaseContractValidator {
             "Snapshot exceeds the bounded applied-attempt record limit"
         }
         requireContract(
-            commit.snapshot.appliedCorrectionRecords.size <= MAX_APPLIED_ATTEMPT_RECORDS &&
+                commit.snapshot.appliedCorrectionRecords.size <= MAX_APPLIED_ATTEMPT_RECORDS &&
                 commit.snapshot.appliedAnswerRevealRecords.size <= MAX_APPLIED_ATTEMPT_RECORDS &&
-                commit.snapshot.appliedTutorAnswerExposureRecords.size <= MAX_APPLIED_ATTEMPT_RECORDS,
+                commit.snapshot.appliedTutorAnswerExposureRecords.size <= MAX_APPLIED_ATTEMPT_RECORDS &&
+                commit.snapshot.appliedLearningObservationRecords.size <= MAX_APPLIED_ATTEMPT_RECORDS,
         ) { "Snapshot exceeds the bounded applied-event record limit" }
         if (commit.mode == ProjectionCommitMode.INCREMENTAL) {
             requireContract(commit.consumedLedgerEvents.size <= MAX_PROJECTION_BATCH_SIZE) {
@@ -777,7 +778,8 @@ internal object DatabaseContractValidator {
                 commit.consumedLedgerEvents.all {
                     it.eventKind == "ATTEMPT" ||
                         it.eventKind == "ANSWER_REVEAL_OUTCOME" ||
-                        it.eventKind == "TUTOR_ANSWER_EXPOSURE_OUTCOME"
+                        it.eventKind == "TUTOR_ANSWER_EXPOSURE_OUTCOME" ||
+                        it.eventKind == "ATTRIBUTED_LEARNING_OBSERVATION"
                 },
             ) {
                 "Incremental projection cannot consume corrections"
@@ -813,7 +815,8 @@ internal object DatabaseContractValidator {
                 receipt.eventKind == "ATTEMPT" ||
                     receipt.eventKind == "ATTEMPT_CORRECTION" ||
                     receipt.eventKind == "ANSWER_REVEAL_OUTCOME" ||
-                    receipt.eventKind == "TUTOR_ANSWER_EXPOSURE_OUTCOME",
+                    receipt.eventKind == "TUTOR_ANSWER_EXPOSURE_OUTCOME" ||
+                    receipt.eventKind == "ATTRIBUTED_LEARNING_OBSERVATION",
             ) {
                 "Unknown ledger event kind"
             }
