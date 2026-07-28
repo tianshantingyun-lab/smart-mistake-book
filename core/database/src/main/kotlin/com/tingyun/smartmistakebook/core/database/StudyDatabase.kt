@@ -65,6 +65,7 @@ import com.tingyun.smartmistakebook.core.database.entity.LearnerKnowledgeMastery
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProblemMemoryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProjectionSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningEventIdentityEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceAuthorityEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateAttributionEntity
@@ -151,6 +152,7 @@ internal const val STUDY_DATABASE_VERSION = 32
         AttemptEventEntity::class,
         AttemptCorrectionEntity::class,
         LearningSequenceEntity::class,
+        LearningEventIdentityEntity::class,
         ProjectionOutboxEntity::class,
         ProjectionConsumptionEntity::class,
         ProblemMemoryStateEntity::class,

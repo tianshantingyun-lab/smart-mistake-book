@@ -5,11 +5,46 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 
 /**
- * Adds empty observation workflow and ledger tables. Existing v31 rows are intentionally not
- * transformed: an imported mistake, accepted binding, or elapsed time is not mastery evidence.
+ * Adds the observation workflow and ledger tables. Existing learning events are registered by
+ * immutable event id, while imported mistakes and accepted bindings remain non-evidence.
  */
 internal val LEARNING_OBSERVATION_MIGRATION_31_32 = object : Migration(31, 32) {
     override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `learning_event_identity` (
+                `event_id` TEXT NOT NULL,
+                `event_kind` TEXT NOT NULL,
+                PRIMARY KEY(`event_id`)
+            )
+            """.trimIndent(),
+        )
+        connection.execSQL(
+            """
+            INSERT INTO `learning_event_identity` (`event_id`, `event_kind`)
+            SELECT `attempt_id`, 'ATTEMPT' FROM `attempt_event`
+            """.trimIndent(),
+        )
+        connection.execSQL(
+            """
+            INSERT INTO `learning_event_identity` (`event_id`, `event_kind`)
+            SELECT `correction_id`, 'ATTEMPT_CORRECTION' FROM `attempt_correction`
+            """.trimIndent(),
+        )
+        connection.execSQL(
+            """
+            INSERT INTO `learning_event_identity` (`event_id`, `event_kind`)
+            SELECT `outcome_id`, 'ANSWER_REVEAL_OUTCOME' FROM `answer_reveal_outcome`
+            """.trimIndent(),
+        )
+        connection.execSQL(
+            """
+            INSERT INTO `learning_event_identity` (`event_id`, `event_kind`)
+            SELECT `outcome_id`, 'TUTOR_ANSWER_EXPOSURE_OUTCOME'
+            FROM `tutor_answer_exposure_outcome`
+            """.trimIndent(),
+        )
+
         connection.execSQL(
             """
             CREATE TABLE IF NOT EXISTS `learning_observation_source_authority` (

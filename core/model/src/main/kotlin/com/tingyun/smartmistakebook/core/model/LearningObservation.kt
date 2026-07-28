@@ -19,6 +19,44 @@ enum class LearningObservationCandidateStatus {
     REJECTED,
 }
 
+/**
+ * Public workflow transitions. MATERIALIZED is deliberately absent because only the local
+ * materialization transaction may create the ledger event and advance READY atomically.
+ */
+fun LearningObservationCandidateStatus.allowedExternalTransitions():
+    Set<LearningObservationCandidateStatus> = when (this) {
+    LearningObservationCandidateStatus.WAITING_FOR_ANCHOR -> setOf(
+        LearningObservationCandidateStatus.WAITING_FOR_ORGANIZATION,
+        LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION,
+        LearningObservationCandidateStatus.REJECTED,
+    )
+    LearningObservationCandidateStatus.WAITING_FOR_ORGANIZATION -> setOf(
+        LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION,
+        LearningObservationCandidateStatus.REJECTED,
+    )
+    LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION -> setOf(
+        LearningObservationCandidateStatus.WAITING_FOR_PROJECTION,
+        LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+        LearningObservationCandidateStatus.READY,
+        LearningObservationCandidateStatus.REJECTED,
+    )
+    LearningObservationCandidateStatus.WAITING_FOR_PROJECTION -> setOf(
+        LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+        LearningObservationCandidateStatus.READY,
+        LearningObservationCandidateStatus.REJECTED,
+    )
+    LearningObservationCandidateStatus.PENDING_CONFIRMATION -> setOf(
+        LearningObservationCandidateStatus.READY,
+        LearningObservationCandidateStatus.REJECTED,
+    )
+    LearningObservationCandidateStatus.READY -> setOf(
+        LearningObservationCandidateStatus.REJECTED,
+    )
+    LearningObservationCandidateStatus.MATERIALIZED,
+    LearningObservationCandidateStatus.REJECTED,
+    -> emptySet()
+}
+
 enum class LearningObservationDirection {
     POSITIVE,
     NEGATIVE,
@@ -106,6 +144,21 @@ data class LearningObservationCandidate(
         }
         require(updatedAtEpochMillis >= createdAtEpochMillis) {
             "Observation candidate update must not precede creation"
+        }
+    }
+
+    /**
+     * Persisted candidates also use this model, so READY and MATERIALIZED remain representable.
+     * Every external creation boundary must call this before inserting a new candidate.
+     */
+    fun requireSafeInitialStatus() {
+        require(
+            status == LearningObservationCandidateStatus.WAITING_FOR_ANCHOR ||
+                status == LearningObservationCandidateStatus.WAITING_FOR_ORGANIZATION ||
+                status == LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION ||
+                status == LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+        ) {
+            "New observation candidates must start in a non-projectable workflow status"
         }
     }
 }

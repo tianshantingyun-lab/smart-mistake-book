@@ -29,6 +29,10 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttri
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -92,6 +96,121 @@ class LearningObservationDatabaseInstrumentedTest {
         assertEquals(transitioned.candidate, replay.candidate)
         assertFalse(stale.updated)
         assertEquals(LearningObservationCandidateStatus.READY, stale.candidate.status)
+    }
+
+    @Test
+    fun directReadyOrMaterializedSubmissionIsRejectedEvenWithSourceAuthority() = runBlocking {
+        val initial = candidate(candidateId = "candidate-initial-state-gate")
+        val directReady = initial.copy(status = LearningObservationCandidateStatus.READY)
+        val directMaterialized =
+            initial.copy(status = LearningObservationCandidateStatus.MATERIALIZED)
+
+        assertIllegalArgument { store.submitLearningObservationCandidate(directReady) }
+        assertIllegalArgument { store.submitLearningObservationCandidate(directMaterialized) }
+        assertNull(store.readLearningObservationCandidate(initial.candidateId))
+
+        registerAuthority(initial)
+        assertIllegalArgument { store.submitLearningObservationCandidate(directReady) }
+        assertIllegalArgument {
+            store.submitLearningObservationCandidate(
+                initial.copy(status = LearningObservationCandidateStatus.REJECTED),
+            )
+        }
+
+        val ready = ready(initial)
+        assertEquals(LearningObservationCandidateStatus.READY, ready.status)
+        val materialized = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = ready.candidateId,
+                eventId = "observation-initial-state-gate",
+                confirmedAtEpochMillis = NOW + 2,
+            ),
+        )
+
+        assertNotNull(materialized.event)
+        assertEquals(
+            LearningObservationCandidateStatus.MATERIALIZED,
+            store.readLearningObservationCandidate(initial.candidateId)?.status,
+        )
+    }
+
+    @Test
+    fun publicCasCannotSetMaterializedOrTransitionOutOfTerminalStates() = runBlocking {
+        val ready = ready(candidate(candidateId = "candidate-public-materialized-cas"))
+        LearningObservationCandidateStatus.entries.forEach { expectedStatus ->
+            assertIllegalArgument {
+                store.compareAndSetLearningObservationCandidateStatus(
+                    LearningObservationCandidateStatusChangeCommand(
+                        candidateId = ready.candidateId,
+                        expectedStatus = expectedStatus,
+                        newStatus = LearningObservationCandidateStatus.MATERIALIZED,
+                        expectedRetryCount = ready.retryCount,
+                        incrementRetry = false,
+                        updatedAtEpochMillis = NOW + 2,
+                    ),
+                )
+            }
+        }
+        assertEquals(
+            LearningObservationCandidateStatus.READY,
+            store.readLearningObservationCandidate(ready.candidateId)?.status,
+        )
+
+        val materialized = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = ready.candidateId,
+                eventId = "observation-public-materialized-cas",
+                confirmedAtEpochMillis = NOW + 2,
+            ),
+        )
+        assertNotNull(materialized.event)
+        assertEquals(
+            LearningObservationCandidateStatus.MATERIALIZED,
+            store.readLearningObservationCandidate(ready.candidateId)?.status,
+        )
+        LearningObservationCandidateStatus.entries.forEach { nextStatus ->
+            assertIllegalArgument {
+                store.compareAndSetLearningObservationCandidateStatus(
+                    LearningObservationCandidateStatusChangeCommand(
+                        candidateId = ready.candidateId,
+                        expectedStatus = LearningObservationCandidateStatus.MATERIALIZED,
+                        newStatus = nextStatus,
+                        expectedRetryCount = ready.retryCount,
+                        incrementRetry = false,
+                        updatedAtEpochMillis = NOW + 3,
+                    ),
+                )
+            }
+        }
+
+        val rejectable = candidate(candidateId = "candidate-rejected-terminal")
+        registerAuthority(rejectable)
+        store.submitLearningObservationCandidate(rejectable)
+        val rejected = store.compareAndSetLearningObservationCandidateStatus(
+            LearningObservationCandidateStatusChangeCommand(
+                candidateId = rejectable.candidateId,
+                expectedStatus = rejectable.status,
+                newStatus = LearningObservationCandidateStatus.REJECTED,
+                expectedRetryCount = rejectable.retryCount,
+                incrementRetry = false,
+                updatedAtEpochMillis = NOW + 1,
+            ),
+        ).candidate
+        assertEquals(LearningObservationCandidateStatus.REJECTED, rejected.status)
+        LearningObservationCandidateStatus.entries.forEach { nextStatus ->
+            assertIllegalArgument {
+                store.compareAndSetLearningObservationCandidateStatus(
+                    LearningObservationCandidateStatusChangeCommand(
+                        candidateId = rejected.candidateId,
+                        expectedStatus = LearningObservationCandidateStatus.REJECTED,
+                        newStatus = nextStatus,
+                        expectedRetryCount = rejected.retryCount,
+                        incrementRetry = false,
+                        updatedAtEpochMillis = NOW + 2,
+                    ),
+                )
+            }
+        }
     }
 
     @Test
@@ -249,6 +368,137 @@ class LearningObservationDatabaseInstrumentedTest {
         assertTrue(batch.events[1].event is AttributedLearningObservationEvent)
         assertTrue(batch.events[2].event is Attempt)
         assertEquals(3L, batch.ledgerHeadSequence)
+    }
+
+    @Test
+    fun legacyAttemptIdentityRejectsObservationWithoutConsumingSequence() = runBlocking {
+        val sharedEventId = "shared-attempt-observation-id"
+        store.recordAttempt(
+            attemptCommand(
+                submissionId = "submission-before-observation-collision",
+                attemptId = sharedEventId,
+                presentationId = "presentation-before-observation-collision",
+                occurredAtEpochMillis = NOW,
+            ),
+        )
+        val readyCandidate = ready(
+            candidate(candidateId = "candidate-after-attempt-collision"),
+        )
+
+        assertImmutableConflict {
+            store.materializeLearningObservation(
+                MaterializeLearningObservationCommand(
+                    candidateId = readyCandidate.candidateId,
+                    eventId = sharedEventId,
+                    confirmedAtEpochMillis = NOW + 2,
+                ),
+            )
+        }
+
+        assertEquals(
+            LearningObservationCandidateStatus.READY,
+            store.readLearningObservationCandidate(readyCandidate.candidateId)?.status,
+        )
+        val batch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(1L, batch.ledgerHeadSequence)
+        assertEquals(listOf(sharedEventId), batch.events.map { it.event.ledgerEventId })
+        assertTrue(batch.events.single().event is Attempt)
+    }
+
+    @Test
+    fun observationIdentityRejectsAttemptWithoutConsumingSequence() = runBlocking {
+        val sharedEventId = "shared-observation-attempt-id"
+        val readyCandidate = ready(
+            candidate(candidateId = "candidate-before-attempt-collision"),
+        )
+        val observation = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = readyCandidate.candidateId,
+                eventId = sharedEventId,
+                confirmedAtEpochMillis = NOW + 2,
+            ),
+        )
+
+        assertImmutableConflict {
+            store.recordAttempt(
+                attemptCommand(
+                    submissionId = "submission-after-observation-collision",
+                    attemptId = sharedEventId,
+                    presentationId = "presentation-after-observation-collision",
+                    occurredAtEpochMillis = NOW + 3,
+                ),
+            )
+        }
+
+        assertEquals(
+            LearningObservationCandidateStatus.MATERIALIZED,
+            store.readLearningObservationCandidate(readyCandidate.candidateId)?.status,
+        )
+        val batch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(1L, requireNotNull(observation.event).eventSequence)
+        assertEquals(1L, batch.ledgerHeadSequence)
+        assertEquals(listOf(sharedEventId), batch.events.map { it.event.ledgerEventId })
+        assertTrue(batch.events.single().event is AttributedLearningObservationEvent)
+    }
+
+    @Test
+    fun concurrentAttemptAndObservationCanClaimSharedIdentityOnlyOnce() = runBlocking {
+        val sharedEventId = "shared-concurrent-ledger-id"
+        val readyCandidate = ready(
+            candidate(candidateId = "candidate-concurrent-identity"),
+        )
+
+        val outcomes = coroutineScope {
+            listOf(
+                async(Dispatchers.Default) {
+                    try {
+                        store.recordAttempt(
+                            attemptCommand(
+                                submissionId = "submission-concurrent-identity",
+                                attemptId = sharedEventId,
+                                presentationId = "presentation-concurrent-identity",
+                                occurredAtEpochMillis = NOW + 2,
+                            ),
+                        )
+                        "attempt-created"
+                    } catch (_: ImmutablePayloadConflictException) {
+                        "attempt-conflict"
+                    }
+                },
+                async(Dispatchers.Default) {
+                    try {
+                        store.materializeLearningObservation(
+                            MaterializeLearningObservationCommand(
+                                candidateId = readyCandidate.candidateId,
+                                eventId = sharedEventId,
+                                confirmedAtEpochMillis = NOW + 2,
+                            ),
+                        )
+                        "observation-created"
+                    } catch (_: ImmutablePayloadConflictException) {
+                        "observation-conflict"
+                    }
+                },
+            ).awaitAll()
+        }
+
+        assertTrue(
+            outcomes == listOf("attempt-created", "observation-conflict") ||
+                outcomes == listOf("attempt-conflict", "observation-created"),
+        )
+        val batch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(1L, batch.ledgerHeadSequence)
+        assertEquals(listOf(1L), batch.events.map { it.event.eventSequence })
+        assertEquals(listOf(sharedEventId), batch.events.map { it.event.ledgerEventId })
+        val expectedCandidateStatus = if (outcomes.first() == "attempt-created") {
+            LearningObservationCandidateStatus.READY
+        } else {
+            LearningObservationCandidateStatus.MATERIALIZED
+        }
+        assertEquals(
+            expectedCandidateStatus,
+            store.readLearningObservationCandidate(readyCandidate.candidateId)?.status,
+        )
     }
 
     @Test
@@ -553,6 +803,15 @@ class LearningObservationDatabaseInstrumentedTest {
             block()
             fail("Expected LearningObservationSourceAuthorityException")
         } catch (_: LearningObservationSourceAuthorityException) {
+            Unit
+        }
+    }
+
+    private suspend fun assertIllegalArgument(block: suspend () -> Unit) {
+        try {
+            block()
+            fail("Expected IllegalArgumentException")
+        } catch (_: IllegalArgumentException) {
             Unit
         }
     }

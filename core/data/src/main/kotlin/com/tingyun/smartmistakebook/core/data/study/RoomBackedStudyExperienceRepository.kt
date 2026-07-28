@@ -717,9 +717,11 @@ class RoomBackedStudyExperienceRepository(
                             result.conflictedAttemptIds.isEmpty() &&
                                 result.conflictedAnswerRevealOutcomeIds.isEmpty() &&
                                 result.conflictedTutorAnswerExposureOutcomeIds.isEmpty() &&
+                                result.conflictedLearningObservationEventIds.isEmpty() &&
                                 result.deferredAttemptIds.isEmpty() &&
                                 result.deferredAnswerRevealOutcomeIds.isEmpty() &&
-                                result.deferredTutorAnswerExposureOutcomeIds.isEmpty(),
+                                result.deferredTutorAnswerExposureOutcomeIds.isEmpty() &&
+                                result.deferredLearningObservationEventIds.isEmpty(),
                         ) { "Projector rejected a database-validated incremental prefix" }
                         val commit = ProjectionCommit(
                             projectionName = PROJECTION_NAME,

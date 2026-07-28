@@ -12,6 +12,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.database.TutorSessionProblemAnchorRecord
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningEventIdentityEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureEntity
@@ -126,6 +127,11 @@ internal abstract class TutorExposureDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertOutbox(outbox: ProjectionOutboxEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertEventIdentity(
+        identity: LearningEventIdentityEntity,
+    ): Long
 
     @Query(
         """
@@ -299,9 +305,15 @@ internal abstract class TutorExposureDao {
             verifyMaterialized(existing)
             return false
         }
+        val eventId = outcomeId(exposure.exposureId)
+        claimLearningEventIdentity(
+            eventId = eventId,
+            eventKind = EVENT_KIND_TUTOR_ANSWER_EXPOSURE,
+            insert = ::insertEventIdentity,
+        )
         val sequence = allocateSequence(anchor.learnerId)
         val outcome = TutorAnswerExposureOutcome(
-            outcomeId = outcomeId(exposure.exposureId),
+            outcomeId = eventId,
             exposureId = exposure.exposureId,
             sessionId = exposure.sessionId,
             questionDocumentId = exposure.questionDocumentId,

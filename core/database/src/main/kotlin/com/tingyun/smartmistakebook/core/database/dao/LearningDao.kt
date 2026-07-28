@@ -85,6 +85,7 @@ import com.tingyun.smartmistakebook.core.database.entity.IndependentCorrectObser
 import com.tingyun.smartmistakebook.core.database.entity.LearnerKnowledgeMasteryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProblemMemoryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProjectionSnapshotEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningEventIdentityEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
@@ -436,6 +437,11 @@ internal abstract class AttemptTransactionDao {
     protected abstract suspend fun insertOutbox(outbox: ProjectionOutboxEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertEventIdentity(
+        identity: LearningEventIdentityEntity,
+    ): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun initializeSequence(sequence: LearningSequenceEntity): Long
 
     @Query(
@@ -649,6 +655,7 @@ internal abstract class AttemptTransactionDao {
         ) {
             throw ImmutablePayloadConflictException("assessment_presentation", command.presentationId)
         }
+        claimEventIdentity(command.attemptId, EVENT_KIND_ATTEMPT)
         val sequence = allocateSequence(command.learnerId)
         val attempt = DatabaseContractValidator.constructAttempt(
             command = authoritativeCommand,
@@ -763,6 +770,7 @@ internal abstract class AttemptTransactionDao {
             return readCorrectionReplay(existing, authoritativeCommand)
         }
         DatabaseContractValidator.validateCorrectionAgainstAttempt(authoritativeCommand, target)
+        claimEventIdentity(command.correctionId, EVENT_KIND_CORRECTION)
         val sequence = allocateSequence(command.learnerId)
         val correction = DatabaseContractValidator.constructCorrection(authoritativeCommand, sequence)
         val fingerprint = LearningLedgerFingerprint.correction(correction)
@@ -807,6 +815,8 @@ internal abstract class AttemptTransactionDao {
         ) {
             throw ImmutablePayloadConflictException("assessment_presentation", event.presentationId)
         }
+        val outcomeId = DatabaseContractValidator.answerRevealOutcomeId(event.assessmentEventId)
+        claimEventIdentity(outcomeId, EVENT_KIND_ANSWER_REVEAL)
         val sequence = allocateSequence(event.learnerId)
         val outcome = event.toModel(snapshot, sequence)
         val fingerprint = LearningLedgerFingerprint.answerReveal(outcome)
@@ -1099,6 +1109,14 @@ internal abstract class AttemptTransactionDao {
             "Learning sequence CAS failed inside a serialized Room transaction"
         }
         return next
+    }
+
+    private suspend fun claimEventIdentity(eventId: String, eventKind: String) {
+        claimLearningEventIdentity(
+            eventId = eventId,
+            eventKind = eventKind,
+            insert = ::insertEventIdentity,
+        )
     }
 }
 

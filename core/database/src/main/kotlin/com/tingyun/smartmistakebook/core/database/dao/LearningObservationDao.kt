@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.database.MaterializeLearningObservation
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.entity.AttributedLearningObservationEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningEvidenceReviewCaseEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningEventIdentityEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
@@ -37,6 +38,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
+import com.tingyun.smartmistakebook.core.model.allowedExternalTransitions
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
@@ -81,6 +83,11 @@ internal abstract class LearningObservationDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertOutbox(entity: ProjectionOutboxEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertEventIdentity(
+        identity: LearningEventIdentityEntity,
+    ): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertReviewCase(entity: LearningEvidenceReviewCaseEntity): Long
@@ -311,6 +318,7 @@ internal abstract class LearningObservationDao {
     open suspend fun submitCandidate(
         candidate: LearningObservationCandidate,
     ): LearningObservationCandidateWriteResult {
+        candidate.requireSafeInitialStatus()
         val fingerprint = LearningLedgerFingerprint.learningObservationCandidate(candidate)
         findCandidateByProvenance(
             candidate.learnerId,
@@ -348,7 +356,7 @@ internal abstract class LearningObservationDao {
         require(command.candidateId.isNotBlank()) { "candidateId must not be blank" }
         require(command.expectedRetryCount >= 0) { "expectedRetryCount cannot be negative" }
         require(command.updatedAtEpochMillis >= 0) { "updatedAtEpochMillis cannot be negative" }
-        require(command.newStatus in allowedNextStatuses(command.expectedStatus)) {
+        require(command.newStatus in command.expectedStatus.allowedExternalTransitions()) {
             "Illegal learning-observation candidate status transition"
         }
         val before = findCandidateEntity(command.candidateId)
@@ -537,6 +545,11 @@ internal abstract class LearningObservationDao {
                 "Candidate state changed before ledger admission.",
             )
         }
+        claimLearningEventIdentity(
+            eventId = command.eventId,
+            eventKind = EVENT_KIND_LEARNING_OBSERVATION,
+            insert = ::insertEventIdentity,
+        )
         val sequence = allocateSequence(candidate.learnerId)
         val event = AttributedLearningObservationEvent(
             eventId = command.eventId,
@@ -690,42 +703,6 @@ internal abstract class LearningObservationDao {
         }
         return next
     }
-}
-
-private fun allowedNextStatuses(
-    status: LearningObservationCandidateStatus,
-): Set<LearningObservationCandidateStatus> = when (status) {
-    LearningObservationCandidateStatus.WAITING_FOR_ANCHOR -> setOf(
-        LearningObservationCandidateStatus.WAITING_FOR_ORGANIZATION,
-        LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION,
-        LearningObservationCandidateStatus.REJECTED,
-    )
-    LearningObservationCandidateStatus.WAITING_FOR_ORGANIZATION -> setOf(
-        LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION,
-        LearningObservationCandidateStatus.REJECTED,
-    )
-    LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION -> setOf(
-        LearningObservationCandidateStatus.WAITING_FOR_PROJECTION,
-        LearningObservationCandidateStatus.PENDING_CONFIRMATION,
-        LearningObservationCandidateStatus.READY,
-        LearningObservationCandidateStatus.REJECTED,
-    )
-    LearningObservationCandidateStatus.WAITING_FOR_PROJECTION -> setOf(
-        LearningObservationCandidateStatus.PENDING_CONFIRMATION,
-        LearningObservationCandidateStatus.READY,
-        LearningObservationCandidateStatus.REJECTED,
-    )
-    LearningObservationCandidateStatus.PENDING_CONFIRMATION -> setOf(
-        LearningObservationCandidateStatus.READY,
-        LearningObservationCandidateStatus.REJECTED,
-    )
-    LearningObservationCandidateStatus.READY -> setOf(
-        LearningObservationCandidateStatus.MATERIALIZED,
-        LearningObservationCandidateStatus.REJECTED,
-    )
-    LearningObservationCandidateStatus.MATERIALIZED,
-    LearningObservationCandidateStatus.REJECTED,
-    -> emptySet()
 }
 
 private fun LearningObservationSourceAuthorityRecord.toEntity() =

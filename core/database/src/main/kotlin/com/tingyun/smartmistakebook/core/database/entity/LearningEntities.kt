@@ -492,6 +492,15 @@ internal data class LearningSequenceEntity(
     val lastAllocatedSequence: Long,
 )
 
+@Entity(tableName = "learning_event_identity")
+internal data class LearningEventIdentityEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "event_id")
+    val eventId: String,
+    @ColumnInfo(name = "event_kind")
+    val eventKind: String,
+)
+
 @Entity(
     tableName = "projection_outbox",
     indices = [

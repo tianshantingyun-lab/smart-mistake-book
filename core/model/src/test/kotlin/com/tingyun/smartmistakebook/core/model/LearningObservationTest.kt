@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.model
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -56,6 +57,45 @@ class LearningObservationTest {
         assertIllegalArgument {
             event.copy(confirmedAtEpochMillis = event.occurredAtEpochMillis - 1)
         }
+    }
+
+    @Test
+    fun `only non projectable workflow states are safe for new candidate submission`() {
+        listOf(
+            LearningObservationCandidateStatus.WAITING_FOR_ANCHOR,
+            LearningObservationCandidateStatus.WAITING_FOR_ORGANIZATION,
+            LearningObservationCandidateStatus.WAITING_FOR_ATTRIBUTION,
+            LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+        ).forEach { status ->
+            candidate(status = status).requireSafeInitialStatus()
+        }
+
+        listOf(
+            LearningObservationCandidateStatus.WAITING_FOR_PROJECTION,
+            LearningObservationCandidateStatus.READY,
+            LearningObservationCandidateStatus.MATERIALIZED,
+            LearningObservationCandidateStatus.REJECTED,
+        ).forEach { status ->
+            assertIllegalArgument {
+                candidate(status = status).requireSafeInitialStatus()
+            }
+        }
+    }
+
+    @Test
+    fun `external workflow cannot enter or leave materialized terminal state`() {
+        LearningObservationCandidateStatus.entries.forEach { status ->
+            assertFalse(
+                LearningObservationCandidateStatus.MATERIALIZED in
+                    status.allowedExternalTransitions(),
+            )
+        }
+        assertEquals(
+            setOf(LearningObservationCandidateStatus.REJECTED),
+            LearningObservationCandidateStatus.READY.allowedExternalTransitions(),
+        )
+        assertTrueTerminal(LearningObservationCandidateStatus.MATERIALIZED)
+        assertTrueTerminal(LearningObservationCandidateStatus.REJECTED)
     }
 
     @Test
@@ -125,6 +165,8 @@ class LearningObservationTest {
         modelVersion: String = "model-v1",
         evidenceLocator: String = "turn:1/choice:choice-a",
         evidenceWeight: Double = 0.8,
+        status: LearningObservationCandidateStatus =
+            LearningObservationCandidateStatus.PENDING_CONFIRMATION,
         proposedAttributions: List<LearningObservationKnowledgeAttribution> = listOf(
             attribution("binding-1", "knowledge-1", 1.0),
         ),
@@ -143,7 +185,7 @@ class LearningObservationTest {
         occurredAtEpochMillis = 1_000,
         modelVersion = modelVersion,
         evidenceLocator = evidenceLocator,
-        status = LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+        status = status,
         retryCount = 0,
         createdAtEpochMillis = 1_100,
         updatedAtEpochMillis = 1_100,
@@ -170,5 +212,9 @@ class LearningObservationTest {
         } catch (_: IllegalArgumentException) {
             Unit
         }
+    }
+
+    private fun assertTrueTerminal(status: LearningObservationCandidateStatus) {
+        assertEquals(emptySet<LearningObservationCandidateStatus>(), status.allowedExternalTransitions())
     }
 }
