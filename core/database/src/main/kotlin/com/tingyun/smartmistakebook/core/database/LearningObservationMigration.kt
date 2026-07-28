@@ -12,6 +12,27 @@ internal val LEARNING_OBSERVATION_MIGRATION_31_32 = object : Migration(31, 32) {
     override suspend fun migrate(connection: SQLiteConnection) {
         connection.execSQL(
             """
+            CREATE TABLE IF NOT EXISTS `learning_observation_source_authority` (
+                `learner_id` TEXT NOT NULL,
+                `source` TEXT NOT NULL,
+                `source_reference_id` TEXT NOT NULL,
+                `practice_unit_id` TEXT NOT NULL,
+                `problem_revision_id` TEXT NOT NULL,
+                `source_payload_fingerprint` TEXT NOT NULL,
+                `verified_at_epoch_millis` INTEGER NOT NULL,
+                PRIMARY KEY(`learner_id`, `source`, `source_reference_id`),
+                FOREIGN KEY(`practice_unit_id`, `problem_revision_id`)
+                    REFERENCES `practice_unit`(`practice_unit_id`, `problem_revision_id`)
+                    ON UPDATE NO ACTION ON DELETE RESTRICT
+            )
+            """.trimIndent(),
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_learning_observation_source_authority_practice_unit_id_problem_revision_id` ON `learning_observation_source_authority` (`practice_unit_id`, `problem_revision_id`)",
+        )
+
+        connection.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS `learning_observation_candidate` (
                 `candidate_id` TEXT NOT NULL,
                 `learner_id` TEXT NOT NULL,
@@ -43,6 +64,9 @@ internal val LEARNING_OBSERVATION_MIGRATION_31_32 = object : Migration(31, 32) {
         )
         connection.execSQL(
             "CREATE INDEX IF NOT EXISTS `index_learning_observation_candidate_learner_id_status_retry_count` ON `learning_observation_candidate` (`learner_id`, `status`, `retry_count`)",
+        )
+        connection.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_learning_observation_candidate_learner_id_source_source_reference_id` ON `learning_observation_candidate` (`learner_id`, `source`, `source_reference_id`)",
         )
         connection.execSQL(
             "CREATE UNIQUE INDEX IF NOT EXISTS `index_learning_observation_candidate_payload_fingerprint` ON `learning_observation_candidate` (`payload_fingerprint`)",

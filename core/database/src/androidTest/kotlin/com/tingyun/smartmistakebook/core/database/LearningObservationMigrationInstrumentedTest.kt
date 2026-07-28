@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.model.LearningObservationSource
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -37,7 +38,17 @@ class LearningObservationMigrationInstrumentedTest {
                 )
             }
 
-            StudyDatabaseFactory.open(context, databaseName).close()
+            StudyDatabaseFactory.open(context, databaseName).use { store ->
+                // Room 3 opens lazily; a DAO query forces migration and full schema validation.
+                assertEquals(
+                    null,
+                    store.readLearningObservationSourceAuthority(
+                        learnerId = "migration-probe",
+                        source = LearningObservationSource.TUTOR_CHOICE,
+                        sourceReferenceId = "missing-source",
+                    ),
+                )
+            }
 
             SQLiteDatabase.openDatabase(
                 context.getDatabasePath(databaseName).path,
@@ -55,6 +66,12 @@ class LearningObservationMigrationInstrumentedTest {
                 assertEquals(
                     0,
                     database.scalarInt("SELECT COUNT(*) FROM learning_observation_candidate"),
+                )
+                assertEquals(
+                    0,
+                    database.scalarInt(
+                        "SELECT COUNT(*) FROM learning_observation_source_authority",
+                    ),
                 )
                 assertEquals(
                     0,

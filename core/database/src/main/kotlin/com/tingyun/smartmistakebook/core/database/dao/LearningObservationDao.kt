@@ -10,6 +10,9 @@ import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateSt
 import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateStatusChangeCommand
 import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateWriteResult
 import com.tingyun.smartmistakebook.core.database.LearningObservationMaterializationResult
+import com.tingyun.smartmistakebook.core.database.LearningObservationSourceAuthorityException
+import com.tingyun.smartmistakebook.core.database.LearningObservationSourceAuthorityRecord
+import com.tingyun.smartmistakebook.core.database.LearningObservationSourceAuthorityWriteResult
 import com.tingyun.smartmistakebook.core.database.MaterializeLearningObservationCommand
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.entity.AttributedLearningObservationEventEntity
@@ -17,6 +20,7 @@ import com.tingyun.smartmistakebook.core.database.entity.LearningEvidenceReviewC
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceAuthorityEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
@@ -54,6 +58,11 @@ internal data class LearningObservationAttributionAuthorityRow(
 
 @Dao
 internal abstract class LearningObservationDao {
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    protected abstract suspend fun insertSourceAuthority(
+        entity: LearningObservationSourceAuthorityEntity,
+    )
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertCandidate(entity: LearningObservationCandidateEntity)
 
@@ -101,6 +110,36 @@ internal abstract class LearningObservationDao {
     protected abstract suspend fun findCandidateEntity(
         candidateId: String,
     ): LearningObservationCandidateEntity?
+
+    @Query(
+        """
+        SELECT * FROM learning_observation_candidate
+        WHERE learner_id = :learnerId
+          AND source = :source
+          AND source_reference_id = :sourceReferenceId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findCandidateByProvenance(
+        learnerId: String,
+        source: String,
+        sourceReferenceId: String,
+    ): LearningObservationCandidateEntity?
+
+    @Query(
+        """
+        SELECT * FROM learning_observation_source_authority
+        WHERE learner_id = :learnerId
+          AND source = :source
+          AND source_reference_id = :sourceReferenceId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findSourceAuthorityEntity(
+        learnerId: String,
+        source: String,
+        sourceReferenceId: String,
+    ): LearningObservationSourceAuthorityEntity?
 
     @Query(
         """
@@ -163,6 +202,28 @@ internal abstract class LearningObservationDao {
 
     @Query(
         """
+        UPDATE learning_evidence_review_case
+        SET status = :resolvedStatus,
+            resolved_at_epoch_millis = CASE
+                WHEN created_at_epoch_millis > :resolvedAtEpochMillis
+                    THEN created_at_epoch_millis
+                ELSE :resolvedAtEpochMillis
+            END
+        WHERE candidate_id = :candidateId
+          AND proposed_event_id = :proposedEventId
+          AND status = :openStatus
+        """,
+    )
+    protected abstract suspend fun resolveOpenReviewCases(
+        candidateId: String,
+        proposedEventId: String,
+        resolvedAtEpochMillis: Long,
+        openStatus: String,
+        resolvedStatus: String,
+    ): Int
+
+    @Query(
+        """
         SELECT problem.subject AS subject
         FROM practice_unit AS unit
         JOIN problem ON problem.problem_id = unit.problem_id
@@ -222,10 +283,47 @@ internal abstract class LearningObservationDao {
     ): Int
 
     @Transaction
+    open suspend fun registerSourceAuthority(
+        authority: LearningObservationSourceAuthorityRecord,
+    ): LearningObservationSourceAuthorityWriteResult {
+        findSourceAuthorityEntity(
+            authority.learnerId,
+            authority.source.name,
+            authority.sourceReferenceId,
+        )?.let { existing ->
+            val persisted = existing.toModel()
+            if (persisted != authority) {
+                throw ImmutablePayloadConflictException(
+                    "learning_observation_source_authority",
+                    authority.provenanceKey(),
+                )
+            }
+            return LearningObservationSourceAuthorityWriteResult(
+                created = false,
+                authority = persisted,
+            )
+        }
+        insertSourceAuthority(authority.toEntity())
+        return LearningObservationSourceAuthorityWriteResult(created = true, authority = authority)
+    }
+
+    @Transaction
     open suspend fun submitCandidate(
         candidate: LearningObservationCandidate,
     ): LearningObservationCandidateWriteResult {
         val fingerprint = LearningLedgerFingerprint.learningObservationCandidate(candidate)
+        findCandidateByProvenance(
+            candidate.learnerId,
+            candidate.source.name,
+            candidate.sourceReferenceId,
+        )?.let { existing ->
+            if (existing.candidateId != candidate.candidateId) {
+                throw ImmutablePayloadConflictException(
+                    "learning_observation_candidate_provenance",
+                    candidate.provenanceKey(),
+                )
+            }
+        }
         findCandidateEntity(candidate.candidateId)?.let { existing ->
             val current = readCandidate(existing)
             if (existing.payloadFingerprint != fingerprint ||
@@ -252,6 +350,18 @@ internal abstract class LearningObservationDao {
         require(command.updatedAtEpochMillis >= 0) { "updatedAtEpochMillis cannot be negative" }
         require(command.newStatus in allowedNextStatuses(command.expectedStatus)) {
             "Illegal learning-observation candidate status transition"
+        }
+        val before = findCandidateEntity(command.candidateId)
+            ?: throw ImmutablePayloadConflictException(
+                "learning_observation_candidate",
+                command.candidateId,
+            )
+        if (command.newStatus == LearningObservationCandidateStatus.READY &&
+            before.status == command.expectedStatus.name &&
+            before.retryCount == command.expectedRetryCount &&
+            sourceAuthorityFailure(readCandidate(before)) != null
+        ) {
+            throw LearningObservationSourceAuthorityException(command.candidateId)
         }
         val updated = compareAndSetStatus(
             candidateId = command.candidateId,
@@ -314,6 +424,9 @@ internal abstract class LearningObservationDao {
                     detail = "The candidate already materialized as another immutable event.",
                 )
             }
+        }
+        sourceAuthorityFailure(candidate)?.let { (reason, detail) ->
+            return review(candidate, command, reason, detail)
         }
         if (candidate.status != LearningObservationCandidateStatus.READY) {
             return review(
@@ -448,6 +561,13 @@ internal abstract class LearningObservationDao {
         insertEvent(entity)
         event.toAttributionEntities().insertWhenNotEmpty(::insertEventAttributions)
         insertOutbox(outbox)
+        resolveOpenReviewCases(
+            candidateId = candidate.candidateId,
+            proposedEventId = command.eventId,
+            resolvedAtEpochMillis = command.confirmedAtEpochMillis,
+            openStatus = LearningEvidenceReviewStatus.OPEN.name,
+            resolvedStatus = LearningEvidenceReviewStatus.RESOLVED.name,
+        )
         return LearningObservationMaterializationResult(
             created = true,
             event = event,
@@ -464,6 +584,18 @@ internal abstract class LearningObservationDao {
     @Transaction
     open suspend fun readEvent(eventId: String): AttributedLearningObservationEvent? =
         findEventEntity(eventId)?.let { readEvent(it) }
+
+    @Transaction
+    open suspend fun readSourceAuthority(
+        learnerId: String,
+        source: LearningObservationSource,
+        sourceReferenceId: String,
+    ): LearningObservationSourceAuthorityRecord? =
+        findSourceAuthorityEntity(learnerId, source.name, sourceReferenceId)?.toModel()
+
+    @Transaction
+    open suspend fun readReviewCase(reviewCaseId: String): LearningEvidenceReviewCase? =
+        findReviewCase(reviewCaseId)?.toModel()
 
     internal suspend fun readEvent(
         entity: AttributedLearningObservationEventEntity,
@@ -530,6 +662,24 @@ internal abstract class LearningObservationDao {
         )
     }
 
+    private suspend fun sourceAuthorityFailure(
+        candidate: LearningObservationCandidate,
+    ): Pair<LearningEvidenceReviewReason, String>? {
+        val authority = findSourceAuthorityEntity(
+            candidate.learnerId,
+            candidate.source.name,
+            candidate.sourceReferenceId,
+        )?.toModel() ?: return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISSING to
+            "No immutable local source fact authorizes this learner and source reference."
+        if (candidate.practiceUnitId != authority.practiceUnitId ||
+            candidate.problemRevisionId != authority.problemRevisionId
+        ) {
+            return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH to
+                "The candidate anchor differs from its immutable local source authority."
+        }
+        return null
+    }
+
     private suspend fun allocateSequence(learnerId: String): Long {
         initializeSequence(LearningSequenceEntity(learnerId, 0))
         val current = checkNotNull(lastAllocatedSequence(learnerId))
@@ -577,6 +727,34 @@ private fun allowedNextStatuses(
     LearningObservationCandidateStatus.REJECTED,
     -> emptySet()
 }
+
+private fun LearningObservationSourceAuthorityRecord.toEntity() =
+    LearningObservationSourceAuthorityEntity(
+        learnerId = learnerId,
+        source = source.name,
+        sourceReferenceId = sourceReferenceId,
+        practiceUnitId = practiceUnitId,
+        problemRevisionId = problemRevisionId,
+        sourcePayloadFingerprint = sourcePayloadFingerprint,
+        verifiedAtEpochMillis = verifiedAtEpochMillis,
+    )
+
+private fun LearningObservationSourceAuthorityEntity.toModel() =
+    LearningObservationSourceAuthorityRecord(
+        learnerId = learnerId,
+        source = LearningObservationSource.valueOf(source),
+        sourceReferenceId = sourceReferenceId,
+        practiceUnitId = practiceUnitId,
+        problemRevisionId = problemRevisionId,
+        sourcePayloadFingerprint = sourcePayloadFingerprint,
+        verifiedAtEpochMillis = verifiedAtEpochMillis,
+    )
+
+private fun LearningObservationSourceAuthorityRecord.provenanceKey(): String =
+    "$learnerId:${source.name}:$sourceReferenceId"
+
+private fun LearningObservationCandidate.provenanceKey(): String =
+    "$learnerId:${source.name}:$sourceReferenceId"
 
 private fun LearningObservationCandidate.toEntity(
     fingerprint: String,

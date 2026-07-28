@@ -18,42 +18,42 @@ object LearningLedgerFingerprint {
     }
 
     fun learningObservation(event: AttributedLearningObservationEvent): String = digest {
-        field("eventType", "ATTRIBUTED_LEARNING_OBSERVATION")
-        field("schemaVersion", LEARNING_OBSERVATION_SCHEMA_VERSION)
-        field("eventId", event.eventId)
-        field("candidateId", event.candidateId)
-        field("learnerId", event.learnerId)
-        field("practiceUnitId", event.practiceUnitId)
-        field("problemRevisionId", event.problemRevisionId)
-        field("direction", event.direction)
-        field("evidenceLevel", event.evidenceLevel)
-        field("evidenceWeight", java.lang.Double.toHexString(event.evidenceWeight))
-        field("independence", event.independence)
-        field("occurredAtEpochMillis", event.occurredAtEpochMillis)
-        field("confirmedAtEpochMillis", event.confirmedAtEpochMillis)
-        field("modelVersion", event.modelVersion)
-        field("evidenceLocator", event.evidenceLocator)
-        field("eventSequence", event.eventSequence)
+        observationField("eventType", "ATTRIBUTED_LEARNING_OBSERVATION")
+        observationField("schemaVersion", LEARNING_OBSERVATION_SCHEMA_VERSION)
+        observationField("eventId", event.eventId)
+        observationField("candidateId", event.candidateId)
+        observationField("learnerId", event.learnerId)
+        observationField("practiceUnitId", event.practiceUnitId)
+        observationField("problemRevisionId", event.problemRevisionId)
+        observationField("direction", event.direction)
+        observationField("evidenceLevel", event.evidenceLevel)
+        observationField("evidenceWeight", java.lang.Double.toHexString(event.evidenceWeight))
+        observationField("independence", event.independence)
+        observationField("occurredAtEpochMillis", event.occurredAtEpochMillis)
+        observationField("confirmedAtEpochMillis", event.confirmedAtEpochMillis)
+        observationField("modelVersion", event.modelVersion)
+        observationField("evidenceLocator", event.evidenceLocator)
+        observationField("eventSequence", event.eventSequence)
         observationAttributions(event.attributions)
     }
 
     fun learningObservationCandidate(candidate: LearningObservationCandidate): String = digest {
-        field("payloadType", "LEARNING_OBSERVATION_CANDIDATE")
-        field("schemaVersion", LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION)
-        field("candidateId", candidate.candidateId)
-        field("learnerId", candidate.learnerId)
-        field("source", candidate.source)
-        field("sourceReferenceId", candidate.sourceReferenceId)
-        field("practiceUnitId", candidate.practiceUnitId)
-        field("problemRevisionId", candidate.problemRevisionId)
-        field("direction", candidate.direction)
-        field("evidenceLevel", candidate.evidenceLevel)
-        field("evidenceWeight", java.lang.Double.toHexString(candidate.evidenceWeight))
-        field("independence", candidate.independence)
-        field("occurredAtEpochMillis", candidate.occurredAtEpochMillis)
-        field("modelVersion", candidate.modelVersion)
-        field("evidenceLocator", candidate.evidenceLocator)
-        field("createdAtEpochMillis", candidate.createdAtEpochMillis)
+        observationField("payloadType", "LEARNING_OBSERVATION_CANDIDATE")
+        observationField("schemaVersion", LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION)
+        observationField("candidateId", candidate.candidateId)
+        observationField("learnerId", candidate.learnerId)
+        observationField("source", candidate.source)
+        observationField("sourceReferenceId", candidate.sourceReferenceId)
+        observationField("practiceUnitId", candidate.practiceUnitId)
+        observationField("problemRevisionId", candidate.problemRevisionId)
+        observationField("direction", candidate.direction)
+        observationField("evidenceLevel", candidate.evidenceLevel)
+        observationField("evidenceWeight", java.lang.Double.toHexString(candidate.evidenceWeight))
+        observationField("independence", candidate.independence)
+        observationField("occurredAtEpochMillis", candidate.occurredAtEpochMillis)
+        observationField("modelVersion", candidate.modelVersion)
+        observationField("evidenceLocator", candidate.evidenceLocator)
+        observationField("createdAtEpochMillis", candidate.createdAtEpochMillis)
         observationAttributions(candidate.proposedAttributions)
     }
 
@@ -173,15 +173,18 @@ object LearningLedgerFingerprint {
         attributions: List<LearningObservationKnowledgeAttribution>,
     ) {
         val canonical = attributions.sortedBy(LearningObservationKnowledgeAttribution::bindingId)
-        field("attributionCount", canonical.size)
+        observationField("attributionCount", canonical.size)
         canonical.forEachIndexed { index, attribution ->
-            field("attribution[$index].bindingId", attribution.bindingId)
-            field("attribution[$index].knowledgeNodeId", attribution.knowledgeNodeId)
-            field("attribution[$index].weight", java.lang.Double.toHexString(attribution.weight))
-            field("attribution[$index].basisRevisionId", attribution.basisRevisionId)
-            field("attribution[$index].taxonomyVersion", attribution.taxonomyVersion)
-            field("attribution[$index].role", attribution.role)
-            field("attribution[$index].certainty", attribution.certainty)
+            observationField("attribution[$index].bindingId", attribution.bindingId)
+            observationField("attribution[$index].knowledgeNodeId", attribution.knowledgeNodeId)
+            observationField(
+                "attribution[$index].weight",
+                java.lang.Double.toHexString(attribution.weight),
+            )
+            observationField("attribution[$index].basisRevisionId", attribution.basisRevisionId)
+            observationField("attribution[$index].taxonomyVersion", attribution.taxonomyVersion)
+            observationField("attribution[$index].role", attribution.role)
+            observationField("attribution[$index].certainty", attribution.certainty)
         }
     }
 
@@ -191,6 +194,12 @@ object LearningLedgerFingerprint {
         fun field(name: String, value: Any?) {
             append(name)
             append(value?.toString() ?: "<null>")
+        }
+
+        fun observationField(name: String, value: Any?) {
+            append(name)
+            append(if (value == null) "NULL" else "PRESENT")
+            value?.let { append(it.toString()) }
         }
 
         fun finish(): String = digest.digest().joinToString("") {

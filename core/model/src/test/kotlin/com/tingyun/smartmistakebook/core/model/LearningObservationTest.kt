@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.model
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -73,6 +74,51 @@ class LearningObservationTest {
                 eventSequence = 0,
             )
         }
+    }
+
+    @Test
+    fun `observation fingerprints use stable unambiguous encoding`() {
+        val candidate = candidate()
+        val event = AttributedLearningObservationEvent(
+            eventId = "observation-1",
+            candidateId = candidate.candidateId,
+            learnerId = candidate.learnerId,
+            practiceUnitId = requireNotNull(candidate.practiceUnitId),
+            problemRevisionId = requireNotNull(candidate.problemRevisionId),
+            direction = candidate.direction,
+            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceWeight = candidate.evidenceWeight,
+            independence = candidate.independence,
+            attributions = candidate.proposedAttributions,
+            occurredAtEpochMillis = candidate.occurredAtEpochMillis,
+            confirmedAtEpochMillis = candidate.updatedAtEpochMillis,
+            modelVersion = candidate.modelVersion,
+            evidenceLocator = candidate.evidenceLocator,
+            eventSequence = 3,
+        )
+
+        assertEquals(
+            "28a2c398e8367454951e71d2f5cbe26950199e226342f0fb1eb8d49432e580b6",
+            LearningLedgerFingerprint.learningObservationCandidate(candidate),
+        )
+        assertEquals(
+            "144a3d4f37c70428db6800a1208e4a4c3ce72977b9979efab4fa2b0d221797da",
+            LearningLedgerFingerprint.learningObservation(event),
+        )
+
+        val unanchored = candidate.copy(
+            practiceUnitId = null,
+            problemRevisionId = null,
+            proposedAttributions = emptyList(),
+        )
+        val literalNull = unanchored.copy(
+            practiceUnitId = "<null>",
+            problemRevisionId = "<null>",
+        )
+        assertNotEquals(
+            LearningLedgerFingerprint.learningObservationCandidate(unanchored),
+            LearningLedgerFingerprint.learningObservationCandidate(literalNull),
+        )
     }
 
     private fun candidate(

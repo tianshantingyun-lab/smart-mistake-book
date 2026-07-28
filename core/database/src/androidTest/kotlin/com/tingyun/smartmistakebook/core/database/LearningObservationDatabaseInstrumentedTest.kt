@@ -3,11 +3,23 @@ package com.tingyun.smartmistakebook.core.database
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.database.dao.EVENT_KIND_LEARNING_OBSERVATION
+import com.tingyun.smartmistakebook.core.domain.LearningProjector
+import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
+import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
+import com.tingyun.smartmistakebook.core.model.Attempt
+import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
+import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
+import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
+import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
-import com.tingyun.smartmistakebook.core.model.AppliedLearningObservationRecord
+import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
-import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
+import com.tingyun.smartmistakebook.core.model.LearningEvidence
+import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
+import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewReason
+import com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewStatus
 import com.tingyun.smartmistakebook.core.model.LearningObservationCandidate
 import com.tingyun.smartmistakebook.core.model.LearningObservationCandidateStatus
 import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
@@ -15,8 +27,8 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
-import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
-import com.tingyun.smartmistakebook.core.model.ProjectionStatus
+import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
+import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -24,6 +36,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,6 +49,7 @@ class LearningObservationDatabaseInstrumentedTest {
     fun setUp() = runBlocking {
         store = StudyDatabaseFactory.openInMemory(ApplicationProvider.getApplicationContext())
         store.seedFixture(seed())
+        store.saveAssessmentEvidenceSnapshot(assessmentSnapshot())
     }
 
     @After
@@ -49,17 +63,18 @@ class LearningObservationDatabaseInstrumentedTest {
 
         assertTrue(store.submitLearningObservationCandidate(candidate).created)
         assertFalse(store.submitLearningObservationCandidate(candidate).created)
+        registerAuthority(candidate)
 
-        val transitioned = store.compareAndSetLearningObservationCandidateStatus(
-            LearningObservationCandidateStatusChangeCommand(
-                candidateId = candidate.candidateId,
-                expectedStatus = LearningObservationCandidateStatus.PENDING_CONFIRMATION,
-                newStatus = LearningObservationCandidateStatus.READY,
-                expectedRetryCount = 0,
-                incrementRetry = false,
-                updatedAtEpochMillis = NOW + 1,
-            ),
+        val transition = LearningObservationCandidateStatusChangeCommand(
+            candidateId = candidate.candidateId,
+            expectedStatus = LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+            newStatus = LearningObservationCandidateStatus.READY,
+            expectedRetryCount = 0,
+            incrementRetry = false,
+            updatedAtEpochMillis = NOW + 1,
         )
+        val transitioned = store.compareAndSetLearningObservationCandidateStatus(transition)
+        val replay = store.compareAndSetLearningObservationCandidateStatus(transition)
         val stale = store.compareAndSetLearningObservationCandidateStatus(
             LearningObservationCandidateStatusChangeCommand(
                 candidateId = candidate.candidateId,
@@ -73,8 +88,167 @@ class LearningObservationDatabaseInstrumentedTest {
 
         assertTrue(transitioned.updated)
         assertEquals(LearningObservationCandidateStatus.READY, transitioned.candidate.status)
+        assertFalse(replay.updated)
+        assertEquals(transitioned.candidate, replay.candidate)
         assertFalse(stale.updated)
         assertEquals(LearningObservationCandidateStatus.READY, stale.candidate.status)
+    }
+
+    @Test
+    fun provenanceRejectsChangedPayloadAndDifferentCandidateIdentity() = runBlocking {
+        val original = candidate(
+            candidateId = "candidate-provenance",
+            sourceReferenceId = "choice-one-real-source",
+        )
+        registerAuthority(original)
+        store.submitLearningObservationCandidate(original)
+
+        assertImmutableConflict {
+            store.submitLearningObservationCandidate(original.copy(evidenceWeight = 0.7))
+        }
+        assertImmutableConflict {
+            store.submitLearningObservationCandidate(
+                candidate(
+                    candidateId = "candidate-provenance-alias",
+                    sourceReferenceId = original.sourceReferenceId,
+                ),
+            )
+        }
+
+        assertEquals(
+            original,
+            store.readLearningObservationCandidate(original.candidateId),
+        )
+        assertNull(store.readLearningObservationCandidate("candidate-provenance-alias"))
+    }
+
+    @Test
+    fun sourceAuthorityIsImmutableAndRequiredForReadyOrMaterialization() = runBlocking {
+        val authorized = candidate(
+            candidateId = "candidate-authority",
+            sourceReferenceId = "choice-authority",
+        )
+        val authority = authority(authorized)
+        assertTrue(store.registerLearningObservationSourceAuthority(authority).created)
+        assertFalse(store.registerLearningObservationSourceAuthority(authority).created)
+        assertImmutableConflict {
+            store.registerLearningObservationSourceAuthority(
+                authority.copy(practiceUnitId = OTHER_UNIT),
+            )
+        }
+
+        val missing = candidate(
+            candidateId = "candidate-authority-missing",
+            sourceReferenceId = "choice-authority-missing",
+        )
+        store.submitLearningObservationCandidate(missing)
+        assertSourceAuthorityFailure { markReady(missing) }
+        val missingResult = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = missing.candidateId,
+                eventId = "observation-authority-missing",
+                confirmedAtEpochMillis = NOW + 2,
+            ),
+        )
+        assertEquals(
+            LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISSING,
+            requireNotNull(missingResult.reviewCase).reason,
+        )
+
+        val crossLearner = candidate(
+            candidateId = "candidate-cross-learner",
+            learnerId = "learner-without-authority",
+            sourceReferenceId = authority.sourceReferenceId,
+        )
+        store.submitLearningObservationCandidate(crossLearner)
+        assertSourceAuthorityFailure { markReady(crossLearner) }
+
+        val wrongAnchor = candidate(
+            candidateId = "candidate-wrong-anchor",
+            sourceReferenceId = "choice-wrong-anchor",
+        )
+        store.registerLearningObservationSourceAuthority(
+            authority(wrongAnchor, practiceUnitId = OTHER_UNIT),
+        )
+        store.submitLearningObservationCandidate(wrongAnchor)
+        assertSourceAuthorityFailure { markReady(wrongAnchor) }
+        val mismatchResult = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = wrongAnchor.candidateId,
+                eventId = "observation-wrong-anchor",
+                confirmedAtEpochMillis = NOW + 2,
+            ),
+        )
+        assertEquals(
+            LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH,
+            requireNotNull(mismatchResult.reviewCase).reason,
+        )
+        assertEquals(0L, store.loadProjectionBatch(PROJECTION, LEARNER, 10).ledgerHeadSequence)
+    }
+
+    @Test
+    fun successfulMaterializationResolvesEarlierNotReadyReview() = runBlocking {
+        val candidate = candidate(candidateId = "candidate-review-resolution")
+        store.submitLearningObservationCandidate(candidate)
+        registerAuthority(candidate)
+        val command = MaterializeLearningObservationCommand(
+            candidateId = candidate.candidateId,
+            eventId = "observation-review-resolution",
+            confirmedAtEpochMillis = NOW + 2,
+        )
+
+        val blocked = store.materializeLearningObservation(command)
+        val openCase = requireNotNull(blocked.reviewCase)
+        assertEquals(LearningEvidenceReviewReason.CANDIDATE_NOT_READY, openCase.reason)
+        assertEquals(LearningEvidenceReviewStatus.OPEN, openCase.status)
+
+        markReady(candidate)
+        assertNotNull(store.materializeLearningObservation(command).event)
+
+        val resolved = requireNotNull(
+            store.readLearningEvidenceReviewCase(openCase.reviewCaseId),
+        )
+        assertEquals(LearningEvidenceReviewStatus.RESOLVED, resolved.status)
+        assertEquals(command.confirmedAtEpochMillis, resolved.resolvedAtEpochMillis)
+    }
+
+    @Test
+    fun attemptAndObservationShareOneGlobalLearnerSequence() = runBlocking {
+        val firstAttempt = store.recordAttempt(
+            attemptCommand(
+                submissionId = "submission-before-observation",
+                attemptId = "attempt-before-observation",
+                presentationId = "presentation-before-observation",
+                occurredAtEpochMillis = NOW,
+            ),
+        )
+        val observation = store.materializeLearningObservation(
+            MaterializeLearningObservationCommand(
+                candidateId = ready(
+                    candidate(candidateId = "candidate-between-attempts"),
+                ).candidateId,
+                eventId = "observation-between-attempts",
+                confirmedAtEpochMillis = NOW + 2,
+            ),
+        )
+        val secondAttempt = store.recordAttempt(
+            attemptCommand(
+                submissionId = "submission-after-observation",
+                attemptId = "attempt-after-observation",
+                presentationId = "presentation-after-observation",
+                occurredAtEpochMillis = NOW + 3,
+            ),
+        )
+        val batch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+
+        assertEquals(1L, firstAttempt.attempt.eventSequence)
+        assertEquals(2L, requireNotNull(observation.event).eventSequence)
+        assertEquals(3L, secondAttempt.attempt.eventSequence)
+        assertEquals(listOf(1L, 2L, 3L), batch.events.map { it.event.eventSequence })
+        assertTrue(batch.events[0].event is Attempt)
+        assertTrue(batch.events[1].event is AttributedLearningObservationEvent)
+        assertTrue(batch.events[2].event is Attempt)
+        assertEquals(3L, batch.ledgerHeadSequence)
     }
 
     @Test
@@ -155,7 +329,7 @@ class LearningObservationDatabaseInstrumentedTest {
     }
 
     @Test
-    fun uncommittedProjectionReloadsSameEventAndAppliedRecordSurvivesCommit() = runBlocking {
+    fun loadProjectCommitReloadPreservesMasteryAndAppliesObservationOnce() = runBlocking {
         val candidate = ready(candidate())
         val materialized = store.materializeLearningObservation(
             MaterializeLearningObservationCommand(
@@ -166,64 +340,73 @@ class LearningObservationDatabaseInstrumentedTest {
         )
         val event = requireNotNull(materialized.event)
         val firstLoad = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        val abandonedProjection = LearningProjector().project(
+            previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
+            events = firstLoad.events.map { it.event },
+            knownLedgerHeadSequence = firstLoad.ledgerHeadSequence,
+            authoritativePresentationStates = firstLoad.authoritativePresentationStates,
+        )
         val afterCrash = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
 
         assertEquals(firstLoad.events, afterCrash.events)
-
-        val fingerprint = requireNotNull(materialized.canonicalFingerprint)
-        val snapshot = LearnerSnapshot(
-            learnerId = LEARNER,
-            checkpoint = ProjectionCheckpoint(
-                lastSequence = event.eventSequence,
-                projectorVersion = PROJECTOR_VERSION,
-                projectedAtEpochMillis = event.occurredAtEpochMillis,
-            ),
-            knownLedgerHeadSequence = event.eventSequence,
-            generatedAtEpochMillis = event.occurredAtEpochMillis,
-            freshness = LearnerSnapshotFreshness.CURRENT,
-            projectionStatus = ProjectionStatus.CURRENT,
-            appliedLearningObservationRecords = mapOf(
-                event.eventId to AppliedLearningObservationRecord(
-                    observationEventId = event.eventId,
-                    canonicalFingerprint = fingerprint,
-                    eventSequence = event.eventSequence,
-                ),
-            ),
+        val projected = LearningProjector().project(
+            previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
+            events = afterCrash.events.map { it.event },
+            knownLedgerHeadSequence = afterCrash.ledgerHeadSequence,
+            authoritativePresentationStates = afterCrash.authoritativePresentationStates,
         )
+        assertEquals(abandonedProjection, projected)
         store.commitProjection(
             ProjectionCommit(
                 projectionName = PROJECTION,
                 learnerId = LEARNER,
-                expectedPreviousCheckpoint = 0,
+                expectedPreviousCheckpoint = afterCrash.previousCheckpoint,
                 expectedPreviousStateVersion = 0,
                 mode = ProjectionCommitMode.INCREMENTAL,
-                knownLedgerHeadSequence = event.eventSequence,
-                consumedLedgerEvents = listOf(
+                knownLedgerHeadSequence = afterCrash.ledgerHeadSequence,
+                consumedLedgerEvents = afterCrash.events.map { persisted ->
                     ConsumedLedgerEventReceipt(
-                        eventKind = EVENT_KIND_LEARNING_OBSERVATION,
-                        eventId = event.eventId,
-                        eventSequence = event.eventSequence,
-                        canonicalFingerprint = fingerprint,
-                    ),
-                ),
-                presentationProjectionStates = emptyMap(),
-                snapshot = snapshot,
+                        eventKind = persisted.outbox.eventKind,
+                        eventId = persisted.event.ledgerEventId,
+                        eventSequence = persisted.event.eventSequence,
+                        canonicalFingerprint = persisted.canonicalFingerprint,
+                    )
+                },
+                presentationProjectionStates = projected.presentationProjectionStates,
+                snapshot = projected.snapshot,
             ),
         )
 
-        val persisted = requireNotNull(
+        val reloaded = requireNotNull(
             store.readCurrentLearnerSnapshot(PROJECTION, LEARNER),
         )
+        assertEquals(projected.snapshot.knowledgeMasteryStates, reloaded.snapshot.knowledgeMasteryStates)
+        assertTrue(reloaded.snapshot.knowledgeMasteryStates.containsKey("knowledge-math"))
         assertEquals(
-            snapshot.appliedLearningObservationRecords,
-            persisted.snapshot.appliedLearningObservationRecords,
+            setOf(event.eventId),
+            reloaded.snapshot.appliedLearningObservationRecords.keys,
         )
         assertTrue(store.loadProjectionBatch(PROJECTION, LEARNER, 10).events.isEmpty())
+        val duplicate = LearningProjector().project(
+            previous = reloaded.snapshot,
+            events = firstLoad.events.map { it.event },
+            knownLedgerHeadSequence = firstLoad.ledgerHeadSequence,
+            authoritativePresentationStates = firstLoad.authoritativePresentationStates,
+        )
+        assertEquals(reloaded.snapshot, duplicate.snapshot)
+        assertEquals(setOf(event.eventId), duplicate.ignoredLearningObservationEventIds)
     }
 
     private suspend fun ready(candidate: LearningObservationCandidate): LearningObservationCandidate {
         store.submitLearningObservationCandidate(candidate)
-        return store.compareAndSetLearningObservationCandidateStatus(
+        registerAuthority(candidate)
+        return markReady(candidate)
+    }
+
+    private suspend fun markReady(
+        candidate: LearningObservationCandidate,
+    ): LearningObservationCandidate =
+        store.compareAndSetLearningObservationCandidateStatus(
             LearningObservationCandidateStatusChangeCommand(
                 candidateId = candidate.candidateId,
                 expectedStatus = candidate.status,
@@ -233,24 +416,28 @@ class LearningObservationDatabaseInstrumentedTest {
                 updatedAtEpochMillis = NOW + 1,
             ),
         ).candidate
-    }
 
     private fun candidate(
         candidateId: String = "candidate-1",
+        learnerId: String = LEARNER,
+        sourceReferenceId: String = "choice-$candidateId",
+        practiceUnitId: String = UNIT,
+        problemRevisionId: String = REVISION,
         bindingId: String = "binding-math",
         knowledgeNodeId: String = "knowledge-math",
         evidenceLevel: LearningObservationEvidenceLevel =
             LearningObservationEvidenceLevel.HIGH_CONFIDENCE,
+        evidenceWeight: Double = 0.8,
     ) = LearningObservationCandidate(
         candidateId = candidateId,
-        learnerId = LEARNER,
+        learnerId = learnerId,
         source = LearningObservationSource.TUTOR_CHOICE,
-        sourceReferenceId = "choice-$candidateId",
-        practiceUnitId = UNIT,
-        problemRevisionId = REVISION,
+        sourceReferenceId = sourceReferenceId,
+        practiceUnitId = practiceUnitId,
+        problemRevisionId = problemRevisionId,
         direction = LearningObservationDirection.POSITIVE,
         evidenceLevel = evidenceLevel,
-        evidenceWeight = 0.8,
+        evidenceWeight = evidenceWeight,
         independence = LearningObservationIndependence.INDEPENDENT,
         proposedAttributions = listOf(
             LearningObservationKnowledgeAttribution(
@@ -271,6 +458,104 @@ class LearningObservationDatabaseInstrumentedTest {
         createdAtEpochMillis = NOW,
         updatedAtEpochMillis = NOW,
     )
+
+    private fun authority(
+        candidate: LearningObservationCandidate,
+        practiceUnitId: String = requireNotNull(candidate.practiceUnitId),
+        problemRevisionId: String = requireNotNull(candidate.problemRevisionId),
+    ) = LearningObservationSourceAuthorityRecord(
+        learnerId = candidate.learnerId,
+        source = candidate.source,
+        sourceReferenceId = candidate.sourceReferenceId,
+        practiceUnitId = practiceUnitId,
+        problemRevisionId = problemRevisionId,
+        sourcePayloadFingerprint = "source-fingerprint:${candidate.sourceReferenceId}",
+        verifiedAtEpochMillis = NOW,
+    )
+
+    private suspend fun registerAuthority(candidate: LearningObservationCandidate) {
+        store.registerLearningObservationSourceAuthority(authority(candidate))
+    }
+
+    private fun attemptCommand(
+        submissionId: String,
+        attemptId: String,
+        presentationId: String,
+        occurredAtEpochMillis: Long,
+    ) = AttemptWriteCommand(
+        learnerId = LEARNER,
+        submissionId = submissionId,
+        attemptId = attemptId,
+        presentationId = presentationId,
+        assessmentSnapshotId = ASSESSMENT_SNAPSHOT,
+        submittedResponse = AttemptSubmittedResponse.Choice(
+            choiceId = "choice-a",
+            choiceMarkdown = "A",
+            submittedAtEpochMillis = occurredAtEpochMillis,
+        ),
+        evidence = LearningEvidence(
+            direction = LearningEvidenceDirection.POSITIVE,
+            weight = 1.0,
+            reason = LearningEvidenceReason.INDEPENDENT_CORRECT,
+        ),
+        problemMemoryOutcome = ProblemMemoryOutcome.INDEPENDENT_RECALL,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        durationSeconds = 30,
+        studyDay = StudyDayContext(
+            epochDay = 20_000,
+            timeZoneId = "Asia/Shanghai",
+            utcOffsetMinutes = 480,
+        ),
+    )
+
+    private fun assessmentSnapshot() = AssessmentEvidenceSnapshot(
+        snapshotId = ASSESSMENT_SNAPSHOT,
+        assessmentItemId = "assessment-observation",
+        practiceUnitId = UNIT,
+        problemRevisionId = REVISION,
+        answerSpecId = "answer-1",
+        itemFamilyId = "family-observation",
+        sourceBundleId = "bundle-observation",
+        taxonomyVersion = "taxonomy-v1",
+        verification = AssessmentSnapshotVerification.VERIFIED,
+        calibration = CalibrationSnapshot(
+            support = CalibrationSupport.SUPPORTED,
+            sourceId = "calibration-source",
+            version = "calibration-v1",
+            validFromEpochMillis = 0,
+            validUntilEpochMillis = NOW + 100_000,
+        ),
+        attributions = listOf(
+            KnowledgeEvidenceAttribution(
+                bindingId = "binding-math",
+                knowledgeNodeId = "knowledge-math",
+                weight = 1.0,
+                basisRevisionId = REVISION,
+                taxonomyVersion = "taxonomy-v1",
+                role = EvidenceAttributionRole.PRIMARY,
+                certainty = EvidenceAttributionCertainty.DIRECT,
+            ),
+        ),
+        capturedAtEpochMillis = NOW - 1,
+    )
+
+    private suspend fun assertImmutableConflict(block: suspend () -> Unit) {
+        try {
+            block()
+            fail("Expected ImmutablePayloadConflictException")
+        } catch (_: ImmutablePayloadConflictException) {
+            Unit
+        }
+    }
+
+    private suspend fun assertSourceAuthorityFailure(block: suspend () -> Unit) {
+        try {
+            block()
+            fail("Expected LearningObservationSourceAuthorityException")
+        } catch (_: LearningObservationSourceAuthorityException) {
+            Unit
+        }
+    }
 
     private fun seed() = StudySeedBundle(
         problems = listOf(
@@ -303,6 +588,17 @@ class LearningObservationDatabaseInstrumentedTest {
                 promptMarkdown = "求解。",
                 estimatedSeconds = 60,
                 createdAtEpochMillis = NOW - 80,
+            ),
+            PracticeUnitSeedRecord(
+                practiceUnitId = OTHER_UNIT,
+                problemId = PROBLEM,
+                problemRevisionId = REVISION,
+                unitKey = "alternate",
+                unitKind = "ALTERNATE",
+                title = "函数变式",
+                promptMarkdown = "求解变式。",
+                estimatedSeconds = 60,
+                createdAtEpochMillis = NOW - 79,
             ),
         ),
         errorBookEntries = emptyList(),
@@ -346,10 +642,11 @@ class LearningObservationDatabaseInstrumentedTest {
     private companion object {
         const val LEARNER = "learner-observation"
         const val PROJECTION = "learning-observation-projection"
-        const val PROJECTOR_VERSION = "learning-observation-projector-v1"
         const val PROBLEM = "problem-observation"
         const val REVISION = "revision-observation"
         const val UNIT = "unit-observation"
+        const val OTHER_UNIT = "unit-observation-other"
+        const val ASSESSMENT_SNAPSHOT = "snapshot-observation"
         const val NOW = 1_728_000_000_000L
     }
 }

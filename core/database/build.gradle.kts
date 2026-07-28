@@ -27,6 +27,7 @@ dependencies {
     ksp(libs.androidx.room3.compiler)
 
     testImplementation(libs.junit)
+    androidTestImplementation(project(":core:domain"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.kotlinx.coroutines.android)

@@ -1235,6 +1235,22 @@ internal class RoomStudyDatabase(
     ): LearningObservationCandidateWriteResult =
         database.learningObservationDao().submitCandidate(candidate)
 
+    override suspend fun registerLearningObservationSourceAuthority(
+        authority: LearningObservationSourceAuthorityRecord,
+    ): LearningObservationSourceAuthorityWriteResult =
+        database.learningObservationDao().registerSourceAuthority(authority)
+
+    override suspend fun readLearningObservationSourceAuthority(
+        learnerId: String,
+        source: com.tingyun.smartmistakebook.core.model.LearningObservationSource,
+        sourceReferenceId: String,
+    ): LearningObservationSourceAuthorityRecord? =
+        database.learningObservationDao().readSourceAuthority(
+            learnerId,
+            source,
+            sourceReferenceId,
+        )
+
     override suspend fun compareAndSetLearningObservationCandidateStatus(
         command: LearningObservationCandidateStatusChangeCommand,
     ): LearningObservationCandidateStatusCasResult =
@@ -1254,6 +1270,11 @@ internal class RoomStudyDatabase(
         eventId: String,
     ): com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent? =
         database.learningObservationDao().readEvent(eventId)
+
+    override suspend fun readLearningEvidenceReviewCase(
+        reviewCaseId: String,
+    ): com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewCase? =
+        database.learningObservationDao().readReviewCase(reviewCaseId)
 
     override suspend fun recordReviewAttempt(
         command: ReviewAttemptWriteCommand,

@@ -17,6 +17,11 @@ import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
 import com.tingyun.smartmistakebook.core.database.AttemptWriteResult
 import com.tingyun.smartmistakebook.core.database.LearningLedgerRead
 import com.tingyun.smartmistakebook.core.database.LearningLedgerReadStatus
+import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateStatusCasResult
+import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateStatusChangeCommand
+import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateWriteResult
+import com.tingyun.smartmistakebook.core.database.LearningObservationMaterializationResult
+import com.tingyun.smartmistakebook.core.database.MaterializeLearningObservationCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingSummaryRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRecord
 import com.tingyun.smartmistakebook.core.database.ModelTaskWriteResult
@@ -24,6 +29,7 @@ import com.tingyun.smartmistakebook.core.database.PersistedAnswerRevealP0
 import com.tingyun.smartmistakebook.core.database.PersistedAttemptP0
 import com.tingyun.smartmistakebook.core.database.PersistedCorrectionP0
 import com.tingyun.smartmistakebook.core.database.PersistedLearnerSnapshot
+import com.tingyun.smartmistakebook.core.database.PersistedLearningLedgerEvent
 import com.tingyun.smartmistakebook.core.database.ProjectionBatch
 import com.tingyun.smartmistakebook.core.database.ProjectionBatchStopReason
 import com.tingyun.smartmistakebook.core.database.ProjectionCommit
@@ -51,10 +57,18 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
+import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
+import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
+import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
+import com.tingyun.smartmistakebook.core.model.LearningObservationCandidate
+import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
+import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
+import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.SubjectKind
@@ -80,6 +94,56 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RoomBackedStudyExperienceRepositoryTest {
+    @Test
+    fun fullReplayReceiptMapsAttributedObservationWithoutPresentationIdentity() {
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(FakeStudyDatabasePort(), applicationScope)
+        val observation = AttributedLearningObservationEvent(
+            eventId = "observation-full-replay",
+            candidateId = "candidate-full-replay",
+            learnerId = "learner:local",
+            practiceUnitId = "unit-full-replay",
+            problemRevisionId = "revision-full-replay",
+            direction = LearningObservationDirection.POSITIVE,
+            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceWeight = 0.8,
+            independence = LearningObservationIndependence.INDEPENDENT,
+            attributions = listOf(
+                LearningObservationKnowledgeAttribution(
+                    bindingId = "binding-full-replay",
+                    knowledgeNodeId = "knowledge-full-replay",
+                    weight = 1.0,
+                    basisRevisionId = "revision-full-replay",
+                    taxonomyVersion = "taxonomy-v1",
+                    role = EvidenceAttributionRole.PRIMARY,
+                    certainty = EvidenceAttributionCertainty.DIRECT,
+                ),
+            ),
+            occurredAtEpochMillis = 1_000,
+            confirmedAtEpochMillis = 1_001,
+            modelVersion = "model-v1",
+            evidenceLocator = "response:full-replay",
+            eventSequence = 7,
+        )
+
+        try {
+            val receipt = repository.fullReplayReceipt(
+                PersistedLearningLedgerEvent(
+                    event = observation,
+                    canonicalFingerprint = "observation-fingerprint",
+                ),
+            )
+
+            assertEquals("ATTRIBUTED_LEARNING_OBSERVATION", receipt.eventKind)
+            assertEquals(observation.eventId, receipt.eventId)
+            assertEquals(observation.eventSequence, receipt.eventSequence)
+            assertEquals("observation-fingerprint", receipt.canonicalFingerprint)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
     @Test
     fun cancellationAfterStorageAuthorizationCannotRevokeTutorChoice() = runBlocking {
         val database = FakeStudyDatabasePort()
@@ -878,6 +942,29 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
         )
         return result
     }
+
+    override suspend fun submitLearningObservationCandidate(
+        candidate: LearningObservationCandidate,
+    ): LearningObservationCandidateWriteResult =
+        error("Learning observations are outside this study-repository fake")
+
+    override suspend fun compareAndSetLearningObservationCandidateStatus(
+        command: LearningObservationCandidateStatusChangeCommand,
+    ): LearningObservationCandidateStatusCasResult =
+        error("Learning observations are outside this study-repository fake")
+
+    override suspend fun materializeLearningObservation(
+        command: MaterializeLearningObservationCommand,
+    ): LearningObservationMaterializationResult =
+        error("Learning observations are outside this study-repository fake")
+
+    override suspend fun readLearningObservationCandidate(
+        candidateId: String,
+    ): LearningObservationCandidate? = null
+
+    override suspend fun readAttributedLearningObservation(
+        eventId: String,
+    ): AttributedLearningObservationEvent? = null
 
     override suspend fun recordReviewAttempt(
         command: ReviewAttemptWriteCommand,

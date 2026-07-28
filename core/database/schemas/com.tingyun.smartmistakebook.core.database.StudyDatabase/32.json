@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 32,
-    "identityHash": "f365aef59d39669e5da2519f0251e34a",
+    "identityHash": "b10d12fa4ceb886ebfe6af9517acf71e",
     "entities": [
       {
         "tableName": "problem",
@@ -7895,6 +7895,89 @@
         ]
       },
       {
+        "tableName": "learning_observation_source_authority",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `source` TEXT NOT NULL, `source_reference_id` TEXT NOT NULL, `practice_unit_id` TEXT NOT NULL, `problem_revision_id` TEXT NOT NULL, `source_payload_fingerprint` TEXT NOT NULL, `verified_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`learner_id`, `source`, `source_reference_id`), FOREIGN KEY(`practice_unit_id`, `problem_revision_id`) REFERENCES `practice_unit`(`practice_unit_id`, `problem_revision_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceReferenceId",
+            "columnName": "source_reference_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemRevisionId",
+            "columnName": "problem_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePayloadFingerprint",
+            "columnName": "source_payload_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verifiedAtEpochMillis",
+            "columnName": "verified_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id",
+            "source",
+            "source_reference_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_learning_observation_source_authority_practice_unit_id_problem_revision_id",
+            "unique": false,
+            "columnNames": [
+              "practice_unit_id",
+              "problem_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_learning_observation_source_authority_practice_unit_id_problem_revision_id` ON `${TABLE_NAME}` (`practice_unit_id`, `problem_revision_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "practice_unit",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_unit_id",
+              "problem_revision_id"
+            ],
+            "referencedColumns": [
+              "practice_unit_id",
+              "problem_revision_id"
+            ]
+          }
+        ]
+      },
+      {
         "tableName": "learning_observation_candidate",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`candidate_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `source` TEXT NOT NULL, `source_reference_id` TEXT NOT NULL, `practice_unit_id` TEXT, `problem_revision_id` TEXT, `direction` TEXT NOT NULL, `evidence_level` TEXT NOT NULL, `evidence_weight` REAL NOT NULL, `independence` TEXT NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `model_version` TEXT NOT NULL, `evidence_locator` TEXT NOT NULL, `status` TEXT NOT NULL, `retry_count` INTEGER NOT NULL, `payload_fingerprint` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`candidate_id`), FOREIGN KEY(`practice_unit_id`, `problem_revision_id`) REFERENCES `practice_unit`(`practice_unit_id`, `problem_revision_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
@@ -8032,6 +8115,17 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_learning_observation_candidate_learner_id_status_retry_count` ON `${TABLE_NAME}` (`learner_id`, `status`, `retry_count`)"
+          },
+          {
+            "name": "index_learning_observation_candidate_learner_id_source_source_reference_id",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "source",
+              "source_reference_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_learning_observation_candidate_learner_id_source_source_reference_id` ON `${TABLE_NAME}` (`learner_id`, `source`, `source_reference_id`)"
           },
           {
             "name": "index_learning_observation_candidate_payload_fingerprint",
@@ -8914,7 +9008,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f365aef59d39669e5da2519f0251e34a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b10d12fa4ceb886ebfe6af9517acf71e')"
     ]
   }
 }

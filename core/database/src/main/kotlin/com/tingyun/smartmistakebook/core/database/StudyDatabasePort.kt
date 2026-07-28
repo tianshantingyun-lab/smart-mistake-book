@@ -14,6 +14,7 @@ import com.tingyun.smartmistakebook.core.model.LearningLedgerEvent
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewCase
 import com.tingyun.smartmistakebook.core.model.LearningObservationCandidate
 import com.tingyun.smartmistakebook.core.model.LearningObservationCandidateStatus
+import com.tingyun.smartmistakebook.core.model.LearningObservationSource
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.PresentationProjectionState
@@ -32,6 +33,11 @@ class AssessmentSequenceConflictException(message: String) : IllegalStateExcepti
 
 class ImmutablePayloadConflictException(entityType: String, entityId: String) :
     IllegalStateException("$entityType $entityId already exists with a different payload")
+
+class LearningObservationSourceAuthorityException(candidateId: String) :
+    IllegalStateException(
+        "Learning observation candidate $candidateId lacks matching local source authority",
+    )
 
 class ProblemOrganizationAuthorityConflictException(problemRevisionId: String) :
     IllegalStateException("A user correction already owns organization for $problemRevisionId")
@@ -1234,6 +1240,32 @@ data class LearningObservationCandidateWriteResult(
     val candidate: LearningObservationCandidate,
 )
 
+data class LearningObservationSourceAuthorityRecord(
+    val learnerId: String,
+    val source: LearningObservationSource,
+    val sourceReferenceId: String,
+    val practiceUnitId: String,
+    val problemRevisionId: String,
+    val sourcePayloadFingerprint: String,
+    val verifiedAtEpochMillis: Long,
+) {
+    init {
+        require(learnerId.isNotBlank()) { "learnerId must not be blank" }
+        require(sourceReferenceId.isNotBlank()) { "sourceReferenceId must not be blank" }
+        require(practiceUnitId.isNotBlank()) { "practiceUnitId must not be blank" }
+        require(problemRevisionId.isNotBlank()) { "problemRevisionId must not be blank" }
+        require(
+            sourcePayloadFingerprint.isNotBlank() && sourcePayloadFingerprint.length <= 256,
+        ) { "sourcePayloadFingerprint must be non-blank and at most 256 characters" }
+        require(verifiedAtEpochMillis >= 0) { "verifiedAtEpochMillis cannot be negative" }
+    }
+}
+
+data class LearningObservationSourceAuthorityWriteResult(
+    val created: Boolean,
+    val authority: LearningObservationSourceAuthorityRecord,
+)
+
 data class LearningObservationCandidateStatusChangeCommand(
     val candidateId: String,
     val expectedStatus: LearningObservationCandidateStatus,
@@ -1900,6 +1932,22 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
         candidate: LearningObservationCandidate,
     ): LearningObservationCandidateWriteResult
 
+    /**
+     * Registers an immutable local source fact. Tutor/capture ingestion should call this inside
+     * the same transaction that persists the referenced source response.
+     */
+    suspend fun registerLearningObservationSourceAuthority(
+        authority: LearningObservationSourceAuthorityRecord,
+    ): LearningObservationSourceAuthorityWriteResult = throw UnsupportedOperationException(
+        "Learning-observation source authority is not implemented",
+    )
+
+    suspend fun readLearningObservationSourceAuthority(
+        learnerId: String,
+        source: LearningObservationSource,
+        sourceReferenceId: String,
+    ): LearningObservationSourceAuthorityRecord? = null
+
     suspend fun compareAndSetLearningObservationCandidateStatus(
         command: LearningObservationCandidateStatusChangeCommand,
     ): LearningObservationCandidateStatusCasResult
@@ -1915,6 +1963,10 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     suspend fun readAttributedLearningObservation(
         eventId: String,
     ): AttributedLearningObservationEvent?
+
+    suspend fun readLearningEvidenceReviewCase(
+        reviewCaseId: String,
+    ): LearningEvidenceReviewCase? = null
 
     suspend fun recordReviewAttempt(
         command: ReviewAttemptWriteCommand,

@@ -769,7 +769,7 @@ class RoomBackedStudyExperienceRepository(
         val expectedCheckpoint = current?.snapshot?.checkpoint?.lastSequence ?: 0L
         val consumed = ledger.validPrefix
             .filter { it.event.eventSequence > expectedCheckpoint }
-            .map { persisted -> persisted.toReceipt() }
+            .map(::fullReplayReceipt)
         return database.commitProjection(
             ProjectionCommit(
                 projectionName = PROJECTION_NAME,
@@ -785,17 +785,21 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    private fun com.tingyun.smartmistakebook.core.database.PersistedLearningLedgerEvent.toReceipt() =
+    internal fun fullReplayReceipt(
+        persisted: com.tingyun.smartmistakebook.core.database.PersistedLearningLedgerEvent,
+    ) =
         ConsumedLedgerEventReceipt(
-            eventKind = when (event) {
+            eventKind = when (persisted.event) {
                 is Attempt -> EVENT_KIND_ATTEMPT
                 is AttemptCorrection -> EVENT_KIND_CORRECTION
                 is com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome -> EVENT_KIND_ANSWER_REVEAL
                 is TutorAnswerExposureOutcome -> EVENT_KIND_TUTOR_ANSWER_EXPOSURE
+                is com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent ->
+                    EVENT_KIND_LEARNING_OBSERVATION
             },
-            eventId = event.ledgerEventId,
-            eventSequence = event.eventSequence,
-            canonicalFingerprint = canonicalFingerprint,
+            eventId = persisted.event.ledgerEventId,
+            eventSequence = persisted.event.eventSequence,
+            canonicalFingerprint = persisted.canonicalFingerprint,
         )
 
     private fun MistakeRecord.toCatalogEntry(
@@ -1224,6 +1228,7 @@ class RoomBackedStudyExperienceRepository(
         private const val EVENT_KIND_CORRECTION = "ATTEMPT_CORRECTION"
         private const val EVENT_KIND_ANSWER_REVEAL = "ANSWER_REVEAL_OUTCOME"
         private const val EVENT_KIND_TUTOR_ANSWER_EXPOSURE = "TUTOR_ANSWER_EXPOSURE_OUTCOME"
+        private const val EVENT_KIND_LEARNING_OBSERVATION = "ATTRIBUTED_LEARNING_OBSERVATION"
     }
 }
 

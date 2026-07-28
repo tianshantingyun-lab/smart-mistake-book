@@ -7,6 +7,37 @@ import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
 @Entity(
+    tableName = "learning_observation_source_authority",
+    primaryKeys = ["learner_id", "source", "source_reference_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = PracticeUnitEntity::class,
+            parentColumns = ["practice_unit_id", "problem_revision_id"],
+            childColumns = ["practice_unit_id", "problem_revision_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [
+        Index(value = ["practice_unit_id", "problem_revision_id"]),
+    ],
+)
+internal data class LearningObservationSourceAuthorityEntity(
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    val source: String,
+    @ColumnInfo(name = "source_reference_id")
+    val sourceReferenceId: String,
+    @ColumnInfo(name = "practice_unit_id")
+    val practiceUnitId: String,
+    @ColumnInfo(name = "problem_revision_id")
+    val problemRevisionId: String,
+    @ColumnInfo(name = "source_payload_fingerprint")
+    val sourcePayloadFingerprint: String,
+    @ColumnInfo(name = "verified_at_epoch_millis")
+    val verifiedAtEpochMillis: Long,
+)
+
+@Entity(
     tableName = "learning_observation_candidate",
     foreignKeys = [
         ForeignKey(
@@ -19,6 +50,7 @@ import androidx.room3.PrimaryKey
     indices = [
         Index(value = ["practice_unit_id", "problem_revision_id"]),
         Index(value = ["learner_id", "status", "retry_count"]),
+        Index(value = ["learner_id", "source", "source_reference_id"], unique = true),
         Index(value = ["payload_fingerprint"], unique = true),
     ],
 )
