@@ -63,10 +63,14 @@ object ClearlyMasteredForSkipPolicy {
         atEpochMillis: Long,
     ): List<IndependentCorrectObservation> = observations.filter {
         val afterError = when {
+            lastIndependentErrorAtEpochMillis != null ->
+                it.occurredAtEpochMillis > lastIndependentErrorAtEpochMillis ||
+                    (
+                        it.occurredAtEpochMillis == lastIndependentErrorAtEpochMillis &&
+                            it.eventSequence > (lastIndependentErrorSequence ?: 0)
+                        )
             lastIndependentErrorSequence != null && it.eventSequence > 0 ->
                 it.eventSequence > lastIndependentErrorSequence
-            lastIndependentErrorAtEpochMillis != null ->
-                it.occurredAtEpochMillis > lastIndependentErrorAtEpochMillis
             else -> true
         }
         val fresh = atEpochMillis >= it.occurredAtEpochMillis &&

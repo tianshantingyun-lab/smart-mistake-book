@@ -676,37 +676,12 @@ class BlockingLearningCoreReviewTest {
 
     @Test
     fun `clock rollback study day cannot create mastery breadth`() {
-        val trustedObservation = com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation(
-            itemFamilyId = "family-trusted",
-            studyDayEpochDay = 10,
+        val trusted = attempt("trusted", 1).copy(
             occurredAtEpochMillis = 5_000,
-            eventSequence = 1,
-            evidenceWeight = 1.0,
-            calibration = CalibrationSnapshot(
-                CalibrationSupport.SUPPORTED,
-                "calibration-source",
-                "calibration-v1",
-                0,
-                30 * DAY_MILLIS,
+            studyDay = StudyDayContext(10, "Asia/Shanghai", 480),
+            assessmentSnapshot = attempt("trusted-seed", 1).assessmentSnapshot.copy(
+                itemFamilyId = "family-trusted",
             ),
-        )
-        val priorMastery = KnowledgeMasteryState(
-            knowledgeNodeId = "kc-a",
-            probabilityIndependentCorrect = 0.98,
-            lowerBoundIndependentCorrect = 0.9,
-            evidenceMass = 2.0,
-            independentCorrectObservations = listOf(trustedObservation),
-            status = MasteryStatus.LEARNING,
-            calibrationSupport = CalibrationSupport.SUPPORTED,
-            projectorVersion = LearningProjector.VERSION,
-            checkpointSequence = 1,
-            lastEvidenceAtEpochMillis = 5_000,
-        )
-        val previous = LearnerSnapshot(
-            learnerId = "learner",
-            knowledgeMasteryStates = mapOf("kc-a" to priorMastery),
-            checkpoint = ProjectionCheckpoint(1, LearningProjector.VERSION, 5_000),
-            generatedAtEpochMillis = 5_000,
         )
         val rollback = attempt("rollback", 2).copy(
             occurredAtEpochMillis = 1_000,
@@ -716,10 +691,20 @@ class BlockingLearningCoreReviewTest {
             ),
         )
 
-        val result = projector.project(previous, listOf(rollback), 2)
-        val mastery = result.snapshot.knowledgeMasteryStates.getValue("kc-a")
+        val incremental = projector.project(
+            LearnerSnapshot.empty("learner"),
+            listOf(trusted, rollback),
+            2,
+        )
+        assertTrue(incremental.requiresFullReplay)
 
-        assertFalse(mastery.independentCorrectObservations.last().isStudyDayTrusted)
+        val result = projector.replay("learner", listOf(rollback, trusted))
+        val mastery = result.snapshot.knowledgeMasteryStates.getValue("kc-a")
+        val rollbackObservation = mastery.independentCorrectObservations.single {
+            it.itemFamilyId == "family-forged-day"
+        }
+
+        assertFalse(rollbackObservation.isStudyDayTrusted)
         assertNotEquals(MasteryStatus.MASTERED, mastery.status)
         assertFalse(ClearlyMasteredForSkipPolicy.isSatisfied(mastery, 5_000))
     }

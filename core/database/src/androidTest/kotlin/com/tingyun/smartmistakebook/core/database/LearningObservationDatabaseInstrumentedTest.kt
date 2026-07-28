@@ -596,6 +596,39 @@ class LearningObservationDatabaseInstrumentedTest {
                 confirmedAtEpochMillis = positiveConfirmedAt,
             ),
         )
+        val positiveEvent = requireNotNull(positive.event)
+        assertEquals(positiveConfirmedAt, positiveEvent.confirmedAtEpochMillis)
+
+        val projector = LearningProjector()
+        val firstBatch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        val firstProjection = projector.project(
+            previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
+            events = firstBatch.events.map(PersistedIncrementalLearningEvent::event),
+            knownLedgerHeadSequence = firstBatch.ledgerHeadSequence,
+            authoritativePresentationStates = firstBatch.authoritativePresentationStates,
+        )
+        val persistedPositive = store.commitProjection(
+            ProjectionCommit(
+                projectionName = PROJECTION,
+                learnerId = LEARNER,
+                expectedPreviousCheckpoint = 0,
+                expectedPreviousStateVersion = 0,
+                mode = ProjectionCommitMode.INCREMENTAL,
+                knownLedgerHeadSequence = firstBatch.ledgerHeadSequence,
+                consumedLedgerEvents = firstBatch.events.map { persisted ->
+                    ConsumedLedgerEventReceipt(
+                        eventKind = EVENT_KIND_LEARNING_OBSERVATION,
+                        eventId = persisted.event.ledgerEventId,
+                        eventSequence = persisted.event.eventSequence,
+                        canonicalFingerprint = persisted.canonicalFingerprint,
+                    )
+                },
+                presentationProjectionStates = firstProjection.presentationProjectionStates,
+                snapshot = firstProjection.snapshot,
+            ),
+        )
+        assertEquals(1L, persistedPositive.snapshot.checkpoint.lastSequence)
+
         val negative = store.materializeLearningObservation(
             MaterializeLearningObservationCommand(
                 candidateId = ready(
@@ -609,38 +642,45 @@ class LearningObservationDatabaseInstrumentedTest {
                 confirmedAtEpochMillis = negativeConfirmedAt,
             ),
         )
-        assertEquals(positiveConfirmedAt, requireNotNull(positive.event).confirmedAtEpochMillis)
-        assertEquals(negativeConfirmedAt, requireNotNull(negative.event).confirmedAtEpochMillis)
+        val negativeEvent = requireNotNull(negative.event)
+        assertEquals(negativeConfirmedAt, negativeEvent.confirmedAtEpochMillis)
+
+        val lateBatch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(1L, lateBatch.previousCheckpoint)
+        assertEquals(2L, lateBatch.ledgerHeadSequence)
+        assertEquals(listOf(negativeEvent.eventId), lateBatch.events.map { it.event.ledgerEventId })
+        val incremental = projector.project(
+            previous = persistedPositive.snapshot,
+            events = lateBatch.events.map(PersistedIncrementalLearningEvent::event),
+            knownLedgerHeadSequence = lateBatch.ledgerHeadSequence,
+            authoritativePresentationStates = lateBatch.authoritativePresentationStates,
+        )
+        assertTrue(incremental.requiresFullReplay)
+        assertEquals(persistedPositive.snapshot, incremental.snapshot)
 
         val ledger = store.loadLearningLedger(LEARNER)
         assertEquals(LearningLedgerReadStatus.COMPLETE, ledger.status)
         val events = ledger.validPrefix.map(PersistedLearningLedgerEvent::event)
-        val observations = events.filterIsInstance<AttributedLearningObservationEvent>()
-        val projector = LearningProjector()
-        val incremental = projector.project(
-            previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
-            events = observations,
-            knownLedgerHeadSequence = 2,
-            authoritativePresentationStates = emptyMap(),
-        )
         val replay = projector.replay(LEARNER, events)
         val mastery = replay.snapshot.knowledgeMasteryStates.getValue("knowledge-math")
 
-        assertEquals(incremental.snapshot, replay.snapshot)
         assertEquals(positiveOccurredAt, mastery.lastEvidenceAtEpochMillis)
         assertEquals(negativeOccurredAt, mastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(2L, mastery.lastIndependentErrorSequence)
         assertEquals(positiveOccurredAt, replay.snapshot.checkpoint.projectedAtEpochMillis)
         assertEquals(positiveOccurredAt, replay.snapshot.generatedAtEpochMillis)
+        assertEquals(2L, replay.snapshot.checkpoint.lastSequence)
+        assertEquals(2L, replay.snapshot.knownLedgerHeadSequence)
 
         store.commitProjection(
             ProjectionCommit(
                 projectionName = PROJECTION,
                 learnerId = LEARNER,
-                expectedPreviousCheckpoint = 0,
-                expectedPreviousStateVersion = 0,
+                expectedPreviousCheckpoint = 1,
+                expectedPreviousStateVersion = persistedPositive.stateVersion,
                 mode = ProjectionCommitMode.FULL_REPLAY,
                 knownLedgerHeadSequence = 2,
-                consumedLedgerEvents = ledger.validPrefix.map { persisted ->
+                consumedLedgerEvents = lateBatch.events.map { persisted ->
                     ConsumedLedgerEventReceipt(
                         eventKind = EVENT_KIND_LEARNING_OBSERVATION,
                         eventId = persisted.event.ledgerEventId,
@@ -655,6 +695,13 @@ class LearningObservationDatabaseInstrumentedTest {
 
         val reloaded = requireNotNull(store.readCurrentLearnerSnapshot(PROJECTION, LEARNER))
         assertEquals(replay.snapshot, reloaded.snapshot)
+        assertEquals(2L, reloaded.stateVersion)
+        assertEquals(2L, reloaded.knownLedgerHeadSequence)
+        assertEquals(2L, reloaded.snapshot.checkpoint.lastSequence)
+        assertEquals(
+            setOf(positiveEvent.eventId, negativeEvent.eventId),
+            reloaded.snapshot.appliedLearningObservationRecords.keys,
+        )
         assertEquals(
             negativeOccurredAt,
             reloaded.snapshot.knowledgeMasteryStates.getValue("knowledge-math")

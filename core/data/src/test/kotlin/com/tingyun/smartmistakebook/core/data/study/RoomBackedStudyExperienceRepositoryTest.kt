@@ -28,11 +28,14 @@ import com.tingyun.smartmistakebook.core.database.ModelTaskWriteResult
 import com.tingyun.smartmistakebook.core.database.PersistedAnswerRevealP0
 import com.tingyun.smartmistakebook.core.database.PersistedAttemptP0
 import com.tingyun.smartmistakebook.core.database.PersistedCorrectionP0
+import com.tingyun.smartmistakebook.core.database.PersistedIncrementalLearningEvent
 import com.tingyun.smartmistakebook.core.database.PersistedLearnerSnapshot
 import com.tingyun.smartmistakebook.core.database.PersistedLearningLedgerEvent
 import com.tingyun.smartmistakebook.core.database.ProjectionBatch
 import com.tingyun.smartmistakebook.core.database.ProjectionBatchStopReason
 import com.tingyun.smartmistakebook.core.database.ProjectionCommit
+import com.tingyun.smartmistakebook.core.database.ProjectionCommitMode
+import com.tingyun.smartmistakebook.core.database.ProjectionOutboxRecord
 import com.tingyun.smartmistakebook.core.database.ProblemDraftRecord
 import com.tingyun.smartmistakebook.core.database.ProblemDraftWriteResult
 import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
@@ -63,7 +66,10 @@ import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
+import com.tingyun.smartmistakebook.core.model.IncrementalLearningEvent
+import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.LearningLedgerFingerprint
 import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
 import com.tingyun.smartmistakebook.core.model.LearningObservationCandidate
 import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
@@ -138,6 +144,109 @@ class RoomBackedStudyExperienceRepositoryTest {
             assertEquals(observation.eventId, receipt.eventId)
             assertEquals(observation.eventSequence, receipt.eventSequence)
             assertEquals("observation-fingerprint", receipt.canonicalFingerprint)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun lateObservationRoutesIncrementalProjectionThroughFullReplay() = runBlocking {
+        fun observation(
+            eventId: String,
+            sequence: Long,
+            direction: LearningObservationDirection,
+            occurredAtEpochMillis: Long,
+            confirmedAtEpochMillis: Long,
+        ) = AttributedLearningObservationEvent(
+            eventId = eventId,
+            candidateId = "candidate-$eventId",
+            learnerId = "learner:local",
+            practiceUnitId = "unit-late-observation",
+            problemRevisionId = "revision-late-observation",
+            direction = direction,
+            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceWeight = 0.8,
+            independence = LearningObservationIndependence.INDEPENDENT,
+            attributions = listOf(
+                LearningObservationKnowledgeAttribution(
+                    bindingId = "binding-late-observation",
+                    knowledgeNodeId = "knowledge-late-observation",
+                    weight = 1.0,
+                    basisRevisionId = "revision-late-observation",
+                    taxonomyVersion = "taxonomy-v1",
+                    role = EvidenceAttributionRole.PRIMARY,
+                    certainty = EvidenceAttributionCertainty.DIRECT,
+                ),
+            ),
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            confirmedAtEpochMillis = confirmedAtEpochMillis,
+            modelVersion = "model-v1",
+            evidenceLocator = "response:$eventId",
+            eventSequence = sequence,
+        )
+
+        val positive = observation(
+            eventId = "observation-positive",
+            sequence = 1,
+            direction = LearningObservationDirection.POSITIVE,
+            occurredAtEpochMillis = 2_000,
+            confirmedAtEpochMillis = 2_000,
+        )
+        val lateNegative = observation(
+            eventId = "observation-late-negative",
+            sequence = 2,
+            direction = LearningObservationDirection.NEGATIVE,
+            occurredAtEpochMillis = 1_000,
+            confirmedAtEpochMillis = 10_000,
+        )
+        val projector = LearningProjector()
+        val beforeLateObservation = projector.replay(
+            learnerId = "learner:local",
+            ledger = listOf(positive),
+        ).snapshot
+        val persistedLedger = listOf(positive, lateNegative).map { event ->
+            PersistedLearningLedgerEvent(
+                event = event,
+                canonicalFingerprint = LearningLedgerFingerprint.learningObservation(event),
+            )
+        }
+        val expected = projector.replay(
+            learnerId = "learner:local",
+            ledger = listOf(lateNegative, positive),
+        ).snapshot
+        val database = FakeStudyDatabasePort().apply {
+            configureProjection(beforeLateObservation, persistedLedger)
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(
+            database = database,
+            applicationScope = applicationScope,
+            initialFixture = null,
+        )
+
+        try {
+            repository.initialize()
+
+            val commit = database.projectionCommits.single()
+            assertEquals(ProjectionCommitMode.FULL_REPLAY, commit.mode)
+            assertEquals(1L, commit.expectedPreviousCheckpoint)
+            assertEquals(listOf(2L), commit.consumedLedgerEvents.map { it.eventSequence })
+            assertEquals(
+                listOf(lateNegative.eventId),
+                commit.consumedLedgerEvents.map { it.eventId },
+            )
+            assertEquals(2L, commit.knownLedgerHeadSequence)
+            assertEquals(expected, commit.snapshot)
+            assertEquals(expected, database.currentProjectionSnapshot)
+            assertEquals(2L, database.currentProjectionSnapshot?.checkpoint?.lastSequence)
+            assertEquals(
+                1_000L,
+                database.currentProjectionSnapshot
+                    ?.knowledgeMasteryStates
+                    ?.get("knowledge-late-observation")
+                    ?.lastIndependentErrorAtEpochMillis,
+            )
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -718,6 +827,8 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     private val attemptsBySubmission = mutableMapOf<String, AttemptWriteResult>()
     private var nextEventSequence = 1L
     private var persistedLearnerSnapshot: PersistedLearnerSnapshot? = null
+    private var projectionLedger = emptyList<PersistedLearningLedgerEvent>()
+    val projectionCommits = mutableListOf<ProjectionCommit>()
     var lastAttemptCommand: AttemptWriteCommand? = null
         private set
     var lastEvidenceSnapshot: AssessmentEvidenceSnapshot? = null
@@ -732,6 +843,23 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
 
     val problemCount: Int
         get() = problemIds.size
+    val currentProjectionSnapshot: LearnerSnapshot?
+        get() = persistedLearnerSnapshot?.snapshot
+
+    fun configureProjection(
+        snapshot: LearnerSnapshot,
+        ledger: List<PersistedLearningLedgerEvent>,
+    ) {
+        projectionLedger = ledger
+        val ledgerHead = ledger.maxOfOrNull { it.event.eventSequence } ?: 0L
+        persistedLearnerSnapshot = PersistedLearnerSnapshot(
+            projectionName = "learner-state-v1",
+            stateVersion = 1,
+            knownLedgerHeadSequence = snapshot.knownLedgerHeadSequence,
+            snapshot = snapshot,
+        )
+        learningLedgerHead.value = ledgerHead
+    }
 
     fun addMistake(mistake: MistakeRecord) {
         entries[mistake.entryId] = mistake
@@ -1045,12 +1173,37 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     ): ProjectionBatch {
         if (failProjectionReads) error("forced projection read failure")
         val checkpoint = persistedLearnerSnapshot?.snapshot?.checkpoint?.lastSequence ?: 0L
+        val pendingEvents = projectionLedger.mapNotNull { persisted ->
+            val event = persisted.event as? IncrementalLearningEvent ?: return@mapNotNull null
+            if (event.eventSequence <= checkpoint) return@mapNotNull null
+            val eventKind = when (event) {
+                is Attempt -> "ATTEMPT"
+                is com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome ->
+                    "ANSWER_REVEAL_OUTCOME"
+                is TutorAnswerExposureOutcome -> "TUTOR_ANSWER_EXPOSURE_OUTCOME"
+                is AttributedLearningObservationEvent -> "ATTRIBUTED_LEARNING_OBSERVATION"
+            }
+            PersistedIncrementalLearningEvent(
+                event = event,
+                canonicalFingerprint = persisted.canonicalFingerprint,
+                outbox = ProjectionOutboxRecord(
+                    outboxId = "outbox:${event.ledgerEventId}",
+                    learnerId = learnerId,
+                    outboxSequence = event.eventSequence,
+                    eventKind = eventKind,
+                    eventId = event.ledgerEventId,
+                    canonicalFingerprint = persisted.canonicalFingerprint,
+                    status = "PENDING",
+                    createdAtEpochMillis = event.occurredAtEpochMillis,
+                ),
+            )
+        }
         return ProjectionBatch(
             projectionName = projectionName,
             learnerId = learnerId,
             previousCheckpoint = checkpoint,
             ledgerHeadSequence = learningLedgerHead.value,
-            events = emptyList(),
+            events = pendingEvents,
             authoritativePresentationStates = emptyMap(),
             stopReason = ProjectionBatchStopReason.END_OF_LEDGER,
         )
@@ -1059,7 +1212,7 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead =
         LearningLedgerRead(
             learnerId = learnerId,
-            validPrefix = emptyList(),
+            validPrefix = projectionLedger,
             status = LearningLedgerReadStatus.COMPLETE,
         )
 
@@ -1068,8 +1221,20 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
         learnerId: String,
     ): PersistedLearnerSnapshot? = persistedLearnerSnapshot
 
-    override suspend fun commitProjection(commit: ProjectionCommit): PersistedLearnerSnapshot =
-        error("commitProjection is not used by these focused tests")
+    override suspend fun commitProjection(commit: ProjectionCommit): PersistedLearnerSnapshot {
+        val currentStateVersion = persistedLearnerSnapshot?.stateVersion ?: 0L
+        val currentCheckpoint =
+            persistedLearnerSnapshot?.snapshot?.checkpoint?.lastSequence ?: 0L
+        check(commit.expectedPreviousStateVersion == currentStateVersion)
+        check(commit.expectedPreviousCheckpoint == currentCheckpoint)
+        projectionCommits += commit
+        return PersistedLearnerSnapshot(
+            projectionName = commit.projectionName,
+            stateVersion = currentStateVersion + 1,
+            knownLedgerHeadSequence = commit.knownLedgerHeadSequence,
+            snapshot = commit.snapshot,
+        ).also { persistedLearnerSnapshot = it }
+    }
 
     override suspend fun saveReviewPlan(bundle: ReviewPlanBundle) {
         val session = latestSessions[bundle.plan.reviewPlanId]

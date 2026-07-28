@@ -712,41 +712,51 @@ class RoomBackedStudyExperienceRepository(
                             knownLedgerHeadSequence = batch.ledgerHeadSequence,
                             authoritativePresentationStates = batch.authoritativePresentationStates,
                         )
-                        check(
-                            result.missingSequence == null &&
-                            result.conflictedAttemptIds.isEmpty() &&
-                                result.conflictedAnswerRevealOutcomeIds.isEmpty() &&
-                                result.conflictedTutorAnswerExposureOutcomeIds.isEmpty() &&
-                                result.conflictedLearningObservationEventIds.isEmpty() &&
-                                result.deferredAttemptIds.isEmpty() &&
-                                result.deferredAnswerRevealOutcomeIds.isEmpty() &&
-                                result.deferredTutorAnswerExposureOutcomeIds.isEmpty() &&
-                                result.deferredLearningObservationEventIds.isEmpty(),
-                        ) { "Projector rejected a database-validated incremental prefix" }
-                        val commit = ProjectionCommit(
-                            projectionName = PROJECTION_NAME,
-                            learnerId = learnerId,
-                            expectedPreviousCheckpoint = expectedCheckpoint,
-                            expectedPreviousStateVersion = current?.stateVersion ?: 0L,
-                            mode = ProjectionCommitMode.INCREMENTAL,
-                            knownLedgerHeadSequence = batch.ledgerHeadSequence,
-                            consumedLedgerEvents = batch.events.map { persisted ->
-                                ConsumedLedgerEventReceipt(
-                                    eventKind = persisted.outbox.eventKind,
-                                    eventId = persisted.outbox.eventId,
-                                    eventSequence = persisted.outbox.outboxSequence,
-                                    canonicalFingerprint = persisted.canonicalFingerprint,
-                                )
-                            },
-                            presentationProjectionStates = result.presentationProjectionStates,
-                            snapshot = result.snapshot,
-                        )
-                        try {
-                            database.commitProjection(commit)
-                            consecutiveCasConflicts = 0
-                        } catch (conflict: ProjectionCasConflictException) {
-                            consecutiveCasConflicts++
-                            if (consecutiveCasConflicts >= MAX_CAS_RETRIES) throw conflict
+                        if (result.requiresFullReplay) {
+                            try {
+                                commitFullReplay(current)
+                                consecutiveCasConflicts = 0
+                            } catch (conflict: ProjectionCasConflictException) {
+                                consecutiveCasConflicts++
+                                if (consecutiveCasConflicts >= MAX_CAS_RETRIES) throw conflict
+                            }
+                        } else {
+                            check(
+                                result.missingSequence == null &&
+                                    result.conflictedAttemptIds.isEmpty() &&
+                                    result.conflictedAnswerRevealOutcomeIds.isEmpty() &&
+                                    result.conflictedTutorAnswerExposureOutcomeIds.isEmpty() &&
+                                    result.conflictedLearningObservationEventIds.isEmpty() &&
+                                    result.deferredAttemptIds.isEmpty() &&
+                                    result.deferredAnswerRevealOutcomeIds.isEmpty() &&
+                                    result.deferredTutorAnswerExposureOutcomeIds.isEmpty() &&
+                                    result.deferredLearningObservationEventIds.isEmpty(),
+                            ) { "Projector rejected a database-validated incremental prefix" }
+                            val commit = ProjectionCommit(
+                                projectionName = PROJECTION_NAME,
+                                learnerId = learnerId,
+                                expectedPreviousCheckpoint = expectedCheckpoint,
+                                expectedPreviousStateVersion = current?.stateVersion ?: 0L,
+                                mode = ProjectionCommitMode.INCREMENTAL,
+                                knownLedgerHeadSequence = batch.ledgerHeadSequence,
+                                consumedLedgerEvents = batch.events.map { persisted ->
+                                    ConsumedLedgerEventReceipt(
+                                        eventKind = persisted.outbox.eventKind,
+                                        eventId = persisted.outbox.eventId,
+                                        eventSequence = persisted.outbox.outboxSequence,
+                                        canonicalFingerprint = persisted.canonicalFingerprint,
+                                    )
+                                },
+                                presentationProjectionStates = result.presentationProjectionStates,
+                                snapshot = result.snapshot,
+                            )
+                            try {
+                                database.commitProjection(commit)
+                                consecutiveCasConflicts = 0
+                            } catch (conflict: ProjectionCasConflictException) {
+                                consecutiveCasConflicts++
+                                if (consecutiveCasConflicts >= MAX_CAS_RETRIES) throw conflict
+                            }
                         }
                     }
                 }

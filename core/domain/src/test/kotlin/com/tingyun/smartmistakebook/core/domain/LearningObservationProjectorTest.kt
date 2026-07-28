@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
 import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
+import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.ProjectionStatus
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
@@ -102,7 +103,7 @@ class LearningObservationProjectorTest {
     }
 
     @Test
-    fun `delayed confirmation preserves occurrence time in incremental and full replay`() {
+    fun `delayed confirmation requests full replay without mutating incremental state`() {
         val positive = observation(
             sequence = 1,
             direction = LearningObservationDirection.POSITIVE,
@@ -135,20 +136,282 @@ class LearningObservationProjectorTest {
             events = listOf(negative),
             knownLedgerHeadSequence = 2,
         )
-        val incrementalMastery =
-            incremental.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
 
-        assertEquals(2_000L, incrementalMastery.lastEvidenceAtEpochMillis)
-        assertEquals(1_000L, incrementalMastery.lastIndependentErrorAtEpochMillis)
-        assertEquals(2_000L, incremental.snapshot.checkpoint.projectedAtEpochMillis)
-        assertEquals(2_000L, incremental.snapshot.generatedAtEpochMillis)
+        assertTrue(incremental.requiresFullReplay)
+        assertEquals(FullReplayReason.SEMANTIC_TIME_ROLLBACK, incremental.fullReplayReason)
+        assertEquals(afterPositive.snapshot, incremental.snapshot)
+        assertEquals(
+            setOf(negative.eventId),
+            incremental.deferredLearningObservationEventIds,
+        )
 
         val replay = projector.replay("learner-1", listOf(negative, positive))
+        val replayMastery =
+            replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
 
-        assertEquals(incremental.snapshot, replay.snapshot)
+        assertEquals(2_000L, replayMastery.lastEvidenceAtEpochMillis)
+        assertEquals(1_000L, replayMastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(2L, replayMastery.lastIndependentErrorSequence)
+        assertEquals(2_000L, replay.snapshot.checkpoint.projectedAtEpochMillis)
+        assertEquals(2_000L, replay.snapshot.generatedAtEpochMillis)
+    }
+
+    @Test
+    fun `late historical error cannot overwrite fifteen newer correct attempts`() {
+        val correctAttempts = (1L..15L).map { sequence ->
+            attempt(
+                id = "attempt-$sequence",
+                sequence = sequence,
+                knowledgeNodeId = "knowledge-direct",
+                evidence = positiveEvidence(),
+            )
+        }
+        val beforeLateEvidence = projector.project(
+            previous = LearnerSnapshot.empty("learner-1", LearningProjector.VERSION),
+            events = correctAttempts,
+            knownLedgerHeadSequence = 15,
+        )
+        val lateError = observation(
+            sequence = 16,
+            direction = LearningObservationDirection.NEGATIVE,
+            eventId = "observation-late-error",
+            candidateId = "candidate-late-error",
+            occurredAtEpochMillis = 500,
+            confirmedAtEpochMillis = 1_000_000,
+        )
+
+        val incremental = projector.project(
+            previous = beforeLateEvidence.snapshot,
+            events = listOf(lateError),
+            knownLedgerHeadSequence = 16,
+        )
+
+        assertTrue(incremental.requiresFullReplay)
+        assertEquals(beforeLateEvidence.snapshot, incremental.snapshot)
+
+        val replay = projector.replay(
+            learnerId = "learner-1",
+            ledger = listOf(lateError) + correctAttempts.reversed(),
+        )
+        val mastery = replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
+
+        assertEquals(MasteryStatus.MASTERED, mastery.status)
+        assertEquals(0.997946899763277, mastery.probabilityIndependentCorrect, 1e-12)
+        assertEquals(500L, mastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(16L, mastery.lastIndependentErrorSequence)
+        assertEquals(15_000L, mastery.lastEvidenceAtEpochMillis)
+        assertEquals(16L, mastery.checkpointSequence)
+        assertEquals(16L, replay.snapshot.checkpoint.lastSequence)
+        assertTrue(ClearlyMasteredForSkipPolicy.isSatisfied(mastery, 15_000))
+    }
+
+    @Test
+    fun `recovery follows behavior time when its sequences precede the late error`() {
+        val correctAttempts = (1L..15L).map { sequence ->
+            attempt(
+                id = "recovery-attempt-$sequence",
+                sequence = sequence,
+                knowledgeNodeId = "knowledge-direct",
+                evidence = positiveEvidence(),
+            )
+        }
+        val lateError = observation(
+            sequence = 16,
+            direction = LearningObservationDirection.NEGATIVE,
+            eventId = "observation-mid-timeline-error",
+            candidateId = "candidate-mid-timeline-error",
+            occurredAtEpochMillis = 10_000,
+            confirmedAtEpochMillis = 1_000_000,
+        )
+
+        val replay = projector.replay(
+            learnerId = "learner-1",
+            ledger = correctAttempts + lateError,
+        )
+        val mastery = replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
+
+        assertEquals(10_000L, mastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(16L, mastery.lastIndependentErrorSequence)
+        assertEquals(null, mastery.conflictSinceSequence)
+        assertEquals(MasteryStatus.MASTERED, mastery.status)
+        assertTrue(ClearlyMasteredForSkipPolicy.isSatisfied(mastery, 15_000))
+    }
+
+    @Test
+    fun `late positive observation replays before a newer negative attempt`() {
+        val negativeAttempt = attempt(
+            id = "attempt-negative",
+            sequence = 1,
+            knowledgeNodeId = "knowledge-direct",
+            evidence = negativeEvidence(),
+            occurredAtEpochMillis = 2_000,
+        )
+        val positiveObservation = observation(
+            sequence = 2,
+            direction = LearningObservationDirection.POSITIVE,
+            eventId = "observation-late-positive",
+            candidateId = "candidate-late-positive",
+            occurredAtEpochMillis = 1_000,
+            confirmedAtEpochMillis = 10_000,
+        )
+        val afterNegative = projector.project(
+            previous = LearnerSnapshot.empty("learner-1", LearningProjector.VERSION),
+            events = listOf(negativeAttempt),
+            knownLedgerHeadSequence = 1,
+        )
+
+        val incremental = projector.project(
+            previous = afterNegative.snapshot,
+            events = listOf(positiveObservation),
+            knownLedgerHeadSequence = 2,
+        )
+        val replay = projector.replay(
+            learnerId = "learner-1",
+            ledger = listOf(positiveObservation, negativeAttempt),
+        )
+        val repeated = projector.replay(
+            learnerId = "learner-1",
+            ledger = listOf(negativeAttempt, positiveObservation),
+        )
+        val mastery = replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
+
+        assertTrue(incremental.requiresFullReplay)
+        assertEquals(replay.snapshot, repeated.snapshot)
+        assertEquals(0.36424, mastery.probabilityIndependentCorrect, 1e-12)
+        assertEquals(2_000L, mastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(1L, mastery.lastIndependentErrorSequence)
+        assertEquals(2L, mastery.checkpointSequence)
+    }
+
+    @Test
+    fun `same occurrence time uses ledger sequence as the mastery tie break`() {
+        val positiveAttempt = attempt(
+            id = "attempt-positive",
+            sequence = 1,
+            knowledgeNodeId = "knowledge-direct",
+            evidence = positiveEvidence(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val negativeObservation = observation(
+            sequence = 2,
+            direction = LearningObservationDirection.NEGATIVE,
+            eventId = "observation-same-time-negative",
+            candidateId = "candidate-same-time-negative",
+            occurredAtEpochMillis = 1_000,
+        )
+
+        val afterPositive = projector.project(
+            previous = LearnerSnapshot.empty("learner-1", LearningProjector.VERSION),
+            events = listOf(positiveAttempt),
+            knownLedgerHeadSequence = 1,
+        )
+        val incremental = projector.project(
+            previous = afterPositive.snapshot,
+            events = listOf(negativeObservation),
+            knownLedgerHeadSequence = 2,
+        )
+        val replay = projector.replay(
+            learnerId = "learner-1",
+            ledger = listOf(negativeObservation, positiveAttempt),
+        )
+        val repeated = projector.replay(
+            learnerId = "learner-1",
+            ledger = listOf(positiveAttempt, negativeObservation),
+        )
+        val mastery = replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct")
+
+        assertFalse(incremental.requiresFullReplay)
+        assertEquals(replay.snapshot, incremental.snapshot)
+        assertEquals(replay.snapshot, repeated.snapshot)
+        assertEquals(0.43824, mastery.probabilityIndependentCorrect, 1e-12)
+        assertEquals(1_000L, mastery.lastIndependentErrorAtEpochMillis)
+        assertEquals(2L, mastery.lastIndependentErrorSequence)
+    }
+
+    @Test
+    fun `rollback scan ignores other nodes ambiguous attribution and zero weight`() {
+        val first = observation(
+            sequence = 1,
+            direction = LearningObservationDirection.POSITIVE,
+            occurredAtEpochMillis = 2_000,
+        )
+        val afterFirst = projector.project(
+            previous = LearnerSnapshot.empty("learner-1", LearningProjector.VERSION),
+            events = listOf(first),
+            knownLedgerHeadSequence = 1,
+        )
+        val otherNode = observation(
+            sequence = 2,
+            direction = LearningObservationDirection.POSITIVE,
+            eventId = "observation-other-node",
+            candidateId = "candidate-other-node",
+            occurredAtEpochMillis = 1_000,
+            attributions = listOf(
+                attribution(
+                    bindingId = "binding-other-node",
+                    knowledgeNodeId = "knowledge-other",
+                    certainty = EvidenceAttributionCertainty.DIRECT,
+                ),
+            ),
+        )
+        val afterOtherNode = projector.project(
+            previous = afterFirst.snapshot,
+            events = listOf(otherNode),
+            knownLedgerHeadSequence = 2,
+        )
+        val ambiguous = observation(
+            sequence = 3,
+            direction = LearningObservationDirection.NEGATIVE,
+            eventId = "observation-ambiguous-rollback",
+            candidateId = "candidate-ambiguous-rollback",
+            occurredAtEpochMillis = 500,
+            attributions = listOf(
+                attribution(
+                    bindingId = "binding-ambiguous-rollback",
+                    knowledgeNodeId = "knowledge-direct",
+                    certainty = EvidenceAttributionCertainty.AMBIGUOUS,
+                ),
+            ),
+        )
+        val afterAmbiguous = projector.project(
+            previous = afterOtherNode.snapshot,
+            events = listOf(ambiguous),
+            knownLedgerHeadSequence = 3,
+        )
+        val zeroWeightSeed = attempt(
+            id = "attempt-zero-weight",
+            sequence = 4,
+            knowledgeNodeId = "knowledge-direct",
+            evidence = positiveEvidence(),
+            occurredAtEpochMillis = 250,
+        )
+        val zeroWeight = zeroWeightSeed.copy(
+            evidence = LearningEvidence(
+                direction = LearningEvidenceDirection.NONE,
+                weight = 0.0,
+                reason = LearningEvidenceReason.ANSWER_REVEALED,
+            ),
+            problemMemoryOutcome = ProblemMemoryOutcome.ANSWER_REVEALED,
+        )
+        val afterZeroWeight = projector.project(
+            previous = afterAmbiguous.snapshot,
+            events = listOf(zeroWeight),
+            knownLedgerHeadSequence = 4,
+        )
+
+        assertFalse(afterOtherNode.requiresFullReplay)
+        assertFalse(afterAmbiguous.requiresFullReplay)
         assertEquals(
-            incrementalMastery,
-            replay.snapshot.knowledgeMasteryStates.getValue("knowledge-direct"),
+            setOf(ambiguous.eventId),
+            afterAmbiguous.ambiguousLearningObservationEventIds,
+        )
+        assertFalse(afterZeroWeight.requiresFullReplay)
+        assertEquals(4L, afterZeroWeight.snapshot.checkpoint.lastSequence)
+        assertEquals(
+            2_000L,
+            afterZeroWeight.snapshot.knowledgeMasteryStates
+                .getValue("knowledge-direct")
+                .lastEvidenceAtEpochMillis,
         )
     }
 
@@ -320,6 +583,7 @@ class LearningObservationProjectorTest {
         sequence: Long,
         knowledgeNodeId: String,
         evidence: LearningEvidence,
+        occurredAtEpochMillis: Long = sequence * 1_000,
     ) = Attempt(
         attemptId = id,
         presentationId = "presentation-$id",
@@ -360,7 +624,7 @@ class LearningObservationProjectorTest {
         } else {
             ProblemMemoryOutcome.RETRIEVAL_FAILURE
         },
-        occurredAtEpochMillis = sequence * 1_000,
+        occurredAtEpochMillis = occurredAtEpochMillis,
         durationSeconds = 60,
         studyDay = StudyDayContext(sequence, "Asia/Shanghai", 480),
         eventSequence = sequence,

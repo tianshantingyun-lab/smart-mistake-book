@@ -120,9 +120,14 @@ class LearningProjectorTest {
             assessmentSnapshot = secondSeed.assessmentSnapshot.copy(calibration = expiredCalibration),
         )
 
-        val result = projector.project(
+        val incremental = projector.project(
             LearnerSnapshot.empty("learner-1"), listOf(first, second), 2,
         )
+        assertTrue(incremental.requiresFullReplay)
+        assertEquals(FullReplayReason.SEMANTIC_TIME_ROLLBACK, incremental.fullReplayReason)
+        assertTrue(incremental.snapshot.problemMemoryStates.isEmpty())
+
+        val result = projector.replay("learner-1", listOf(second, first))
 
         val memory = result.snapshot.problemMemoryStates.getValue("unit-1")
         assertEquals(5_000, memory.lastReviewedAtEpochMillis)
