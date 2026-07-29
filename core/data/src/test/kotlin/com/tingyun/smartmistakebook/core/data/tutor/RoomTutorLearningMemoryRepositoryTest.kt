@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.database.TutorConversationWriteResult
 import com.tingyun.smartmistakebook.core.database.TutorEvidenceFinalizationResult
 import com.tingyun.smartmistakebook.core.database.TutorEvidencePreparationResult
 import com.tingyun.smartmistakebook.core.database.TutorTurnAllocationResult
+import com.tingyun.smartmistakebook.core.database.TutorTurnReadResult
 import com.tingyun.smartmistakebook.core.database.FinalizeTutorEvidenceRequestCommand as DatabaseFinalizeEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.AllocateTutorTurnCommand
 import com.tingyun.smartmistakebook.core.domain.AllocateTutorTurnResult
@@ -17,6 +18,7 @@ import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceAnchorFingerprints
@@ -52,6 +54,7 @@ class RoomTutorLearningMemoryRepositoryTest {
         var openCalls = 0
         var archiveCalls = 0
         var finalizeCalls = 0
+        var openTurnCalls = 0
         var finalizeCommand: DatabaseFinalizeEvidenceCommand? = null
         val repository = RoomTutorLearningMemoryRepository(database { method, arguments ->
             when (method) {
@@ -62,6 +65,11 @@ class RoomTutorLearningMemoryRepositoryTest {
 
                 "openTutorConversation" -> if (openCalls++ == 0) activeConversation else null
                 "latestActiveTutorConversation" -> activeConversation
+                "openTutorTurn" -> if (openTurnCalls++ == 0) {
+                    TutorTurnReadResult.Found(receipt)
+                } else {
+                    TutorTurnReadResult.NotFound
+                }
                 "archiveTutorConversation" -> TutorConversationArchiveWriteResult(
                     archived = archiveCalls++ == 0,
                     conversation = archivedConversation,
@@ -107,6 +115,10 @@ class RoomTutorLearningMemoryRepositoryTest {
         assertEquals(OpenTutorConversationResult.NotFound, repository.openConversation(openCommand))
         assertEquals(activeConversation, repository.latestActiveConversation(LEARNER_ID))
         assertTrue(runCatching { repository.latestActiveConversation(" learner-1") }.isFailure)
+        assertEquals(OpenTutorTurnResult.Found(receipt), repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
+        assertEquals(OpenTutorTurnResult.NotFound, repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
+        assertTrue(runCatching { repository.openTurn(" learner-1", receipt.turnReceiptId) }.isFailure)
+        assertTrue(runCatching { repository.openTurn(LEARNER_ID, " turn-1") }.isFailure)
         assertTrue(repository.archiveConversation(archiveCommand) is ArchiveTutorConversationResult.Archived)
         assertTrue(repository.archiveConversation(archiveCommand) is ArchiveTutorConversationResult.Replayed)
         assertTrue(repository.allocateTurn(allocateCommand) is AllocateTutorTurnResult.Replayed)

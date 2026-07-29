@@ -109,6 +109,12 @@ data class TutorTurnAllocationResult(
     val receipt: TutorTurnReceipt,
 )
 
+sealed interface TutorTurnReadResult {
+    data class Found(val receipt: TutorTurnReceipt) : TutorTurnReadResult
+
+    data object NotFound : TutorTurnReadResult
+}
+
 data class PrepareTutorEvidenceRequestCommand(
     val evidenceRequestId: String,
     val learnerId: String,
@@ -265,6 +271,13 @@ interface TutorLearningMemoryDatabasePort {
     suspend fun allocateTutorTurn(
         command: AllocateTutorTurnCommand,
     ): TutorTurnAllocationResult = throw UnsupportedOperationException(
+        "Tutor learning-memory turns are not implemented",
+    )
+
+    suspend fun openTutorTurn(
+        learnerId: String,
+        turnReceiptId: String,
+    ): TutorTurnReadResult = throw UnsupportedOperationException(
         "Tutor learning-memory turns are not implemented",
     )
 

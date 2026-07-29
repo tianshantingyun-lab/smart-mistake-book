@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.database.TutorEvidenceConflictException
 import com.tingyun.smartmistakebook.core.database.TutorEvidenceSubmission
 import com.tingyun.smartmistakebook.core.database.TutorMemoryScopeConflictException
 import com.tingyun.smartmistakebook.core.database.TutorTurnConflictException
+import com.tingyun.smartmistakebook.core.database.TutorTurnReadResult
 import com.tingyun.smartmistakebook.core.domain.AllocateTutorTurnCommand
 import com.tingyun.smartmistakebook.core.domain.AllocateTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.ArchiveTutorConversationCommand
@@ -21,6 +22,7 @@ import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceTerminal
@@ -70,6 +72,23 @@ internal class RoomTutorLearningMemoryRepository(
                 database.latestActiveTutorConversation(learnerScopeId)
             }
         }
+
+    override suspend fun openTurn(
+        learnerScopeId: String,
+        turnReceiptId: String,
+    ): OpenTutorTurnResult {
+        requireTutorMemoryId(learnerScopeId, "Learner scope")
+        requireTutorMemoryId(turnReceiptId, "Turn receipt")
+        return mapDatabaseConflict(
+            TutorLearningMemoryOperation.OPEN_TURN,
+            TutorLearningMemoryConflictReason.NOT_FOUND_OR_OUT_OF_SCOPE,
+        ) {
+            when (val result = database.openTutorTurn(learnerScopeId, turnReceiptId)) {
+                is TutorTurnReadResult.Found -> OpenTutorTurnResult.Found(result.receipt)
+                TutorTurnReadResult.NotFound -> OpenTutorTurnResult.NotFound
+            }
+        }
+    }
 
     override suspend fun archiveConversation(
         command: ArchiveTutorConversationCommand,
@@ -263,10 +282,14 @@ private fun TutorLearningEvidenceTerminal.Submitted.toDatabaseSubmission() = Tut
 )
 
 private fun requireLearnerScopeId(learnerScopeId: String) {
+    requireTutorMemoryId(learnerScopeId, "Learner scope")
+}
+
+private fun requireTutorMemoryId(value: String, name: String) {
     require(
-        learnerScopeId.isNotBlank() &&
-            learnerScopeId == learnerScopeId.trim() &&
-            learnerScopeId.length <= 256 &&
-            learnerScopeId.none(Char::isISOControl),
-    ) { "Learner scope must be a trimmed non-blank opaque id" }
+        value.isNotBlank() &&
+            value == value.trim() &&
+            value.length <= 256 &&
+            value.none(Char::isISOControl),
+    ) { "$name must be a trimmed non-blank opaque id" }
 }

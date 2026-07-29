@@ -103,6 +103,16 @@ sealed interface OpenTutorConversationResult {
     data object NotFound : OpenTutorConversationResult
 }
 
+sealed interface OpenTutorTurnResult {
+    data class Found(val receipt: TutorTurnReceipt) : OpenTutorTurnResult
+
+    /**
+     * Missing and out-of-learner-scope receipts deliberately share one result so a caller cannot
+     * discover another learner's turn.
+     */
+    data object NotFound : OpenTutorTurnResult
+}
+
 sealed interface ArchiveTutorConversationResult {
     val conversation: TutorConversation
     val archived: Boolean
@@ -476,6 +486,7 @@ sealed interface FinalizeTutorEvidenceResult {
 enum class TutorLearningMemoryOperation {
     CREATE_CONVERSATION,
     OPEN_CONVERSATION,
+    OPEN_TURN,
     ARCHIVE_CONVERSATION,
     ALLOCATE_TURN,
     PREPARE_EVIDENCE,
@@ -524,6 +535,16 @@ interface TutorLearningMemoryRepository {
 
     /** Returns only this learner's most recently created active conversation, if one exists. */
     suspend fun latestActiveConversation(learnerScopeId: String): TutorConversation?
+
+    /** Opens an exact receipt only when it belongs to [learnerScopeId]. */
+    suspend fun openTurn(
+        learnerScopeId: String,
+        turnReceiptId: String,
+    ): OpenTutorTurnResult {
+        learnerScopeId.requireTutorMemoryId("Learner scope")
+        turnReceiptId.requireTutorMemoryId("Turn receipt")
+        return OpenTutorTurnResult.NotFound
+    }
 
     /** Archives the exact active generation using a conversation-version compare-and-set. */
     suspend fun archiveConversation(

@@ -177,6 +177,48 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
+        SELECT * FROM tutor_turn_receipt
+        WHERE learner_id = :learnerId
+          AND turn_receipt_id = :turnReceiptId
+        LIMIT 1
+        """,
+    )
+    internal abstract suspend fun openTurn(
+        learnerId: String,
+        turnReceiptId: String,
+    ): TutorTurnReceiptEntity?
+
+    @Query(
+        """
+        UPDATE tutor_evidence_request
+        SET status = :cancelledStatus,
+            state_version = state_version + 1,
+            terminal_idempotency_key = :idempotencyKey,
+            terminal_payload_fingerprint = :payloadFingerprint,
+            terminal_source_fact_id = NULL,
+            resolved_at_epoch_millis = CASE
+                WHEN created_at_epoch_millis > :nowEpochMillis THEN created_at_epoch_millis
+                ELSE :nowEpochMillis
+            END
+        WHERE learner_id = :learnerId
+          AND conversation_id = :conversationId
+          AND conversation_generation = :generation
+          AND status = :pendingStatus
+        """,
+    )
+    protected abstract suspend fun cancelPendingEvidenceForArchive(
+        learnerId: String,
+        conversationId: String,
+        generation: Long,
+        idempotencyKey: String,
+        payloadFingerprint: String,
+        nowEpochMillis: Long,
+        pendingStatus: String,
+        cancelledStatus: String,
+    ): Int
+
+    @Query(
+        """
         SELECT * FROM tutor_evidence_request
         WHERE conversation_id = :conversationId
           AND conversation_generation = :generation
@@ -322,6 +364,16 @@ internal abstract class TutorLearningMemoryDao {
                 before.archiveIdempotencyKey == command.idempotencyKey &&
                 before.archivePayloadFingerprint == command.payloadFingerprint
             ) {
+                cancelPendingEvidenceForArchive(
+                    learnerId = command.learnerId,
+                    conversationId = command.conversationId,
+                    generation = command.conversationGeneration,
+                    idempotencyKey = command.idempotencyKey,
+                    payloadFingerprint = command.payloadFingerprint,
+                    nowEpochMillis = nowEpochMillis,
+                    pendingStatus = TutorEvidenceRequestStatus.PENDING.name,
+                    cancelledStatus = TutorEvidenceRequestStatus.CANCELLED.name,
+                )
                 return TutorConversationArchiveWriteResult(
                     archived = false,
                     conversation = before.toModel(),
@@ -331,7 +383,21 @@ internal abstract class TutorLearningMemoryDao {
         }
         if (
             before.status != TutorConversationStatus.ACTIVE.name ||
-            before.stateVersion != command.expectedStateVersion ||
+            before.stateVersion != command.expectedStateVersion
+        ) {
+            throw TutorConversationConflictException(command.conversationId)
+        }
+        cancelPendingEvidenceForArchive(
+            learnerId = command.learnerId,
+            conversationId = command.conversationId,
+            generation = command.conversationGeneration,
+            idempotencyKey = command.idempotencyKey,
+            payloadFingerprint = command.payloadFingerprint,
+            nowEpochMillis = nowEpochMillis,
+            pendingStatus = TutorEvidenceRequestStatus.PENDING.name,
+            cancelledStatus = TutorEvidenceRequestStatus.CANCELLED.name,
+        )
+        if (
             archiveConversationCas(
                 learnerId = command.learnerId,
                 conversationId = command.conversationId,

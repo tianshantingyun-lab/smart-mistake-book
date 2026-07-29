@@ -126,6 +126,35 @@ internal class RoomStudyDatabase(
         trustedClockEpochMillis(),
     )
 
+    override suspend fun openTutorTurn(
+        learnerId: String,
+        turnReceiptId: String,
+    ): TutorTurnReadResult = database.tutorLearningMemoryDao()
+        .openTurn(learnerId, turnReceiptId)
+        ?.let { entity ->
+            TutorTurnReadResult.Found(
+                com.tingyun.smartmistakebook.core.model.TutorTurnReceipt(
+                    turnReceiptId = entity.turnReceiptId,
+                    conversationId = entity.conversationId,
+                    conversationGeneration = entity.conversationGeneration,
+                    conversationStateVersion = entity.conversationStateVersion,
+                    turnOrdinal = entity.turnOrdinal,
+                    subject = com.tingyun.smartmistakebook.core.model.SubjectKind
+                        .valueOf(entity.subject),
+                    problemAnchorId = entity.problemAnchorId,
+                    requestVersion = entity.requestVersion,
+                    modeVersion = entity.modeVersion,
+                    explanationMode = com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+                        .valueOf(entity.explanationMode),
+                    directiveFingerprint = entity.directiveFingerprint,
+                    studentMessageFingerprint = entity.studentMessageFingerprint,
+                    studentMessageSummary = entity.studentMessageSummary,
+                    occurredAtEpochMillis = entity.occurredAtEpochMillis,
+                ),
+            )
+        }
+        ?: TutorTurnReadResult.NotFound
+
     override suspend fun prepareTutorEvidenceRequest(
         command: PrepareTutorEvidenceRequestCommand,
     ) = database.tutorLearningMemoryDao().prepareEvidence(

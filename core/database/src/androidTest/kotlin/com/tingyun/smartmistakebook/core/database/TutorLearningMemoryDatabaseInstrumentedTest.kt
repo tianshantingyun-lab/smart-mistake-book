@@ -194,6 +194,181 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     }
 
     @Test
+    fun openTurnReturnsExactScopedReceiptAndHidesOtherLearners() = runBlocking {
+        val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
+        try {
+            store.createTutorConversation(createConversation())
+            val allocated = store.allocateTutorTurn(
+                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
+            ).receipt
+
+            assertEquals(
+                TutorTurnReadResult.Found(allocated),
+                store.openTutorTurn(LEARNER_ID, allocated.turnReceiptId),
+            )
+            assertEquals(
+                TutorTurnReadResult.NotFound,
+                store.openTutorTurn(OTHER_LEARNER_ID, allocated.turnReceiptId),
+            )
+            assertEquals(
+                TutorTurnReadResult.NotFound,
+                store.openTutorTurn(LEARNER_ID, "missing-turn-receipt"),
+            )
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
+    fun archiveAtomicallyCancelsEveryPendingRequestWithoutCreatingLearningFacts() = runBlocking {
+        var now = TRUSTED_NOW
+        val store = StudyDatabaseFactory.openInMemory(context()) { now }
+        try {
+            store.createTutorConversation(createConversation())
+            val turn = store.allocateTutorTurn(
+                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
+            ).receipt
+            val first = prepareEvidence(
+                conversationStateVersion = turn.conversationStateVersion,
+                requestId = "archive-pending-1",
+                idempotencyKey = "archive-prepare-1",
+                payloadSeed = "archive-prepare-payload-1",
+            )
+            val second = prepareEvidence(
+                conversationStateVersion = turn.conversationStateVersion,
+                requestId = "archive-pending-2",
+                idempotencyKey = "archive-prepare-2",
+                payloadSeed = "archive-prepare-payload-2",
+            )
+            store.prepareTutorEvidenceRequest(first)
+            store.prepareTutorEvidenceRequest(second)
+
+            now = TRUSTED_NOW + 1_000
+            val archive = ArchiveTutorConversationCommand(
+                learnerId = LEARNER_ID,
+                conversationId = CONVERSATION_ID,
+                conversationGeneration = 1,
+                expectedStateVersion = turn.conversationStateVersion,
+                idempotencyKey = "archive-with-pending",
+                payloadFingerprint = sha256("archive-with-pending"),
+            )
+            val archived = store.archiveTutorConversation(archive)
+            val firstAfterArchive = store.prepareTutorEvidenceRequest(first).request
+            val secondAfterArchive = store.prepareTutorEvidenceRequest(second).request
+
+            assertTrue(archived.archived)
+            listOf(firstAfterArchive, secondAfterArchive).forEach { request ->
+                assertEquals(TutorEvidenceRequestStatus.CANCELLED, request.status)
+                assertEquals(1, request.stateVersion)
+                assertEquals(now, request.resolvedAtEpochMillis)
+                assertNull(request.terminalSourceFactId)
+            }
+            val dao = store.database.tutorLearningMemoryDao()
+            assertEquals(0, dao.countEvidenceRequests(TutorEvidenceRequestStatus.PENDING.name))
+            assertEquals(2, dao.countEvidenceRequests(TutorEvidenceRequestStatus.CANCELLED.name))
+            assertEquals(0, dao.countAnchors())
+            assertEquals(0, dao.countSourceFacts())
+
+            val archiveCancellationReplay = store.finalizeTutorEvidenceRequest(
+                cancelEvidence(first, "ignored").copy(
+                    idempotencyKey = archive.idempotencyKey,
+                    payloadFingerprint = archive.payloadFingerprint,
+                ),
+            )
+            assertTrue(archiveCancellationReplay.replayed)
+            assertEquals(TutorEvidenceRequestStatus.CANCELLED, archiveCancellationReplay.request.status)
+            assertNull(archiveCancellationReplay.sourceFact)
+
+            assertConflict<TutorEvidenceConflictException> {
+                store.finalizeTutorEvidenceRequest(
+                    submitEvidence(first, terminalSeed = "late-submit-after-archive"),
+                )
+            }
+            assertConflict<TutorEvidenceConflictException> {
+                store.prepareTutorEvidenceRequest(
+                    first.copy(
+                        evidenceRequestId = "new-request-after-archive",
+                        idempotencyKey = "new-prepare-after-archive",
+                        payloadFingerprint = sha256("new-prepare-after-archive"),
+                    ),
+                )
+            }
+            assertEquals(0, dao.countAnchors())
+            assertEquals(0, dao.countSourceFacts())
+
+            now += 1_000
+            val replay = store.archiveTutorConversation(archive)
+            val firstAfterReplay = store.prepareTutorEvidenceRequest(first).request
+            assertFalse(replay.archived)
+            assertEquals(firstAfterArchive, firstAfterReplay)
+            assertEquals(2, dao.countEvidenceRequests(TutorEvidenceRequestStatus.CANCELLED.name))
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
+    fun archiveReplayLeavesExistingTerminalEvidenceUnchanged() = runBlocking {
+        var now = TRUSTED_NOW
+        val store = StudyDatabaseFactory.openInMemory(context()) { now }
+        try {
+            store.createTutorConversation(createConversation())
+            val turn = store.allocateTutorTurn(
+                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
+            ).receipt
+            val submittedPrepare = prepareEvidence(
+                conversationStateVersion = turn.conversationStateVersion,
+                requestId = "already-submitted",
+                idempotencyKey = "prepare-already-submitted",
+                payloadSeed = "prepare-already-submitted",
+            )
+            val cancelledPrepare = prepareEvidence(
+                conversationStateVersion = turn.conversationStateVersion,
+                requestId = "already-cancelled",
+                idempotencyKey = "prepare-already-cancelled",
+                payloadSeed = "prepare-already-cancelled",
+            )
+            store.prepareTutorEvidenceRequest(submittedPrepare)
+            store.prepareTutorEvidenceRequest(cancelledPrepare)
+            val submitted = store.finalizeTutorEvidenceRequest(
+                submitEvidence(submittedPrepare, terminalSeed = "before-archive"),
+            ).request
+            val cancelled = store.finalizeTutorEvidenceRequest(
+                cancelEvidence(cancelledPrepare, terminalSeed = "before-archive"),
+            ).request
+
+            now += 1_000
+            val archive = ArchiveTutorConversationCommand(
+                learnerId = LEARNER_ID,
+                conversationId = CONVERSATION_ID,
+                conversationGeneration = 1,
+                expectedStateVersion = turn.conversationStateVersion,
+                idempotencyKey = "archive-terminal-evidence",
+                payloadFingerprint = sha256("archive-terminal-evidence"),
+            )
+            store.archiveTutorConversation(archive)
+            now += 1_000
+            store.archiveTutorConversation(archive)
+
+            assertEquals(
+                submitted,
+                store.prepareTutorEvidenceRequest(submittedPrepare).request,
+            )
+            assertEquals(
+                cancelled,
+                store.prepareTutorEvidenceRequest(cancelledPrepare).request,
+            )
+            val dao = store.database.tutorLearningMemoryDao()
+            assertEquals(1, dao.countEvidenceRequests(TutorEvidenceRequestStatus.SUBMITTED.name))
+            assertEquals(1, dao.countEvidenceRequests(TutorEvidenceRequestStatus.CANCELLED.name))
+            assertEquals(1, dao.countAnchors())
+            assertEquals(1, dao.countSourceFacts())
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
     fun evidenceScopeIdempotencyAndPrivacyFailClosed() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
