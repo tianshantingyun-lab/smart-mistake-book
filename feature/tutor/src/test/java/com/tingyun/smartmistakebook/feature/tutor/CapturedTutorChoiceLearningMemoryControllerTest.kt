@@ -18,6 +18,9 @@ import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCancellationReason
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceTerminal
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryConflictException
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryConflictReason
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryOperation
 import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
 import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
@@ -186,13 +189,13 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     }
 
     @Test
-    fun correctAndIncorrectPersistedChoicesCreateVerifiedFactsOnly() = runTest {
+    fun modelEvaluatedChoicesRemainDeterministicWeakFacts() = runTest {
         val correct = Fixture()
         correct.controller.ensurePrepared(correct.task, correct.guidance, correct.modeVersion)
         correct.now = 200
         val correctResult = correct.controller.submitPreparedChoice(
             correct.task,
-            correct.guidance,
+            correct.guidance.copy(hintsUsed = 3, strugglesObserved = 2),
             response(
                 correct.session,
                 choiceId = "choice-correct",
@@ -224,7 +227,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         assertTrue(correctResult is CapturedTutorChoiceLearningMemoryState.Submitted)
         assertTrue(incorrectResult is CapturedTutorChoiceLearningMemoryState.Submitted)
         assertEquals(
-            LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE,
             correct.repository.sourceFacts.single().factKind,
         )
         assertEquals(
@@ -502,6 +505,34 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         val fixture = Fixture()
         fixture.repository.failure = CancellationException("cancelled")
         fixture.controller.ensurePrepared(fixture.task, fixture.guidance, fixture.modeVersion)
+    }
+
+    @Test
+    fun optimisticOrdinalConflictIsRetryableButScopeConflictIsPermanent() = runTest {
+        val retryable = Fixture()
+        retryable.repository.failure = TutorLearningMemoryConflictException(
+            operation = TutorLearningMemoryOperation.ALLOCATE_TURN,
+            reason = TutorLearningMemoryConflictReason.TURN_ORDINAL_MISMATCH,
+        )
+        val retryableResult = retryable.controller.ensurePrepared(
+            retryable.task,
+            retryable.guidance,
+            retryable.modeVersion,
+        )
+
+        val permanent = Fixture(requestId = "plan-request-permanent-conflict")
+        permanent.repository.failure = TutorLearningMemoryConflictException(
+            operation = TutorLearningMemoryOperation.PREPARE_EVIDENCE,
+            reason = TutorLearningMemoryConflictReason.EVIDENCE_SCOPE_MISMATCH,
+        )
+        val permanentResult = permanent.controller.ensurePrepared(
+            permanent.task,
+            permanent.guidance,
+            permanent.modeVersion,
+        )
+
+        assertTrue(retryableResult is CapturedTutorChoiceLearningMemoryState.RetryableFailure)
+        assertTrue(permanentResult is CapturedTutorChoiceLearningMemoryState.PermanentConflict)
     }
 
     private class Fixture(

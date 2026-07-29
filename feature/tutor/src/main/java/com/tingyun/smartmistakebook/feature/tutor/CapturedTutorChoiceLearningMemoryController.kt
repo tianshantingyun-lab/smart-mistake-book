@@ -117,7 +117,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 CapturedTutorChoiceIneligibleReason.STALE_MODE_EPOCH,
             )
         }
-        submit(context, receipt, request, persistedResponse, guidanceState)
+        submit(context, receipt, request, persistedResponse)
     }
 
     /**
@@ -380,7 +380,6 @@ internal class CapturedTutorChoiceLearningMemoryController(
         receipt: TutorTurnReceipt,
         request: TutorEvidenceRequest,
         response: TutorTurnResponse,
-        guidanceState: TutorGuidanceState,
     ): CapturedTutorChoiceLearningMemoryState {
         val responseOccurredAt = checkNotNull(response.choiceSubmittedAtEpochMillis)
         if (
@@ -421,10 +420,11 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 response.selectionWasCorrect != true ->
                     LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE
 
-                guidanceState.hintsUsed > 0 || guidanceState.strugglesObserved > 0 ->
-                    LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE
-
-                else -> LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE
+                // The diagnostic answer itself comes from a model-produced plan. Until an
+                // independently trusted answer key is attached, recovery must remain
+                // deterministic and fail closed instead of promoting a correct click to
+                // independent mastery based on transient guidance counters.
+                else -> LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE
             },
             anchorId = context.problemAnchorId,
             subject = context.subject,
@@ -803,7 +803,10 @@ internal class CapturedTutorChoiceLearningMemoryController(
     } catch (cancelled: CancellationException) {
         throw cancelled
     } catch (conflict: TutorLearningMemoryConflictException) {
-        if (conflict.reason == TutorLearningMemoryConflictReason.STATE_VERSION_MISMATCH) {
+        if (
+            conflict.reason == TutorLearningMemoryConflictReason.STATE_VERSION_MISMATCH ||
+            conflict.reason == TutorLearningMemoryConflictReason.TURN_ORDINAL_MISMATCH
+        ) {
             CapturedTutorChoiceLearningMemoryState.RetryableFailure(conflict)
         } else {
             CapturedTutorChoiceLearningMemoryState.PermanentConflict(conflict)
@@ -1040,7 +1043,9 @@ private const val CAPTURED_QUESTION_FINGERPRINT_VERSION = "captured-question-v1"
 private const val CAPTURED_CHOICE_SOURCE_VERSION = "captured-choice-source-v1"
 private const val CAPTURED_CHOICE_PENDING_SUMMARY = "guided-choice-pending"
 
-private const val CONVERSATION_ID_DOMAIN = "captured-choice-conversation-v1"
+// v1 was never wired into a production route. The input tuple changed before first production
+// use, so this domain is intentionally versioned instead of silently reinterpreting v1 ids.
+private const val CONVERSATION_ID_DOMAIN = "captured-choice-conversation-v2"
 private const val CONVERSATION_CREATE_IDEMPOTENCY_DOMAIN = "captured-choice-create-key-v1"
 private const val CONVERSATION_CREATE_PAYLOAD_DOMAIN = "captured-choice-create-payload-v1"
 private const val PROBLEM_ANCHOR_ID_DOMAIN = "captured-choice-anchor-v1"
