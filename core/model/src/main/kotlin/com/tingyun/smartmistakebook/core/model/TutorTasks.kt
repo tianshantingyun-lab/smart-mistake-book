@@ -748,57 +748,132 @@ fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
         turnOrdinal == input.turnOrdinal
 
 /**
- * Validates the response against the chosen explanation boundary without replacing model-authored
- * guided interactions. Returning null means the output cannot safely be rendered as requested.
+ * Applies the deterministic part of the explanation boundary. It constrains every visible field by
+ * its UI role, but plain Markdown cannot prove semantic non-disclosure; an independent semantic
+ * review remains required for higher-risk guided explanations.
  */
 fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRespondOutput? {
-    if (input.explanationMode == TutorExplanationMode.DIRECT ||
-        input.authorizesSolutionExposure()
-    ) {
-        return takeIf { interactionDirective == null }
+    if (intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP) {
+        return takeIf {
+            !solutionRevealed &&
+                visualScene == null &&
+                visualRequest == null &&
+                suggestedMoves.isEmpty() &&
+                interactionDirective == null
+        }
+    }
+    if (input.authorizesSolutionExposure()) {
+        return takeIf {
+            solutionRevealed &&
+                interactionDirective == null &&
+                messageMarkdown.hasDirectAnswerShape()
+        }
     }
     if (
         solutionRevealed ||
         visualScene != null ||
         visualRequest != null ||
-        suggestedMoves.isNotEmpty() ||
-        intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP
+        suggestedMoves.isNotEmpty()
     ) {
         return null
     }
-    if (containsObviousSolutionDisclosure()) return null
-    return this
-}
-
-private fun TutorRespondOutput.containsObviousSolutionDisclosure(): Boolean {
-    val directivePrompt = when (val directive = interactionDirective) {
-        is TutorInteractionDirective.Choices -> directive.promptMarkdown
-        is TutorInteractionDirective.FreeResponse -> directive.promptMarkdown
-        is TutorInteractionDirective.VisualTarget -> directive.promptMarkdown
-        TutorInteractionDirective.Continue,
-        null,
-        -> null
+    val directive = interactionDirective
+    if (directive == null) {
+        return takeIf {
+            !messageMarkdown.isQuestionShaped() &&
+                !messageMarkdown.containsDeterministicSolutionClaim()
+        }
     }
-    return sequenceOf(messageMarkdown, directivePrompt)
-        .filterNotNull()
-        .map { text -> text.replace(TUTOR_DISCLOSURE_MARKDOWN_DECORATION, "") }
-        .any(OBVIOUS_TUTOR_SOLUTION_DISCLOSURE::containsMatchIn)
+    if (!directive.hasSafeVisibleInteractionShape()) return null
+    return copy(messageMarkdown = GUIDED_INTERACTION_MESSAGE)
 }
 
-private val TUTOR_DISCLOSURE_MARKDOWN_DECORATION = Regex("""[*_~#>]""")
+private fun TutorInteractionDirective.hasSafeVisibleInteractionShape(): Boolean = when (this) {
+    TutorInteractionDirective.Continue -> true
+    is TutorInteractionDirective.FreeResponse ->
+        promptMarkdown.isSafeTutorQuestionPrompt()
+    is TutorInteractionDirective.VisualTarget ->
+        promptMarkdown.isSafeTutorQuestionPrompt()
+    is TutorInteractionDirective.Choices ->
+        promptMarkdown.isSafeTutorQuestionPrompt() &&
+            choices.all { choice -> choice.labelMarkdown.isSafeTutorChoiceLabel() }
+}
 
-private val OBVIOUS_TUTOR_SOLUTION_DISCLOSURE = Regex(
+private fun String.hasDirectAnswerShape(): Boolean {
+    val normalized = normalizedTutorBoundaryText()
+    return normalized.length >= MIN_DIRECT_ANSWER_CHARS &&
+        !normalized.isQuestionShaped() &&
+        DIRECT_DECLARATIVE_END.containsMatchIn(normalized) &&
+        !DIRECT_DEFERRAL.containsMatchIn(normalized)
+}
+
+private fun String.isSafeTutorQuestionPrompt(): Boolean {
+    val normalized = normalizedTutorBoundaryText()
+    return normalized.isQuestionShaped() &&
+        !normalized.containsDeterministicSolutionClaim()
+}
+
+private fun String.isSafeTutorChoiceLabel(): Boolean {
+    val normalized = normalizedTutorBoundaryText()
+    return !normalized.containsDeterministicSolutionClaim() &&
+        !CHOICE_CORRECTNESS_MARKER.containsMatchIn(normalized)
+}
+
+private fun String.isQuestionShaped(): Boolean =
+    trimEnd().endsWith("？") || trimEnd().endsWith("?")
+
+private fun String.containsDeterministicSolutionClaim(): Boolean {
+    val normalized = normalizedTutorBoundaryText()
+    return EXPLICIT_RESULT_CLAIM.containsMatchIn(normalized) ||
+        FINAL_SELECTION_CLAIM.containsMatchIn(normalized) ||
+        FINAL_EQUATION_CLAIM.containsMatchIn(normalized) ||
+        COMPLETE_SOLUTION_CLAIM.containsMatchIn(normalized)
+}
+
+private fun String.normalizedTutorBoundaryText(): String =
+    replace(TUTOR_BOUNDARY_MARKDOWN_DECORATION, "")
+        .replace('\u00a0', ' ')
+        .trim()
+
+private const val MIN_DIRECT_ANSWER_CHARS = 12
+
+private val DIRECT_DECLARATIVE_END = Regex("""[。.!！；;]\s*$""")
+private val DIRECT_DEFERRAL = Regex(
+    """(?i)(?:先|再|请)?\s*(?:想一想|自己想|自己试|尝试一下|再看看|先思考)""",
+)
+private val TUTOR_BOUNDARY_MARKDOWN_DECORATION = Regex("""[*_~#>]""")
+private val EXPLICIT_RESULT_CLAIM = Regex(
     pattern =
         """(?ix)""" +
-            """(?:最终\s*(?:答案|结果)|正确\s*(?:答案|选项)|本题\s*答案|答案)""" +
-            """\s*(?:是|为|[:：])\s*(?!什么|多少|哪(?:个|项)?|谁|[?？])\S""" +
-            """|完整\s*(?:解法|解答|解析|过程)\s*(?:是|如下|[:：])""" +
-            """|\b(?:final\s+answer|answer)\s*(?:is|:)\s*(?!what|which)\S""" +
-            """|\bcomplete\s+solution\s*(?:is|follows|:)\b""",
+            """(?:最终\s*(?:答案|结果|结论)|正确\s*(?:答案|选项)|本题\s*(?:答案|结论)|答案|结论)""" +
+            """\s*(?:是|为|[:：])\s*""" +
+            """(?!什么|多少|哪(?:个|项)?|谁|如何|怎么|是否|能否|由\s*(?:哪个|什么)|[?？])\S""" +
+            """|\b(?:final\s+answer|answer|conclusion)\s*(?:is|:)\s*""" +
+            """(?!what|which|who|how)\S""",
+)
+private val FINAL_SELECTION_CLAIM = Regex(
+    pattern =
+        """(?ix)(?:所以|因此|故|从而|可见|可知|应当|应该)""" +
+            """\s*(?:应当|应该|要|可)?\s*(?:选择|选)\s*(?:项\s*)?""" +
+            """(?:[a-hＡ-Ｈ]\b|[甲乙丙丁①②③④⑤⑥⑦⑧])""" +
+            """|\b(?:therefore|thus)\s+(?:choose|select)\s+[a-h]\b""",
+)
+private val FINAL_EQUATION_CLAIM = Regex(
+    pattern =
+        """(?ix)(?:最终|综上|解得|求得|算得|得到|推出|可得)\s*[,，:：]?\s*""" +
+            """[^\r\n。；;]{0,64}[=＝]\s*\S+""" +
+            """|\b(?:solving\s+gives|therefore)\s+[^.\r\n]{0,48}=\s*\S+""",
+)
+private val COMPLETE_SOLUTION_CLAIM = Regex(
+    """(?ix)完整\s*(?:解法|解答|解析|过程)\s*(?:是|如下|[:：])""" +
+        """|\bcomplete\s+solution\s*(?:is|follows|:)\b""",
+)
+private val CHOICE_CORRECTNESS_MARKER = Regex(
+    """(?ix)(?:正确|错误|答对|答错|应选|[✓✔✗✘])|\b(?:correct|incorrect)\b""",
 )
 
 const val GUIDED_INTERACTION_MESSAGE = "先完成下面这个小步骤。"
-const val GUIDED_FREE_RESPONSE_PROMPT = "写下你认为下一步该做什么。"
+const val GUIDED_FREE_RESPONSE_PROMPT = "下一步应该怎么做？"
 
 /** Model-authored content. This is intentionally not a [VerifiedTeachingArtifact]. */
 @Serializable

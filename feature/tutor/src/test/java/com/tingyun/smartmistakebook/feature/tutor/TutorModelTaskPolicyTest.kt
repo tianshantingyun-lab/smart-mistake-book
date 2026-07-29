@@ -335,7 +335,7 @@ class TutorModelTaskPolicyTest {
     }
 
     @Test
-    fun schemaOneFreshApprovalPromotesOnlyTheRequiredEgressEnvelopeFloor() {
+    fun schemaOneFreshApprovalIsExplicitlyUnrecoverable() {
         val provider = provider()
         val legacy = ModelTaskRequest(
             schemaVersion = ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION,
@@ -344,16 +344,14 @@ class TutorModelTaskPolicyTest {
             occurredAtEpochMillis = 300,
         )
 
-        val rebuilt = rebuildTutorRequestAfterApproval(
-            failedTask = failedTutorTask(legacy, provider),
-            provider = provider,
-            approvedAtEpochMillis = 500,
-        )
-
-        assertEquals(ModelTaskRequest.EGRESS_SCHEMA_VERSION, rebuilt.schemaVersion)
-        assertEquals(
-            ModelTaskLogicalOperationFingerprint.of(legacy),
-            ModelTaskLogicalOperationFingerprint.of(rebuilt),
+        assertTrue(
+            runCatching {
+                rebuildTutorRequestAfterApproval(
+                    failedTask = failedTutorTask(legacy, provider),
+                    provider = provider,
+                    approvedAtEpochMillis = 500,
+                )
+            }.isFailure,
         )
     }
 

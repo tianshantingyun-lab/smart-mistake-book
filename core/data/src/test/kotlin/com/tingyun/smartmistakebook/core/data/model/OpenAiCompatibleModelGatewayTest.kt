@@ -1073,9 +1073,10 @@ class OpenAiCompatibleModelGatewayTest {
     @Test
     fun messageFirstDirectResponseCompletesWithoutPreview() = runBlocking {
         val input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val message = "先求导并判断符号，完整答案是函数先增后减。"
         val payload = Json.encodeToString(
             buildJsonObject {
-                put("messageMarkdown", "合法旧顺序")
+                put("messageMarkdown", message)
                 put("solutionRevealed", true)
                 put("intentDecision", tutorIntentPayload())
             },
@@ -1096,7 +1097,7 @@ class OpenAiCompatibleModelGatewayTest {
 
         assertTrue(events.none { it is ModelGatewayEvent.TutorPreview })
         val completed = events.last() as ModelGatewayEvent.Completed
-        assertEquals("合法旧顺序", (completed.output as TutorRespondOutput).messageMarkdown)
+        assertEquals(message, (completed.output as TutorRespondOutput).messageMarkdown)
     }
 
     @Test
@@ -1244,7 +1245,7 @@ class OpenAiCompatibleModelGatewayTest {
         var sentBody = ""
         val directive = buildJsonObject {
             put("kind", "FREE_RESPONSE")
-            put("promptMarkdown", "先说说导数符号怎样决定单调性。")
+            put("promptMarkdown", "导数符号怎样决定单调性？")
         }
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
@@ -1269,14 +1270,37 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(sentBody.contains("explanationMode：GUIDED"))
         assertTrue(sentBody.contains("interactionDirective"))
         val modelDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
-        assertEquals(
-            "导数符号决定原函数在当前区间内的增减方向。",
-            output.messageMarkdown,
-        )
-        assertEquals(
-            "先说说导数符号怎样决定单调性。",
-            modelDirective.promptMarkdown,
-        )
+        assertEquals("先完成下面这个小步骤。", output.messageMarkdown)
+        assertEquals("导数符号怎样决定单调性？", modelDirective.promptMarkdown)
+    }
+
+    @Test
+    fun guidedTutorResponseCanExplainWithoutSelectingAnInteraction() = runBlocking {
+        val message = "先比较导数在区间两侧的符号，再看函数值的变化方向。"
+        val completed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                messageMarkdown = message,
+                solutionRevealed = false,
+            ),
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.GUIDED),
+        ).last() as ModelGatewayEvent.Completed
+
+        val output = completed.output as TutorRespondOutput
+        assertEquals(message, output.messageMarkdown)
+        assertNull(output.interactionDirective)
+    }
+
+    @Test
+    fun directTutorResponseRejectsAQuestionDisguisedAsACompleteReply() = runBlocking {
+        val failed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                messageMarkdown = "你觉得下一步应该判断什么？",
+                solutionRevealed = true,
+            ),
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+        ).last() as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
     }
 
     @Test
@@ -1529,9 +1553,17 @@ class OpenAiCompatibleModelGatewayTest {
             ),
         )
 
-        val failed = events.last() as ModelGatewayEvent.Failed
-        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
-        assertFalse(failed.failure.retryable)
+        val completed = events.last() as ModelGatewayEvent.Completed
+        val output = completed.output as TutorRespondOutput
+        assertEquals(TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP, output.intentDecision.intent)
+        assertEquals(
+            TutorRequestedLocalCapability.READ_MISTAKE_NOTEBOOK,
+            output.intentDecision.requestedLocalCapability,
+        )
+        assertFalse(output.solutionRevealed)
+        assertNull(output.interactionDirective)
+        assertNull(output.visualScene)
+        assertTrue(output.suggestedMoves.isEmpty())
     }
 
     @Test
@@ -1540,9 +1572,17 @@ class OpenAiCompatibleModelGatewayTest {
             tutorRespondPayload(intentDecision = null),
         )
 
-        val failed = events.last() as ModelGatewayEvent.Failed
-        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
-        assertFalse(failed.failure.retryable)
+        val completed = events.last() as ModelGatewayEvent.Completed
+        val output = completed.output as TutorRespondOutput
+        assertEquals(TutorMessageIntent.AMBIGUOUS, output.intentDecision.intent)
+        assertEquals(
+            TutorRequestedLocalCapability.NONE,
+            output.intentDecision.requestedLocalCapability,
+        )
+        assertFalse(output.solutionRevealed)
+        assertNull(output.interactionDirective)
+        assertNull(output.visualScene)
+        assertTrue(output.suggestedMoves.isEmpty())
     }
 
     @Test

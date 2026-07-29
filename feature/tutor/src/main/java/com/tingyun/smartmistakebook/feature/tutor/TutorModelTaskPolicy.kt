@@ -296,6 +296,9 @@ internal fun rebuildTutorRequestAfterApproval(
     provider: ProviderCapabilitySnapshot,
     approvedAtEpochMillis: Long,
 ): ModelTaskRequest {
+    require(failedTask.request.schemaVersion >= ModelTaskRequest.EGRESS_SCHEMA_VERSION) {
+        "Tutor recovery cannot authorize a pre-egress request schema"
+    }
     val taskKind = failedTask.request.input.kind
     require(
         taskKind == ModelTaskKind.TUTOR_PLAN ||
@@ -362,10 +365,7 @@ internal fun rebuildTutorRequestAfterApproval(
         "Tutor recovery must not reuse the failed authorization"
     }
     return ModelTaskRequest(
-        schemaVersion = maxOf(
-            failedTask.request.schemaVersion,
-            ModelTaskRequest.EGRESS_SCHEMA_VERSION,
-        ),
+        schemaVersion = failedTask.request.schemaVersion,
         requestId = requestId,
         input = failedTask.request.input,
         occurredAtEpochMillis = failedTask.request.occurredAtEpochMillis,

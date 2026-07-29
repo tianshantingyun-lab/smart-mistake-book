@@ -159,13 +159,17 @@ class TutorTasksTest {
         val directRequest = respondRequest(
             respondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
         )
+        val directOutput = respondOutput().copy(
+            solutionRevealed = true,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
         val mismatches = listOf(
-            respondOutput().copy(sessionId = "another-session"),
-            respondOutput().copy(draftRevisionNumber = 3),
-            respondOutput().copy(questionDocumentId = "another-question"),
-            respondOutput().copy(responseOrdinal = 4),
-            respondOutput().copy(cycleOrdinal = 2),
-            respondOutput().copy(turnOrdinal = 2),
+            directOutput.copy(sessionId = "another-session"),
+            directOutput.copy(draftRevisionNumber = 3),
+            directOutput.copy(questionDocumentId = "another-question"),
+            directOutput.copy(responseOrdinal = 4),
+            directOutput.copy(cycleOrdinal = 2),
+            directOutput.copy(turnOrdinal = 2),
         )
 
         mismatches.forEach { mismatch ->
@@ -328,6 +332,72 @@ class TutorTasksTest {
     }
 
     @Test
+    fun guidedVisibleFieldsRejectKnownConclusionAndChoiceLeaksWithoutRejectingARealQuestion() {
+        val guidedInput = respondInput().copy(explanationMode = TutorExplanationMode.GUIDED)
+        val unsafe = listOf(
+            respondOutput().copy(
+                messageMarkdown = "由 f'(x)>0，所以选B。",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                messageMarkdown = "整理方程后，解得 x=2。",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                messageMarkdown = "由条件可得 y=3。",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                messageMarkdown = "因此应该选择C。",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                interactionDirective = TutorInteractionDirective.FreeResponse(
+                    "由 f'(x)>0，所以选B，对吗？",
+                ),
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                interactionDirective = TutorInteractionDirective.Choices(
+                    promptMarkdown = "这个答案是由哪个条件决定的？",
+                    choices = listOf(
+                        TutorInteractionChoice("a", "正确答案：B"),
+                        TutorInteractionChoice("b", "检查导数符号"),
+                    ),
+                ),
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+        )
+        unsafe.forEach { output ->
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    output,
+                ).map { it.code },
+            )
+        }
+
+        val legalQuestion = respondOutput().copy(
+            messageMarkdown = GUIDED_INTERACTION_MESSAGE,
+            interactionDirective = TutorInteractionDirective.Choices(
+                promptMarkdown = "这个答案是由哪个条件决定的？",
+                choices = listOf(
+                    TutorInteractionChoice("sign", "检查导数符号"),
+                    TutorInteractionChoice("value", "代入临界点"),
+                ),
+            ),
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                legalQuestion,
+            ).isEmpty(),
+        )
+    }
+
+    @Test
     fun directModeAuthorizesSolutionAcrossCompletionAndExposureBoundaries() {
         val directInput = respondInput().copy(
             explanationMode = TutorExplanationMode.DIRECT,
@@ -349,7 +419,7 @@ class TutorTasksTest {
     }
 
     @Test
-    fun guidedInteractionsRemainModelAuthoredWhileDirectAndRevealRepliesCannotAskAgain() {
+    fun guidedInteractionTypeAndFieldsRemainModelAuthoredWhileItsLeadInIsLocal() {
         val directives = listOf<TutorInteractionDirective>(
             TutorInteractionDirective.Choices(
                 promptMarkdown = "下一步选哪种判断？",
@@ -358,8 +428,9 @@ class TutorTasksTest {
                     TutorInteractionChoice("value", "代入临界点"),
                 ),
             ),
-            TutorInteractionDirective.FreeResponse("写下下一步判断。"),
-            TutorInteractionDirective.VisualTarget("点出临界点。", "critical-point"),
+            TutorInteractionDirective.FreeResponse("下一步应该判断什么？"),
+            TutorInteractionDirective.VisualTarget("图中哪个位置是临界点？", "critical-point"),
+            TutorInteractionDirective.Continue,
         )
         val guidedInput = respondInput().copy(
             explanationMode = TutorExplanationMode.GUIDED,
@@ -371,37 +442,91 @@ class TutorTasksTest {
             requestedMove = TutorMoveType.REVEAL_SOLUTION,
         )
 
-        (directives + null).forEach { directive ->
-            val output = respondOutput().copy(
+        directives.forEach { directive ->
+            val providerOutput = respondOutput().copy(
+                messageMarkdown = "由 f'(x)>0，所以选B。",
                 interactionDirective = directive,
                 intentDecision = TutorIntentDecision.currentQuestionDefault(),
             )
+            val output = requireNotNull(providerOutput.locallyConstrainedFor(guidedInput))
+            assertEquals(GUIDED_INTERACTION_MESSAGE, output.messageMarkdown)
+            assertEquals(directive, output.interactionDirective)
             assertTrue(
                 ModelTaskCompletionValidator.validate(
                     respondRequest(guidedInput),
                     output,
                 ).isEmpty(),
             )
-            if (directive != null) {
-                listOf(directInput, revealInput).forEach { input ->
-                    assertEquals(
-                        listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
-                        ModelTaskCompletionValidator.validate(
-                            respondRequest(input),
-                            output,
-                        ).map { it.code },
-                    )
-                }
-            } else {
+            listOf(directInput, revealInput).forEach { input ->
                 assertEquals(
-                    emptyList<ModelTaskCompletionIssueCode>(),
+                    listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
                     ModelTaskCompletionValidator.validate(
-                        respondRequest(directInput),
+                        respondRequest(input),
                         output,
                     ).map { it.code },
                 )
             }
         }
+    }
+
+    @Test
+    fun directCurrentQuestionRejectsInteractionQuestionsAndIncompleteReplies() {
+        val directInput = respondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val invalid = listOf(
+            respondOutput().copy(
+                solutionRevealed = false,
+                messageMarkdown = "先求导，再判断各区间的符号。",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                solutionRevealed = true,
+                messageMarkdown = "你觉得下一步是什么？",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                solutionRevealed = true,
+                messageMarkdown = "先想一想导数符号。",
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                solutionRevealed = true,
+                interactionDirective = TutorInteractionDirective.Continue,
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+        )
+        invalid.forEach { output ->
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(directInput),
+                    output,
+                ).map { it.code },
+            )
+        }
+    }
+
+    @Test
+    fun directNonQuestionIntentStillUsesTheNonTeachingIntentBoundary() {
+        val directInput = respondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val casual = respondOutput().copy(
+            solutionRevealed = false,
+            messageMarkdown = "好的，我们先暂停。",
+            interactionDirective = null,
+            intentDecision = TutorIntentDecision(
+                intent = TutorMessageIntent.END_OR_PAUSE,
+                confidence = 0.98,
+                explicitActionRequest = false,
+                memoryPreference = TutorMemoryPreference.UNCHANGED,
+                requestedLocalCapability = TutorRequestedLocalCapability.NONE,
+            ),
+        )
+
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(directInput),
+                casual,
+            ).isEmpty(),
+        )
     }
 
     @Test
