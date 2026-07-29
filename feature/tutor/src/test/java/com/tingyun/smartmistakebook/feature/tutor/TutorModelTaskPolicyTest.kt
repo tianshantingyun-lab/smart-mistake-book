@@ -20,6 +20,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -295,6 +296,131 @@ class TutorModelTaskPolicyTest {
         assertNotEquals(original.egressManifest?.authorizationId, first.egressManifest?.authorizationId)
         assertEquals("configuration-v2", first.egressManifest?.providerConfigurationVersion)
         assertNotEquals(first.requestId, changedAgain.requestId)
+    }
+
+    @Test
+    fun schemaSixFreshApprovalPreservesTheLegacyLogicalOperationIdentity() {
+        val provider = provider()
+        val current = buildTutorRespondRequest(
+            question = session().toTutorQuestionContext(),
+            profile = StudyProfileOverview(),
+            provider = provider,
+            requestId = "tutor-respond-schema-six",
+            occurredAtEpochMillis = 300,
+            approvedAtEpochMillis = 300,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "解释这一步",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+        )
+        val legacy = current.copy(
+            schemaVersion = ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION,
+        )
+        val failed = failedTutorTask(legacy, provider)
+
+        val rebuilt = rebuildTutorRequestAfterApproval(
+            failedTask = failed,
+            provider = provider,
+            approvedAtEpochMillis = 500,
+        )
+
+        assertEquals(ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION, rebuilt.schemaVersion)
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(legacy),
+            ModelTaskLogicalOperationFingerprint.of(rebuilt),
+        )
+        assertEquals(legacy.input, rebuilt.input)
+    }
+
+    @Test
+    fun schemaOneFreshApprovalPromotesOnlyTheRequiredEgressEnvelopeFloor() {
+        val provider = provider()
+        val legacy = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION,
+            requestId = "tutor-respond-schema-one",
+            input = respondInput("解释这一步"),
+            occurredAtEpochMillis = 300,
+        )
+
+        val rebuilt = rebuildTutorRequestAfterApproval(
+            failedTask = failedTutorTask(legacy, provider),
+            provider = provider,
+            approvedAtEpochMillis = 500,
+        )
+
+        assertEquals(ModelTaskRequest.EGRESS_SCHEMA_VERSION, rebuilt.schemaVersion)
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(legacy),
+            ModelTaskLogicalOperationFingerprint.of(rebuilt),
+        )
+    }
+
+    @Test
+    fun selectedDirectiveChoiceSurvivesRetryRecoveryAndFreshApproval() {
+        val provider = provider()
+        val question = session().toTutorQuestionContext()
+        val firstRequestId = tutorRespondRequestId(
+            question = question,
+            provider = provider,
+            responseOrdinal = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 2,
+            studentMessage = "判断导数符号",
+            selectedChoiceId = "choice-sign",
+            visibleTutorContextMarkdown = "先判断下一步。",
+            priorMessages = emptyList(),
+            attempt = 0,
+        )
+        val retryRequestId = tutorRespondRequestId(
+            question = question,
+            provider = provider,
+            responseOrdinal = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 2,
+            studentMessage = "判断导数符号",
+            selectedChoiceId = "choice-sign",
+            visibleTutorContextMarkdown = "先判断下一步。",
+            priorMessages = emptyList(),
+            attempt = 1,
+        )
+        val base = buildTutorRespondRequest(
+            question = question,
+            profile = StudyProfileOverview(),
+            provider = provider,
+            requestId = firstRequestId,
+            occurredAtEpochMillis = 300,
+            approvedAtEpochMillis = 300,
+            responseOrdinal = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 2,
+            studentMessage = "判断导数符号",
+            visibleTutorContextMarkdown = "先判断下一步。",
+            priorMessages = emptyList(),
+        )
+        val selectedInput = (base.input as TutorRespondInput).copy(
+            selectedChoiceId = "choice-sign",
+        )
+        val initial = base.copy(input = selectedInput)
+        val retry = initial.copy(requestId = retryRequestId)
+        val rebuilt = rebuildTutorRequestAfterApproval(
+            failedTask = failedTutorTask(initial, provider),
+            provider = provider,
+            approvedAtEpochMillis = 500,
+        )
+
+        assertNotEquals(initial.requestId, retry.requestId)
+        assertEquals("choice-sign", (retry.input as TutorRespondInput).selectedChoiceId)
+        assertEquals("choice-sign", (rebuilt.input as TutorRespondInput).selectedChoiceId)
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(initial),
+            ModelTaskLogicalOperationFingerprint.of(retry),
+        )
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(initial),
+            ModelTaskLogicalOperationFingerprint.of(rebuilt),
+        )
     }
 
     @Test
@@ -1106,6 +1232,28 @@ class TutorModelTaskPolicyTest {
         supportsStreaming = false,
         executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
         providerConfigurationVersion = configurationVersion,
+    )
+
+    private fun failedTutorTask(
+        request: ModelTaskRequest,
+        provider: ProviderCapabilitySnapshot,
+    ) = ModelTaskSnapshot(
+        taskId = "task-${request.requestId}",
+        request = request,
+        requestFingerprint = ModelTaskFingerprint.of(request),
+        status = ModelTaskStatus.PERMANENT_FAILURE,
+        stateVersion = 2,
+        stage = ModelTaskStage.PREPARING,
+        userMessage = "需要重新允许",
+        attemptCount = 1,
+        provider = provider,
+        failure = ModelTaskFailure(
+            ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
+            "授权已失效",
+            retryable = false,
+        ),
+        createdAtEpochMillis = request.occurredAtEpochMillis,
+        updatedAtEpochMillis = request.occurredAtEpochMillis + 1,
     )
 
     private fun session(): ConfirmedTutorSession = ConfirmedTutorSession(

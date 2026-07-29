@@ -273,6 +273,61 @@ class TutorTasksTest {
     }
 
     @Test
+    fun guidedModeAllowsTheModelToExplainWithoutForcingAnInteraction() {
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+            studentMessage = "这一步应该怎么判断？",
+            requestedMove = null,
+        )
+        val explanation = respondOutput().copy(
+            solutionRevealed = false,
+            messageMarkdown = "先比较二次项系数，再判断配方时需要补上的常数。",
+            interactionDirective = null,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                explanation,
+            ).isEmpty(),
+        )
+    }
+
+    @Test
+    fun guidedModeRejectsObviousAnswerDisclosureInsideAnInteractionPrompt() {
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+        )
+        val unsafeOutputs = listOf(
+            respondOutput().copy(
+                solutionRevealed = false,
+                messageMarkdown = "先完成这个判断。",
+                interactionDirective = TutorInteractionDirective.FreeResponse(
+                    promptMarkdown = "答案是 2，请照抄。",
+                ),
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+            respondOutput().copy(
+                solutionRevealed = false,
+                messageMarkdown = "**最终答案：** 2。",
+                interactionDirective = null,
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            ),
+        )
+
+        unsafeOutputs.forEach { unsafe ->
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    unsafe,
+                ).map { it.code },
+            )
+        }
+    }
+
+    @Test
     fun directModeAuthorizesSolutionAcrossCompletionAndExposureBoundaries() {
         val directInput = respondInput().copy(
             explanationMode = TutorExplanationMode.DIRECT,
@@ -316,7 +371,7 @@ class TutorTasksTest {
             requestedMove = TutorMoveType.REVEAL_SOLUTION,
         )
 
-        directives.forEach { directive ->
+        (directives + null).forEach { directive ->
             val output = respondOutput().copy(
                 interactionDirective = directive,
                 intentDecision = TutorIntentDecision.currentQuestionDefault(),
@@ -327,11 +382,21 @@ class TutorTasksTest {
                     output,
                 ).isEmpty(),
             )
-            listOf(directInput, revealInput).forEach { input ->
+            if (directive != null) {
+                listOf(directInput, revealInput).forEach { input ->
+                    assertEquals(
+                        listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                        ModelTaskCompletionValidator.validate(
+                            respondRequest(input),
+                            output,
+                        ).map { it.code },
+                    )
+                }
+            } else {
                 assertEquals(
-                    listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                    emptyList<ModelTaskCompletionIssueCode>(),
                     ModelTaskCompletionValidator.validate(
-                        respondRequest(input),
+                        respondRequest(directInput),
                         output,
                     ).map { it.code },
                 )

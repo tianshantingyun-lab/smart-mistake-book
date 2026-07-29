@@ -362,6 +362,10 @@ internal fun rebuildTutorRequestAfterApproval(
         "Tutor recovery must not reuse the failed authorization"
     }
     return ModelTaskRequest(
+        schemaVersion = maxOf(
+            failedTask.request.schemaVersion,
+            ModelTaskRequest.EGRESS_SCHEMA_VERSION,
+        ),
         requestId = requestId,
         input = failedTask.request.input,
         occurredAtEpochMillis = failedTask.request.occurredAtEpochMillis,

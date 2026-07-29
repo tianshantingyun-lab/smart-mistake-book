@@ -766,9 +766,36 @@ fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRes
     ) {
         return null
     }
-    if (interactionDirective == null) return null
+    if (containsObviousSolutionDisclosure()) return null
     return this
 }
+
+private fun TutorRespondOutput.containsObviousSolutionDisclosure(): Boolean {
+    val directivePrompt = when (val directive = interactionDirective) {
+        is TutorInteractionDirective.Choices -> directive.promptMarkdown
+        is TutorInteractionDirective.FreeResponse -> directive.promptMarkdown
+        is TutorInteractionDirective.VisualTarget -> directive.promptMarkdown
+        TutorInteractionDirective.Continue,
+        null,
+        -> null
+    }
+    return sequenceOf(messageMarkdown, directivePrompt)
+        .filterNotNull()
+        .map { text -> text.replace(TUTOR_DISCLOSURE_MARKDOWN_DECORATION, "") }
+        .any(OBVIOUS_TUTOR_SOLUTION_DISCLOSURE::containsMatchIn)
+}
+
+private val TUTOR_DISCLOSURE_MARKDOWN_DECORATION = Regex("""[*_~#>]""")
+
+private val OBVIOUS_TUTOR_SOLUTION_DISCLOSURE = Regex(
+    pattern =
+        """(?ix)""" +
+            """(?:最终\s*(?:答案|结果)|正确\s*(?:答案|选项)|本题\s*答案|答案)""" +
+            """\s*(?:是|为|[:：])\s*(?!什么|多少|哪(?:个|项)?|谁|[?？])\S""" +
+            """|完整\s*(?:解法|解答|解析|过程)\s*(?:是|如下|[:：])""" +
+            """|\b(?:final\s+answer|answer)\s*(?:is|:)\s*(?!what|which)\S""" +
+            """|\bcomplete\s+solution\s*(?:is|follows|:)\b""",
+)
 
 const val GUIDED_INTERACTION_MESSAGE = "先完成下面这个小步骤。"
 const val GUIDED_FREE_RESPONSE_PROMPT = "写下你认为下一步该做什么。"

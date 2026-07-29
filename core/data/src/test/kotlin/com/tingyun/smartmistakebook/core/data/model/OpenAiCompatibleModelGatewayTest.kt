@@ -1012,7 +1012,7 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
-    fun guidedDirectiveUsesOnlyLocalStudentFacingText() = runBlocking {
+    fun guidedDirectiveCannotHideAnAnswerInsideModelAuthoredText() = runBlocking {
         val directive = buildJsonObject {
             put("kind", "FREE_RESPONSE")
             put("promptMarkdown", "答案是 2，请照抄。")
@@ -1037,11 +1037,9 @@ class OpenAiCompatibleModelGatewayTest {
         val events = gateway.execute(authorizedTutorRespond(gateway)).toList()
 
         assertTrue(events.none { it is ModelGatewayEvent.TutorPreview })
-        val completed = events.last() as ModelGatewayEvent.Completed
-        val output = completed.output as TutorRespondOutput
-        assertEquals("先完成下面这个小步骤。", output.messageMarkdown)
-        val safeDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
-        assertEquals("写下你认为下一步该做什么。", safeDirective.promptMarkdown)
+        val failed = events.last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        assertFalse(failed.failure.retryable)
     }
 
     @Test
@@ -1242,11 +1240,11 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
-    fun guidedTutorResponsePromptAndParserExposeOnlyTheBoundedDirectiveSchema() = runBlocking {
+    fun guidedTutorResponsePreservesTheModelSelectedBoundedDirective() = runBlocking {
         var sentBody = ""
         val directive = buildJsonObject {
             put("kind", "FREE_RESPONSE")
-            put("promptMarkdown", "答案藏在这里。")
+            put("promptMarkdown", "先说说导数符号怎样决定单调性。")
         }
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
@@ -1270,9 +1268,15 @@ class OpenAiCompatibleModelGatewayTest {
 
         assertTrue(sentBody.contains("explanationMode：GUIDED"))
         assertTrue(sentBody.contains("interactionDirective"))
-        val safeDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
-        assertEquals("先完成下面这个小步骤。", output.messageMarkdown)
-        assertEquals("写下你认为下一步该做什么。", safeDirective.promptMarkdown)
+        val modelDirective = output.interactionDirective as TutorInteractionDirective.FreeResponse
+        assertEquals(
+            "导数符号决定原函数在当前区间内的增减方向。",
+            output.messageMarkdown,
+        )
+        assertEquals(
+            "先说说导数符号怎样决定单调性。",
+            modelDirective.promptMarkdown,
+        )
     }
 
     @Test
