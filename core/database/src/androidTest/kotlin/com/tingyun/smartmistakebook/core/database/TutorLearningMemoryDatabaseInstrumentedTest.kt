@@ -599,6 +599,14 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
             val replay = store.prepareTutorEvidenceRequest(prepare)
             assertTrue(prepared.created)
             assertFalse(replay.created)
+            assertEquals(
+                prepared.request,
+                store.openTutorEvidenceRequest(LEARNER_ID, prepare.evidenceRequestId),
+            )
+            assertNull(
+                store.openTutorEvidenceRequest(OTHER_LEARNER_ID, prepare.evidenceRequestId),
+            )
+            assertNull(store.openTutorEvidenceRequest(LEARNER_ID, "missing-evidence-request"))
 
             assertConflict<TutorEvidenceConflictException> {
                 store.prepareTutorEvidenceRequest(

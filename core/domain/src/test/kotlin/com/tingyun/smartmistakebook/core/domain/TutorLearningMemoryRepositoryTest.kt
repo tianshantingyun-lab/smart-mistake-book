@@ -20,6 +20,22 @@ import org.junit.Test
 
 class TutorLearningMemoryRepositoryTest {
     @Test
+    fun `exact evidence read default validates scope and reveals nothing`() = runBlocking {
+        val repository = repositoryWithLatest(null)
+
+        assertEquals(
+            OpenTutorEvidenceResult.NotFound,
+            repository.openEvidenceRequest("learner-1", "evidence-1"),
+        )
+        assertTrue(
+            runCatching { repository.openEvidenceRequest(" learner-1", "evidence-1") }.isFailure,
+        )
+        assertTrue(
+            runCatching { repository.openEvidenceRequest("learner-1", " evidence-1") }.isFailure,
+        )
+    }
+
+    @Test
     fun `namespaced latest default rejects unsafe prefixes and never crosses namespaces`() =
         runBlocking {
             val capturedLatest = activeConversation().copy(

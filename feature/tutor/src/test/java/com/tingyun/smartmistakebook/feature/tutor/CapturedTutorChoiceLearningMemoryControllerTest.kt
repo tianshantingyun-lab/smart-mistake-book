@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
@@ -61,8 +62,16 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun exactLegacyPlanPreparesOnceAndReplaysTheSameDurableScope() = runTest {
         val fixture = Fixture()
-        val first = fixture.controller.ensurePrepared(fixture.task, fixture.guidance)
-        val replay = fixture.controller.ensurePrepared(fixture.task, fixture.guidance)
+        val first = fixture.controller.ensurePrepared(
+            fixture.task,
+            fixture.guidance,
+            fixture.modeVersion,
+        )
+        val replay = fixture.controller.ensurePrepared(
+            fixture.task,
+            fixture.guidance,
+            fixture.modeVersion,
+        )
 
         assertTrue(first is CapturedTutorChoiceLearningMemoryState.Prepared)
         assertTrue(replay is CapturedTutorChoiceLearningMemoryState.Prepared)
@@ -74,7 +83,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         )
         with(fixture.repository.allocateCommands.single()) {
             assertEquals(1L, requestVersion)
-            assertEquals(0L, modeVersion)
+            assertEquals(fixture.modeVersion, modeVersion)
             assertEquals(TutorExplanationMode.GUIDED, mode)
             assertEquals(SubjectKind.MATH, subject)
             assertTrue(turnReceiptId.startsWith("captured-choice-turn-v1:"))
@@ -102,6 +111,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
             val result = controller(repository, baseline.session).ensurePrepared(
                 candidate,
                 guidance(candidate, baseline.session),
+                baseline.modeVersion,
             )
             assertTrue(result is CapturedTutorChoiceLearningMemoryState.Ineligible)
             assertTrue(repository.allWriteCount == 0)
@@ -111,11 +121,13 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         val direct = controller(directRepository, baseline.session).ensurePrepared(
             baseline.task,
             baseline.guidance.copy(mode = TutorExplanationMode.DIRECT),
+            baseline.modeVersion,
         )
         val staleRepository = RecordingMemoryRepository()
         val stale = controller(staleRepository, baseline.session).ensurePrepared(
             baseline.task,
             baseline.guidance.copy(pendingEvidenceRequestId = "request-stale"),
+            baseline.modeVersion,
         )
         val generalSession = session(subject = SubjectKind.GENERAL.name)
         val generalTask = task(generalSession)
@@ -123,6 +135,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         val general = controller(generalRepository, generalSession).ensurePrepared(
             generalTask,
             guidance(generalTask, generalSession),
+            baseline.modeVersion,
         )
 
         assertEquals(
@@ -154,10 +167,12 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         val questionMismatch = controller.ensurePrepared(
             changedQuestionTask,
             guidance(changedQuestionTask, exactSession),
+            MODE_VERSION,
         )
         val subjectMismatch = controller.ensurePrepared(
             changedSubjectTask,
             guidance(changedSubjectTask, exactSession),
+            MODE_VERSION,
         )
 
         assertEquals(
@@ -173,31 +188,47 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun correctAndIncorrectPersistedChoicesCreateVerifiedFactsOnly() = runTest {
         val correct = Fixture()
-        correct.controller.ensurePrepared(correct.task, correct.guidance)
+        correct.controller.ensurePrepared(correct.task, correct.guidance, correct.modeVersion)
         correct.now = 200
         val correctResult = correct.controller.submitPreparedChoice(
             correct.task,
             correct.guidance,
-            response(correct.session, choiceId = "choice-correct", occurredAt = 150),
+            response(
+                correct.session,
+                choiceId = "choice-correct",
+                occurredAt = 150,
+                evidenceRequestId = correct.task.request.requestId,
+            ),
+            correct.modeVersion,
         )
 
         val incorrect = Fixture(requestId = "plan-request-incorrect")
-        incorrect.controller.ensurePrepared(incorrect.task, incorrect.guidance)
+        incorrect.controller.ensurePrepared(
+            incorrect.task,
+            incorrect.guidance,
+            incorrect.modeVersion,
+        )
         incorrect.now = 200
         val incorrectResult = incorrect.controller.submitPreparedChoice(
             incorrect.task,
             incorrect.guidance,
-            response(incorrect.session, choiceId = "choice-wrong", occurredAt = 150),
+            response(
+                incorrect.session,
+                choiceId = "choice-wrong",
+                occurredAt = 150,
+                evidenceRequestId = incorrect.task.request.requestId,
+            ),
+            incorrect.modeVersion,
         )
 
         assertTrue(correctResult is CapturedTutorChoiceLearningMemoryState.Submitted)
         assertTrue(incorrectResult is CapturedTutorChoiceLearningMemoryState.Submitted)
         assertEquals(
-            LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
             correct.repository.sourceFacts.single().factKind,
         )
         assertEquals(
-            LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
             incorrect.repository.sourceFacts.single().factKind,
         )
         assertEquals("先列出已知条件", correct.repository.sourceFacts.single().responseSummary)
@@ -220,7 +251,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         var now = 100L
         val controller = controller(repository, session) { now }
         val guidance = guidance(task, session)
-        controller.ensurePrepared(task, guidance)
+        controller.ensurePrepared(task, guidance, MODE_VERSION)
         now = 200
 
         controller.submitPreparedChoice(
@@ -231,7 +262,9 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
                 choiceId = "choice-correct",
                 occurredAt = 150,
                 item = item,
+                evidenceRequestId = task.request.requestId,
             ),
+            MODE_VERSION,
         )
 
         val summary = repository.sourceFacts.single().responseSummary
@@ -244,17 +277,23 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun persistedResponseWithoutBridgeTurnIsPreBridgeHistoryAndNeverBackfilled() = runTest {
         val fixture = Fixture()
-        val response = response(fixture.session, occurredAt = 150)
+        val response = response(
+            fixture.session,
+            occurredAt = 150,
+            evidenceRequestId = null,
+        )
 
         val ensure = fixture.controller.ensurePrepared(
             fixture.task,
             fixture.guidance,
+            fixture.modeVersion,
             persistedResponse = response,
         )
         val submit = fixture.controller.submitPreparedChoice(
             fixture.task,
             fixture.guidance,
             response,
+            fixture.modeVersion,
         )
 
         assertEquals(CapturedTutorChoiceLearningMemoryState.PreBridgeHistory, ensure)
@@ -267,7 +306,11 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     fun pendingPreparationRecoversAndFinalizesThePersistedResponse() = runTest {
         val fixture = Fixture()
         assertTrue(
-            fixture.controller.ensurePrepared(fixture.task, fixture.guidance) is
+            fixture.controller.ensurePrepared(
+                fixture.task,
+                fixture.guidance,
+                fixture.modeVersion,
+            ) is
                 CapturedTutorChoiceLearningMemoryState.Prepared,
         )
         fixture.now = 250
@@ -275,7 +318,12 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         val recovered = fixture.controller.submitPreparedChoice(
             fixture.task,
             fixture.guidance,
-            response(fixture.session, occurredAt = 200),
+            response(
+                fixture.session,
+                occurredAt = 200,
+                evidenceRequestId = fixture.task.request.requestId,
+            ),
+            fixture.modeVersion,
         )
 
         assertTrue(recovered is CapturedTutorChoiceLearningMemoryState.Submitted)
@@ -286,18 +334,24 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun cancellationWinsAgainstLateSubmissionWithoutCreatingLearningFacts() = runTest {
         val fixture = Fixture()
-        fixture.controller.ensurePrepared(fixture.task, fixture.guidance)
+        fixture.controller.ensurePrepared(fixture.task, fixture.guidance, fixture.modeVersion)
         fixture.now = 150
         val cancelled = fixture.controller.cancelPreparedChoice(
             fixture.task,
-            fixture.guidance,
+            fixture.task.request.requestId,
+            fixture.modeVersion + 1,
             TutorLearningEvidenceCancellationReason.GUIDANCE_DISABLED,
         )
         fixture.now = 250
         val late = fixture.controller.submitPreparedChoice(
             fixture.task,
             fixture.guidance,
-            response(fixture.session, occurredAt = 200),
+            response(
+                fixture.session,
+                occurredAt = 200,
+                evidenceRequestId = fixture.task.request.requestId,
+            ),
+            fixture.modeVersion + 1,
         )
 
         assertTrue(cancelled is CapturedTutorChoiceLearningMemoryState.Cancelled)
@@ -310,18 +364,34 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun canonicalIdentitiesChangeWithDirectiveDraftAndRevisionButReplayExactly() = runTest {
         val baseline = Fixture()
-        baseline.controller.ensurePrepared(baseline.task, baseline.guidance)
+        baseline.controller.ensurePrepared(
+            baseline.task,
+            baseline.guidance,
+            baseline.modeVersion,
+        )
         val baselineTurn = baseline.repository.allocateCommands.single()
         val baselinePrepare = baseline.repository.prepareCommands.single()
 
         val changedDirective = Fixture(
             diagnosticItem = diagnosticItem(correctMarkdown = "先画关系图"),
         )
-        changedDirective.controller.ensurePrepared(changedDirective.task, changedDirective.guidance)
+        changedDirective.controller.ensurePrepared(
+            changedDirective.task,
+            changedDirective.guidance,
+            changedDirective.modeVersion,
+        )
         val changedDraft = Fixture(session = session(draftId = "draft-2"))
-        changedDraft.controller.ensurePrepared(changedDraft.task, changedDraft.guidance)
+        changedDraft.controller.ensurePrepared(
+            changedDraft.task,
+            changedDraft.guidance,
+            changedDraft.modeVersion,
+        )
         val changedRevision = Fixture(session = session(stem = "题面增加一个严格条件"))
-        changedRevision.controller.ensurePrepared(changedRevision.task, changedRevision.guidance)
+        changedRevision.controller.ensurePrepared(
+            changedRevision.task,
+            changedRevision.guidance,
+            changedRevision.modeVersion,
+        )
 
         assertNotEquals(
             baselineTurn.directiveFingerprint,
@@ -340,7 +410,11 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
             changedRevision.repository.prepareCommands.single().problemAnchorId,
         )
 
-        baseline.controller.ensurePrepared(baseline.task, baseline.guidance)
+        baseline.controller.ensurePrepared(
+            baseline.task,
+            baseline.guidance,
+            baseline.modeVersion,
+        )
         assertEquals(
             baselineTurn.turnReceiptId,
             baseline.repository.allocateCommands.single().turnReceiptId,
@@ -354,19 +428,25 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun postCommitRetryAdoptsSubmittedTerminalWithoutDuplicatingTheFact() = runTest {
         val fixture = Fixture()
-        fixture.controller.ensurePrepared(fixture.task, fixture.guidance)
+        fixture.controller.ensurePrepared(fixture.task, fixture.guidance, fixture.modeVersion)
         fixture.now = 200
-        val response = response(fixture.session, occurredAt = 150)
+        val response = response(
+            fixture.session,
+            occurredAt = 150,
+            evidenceRequestId = fixture.task.request.requestId,
+        )
 
         val first = fixture.controller.submitPreparedChoice(
             fixture.task,
             fixture.guidance,
             response,
+            fixture.modeVersion,
         )
         val replay = fixture.controller.submitPreparedChoice(
             fixture.task,
             fixture.guidance,
             response,
+            fixture.modeVersion,
         )
 
         assertTrue(first is CapturedTutorChoiceLearningMemoryState.Submitted)
@@ -378,11 +458,15 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     @Test
     fun foreignConversationAndArchivedPendingRequestFailClosed() = runTest {
         val foreign = Fixture()
-        foreign.repository.latestConversationOverride = activeConversation(
+        foreign.repository.openConversationOverride = activeConversation(
             id = "foreign-conversation",
             learner = "another-learner",
         )
-        val foreignResult = foreign.controller.ensurePrepared(foreign.task, foreign.guidance)
+        val foreignResult = foreign.controller.ensurePrepared(
+            foreign.task,
+            foreign.guidance,
+            foreign.modeVersion,
+        )
 
         assertEquals(
             CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
@@ -391,13 +475,22 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         assertEquals(0, foreign.repository.allWriteCount)
 
         val archived = Fixture(requestId = "plan-request-archived")
-        archived.controller.ensurePrepared(archived.task, archived.guidance)
+        archived.controller.ensurePrepared(
+            archived.task,
+            archived.guidance,
+            archived.modeVersion,
+        )
         archived.repository.archiveAndCancelPending(occurredAt = 150)
         archived.now = 250
         val archivedSubmit = archived.controller.submitPreparedChoice(
             archived.task,
             archived.guidance,
-            response(archived.session, occurredAt = 200),
+            response(
+                archived.session,
+                occurredAt = 200,
+                evidenceRequestId = archived.task.request.requestId,
+            ),
+            archived.modeVersion,
         )
 
         assertTrue(archivedSubmit is CapturedTutorChoiceLearningMemoryState.Cancelled)
@@ -408,7 +501,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     fun coroutineCancellationIsNeverConvertedToRetryableFailure() = runTest {
         val fixture = Fixture()
         fixture.repository.failure = CancellationException("cancelled")
-        fixture.controller.ensurePrepared(fixture.task, fixture.guidance)
+        fixture.controller.ensurePrepared(fixture.task, fixture.guidance, fixture.modeVersion)
     }
 
     private class Fixture(
@@ -418,6 +511,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
     ) {
         val repository = RecordingMemoryRepository()
         var now = 100L
+        val modeVersion = MODE_VERSION
         val controller = controller(repository, session) { now }
         val task = task(
             target = session,
@@ -440,7 +534,7 @@ private class RecordingMemoryRepository : TutorLearningMemoryRepository {
     val finalizeCommands = mutableListOf<FinalizeTutorEvidenceCommand>()
     val evidenceRequests = linkedMapOf<String, TutorEvidenceRequest>()
     val sourceFacts = mutableListOf<LearningObservationSourceFact>()
-    var latestConversationOverride: TutorConversation? = null
+    var openConversationOverride: TutorConversation? = null
     var failure: Exception? = null
 
     val allWriteCount: Int
@@ -470,17 +564,21 @@ private class RecordingMemoryRepository : TutorLearningMemoryRepository {
 
     override suspend fun openConversation(
         command: OpenTutorConversationCommand,
-    ): OpenTutorConversationResult = conversations[command.conversationId]
-        ?.takeIf {
-            it.learnerScopeId == command.learnerScopeId &&
-                it.generation == command.conversationGeneration
+    ): OpenTutorConversationResult {
+        openConversationOverride?.let {
+            return OpenTutorConversationResult.Opened(it)
         }
-        ?.let(OpenTutorConversationResult::Opened)
-        ?: OpenTutorConversationResult.NotFound
+        return conversations[command.conversationId]
+            ?.takeIf {
+                it.learnerScopeId == command.learnerScopeId &&
+                    it.generation == command.conversationGeneration
+            }
+            ?.let(OpenTutorConversationResult::Opened)
+            ?: OpenTutorConversationResult.NotFound
+    }
 
     override suspend fun latestActiveConversation(learnerScopeId: String): TutorConversation? {
         failIfRequested()
-        latestConversationOverride?.let { return it }
         return conversations.values
             .filter {
                 it.learnerScopeId == learnerScopeId &&
@@ -501,6 +599,19 @@ private class RecordingMemoryRepository : TutorLearningMemoryRepository {
             ?.takeIf { turnOwners[turnReceiptId] == learnerScopeId }
             ?.let(OpenTutorTurnResult::Found)
             ?: OpenTutorTurnResult.NotFound
+    }
+
+    override suspend fun openEvidenceRequest(
+        learnerScopeId: String,
+        evidenceRequestId: String,
+    ): OpenTutorEvidenceResult {
+        failIfRequested()
+        return evidenceRequests[evidenceRequestId]
+            ?.takeIf { request ->
+                conversations[request.conversationId]?.learnerScopeId == learnerScopeId
+            }
+            ?.let(OpenTutorEvidenceResult::Found)
+            ?: OpenTutorEvidenceResult.NotFound
     }
 
     override suspend fun archiveConversation(
@@ -727,6 +838,7 @@ private fun response(
     choiceId: String = "choice-correct",
     occurredAt: Long,
     item: TutorAssessmentItem = diagnosticItem(),
+    evidenceRequestId: String? = "plan-request-1",
 ): TutorTurnResponse {
     val selected = item.evaluateChoice(choiceId)
     return TutorTurnResponse(
@@ -743,6 +855,7 @@ private fun response(
         submittedAtEpochMillis = occurredAt,
         updatedAtEpochMillis = occurredAt,
         choiceSubmittedAtEpochMillis = occurredAt,
+        evidenceRequestId = evidenceRequestId,
     )
 }
 
@@ -811,3 +924,5 @@ private fun activeConversation(
     archivedAtEpochMillis = null,
     stateVersion = 0,
 )
+
+private const val MODE_VERSION = 7L

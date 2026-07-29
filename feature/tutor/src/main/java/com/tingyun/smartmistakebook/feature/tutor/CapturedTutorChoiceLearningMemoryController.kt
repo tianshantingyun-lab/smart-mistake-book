@@ -6,6 +6,9 @@ import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationCommand
+import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
@@ -13,6 +16,8 @@ import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceAnchorFingerprints
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCancellationReason
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceTerminal
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryConflictException
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryConflictReason
 import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
@@ -52,18 +57,16 @@ internal class CapturedTutorChoiceLearningMemoryController(
     suspend fun ensurePrepared(
         planTask: ModelTaskSnapshot,
         guidanceState: TutorGuidanceState,
+        modeVersion: Long,
         persistedResponse: TutorTurnResponse? = null,
     ): CapturedTutorChoiceLearningMemoryState = guarded {
-        val context = eligibleContext(planTask, guidanceState)
-            ?: return@guarded ineligible(planTask, guidanceState)
-        if (
-            persistedResponse != null &&
-            !context.matchesPersistedResponse(persistedResponse)
-        ) {
-            return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
-                CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
-            )
+        if (persistedResponse != null) {
+            val recoveryContext = planContext(planTask, modeVersion)
+                ?: return@guarded planIneligible(planTask)
+            return@guarded recoverPreparedResponse(recoveryContext, persistedResponse)
         }
+        val context = liveEligibleContext(planTask, guidanceState, modeVersion)
+            ?: return@guarded ineligible(planTask, guidanceState)
 
         when (
             val opened = repository.openTurn(
@@ -72,13 +75,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
             )
         ) {
             is OpenTutorTurnResult.Found -> prepare(context, opened.receipt)
-            OpenTutorTurnResult.NotFound -> {
-                if (persistedResponse != null) {
-                    CapturedTutorChoiceLearningMemoryState.PreBridgeHistory
-                } else {
-                    allocateAndPrepare(context)
-                }
-            }
+            OpenTutorTurnResult.NotFound -> allocateAndPrepare(context)
         }
     }
 
@@ -90,31 +87,37 @@ internal class CapturedTutorChoiceLearningMemoryController(
         planTask: ModelTaskSnapshot,
         guidanceState: TutorGuidanceState,
         persistedResponse: TutorTurnResponse,
+        modeVersion: Long,
     ): CapturedTutorChoiceLearningMemoryState = guarded {
-        val context = eligibleContext(planTask, guidanceState)
-            ?: return@guarded ineligible(planTask, guidanceState)
+        val context = planContext(planTask, modeVersion)
+            ?: return@guarded planIneligible(planTask)
+        val evidenceRequestId = persistedResponse.evidenceRequestId
+            ?: return@guarded CapturedTutorChoiceLearningMemoryState.PreBridgeHistory
         if (!context.matchesPersistedResponse(persistedResponse)) {
             return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
                 CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
             )
         }
-
-        val receipt = when (
-            val opened = repository.openTurn(
-                learnerScopeId = learnerScopeId,
-                turnReceiptId = context.turnReceiptId,
-            )
+        val request = when (
+            val opened = repository.openEvidenceRequest(learnerScopeId, evidenceRequestId)
         ) {
-            is OpenTutorTurnResult.Found -> opened.receipt
-            OpenTutorTurnResult.NotFound ->
-                return@guarded CapturedTutorChoiceLearningMemoryState.PreBridgeHistory
+            is OpenTutorEvidenceResult.Found -> opened.request
+            OpenTutorEvidenceResult.NotFound ->
+                return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
+                    CapturedTutorChoiceIneligibleReason.EVIDENCE_NOT_PREPARED,
+                )
         }
-        when (val prepared = prepare(context, receipt)) {
-            is CapturedTutorChoiceLearningMemoryState.Prepared ->
-                submit(context, receipt, prepared.request, persistedResponse)
-
-            else -> prepared
+        val receipt = openExactReceipt(context, request)
+            ?: return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
+            )
+        if (request.status.isTerminal) return@guarded request.toControllerState()
+        if (request.modeVersion != modeVersion) {
+            return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.STALE_MODE_EPOCH,
+            )
         }
+        submit(context, receipt, request, persistedResponse, guidanceState)
     }
 
     /**
@@ -123,37 +126,55 @@ internal class CapturedTutorChoiceLearningMemoryController(
      */
     suspend fun cancelPreparedChoice(
         planTask: ModelTaskSnapshot,
-        guidanceState: TutorGuidanceState,
+        evidenceRequestId: String,
+        modeVersion: Long,
         reason: TutorLearningEvidenceCancellationReason,
     ): CapturedTutorChoiceLearningMemoryState = guarded {
-        val context = eligibleContext(planTask, guidanceState)
-            ?: return@guarded ineligible(planTask, guidanceState)
-        val receipt = when (
-            val opened = repository.openTurn(
-                learnerScopeId = learnerScopeId,
-                turnReceiptId = context.turnReceiptId,
+        val context = planContext(planTask, modeVersion)
+            ?: return@guarded planIneligible(planTask)
+        if (evidenceRequestId != context.planRequestId) {
+            return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
             )
+        }
+        val request = when (
+            val opened = repository.openEvidenceRequest(learnerScopeId, evidenceRequestId)
         ) {
-            is OpenTutorTurnResult.Found -> opened.receipt
-            OpenTutorTurnResult.NotFound ->
+            is OpenTutorEvidenceResult.Found -> opened.request
+            OpenTutorEvidenceResult.NotFound ->
                 return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
-                    CapturedTutorChoiceIneligibleReason.TURN_NOT_PREPARED,
+                    CapturedTutorChoiceIneligibleReason.EVIDENCE_NOT_PREPARED,
                 )
         }
-        when (val prepared = prepare(context, receipt)) {
-            is CapturedTutorChoiceLearningMemoryState.Prepared ->
-                cancel(context, receipt, prepared.request, reason)
-
-            else -> prepared
+        val receipt = openExactReceipt(context, request)
+            ?: return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
+            )
+        if (request.status.isTerminal) return@guarded request.toControllerState()
+        if (modeVersion < request.modeVersion) {
+            return@guarded CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.STALE_MODE_EPOCH,
+            )
         }
+        cancel(context, receipt, request, reason)
     }
 
     private suspend fun allocateAndPrepare(
         context: EligibleChoiceContext,
     ): CapturedTutorChoiceLearningMemoryState {
-        val conversation = repository.latestActiveConversation(learnerScopeId)
-            ?: createConversation(context)
-        if (!conversation.isEligibleActiveConversation()) {
+        val conversation = when (
+            val opened = repository.openConversation(
+                OpenTutorConversationCommand(
+                    learnerScopeId = learnerScopeId,
+                    conversationId = context.conversationId,
+                    conversationGeneration = CAPTURED_CONVERSATION_GENERATION,
+                ),
+            )
+        ) {
+            is OpenTutorConversationResult.Opened -> opened.conversation
+            OpenTutorConversationResult.NotFound -> createConversation(context)
+        }
+        if (!conversation.isEligibleActiveConversation(context.conversationId)) {
             return CapturedTutorChoiceLearningMemoryState.Ineligible(
                 CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
             )
@@ -176,7 +197,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
             .field("subject", context.subject.name)
             .field("problemAnchorId", context.problemAnchorId)
             .field("requestVersion", CAPTURED_CHOICE_REQUEST_VERSION)
-            .field("modeVersion", CAPTURED_CHOICE_MODE_VERSION)
+            .field("modeVersion", context.modeVersion)
             .field("mode", TutorExplanationMode.GUIDED.name)
             .field("directiveFingerprint", context.directiveFingerprint)
             .field("studentMessageFingerprint", context.studentMessageFingerprint)
@@ -193,7 +214,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 subject = context.subject,
                 problemAnchorId = context.problemAnchorId,
                 requestVersion = CAPTURED_CHOICE_REQUEST_VERSION,
-                modeVersion = CAPTURED_CHOICE_MODE_VERSION,
+                modeVersion = context.modeVersion,
                 mode = TutorExplanationMode.GUIDED,
                 directiveFingerprint = context.directiveFingerprint,
                 studentMessageFingerprint = context.studentMessageFingerprint,
@@ -206,7 +227,10 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 occurredAtEpochMillis = occurredAt,
             ),
         )
-        if (!allocation.receipt.matches(context) || !allocation.conversation.isEligibleActiveConversation()) {
+        if (
+            !allocation.receipt.matches(context) ||
+            !allocation.conversation.isEligibleActiveConversation(context.conversationId)
+        ) {
             return CapturedTutorChoiceLearningMemoryState.Ineligible(
                 CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
             )
@@ -215,28 +239,20 @@ internal class CapturedTutorChoiceLearningMemoryController(
     }
 
     private suspend fun createConversation(context: EligibleChoiceContext): TutorConversation {
-        val conversationId = opaqueId(
-            CONVERSATION_ID_DOMAIN,
-            learnerScopeId,
-            session.sessionId,
-            session.draftId,
-            decimal(session.draftRevisionNumber),
-            context.planRequestId,
-        )
         val createPayload = CanonicalSha256(CONVERSATION_CREATE_PAYLOAD_DOMAIN)
             .field("learnerScopeId", learnerScopeId)
-            .field("conversationId", conversationId)
+            .field("conversationId", context.conversationId)
             .field("conversationGeneration", CAPTURED_CONVERSATION_GENERATION)
             .finish()
         return repository.createConversation(
             CreateTutorConversationCommand(
                 learnerScopeId = learnerScopeId,
-                conversationId = conversationId,
+                conversationId = context.conversationId,
                 conversationGeneration = CAPTURED_CONVERSATION_GENERATION,
                 clientIdempotencyKey = opaqueId(
                     CONVERSATION_CREATE_IDEMPOTENCY_DOMAIN,
                     learnerScopeId,
-                    conversationId,
+                    context.conversationId,
                 ),
                 payloadFingerprint = createPayload,
                 occurredAtEpochMillis = clock(),
@@ -265,7 +281,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
             .field("evidenceRequestId", context.planRequestId)
             .field("kind", TutorEvidenceRequestKind.CHOICE.name)
             .field("requestVersion", CAPTURED_CHOICE_REQUEST_VERSION)
-            .field("modeVersion", CAPTURED_CHOICE_MODE_VERSION)
+            .field("modeVersion", context.modeVersion)
             .field("mode", TutorExplanationMode.GUIDED.name)
             .field("directiveFingerprint", context.directiveFingerprint)
             .finish()
@@ -282,7 +298,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 evidenceRequestId = context.planRequestId,
                 kind = TutorEvidenceRequestKind.CHOICE,
                 requestVersion = CAPTURED_CHOICE_REQUEST_VERSION,
-                modeVersion = CAPTURED_CHOICE_MODE_VERSION,
+                modeVersion = context.modeVersion,
                 mode = TutorExplanationMode.GUIDED,
                 directiveFingerprint = context.directiveFingerprint,
                 clientIdempotencyKey = opaqueId(
@@ -302,11 +318,69 @@ internal class CapturedTutorChoiceLearningMemoryController(
         return prepared.request.toControllerState()
     }
 
+    private suspend fun recoverPreparedResponse(
+        context: EligibleChoiceContext,
+        response: TutorTurnResponse,
+    ): CapturedTutorChoiceLearningMemoryState {
+        val evidenceRequestId = response.evidenceRequestId
+            ?: return CapturedTutorChoiceLearningMemoryState.PreBridgeHistory
+        if (!context.matchesPersistedResponse(response)) {
+            return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
+            )
+        }
+        val request = when (
+            val opened = repository.openEvidenceRequest(learnerScopeId, evidenceRequestId)
+        ) {
+            is OpenTutorEvidenceResult.Found -> opened.request
+            OpenTutorEvidenceResult.NotFound ->
+                return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                    CapturedTutorChoiceIneligibleReason.EVIDENCE_NOT_PREPARED,
+                )
+        }
+        val receipt = openExactReceipt(context, request)
+            ?: return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
+            )
+        if (!request.matchesPlan(context) || !request.matches(receipt)) {
+            return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH,
+            )
+        }
+        if (request.status.isTerminal) return request.toControllerState()
+        return if (request.modeVersion == context.modeVersion) {
+            request.toControllerState()
+        } else {
+            CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.STALE_MODE_EPOCH,
+            )
+        }
+    }
+
+    private suspend fun openExactReceipt(
+        context: EligibleChoiceContext,
+        request: TutorEvidenceRequest,
+    ): TutorTurnReceipt? {
+        if (!request.matchesPlan(context)) return null
+        return when (
+            val opened = repository.openTurn(
+                learnerScopeId = learnerScopeId,
+                turnReceiptId = request.turnReceiptId,
+            )
+        ) {
+            is OpenTutorTurnResult.Found ->
+                opened.receipt.takeIf { receipt -> request.matches(receipt) }
+
+            OpenTutorTurnResult.NotFound -> null
+        }
+    }
+
     private suspend fun submit(
         context: EligibleChoiceContext,
         receipt: TutorTurnReceipt,
         request: TutorEvidenceRequest,
         response: TutorTurnResponse,
+        guidanceState: TutorGuidanceState,
     ): CapturedTutorChoiceLearningMemoryState {
         val responseOccurredAt = checkNotNull(response.choiceSubmittedAtEpochMillis)
         if (
@@ -336,24 +410,28 @@ internal class CapturedTutorChoiceLearningMemoryController(
         val sourceFactId = opaqueId(
             SOURCE_FACT_ID_DOMAIN,
             learnerScopeId,
-            context.planRequestId,
+            request.evidenceRequestId,
             responseFingerprint,
         )
         val sourceFact = LearningObservationSourceFact(
             sourceFactId = sourceFactId,
             learnerScopeId = learnerScopeId,
             source = LearningObservationSource.TUTOR_CHOICE,
-            factKind = if (response.selectionWasCorrect == true) {
-                LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE
-            } else {
-                LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE
+            factKind = when {
+                response.selectionWasCorrect != true ->
+                    LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE
+
+                guidanceState.hintsUsed > 0 || guidanceState.strugglesObserved > 0 ->
+                    LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE
+
+                else -> LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE
             },
             anchorId = context.problemAnchorId,
             subject = context.subject,
             conversationGeneration = receipt.conversationGeneration,
             conversationId = receipt.conversationId,
             turnReceiptId = receipt.turnReceiptId,
-            evidenceRequestId = context.planRequestId,
+            evidenceRequestId = request.evidenceRequestId,
             responseFingerprint = responseFingerprint,
             responseSummary = responseSummary,
             occurredAtEpochMillis = responseOccurredAt,
@@ -377,17 +455,17 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 turnOrdinal = receipt.turnOrdinal,
                 subject = context.subject,
                 problemAnchorId = context.problemAnchorId,
-                evidenceRequestId = context.planRequestId,
+                evidenceRequestId = request.evidenceRequestId,
                 kind = TutorEvidenceRequestKind.CHOICE,
                 requestVersion = CAPTURED_CHOICE_REQUEST_VERSION,
-                modeVersion = CAPTURED_CHOICE_MODE_VERSION,
+                modeVersion = request.modeVersion,
                 mode = TutorExplanationMode.GUIDED,
                 directiveFingerprint = context.directiveFingerprint,
                 expectedEvidenceStateVersion = request.stateVersion,
                 terminal = TutorLearningEvidenceTerminal.Submitted(sourceFact, anchors),
                 clientIdempotencyKey = opaqueId(
                     EVIDENCE_SUBMIT_IDEMPOTENCY_DOMAIN,
-                    context.planRequestId,
+                    request.evidenceRequestId,
                     responseFingerprint,
                 ),
                 payloadFingerprint = payload,
@@ -415,10 +493,10 @@ internal class CapturedTutorChoiceLearningMemoryController(
             .field("turnOrdinal", receipt.turnOrdinal)
             .field("subject", context.subject.name)
             .field("problemAnchorId", context.problemAnchorId)
-            .field("evidenceRequestId", context.planRequestId)
+            .field("evidenceRequestId", request.evidenceRequestId)
             .field("kind", TutorEvidenceRequestKind.CHOICE.name)
             .field("requestVersion", CAPTURED_CHOICE_REQUEST_VERSION)
-            .field("modeVersion", CAPTURED_CHOICE_MODE_VERSION)
+            .field("modeVersion", request.modeVersion)
             .field("mode", TutorExplanationMode.GUIDED.name)
             .field("directiveFingerprint", context.directiveFingerprint)
             .field("terminalStatus", TutorEvidenceRequestStatus.CANCELLED.name)
@@ -433,17 +511,17 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 turnOrdinal = receipt.turnOrdinal,
                 subject = context.subject,
                 problemAnchorId = context.problemAnchorId,
-                evidenceRequestId = context.planRequestId,
+                evidenceRequestId = request.evidenceRequestId,
                 kind = TutorEvidenceRequestKind.CHOICE,
                 requestVersion = CAPTURED_CHOICE_REQUEST_VERSION,
-                modeVersion = CAPTURED_CHOICE_MODE_VERSION,
+                modeVersion = request.modeVersion,
                 mode = TutorExplanationMode.GUIDED,
                 directiveFingerprint = context.directiveFingerprint,
                 expectedEvidenceStateVersion = request.stateVersion,
                 terminal = TutorLearningEvidenceTerminal.Cancelled(reason),
                 clientIdempotencyKey = opaqueId(
                     EVIDENCE_CANCEL_IDEMPOTENCY_DOMAIN,
-                    context.planRequestId,
+                    request.evidenceRequestId,
                     receipt.turnReceiptId,
                 ),
                 payloadFingerprint = payload,
@@ -467,10 +545,10 @@ internal class CapturedTutorChoiceLearningMemoryController(
         .field("turnOrdinal", receipt.turnOrdinal)
         .field("subject", context.subject.name)
         .field("problemAnchorId", context.problemAnchorId)
-        .field("evidenceRequestId", context.planRequestId)
+        .field("evidenceRequestId", request.evidenceRequestId)
         .field("kind", TutorEvidenceRequestKind.CHOICE.name)
         .field("requestVersion", CAPTURED_CHOICE_REQUEST_VERSION)
-        .field("modeVersion", CAPTURED_CHOICE_MODE_VERSION)
+        .field("modeVersion", request.modeVersion)
         .field("mode", TutorExplanationMode.GUIDED.name)
         .field("directiveFingerprint", context.directiveFingerprint)
         .field("expectedEvidenceStateVersion", request.stateVersion)
@@ -487,10 +565,26 @@ internal class CapturedTutorChoiceLearningMemoryController(
         .field("turnFingerprint", anchors.turnFingerprint)
         .finish()
 
-    private fun eligibleContext(
+    private fun liveEligibleContext(
         planTask: ModelTaskSnapshot,
         guidanceState: TutorGuidanceState,
+        modeVersion: Long,
     ): EligibleChoiceContext? {
+        val context = planContext(planTask, modeVersion) ?: return null
+        return context.takeIf {
+            guidanceState.mode == TutorExplanationMode.GUIDED &&
+                guidanceState.problem.problemId == session.questionDocument.document.id &&
+                guidanceState.problem.revisionNumber == session.draftRevisionNumber &&
+                guidanceState.pendingEvidenceRequestId == planTask.request.requestId &&
+                guidanceState.authorizeEvidence(planTask.request.requestId).mayWriteLearningEvidence
+        }
+    }
+
+    private fun planContext(
+        planTask: ModelTaskSnapshot,
+        modeVersion: Long,
+    ): EligibleChoiceContext? {
+        if (modeVersion < 0) return null
         if (planTask.status != ModelTaskStatus.SUCCEEDED) return null
         val input = planTask.request.input as? TutorPlanInput ?: return null
         val output = planTask.output as? TutorPlanOutput ?: return null
@@ -513,16 +607,6 @@ internal class CapturedTutorChoiceLearningMemoryController(
         ) {
             return null
         }
-        if (
-            guidanceState.mode != TutorExplanationMode.GUIDED ||
-            guidanceState.problem.problemId != session.questionDocument.document.id ||
-            guidanceState.problem.revisionNumber != session.draftRevisionNumber ||
-            guidanceState.pendingEvidenceRequestId != planTask.request.requestId ||
-            !guidanceState.authorizeEvidence(planTask.request.requestId).mayWriteLearningEvidence
-        ) {
-            return null
-        }
-
         val revisionFingerprint = CapturedQuestionDocumentFingerprint.of(session.questionDocument)
         val questionFingerprint = CanonicalSha256(CAPTURED_QUESTION_FINGERPRINT_VERSION)
             .field("draftId", session.draftId)
@@ -554,6 +638,14 @@ internal class CapturedTutorChoiceLearningMemoryController(
             decimal(output.turnOrdinal),
             directiveFingerprint,
         )
+        val conversationId = opaqueId(
+            CONVERSATION_ID_DOMAIN,
+            learnerScopeId,
+            session.sessionId,
+            session.draftId,
+            decimal(session.draftRevisionNumber),
+            session.questionDocument.document.id,
+        )
         return EligibleChoiceContext(
             planRequestId = planTask.request.requestId,
             input = input,
@@ -565,6 +657,8 @@ internal class CapturedTutorChoiceLearningMemoryController(
             directiveFingerprint = directiveFingerprint,
             problemAnchorId = problemAnchorId,
             turnReceiptId = turnReceiptId,
+            conversationId = conversationId,
+            modeVersion = modeVersion,
             studentMessageFingerprint = CanonicalSha256(TURN_PLACEHOLDER_FINGERPRINT_DOMAIN)
                 .field("turnReceiptId", turnReceiptId)
                 .field("planRequestId", planTask.request.requestId)
@@ -572,9 +666,8 @@ internal class CapturedTutorChoiceLearningMemoryController(
         )
     }
 
-    private fun ineligible(
+    private fun planIneligible(
         planTask: ModelTaskSnapshot,
-        guidanceState: TutorGuidanceState,
     ): CapturedTutorChoiceLearningMemoryState.Ineligible {
         val reason = when {
             planTask.status != ModelTaskStatus.SUCCEEDED ->
@@ -591,6 +684,20 @@ internal class CapturedTutorChoiceLearningMemoryController(
 
             SubjectKind.entries.none { it.name == session.subject && it != SubjectKind.GENERAL } ->
                 CapturedTutorChoiceIneligibleReason.INVALID_SUBJECT
+
+            else -> CapturedTutorChoiceIneligibleReason.PLAN_SCOPE_MISMATCH
+        }
+        return CapturedTutorChoiceLearningMemoryState.Ineligible(reason)
+    }
+
+    private fun ineligible(
+        planTask: ModelTaskSnapshot,
+        guidanceState: TutorGuidanceState,
+    ): CapturedTutorChoiceLearningMemoryState.Ineligible {
+        val planFailure = planIneligible(planTask)
+        val reason = when {
+            planFailure.reason != CapturedTutorChoiceIneligibleReason.PLAN_SCOPE_MISMATCH ->
+                planFailure.reason
 
             guidanceState.mode != TutorExplanationMode.GUIDED ||
                 guidanceState.pendingEvidenceRequestId != planTask.request.requestId ->
@@ -668,6 +775,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
                 "choiceSubmittedAtEpochMillis",
                 response.choiceSubmittedAtEpochMillis?.let(::decimal),
             )
+            .nullableField("evidenceRequestId", response.evidenceRequestId)
             .finish()
 
     private fun turnFingerprint(receipt: TutorTurnReceipt): String =
@@ -694,21 +802,32 @@ internal class CapturedTutorChoiceLearningMemoryController(
         action()
     } catch (cancelled: CancellationException) {
         throw cancelled
+    } catch (conflict: TutorLearningMemoryConflictException) {
+        if (conflict.reason == TutorLearningMemoryConflictReason.STATE_VERSION_MISMATCH) {
+            CapturedTutorChoiceLearningMemoryState.RetryableFailure(conflict)
+        } else {
+            CapturedTutorChoiceLearningMemoryState.PermanentConflict(conflict)
+        }
     } catch (failure: Exception) {
         CapturedTutorChoiceLearningMemoryState.RetryableFailure(failure)
     }
 
-    private fun TutorConversation.isEligibleActiveConversation(): Boolean =
+    private fun TutorConversation.isEligibleActiveConversation(
+        expectedConversationId: String,
+    ): Boolean =
         learnerScopeId == this@CapturedTutorChoiceLearningMemoryController.learnerScopeId &&
+            conversationId == expectedConversationId &&
             status == TutorConversationStatus.ACTIVE &&
-            generation > 0
+            generation == CAPTURED_CONVERSATION_GENERATION
 
     private fun TutorTurnReceipt.matches(context: EligibleChoiceContext): Boolean =
         turnReceiptId == context.turnReceiptId &&
+            conversationId == context.conversationId &&
+            conversationGeneration == CAPTURED_CONVERSATION_GENERATION &&
             subject == context.subject &&
             problemAnchorId == context.problemAnchorId &&
             requestVersion == CAPTURED_CHOICE_REQUEST_VERSION &&
-            modeVersion == CAPTURED_CHOICE_MODE_VERSION &&
+            modeVersion == context.modeVersion &&
             explanationMode == TutorExplanationMode.GUIDED &&
             directiveFingerprint == context.directiveFingerprint &&
             studentMessageFingerprint == context.studentMessageFingerprint &&
@@ -721,6 +840,19 @@ internal class CapturedTutorChoiceLearningMemoryController(
         kind == TutorEvidenceRequestKind.CHOICE &&
         matches(receipt)
 
+    private fun TutorEvidenceRequest.matchesPlan(
+        context: EligibleChoiceContext,
+    ): Boolean = evidenceRequestId == context.planRequestId &&
+        conversationId == context.conversationId &&
+        conversationGeneration == CAPTURED_CONVERSATION_GENERATION &&
+        turnReceiptId == context.turnReceiptId &&
+        subject == context.subject &&
+        problemAnchorId == context.problemAnchorId &&
+        kind == TutorEvidenceRequestKind.CHOICE &&
+        requestVersion == CAPTURED_CHOICE_REQUEST_VERSION &&
+        explanationMode == TutorExplanationMode.GUIDED &&
+        directiveFingerprint == context.directiveFingerprint
+
     private fun EligibleChoiceContext.matchesPersistedResponse(
         response: TutorTurnResponse,
     ): Boolean {
@@ -732,6 +864,7 @@ internal class CapturedTutorChoiceLearningMemoryController(
             response.cycleOrdinal != output.cycleOrdinal ||
             response.turnOrdinal != output.turnOrdinal ||
             response.diagnosticStemMarkdown != item.stemMarkdown ||
+            response.evidenceRequestId != planRequestId ||
             response.requestedMove != null ||
             response.solutionRevealed
         ) {
@@ -756,6 +889,8 @@ internal class CapturedTutorChoiceLearningMemoryController(
         val directiveFingerprint: String,
         val problemAnchorId: String,
         val turnReceiptId: String,
+        val conversationId: String,
+        val modeVersion: Long,
         val studentMessageFingerprint: String,
     )
 }
@@ -783,6 +918,10 @@ internal sealed interface CapturedTutorChoiceLearningMemoryState {
     data class RetryableFailure(
         val cause: Exception,
     ) : CapturedTutorChoiceLearningMemoryState
+
+    data class PermanentConflict(
+        val cause: TutorLearningMemoryConflictException,
+    ) : CapturedTutorChoiceLearningMemoryState
 }
 
 internal enum class CapturedTutorChoiceIneligibleReason {
@@ -796,6 +935,8 @@ internal enum class CapturedTutorChoiceIneligibleReason {
     RESPONSE_SCOPE_MISMATCH,
     RESPONSE_PRECEDES_PREPARATION,
     TURN_NOT_PREPARED,
+    EVIDENCE_NOT_PREPARED,
+    STALE_MODE_EPOCH,
     DURABLE_SCOPE_MISMATCH,
 }
 
@@ -895,7 +1036,6 @@ private fun boolean(value: Boolean): String = if (value) "true" else "false"
 
 private const val CAPTURED_CONVERSATION_GENERATION = 1L
 private const val CAPTURED_CHOICE_REQUEST_VERSION = 1L
-private const val CAPTURED_CHOICE_MODE_VERSION = 0L
 private const val CAPTURED_QUESTION_FINGERPRINT_VERSION = "captured-question-v1"
 private const val CAPTURED_CHOICE_SOURCE_VERSION = "captured-choice-source-v1"
 private const val CAPTURED_CHOICE_PENDING_SUMMARY = "guided-choice-pending"

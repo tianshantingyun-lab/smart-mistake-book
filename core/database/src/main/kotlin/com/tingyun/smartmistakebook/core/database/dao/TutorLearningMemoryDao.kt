@@ -254,6 +254,19 @@ internal abstract class TutorLearningMemoryDao {
         evidenceRequestId: String,
     ): TutorEvidenceRequestEntity?
 
+    @Query(
+        """
+        SELECT * FROM tutor_evidence_request
+        WHERE learner_id = :learnerId
+          AND evidence_request_id = :evidenceRequestId
+        LIMIT 1
+        """,
+    )
+    internal abstract suspend fun openEvidenceRequest(
+        learnerId: String,
+        evidenceRequestId: String,
+    ): TutorEvidenceRequestEntity?
+
     @Query("SELECT * FROM learning_problem_anchor WHERE anchor_id = :anchorId LIMIT 1")
     protected abstract suspend fun findAnchor(anchorId: String): LearningProblemAnchorEntity?
 
@@ -940,7 +953,7 @@ private fun TutorTurnReceiptEntity.toModel() = TutorTurnReceipt(
     occurredAtEpochMillis = occurredAtEpochMillis,
 )
 
-private fun TutorEvidenceRequestEntity.toModel() = TutorEvidenceRequest(
+internal fun TutorEvidenceRequestEntity.toModel() = TutorEvidenceRequest(
     evidenceRequestId = evidenceRequestId,
     conversationId = conversationId,
     conversationGeneration = conversationGeneration,

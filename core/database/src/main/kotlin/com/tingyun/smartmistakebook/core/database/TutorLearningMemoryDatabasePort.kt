@@ -291,6 +291,15 @@ interface TutorLearningMemoryDatabasePort {
         "Tutor learning-memory turns are not implemented",
     )
 
+    suspend fun openTutorEvidenceRequest(
+        learnerId: String,
+        evidenceRequestId: String,
+    ): TutorEvidenceRequest? {
+        requireOpaque(learnerId, "learnerId")
+        requireOpaque(evidenceRequestId, "evidenceRequestId")
+        return null
+    }
+
     suspend fun prepareTutorEvidenceRequest(
         command: PrepareTutorEvidenceRequestCommand,
     ): TutorEvidencePreparationResult = throw UnsupportedOperationException(

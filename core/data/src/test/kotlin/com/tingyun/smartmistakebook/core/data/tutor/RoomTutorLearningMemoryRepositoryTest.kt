@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
@@ -55,6 +56,7 @@ class RoomTutorLearningMemoryRepositoryTest {
         var archiveCalls = 0
         var finalizeCalls = 0
         var openTurnCalls = 0
+        var openEvidenceCalls = 0
         var finalizeCommand: DatabaseFinalizeEvidenceCommand? = null
         val repository = RoomTutorLearningMemoryRepository(database { method, arguments ->
             when (method) {
@@ -71,6 +73,8 @@ class RoomTutorLearningMemoryRepositoryTest {
                 } else {
                     TutorTurnReadResult.NotFound
                 }
+                "openTutorEvidenceRequest" ->
+                    if (openEvidenceCalls++ == 0) pendingRequest else null
                 "archiveTutorConversation" -> TutorConversationArchiveWriteResult(
                     archived = archiveCalls++ == 0,
                     conversation = archivedConversation,
@@ -129,6 +133,24 @@ class RoomTutorLearningMemoryRepositoryTest {
         assertEquals(OpenTutorTurnResult.NotFound, repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
         assertTrue(runCatching { repository.openTurn(" learner-1", receipt.turnReceiptId) }.isFailure)
         assertTrue(runCatching { repository.openTurn(LEARNER_ID, " turn-1") }.isFailure)
+        assertEquals(
+            OpenTutorEvidenceResult.Found(pendingRequest),
+            repository.openEvidenceRequest(LEARNER_ID, pendingRequest.evidenceRequestId),
+        )
+        assertEquals(
+            OpenTutorEvidenceResult.NotFound,
+            repository.openEvidenceRequest(LEARNER_ID, pendingRequest.evidenceRequestId),
+        )
+        assertTrue(
+            runCatching {
+                repository.openEvidenceRequest(" learner-1", pendingRequest.evidenceRequestId)
+            }.isFailure,
+        )
+        assertTrue(
+            runCatching {
+                repository.openEvidenceRequest(LEARNER_ID, " request-1")
+            }.isFailure,
+        )
         assertTrue(repository.archiveConversation(archiveCommand) is ArchiveTutorConversationResult.Archived)
         assertTrue(repository.archiveConversation(archiveCommand) is ArchiveTutorConversationResult.Replayed)
         assertTrue(repository.allocateTurn(allocateCommand) is AllocateTutorTurnResult.Replayed)

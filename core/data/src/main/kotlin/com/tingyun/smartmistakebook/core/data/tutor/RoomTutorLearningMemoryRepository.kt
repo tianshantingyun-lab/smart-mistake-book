@@ -22,6 +22,7 @@ import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.FinalizeTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.OpenTutorConversationResult
+import com.tingyun.smartmistakebook.core.domain.OpenTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
@@ -103,6 +104,22 @@ internal class RoomTutorLearningMemoryRepository(
                 is TutorTurnReadResult.Found -> OpenTutorTurnResult.Found(result.receipt)
                 TutorTurnReadResult.NotFound -> OpenTutorTurnResult.NotFound
             }
+        }
+    }
+
+    override suspend fun openEvidenceRequest(
+        learnerScopeId: String,
+        evidenceRequestId: String,
+    ): OpenTutorEvidenceResult {
+        requireTutorMemoryId(learnerScopeId, "Learner scope")
+        requireTutorMemoryId(evidenceRequestId, "Evidence request")
+        return mapDatabaseConflict(
+            TutorLearningMemoryOperation.OPEN_EVIDENCE,
+            TutorLearningMemoryConflictReason.NOT_FOUND_OR_OUT_OF_SCOPE,
+        ) {
+            database.openTutorEvidenceRequest(learnerScopeId, evidenceRequestId)
+                ?.let(OpenTutorEvidenceResult::Found)
+                ?: OpenTutorEvidenceResult.NotFound
         }
     }
 

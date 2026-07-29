@@ -113,6 +113,16 @@ sealed interface OpenTutorTurnResult {
     data object NotFound : OpenTutorTurnResult
 }
 
+sealed interface OpenTutorEvidenceResult {
+    data class Found(val request: TutorEvidenceRequest) : OpenTutorEvidenceResult
+
+    /**
+     * Missing and out-of-learner-scope requests deliberately share one result so an exact-id read
+     * cannot be used to discover another learner's durable evidence.
+     */
+    data object NotFound : OpenTutorEvidenceResult
+}
+
 sealed interface ArchiveTutorConversationResult {
     val conversation: TutorConversation
     val archived: Boolean
@@ -487,6 +497,7 @@ enum class TutorLearningMemoryOperation {
     CREATE_CONVERSATION,
     OPEN_CONVERSATION,
     OPEN_TURN,
+    OPEN_EVIDENCE,
     ARCHIVE_CONVERSATION,
     ALLOCATE_TURN,
     PREPARE_EVIDENCE,
@@ -558,6 +569,16 @@ interface TutorLearningMemoryRepository {
         learnerScopeId.requireTutorMemoryId("Learner scope")
         turnReceiptId.requireTutorMemoryId("Turn receipt")
         return OpenTutorTurnResult.NotFound
+    }
+
+    /** Opens exactly [evidenceRequestId] only when it belongs to [learnerScopeId]. */
+    suspend fun openEvidenceRequest(
+        learnerScopeId: String,
+        evidenceRequestId: String,
+    ): OpenTutorEvidenceResult {
+        learnerScopeId.requireTutorMemoryId("Learner scope")
+        evidenceRequestId.requireTutorMemoryId("Evidence request")
+        return OpenTutorEvidenceResult.NotFound
     }
 
     /** Archives the exact active generation using a conversation-version compare-and-set. */

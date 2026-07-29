@@ -14,6 +14,7 @@ import com.tingyun.smartmistakebook.core.database.dao.activeSessionHead
 import com.tingyun.smartmistakebook.core.database.dao.latestSessionHead
 import com.tingyun.smartmistakebook.core.database.dao.toRecord
 import com.tingyun.smartmistakebook.core.database.dao.toSnapshot
+import com.tingyun.smartmistakebook.core.database.dao.toModel
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentItemSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.ErrorBookEntryEntity
@@ -176,6 +177,17 @@ internal class RoomStudyDatabase(
             )
         }
         ?: TutorTurnReadResult.NotFound
+
+    override suspend fun openTutorEvidenceRequest(
+        learnerId: String,
+        evidenceRequestId: String,
+    ): com.tingyun.smartmistakebook.core.model.TutorEvidenceRequest? {
+        requireOpaque(learnerId, "learnerId")
+        requireOpaque(evidenceRequestId, "evidenceRequestId")
+        return database.tutorLearningMemoryDao()
+            .openEvidenceRequest(learnerId, evidenceRequestId)
+            ?.toModel()
+    }
 
     override suspend fun prepareTutorEvidenceRequest(
         command: PrepareTutorEvidenceRequestCommand,
