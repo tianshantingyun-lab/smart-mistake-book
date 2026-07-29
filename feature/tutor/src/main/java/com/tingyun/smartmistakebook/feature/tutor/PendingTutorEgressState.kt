@@ -158,119 +158,123 @@ private const val PROVIDER_CONFIGURATION_VERSION = "provider_configuration_versi
 private fun turnKey(index: Int, field: String) = "turn_${index}_$field"
 
 internal val pendingTutorEgressStateSaver = Saver<PendingTutorEgressState, Bundle>(
-    save = { state ->
-        Bundle().apply {
-            when (val action = state.action) {
-                null -> putString(KIND, NONE)
-                is PendingTutorEgressAction.Plan -> savePlan(action)
-                is PendingTutorEgressAction.NewResponse -> {
-                    putString(KIND, NEW_RESPONSE)
-                    putString(MESSAGE, action.message)
-                    putString(SELECTED_CHOICE_ID, action.selectedChoiceId)
-                    putString(CHOICE_SOURCE_REQUEST_ID, action.choiceSourceRequestId)
-                    putString(REQUESTED_MOVE, action.requestedMove?.name)
-                    putBoolean(CLEAR_DRAFT, action.clearDraftOnPersist)
-                }
-                is PendingTutorEgressAction.RetryResponse -> {
-                    putString(KIND, RETRY_RESPONSE)
-                    putString(REQUEST_ID, action.requestId)
-                }
-                is PendingTutorEgressAction.RetryVisual -> saveRetryVisual(action)
-            }
-        }
-    },
-    restore = { bundle -> PendingTutorEgressState(bundle.restoreAction()) },
+    save = { state -> PendingTutorEgressStateCodec.encode(state).toBundle() },
+    restore = { bundle -> PendingTutorEgressStateCodec.decode(bundle.toPrimitivePayload()) },
 )
 
-private fun Bundle.savePlan(action: PendingTutorEgressAction.Plan) {
-    putString(KIND, PLAN)
-    putInt(CYCLE, action.cycleOrdinal)
-    putStringArrayList(MESSAGES, ArrayList(action.priorCycleStudentMessages))
-    putInt(TURN_COUNT, action.priorTurns.size)
+internal object PendingTutorEgressStateCodec {
+    fun encode(state: PendingTutorEgressState): Map<String, Any?> = buildMap {
+        when (val action = state.action) {
+            null -> put(KIND, NONE)
+            is PendingTutorEgressAction.Plan -> savePlan(action)
+            is PendingTutorEgressAction.NewResponse -> {
+                put(KIND, NEW_RESPONSE)
+                put(MESSAGE, action.message)
+                put(SELECTED_CHOICE_ID, action.selectedChoiceId)
+                put(CHOICE_SOURCE_REQUEST_ID, action.choiceSourceRequestId)
+                put(REQUESTED_MOVE, action.requestedMove?.name)
+                put(CLEAR_DRAFT, action.clearDraftOnPersist)
+            }
+            is PendingTutorEgressAction.RetryResponse -> {
+                put(KIND, RETRY_RESPONSE)
+                put(REQUEST_ID, action.requestId)
+            }
+            is PendingTutorEgressAction.RetryVisual -> saveRetryVisual(action)
+        }
+    }
+
+    fun decode(payload: Map<String, Any?>): PendingTutorEgressState =
+        PendingTutorEgressState(payload.restoreAction())
+}
+
+private fun MutableMap<String, Any?>.savePlan(action: PendingTutorEgressAction.Plan) {
+    put(KIND, PLAN)
+    put(CYCLE, action.cycleOrdinal)
+    put(MESSAGES, action.priorCycleStudentMessages.toList())
+    put(TURN_COUNT, action.priorTurns.size)
     action.priorConversationMemory?.let { memory ->
-        putBoolean(HAS_MEMORY, true)
-        putInt(MEMORY_COMPLETED_CYCLES, memory.completedCycleCount)
-        putInt(MEMORY_ANSWERED_TURNS, memory.answeredTurnCount)
-        putInt(MEMORY_CORRECT_CHOICES, memory.correctChoiceCount)
-        putString(MEMORY_LAST_FEEDBACK, memory.lastFeedbackMarkdown)
-        putString(MEMORY_LAST_MOVE, memory.lastRequestedMove?.name)
-        putBoolean(MEMORY_SOLUTION_REVEALED, memory.solutionWasRevealed)
+        put(HAS_MEMORY, true)
+        put(MEMORY_COMPLETED_CYCLES, memory.completedCycleCount)
+        put(MEMORY_ANSWERED_TURNS, memory.answeredTurnCount)
+        put(MEMORY_CORRECT_CHOICES, memory.correctChoiceCount)
+        put(MEMORY_LAST_FEEDBACK, memory.lastFeedbackMarkdown)
+        put(MEMORY_LAST_MOVE, memory.lastRequestedMove?.name)
+        put(MEMORY_SOLUTION_REVEALED, memory.solutionWasRevealed)
     }
     action.priorTurns.forEachIndexed { index, turn ->
-        putInt(turnKey(index, "ordinal"), turn.turnOrdinal)
-        putString(turnKey(index, "stem"), turn.diagnosticStemMarkdown)
-        putString(turnKey(index, "choice"), turn.selectedChoiceMarkdown)
-        putBoolean(turnKey(index, "correct"), turn.selectionWasCorrect)
-        putString(turnKey(index, "feedback"), turn.feedbackMarkdown)
-        putString(turnKey(index, "move"), turn.requestedMove.name)
+        put(turnKey(index, "ordinal"), turn.turnOrdinal)
+        put(turnKey(index, "stem"), turn.diagnosticStemMarkdown)
+        put(turnKey(index, "choice"), turn.selectedChoiceMarkdown)
+        put(turnKey(index, "correct"), turn.selectionWasCorrect)
+        put(turnKey(index, "feedback"), turn.feedbackMarkdown)
+        put(turnKey(index, "move"), turn.requestedMove.name)
     }
 }
 
-private fun Bundle.saveRetryVisual(action: PendingTutorEgressAction.RetryVisual) {
-    putString(KIND, RETRY_VISUAL)
-    putString(SURFACE, action.anchor.surface.name)
-    putInt(CYCLE, action.anchor.cycleOrdinal)
-    putInt(TURN, action.anchor.turnOrdinal)
-    action.anchor.responseOrdinal?.let { putInt(RESPONSE, it) }
-    putString(TASK_KIND, action.taskKind.name)
-    putString(REQUEST_ID, action.failedRequestId)
-    putString(SEMANTIC_REQUEST_ID, action.semanticRequestId)
-    putString(PROVIDER_ID, action.providerId)
-    putString(MODEL_ID, action.modelId)
-    putString(PROVIDER_CONFIGURATION_VERSION, action.providerConfigurationVersion)
+private fun MutableMap<String, Any?>.saveRetryVisual(
+    action: PendingTutorEgressAction.RetryVisual,
+) {
+    put(KIND, RETRY_VISUAL)
+    put(SURFACE, action.anchor.surface.name)
+    put(CYCLE, action.anchor.cycleOrdinal)
+    put(TURN, action.anchor.turnOrdinal)
+    action.anchor.responseOrdinal?.let { put(RESPONSE, it) }
+    put(TASK_KIND, action.taskKind.name)
+    put(REQUEST_ID, action.failedRequestId)
+    put(SEMANTIC_REQUEST_ID, action.semanticRequestId)
+    put(PROVIDER_ID, action.providerId)
+    put(MODEL_ID, action.modelId)
+    put(PROVIDER_CONFIGURATION_VERSION, action.providerConfigurationVersion)
 }
 
-private fun Bundle.restoreAction(): PendingTutorEgressAction? = runCatching {
-    when (getString(KIND)) {
+private fun Map<String, Any?>.restoreAction(): PendingTutorEgressAction? = runCatching {
+    when (optionalString(KIND)) {
         NONE -> null
         PLAN -> restorePlan()
         NEW_RESPONSE -> restoreNewResponse()
         RETRY_RESPONSE -> PendingTutorEgressAction.RetryResponse(
-            requestId = requireNotNull(getString(REQUEST_ID)).also { require(it.isNotBlank()) },
+            requestId = requiredString(REQUEST_ID).also { require(it.isNotBlank()) },
         )
         RETRY_VISUAL -> restoreRetryVisual()
         else -> error("Unknown pending tutor action")
     }
 }.getOrNull()
 
-private fun Bundle.restoreRetryVisual(): PendingTutorEgressAction.RetryVisual {
-    require(containsKey(CYCLE) && containsKey(TURN))
+private fun Map<String, Any?>.restoreRetryVisual(): PendingTutorEgressAction.RetryVisual {
     return PendingTutorEgressAction.RetryVisual(
         anchor = TutorVisualTurnAnchor(
-            surface = TutorVisualTurnSurface.valueOf(requireNotNull(getString(SURFACE))),
-            cycleOrdinal = getInt(CYCLE),
-            turnOrdinal = getInt(TURN),
-            responseOrdinal = getInt(RESPONSE).takeIf { containsKey(RESPONSE) },
+            surface = TutorVisualTurnSurface.valueOf(requiredString(SURFACE)),
+            cycleOrdinal = requiredInt(CYCLE),
+            turnOrdinal = requiredInt(TURN),
+            responseOrdinal = optionalInt(RESPONSE),
         ),
-        taskKind = ModelTaskKind.valueOf(requireNotNull(getString(TASK_KIND))),
-        failedRequestId = getString(REQUEST_ID),
-        semanticRequestId = requireNotNull(getString(SEMANTIC_REQUEST_ID)),
-        providerId = requireNotNull(getString(PROVIDER_ID)),
-        modelId = requireNotNull(getString(MODEL_ID)),
-        providerConfigurationVersion =
-            requireNotNull(getString(PROVIDER_CONFIGURATION_VERSION)),
+        taskKind = ModelTaskKind.valueOf(requiredString(TASK_KIND)),
+        failedRequestId = optionalString(REQUEST_ID),
+        semanticRequestId = requiredString(SEMANTIC_REQUEST_ID),
+        providerId = requiredString(PROVIDER_ID),
+        modelId = requiredString(MODEL_ID),
+        providerConfigurationVersion = requiredString(PROVIDER_CONFIGURATION_VERSION),
     ).restoredWithoutAuthorization()
 }
 
-private fun Bundle.restoreNewResponse(): PendingTutorEgressAction.NewResponse {
-    val message = requireNotNull(getString(MESSAGE))
+private fun Map<String, Any?>.restoreNewResponse(): PendingTutorEgressAction.NewResponse {
+    val message = requiredString(MESSAGE)
     require(message.isNotBlank())
     return PendingTutorEgressAction.NewResponse(
         message = message,
-        selectedChoiceId = getString(SELECTED_CHOICE_ID),
-        choiceSourceRequestId = getString(CHOICE_SOURCE_REQUEST_ID),
-        requestedMove = getString(REQUESTED_MOVE)?.let(TutorMoveType::valueOf),
-        clearDraftOnPersist = getBoolean(CLEAR_DRAFT),
+        selectedChoiceId = optionalString(SELECTED_CHOICE_ID),
+        choiceSourceRequestId = optionalString(CHOICE_SOURCE_REQUEST_ID),
+        requestedMove = optionalString(REQUESTED_MOVE)?.let(TutorMoveType::valueOf),
+        clearDraftOnPersist = optionalBoolean(CLEAR_DRAFT) ?: false,
     )
 }
 
-private fun Bundle.restorePlan(): PendingTutorEgressAction.Plan {
-    require(containsKey(CYCLE) && containsKey(MESSAGES) && containsKey(TURN_COUNT))
-    val cycleOrdinal = getInt(CYCLE)
+private fun Map<String, Any?>.restorePlan(): PendingTutorEgressAction.Plan {
+    val cycleOrdinal = requiredInt(CYCLE)
     require(cycleOrdinal > 0)
-    val priorMessages = getStringArrayList(MESSAGES)?.toList().orEmpty()
+    val priorMessages = requiredStringList(MESSAGES)
     require(priorMessages.size <= TutorPlanInput.MAX_PRIOR_CYCLE_STUDENT_MESSAGES)
-    val turnCount = getInt(TURN_COUNT)
+    val turnCount = requiredInt(TURN_COUNT)
     require(turnCount in 0 until TutorPlanInput.MAX_TURNS)
     val priorMemory = restoreMemory()
     val priorTurns = (0 until turnCount).map(::restoreTurn)
@@ -282,31 +286,75 @@ private fun Bundle.restorePlan(): PendingTutorEgressAction.Plan {
     )
 }
 
-private fun Bundle.restoreMemory(): TutorConversationMemory? {
-    if (!getBoolean(HAS_MEMORY)) return null
-    require(
-        containsKey(MEMORY_COMPLETED_CYCLES) &&
-            containsKey(MEMORY_ANSWERED_TURNS) &&
-            containsKey(MEMORY_CORRECT_CHOICES),
-    )
+private fun Map<String, Any?>.restoreMemory(): TutorConversationMemory? {
+    if (optionalBoolean(HAS_MEMORY) != true) return null
     return TutorConversationMemory(
-        completedCycleCount = getInt(MEMORY_COMPLETED_CYCLES),
-        answeredTurnCount = getInt(MEMORY_ANSWERED_TURNS),
-        correctChoiceCount = getInt(MEMORY_CORRECT_CHOICES),
-        lastFeedbackMarkdown = getString(MEMORY_LAST_FEEDBACK),
-        lastRequestedMove = getString(MEMORY_LAST_MOVE)?.let(TutorMoveType::valueOf),
-        solutionWasRevealed = getBoolean(MEMORY_SOLUTION_REVEALED),
+        completedCycleCount = requiredInt(MEMORY_COMPLETED_CYCLES),
+        answeredTurnCount = requiredInt(MEMORY_ANSWERED_TURNS),
+        correctChoiceCount = requiredInt(MEMORY_CORRECT_CHOICES),
+        lastFeedbackMarkdown = optionalString(MEMORY_LAST_FEEDBACK),
+        lastRequestedMove = optionalString(MEMORY_LAST_MOVE)?.let(TutorMoveType::valueOf),
+        solutionWasRevealed = optionalBoolean(MEMORY_SOLUTION_REVEALED) ?: false,
     )
 }
 
-private fun Bundle.restoreTurn(index: Int): TutorTurnHistoryEntry {
-    require(containsKey(turnKey(index, "ordinal")) && containsKey(turnKey(index, "correct")))
+private fun Map<String, Any?>.restoreTurn(index: Int): TutorTurnHistoryEntry {
     return TutorTurnHistoryEntry(
-        turnOrdinal = getInt(turnKey(index, "ordinal")),
-        diagnosticStemMarkdown = requireNotNull(getString(turnKey(index, "stem"))),
-        selectedChoiceMarkdown = requireNotNull(getString(turnKey(index, "choice"))),
-        selectionWasCorrect = getBoolean(turnKey(index, "correct")),
-        feedbackMarkdown = requireNotNull(getString(turnKey(index, "feedback"))),
-        requestedMove = TutorMoveType.valueOf(requireNotNull(getString(turnKey(index, "move")))),
+        turnOrdinal = requiredInt(turnKey(index, "ordinal")),
+        diagnosticStemMarkdown = requiredString(turnKey(index, "stem")),
+        selectedChoiceMarkdown = requiredString(turnKey(index, "choice")),
+        selectionWasCorrect = requireNotNull(optionalBoolean(turnKey(index, "correct"))),
+        feedbackMarkdown = requiredString(turnKey(index, "feedback")),
+        requestedMove = TutorMoveType.valueOf(requiredString(turnKey(index, "move"))),
     )
 }
+
+private fun Map<String, Any?>.requiredString(key: String): String =
+    requireNotNull(optionalString(key))
+
+private fun Map<String, Any?>.optionalString(key: String): String? {
+    val value = this[key]
+    require(value == null || value is String)
+    return value
+}
+
+private fun Map<String, Any?>.requiredInt(key: String): Int =
+    requireNotNull(optionalInt(key))
+
+private fun Map<String, Any?>.optionalInt(key: String): Int? {
+    val value = this[key] ?: return null
+    require(value is Int)
+    return value
+}
+
+private fun Map<String, Any?>.optionalBoolean(key: String): Boolean? {
+    val value = this[key] ?: return null
+    require(value is Boolean)
+    return value
+}
+
+private fun Map<String, Any?>.requiredStringList(key: String): List<String> {
+    val value = this[key]
+    require(value is List<*> && value.all { it is String })
+    return value.filterIsInstance<String>()
+}
+
+private fun Map<String, Any?>.toBundle(): Bundle = Bundle().apply {
+    this@toBundle.forEach { (key, value) ->
+        when (value) {
+            null -> putString(key, null)
+            is String -> putString(key, value)
+            is Int -> putInt(key, value)
+            is Boolean -> putBoolean(key, value)
+            is List<*> -> {
+                require(value.all { it is String })
+                putStringArrayList(key, ArrayList(value.filterIsInstance<String>()))
+            }
+            else -> error("Unsupported pending tutor payload value")
+        }
+    }
+}
+
+@Suppress("DEPRECATION")
+private fun Bundle.toPrimitivePayload(): Map<String, Any?> =
+    keySet().associateWith(::get)

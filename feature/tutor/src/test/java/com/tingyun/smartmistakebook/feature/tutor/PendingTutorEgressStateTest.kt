@@ -1,6 +1,5 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
-import androidx.compose.runtime.saveable.SaverScope
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
@@ -149,15 +148,23 @@ class PendingTutorEgressStateTest {
                 choiceSourceRequestId = "visible-reply-request",
             ),
         )
-        val saved = with(pendingTutorEgressStateSaver) {
-            requireNotNull(SaverScope { true }.save(pending))
-        }
-        val restored = requireNotNull(pendingTutorEgressStateSaver.restore(saved)).action
+        val saved = PendingTutorEgressStateCodec.encode(pending)
+        val restored = PendingTutorEgressStateCodec.decode(saved).action
             as PendingTutorEgressAction.NewResponse
 
         assertEquals("choice-b", restored.selectedChoiceId)
         assertEquals("visible-reply-request", restored.choiceSourceRequestId)
         assertEquals("继续", restored.message)
+        val legacyPayload = saved
+            .filterKeys { key ->
+                key != "selected_choice_id" && key != "choice_source_request_id"
+            }
+        val legacyRestored = PendingTutorEgressStateCodec.decode(legacyPayload).action
+            as PendingTutorEgressAction.NewResponse
+
+        assertNull(legacyRestored.selectedChoiceId)
+        assertNull(legacyRestored.choiceSourceRequestId)
+        assertEquals("继续", legacyRestored.message)
     }
 
     private fun retry() = PendingTutorEgressAction.RetryVisual(
