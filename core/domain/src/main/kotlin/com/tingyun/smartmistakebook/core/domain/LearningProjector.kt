@@ -242,6 +242,7 @@ class LearningProjector(
         val appliedReveals = linkedSetOf<String>()
         val appliedTutorExposures = linkedSetOf<String>()
         val appliedObservations = linkedSetOf<String>()
+        val quarantinedObservations = linkedSetOf<String>()
         val ambiguous = linkedSetOf<String>()
         val ambiguousObservations = linkedSetOf<String>()
         val sequenceConflicts = linkedSetOf<String>()
@@ -351,26 +352,32 @@ class LearningProjector(
                     appliedTutorExposures += event.outcomeId
                 }
                 is AttributedLearningObservationEvent -> {
-                    applyLearningObservation(
-                        masteryStates = masteryStates,
-                        event = event,
-                        ambiguousEventIds = ambiguousObservations,
-                        effectiveAtEpochMillis = event.occurredAtEpochMillis,
-                    )
-                    observationRecords[event.eventId] = AppliedLearningObservationRecord(
-                        observationEventId = event.eventId,
-                        canonicalFingerprint = fingerprint,
-                        eventSequence = event.eventSequence,
-                    )
-                    appliedObservations += event.eventId
+                    if (event.isProjectionQuarantined) {
+                        quarantinedObservations += event.eventId
+                    } else {
+                        applyLearningObservation(
+                            masteryStates = masteryStates,
+                            event = event,
+                            ambiguousEventIds = ambiguousObservations,
+                            effectiveAtEpochMillis = event.occurredAtEpochMillis,
+                        )
+                        observationRecords[event.eventId] = AppliedLearningObservationRecord(
+                            observationEventId = event.eventId,
+                            canonicalFingerprint = fingerprint,
+                            eventSequence = event.eventSequence,
+                        )
+                        appliedObservations += event.eventId
+                    }
                 }
             }
             expectedSequence++
-            projectedAt = effectiveAt
+            if (event !is AttributedLearningObservationEvent || !event.isProjectionQuarantined) {
+                projectedAt = effectiveAt
+            }
         }
 
         val appliedEventCount = appliedAttempts.size + appliedReveals.size +
-            appliedTutorExposures.size + appliedObservations.size
+            appliedTutorExposures.size + appliedObservations.size + quarantinedObservations.size
         val lastSequence = previous.checkpoint.lastSequence + appliedEventCount
         val projectionStatus = when {
             sequenceConflicts.isNotEmpty() -> ProjectionStatus.CONFLICTED
@@ -577,12 +584,14 @@ class LearningProjector(
                     )
                 }
                 is AttributedLearningObservationEvent -> {
-                    masteryTimeline += event
-                    observationRecords[event.eventId] = AppliedLearningObservationRecord(
-                        observationEventId = event.eventId,
-                        canonicalFingerprint = LearningLedgerFingerprint.learningObservation(event),
-                        eventSequence = event.eventSequence,
-                    )
+                    if (!event.isProjectionQuarantined) {
+                        masteryTimeline += event
+                        observationRecords[event.eventId] = AppliedLearningObservationRecord(
+                            observationEventId = event.eventId,
+                            canonicalFingerprint = LearningLedgerFingerprint.learningObservation(event),
+                            eventSequence = event.eventSequence,
+                        )
+                    }
                 }
                 is AttemptCorrection -> {
                     correctionRecords[event.correctionId] = AppliedCorrectionRecord(
@@ -594,7 +603,9 @@ class LearningProjector(
                     correctionWatermark = maxOf(correctionWatermark ?: 0L, effectiveAt)
                 }
             }
-            replayAt = effectiveAt
+            if (event !is AttributedLearningObservationEvent || !event.isProjectionQuarantined) {
+                replayAt = effectiveAt
+            }
         }
         masteryTimeline
             .sortedWith(
@@ -812,11 +823,16 @@ class LearningProjector(
                 } else {
                     emptySet()
                 }
-                is AttributedLearningObservationEvent -> event.attributions
-                    .asSequence()
-                    .filter { it.certainty == EvidenceAttributionCertainty.DIRECT }
-                    .map(LearningObservationKnowledgeAttribution::knowledgeNodeId)
-                    .toSet()
+                is AttributedLearningObservationEvent ->
+                    if (event.isProjectionQuarantined) {
+                        emptySet()
+                    } else {
+                        event.attributions
+                            .asSequence()
+                            .filter { it.certainty == EvidenceAttributionCertainty.DIRECT }
+                            .map(LearningObservationKnowledgeAttribution::knowledgeNodeId)
+                            .toSet()
+                    }
                 is AnswerRevealOutcome,
                 is TutorAnswerExposureOutcome,
                 -> emptySet()

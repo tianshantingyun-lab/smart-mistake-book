@@ -337,6 +337,50 @@ class LearningObservationDatabaseInstrumentedTest {
     }
 
     @Test
+    fun sourceFactCannotAuthorizeDifferentProblemWithSameSubject() = runBlocking {
+        val candidate = candidate(candidateId = "candidate-same-subject-cross-problem")
+        persistTutorModelFact(candidate)
+
+        assertIllegalArgument {
+            store.registerLearningObservationSourceAuthority(
+                authority(
+                    candidate,
+                    practiceUnitId = OTHER_MATH_UNIT,
+                    problemRevisionId = OTHER_MATH_REVISION,
+                ),
+            )
+        }
+        assertNull(
+            store.readLearningObservationSourceAuthority(
+                learnerId = candidate.learnerId,
+                source = candidate.source,
+                sourceReferenceId = candidate.sourceReferenceId,
+            ),
+        )
+    }
+
+    @Test
+    fun sourceFactFromDifferentTutorTurnCannotCreateFirstAuthority() = runBlocking {
+        val firstTurn = candidate(candidateId = "candidate-authority-first-turn")
+        val secondTurn = candidate(candidateId = "candidate-authority-second-turn")
+        persistTutorModelFact(firstTurn)
+        persistTutorModelFact(secondTurn)
+
+        assertIllegalArgument {
+            store.registerLearningObservationSourceAuthority(
+                authority(secondTurn).copy(sourceFactId = firstTurn.sourceFactId),
+            )
+        }
+        assertNull(
+            store.readLearningObservationSourceAuthority(
+                learnerId = secondTurn.learnerId,
+                source = secondTurn.source,
+                sourceReferenceId = secondTurn.sourceReferenceId,
+            ),
+        )
+    }
+
+    @Test
     fun sourceAuthorityIsImmutableAndRequiredForSubmitReadyAndMaterialization() = runBlocking {
         val authorized = candidate(
             candidateId = "candidate-authority",
@@ -843,6 +887,97 @@ class LearningObservationDatabaseInstrumentedTest {
             requireNotNull(swappedResult.reviewCase).reason,
         )
         assertEquals(0L, store.loadProjectionBatch(PROJECTION, LEARNER, 10).ledgerHeadSequence)
+    }
+
+    @Test
+    fun quarantinedLegacyObservationConsumesSequenceBeforeLaterObservation() = runBlocking {
+        val legacy = requireNotNull(
+            store.materializeLearningObservation(
+                MaterializeLearningObservationCommand(
+                    candidateId = ready(
+                        candidate(candidateId = "candidate-quarantined-legacy"),
+                    ).candidateId,
+                    eventId = "observation-quarantined-legacy",
+                    confirmedAtEpochMillis = NOW + 2,
+                ),
+            ).event,
+        )
+        val later = requireNotNull(
+            store.materializeLearningObservation(
+                MaterializeLearningObservationCommand(
+                    candidateId = ready(
+                        candidate(candidateId = "candidate-after-quarantine"),
+                    ).candidateId,
+                    eventId = "observation-after-quarantine",
+                    confirmedAtEpochMillis = NOW + 3,
+                ),
+            ).event,
+        )
+        val legacyFingerprint = LearningLedgerFingerprint.learningObservation(
+            legacy.copy(sourceFactId = null),
+        )
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                UPDATE attributed_learning_observation_event
+                SET source_fact_id = NULL,
+                    canonical_fingerprint = '$legacyFingerprint'
+                WHERE event_id = '${legacy.eventId}'
+                """.trimIndent(),
+            )
+            executeSQL(
+                """
+                UPDATE projection_outbox
+                SET canonical_fingerprint = '$legacyFingerprint'
+                WHERE event_kind = '$EVENT_KIND_LEARNING_OBSERVATION'
+                  AND event_id = '${legacy.eventId}'
+                """.trimIndent(),
+            )
+        }
+
+        val batch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, batch.stopReason)
+        assertEquals(listOf(1L, 2L), batch.events.map { it.event.eventSequence })
+        assertTrue(
+            (batch.events.first().event as AttributedLearningObservationEvent)
+                .isProjectionQuarantined,
+        )
+        val projected = LearningProjector().project(
+            previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
+            events = batch.events.map(PersistedIncrementalLearningEvent::event),
+            knownLedgerHeadSequence = batch.ledgerHeadSequence,
+            authoritativePresentationStates = batch.authoritativePresentationStates,
+        )
+        assertEquals(2L, projected.snapshot.checkpoint.lastSequence)
+        assertEquals(
+            setOf(later.eventId),
+            projected.snapshot.appliedLearningObservationRecords.keys,
+        )
+        val mastery = projected.snapshot.knowledgeMasteryStates.getValue("knowledge-math")
+        assertEquals(0.25, mastery.evidenceMass, 0.0)
+        assertEquals(later.eventSequence, mastery.checkpointSequence)
+
+        store.commitProjection(
+            ProjectionCommit(
+                projectionName = PROJECTION,
+                learnerId = LEARNER,
+                expectedPreviousCheckpoint = 0,
+                expectedPreviousStateVersion = 0,
+                mode = ProjectionCommitMode.INCREMENTAL,
+                knownLedgerHeadSequence = batch.ledgerHeadSequence,
+                consumedLedgerEvents = batch.events.map { persisted ->
+                    ConsumedLedgerEventReceipt(
+                        eventKind = persisted.outbox.eventKind,
+                        eventId = persisted.outbox.eventId,
+                        eventSequence = persisted.outbox.outboxSequence,
+                        canonicalFingerprint = persisted.canonicalFingerprint,
+                    )
+                },
+                presentationProjectionStates = projected.presentationProjectionStates,
+                snapshot = projected.snapshot,
+            ),
+        )
+        assertTrue(store.loadProjectionBatch(PROJECTION, LEARNER, 10).events.isEmpty())
     }
 
     @Test
@@ -1373,7 +1508,8 @@ class LearningObservationDatabaseInstrumentedTest {
 
     private fun seed() = StudySeedBundle(
         problems = listOf(
-            ProblemSeedRecord(PROBLEM, "problem-fingerprint", "MATH", NOW - 100),
+            ProblemSeedRecord(PROBLEM, FINGERPRINT_A, "MATH", NOW - 100),
+            ProblemSeedRecord(OTHER_MATH_PROBLEM, FINGERPRINT_D, "MATH", NOW - 100),
             ProblemSeedRecord(
                 CHEMISTRY_PROBLEM,
                 "chemistry-problem-fingerprint",
@@ -1393,8 +1529,22 @@ class LearningObservationDatabaseInstrumentedTest {
                 answerVerificationStatus = StudyDbValue.VerificationStatus.VERIFIED,
                 sourceType = "IMPORT",
                 sourceReference = null,
-                contentFingerprint = "revision-fingerprint",
+                contentFingerprint = FINGERPRINT_B,
                 createdAtEpochMillis = NOW - 90,
+            ),
+            ProblemRevisionSeedRecord(
+                revisionId = OTHER_MATH_REVISION,
+                problemId = OTHER_MATH_PROBLEM,
+                revisionNumber = 1,
+                title = "数列",
+                problemMarkdown = "求和。",
+                answerSpecId = "answer-other-math",
+                answerSpecSnapshot = "答案",
+                answerVerificationStatus = StudyDbValue.VerificationStatus.VERIFIED,
+                sourceType = "IMPORT",
+                sourceReference = null,
+                contentFingerprint = FINGERPRINT_E,
+                createdAtEpochMillis = NOW - 89,
             ),
             ProblemRevisionSeedRecord(
                 revisionId = CHEMISTRY_REVISION,
@@ -1431,6 +1581,17 @@ class LearningObservationDatabaseInstrumentedTest {
                 unitKind = "ALTERNATE",
                 title = "函数变式",
                 promptMarkdown = "求解变式。",
+                estimatedSeconds = 60,
+                createdAtEpochMillis = NOW - 79,
+            ),
+            PracticeUnitSeedRecord(
+                practiceUnitId = OTHER_MATH_UNIT,
+                problemId = OTHER_MATH_PROBLEM,
+                problemRevisionId = OTHER_MATH_REVISION,
+                unitKey = "whole",
+                unitKind = "WHOLE",
+                title = "数列",
+                promptMarkdown = "求和。",
                 estimatedSeconds = 60,
                 createdAtEpochMillis = NOW - 79,
             ),
@@ -1480,6 +1641,16 @@ class LearningObservationDatabaseInstrumentedTest {
             binding("binding-math", "knowledge-math"),
             binding("binding-physics", "knowledge-physics"),
             KnowledgeBindingSeedRecord(
+                bindingId = "binding-other-math",
+                practiceUnitId = OTHER_MATH_UNIT,
+                knowledgeNodeId = "knowledge-math",
+                basisRevisionId = OTHER_MATH_REVISION,
+                strength = 1.0,
+                sourceType = "VERIFIED",
+                taxonomyVersion = "taxonomy-v1",
+                acceptedAtEpochMillis = NOW - 60,
+            ),
+            KnowledgeBindingSeedRecord(
                 bindingId = "binding-chemistry",
                 practiceUnitId = CHEMISTRY_UNIT,
                 knowledgeNodeId = "knowledge-chemistry",
@@ -1510,6 +1681,9 @@ class LearningObservationDatabaseInstrumentedTest {
         const val REVISION = "revision-observation"
         const val UNIT = "unit-observation"
         const val OTHER_UNIT = "unit-observation-other"
+        const val OTHER_MATH_PROBLEM = "problem-observation-other-math"
+        const val OTHER_MATH_REVISION = "revision-observation-other-math"
+        const val OTHER_MATH_UNIT = "unit-observation-other-math"
         const val CHEMISTRY_PROBLEM = "problem-observation-chemistry"
         const val CHEMISTRY_REVISION = "revision-observation-chemistry"
         const val CHEMISTRY_UNIT = "unit-observation-chemistry"
@@ -1518,5 +1692,7 @@ class LearningObservationDatabaseInstrumentedTest {
         val FINGERPRINT_A = "a".repeat(64)
         val FINGERPRINT_B = "b".repeat(64)
         val FINGERPRINT_C = "c".repeat(64)
+        val FINGERPRINT_D = "d".repeat(64)
+        val FINGERPRINT_E = "e".repeat(64)
     }
 }

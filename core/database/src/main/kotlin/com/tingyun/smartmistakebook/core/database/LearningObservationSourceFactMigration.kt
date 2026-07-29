@@ -56,9 +56,11 @@ internal val LEARNING_OBSERVATION_SOURCE_FACT_MIGRATION_35_36 =
                 """.trimIndent(),
             )
             // A legacy observation may already have polluted every projection derived from the
-            // learner ledger. Keep immutable ledger/audit rows, but force a clean fail-closed
-            // rebuild boundary. Room migration connections do not provide reliable FK cascades,
-            // so delete every snapshot child explicitly, deepest dependencies first.
+            // learner ledger. Keep immutable ledger/audit rows; source_fact_id NULL is an explicit
+            // projection tombstone that consumes its sequence without changing mastery. Force a
+            // clean rebuild so the tombstone semantics are applied from the ledger boundary. Room
+            // migration connections do not provide reliable FK cascades, so delete every snapshot
+            // child explicitly, deepest dependencies first.
             listOf(
                 "independent_correct_observation",
                 "applied_learning_observation_record",

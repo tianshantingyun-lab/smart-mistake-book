@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
@@ -16,6 +17,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
+import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -83,14 +85,39 @@ class LearningObservationSourceFactMigrationInstrumentedTest {
                     limit = 10,
                 )
                 assertEquals(1L, incremental.ledgerHeadSequence)
-                assertTrue(incremental.events.isEmpty())
-                assertEquals(ProjectionBatchStopReason.CONFLICT, incremental.stopReason)
-                assertEquals(1L, incremental.blockedAtSequence)
+                assertEquals(1, incremental.events.size)
+                assertTrue(
+                    (incremental.events.single().event as AttributedLearningObservationEvent)
+                        .isProjectionQuarantined,
+                )
+                assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, incremental.stopReason)
+                assertNull(incremental.blockedAtSequence)
+                val projected = LearningProjector().project(
+                    previous = LearnerSnapshot.empty(
+                        legacyCandidate.learnerId,
+                        LearningProjector.VERSION,
+                    ),
+                    events = incremental.events.map(PersistedIncrementalLearningEvent::event),
+                    knownLedgerHeadSequence = incremental.ledgerHeadSequence,
+                    authoritativePresentationStates = incremental.authoritativePresentationStates,
+                )
+                assertEquals(1L, projected.snapshot.checkpoint.lastSequence)
+                assertEquals(0L, projected.snapshot.checkpoint.projectedAtEpochMillis)
+                assertTrue(projected.snapshot.knowledgeMasteryStates.isEmpty())
+                assertTrue(projected.snapshot.appliedLearningObservationRecords.isEmpty())
 
                 val fullReplay = store.loadLearningLedger(legacyCandidate.learnerId)
-                assertTrue(fullReplay.validPrefix.isEmpty())
-                assertEquals(LearningLedgerReadStatus.CONFLICT, fullReplay.status)
-                assertEquals(1L, fullReplay.blockedAtSequence)
+                assertEquals(1, fullReplay.validPrefix.size)
+                assertEquals(LearningLedgerReadStatus.COMPLETE, fullReplay.status)
+                assertNull(fullReplay.blockedAtSequence)
+                val replayed = LearningProjector().replay(
+                    legacyCandidate.learnerId,
+                    fullReplay.validPrefix.map(PersistedLearningLedgerEvent::event),
+                )
+                assertEquals(1L, replayed.snapshot.checkpoint.lastSequence)
+                assertEquals(0L, replayed.snapshot.checkpoint.projectedAtEpochMillis)
+                assertTrue(replayed.snapshot.knowledgeMasteryStates.isEmpty())
+                assertTrue(replayed.snapshot.appliedLearningObservationRecords.isEmpty())
                 assertNull(
                     store.readCurrentLearnerSnapshot(
                         projectionName = PROJECTION,

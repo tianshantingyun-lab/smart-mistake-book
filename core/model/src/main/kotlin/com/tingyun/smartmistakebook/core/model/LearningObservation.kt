@@ -76,6 +76,17 @@ enum class LearningObservationIndependence {
     UNKNOWN,
 }
 
+/**
+ * Projection-only disposition assigned by the trusted persistence adapter.
+ *
+ * It is not part of the immutable event fingerprint. Version-35 rows are marked as quarantined
+ * when read from storage, while ordinary domain fixtures and all version-36 writes remain active.
+ */
+enum class LearningObservationProjectionDisposition {
+    APPLY,
+    QUARANTINED_LEGACY,
+}
+
 data class LearningObservationKnowledgeAttribution(
     val bindingId: String,
     val knowledgeNodeId: String,
@@ -187,6 +198,8 @@ data class AttributedLearningObservationEvent(
     val evidenceLocator: String,
     override val eventSequence: Long,
     val sourceFactId: String? = null,
+    val projectionDisposition: LearningObservationProjectionDisposition =
+        LearningObservationProjectionDisposition.APPLY,
 ) : IncrementalLearningEvent {
     init {
         requireObservationId(eventId, "Learning observation event id")
@@ -212,10 +225,18 @@ data class AttributedLearningObservationEvent(
         requireObservationId(modelVersion, "Learning observation model version")
         requireObservationLocator(evidenceLocator)
         require(eventSequence > 0) { "Learning observation sequence must be positive" }
+        require(
+            projectionDisposition != LearningObservationProjectionDisposition.QUARANTINED_LEGACY ||
+                sourceFactId == null,
+        ) { "Only a legacy observation without a source fact may be projection-quarantined" }
     }
 
     override val ledgerEventId: String
         get() = eventId
+
+    val isProjectionQuarantined: Boolean
+        get() = projectionDisposition ==
+            LearningObservationProjectionDisposition.QUARANTINED_LEGACY
 }
 
 enum class LearningEvidenceReviewReason {

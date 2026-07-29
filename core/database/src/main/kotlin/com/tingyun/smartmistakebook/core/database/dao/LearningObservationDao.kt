@@ -38,6 +38,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
 import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
+import com.tingyun.smartmistakebook.core.model.LearningObservationProjectionDisposition
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
 import com.tingyun.smartmistakebook.core.model.SourceFactEvidencePolicy
 import com.tingyun.smartmistakebook.core.model.allowedExternalTransitions
@@ -48,6 +49,7 @@ internal const val EVENT_KIND_LEARNING_OBSERVATION = "ATTRIBUTED_LEARNING_OBSERV
 
 internal data class LearningObservationAnchorAuthorityRow(
     val subject: String,
+    val sourceAnchorId: String?,
 )
 
 internal data class LearningObservationAttributionAuthorityRow(
@@ -262,9 +264,19 @@ internal abstract class LearningObservationDao {
 
     @Query(
         """
-        SELECT problem.subject AS subject
+        SELECT problem.subject AS subject,
+               source_anchor.anchor_id AS sourceAnchorId
         FROM practice_unit AS unit
         JOIN problem ON problem.problem_id = unit.problem_id
+        JOIN problem_revision AS revision
+          ON revision.problem_id = unit.problem_id
+         AND revision.revision_id = unit.problem_revision_id
+        LEFT JOIN learning_problem_anchor AS source_anchor
+          ON source_anchor.anchor_id = :sourceAnchorId
+         AND source_anchor.learner_id = :learnerId
+         AND source_anchor.subject = problem.subject
+         AND source_anchor.question_fingerprint = problem.canonical_fingerprint
+         AND source_anchor.revision_fingerprint = revision.content_fingerprint
         WHERE unit.practice_unit_id = :practiceUnitId
           AND unit.problem_revision_id = :problemRevisionId
         LIMIT 1
@@ -273,6 +285,8 @@ internal abstract class LearningObservationDao {
     protected abstract suspend fun findAnchorAuthority(
         practiceUnitId: String,
         problemRevisionId: String,
+        sourceAnchorId: String,
+        learnerId: String,
     ): LearningObservationAnchorAuthorityRow?
 
     @Query(
@@ -602,7 +616,12 @@ internal abstract class LearningObservationDao {
                 "At least one explicit DIRECT attribution is required before materialization.",
             )
         }
-        val anchor = findAnchorAuthority(practiceUnitId, problemRevisionId)
+        val anchor = findAnchorAuthority(
+            practiceUnitId,
+            problemRevisionId,
+            sourceFact.anchorId,
+            sourceFact.learnerScopeId,
+        )
             ?: return review(
                 candidate,
                 command,
@@ -857,8 +876,14 @@ internal abstract class LearningObservationDao {
         val anchor = findAnchorAuthority(
             authority.practiceUnitId,
             authority.problemRevisionId,
+            sourceFact.anchorId,
+            sourceFact.learnerScopeId,
         ) ?: return LearningEvidenceReviewReason.MISSING_AUTHORITY to
             "The source authority no longer names an authoritative practice-unit anchor."
+        if (anchor.sourceAnchorId != sourceFact.anchorId) {
+            return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH to
+                "The canonical source-fact anchor does not match the authoritative problem fingerprints."
+        }
         if (anchor.subject != sourceFact.subject.name) {
             return LearningEvidenceReviewReason.SUBJECT_MISMATCH to
                 "The canonical source fact subject differs from the authoritative problem subject."
@@ -888,9 +913,17 @@ internal abstract class LearningObservationDao {
             "Source authority reference must match the canonical source fact"
         }
         val anchor = requireNotNull(
-            findAnchorAuthority(authority.practiceUnitId, authority.problemRevisionId),
+            findAnchorAuthority(
+                authority.practiceUnitId,
+                authority.problemRevisionId,
+                sourceFact.anchorId,
+                sourceFact.learnerScopeId,
+            ),
         ) {
             "Source authority must name an authoritative practice-unit anchor"
+        }
+        require(anchor.sourceAnchorId == sourceFact.anchorId) {
+            "Source authority problem fingerprints must match the canonical source-fact anchor"
         }
         require(anchor.subject == sourceFact.subject.name) {
             "Source authority problem subject must match the canonical source fact"
@@ -1082,6 +1115,11 @@ internal fun AttributedLearningObservationEventEntity.toModel(
     modelVersion = modelVersion,
     evidenceLocator = evidenceLocator,
     eventSequence = eventSequence,
+    projectionDisposition = if (sourceFactId == null) {
+        LearningObservationProjectionDisposition.QUARANTINED_LEGACY
+    } else {
+        LearningObservationProjectionDisposition.APPLY
+    },
 )
 
 internal fun AttributedLearningObservationEventEntity.toOutbox() = ProjectionOutboxEntity(
