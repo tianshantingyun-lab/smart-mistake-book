@@ -23,6 +23,7 @@ include(
     ":core:visual-ui",
     ":core:domain",
     ":core:database",
+    ":core:knowledge-database",
     ":core:data",
     ":core:export",
     ":core:ui",
