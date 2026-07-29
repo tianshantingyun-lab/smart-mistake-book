@@ -304,7 +304,7 @@ interface TutorLearningMemoryDatabasePort {
     )
 }
 
-private fun requireOpaque(value: String, name: String) {
+internal fun requireOpaque(value: String, name: String) {
     require(value.isNotBlank() && value == value.trim() && value.length <= 256) {
         "$name must be a bounded opaque identifier"
     }

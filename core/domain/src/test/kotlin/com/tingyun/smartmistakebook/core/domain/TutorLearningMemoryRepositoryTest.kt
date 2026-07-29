@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestStatus
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorTurnReceipt
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
@@ -18,6 +19,40 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TutorLearningMemoryRepositoryTest {
+    @Test
+    fun `namespaced latest default rejects unsafe prefixes and never crosses namespaces`() =
+        runBlocking {
+            val capturedLatest = activeConversation().copy(
+                conversationId = "captured:tutor-session",
+            )
+            val capturedRepository = repositoryWithLatest(capturedLatest)
+
+            assertTrue(
+                runCatching {
+                    capturedRepository.latestActiveConversationInNamespace("learner-1", "")
+                }.isFailure,
+            )
+            assertNull(
+                capturedRepository.latestActiveConversationInNamespace(
+                    "learner-1",
+                    "tutor-lobby:",
+                ),
+            )
+            assertNull(
+                capturedRepository.latestActiveConversationInNamespace(
+                    "learner-1",
+                    "captured:tutor-sessions",
+                ),
+            )
+            assertEquals(
+                capturedLatest,
+                capturedRepository.latestActiveConversationInNamespace(
+                    "learner-1",
+                    "captured:tutor-",
+                ),
+            )
+        }
+
     @Test
     fun `conversation mutations bind learner opaque id generation version and payload`() {
         val create = createConversationCommand()
@@ -91,7 +126,7 @@ class TutorLearningMemoryRepositoryTest {
 
         assertEquals(LearningObservationSource.TUTOR_CHOICE, submitted.sourceFact.source)
         assertEquals(
-            LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
             submitted.sourceFact.factKind,
         )
         assertEquals(command.directiveFingerprint, submitted.anchors.directiveFingerprint)
@@ -354,7 +389,7 @@ class TutorLearningMemoryRepositoryTest {
         sourceFactId = "fact-1",
         learnerScopeId = "learner-1",
         source = LearningObservationSource.TUTOR_CHOICE,
-        factKind = LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+        factKind = LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
         anchorId = "anchor-1",
         subject = SubjectKind.MATH,
         conversationGeneration = 1,
@@ -366,6 +401,38 @@ class TutorLearningMemoryRepositoryTest {
         occurredAtEpochMillis = 180,
         sourceVersion = "tutor-source-v1",
     )
+
+    private fun repositoryWithLatest(
+        latest: TutorConversation?,
+    ) = object : TutorLearningMemoryRepository {
+        override suspend fun createConversation(
+            command: CreateTutorConversationCommand,
+        ): CreateTutorConversationResult = error("Not used")
+
+        override suspend fun openConversation(
+            command: OpenTutorConversationCommand,
+        ): OpenTutorConversationResult = error("Not used")
+
+        override suspend fun latestActiveConversation(
+            learnerScopeId: String,
+        ): TutorConversation? = latest
+
+        override suspend fun archiveConversation(
+            command: ArchiveTutorConversationCommand,
+        ): ArchiveTutorConversationResult = error("Not used")
+
+        override suspend fun allocateTurn(
+            command: AllocateTutorTurnCommand,
+        ): AllocateTutorTurnResult = error("Not used")
+
+        override suspend fun prepareEvidenceRequest(
+            command: PrepareTutorEvidenceCommand,
+        ): PrepareTutorEvidenceResult = error("Not used")
+
+        override suspend fun finalizeEvidence(
+            command: FinalizeTutorEvidenceCommand,
+        ): FinalizeTutorEvidenceResult = error("Not used")
+    }
 
     private fun hash(char: Char): String = char.toString().repeat(64)
 }

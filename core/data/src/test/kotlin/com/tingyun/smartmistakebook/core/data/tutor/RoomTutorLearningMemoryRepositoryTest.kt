@@ -119,6 +119,11 @@ class RoomTutorLearningMemoryRepositoryTest {
             activeConversation,
             repository.latestActiveConversationInNamespace(LEARNER_ID, "conversation-"),
         )
+        assertTrue(
+            runCatching {
+                repository.latestActiveConversationInNamespace(LEARNER_ID, "")
+            }.isFailure,
+        )
         assertTrue(runCatching { repository.latestActiveConversation(" learner-1") }.isFailure)
         assertEquals(OpenTutorTurnResult.Found(receipt), repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
         assertEquals(OpenTutorTurnResult.NotFound, repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
@@ -218,7 +223,7 @@ class RoomTutorLearningMemoryRepositoryTest {
             sourceFactId = "source-fact-1",
             learnerScopeId = LEARNER_ID,
             source = LearningObservationSource.TUTOR_CHOICE,
-            factKind = LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+            factKind = LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
             anchorId = pendingRequest.problemAnchorId,
             subject = pendingRequest.subject,
             conversationId = pendingRequest.conversationId,

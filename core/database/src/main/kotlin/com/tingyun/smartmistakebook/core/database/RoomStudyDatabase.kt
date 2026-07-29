@@ -115,20 +115,24 @@ internal class RoomStudyDatabase(
     override suspend fun latestActiveTutorConversationInNamespace(
         learnerId: String,
         conversationIdPrefix: String,
-    ) = database.tutorLearningMemoryDao()
-        .latestActiveConversationInNamespace(learnerId, conversationIdPrefix)
-        ?.let { entity ->
-            com.tingyun.smartmistakebook.core.model.TutorConversation(
-                conversationId = entity.conversationId,
-                learnerScopeId = entity.learnerId,
-                generation = entity.generation,
-                status = com.tingyun.smartmistakebook.core.model.TutorConversationStatus
-                    .valueOf(entity.status),
-                createdAtEpochMillis = entity.createdAtEpochMillis,
-                archivedAtEpochMillis = entity.archivedAtEpochMillis,
-                stateVersion = entity.stateVersion,
-            )
-        }
+    ): com.tingyun.smartmistakebook.core.model.TutorConversation? {
+        requireOpaque(learnerId, "learnerId")
+        requireOpaque(conversationIdPrefix, "conversationIdPrefix")
+        return database.tutorLearningMemoryDao()
+            .latestActiveConversationInNamespace(learnerId, conversationIdPrefix)
+            ?.let { entity ->
+                com.tingyun.smartmistakebook.core.model.TutorConversation(
+                    conversationId = entity.conversationId,
+                    learnerScopeId = entity.learnerId,
+                    generation = entity.generation,
+                    status = com.tingyun.smartmistakebook.core.model.TutorConversationStatus
+                        .valueOf(entity.status),
+                    createdAtEpochMillis = entity.createdAtEpochMillis,
+                    archivedAtEpochMillis = entity.archivedAtEpochMillis,
+                    stateVersion = entity.stateVersion,
+                )
+            }
+    }
 
     override suspend fun archiveTutorConversation(
         command: ArchiveTutorConversationCommand,
