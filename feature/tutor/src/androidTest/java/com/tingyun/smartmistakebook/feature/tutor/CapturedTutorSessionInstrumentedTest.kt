@@ -90,6 +90,7 @@ import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationStep
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
@@ -889,6 +890,49 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.onNodeWithTag("tutor_chat_user_1").assertExists()
         composeRule.onNodeWithText("先看导数在临界点两侧的符号。").assertExists()
         composeRule.runOnIdle { assertEquals(1, modelTasks.executeRespondCalls) }
+    }
+
+    @Test
+    fun directiveChoiceClickSendsTheCapturedChoiceId() {
+        val modelTasks = ChatModelTaskRepository(
+            session = session(),
+            masteryRelevantPlan = true,
+            initialInteractionDirective = TutorInteractionDirective.Choices(
+                promptMarkdown = "选择下一步。",
+                choices = listOf(
+                    TutorInteractionChoice("directive-choice-a", "继续"),
+                    TutorInteractionChoice("directive-choice-b", "继续"),
+                ),
+            ),
+        )
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session(),
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = modelTasks,
+                    interactions = RecordingTutorInteractions(),
+                    profile = StudyProfileOverview(),
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("captured_tutor_directive_choice_directive-choice-b")
+            .performScrollTo()
+            .performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
+        }
+
+        composeRule.runOnIdle {
+            val input = modelTasks.respondRequests.single().input as TutorRespondInput
+            assertEquals("继续", input.studentMessage)
+            assertEquals("directive-choice-b", input.selectedChoiceId)
+        }
     }
 
     @Test
@@ -3230,6 +3274,7 @@ class CapturedTutorSessionInstrumentedTest {
         private val restoredSucceededIntentDecision: TutorIntentDecision =
             TutorIntentDecision.currentQuestionDefault(),
         private val restoredSucceededSuggestedMoves: List<TutorSuggestedMove> = emptyList(),
+        private val initialInteractionDirective: TutorInteractionDirective? = null,
         private val restoredCycleOrdinal: Int = 1,
         private val restoredTurnOrdinal: Int = 1,
         private val restoredFailureStatus: ModelTaskStatus? = null,
@@ -3260,15 +3305,13 @@ class CapturedTutorSessionInstrumentedTest {
             },
         )
         private fun configuredTutorOutput(): TutorPlanOutput = tutorOutput().let { output ->
-            if (masteryRelevantPlan) {
-                output.copy(
-                    plan = output.plan.copy(
-                        targetedEvidenceLabels = listOf("导数"),
-                    ),
-                )
-            } else {
-                output
-            }
+            output.copy(
+                plan = output.plan.copy(
+                    targetedEvidenceLabels = listOf("导数").takeIf { masteryRelevantPlan }
+                        ?: output.plan.targetedEvidenceLabels,
+                    interactionDirective = initialInteractionDirective,
+                ),
+            )
         }
         private var currentCapabilitiesOverride = currentCapabilities
         private val planRequest = buildTutorPlanRequest(

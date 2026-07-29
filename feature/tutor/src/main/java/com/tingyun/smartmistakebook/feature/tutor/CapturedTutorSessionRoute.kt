@@ -2496,11 +2496,13 @@ internal fun TutorModelPanel(
     }
 
     fun executeTutorResponse(
-        message: String,
+        response: TutorResponseMessage,
         requestedMove: TutorMoveType? = null,
         clearDraftOnPersist: Boolean = false,
     ) {
-        val exactMessage = message
+        val exactMessage = response.messageMarkdown
+        val selectedChoiceId = response.selectedChoiceId
+        val choiceDirective = response.choiceDirective
         if (
             exactMessage.isBlank() ||
             chatSending ||
@@ -2556,7 +2558,7 @@ internal fun TutorModelPanel(
                             cancelEvidence = ::persistEvidenceCancellation,
                             continueResponse = {
                                 executeTutorResponse(
-                                    message = message,
+                                    response = response,
                                     requestedMove = requestedMove,
                                     clearDraftOnPersist = clearDraftOnPersist,
                                 )
@@ -2604,6 +2606,7 @@ internal fun TutorModelPanel(
                 pendingEgressState = PendingTutorEgressState(
                     PendingTutorEgressAction.NewResponse(
                         message = exactMessage,
+                        selectedChoiceId = selectedChoiceId,
                         requestedMove = requestedMove,
                         clearDraftOnPersist = clearDraftOnPersist,
                     ),
@@ -2648,6 +2651,7 @@ internal fun TutorModelPanel(
                     cycleOrdinal = responseCycleOrdinal,
                     turnOrdinal = responseTurnOrdinal,
                     studentMessage = exactMessage,
+                    selectedChoiceId = selectedChoiceId,
                     visibleTutorContextMarkdown = visibleContext,
                     priorMessages = priorMessages,
                     requestedMove = requestedMove,
@@ -2669,14 +2673,43 @@ internal fun TutorModelPanel(
                     cycleOrdinal = responseCycleOrdinal,
                     turnOrdinal = responseTurnOrdinal,
                     studentMessage = exactMessage,
+                    selectedChoiceId = selectedChoiceId,
                     visibleTutorContextMarkdown = visibleContext,
                     priorMessages = priorMessages,
                     requestedMove = requestedMove,
                     explanationMode = requestMode,
+                    choiceDirective = choiceDirective,
                 )
             }
         }
         startResponse()
+    }
+
+    fun executeTutorResponse(
+        message: String,
+        requestedMove: TutorMoveType? = null,
+        clearDraftOnPersist: Boolean = false,
+    ) = executeTutorResponse(
+        response = TutorResponseMessage.freeResponse(message),
+        requestedMove = requestedMove,
+        clearDraftOnPersist = clearDraftOnPersist,
+    )
+
+    fun pendingTutorResponseMessage(
+        pending: PendingTutorEgressAction.NewResponse,
+    ): TutorResponseMessage? {
+        val selectedChoiceId = pending.selectedChoiceId
+            ?: return TutorResponseMessage.freeResponse(pending.message)
+        val directive = currentPlanOutput?.plan?.interactionDirective
+            as? TutorInteractionDirective.Choices
+            ?: return null
+        return runCatching {
+            TutorResponseMessage.directiveChoice(
+                directive = directive,
+                selectedChoiceId = selectedChoiceId,
+                messageMarkdown = pending.message,
+            )
+        }.getOrNull()
     }
 
     fun retryTutorResponse(task: ModelTaskSnapshot) {
@@ -2793,11 +2826,14 @@ internal fun TutorModelPanel(
             return@LaunchedEffect
         }
         when (val pendingAction = pendingEgressState.action) {
-            is PendingTutorEgressAction.NewResponse -> executeTutorResponse(
-                message = pendingAction.message,
-                requestedMove = pendingAction.requestedMove,
-                clearDraftOnPersist = pendingAction.clearDraftOnPersist,
-            )
+            is PendingTutorEgressAction.NewResponse ->
+                pendingTutorResponseMessage(pendingAction)?.let { response ->
+                    executeTutorResponse(
+                        response = response,
+                        requestedMove = pendingAction.requestedMove,
+                        clearDraftOnPersist = pendingAction.clearDraftOnPersist,
+                    )
+                }
             is PendingTutorEgressAction.RetryResponse ->
                 pendingLocalRetryTask?.let(::retryTutorResponse)
             is PendingTutorEgressAction.Plan,
@@ -3445,7 +3481,7 @@ internal fun TutorModelPanel(
                             }
                         },
                         explanationMode = effectiveExplanationMode,
-                        onDirectiveResponse = { response -> executeTutorResponse(response) },
+                        onDirectiveResponse = ::executeTutorResponse,
                         localIntentContent = { input, output ->
                             TutorLocalIntentPanel(
                                 output = output,
@@ -3598,12 +3634,14 @@ internal fun TutorModelPanel(
                         grantExternalEgressLease(requireNotNull(currentProvider), approvedAt)
                         forceResponseDisclosure = false
                         if (pendingResponseAction is PendingTutorEgressAction.NewResponse) {
-                            executeTutorResponse(
-                                message = pendingResponseAction.message,
-                                requestedMove = pendingResponseAction.requestedMove,
-                                clearDraftOnPersist =
-                                pendingResponseAction.clearDraftOnPersist,
-                            )
+                            pendingTutorResponseMessage(pendingResponseAction)?.let { response ->
+                                executeTutorResponse(
+                                    response = response,
+                                    requestedMove = pendingResponseAction.requestedMove,
+                                    clearDraftOnPersist =
+                                    pendingResponseAction.clearDraftOnPersist,
+                                )
+                            }
                             return@TutorRespondDisclosureCard
                         }
                         val taskToRecover = when (pendingResponseAction) {
@@ -3816,7 +3854,7 @@ private fun TutorTaskContent(
     onRetryVisual: () -> Unit = {},
     onVisualTargetHit: (TutorVisualHitProof) -> Unit = {},
     onSubmitChoice: (String) -> Unit,
-    onDirectiveResponse: (String) -> Unit,
+    onDirectiveResponse: (TutorResponseMessage) -> Unit,
     onRequestHint: (() -> Unit)?,
     onContinue: (TutorMoveType) -> Unit,
     onRevealSolution: () -> Unit,

@@ -35,6 +35,8 @@ import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
@@ -897,6 +899,94 @@ class TutorModelTaskPolicyTest {
         )
 
         assertNotEquals(guided, direct)
+    }
+
+    @Test
+    fun directiveChoiceIdentityIsPersistedAndIncludedInTheRequestIdentity() {
+        val question = session().toTutorQuestionContext()
+        val directive = TutorInteractionDirective.Choices(
+            promptMarkdown = "选择下一步。",
+            choices = listOf(
+                TutorInteractionChoice("choice-a", "继续"),
+                TutorInteractionChoice("choice-b", "继续"),
+            ),
+        )
+        val first = TutorResponseMessage.directiveChoice(directive, directive.choices[0])
+        val second = TutorResponseMessage.directiveChoice(directive, directive.choices[1])
+        val firstRequestId = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = first.messageMarkdown,
+            selectedChoiceId = first.selectedChoiceId,
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            attempt = 0,
+        )
+        val secondRequestId = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = second.messageMarkdown,
+            selectedChoiceId = second.selectedChoiceId,
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            attempt = 0,
+        )
+
+        val request = buildTutorRespondRequest(
+            question = question,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = firstRequestId,
+            occurredAtEpochMillis = 1,
+            approvedAtEpochMillis = 1,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = first.messageMarkdown,
+            selectedChoiceId = first.selectedChoiceId,
+            choiceDirective = first.choiceDirective,
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+        )
+
+        assertEquals("choice-a", (request.input as TutorRespondInput).selectedChoiceId)
+        assertNotEquals(firstRequestId, secondRequestId)
+    }
+
+    @Test
+    fun tutorRespondRequestRejectsForgedOrMismatchedDirectiveChoices() {
+        val directive = TutorInteractionDirective.Choices(
+            promptMarkdown = "选择下一步。",
+            choices = listOf(
+                TutorInteractionChoice("choice-a", "继续"),
+                TutorInteractionChoice("choice-b", "换一种方法"),
+            ),
+        )
+        fun request(selectedChoiceId: String, message: String) = buildTutorRespondRequest(
+            question = session().toTutorQuestionContext(),
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "request-$selectedChoiceId",
+            occurredAtEpochMillis = 1,
+            approvedAtEpochMillis = 1,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = message,
+            selectedChoiceId = selectedChoiceId,
+            choiceDirective = directive,
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+        )
+
+        assertTrue(runCatching { request("old-choice", "继续") }.isFailure)
+        assertTrue(runCatching { request("choice-a", "换一种方法") }.isFailure)
     }
 
     @Test

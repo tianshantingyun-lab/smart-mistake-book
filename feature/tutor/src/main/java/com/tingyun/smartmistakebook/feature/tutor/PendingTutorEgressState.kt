@@ -24,6 +24,7 @@ internal sealed interface PendingTutorEgressAction {
         val message: String,
         val requestedMove: TutorMoveType?,
         val clearDraftOnPersist: Boolean,
+        val selectedChoiceId: String? = null,
     ) : PendingTutorEgressAction
 
     data class RetryResponse(
@@ -139,6 +140,7 @@ private const val MEMORY_LAST_FEEDBACK = "memory_last_feedback"
 private const val MEMORY_LAST_MOVE = "memory_last_move"
 private const val MEMORY_SOLUTION_REVEALED = "memory_solution_revealed"
 private const val MESSAGE = "message"
+private const val SELECTED_CHOICE_ID = "selected_choice_id"
 private const val REQUESTED_MOVE = "requested_move"
 private const val CLEAR_DRAFT = "clear_draft"
 private const val REQUEST_ID = "request_id"
@@ -162,6 +164,7 @@ internal val pendingTutorEgressStateSaver = Saver<PendingTutorEgressState, Bundl
                 is PendingTutorEgressAction.NewResponse -> {
                     putString(KIND, NEW_RESPONSE)
                     putString(MESSAGE, action.message)
+                    putString(SELECTED_CHOICE_ID, action.selectedChoiceId)
                     putString(REQUESTED_MOVE, action.requestedMove?.name)
                     putBoolean(CLEAR_DRAFT, action.clearDraftOnPersist)
                 }
@@ -251,6 +254,7 @@ private fun Bundle.restoreNewResponse(): PendingTutorEgressAction.NewResponse {
     require(message.isNotBlank())
     return PendingTutorEgressAction.NewResponse(
         message = message,
+        selectedChoiceId = getString(SELECTED_CHOICE_ID),
         requestedMove = getString(REQUESTED_MOVE)?.let(TutorMoveType::valueOf),
         clearDraftOnPersist = getBoolean(CLEAR_DRAFT),
     )

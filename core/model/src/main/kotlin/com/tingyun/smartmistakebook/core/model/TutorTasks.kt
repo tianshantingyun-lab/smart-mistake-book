@@ -660,6 +660,8 @@ data class TutorRespondInput(
     val cycleOrdinal: Int = 1,
     val turnOrdinal: Int = 1,
     val studentMessage: String,
+    /** Local identity for a selected directive choice; it is never model-visible text. */
+    val selectedChoiceId: String? = null,
     val visibleTutorContextMarkdown: String? = null,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
     val requestedMove: TutorMoveType? = null,
@@ -698,6 +700,11 @@ data class TutorRespondInput(
         studentMessage.requireSafeTutorStudentMessage(
             "Tutor response student message",
             MAX_STUDENT_MESSAGE_CHARS,
+        )
+        selectedChoiceId?.requireSafeModelText(
+            "Tutor response selected choice id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
         )
         visibleTutorContextMarkdown?.requireTutorRespondText(
             "Tutor visible context",

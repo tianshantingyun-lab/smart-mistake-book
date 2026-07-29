@@ -22,6 +22,7 @@ import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
@@ -563,6 +564,7 @@ internal fun tutorRespondRequestId(
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    selectedChoiceId: String? = null,
     attempt: Int,
 ): String {
     require(responseOrdinal > 0)
@@ -578,6 +580,7 @@ internal fun tutorRespondRequestId(
             appendLengthPrefixed(cycleOrdinal.toString())
             appendLengthPrefixed(turnOrdinal.toString())
             appendLengthPrefixed(studentMessage)
+            appendLengthPrefixed(selectedChoiceId)
             appendLengthPrefixed(visibleTutorContextMarkdown)
             appendLengthPrefixed(requestedMove?.name)
             appendLengthPrefixed(explanationMode.name)
@@ -610,7 +613,21 @@ internal fun buildTutorRespondRequest(
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    selectedChoiceId: String? = null,
+    choiceDirective: TutorInteractionDirective.Choices? = null,
 ): ModelTaskRequest {
+    if (selectedChoiceId != null) {
+        val selectedChoice = choiceDirective?.choices?.firstOrNull { choice ->
+            choice.id == selectedChoiceId
+        } ?: error("Tutor response choice id is not in the current visible directive")
+        require(selectedChoice.labelMarkdown == studentMessage) {
+            "Tutor response choice label does not match the selected choice id"
+        }
+    } else {
+        require(choiceDirective == null) {
+            "Tutor response choice directive requires a selected choice id"
+        }
+    }
     val input = TutorRespondInput(
         sessionId = question.sessionId,
         draftRevisionNumber = question.revisionNumber,
@@ -628,6 +645,7 @@ internal fun buildTutorRespondRequest(
         cycleOrdinal = cycleOrdinal,
         turnOrdinal = turnOrdinal,
         studentMessage = studentMessage,
+        selectedChoiceId = selectedChoiceId,
         visibleTutorContextMarkdown = visibleTutorContextMarkdown,
         priorMessages = priorMessages,
         requestedMove = requestedMove,

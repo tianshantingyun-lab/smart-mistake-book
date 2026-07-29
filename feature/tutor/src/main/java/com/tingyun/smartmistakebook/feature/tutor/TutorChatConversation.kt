@@ -59,6 +59,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
@@ -83,12 +84,56 @@ import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 
+/** A locally-issued reply that may carry the identity of a visible directive choice. */
+internal class TutorResponseMessage private constructor(
+    val messageMarkdown: String,
+    val selectedChoiceId: String?,
+    val choiceDirective: TutorInteractionDirective.Choices?,
+) {
+    init {
+        require((selectedChoiceId == null) == (choiceDirective == null))
+    }
+
+    companion object {
+        fun freeResponse(messageMarkdown: String) = TutorResponseMessage(
+            messageMarkdown = messageMarkdown,
+            selectedChoiceId = null,
+            choiceDirective = null,
+        )
+
+        fun directiveChoice(
+            directive: TutorInteractionDirective.Choices,
+            choice: TutorInteractionChoice,
+        ): TutorResponseMessage = directiveChoice(
+            directive = directive,
+            selectedChoiceId = choice.id,
+            messageMarkdown = choice.labelMarkdown,
+        )
+
+        fun directiveChoice(
+            directive: TutorInteractionDirective.Choices,
+            selectedChoiceId: String,
+            messageMarkdown: String,
+        ): TutorResponseMessage {
+            require(directive.choices.any { choice ->
+                choice.id == selectedChoiceId && choice.labelMarkdown == messageMarkdown
+            }) { "Tutor directive choice must belong to the visible directive" }
+            return TutorResponseMessage(
+                messageMarkdown = messageMarkdown,
+                selectedChoiceId = selectedChoiceId,
+                choiceDirective = directive,
+            )
+        }
+    }
+}
+
 private data class TutorRespondExchangeKey(
     val sessionId: String,
     val revisionNumber: Int,
     val questionDocumentId: String,
     val responseOrdinal: Int,
     val studentMessage: String,
+    val selectedChoiceId: String?,
     val visibleTutorContextMarkdown: String?,
     val priorMessages: List<TutorChatHistoryEntry>,
     val requestedMove: TutorMoveType?,
@@ -101,6 +146,7 @@ private fun TutorRespondInput.exchangeKey() = TutorRespondExchangeKey(
     questionDocumentId = questionDocument.id,
     responseOrdinal = responseOrdinal,
     studentMessage = studentMessage,
+    selectedChoiceId = selectedChoiceId,
     visibleTutorContextMarkdown = visibleTutorContextMarkdown,
     priorMessages = priorMessages,
     requestedMove = requestedMove,
@@ -348,7 +394,7 @@ internal fun TutorChatExchange(
     onMove: (TutorSuggestedMove) -> Unit,
     onRevealSolution: (TutorSuggestedMove) -> Unit,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
-    onDirectiveResponse: (String) -> Unit = {},
+    onDirectiveResponse: (TutorResponseMessage) -> Unit = {},
     onRetryVisual: () -> Unit = {},
     onVisualTargetHit: (TutorVisualHitProof) -> Unit = {},
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit = { _, _ -> },
@@ -559,7 +605,7 @@ private fun TutorAssistantReplyBubble(
     onMove: (TutorSuggestedMove) -> Unit,
     onRevealSolution: (TutorSuggestedMove) -> Unit,
     explanationMode: TutorExplanationMode,
-    onDirectiveResponse: (String) -> Unit,
+    onDirectiveResponse: (TutorResponseMessage) -> Unit,
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit,
     visualTargetReady: Boolean,
     assistantBottomModifier: Modifier,

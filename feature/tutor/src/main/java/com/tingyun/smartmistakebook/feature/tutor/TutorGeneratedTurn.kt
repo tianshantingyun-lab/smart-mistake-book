@@ -57,7 +57,7 @@ internal fun TutorTurnContent(
     onReportVisualIncorrect: (String) -> Unit = {},
     onVisualTargetHit: (TutorVisualHitProof) -> Unit = {},
     onSubmitChoice: (String) -> Unit = {},
-    onDirectiveResponse: (String) -> Unit = {},
+    onDirectiveResponse: (TutorResponseMessage) -> Unit = {},
     onRequestHint: (() -> Unit)? = null,
     onContinue: (TutorMoveType) -> Unit = {},
     onRevealSolution: () -> Unit = {},
@@ -538,13 +538,13 @@ private fun TutorMoveButtons(
 internal fun TutorInteractionDirectiveContent(
     directive: TutorInteractionDirective,
     enabled: Boolean,
-    onResponse: (String) -> Unit,
+    onResponse: (TutorResponseMessage) -> Unit,
     visualTargetReady: Boolean = false,
 ) {
     when (directive) {
         TutorInteractionDirective.Continue -> OutlineActionChip(
             text = "继续",
-            onClick = { onResponse("继续") },
+            onClick = { onResponse(TutorResponseMessage.freeResponse("继续")) },
             enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()
@@ -571,7 +571,9 @@ internal fun TutorInteractionDirectiveContent(
             directive.choices.forEach { choice ->
                 OutlineActionChip(
                     text = choice.labelMarkdown,
-                    onClick = { onResponse(choice.labelMarkdown) },
+                    onClick = {
+                        onResponse(TutorResponseMessage.directiveChoice(directive, choice))
+                    },
                     enabled = enabled,
                     modifier = Modifier
                         .fillMaxWidth()

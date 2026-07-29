@@ -87,6 +87,21 @@ class TutorTasksTest {
     }
 
     @Test
+    fun legacyTutorResponseDefaultsToNoSelectedChoiceId() {
+        val request = respondRequest(respondInput().copy(selectedChoiceId = "directive-choice-a"))
+        val encoded = ModelTaskCodec.encodeRequest(request)
+        val legacy = encoded.replace(",\"selectedChoiceId\":\"directive-choice-a\"", "")
+
+        assertTrue(encoded != legacy)
+        assertEquals(
+            "directive-choice-a",
+            (ModelTaskCodec.decodeRequest(encoded).input as TutorRespondInput).selectedChoiceId,
+        )
+        val decoded = ModelTaskCodec.decodeRequest(legacy).input as TutorRespondInput
+        assertEquals(null, decoded.selectedChoiceId)
+    }
+
+    @Test
     fun studentMessagePreservesOrdinaryMathCodeAndLinksButRejectsUnsafeControls() {
         val exact = "  x < 3 时为什么？\n参考 https://example.com 和 `f'(x)`  "
 
