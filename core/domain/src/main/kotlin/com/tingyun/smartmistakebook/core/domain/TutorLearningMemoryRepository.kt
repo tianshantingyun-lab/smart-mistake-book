@@ -291,6 +291,7 @@ sealed interface PrepareTutorEvidenceResult {
 data class TutorLearningEvidenceAnchorFingerprints(
     val questionFingerprint: String,
     val problemRevisionFingerprint: String,
+    val fingerprintVersion: String,
     val turnFingerprint: String,
     val directiveFingerprint: String,
 ) {
@@ -299,6 +300,7 @@ data class TutorLearningEvidenceAnchorFingerprints(
         problemRevisionFingerprint.requireTutorMemoryFingerprint(
             "Evidence problem-revision fingerprint",
         )
+        fingerprintVersion.requireTutorMemoryId("Evidence fingerprint version")
         turnFingerprint.requireTutorMemoryFingerprint("Evidence turn fingerprint")
         directiveFingerprint.requireTutorMemoryFingerprint("Evidence directive fingerprint")
     }
@@ -519,6 +521,9 @@ interface TutorLearningMemoryRepository {
     suspend fun openConversation(
         command: OpenTutorConversationCommand,
     ): OpenTutorConversationResult
+
+    /** Returns only this learner's most recently created active conversation, if one exists. */
+    suspend fun latestActiveConversation(learnerScopeId: String): TutorConversation?
 
     /** Archives the exact active generation using a conversation-version compare-and-set. */
     suspend fun archiveConversation(

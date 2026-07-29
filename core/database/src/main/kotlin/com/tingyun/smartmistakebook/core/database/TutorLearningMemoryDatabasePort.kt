@@ -44,6 +44,11 @@ data class TutorConversationWriteResult(
     val conversation: TutorConversation,
 )
 
+data class TutorConversationArchiveWriteResult(
+    val archived: Boolean,
+    val conversation: TutorConversation,
+)
+
 data class ArchiveTutorConversationCommand(
     val learnerId: String,
     val conversationId: String,
@@ -245,9 +250,15 @@ interface TutorLearningMemoryDatabasePort {
         "Tutor learning-memory conversations are not implemented",
     )
 
+    suspend fun latestActiveTutorConversation(
+        learnerId: String,
+    ): TutorConversation? = throw UnsupportedOperationException(
+        "Tutor learning-memory conversations are not implemented",
+    )
+
     suspend fun archiveTutorConversation(
         command: ArchiveTutorConversationCommand,
-    ): TutorConversation = throw UnsupportedOperationException(
+    ): TutorConversationArchiveWriteResult = throw UnsupportedOperationException(
         "Tutor learning-memory conversations are not implemented",
     )
 

@@ -101,6 +101,15 @@ class TutorLearningMemoryRepositoryTest {
             runCatching {
                 command.copy(
                     terminal = submitted.copy(
+                        anchors = submitted.anchors.copy(fingerprintVersion = " "),
+                    ),
+                )
+            }.isFailure,
+        )
+        assertTrue(
+            runCatching {
+                command.copy(
+                    terminal = submitted.copy(
                         sourceFact = submitted.sourceFact.copy(
                             conversationId = "other-conversation",
                         ),
@@ -282,6 +291,7 @@ class TutorLearningMemoryRepositoryTest {
                 anchors = TutorLearningEvidenceAnchorFingerprints(
                     questionFingerprint = hash('1'),
                     problemRevisionFingerprint = hash('2'),
+                    fingerprintVersion = "problem-fingerprint-v1",
                     turnFingerprint = hash('3'),
                     directiveFingerprint = prepared.directiveFingerprint,
                 ),

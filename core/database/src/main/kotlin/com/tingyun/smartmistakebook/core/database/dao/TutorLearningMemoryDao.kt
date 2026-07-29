@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.database.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.database.FinalizeTutorEvidenceRequestCommand
 import com.tingyun.smartmistakebook.core.database.PrepareTutorEvidenceRequestCommand
 import com.tingyun.smartmistakebook.core.database.TutorConversationConflictException
+import com.tingyun.smartmistakebook.core.database.TutorConversationArchiveWriteResult
 import com.tingyun.smartmistakebook.core.database.TutorConversationWriteResult
 import com.tingyun.smartmistakebook.core.database.TutorEvidenceConflictException
 import com.tingyun.smartmistakebook.core.database.TutorEvidenceFinalizationResult
@@ -88,6 +89,19 @@ internal abstract class TutorLearningMemoryDao {
         learnerId: String,
         conversationId: String,
         conversationGeneration: Long,
+    ): TutorConversationEntity?
+
+    @Query(
+        """
+        SELECT * FROM tutor_conversation
+        WHERE learner_id = :learnerId
+          AND status = 'ACTIVE'
+        ORDER BY created_at_epoch_millis DESC, conversation_id DESC
+        LIMIT 1
+        """,
+    )
+    internal abstract suspend fun latestActiveConversation(
+        learnerId: String,
     ): TutorConversationEntity?
 
     @Query(
@@ -299,7 +313,7 @@ internal abstract class TutorLearningMemoryDao {
     open suspend fun archiveConversation(
         command: ArchiveTutorConversationCommand,
         nowEpochMillis: Long,
-    ): TutorConversation {
+    ): TutorConversationArchiveWriteResult {
         val before = findConversation(command.conversationId)
             ?: throw TutorMemoryScopeConflictException("Tutor conversation is unavailable")
         before.requireScope(command.learnerId, command.conversationGeneration)
@@ -308,7 +322,10 @@ internal abstract class TutorLearningMemoryDao {
                 before.archiveIdempotencyKey == command.idempotencyKey &&
                 before.archivePayloadFingerprint == command.payloadFingerprint
             ) {
-                return before.toModel()
+                return TutorConversationArchiveWriteResult(
+                    archived = false,
+                    conversation = before.toModel(),
+                )
             }
             throw TutorConversationConflictException(command.conversationId)
         }
@@ -329,7 +346,10 @@ internal abstract class TutorLearningMemoryDao {
         ) {
             throw TutorConversationConflictException(command.conversationId)
         }
-        return checkNotNull(findConversation(command.conversationId)).toModel()
+        return TutorConversationArchiveWriteResult(
+            archived = true,
+            conversation = checkNotNull(findConversation(command.conversationId)).toModel(),
+        )
     }
 
     @Transaction

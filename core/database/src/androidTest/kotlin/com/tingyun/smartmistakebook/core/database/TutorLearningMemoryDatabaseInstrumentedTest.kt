@@ -27,6 +27,62 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TutorLearningMemoryDatabaseInstrumentedTest {
     @Test
+    fun latestActiveConversationIsLearnerScopedAndOrderedByCreationThenId() = runBlocking {
+        var now = 1_000L
+        val store = StudyDatabaseFactory.openInMemory(context()) { now }
+        try {
+            store.createTutorConversation(
+                createConversation(
+                    conversationId = "conversation-a",
+                    idempotencyKey = "create-a",
+                ),
+            )
+            store.createTutorConversation(
+                createConversation(
+                    conversationId = "conversation-z",
+                    idempotencyKey = "create-z",
+                ),
+            )
+            now = 2_000L
+            store.createTutorConversation(
+                createConversation(
+                    conversationId = "other-conversation",
+                    learnerId = OTHER_LEARNER_ID,
+                    idempotencyKey = "create-other",
+                ),
+            )
+
+            assertEquals(
+                "conversation-z",
+                store.latestActiveTutorConversation(LEARNER_ID)?.conversationId,
+            )
+            assertEquals(
+                "other-conversation",
+                store.latestActiveTutorConversation(OTHER_LEARNER_ID)?.conversationId,
+            )
+
+            now = 3_000L
+            store.archiveTutorConversation(
+                ArchiveTutorConversationCommand(
+                    learnerId = LEARNER_ID,
+                    conversationId = "conversation-z",
+                    conversationGeneration = 1,
+                    expectedStateVersion = 0,
+                    idempotencyKey = "archive-z",
+                    payloadFingerprint = sha256("archive-z"),
+                ),
+            )
+
+            assertEquals(
+                "conversation-a",
+                store.latestActiveTutorConversation(LEARNER_ID)?.conversationId,
+            )
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
     fun conversationAndTurnAllocationAreScopedIdempotentAndContinuous() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
@@ -116,8 +172,10 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
                     payloadFingerprint = sha256("archive"),
                 ),
             )
-            assertEquals(TutorConversationStatus.ARCHIVED, archived.status)
-            assertEquals(archived, archivedReplay)
+            assertTrue(archived.archived)
+            assertFalse(archivedReplay.archived)
+            assertEquals(TutorConversationStatus.ARCHIVED, archived.conversation.status)
+            assertEquals(archived.conversation, archivedReplay.conversation)
             assertConflict<TutorConversationConflictException> {
                 store.archiveTutorConversation(
                     ArchiveTutorConversationCommand(
@@ -517,12 +575,16 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
         }
     }
 
-    private fun createConversation() = CreateTutorConversationCommand(
-        conversationId = CONVERSATION_ID,
-        learnerId = LEARNER_ID,
+    private fun createConversation(
+        conversationId: String = CONVERSATION_ID,
+        learnerId: String = LEARNER_ID,
+        idempotencyKey: String = "create-conversation-key",
+    ) = CreateTutorConversationCommand(
+        conversationId = conversationId,
+        learnerId = learnerId,
         generation = 1,
-        idempotencyKey = "create-conversation-key",
-        payloadFingerprint = sha256("create-conversation"),
+        idempotencyKey = idempotencyKey,
+        payloadFingerprint = sha256("create-conversation:$idempotencyKey"),
     )
 
     private fun allocateTurn(
