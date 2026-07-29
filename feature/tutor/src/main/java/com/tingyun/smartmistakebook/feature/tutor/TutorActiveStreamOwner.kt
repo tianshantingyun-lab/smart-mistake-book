@@ -467,9 +467,9 @@ internal class TutorActiveStreamOwner(
                         active.copy(
                             phase = TutorActiveStreamPhase.FAILED,
                             showPlaceholder = false,
-                            retryable = preparationCompleted,
+                            retryable = true,
                             failureDetail = if (
-                                preparationCompleted && !active.durablyStarted
+                                !active.durablyStarted
                             ) {
                                 STORAGE_FAILURE_DETAIL
                             } else {

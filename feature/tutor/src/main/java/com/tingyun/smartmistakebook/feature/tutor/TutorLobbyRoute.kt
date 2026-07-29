@@ -207,6 +207,12 @@ private fun TutorLobbyConversationRoute(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    var committedConversation by remember(
+        conversation.conversationId,
+        conversation.generation,
+    ) {
+        mutableStateOf(conversation)
+    }
     val activeStreamOwner = remember(modelTasks, scope, conversation.conversationId) {
         TutorActiveStreamOwner(
             scope = scope,
@@ -309,7 +315,7 @@ private fun TutorLobbyConversationRoute(
             return
         }
         val tasksForRequest = conversationTasks
-        val conversationForRequest = conversation
+        val conversationForRequest = committedConversation
         val turnIdentity = controller.newTurnIdentity()
         val modeForTurn = explanationMode
         val modeVersionForTurn = modeVersion
@@ -327,6 +333,12 @@ private fun TutorLobbyConversationRoute(
                 identity = turnIdentity,
                 occurredAtEpochMillis = occurredAt,
             )
+            if (
+                committedConversation.conversationId == conversationForRequest.conversationId &&
+                    committedConversation.generation == conversationForRequest.generation
+            ) {
+                committedConversation = allocated.conversation
+            }
             val request = buildTutorLobbyRequest(
                 provider = currentProvider,
                 messageOrdinal = allocated.receipt.turnOrdinal,

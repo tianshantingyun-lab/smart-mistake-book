@@ -173,6 +173,8 @@ class CapturedTutorSessionInstrumentedTest {
                     onOpenMistakeNotebook = {},
                     onOpenProfile = {},
                     modelTasks = modelTasks,
+                    learningMemory = TestLobbyMemoryRepository(),
+                    learnerScopeId = "instrumented-learner",
                     catalogEntries = emptyList(),
                     profile = StudyProfileOverview(),
                 )
