@@ -761,22 +761,13 @@ fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRes
         }
     }
     if (intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP) {
-        if (
-            input.authorizesSolutionExposure() &&
-            solutionRevealed &&
-            interactionDirective == null &&
-            messageMarkdown.hasDirectAnswerShape()
-        ) {
-            return this
-        }
         return takeIf {
             !solutionRevealed &&
                 visualScene == null &&
                 visualRequest == null &&
                 suggestedMoves.isEmpty() &&
                 interactionDirective == null &&
-                !messageMarkdown.containsDeterministicSolutionClaim() &&
-                !messageMarkdown.containsDeterministicTeachingContent()
+                !messageMarkdown.containsDeterministicSolutionClaim()
         }
     }
     if (input.authorizesSolutionExposure()) {
@@ -830,7 +821,8 @@ private fun String.isSafeTutorPrompt(allowImperative: Boolean): Boolean {
         normalized.containsTutorQuestionMark() ||
             allowImperative && SAFE_TUTOR_IMPERATIVE_PROMPT.containsMatchIn(normalized)
         ) &&
-        !normalized.containsDeterministicSolutionClaim()
+        !normalized.containsDeterministicSolutionClaim() &&
+        !normalized.containsBareGuidedAnswer()
 }
 
 private fun String.isSafeTutorChoiceLabel(): Boolean {
@@ -850,6 +842,11 @@ private fun String.containsDeterministicSolutionClaim(): Boolean {
         COMPLETE_SOLUTION_CLAIM.containsMatchIn(normalized)
 }
 
+private fun String.containsBareGuidedAnswer(): Boolean =
+    GUIDED_BARE_OPTION.containsMatchIn(this) ||
+        GUIDED_BARE_EQUATION.containsMatchIn(this) ||
+        GUIDED_BARE_VALUE.containsMatchIn(this)
+
 private fun String.normalizedTutorBoundaryText(): String =
     replace(TUTOR_BOUNDARY_MARKDOWN_DECORATION, "")
         .replace('\u00a0', ' ')
@@ -864,6 +861,16 @@ private val DIRECT_DEFERRAL = Regex(
 private val TUTOR_BOUNDARY_MARKDOWN_DECORATION = Regex("""[*_~#>]""")
 private val SAFE_TUTOR_IMPERATIVE_PROMPT = Regex(
     """^(?:请\s*)?(?:写下|指出|点出|选择|判断|说说|算出|圈出|标出)\s*\S+""",
+)
+private val GUIDED_BARE_OPTION = Regex(
+    """^(?:请\s*)?(?:选择|写下|指出|点出|圈出|标出)\s*(?:选项\s*)?(?:[a-hＡ-Ｈ]|[甲乙丙丁①②③④⑤⑥⑦⑧])(?:\s*[。.!！])?$""",
+    RegexOption.IGNORE_CASE,
+)
+private val GUIDED_BARE_EQUATION = Regex(
+    """[=＝]\s*\S+""",
+)
+private val GUIDED_BARE_VALUE = Regex(
+    """^(?:请\s*)?(?:写下|指出|点出|选择|算出|圈出|标出)\s*[-+]?\d+(?:\.\d+)?(?:\s*[。.!！])?$""",
 )
 private val EXPLICIT_RESULT_CLAIM = Regex(
     pattern =
@@ -897,24 +904,7 @@ private val CHOICE_META_ANSWER_MARKER = Regex(
             """|(?:最终|正确)\s*(?:答案|选项)""" +
             """|(?:答案|选项)\s*(?:是|为|[:：])?\s*(?:[a-hＡ-Ｈ]|[甲乙丙丁①②③④⑤⑥⑦⑧])""" +
             """|(?:应当|应该|应)\s*选(?:择)?""" +
-            """|[✓✔✗✘]|\b(?:correct|incorrect|final\s+answer)\b""",
-)
-
-private fun String.containsDeterministicTeachingContent(): Boolean {
-    val normalized = normalizedTutorBoundaryText()
-    return TEACHING_SEQUENCE.containsMatchIn(normalized) ||
-        TEACHING_DERIVATION.containsMatchIn(normalized) ||
-        TEACHING_FORMULA.containsMatchIn(normalized)
-}
-
-private val TEACHING_SEQUENCE = Regex(
-    """(?s)(?:先|首先).{0,120}(?:再|然后|接着|最后)""",
-)
-private val TEACHING_DERIVATION = Regex(
-    """(?s)(?:因为|由于|根据|由).{0,120}(?:所以|因此|可得|推出|说明)""",
-)
-private val TEACHING_FORMULA = Regex(
-    """(?i)(?:\b[a-z]\s*['′]?\s*(?:\([^)\r\n]{1,40}\))?\s*[=＝<>≤≥≠]|\d+\s*[=＝]\s*\d+)""",
+            """|(?:答对|答错)|[✓✔✗✘]|\b(?:correct|incorrect|final\s+answer)\b""",
 )
 
 const val GUIDED_INTERACTION_MESSAGE = "先完成下面这个小步骤。"

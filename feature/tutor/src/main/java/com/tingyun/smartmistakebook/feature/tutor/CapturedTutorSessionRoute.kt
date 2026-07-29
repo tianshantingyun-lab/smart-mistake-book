@@ -1173,13 +1173,15 @@ internal fun TutorModelPanel(
         }
         ?.let { candidate ->
             observedTask?.takeIf { task ->
-                task.requiresFreshTutorApproval(candidate) ||
-                    (planLeaseApprovedAt == null &&
-                        (task.status.isTutorExecutionPending() ||
-                            task.status == ModelTaskStatus.RETRYABLE_FAILURE)) ||
-                    (planLeaseApprovedAt == null &&
-                        task.status == ModelTaskStatus.SUCCEEDED &&
-                        task.output !is TutorPlanOutput)
+                task.isRebuildableTutorRequest() && (
+                    task.requiresFreshTutorApproval(candidate) ||
+                        (planLeaseApprovedAt == null &&
+                            (task.status.isTutorExecutionPending() ||
+                                task.status == ModelTaskStatus.RETRYABLE_FAILURE)) ||
+                        (planLeaseApprovedAt == null &&
+                            task.status == ModelTaskStatus.SUCCEEDED &&
+                            task.output !is TutorPlanOutput)
+                    )
             }
         }
 
@@ -1265,7 +1267,8 @@ internal fun TutorModelPanel(
     }
 
     val recoverableLocalPlanTask = observedTask?.takeIf { task ->
-        currentProvider?.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&
+        task.isRebuildableTutorRequest() &&
+            currentProvider?.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&
             task.request.egressManifest == null &&
             task.status.isTutorExecutionPending()
     }
@@ -2759,6 +2762,7 @@ internal fun TutorModelPanel(
     }
 
     fun retryTutorResponse(task: ModelTaskSnapshot) {
+        if (!task.isRebuildableTutorRequest()) return
         if (!task.canRetryTutorResponseFor(effectiveExplanationMode)) return
         val exactPendingRetry = (pendingEgressState.action as? PendingTutorEgressAction.RetryResponse)
             ?.takeIf { it.requestId == task.request.requestId }
@@ -2830,7 +2834,8 @@ internal fun TutorModelPanel(
     }
 
     val recoverableRespondTask = latestRespondTasks.lastOrNull { task ->
-        currentProvider?.let(task::matchesTutorProvider) == true &&
+        task.isRebuildableTutorRequest() &&
+            currentProvider?.let(task::matchesTutorProvider) == true &&
             task.isPendingTutorRespondFor(effectiveExplanationMode)
     }
     LaunchedEffect(
@@ -3276,9 +3281,17 @@ internal fun TutorModelPanel(
     val showVisualRetryDisclosure =
         pendingVisualRetry != null &&
             currentProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
+    val pendingResponseRetryIsRebuildable =
+        (pendingEgressState.action as? PendingTutorEgressAction.RetryResponse)?.let { pending ->
+            latestRespondTasks.any { task ->
+                task.request.requestId == pending.requestId &&
+                    task.isRebuildableTutorRequest()
+            }
+        } ?: true
     val showRespondDisclosure =
         respondSupported && currentPlanOutput != null && !respondAuthorized &&
-            planFreshApprovalTask == null && pendingVisualRetry == null
+            planFreshApprovalTask == null && pendingVisualRetry == null &&
+            pendingResponseRetryIsRebuildable
     val showChatStartError = composerContent == null && chatStartError != null
     val expectedConversationItemCount =
         2 +
@@ -3440,12 +3453,18 @@ internal fun TutorModelPanel(
                     val executionMatches = currentProvider?.let(
                         timelineItem.task::matchesTutorProvider,
                     ) == true
-                    val taskAllowsInteraction = timelineItem.task.status ==
-                        ModelTaskStatus.SUCCEEDED ||
-                        timelineItem.task.canRetryTutorResponseFor(effectiveExplanationMode)
+                    val taskAllowsInteraction =
+                        timelineItem.task.status == ModelTaskStatus.SUCCEEDED ||
+                            (
+                                timelineItem.task.isRebuildableTutorRequest() &&
+                                    timelineItem.task.canRetryTutorResponseFor(
+                                        effectiveExplanationMode,
+                                    )
+                                )
                     val opensLocalSettings =
                         timelineItem.task.failure?.code?.requiresModelSettings() == true
                     val recoveryEnabled = isTail && executionMatches &&
+                        timelineItem.task.isRebuildableTutorRequest() &&
                         !chatSending && !interactionBusy &&
                         (opensLocalSettings ||
                             (responseFreshApprovalTask == null && respondAuthorized))
@@ -3589,11 +3608,11 @@ internal fun TutorModelPanel(
                             val request = if (canReuseExactRequest) {
                                 planFreshApprovalTask.request
                             } else {
-                                rebuildTutorRequestAfterApproval(
+                                rebuildTutorRequestAfterApprovalOrNull(
                                     failedTask = planFreshApprovalTask,
                                     provider = providerForRecovery,
                                     approvedAtEpochMillis = approvedAt,
-                                )
+                                ) ?: return@TutorDisclosureCard
                             }
                             planRecoveryRequestInFlight = request.requestId
                             scope.launch {
@@ -3672,6 +3691,7 @@ internal fun TutorModelPanel(
                                 ?.let { pending ->
                                     latestRespondTasks.firstOrNull {
                                         it.request.requestId == pending.requestId &&
+                                            it.isRebuildableTutorRequest() &&
                                             it.canRetryTutorResponseFor(effectiveExplanationMode)
                                     }
                                 }
@@ -3705,7 +3725,8 @@ internal fun TutorModelPanel(
                             is PendingTutorEgressAction.RetryResponse -> pendingRetryTask
                             else -> responseFreshApprovalTask ?: recoverableRespondTask ?: 
                                 latestRespondTasks.lastOrNull { task ->
-                                    task.canRetryTutorResponseFor(effectiveExplanationMode)
+                                    task.isRebuildableTutorRequest() &&
+                                        task.canRetryTutorResponseFor(effectiveExplanationMode)
                                 }
                         }
                         taskToRecover?.let { failedTask ->
@@ -3726,11 +3747,11 @@ internal fun TutorModelPanel(
                                 request = if (canReuseExactRequest) {
                                     failedTask.request
                                 } else {
-                                    rebuildTutorRequestAfterApproval(
+                                    rebuildTutorRequestAfterApprovalOrNull(
                                         failedTask = failedTask,
                                         provider = providerForRecovery,
                                         approvedAtEpochMillis = recoveryApprovedAt,
-                                    )
+                                    ) ?: return@let
                                 },
                                 clearDraftOnPersist = false,
                                 clearPendingActionOnPersist =

@@ -345,16 +345,60 @@ class TutorModelTaskPolicyTest {
         )
         val failed = failedTutorTask(legacy, provider)
 
+        assertFalse(failed.isRebuildableTutorRequest())
         assertFalse(failed.requiresFreshTutorApproval(provider))
-        assertTrue(
-            runCatching {
-                rebuildTutorRequestAfterApproval(
-                    failedTask = failed,
-                    provider = provider,
-                    approvedAtEpochMillis = 500,
-                )
-            }.isFailure,
+        assertEquals(
+            null,
+            rebuildTutorRequestAfterApprovalOrNull(
+                failedTask = failed,
+                provider = provider,
+                approvedAtEpochMillis = 500,
+            ),
         )
+    }
+
+    @Test
+    fun preEgressPendingPlanAndRetryableResponseAreNotRecoverableUiWork() {
+        val provider = provider()
+        val currentPlan = buildTutorPlanRequest(
+            session = session(),
+            profile = StudyProfileOverview(),
+            provider = provider,
+            requestId = "tutor-plan-current",
+            occurredAtEpochMillis = 300,
+            approvedAtEpochMillis = 300,
+        )
+        val legacyPlan = currentPlan.copy(
+            schemaVersion = ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION,
+            egressManifest = null,
+        )
+        val pendingPlan = failedTutorTask(legacyPlan, provider).copy(
+            status = ModelTaskStatus.WAITING_FOR_MODEL,
+            failure = null,
+        )
+        val legacyRespond = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION,
+            requestId = "tutor-respond-legacy-retry",
+            input = respondInput("解释这一步"),
+            occurredAtEpochMillis = 300,
+        )
+        val retryableRespond = failedTutorTask(legacyRespond, provider).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            failure = ModelTaskFailure(
+                code = ModelFailureCode.TIMEOUT,
+                message = "连接超时",
+                retryable = true,
+            ),
+        )
+
+        listOf(pendingPlan, retryableRespond).forEach { task ->
+            assertFalse(task.isRebuildableTutorRequest())
+            assertFalse(task.requiresFreshTutorApproval(provider))
+            assertEquals(
+                null,
+                rebuildTutorRequestAfterApprovalOrNull(task, provider, 500),
+            )
+        }
     }
 
     @Test

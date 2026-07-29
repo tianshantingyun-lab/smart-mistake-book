@@ -252,12 +252,23 @@ internal fun ModelTaskSnapshot.coversCurrentTutorDisclosure(
 internal fun ModelTaskSnapshot.requiresFreshTutorApproval(
     provider: ProviderCapabilitySnapshot,
 ): Boolean {
-    if (request.schemaVersion < ModelTaskRequest.EGRESS_SCHEMA_VERSION) return false
+    if (!isRebuildableTutorRequest()) return false
     val failureCode = failure?.code ?: return false
     return !coversCurrentTutorDisclosure(provider, request.input.kind) ||
         failureCode.requiresEgressAuthorizationRenewal() ||
         (failureCode.requiresModelSettings() && !matchesTutorProvider(provider))
 }
+
+internal fun ModelTaskSnapshot.isRebuildableTutorRequest(): Boolean =
+    request.schemaVersion >= ModelTaskRequest.EGRESS_SCHEMA_VERSION &&
+        when (request.input.kind) {
+            ModelTaskKind.TUTOR_PLAN,
+            ModelTaskKind.TUTOR_RESPOND,
+            ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            -> true
+            else -> false
+        }
 
 internal fun tutorRecoveryRequestId(
     failedRequest: ModelTaskRequest,
@@ -371,6 +382,26 @@ internal fun rebuildTutorRequestAfterApproval(
         input = failedTask.request.input,
         occurredAtEpochMillis = failedTask.request.occurredAtEpochMillis,
         egressManifest = manifest,
+    )
+}
+
+internal fun rebuildTutorRequestAfterApprovalOrNull(
+    failedTask: ModelTaskSnapshot,
+    provider: ProviderCapabilitySnapshot,
+    approvedAtEpochMillis: Long,
+): ModelTaskRequest? {
+    val taskKind = failedTask.request.input.kind
+    if (
+        !failedTask.isRebuildableTutorRequest() ||
+        provider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER ||
+        !provider.supports(taskKind)
+    ) {
+        return null
+    }
+    return rebuildTutorRequestAfterApproval(
+        failedTask = failedTask,
+        provider = provider,
+        approvedAtEpochMillis = approvedAtEpochMillis,
     )
 }
 

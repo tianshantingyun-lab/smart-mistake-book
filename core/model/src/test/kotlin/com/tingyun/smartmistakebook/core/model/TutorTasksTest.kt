@@ -398,7 +398,7 @@ class TutorTasksTest {
     }
 
     @Test
-    fun locallyAuthorizedSolutionTakesPriorityOverTheModelIntentLabel() {
+    fun directModeCannotOverrideANonLearningIntentWithoutAnExplicitReveal() {
         val directInput = respondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
         val mislabeledSolution = respondOutput().copy(
             solutionRevealed = true,
@@ -412,12 +412,12 @@ class TutorTasksTest {
             ),
         )
 
-        assertEquals(mislabeledSolution, mislabeledSolution.locallyConstrainedFor(directInput))
-        assertTrue(
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
             ModelTaskCompletionValidator.validate(
                 respondRequest(directInput),
                 mislabeledSolution,
-            ).isEmpty(),
+            ).map { it.code },
         )
     }
 
@@ -464,7 +464,6 @@ class TutorTasksTest {
         )
         val unsafeMessages = listOf(
             "最终答案为 B。",
-            "先求导，再令 f'(x)=0。",
             "由已知条件推出 x=2。",
         )
 
@@ -482,16 +481,21 @@ class TutorTasksTest {
             )
         }
 
-        val benign = respondOutput().copy(
-            messageMarkdown = "好的，这次先暂停。",
-            intentDecision = pauseIntent,
-        )
-        assertTrue(
-            ModelTaskCompletionValidator.validate(
-                respondRequest(guidedInput),
-                benign,
-            ).isEmpty(),
-        )
+        listOf(
+            "因为现在要暂停，所以先不继续。",
+            "先暂停，稍后再继续。",
+        ).forEach { message ->
+            val benign = respondOutput().copy(
+                messageMarkdown = message,
+                intentDecision = pauseIntent,
+            )
+            assertTrue(
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    benign,
+                ).isEmpty(),
+            )
+        }
     }
 
     @Test
@@ -540,17 +544,23 @@ class TutorTasksTest {
             assertEquals(directive, constrained.interactionDirective)
         }
 
-        val answerDeclaration = respondOutput().copy(
-            interactionDirective = TutorInteractionDirective.FreeResponse("请写下答案是 2。"),
-            intentDecision = TutorIntentDecision.currentQuestionDefault(),
-        )
-        assertEquals(
-            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
-            ModelTaskCompletionValidator.validate(
-                respondRequest(guidedInput),
-                answerDeclaration,
-            ).map { it.code },
-        )
+        listOf(
+            "请写下答案是 2。",
+            "选择 B。",
+            "写下 x=2。",
+        ).forEach { prompt ->
+            val answerDeclaration = respondOutput().copy(
+                interactionDirective = TutorInteractionDirective.FreeResponse(prompt),
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            )
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    answerDeclaration,
+                ).map { it.code },
+            )
+        }
     }
 
     @Test
@@ -573,25 +583,26 @@ class TutorTasksTest {
             ).isEmpty(),
         )
 
-        listOf("最终选项", "答案 B", "正确答案", "应选").forEachIndexed { index, marker ->
-            val unsafe = respondOutput().copy(
-                interactionDirective = TutorInteractionDirective.Choices(
-                    promptMarkdown = "这一步更像是哪类问题？",
-                    choices = listOf(
-                        TutorInteractionChoice("unsafe-$index", marker),
-                        TutorInteractionChoice("other-$index", "检查条件"),
+        listOf("最终选项", "答案 B", "正确答案", "应选", "B（答对）")
+            .forEachIndexed { index, marker ->
+                val unsafe = respondOutput().copy(
+                    interactionDirective = TutorInteractionDirective.Choices(
+                        promptMarkdown = "这一步更像是哪类问题？",
+                        choices = listOf(
+                            TutorInteractionChoice("unsafe-$index", marker),
+                            TutorInteractionChoice("other-$index", "检查条件"),
+                        ),
                     ),
-                ),
-                intentDecision = TutorIntentDecision.currentQuestionDefault(),
-            )
-            assertEquals(
-                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
-                ModelTaskCompletionValidator.validate(
-                    respondRequest(guidedInput),
-                    unsafe,
-                ).map { it.code },
-            )
-        }
+                    intentDecision = TutorIntentDecision.currentQuestionDefault(),
+                )
+                assertEquals(
+                    listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                    ModelTaskCompletionValidator.validate(
+                        respondRequest(guidedInput),
+                        unsafe,
+                    ).map { it.code },
+                )
+            }
     }
 
     @Test

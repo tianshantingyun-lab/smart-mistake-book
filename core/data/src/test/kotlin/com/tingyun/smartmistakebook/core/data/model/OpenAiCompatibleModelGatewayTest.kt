@@ -1294,6 +1294,20 @@ class OpenAiCompatibleModelGatewayTest {
             "请写下下一步判断。",
             (output.interactionDirective as TutorInteractionDirective.FreeResponse).promptMarkdown,
         )
+
+        listOf("选择 B。", "写下 x=2。").forEach { prompt ->
+            val unsafeDirective = buildJsonObject {
+                put("kind", "FREE_RESPONSE")
+                put("promptMarkdown", prompt)
+            }
+            val failed = executeTutorRespondPayload(
+                payload = tutorRespondPayload(
+                    extraTopLevel = "interactionDirective" to unsafeDirective,
+                ),
+                input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.GUIDED),
+            ).last() as ModelGatewayEvent.Failed
+            assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+        }
     }
 
     @Test
@@ -1339,17 +1353,17 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
-    fun directTutorResponseUsesLocalDisclosureAuthorityBeforeTheModelIntentLabel() = runBlocking {
-        val completed = executeTutorRespondPayload(
+    fun directTutorResponseCannotOverrideANonLearningIntent() = runBlocking {
+        val failed = executeTutorRespondPayload(
             payload = tutorRespondPayload(
                 messageMarkdown = "完整解法是先求导，再根据导数符号写出全部单调区间。",
                 solutionRevealed = true,
                 intentDecision = tutorIntentPayload(intent = TutorMessageIntent.CASUAL_CONVERSATION),
             ),
             input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
-        ).last() as ModelGatewayEvent.Completed
+        ).last() as ModelGatewayEvent.Failed
 
-        assertTrue((completed.output as TutorRespondOutput).solutionRevealed)
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
     }
 
     @Test
@@ -1373,7 +1387,7 @@ class OpenAiCompatibleModelGatewayTest {
     fun nonLearningTutorIntentCannotSmuggleDeterministicTeachingContent() = runBlocking {
         val failed = executeTutorRespondPayload(
             payload = tutorRespondPayload(
-                messageMarkdown = "先求导，再令 f'(x)=0。",
+                messageMarkdown = "由已知条件推出 x=2。",
                 solutionRevealed = false,
                 intentDecision = tutorIntentPayload(intent = TutorMessageIntent.END_OR_PAUSE),
             ),

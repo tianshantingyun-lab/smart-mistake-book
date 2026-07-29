@@ -825,7 +825,7 @@ object ModelTaskCompletionValidator {
             output.locallyConstrainedFor(input) != output ||
             (
                 output.intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP &&
-                    !input.authorizesSolutionExposure() &&
+                    !input.studentAuthorizedSolutionRequest() &&
                     (
                         output.solutionRevealed ||
                             output.visualScene != null ||
