@@ -93,6 +93,138 @@ class ProblemOrganizationTasksTest {
     }
 
     @Test
+    fun v3RoundTripPreservesExactEvidenceAndResolvedAttribution() {
+        val input = v3Input()
+        val request = ModelTaskRequest(
+            requestId = "organization-v3-request",
+            input = input,
+            occurredAtEpochMillis = 1,
+        )
+        val output = v3Output()
+
+        assertEquals(request, ModelTaskCodec.decodeRequest(ModelTaskCodec.encodeRequest(request)))
+        assertEquals(output, ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(output)))
+        assertTrue(ModelTaskCompletionValidator.validate(request, output).isEmpty())
+    }
+
+    @Test
+    fun persistedSchemaTwoPlanWithoutErrorCandidatesRemainsReadable() {
+        val legacyJson = ModelTaskCodec.encodeOutput(output())
+            .replace(",\"errorAttributionCandidates\":[]", "")
+
+        assertEquals(output(), ModelTaskCodec.decodeOutput(legacyJson))
+    }
+
+    @Test
+    fun v3InputRejectsBlockEvidenceOutsideTheExactSourceAllowlist() {
+        val input = v3Input()
+        val mismatchedDocument = input.capturedDocument.copy(
+            blockEvidence = input.capturedDocument.blockEvidence.map { evidence ->
+                evidence.copy(sourceAssetId = "another-asset")
+            },
+        )
+
+        assertTrue(
+            runCatching { input.copy(capturedDocument = mismatchedDocument) }.isFailure,
+        )
+    }
+
+    @Test
+    fun resolvedAndUnresolvedErrorAttributionsHaveExplicitReferenceSemantics() {
+        val unresolved = ProblemErrorAttributionCandidate(
+            resolutionStatus = ProblemErrorAttributionResolutionStatus.UNRESOLVED,
+            rationaleMarkdown = "题图没有保留可核对的作答过程。",
+            confidence = 0.2,
+        )
+
+        assertTrue(unresolved.evidenceRefs.isEmpty())
+        assertTrue(
+            runCatching { unresolved.copy(stepOrdinal = 1) }.isFailure,
+        )
+        assertTrue(
+            runCatching {
+                ProblemErrorAttributionCandidate(
+                    resolutionStatus = ProblemErrorAttributionResolutionStatus.RESOLVED,
+                    rationaleMarkdown = "作答在符号判断处出现矛盾。",
+                    confidence = 0.9,
+                    stepOrdinal = 1,
+                    atomicReferenceId = "atom-1",
+                    evidenceRefs = emptyList(),
+                )
+            }.isFailure,
+        )
+    }
+
+    @Test
+    fun legacyOrganizationCanNeverAuthorizeErrorCandidates() {
+        val legacyRequest = request()
+        val v3Plan = v3Output().plan
+
+        val codes = ModelTaskCompletionValidator.validate(
+            legacyRequest,
+            output().copy(plan = v3Plan),
+        ).map { it.code }
+
+        assertTrue(ModelTaskCompletionIssueCode.ORGANIZATION_ERROR_ATTRIBUTION_NOT_AUTHORIZED in codes)
+    }
+
+    @Test
+    fun v3ClassificationRequiresItsExactImageGrantWhileLegacyStaysDocumentOnly() {
+        val input = v3Input()
+        val source = input.sourceAssets.single()
+        val provider = provider()
+        val disclosure = ModelEgressManifest.problemOrganizationV3Disclosure(
+            includesSelectedRegion = true,
+        )
+        val manifest = ModelEgressManifest(
+            authorizationId = "organization-v3-authorization",
+            subjectId = input.subjectId,
+            purpose = ModelEgressPurpose.CLASSIFICATION,
+            authorizedTaskKinds = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
+            providerId = provider.providerId,
+            modelId = provider.modelId,
+            providerConfigurationVersion = provider.providerConfigurationVersion,
+            promptPolicyVersion = ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,
+            approvedAtEpochMillis = 2,
+            assets = listOf(
+                ModelEgressAssetGrant(
+                    assetId = source.assetId,
+                    sha256 = source.sha256,
+                    byteSize = 1_024,
+                    width = source.width,
+                    height = source.height,
+                    selectedRegion = source.selectedRegion,
+                ),
+            ),
+            disclosedData = disclosure,
+            prohibitedData = ModelEgressManifest.problemOrganizationV3ProhibitedData(
+                includesSelectedRegion = true,
+            ),
+        )
+        val request = ModelTaskRequest(
+            requestId = "organization-v3-request",
+            input = input,
+            occurredAtEpochMillis = 1,
+            egressManifest = manifest,
+        )
+
+        val execution = ModelEgressPolicy.authorize(request, provider, 2)
+
+        assertEquals(manifest, (execution.permit as ModelExecutionPermit.External).manifest)
+        assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in disclosure)
+        assertTrue(ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE in disclosure)
+        assertTrue(
+            runCatching {
+                ModelEgressPolicy.authorize(
+                    request.copy(input = input()),
+                    provider,
+                    2,
+                )
+            }.isFailure,
+        )
+    }
+
+    @Test
     fun organizationOnlyAcceptsContentHierarchyClassifications() {
         assertEquals(
             setOf(ClassificationDimension.CHAPTER, ClassificationDimension.KNOWLEDGE),
@@ -185,6 +317,97 @@ class ProblemOrganizationTasksTest {
         assertTrue(
             ModelTaskCompletionIssueCode.ORGANIZATION_UNKNOWN_KNOWLEDGE_PREREQUISITE in
                 ModelTaskCompletionValidator.validate(request, invalid).map { it.code },
+        )
+    }
+
+    @Test
+    fun v3CompletionRejectsTwoStepReferencesMatchedToTheSameKnowledgeNode() {
+        val knowledgeNode = knowledgeNode(
+            id = "knowledge-shared",
+            name = "根据导数符号判断函数单调性",
+        )
+        val firstAtom = v3Output().plan.atomicKnowledge.single().copy(
+            matchedKnowledgeNodeId = knowledgeNode.knowledgeNodeId,
+        )
+        val secondAtom = firstAtom.copy(
+            referenceId = "atom-2",
+            canonicalName = "由导数符号确定增减区间",
+        )
+        val invalid = v3Output().copy(
+            plan = v3Output().plan.copy(
+                atomicKnowledge = listOf(firstAtom, secondAtom),
+                stepAttributions = listOf(
+                    v3Output().plan.stepAttributions.single().copy(
+                        atomicReferenceIds = listOf(firstAtom.referenceId, secondAtom.referenceId),
+                    ),
+                ),
+            ),
+        )
+        val boundedRequest = ModelTaskRequest(
+            requestId = "organization-v3-request",
+            input = v3Input().copy(knowledgeBaseNodes = listOf(knowledgeNode)),
+            occurredAtEpochMillis = 1,
+        )
+
+        assertTrue(
+            ModelTaskCompletionIssueCode.ORGANIZATION_DUPLICATE_STEP_KNOWLEDGE_NODE in
+                ModelTaskCompletionValidator.validate(boundedRequest, invalid).map { it.code },
+        )
+    }
+
+    @Test
+    fun resolvedStudentWorkRejectsNonStudentWritingLayers() {
+        listOf(WritingLayer.PRINTED, WritingLayer.DIAGRAM, WritingLayer.UNKNOWN).forEach { layer ->
+            val baseInput = v3Input()
+            val invalidInput = baseInput.copy(
+                capturedDocument = baseInput.capturedDocument.copy(
+                    blockEvidence = baseInput.capturedDocument.blockEvidence.map { evidence ->
+                        evidence.copy(writingLayer = layer)
+                    },
+                ),
+            )
+            val request = ModelTaskRequest(
+                requestId = "organization-v3-request-$layer",
+                input = invalidInput,
+                occurredAtEpochMillis = 1,
+            )
+
+            assertTrue(
+                "$layer must not authorize STUDENT_WORK evidence",
+                ModelTaskCompletionIssueCode.ORGANIZATION_ERROR_EVIDENCE_LAYER_MISMATCH in
+                    ModelTaskCompletionValidator.validate(request, v3Output()).map { it.code },
+            )
+        }
+    }
+
+    @Test
+    fun questionContentAloneCannotResolveAStudentError() {
+        val invalid = v3Output().copy(
+            plan = v3Output().plan.copy(
+                errorAttributionCandidates = listOf(
+                    v3Output().plan.errorAttributionCandidates.single().copy(
+                        evidenceRefs = listOf(
+                            v3Output().plan.errorAttributionCandidates
+                                .single()
+                                .evidenceRefs
+                                .single()
+                                .copy(evidenceKind = ProblemErrorEvidenceKind.QUESTION_CONTENT),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        assertTrue(
+            ModelTaskCompletionIssueCode.ORGANIZATION_RESOLVED_ERROR_REQUIRES_NON_QUESTION_EVIDENCE in
+                ModelTaskCompletionValidator.validate(
+                    ModelTaskRequest(
+                        requestId = "organization-v3-request",
+                        input = v3Input(),
+                        occurredAtEpochMillis = 1,
+                    ),
+                    invalid,
+                ).map { it.code },
         )
     }
 
@@ -320,6 +543,61 @@ class ProblemOrganizationTasksTest {
             ),
         ),
         modelVersion = "model-v1",
+    )
+
+    private fun v3Input() = ProblemOrganizationV3Input(
+        problemId = "problem-1",
+        problemRevisionId = "revision-1",
+        practiceUnitId = "unit-1",
+        subject = SubjectKind.MATH,
+        capturedDocument = CapturedQuestionDocument(
+            document = document("question-private", "求函数的单调区间"),
+            blockEvidence = listOf(
+                QuestionBlockEvidence(
+                    blockId = "question-private-block",
+                    sourceAssetId = "asset-private",
+                    sourceRegion = NormalizedSourceRegion(0.1, 0.1, 0.9, 0.9),
+                    writingLayer = WritingLayer.HANDWRITTEN,
+                    provenance = QuestionBlockProvenance.USER_CORRECTION,
+                    confidence = 0.95,
+                    reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+                ),
+            ),
+        ),
+        sourceAssets = listOf(
+            CaptureSourceAssetRef(
+                assetId = "asset-private",
+                sha256 = "a".repeat(64),
+                width = 1_000,
+                height = 1_400,
+                pageIndex = 0,
+                selectedRegion = NormalizedSourceRegion(0.05, 0.05, 0.95, 0.95),
+            ),
+        ),
+        relationCandidates = input().relationCandidates,
+        knowledgeBaseNodes = emptyList(),
+    )
+
+    private fun v3Output() = output().copy(
+        plan = output().plan.copy(
+            schemaVersion = ProblemOrganizationPlan.SCHEMA_VERSION,
+            errorAttributionCandidates = listOf(
+                ProblemErrorAttributionCandidate(
+                    resolutionStatus = ProblemErrorAttributionResolutionStatus.RESOLVED,
+                    rationaleMarkdown = "手写作答把导数为负的区间判断成了递增区间。",
+                    confidence = 0.91,
+                    stepOrdinal = 1,
+                    atomicReferenceId = "atom-1",
+                    evidenceRefs = listOf(
+                        ProblemErrorEvidenceRef(
+                            blockId = "question-private-block",
+                            sourceAssetId = "asset-private",
+                            evidenceKind = ProblemErrorEvidenceKind.STUDENT_WORK,
+                        ),
+                    ),
+                ),
+            ),
+        ),
     )
 
     private fun knowledgeNode(

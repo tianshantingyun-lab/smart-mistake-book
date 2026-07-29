@@ -65,6 +65,7 @@ class CaptureInformedEgressIntentTest {
 
         val draftIntent = requireNotNull(sourceIntent).bindDraft("draft-1", listOf(page))
         assertTrue(draftIntent.authorizesInitialTutorPlan)
+        assertTrue(draftIntent.authorizesProblemOrganization)
         assertTrue(
             draftIntent.matches(
                 provider = provider,
@@ -160,6 +161,7 @@ class CaptureInformedEgressIntentTest {
             ModelTaskKind.CAPTURE_ASSESS,
             ModelTaskKind.CAPTURE_PARSE,
             ModelTaskKind.TUTOR_PLAN,
+            ModelTaskKind.PROBLEM_CLASSIFY,
         ),
         supportsImageInput = true,
         supportsStructuredOutput = true,

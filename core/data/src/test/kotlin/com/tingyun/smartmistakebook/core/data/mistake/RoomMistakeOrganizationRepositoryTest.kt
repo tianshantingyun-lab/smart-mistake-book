@@ -12,6 +12,10 @@ import com.tingyun.smartmistakebook.core.model.KnowledgeNodeKind
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 import com.tingyun.smartmistakebook.core.model.KnowledgeGroundingRequest
 import com.tingyun.smartmistakebook.core.model.ProblemClassificationSuggestion
+import com.tingyun.smartmistakebook.core.model.ProblemErrorAttributionCandidate
+import com.tingyun.smartmistakebook.core.model.ProblemErrorAttributionResolutionStatus
+import com.tingyun.smartmistakebook.core.model.ProblemErrorEvidenceKind
+import com.tingyun.smartmistakebook.core.model.ProblemErrorEvidenceRef
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationPlan
@@ -90,6 +94,66 @@ class RoomMistakeOrganizationRepositoryTest {
         assertEquals("ACTIVE", first.relations.single().status)
         assertFalse(first.replaceRelations)
         assertTrue(first.payloadFingerprint.matches(Regex("[a-f0-9]{64}")))
+    }
+
+    @Test
+    fun schemaThreeCommandPreservesStepsAttributionsAndErrorEvidence() {
+        val candidate = ProblemErrorAttributionCandidate(
+            resolutionStatus = ProblemErrorAttributionResolutionStatus.RESOLVED,
+            rationaleMarkdown = "把导数为负的区间误判为递增。",
+            confidence = 0.91,
+            stepOrdinal = 1,
+            atomicReferenceId = "atom-1",
+            evidenceRefs = listOf(
+                ProblemErrorEvidenceRef(
+                    blockId = "question-1-block",
+                    sourceAssetId = "asset-2",
+                    evidenceKind = ProblemErrorEvidenceKind.STUDENT_WORK,
+                ),
+                ProblemErrorEvidenceRef(
+                    blockId = "question-1-block",
+                    sourceAssetId = "asset-1",
+                    evidenceKind = ProblemErrorEvidenceKind.QUESTION_CONTENT,
+                ),
+            ),
+        )
+        fun commandFor(errorCandidate: ProblemErrorAttributionCandidate) =
+            buildV3ConfirmationCommand(
+                requestId = "organization-v3-request",
+                input = input(),
+                classifications = classifications(),
+                relations = emptyList(),
+                atomicKnowledge = output().plan.atomicKnowledge,
+                stepAttributions = output().plan.stepAttributions,
+                errorAttributionCandidates = listOf(errorCandidate),
+                modelVersion = "test-model-v3",
+                sourceCommitReceiptCommandId = "draft-commit-receipt-1",
+                acceptedAtEpochMillis = 2_000,
+                acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
+                relationRemovals = emptySet(),
+                replaceRelations = false,
+            )
+        val command = commandFor(candidate)
+
+        assertEquals(3, command.planSchemaVersion)
+        assertEquals("draft-commit-receipt-1", command.sourceCommitReceiptCommandId)
+        assertEquals(1, command.solutionSteps.size)
+        assertEquals("atom-1", command.solutionSteps.single().knowledgeReferences.single().knowledgeReferenceId)
+        assertEquals("math-atomic-core-operation", command.solutionSteps.single().knowledgeReferences.single().knowledgeNodeId)
+        val persistedCandidate = command.errorAttributionCandidates.single()
+        assertEquals("RESOLVED", persistedCandidate.resolutionStatus)
+        assertEquals("atom-1", persistedCandidate.knowledgeReferenceId)
+        assertEquals("math-atomic-core-operation", persistedCandidate.knowledgeNodeId)
+        assertEquals(listOf("asset-1", "asset-2"), persistedCandidate.evidence.map { it.sourceAssetId })
+        assertTrue(command.payloadFingerprint.matches(Regex("[a-f0-9]{64}")))
+        assertEquals(
+            command.payloadFingerprint,
+            commandFor(candidate.copy(evidenceRefs = candidate.evidenceRefs.reversed())).payloadFingerprint,
+        )
+        assertFalse(
+            command.payloadFingerprint ==
+                commandFor(candidate.copy(rationaleMarkdown = "不同的错误归因说明。")).payloadFingerprint,
+        )
     }
 
     @Test

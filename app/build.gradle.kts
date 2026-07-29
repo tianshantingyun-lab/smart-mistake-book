@@ -98,6 +98,7 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.androidx.profileinstaller)
+    implementation(libs.androidx.work.runtime.ktx)
 
     add("benchmarkImplementation", platform(libs.compose.bom))
     add("benchmarkImplementation", libs.compose.runtime.tracing)
@@ -109,4 +110,5 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.work.testing)
 }

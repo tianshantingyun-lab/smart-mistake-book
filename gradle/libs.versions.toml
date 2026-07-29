@@ -26,6 +26,7 @@ desugar-jdk-libs = "2.0.3"
 okhttp = "5.4.0"
 filament = "1.71.5"
 vico = "3.2.1"
+workmanager = "2.11.2"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -66,6 +67,8 @@ filament-android = { module = "com.google.android.filament:filament-android", ve
 filament-utils-android = { module = "com.google.android.filament:filament-utils-android", version.ref = "filament" }
 filamat-android = { module = "com.google.android.filament:filamat-android", version.ref = "filament" }
 vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workmanager" }
+androidx-work-testing = { module = "androidx.work:work-testing", version.ref = "workmanager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

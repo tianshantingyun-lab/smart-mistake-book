@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import kotlinx.coroutines.flow.Flow
 
@@ -462,6 +463,7 @@ data class CaptureDraftSummary(
 data class ConfirmCapturedProblemRequest(
     val draftId: String,
     val workspaceIdentity: CaptureDraftWorkspaceIdentity,
+    val problemOrganizationAuthorization: ProblemOrganizationAuthorizationGrant? = null,
 ) {
     init {
         require(draftId.isNotBlank()) { "Draft id must not be blank" }
@@ -470,6 +472,11 @@ data class ConfirmCapturedProblemRequest(
         }
         require(workspaceIdentity.finalConfirmationRequest != null) {
             "Capture confirmation requires a persisted final request identity"
+        }
+        problemOrganizationAuthorization?.let {
+            require(it.sourceDraftId == draftId) {
+                "Problem organization authorization belongs to another draft"
+            }
         }
     }
 }

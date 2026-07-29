@@ -19,6 +19,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
@@ -135,6 +136,9 @@ class FakeModelGateway(
         is TutorVisualReviewInput -> error("The capture-only demo provider cannot review tutor visuals")
         is ProblemOrganizationInput -> error(
             "The capture-only demo provider cannot organize committed problems",
+        )
+        is ProblemOrganizationV3Input -> error(
+            "The capture-only demo provider cannot organize image-grounded problems",
         )
     }
 

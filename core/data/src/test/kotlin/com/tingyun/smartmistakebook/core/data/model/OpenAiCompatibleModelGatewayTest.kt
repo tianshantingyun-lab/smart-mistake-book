@@ -16,6 +16,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.KnowledgeBaseNodeContext
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
@@ -42,6 +43,8 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
+import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
@@ -1739,6 +1742,42 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
+    fun organizationV3ReadsOnlyItsExactGrantAndReconstructsEvidenceAliases() = runBlocking {
+        val openedAssets = mutableListOf<String>()
+        var sentBody = ""
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, assetId ->
+                openedAssets += assetId
+                asset()
+            },
+            transport = modelTransport { _, _, body ->
+                sentBody = body
+                ModelHttpResponse(200, envelope(organizationV3Payload()))
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val execution = authorizedOrganizationV3(gateway)
+        val input = execution.request.input as ProblemOrganizationV3Input
+        val events = gateway.execute(execution).toList()
+        val output = (events.last() as ModelGatewayEvent.Completed).output
+            as ProblemOrganizationOutput
+        val evidence = output.plan.errorAttributionCandidates.single().evidenceRefs.single()
+
+        assertEquals(listOf(ASSET_ID), openedAssets)
+        assertTrue(sentBody.contains("data:image/jpeg;base64,"))
+        assertTrue(sentBody.contains("confirmed-question-block-1"))
+        assertTrue(sentBody.contains("source-1"))
+        assertFalse(sentBody.contains(input.problemId))
+        assertFalse(sentBody.contains(input.capturedDocument.document.id))
+        assertFalse(sentBody.contains(input.capturedDocument.document.blocks.single().id))
+        assertFalse(sentBody.contains(ASSET_ID))
+        assertEquals(input.capturedDocument.document.blocks.single().id, evidence.blockId)
+        assertEquals(ASSET_ID, evidence.sourceAssetId)
+    }
+
+    @Test
     fun publicAddressPolicyRejectsLocalAndReservedNetworks() {
         listOf(
             "127.0.0.1",
@@ -2175,6 +2214,96 @@ class OpenAiCompatibleModelGatewayTest {
                 assets = emptyList(),
                 disclosedData = ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE,
                 prohibitedData = ModelEgressManifest.PROBLEM_ORGANIZATION_PROHIBITED_DATA,
+            ),
+        )
+        return ModelEgressPolicy.authorize(request, capabilities, AUTHORIZATION_NOW)
+    }
+
+    private suspend fun authorizedOrganizationV3(
+        gateway: OpenAiCompatibleModelGateway,
+    ): ModelGatewayExecution {
+        val capabilities = gateway.capabilities()
+        val input = ProblemOrganizationV3Input(
+            problemId = "problem-v3-secret-local-id",
+            problemRevisionId = "revision-v3-secret-local-id",
+            practiceUnitId = "unit-v3-secret-local-id",
+            subject = SubjectKind.MATH,
+            capturedDocument = CapturedQuestionDocument(
+                document = QuestionDocument(
+                    id = "question-v3-secret-local-id",
+                    blocks = listOf(
+                        ContentBlock.Paragraph(
+                            "block-v3-secret-local-id",
+                            "手写答案把导数为负的区间判断成递增区间。",
+                        ),
+                    ),
+                ),
+                blockEvidence = listOf(
+                    QuestionBlockEvidence(
+                        blockId = "block-v3-secret-local-id",
+                        sourceAssetId = ASSET_ID,
+                        writingLayer = WritingLayer.HANDWRITTEN,
+                        provenance = QuestionBlockProvenance.USER_CORRECTION,
+                        confidence = 0.95,
+                        reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+                    ),
+                ),
+            ),
+            sourceAssets = listOf(
+                CaptureSourceAssetRef(
+                    assetId = ASSET_ID,
+                    sha256 = SHA,
+                    width = 100,
+                    height = 200,
+                    pageIndex = 0,
+                ),
+            ),
+            relationCandidates = emptyList(),
+            knowledgeBaseNodes = listOf(
+                KnowledgeBaseNodeContext(
+                    knowledgeNodeId = "knowledge-v3-secret-local-id",
+                    subject = SubjectKind.MATH,
+                    canonicalName = "根据导数符号判断函数单调性",
+                    aliases = emptyList(),
+                    kind = KnowledgeNodeKind.REASONING,
+                    granularity = KnowledgeNodeGranularity.ATOMIC,
+                    parentCanonicalName = "利用导数研究函数单调性",
+                    taxonomyVersion = "math-v1",
+                    verificationStatus = KnowledgeNodeVerificationStatus.CURATED,
+                    boundaryMarkdown = "不包含求导公式的机械计算。",
+                ),
+            ),
+        )
+        val disclosure = ModelEgressManifest.problemOrganizationV3Disclosure(
+            includesSelectedRegion = false,
+        )
+        val request = ModelTaskRequest(
+            requestId = "organization-v3-request",
+            input = input,
+            occurredAtEpochMillis = REQUEST_OCCURRED_AT,
+            egressManifest = ModelEgressManifest(
+                authorizationId = "organization-v3-authorization",
+                subjectId = input.subjectId,
+                purpose = ModelEgressPurpose.CLASSIFICATION,
+                authorizedTaskKinds = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
+                providerId = capabilities.providerId,
+                modelId = capabilities.modelId,
+                providerConfigurationVersion = capabilities.providerConfigurationVersion,
+                promptPolicyVersion = ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,
+                approvedAtEpochMillis = AUTHORIZATION_APPROVED_AT,
+                assets = listOf(
+                    ModelEgressAssetGrant(
+                        assetId = ASSET_ID,
+                        sha256 = SHA,
+                        byteSize = IMAGE.size.toLong(),
+                        width = 100,
+                        height = 200,
+                    ),
+                ),
+                disclosedData = disclosure,
+                prohibitedData = ModelEgressManifest.problemOrganizationV3ProhibitedData(
+                    includesSelectedRegion = false,
+                ),
             ),
         )
         return ModelEgressPolicy.authorize(request, capabilities, AUTHORIZATION_NOW)
@@ -3060,6 +3189,93 @@ class OpenAiCompatibleModelGatewayTest {
                 },
             )
             put("groundingRequests", buildJsonArray {})
+        },
+    )
+
+    private fun organizationV3Payload(): String = Json.encodeToString(
+        buildJsonObject {
+            put("summaryMarkdown", "这是一道利用导数判断单调性的题。")
+            put("reviewPriorityMarkdown", "适合近期复习作答中的符号判断。")
+            put("schemaVersion", 3)
+            put("targetedEvidenceLabels", buildJsonArray {})
+            put(
+                "classifications",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put("dimension", "KNOWLEDGE")
+                            put("displayName", "利用导数研究函数单调性")
+                            put("rationaleMarkdown", "核心步骤是根据导数符号判断增减。")
+                            put("confidence", 0.94)
+                        },
+                    )
+                },
+            )
+            put("relations", buildJsonArray {})
+            put(
+                "atomicKnowledge",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put("referenceId", "atom-1")
+                            put("canonicalName", "根据导数符号判断函数单调性")
+                            put("aliases", buildJsonArray {})
+                            put("kind", "REASONING")
+                            put("parentKnowledgeDisplayName", "利用导数研究函数单调性")
+                            put("existingAlias", "knowledge-1")
+                            put("prerequisiteReferenceIds", buildJsonArray {})
+                            put("observableOutcomeMarkdown", "能由导数符号确定函数增减区间。")
+                            put("boundaryMarkdown", "不包含求导公式的机械计算。")
+                            put("confidence", 0.94)
+                        },
+                    )
+                },
+            )
+            put(
+                "stepAttributions",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put("stepOrdinal", 1)
+                            put("stepSummaryMarkdown", "根据导数符号判断单调区间。")
+                            put(
+                                "atomicReferenceIds",
+                                buildJsonArray { add(JsonPrimitive("atom-1")) },
+                            )
+                        },
+                    )
+                },
+            )
+            put("groundingRequests", buildJsonArray {})
+            put(
+                "errorAttributionCandidates",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put("resolutionStatus", "RESOLVED")
+                            put("rationaleMarkdown", "手写作答把导数为负的区间判断成递增区间。")
+                            put("confidence", 0.92)
+                            put("stepOrdinal", 1)
+                            put("atomicReferenceId", "atom-1")
+                            put(
+                                "evidenceRefs",
+                                buildJsonArray {
+                                    add(
+                                        buildJsonObject {
+                                            put(
+                                                "blockAlias",
+                                                "confirmed-question-block-1",
+                                            )
+                                            put("sourceAlias", "source-1")
+                                            put("evidenceKind", "STUDENT_WORK")
+                                        },
+                                    )
+                                },
+                            )
+                        },
+                    )
+                },
+            )
         },
     )
 

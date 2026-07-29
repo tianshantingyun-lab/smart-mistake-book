@@ -23,6 +23,7 @@ import com.tingyun.smartmistakebook.core.database.dao.MistakeDetailDao
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureDao
 import com.tingyun.smartmistakebook.core.database.dao.ProblemDao
 import com.tingyun.smartmistakebook.core.database.dao.ProblemOrganizationDao
+import com.tingyun.smartmistakebook.core.database.dao.ProblemOrganizationWorkDao
 import com.tingyun.smartmistakebook.core.database.dao.ProblemDraftEditWorkspaceDao
 import com.tingyun.smartmistakebook.core.database.dao.ProblemDraftTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.ProjectionTransactionDao
@@ -88,8 +89,13 @@ import com.tingyun.smartmistakebook.core.database.entity.ProblemMemoryStateEntit
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRelationEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemClassificationBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationReceiptEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationWorkEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRevisionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRevisionSourceAssetEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemSolutionStepEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemStepKnowledgeBindingEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemErrorAttributionCandidateEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemErrorCandidateEvidenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionConsumptionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.PresentationProjectionStateEntity
@@ -111,7 +117,7 @@ import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExpos
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 32
+internal const val STUDY_DATABASE_VERSION = 33
 
 @Database(
     entities = [
@@ -134,6 +140,11 @@ internal const val STUDY_DATABASE_VERSION = 32
         ProblemRelationEntity::class,
         ProblemClassificationBindingEntity::class,
         ProblemOrganizationReceiptEntity::class,
+        ProblemSolutionStepEntity::class,
+        ProblemStepKnowledgeBindingEntity::class,
+        ProblemErrorAttributionCandidateEntity::class,
+        ProblemErrorCandidateEvidenceEntity::class,
+        ProblemOrganizationWorkEntity::class,
         CanonicalSourceAssetEntity::class,
         ProblemDraftEntity::class,
         ProblemDraftSourceAssetEntity::class,
@@ -201,6 +212,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
     abstract fun problemDao(): ProblemDao
 
     abstract fun problemOrganizationDao(): ProblemOrganizationDao
+
+    abstract fun problemOrganizationWorkDao(): ProblemOrganizationWorkDao
 
     abstract fun knowledgeGroundingDao(): KnowledgeGroundingDao
 
@@ -287,6 +300,7 @@ object StudyDatabaseFactory {
             TUTOR_VISUAL_TARGET_EVIDENCE_MIGRATION_29_30,
             TUTOR_EVIDENCE_CANCELLATION_MIGRATION_30_31,
             LEARNING_OBSERVATION_MIGRATION_31_32,
+            PROBLEM_ORGANIZATION_WORK_MIGRATION_32_33,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

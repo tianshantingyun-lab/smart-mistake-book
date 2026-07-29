@@ -28,6 +28,7 @@ dependencies {
 
     testImplementation(libs.junit)
     androidTestImplementation(project(":core:domain"))
+    androidTestImplementation(project(":core:model"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.kotlinx.coroutines.android)

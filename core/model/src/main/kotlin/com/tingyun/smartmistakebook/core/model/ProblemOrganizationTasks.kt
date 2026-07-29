@@ -156,6 +156,94 @@ data class ProblemOrganizationInput(
     }
 }
 
+/**
+ * Image-grounded organization request. The model receives only aliased identifiers; source
+ * coordinates remain local and error candidates can refer only to the exact captured evidence.
+ */
+@Serializable
+@SerialName("problem_organization_v3")
+data class ProblemOrganizationV3Input(
+    val problemId: String,
+    val problemRevisionId: String,
+    val practiceUnitId: String,
+    val subject: SubjectKind,
+    val capturedDocument: CapturedQuestionDocument,
+    val sourceAssets: List<CaptureSourceAssetRef>,
+    val relationCandidates: List<RelatedProblemCandidate>,
+    val knowledgeBaseNodes: List<KnowledgeBaseNodeContext> = emptyList(),
+) : ModelTaskInput {
+    override val kind: ModelTaskKind
+        get() = ModelTaskKind.PROBLEM_CLASSIFY
+
+    override val subjectId: String
+        get() = problemRevisionId
+
+    init {
+        problemId.requireSafeModelText("Organization problem id", ModelTaskRequest.MAX_ID_CHARS, false)
+        problemRevisionId.requireSafeModelText(
+            "Organization revision id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        practiceUnitId.requireSafeModelText(
+            "Organization practice unit id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        require(capturedDocument.document.blocks.isNotEmpty()) {
+            "Organization requires a captured question"
+        }
+        require(CapturedQuestionDocumentValidator.validateDraft(capturedDocument).isEmpty()) {
+            "Organization captured document is invalid"
+        }
+        require(
+            capturedDocument.blockEvidence.all { evidence ->
+                evidence.reviewStatus == QuestionBlockReviewStatus.LOCAL_POLICY_ACCEPTED ||
+                    evidence.reviewStatus == QuestionBlockReviewStatus.USER_CONFIRMED
+            },
+        ) { "Organization requires committed block evidence" }
+        require(sourceAssets.isNotEmpty()) { "Organization requires exact source assets" }
+        require(sourceAssets.size <= MAX_CAPTURE_SOURCE_ASSETS) {
+            "Organization source asset scope exceeds budget"
+        }
+        require(sourceAssets.map(CaptureSourceAssetRef::assetId).distinct().size == sourceAssets.size) {
+            "Organization source asset ids must be unique"
+        }
+        require(sourceAssets.map(CaptureSourceAssetRef::pageIndex).distinct().size == sourceAssets.size) {
+            "Organization source page indexes must be unique"
+        }
+        require(sourceAssets.map(CaptureSourceAssetRef::pageIndex).sorted() == sourceAssets.indices.toList()) {
+            "Organization source page indexes must be contiguous from zero"
+        }
+        val sourceById = sourceAssets.associateBy(CaptureSourceAssetRef::assetId)
+        require(capturedDocument.blockEvidence.all { evidence ->
+            val source = sourceById[evidence.sourceAssetId] ?: return@all false
+            val evidenceRegion = evidence.sourceRegion
+            source.selectedRegion == null ||
+                evidenceRegion == null ||
+                source.selectedRegion.containsOrganizationRegion(evidenceRegion)
+        }) { "Organization block evidence must stay inside its exact source asset scope" }
+        require(relationCandidates.size <= ProblemOrganizationInput.MAX_RELATION_CANDIDATES)
+        require(relationCandidates.none { it.problemId == problemId }) {
+            "A problem cannot be its own relation candidate"
+        }
+        require(relationCandidates.map(RelatedProblemCandidate::problemId).distinct().size == relationCandidates.size) {
+            "Relation candidate problem ids must be unique"
+        }
+        require(knowledgeBaseNodes.size <= ProblemOrganizationInput.MAX_KNOWLEDGE_BASE_NODES)
+        require(knowledgeBaseNodes.all { it.subject == subject }) {
+            "Organization knowledge context must stay inside one subject"
+        }
+        require(knowledgeBaseNodes.map(KnowledgeBaseNodeContext::knowledgeNodeId).distinct().size == knowledgeBaseNodes.size) {
+            "Organization knowledge context ids must be unique"
+        }
+        val disclosedKnowledgeIds = knowledgeBaseNodes.mapTo(hashSetOf()) { it.knowledgeNodeId }
+        require(knowledgeBaseNodes.all { node ->
+            node.prerequisiteKnowledgeNodeIds.all(disclosedKnowledgeIds::contains)
+        }) { "Organization knowledge prerequisites must stay inside the bounded context" }
+    }
+}
+
 @Serializable
 data class ProblemClassificationSuggestion(
     val dimension: ClassificationDimension,
@@ -324,6 +412,98 @@ data class KnowledgeGroundingRequest(
 }
 
 @Serializable
+enum class ProblemErrorAttributionResolutionStatus {
+    RESOLVED,
+    UNRESOLVED,
+}
+
+@Serializable
+enum class ProblemErrorEvidenceKind {
+    QUESTION_CONTENT,
+    STUDENT_WORK,
+    MARKING_OR_CORRECTION,
+}
+
+@Serializable
+data class ProblemErrorEvidenceRef(
+    val blockId: String,
+    val sourceAssetId: String,
+    val evidenceKind: ProblemErrorEvidenceKind,
+) {
+    init {
+        blockId.requireSafeModelText(
+            "Error evidence block id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        sourceAssetId.requireSafeModelText(
+            "Error evidence source asset id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+    }
+}
+
+/**
+ * A review candidate, never a trusted diagnosis. Resolved candidates are fully grounded in one
+ * disclosed solution step, one disclosed atomic reference, and exact captured block evidence.
+ */
+@Serializable
+data class ProblemErrorAttributionCandidate(
+    val resolutionStatus: ProblemErrorAttributionResolutionStatus,
+    val rationaleMarkdown: String,
+    val confidence: Double,
+    val stepOrdinal: Int? = null,
+    val atomicReferenceId: String? = null,
+    val evidenceRefs: List<ProblemErrorEvidenceRef> = emptyList(),
+) {
+    init {
+        rationaleMarkdown.requireOrganizationMarkdown(
+            "Error attribution rationale",
+            MAX_RATIONALE_CHARS,
+        )
+        rationaleMarkdown.requireStudentFacingOrganizationText("Error attribution rationale")
+        require(confidence.isFinite() && confidence in 0.0..1.0)
+        require(evidenceRefs.size <= MAX_EVIDENCE_REFS)
+        require(evidenceRefs.distinct().size == evidenceRefs.size) {
+            "Error attribution evidence references must be unique"
+        }
+        when (resolutionStatus) {
+            ProblemErrorAttributionResolutionStatus.RESOLVED -> {
+                require(stepOrdinal != null && stepOrdinal > 0) {
+                    "A resolved error attribution must reference a disclosed step"
+                }
+                atomicReferenceId?.requireSafeModelText(
+                    "Error attribution atomic reference",
+                    AtomicKnowledgeSuggestion.MAX_REFERENCE_CHARS,
+                    false,
+                ) ?: error("A resolved error attribution must reference a disclosed atomic node")
+                require(evidenceRefs.isNotEmpty()) {
+                    "A resolved error attribution must reference exact captured evidence"
+                }
+            }
+
+            ProblemErrorAttributionResolutionStatus.UNRESOLVED -> {
+                require(stepOrdinal == null) {
+                    "An unresolved error attribution cannot invent a step reference"
+                }
+                require(atomicReferenceId == null) {
+                    "An unresolved error attribution cannot invent an atomic reference"
+                }
+                require(evidenceRefs.isEmpty()) {
+                    "An unresolved error attribution cannot invent evidence references"
+                }
+            }
+        }
+    }
+
+    companion object {
+        const val MAX_RATIONALE_CHARS = 1_200
+        const val MAX_EVIDENCE_REFS = 8
+    }
+}
+
+@Serializable
 data class ProblemOrganizationPlan(
     val summaryMarkdown: String,
     val reviewPriorityMarkdown: String,
@@ -335,6 +515,7 @@ data class ProblemOrganizationPlan(
     val atomicKnowledge: List<AtomicKnowledgeSuggestion> = emptyList(),
     val stepAttributions: List<ProblemStepKnowledgeAttribution> = emptyList(),
     val groundingRequests: List<KnowledgeGroundingRequest> = emptyList(),
+    val errorAttributionCandidates: List<ProblemErrorAttributionCandidate> = emptyList(),
 ) {
     init {
         summaryMarkdown.requireOrganizationMarkdown("Organization summary", MAX_SUMMARY_CHARS)
@@ -362,6 +543,10 @@ data class ProblemOrganizationPlan(
             "Organization must identify at least one knowledge label"
         }
         require(schemaVersion in 1..SCHEMA_VERSION) { "Unsupported organization schema version" }
+        require(errorAttributionCandidates.size <= MAX_ERROR_ATTRIBUTION_CANDIDATES)
+        require(schemaVersion >= 3 || errorAttributionCandidates.isEmpty()) {
+            "Legacy organization plans cannot contain error attribution candidates"
+        }
         if (schemaVersion >= 2) {
             require(atomicKnowledge.size <= MAX_ATOMIC_KNOWLEDGE)
             require(stepAttributions.size <= MAX_STEP_ATTRIBUTIONS)
@@ -412,20 +597,44 @@ data class ProblemOrganizationPlan(
                 }
             }
         }
+        if (schemaVersion >= 3) {
+            val disclosedStepOrdinals =
+                stepAttributions.mapTo(hashSetOf(), ProblemStepKnowledgeAttribution::stepOrdinal)
+            val disclosedAtomicReferences =
+                atomicKnowledge.mapTo(hashSetOf(), AtomicKnowledgeSuggestion::referenceId)
+            errorAttributionCandidates
+                .filter {
+                    it.resolutionStatus == ProblemErrorAttributionResolutionStatus.RESOLVED
+                }
+                .forEach { candidate ->
+                    require(candidate.stepOrdinal in disclosedStepOrdinals) {
+                        "A resolved error attribution must reference a disclosed step"
+                    }
+                    require(candidate.atomicReferenceId in disclosedAtomicReferences) {
+                        "A resolved error attribution must reference a disclosed atomic node"
+                    }
+                }
+        }
     }
 
     companion object {
-        const val SCHEMA_VERSION = 2
+        const val SCHEMA_VERSION = 3
         const val MAX_SUMMARY_CHARS = 2_000
         const val MAX_CLASSIFICATIONS = 16
         const val MAX_ATOMIC_KNOWLEDGE = 24
         const val MAX_STEP_ATTRIBUTIONS = 16
         const val MAX_GROUNDING_REQUESTS = 4
+        const val MAX_ERROR_ATTRIBUTION_CANDIDATES = 16
     }
 }
 
 private fun String.normalizedKnowledgeLabel(): String =
     trim().lowercase(Locale.ROOT).replace(Regex("\\s+"), " ")
+
+private fun NormalizedSourceRegion.containsOrganizationRegion(
+    other: NormalizedSourceRegion,
+): Boolean =
+    other.left >= left && other.top >= top && other.right <= right && other.bottom <= bottom
 
 @Serializable
 @SerialName("problem_organization_output")

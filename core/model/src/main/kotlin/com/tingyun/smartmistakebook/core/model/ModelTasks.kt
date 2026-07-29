@@ -302,6 +302,10 @@ data class ModelTaskRequest(
             schemaVersion >= TUTOR_VISUAL_SCHEMA_VERSION ||
                 input !is TutorVisualGenerateInput && input !is TutorVisualReviewInput,
         ) { "Legacy model task requests cannot contain tutor visual work" }
+        require(
+            schemaVersion >= PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION ||
+                input !is ProblemOrganizationV3Input,
+        ) { "Legacy model task requests cannot contain image-grounded problem organization" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -314,7 +318,8 @@ data class ModelTaskRequest(
         const val TUTOR_STUDENT_CONTEXT_SCHEMA_VERSION = 3
         const val CAPTURE_PAGE_RELATION_SCHEMA_VERSION = 4
         const val TUTOR_VISUAL_SCHEMA_VERSION = 5
-        const val CURRENT_SCHEMA_VERSION = TUTOR_VISUAL_SCHEMA_VERSION
+        const val PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION = 6
+        const val CURRENT_SCHEMA_VERSION = PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -546,6 +551,11 @@ enum class ModelTaskCompletionIssueCode {
     ORGANIZATION_ATOMIC_DECOMPOSITION_REQUIRED,
     ORGANIZATION_UNKNOWN_RELATION_TARGET,
     ORGANIZATION_UNKNOWN_KNOWLEDGE_PREREQUISITE,
+    ORGANIZATION_DUPLICATE_STEP_KNOWLEDGE_NODE,
+    ORGANIZATION_ERROR_ATTRIBUTION_NOT_AUTHORIZED,
+    ORGANIZATION_UNKNOWN_ERROR_EVIDENCE,
+    ORGANIZATION_ERROR_EVIDENCE_LAYER_MISMATCH,
+    ORGANIZATION_RESOLVED_ERROR_REQUIRES_NON_QUESTION_EVIDENCE,
 }
 
 data class ModelTaskCompletionIssue(
@@ -612,6 +622,21 @@ object ModelTaskCompletionValidator {
             listOf(typeMismatch())
         }
         is ProblemOrganizationInput -> if (output is ProblemOrganizationOutput) {
+            validateProblemOrganization(
+                input = input,
+                output = output,
+                minimumPlanSchema = if (
+                    request.schemaVersion == ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION
+                ) {
+                    1
+                } else {
+                    2
+                },
+            )
+        } else {
+            listOf(typeMismatch())
+        }
+        is ProblemOrganizationV3Input -> if (output is ProblemOrganizationOutput) {
             validateProblemOrganization(input, output)
         } else {
             listOf(typeMismatch())
@@ -866,11 +891,48 @@ object ModelTaskCompletionValidator {
     private fun validateProblemOrganization(
         input: ProblemOrganizationInput,
         output: ProblemOrganizationOutput,
+        minimumPlanSchema: Int,
+    ): List<ModelTaskCompletionIssue> = validateProblemOrganization(
+        problemId = input.problemId,
+        problemRevisionId = input.problemRevisionId,
+        practiceUnitId = input.practiceUnitId,
+        disclosedEvidenceLabels = input.relevantLearningEvidence
+            .mapTo(mutableSetOf(), TutorKnowledgeEvidence::displayName),
+        knowledgeBaseNodes = input.knowledgeBaseNodes,
+        minimumPlanSchema = minimumPlanSchema,
+        authorizedErrorEvidence = null,
+        output = output,
+    )
+
+    private fun validateProblemOrganization(
+        input: ProblemOrganizationV3Input,
+        output: ProblemOrganizationOutput,
+    ): List<ModelTaskCompletionIssue> = validateProblemOrganization(
+        problemId = input.problemId,
+        problemRevisionId = input.problemRevisionId,
+        practiceUnitId = input.practiceUnitId,
+        disclosedEvidenceLabels = emptySet(),
+        knowledgeBaseNodes = input.knowledgeBaseNodes,
+        minimumPlanSchema = ProblemOrganizationPlan.SCHEMA_VERSION,
+        authorizedErrorEvidence = input.capturedDocument.blockEvidence
+            .associateBy { evidence -> evidence.blockId to evidence.sourceAssetId },
+        output = output,
+    )
+
+    private fun validateProblemOrganization(
+        problemId: String,
+        problemRevisionId: String,
+        practiceUnitId: String,
+        disclosedEvidenceLabels: Set<String>,
+        knowledgeBaseNodes: List<KnowledgeBaseNodeContext>,
+        minimumPlanSchema: Int,
+        authorizedErrorEvidence: Map<Pair<String, String>, QuestionBlockEvidence>?,
+        output: ProblemOrganizationOutput,
     ): List<ModelTaskCompletionIssue> = buildList {
         if (
-            output.problemId != input.problemId ||
-            output.problemRevisionId != input.problemRevisionId ||
-            output.practiceUnitId != input.practiceUnitId
+            output.problemId != problemId ||
+            output.problemRevisionId != problemRevisionId ||
+            output.practiceUnitId != practiceUnitId
         ) {
             add(
                 ModelTaskCompletionIssue(
@@ -878,23 +940,21 @@ object ModelTaskCompletionValidator {
                 ),
             )
         }
-        if (output.plan.schemaVersion < ProblemOrganizationPlan.SCHEMA_VERSION) {
+        if (output.plan.schemaVersion < minimumPlanSchema) {
             add(
                 ModelTaskCompletionIssue(
                     ModelTaskCompletionIssueCode.ORGANIZATION_ATOMIC_DECOMPOSITION_REQUIRED,
                 ),
             )
         }
-        val disclosedLabels = input.relevantLearningEvidence
-            .mapTo(mutableSetOf(), TutorKnowledgeEvidence::displayName)
-        if (output.plan.targetedEvidenceLabels.any { it !in disclosedLabels }) {
+        if (output.plan.targetedEvidenceLabels.any { it !in disclosedEvidenceLabels }) {
             add(
                 ModelTaskCompletionIssue(
                     ModelTaskCompletionIssueCode.MODEL_CLAIMED_UNDISCLOSED_EVIDENCE,
                 ),
             )
         }
-        val contextById = input.knowledgeBaseNodes.associateBy(
+        val contextById = knowledgeBaseNodes.associateBy(
             KnowledgeBaseNodeContext::knowledgeNodeId,
         )
         val matchedNodeIdByReference = output.plan.atomicKnowledge.associate { atom ->
@@ -917,10 +977,88 @@ object ModelTaskCompletionValidator {
                 ),
             )
         }
+        val hasDuplicateMatchedNodeInStep = output.plan.stepAttributions.any { step ->
+            val matchedNodeIds = step.atomicReferenceIds.mapNotNull(matchedNodeIdByReference::get)
+            matchedNodeIds.distinct().size != matchedNodeIds.size
+        }
+        if (hasDuplicateMatchedNodeInStep) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.ORGANIZATION_DUPLICATE_STEP_KNOWLEDGE_NODE,
+                ),
+            )
+        }
+        if (
+            authorizedErrorEvidence == null &&
+            output.plan.errorAttributionCandidates.isNotEmpty()
+        ) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.ORGANIZATION_ERROR_ATTRIBUTION_NOT_AUTHORIZED,
+                ),
+            )
+        }
+        if (
+            authorizedErrorEvidence != null &&
+            output.plan.errorAttributionCandidates.any { candidate ->
+                candidate.evidenceRefs.any { evidence ->
+                    (evidence.blockId to evidence.sourceAssetId) !in authorizedErrorEvidence
+                }
+            }
+        ) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.ORGANIZATION_UNKNOWN_ERROR_EVIDENCE,
+                ),
+            )
+        }
+        if (
+            authorizedErrorEvidence != null &&
+            output.plan.errorAttributionCandidates.any { candidate ->
+                candidate.evidenceRefs.any { evidence ->
+                    val capturedEvidence =
+                        authorizedErrorEvidence[evidence.blockId to evidence.sourceAssetId]
+                    capturedEvidence != null &&
+                        evidence.evidenceKind.requiresStudentWritingLayer() &&
+                        capturedEvidence.writingLayer !in STUDENT_EVIDENCE_WRITING_LAYERS
+                }
+            }
+        ) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.ORGANIZATION_ERROR_EVIDENCE_LAYER_MISMATCH,
+                ),
+            )
+        }
+        if (
+            authorizedErrorEvidence != null &&
+            output.plan.errorAttributionCandidates.any { candidate ->
+                candidate.resolutionStatus ==
+                    ProblemErrorAttributionResolutionStatus.RESOLVED &&
+                    candidate.evidenceRefs.none { evidence ->
+                        evidence.evidenceKind != ProblemErrorEvidenceKind.QUESTION_CONTENT
+                    }
+            }
+        ) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.ORGANIZATION_RESOLVED_ERROR_REQUIRES_NON_QUESTION_EVIDENCE,
+                ),
+            )
+        }
         // Relations are optional enrichment. Their target allowlist and confidence are evaluated
         // independently by the local acceptance policy so a bad relation cannot discard valid
         // chapter/knowledge classifications from the same response.
     }
+
+    private fun ProblemErrorEvidenceKind.requiresStudentWritingLayer(): Boolean =
+        this == ProblemErrorEvidenceKind.STUDENT_WORK ||
+            this == ProblemErrorEvidenceKind.MARKING_OR_CORRECTION
+
+    private val STUDENT_EVIDENCE_WRITING_LAYERS = setOf(
+        WritingLayer.HANDWRITTEN,
+        WritingLayer.MIXED,
+    )
 }
 
 @Serializable

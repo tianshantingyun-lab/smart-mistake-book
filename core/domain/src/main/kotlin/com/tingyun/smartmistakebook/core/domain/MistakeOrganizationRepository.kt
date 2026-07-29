@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.model.ClassificationDimension
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ProblemRelationKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import kotlinx.coroutines.flow.Flow
 
 /** Exact, reviewable context for one model-assisted organization request. */
@@ -126,6 +127,21 @@ interface MistakeOrganizationRepository {
         occurredAtEpochMillis: Long,
         approvedAtEpochMillis: Long,
     ): MistakeOrganizationPreparation
+
+    /**
+     * Prepares image-grounded organization for one exact committed import occurrence.
+     * Implementations must derive the document and source assets from [workId], never from caller
+     * supplied content.
+     */
+    suspend fun prepareCommittedWork(
+        workId: String,
+        provider: ProviderCapabilitySnapshot,
+        authorization: ProblemOrganizationAuthorizationGrant,
+        requestVersion: Long,
+        occurredAtEpochMillis: Long,
+    ): MistakeOrganizationPreparation = throw UnsupportedOperationException(
+        "Committed organization work preparation is not implemented",
+    )
 
     fun observeConfirmed(key: MistakeRevisionKey): Flow<ConfirmedMistakeOrganization>
 

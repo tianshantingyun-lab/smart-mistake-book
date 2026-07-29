@@ -35,6 +35,7 @@ enum class ModelEgressDataClass {
     STUDENT_TUTOR_MESSAGE,
     TUTOR_CONVERSATION_CONTEXT,
     MODEL_AUTHORED_VISUAL_CANDIDATE,
+    CAPTURED_QUESTION_BLOCK_EVIDENCE,
 }
 
 /** One source of truth for the prompt whose exact scope the student approved. */
@@ -45,7 +46,7 @@ object ModelPromptPolicyVersions {
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
     const val TUTOR_LOBBY = "tutor-lobby-v1-intent-boundary"
-    const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
+    const val PROBLEM_ORGANIZATION = "problem-organization-v5-v3-error-attribution"
 
     fun currentFor(kind: ModelTaskKind): String? = when (kind) {
         ModelTaskKind.CAPTURE_ASSESS,
@@ -220,21 +221,28 @@ data class ModelEgressManifest(
             require(authorizedTaskKinds == setOf(ModelTaskKind.PROBLEM_CLASSIFY)) {
                 "Classification egress must be limited to organizing one confirmed revision"
             }
-            require(assets.isEmpty()) {
-                "Problem organization must use confirmed documents, not image bytes"
+            val expectedDisclosure = if (assets.isEmpty()) {
+                PROBLEM_ORGANIZATION_DISCLOSURE
+            } else {
+                require(schemaVersion >= 6) {
+                    "Image-grounded problem organization requires egress schema six"
+                }
+                problemOrganizationV3Disclosure(
+                    includesSelectedRegion = assets.any { it.selectedRegion != null },
+                )
             }
-            require(disclosedData == PROBLEM_ORGANIZATION_DISCLOSURE) {
+            require(disclosedData == expectedDisclosure) {
                 "Classification egress disclosure must match the bounded organization context"
             }
             require(
                 prohibitedData ==
-                    dataClassUniverse - PROBLEM_ORGANIZATION_DISCLOSURE,
+                    dataClassUniverse - expectedDisclosure,
             ) { "Classification egress must prohibit every undisclosed data class" }
         }
     }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 5
+        const val CURRENT_SCHEMA_VERSION = 6
         private const val MIN_SUPPORTED_SCHEMA_VERSION = 1
 
         val SCHEMA_V1_DATA_CLASSES = setOf(
@@ -343,7 +351,13 @@ data class ModelEgressManifest(
             schemaVersion == 1 -> SCHEMA_V1_DATA_CLASSES
             schemaVersion < 5 ->
                 ModelEgressDataClass.entries.toSet() -
-                    ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE
+                    setOf(
+                        ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE,
+                        ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE,
+                    )
+            schemaVersion < 6 ->
+                ModelEgressDataClass.entries.toSet() -
+                    ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE
             else -> ModelEgressDataClass.entries.toSet()
         }
 
@@ -355,6 +369,27 @@ data class ModelEgressManifest(
 
         val PROBLEM_ORGANIZATION_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - PROBLEM_ORGANIZATION_DISCLOSURE
+
+        private val PROBLEM_ORGANIZATION_V3_BASE_DISCLOSURE =
+            PROBLEM_ORGANIZATION_DISCLOSURE +
+                CAPTURE_IMAGE_DISCLOSURE +
+                ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE
+
+        fun problemOrganizationV3Disclosure(
+            includesSelectedRegion: Boolean,
+        ): Set<ModelEgressDataClass> = PROBLEM_ORGANIZATION_V3_BASE_DISCLOSURE + if (
+            includesSelectedRegion
+        ) {
+            setOf(ModelEgressDataClass.SELECTED_IMAGE_REGION)
+        } else {
+            emptySet()
+        }
+
+        fun problemOrganizationV3ProhibitedData(
+            includesSelectedRegion: Boolean,
+        ): Set<ModelEgressDataClass> =
+            ModelEgressDataClass.entries.toSet() -
+                problemOrganizationV3Disclosure(includesSelectedRegion)
     }
 }
 
@@ -612,6 +647,22 @@ private fun ModelEgressManifest.requireAuthorizes(
             val dataClassUniverse = ModelEgressManifest.dataClassUniverseForSchema(schemaVersion)
             require(
                 prohibitedData == dataClassUniverse - ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE,
+            )
+        }
+
+        is ProblemOrganizationV3Input -> {
+            require(schemaVersion >= 6) {
+                "Image-grounded problem organization requires egress schema six"
+            }
+            require(purpose == ModelEgressPurpose.CLASSIFICATION)
+            requireVisualAssetScope(input.sourceAssets)
+            val expectedDisclosure = ModelEgressManifest.problemOrganizationV3Disclosure(
+                includesSelectedRegion = input.sourceAssets.any { it.selectedRegion != null },
+            )
+            require(disclosedData == expectedDisclosure)
+            require(
+                prohibitedData ==
+                    ModelEgressManifest.dataClassUniverseForSchema(schemaVersion) - expectedDisclosure,
             )
         }
 

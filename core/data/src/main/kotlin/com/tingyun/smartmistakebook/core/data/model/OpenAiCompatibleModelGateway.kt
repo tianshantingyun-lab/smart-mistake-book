@@ -43,6 +43,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
@@ -224,6 +225,7 @@ internal class OpenAiCompatibleModelGateway(
                                     is TutorVisualGenerateInput -> "正在核对题图并组织直观讲解"
                                     is TutorVisualReviewInput -> "正在复核图中的关键关系"
                                     is ProblemOrganizationInput -> "模型正在提出待确认的分类和题目联系"
+                                    is ProblemOrganizationV3Input -> "模型正在核对题图中的步骤和错误证据"
                                 },
                             ),
                         )
@@ -544,6 +546,7 @@ private object OpenAiModelProtocol {
             is TutorVisualGenerateInput -> tutorVisualGeneratePrompt(input)
             is TutorVisualReviewInput -> tutorVisualReviewPrompt(input)
             is ProblemOrganizationInput -> OpenAiProblemOrganizationProtocol.prompt(input)
+            is ProblemOrganizationV3Input -> OpenAiProblemOrganizationProtocol.prompt(input)
         }
         val content = buildJsonArray {
             add(buildJsonObject { put("type", "text"); put("text", taskPrompt) })
@@ -615,6 +618,11 @@ private object OpenAiModelProtocol {
             is TutorVisualGenerateInput -> payload.toTutorVisualGenerate(input, modelVersion)
             is TutorVisualReviewInput -> payload.toTutorVisualReview(input, modelVersion)
             is ProblemOrganizationInput -> OpenAiProblemOrganizationProtocol.parse(
+                payload,
+                input,
+                modelVersion,
+            )
+            is ProblemOrganizationV3Input -> OpenAiProblemOrganizationProtocol.parse(
                 payload,
                 input,
                 modelVersion,
@@ -2146,7 +2154,8 @@ private fun ModelGatewayExecution.isReadyForNetwork(
     val requiresImageInput = request.input is CaptureAssessmentInput ||
         request.input is CaptureParseInput ||
         request.input is TutorVisualGenerateInput ||
-        request.input is TutorVisualReviewInput
+        request.input is TutorVisualReviewInput ||
+        request.input is ProblemOrganizationV3Input
     return provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
         provider.supportsStructuredOutput &&
         provider.supports(request.input.kind) &&
@@ -2167,6 +2176,8 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is CaptureParseInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
+        is ProblemOrganizationV3Input ->
+            input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorPlanInput,
         is TutorLobbyInput,
         is TutorRespondInput,

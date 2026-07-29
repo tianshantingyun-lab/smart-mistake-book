@@ -38,6 +38,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ProblemDraftCommitRecei
 import com.tingyun.smartmistakebook.core.database.entity.ProblemDraftEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemDraftRevisionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemDraftSourceAssetEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationWorkEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRevisionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRevisionSourceAssetEntity
@@ -46,6 +47,7 @@ import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentCodec
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrantCodec
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlinx.coroutines.flow.Flow
@@ -101,6 +103,11 @@ internal abstract class ProblemDraftTransactionDao {
 
     @Insert
     protected abstract suspend fun insertCommitReceipt(entity: ProblemDraftCommitReceiptEntity)
+
+    @Insert
+    protected abstract suspend fun insertProblemOrganizationWork(
+        entity: ProblemOrganizationWorkEntity,
+    )
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertTutorSession(entity: TutorSessionEntity): Long
@@ -800,7 +807,30 @@ internal abstract class ProblemDraftTransactionDao {
             subject = subject,
             problemMarkdown = problemMarkdown,
         )
-        findDraftSourceAssets(command.draftId).forEach { source ->
+        val draftSourceAssets = findDraftSourceAssets(command.draftId)
+        command.problemOrganizationAuthorization?.let { grant ->
+            require(grant.sourceDraftId == command.draftId) {
+                "Problem organization authorization belongs to another draft"
+            }
+            require(grant.assets.size == draftSourceAssets.size) {
+                "Problem organization authorization asset scope changed"
+            }
+            draftSourceAssets.forEach { source ->
+                val authorized = grant.assets.singleOrNull {
+                    it.assetId == source.sourceAssetId
+                } ?: error("Problem organization source asset is outside authorization")
+                val canonical = findSourceAsset(source.sourceAssetId)
+                    ?: error("Problem organization source asset is missing")
+                require(
+                    authorized.sha256 == canonical.contentSha256 &&
+                        authorized.byteSize == canonical.byteSize &&
+                        authorized.width == canonical.width &&
+                        authorized.height == canonical.height &&
+                        authorized.selectedRegion == null,
+                ) { "Problem organization source asset changed after authorization" }
+            }
+        }
+        draftSourceAssets.forEach { source ->
             insertRevisionSourceAsset(
                 ProblemRevisionSourceAssetEntity(
                     problemRevisionId = committedIds.problemRevisionId,
@@ -831,6 +861,26 @@ internal abstract class ProblemDraftTransactionDao {
             committedAtEpochMillis = command.committedAtEpochMillis,
         )
         insertCommitReceipt(receipt)
+        insertProblemOrganizationWork(
+            ProblemOrganizationWorkEntity(
+                workId = "problem-organization-work:${receipt.commandId}",
+                commitReceiptCommandId = receipt.commandId,
+                status = StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION,
+                stateVersion = 0,
+                attemptCount = 0,
+                notBeforeEpochMillis = receipt.committedAtEpochMillis,
+                requestId = null,
+                requestSnapshot = null,
+                authorizationGrantSnapshot = command.problemOrganizationAuthorization
+                    ?.let(ProblemOrganizationAuthorizationGrantCodec::encode),
+                leaseOwner = null,
+                leaseExpiresAtEpochMillis = null,
+                failureCode = null,
+                failureMessage = null,
+                createdAtEpochMillis = receipt.committedAtEpochMillis,
+                updatedAtEpochMillis = receipt.committedAtEpochMillis,
+            ),
+        )
         return CommitProblemDraftResult(created = true, receipt = receipt.toRecord())
     }
 
@@ -1161,17 +1211,25 @@ private fun ProblemDraftCommitReceiptEntity.toRecord() = ProblemDraftCommitRecei
     committedAtEpochMillis = committedAtEpochMillis,
 )
 
-private fun commitPayloadFingerprint(command: CommitProblemDraftCommand): String = stableSha256(
-    command.commandId,
-    command.draftId,
-    command.expectedRevisionNumber.toString(),
-    command.problemId,
-    command.problemRevisionId,
-    command.practiceUnitId,
-    command.errorBookEntryId,
-    command.estimatedSeconds.toString(),
-    command.committedAtEpochMillis.toString(),
-)
+private fun commitPayloadFingerprint(command: CommitProblemDraftCommand): String {
+    val legacyFingerprint = stableSha256(
+        command.commandId,
+        command.draftId,
+        command.expectedRevisionNumber.toString(),
+        command.problemId,
+        command.problemRevisionId,
+        command.practiceUnitId,
+        command.errorBookEntryId,
+        command.estimatedSeconds.toString(),
+        command.committedAtEpochMillis.toString(),
+    )
+    val authorization = command.problemOrganizationAuthorization ?: return legacyFingerprint
+    return stableSha256(
+        legacyFingerprint,
+        "problem-organization-authorization",
+        ProblemOrganizationAuthorizationGrantCodec.encode(authorization),
+    )
+}
 
 private fun stableSha256(vararg fields: String): String {
     val canonical = buildString {

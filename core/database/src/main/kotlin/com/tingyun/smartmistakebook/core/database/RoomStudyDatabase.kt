@@ -30,7 +30,9 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMateri
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemDraftCommitReceiptEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemMemoryStateEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationWorkEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRelationEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRevisionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewPlanEntity
@@ -43,6 +45,10 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEn
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentCodec
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
+import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrantCodec
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -837,6 +843,250 @@ internal class RoomStudyDatabase(
         command: CommitProblemDraftCommand,
     ): CommitProblemDraftResult = database.problemDraftTransactionDao().commit(command)
 
+    override suspend fun readProblemOrganizationWork(
+        workId: String,
+    ): ProblemOrganizationWorkRecord? {
+        require(workId.isNotBlank()) { "workId must not be blank" }
+        return database.problemOrganizationWorkDao().readWork(workId)?.toRecord()
+    }
+
+    override suspend fun readProblemOrganizationWorkByCommitReceipt(
+        commitReceiptCommandId: String,
+    ): ProblemOrganizationWorkRecord? {
+        require(commitReceiptCommandId.isNotBlank()) {
+            "commitReceiptCommandId must not be blank"
+        }
+        return database.problemOrganizationWorkDao()
+            .readWorkByCommitReceipt(commitReceiptCommandId)
+            ?.toRecord()
+    }
+
+    override suspend fun readProblemOrganizationWorkByRequestId(
+        requestId: String,
+    ): ProblemOrganizationWorkRecord? {
+        require(requestId.isNotBlank()) { "requestId must not be blank" }
+        return database.problemOrganizationWorkDao()
+            .readWorkByRequestId(requestId)
+            ?.toRecord()
+    }
+
+    override suspend fun readProblemOrganizationWorkCommitReceipt(
+        commitReceiptCommandId: String,
+    ): ProblemDraftCommitReceipt? {
+        require(commitReceiptCommandId.isNotBlank()) {
+            "commitReceiptCommandId must not be blank"
+        }
+        return database.problemOrganizationWorkDao()
+            .readCommitReceipt(commitReceiptCommandId)
+            ?.toProblemDraftCommitReceipt()
+    }
+
+    override suspend fun claimNextProblemOrganizationWork(
+        leaseOwner: String,
+        nowEpochMillis: Long,
+        leaseDurationMillis: Long,
+    ): ProblemOrganizationWorkRecord? = database.problemOrganizationWorkDao()
+        .claimNext(leaseOwner, nowEpochMillis, leaseDurationMillis)
+        ?.toRecord()
+
+    override suspend fun claimProblemOrganizationWork(
+        workId: String,
+        leaseOwner: String,
+        nowEpochMillis: Long,
+        leaseDurationMillis: Long,
+    ): ProblemOrganizationWorkRecord? = database.problemOrganizationWorkDao()
+        .claim(workId, leaseOwner, nowEpochMillis, leaseDurationMillis)
+        ?.toRecord()
+
+    override suspend fun readSchedulableProblemOrganizationWorks(
+        nowEpochMillis: Long,
+        limit: Int,
+    ): List<ProblemOrganizationWorkRecord> {
+        require(nowEpochMillis >= 0) { "nowEpochMillis must not be negative" }
+        require(limit in 1..100) { "limit must be between 1 and 100" }
+        return database.problemOrganizationWorkDao()
+            .readSchedulable(limit)
+            .map { it.toRecord() }
+    }
+
+    override fun observeSchedulableProblemOrganizationWorks():
+        Flow<List<ProblemOrganizationWorkRecord>> =
+        database.problemOrganizationWorkDao()
+            .observeSchedulable()
+            .map { works -> works.map(ProblemOrganizationWorkEntity::toRecord) }
+
+    override suspend fun readRunningProblemOrganizationWorks(
+        limit: Int,
+    ): List<ProblemOrganizationWorkRecord> {
+        require(limit in 1..100) { "limit must be between 1 and 100" }
+        return database.problemOrganizationWorkDao()
+            .readRunning(limit)
+            .map(ProblemOrganizationWorkEntity::toRecord)
+    }
+
+    override suspend fun authorizeProblemOrganizationWork(
+        command: AuthorizeProblemOrganizationWorkCommand,
+    ): Boolean {
+        require(command.workId.isNotBlank()) { "workId must not be blank" }
+        require(command.expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
+        require(command.requestId.isNotBlank()) { "requestId must not be blank" }
+        require(command.notBeforeEpochMillis >= command.authorizedAtEpochMillis) {
+            "Authorized organization work cannot be scheduled in the past"
+        }
+        val request = ModelTaskCodec.decodeRequest(command.requestSnapshot)
+        require(request.requestId == command.requestId) {
+            "Organization work request snapshot id does not match"
+        }
+        require(request.input.kind == com.tingyun.smartmistakebook.core.model.ModelTaskKind.PROBLEM_CLASSIFY) {
+            "Organization work can only authorize a problem-classification task"
+        }
+        require(request.schemaVersion == ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION) {
+            "Organization work requires the current image-grounded request schema"
+        }
+        request.egressManifest?.let { manifest ->
+            require(
+                manifest.schemaVersion ==
+                    com.tingyun.smartmistakebook.core.model.ModelEgressManifest.CURRENT_SCHEMA_VERSION,
+            ) { "Organization work requires the current egress schema" }
+        }
+        val work = database.problemOrganizationWorkDao().readWork(command.workId)
+            ?: return false
+        val authorization = ProblemOrganizationAuthorizationGrantCodec.decodeOrNull(
+            work.authorizationGrantSnapshot,
+        ) ?: return false
+        val receipt = database.problemOrganizationWorkDao()
+            .readCommitReceipt(work.commitReceiptCommandId)
+            ?: throw DatabaseContractViolationException(
+                "Organization work commit receipt is missing",
+            )
+        val input = request.input as? ProblemOrganizationV3Input
+            ?: throw IllegalArgumentException(
+                "Persistent organization work requires ProblemOrganizationV3Input",
+            )
+        require(authorization.sourceDraftId == receipt.draftId) {
+            "Organization authorization belongs to another source draft"
+        }
+        require(
+            command.authorizedAtEpochMillis in
+                authorization.approvedAtEpochMillis until authorization.expiresAtEpochMillis,
+        ) { "Organization authorization is not current" }
+        require(request.egressManifest == authorization.toEgressManifest(input.subjectId)) {
+            "Organization request does not match its persisted authorization"
+        }
+        require(
+            input.problemId == receipt.problemId &&
+                input.problemRevisionId == receipt.problemRevisionId &&
+                input.practiceUnitId == receipt.practiceUnitId,
+        ) { "Organization work request does not match its exact commit receipt" }
+        val draft = database.problemDraftTransactionDao().read(receipt.draftId)
+            ?: throw DatabaseContractViolationException(
+                "Organization work source draft is missing",
+            )
+        require(draft.currentRevision.revisionNumber == receipt.draftRevisionNumber) {
+            "Organization work source revision no longer matches its receipt"
+        }
+        require(
+            CapturedQuestionDocumentFingerprint.of(input.capturedDocument) ==
+                draft.currentRevision.documentFingerprint,
+        ) { "Organization work document does not match its committed revision" }
+        val expectedAssets = draft.sourceAssets.map { source ->
+            OrganizationSourceAssetIdentity(
+                assetId = source.sourceAsset.sourceAssetId,
+                sha256 = source.sourceAsset.contentSha256,
+                width = source.sourceAsset.width,
+                height = source.sourceAsset.height,
+                pageIndex = source.pageIndex,
+            )
+        }
+        val requestedAssets = input.sourceAssets.map { source ->
+            require(source.selectedRegion == null) {
+                "Persistent organization work must reference the committed full source page"
+            }
+            OrganizationSourceAssetIdentity(
+                assetId = source.assetId,
+                sha256 = source.sha256,
+                width = source.width,
+                height = source.height,
+                pageIndex = source.pageIndex,
+            )
+        }
+        require(requestedAssets == expectedAssets) {
+            "Organization work assets do not match its exact import occurrence"
+        }
+        return database.problemOrganizationWorkDao().authorize(
+            workId = command.workId,
+            expectedStateVersion = command.expectedStateVersion,
+            requestId = command.requestId,
+            requestSnapshot = command.requestSnapshot,
+            notBeforeEpochMillis = command.notBeforeEpochMillis,
+            updatedAtEpochMillis = command.authorizedAtEpochMillis,
+        ) == 1
+    }
+
+    override suspend fun markProblemOrganizationWorkWaitingAuthorization(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean {
+        validateOrganizationWorkTransition(command, requireFailure = true)
+        return database.problemOrganizationWorkDao().markWaitingAuthorization(
+            workId = command.workId,
+            expectedStateVersion = command.expectedStateVersion,
+            leaseOwner = command.leaseOwner,
+            failureCode = requireNotNull(command.failureCode),
+            failureMessage = requireNotNull(command.failureMessage),
+            updatedAtEpochMillis = command.occurredAtEpochMillis,
+        ) == 1
+    }
+
+    override suspend fun retryProblemOrganizationWork(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean {
+        validateOrganizationWorkTransition(command, requireFailure = true)
+        val notBefore = requireNotNull(command.notBeforeEpochMillis) {
+            "Retry requires a not-before time"
+        }
+        require(notBefore >= command.occurredAtEpochMillis) {
+            "Retry not-before time must not precede its transition"
+        }
+        return database.problemOrganizationWorkDao().markRetry(
+            workId = command.workId,
+            expectedStateVersion = command.expectedStateVersion,
+            leaseOwner = command.leaseOwner,
+            notBeforeEpochMillis = notBefore,
+            failureCode = requireNotNull(command.failureCode),
+            failureMessage = requireNotNull(command.failureMessage),
+            updatedAtEpochMillis = command.occurredAtEpochMillis,
+        ) == 1
+    }
+
+    override suspend fun failProblemOrganizationWorkPermanently(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean {
+        validateOrganizationWorkTransition(command, requireFailure = true)
+        return database.problemOrganizationWorkDao().markPermanentFailure(
+            workId = command.workId,
+            expectedStateVersion = command.expectedStateVersion,
+            leaseOwner = command.leaseOwner,
+            failureCode = requireNotNull(command.failureCode),
+            failureMessage = requireNotNull(command.failureMessage),
+            updatedAtEpochMillis = command.occurredAtEpochMillis,
+        ) == 1
+    }
+
+    override suspend fun completeProblemOrganizationWork(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean {
+        validateOrganizationWorkTransition(command, requireFailure = false)
+        val requestId = requireNotNull(command.requestId) { "Success requires a request id" }
+        require(requestId.isNotBlank()) { "requestId must not be blank" }
+        return database.problemOrganizationWorkDao().markSucceeded(
+            workId = command.workId,
+            expectedStateVersion = command.expectedStateVersion,
+            leaseOwner = command.leaseOwner,
+            requestId = requestId,
+            updatedAtEpochMillis = command.occurredAtEpochMillis,
+        ) == 1
+    }
+
     override suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
     ): CommitProblemDraftResult = database.withWriteTransaction {
@@ -1448,6 +1698,63 @@ internal class RoomStudyDatabase(
 }
 
 private const val KNOWLEDGE_NODE_QUERY_CHUNK_SIZE = 400
+
+private data class OrganizationSourceAssetIdentity(
+    val assetId: String,
+    val sha256: String,
+    val width: Int,
+    val height: Int,
+    val pageIndex: Int,
+)
+
+private fun validateOrganizationWorkTransition(
+    command: ProblemOrganizationWorkTransitionCommand,
+    requireFailure: Boolean,
+) {
+    require(command.workId.isNotBlank()) { "workId must not be blank" }
+    require(command.expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
+    require(command.leaseOwner.isNotBlank()) { "leaseOwner must not be blank" }
+    require(command.occurredAtEpochMillis >= 0) { "occurredAtEpochMillis must not be negative" }
+    if (requireFailure) {
+        require(!command.failureCode.isNullOrBlank()) { "failureCode must not be blank" }
+        require(!command.failureMessage.isNullOrBlank()) { "failureMessage must not be blank" }
+    } else {
+        require(command.failureCode == null && command.failureMessage == null) {
+            "Successful organization work cannot contain a failure"
+        }
+    }
+}
+
+private fun ProblemOrganizationWorkEntity.toRecord() = ProblemOrganizationWorkRecord(
+    workId = workId,
+    commitReceiptCommandId = commitReceiptCommandId,
+    status = status,
+    stateVersion = stateVersion,
+    attemptCount = attemptCount,
+    notBeforeEpochMillis = notBeforeEpochMillis,
+    requestId = requestId,
+    requestSnapshot = requestSnapshot,
+    authorizationGrantSnapshot = authorizationGrantSnapshot,
+    leaseOwner = leaseOwner,
+    leaseExpiresAtEpochMillis = leaseExpiresAtEpochMillis,
+    failureCode = failureCode,
+    failureMessage = failureMessage,
+    createdAtEpochMillis = createdAtEpochMillis,
+    updatedAtEpochMillis = updatedAtEpochMillis,
+)
+
+private fun ProblemDraftCommitReceiptEntity.toProblemDraftCommitReceipt() =
+    ProblemDraftCommitReceipt(
+        commandId = commandId,
+        payloadFingerprint = payloadFingerprint,
+        draftId = draftId,
+        draftRevisionNumber = draftRevisionNumber,
+        problemId = problemId,
+        problemRevisionId = problemRevisionId,
+        practiceUnitId = practiceUnitId,
+        errorBookEntryId = errorBookEntryId,
+        committedAtEpochMillis = committedAtEpochMillis,
+    )
 
 private fun PendingCaptureHeadRow.toProblemDraftRecord(
     sourceRows: List<PendingCaptureSourceAssetRow>,

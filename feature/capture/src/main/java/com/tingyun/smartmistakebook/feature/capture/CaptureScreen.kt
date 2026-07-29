@@ -85,6 +85,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
+import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
@@ -92,6 +93,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
 import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
@@ -243,6 +245,9 @@ fun CaptureScreen(
     }
     var freshCaptureEgressIntent by remember(modelTasks) {
         mutableStateOf<CaptureDraftEgressIntent?>(null)
+    }
+    var problemOrganizationAuthorization by remember(modelTasks) {
+        mutableStateOf<ProblemOrganizationAuthorizationGrant?>(null)
     }
     val informedEgressIntentSession = remember(modelTasks) {
         CaptureInformedEgressIntentSession()
@@ -411,10 +416,12 @@ fun CaptureScreen(
         egressApprovedProviderId = null
         egressApprovedModelId = null
         egressApprovedProviderConfigurationVersion = null
+        problemOrganizationAuthorization = null
     }
 
     fun approveCaptureEgress(
         provider: ProviderCapabilitySnapshot,
+        authorizeProblemOrganization: Boolean = true,
     ): ModelEgressManifest? {
         val currentDraftId = draftId ?: return null
         if (sourcePages.isEmpty()) return null
@@ -433,6 +440,27 @@ fun CaptureScreen(
         egressApprovedModelId = provider.modelId
         egressApprovedProviderConfigurationVersion = provider.providerConfigurationVersion
         activeCaptureAuthorizationId = authorizationId
+        problemOrganizationAuthorization = manifest
+            .takeIf {
+                authorizeProblemOrganization &&
+                    provider.supportsImageInput &&
+                    provider.supports(ModelTaskKind.PROBLEM_CLASSIFY)
+            }
+            ?.let {
+                ProblemOrganizationAuthorizationGrant(
+                    authorizationId = "problem-organization:${UUID.randomUUID()}",
+                    sourceDraftId = currentDraftId,
+                    providerId = provider.providerId,
+                    modelId = provider.modelId,
+                    providerConfigurationVersion = provider.providerConfigurationVersion,
+                    approvedAtEpochMillis = approvedAt,
+                    expiresAtEpochMillis = Math.addExact(
+                        approvedAt,
+                        MODEL_EGRESS_APPROVAL_TTL_MILLIS,
+                    ),
+                    assets = it.assets,
+                )
+            }
         return manifest
     }
 
@@ -1033,6 +1061,15 @@ fun CaptureScreen(
                 val confirmation = ConfirmCapturedProblemRequest(
                     draftId = currentDraftId,
                     workspaceIdentity = exactWorkspaceIdentity,
+                    problemOrganizationAuthorization = problemOrganizationAuthorization
+                        ?.takeIf { grant ->
+                            providerCapabilities?.let { provider ->
+                                grant.matchesCurrent(
+                                    provider = provider,
+                                    nowEpochMillis = System.currentTimeMillis(),
+                                )
+                            } == true
+                        },
                 )
                 when (activeEntryOrigin) {
                     CaptureEntryOrigin.LIBRARY -> {
@@ -1361,7 +1398,10 @@ fun CaptureScreen(
             freshCaptureEgressIntent = null
             return@LaunchedEffect
         }
-        val approvedManifest = approveCaptureEgress(provider)
+        val approvedManifest = approveCaptureEgress(
+            provider = provider,
+            authorizeProblemOrganization = informedIntent.authorizesProblemOrganization,
+        )
         initialTutorPlanCaptureAuthorizationId = approvedManifest
             ?.authorizationId
             ?.takeIf { informedIntent.authorizesInitialTutorPlan }

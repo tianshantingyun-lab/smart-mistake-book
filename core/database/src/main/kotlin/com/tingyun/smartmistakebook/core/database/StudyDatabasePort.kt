@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationCandidateStatu
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import com.tingyun.smartmistakebook.core.model.PresentationProjectionState
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
@@ -76,6 +77,20 @@ object StudyDbValue {
         const val EDITING = "EDITING"
         const val COMMITTED = "COMMITTED"
         const val ABANDONED = "ABANDONED"
+    }
+
+    object ProblemOrganizationWorkStatus {
+        const val PENDING = "PENDING"
+        const val RUNNING = "RUNNING"
+        const val RETRY = "RETRY"
+        const val WAITING_AUTHORIZATION = "WAITING_AUTHORIZATION"
+        const val SUCCEEDED = "SUCCEEDED"
+        const val PERMANENT_FAILURE = "PERMANENT_FAILURE"
+    }
+
+    object ProblemErrorAttributionResolution {
+        const val RESOLVED = "RESOLVED"
+        const val UNRESOLVED = "UNRESOLVED"
     }
 
     object ProblemDraftAuthor {
@@ -472,6 +487,41 @@ data class ConfirmProblemOrganizationCommand(
     val relationIdsToRemove: Set<String> = emptySet(),
     /** False merges supplied relations and preserves all existing ones; true replaces the set. */
     val replaceRelations: Boolean = false,
+    /** Legacy v1/v2 commands remain readable but cannot persist error-attribution candidates. */
+    val planSchemaVersion: Int = 2,
+    val solutionSteps: List<ProblemSolutionStepSeedRecord> = emptyList(),
+    val errorAttributionCandidates: List<ProblemErrorAttributionCandidateSeedRecord> = emptyList(),
+    /** Present only for a v3 organization generated from this exact import occurrence. */
+    val sourceCommitReceiptCommandId: String? = null,
+)
+
+data class ProblemSolutionStepSeedRecord(
+    val stepOrdinal: Int,
+    val summaryMarkdown: String,
+    val knowledgeReferences: List<ProblemStepKnowledgeReferenceSeedRecord>,
+)
+
+data class ProblemStepKnowledgeReferenceSeedRecord(
+    val knowledgeReferenceId: String,
+    val knowledgeNodeId: String,
+)
+
+data class ProblemErrorAttributionCandidateSeedRecord(
+    val candidateOrdinal: Int,
+    val resolutionStatus: String,
+    val stepOrdinal: Int?,
+    val knowledgeReferenceId: String?,
+    val knowledgeNodeId: String?,
+    val rationaleMarkdown: String,
+    val confidence: Double,
+    val modelVersion: String,
+    val evidence: List<ProblemErrorAttributionEvidenceSeedRecord>,
+)
+
+data class ProblemErrorAttributionEvidenceSeedRecord(
+    val blockId: String,
+    val sourceAssetId: String,
+    val evidenceKind: String,
 )
 
 data class ProblemOrganizationReceiptRecord(
@@ -886,6 +936,7 @@ data class CommitProblemDraftCommand(
     val errorBookEntryId: String,
     val estimatedSeconds: Int,
     val committedAtEpochMillis: Long,
+    val problemOrganizationAuthorization: ProblemOrganizationAuthorizationGrant? = null,
 )
 
 data class ProblemDraftCommitReceipt(
@@ -1028,6 +1079,44 @@ data class TutorVisualTargetEvidenceRecord(
     val selectedTargetId: String,
     val selectionWasCorrect: Boolean,
     val submittedAtEpochMillis: Long,
+)
+
+data class ProblemOrganizationWorkRecord(
+    val workId: String,
+    val commitReceiptCommandId: String,
+    val status: String,
+    val stateVersion: Long,
+    val attemptCount: Int,
+    val notBeforeEpochMillis: Long,
+    val requestId: String?,
+    val requestSnapshot: String?,
+    val authorizationGrantSnapshot: String? = null,
+    val leaseOwner: String?,
+    val leaseExpiresAtEpochMillis: Long?,
+    val failureCode: String?,
+    val failureMessage: String?,
+    val createdAtEpochMillis: Long,
+    val updatedAtEpochMillis: Long,
+)
+
+data class AuthorizeProblemOrganizationWorkCommand(
+    val workId: String,
+    val expectedStateVersion: Long,
+    val requestId: String,
+    val requestSnapshot: String,
+    val notBeforeEpochMillis: Long,
+    val authorizedAtEpochMillis: Long,
+)
+
+data class ProblemOrganizationWorkTransitionCommand(
+    val workId: String,
+    val expectedStateVersion: Long,
+    val leaseOwner: String,
+    val occurredAtEpochMillis: Long,
+    val failureCode: String? = null,
+    val failureMessage: String? = null,
+    val notBeforeEpochMillis: Long? = null,
+    val requestId: String? = null,
 )
 
 data class PersistTutorVisualTargetEvidenceCommand(
@@ -1820,6 +1909,67 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     )
 
     suspend fun commitProblemDraft(command: CommitProblemDraftCommand): CommitProblemDraftResult
+
+    suspend fun readProblemOrganizationWork(
+        workId: String,
+    ): ProblemOrganizationWorkRecord? = null
+
+    suspend fun readProblemOrganizationWorkByCommitReceipt(
+        commitReceiptCommandId: String,
+    ): ProblemOrganizationWorkRecord? = null
+
+    suspend fun readProblemOrganizationWorkByRequestId(
+        requestId: String,
+    ): ProblemOrganizationWorkRecord? = null
+
+    suspend fun readProblemOrganizationWorkCommitReceipt(
+        commitReceiptCommandId: String,
+    ): ProblemDraftCommitReceipt? = null
+
+    suspend fun claimNextProblemOrganizationWork(
+        leaseOwner: String,
+        nowEpochMillis: Long,
+        leaseDurationMillis: Long,
+    ): ProblemOrganizationWorkRecord? = null
+
+    suspend fun claimProblemOrganizationWork(
+        workId: String,
+        leaseOwner: String,
+        nowEpochMillis: Long,
+        leaseDurationMillis: Long,
+    ): ProblemOrganizationWorkRecord? = null
+
+    suspend fun readSchedulableProblemOrganizationWorks(
+        nowEpochMillis: Long,
+        limit: Int,
+    ): List<ProblemOrganizationWorkRecord> = emptyList()
+
+    suspend fun readRunningProblemOrganizationWorks(
+        limit: Int,
+    ): List<ProblemOrganizationWorkRecord> = emptyList()
+
+    fun observeSchedulableProblemOrganizationWorks(): Flow<List<ProblemOrganizationWorkRecord>> =
+        kotlinx.coroutines.flow.flowOf(emptyList())
+
+    suspend fun authorizeProblemOrganizationWork(
+        command: AuthorizeProblemOrganizationWorkCommand,
+    ): Boolean = false
+
+    suspend fun markProblemOrganizationWorkWaitingAuthorization(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean = false
+
+    suspend fun retryProblemOrganizationWork(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean = false
+
+    suspend fun failProblemOrganizationWorkPermanently(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean = false
+
+    suspend fun completeProblemOrganizationWork(
+        command: ProblemOrganizationWorkTransitionCommand,
+    ): Boolean = false
 
     suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,

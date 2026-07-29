@@ -334,6 +334,8 @@ class RoomCaptureWorkflowRepository internal constructor(
                         errorBookEntryId = "entry-$suffix",
                         estimatedSeconds = DEFAULT_ESTIMATED_SECONDS,
                         committedAtEpochMillis = expected.finalOccurredAtEpochMillis,
+                        problemOrganizationAuthorization =
+                            request.problemOrganizationAuthorization,
                     ),
                 ),
             )

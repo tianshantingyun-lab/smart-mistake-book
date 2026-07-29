@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook
 
 import android.app.Application
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
@@ -38,8 +40,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
-class SmartMistakeBookApplication : Application() {
+class SmartMistakeBookApplication : Application(), Configuration.Provider {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     lateinit var studyRepository: StudyExperienceRepository
@@ -74,6 +77,29 @@ class SmartMistakeBookApplication : Application() {
 
     private lateinit var database: StudyDatabasePort
     private lateinit var reviewReminderCoordinator: ReviewReminderCoordinator
+    private lateinit var problemOrganizationWorkScheduler: ProblemOrganizationWorkScheduler
+    private val problemOrganizationWorkerFactory = ProblemOrganizationWorkerFactory {
+        if (
+            !::database.isInitialized ||
+            !::modelTaskRepository.isInitialized ||
+            !::mistakeOrganizationRepository.isInitialized ||
+            !::problemOrganizationWorkScheduler.isInitialized
+        ) {
+            null
+        } else {
+            ProblemOrganizationWorkerDependencies(
+                database = database,
+                modelTasks = modelTaskRepository,
+                organizations = mistakeOrganizationRepository,
+                scheduler = problemOrganizationWorkScheduler,
+            )
+        }
+    }
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(problemOrganizationWorkerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -115,6 +141,10 @@ class SmartMistakeBookApplication : Application() {
             database = database,
             gateway = gateway,
         )
+        problemOrganizationWorkScheduler = ProblemOrganizationWorkScheduler(
+            workManager = WorkManager.getInstance(this),
+        )
+        startProblemOrganizationWorkScheduling()
         batchImportRepository = BatchImportRepositoryFactory.create(
             context = this,
             database = database,
@@ -130,6 +160,29 @@ class SmartMistakeBookApplication : Application() {
                 throw cancelled
             } catch (_: Throwable) {
                 // The repository publishes the fail-closed state consumed by the UI.
+            }
+        }
+    }
+
+    private fun startProblemOrganizationWorkScheduling() {
+        applicationScope.launch {
+            try {
+                database.readRunningProblemOrganizationWorks(
+                    limit = ORGANIZATION_RUNNING_RECOVERY_LIMIT,
+                ).forEach(problemOrganizationWorkScheduler::enqueueRunningRecovery)
+                val scheduledVersions = mutableMapOf<String, Long>()
+                database.observeSchedulableProblemOrganizationWorks().collect { works ->
+                    scheduledVersions.keys.retainAll(works.mapTo(hashSetOf()) { it.workId })
+                    works.forEach { work ->
+                        if (scheduledVersions.put(work.workId, work.stateVersion) != work.stateVersion) {
+                            problemOrganizationWorkScheduler.enqueue(work)
+                        }
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Throwable) {
+                // Durable work remains in the database and is recovered on the next process start.
             }
         }
     }
@@ -187,5 +240,9 @@ class SmartMistakeBookApplication : Application() {
         database.close()
         applicationScope.cancel()
         super.onTerminate()
+    }
+
+    private companion object {
+        const val ORGANIZATION_RUNNING_RECOVERY_LIMIT = 100
     }
 }

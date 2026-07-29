@@ -26,6 +26,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.StreamingMarkdownAssembler
 import com.tingyun.smartmistakebook.core.model.StreamingMarkdownCompletion
@@ -531,6 +532,7 @@ class RoomModelTaskRepository internal constructor(
                     is com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput ->
                         "图形讲解已复核"
                     is ProblemOrganizationInput -> "分类和题目联系建议已生成，请确认后再保存"
+                    is ProblemOrganizationV3Input -> "分类和题目联系建议已生成，请确认后再保存"
                 },
                 provider = current.provider,
                 output = event.output,

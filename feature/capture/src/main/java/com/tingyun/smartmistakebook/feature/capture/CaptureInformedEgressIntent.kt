@@ -14,6 +14,7 @@ internal data class CaptureAcquisitionEgressIntent(
     val providerConfigurationVersion: String,
     val createdAtEpochMillis: Long,
     val authorizesInitialTutorPlan: Boolean,
+    val authorizesProblemOrganization: Boolean,
 ) {
     init {
         require(intentId.isNotBlank())
@@ -33,6 +34,7 @@ internal data class CaptureAcquisitionEgressIntent(
             providerConfigurationVersion = providerConfigurationVersion,
             createdAtEpochMillis = createdAtEpochMillis,
             authorizesInitialTutorPlan = authorizesInitialTutorPlan,
+            authorizesProblemOrganization = authorizesProblemOrganization,
             sourceUri = sourceUri,
         )
     }
@@ -46,6 +48,7 @@ internal data class CaptureSourceEgressIntent(
     val providerConfigurationVersion: String,
     val createdAtEpochMillis: Long,
     val authorizesInitialTutorPlan: Boolean,
+    val authorizesProblemOrganization: Boolean,
     val sourceUri: String,
 ) {
     fun matchesSource(
@@ -66,6 +69,7 @@ internal data class CaptureSourceEgressIntent(
             providerConfigurationVersion = providerConfigurationVersion,
             createdAtEpochMillis = createdAtEpochMillis,
             authorizesInitialTutorPlan = authorizesInitialTutorPlan,
+            authorizesProblemOrganization = authorizesProblemOrganization,
             draftId = draftId,
             assets = sourcePages.map(CaptureSourcePage::toEgressAssetIdentity),
         )
@@ -79,6 +83,7 @@ internal data class CaptureDraftEgressIntent(
     val providerConfigurationVersion: String,
     val createdAtEpochMillis: Long,
     val authorizesInitialTutorPlan: Boolean,
+    val authorizesProblemOrganization: Boolean,
     val draftId: String,
     val assets: List<CaptureEgressAssetIdentity>,
 ) {
@@ -119,6 +124,7 @@ internal class CaptureInformedEgressIntentSession {
         intentId: String,
         nowEpochMillis: Long,
         authorizesInitialTutorPlan: Boolean = false,
+        authorizesProblemOrganization: Boolean = true,
     ) {
         sourceIntent = null
         acquisitionIntent = provider
@@ -133,6 +139,9 @@ internal class CaptureInformedEgressIntentSession {
                     createdAtEpochMillis = nowEpochMillis,
                     authorizesInitialTutorPlan = authorizesInitialTutorPlan &&
                         it.supports(ModelTaskKind.TUTOR_PLAN),
+                    authorizesProblemOrganization = authorizesProblemOrganization &&
+                        it.supportsImageInput &&
+                        it.supports(ModelTaskKind.PROBLEM_CLASSIFY),
                 )
             }
     }
