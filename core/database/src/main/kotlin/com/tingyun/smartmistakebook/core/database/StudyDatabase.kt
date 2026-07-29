@@ -31,6 +31,7 @@ import com.tingyun.smartmistakebook.core.database.dao.ReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.ReviewPlanTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorInteractionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorExposureDao
+import com.tingyun.smartmistakebook.core.database.dao.TutorLearningMemoryDao
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEvidenceAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEvidenceSnapshotEntity
@@ -111,13 +112,18 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorTurnResponseEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorVisualTargetEvidenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorEvidenceCancellationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorSessionProblemAnchorEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorTurnReceiptEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorEvidenceRequestEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningProblemAnchorEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceFactEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExposureRecordEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 33
+internal const val STUDY_DATABASE_VERSION = 34
 
 @Database(
     entities = [
@@ -204,6 +210,11 @@ internal const val STUDY_DATABASE_VERSION = 33
         AppliedLearningObservationRecordEntity::class,
         BatchImportJobEntity::class,
         BatchImportPageEntity::class,
+        TutorConversationEntity::class,
+        TutorTurnReceiptEntity::class,
+        TutorEvidenceRequestEntity::class,
+        LearningProblemAnchorEntity::class,
+        LearningObservationSourceFactEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -254,6 +265,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
     abstract fun tutorExposureDao(): TutorExposureDao
 
     abstract fun batchImportDao(): BatchImportDao
+
+    abstract fun tutorLearningMemoryDao(): TutorLearningMemoryDao
 }
 
 object StudyDatabaseFactory {
@@ -301,6 +314,7 @@ object StudyDatabaseFactory {
             TUTOR_EVIDENCE_CANCELLATION_MIGRATION_30_31,
             LEARNING_OBSERVATION_MIGRATION_31_32,
             PROBLEM_ORGANIZATION_WORK_MIGRATION_32_33,
+            TUTOR_LEARNING_MEMORY_MIGRATION_33_34,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

@@ -67,6 +67,62 @@ internal class RoomStudyDatabase(
 
     private val problemOrganization = RoomProblemOrganizationStore(database)
     private val batchImports = RoomBatchImportStore(database)
+
+    override suspend fun createTutorConversation(
+        command: CreateTutorConversationCommand,
+    ): TutorConversationWriteResult =
+        database.tutorLearningMemoryDao().createConversation(
+            command,
+            trustedClockEpochMillis(),
+        )
+
+    override suspend fun openTutorConversation(
+        learnerId: String,
+        conversationId: String,
+        conversationGeneration: Long,
+    ) = database.tutorLearningMemoryDao()
+        .openConversation(learnerId, conversationId, conversationGeneration)
+        ?.let { entity ->
+            com.tingyun.smartmistakebook.core.model.TutorConversation(
+                conversationId = entity.conversationId,
+                learnerScopeId = entity.learnerId,
+                generation = entity.generation,
+                status = com.tingyun.smartmistakebook.core.model.TutorConversationStatus
+                    .valueOf(entity.status),
+                createdAtEpochMillis = entity.createdAtEpochMillis,
+                archivedAtEpochMillis = entity.archivedAtEpochMillis,
+                stateVersion = entity.stateVersion,
+            )
+        }
+
+    override suspend fun archiveTutorConversation(
+        command: ArchiveTutorConversationCommand,
+    ) = database.tutorLearningMemoryDao().archiveConversation(
+        command,
+        trustedClockEpochMillis(),
+    )
+
+    override suspend fun allocateTutorTurn(
+        command: AllocateTutorTurnCommand,
+    ) = database.tutorLearningMemoryDao().allocateTurn(
+        command,
+        trustedClockEpochMillis(),
+    )
+
+    override suspend fun prepareTutorEvidenceRequest(
+        command: PrepareTutorEvidenceRequestCommand,
+    ) = database.tutorLearningMemoryDao().prepareEvidence(
+        command,
+        trustedClockEpochMillis(),
+    )
+
+    override suspend fun finalizeTutorEvidenceRequest(
+        command: FinalizeTutorEvidenceRequestCommand,
+    ) = database.tutorLearningMemoryDao().finalizeEvidence(
+        command,
+        trustedClockEpochMillis(),
+    )
+
     override fun observeMistakes(): Flow<List<MistakeRecord>> =
         database.problemDao().observeActiveMistakes().map { rows -> rows.map(MistakeRow::toRecord) }
 

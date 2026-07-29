@@ -5,6 +5,7 @@ enum class LearningObservationSource {
     TUTOR_CHOICE,
     TUTOR_FREE_RESPONSE,
     TUTOR_VISUAL_TARGET,
+    TUTOR_SPECIFIC_STUCK,
     CAPTURED_REVIEW_RESPONSE,
 }
 

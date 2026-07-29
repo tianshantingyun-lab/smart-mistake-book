@@ -1634,7 +1634,10 @@ data class ReviewPlanBundle(
     val latestSession: ReviewSessionRecord? = null,
 )
 
-interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
+interface StudyDatabasePort :
+    AutoCloseable,
+    ModelTaskDatabasePort,
+    TutorLearningMemoryDatabasePort {
     fun observeMistakes(): Flow<List<MistakeRecord>>
 
     fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)
