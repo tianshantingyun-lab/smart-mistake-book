@@ -17,6 +17,7 @@ import java.util.UUID
 
 internal const val DEFAULT_TUTOR_LEARNER_SCOPE_ID = "local-learner"
 private const val TUTOR_LOBBY_REQUEST_VERSION = 1L
+private const val TUTOR_LOBBY_CONVERSATION_PREFIX = "tutor-lobby:"
 
 /** Owns only locally generated lobby identities; model output never selects this scope. */
 internal class TutorLobbyConversationController(
@@ -26,7 +27,10 @@ internal class TutorLobbyConversationController(
     private val newId: () -> String = { UUID.randomUUID().toString() },
 ) {
     suspend fun loadInitialConversation(): TutorConversation {
-        repository.latestActiveConversation(learnerScopeId)?.let { return it }
+        repository.latestActiveConversationInNamespace(
+            learnerScopeId,
+            TUTOR_LOBBY_CONVERSATION_PREFIX,
+        )?.let { return it }
         return when (
             val legacy = repository.openConversation(
                 OpenTutorConversationCommand(

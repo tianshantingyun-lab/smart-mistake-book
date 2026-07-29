@@ -106,6 +106,21 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
+        SELECT * FROM tutor_conversation
+        WHERE learner_id = :learnerId
+          AND status = 'ACTIVE'
+          AND substr(conversation_id, 1, length(:conversationIdPrefix)) = :conversationIdPrefix
+        ORDER BY created_at_epoch_millis DESC, conversation_id DESC
+        LIMIT 1
+        """,
+    )
+    internal abstract suspend fun latestActiveConversationInNamespace(
+        learnerId: String,
+        conversationIdPrefix: String,
+    ): TutorConversationEntity?
+
+    @Query(
+        """
         UPDATE tutor_conversation
         SET status = :archivedStatus,
             archive_idempotency_key = :idempotencyKey,

@@ -63,6 +63,7 @@ class TutorInteractionDatabaseInstrumentedTest {
 
         val recorded = store.recordTutorChoice(choice)
         assertEquals(1_000L, recorded.choiceSubmittedAtEpochMillis)
+        assertEquals("guided-request-1", recorded.evidenceRequestId)
         assertEquals(
             recorded,
             store.recordTutorChoice(choice.copy(choiceSubmittedAtEpochMillis = 1_050)),
@@ -77,6 +78,11 @@ class TutorInteractionDatabaseInstrumentedTest {
                 )
             }.isFailure,
         )
+        assertTrue(
+            runCatching {
+                store.recordTutorChoice(choice.copy(evidenceRequestId = "guided-request-2"))
+            }.isFailure,
+        )
 
         val move = PersistTutorMoveCommand(
             sessionId = choice.sessionId,
@@ -86,6 +92,10 @@ class TutorInteractionDatabaseInstrumentedTest {
             turnOrdinal = choice.turnOrdinal,
             requestedMove = "CHANGE_REPRESENTATION",
             occurredAtEpochMillis = 1_100,
+        )
+        assertNull(
+            store.recordTutorMove(move.copy(sessionId = "action-only-session"))
+                .evidenceRequestId,
         )
         val moved = store.recordTutorMove(move)
         assertEquals(moved, store.recordTutorMove(move.copy(occurredAtEpochMillis = 1_150)))
@@ -892,6 +902,7 @@ class TutorInteractionDatabaseInstrumentedTest {
         selectedChoiceMarkdown = "先检查定义域",
         selectionWasCorrect = true,
         feedbackMarkdown = "定义域会约束后续每一步，因此这是有效起点。",
+        evidenceRequestId = "guided-request-1",
         choiceSubmittedAtEpochMillis = 1_000,
     )
 

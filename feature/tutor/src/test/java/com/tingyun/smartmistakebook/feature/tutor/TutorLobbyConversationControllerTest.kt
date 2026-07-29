@@ -45,6 +45,16 @@ class TutorLobbyConversationControllerTest {
     }
 
     @Test
+    fun capturedConversationCannotReplaceTheLatestLobbyConversation() = runTest {
+        val repository = FakeMemoryRepository().apply {
+            put(activeConversation("tutor-lobby:active", createdAt = 10))
+            put(activeConversation("captured:tutor-session", createdAt = 20))
+        }
+
+        assertEquals("tutor-lobby:active", controller(repository).loadInitialConversation().conversationId)
+    }
+
+    @Test
     fun archivedLegacyConversationStartsARandomNewConversation() = runTest {
         val repository = FakeMemoryRepository().apply {
             put(activeConversation(TUTOR_LOBBY_CONVERSATION_ID).copy(
@@ -136,6 +146,21 @@ private class FakeMemoryRepository : TutorLearningMemoryRepository {
         .values
         .filter { it.learnerScopeId == learnerScopeId && it.status == TutorConversationStatus.ACTIVE }
         .maxByOrNull(TutorConversation::createdAtEpochMillis)
+
+    override suspend fun latestActiveConversationInNamespace(
+        learnerScopeId: String,
+        conversationIdPrefix: String,
+    ): TutorConversation? = conversations
+        .values
+        .filter {
+            it.learnerScopeId == learnerScopeId &&
+                it.status == TutorConversationStatus.ACTIVE &&
+                it.conversationId.startsWith(conversationIdPrefix)
+        }
+        .maxWithOrNull(
+            compareBy<TutorConversation> { it.createdAtEpochMillis }
+                .thenBy { it.conversationId },
+        )
 
     override suspend fun archiveConversation(command: ArchiveTutorConversationCommand): ArchiveTutorConversationResult {
         val current = requireNotNull(conversations[command.conversationId])

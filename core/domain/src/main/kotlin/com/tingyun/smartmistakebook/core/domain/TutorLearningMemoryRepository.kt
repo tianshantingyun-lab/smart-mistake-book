@@ -536,6 +536,20 @@ interface TutorLearningMemoryRepository {
     /** Returns only this learner's most recently created active conversation, if one exists. */
     suspend fun latestActiveConversation(learnerScopeId: String): TutorConversation?
 
+    /**
+     * Safe compatibility default: never returns a conversation outside [conversationIdPrefix].
+     * Implementations with indexed storage should override this to search inside the namespace.
+     */
+    suspend fun latestActiveConversationInNamespace(
+        learnerScopeId: String,
+        conversationIdPrefix: String,
+    ): TutorConversation? {
+        learnerScopeId.requireTutorMemoryId("Learner scope")
+        conversationIdPrefix.requireTutorMemoryId("Conversation namespace")
+        return latestActiveConversation(learnerScopeId)
+            ?.takeIf { it.conversationId.startsWith(conversationIdPrefix) }
+    }
+
     /** Opens an exact receipt only when it belongs to [learnerScopeId]. */
     suspend fun openTurn(
         learnerScopeId: String,

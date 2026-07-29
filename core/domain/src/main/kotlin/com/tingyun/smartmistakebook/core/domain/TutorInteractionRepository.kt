@@ -26,6 +26,7 @@ data class TutorTurnResponse(
     val updatedAtEpochMillis: Long,
     val choiceSubmittedAtEpochMillis: Long? =
         submittedAtEpochMillis.takeIf { diagnosticStemMarkdown != null },
+    val evidenceRequestId: String? = null,
 ) {
     init {
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
@@ -47,10 +48,14 @@ data class TutorTurnResponse(
             require(choiceSubmittedAtEpochMillis != null && choiceSubmittedAtEpochMillis >= 0)
         } else {
             require(choiceSubmittedAtEpochMillis == null)
+            require(evidenceRequestId == null) {
+                "A tutor action-only response cannot claim an evidence request"
+            }
             require(requestedMove != null || solutionRevealed) {
                 "A tutor action-only response must persist a move or solution reveal"
             }
         }
+        require(evidenceRequestId == null || evidenceRequestId.isNotBlank())
         require(requestedMove != TutorMoveType.REVEAL_SOLUTION)
         require(submittedAtEpochMillis >= 0 && updatedAtEpochMillis >= submittedAtEpochMillis)
     }

@@ -1028,6 +1028,7 @@ data class TutorTurnResponseRecord(
     val choiceSubmittedAtEpochMillis: Long?,
     val submittedAtEpochMillis: Long,
     val updatedAtEpochMillis: Long,
+    val evidenceRequestId: String? = null,
 )
 
 data class PersistTutorChoiceCommand(
@@ -1042,9 +1043,11 @@ data class PersistTutorChoiceCommand(
     val selectionWasCorrect: Boolean,
     val feedbackMarkdown: String,
     val choiceSubmittedAtEpochMillis: Long,
+    val evidenceRequestId: String? = null,
 ) {
     init {
         require(choiceSubmittedAtEpochMillis >= 0)
+        require(evidenceRequestId == null || evidenceRequestId.isNotBlank())
     }
 }
 

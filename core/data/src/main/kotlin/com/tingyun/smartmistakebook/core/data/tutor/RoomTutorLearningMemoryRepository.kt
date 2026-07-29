@@ -73,6 +73,22 @@ internal class RoomTutorLearningMemoryRepository(
             }
         }
 
+    override suspend fun latestActiveConversationInNamespace(
+        learnerScopeId: String,
+        conversationIdPrefix: String,
+    ) = requireLearnerScopeId(learnerScopeId).let {
+        requireTutorMemoryId(conversationIdPrefix, "Conversation namespace")
+        mapDatabaseConflict(
+            TutorLearningMemoryOperation.OPEN_CONVERSATION,
+            TutorLearningMemoryConflictReason.NOT_FOUND_OR_OUT_OF_SCOPE,
+        ) {
+            database.latestActiveTutorConversationInNamespace(
+                learnerScopeId,
+                conversationIdPrefix,
+            )
+        }
+    }
+
     override suspend fun openTurn(
         learnerScopeId: String,
         turnReceiptId: String,

@@ -2,11 +2,14 @@ package com.tingyun.smartmistakebook.core.data.tutor
 
 import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorEvidenceCancellationCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
+import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
 import com.tingyun.smartmistakebook.core.domain.RecordTutorVisualTargetEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.CancelTutorEvidenceCommand
+import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorEvidenceRejectedException
@@ -26,6 +29,62 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.runBlocking
 
 class RoomTutorInteractionRepositoryTest {
+    @Test
+    fun `guided choice preserves its exact evidence request identity through the database adapter`() =
+        runBlocking {
+            var persistedChoice: PersistTutorChoiceCommand? = null
+            val database = Proxy.newProxyInstance(
+                StudyDatabasePort::class.java.classLoader,
+                arrayOf(StudyDatabasePort::class.java),
+            ) { _, method, arguments ->
+                when (method.name) {
+                    "recordTutorChoiceUnlessCancelled" -> {
+                        val choice = arguments.orEmpty().first() as PersistTutorChoiceCommand
+                        persistedChoice = choice
+                        TutorTurnResponseRecord(
+                            sessionId = choice.sessionId,
+                            questionDocumentId = choice.questionDocumentId,
+                            revisionNumber = choice.revisionNumber,
+                            cycleOrdinal = choice.cycleOrdinal,
+                            turnOrdinal = choice.turnOrdinal,
+                            diagnosticStemMarkdown = choice.diagnosticStemMarkdown,
+                            selectedChoiceId = choice.selectedChoiceId,
+                            selectedChoiceMarkdown = choice.selectedChoiceMarkdown,
+                            selectionWasCorrect = choice.selectionWasCorrect,
+                            feedbackMarkdown = choice.feedbackMarkdown,
+                            requestedMove = null,
+                            solutionRevealed = false,
+                            choiceSubmittedAtEpochMillis = choice.choiceSubmittedAtEpochMillis,
+                            submittedAtEpochMillis = choice.choiceSubmittedAtEpochMillis,
+                            updatedAtEpochMillis = choice.choiceSubmittedAtEpochMillis,
+                            evidenceRequestId = choice.evidenceRequestId,
+                        )
+                    }
+                    "close" -> Unit
+                    else -> error("Unexpected database call: ${method.name}")
+                }
+            } as StudyDatabasePort
+            val command = RecordTutorChoiceCommand(
+                sessionId = "session-choice",
+                questionDocumentId = "question-choice",
+                revisionNumber = 1,
+                cycleOrdinal = 1,
+                turnOrdinal = 1,
+                diagnosticStemMarkdown = "Which premise matters?",
+                selectedChoiceId = "choice-a",
+                selectedChoiceMarkdown = "The exact premise",
+                selectionWasCorrect = true,
+                feedbackMarkdown = "That premise controls the next step.",
+                occurredAtEpochMillis = 1_000,
+                evidenceRequestId = "guided-request-exact",
+            )
+
+            val recorded = RoomTutorInteractionRepository(database).recordChoice(command)
+
+            assertEquals("guided-request-exact", persistedChoice?.evidenceRequestId)
+            assertEquals("guided-request-exact", recorded.evidenceRequestId)
+        }
+
     @Test
     fun `durable cancellation survives repository reconstruction with exact identity`() =
         runBlocking {

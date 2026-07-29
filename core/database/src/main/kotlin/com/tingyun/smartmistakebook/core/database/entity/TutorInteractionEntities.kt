@@ -34,6 +34,8 @@ internal data class TutorTurnResponseEntity(
     val selectionWasCorrect: Boolean?,
     @ColumnInfo(name = "feedback_markdown")
     val feedbackMarkdown: String?,
+    @ColumnInfo(name = "evidence_request_id")
+    val evidenceRequestId: String?,
     @ColumnInfo(name = "requested_move")
     val requestedMove: String?,
     @ColumnInfo(name = "solution_revealed")

@@ -85,6 +85,41 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     }
 
     @Test
+    fun latestActiveConversationInNamespaceIgnoresNewerConversationsElsewhere() = runBlocking {
+        var now = 1_000L
+        val store = StudyDatabaseFactory.openInMemory(context()) { now }
+        try {
+            store.createTutorConversation(
+                createConversation(
+                    conversationId = "tutor-lobby:active",
+                    idempotencyKey = "create-lobby",
+                ),
+            )
+            now = 2_000L
+            store.createTutorConversation(
+                createConversation(
+                    conversationId = "captured:tutor-session",
+                    idempotencyKey = "create-captured",
+                ),
+            )
+
+            assertEquals(
+                "captured:tutor-session",
+                store.latestActiveTutorConversation(LEARNER_ID)?.conversationId,
+            )
+            assertEquals(
+                "tutor-lobby:active",
+                store.latestActiveTutorConversationInNamespace(
+                    LEARNER_ID,
+                    "tutor-lobby:",
+                )?.conversationId,
+            )
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
     fun conversationAndTurnAllocationAreScopedIdempotentAndContinuous() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {

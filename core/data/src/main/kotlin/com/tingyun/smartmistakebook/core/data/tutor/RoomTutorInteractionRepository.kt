@@ -486,6 +486,7 @@ private fun RecordTutorChoiceCommand.toPersistedChoice() = PersistTutorChoiceCom
     selectionWasCorrect = selectionWasCorrect,
     feedbackMarkdown = feedbackMarkdown,
     choiceSubmittedAtEpochMillis = occurredAtEpochMillis,
+    evidenceRequestId = evidenceRequestId,
 )
 
 private fun RecordTutorVisualTargetEvidenceCommand.toPersistedVisualTargetEvidence() =
@@ -555,6 +556,7 @@ private fun TutorTurnResponseRecord.toDomain() = TutorTurnResponse(
     choiceSubmittedAtEpochMillis = choiceSubmittedAtEpochMillis,
     submittedAtEpochMillis = submittedAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
+    evidenceRequestId = evidenceRequestId,
 )
 
 private fun TutorVisualTargetEvidenceRecord.toDomain() = TutorVisualTargetEvidence(

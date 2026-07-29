@@ -262,6 +262,16 @@ interface TutorLearningMemoryDatabasePort {
         "Tutor learning-memory conversations are not implemented",
     )
 
+    suspend fun latestActiveTutorConversationInNamespace(
+        learnerId: String,
+        conversationIdPrefix: String,
+    ): TutorConversation? {
+        requireOpaque(learnerId, "learnerId")
+        requireOpaque(conversationIdPrefix, "conversationIdPrefix")
+        return latestActiveTutorConversation(learnerId)
+            ?.takeIf { it.conversationId.startsWith(conversationIdPrefix) }
+    }
+
     suspend fun archiveTutorConversation(
         command: ArchiveTutorConversationCommand,
     ): TutorConversationArchiveWriteResult = throw UnsupportedOperationException(

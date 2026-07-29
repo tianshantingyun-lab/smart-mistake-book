@@ -135,6 +135,7 @@ internal abstract class TutorInteractionDao {
             selected_choice_markdown = :selectedChoiceMarkdown,
             selection_was_correct = :selectionWasCorrect,
             feedback_markdown = :feedbackMarkdown,
+            evidence_request_id = :evidenceRequestId,
             choice_submitted_at_epoch_millis = :choiceSubmittedAtEpochMillis
         WHERE session_id = :sessionId
           AND cycle_ordinal = :cycleOrdinal
@@ -146,6 +147,7 @@ internal abstract class TutorInteractionDao {
           AND selected_choice_markdown IS NULL
           AND selection_was_correct IS NULL
           AND feedback_markdown IS NULL
+          AND evidence_request_id IS NULL
           AND choice_submitted_at_epoch_millis IS NULL
         """,
     )
@@ -160,6 +162,7 @@ internal abstract class TutorInteractionDao {
         selectedChoiceMarkdown: String,
         selectionWasCorrect: Boolean,
         feedbackMarkdown: String,
+        evidenceRequestId: String?,
         choiceSubmittedAtEpochMillis: Long,
     ): Int
 
@@ -171,6 +174,7 @@ internal abstract class TutorInteractionDao {
             selected_choice_markdown = NULL,
             selection_was_correct = NULL,
             feedback_markdown = NULL,
+            evidence_request_id = NULL,
             choice_submitted_at_epoch_millis = NULL
         WHERE session_id = :sessionId
           AND cycle_ordinal = :cycleOrdinal
@@ -182,6 +186,10 @@ internal abstract class TutorInteractionDao {
           AND selected_choice_markdown = :selectedChoiceMarkdown
           AND selection_was_correct = :selectionWasCorrect
           AND feedback_markdown = :feedbackMarkdown
+          AND (
+            evidence_request_id = :evidenceRequestId
+            OR (evidence_request_id IS NULL AND :evidenceRequestId IS NULL)
+          )
           AND choice_submitted_at_epoch_millis = :choiceSubmittedAtEpochMillis
         """,
     )
@@ -196,6 +204,7 @@ internal abstract class TutorInteractionDao {
         selectedChoiceMarkdown: String,
         selectionWasCorrect: Boolean,
         feedbackMarkdown: String,
+        evidenceRequestId: String?,
         choiceSubmittedAtEpochMillis: Long,
     ): Int
 
@@ -272,6 +281,7 @@ internal abstract class TutorInteractionDao {
             selectedChoiceMarkdown = command.selectedChoiceMarkdown,
             selectionWasCorrect = command.selectionWasCorrect,
             feedbackMarkdown = command.feedbackMarkdown,
+            evidenceRequestId = command.evidenceRequestId,
             choiceSubmittedAtEpochMillis = command.choiceSubmittedAtEpochMillis,
         )
         val stored = checkNotNull(
@@ -307,6 +317,7 @@ internal abstract class TutorInteractionDao {
             selectedChoiceMarkdown = command.selectedChoiceMarkdown,
             selectionWasCorrect = command.selectionWasCorrect,
             feedbackMarkdown = command.feedbackMarkdown,
+            evidenceRequestId = command.evidenceRequestId,
             choiceSubmittedAtEpochMillis = command.choiceSubmittedAtEpochMillis,
         ) == 1
 
@@ -564,6 +575,7 @@ private fun PersistTutorChoiceCommand.toEntity() = TutorTurnResponseEntity(
     selectedChoiceMarkdown = selectedChoiceMarkdown,
     selectionWasCorrect = selectionWasCorrect,
     feedbackMarkdown = feedbackMarkdown,
+    evidenceRequestId = evidenceRequestId,
     requestedMove = null,
     solutionRevealed = false,
     choiceSubmittedAtEpochMillis = choiceSubmittedAtEpochMillis,
@@ -607,6 +619,7 @@ private fun PersistTutorMoveCommand.toActionEntity() = TutorTurnResponseEntity(
     selectedChoiceMarkdown = null,
     selectionWasCorrect = null,
     feedbackMarkdown = null,
+    evidenceRequestId = null,
     requestedMove = requestedMove,
     solutionRevealed = false,
     choiceSubmittedAtEpochMillis = null,
@@ -625,6 +638,7 @@ private fun PersistTutorRevealCommand.toActionEntity() = TutorTurnResponseEntity
     selectedChoiceMarkdown = null,
     selectionWasCorrect = null,
     feedbackMarkdown = null,
+    evidenceRequestId = null,
     requestedMove = null,
     solutionRevealed = true,
     choiceSubmittedAtEpochMillis = null,
@@ -637,7 +651,8 @@ private fun TutorTurnResponseEntity.hasSameChoicePayload(other: TutorTurnRespons
         revisionNumber == other.revisionNumber && cycleOrdinal == other.cycleOrdinal &&
         turnOrdinal == other.turnOrdinal && diagnosticStemMarkdown == other.diagnosticStemMarkdown &&
         selectedChoiceId == other.selectedChoiceId && selectedChoiceMarkdown == other.selectedChoiceMarkdown &&
-        selectionWasCorrect == other.selectionWasCorrect && feedbackMarkdown == other.feedbackMarkdown
+        selectionWasCorrect == other.selectionWasCorrect && feedbackMarkdown == other.feedbackMarkdown &&
+        evidenceRequestId == other.evidenceRequestId
 
 private fun TutorVisualTargetEvidenceEntity.hasSameVisualEvidencePayload(
     other: TutorVisualTargetEvidenceEntity,
@@ -690,6 +705,7 @@ internal fun TutorTurnResponseEntity.toRecord() = TutorTurnResponseRecord(
     selectedChoiceMarkdown = selectedChoiceMarkdown,
     selectionWasCorrect = selectionWasCorrect,
     feedbackMarkdown = feedbackMarkdown,
+    evidenceRequestId = evidenceRequestId,
     requestedMove = requestedMove,
     solutionRevealed = solutionRevealed,
     choiceSubmittedAtEpochMillis = choiceSubmittedAtEpochMillis,

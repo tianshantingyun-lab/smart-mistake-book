@@ -65,6 +65,7 @@ class RoomTutorLearningMemoryRepositoryTest {
 
                 "openTutorConversation" -> if (openCalls++ == 0) activeConversation else null
                 "latestActiveTutorConversation" -> activeConversation
+                "latestActiveTutorConversationInNamespace" -> activeConversation
                 "openTutorTurn" -> if (openTurnCalls++ == 0) {
                     TutorTurnReadResult.Found(receipt)
                 } else {
@@ -114,6 +115,10 @@ class RoomTutorLearningMemoryRepositoryTest {
         assertTrue(repository.openConversation(openCommand) is OpenTutorConversationResult.Opened)
         assertEquals(OpenTutorConversationResult.NotFound, repository.openConversation(openCommand))
         assertEquals(activeConversation, repository.latestActiveConversation(LEARNER_ID))
+        assertEquals(
+            activeConversation,
+            repository.latestActiveConversationInNamespace(LEARNER_ID, "conversation-"),
+        )
         assertTrue(runCatching { repository.latestActiveConversation(" learner-1") }.isFailure)
         assertEquals(OpenTutorTurnResult.Found(receipt), repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
         assertEquals(OpenTutorTurnResult.NotFound, repository.openTurn(LEARNER_ID, receipt.turnReceiptId))
