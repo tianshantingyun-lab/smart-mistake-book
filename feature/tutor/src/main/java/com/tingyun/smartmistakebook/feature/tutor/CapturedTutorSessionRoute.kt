@@ -2872,14 +2872,19 @@ internal fun TutorModelPanel(
             return@LaunchedEffect
         }
         when (val pendingAction = pendingEgressState.action) {
-            is PendingTutorEgressAction.NewResponse ->
-                pendingTutorResponseMessage(pendingAction)?.let { response ->
+            is PendingTutorEgressAction.NewResponse -> {
+                val response = pendingTutorResponseMessage(pendingAction)
+                if (response == null) {
+                    pendingEgressState = PendingTutorEgressState()
+                    interactionError = "互动内容已更新，请根据当前提示重新选择。"
+                } else {
                     executeTutorResponse(
                         response = response,
                         requestedMove = pendingAction.requestedMove,
                         clearDraftOnPersist = pendingAction.clearDraftOnPersist,
                     )
                 }
+            }
             is PendingTutorEgressAction.RetryResponse ->
                 pendingLocalRetryTask?.let(::retryTutorResponse)
             is PendingTutorEgressAction.Plan,
@@ -3680,7 +3685,13 @@ internal fun TutorModelPanel(
                         grantExternalEgressLease(requireNotNull(currentProvider), approvedAt)
                         forceResponseDisclosure = false
                         if (pendingResponseAction is PendingTutorEgressAction.NewResponse) {
-                            pendingTutorResponseMessage(pendingResponseAction)?.let { response ->
+                            val response = pendingTutorResponseMessage(pendingResponseAction)
+                            if (response == null) {
+                                pendingEgressState = PendingTutorEgressState()
+                                interactionError = "互动内容已更新，请根据当前提示重新选择。"
+                                return@TutorRespondDisclosureCard
+                            }
+                            run {
                                 executeTutorResponse(
                                     response = response,
                                     requestedMove = pendingResponseAction.requestedMove,

@@ -748,11 +748,15 @@ fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
         turnOrdinal == input.turnOrdinal
 
 /**
- * Replaces every provider-authored GUIDED explanation with a bounded local interaction. Returning
- * null means the response cannot be made safe without inventing model authority.
+ * Validates the response against the chosen explanation boundary without replacing model-authored
+ * guided interactions. Returning null means the output cannot safely be rendered as requested.
  */
 fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRespondOutput? {
-    if (input.authorizesSolutionExposure()) return this
+    if (input.explanationMode == TutorExplanationMode.DIRECT ||
+        input.authorizesSolutionExposure()
+    ) {
+        return takeIf { interactionDirective == null }
+    }
     if (
         solutionRevealed ||
         visualScene != null ||
@@ -762,20 +766,8 @@ fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRes
     ) {
         return null
     }
-    val safeDirective = when (interactionDirective) {
-        TutorInteractionDirective.Continue -> TutorInteractionDirective.Continue
-        is TutorInteractionDirective.FreeResponse -> TutorInteractionDirective.FreeResponse(
-            promptMarkdown = GUIDED_FREE_RESPONSE_PROMPT,
-        )
-        is TutorInteractionDirective.Choices,
-        is TutorInteractionDirective.VisualTarget,
-        null,
-        -> return null
-    }
-    return copy(
-        messageMarkdown = GUIDED_INTERACTION_MESSAGE,
-        interactionDirective = safeDirective,
-    )
+    if (interactionDirective == null) return null
+    return this
 }
 
 const val GUIDED_INTERACTION_MESSAGE = "先完成下面这个小步骤。"

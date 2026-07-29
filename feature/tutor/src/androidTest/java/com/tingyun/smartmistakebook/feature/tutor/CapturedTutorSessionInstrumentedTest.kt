@@ -1837,6 +1837,115 @@ class CapturedTutorSessionInstrumentedTest {
     }
 
     @Test
+    fun externalFollowUpChoiceRestoresItsVisibleDirectiveAfterApproval() {
+        val session = session()
+        var now = 10_000L
+        val directive = TutorInteractionDirective.Choices(
+            promptMarkdown = "选择下一步。",
+            choices = listOf(
+                TutorInteractionChoice("follow-up-a", "继续"),
+                TutorInteractionChoice("follow-up-b", "继续"),
+            ),
+        )
+        val modelTasks = ChatModelTaskRepository(
+            session = session,
+            restoredSucceededMessage = "我还是不明白。",
+            restoredSucceededInteractionDirective = directive,
+            externalProvider = true,
+            masteryRelevantPlan = true,
+        )
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { now },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = modelTasks,
+                    interactions = RecordingTutorInteractions(),
+                    profile = StudyProfileOverview(),
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
+            .performScrollTo()
+            .performClick()
+        composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
+        composeRule.onNodeWithTag("captured_tutor_directive_choice_follow-up-b")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
+            .performScrollTo()
+            .performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            modelTasks.executeRespondCalls == 1
+        }
+        composeRule.runOnIdle {
+            val request = modelTasks.respondRequests.single()
+            val input = request.input as TutorRespondInput
+            assertEquals("继续", input.studentMessage)
+            assertEquals("follow-up-b", input.selectedChoiceId)
+        }
+        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
+    }
+
+    @Test
+    fun staleExternalFollowUpChoiceClearsPendingApprovalWithoutSendingIt() {
+        val session = session()
+        var now = 10_000L
+        val modelTasks = ChatModelTaskRepository(
+            session = session,
+            restoredSucceededMessage = "我还是不明白。",
+            restoredSucceededInteractionDirective = TutorInteractionDirective.Choices(
+                promptMarkdown = "选择下一步。",
+                choices = listOf(
+                    TutorInteractionChoice("follow-up-a", "继续"),
+                    TutorInteractionChoice("follow-up-b", "继续"),
+                ),
+            ),
+            externalProvider = true,
+            masteryRelevantPlan = true,
+        )
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { now },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = modelTasks,
+                    interactions = RecordingTutorInteractions(),
+                    profile = StudyProfileOverview(),
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
+            .performScrollTo()
+            .performClick()
+        composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
+        composeRule.onNodeWithTag("captured_tutor_directive_choice_follow-up-b")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag("tutor_respond_disclosure_approve").assertExists()
+        composeRule.runOnIdle {
+            modelTasks.respondTasks.value = emptyList()
+        }
+        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
+            .performScrollTo()
+            .performClick()
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
+        assertTrue(modelTasks.respondRequests.isEmpty())
+    }
+
+    @Test
     fun restoredPendingExternalPlanWaitsForConsentThenResumesTheExactTurnOnce() {
         val session = session()
         val modelTasks = ChatModelTaskRepository(
@@ -3274,6 +3383,7 @@ class CapturedTutorSessionInstrumentedTest {
         private val restoredSucceededIntentDecision: TutorIntentDecision =
             TutorIntentDecision.currentQuestionDefault(),
         private val restoredSucceededSuggestedMoves: List<TutorSuggestedMove> = emptyList(),
+        private val restoredSucceededInteractionDirective: TutorInteractionDirective? = null,
         private val initialInteractionDirective: TutorInteractionDirective? = null,
         private val restoredCycleOrdinal: Int = 1,
         private val restoredTurnOrdinal: Int = 1,
@@ -3447,6 +3557,7 @@ class CapturedTutorSessionInstrumentedTest {
                                 messageMarkdown = "先看导数在临界点两侧的符号。",
                                 solutionRevealed = restoredSucceededRevealsSolution,
                                 suggestedMoves = restoredSucceededSuggestedMoves,
+                                interactionDirective = restoredSucceededInteractionDirective,
                                 intentDecision = restoredSucceededIntentDecision,
                                 modelVersion = "model-v1",
                             )

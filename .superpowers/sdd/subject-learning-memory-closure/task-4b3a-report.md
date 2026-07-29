@@ -28,4 +28,12 @@
 - Pending external responses now retain the directive source request ID as well as the choice ID.
 - PASS from `T:\`: `:core:model:compileKotlin :core:model:compileTestKotlin :feature:tutor:compileDebugKotlin :feature:tutor:compileDebugUnitTestKotlin`.
 - JVM execution remains blocked before tests begin by the documented Gradle worker classpath failure.
-- Remaining verification: follow-up directive external-authorization Compose recovery still needs its dedicated route test.
+
+## Fix round 2
+
+- Corrected the completion boundary: DIRECT and any solution-authorized reply must not carry an interaction directive. Ordinary GUIDED replies retain their model-authored Continue, Choices, FreeResponse, or VisualTarget structure rather than being replaced with a local prompt.
+- External follow-up choice recovery now has a dedicated Compose route test: after initial authorization expires, a selected visible choice produces fresh external authorization, and approval resumes the exact `selectedChoiceId` and label.
+- Added a stale-timeline Compose test: if the source reply disappears before approval, the pending action clears and sends no request.
+- PASS from `T:\`: `:core:model:compileKotlin :core:model:compileTestKotlin :feature:tutor:compileDebugKotlin :feature:tutor:compileDebugAndroidTestKotlin --no-daemon --no-configuration-cache '-Pksp.incremental=false'` (29s).
+- PASS from `T:\` with `ANDROID_SERIAL=emulator-5558`: `CapturedTutorSessionInstrumentedTest#externalFollowUpChoiceRestoresItsVisibleDirectiveAfterApproval` (1m 04s) and `#staleExternalFollowUpChoiceClearsPendingApprovalWithoutSendingIt` (24s).
+- BLOCKED: targeted `TutorTasksTest#guidedInteractionsRemainModelAuthoredWhileDirectAndRevealRepliesCannotAskAgain` still cannot start because Gradle's test executor throws `ClassNotFoundException: worker.org.gradle.process.internal.worker.GradleWorkerMain` before any test runs.

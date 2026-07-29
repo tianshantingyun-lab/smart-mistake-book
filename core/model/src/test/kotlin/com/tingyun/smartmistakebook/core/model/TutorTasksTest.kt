@@ -294,6 +294,52 @@ class TutorTasksTest {
     }
 
     @Test
+    fun guidedInteractionsRemainModelAuthoredWhileDirectAndRevealRepliesCannotAskAgain() {
+        val directives = listOf<TutorInteractionDirective>(
+            TutorInteractionDirective.Choices(
+                promptMarkdown = "下一步选哪种判断？",
+                choices = listOf(
+                    TutorInteractionChoice("sign", "判断导数符号"),
+                    TutorInteractionChoice("value", "代入临界点"),
+                ),
+            ),
+            TutorInteractionDirective.FreeResponse("写下下一步判断。"),
+            TutorInteractionDirective.VisualTarget("点出临界点。", "critical-point"),
+        )
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+        )
+        val directInput = guidedInput.copy(
+            explanationMode = TutorExplanationMode.DIRECT,
+        )
+        val revealInput = guidedInput.copy(
+            requestedMove = TutorMoveType.REVEAL_SOLUTION,
+        )
+
+        directives.forEach { directive ->
+            val output = respondOutput().copy(
+                interactionDirective = directive,
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            )
+            assertTrue(
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    output,
+                ).isEmpty(),
+            )
+            listOf(directInput, revealInput).forEach { input ->
+                assertEquals(
+                    listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                    ModelTaskCompletionValidator.validate(
+                        respondRequest(input),
+                        output,
+                    ).map { it.code },
+                )
+            }
+        }
+    }
+
+    @Test
     fun guidedModeWithoutExplicitRequestRejectsSolutionAcrossBothBoundaries() {
         val guidedInput = respondInput().copy(
             explanationMode = TutorExplanationMode.GUIDED,
