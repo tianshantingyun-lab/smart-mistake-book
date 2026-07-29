@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.database
 
 import android.content.Context
+import androidx.room3.executeSQL
+import androidx.room3.withWriteTransaction
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.model.LearningObservationFactKind
@@ -364,6 +366,171 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
             assertEquals(1, dao.countAnchors())
             assertEquals(1, dao.countSourceFacts())
         } finally {
+            store.close()
+        }
+    }
+
+    @Test
+    fun archivedConversationReplayRepairsLegacyPendingEvidenceExactlyOnce() = runBlocking {
+        var now = TRUSTED_NOW
+        val store = StudyDatabaseFactory.openInMemory(context()) { now }
+        try {
+            store.createTutorConversation(createConversation())
+            val turn = store.allocateTutorTurn(
+                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
+            ).receipt
+            val pending = prepareEvidence(turn.conversationStateVersion)
+            val initial = store.prepareTutorEvidenceRequest(pending).request
+            val archive = ArchiveTutorConversationCommand(
+                learnerId = LEARNER_ID,
+                conversationId = CONVERSATION_ID,
+                conversationGeneration = 1,
+                expectedStateVersion = turn.conversationStateVersion,
+                idempotencyKey = "legacy-archive",
+                payloadFingerprint = sha256("legacy-archive"),
+            )
+            store.database.withWriteTransaction {
+                executeSQL(
+                    """
+                    UPDATE tutor_conversation
+                    SET status = 'ARCHIVED',
+                        archive_idempotency_key = '${archive.idempotencyKey}',
+                        archive_payload_fingerprint = '${archive.payloadFingerprint}',
+                        archived_at_epoch_millis = $now,
+                        updated_at_epoch_millis = $now,
+                        state_version = state_version + 1
+                    WHERE conversation_id = '$CONVERSATION_ID'
+                    """.trimIndent(),
+                )
+            }
+
+            now += 1_000
+            val firstReplay = store.archiveTutorConversation(archive)
+            val repaired = store.prepareTutorEvidenceRequest(pending).request
+            now += 1_000
+            val secondReplay = store.archiveTutorConversation(archive)
+            val stable = store.prepareTutorEvidenceRequest(pending).request
+
+            assertFalse(firstReplay.archived)
+            assertFalse(secondReplay.archived)
+            assertEquals(TutorEvidenceRequestStatus.PENDING, initial.status)
+            assertEquals(TutorEvidenceRequestStatus.CANCELLED, repaired.status)
+            assertEquals(initial.stateVersion + 1, repaired.stateVersion)
+            assertEquals(TRUSTED_NOW + 1_000, repaired.resolvedAtEpochMillis)
+            assertEquals(repaired, stable)
+            val dao = store.database.tutorLearningMemoryDao()
+            assertEquals(1, dao.countEvidenceRequests(TutorEvidenceRequestStatus.CANCELLED.name))
+            assertEquals(0, dao.countAnchors())
+            assertEquals(0, dao.countSourceFacts())
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
+    fun archiveResolutionNeverPrecedesEvidenceWhenTrustedClockMovesBackward() = runBlocking {
+        var now = TRUSTED_NOW - 2_000
+        val store = StudyDatabaseFactory.openInMemory(context()) { now }
+        try {
+            store.createTutorConversation(createConversation())
+            now = TRUSTED_NOW
+            val turn = store.allocateTutorTurn(
+                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
+            ).receipt
+            val pending = prepareEvidence(turn.conversationStateVersion)
+            val created = store.prepareTutorEvidenceRequest(pending).request
+
+            now = TRUSTED_NOW - 1_000
+            store.archiveTutorConversation(
+                ArchiveTutorConversationCommand(
+                    learnerId = LEARNER_ID,
+                    conversationId = CONVERSATION_ID,
+                    conversationGeneration = 1,
+                    expectedStateVersion = turn.conversationStateVersion,
+                    idempotencyKey = "clock-rollback-archive",
+                    payloadFingerprint = sha256("clock-rollback-archive"),
+                ),
+            )
+            val cancelled = store.prepareTutorEvidenceRequest(pending).request
+
+            assertEquals(TutorEvidenceRequestStatus.CANCELLED, cancelled.status)
+            assertEquals(created.createdAtEpochMillis, cancelled.resolvedAtEpochMillis)
+            assertEquals(TRUSTED_NOW, cancelled.resolvedAtEpochMillis)
+        } finally {
+            store.close()
+        }
+    }
+
+    @Test
+    fun archiveFailureAfterEvidenceCancellationRollsBackEntireTransaction() = runBlocking {
+        val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
+        try {
+            store.createTutorConversation(createConversation())
+            val turn = store.allocateTutorTurn(
+                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
+            ).receipt
+            val first = prepareEvidence(
+                conversationStateVersion = turn.conversationStateVersion,
+                requestId = "rollback-pending-1",
+                idempotencyKey = "rollback-prepare-1",
+                payloadSeed = "rollback-prepare-1",
+            )
+            val second = prepareEvidence(
+                conversationStateVersion = turn.conversationStateVersion,
+                requestId = "rollback-pending-2",
+                idempotencyKey = "rollback-prepare-2",
+                payloadSeed = "rollback-prepare-2",
+            )
+            val firstBefore = store.prepareTutorEvidenceRequest(first).request
+            val secondBefore = store.prepareTutorEvidenceRequest(second).request
+            store.database.withWriteTransaction {
+                executeSQL(
+                    """
+                    CREATE TRIGGER fail_tutor_conversation_archive
+                    BEFORE UPDATE OF status ON tutor_conversation
+                    WHEN NEW.status = 'ARCHIVED'
+                    BEGIN
+                        SELECT RAISE(ABORT, 'forced archive failure');
+                    END
+                    """.trimIndent(),
+                )
+            }
+
+            val failure = runCatching {
+                store.archiveTutorConversation(
+                    ArchiveTutorConversationCommand(
+                        learnerId = LEARNER_ID,
+                        conversationId = CONVERSATION_ID,
+                        conversationGeneration = 1,
+                        expectedStateVersion = turn.conversationStateVersion,
+                        idempotencyKey = "forced-failure-archive",
+                        payloadFingerprint = sha256("forced-failure-archive"),
+                    ),
+                )
+            }.exceptionOrNull()
+            assertTrue("Expected the archive trigger to abort the transaction", failure != null)
+
+            assertEquals(firstBefore, store.prepareTutorEvidenceRequest(first).request)
+            assertEquals(secondBefore, store.prepareTutorEvidenceRequest(second).request)
+            listOf(firstBefore, secondBefore).forEach { request ->
+                assertEquals(TutorEvidenceRequestStatus.PENDING, request.status)
+                assertEquals(0, request.stateVersion)
+                assertNull(request.resolvedAtEpochMillis)
+                assertNull(request.terminalSourceFactId)
+            }
+            assertEquals(
+                TutorConversationStatus.ACTIVE,
+                store.openTutorConversation(LEARNER_ID, CONVERSATION_ID, 1)?.status,
+            )
+            val dao = store.database.tutorLearningMemoryDao()
+            assertEquals(2, dao.countEvidenceRequests(TutorEvidenceRequestStatus.PENDING.name))
+            assertEquals(0, dao.countEvidenceRequests(TutorEvidenceRequestStatus.CANCELLED.name))
+            assertEquals(0, dao.countAnchors())
+            assertEquals(0, dao.countSourceFacts())
+        } finally {
+            store.database.withWriteTransaction {
+                executeSQL("DROP TRIGGER IF EXISTS fail_tutor_conversation_archive")
+            }
             store.close()
         }
     }
