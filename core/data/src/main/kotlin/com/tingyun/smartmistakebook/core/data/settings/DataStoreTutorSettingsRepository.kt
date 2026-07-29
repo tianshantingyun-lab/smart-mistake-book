@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class DataStoreTutorSettingsRepository internal constructor(
@@ -40,10 +41,24 @@ class DataStoreTutorSettingsRepository internal constructor(
         .map(::snapshotFrom)
         .distinctUntilChanged()
 
+    override val mode: Flow<TutorExplanationMode> = modeSnapshot
+        .map { snapshot -> snapshot.mode }
+        .distinctUntilChanged()
+
+    override suspend fun currentModeSnapshot(): TutorExplanationModeSnapshot = modeSnapshot.first()
+
+    override suspend fun currentMode(): TutorExplanationMode = currentModeSnapshot().mode
+
     override suspend fun setMode(mode: TutorExplanationMode) {
         dataStore.edit { values ->
             val current = snapshotFrom(values)
-            if (current.mode == mode) return@edit
+            if (current.mode == mode) {
+                if (!rawStateIsCanonical(values)) {
+                    values[MODE_KEY] = current.mode.name
+                    values[MODE_VERSION_KEY] = current.modeVersion
+                }
+                return@edit
+            }
 
             check(current.modeVersion < Long.MAX_VALUE) {
                 "Tutor explanation mode version overflow"
@@ -55,26 +70,32 @@ class DataStoreTutorSettingsRepository internal constructor(
 
     private fun snapshotFrom(values: Preferences): TutorExplanationModeSnapshot {
         val storedMode = values[MODE_KEY]
-        val storedVersion = values[MODE_VERSION_KEY]
-        if (storedMode == null && storedVersion != null) return DEFAULT_SNAPSHOT
+        val storedVersion = values[MODE_VERSION_KEY] ?: 0L
+        if (storedVersion < 0L) return FAILED_CLOSED_SNAPSHOT
         val mode = storedMode
             ?.let { stored -> runCatching { TutorExplanationMode.valueOf(stored) }.getOrNull() }
-            ?: if (storedMode == null) TutorExplanationMode.DIRECT else return DEFAULT_SNAPSHOT
-        val version = storedVersion ?: 0L
-        if (version < 0L) return DEFAULT_SNAPSHOT
+            ?: TutorExplanationMode.DIRECT
         return TutorExplanationModeSnapshot(
             mode = mode,
-            modeVersion = version,
+            modeVersion = storedVersion,
         )
+    }
+
+    private fun rawStateIsCanonical(values: Preferences): Boolean {
+        val storedMode = values[MODE_KEY]
+        val storedVersion = values[MODE_VERSION_KEY]
+        if (storedVersion != null && storedVersion < 0L) return false
+        if (storedMode == null) return storedVersion == null
+        return runCatching { TutorExplanationMode.valueOf(storedMode) }.isSuccess
     }
 
     internal companion object {
         const val DATASTORE_FILE = "tutor_settings.preferences_pb"
         val MODE_KEY = stringPreferencesKey("explanation_mode")
         val MODE_VERSION_KEY = longPreferencesKey("explanation_mode_version")
-        val DEFAULT_SNAPSHOT = TutorExplanationModeSnapshot(
+        val FAILED_CLOSED_SNAPSHOT = TutorExplanationModeSnapshot(
             mode = TutorExplanationMode.DIRECT,
-            modeVersion = 0L,
+            modeVersion = Long.MAX_VALUE,
         )
     }
 }

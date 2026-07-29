@@ -5,7 +5,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.mutablePreferencesOf
 import com.tingyun.smartmistakebook.core.domain.TutorExplanationModeSnapshot
+import com.tingyun.smartmistakebook.core.domain.TutorSettingsRepository
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
@@ -82,29 +85,96 @@ class DataStoreTutorSettingsRepositoryTest {
     }
 
     @Test
-    fun corruptStoredSettingsFallBackToDirectAtVersionZero() = runBlocking {
+    fun legacyRepositoryImplementationAdaptsModeToVersionZeroSnapshot() = runBlocking {
+        val repository = LegacyTutorSettingsRepository(TutorExplanationMode.GUIDED)
+
+        assertEquals(
+            TutorExplanationModeSnapshot(TutorExplanationMode.GUIDED, 0L),
+            repository.modeSnapshot.first(),
+        )
+        assertEquals(
+            TutorExplanationModeSnapshot(TutorExplanationMode.GUIDED, 0L),
+            repository.currentModeSnapshot(),
+        )
+    }
+
+    @Test
+    fun unknownAndOrphanModesPreserveNonNegativeVersionAndAreRepaired() = runBlocking {
         val store = MemoryPreferencesDataStore()
-        store.updateData { values ->
+        store.updateData {
             mutablePreferencesOf(
                 DataStoreTutorSettingsRepository.MODE_KEY to "FUTURE_MODE",
                 DataStoreTutorSettingsRepository.MODE_VERSION_KEY to 42L,
             )
         }
+        val repository = DataStoreTutorSettingsRepository(store)
 
         assertEquals(
-            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, 0L),
-            DataStoreTutorSettingsRepository(store).currentModeSnapshot(),
+            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, 42L),
+            repository.currentModeSnapshot(),
+        )
+        repository.setMode(TutorExplanationMode.DIRECT)
+        assertEquals(
+            TutorExplanationMode.DIRECT.name,
+            store.data.first()[DataStoreTutorSettingsRepository.MODE_KEY],
+        )
+        assertEquals(
+            42L,
+            store.data.first()[DataStoreTutorSettingsRepository.MODE_VERSION_KEY],
         )
 
+        store.updateData {
+            mutablePreferencesOf(
+                DataStoreTutorSettingsRepository.MODE_VERSION_KEY to 73L,
+            )
+        }
+        assertEquals(
+            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, 73L),
+            repository.currentModeSnapshot(),
+        )
+        repository.setMode(TutorExplanationMode.DIRECT)
+        assertEquals(
+            TutorExplanationMode.DIRECT.name,
+            store.data.first()[DataStoreTutorSettingsRepository.MODE_KEY],
+        )
+        assertEquals(
+            73L,
+            store.data.first()[DataStoreTutorSettingsRepository.MODE_VERSION_KEY],
+        )
+    }
+
+    @Test
+    fun negativeVersionFailsClosedAndCannotBeReusedForModeChange() = runBlocking {
+        val store = MemoryPreferencesDataStore()
         store.updateData {
             mutablePreferencesOf(
                 DataStoreTutorSettingsRepository.MODE_KEY to TutorExplanationMode.GUIDED.name,
                 DataStoreTutorSettingsRepository.MODE_VERSION_KEY to -1L,
             )
         }
+        val repository = DataStoreTutorSettingsRepository(store)
+
         assertEquals(
-            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, 0L),
-            DataStoreTutorSettingsRepository(store).currentModeSnapshot(),
+            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, Long.MAX_VALUE),
+            repository.currentModeSnapshot(),
+        )
+        repository.setMode(TutorExplanationMode.DIRECT)
+        assertEquals(
+            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, Long.MAX_VALUE),
+            repository.currentModeSnapshot(),
+        )
+        assertEquals(
+            TutorExplanationMode.DIRECT.name,
+            store.data.first()[DataStoreTutorSettingsRepository.MODE_KEY],
+        )
+        assertThrows(IllegalStateException::class.java) {
+            runBlocking {
+                repository.setMode(TutorExplanationMode.GUIDED)
+            }
+        }
+        assertEquals(
+            TutorExplanationModeSnapshot(TutorExplanationMode.DIRECT, Long.MAX_VALUE),
+            repository.currentModeSnapshot(),
         )
     }
 
@@ -131,30 +201,29 @@ class DataStoreTutorSettingsRepositoryTest {
     }
 
     @Test
-    fun concurrentSetModeKeepsEverySerializedTransition() = runBlocking {
+    fun concurrentSameTargetSetModeAdvancesVersionOnlyOnce() = runBlocking {
         val store = MemoryPreferencesDataStore()
         val repository = DataStoreTutorSettingsRepository(store)
+        val start = CompletableDeferred<Unit>()
 
-        List(100) { index ->
-            async {
-                repository.setMode(
-                    if (index % 2 == 0) TutorExplanationMode.GUIDED else TutorExplanationMode.DIRECT,
-                )
+        val requests = List(100) {
+            async(Dispatchers.Default) {
+                start.await()
+                repository.setMode(TutorExplanationMode.GUIDED)
             }
-        }.awaitAll()
+        }
+        start.complete(Unit)
+        requests.awaitAll()
 
-        val expectedTransitions = store.committedModes
-            .fold(TutorExplanationMode.DIRECT to 0L) { (previous, transitions), committed ->
-                committed to (transitions + if (committed == previous) 0L else 1L)
-            }
-            .second
-        assertEquals(expectedTransitions, repository.currentModeSnapshot().modeVersion)
+        assertEquals(
+            TutorExplanationModeSnapshot(TutorExplanationMode.GUIDED, 1L),
+            repository.currentModeSnapshot(),
+        )
     }
 
     private class MemoryPreferencesDataStore : DataStore<Preferences> {
         private val state = MutableStateFlow<Preferences>(emptyPreferences())
         private val updateMutex = Mutex()
-        val committedModes = mutableListOf<TutorExplanationMode>()
 
         override val data: Flow<Preferences> = state
 
@@ -163,10 +232,20 @@ class DataStoreTutorSettingsRepositoryTest {
         ): Preferences = updateMutex.withLock {
             val updated = transform(state.value)
             state.value = updated
-            updated[DataStoreTutorSettingsRepository.MODE_KEY]
-                ?.let { stored -> runCatching { TutorExplanationMode.valueOf(stored) }.getOrNull() }
-                ?.let(committedModes::add)
             updated
+        }
+    }
+
+    private class LegacyTutorSettingsRepository(
+        initialMode: TutorExplanationMode,
+    ) : TutorSettingsRepository {
+        private val mutableMode = MutableStateFlow(initialMode)
+        override val mode: Flow<TutorExplanationMode> = mutableMode
+
+        override suspend fun currentMode(): TutorExplanationMode = mutableMode.value
+
+        override suspend fun setMode(mode: TutorExplanationMode) {
+            mutableMode.value = mode
         }
     }
 }

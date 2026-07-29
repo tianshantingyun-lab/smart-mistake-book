@@ -3,7 +3,6 @@ package com.tingyun.smartmistakebook.core.domain
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 data class TutorExplanationModeSnapshot(
@@ -16,16 +15,17 @@ data class TutorExplanationModeSnapshot(
 }
 
 interface TutorSettingsRepository {
-    val modeSnapshot: Flow<TutorExplanationModeSnapshot>
-
     val mode: Flow<TutorExplanationMode>
-        get() = modeSnapshot
-            .map { snapshot -> snapshot.mode }
+
+    val modeSnapshot: Flow<TutorExplanationModeSnapshot>
+        get() = mode
+            .map { mode -> TutorExplanationModeSnapshot(mode = mode, modeVersion = 0L) }
             .distinctUntilChanged()
 
-    suspend fun currentModeSnapshot(): TutorExplanationModeSnapshot = modeSnapshot.first()
+    suspend fun currentMode(): TutorExplanationMode
 
-    suspend fun currentMode(): TutorExplanationMode = currentModeSnapshot().mode
+    suspend fun currentModeSnapshot(): TutorExplanationModeSnapshot =
+        TutorExplanationModeSnapshot(mode = currentMode(), modeVersion = 0L)
 
     suspend fun setMode(mode: TutorExplanationMode)
 }
