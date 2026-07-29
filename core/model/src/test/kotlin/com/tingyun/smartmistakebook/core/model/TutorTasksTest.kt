@@ -398,6 +398,203 @@ class TutorTasksTest {
     }
 
     @Test
+    fun locallyAuthorizedSolutionTakesPriorityOverTheModelIntentLabel() {
+        val directInput = respondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val mislabeledSolution = respondOutput().copy(
+            solutionRevealed = true,
+            messageMarkdown = "完整解法是先求导，再根据导数符号写出全部单调区间。",
+            intentDecision = TutorIntentDecision(
+                intent = TutorMessageIntent.CASUAL_CONVERSATION,
+                confidence = 0.96,
+                explicitActionRequest = false,
+                memoryPreference = TutorMemoryPreference.UNCHANGED,
+                requestedLocalCapability = TutorRequestedLocalCapability.NONE,
+            ),
+        )
+
+        assertEquals(mislabeledSolution, mislabeledSolution.locallyConstrainedFor(directInput))
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(directInput),
+                mislabeledSolution,
+            ).isEmpty(),
+        )
+    }
+
+    @Test
+    fun explicitRevealCannotBeSilentlyDowngradedToANonLearningReply() {
+        val revealInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+            requestedMove = TutorMoveType.REVEAL_SOLUTION,
+        )
+        val deniedReveal = respondOutput().copy(
+            solutionRevealed = false,
+            messageMarkdown = "好的，我们先暂停。",
+            intentDecision = TutorIntentDecision(
+                intent = TutorMessageIntent.END_OR_PAUSE,
+                confidence = 0.98,
+                explicitActionRequest = false,
+                memoryPreference = TutorMemoryPreference.UNCHANGED,
+                requestedLocalCapability = TutorRequestedLocalCapability.NONE,
+            ),
+        )
+
+        assertTrue(revealInput.authorizesSolutionExposure())
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+            ModelTaskCompletionValidator.validate(
+                respondRequest(revealInput),
+                deniedReveal,
+            ).map { it.code },
+        )
+    }
+
+    @Test
+    fun nonLearningIntentRejectsDeterministicTeachingButAllowsABenignReply() {
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+            requestedMove = null,
+        )
+        val pauseIntent = TutorIntentDecision(
+            intent = TutorMessageIntent.END_OR_PAUSE,
+            confidence = 0.98,
+            explicitActionRequest = false,
+            memoryPreference = TutorMemoryPreference.UNCHANGED,
+            requestedLocalCapability = TutorRequestedLocalCapability.NONE,
+        )
+        val unsafeMessages = listOf(
+            "最终答案为 B。",
+            "先求导，再令 f'(x)=0。",
+            "由已知条件推出 x=2。",
+        )
+
+        unsafeMessages.forEach { message ->
+            val unsafe = respondOutput().copy(
+                messageMarkdown = message,
+                intentDecision = pauseIntent,
+            )
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    unsafe,
+                ).map { it.code },
+            )
+        }
+
+        val benign = respondOutput().copy(
+            messageMarkdown = "好的，这次先暂停。",
+            intentDecision = pauseIntent,
+        )
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                benign,
+            ).isEmpty(),
+        )
+    }
+
+    @Test
+    fun directAndGuidedExplanationOnlyRepliesRejectQuestionsAnywhereInTheText() {
+        val directInput = respondInput().copy(explanationMode = TutorExplanationMode.DIRECT)
+        val directWithEmbeddedQuestion = respondOutput().copy(
+            solutionRevealed = true,
+            messageMarkdown = "你明白吗？接着根据导数符号写出全部单调区间。",
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+        val guidedInput = respondInput().copy(
+            explanationMode = TutorExplanationMode.GUIDED,
+            requestedMove = null,
+        )
+        val guidedWithEmbeddedQuestion = respondOutput().copy(
+            messageMarkdown = "先比较导数符号？然后说明函数的变化。",
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+
+        listOf(
+            respondRequest(directInput) to directWithEmbeddedQuestion,
+            respondRequest(guidedInput) to guidedWithEmbeddedQuestion,
+        ).forEach { (request, output) ->
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(request, output).map { it.code },
+            )
+        }
+    }
+
+    @Test
+    fun guidedFreeResponseAndVisualTargetAcceptSafeImperativesButRejectAnswerDeclarations() {
+        val guidedInput = respondInput().copy(explanationMode = TutorExplanationMode.GUIDED)
+        val safeDirectives = listOf<TutorInteractionDirective>(
+            TutorInteractionDirective.FreeResponse("请写下下一步判断。"),
+            TutorInteractionDirective.VisualTarget("点出图中的临界点。", "critical-point"),
+        )
+
+        safeDirectives.forEach { directive ->
+            val providerOutput = respondOutput().copy(
+                interactionDirective = directive,
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            )
+            val constrained = requireNotNull(providerOutput.locallyConstrainedFor(guidedInput))
+            assertEquals(GUIDED_INTERACTION_MESSAGE, constrained.messageMarkdown)
+            assertEquals(directive, constrained.interactionDirective)
+        }
+
+        val answerDeclaration = respondOutput().copy(
+            interactionDirective = TutorInteractionDirective.FreeResponse("请写下答案是 2。"),
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+        assertEquals(
+            listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                answerDeclaration,
+            ).map { it.code },
+        )
+    }
+
+    @Test
+    fun guidedChoiceLabelsRejectMetaAnswersWithoutRejectingSubjectErrorDescriptions() {
+        val guidedInput = respondInput().copy(explanationMode = TutorExplanationMode.GUIDED)
+        val safe = respondOutput().copy(
+            interactionDirective = TutorInteractionDirective.Choices(
+                promptMarkdown = "这一步更像是哪类问题？",
+                choices = listOf(
+                    TutorInteractionChoice("sign", "符号错误"),
+                    TutorInteractionChoice("calculation", "计算错误"),
+                ),
+            ),
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+        assertTrue(
+            ModelTaskCompletionValidator.validate(
+                respondRequest(guidedInput),
+                safe.copy(messageMarkdown = GUIDED_INTERACTION_MESSAGE),
+            ).isEmpty(),
+        )
+
+        listOf("最终选项", "答案 B", "正确答案", "应选").forEachIndexed { index, marker ->
+            val unsafe = respondOutput().copy(
+                interactionDirective = TutorInteractionDirective.Choices(
+                    promptMarkdown = "这一步更像是哪类问题？",
+                    choices = listOf(
+                        TutorInteractionChoice("unsafe-$index", marker),
+                        TutorInteractionChoice("other-$index", "检查条件"),
+                    ),
+                ),
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            )
+            assertEquals(
+                listOf(ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION),
+                ModelTaskCompletionValidator.validate(
+                    respondRequest(guidedInput),
+                    unsafe,
+                ).map { it.code },
+            )
+        }
+    }
+
+    @Test
     fun directModeAuthorizesSolutionAcrossCompletionAndExposureBoundaries() {
         val directInput = respondInput().copy(
             explanationMode = TutorExplanationMode.DIRECT,

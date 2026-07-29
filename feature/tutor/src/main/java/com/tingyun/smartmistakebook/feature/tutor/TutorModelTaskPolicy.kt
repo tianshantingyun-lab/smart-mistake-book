@@ -252,6 +252,7 @@ internal fun ModelTaskSnapshot.coversCurrentTutorDisclosure(
 internal fun ModelTaskSnapshot.requiresFreshTutorApproval(
     provider: ProviderCapabilitySnapshot,
 ): Boolean {
+    if (request.schemaVersion < ModelTaskRequest.EGRESS_SCHEMA_VERSION) return false
     val failureCode = failure?.code ?: return false
     return !coversCurrentTutorDisclosure(provider, request.input.kind) ||
         failureCode.requiresEgressAuthorizationRenewal() ||

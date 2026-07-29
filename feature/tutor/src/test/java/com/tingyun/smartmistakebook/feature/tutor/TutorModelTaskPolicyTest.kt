@@ -343,11 +343,13 @@ class TutorModelTaskPolicyTest {
             input = respondInput("解释这一步"),
             occurredAtEpochMillis = 300,
         )
+        val failed = failedTutorTask(legacy, provider)
 
+        assertFalse(failed.requiresFreshTutorApproval(provider))
         assertTrue(
             runCatching {
                 rebuildTutorRequestAfterApproval(
-                    failedTask = failedTutorTask(legacy, provider),
+                    failedTask = failed,
                     provider = provider,
                     approvedAtEpochMillis = 500,
                 )

@@ -1275,6 +1275,28 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
+    fun guidedTutorResponseAcceptsAModelSelectedImperativeFreeResponse() = runBlocking {
+        val directive = buildJsonObject {
+            put("kind", "FREE_RESPONSE")
+            put("promptMarkdown", "请写下下一步判断。")
+        }
+
+        val completed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                extraTopLevel = "interactionDirective" to directive,
+            ),
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.GUIDED),
+        ).last() as ModelGatewayEvent.Completed
+
+        val output = completed.output as TutorRespondOutput
+        assertEquals("先完成下面这个小步骤。", output.messageMarkdown)
+        assertEquals(
+            "请写下下一步判断。",
+            (output.interactionDirective as TutorInteractionDirective.FreeResponse).promptMarkdown,
+        )
+    }
+
+    @Test
     fun guidedTutorResponseCanExplainWithoutSelectingAnInteraction() = runBlocking {
         val message = "先比较导数在区间两侧的符号，再看函数值的变化方向。"
         val completed = executeTutorRespondPayload(
@@ -1294,10 +1316,68 @@ class OpenAiCompatibleModelGatewayTest {
     fun directTutorResponseRejectsAQuestionDisguisedAsACompleteReply() = runBlocking {
         val failed = executeTutorRespondPayload(
             payload = tutorRespondPayload(
-                messageMarkdown = "你觉得下一步应该判断什么？",
+                messageMarkdown = "你明白吗？接着根据导数符号写出全部单调区间。",
                 solutionRevealed = true,
             ),
             input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+        ).last() as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+    @Test
+    fun guidedExplanationOnlyResponseRejectsAnEmbeddedQuestion() = runBlocking {
+        val failed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                messageMarkdown = "先比较导数符号？然后说明函数的变化。",
+                solutionRevealed = false,
+            ),
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.GUIDED),
+        ).last() as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+    @Test
+    fun directTutorResponseUsesLocalDisclosureAuthorityBeforeTheModelIntentLabel() = runBlocking {
+        val completed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                messageMarkdown = "完整解法是先求导，再根据导数符号写出全部单调区间。",
+                solutionRevealed = true,
+                intentDecision = tutorIntentPayload(intent = TutorMessageIntent.CASUAL_CONVERSATION),
+            ),
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.DIRECT),
+        ).last() as ModelGatewayEvent.Completed
+
+        assertTrue((completed.output as TutorRespondOutput).solutionRevealed)
+    }
+
+    @Test
+    fun explicitRevealRejectsAModelAttemptToReturnOnlyAPauseReply() = runBlocking {
+        val failed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                messageMarkdown = "好的，我们先暂停。",
+                solutionRevealed = false,
+                intentDecision = tutorIntentPayload(intent = TutorMessageIntent.END_OR_PAUSE),
+            ),
+            input = tutorRespondInput().copy(
+                explanationMode = TutorExplanationMode.GUIDED,
+                requestedMove = TutorMoveType.REVEAL_SOLUTION,
+            ),
+        ).last() as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+    @Test
+    fun nonLearningTutorIntentCannotSmuggleDeterministicTeachingContent() = runBlocking {
+        val failed = executeTutorRespondPayload(
+            payload = tutorRespondPayload(
+                messageMarkdown = "先求导，再令 f'(x)=0。",
+                solutionRevealed = false,
+                intentDecision = tutorIntentPayload(intent = TutorMessageIntent.END_OR_PAUSE),
+            ),
+            input = tutorRespondInput().copy(explanationMode = TutorExplanationMode.GUIDED),
         ).last() as ModelGatewayEvent.Failed
 
         assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
