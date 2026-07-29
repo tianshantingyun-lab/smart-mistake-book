@@ -911,8 +911,16 @@ class TutorModelTaskPolicyTest {
                 TutorInteractionChoice("choice-b", "继续"),
             ),
         )
-        val first = TutorResponseMessage.directiveChoice(directive, directive.choices[0])
-        val second = TutorResponseMessage.directiveChoice(directive, directive.choices[1])
+        val first = TutorResponseMessage.directiveChoice(
+            directive,
+            directive.choices[0],
+            sourceRequestId = "visible-request",
+        )
+        val second = TutorResponseMessage.directiveChoice(
+            directive,
+            directive.choices[1],
+            sourceRequestId = "visible-request",
+        )
         val firstRequestId = tutorRespondRequestId(
             question = question,
             provider = provider(),
@@ -938,24 +946,7 @@ class TutorModelTaskPolicyTest {
             attempt = 0,
         )
 
-        val request = buildTutorRespondRequest(
-            question = question,
-            profile = StudyProfileOverview(),
-            provider = provider(),
-            requestId = firstRequestId,
-            occurredAtEpochMillis = 1,
-            approvedAtEpochMillis = 1,
-            responseOrdinal = 1,
-            cycleOrdinal = 1,
-            turnOrdinal = 1,
-            studentMessage = first.messageMarkdown,
-            selectedChoiceId = first.selectedChoiceId,
-            choiceDirective = first.choiceDirective,
-            visibleTutorContextMarkdown = null,
-            priorMessages = emptyList(),
-        )
-
-        assertEquals("choice-a", (request.input as TutorRespondInput).selectedChoiceId)
+        assertEquals("choice-a", first.selectedChoiceId)
         assertNotEquals(firstRequestId, secondRequestId)
     }
 
@@ -968,25 +959,26 @@ class TutorModelTaskPolicyTest {
                 TutorInteractionChoice("choice-b", "换一种方法"),
             ),
         )
-        fun request(selectedChoiceId: String, message: String) = buildTutorRespondRequest(
-            question = session().toTutorQuestionContext(),
-            profile = StudyProfileOverview(),
-            provider = provider(),
-            requestId = "request-$selectedChoiceId",
-            occurredAtEpochMillis = 1,
-            approvedAtEpochMillis = 1,
-            responseOrdinal = 1,
-            cycleOrdinal = 1,
-            turnOrdinal = 1,
-            studentMessage = message,
-            selectedChoiceId = selectedChoiceId,
-            choiceDirective = directive,
-            visibleTutorContextMarkdown = null,
-            priorMessages = emptyList(),
+        assertTrue(
+            runCatching {
+                TutorResponseMessage.directiveChoice(
+                    directive = directive,
+                    selectedChoiceId = "old-choice",
+                    messageMarkdown = "继续",
+                    sourceRequestId = "current-request",
+                )
+            }.isFailure,
         )
-
-        assertTrue(runCatching { request("old-choice", "继续") }.isFailure)
-        assertTrue(runCatching { request("choice-a", "换一种方法") }.isFailure)
+        assertTrue(
+            runCatching {
+                TutorResponseMessage.directiveChoice(
+                    directive = directive,
+                    selectedChoiceId = "choice-a",
+                    messageMarkdown = "换一种方法",
+                    sourceRequestId = "current-request",
+                )
+            }.isFailure,
+        )
     }
 
     @Test

@@ -88,40 +88,46 @@ import kotlinx.coroutines.flow.first
 internal class TutorResponseMessage private constructor(
     val messageMarkdown: String,
     val selectedChoiceId: String?,
-    val choiceDirective: TutorInteractionDirective.Choices?,
+    val choiceSourceRequestId: String?,
 ) {
     init {
-        require((selectedChoiceId == null) == (choiceDirective == null))
+        require((selectedChoiceId == null) == (choiceSourceRequestId == null))
     }
 
     companion object {
         fun freeResponse(messageMarkdown: String) = TutorResponseMessage(
             messageMarkdown = messageMarkdown,
             selectedChoiceId = null,
-            choiceDirective = null,
+            choiceSourceRequestId = null,
         )
 
         fun directiveChoice(
             directive: TutorInteractionDirective.Choices,
             choice: TutorInteractionChoice,
+            sourceRequestId: String,
         ): TutorResponseMessage = directiveChoice(
             directive = directive,
             selectedChoiceId = choice.id,
             messageMarkdown = choice.labelMarkdown,
+            sourceRequestId = sourceRequestId,
         )
 
         fun directiveChoice(
             directive: TutorInteractionDirective.Choices,
             selectedChoiceId: String,
             messageMarkdown: String,
+            sourceRequestId: String,
         ): TutorResponseMessage {
+            require(sourceRequestId.isNotBlank()) {
+                "Tutor directive choice must have a visible source request"
+            }
             require(directive.choices.any { choice ->
                 choice.id == selectedChoiceId && choice.labelMarkdown == messageMarkdown
             }) { "Tutor directive choice must belong to the visible directive" }
             return TutorResponseMessage(
                 messageMarkdown = messageMarkdown,
                 selectedChoiceId = selectedChoiceId,
-                choiceDirective = directive,
+                choiceSourceRequestId = sourceRequestId,
             )
         }
     }
@@ -672,6 +678,7 @@ private fun TutorAssistantReplyBubble(
                                     directive = directive,
                                     enabled = showActions,
                                     onResponse = onDirectiveResponse,
+                                    directiveSourceRequestId = task.request.requestId,
                                     visualTargetReady = visualTargetReady,
                                 )
                             }

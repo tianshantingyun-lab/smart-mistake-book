@@ -25,6 +25,7 @@ internal sealed interface PendingTutorEgressAction {
         val requestedMove: TutorMoveType?,
         val clearDraftOnPersist: Boolean,
         val selectedChoiceId: String? = null,
+        val choiceSourceRequestId: String? = null,
     ) : PendingTutorEgressAction
 
     data class RetryResponse(
@@ -141,6 +142,7 @@ private const val MEMORY_LAST_MOVE = "memory_last_move"
 private const val MEMORY_SOLUTION_REVEALED = "memory_solution_revealed"
 private const val MESSAGE = "message"
 private const val SELECTED_CHOICE_ID = "selected_choice_id"
+private const val CHOICE_SOURCE_REQUEST_ID = "choice_source_request_id"
 private const val REQUESTED_MOVE = "requested_move"
 private const val CLEAR_DRAFT = "clear_draft"
 private const val REQUEST_ID = "request_id"
@@ -165,6 +167,7 @@ internal val pendingTutorEgressStateSaver = Saver<PendingTutorEgressState, Bundl
                     putString(KIND, NEW_RESPONSE)
                     putString(MESSAGE, action.message)
                     putString(SELECTED_CHOICE_ID, action.selectedChoiceId)
+                    putString(CHOICE_SOURCE_REQUEST_ID, action.choiceSourceRequestId)
                     putString(REQUESTED_MOVE, action.requestedMove?.name)
                     putBoolean(CLEAR_DRAFT, action.clearDraftOnPersist)
                 }
@@ -255,6 +258,7 @@ private fun Bundle.restoreNewResponse(): PendingTutorEgressAction.NewResponse {
     return PendingTutorEgressAction.NewResponse(
         message = message,
         selectedChoiceId = getString(SELECTED_CHOICE_ID),
+        choiceSourceRequestId = getString(CHOICE_SOURCE_REQUEST_ID),
         requestedMove = getString(REQUESTED_MOVE)?.let(TutorMoveType::valueOf),
         clearDraftOnPersist = getBoolean(CLEAR_DRAFT),
     )

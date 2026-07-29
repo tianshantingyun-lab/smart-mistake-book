@@ -1,5 +1,9 @@
 package com.tingyun.smartmistakebook.core.model
 
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -99,6 +103,40 @@ class TutorTasksTest {
         )
         val decoded = ModelTaskCodec.decodeRequest(legacy).input as TutorRespondInput
         assertEquals(null, decoded.selectedChoiceId)
+    }
+
+    @Test
+    fun legacyTutorResponseSnapshotKeepsItsPreChoiceIdFingerprints() {
+        val preChoiceIdRequest = respondRequest().copy(
+            schemaVersion = ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION,
+        )
+        val encodedWithCurrentDefaults = ModelTaskCodec.encodeRequest(preChoiceIdRequest)
+        val legacySnapshot = encodedWithCurrentDefaults.replace(",\"selectedChoiceId\":null", "")
+        val restoredRequest = ModelTaskCodec.decodeRequest(legacySnapshot)
+        val oldRequestFingerprint = sha256(legacySnapshot)
+        val oldOperationFingerprint = sha256(
+            restoredRequest.input.kind.name + "\n" +
+                oldFingerprintJson.encodeToString(ModelTaskInput.serializer(), restoredRequest.input)
+                    .replace(",\"selectedChoiceId\":null", ""),
+        )
+
+        assertEquals(oldRequestFingerprint, ModelTaskFingerprint.of(restoredRequest))
+        assertEquals(oldOperationFingerprint, ModelTaskLogicalOperationFingerprint.of(restoredRequest))
+        val restoredSnapshot = ModelTaskSnapshot(
+            taskId = "legacy-tutor-response",
+            request = restoredRequest,
+            requestFingerprint = oldRequestFingerprint,
+            status = ModelTaskStatus.QUEUED,
+            stateVersion = 1,
+            stage = ModelTaskStage.WAITING,
+            userMessage = "等待模型处理",
+            attemptCount = 0,
+            createdAtEpochMillis = 1,
+            updatedAtEpochMillis = 1,
+        )
+
+        assertEquals(restoredRequest, restoredSnapshot.request)
+        assertEquals(null, (restoredSnapshot.request.input as TutorRespondInput).selectedChoiceId)
     }
 
     @Test
@@ -1325,3 +1363,14 @@ class TutorTasksTest {
         const val SESSION_ID = "tutor-session-1"
     }
 }
+
+private val oldFingerprintJson = Json {
+    classDiscriminator = "type"
+    encodeDefaults = true
+    explicitNulls = true
+    ignoreUnknownKeys = false
+}
+
+private fun sha256(value: String): String = MessageDigest.getInstance("SHA-256")
+    .digest(value.toByteArray(StandardCharsets.UTF_8))
+    .joinToString(separator = "") { byte -> "%02x".format(byte) }

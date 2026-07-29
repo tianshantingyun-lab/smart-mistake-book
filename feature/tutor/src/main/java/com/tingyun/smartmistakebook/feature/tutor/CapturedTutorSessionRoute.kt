@@ -149,6 +149,45 @@ private data class TutorVisualReviewWorkItem(
     val executionKey: TutorVisualExecutionKey,
 )
 
+internal class TutorVisibleChoice private constructor(
+    val id: String,
+    val labelMarkdown: String,
+) {
+    companion object {
+        fun resolve(
+            timeline: List<TutorConversationTimelineItem>,
+            response: TutorResponseMessage,
+        ): TutorVisibleChoice? {
+            val id = response.selectedChoiceId ?: return null
+            val sourceRequestId = response.choiceSourceRequestId ?: return null
+            val directive = visibleTutorChoiceDirective(timeline, sourceRequestId) ?: return null
+            val choice = directive.choices.firstOrNull { choice ->
+                choice.id == id && choice.labelMarkdown == response.messageMarkdown
+            } ?: return null
+            return TutorVisibleChoice(choice.id, choice.labelMarkdown)
+        }
+    }
+}
+
+private fun visibleTutorChoiceDirective(
+    timeline: List<TutorConversationTimelineItem>,
+    sourceRequestId: String,
+): TutorInteractionDirective.Choices? {
+    val currentTask = timeline.asReversed().firstNotNullOfOrNull { item ->
+        when (item) {
+            is TutorConversationTimelineItem.Plan -> item.task
+            is TutorConversationTimelineItem.Reply -> item.task
+            else -> null
+        }
+    } ?: return null
+    if (currentTask.request.requestId != sourceRequestId) return null
+    return when (val output = currentTask.output) {
+        is TutorPlanOutput -> output.plan.interactionDirective
+        is TutorRespondOutput -> output.interactionDirective
+        else -> null
+    } as? TutorInteractionDirective.Choices
+}
+
 internal fun applyTutorVisualSchedulingBoundary(
     taskKind: ModelTaskKind,
     provider: ProviderCapabilitySnapshot?,
@@ -2502,7 +2541,11 @@ internal fun TutorModelPanel(
     ) {
         val exactMessage = response.messageMarkdown
         val selectedChoiceId = response.selectedChoiceId
-        val choiceDirective = response.choiceDirective
+        val visibleChoice = TutorVisibleChoice.resolve(timeline, response)
+        if (selectedChoiceId != null && visibleChoice == null) {
+            interactionError = "这项互动已经过期，请根据当前提示重新选择。"
+            return
+        }
         if (
             exactMessage.isBlank() ||
             chatSending ||
@@ -2579,6 +2622,8 @@ internal fun TutorModelPanel(
             -> return
             is PendingTutorEgressAction.NewResponse -> if (
                 pendingAction.message != exactMessage ||
+                pendingAction.selectedChoiceId != selectedChoiceId ||
+                pendingAction.choiceSourceRequestId != response.choiceSourceRequestId ||
                 pendingAction.requestedMove != requestedMove ||
                 pendingAction.clearDraftOnPersist != clearDraftOnPersist
             ) {
@@ -2607,6 +2652,7 @@ internal fun TutorModelPanel(
                     PendingTutorEgressAction.NewResponse(
                         message = exactMessage,
                         selectedChoiceId = selectedChoiceId,
+                        choiceSourceRequestId = response.choiceSourceRequestId,
                         requestedMove = requestedMove,
                         clearDraftOnPersist = clearDraftOnPersist,
                     ),
@@ -2651,7 +2697,7 @@ internal fun TutorModelPanel(
                     cycleOrdinal = responseCycleOrdinal,
                     turnOrdinal = responseTurnOrdinal,
                     studentMessage = exactMessage,
-                    selectedChoiceId = selectedChoiceId,
+                    selectedChoiceId = visibleChoice?.id,
                     visibleTutorContextMarkdown = visibleContext,
                     priorMessages = priorMessages,
                     requestedMove = requestedMove,
@@ -2673,12 +2719,11 @@ internal fun TutorModelPanel(
                     cycleOrdinal = responseCycleOrdinal,
                     turnOrdinal = responseTurnOrdinal,
                     studentMessage = exactMessage,
-                    selectedChoiceId = selectedChoiceId,
+                    selectedChoice = visibleChoice,
                     visibleTutorContextMarkdown = visibleContext,
                     priorMessages = priorMessages,
                     requestedMove = requestedMove,
                     explanationMode = requestMode,
-                    choiceDirective = choiceDirective,
                 )
             }
         }
@@ -2700,14 +2745,15 @@ internal fun TutorModelPanel(
     ): TutorResponseMessage? {
         val selectedChoiceId = pending.selectedChoiceId
             ?: return TutorResponseMessage.freeResponse(pending.message)
-        val directive = currentPlanOutput?.plan?.interactionDirective
-            as? TutorInteractionDirective.Choices
+        val sourceRequestId = pending.choiceSourceRequestId ?: return null
+        val directive = visibleTutorChoiceDirective(timeline, sourceRequestId)
             ?: return null
         return runCatching {
             TutorResponseMessage.directiveChoice(
                 directive = directive,
                 selectedChoiceId = selectedChoiceId,
                 messageMarkdown = pending.message,
+                sourceRequestId = sourceRequestId,
             )
         }.getOrNull()
     }

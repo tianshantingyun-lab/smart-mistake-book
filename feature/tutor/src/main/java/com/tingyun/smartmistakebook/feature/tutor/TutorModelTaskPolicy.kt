@@ -613,19 +613,11 @@ internal fun buildTutorRespondRequest(
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
-    selectedChoiceId: String? = null,
-    choiceDirective: TutorInteractionDirective.Choices? = null,
+    selectedChoice: TutorVisibleChoice? = null,
 ): ModelTaskRequest {
-    if (selectedChoiceId != null) {
-        val selectedChoice = choiceDirective?.choices?.firstOrNull { choice ->
-            choice.id == selectedChoiceId
-        } ?: error("Tutor response choice id is not in the current visible directive")
+    if (selectedChoice != null) {
         require(selectedChoice.labelMarkdown == studentMessage) {
             "Tutor response choice label does not match the selected choice id"
-        }
-    } else {
-        require(choiceDirective == null) {
-            "Tutor response choice directive requires a selected choice id"
         }
     }
     val input = TutorRespondInput(
@@ -645,7 +637,7 @@ internal fun buildTutorRespondRequest(
         cycleOrdinal = cycleOrdinal,
         turnOrdinal = turnOrdinal,
         studentMessage = studentMessage,
-        selectedChoiceId = selectedChoiceId,
+        selectedChoiceId = selectedChoice?.id,
         visibleTutorContextMarkdown = visibleTutorContextMarkdown,
         priorMessages = priorMessages,
         requestedMove = requestedMove,

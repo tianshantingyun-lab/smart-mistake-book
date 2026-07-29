@@ -306,6 +306,10 @@ data class ModelTaskRequest(
             schemaVersion >= PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION ||
                 input !is ProblemOrganizationV3Input,
         ) { "Legacy model task requests cannot contain image-grounded problem organization" }
+        require(
+            schemaVersion >= TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION ||
+                (input as? TutorRespondInput)?.selectedChoiceId == null,
+        ) { "Legacy tutor response requests cannot contain a selected choice id" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -319,7 +323,8 @@ data class ModelTaskRequest(
         const val CAPTURE_PAGE_RELATION_SCHEMA_VERSION = 4
         const val TUTOR_VISUAL_SCHEMA_VERSION = 5
         const val PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION = 6
-        const val CURRENT_SCHEMA_VERSION = PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION
+        const val TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION = 7
+        const val CURRENT_SCHEMA_VERSION = TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -1196,19 +1201,26 @@ object ModelTaskFingerprint {
  * participates in this fingerprint.
  */
 object ModelTaskLogicalOperationFingerprint {
-    fun of(request: ModelTaskRequest): String = of(request.input)
+    fun of(request: ModelTaskRequest): String = fingerprint(
+        operationPayload(request.input, request.schemaVersion),
+    )
 
-    fun of(input: ModelTaskInput): String = MessageDigest.getInstance("SHA-256")
-        .digest(operationPayload(input).toByteArray(StandardCharsets.UTF_8))
+    fun of(input: ModelTaskInput): String = fingerprint(
+        operationPayload(input, ModelTaskRequest.CURRENT_SCHEMA_VERSION),
+    )
+
+    private fun fingerprint(payload: String): String = MessageDigest.getInstance("SHA-256")
+        .digest(payload.toByteArray(StandardCharsets.UTF_8))
         .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
-    private fun operationPayload(input: ModelTaskInput): String =
+    private fun operationPayload(input: ModelTaskInput, schemaVersion: Int): String =
         buildString {
             append(input.kind.name)
             append('\n')
             append(
                 logicalOperationJson.encodeToString(ModelTaskInput.serializer(), input)
-                    .withoutEmptyPageComparison(input),
+                    .withoutEmptyPageComparison(input)
+                    .withoutLegacyTutorRespondChoiceId(input, schemaVersion),
             )
         }
 }
@@ -1260,6 +1272,9 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    it.withoutLegacyTutorRespondChoiceId(input, schemaVersion)
+                }
         }
     }
 
@@ -1273,6 +1288,20 @@ private fun String.withoutLegacyTutorStudentContext(input: ModelTaskInput): Stri
 private fun String.withoutEmptyPageComparison(input: ModelTaskInput): String =
     if (input is CaptureAssessmentInput && input.followingSourceAssets.isEmpty()) {
         replace(",\"followingSourceAssets\":[]", "")
+    } else {
+        this
+    }
+
+private fun String.withoutLegacyTutorRespondChoiceId(
+    input: ModelTaskInput,
+    schemaVersion: Int,
+): String =
+    if (
+        schemaVersion < ModelTaskRequest.TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION &&
+        input is TutorRespondInput &&
+        input.selectedChoiceId == null
+    ) {
+        replace(",\"selectedChoiceId\":null", "")
     } else {
         this
     }

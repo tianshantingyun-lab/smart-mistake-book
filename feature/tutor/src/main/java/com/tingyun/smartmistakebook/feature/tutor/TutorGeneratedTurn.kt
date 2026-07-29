@@ -211,6 +211,7 @@ internal fun TutorTurnContent(
                 directive = it,
                 enabled = interactionEnabled && !interactionBusy,
                 onResponse = onDirectiveResponse,
+                directiveSourceRequestId = ownerModelTaskRequestId,
                 visualTargetReady = isTutorVisualTargetReady(
                     state = resolvedVisual,
                     inlineScene = plan.visualScene,
@@ -539,6 +540,7 @@ internal fun TutorInteractionDirectiveContent(
     directive: TutorInteractionDirective,
     enabled: Boolean,
     onResponse: (TutorResponseMessage) -> Unit,
+    directiveSourceRequestId: String? = null,
     visualTargetReady: Boolean = false,
 ) {
     when (directive) {
@@ -572,9 +574,17 @@ internal fun TutorInteractionDirectiveContent(
                 OutlineActionChip(
                     text = choice.labelMarkdown,
                     onClick = {
-                        onResponse(TutorResponseMessage.directiveChoice(directive, choice))
+                        directiveSourceRequestId?.let { sourceRequestId ->
+                            onResponse(
+                                TutorResponseMessage.directiveChoice(
+                                    directive = directive,
+                                    choice = choice,
+                                    sourceRequestId = sourceRequestId,
+                                ),
+                            )
+                        }
                     },
-                    enabled = enabled,
+                    enabled = enabled && directiveSourceRequestId != null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("captured_tutor_directive_choice_${choice.id}"),
