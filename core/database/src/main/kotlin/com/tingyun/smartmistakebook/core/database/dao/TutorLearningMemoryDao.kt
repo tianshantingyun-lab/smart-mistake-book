@@ -971,7 +971,7 @@ private fun LearningProblemAnchorEntity.toModel() = LearningProblemAnchor(
     createdAtEpochMillis = createdAtEpochMillis,
 )
 
-private fun LearningObservationSourceFactEntity.toModel() = LearningObservationSourceFact(
+internal fun LearningObservationSourceFactEntity.toModel() = LearningObservationSourceFact(
     sourceFactId = sourceFactId,
     learnerScopeId = learnerId,
     source = LearningObservationSource.valueOf(source),

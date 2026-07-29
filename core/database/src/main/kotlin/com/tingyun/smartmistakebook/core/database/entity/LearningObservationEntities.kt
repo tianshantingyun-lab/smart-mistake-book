@@ -46,9 +46,16 @@ internal data class LearningObservationSourceAuthorityEntity(
             childColumns = ["practice_unit_id", "problem_revision_id"],
             onDelete = ForeignKey.RESTRICT,
         ),
+        ForeignKey(
+            entity = LearningObservationSourceFactEntity::class,
+            parentColumns = ["source_fact_id"],
+            childColumns = ["source_fact_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
     ],
     indices = [
         Index(value = ["practice_unit_id", "problem_revision_id"]),
+        Index(value = ["source_fact_id"]),
         Index(value = ["learner_id", "status", "retry_count"]),
         Index(value = ["learner_id", "source", "source_reference_id"], unique = true),
         Index(value = ["payload_fingerprint"], unique = true),
@@ -63,6 +70,8 @@ internal data class LearningObservationCandidateEntity(
     val source: String,
     @ColumnInfo(name = "source_reference_id")
     val sourceReferenceId: String,
+    @ColumnInfo(name = "source_fact_id")
+    val sourceFactId: String?,
     @ColumnInfo(name = "practice_unit_id")
     val practiceUnitId: String?,
     @ColumnInfo(name = "problem_revision_id")
@@ -138,10 +147,17 @@ internal data class LearningObservationCandidateAttributionEntity(
             childColumns = ["practice_unit_id", "problem_revision_id"],
             onDelete = ForeignKey.RESTRICT,
         ),
+        ForeignKey(
+            entity = LearningObservationSourceFactEntity::class,
+            parentColumns = ["source_fact_id"],
+            childColumns = ["source_fact_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
     ],
     indices = [
         Index(value = ["candidate_id"], unique = true),
         Index(value = ["practice_unit_id", "problem_revision_id"]),
+        Index(value = ["source_fact_id"]),
         Index(value = ["learner_id", "event_sequence"], unique = true),
         Index(value = ["learner_id", "event_id"], unique = true),
         Index(value = ["learner_id", "subject", "occurred_at_epoch_millis"]),
@@ -155,6 +171,8 @@ internal data class AttributedLearningObservationEventEntity(
     val eventId: String,
     @ColumnInfo(name = "candidate_id")
     val candidateId: String,
+    @ColumnInfo(name = "source_fact_id")
+    val sourceFactId: String?,
     @ColumnInfo(name = "learner_id")
     val learnerId: String,
     @ColumnInfo(name = "practice_unit_id")

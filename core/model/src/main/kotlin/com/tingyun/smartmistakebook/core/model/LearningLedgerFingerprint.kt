@@ -19,9 +19,17 @@ object LearningLedgerFingerprint {
 
     fun learningObservation(event: AttributedLearningObservationEvent): String = digest {
         observationField("eventType", "ATTRIBUTED_LEARNING_OBSERVATION")
-        observationField("schemaVersion", LEARNING_OBSERVATION_SCHEMA_VERSION)
+        observationField(
+            "schemaVersion",
+            if (event.sourceFactId == null) {
+                LEARNING_OBSERVATION_SCHEMA_VERSION_V1
+            } else {
+                LEARNING_OBSERVATION_SCHEMA_VERSION_V2
+            },
+        )
         observationField("eventId", event.eventId)
         observationField("candidateId", event.candidateId)
+        event.sourceFactId?.let { observationField("sourceFactId", it) }
         observationField("learnerId", event.learnerId)
         observationField("practiceUnitId", event.practiceUnitId)
         observationField("problemRevisionId", event.problemRevisionId)
@@ -39,11 +47,19 @@ object LearningLedgerFingerprint {
 
     fun learningObservationCandidate(candidate: LearningObservationCandidate): String = digest {
         observationField("payloadType", "LEARNING_OBSERVATION_CANDIDATE")
-        observationField("schemaVersion", LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION)
+        observationField(
+            "schemaVersion",
+            if (candidate.sourceFactId == null) {
+                LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION_V1
+            } else {
+                LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION_V2
+            },
+        )
         observationField("candidateId", candidate.candidateId)
         observationField("learnerId", candidate.learnerId)
         observationField("source", candidate.source)
         observationField("sourceReferenceId", candidate.sourceReferenceId)
+        candidate.sourceFactId?.let { observationField("sourceFactId", it) }
         observationField("practiceUnitId", candidate.practiceUnitId)
         observationField("problemRevisionId", candidate.problemRevisionId)
         observationField("direction", candidate.direction)
@@ -215,8 +231,12 @@ object LearningLedgerFingerprint {
 
     private const val TUTOR_ANSWER_EXPOSURE_SCHEMA_VERSION =
         "learning-ledger-tutor-answer-exposure-canonical-v1"
-    private const val LEARNING_OBSERVATION_SCHEMA_VERSION =
+    private const val LEARNING_OBSERVATION_SCHEMA_VERSION_V1 =
         "learning-ledger-observation-canonical-v1"
-    private const val LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION =
+    private const val LEARNING_OBSERVATION_SCHEMA_VERSION_V2 =
+        "learning-ledger-observation-canonical-v2"
+    private const val LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION_V1 =
         "learning-observation-candidate-canonical-v1"
+    private const val LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION_V2 =
+        "learning-observation-candidate-canonical-v2"
 }

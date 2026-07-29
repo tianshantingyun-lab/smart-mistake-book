@@ -114,6 +114,22 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
                     "tutor-lobby:",
                 )?.conversationId,
             )
+            assertNull(
+                store.latestActiveTutorConversationInNamespace(
+                    LEARNER_ID,
+                    "tutor-lobby:active:",
+                ),
+            )
+            assertTrue(
+                runCatching {
+                    store.latestActiveTutorConversationInNamespace(LEARNER_ID, "")
+                }.isFailure,
+            )
+            assertTrue(
+                runCatching {
+                    store.latestActiveTutorConversationInNamespace(" $LEARNER_ID", "tutor-lobby:")
+                }.isFailure,
+            )
         } finally {
             store.close()
         }
@@ -1042,7 +1058,7 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
         submission = TutorEvidenceSubmission(
             sourceFactId = "source-fact-$terminalSeed",
             source = LearningObservationSource.TUTOR_CHOICE,
-            factKind = LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+            factKind = LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
             questionFingerprint = QUESTION_FINGERPRINT,
             revisionFingerprint = REVISION_FINGERPRINT,
             fingerprintVersion = "question-fingerprint-v1",

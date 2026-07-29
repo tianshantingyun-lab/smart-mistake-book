@@ -123,7 +123,7 @@ import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExpos
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 35
+internal const val STUDY_DATABASE_VERSION = 36
 
 @Database(
     entities = [
@@ -316,6 +316,7 @@ object StudyDatabaseFactory {
             PROBLEM_ORGANIZATION_WORK_MIGRATION_32_33,
             TUTOR_LEARNING_MEMORY_MIGRATION_33_34,
             TUTOR_RESPONSE_IDENTITY_MIGRATION_34_35,
+            LEARNING_OBSERVATION_SOURCE_FACT_MIGRATION_35_36,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

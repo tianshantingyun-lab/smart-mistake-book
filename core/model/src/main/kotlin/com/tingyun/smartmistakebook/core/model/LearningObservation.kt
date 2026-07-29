@@ -119,11 +119,13 @@ data class LearningObservationCandidate(
     val retryCount: Int,
     val createdAtEpochMillis: Long,
     val updatedAtEpochMillis: Long,
+    val sourceFactId: String? = null,
 ) {
     init {
         requireObservationId(candidateId, "Observation candidate id")
         requireObservationId(learnerId, "Observation learner id")
         requireObservationId(sourceReferenceId, "Observation source reference id")
+        sourceFactId?.let { requireObservationId(it, "Observation source-fact id") }
         require((practiceUnitId == null) == (problemRevisionId == null)) {
             "Observation anchor ids must either both be present or both be absent"
         }
@@ -165,7 +167,7 @@ data class LearningObservationCandidate(
 }
 
 /**
- * A confirmed, anchored and attributed observation admitted by the local persistence gate.
+ * A reviewed, anchored and attributed observation admitted by the local persistence gate.
  * Subject is intentionally absent: storage derives it from the authoritative problem chain.
  */
 data class AttributedLearningObservationEvent(
@@ -184,15 +186,17 @@ data class AttributedLearningObservationEvent(
     val modelVersion: String,
     val evidenceLocator: String,
     override val eventSequence: Long,
+    val sourceFactId: String? = null,
 ) : IncrementalLearningEvent {
     init {
         requireObservationId(eventId, "Learning observation event id")
         requireObservationId(candidateId, "Learning observation candidate id")
+        sourceFactId?.let { requireObservationId(it, "Learning observation source-fact id") }
         requireObservationId(learnerId, "Learning observation learner id")
         requireObservationId(practiceUnitId, "Learning observation practice-unit id")
         requireObservationId(problemRevisionId, "Learning observation problem revision id")
-        require(evidenceLevel == LearningObservationEvidenceLevel.CONFIRMED) {
-            "Only confirmed learning observations may become ledger events"
+        require(evidenceLevel != LearningObservationEvidenceLevel.LOW_CONFIDENCE) {
+            "Low-confidence learning observations cannot become ledger events"
         }
         require(evidenceWeight.isFinite() && evidenceWeight > 0.0 && evidenceWeight <= 1.0) {
             "Learning observation evidence weight must be greater than zero and at most one"
@@ -219,6 +223,8 @@ enum class LearningEvidenceReviewReason {
     CANDIDATE_ALREADY_MATERIALIZED,
     CANDIDATE_NOT_READY,
     LOW_CONFIDENCE,
+    SOURCE_FACT_MISSING,
+    SOURCE_FACT_POLICY_REJECTED,
     SOURCE_AUTHORITY_MISSING,
     SOURCE_AUTHORITY_MISMATCH,
     MISSING_AUTHORITY,

@@ -22,6 +22,7 @@ import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCand
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceAuthorityEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceFactEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
@@ -38,6 +39,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
+import com.tingyun.smartmistakebook.core.model.SourceFactEvidencePolicy
 import com.tingyun.smartmistakebook.core.model.allowedExternalTransitions
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -132,6 +134,13 @@ internal abstract class LearningObservationDao {
         source: String,
         sourceReferenceId: String,
     ): LearningObservationCandidateEntity?
+
+    @Query(
+        "SELECT * FROM learning_observation_source_fact WHERE source_fact_id = :sourceFactId LIMIT 1",
+    )
+    protected abstract suspend fun findCanonicalSourceFact(
+        sourceFactId: String,
+    ): LearningObservationSourceFactEntity?
 
     @Query(
         """
@@ -318,7 +327,13 @@ internal abstract class LearningObservationDao {
     open suspend fun submitCandidate(
         candidate: LearningObservationCandidate,
     ): LearningObservationCandidateWriteResult {
-        candidate.requireSafeInitialStatus()
+        val sourceFactId = requireNotNull(candidate.sourceFactId) {
+            "New learning-observation candidates require a canonical source-fact id"
+        }
+        val sourceFact = requireNotNull(findCanonicalSourceFact(sourceFactId)) {
+            "Learning-observation source fact is not canonical"
+        }.toModel()
+        SourceFactEvidencePolicy.requireCandidate(sourceFact, candidate)
         val fingerprint = LearningLedgerFingerprint.learningObservationCandidate(candidate)
         findCandidateByProvenance(
             candidate.learnerId,
@@ -405,11 +420,66 @@ internal abstract class LearningObservationDao {
                 command.candidateId,
             )
         val candidate = readCandidate(candidateEntity)
+        if (candidateEntity.payloadFingerprint !=
+            LearningLedgerFingerprint.learningObservationCandidate(candidate)
+        ) {
+            return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED,
+                "The persisted candidate payload no longer matches its immutable fingerprint.",
+            )
+        }
+        val sourceFactId = candidate.sourceFactId
+            ?: return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.SOURCE_FACT_MISSING,
+                "Legacy candidate has no canonical source-fact association.",
+            )
+        val sourceFactEntity = findCanonicalSourceFact(sourceFactId)
+            ?: return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.SOURCE_FACT_MISSING,
+                "The candidate source fact is absent from canonical storage.",
+            )
+        val sourceFact = try {
+            sourceFactEntity.toModel()
+        } catch (_: IllegalArgumentException) {
+            return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED,
+                "The canonical source fact is invalid.",
+            )
+        }
+        try {
+            SourceFactEvidencePolicy.requirePersistedCandidate(sourceFact, candidate)
+        } catch (_: IllegalArgumentException) {
+            return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED,
+                "The candidate exceeds or mismatches its canonical source fact.",
+            )
+        }
 
         findEventEntity(command.eventId)?.let { existing ->
             if (existing.candidateId == command.candidateId &&
                 existing.confirmedAtEpochMillis == command.confirmedAtEpochMillis
             ) {
+                val event = readEvent(existing)
+                try {
+                    SourceFactEvidencePolicy.requireAttribution(sourceFact, candidate, event)
+                } catch (_: IllegalArgumentException) {
+                    return review(
+                        candidate,
+                        command,
+                        LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED,
+                        "The persisted event mismatches its canonical source fact.",
+                    )
+                }
                 return replay(existing)
             }
             return review(
@@ -423,6 +493,17 @@ internal abstract class LearningObservationDao {
             return if (existing.eventId == command.eventId &&
                 existing.confirmedAtEpochMillis == command.confirmedAtEpochMillis
             ) {
+                val event = readEvent(existing)
+                try {
+                    SourceFactEvidencePolicy.requireAttribution(sourceFact, candidate, event)
+                } catch (_: IllegalArgumentException) {
+                    return review(
+                        candidate,
+                        command,
+                        LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED,
+                        "The persisted event mismatches its canonical source fact.",
+                    )
+                }
                 replay(existing)
             } else {
                 review(
@@ -512,14 +593,15 @@ internal abstract class LearningObservationDao {
                 )
             }
         }
-        AttributedLearningObservationEvent(
+        val proposedEvent = AttributedLearningObservationEvent(
             eventId = command.eventId,
             candidateId = candidate.candidateId,
+            sourceFactId = sourceFactId,
             learnerId = candidate.learnerId,
             practiceUnitId = practiceUnitId,
             problemRevisionId = problemRevisionId,
             direction = candidate.direction,
-            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceLevel = candidate.evidenceLevel,
             evidenceWeight = candidate.evidenceWeight,
             independence = candidate.independence,
             attributions = candidate.proposedAttributions,
@@ -529,6 +611,16 @@ internal abstract class LearningObservationDao {
             evidenceLocator = candidate.evidenceLocator,
             eventSequence = 1,
         )
+        try {
+            SourceFactEvidencePolicy.requireAttribution(sourceFact, candidate, proposedEvent)
+        } catch (_: IllegalArgumentException) {
+            return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED,
+                "The attributed event would exceed its canonical source-fact evidence ceiling.",
+            )
+        }
         if (compareAndSetStatus(
                 candidateId = candidate.candidateId,
                 expectedStatus = LearningObservationCandidateStatus.READY.name,
@@ -554,11 +646,12 @@ internal abstract class LearningObservationDao {
         val event = AttributedLearningObservationEvent(
             eventId = command.eventId,
             candidateId = candidate.candidateId,
+            sourceFactId = sourceFactId,
             learnerId = candidate.learnerId,
             practiceUnitId = practiceUnitId,
             problemRevisionId = problemRevisionId,
             direction = candidate.direction,
-            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceLevel = candidate.evidenceLevel,
             evidenceWeight = candidate.evidenceWeight,
             independence = candidate.independence,
             attributions = candidate.proposedAttributions,
@@ -740,6 +833,7 @@ private fun LearningObservationCandidate.toEntity(
     learnerId = learnerId,
     source = source.name,
     sourceReferenceId = sourceReferenceId,
+    sourceFactId = sourceFactId,
     practiceUnitId = practiceUnitId,
     problemRevisionId = problemRevisionId,
     direction = direction.name,
@@ -779,6 +873,7 @@ private fun LearningObservationCandidateEntity.toModel(
     learnerId = learnerId,
     source = LearningObservationSource.valueOf(source),
     sourceReferenceId = sourceReferenceId,
+    sourceFactId = sourceFactId,
     practiceUnitId = practiceUnitId,
     problemRevisionId = problemRevisionId,
     direction = LearningObservationDirection.valueOf(direction),
@@ -811,6 +906,7 @@ private fun AttributedLearningObservationEvent.toEntity(
 ) = AttributedLearningObservationEventEntity(
     eventId = eventId,
     candidateId = candidateId,
+    sourceFactId = sourceFactId,
     learnerId = learnerId,
     practiceUnitId = practiceUnitId,
     problemRevisionId = problemRevisionId,
@@ -849,6 +945,7 @@ internal fun AttributedLearningObservationEventEntity.toModel(
 ) = AttributedLearningObservationEvent(
     eventId = eventId,
     candidateId = candidateId,
+    sourceFactId = sourceFactId,
     learnerId = learnerId,
     practiceUnitId = practiceUnitId,
     problemRevisionId = problemRevisionId,

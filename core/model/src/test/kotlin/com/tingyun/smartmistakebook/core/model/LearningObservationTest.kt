@@ -51,6 +51,12 @@ class LearningObservationTest {
 
         val ledgerEvent: IncrementalLearningEvent = event
         assertEquals("observation-1", ledgerEvent.ledgerEventId)
+        assertEquals(
+            LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+            event.copy(
+                evidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+            ).evidenceLevel,
+        )
         assertIllegalArgument {
             event.copy(evidenceLevel = LearningObservationEvidenceLevel.LOW_CONFIDENCE)
         }
@@ -158,6 +164,25 @@ class LearningObservationTest {
         assertNotEquals(
             LearningLedgerFingerprint.learningObservationCandidate(unanchored),
             LearningLedgerFingerprint.learningObservationCandidate(literalNull),
+        )
+
+        val sourcedCandidate = candidate.copy(sourceFactId = "source-fact-1")
+        val sourcedEvent = event.copy(sourceFactId = "source-fact-1")
+        assertNotEquals(candidate, sourcedCandidate)
+        assertNotEquals(event, sourcedEvent)
+        assertNotEquals(
+            LearningLedgerFingerprint.learningObservationCandidate(candidate),
+            LearningLedgerFingerprint.learningObservationCandidate(sourcedCandidate),
+        )
+        assertNotEquals(
+            LearningLedgerFingerprint.learningObservation(event),
+            LearningLedgerFingerprint.learningObservation(sourcedEvent),
+        )
+        assertNotEquals(
+            LearningLedgerFingerprint.learningObservationCandidate(sourcedCandidate),
+            LearningLedgerFingerprint.learningObservationCandidate(
+                sourcedCandidate.copy(sourceFactId = "source-fact-2"),
+            ),
         )
     }
 

@@ -1,52 +1,10 @@
 package com.tingyun.smartmistakebook.core.model
 
 /**
- * A local capability proving that this exact source fact was produced from an application-side
- * answer comparison. It is intentionally not serializable and cannot be supplied as model data.
- */
-class TrustedLocalAnswerAuthority private constructor(
-    private val sourceFactId: String,
-    private val direction: LearningObservationDirection,
-) {
-    internal fun authorizes(
-        sourceFact: LearningObservationSourceFact,
-        requiredDirection: LearningObservationDirection,
-    ): Boolean =
-        sourceFactId == sourceFact.sourceFactId && direction == requiredDirection
-
-    companion object {
-        /**
-         * Call only after comparing the learner answer with a trusted local answer key.
-         */
-        fun fromLocallyVerifiedAnswer(
-            sourceFact: LearningObservationSourceFact,
-            answerWasCorrect: Boolean,
-        ): TrustedLocalAnswerAuthority {
-            val expectedFactKind = if (answerWasCorrect) {
-                LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE
-            } else {
-                LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE
-            }
-            require(sourceFact.factKind == expectedFactKind) {
-                "Trusted local answer authority must match the verified source-fact result"
-            }
-            return TrustedLocalAnswerAuthority(
-                sourceFactId = sourceFact.sourceFactId,
-                direction = if (answerWasCorrect) {
-                    LearningObservationDirection.POSITIVE
-                } else {
-                    LearningObservationDirection.NEGATIVE
-                },
-            )
-        }
-    }
-}
-
-/**
  * Immutable evidence ceiling for one source-fact kind.
  *
  * A null [maximumEvidenceLevel] means the fact records workflow provenance but cannot itself
- * produce a learning-evidence candidate.
+ * produce learning evidence.
  */
 class SourceFactEvidenceLimits internal constructor(
     val direction: LearningObservationDirection?,
@@ -67,7 +25,9 @@ class SourceFactEvidenceLimits internal constructor(
     }
 
     val isRevisableWeakEvidence: Boolean
-        get() = maximumEvidenceLevel == LearningObservationEvidenceLevel.LOW_CONFIDENCE
+        get() =
+            maximumEvidenceLevel == LearningObservationEvidenceLevel.LOW_CONFIDENCE ||
+                maximumEvidenceLevel == LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE
 
     val canEstablishIndependentMastery: Boolean
         get() =
@@ -79,102 +39,86 @@ class SourceFactEvidenceLimits internal constructor(
 }
 
 /**
- * Pure local gate between immutable source facts and model-proposed learning evidence.
+ * Pure local gate between canonical source facts and proposed learning evidence.
  *
- * Candidates and attributed events do not currently persist a source-fact id. Callers must pass
- * the associated [LearningObservationSourceFact] explicitly; this policy never guesses an
- * association from sourceReferenceId or another model-controlled field.
+ * The observation path has no persisted local-answer verification receipt. VERIFIED facts
+ * therefore fail closed here; trusted assessment answers continue through
+ * [AssessmentEvidenceSnapshot].
  */
 object SourceFactEvidencePolicy {
-    fun limitsFor(
-        sourceFact: LearningObservationSourceFact,
-        trustedLocalAnswerAuthority: TrustedLocalAnswerAuthority? = null,
-    ): SourceFactEvidenceLimits =
+    fun limitsFor(sourceFact: LearningObservationSourceFact): SourceFactEvidenceLimits =
         when (sourceFact.factKind) {
-            LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE -> verifiedLimits(
-                sourceFact = sourceFact,
-                direction = LearningObservationDirection.POSITIVE,
-                trustedLocalAnswerAuthority = trustedLocalAnswerAuthority,
+            LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
+            LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+            -> throw IllegalArgumentException(
+                "Verified response facts require a persisted local verification receipt",
             )
 
-            LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE -> verifiedLimits(
-                sourceFact = sourceFact,
-                direction = LearningObservationDirection.NEGATIVE,
-                trustedLocalAnswerAuthority = trustedLocalAnswerAuthority,
-            )
-
-            LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE -> {
-                requireNoTrustedAuthority(trustedLocalAnswerAuthority)
+            LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE ->
                 SourceFactEvidenceLimits(
                     direction = LearningObservationDirection.POSITIVE,
-                    maximumEvidenceLevel = LearningObservationEvidenceLevel.LOW_CONFIDENCE,
+                    maximumEvidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
                     maximumEvidenceWeight = MODEL_EVALUATION_MAXIMUM_WEIGHT,
                     independence = LearningObservationIndependence.UNKNOWN,
                 )
-            }
 
-            LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE -> {
-                requireNoTrustedAuthority(trustedLocalAnswerAuthority)
+            LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE ->
                 SourceFactEvidenceLimits(
                     direction = LearningObservationDirection.NEGATIVE,
-                    maximumEvidenceLevel = LearningObservationEvidenceLevel.LOW_CONFIDENCE,
+                    maximumEvidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
                     maximumEvidenceWeight = MODEL_EVALUATION_MAXIMUM_WEIGHT,
                     independence = LearningObservationIndependence.UNKNOWN,
                 )
-            }
 
-            LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE -> {
-                requireNoTrustedAuthority(trustedLocalAnswerAuthority)
+            LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE ->
                 SourceFactEvidenceLimits(
                     direction = LearningObservationDirection.POSITIVE,
-                    maximumEvidenceLevel = LearningObservationEvidenceLevel.LOW_CONFIDENCE,
+                    maximumEvidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
                     maximumEvidenceWeight = ASSISTED_MODEL_EVALUATION_MAXIMUM_WEIGHT,
                     independence = LearningObservationIndependence.ASSISTED,
                 )
-            }
 
-            LearningObservationFactKind.OPEN_RESPONSE_SUBMITTED -> {
-                requireNoTrustedAuthority(trustedLocalAnswerAuthority)
+            LearningObservationFactKind.OPEN_RESPONSE_SUBMITTED ->
                 SourceFactEvidenceLimits(
                     direction = null,
                     maximumEvidenceLevel = null,
                     maximumEvidenceWeight = 0.0,
                     independence = LearningObservationIndependence.UNKNOWN,
                 )
-            }
 
-            LearningObservationFactKind.SPECIFIC_STUCK -> {
-                requireNoTrustedAuthority(trustedLocalAnswerAuthority)
-                SourceFactEvidenceLimits(
-                    direction = LearningObservationDirection.NEGATIVE,
-                    maximumEvidenceLevel = LearningObservationEvidenceLevel.LOW_CONFIDENCE,
-                    maximumEvidenceWeight = SPECIFIC_STUCK_MAXIMUM_WEIGHT,
-                    independence = LearningObservationIndependence.UNKNOWN,
-                )
-            }
-
-            LearningObservationFactKind.IMPORTED_VISIBLE_ERROR -> {
-                requireNoTrustedAuthority(trustedLocalAnswerAuthority)
+            LearningObservationFactKind.SPECIFIC_STUCK ->
                 SourceFactEvidenceLimits(
                     direction = LearningObservationDirection.NEGATIVE,
                     maximumEvidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+                    maximumEvidenceWeight = SPECIFIC_STUCK_MAXIMUM_WEIGHT,
+                    independence = LearningObservationIndependence.UNKNOWN,
+                )
+
+            LearningObservationFactKind.IMPORTED_VISIBLE_ERROR ->
+                SourceFactEvidenceLimits(
+                    direction = LearningObservationDirection.NEGATIVE,
+                    maximumEvidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
                     maximumEvidenceWeight = IMPORTED_VISIBLE_ERROR_MAXIMUM_WEIGHT,
                     independence = LearningObservationIndependence.UNKNOWN,
                 )
-            }
         }
 
-    /**
-     * Admission gate for a newly proposed candidate.
-     */
+    /** Admission gate for a newly proposed candidate. */
     fun requireCandidate(
         sourceFact: LearningObservationSourceFact,
         candidate: LearningObservationCandidate,
-        trustedLocalAnswerAuthority: TrustedLocalAnswerAuthority? = null,
     ) {
-        val limits = limitsFor(sourceFact, trustedLocalAnswerAuthority)
-        requireCandidateAssociation(sourceFact, candidate)
         candidate.requireSafeInitialStatus()
+        requirePersistedCandidate(sourceFact, candidate)
+    }
+
+    /** Revalidation gate for a candidate loaded from storage. */
+    fun requirePersistedCandidate(
+        sourceFact: LearningObservationSourceFact,
+        candidate: LearningObservationCandidate,
+    ) {
+        val limits = limitsFor(sourceFact)
+        requireCandidateAssociation(sourceFact, candidate)
         requireEvidenceWithinLimits(
             direction = candidate.direction,
             evidenceLevel = candidate.evidenceLevel,
@@ -184,28 +128,58 @@ object SourceFactEvidencePolicy {
         )
     }
 
-    /**
-     * Attribution gate for a candidate/event pair explicitly associated with one source fact.
-     */
+    /** Attribution gate for a stored candidate/event pair and its canonical source fact. */
     fun requireAttribution(
         sourceFact: LearningObservationSourceFact,
         candidate: LearningObservationCandidate,
         event: AttributedLearningObservationEvent,
-        trustedLocalAnswerAuthority: TrustedLocalAnswerAuthority? = null,
     ) {
-        val limits = limitsFor(sourceFact, trustedLocalAnswerAuthority)
+        val limits = limitsFor(sourceFact)
         requireCandidateAssociation(sourceFact, candidate)
-        require(candidate.status == LearningObservationCandidateStatus.READY) {
-            "Only a ready observation candidate may cross the attribution boundary"
+        require(
+            candidate.status == LearningObservationCandidateStatus.READY ||
+                candidate.status == LearningObservationCandidateStatus.MATERIALIZED,
+        ) {
+            "Only a ready or already materialized candidate may cross the attribution boundary"
         }
         require(event.candidateId == candidate.candidateId) {
-            "Attributed event must reference the explicitly associated candidate"
+            "Attributed event must reference the canonical candidate"
+        }
+        require(event.sourceFactId == candidate.sourceFactId) {
+            "Attributed event must inherit the candidate source-fact id"
         }
         require(event.learnerId == candidate.learnerId) {
             "Attributed event learner must match its candidate"
         }
+        require(event.practiceUnitId == candidate.practiceUnitId) {
+            "Attributed event practice unit must match its candidate"
+        }
+        require(event.problemRevisionId == candidate.problemRevisionId) {
+            "Attributed event problem revision must match its candidate"
+        }
         require(event.occurredAtEpochMillis == candidate.occurredAtEpochMillis) {
             "Attributed event time must match its candidate"
+        }
+        require(event.direction == candidate.direction) {
+            "Attributed event direction must match its candidate"
+        }
+        require(event.evidenceLevel == candidate.evidenceLevel) {
+            "Attributed event evidence level must match its candidate"
+        }
+        require(event.evidenceWeight == candidate.evidenceWeight) {
+            "Attributed event weight must match its candidate"
+        }
+        require(event.independence == candidate.independence) {
+            "Attributed event independence must match its candidate"
+        }
+        require(event.attributions == candidate.proposedAttributions) {
+            "Attributed event attributions must match its candidate"
+        }
+        require(event.modelVersion == candidate.modelVersion) {
+            "Attributed event model version must match its candidate"
+        }
+        require(event.evidenceLocator == candidate.evidenceLocator) {
+            "Attributed event evidence locator must match its candidate"
         }
         requireEvidenceWithinLimits(
             direction = candidate.direction,
@@ -223,36 +197,21 @@ object SourceFactEvidencePolicy {
         )
     }
 
-    private fun verifiedLimits(
-        sourceFact: LearningObservationSourceFact,
-        direction: LearningObservationDirection,
-        trustedLocalAnswerAuthority: TrustedLocalAnswerAuthority?,
-    ): SourceFactEvidenceLimits {
-        require(
-            trustedLocalAnswerAuthority?.authorizes(sourceFact, direction) == true,
-        ) {
-            "Verified response evidence requires matching trusted local answer authority"
-        }
-        return SourceFactEvidenceLimits(
-            direction = direction,
-            maximumEvidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
-            maximumEvidenceWeight = VERIFIED_RESPONSE_MAXIMUM_WEIGHT,
-            independence = LearningObservationIndependence.INDEPENDENT,
-        )
-    }
-
     private fun requireCandidateAssociation(
         sourceFact: LearningObservationSourceFact,
         candidate: LearningObservationCandidate,
     ) {
+        require(candidate.sourceFactId == sourceFact.sourceFactId) {
+            "Observation candidate must name the canonical source fact"
+        }
         require(candidate.learnerId == sourceFact.learnerScopeId) {
-            "Observation candidate learner must match the explicit source fact"
+            "Observation candidate learner must match the canonical source fact"
         }
         require(candidate.source == sourceFact.source) {
-            "Observation candidate source must match the explicit source fact"
+            "Observation candidate source must match the canonical source fact"
         }
         require(candidate.occurredAtEpochMillis == sourceFact.occurredAtEpochMillis) {
-            "Observation candidate time must match the explicit source fact"
+            "Observation candidate time must match the canonical source fact"
         }
     }
 
@@ -280,19 +239,10 @@ object SourceFactEvidencePolicy {
         }
     }
 
-    private fun requireNoTrustedAuthority(
-        trustedLocalAnswerAuthority: TrustedLocalAnswerAuthority?,
-    ) {
-        require(trustedLocalAnswerAuthority == null) {
-            "Trusted local answer authority applies only to verified response facts"
-        }
-    }
-
-    private const val VERIFIED_RESPONSE_MAXIMUM_WEIGHT = 1.0
     private const val MODEL_EVALUATION_MAXIMUM_WEIGHT = 0.25
     private const val ASSISTED_MODEL_EVALUATION_MAXIMUM_WEIGHT = 0.2
     private const val SPECIFIC_STUCK_MAXIMUM_WEIGHT = 0.25
-    private const val IMPORTED_VISIBLE_ERROR_MAXIMUM_WEIGHT = 0.5
+    private const val IMPORTED_VISIBLE_ERROR_MAXIMUM_WEIGHT = 1.0
     private const val EVIDENCE_WEIGHT_EPSILON = 1e-9
 }
 

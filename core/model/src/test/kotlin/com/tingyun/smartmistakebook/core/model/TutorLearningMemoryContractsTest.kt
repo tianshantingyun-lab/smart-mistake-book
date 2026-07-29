@@ -172,11 +172,11 @@ class TutorLearningMemoryContractsTest {
     fun `source facts require exact tutor scope and reject cross source leakage`() {
         mapOf(
             LearningObservationSource.TUTOR_CHOICE to
-                LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
+                LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
             LearningObservationSource.TUTOR_FREE_RESPONSE to
                 LearningObservationFactKind.OPEN_RESPONSE_SUBMITTED,
             LearningObservationSource.TUTOR_VISUAL_TARGET to
-                LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+                LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
             LearningObservationSource.TUTOR_SPECIFIC_STUCK to
                 LearningObservationFactKind.SPECIFIC_STUCK,
         ).forEach { (source, factKind) ->

@@ -325,8 +325,6 @@ private fun LearningObservationSource.allowedFactKinds(): Set<LearningObservatio
         LearningObservationSource.TUTOR_CHOICE,
         LearningObservationSource.TUTOR_VISUAL_TARGET,
         -> setOf(
-            LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
-            LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
             LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
             LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
             LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE,

@@ -8,29 +8,35 @@ import org.junit.Test
 
 class SourceFactEvidencePolicyTest {
     @Test
-    fun `model answer reversals remain directional revisable weak evidence`() {
+    fun `choice and visual sources accept model evaluations but reject verified claims`() {
         listOf(
             LearningObservationSource.TUTOR_CHOICE,
             LearningObservationSource.TUTOR_VISUAL_TARGET,
         ).forEach { source ->
-            LearningObservationSourceFact(
-                sourceFactId = "fact-${source.name.lowercase()}",
-                learnerScopeId = "learner-1",
-                source = source,
-                factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
-                anchorId = "anchor-1",
-                subject = SubjectKind.MATH,
-                conversationGeneration = 1,
-                conversationId = "conversation-1",
-                turnReceiptId = "turn-1",
-                evidenceRequestId = "request-1",
-                responseFingerprint = SHA256,
-                responseSummary = "Model-evaluated response.",
-                occurredAtEpochMillis = 1_000,
-                sourceVersion = "model-evaluation-v1",
-            )
+            listOf(
+                LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
+                LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
+                LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE,
+            ).forEach { factKind ->
+                sourceFact(source = source, factKind = factKind)
+            }
+            assertIllegalArgument {
+                sourceFact(
+                    source = source,
+                    factKind = LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
+                )
+            }
+            assertIllegalArgument {
+                sourceFact(
+                    source = source,
+                    factKind = LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+                )
+            }
         }
+    }
 
+    @Test
+    fun `model answer reversals remain directional revisable weak evidence`() {
         val evaluatedCorrect = sourceFact(
             sourceFactId = "fact-correct",
             factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
@@ -47,7 +53,7 @@ class SourceFactEvidencePolicyTest {
         assertEquals(LearningObservationDirection.NEGATIVE, incorrectLimits.direction)
         listOf(correctLimits, incorrectLimits).forEach { limits ->
             assertEquals(
-                LearningObservationEvidenceLevel.LOW_CONFIDENCE,
+                LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
                 limits.maximumEvidenceLevel,
             )
             assertEquals(0.25, limits.maximumEvidenceWeight, 0.0)
@@ -73,21 +79,19 @@ class SourceFactEvidencePolicyTest {
     }
 
     @Test
-    fun `correct after hints or repeated stuck is assisted and cannot establish mastery`() {
+    fun `correct after assistance cannot establish independent mastery`() {
         val assistedCorrect = sourceFact(
-            sourceFactId = "fact-assisted",
             factKind = LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE,
         )
         val limits = SourceFactEvidencePolicy.limitsFor(assistedCorrect)
 
         assertEquals(LearningObservationDirection.POSITIVE, limits.direction)
         assertEquals(
-            LearningObservationEvidenceLevel.LOW_CONFIDENCE,
+            LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
             limits.maximumEvidenceLevel,
         )
         assertEquals(0.2, limits.maximumEvidenceWeight, 0.0)
         assertEquals(LearningObservationIndependence.ASSISTED, limits.independence)
-        assertTrue(limits.isRevisableWeakEvidence)
         assertFalse(limits.canEstablishIndependentMastery)
 
         SourceFactEvidencePolicy.requireCandidate(
@@ -109,145 +113,212 @@ class SourceFactEvidencePolicyTest {
                 ),
             )
         }
-        assertIllegalArgument {
-            SourceFactEvidencePolicy.requireCandidate(
-                sourceFact = assistedCorrect,
-                candidate = candidate(
-                    sourceFact = assistedCorrect,
-                    direction = LearningObservationDirection.POSITIVE,
-                    evidenceLevel = LearningObservationEvidenceLevel.HIGH_CONFIDENCE,
-                    evidenceWeight = 0.2,
-                    independence = LearningObservationIndependence.ASSISTED,
-                ),
+    }
+
+    @Test
+    fun `specific stuck remains revisable medium negative evidence`() {
+        val stuckFact = sourceFact(
+            source = LearningObservationSource.TUTOR_SPECIFIC_STUCK,
+            factKind = LearningObservationFactKind.SPECIFIC_STUCK,
+        )
+        val limits = SourceFactEvidencePolicy.limitsFor(stuckFact)
+
+        assertEquals(LearningObservationDirection.NEGATIVE, limits.direction)
+        assertEquals(
+            LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+            limits.maximumEvidenceLevel,
+        )
+        assertEquals(0.25, limits.maximumEvidenceWeight, 0.0)
+        assertEquals(LearningObservationIndependence.UNKNOWN, limits.independence)
+        assertTrue(limits.isRevisableWeakEvidence)
+        assertFalse(limits.canEstablishIndependentMastery)
+
+        SourceFactEvidencePolicy.requireCandidate(
+            sourceFact = stuckFact,
+            candidate = candidate(
+                sourceFact = stuckFact,
+                direction = LearningObservationDirection.NEGATIVE,
+                evidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+            ),
+        )
+    }
+
+    @Test
+    fun `verified observation facts fail closed without persisted local receipt`() {
+        listOf(
+            LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
+            LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+        ).forEach { factKind ->
+            val fact = sourceFact(
+                source = LearningObservationSource.CAPTURED_REVIEW_RESPONSE,
+                factKind = factKind,
             )
+            assertIllegalArgument {
+                SourceFactEvidencePolicy.limitsFor(fact)
+            }
         }
     }
 
     @Test
-    fun `verified evidence requires authority for that exact local answer result`() {
-        val verifiedCorrect = sourceFact(
-            sourceFactId = "fact-verified",
-            factKind = LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
-        )
-        assertIllegalArgument {
-            SourceFactEvidencePolicy.limitsFor(verifiedCorrect)
-        }
-
-        val otherFactAuthority = TrustedLocalAnswerAuthority.fromLocallyVerifiedAnswer(
-            sourceFact = sourceFact(
-                sourceFactId = "fact-other",
-                factKind = LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
-            ),
-            answerWasCorrect = true,
-        )
-        assertIllegalArgument {
-            SourceFactEvidencePolicy.limitsFor(verifiedCorrect, otherFactAuthority)
-        }
-        assertIllegalArgument {
-            TrustedLocalAnswerAuthority.fromLocallyVerifiedAnswer(
-                sourceFact = verifiedCorrect,
-                answerWasCorrect = false,
-            )
-        }
-
-        val authority = TrustedLocalAnswerAuthority.fromLocallyVerifiedAnswer(
-            sourceFact = verifiedCorrect,
-            answerWasCorrect = true,
-        )
-        val limits = SourceFactEvidencePolicy.limitsFor(verifiedCorrect, authority)
-        assertEquals(LearningObservationDirection.POSITIVE, limits.direction)
-        assertEquals(
-            LearningObservationEvidenceLevel.CONFIRMED,
-            limits.maximumEvidenceLevel,
-        )
-        assertEquals(1.0, limits.maximumEvidenceWeight, 0.0)
-        assertEquals(LearningObservationIndependence.INDEPENDENT, limits.independence)
-        assertTrue(limits.canEstablishIndependentMastery)
-
+    fun `candidate and attribution gates reject fact swapping and evidence upgrades`() {
         val modelFact = sourceFact(
             sourceFactId = "fact-model",
             factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
         )
-        assertIllegalArgument {
-            SourceFactEvidencePolicy.limitsFor(modelFact, authority)
-        }
-    }
-
-    @Test
-    fun `candidate and attribution gates reject model evidence upgrades`() {
-        val sourceFact = sourceFact(
-            sourceFactId = "fact-model",
+        val otherFact = sourceFact(
+            sourceFactId = "fact-other",
             factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
         )
 
         assertIllegalArgument {
             SourceFactEvidencePolicy.requireCandidate(
-                sourceFact = sourceFact,
+                sourceFact = modelFact,
                 candidate = candidate(
-                    sourceFact = sourceFact,
+                    sourceFact = modelFact,
+                    sourceFactId = otherFact.sourceFactId,
+                    direction = LearningObservationDirection.POSITIVE,
+                ),
+            )
+        }
+        assertIllegalArgument {
+            SourceFactEvidencePolicy.requireCandidate(
+                sourceFact = modelFact,
+                candidate = candidate(
+                    sourceFact = modelFact,
                     direction = LearningObservationDirection.POSITIVE,
                     evidenceLevel = LearningObservationEvidenceLevel.HIGH_CONFIDENCE,
-                    evidenceWeight = 0.25,
-                ),
-            )
-        }
-        assertIllegalArgument {
-            SourceFactEvidencePolicy.requireCandidate(
-                sourceFact = sourceFact,
-                candidate = candidate(
-                    sourceFact = sourceFact,
-                    direction = LearningObservationDirection.POSITIVE,
-                    evidenceWeight = 0.9,
-                ),
-            )
-        }
-        assertIllegalArgument {
-            SourceFactEvidencePolicy.requireCandidate(
-                sourceFact = sourceFact,
-                candidate = candidate(
-                    sourceFact = sourceFact,
-                    direction = LearningObservationDirection.POSITIVE,
-                    independence = LearningObservationIndependence.INDEPENDENT,
                 ),
             )
         }
 
         val readyCandidate = candidate(
-            sourceFact = sourceFact,
+            sourceFact = modelFact,
             direction = LearningObservationDirection.POSITIVE,
             status = LearningObservationCandidateStatus.READY,
         )
         assertIllegalArgument {
             SourceFactEvidencePolicy.requireAttribution(
-                sourceFact = sourceFact,
+                sourceFact = modelFact,
                 candidate = readyCandidate,
                 event = event(readyCandidate),
             )
         }
+        assertIllegalArgument {
+            SourceFactEvidencePolicy.requireAttribution(
+                sourceFact = modelFact,
+                candidate = readyCandidate,
+                event = event(readyCandidate).copy(sourceFactId = otherFact.sourceFactId),
+            )
+        }
+    }
+
+    @Test
+    fun `attribution must exactly inherit reviewed candidate provenance`() {
+        val modelFact = sourceFact(
+            factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
+        )
+        val reviewedCandidate = candidate(
+            sourceFact = modelFact,
+            direction = LearningObservationDirection.POSITIVE,
+            evidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+            status = LearningObservationCandidateStatus.READY,
+        )
+        val matchingEvent = event(reviewedCandidate).copy(
+            evidenceLevel = LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
+        )
+        SourceFactEvidencePolicy.requirePersistedCandidate(modelFact, reviewedCandidate)
+        SourceFactEvidencePolicy.requireAttribution(
+            sourceFact = modelFact,
+            candidate = reviewedCandidate,
+            event = matchingEvent,
+        )
+
+        listOf(
+            matchingEvent.copy(candidateId = "candidate-other"),
+            matchingEvent.copy(sourceFactId = "fact-other"),
+            matchingEvent.copy(learnerId = "learner-other"),
+            matchingEvent.copy(practiceUnitId = "unit-other"),
+            matchingEvent.copy(
+                problemRevisionId = "revision-other",
+                attributions = matchingEvent.attributions.map { attribution ->
+                    attribution.copy(basisRevisionId = "revision-other")
+                },
+            ),
+            matchingEvent.copy(direction = LearningObservationDirection.NEGATIVE),
+            matchingEvent.copy(evidenceLevel = LearningObservationEvidenceLevel.HIGH_CONFIDENCE),
+            matchingEvent.copy(evidenceWeight = 0.2),
+            matchingEvent.copy(independence = LearningObservationIndependence.ASSISTED),
+            matchingEvent.copy(
+                attributions = listOf(
+                    matchingEvent.attributions.single().copy(
+                        knowledgeNodeId = "knowledge-other",
+                    ),
+                ),
+            ),
+            matchingEvent.copy(occurredAtEpochMillis = matchingEvent.occurredAtEpochMillis + 1),
+            matchingEvent.copy(modelVersion = "model-other"),
+            matchingEvent.copy(evidenceLocator = "turn:1/model-evaluation-other"),
+        ).forEach { mismatchedEvent ->
+            assertIllegalArgument {
+                SourceFactEvidencePolicy.requireAttribution(
+                    sourceFact = modelFact,
+                    candidate = reviewedCandidate,
+                    event = mismatchedEvent,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `canonical imported visible error may cross the confirmed negative boundary`() {
+        val importedFact = sourceFact(
+            source = LearningObservationSource.IMPORTED_MISTAKE,
+            factKind = LearningObservationFactKind.IMPORTED_VISIBLE_ERROR,
+        )
+        val readyCandidate = candidate(
+            sourceFact = importedFact,
+            direction = LearningObservationDirection.NEGATIVE,
+            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceWeight = 0.8,
+            independence = LearningObservationIndependence.UNKNOWN,
+            status = LearningObservationCandidateStatus.READY,
+        )
+
+        SourceFactEvidencePolicy.requirePersistedCandidate(importedFact, readyCandidate)
+        SourceFactEvidencePolicy.requireAttribution(
+            sourceFact = importedFact,
+            candidate = readyCandidate,
+            event = event(readyCandidate),
+        )
     }
 
     private fun sourceFact(
-        sourceFactId: String,
+        sourceFactId: String = "fact-1",
+        source: LearningObservationSource = LearningObservationSource.TUTOR_CHOICE,
         factKind: LearningObservationFactKind,
-    ) = LearningObservationSourceFact(
-        sourceFactId = sourceFactId,
-        learnerScopeId = "learner-1",
-        source = LearningObservationSource.TUTOR_CHOICE,
-        factKind = factKind,
-        anchorId = "anchor-1",
-        subject = SubjectKind.MATH,
-        conversationGeneration = 1,
-        conversationId = "conversation-1",
-        turnReceiptId = "turn-1",
-        evidenceRequestId = "request-1",
-        responseFingerprint = SHA256,
-        responseSummary = "Locally bounded response evidence.",
-        occurredAtEpochMillis = 1_000,
-        sourceVersion = "source-v1",
-    )
+    ): LearningObservationSourceFact {
+        val tutorScoped = source in LearningObservationSourceFact.tutorSources
+        return LearningObservationSourceFact(
+            sourceFactId = sourceFactId,
+            learnerScopeId = "learner-1",
+            source = source,
+            factKind = factKind,
+            anchorId = "anchor-1",
+            subject = SubjectKind.MATH,
+            conversationGeneration = if (tutorScoped) 1 else null,
+            conversationId = if (tutorScoped) "conversation-1" else null,
+            turnReceiptId = if (tutorScoped) "turn-1" else null,
+            evidenceRequestId = if (tutorScoped) "request-1" else null,
+            responseFingerprint = SHA256,
+            responseSummary = "Bounded response evidence.",
+            occurredAtEpochMillis = 1_000,
+            sourceVersion = "source-v1",
+        )
+    }
 
     private fun candidate(
         sourceFact: LearningObservationSourceFact,
+        sourceFactId: String? = sourceFact.sourceFactId,
         direction: LearningObservationDirection,
         evidenceLevel: LearningObservationEvidenceLevel =
             LearningObservationEvidenceLevel.LOW_CONFIDENCE,
@@ -261,6 +332,7 @@ class SourceFactEvidencePolicyTest {
         learnerId = sourceFact.learnerScopeId,
         source = sourceFact.source,
         sourceReferenceId = "model-proposal-1",
+        sourceFactId = sourceFactId,
         practiceUnitId = "unit-1",
         problemRevisionId = "revision-1",
         direction = direction,
@@ -282,6 +354,7 @@ class SourceFactEvidencePolicyTest {
     ) = AttributedLearningObservationEvent(
         eventId = "event-1",
         candidateId = candidate.candidateId,
+        sourceFactId = candidate.sourceFactId,
         learnerId = candidate.learnerId,
         practiceUnitId = requireNotNull(candidate.practiceUnitId),
         problemRevisionId = requireNotNull(candidate.problemRevisionId),
