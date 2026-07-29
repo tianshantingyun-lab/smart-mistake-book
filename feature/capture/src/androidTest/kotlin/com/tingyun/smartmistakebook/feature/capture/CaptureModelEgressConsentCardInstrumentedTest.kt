@@ -73,9 +73,9 @@ class CaptureModelEgressConsentCardInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("把这张题图交给模型整理？").assertExists()
+        composeRule.onNodeWithText("将本题交给模型继续整理？").assertExists()
         composeRule.onNodeWithText(
-            "本次只把当前题图发给我的视觉模型，用于读题和整理；不会发送其他题目或学习记录。",
+            "本次题图、整理后的题面和相关知识资料会交给我的视觉模型，用于保存后继续整理；不会发送其他题目或学习记录。",
         ).assertExists()
         composeRule.onNodeWithText("vision-model-1", substring = true).assertDoesNotExist()
         composeRule.onNodeWithTag("capture_model_egress_approve_button").performClick()
@@ -95,10 +95,10 @@ class CaptureModelEgressConsentCardInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("本次只发送当前题图").assertExists()
+        composeRule.onNodeWithText("已确认本次发送范围").assertExists()
         composeRule.onAllNodesWithTag("capture_model_egress_approve_button").assertCountEquals(0)
         composeRule.onAllNodesWithTag("capture_model_egress_manual_button").assertCountEquals(0)
-        composeRule.onNodeWithText("把这张题图交给模型整理？").assertDoesNotExist()
+        composeRule.onNodeWithText("将本题交给模型继续整理？").assertDoesNotExist()
         composeRule.onNodeWithText("允许这一次").assertDoesNotExist()
         composeRule.onNodeWithText("继续整理这道题").assertDoesNotExist()
     }
@@ -117,9 +117,9 @@ class CaptureModelEgressConsentCardInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("把这张题图交给模型整理？").assertExists()
+        composeRule.onNodeWithText("将本题交给模型继续整理？").assertExists()
         composeRule.onAllNodesWithTag("capture_model_egress_approve_button").assertCountEquals(1)
-        composeRule.onNodeWithText("本次只发送当前题图").assertDoesNotExist()
+        composeRule.onNodeWithText("已确认本次发送范围").assertDoesNotExist()
         composeRule.onNodeWithText("继续整理这道题").performClick()
         composeRule.onNodeWithText("允许这一次").assertDoesNotExist()
         composeRule.runOnIdle { assertTrue(continued) }

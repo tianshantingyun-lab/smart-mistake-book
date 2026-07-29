@@ -206,6 +206,12 @@ internal interface KnowledgeGroundingDao {
 
     @Transaction
     suspend fun recordAll(requests: List<KnowledgeGroundingRequestEntity>) {
+        recordAllInCurrentTransaction(requests)
+    }
+
+    suspend fun recordAllInCurrentTransaction(
+        requests: List<KnowledgeGroundingRequestEntity>,
+    ) {
         if (requests.isEmpty()) return
         val results = insertAll(requests)
         val replayedIds = requests.indices

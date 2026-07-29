@@ -3,12 +3,17 @@ package com.tingyun.smartmistakebook.core.data.mistake
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
+import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
+import com.tingyun.smartmistakebook.core.database.CreateProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.ErrorBookEntrySeedRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.PracticeUnitSeedRecord
+import com.tingyun.smartmistakebook.core.database.ProblemDraftRevisionRecord
 import com.tingyun.smartmistakebook.core.database.ProblemRevisionSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
+import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
@@ -18,6 +23,8 @@ import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationRelationKey
 import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.ClassificationDimension
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.KnowledgeBaseNodeContext
@@ -26,21 +33,32 @@ import com.tingyun.smartmistakebook.core.model.KnowledgeNodeKind
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 import com.tingyun.smartmistakebook.core.model.KnowledgeGroundingRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
+import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
+import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ProblemClassificationSuggestion
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationPlan
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.ProblemRelationKind
 import com.tingyun.smartmistakebook.core.model.ProblemRelationSuggestion
 import com.tingyun.smartmistakebook.core.model.ProblemStepKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
+import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
+import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.WritingLayer
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -90,6 +108,56 @@ class MistakeOrganizationRepositoryInstrumentedTest {
         assertTrue(stored.classifications.all { it.acceptedAtEpochMillis == 400L })
         assertEquals(setOf(ATOMIC_KNOWLEDGE_NODE), stored.knowledgeNodeIds)
         assertEquals(listOf(RELATED_PROBLEM), stored.relations.map { it.targetProblemId })
+    }
+
+    @Test
+    fun committedV3NeverDisclosesMistakesStoredBeforeOrAfterConsent() = runBlocking {
+        commitPrivacyMistake(
+            suffix = "privacy-existing",
+            title = "同意前已有的错题",
+            markdown = "同意前不应外发的完整题面。",
+            committedAtEpochMillis = 2_000,
+        )
+        val currentGrant = commitPrivacyMistake(
+            suffix = "privacy-current",
+            title = "当前题",
+            markdown = "本次允许整理的题面。",
+            committedAtEpochMillis = 3_500,
+            approvedAtEpochMillis = 3_000,
+        )
+        commitPrivacyMistake(
+            suffix = "privacy-later",
+            title = "同意后新增的错题",
+            markdown = "同意后不应外发的完整题面。",
+            committedAtEpochMillis = 4_500,
+        )
+        val work = checkNotNull(
+            database.readProblemOrganizationWorkByCommitReceipt("commit-privacy-current"),
+        )
+
+        val preparation = repository.prepareCommittedWork(
+            workId = work.workId,
+            provider = V3_PROVIDER,
+            authorization = currentGrant,
+            requestVersion = work.stateVersion,
+            occurredAtEpochMillis = 5_000,
+        )
+        val input = preparation.request.input as ProblemOrganizationV3Input
+        val serializedRequest = ModelTaskCodec.encodeRequest(preparation.request)
+
+        assertTrue(input.relationCandidates.isEmpty())
+        assertTrue(preparation.relatedCandidateTitles.isEmpty())
+        listOf(
+            "problem-privacy-existing",
+            "同意前已有的错题",
+            "同意前不应外发的完整题面。",
+            "problem-privacy-later",
+            "同意后新增的错题",
+            "同意后不应外发的完整题面。",
+        ).forEach { undisclosed -> assertFalse(undisclosed, serializedRequest.contains(undisclosed)) }
+        val manifest = checkNotNull(preparation.request.egressManifest)
+        assertFalse(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES in manifest.disclosedData)
+        assertTrue(ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE in manifest.disclosedData)
     }
 
     @Test
@@ -288,6 +356,134 @@ class MistakeOrganizationRepositoryInstrumentedTest {
             ),
         )
     }
+
+    private suspend fun commitPrivacyMistake(
+        suffix: String,
+        title: String,
+        markdown: String,
+        committedAtEpochMillis: Long,
+        approvedAtEpochMillis: Long? = null,
+    ): ProblemOrganizationAuthorizationGrant {
+        val draftId = "draft-$suffix"
+        val assetId = "asset-$suffix"
+        val sha256 = privacyAssetHash(suffix)
+        val document = CapturedQuestionDocument(
+            document = QuestionDocument(
+                id = "document-$suffix-confirmed",
+                title = title,
+                blocks = listOf(ContentBlock.Paragraph("block-$suffix", markdown)),
+            ),
+            blockEvidence = listOf(
+                QuestionBlockEvidence(
+                    blockId = "block-$suffix",
+                    sourceAssetId = assetId,
+                    sourceRegion = NormalizedSourceRegion(0.0, 0.0, 1.0, 1.0),
+                    writingLayer = WritingLayer.PRINTED,
+                    provenance = QuestionBlockProvenance.USER_CORRECTION,
+                    reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+                ),
+            ),
+        )
+        val importedDocument = CapturedQuestionDocument(
+            document = QuestionDocument(
+                id = "document-$suffix-imported",
+                title = "待确认题目",
+                blocks = listOf(ContentBlock.Paragraph("block-$suffix", markdown)),
+            ),
+            blockEvidence = listOf(
+                QuestionBlockEvidence(
+                    blockId = "block-$suffix",
+                    sourceAssetId = assetId,
+                    sourceRegion = NormalizedSourceRegion(0.0, 0.0, 1.0, 1.0),
+                    writingLayer = WritingLayer.PRINTED,
+                    provenance = QuestionBlockProvenance.IMPORTED_STRUCTURE,
+                    reviewStatus = QuestionBlockReviewStatus.NEEDS_REVIEW,
+                    producerVersion = "privacy-fixture/import-v1",
+                ),
+            ),
+        )
+        database.createProblemDraft(
+            CreateProblemDraftCommand(
+                sourceAsset = CanonicalSourceAssetRecord(
+                    sourceAssetId = assetId,
+                    contentSha256 = sha256,
+                    relativePath = "source-assets/$sha256.jpg",
+                    mimeType = "image/jpeg",
+                    byteSize = 4_096,
+                    width = 1_200,
+                    height = 1_600,
+                    sourceType = StudyDbValue.SourceAssetType.PHOTO_PICKER,
+                    createdAtEpochMillis = committedAtEpochMillis - 100,
+                ),
+                draftId = draftId,
+                origin = StudyDbValue.CaptureOrigin.LIBRARY,
+                initialRevision = ProblemDraftRevisionRecord(
+                    draftId = draftId,
+                    revisionNumber = 1,
+                    basisRevisionNumber = null,
+                    subject = null,
+                    title = "待确认题目",
+                    questionDocument = importedDocument,
+                    documentFingerprint = CapturedQuestionDocumentFingerprint.of(importedDocument),
+                    author = StudyDbValue.ProblemDraftAuthor.CAPTURE_IMPORT,
+                    createdAtEpochMillis = committedAtEpochMillis - 100,
+                ),
+            ),
+        )
+        database.reviseProblemDraft(
+            ReviseProblemDraftCommand(
+                draftId = draftId,
+                expectedRevisionNumber = 1,
+                revision = ProblemDraftRevisionRecord(
+                    draftId = draftId,
+                    revisionNumber = 2,
+                    basisRevisionNumber = 1,
+                    subject = SubjectKind.MATH.name,
+                    title = title,
+                    questionDocument = document,
+                    documentFingerprint = CapturedQuestionDocumentFingerprint.of(document),
+                    author = StudyDbValue.ProblemDraftAuthor.USER,
+                    createdAtEpochMillis = committedAtEpochMillis - 75,
+                ),
+            ),
+        )
+        val grant = ProblemOrganizationAuthorizationGrant(
+            authorizationId = "authorization-$suffix",
+            sourceDraftId = draftId,
+            providerId = V3_PROVIDER.providerId,
+            modelId = V3_PROVIDER.modelId,
+            providerConfigurationVersion = V3_PROVIDER.providerConfigurationVersion,
+            approvedAtEpochMillis = approvedAtEpochMillis ?: committedAtEpochMillis - 50,
+            expiresAtEpochMillis = 10_000,
+            assets = listOf(
+                ModelEgressAssetGrant(
+                    assetId = assetId,
+                    sha256 = sha256,
+                    byteSize = 4_096,
+                    width = 1_200,
+                    height = 1_600,
+                ),
+            ),
+        )
+        database.commitProblemDraft(
+            CommitProblemDraftCommand(
+                commandId = "commit-$suffix",
+                draftId = draftId,
+                expectedRevisionNumber = 2,
+                problemId = "problem-$suffix",
+                problemRevisionId = "revision-$suffix",
+                practiceUnitId = "practice-$suffix",
+                errorBookEntryId = "entry-$suffix",
+                estimatedSeconds = 120,
+                committedAtEpochMillis = committedAtEpochMillis,
+                problemOrganizationAuthorization = if (approvedAtEpochMillis == null) null else grant,
+            ),
+        )
+        return grant
+    }
+
+    private fun privacyAssetHash(suffix: String): String =
+        "0123456789abcdef"[suffix.sumOf { it.code } % 16].toString().repeat(64)
 
     private suspend fun persistSuccess(
         requestId: String,
@@ -568,6 +764,16 @@ class MistakeOrganizationRepositoryInstrumentedTest {
             supportsStructuredOutput = true,
             supportsStreaming = false,
             providerConfigurationVersion = "config-v1",
+        )
+        val V3_PROVIDER = ProviderCapabilitySnapshot(
+            providerId = "v3-provider",
+            providerDisplayName = "V3测试模型",
+            modelId = "v3-model",
+            supportedTasks = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
+            supportsImageInput = true,
+            supportsStructuredOutput = true,
+            supportsStreaming = false,
+            providerConfigurationVersion = "v3-config",
         )
     }
 }

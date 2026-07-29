@@ -1773,6 +1773,9 @@ class OpenAiCompatibleModelGatewayTest {
         assertFalse(sentBody.contains(input.capturedDocument.document.id))
         assertFalse(sentBody.contains(input.capturedDocument.document.blocks.single().id))
         assertFalse(sentBody.contains(ASSET_ID))
+        assertFalse(sentBody.contains("relatedCandidates"))
+        assertFalse(sentBody.contains(RELATED_PROBLEM_ID))
+        assertFalse(sentBody.contains("导数变式"))
         assertEquals(input.capturedDocument.document.blocks.single().id, evidence.blockId)
         assertEquals(ASSET_ID, evidence.sourceAssetId)
     }

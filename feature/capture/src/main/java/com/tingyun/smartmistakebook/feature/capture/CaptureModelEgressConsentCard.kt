@@ -323,9 +323,9 @@ internal fun CaptureModelEgressConsentCard(
             )
             Text(
                 text = if (approved) {
-                    "本次只发送当前题图"
+                    "已确认本次发送范围"
                 } else {
-                    "把这张题图交给模型整理？"
+                    "将本题交给模型继续整理？"
                 },
                 modifier = Modifier.padding(start = 8.dp),
                 color = Ink,
@@ -334,7 +334,7 @@ internal fun CaptureModelEgressConsentCard(
             )
         }
         Text(
-            text = "本次只把当前题图发给${provider.providerDisplayName}，用于读题和整理；不会发送其他题目或学习记录。",
+            text = captureDisclosureText(provider.providerDisplayName),
             modifier = Modifier.padding(top = 8.dp),
             color = InkSecondary,
             style = MaterialTheme.typography.bodySmall,

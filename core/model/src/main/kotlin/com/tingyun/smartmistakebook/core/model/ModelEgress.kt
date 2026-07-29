@@ -371,9 +371,11 @@ data class ModelEgressManifest(
             ModelEgressDataClass.entries.toSet() - PROBLEM_ORGANIZATION_DISCLOSURE
 
         private val PROBLEM_ORGANIZATION_V3_BASE_DISCLOSURE =
-            PROBLEM_ORGANIZATION_DISCLOSURE +
-                CAPTURE_IMAGE_DISCLOSURE +
-                ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE
+            setOf(
+                ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
+                ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE,
+                ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE,
+            ) + CAPTURE_IMAGE_DISCLOSURE
 
         fun problemOrganizationV3Disclosure(
             includesSelectedRegion: Boolean,

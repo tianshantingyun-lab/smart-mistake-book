@@ -1119,6 +1119,20 @@ data class ProblemOrganizationWorkTransitionCommand(
     val requestId: String? = null,
 )
 
+data class CompleteProblemOrganizationWorkAtomicallyCommand(
+    val workId: String,
+    val expectedStateVersion: Long,
+    val leaseOwner: String,
+    val requestId: String,
+    val confirmation: ConfirmProblemOrganizationCommand? = null,
+    val groundingRequests: List<KnowledgeGroundingRequestRecord> = emptyList(),
+)
+
+data class ConfirmAndCompleteProblemOrganizationWorkResult(
+    val completed: Boolean,
+    val organizationResult: ConfirmProblemOrganizationResult?,
+)
+
 data class PersistTutorVisualTargetEvidenceCommand(
     val sessionId: String,
     val questionDocumentId: String,
@@ -1970,6 +1984,14 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     suspend fun completeProblemOrganizationWork(
         command: ProblemOrganizationWorkTransitionCommand,
     ): Boolean = false
+
+    suspend fun confirmAndCompleteProblemOrganizationWork(
+        command: CompleteProblemOrganizationWorkAtomicallyCommand,
+    ): ConfirmAndCompleteProblemOrganizationWorkResult =
+        ConfirmAndCompleteProblemOrganizationWorkResult(
+            completed = false,
+            organizationResult = null,
+        )
 
     suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,

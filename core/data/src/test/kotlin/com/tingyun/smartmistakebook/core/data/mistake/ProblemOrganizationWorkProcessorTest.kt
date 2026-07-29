@@ -12,6 +12,8 @@ import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationConfirmation
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionAuthority
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionOutcome
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
@@ -290,6 +292,60 @@ class ProblemOrganizationWorkProcessorTest {
         assertTrue(fixture.retryTransitions.isEmpty())
     }
 
+    @Test
+    fun successfulResultUsesOneAtomicCompletionAuthority() = runBlocking {
+        val request = authorizationRequest().copy(requestId = "request-id")
+        val fixture = DatabaseFixture(
+            work = runningWork(ModelTaskCodec.encodeRequest(request)),
+            receipt = commitReceipt(),
+        )
+        val organizations = AtomicCompletionOrganizationRepository()
+
+        val result = ProblemOrganizationWorkProcessor(
+            database = fixture.port,
+            modelTasks = SuccessfulModelTaskRepository(request),
+            organizations = organizations,
+            clock = { NOW },
+        ).process(WORK_ID, LEASE_OWNER, NOW)
+
+        assertEquals(ProblemOrganizationWorkProcessResult.Succeeded, result)
+        assertEquals(
+            ProblemOrganizationWorkCompletionAuthority(
+                workId = WORK_ID,
+                expectedStateVersion = 7,
+                leaseOwner = LEASE_OWNER,
+                requestId = request.requestId,
+            ),
+            organizations.authority,
+        )
+        assertTrue(fixture.retryTransitions.isEmpty())
+        assertTrue(fixture.permanentFailureTransitions.isEmpty())
+    }
+
+    @Test
+    fun lostAtomicCompletionAuthorityNeverFallsBackToASecondTransition() = runBlocking {
+        val request = authorizationRequest().copy(requestId = "request-id")
+        val fixture = DatabaseFixture(
+            work = runningWork(ModelTaskCodec.encodeRequest(request)),
+            receipt = commitReceipt(),
+        )
+        val organizations = AtomicCompletionOrganizationRepository(
+            outcome = ProblemOrganizationWorkCompletionOutcome.LOST_AUTHORITY,
+        )
+
+        val result = ProblemOrganizationWorkProcessor(
+            database = fixture.port,
+            modelTasks = SuccessfulModelTaskRepository(request),
+            organizations = organizations,
+            clock = { NOW },
+        ).process(WORK_ID, LEASE_OWNER, NOW)
+
+        assertEquals(ProblemOrganizationWorkProcessResult.LostLease, result)
+        assertTrue(fixture.waitingTransitions.isEmpty())
+        assertTrue(fixture.retryTransitions.isEmpty())
+        assertTrue(fixture.permanentFailureTransitions.isEmpty())
+    }
+
     private fun processor(fixture: DatabaseFixture) = ProblemOrganizationWorkProcessor(
         database = fixture.port,
         modelTasks = NoOpModelTaskRepository,
@@ -418,13 +474,28 @@ class ProblemOrganizationWorkProcessorTest {
 
     private object ImmutableConflictOrganizationRepository :
         MistakeOrganizationRepository by NoOpMistakeOrganizationRepository {
-        override suspend fun applySuccessfulOrganization(
-            requestId: String,
-        ): ProblemOrganizationConfirmation {
+        override suspend fun completeSuccessfulOrganizationWork(
+            authority: ProblemOrganizationWorkCompletionAuthority,
+        ): ProblemOrganizationWorkCompletionOutcome {
             throw ImmutablePayloadConflictException(
                 "problem_organization_stale_confirmation",
-                requestId,
+                authority.requestId,
             )
+        }
+    }
+
+    private class AtomicCompletionOrganizationRepository(
+        private val outcome: ProblemOrganizationWorkCompletionOutcome =
+            ProblemOrganizationWorkCompletionOutcome.COMPLETED,
+    ) :
+        MistakeOrganizationRepository by NoOpMistakeOrganizationRepository {
+        var authority: ProblemOrganizationWorkCompletionAuthority? = null
+
+        override suspend fun completeSuccessfulOrganizationWork(
+            authority: ProblemOrganizationWorkCompletionAuthority,
+        ): ProblemOrganizationWorkCompletionOutcome {
+            this.authority = authority
+            return outcome
         }
     }
 

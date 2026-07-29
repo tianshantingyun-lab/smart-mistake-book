@@ -8,6 +8,8 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionAuthority
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionOutcome
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationException
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
@@ -188,8 +190,15 @@ class ProblemOrganizationWorkProcessor(
 
         return when (terminal.status) {
             ModelTaskStatus.SUCCEEDED -> {
-                try {
-                    organizations.applySuccessfulOrganization(request.requestId)
+                val completion = try {
+                    organizations.completeSuccessfulOrganizationWork(
+                        ProblemOrganizationWorkCompletionAuthority(
+                            workId = work.workId,
+                            expectedStateVersion = work.stateVersion,
+                            leaseOwner = leaseOwner,
+                            requestId = request.requestId,
+                        ),
+                    )
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: IllegalArgumentException) {
@@ -217,20 +226,12 @@ class ProblemOrganizationWorkProcessor(
                         message = "组织结果暂时无法保存，将稍后重试",
                     )
                 }
-                if (
-                    database.completeProblemOrganizationWork(
-                        ProblemOrganizationWorkTransitionCommand(
-                            workId = work.workId,
-                            expectedStateVersion = work.stateVersion,
-                            leaseOwner = leaseOwner,
-                            occurredAtEpochMillis = transitionTime(nowEpochMillis),
-                            requestId = request.requestId,
-                        ),
-                    )
-                ) {
-                    ProblemOrganizationWorkProcessResult.Succeeded
-                } else {
-                    ProblemOrganizationWorkProcessResult.LostLease
+                when (completion) {
+                    ProblemOrganizationWorkCompletionOutcome.COMPLETED ->
+                        ProblemOrganizationWorkProcessResult.Succeeded
+
+                    ProblemOrganizationWorkCompletionOutcome.LOST_AUTHORITY ->
+                        ProblemOrganizationWorkProcessResult.LostLease
                 }
             }
 

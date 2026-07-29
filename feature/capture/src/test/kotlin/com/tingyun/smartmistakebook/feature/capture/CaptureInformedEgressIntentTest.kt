@@ -19,14 +19,14 @@ class CaptureInformedEgressIntentTest {
         val disclosure = captureInitialEgressDisclosure(provider())
 
         assertEquals(
-            "仅把本次选中的题图交给我的视觉模型整理；不会发送其他题目或学习记录。",
+            "本次题图、整理后的题面和相关知识资料会交给我的视觉模型，用于保存后继续整理；不会发送其他题目或学习记录。",
             disclosure,
         )
         assertFalse(disclosure.contains("vision-model-1"))
         assertFalse(disclosure.contains("OCR", ignoreCase = true))
         assertFalse(disclosure.contains("API", ignoreCase = true))
         assertEquals(
-            "仅把本次选中的题图交给当前配置的大模型整理；不会发送其他题目或学习记录。",
+            "本次题图、整理后的题面和相关知识资料会交给当前配置的大模型，用于保存后继续整理；不会发送其他题目或学习记录。",
             captureInitialEgressDisclosure(provider = null),
         )
         assertEquals(

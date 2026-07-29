@@ -5,8 +5,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
+import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
+import com.tingyun.smartmistakebook.core.model.KnowledgeGroundingFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -37,10 +39,15 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ProblemOrganizationWorkDatabaseInstrumentedTest {
     private lateinit var store: StudyDatabasePort
+    private val databaseClockReadings = ArrayDeque<Long>()
+    private var databaseClockFallbackEpochMillis = 0L
 
     @Before
     fun setUp() {
-        store = StudyDatabaseFactory.openInMemory(ApplicationProvider.getApplicationContext())
+        store = StudyDatabaseFactory.openInMemory(
+            ApplicationProvider.getApplicationContext(),
+            ::readDatabaseClock,
+        )
     }
 
     @After
@@ -225,11 +232,466 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
         assertEquals("second-worker", store.readProblemOrganizationWork(work.workId)?.leaseOwner)
     }
 
+    @Test
+    fun organizationFactsAndSuccessfulWorkTransitionCommitAtomically() = runBlocking {
+        val claimed = prepareClaimedWork("atomic-completion", "worker", 5_000, 1_000)
+        val confirmation = organizationCommand("atomic-completion", acceptedAtEpochMillis = 5_100)
+
+        val result = store.confirmAndCompleteProblemOrganizationWork(
+            completionCommand(claimed, "worker", 5_100, confirmation = confirmation),
+        )
+
+        assertTrue(result.completed)
+        assertTrue(checkNotNull(result.organizationResult).created)
+        assertEquals(
+            StudyDbValue.ProblemOrganizationWorkStatus.SUCCEEDED,
+            store.readProblemOrganizationWork(claimed.workId)?.status,
+        )
+        assertNotNull(database().problemOrganizationDao().readReceipt(confirmation.commandId))
+        assertEquals(
+            1,
+            database().problemOrganizationWorkDao()
+                .readSolutionSteps(confirmation.commandId)
+                .size,
+        )
+        assertEquals(
+            1,
+            database().problemOrganizationWorkDao()
+                .readErrorAttributionCandidates(confirmation.commandId)
+                .size,
+        )
+    }
+
+    @Test
+    fun reclaimedLeaseRejectsLateAtomicCompletionWithoutBusinessWrites() = runBlocking {
+        val claimA = prepareClaimedWork("late-atomic", "worker-a", 5_000, 100)
+        val claimB = checkNotNull(
+            store.claimProblemOrganizationWork(
+                workId = claimA.workId,
+                leaseOwner = "worker-b",
+                nowEpochMillis = 5_100,
+                leaseDurationMillis = 1_000,
+            ),
+        )
+        val confirmation = organizationCommand("late-atomic", acceptedAtEpochMillis = 5_101)
+
+        val late = store.confirmAndCompleteProblemOrganizationWork(
+            completionCommand(claimA, "worker-a", 5_101, confirmation = confirmation),
+        )
+
+        assertFalse(late.completed)
+        assertNull(late.organizationResult)
+        assertNull(database().problemOrganizationDao().readReceipt(confirmation.commandId))
+        assertTrue(
+            database().problemOrganizationWorkDao()
+                .readSolutionSteps(confirmation.commandId)
+                .isEmpty(),
+        )
+        val persisted = checkNotNull(store.readProblemOrganizationWork(claimA.workId))
+        assertEquals(claimB.stateVersion, persisted.stateVersion)
+        assertEquals("worker-b", persisted.leaseOwner)
+        assertEquals(StudyDbValue.ProblemOrganizationWorkStatus.RUNNING, persisted.status)
+    }
+
+    @Test
+    fun leaseExpiringDuringAtomicCompletionRollsBackBusinessWritesWithoutReclaim() = runBlocking {
+        val claimed = prepareClaimedWork("expiry-mid-commit", "worker", 5_000, 100)
+        val confirmation = organizationCommand("expiry-mid-commit", acceptedAtEpochMillis = 5_099)
+        val command = completionCommand(
+            claimed = claimed,
+            leaseOwner = "worker",
+            completedAtEpochMillis = 5_099,
+            confirmation = confirmation,
+        )
+        setDatabaseClockReadings(5_099, 5_101)
+
+        assertThrows(DatabaseContractViolationException::class.java) {
+            runBlocking {
+                store.confirmAndCompleteProblemOrganizationWork(command)
+            }
+        }
+
+        assertNull(database().problemOrganizationDao().readReceipt(confirmation.commandId))
+        assertTrue(
+            database().problemOrganizationWorkDao()
+                .readSolutionSteps(confirmation.commandId)
+                .isEmpty(),
+        )
+        assertNull(
+            database().problemOrganizationDao()
+                .readClassificationBinding("chapter-classification-expiry-mid-commit"),
+        )
+        val persisted = checkNotNull(store.readProblemOrganizationWork(claimed.workId))
+        assertEquals(claimed.stateVersion, persisted.stateVersion)
+        assertEquals("worker", persisted.leaseOwner)
+        assertEquals(StudyDbValue.ProblemOrganizationWorkStatus.RUNNING, persisted.status)
+    }
+
+    @Test
+    fun userOwnedCorrectionBlocksGroundingOnlyCompletionInsideTransaction() = runBlocking {
+        val claimed = prepareClaimedWork("grounding-user-race", "worker", 5_000, 1_000)
+        val userCorrectionBase = organizationCommand(
+            "grounding-user-race",
+            acceptedAtEpochMillis = 5_050,
+        )
+        val userCorrection = userCorrectionBase.copy(
+            commandId = "user-correction-grounding-user-race",
+            payloadFingerprint = "d".repeat(64),
+            classifications = userCorrectionBase.classifications.map { classification ->
+                classification.copy(
+                    acceptanceSource = BindingAcceptanceSource.USER_CORRECTED.name,
+                )
+            },
+            knowledgeBindings = userCorrectionBase.knowledgeBindings.map { binding ->
+                binding.copy(sourceType = BindingAcceptanceSource.USER_CORRECTED.name)
+            },
+        )
+        store.confirmProblemOrganization(userCorrection)
+        val grounding = groundingRequest(
+            claimed,
+            "grounding-user-race",
+            occurredAtEpochMillis = 5_100,
+        )
+
+        assertThrows(ProblemOrganizationAuthorityConflictException::class.java) {
+            runBlocking {
+                store.confirmAndCompleteProblemOrganizationWork(
+                    completionCommand(
+                        claimed = claimed,
+                        leaseOwner = "worker",
+                        completedAtEpochMillis = 5_100,
+                        groundingRequests = listOf(grounding),
+                    ),
+                )
+            }
+        }
+
+        assertNotNull(database().problemOrganizationDao().readReceipt(userCorrection.commandId))
+        assertTrue(
+            database().knowledgeGroundingDao()
+                .readByIds(setOf(grounding.groundingRequestId))
+                .isEmpty(),
+        )
+        val persisted = checkNotNull(store.readProblemOrganizationWork(claimed.workId))
+        assertEquals(claimed.stateVersion, persisted.stateVersion)
+        assertEquals("worker", persisted.leaseOwner)
+        assertEquals(StudyDbValue.ProblemOrganizationWorkStatus.RUNNING, persisted.status)
+    }
+
+    @Test
+    fun failureAfterOrganizationWriteRollsBackFactsReceiptAndWorkTransition() = runBlocking {
+        val claimed = prepareClaimedWork("atomic-rollback", "worker", 5_000, 1_000)
+        val confirmation = organizationCommand("atomic-rollback", acceptedAtEpochMillis = 5_100)
+        val grounding = groundingRequest(claimed, "atomic-rollback", occurredAtEpochMillis = 5_100)
+        store.recordKnowledgeGroundingRequests(
+            listOf(grounding.copy(reasonMarkdown = "already persisted with another payload")),
+        )
+
+        val failure = runCatching {
+            store.confirmAndCompleteProblemOrganizationWork(
+                completionCommand(
+                    claimed = claimed,
+                    leaseOwner = "worker",
+                    completedAtEpochMillis = 5_100,
+                    confirmation = confirmation,
+                    groundingRequests = listOf(grounding),
+                ),
+            )
+        }.exceptionOrNull()
+
+        assertTrue(failure is ImmutablePayloadConflictException)
+        assertNull(database().problemOrganizationDao().readReceipt(confirmation.commandId))
+        assertTrue(
+            database().problemOrganizationWorkDao()
+                .readSolutionSteps(confirmation.commandId)
+                .isEmpty(),
+        )
+        val persisted = checkNotNull(store.readProblemOrganizationWork(claimed.workId))
+        assertEquals(claimed.stateVersion, persisted.stateVersion)
+        assertEquals("worker", persisted.leaseOwner)
+        assertEquals(StudyDbValue.ProblemOrganizationWorkStatus.RUNNING, persisted.status)
+    }
+
+    @Test
+    fun replayAndDelayedPayloadAreImmutableNoOpsAfterAtomicSuccess() = runBlocking {
+        val claimed = prepareClaimedWork("atomic-replay", "worker", 5_000, 1_000)
+        val confirmation = organizationCommand("atomic-replay", acceptedAtEpochMillis = 5_100)
+        val command = completionCommand(claimed, "worker", 5_100, confirmation = confirmation)
+
+        assertTrue(store.confirmAndCompleteProblemOrganizationWork(command).completed)
+        val replay = store.confirmAndCompleteProblemOrganizationWork(command)
+        val delayedConfirmation = organizationCommand(
+            suffix = "atomic-replay",
+            acceptedAtEpochMillis = 5_200,
+        ).copy(
+            commandId = "delayed-organization",
+            payloadFingerprint = "f".repeat(64),
+        )
+        setDatabaseClockReadings(5_200, 5_200)
+        val delayed = store.confirmAndCompleteProblemOrganizationWork(
+            command.copy(
+                confirmation = delayedConfirmation,
+            ),
+        )
+
+        assertFalse(replay.completed)
+        assertNull(replay.organizationResult)
+        assertFalse(delayed.completed)
+        assertNull(database().problemOrganizationDao().readReceipt(delayedConfirmation.commandId))
+        assertEquals(
+            1,
+            database().problemOrganizationWorkDao()
+                .readSolutionSteps(confirmation.commandId)
+                .size,
+        )
+    }
+
+    @Test
+    fun groundingOnlyAndNoOpResultsCanCompleteTheirExactWork() = runBlocking {
+        val groundingClaim = prepareClaimedWork("grounding-only", "grounder", 5_000, 1_000)
+        assertWorkRequestMatchesItsExactReceipt(groundingClaim)
+        val grounding = groundingRequest(
+            groundingClaim,
+            "grounding-only",
+            occurredAtEpochMillis = 5_100,
+        )
+        val groundingResult = store.confirmAndCompleteProblemOrganizationWork(
+            completionCommand(
+                claimed = groundingClaim,
+                leaseOwner = "grounder",
+                completedAtEpochMillis = 5_100,
+                groundingRequests = listOf(grounding),
+            ),
+        )
+        val noOpClaim = prepareClaimedWork(
+            suffix = "no-op",
+            leaseOwner = "no-op-worker",
+            nowEpochMillis = 6_000,
+            leaseDurationMillis = 1_000,
+            confirmedQuestionMarkdown = "已知函数 g(x)=x²+1，求最值。",
+        )
+        assertWorkRequestMatchesItsExactReceipt(noOpClaim)
+        val noOpResult = store.confirmAndCompleteProblemOrganizationWork(
+            completionCommand(noOpClaim, "no-op-worker", 6_100),
+        )
+
+        assertTrue(groundingResult.completed)
+        assertNull(groundingResult.organizationResult)
+        assertNotNull(
+            database().knowledgeGroundingDao()
+                .readByIds(setOf(grounding.groundingRequestId))
+                .singleOrNull(),
+        )
+        assertTrue(noOpResult.completed)
+        assertNull(noOpResult.organizationResult)
+    }
+
+    private suspend fun assertWorkRequestMatchesItsExactReceipt(
+        claimed: ProblemOrganizationWorkRecord,
+    ) {
+        val work = checkNotNull(
+            database().problemOrganizationWorkDao().readWork(claimed.workId),
+        )
+        val receipt = checkNotNull(
+            database().problemOrganizationWorkDao()
+                .readCommitReceipt(work.commitReceiptCommandId),
+        )
+        val input = checkNotNull(
+            ModelTaskCodec.decodeRequest(checkNotNull(work.requestSnapshot)).input
+                as? ProblemOrganizationV3Input,
+        )
+        assertEquals(receipt.problemId, input.problemId)
+        assertEquals(receipt.problemRevisionId, input.problemRevisionId)
+        assertEquals(receipt.practiceUnitId, input.practiceUnitId)
+    }
+
+    private suspend fun prepareClaimedWork(
+        suffix: String,
+        leaseOwner: String,
+        nowEpochMillis: Long,
+        leaseDurationMillis: Long,
+        confirmedQuestionMarkdown: String = "已知函数 f(x)=x²，求最值。",
+    ): ProblemOrganizationWorkRecord {
+        val claimable = prepareClaimableWork(suffix, confirmedQuestionMarkdown)
+        return checkNotNull(
+            store.claimProblemOrganizationWork(
+                workId = claimable.workId,
+                leaseOwner = leaseOwner,
+                nowEpochMillis = nowEpochMillis,
+                leaseDurationMillis = leaseDurationMillis,
+            ),
+        )
+    }
+
+    private fun completionCommand(
+        claimed: ProblemOrganizationWorkRecord,
+        leaseOwner: String,
+        completedAtEpochMillis: Long,
+        confirmation: ConfirmProblemOrganizationCommand? = null,
+        groundingRequests: List<KnowledgeGroundingRequestRecord> = emptyList(),
+    ): CompleteProblemOrganizationWorkAtomicallyCommand {
+        setDatabaseClockReadings(completedAtEpochMillis, completedAtEpochMillis)
+        return CompleteProblemOrganizationWorkAtomicallyCommand(
+            workId = claimed.workId,
+            expectedStateVersion = claimed.stateVersion,
+            leaseOwner = leaseOwner,
+            requestId = requireNotNull(claimed.requestId),
+            confirmation = confirmation,
+            groundingRequests = groundingRequests,
+        )
+    }
+
+    private fun setDatabaseClockReadings(vararg readings: Long) {
+        require(readings.isNotEmpty())
+        databaseClockReadings.clear()
+        databaseClockReadings.addAll(readings.toList())
+        databaseClockFallbackEpochMillis = readings.last()
+    }
+
+    private fun readDatabaseClock(): Long =
+        databaseClockReadings.removeFirstOrNull() ?: databaseClockFallbackEpochMillis
+
+    private fun organizationCommand(
+        suffix: String,
+        acceptedAtEpochMillis: Long,
+    ): ConfirmProblemOrganizationCommand {
+        val problemId = "problem-$suffix"
+        val revisionId = "revision-$suffix"
+        val practiceUnitId = "practice-$suffix"
+        val knowledgeNodeId = "knowledge-$suffix"
+        val stableCode = "math:knowledge:$suffix"
+        return ConfirmProblemOrganizationCommand(
+            commandId = "organization-$suffix",
+            payloadFingerprint = "e".repeat(64),
+            problemId = problemId,
+            problemRevisionId = revisionId,
+            practiceUnitId = practiceUnitId,
+            knowledgeNodes = listOf(
+                KnowledgeNodeSeedRecord(
+                    knowledgeNodeId = knowledgeNodeId,
+                    stableCode = stableCode,
+                    subject = SubjectKind.MATH.name,
+                    displayName = "二次函数最值",
+                    parentKnowledgeNodeId = null,
+                    taxonomyVersion = "organization-test-v1",
+                    createdAtEpochMillis = acceptedAtEpochMillis,
+                ),
+            ),
+            knowledgeBindings = listOf(
+                KnowledgeBindingSeedRecord(
+                    bindingId = "knowledge-binding-$suffix",
+                    practiceUnitId = practiceUnitId,
+                    knowledgeNodeId = knowledgeNodeId,
+                    basisRevisionId = revisionId,
+                    strength = 0.9,
+                    sourceType = "LOCAL_POLICY_ACCEPTED",
+                    taxonomyVersion = "organization-test-v1",
+                    acceptedAtEpochMillis = acceptedAtEpochMillis,
+                ),
+            ),
+            classifications = listOf(
+                ProblemClassificationBindingRecord(
+                    bindingId = "chapter-classification-$suffix",
+                    problemId = problemId,
+                    basisRevisionId = revisionId,
+                    dimension = "CHAPTER",
+                    labelId = "math:chapter:function",
+                    displayName = "函数",
+                    taxonomyVersion = "organization-test-v1",
+                    acceptanceSource = "LOCAL_POLICY_ACCEPTED",
+                    acceptedAtEpochMillis = acceptedAtEpochMillis,
+                ),
+                ProblemClassificationBindingRecord(
+                    bindingId = "knowledge-classification-$suffix",
+                    problemId = problemId,
+                    basisRevisionId = revisionId,
+                    dimension = "KNOWLEDGE",
+                    labelId = stableCode,
+                    displayName = "二次函数最值",
+                    taxonomyVersion = "organization-test-v1",
+                    acceptanceSource = "LOCAL_POLICY_ACCEPTED",
+                    acceptedAtEpochMillis = acceptedAtEpochMillis,
+                ),
+            ),
+            relations = emptyList(),
+            acceptedAtEpochMillis = acceptedAtEpochMillis,
+            planSchemaVersion = 3,
+            solutionSteps = listOf(
+                ProblemSolutionStepSeedRecord(
+                    stepOrdinal = 1,
+                    summaryMarkdown = "确定函数开口方向与对称轴。",
+                    knowledgeReferences = listOf(
+                        ProblemStepKnowledgeReferenceSeedRecord(
+                            knowledgeReferenceId = "knowledge-ref-$suffix",
+                            knowledgeNodeId = knowledgeNodeId,
+                        ),
+                    ),
+                ),
+            ),
+            errorAttributionCandidates = listOf(
+                ProblemErrorAttributionCandidateSeedRecord(
+                    candidateOrdinal = 0,
+                    resolutionStatus =
+                        StudyDbValue.ProblemErrorAttributionResolution.UNRESOLVED,
+                    stepOrdinal = null,
+                    knowledgeReferenceId = null,
+                    knowledgeNodeId = null,
+                    rationaleMarkdown = "当前图片无法可靠定位具体错误步骤。",
+                    confidence = 0.4,
+                    modelVersion = "organization-test-model",
+                    evidence = emptyList(),
+                ),
+            ),
+            sourceCommitReceiptCommandId = "commit-$suffix",
+        )
+    }
+
+    private fun groundingRequest(
+        claimed: ProblemOrganizationWorkRecord,
+        suffix: String,
+        occurredAtEpochMillis: Long,
+    ): KnowledgeGroundingRequestRecord {
+        val requestId = requireNotNull(claimed.requestId)
+        val groundingKey = KnowledgeGroundingFingerprint.of(
+            subject = SubjectKind.MATH,
+            expectedParentKnowledgeDisplayName = "函数",
+            query = "含参数的二次函数最值",
+        )
+        return KnowledgeGroundingRequestRecord(
+            groundingRequestId = KnowledgeGroundingFingerprint.occurrenceId(
+                organizationRequestId = requestId,
+                requestOrdinal = 0,
+                groundingKey = groundingKey,
+            ),
+            groundingKey = groundingKey,
+            organizationRequestId = requestId,
+            organizationRequestFingerprint = "a".repeat(64),
+            requestOrdinal = 0,
+            problemId = "problem-$suffix",
+            problemRevisionId = "revision-$suffix",
+            practiceUnitId = "practice-$suffix",
+            subject = SubjectKind.MATH.name,
+            query = "含参数的二次函数最值",
+            expectedParentKnowledgeDisplayName = "函数",
+            reasonMarkdown = "本地知识节点不足以稳定归类。",
+            createdAtEpochMillis = occurredAtEpochMillis,
+            updatedAtEpochMillis = occurredAtEpochMillis,
+        )
+    }
+
+    private fun database(): StudyDatabase =
+        (store as RoomStudyDatabase).database
+
     private suspend fun prepareCommit(
         suffix: String,
         includeAuthorization: Boolean = true,
+        confirmedQuestionMarkdown: String = "已知函数 f(x)=x²，求最值。",
     ): CommitProblemDraftCommand {
-        createDraft(suffix, confirmed = true)
+        createDraft(
+            suffix = suffix,
+            confirmed = true,
+            confirmedQuestionMarkdown = confirmedQuestionMarkdown,
+        )
         return CommitProblemDraftCommand(
             commandId = "commit-$suffix",
             draftId = "draft-$suffix",
@@ -248,8 +710,11 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
         )
     }
 
-    private suspend fun prepareClaimableWork(suffix: String): ProblemOrganizationWorkRecord {
-        val command = prepareCommit(suffix)
+    private suspend fun prepareClaimableWork(
+        suffix: String,
+        confirmedQuestionMarkdown: String = "已知函数 f(x)=x²，求最值。",
+    ): ProblemOrganizationWorkRecord {
+        val command = prepareCommit(suffix, confirmedQuestionMarkdown = confirmedQuestionMarkdown)
         store.commitProblemDraft(command)
         val waiting = checkNotNull(
             store.readProblemOrganizationWorkByCommitReceipt(command.commandId),
@@ -318,7 +783,11 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
         ),
     )
 
-    private suspend fun createDraft(suffix: String, confirmed: Boolean) {
+    private suspend fun createDraft(
+        suffix: String,
+        confirmed: Boolean,
+        confirmedQuestionMarkdown: String = "已知函数 f(x)=x²，求最值。",
+    ) {
         val draftId = "draft-$suffix"
         val assetId = "asset-$suffix"
         val assetHash = assetHash(suffix)
@@ -362,7 +831,7 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
         val confirmedDocument = questionDocument(
             documentId = "document-$suffix-confirmed",
             assetId = assetId,
-            markdown = "已知函数 f(x)=x²，求最值。",
+            markdown = confirmedQuestionMarkdown,
             provenance = QuestionBlockProvenance.USER_CORRECTION,
             reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
         )

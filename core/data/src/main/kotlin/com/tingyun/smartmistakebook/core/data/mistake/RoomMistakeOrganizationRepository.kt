@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.mistake
 
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
 import com.tingyun.smartmistakebook.core.data.knowledge.KnowledgeContextRetriever
+import com.tingyun.smartmistakebook.core.database.CompleteProblemOrganizationWorkAtomicallyCommand
 import com.tingyun.smartmistakebook.core.database.ConfirmProblemOrganizationCommand
 import com.tingyun.smartmistakebook.core.database.ProblemErrorAttributionCandidateSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemErrorAttributionEvidenceSeedRecord
@@ -29,6 +30,8 @@ import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationConfirmation
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationRelationKey
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionAuthority
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionOutcome
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.UserProblemClassification
 import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
@@ -361,6 +364,137 @@ internal class RoomMistakeOrganizationRepository(
         )
     }
 
+    override suspend fun completeSuccessfulOrganizationWork(
+        authority: ProblemOrganizationWorkCompletionAuthority,
+    ): ProblemOrganizationWorkCompletionOutcome = withContext(Dispatchers.IO) {
+        completeSuccessfulOrganizationWorkOnIo(authority)
+    }
+
+    private suspend fun completeSuccessfulOrganizationWorkOnIo(
+        authority: ProblemOrganizationWorkCompletionAuthority,
+    ): ProblemOrganizationWorkCompletionOutcome {
+        val persisted = readSuccessfulOrganization(authority.requestId)
+        val existing = database.observeConfirmedProblemOrganization(
+            persisted.input.problemId,
+            persisted.input.problemRevisionId,
+        ).first()
+        val hasUserCorrection = existing.classifications.any { classification ->
+            classification.acceptanceSource == BindingAcceptanceSource.USER_CORRECTED.name ||
+                classification.acceptanceSource == BindingAcceptanceSource.USER_CONFIRMED.name
+        }
+        val acceptedAtEpochMillis = persisted.task.updatedAtEpochMillis
+        require(acceptedAtEpochMillis > 0) {
+            "Successful organization task has no durable completion time"
+        }
+        val groundingRequests = if (
+            !hasUserCorrection && persisted.output.plan.groundingRequests.isNotEmpty()
+        ) {
+            buildKnowledgeGroundingRecords(
+                organizationRequestId = authority.requestId,
+                organizationRequestFingerprint = persisted.task.requestFingerprint,
+                input = persisted.input,
+                requests = persisted.output.plan.groundingRequests,
+                occurredAtEpochMillis = acceptedAtEpochMillis,
+            )
+        } else {
+            emptyList()
+        }
+        val confirmation = if (hasUserCorrection || groundingRequests.isNotEmpty()) {
+            null
+        } else {
+            acceptOrganizationLocally(persisted.input, persisted.output)?.let { accepted ->
+                val classifications = mergeAutomaticClassifications(
+                    existing = existing.classifications,
+                    incoming = accepted.classifications,
+                )
+                val provisional = persisted.buildConfirmationCommand(
+                    requestId = authority.requestId,
+                    classifications = classifications,
+                    relations = emptyList(),
+                    atomicKnowledge = accepted.atomicKnowledge,
+                    stepAttributions = accepted.stepAttributions,
+                    acceptedAtEpochMillis = acceptedAtEpochMillis,
+                    acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
+                    replaceRelations = false,
+                )
+                val localRelations = localSameKnowledgeRelations(
+                    input = persisted.input,
+                    knowledgeNodeIds = provisional.knowledgeBindings
+                        .mapTo(linkedSetOf()) { it.knowledgeNodeId },
+                )
+                if (localRelations.isEmpty()) {
+                    provisional
+                } else {
+                    persisted.buildConfirmationCommand(
+                        requestId = authority.requestId,
+                        classifications = classifications,
+                        relations = localRelations,
+                        atomicKnowledge = accepted.atomicKnowledge,
+                        stepAttributions = accepted.stepAttributions,
+                        acceptedAtEpochMillis = acceptedAtEpochMillis,
+                        acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
+                        replaceRelations = false,
+                    )
+                }
+            }
+        }
+        val command = CompleteProblemOrganizationWorkAtomicallyCommand(
+            workId = authority.workId,
+            expectedStateVersion = authority.expectedStateVersion,
+            leaseOwner = authority.leaseOwner,
+            requestId = authority.requestId,
+            confirmation = confirmation,
+            groundingRequests = groundingRequests,
+        )
+        val result = try {
+            database.confirmAndCompleteProblemOrganizationWork(command)
+        } catch (_: ProblemOrganizationAuthorityConflictException) {
+            database.confirmAndCompleteProblemOrganizationWork(
+                command.copy(
+                    confirmation = null,
+                    groundingRequests = emptyList(),
+                ),
+            )
+        }
+        return if (result.completed) {
+            ProblemOrganizationWorkCompletionOutcome.COMPLETED
+        } else {
+            ProblemOrganizationWorkCompletionOutcome.LOST_AUTHORITY
+        }
+    }
+
+    private suspend fun localSameKnowledgeRelations(
+        input: ProblemOrganizationInput,
+        knowledgeNodeIds: Set<String>,
+    ): List<ProblemRelationSuggestion> {
+        if (knowledgeNodeIds.isEmpty()) return emptyList()
+        return database.observeMistakes().first().asSequence()
+            .filter { candidate ->
+                candidate.problemId != input.problemId &&
+                    candidate.subject.toSubjectKind() == input.subject &&
+                    candidate.knowledgeNodeIds.any(knowledgeNodeIds::contains)
+            }
+            .map { candidate ->
+                candidate to candidate.knowledgeNodeIds.count(knowledgeNodeIds::contains)
+            }
+            .sortedWith(
+                compareByDescending<Pair<MistakeRecord, Int>> { it.second }
+                    .thenByDescending { it.first.createdAtEpochMillis }
+                    .thenBy { it.first.problemId },
+            )
+            .take(MAX_ACCEPTED_RELATIONS)
+            .map { (candidate, _) ->
+                ProblemRelationSuggestion(
+                    targetProblemId = candidate.problemId,
+                    targetProblemRevisionId = candidate.problemRevisionId,
+                    kind = ProblemRelationKind.SAME_KNOWLEDGE,
+                    rationaleMarkdown = "与本题有相同知识点，已在本机整理。",
+                    confidence = 1.0,
+                )
+            }
+            .toList()
+    }
+
     override suspend fun confirm(
         requestId: String,
         selection: ProblemOrganizationSelection,
@@ -592,7 +726,6 @@ internal class RoomMistakeOrganizationRepository(
         require(draft.currentRevision.subject == current.subject) {
             "Organization source subject does not match its committed problem"
         }
-        val relationCandidates = committedRelationCandidates(catalog, current)
         val questionText = QuestionDocumentMarkdownProjection.project(
             draft.currentRevision.questionDocument.document,
         )
@@ -631,7 +764,7 @@ internal class RoomMistakeOrganizationRepository(
             subject = current.subject.toSubjectKind(),
             capturedDocument = draft.currentRevision.questionDocument,
             sourceAssets = sourceAssets,
-            relationCandidates = relationCandidates,
+            relationCandidates = emptyList(),
             knowledgeBaseNodes = knowledgeBaseNodes,
         )
         val requestId = organizationV3RequestId(
@@ -651,7 +784,7 @@ internal class RoomMistakeOrganizationRepository(
                 occurredAtEpochMillis = occurredAtEpochMillis,
                 egressManifest = manifest,
             ),
-            relatedCandidateTitles = relationCandidates.map(RelatedProblemCandidate::title),
+            relatedCandidateTitles = emptyList(),
             knowledgeContextCount = knowledgeBaseNodes.size,
         )
     }

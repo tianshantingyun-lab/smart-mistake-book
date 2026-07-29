@@ -223,12 +223,8 @@ data class ProblemOrganizationV3Input(
                 evidenceRegion == null ||
                 source.selectedRegion.containsOrganizationRegion(evidenceRegion)
         }) { "Organization block evidence must stay inside its exact source asset scope" }
-        require(relationCandidates.size <= ProblemOrganizationInput.MAX_RELATION_CANDIDATES)
-        require(relationCandidates.none { it.problemId == problemId }) {
-            "A problem cannot be its own relation candidate"
-        }
-        require(relationCandidates.map(RelatedProblemCandidate::problemId).distinct().size == relationCandidates.size) {
-            "Relation candidate problem ids must be unique"
+        require(relationCandidates.isEmpty()) {
+            "Problem organization v3 must not disclose other questions"
         }
         require(knowledgeBaseNodes.size <= ProblemOrganizationInput.MAX_KNOWLEDGE_BASE_NODES)
         require(knowledgeBaseNodes.all { it.subject == subject }) {

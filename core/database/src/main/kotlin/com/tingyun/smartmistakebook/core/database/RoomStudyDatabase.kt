@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.mapLatest
 
 internal class RoomStudyDatabase(
     internal val database: StudyDatabase,
+    private val clock: () -> Long = System::currentTimeMillis,
 ) : StudyDatabasePort {
     private val knowledgeResearchReviewStore = RoomKnowledgeResearchReviewStore(database)
 
@@ -1087,6 +1088,81 @@ internal class RoomStudyDatabase(
         ) == 1
     }
 
+    override suspend fun confirmAndCompleteProblemOrganizationWork(
+        command: CompleteProblemOrganizationWorkAtomicallyCommand,
+    ): ConfirmAndCompleteProblemOrganizationWorkResult {
+        validateAtomicOrganizationCompletion(command)
+        KnowledgeGroundingRequestContract.validate(command.groundingRequests)
+        return database.withWriteTransaction {
+            val authorizationNowEpochMillis = trustedClockEpochMillis()
+            val workDao = database.problemOrganizationWorkDao()
+            val work = workDao.readWork(command.workId)
+            if (
+                work == null ||
+                !work.matchesCompletionAuthority(command, authorizationNowEpochMillis)
+            ) {
+                return@withWriteTransaction ConfirmAndCompleteProblemOrganizationWorkResult(
+                    completed = false,
+                    organizationResult = null,
+                )
+            }
+            val sourceReceipt = workDao.readCommitReceipt(work.commitReceiptCommandId)
+                ?: throw DatabaseContractViolationException(
+                    "Organization work commit receipt is missing",
+                )
+            command.confirmation?.let { confirmation ->
+                require(
+                    confirmation.sourceCommitReceiptCommandId == work.commitReceiptCommandId,
+                ) { "Organization confirmation belongs to another import occurrence" }
+            }
+            require(
+                command.groundingRequests.all { request ->
+                    request.organizationRequestId == command.requestId &&
+                        request.problemId == sourceReceipt.problemId &&
+                        request.problemRevisionId == sourceReceipt.problemRevisionId &&
+                        request.practiceUnitId == sourceReceipt.practiceUnitId
+                },
+            ) { "Knowledge grounding belongs to another organization work" }
+            if (command.groundingRequests.isNotEmpty()) {
+                problemOrganization.requireLocalPolicyAuthority(
+                    sourceReceipt.problemId,
+                    sourceReceipt.problemRevisionId,
+                )
+            }
+
+            val organizationResult = command.confirmation?.let {
+                problemOrganization.confirmInCurrentTransaction(it)
+            }
+            database.knowledgeGroundingDao().recordAllInCurrentTransaction(
+                command.groundingRequests.map(KnowledgeGroundingRequestRecord::toEntity),
+            )
+            val completionNowEpochMillis = maxOf(
+                authorizationNowEpochMillis,
+                trustedClockEpochMillis(),
+            )
+            if (
+                workDao.markSucceeded(
+                    workId = command.workId,
+                    expectedStateVersion = command.expectedStateVersion,
+                    leaseOwner = command.leaseOwner,
+                    requestId = command.requestId,
+                    updatedAtEpochMillis = completionNowEpochMillis,
+                ) != 1
+            ) {
+                throw DatabaseContractViolationException(
+                    "Organization work lease changed during atomic completion",
+                )
+            }
+            ConfirmAndCompleteProblemOrganizationWorkResult(
+                completed = true,
+                organizationResult = organizationResult,
+            )
+        }
+    }
+
+    private fun trustedClockEpochMillis(): Long =
+        clock().also { require(it >= 0) { "clock must not be negative" } }
+
     override suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
     ): CommitProblemDraftResult = database.withWriteTransaction {
@@ -1724,6 +1800,26 @@ private fun validateOrganizationWorkTransition(
         }
     }
 }
+
+private fun validateAtomicOrganizationCompletion(
+    command: CompleteProblemOrganizationWorkAtomicallyCommand,
+) {
+    require(command.workId.isNotBlank()) { "workId must not be blank" }
+    require(command.expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
+    require(command.leaseOwner.isNotBlank()) { "leaseOwner must not be blank" }
+    require(command.requestId.isNotBlank()) { "requestId must not be blank" }
+}
+
+private fun ProblemOrganizationWorkEntity.matchesCompletionAuthority(
+    command: CompleteProblemOrganizationWorkAtomicallyCommand,
+    authorizationNowEpochMillis: Long,
+): Boolean =
+    stateVersion == command.expectedStateVersion &&
+        status == StudyDbValue.ProblemOrganizationWorkStatus.RUNNING &&
+        leaseOwner == command.leaseOwner &&
+        requestId == command.requestId &&
+        leaseExpiresAtEpochMillis != null &&
+        leaseExpiresAtEpochMillis > authorizationNowEpochMillis
 
 private fun ProblemOrganizationWorkEntity.toRecord() = ProblemOrganizationWorkRecord(
     workId = workId,

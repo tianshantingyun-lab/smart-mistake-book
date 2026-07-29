@@ -307,13 +307,16 @@ object StudyDatabaseFactory {
         return RoomStudyDatabase(database)
     }
 
-    internal fun openInMemory(context: Context): RoomStudyDatabase {
+    internal fun openInMemory(
+        context: Context,
+        clock: () -> Long = System::currentTimeMillis,
+    ): RoomStudyDatabase {
         val database = Room.inMemoryDatabaseBuilder(
             context.applicationContext,
             StudyDatabase::class.java,
         ).setDriver(AndroidSQLiteDriver())
             .build()
-        return RoomStudyDatabase(database)
+        return RoomStudyDatabase(database, clock)
     }
 }
 

@@ -85,6 +85,8 @@ class OpenAiProblemOrganizationProtocolTest {
         assertFalse(prompt.contains("\"sourceRegion\""))
         assertFalse(prompt.contains("\"left\""))
         assertFalse(prompt.contains("\"top\""))
+        assertFalse(prompt.contains("relatedCandidates"))
+        assertFalse(prompt.contains("候选题"))
     }
 
     @Test

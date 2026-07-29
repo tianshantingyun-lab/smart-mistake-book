@@ -186,10 +186,13 @@ internal fun captureInitialEgressDisclosure(
         provider.supports(ModelTaskKind.TUTOR_PLAN) ->
         "本次题图和与本题相关的学习记录只在本机整理并开始讲解。"
     provider?.requiresCaptureEgressApproval() == true ->
-        "仅把本次选中的题图交给${provider.providerDisplayName}整理；不会发送其他题目或学习记录。"
+        captureDisclosureText(provider.providerDisplayName)
     provider != null -> "本次选中的题图只在本机整理。"
-    else -> "仅把本次选中的题图交给当前配置的大模型整理；不会发送其他题目或学习记录。"
+    else -> captureDisclosureText("当前配置的大模型")
 }
+
+internal fun captureDisclosureText(providerDisplayName: String): String =
+    "本次题图、整理后的题面和相关知识资料会交给$providerDisplayName，用于保存后继续整理；不会发送其他题目或学习记录。"
 
 private fun CaptureSourcePage.toEgressAssetIdentity(): CaptureEgressAssetIdentity =
     CaptureEgressAssetIdentity(

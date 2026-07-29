@@ -46,23 +46,28 @@ internal class RoomProblemOrganizationStore(
 
     suspend fun confirm(
         command: ConfirmProblemOrganizationCommand,
+    ): ConfirmProblemOrganizationResult = database.withWriteTransaction {
+        confirmInCurrentTransaction(command)
+    }
+
+    suspend fun confirmInCurrentTransaction(
+        command: ConfirmProblemOrganizationCommand,
     ): ConfirmProblemOrganizationResult {
         validateCommand(command)
-        return database.withWriteTransaction {
-            val dao = database.problemOrganizationDao()
-            val expectedReceipt = command.toReceiptEntity()
-            dao.readReceipt(command.commandId)?.let { existing ->
-                if (existing != expectedReceipt) {
-                    throw ImmutablePayloadConflictException(
-                        "problem_organization_receipt",
-                        command.commandId,
-                    )
-                }
-                return@withWriteTransaction ConfirmProblemOrganizationResult(
-                    created = false,
-                    receipt = existing.toRecord(),
+        val dao = database.problemOrganizationDao()
+        val expectedReceipt = command.toReceiptEntity()
+        dao.readReceipt(command.commandId)?.let { existing ->
+            if (existing != expectedReceipt) {
+                throw ImmutablePayloadConflictException(
+                    "problem_organization_receipt",
+                    command.commandId,
                 )
             }
+            return ConfirmProblemOrganizationResult(
+                created = false,
+                receipt = existing.toRecord(),
+            )
+        }
             if (
                 dao.exactPracticeUnitCount(
                     command.practiceUnitId,
@@ -81,8 +86,7 @@ internal class RoomProblemOrganizationStore(
                 .single()
             if (
                 incomingAcceptanceSource == BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED.name &&
-                dao.readClassificationAcceptanceSources(command.problemId, command.problemRevisionId)
-                    .any(USER_OWNED_ORGANIZATION_SOURCES::contains)
+                hasUserOwnedOrganization(command.problemId, command.problemRevisionId)
             ) {
                 throw ProblemOrganizationAuthorityConflictException(command.problemRevisionId)
             }
@@ -188,7 +192,7 @@ internal class RoomProblemOrganizationStore(
                         command.commandId,
                     )
                 }
-                return@withWriteTransaction ConfirmProblemOrganizationResult(
+                return ConfirmProblemOrganizationResult(
                     created = false,
                     receipt = winner.toRecord(),
                 )
@@ -208,12 +212,27 @@ internal class RoomProblemOrganizationStore(
                     workDao.insertErrorCandidateEvidence(detailedOrganization.errorEvidence)
                 }
             }
-            ConfirmProblemOrganizationResult(
-                created = true,
-                receipt = expectedReceipt.toRecord(),
-            )
+        return ConfirmProblemOrganizationResult(
+            created = true,
+            receipt = expectedReceipt.toRecord(),
+        )
+    }
+
+    suspend fun requireLocalPolicyAuthority(
+        problemId: String,
+        problemRevisionId: String,
+    ) {
+        if (hasUserOwnedOrganization(problemId, problemRevisionId)) {
+            throw ProblemOrganizationAuthorityConflictException(problemRevisionId)
         }
     }
+
+    private suspend fun hasUserOwnedOrganization(
+        problemId: String,
+        problemRevisionId: String,
+    ): Boolean = database.problemOrganizationDao()
+        .readClassificationAcceptanceSources(problemId, problemRevisionId)
+        .any(USER_OWNED_ORGANIZATION_SOURCES::contains)
 }
 
 private data class DetailedOrganizationPersistence(

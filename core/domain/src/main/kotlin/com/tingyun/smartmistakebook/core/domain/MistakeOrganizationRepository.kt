@@ -118,6 +118,25 @@ data class ProblemOrganizationConfirmation(
     val preservedUserCorrection: Boolean = false,
 )
 
+data class ProblemOrganizationWorkCompletionAuthority(
+    val workId: String,
+    val expectedStateVersion: Long,
+    val leaseOwner: String,
+    val requestId: String,
+) {
+    init {
+        require(workId.isNotBlank()) { "workId must not be blank" }
+        require(expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
+        require(leaseOwner.isNotBlank()) { "leaseOwner must not be blank" }
+        require(requestId.isNotBlank()) { "requestId must not be blank" }
+    }
+}
+
+enum class ProblemOrganizationWorkCompletionOutcome {
+    COMPLETED,
+    LOST_AUTHORITY,
+}
+
 interface MistakeOrganizationRepository {
     suspend fun prepare(
         key: MistakeRevisionKey,
@@ -153,6 +172,16 @@ interface MistakeOrganizationRepository {
     suspend fun applySuccessfulOrganization(
         requestId: String,
     ): ProblemOrganizationConfirmation
+
+    /**
+     * Applies a successful persisted result and completes its durable work under one database
+     * lease transaction. A lost lease must produce no organization, grounding, or work writes.
+     */
+    suspend fun completeSuccessfulOrganizationWork(
+        authority: ProblemOrganizationWorkCompletionAuthority,
+    ): ProblemOrganizationWorkCompletionOutcome = throw UnsupportedOperationException(
+        "Atomic committed organization completion is not implemented",
+    )
 
     /**
      * Persists an explicit user correction against a successful task for the exact revision.

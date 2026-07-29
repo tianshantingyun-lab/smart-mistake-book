@@ -213,6 +213,12 @@ class ProblemOrganizationTasksTest {
         assertEquals(manifest, (execution.permit as ModelExecutionPermit.External).manifest)
         assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in disclosure)
         assertTrue(ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE in disclosure)
+        assertTrue(ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE in disclosure)
+        assertFalse(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES in disclosure)
+        assertTrue(
+            ModelEgressDataClass.RELATED_QUESTION_CANDIDATES in
+                ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE,
+        )
         assertTrue(
             runCatching {
                 ModelEgressPolicy.authorize(
@@ -220,6 +226,29 @@ class ProblemOrganizationTasksTest {
                     provider,
                     2,
                 )
+            }.isFailure,
+        )
+    }
+
+    @Test
+    fun v3RejectsOtherQuestionsRegardlessOfWhenTheyWereAdded() {
+        val current = v3Input()
+        val existingMistake = input().relationCandidates.single()
+        val addedAfterConsent = existingMistake.copy(
+            problemId = "problem-added-after-consent",
+            problemRevisionId = "revision-added-after-consent",
+            title = "同意后新增的错题",
+            questionDocument = document("question-added-after-consent", "不得发送的另一道题"),
+        )
+
+        assertTrue(
+            runCatching {
+                current.copy(relationCandidates = listOf(existingMistake))
+            }.isFailure,
+        )
+        assertTrue(
+            runCatching {
+                current.copy(relationCandidates = listOf(addedAfterConsent))
             }.isFailure,
         )
     }
@@ -574,7 +603,7 @@ class ProblemOrganizationTasksTest {
                 selectedRegion = NormalizedSourceRegion(0.05, 0.05, 0.95, 0.95),
             ),
         ),
-        relationCandidates = input().relationCandidates,
+        relationCandidates = emptyList(),
         knowledgeBaseNodes = emptyList(),
     )
 
