@@ -59,6 +59,8 @@ import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCancellationReason
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
 import com.tingyun.smartmistakebook.core.domain.TutorGuidancePolicy
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceOutcome
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceRequest
@@ -115,6 +117,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -296,6 +300,8 @@ fun CapturedTutorSessionRoute(
     repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    learningMemory: TutorLearningMemoryRepository,
+    learnerScopeId: String = DEFAULT_TUTOR_LEARNER_SCOPE_ID,
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     onOpenModelSettings: () -> Unit,
@@ -307,6 +313,7 @@ fun CapturedTutorSessionRoute(
     onBack: () -> Unit,
     onEndedWithoutSave: () -> Unit = onBack,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    explanationModeVersion: Long = 0L,
     onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -419,6 +426,8 @@ fun CapturedTutorSessionRoute(
         repository = repository,
         modelTasks = modelTasks,
         interactions = interactions,
+        learningMemory = learningMemory,
+        learnerScopeId = learnerScopeId,
         profile = profile,
         catalogEntries = catalogEntries,
         longTermWritesBlocked = longTermWritesBlocked,
@@ -433,6 +442,7 @@ fun CapturedTutorSessionRoute(
         autoStartAuthorization = autoStartAuthorization,
         onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
         explanationMode = explanationMode,
+        explanationModeVersion = explanationModeVersion,
         onExplanationModeChange = onExplanationModeChange,
         modifier = modifier,
     )
@@ -490,6 +500,8 @@ private fun CapturedTutorSessionContent(
     repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    learningMemory: TutorLearningMemoryRepository,
+    learnerScopeId: String,
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry>,
     longTermWritesBlocked: Boolean,
@@ -504,6 +516,7 @@ private fun CapturedTutorSessionContent(
     autoStartAuthorization: TutorAutoStartAuthorization?,
     onAutoStartAuthorizationConsumed: (String) -> Unit,
     explanationMode: TutorExplanationMode,
+    explanationModeVersion: Long,
     onExplanationModeChange: (TutorExplanationMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -522,6 +535,8 @@ private fun CapturedTutorSessionContent(
                 visualOriginalAvailable = true,
                 modelTasks = modelTasks,
                 interactions = interactions,
+                learningMemory = learningMemory,
+                learnerScopeId = learnerScopeId,
                 profile = profile,
                 catalogEntries = catalogEntries,
                 longTermWritesBlocked = longTermWritesBlocked,
@@ -536,6 +551,7 @@ private fun CapturedTutorSessionContent(
                 autoStartAuthorization = autoStartAuthorization,
                 onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
                 explanationMode = explanationMode,
+                explanationModeVersion = explanationModeVersion,
                 onExplanationModeChange = onExplanationModeChange,
                 modifier = modifier.testTag("captured_tutor_session_screen"),
             )
@@ -615,6 +631,30 @@ internal fun LoadingTutorQuestion() {
     }
 }
 
+private data class CapturedTutorChoiceRuntimeIdentity(
+    val sessionId: String,
+    val questionDocumentId: String,
+    val revisionNumber: Int,
+    val planRequestId: String,
+    val cycleOrdinal: Int,
+    val turnOrdinal: Int,
+    val modeVersion: Long,
+)
+
+private fun CapturedTutorChoiceLearningMemoryState.blocksCapturedChoiceInteraction(): Boolean =
+    when (this) {
+        is CapturedTutorChoiceLearningMemoryState.RetryableFailure,
+        is CapturedTutorChoiceLearningMemoryState.PermanentConflict,
+        -> true
+
+        is CapturedTutorChoiceLearningMemoryState.Ineligible ->
+            reason == CapturedTutorChoiceIneligibleReason.DURABLE_SCOPE_MISMATCH ||
+                reason == CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH ||
+                reason == CapturedTutorChoiceIneligibleReason.STALE_MODE_EPOCH
+
+        else -> false
+    }
+
 @Composable
 internal fun ReadyCapturedSession(
     session: ConfirmedTutorSession,
@@ -630,6 +670,8 @@ internal fun ReadyCapturedSession(
     visualOriginalAvailable: Boolean = false,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    learningMemory: TutorLearningMemoryRepository? = null,
+    learnerScopeId: String = DEFAULT_TUTOR_LEARNER_SCOPE_ID,
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     longTermWritesBlocked: Boolean = false,
@@ -645,6 +687,7 @@ internal fun ReadyCapturedSession(
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
     clock: () -> Long = System::currentTimeMillis,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    explanationModeVersion: Long = 0L,
     onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -656,6 +699,9 @@ internal fun ReadyCapturedSession(
         visualSourceAssetsReader = visualSourceAssetsReader,
         visualOriginalAvailable = visualOriginalAvailable,
         interactions = interactions,
+        capturedSession = session,
+        learningMemory = learningMemory,
+        learnerScopeId = learnerScopeId,
         catalogEntries = catalogEntries,
         onLongTermWritesBlocked = onLongTermWritesBlocked,
         onRequestSave = { onSave(session) },
@@ -670,6 +716,7 @@ internal fun ReadyCapturedSession(
         autoStartAuthorization = autoStartAuthorization,
         onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
         explanationMode = explanationMode,
+        explanationModeVersion = explanationModeVersion,
         onExplanationModeChange = onExplanationModeChange,
         clock = clock,
         conversationEnabled = !session.isEndedWithoutSave,
@@ -821,6 +868,9 @@ internal fun TutorModelPanel(
     },
     visualOriginalAvailable: Boolean = false,
     interactions: TutorInteractionRepository,
+    capturedSession: ConfirmedTutorSession? = null,
+    learningMemory: TutorLearningMemoryRepository? = null,
+    learnerScopeId: String = DEFAULT_TUTOR_LEARNER_SCOPE_ID,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     onLongTermWritesBlocked: () -> Unit = {},
     onRequestSave: () -> Unit = {},
@@ -836,6 +886,7 @@ internal fun TutorModelPanel(
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
     conversationEnabled: Boolean = true,
     explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    explanationModeVersion: Long = 0L,
     onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     headerContent: @Composable () -> Unit = {},
     leadingContent: @Composable ColumnScope.() -> Unit = {},
@@ -870,6 +921,25 @@ internal fun TutorModelPanel(
     val provider = providerAuthority.provider
     val providerLoadFailed = providerAuthority.loadFailed
     val scope = rememberCoroutineScope()
+    val choiceLearningMemoryController = remember(
+        capturedSession?.sessionId,
+        capturedSession?.draftId,
+        capturedSession?.draftRevisionNumber,
+        capturedSession?.questionDocument,
+        learningMemory,
+        learnerScopeId,
+    ) {
+        if (capturedSession != null && learningMemory != null) {
+            CapturedTutorChoiceLearningMemoryController(
+                repository = learningMemory,
+                learnerScopeId = learnerScopeId,
+                session = capturedSession,
+                clock = clock,
+            )
+        } else {
+            null
+        }
+    }
     val activeStreamOwner = remember(
         question.sessionId,
         question.revisionNumber,
@@ -1622,6 +1692,40 @@ internal fun TutorModelPanel(
     }
     val guidanceState = guidanceResolution.state
     val effectiveExplanationMode = guidanceState.mode
+    val choiceLearningMemoryIdentity = remember(
+        question.sessionId,
+        question.questionDocument.document.id,
+        question.revisionNumber,
+        observedTask.request.requestId,
+        currentInput.cycleOrdinal,
+        currentInput.turnOrdinal,
+        explanationModeVersion,
+    ) {
+        CapturedTutorChoiceRuntimeIdentity(
+            sessionId = question.sessionId,
+            questionDocumentId = question.questionDocument.document.id,
+            revisionNumber = question.revisionNumber,
+            planRequestId = observedTask.request.requestId,
+            cycleOrdinal = currentInput.cycleOrdinal,
+            turnOrdinal = currentInput.turnOrdinal,
+            modeVersion = explanationModeVersion,
+        )
+    }
+    val latestChoiceLearningMemoryIdentity =
+        rememberUpdatedState(choiceLearningMemoryIdentity)
+    val latestChoiceLearningMemoryMode =
+        rememberUpdatedState(effectiveExplanationMode)
+    var recoveredChoiceLearningMemoryIdentity by remember(
+        choiceLearningMemoryController,
+        question.sessionId,
+        question.questionDocument.document.id,
+        question.revisionNumber,
+    ) {
+        mutableStateOf<CapturedTutorChoiceRuntimeIdentity?>(null)
+    }
+    val choiceLearningMemoryReady =
+        choiceLearningMemoryController == null ||
+            recoveredChoiceLearningMemoryIdentity == choiceLearningMemoryIdentity
     val pendingInteractionBlocked =
         guidanceResolution.blockPendingInteraction ||
             (
@@ -1688,6 +1792,48 @@ internal fun TutorModelPanel(
         }
     }
     LaunchedEffect(
+        choiceLearningMemoryController,
+        choiceLearningMemoryIdentity,
+    ) {
+        val controller = choiceLearningMemoryController ?: return@LaunchedEffect
+        val exactIdentity = choiceLearningMemoryIdentity
+        val exactPlanTask = observedTask
+        val exactGuidanceState = guidanceState
+        try {
+            val responseSnapshot = interactions.observe(exactIdentity.sessionId).first()
+            val recovery = controller.recoverFromInteractionSnapshot(
+                planTask = exactPlanTask,
+                guidanceState = exactGuidanceState,
+                modeVersion = exactIdentity.modeVersion,
+                responses = responseSnapshot,
+            )
+            if (latestChoiceLearningMemoryIdentity.value == exactIdentity) {
+                if (recovery.blocksCapturedChoiceInteraction()) {
+                    interactionError = "这次选择的学习记录暂时没有恢复，请重试后再继续。"
+                } else {
+                    recoveredChoiceLearningMemoryIdentity = exactIdentity
+                }
+            }
+            awaitCancellation()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            if (latestChoiceLearningMemoryIdentity.value == exactIdentity) {
+                interactionError = "这次选择的学习记录暂时没有恢复，请重试后再继续。"
+            }
+            awaitCancellation()
+        } finally {
+            withContext(NonCancellable) {
+                controller.cancelPreparedChoice(
+                    planTask = exactPlanTask,
+                    evidenceRequestId = exactIdentity.planRequestId,
+                    modeVersion = exactIdentity.modeVersion,
+                    reason = TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+                )
+            }
+        }
+    }
+    LaunchedEffect(
         activeStreamOwner,
         effectiveExplanationMode,
     ) {
@@ -1704,6 +1850,18 @@ internal fun TutorModelPanel(
                 runCatching {
                     transition.cancelEvidenceRequestId?.let {
                         persistEvidenceCancellation(it)
+                    }
+                    choiceLearningMemoryController?.let { controller ->
+                        val cancellation = controller.cancelPreparedChoice(
+                            planTask = observedTask,
+                            evidenceRequestId = observedTask.request.requestId,
+                            modeVersion = explanationModeVersion,
+                            reason =
+                                TutorLearningEvidenceCancellationReason.GUIDANCE_DISABLED,
+                        )
+                        check(!cancellation.blocksCapturedChoiceInteraction()) {
+                            "Exact captured-choice cancellation did not reach a safe terminal"
+                        }
                     }
                     onExplanationModeChange(mode)
                 }.onFailure {
@@ -2970,33 +3128,59 @@ internal fun TutorModelPanel(
         val evaluation = item?.evaluateChoice(choiceId)
         val evidence = guidanceState.authorizeEvidence(observedTask.request.requestId)
         if (
+            effectiveExplanationMode != TutorExplanationMode.GUIDED ||
             !evidence.mayWriteLearningEvidence ||
             output == null || item == null || evaluation == null || interactionBusy ||
+            !choiceLearningMemoryReady ||
             pendingInteractionIsCurrentlyBlocked() ||
             responseActionAwaitingAuthorization
         ) {
             return
         }
+        val exactIdentity = choiceLearningMemoryIdentity
+        val exactPlanTask = observedTask
+        val exactGuidanceState = guidanceState
+        val command = RecordTutorChoiceCommand(
+            sessionId = question.sessionId,
+            questionDocumentId = question.questionDocument.document.id,
+            revisionNumber = question.revisionNumber,
+            cycleOrdinal = currentInput.cycleOrdinal,
+            turnOrdinal = currentInput.turnOrdinal,
+            diagnosticStemMarkdown = item.stemMarkdown,
+            selectedChoiceId = evaluation.choice.id,
+            selectedChoiceMarkdown = evaluation.choice.markdown,
+            selectionWasCorrect = evaluation.isCorrect,
+            feedbackMarkdown = requireNotNull(evaluation.choice.feedbackMarkdown),
+            occurredAtEpochMillis = clock(),
+            evidenceRequestId = observedTask.request.requestId,
+        )
         interactionError = null
         interactionBusy = true
         pendingEvidenceJob = scope.launch {
             try {
-                interactions.recordChoice(
-                    RecordTutorChoiceCommand(
-                        sessionId = question.sessionId,
-                        questionDocumentId = question.questionDocument.document.id,
-                        revisionNumber = question.revisionNumber,
-                        cycleOrdinal = currentInput.cycleOrdinal,
-                        turnOrdinal = currentInput.turnOrdinal,
-                        diagnosticStemMarkdown = item.stemMarkdown,
-                        selectedChoiceId = evaluation.choice.id,
-                        selectedChoiceMarkdown = evaluation.choice.markdown,
-                        selectionWasCorrect = evaluation.isCorrect,
-                        feedbackMarkdown = requireNotNull(evaluation.choice.feedbackMarkdown),
-                        occurredAtEpochMillis = System.currentTimeMillis(),
-                        evidenceRequestId = observedTask.request.requestId,
-                    ),
-                )
+                val controller = choiceLearningMemoryController
+                if (controller == null) {
+                    interactions.recordChoice(command)
+                } else {
+                    val result = controller.recordPreparedChoice(
+                        planTask = exactPlanTask,
+                        guidanceState = exactGuidanceState,
+                        modeVersion = exactIdentity.modeVersion,
+                        command = command,
+                        isStillCurrent = {
+                            latestChoiceLearningMemoryIdentity.value == exactIdentity &&
+                                latestChoiceLearningMemoryMode.value ==
+                                TutorExplanationMode.GUIDED
+                        },
+                        persistChoice = interactions::recordChoice,
+                    )
+                    check(
+                        result is CapturedTutorChoiceLearningMemoryState.Submitted ||
+                            result is CapturedTutorChoiceLearningMemoryState.Cancelled,
+                    ) {
+                        "Captured-choice learning memory did not reach a safe state"
+                    }
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {

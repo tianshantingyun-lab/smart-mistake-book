@@ -57,6 +57,7 @@ import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
+import com.tingyun.smartmistakebook.core.domain.TutorExplanationModeSnapshot
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
@@ -211,8 +212,14 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             verifiedModelCapabilities?.supportsStructuredOutput == true,
     )
     val applicationUiScope = rememberCoroutineScope()
-    val tutorExplanationMode by application.tutorSettingsRepository.mode
-        .collectAsStateWithLifecycle(initialValue = TutorExplanationMode.DIRECT)
+    val tutorExplanationModeSnapshot by application.tutorSettingsRepository.modeSnapshot
+        .collectAsStateWithLifecycle(
+            initialValue = TutorExplanationModeSnapshot(
+                mode = TutorExplanationMode.DIRECT,
+                modeVersion = 0L,
+            ),
+        )
+    val tutorExplanationMode = tutorExplanationModeSnapshot.mode
     val setTutorExplanationMode: (TutorExplanationMode) -> Unit = { mode ->
         applicationUiScope.launch {
             application.tutorSettingsRepository.setMode(mode)
@@ -722,6 +729,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     interactions = application.tutorInteractionRepository,
+                    learningMemory = application.tutorLearningMemoryRepository,
                     profile = experience.profile,
                     catalogEntries = experience.catalog,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
@@ -745,6 +753,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onBack = navController::popBackStack,
                     onEndedWithoutSave = { navController.popBackStack() },
                     explanationMode = tutorExplanationMode,
+                    explanationModeVersion = tutorExplanationModeSnapshot.modeVersion,
                     onExplanationModeChange = setTutorExplanationMode,
                 )
             }

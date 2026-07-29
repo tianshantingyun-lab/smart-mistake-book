@@ -15,6 +15,7 @@ import com.tingyun.smartmistakebook.core.domain.OpenTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
+import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCancellationReason
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceTerminal
@@ -292,6 +293,12 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
             fixture.modeVersion,
             persistedResponse = response,
         )
+        val recovered = fixture.controller.recoverFromInteractionSnapshot(
+            planTask = fixture.task,
+            guidanceState = fixture.guidance,
+            modeVersion = fixture.modeVersion,
+            responses = listOf(response),
+        )
         val submit = fixture.controller.submitPreparedChoice(
             fixture.task,
             fixture.guidance,
@@ -300,6 +307,7 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
         )
 
         assertEquals(CapturedTutorChoiceLearningMemoryState.PreBridgeHistory, ensure)
+        assertEquals(CapturedTutorChoiceLearningMemoryState.PreBridgeHistory, recovered)
         assertEquals(CapturedTutorChoiceLearningMemoryState.PreBridgeHistory, submit)
         assertEquals(0, fixture.repository.allWriteCount)
         assertTrue(fixture.repository.sourceFacts.isEmpty())
@@ -533,6 +541,139 @@ class CapturedTutorChoiceLearningMemoryControllerTest {
 
         assertTrue(retryableResult is CapturedTutorChoiceLearningMemoryState.RetryableFailure)
         assertTrue(permanentResult is CapturedTutorChoiceLearningMemoryState.PermanentConflict)
+    }
+
+    @Test
+    fun snapshotRecoveryCancelsPendingWithoutPreparingAgain() = runTest {
+        val fixture = Fixture()
+        fixture.controller.ensurePrepared(fixture.task, fixture.guidance, fixture.modeVersion)
+        val prepareCount = fixture.repository.prepareCommands.size
+
+        val recovered = fixture.controller.recoverFromInteractionSnapshot(
+            planTask = fixture.task,
+            guidanceState = fixture.guidance,
+            modeVersion = fixture.modeVersion,
+            responses = emptyList(),
+        )
+
+        assertTrue(recovered is CapturedTutorChoiceLearningMemoryState.Cancelled)
+        assertEquals(prepareCount, fixture.repository.prepareCommands.size)
+        assertEquals(
+            TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+            (fixture.repository.finalizeCommands.single().terminal as
+                TutorLearningEvidenceTerminal.Cancelled).reason,
+        )
+        assertTrue(fixture.repository.sourceFacts.isEmpty())
+    }
+
+    @Test
+    fun snapshotRecoveryFinalizesOnlyTheExactDurableResponse() = runTest {
+        val fixture = Fixture()
+        fixture.controller.ensurePrepared(fixture.task, fixture.guidance, fixture.modeVersion)
+        fixture.now = 250
+
+        val recovered = fixture.controller.recoverFromInteractionSnapshot(
+            planTask = fixture.task,
+            guidanceState = fixture.guidance,
+            modeVersion = fixture.modeVersion,
+            responses = listOf(
+                response(
+                    session = fixture.session,
+                    occurredAt = 200,
+                    evidenceRequestId = fixture.task.request.requestId,
+                ),
+            ),
+        )
+
+        assertTrue(recovered is CapturedTutorChoiceLearningMemoryState.Submitted)
+        assertEquals(1, fixture.repository.sourceFacts.size)
+    }
+
+    @Test
+    fun preparedChoicePersistsAndSettlesTheReturnedResponseSerially() = runTest {
+        val fixture = Fixture()
+        var persistCalls = 0
+
+        val submitted = fixture.controller.recordPreparedChoice(
+            planTask = fixture.task,
+            guidanceState = fixture.guidance,
+            modeVersion = fixture.modeVersion,
+            command = choiceCommand(fixture.session, fixture.task.request.requestId, 50),
+            isStillCurrent = { true },
+            persistChoice = { command ->
+                persistCalls += 1
+                val pending = fixture.repository.evidenceRequests
+                    .getValue(command.evidenceRequestId!!)
+                assertEquals(TutorEvidenceRequestStatus.PENDING, pending.status)
+                assertTrue(command.occurredAtEpochMillis >= pending.createdAtEpochMillis)
+                fixture.now = 200
+                response(
+                    session = fixture.session,
+                    occurredAt = command.occurredAtEpochMillis,
+                    evidenceRequestId = command.evidenceRequestId,
+                )
+            },
+        )
+
+        assertTrue(submitted is CapturedTutorChoiceLearningMemoryState.Submitted)
+        assertEquals(1, persistCalls)
+        assertEquals(1, fixture.repository.sourceFacts.size)
+    }
+
+    @Test
+    fun directModeNeverPreparesOrPersistsAChoice() = runTest {
+        val fixture = Fixture()
+        var persistCalls = 0
+
+        val result = fixture.controller.recordPreparedChoice(
+            planTask = fixture.task,
+            guidanceState = fixture.guidance.copy(mode = TutorExplanationMode.DIRECT),
+            modeVersion = fixture.modeVersion,
+            command = choiceCommand(fixture.session, fixture.task.request.requestId, 150),
+            isStillCurrent = { true },
+            persistChoice = {
+                persistCalls += 1
+                error("DIRECT must not persist a choice")
+            },
+        )
+
+        assertEquals(
+            CapturedTutorChoiceIneligibleReason.GUIDANCE_NOT_AUTHORIZED,
+            (result as CapturedTutorChoiceLearningMemoryState.Ineligible).reason,
+        )
+        assertEquals(0, persistCalls)
+        assertEquals(0, fixture.repository.allWriteCount)
+    }
+
+    @Test
+    fun lateIdentityAfterDurableResponseCancelsInsteadOfSubmittingLearningFact() = runTest {
+        val fixture = Fixture()
+        var current = true
+
+        val result = fixture.controller.recordPreparedChoice(
+            planTask = fixture.task,
+            guidanceState = fixture.guidance,
+            modeVersion = fixture.modeVersion,
+            command = choiceCommand(fixture.session, fixture.task.request.requestId, 150),
+            isStillCurrent = { current },
+            persistChoice = { command ->
+                current = false
+                fixture.now = 200
+                response(
+                    session = fixture.session,
+                    occurredAt = command.occurredAtEpochMillis,
+                    evidenceRequestId = command.evidenceRequestId,
+                )
+            },
+        )
+
+        assertTrue(result is CapturedTutorChoiceLearningMemoryState.Cancelled)
+        assertTrue(fixture.repository.sourceFacts.isEmpty())
+        assertEquals(
+            TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+            (fixture.repository.finalizeCommands.single().terminal as
+                TutorLearningEvidenceTerminal.Cancelled).reason,
+        )
     }
 
     private class Fixture(
@@ -886,6 +1027,30 @@ private fun response(
         submittedAtEpochMillis = occurredAt,
         updatedAtEpochMillis = occurredAt,
         choiceSubmittedAtEpochMillis = occurredAt,
+        evidenceRequestId = evidenceRequestId,
+    )
+}
+
+private fun choiceCommand(
+    session: ConfirmedTutorSession,
+    evidenceRequestId: String,
+    occurredAt: Long,
+    choiceId: String = "choice-correct",
+    item: TutorAssessmentItem = diagnosticItem(),
+): RecordTutorChoiceCommand {
+    val selected = item.evaluateChoice(choiceId)
+    return RecordTutorChoiceCommand(
+        sessionId = session.sessionId,
+        questionDocumentId = session.questionDocument.document.id,
+        revisionNumber = session.draftRevisionNumber,
+        cycleOrdinal = 1,
+        turnOrdinal = 1,
+        diagnosticStemMarkdown = item.stemMarkdown,
+        selectedChoiceId = selected.choice.id,
+        selectedChoiceMarkdown = selected.choice.markdown,
+        selectionWasCorrect = selected.isCorrect,
+        feedbackMarkdown = checkNotNull(selected.choice.feedbackMarkdown),
+        occurredAtEpochMillis = occurredAt,
         evidenceRequestId = evidenceRequestId,
     )
 }

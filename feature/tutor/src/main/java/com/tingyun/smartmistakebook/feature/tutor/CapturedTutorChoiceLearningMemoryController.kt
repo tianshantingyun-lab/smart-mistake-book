@@ -12,6 +12,7 @@ import com.tingyun.smartmistakebook.core.domain.OpenTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
+import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceAnchorFingerprints
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCancellationReason
@@ -77,6 +78,125 @@ internal class CapturedTutorChoiceLearningMemoryController(
             is OpenTutorTurnResult.Found -> prepare(context, opened.receipt)
             OpenTutorTurnResult.NotFound -> allocateAndPrepare(context)
         }
+    }
+
+    /**
+     * Reconciles only the first durable interaction snapshot observed on entry. A pending bridge
+     * without its exact response is closed instead of being prepared again, while pre-bridge
+     * responses remain history and are never backfilled.
+     */
+    suspend fun recoverFromInteractionSnapshot(
+        planTask: ModelTaskSnapshot,
+        guidanceState: TutorGuidanceState,
+        modeVersion: Long,
+        responses: List<TutorTurnResponse>,
+    ): CapturedTutorChoiceLearningMemoryState {
+        val context = planContext(planTask, modeVersion)
+            ?: return planIneligible(planTask)
+        val exactResponses = responses.filter { response ->
+            context.matchesTurn(response)
+        }
+        if (exactResponses.isEmpty()) {
+            return cancelPreparedChoice(
+                planTask = planTask,
+                evidenceRequestId = context.planRequestId,
+                modeVersion = modeVersion,
+                reason = TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+            )
+        }
+        if (exactResponses.size != 1) {
+            return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
+            )
+        }
+        val persistedResponse = exactResponses.single()
+        return when (
+            val recovered = ensurePrepared(
+                planTask = planTask,
+                guidanceState = guidanceState,
+                modeVersion = modeVersion,
+                persistedResponse = persistedResponse,
+            )
+        ) {
+            is CapturedTutorChoiceLearningMemoryState.Prepared ->
+                submitPreparedChoice(
+                    planTask = planTask,
+                    guidanceState = guidanceState,
+                    persistedResponse = persistedResponse,
+                    modeVersion = modeVersion,
+                )
+
+            else -> recovered
+        }
+    }
+
+    /**
+     * Owns the only authorized ordering for a captured diagnostic choice:
+     * prepare durable evidence, persist the response, then settle the exact returned response.
+     */
+    suspend fun recordPreparedChoice(
+        planTask: ModelTaskSnapshot,
+        guidanceState: TutorGuidanceState,
+        modeVersion: Long,
+        command: RecordTutorChoiceCommand,
+        isStillCurrent: () -> Boolean,
+        persistChoice: suspend (RecordTutorChoiceCommand) -> TutorTurnResponse,
+    ): CapturedTutorChoiceLearningMemoryState {
+        if (!isStillCurrent()) {
+            return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.STALE_MODE_EPOCH,
+            )
+        }
+        val context = planContext(planTask, modeVersion)
+            ?: return planIneligible(planTask)
+        if (!context.matchesCommand(command)) {
+            return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
+            )
+        }
+        val prepared = ensurePrepared(planTask, guidanceState, modeVersion)
+        if (prepared !is CapturedTutorChoiceLearningMemoryState.Prepared) return prepared
+        if (!isStillCurrent()) {
+            return cancelPreparedChoice(
+                planTask = planTask,
+                evidenceRequestId = context.planRequestId,
+                modeVersion = modeVersion,
+                reason = TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+            )
+        }
+        val durableCommand = command.copy(
+            occurredAtEpochMillis = maxOf(
+                command.occurredAtEpochMillis,
+                prepared.request.createdAtEpochMillis,
+                clock(),
+            ),
+        )
+        val persistedResponse = persistChoice(durableCommand)
+        if (!context.matchesPersistedResponse(persistedResponse)) {
+            cancelPreparedChoice(
+                planTask = planTask,
+                evidenceRequestId = context.planRequestId,
+                modeVersion = modeVersion,
+                reason = TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+            )
+            return CapturedTutorChoiceLearningMemoryState.Ineligible(
+                CapturedTutorChoiceIneligibleReason.RESPONSE_SCOPE_MISMATCH,
+            )
+        }
+        if (!isStillCurrent()) {
+            return cancelPreparedChoice(
+                planTask = planTask,
+                evidenceRequestId = context.planRequestId,
+                modeVersion = modeVersion,
+                reason = TutorLearningEvidenceCancellationReason.TURN_SUPERSEDED,
+            )
+        }
+        return submitPreparedChoice(
+            planTask = planTask,
+            guidanceState = guidanceState,
+            persistedResponse = persistedResponse,
+            modeVersion = modeVersion,
+        )
     }
 
     /**
@@ -879,6 +999,38 @@ internal class CapturedTutorChoiceLearningMemoryController(
         return response.selectedChoiceMarkdown == selected.markdown &&
             response.selectionWasCorrect == (selected.id == item.correctChoiceId) &&
             response.feedbackMarkdown == selected.feedbackMarkdown
+    }
+
+    private fun EligibleChoiceContext.matchesTurn(
+        response: TutorTurnResponse,
+    ): Boolean =
+        response.hasChoicePayload &&
+            response.sessionId == session.sessionId &&
+            response.questionDocumentId == session.questionDocument.document.id &&
+            response.revisionNumber == session.draftRevisionNumber &&
+            response.cycleOrdinal == output.cycleOrdinal &&
+            response.turnOrdinal == output.turnOrdinal
+
+    private fun EligibleChoiceContext.matchesCommand(
+        command: RecordTutorChoiceCommand,
+    ): Boolean {
+        if (
+            command.sessionId != session.sessionId ||
+            command.questionDocumentId != session.questionDocument.document.id ||
+            command.revisionNumber != session.draftRevisionNumber ||
+            command.cycleOrdinal != output.cycleOrdinal ||
+            command.turnOrdinal != output.turnOrdinal ||
+            command.diagnosticStemMarkdown != item.stemMarkdown ||
+            command.evidenceRequestId != planRequestId
+        ) {
+            return false
+        }
+        val selected = item.choices.firstOrNull { choice ->
+            choice.id == command.selectedChoiceId
+        } ?: return false
+        return command.selectedChoiceMarkdown == selected.markdown &&
+            command.selectionWasCorrect == (selected.id == item.correctChoiceId) &&
+            command.feedbackMarkdown == selected.feedbackMarkdown
     }
 
     private data class EligibleChoiceContext(
