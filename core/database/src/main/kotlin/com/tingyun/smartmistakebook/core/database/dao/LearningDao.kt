@@ -2208,6 +2208,10 @@ internal abstract class ProjectionTransactionDao {
         row: ProjectionOutboxEntity,
     ): AttributedLearningObservationEvent? {
         val entity = findProjectionLearningObservation(row.eventId) ?: return null
+        // Version-35 observations have no canonical source fact. Keep the immutable rows for
+        // audit, but never expose them to incremental projection, full replay, or commit receipt
+        // validation.
+        if (entity.sourceFactId == null) return null
         if (entity.learnerId != row.learnerId ||
             entity.eventSequence != row.outboxSequence ||
             entity.canonicalFingerprint != row.canonicalFingerprint

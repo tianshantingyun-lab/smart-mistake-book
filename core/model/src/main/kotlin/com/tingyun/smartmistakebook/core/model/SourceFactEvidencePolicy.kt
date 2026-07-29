@@ -46,6 +46,15 @@ class SourceFactEvidenceLimits internal constructor(
  * [AssessmentEvidenceSnapshot].
  */
 object SourceFactEvidencePolicy {
+    /**
+     * Stable identity shared by the canonical fact, its local authority, and its candidate.
+     *
+     * Tutor facts already have a one-to-one evidence-request identity. Sources without that
+     * scope fall back to the immutable source-fact id instead of accepting a caller alias.
+     */
+    fun canonicalSourceReferenceId(sourceFact: LearningObservationSourceFact): String =
+        sourceFact.evidenceRequestId ?: sourceFact.sourceFactId
+
     fun limitsFor(sourceFact: LearningObservationSourceFact): SourceFactEvidenceLimits =
         when (sourceFact.factKind) {
             LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
@@ -209,6 +218,9 @@ object SourceFactEvidencePolicy {
         }
         require(candidate.source == sourceFact.source) {
             "Observation candidate source must match the canonical source fact"
+        }
+        require(candidate.sourceReferenceId == canonicalSourceReferenceId(sourceFact)) {
+            "Observation candidate source reference must match the canonical source fact"
         }
         require(candidate.occurredAtEpochMillis == sourceFact.occurredAtEpochMillis) {
             "Observation candidate time must match the canonical source fact"

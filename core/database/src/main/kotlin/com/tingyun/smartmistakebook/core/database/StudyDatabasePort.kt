@@ -1384,6 +1384,7 @@ data class LearningObservationSourceAuthorityRecord(
     val problemRevisionId: String,
     val sourcePayloadFingerprint: String,
     val verifiedAtEpochMillis: Long,
+    val sourceFactId: String? = null,
 ) {
     init {
         require(learnerId.isNotBlank()) { "learnerId must not be blank" }
@@ -1394,6 +1395,7 @@ data class LearningObservationSourceAuthorityRecord(
             sourcePayloadFingerprint.isNotBlank() && sourcePayloadFingerprint.length <= 256,
         ) { "sourcePayloadFingerprint must be non-blank and at most 256 characters" }
         require(verifiedAtEpochMillis >= 0) { "verifiedAtEpochMillis cannot be negative" }
+        sourceFactId?.let { require(it.isNotBlank()) { "sourceFactId must not be blank" } }
     }
 }
 

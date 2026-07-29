@@ -248,10 +248,12 @@ class LearningObservationDatabaseInstrumentedTest {
                 candidate(
                     candidateId = "candidate-provenance-alias",
                     sourceReferenceId = original.sourceReferenceId,
+                    sourceFactId = original.sourceFactId,
+                    occurredAtEpochMillis = original.occurredAtEpochMillis,
                 ),
             )
         }
-        assertImmutableConflict {
+        assertIllegalArgument {
             store.submitLearningObservationCandidate(
                 original.copy(sourceFactId = alternateSourceFact.sourceFactId),
             )
@@ -265,13 +267,83 @@ class LearningObservationDatabaseInstrumentedTest {
     }
 
     @Test
-    fun sourceAuthorityIsImmutableAndRequiredForReadyOrMaterialization() = runBlocking {
+    fun canonicalSourceFactCanAuthorizeOnlyOneAuthorityAndOneCandidate() = runBlocking {
+        val first = candidate(candidateId = "candidate-single-fact-first")
+        submitCandidate(first)
+        val second = candidate(
+            candidateId = "candidate-single-fact-second",
+            sourceReferenceId = first.sourceReferenceId,
+            sourceFactId = first.sourceFactId,
+            occurredAtEpochMillis = first.occurredAtEpochMillis,
+        )
+
+        assertImmutableConflict {
+            store.registerLearningObservationSourceAuthority(
+                authority(second, practiceUnitId = OTHER_UNIT),
+            )
+        }
+        assertImmutableConflict {
+            store.submitLearningObservationCandidate(second)
+        }
+
+        assertNull(store.readLearningObservationCandidate(second.candidateId))
+        val ledger = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(0L, ledger.ledgerHeadSequence)
+        assertTrue(ledger.events.isEmpty())
+        assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, ledger.stopReason)
+    }
+
+    @Test
+    fun mathSourceFactCannotAuthorizeChemistryProblem() = runBlocking {
+        val chemistryCandidate = candidate(
+            candidateId = "candidate-cross-subject-authority",
+            practiceUnitId = CHEMISTRY_UNIT,
+            problemRevisionId = CHEMISTRY_REVISION,
+            bindingId = "binding-chemistry",
+            knowledgeNodeId = "knowledge-chemistry",
+        )
+        persistTutorModelFact(chemistryCandidate)
+
+        listOf(
+            authority(chemistryCandidate).copy(learnerId = "other-learner"),
+            authority(chemistryCandidate).copy(
+                source = LearningObservationSource.TUTOR_VISUAL_TARGET,
+            ),
+            authority(chemistryCandidate).copy(
+                sourceReferenceId = "caller-selected-source-reference",
+            ),
+        ).forEach { mismatchedAuthority ->
+            assertIllegalArgument {
+                store.registerLearningObservationSourceAuthority(mismatchedAuthority)
+            }
+        }
+        assertIllegalArgument {
+            store.registerLearningObservationSourceAuthority(authority(chemistryCandidate))
+        }
+        assertNull(
+            store.readLearningObservationSourceAuthority(
+                learnerId = chemistryCandidate.learnerId,
+                source = chemistryCandidate.source,
+                sourceReferenceId = chemistryCandidate.sourceReferenceId,
+            ),
+        )
+        assertSourceAuthorityFailure {
+            store.submitLearningObservationCandidate(chemistryCandidate)
+        }
+        val ledger = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(0L, ledger.ledgerHeadSequence)
+        assertTrue(ledger.events.isEmpty())
+        assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, ledger.stopReason)
+    }
+
+    @Test
+    fun sourceAuthorityIsImmutableAndRequiredForSubmitReadyAndMaterialization() = runBlocking {
         val authorized = candidate(
             candidateId = "candidate-authority",
             sourceReferenceId = "choice-authority",
         )
         val authority = authority(authorized)
-        assertTrue(store.registerLearningObservationSourceAuthority(authority).created)
+        assertTrue(registerAuthorityResult(authorized).created)
         assertFalse(store.registerLearningObservationSourceAuthority(authority).created)
         assertImmutableConflict {
             store.registerLearningObservationSourceAuthority(
@@ -283,12 +355,25 @@ class LearningObservationDatabaseInstrumentedTest {
             candidateId = "candidate-authority-missing",
             sourceReferenceId = "choice-authority-missing",
         )
-        submitCandidate(missing)
-        assertSourceAuthorityFailure { markReady(missing) }
+        persistTutorModelFact(missing)
+        assertSourceAuthorityFailure {
+            store.submitLearningObservationCandidate(missing)
+        }
+        assertNull(store.readLearningObservationCandidate(missing.candidateId))
+
+        val readyGate = candidate(candidateId = "candidate-authority-ready-gate")
+        submitCandidate(readyGate)
+        clearAuthoritySourceFact(readyGate)
+        assertSourceAuthorityFailure { markReady(readyGate) }
+
+        val materializationGate = ready(
+            candidate(candidateId = "candidate-authority-materialization-gate"),
+        )
+        clearAuthoritySourceFact(materializationGate)
         val missingResult = store.materializeLearningObservation(
             MaterializeLearningObservationCommand(
-                candidateId = missing.candidateId,
-                eventId = "observation-authority-missing",
+                candidateId = materializationGate.candidateId,
+                eventId = "observation-authority-materialization-gate",
                 confirmedAtEpochMillis = NOW + 2,
             ),
         )
@@ -297,35 +382,24 @@ class LearningObservationDatabaseInstrumentedTest {
             requireNotNull(missingResult.reviewCase).reason,
         )
 
-        val crossLearner = candidate(
-            candidateId = "candidate-cross-learner",
-            learnerId = "learner-without-authority",
-            sourceReferenceId = authority.sourceReferenceId,
+        val legacyAuthority = candidate(
+            candidateId = "candidate-legacy-null-authority",
         )
-        submitCandidate(crossLearner)
-        assertSourceAuthorityFailure { markReady(crossLearner) }
+        persistTutorModelFact(legacyAuthority)
+        insertLegacyNullSourceFactAuthority(legacyAuthority)
+        assertSourceAuthorityFailure {
+            store.submitLearningObservationCandidate(legacyAuthority)
+        }
+        assertIllegalArgument {
+            store.registerLearningObservationSourceAuthority(
+                authority(legacyAuthority).copy(sourceFactId = null),
+            )
+        }
 
-        val wrongAnchor = candidate(
-            candidateId = "candidate-wrong-anchor",
-            sourceReferenceId = "choice-wrong-anchor",
-        )
-        store.registerLearningObservationSourceAuthority(
-            authority(wrongAnchor, practiceUnitId = OTHER_UNIT),
-        )
-        submitCandidate(wrongAnchor)
-        assertSourceAuthorityFailure { markReady(wrongAnchor) }
-        val mismatchResult = store.materializeLearningObservation(
-            MaterializeLearningObservationCommand(
-                candidateId = wrongAnchor.candidateId,
-                eventId = "observation-wrong-anchor",
-                confirmedAtEpochMillis = NOW + 2,
-            ),
-        )
-        assertEquals(
-            LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH,
-            requireNotNull(mismatchResult.reviewCase).reason,
-        )
-        assertEquals(0L, store.loadProjectionBatch(PROJECTION, LEARNER, 10).ledgerHeadSequence)
+        val ledger = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
+        assertEquals(0L, ledger.ledgerHeadSequence)
+        assertTrue(ledger.events.isEmpty())
+        assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, ledger.stopReason)
     }
 
     @Test
@@ -684,6 +758,10 @@ class LearningObservationDatabaseInstrumentedTest {
                     sourceFactId = canonical.sourceFactId,
                     occurredAtEpochMillis = canonical.occurredAtEpochMillis + 1,
                 ),
+                canonical.copy(
+                    candidateId = "candidate-wrong-source-reference",
+                    sourceReferenceId = "caller-selected-source-reference",
+                ),
                 candidate(
                     candidateId = "candidate-strong-model",
                     sourceFactId = canonical.sourceFactId,
@@ -968,7 +1046,6 @@ class LearningObservationDatabaseInstrumentedTest {
 
     private suspend fun ready(candidate: LearningObservationCandidate): LearningObservationCandidate {
         submitCandidate(candidate)
-        registerAuthority(candidate)
         return markReady(candidate)
     }
 
@@ -976,6 +1053,7 @@ class LearningObservationDatabaseInstrumentedTest {
         candidate: LearningObservationCandidate,
     ): LearningObservationCandidateWriteResult {
         persistTutorModelFact(candidate)
+        store.registerLearningObservationSourceAuthority(authority(candidate))
         return store.submitLearningObservationCandidate(candidate)
     }
 
@@ -985,7 +1063,7 @@ class LearningObservationDatabaseInstrumentedTest {
         databaseClockEpochMillis = candidate.occurredAtEpochMillis
         val conversationId = "conversation-$sourceFactId"
         val turnReceiptId = "turn-$sourceFactId"
-        val evidenceRequestId = "request-$sourceFactId"
+        val evidenceRequestId = candidate.sourceReferenceId
         val anchorId = "anchor:${candidate.learnerId}"
         store.createTutorConversation(
             CreateTutorConversationCommand(
@@ -1128,7 +1206,7 @@ class LearningObservationDatabaseInstrumentedTest {
                 bindingId = bindingId,
                 knowledgeNodeId = knowledgeNodeId,
                 weight = 1.0,
-                basisRevisionId = REVISION,
+                basisRevisionId = problemRevisionId,
                 taxonomyVersion = "taxonomy-v1",
                 role = EvidenceAttributionRole.PRIMARY,
                 certainty = EvidenceAttributionCertainty.DIRECT,
@@ -1155,10 +1233,53 @@ class LearningObservationDatabaseInstrumentedTest {
         problemRevisionId = problemRevisionId,
         sourcePayloadFingerprint = "source-fingerprint:${candidate.sourceReferenceId}",
         verifiedAtEpochMillis = NOW,
+        sourceFactId = candidate.sourceFactId,
     )
 
     private suspend fun registerAuthority(candidate: LearningObservationCandidate) {
-        store.registerLearningObservationSourceAuthority(authority(candidate))
+        registerAuthorityResult(candidate)
+    }
+
+    private suspend fun registerAuthorityResult(
+        candidate: LearningObservationCandidate,
+    ): LearningObservationSourceAuthorityWriteResult {
+        persistTutorModelFact(candidate)
+        return store.registerLearningObservationSourceAuthority(authority(candidate))
+    }
+
+    private suspend fun clearAuthoritySourceFact(candidate: LearningObservationCandidate) {
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                UPDATE learning_observation_source_authority
+                SET source_fact_id = NULL
+                WHERE learner_id = '${candidate.learnerId}'
+                  AND source = '${candidate.source.name}'
+                  AND source_reference_id = '${candidate.sourceReferenceId}'
+                """.trimIndent(),
+            )
+        }
+    }
+
+    private suspend fun insertLegacyNullSourceFactAuthority(
+        candidate: LearningObservationCandidate,
+    ) {
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                INSERT INTO learning_observation_source_authority(
+                    learner_id, source, source_reference_id, practice_unit_id,
+                    problem_revision_id, source_payload_fingerprint, verified_at_epoch_millis,
+                    source_fact_id
+                ) VALUES(
+                    '${candidate.learnerId}', '${candidate.source.name}',
+                    '${candidate.sourceReferenceId}', '${candidate.practiceUnitId}',
+                    '${candidate.problemRevisionId}',
+                    'legacy-source-fingerprint:${candidate.sourceReferenceId}', $NOW, NULL
+                )
+                """.trimIndent(),
+            )
+        }
     }
 
     private fun attemptCommand(
@@ -1253,6 +1374,12 @@ class LearningObservationDatabaseInstrumentedTest {
     private fun seed() = StudySeedBundle(
         problems = listOf(
             ProblemSeedRecord(PROBLEM, "problem-fingerprint", "MATH", NOW - 100),
+            ProblemSeedRecord(
+                CHEMISTRY_PROBLEM,
+                "chemistry-problem-fingerprint",
+                "CHEMISTRY",
+                NOW - 100,
+            ),
         ),
         revisions = listOf(
             ProblemRevisionSeedRecord(
@@ -1267,6 +1394,20 @@ class LearningObservationDatabaseInstrumentedTest {
                 sourceType = "IMPORT",
                 sourceReference = null,
                 contentFingerprint = "revision-fingerprint",
+                createdAtEpochMillis = NOW - 90,
+            ),
+            ProblemRevisionSeedRecord(
+                revisionId = CHEMISTRY_REVISION,
+                problemId = CHEMISTRY_PROBLEM,
+                revisionNumber = 1,
+                title = "化学反应",
+                problemMarkdown = "判断反应。 ",
+                answerSpecId = "chemistry-answer-1",
+                answerSpecSnapshot = "反应成立",
+                answerVerificationStatus = StudyDbValue.VerificationStatus.VERIFIED,
+                sourceType = "IMPORT",
+                sourceReference = null,
+                contentFingerprint = "chemistry-revision-fingerprint",
                 createdAtEpochMillis = NOW - 90,
             ),
         ),
@@ -1293,6 +1434,17 @@ class LearningObservationDatabaseInstrumentedTest {
                 estimatedSeconds = 60,
                 createdAtEpochMillis = NOW - 79,
             ),
+            PracticeUnitSeedRecord(
+                practiceUnitId = CHEMISTRY_UNIT,
+                problemId = CHEMISTRY_PROBLEM,
+                problemRevisionId = CHEMISTRY_REVISION,
+                unitKey = "chemistry-whole",
+                unitKind = "WHOLE",
+                title = "化学反应",
+                promptMarkdown = "判断反应。",
+                estimatedSeconds = 60,
+                createdAtEpochMillis = NOW - 78,
+            ),
         ),
         errorBookEntries = emptyList(),
         knowledgeNodes = listOf(
@@ -1314,10 +1466,29 @@ class LearningObservationDatabaseInstrumentedTest {
                 taxonomyVersion = "taxonomy-v1",
                 createdAtEpochMillis = NOW - 70,
             ),
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge-chemistry",
+                stableCode = "chemistry.reaction",
+                subject = "CHEMISTRY",
+                displayName = "化学反应",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "taxonomy-v1",
+                createdAtEpochMillis = NOW - 70,
+            ),
         ),
         knowledgeBindings = listOf(
             binding("binding-math", "knowledge-math"),
             binding("binding-physics", "knowledge-physics"),
+            KnowledgeBindingSeedRecord(
+                bindingId = "binding-chemistry",
+                practiceUnitId = CHEMISTRY_UNIT,
+                knowledgeNodeId = "knowledge-chemistry",
+                basisRevisionId = CHEMISTRY_REVISION,
+                strength = 1.0,
+                sourceType = "VERIFIED",
+                taxonomyVersion = "taxonomy-v1",
+                acceptedAtEpochMillis = NOW - 60,
+            ),
         ),
     )
 
@@ -1339,6 +1510,9 @@ class LearningObservationDatabaseInstrumentedTest {
         const val REVISION = "revision-observation"
         const val UNIT = "unit-observation"
         const val OTHER_UNIT = "unit-observation-other"
+        const val CHEMISTRY_PROBLEM = "problem-observation-chemistry"
+        const val CHEMISTRY_REVISION = "revision-observation-chemistry"
+        const val CHEMISTRY_UNIT = "unit-observation-chemistry"
         const val ASSESSMENT_SNAPSHOT = "snapshot-observation"
         const val NOW = 1_728_000_000_000L
         val FINGERPRINT_A = "a".repeat(64)

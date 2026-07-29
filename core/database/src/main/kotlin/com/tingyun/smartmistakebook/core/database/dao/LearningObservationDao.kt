@@ -136,6 +136,17 @@ internal abstract class LearningObservationDao {
     ): LearningObservationCandidateEntity?
 
     @Query(
+        """
+        SELECT * FROM learning_observation_candidate
+        WHERE source_fact_id = :sourceFactId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findCandidateBySourceFact(
+        sourceFactId: String,
+    ): LearningObservationCandidateEntity?
+
+    @Query(
         "SELECT * FROM learning_observation_source_fact WHERE source_fact_id = :sourceFactId LIMIT 1",
     )
     protected abstract suspend fun findCanonicalSourceFact(
@@ -155,6 +166,17 @@ internal abstract class LearningObservationDao {
         learnerId: String,
         source: String,
         sourceReferenceId: String,
+    ): LearningObservationSourceAuthorityEntity?
+
+    @Query(
+        """
+        SELECT * FROM learning_observation_source_authority
+        WHERE source_fact_id = :sourceFactId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findSourceAuthorityBySourceFact(
+        sourceFactId: String,
     ): LearningObservationSourceAuthorityEntity?
 
     @Query(
@@ -302,6 +324,21 @@ internal abstract class LearningObservationDao {
     open suspend fun registerSourceAuthority(
         authority: LearningObservationSourceAuthorityRecord,
     ): LearningObservationSourceAuthorityWriteResult {
+        validateSourceAuthority(authority)
+        val sourceFactId = requireNotNull(authority.sourceFactId)
+        findSourceAuthorityBySourceFact(sourceFactId)?.let { existing ->
+            val persisted = existing.toModel()
+            if (persisted != authority) {
+                throw ImmutablePayloadConflictException(
+                    "learning_observation_source_authority_source_fact",
+                    sourceFactId,
+                )
+            }
+            return LearningObservationSourceAuthorityWriteResult(
+                created = false,
+                authority = persisted,
+            )
+        }
         findSourceAuthorityEntity(
             authority.learnerId,
             authority.source.name,
@@ -334,7 +371,18 @@ internal abstract class LearningObservationDao {
             "Learning-observation source fact is not canonical"
         }.toModel()
         SourceFactEvidencePolicy.requireCandidate(sourceFact, candidate)
+        sourceAuthorityFailure(candidate)?.let {
+            throw LearningObservationSourceAuthorityException(candidate.candidateId)
+        }
         val fingerprint = LearningLedgerFingerprint.learningObservationCandidate(candidate)
+        findCandidateBySourceFact(sourceFactId)?.let { existing ->
+            if (existing.candidateId != candidate.candidateId) {
+                throw ImmutablePayloadConflictException(
+                    "learning_observation_candidate_source_fact",
+                    sourceFactId,
+                )
+            }
+        }
         findCandidateByProvenance(
             candidate.learnerId,
             candidate.source.name,
@@ -464,6 +512,9 @@ internal abstract class LearningObservationDao {
                 "The candidate exceeds or mismatches its canonical source fact.",
             )
         }
+        sourceAuthorityFailure(candidate)?.let { (reason, detail) ->
+            return review(candidate, command, reason, detail)
+        }
 
         findEventEntity(command.eventId)?.let { existing ->
             if (existing.candidateId == command.candidateId &&
@@ -513,9 +564,6 @@ internal abstract class LearningObservationDao {
                     detail = "The candidate already materialized as another immutable event.",
                 )
             }
-        }
-        sourceAuthorityFailure(candidate)?.let { (reason, detail) ->
-            return review(candidate, command, reason, detail)
         }
         if (candidate.status != LearningObservationCandidateStatus.READY) {
             return review(
@@ -771,19 +819,82 @@ internal abstract class LearningObservationDao {
     private suspend fun sourceAuthorityFailure(
         candidate: LearningObservationCandidate,
     ): Pair<LearningEvidenceReviewReason, String>? {
+        val sourceFactId = candidate.sourceFactId
+            ?: return LearningEvidenceReviewReason.SOURCE_FACT_MISSING to
+                "The candidate has no canonical source-fact association."
+        val sourceFactEntity = findCanonicalSourceFact(sourceFactId)
+            ?: return LearningEvidenceReviewReason.SOURCE_FACT_MISSING to
+                "The candidate source fact is absent from canonical storage."
+        val sourceFact = try {
+            sourceFactEntity.toModel()
+        } catch (_: IllegalArgumentException) {
+            return LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED to
+                "The canonical source fact is invalid."
+        }
+        try {
+            SourceFactEvidencePolicy.requirePersistedCandidate(sourceFact, candidate)
+        } catch (_: IllegalArgumentException) {
+            return LearningEvidenceReviewReason.SOURCE_FACT_POLICY_REJECTED to
+                "The candidate does not match its canonical source fact."
+        }
         val authority = findSourceAuthorityEntity(
             candidate.learnerId,
             candidate.source.name,
             candidate.sourceReferenceId,
         )?.toModel() ?: return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISSING to
             "No immutable local source fact authorizes this learner and source reference."
-        if (candidate.practiceUnitId != authority.practiceUnitId ||
+        if (authority.sourceFactId == null) {
+            return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISSING to
+                "Legacy source authority without a canonical source fact cannot authorize evidence."
+        }
+        if (authority.sourceFactId != sourceFactId ||
+            candidate.practiceUnitId != authority.practiceUnitId ||
             candidate.problemRevisionId != authority.problemRevisionId
         ) {
             return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH to
-                "The candidate anchor differs from its immutable local source authority."
+                "The candidate fact or anchor differs from its immutable local source authority."
+        }
+        val anchor = findAnchorAuthority(
+            authority.practiceUnitId,
+            authority.problemRevisionId,
+        ) ?: return LearningEvidenceReviewReason.MISSING_AUTHORITY to
+            "The source authority no longer names an authoritative practice-unit anchor."
+        if (anchor.subject != sourceFact.subject.name) {
+            return LearningEvidenceReviewReason.SUBJECT_MISMATCH to
+                "The canonical source fact subject differs from the authoritative problem subject."
         }
         return null
+    }
+
+    private suspend fun validateSourceAuthority(
+        authority: LearningObservationSourceAuthorityRecord,
+    ) {
+        val sourceFactId = requireNotNull(authority.sourceFactId) {
+            "New learning-observation source authorities require a canonical source-fact id"
+        }
+        val sourceFact = requireNotNull(findCanonicalSourceFact(sourceFactId)) {
+            "Learning-observation source fact is not canonical"
+        }.toModel()
+        require(authority.learnerId == sourceFact.learnerScopeId) {
+            "Source authority learner must match the canonical source fact"
+        }
+        require(authority.source == sourceFact.source) {
+            "Source authority source must match the canonical source fact"
+        }
+        require(
+            authority.sourceReferenceId ==
+                SourceFactEvidencePolicy.canonicalSourceReferenceId(sourceFact),
+        ) {
+            "Source authority reference must match the canonical source fact"
+        }
+        val anchor = requireNotNull(
+            findAnchorAuthority(authority.practiceUnitId, authority.problemRevisionId),
+        ) {
+            "Source authority must name an authoritative practice-unit anchor"
+        }
+        require(anchor.subject == sourceFact.subject.name) {
+            "Source authority problem subject must match the canonical source fact"
+        }
     }
 
     private suspend fun allocateSequence(learnerId: String): Long {
@@ -807,6 +918,7 @@ private fun LearningObservationSourceAuthorityRecord.toEntity() =
         problemRevisionId = problemRevisionId,
         sourcePayloadFingerprint = sourcePayloadFingerprint,
         verifiedAtEpochMillis = verifiedAtEpochMillis,
+        sourceFactId = sourceFactId,
     )
 
 private fun LearningObservationSourceAuthorityEntity.toModel() =
@@ -818,6 +930,7 @@ private fun LearningObservationSourceAuthorityEntity.toModel() =
         problemRevisionId = problemRevisionId,
         sourcePayloadFingerprint = sourcePayloadFingerprint,
         verifiedAtEpochMillis = verifiedAtEpochMillis,
+        sourceFactId = sourceFactId,
     )
 
 private fun LearningObservationSourceAuthorityRecord.provenanceKey(): String =

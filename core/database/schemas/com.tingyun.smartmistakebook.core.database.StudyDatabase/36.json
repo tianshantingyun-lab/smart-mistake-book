@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 36,
-    "identityHash": "4c6aa482be97793b9272dfa7c20ee058",
+    "identityHash": "8c7b6b4413c05a19cdd2b33bd184a80d",
     "entities": [
       {
         "tableName": "problem",
@@ -8568,7 +8568,7 @@
       },
       {
         "tableName": "learning_observation_source_authority",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `source` TEXT NOT NULL, `source_reference_id` TEXT NOT NULL, `practice_unit_id` TEXT NOT NULL, `problem_revision_id` TEXT NOT NULL, `source_payload_fingerprint` TEXT NOT NULL, `verified_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`learner_id`, `source`, `source_reference_id`), FOREIGN KEY(`practice_unit_id`, `problem_revision_id`) REFERENCES `practice_unit`(`practice_unit_id`, `problem_revision_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `source` TEXT NOT NULL, `source_reference_id` TEXT NOT NULL, `practice_unit_id` TEXT NOT NULL, `problem_revision_id` TEXT NOT NULL, `source_payload_fingerprint` TEXT NOT NULL, `verified_at_epoch_millis` INTEGER NOT NULL, `source_fact_id` TEXT, PRIMARY KEY(`learner_id`, `source`, `source_reference_id`), FOREIGN KEY(`practice_unit_id`, `problem_revision_id`) REFERENCES `practice_unit`(`practice_unit_id`, `problem_revision_id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`source_fact_id`) REFERENCES `learning_observation_source_fact`(`source_fact_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "learnerId",
@@ -8611,6 +8611,11 @@
             "columnName": "verified_at_epoch_millis",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "sourceFactId",
+            "columnName": "source_fact_id",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -8631,6 +8636,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_learning_observation_source_authority_practice_unit_id_problem_revision_id` ON `${TABLE_NAME}` (`practice_unit_id`, `problem_revision_id`)"
+          },
+          {
+            "name": "index_learning_observation_source_authority_source_fact_id",
+            "unique": true,
+            "columnNames": [
+              "source_fact_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_learning_observation_source_authority_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
           }
         ],
         "foreignKeys": [
@@ -8645,6 +8659,17 @@
             "referencedColumns": [
               "practice_unit_id",
               "problem_revision_id"
+            ]
+          },
+          {
+            "table": "learning_observation_source_fact",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "source_fact_id"
+            ],
+            "referencedColumns": [
+              "source_fact_id"
             ]
           }
         ]
@@ -8784,12 +8809,12 @@
           },
           {
             "name": "index_learning_observation_candidate_source_fact_id",
-            "unique": false,
+            "unique": true,
             "columnNames": [
               "source_fact_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_learning_observation_candidate_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_learning_observation_candidate_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
           },
           {
             "name": "index_learning_observation_candidate_learner_id_status_retry_count",
@@ -9086,12 +9111,12 @@
           },
           {
             "name": "index_attributed_learning_observation_event_source_fact_id",
-            "unique": false,
+            "unique": true,
             "columnNames": [
               "source_fact_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_attributed_learning_observation_event_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_attributed_learning_observation_event_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
           },
           {
             "name": "index_attributed_learning_observation_event_learner_id_event_sequence",
@@ -10542,7 +10567,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4c6aa482be97793b9272dfa7c20ee058')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8c7b6b4413c05a19cdd2b33bd184a80d')"
     ]
   }
 }

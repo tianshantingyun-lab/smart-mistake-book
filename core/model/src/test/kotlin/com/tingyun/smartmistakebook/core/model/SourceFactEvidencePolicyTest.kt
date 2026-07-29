@@ -213,6 +213,38 @@ class SourceFactEvidencePolicyTest {
     }
 
     @Test
+    fun `candidate source reference is the canonical request or source fact identity`() {
+        val tutorFact = sourceFact(
+            sourceFactId = "fact-request-scoped",
+            factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
+        )
+        val importedFact = sourceFact(
+            sourceFactId = "fact-imported",
+            source = LearningObservationSource.IMPORTED_MISTAKE,
+            factKind = LearningObservationFactKind.IMPORTED_VISIBLE_ERROR,
+        )
+
+        assertEquals(
+            requireNotNull(tutorFact.evidenceRequestId),
+            SourceFactEvidencePolicy.canonicalSourceReferenceId(tutorFact),
+        )
+        assertEquals(
+            importedFact.sourceFactId,
+            SourceFactEvidencePolicy.canonicalSourceReferenceId(importedFact),
+        )
+        assertIllegalArgument {
+            SourceFactEvidencePolicy.requireCandidate(
+                sourceFact = tutorFact,
+                candidate = candidate(
+                    sourceFact = tutorFact,
+                    sourceReferenceId = "caller-selected-alias",
+                    direction = LearningObservationDirection.POSITIVE,
+                ),
+            )
+        }
+    }
+
+    @Test
     fun `attribution must exactly inherit reviewed candidate provenance`() {
         val modelFact = sourceFact(
             factKind = LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
@@ -319,6 +351,8 @@ class SourceFactEvidencePolicyTest {
     private fun candidate(
         sourceFact: LearningObservationSourceFact,
         sourceFactId: String? = sourceFact.sourceFactId,
+        sourceReferenceId: String =
+            SourceFactEvidencePolicy.canonicalSourceReferenceId(sourceFact),
         direction: LearningObservationDirection,
         evidenceLevel: LearningObservationEvidenceLevel =
             LearningObservationEvidenceLevel.LOW_CONFIDENCE,
@@ -331,7 +365,7 @@ class SourceFactEvidencePolicyTest {
         candidateId = "candidate-1",
         learnerId = sourceFact.learnerScopeId,
         source = sourceFact.source,
-        sourceReferenceId = "model-proposal-1",
+        sourceReferenceId = sourceReferenceId,
         sourceFactId = sourceFactId,
         practiceUnitId = "unit-1",
         problemRevisionId = "revision-1",

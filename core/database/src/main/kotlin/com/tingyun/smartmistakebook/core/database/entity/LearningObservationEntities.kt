@@ -16,9 +16,16 @@ import androidx.room3.PrimaryKey
             childColumns = ["practice_unit_id", "problem_revision_id"],
             onDelete = ForeignKey.RESTRICT,
         ),
+        ForeignKey(
+            entity = LearningObservationSourceFactEntity::class,
+            parentColumns = ["source_fact_id"],
+            childColumns = ["source_fact_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
     ],
     indices = [
         Index(value = ["practice_unit_id", "problem_revision_id"]),
+        Index(value = ["source_fact_id"], unique = true),
     ],
 )
 internal data class LearningObservationSourceAuthorityEntity(
@@ -35,6 +42,8 @@ internal data class LearningObservationSourceAuthorityEntity(
     val sourcePayloadFingerprint: String,
     @ColumnInfo(name = "verified_at_epoch_millis")
     val verifiedAtEpochMillis: Long,
+    @ColumnInfo(name = "source_fact_id")
+    val sourceFactId: String?,
 )
 
 @Entity(
@@ -55,7 +64,7 @@ internal data class LearningObservationSourceAuthorityEntity(
     ],
     indices = [
         Index(value = ["practice_unit_id", "problem_revision_id"]),
-        Index(value = ["source_fact_id"]),
+        Index(value = ["source_fact_id"], unique = true),
         Index(value = ["learner_id", "status", "retry_count"]),
         Index(value = ["learner_id", "source", "source_reference_id"], unique = true),
         Index(value = ["payload_fingerprint"], unique = true),
@@ -157,7 +166,7 @@ internal data class LearningObservationCandidateAttributionEntity(
     indices = [
         Index(value = ["candidate_id"], unique = true),
         Index(value = ["practice_unit_id", "problem_revision_id"]),
-        Index(value = ["source_fact_id"]),
+        Index(value = ["source_fact_id"], unique = true),
         Index(value = ["learner_id", "event_sequence"], unique = true),
         Index(value = ["learner_id", "event_id"], unique = true),
         Index(value = ["learner_id", "subject", "occurred_at_epoch_millis"]),
