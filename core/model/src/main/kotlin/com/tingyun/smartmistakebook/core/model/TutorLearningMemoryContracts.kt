@@ -231,6 +231,9 @@ data class LearningProblemAnchor(
 enum class LearningObservationFactKind {
     VERIFIED_CORRECT_RESPONSE,
     VERIFIED_INCORRECT_RESPONSE,
+    MODEL_EVALUATED_CORRECT_RESPONSE,
+    MODEL_EVALUATED_INCORRECT_RESPONSE,
+    MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE,
     OPEN_RESPONSE_SUBMITTED,
     SPECIFIC_STUCK,
     IMPORTED_VISIBLE_ERROR,
@@ -324,6 +327,9 @@ private fun LearningObservationSource.allowedFactKinds(): Set<LearningObservatio
         -> setOf(
             LearningObservationFactKind.VERIFIED_CORRECT_RESPONSE,
             LearningObservationFactKind.VERIFIED_INCORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
+            LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE,
         )
 
         LearningObservationSource.TUTOR_FREE_RESPONSE -> setOf(
