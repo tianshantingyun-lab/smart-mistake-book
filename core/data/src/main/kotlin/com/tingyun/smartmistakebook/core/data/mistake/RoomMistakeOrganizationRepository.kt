@@ -19,6 +19,8 @@ import com.tingyun.smartmistakebook.core.database.MistakeRecord
 import com.tingyun.smartmistakebook.core.database.ProblemClassificationBindingRecord
 import com.tingyun.smartmistakebook.core.database.ProblemOrganizationAuthorityConflictException
 import com.tingyun.smartmistakebook.core.database.ProblemRelationSeedRecord
+import com.tingyun.smartmistakebook.core.database.ReauthorizeProblemOrganizationWorkCommand
+import com.tingyun.smartmistakebook.core.database.ReauthorizeProblemOrganizationWorkOutcome
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
@@ -28,7 +30,10 @@ import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationPreparation
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationConfirmation
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationDurableStatus
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationRelationKey
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationOutcome
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationPreparation
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionAuthority
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionOutcome
@@ -45,6 +50,7 @@ import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -60,6 +66,7 @@ import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrantCodec
 import com.tingyun.smartmistakebook.core.model.ProblemStepKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.ProblemClassificationSuggestion
 import com.tingyun.smartmistakebook.core.model.ProblemRelationSuggestion
@@ -73,6 +80,7 @@ import com.tingyun.smartmistakebook.core.model.SubjectKind
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Locale
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -787,6 +795,122 @@ internal class RoomMistakeOrganizationRepository(
             relatedCandidateTitles = emptyList(),
             knowledgeContextCount = knowledgeBaseNodes.size,
         )
+    }
+
+    override suspend fun prepareReauthorization(
+        key: MistakeRevisionKey,
+        provider: ProviderCapabilitySnapshot,
+        occurredAtEpochMillis: Long,
+    ): ProblemOrganizationReauthorizationPreparation? = withContext(Dispatchers.IO) {
+        require(occurredAtEpochMillis >= 0) { "Occurrence time must not be negative" }
+        val prepared = database.readLatestProblemOrganizationWork(
+            problemId = key.problemId,
+            problemRevisionId = key.problemRevisionId,
+            errorBookEntryId = key.entryId,
+        ) ?: return@withContext null
+        val durableStatus = when (prepared.work.status) {
+            StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION ->
+                ProblemOrganizationDurableStatus.WAITING_AUTHORIZATION
+
+            StudyDbValue.ProblemOrganizationWorkStatus.PENDING,
+            StudyDbValue.ProblemOrganizationWorkStatus.RUNNING,
+            StudyDbValue.ProblemOrganizationWorkStatus.RETRY,
+            -> ProblemOrganizationDurableStatus.ACTIVE
+
+            StudyDbValue.ProblemOrganizationWorkStatus.SUCCEEDED,
+            StudyDbValue.ProblemOrganizationWorkStatus.PERMANENT_FAILURE,
+            -> ProblemOrganizationDurableStatus.TERMINAL
+
+            else -> error("Unknown durable organization work status")
+        }
+        val currentGrant = ProblemOrganizationAuthorizationGrantCodec.decodeOrNull(
+            prepared.work.authorizationGrantSnapshot,
+        )
+        ProblemOrganizationReauthorizationPreparation(
+            key = key,
+            workId = prepared.work.workId,
+            expectedStateVersion = prepared.work.stateVersion,
+            requiresStudentConfirmation =
+                durableStatus == ProblemOrganizationDurableStatus.WAITING_AUTHORIZATION &&
+                    currentGrant?.matchesCurrent(provider, occurredAtEpochMillis) != true,
+            durableStatus = durableStatus,
+        )
+    }
+
+    override suspend fun reauthorize(
+        preparation: ProblemOrganizationReauthorizationPreparation,
+        provider: ProviderCapabilitySnapshot,
+        approvedAtEpochMillis: Long,
+    ): ProblemOrganizationReauthorizationOutcome = withContext(Dispatchers.IO) {
+        require(approvedAtEpochMillis >= 0) { "Approval time must not be negative" }
+        require(
+            preparation.durableStatus == ProblemOrganizationDurableStatus.WAITING_AUTHORIZATION,
+        ) { "Only waiting organization work can be reauthorized" }
+        require(
+            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+                provider.supportsImageInput &&
+                provider.supports(ModelTaskKind.PROBLEM_CLASSIFY),
+        ) { "Current provider cannot receive an image-grounded organization request" }
+        val work = database.readProblemOrganizationWork(preparation.workId)
+            ?: return@withContext ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY
+        if (work.stateVersion != preparation.expectedStateVersion) {
+            return@withContext ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY
+        }
+        val receipt = database.readProblemOrganizationWorkCommitReceipt(
+            work.commitReceiptCommandId,
+        ) ?: return@withContext ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY
+        if (
+            receipt.problemId != preparation.key.problemId ||
+            receipt.problemRevisionId != preparation.key.problemRevisionId ||
+            receipt.errorBookEntryId != preparation.key.entryId
+        ) {
+            return@withContext ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY
+        }
+        val draft = database.readProblemDraft(receipt.draftId)
+            ?: return@withContext ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY
+        val authorization = ProblemOrganizationAuthorizationGrant(
+            authorizationId = "problem-organization:${UUID.randomUUID()}",
+            sourceDraftId = receipt.draftId,
+            providerId = provider.providerId,
+            modelId = provider.modelId,
+            providerConfigurationVersion = provider.providerConfigurationVersion,
+            approvedAtEpochMillis = approvedAtEpochMillis,
+            expiresAtEpochMillis = Math.addExact(
+                approvedAtEpochMillis,
+                MODEL_EGRESS_APPROVAL_TTL_MILLIS,
+            ),
+            assets = draft.sourceAssets.map { source ->
+                ModelEgressAssetGrant(
+                    assetId = source.sourceAsset.sourceAssetId,
+                    sha256 = source.sourceAsset.contentSha256,
+                    byteSize = source.sourceAsset.byteSize,
+                    width = source.sourceAsset.width,
+                    height = source.sourceAsset.height,
+                )
+            },
+        )
+        when (
+            database.reauthorizeProblemOrganizationWork(
+                ReauthorizeProblemOrganizationWorkCommand(
+                    workId = preparation.workId,
+                    expectedStateVersion = preparation.expectedStateVersion,
+                    problemId = preparation.key.problemId,
+                    problemRevisionId = preparation.key.problemRevisionId,
+                    errorBookEntryId = preparation.key.entryId,
+                    provider = provider,
+                    authorizationGrant = authorization,
+                ),
+            ).outcome
+        ) {
+            ReauthorizeProblemOrganizationWorkOutcome.REAUTHORIZED ->
+                ProblemOrganizationReauthorizationOutcome.REAUTHORIZED
+
+            ReauthorizeProblemOrganizationWorkOutcome.REPLAYED ->
+                ProblemOrganizationReauthorizationOutcome.REPLAYED
+
+            ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED ->
+                ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY
+        }
     }
 
     private suspend fun readSuccessfulOrganization(requestId: String): PersistedOrganizationTask {

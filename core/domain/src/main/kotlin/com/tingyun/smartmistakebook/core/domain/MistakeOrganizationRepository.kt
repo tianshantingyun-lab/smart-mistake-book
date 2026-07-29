@@ -137,6 +137,36 @@ enum class ProblemOrganizationWorkCompletionOutcome {
     LOST_AUTHORITY,
 }
 
+data class ProblemOrganizationReauthorizationPreparation(
+    val key: MistakeRevisionKey,
+    val workId: String,
+    val expectedStateVersion: Long,
+    val requiresStudentConfirmation: Boolean,
+    val durableStatus: ProblemOrganizationDurableStatus =
+        ProblemOrganizationDurableStatus.WAITING_AUTHORIZATION,
+) {
+    init {
+        require(workId.isNotBlank()) { "Work id must not be blank" }
+        require(expectedStateVersion >= 0) { "Expected state version must not be negative" }
+        require(
+            durableStatus == ProblemOrganizationDurableStatus.WAITING_AUTHORIZATION ||
+                !requiresStudentConfirmation,
+        ) { "Only waiting organization work can require renewed confirmation" }
+    }
+}
+
+enum class ProblemOrganizationDurableStatus {
+    WAITING_AUTHORIZATION,
+    ACTIVE,
+    TERMINAL,
+}
+
+enum class ProblemOrganizationReauthorizationOutcome {
+    REAUTHORIZED,
+    REPLAYED,
+    LOST_AUTHORITY,
+}
+
 interface MistakeOrganizationRepository {
     suspend fun prepare(
         key: MistakeRevisionKey,
@@ -160,6 +190,29 @@ interface MistakeOrganizationRepository {
         occurredAtEpochMillis: Long,
     ): MistakeOrganizationPreparation = throw UnsupportedOperationException(
         "Committed organization work preparation is not implemented",
+    )
+
+    /**
+     * Finds at most one durable organization occurrence for the exact mistake revision. Active and
+     * terminal occurrences remain visible to the presentation policy so it cannot fall back to the
+     * legacy request path.
+     */
+    suspend fun prepareReauthorization(
+        key: MistakeRevisionKey,
+        provider: ProviderCapabilitySnapshot,
+        occurredAtEpochMillis: Long,
+    ): ProblemOrganizationReauthorizationPreparation? = null
+
+    /**
+     * Renews only the exact durable work selected by [preparation]. Implementations must rebuild
+     * the grant from the committed draft and current provider; caller-supplied assets are forbidden.
+     */
+    suspend fun reauthorize(
+        preparation: ProblemOrganizationReauthorizationPreparation,
+        provider: ProviderCapabilitySnapshot,
+        approvedAtEpochMillis: Long,
+    ): ProblemOrganizationReauthorizationOutcome = throw UnsupportedOperationException(
+        "Committed organization work reauthorization is not implemented",
     )
 
     fun observeConfirmed(key: MistakeRevisionKey): Flow<ConfirmedMistakeOrganization>

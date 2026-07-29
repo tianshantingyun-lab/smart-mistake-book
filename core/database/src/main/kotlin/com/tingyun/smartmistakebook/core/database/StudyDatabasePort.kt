@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationSource
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.PresentationProjectionState
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
@@ -42,6 +43,9 @@ class LearningObservationSourceAuthorityException(candidateId: String) :
 
 class ProblemOrganizationAuthorityConflictException(problemRevisionId: String) :
     IllegalStateException("A user correction already owns organization for $problemRevisionId")
+
+class ProblemOrganizationWorkReauthorizationConflictException(workId: String) :
+    IllegalStateException("Organization work $workId was reauthorized with a different payload")
 
 class ProjectionCasConflictException(message: String) : IllegalStateException(message)
 
@@ -1099,6 +1103,32 @@ data class ProblemOrganizationWorkRecord(
     val updatedAtEpochMillis: Long,
 )
 
+data class ProblemOrganizationWorkPreparationRecord(
+    val work: ProblemOrganizationWorkRecord,
+    val commitReceipt: ProblemDraftCommitReceipt,
+)
+
+data class ReauthorizeProblemOrganizationWorkCommand(
+    val workId: String,
+    val expectedStateVersion: Long,
+    val problemId: String,
+    val problemRevisionId: String,
+    val errorBookEntryId: String,
+    val provider: ProviderCapabilitySnapshot,
+    val authorizationGrant: ProblemOrganizationAuthorizationGrant,
+)
+
+enum class ReauthorizeProblemOrganizationWorkOutcome {
+    REAUTHORIZED,
+    REPLAYED,
+    NOT_APPLIED,
+}
+
+data class ReauthorizeProblemOrganizationWorkResult(
+    val outcome: ReauthorizeProblemOrganizationWorkOutcome,
+    val work: ProblemOrganizationWorkRecord?,
+)
+
 data class AuthorizeProblemOrganizationWorkCommand(
     val workId: String,
     val expectedStateVersion: Long,
@@ -1940,6 +1970,18 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
         commitReceiptCommandId: String,
     ): ProblemDraftCommitReceipt? = null
 
+    suspend fun readWaitingProblemOrganizationWork(
+        problemId: String,
+        problemRevisionId: String,
+        errorBookEntryId: String,
+    ): ProblemOrganizationWorkPreparationRecord? = null
+
+    suspend fun readLatestProblemOrganizationWork(
+        problemId: String,
+        problemRevisionId: String,
+        errorBookEntryId: String,
+    ): ProblemOrganizationWorkPreparationRecord? = null
+
     suspend fun claimNextProblemOrganizationWork(
         leaseOwner: String,
         nowEpochMillis: Long,
@@ -1960,6 +2002,9 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
 
     suspend fun readRunningProblemOrganizationWorks(
         limit: Int,
+        afterLeaseExpiresAtEpochMillis: Long? = null,
+        afterUpdatedAtEpochMillis: Long? = null,
+        afterWorkId: String? = null,
     ): List<ProblemOrganizationWorkRecord> = emptyList()
 
     fun observeSchedulableProblemOrganizationWorks(): Flow<List<ProblemOrganizationWorkRecord>> =
@@ -1968,6 +2013,14 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     suspend fun authorizeProblemOrganizationWork(
         command: AuthorizeProblemOrganizationWorkCommand,
     ): Boolean = false
+
+    suspend fun reauthorizeProblemOrganizationWork(
+        command: ReauthorizeProblemOrganizationWorkCommand,
+    ): ReauthorizeProblemOrganizationWorkResult =
+        ReauthorizeProblemOrganizationWorkResult(
+            outcome = ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED,
+            work = null,
+        )
 
     suspend fun markProblemOrganizationWorkWaitingAuthorization(
         command: ProblemOrganizationWorkTransitionCommand,

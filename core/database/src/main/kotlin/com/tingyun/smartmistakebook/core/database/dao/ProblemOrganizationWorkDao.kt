@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database.dao
 
 import androidx.room3.Dao
+import androidx.room3.Embedded
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
@@ -12,6 +13,13 @@ import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationWork
 import com.tingyun.smartmistakebook.core.database.entity.ProblemSolutionStepEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemStepKnowledgeBindingEntity
 import kotlinx.coroutines.flow.Flow
+
+internal data class ProblemOrganizationWorkPreparationRow(
+    @Embedded
+    val work: ProblemOrganizationWorkEntity,
+    @Embedded(prefix = "receipt_")
+    val receipt: ProblemDraftCommitReceiptEntity,
+)
 
 @Dao
 internal abstract class ProblemOrganizationWorkDao {
@@ -74,6 +82,69 @@ internal abstract class ProblemOrganizationWorkDao {
 
     @Query(
         """
+        SELECT work.*,
+               receipt.command_id AS receipt_command_id,
+               receipt.payload_fingerprint AS receipt_payload_fingerprint,
+               receipt.draft_id AS receipt_draft_id,
+               receipt.draft_revision_number AS receipt_draft_revision_number,
+               receipt.problem_id AS receipt_problem_id,
+               receipt.problem_revision_id AS receipt_problem_revision_id,
+               receipt.practice_unit_id AS receipt_practice_unit_id,
+               receipt.error_book_entry_id AS receipt_error_book_entry_id,
+               receipt.committed_at_epoch_millis AS receipt_committed_at_epoch_millis
+        FROM problem_organization_work AS work
+        INNER JOIN problem_draft_commit_receipt AS receipt
+          ON receipt.command_id = work.commit_receipt_command_id
+        WHERE work.status = 'WAITING_AUTHORIZATION'
+          AND work.request_id IS NULL
+          AND work.request_snapshot IS NULL
+          AND receipt.problem_id = :problemId
+          AND receipt.problem_revision_id = :problemRevisionId
+          AND receipt.error_book_entry_id = :errorBookEntryId
+        ORDER BY receipt.committed_at_epoch_millis DESC,
+                 work.created_at_epoch_millis DESC,
+                 work.work_id DESC
+        LIMIT 1
+        """,
+    )
+    abstract suspend fun readWaitingPreparation(
+        problemId: String,
+        problemRevisionId: String,
+        errorBookEntryId: String,
+    ): ProblemOrganizationWorkPreparationRow?
+
+    @Query(
+        """
+        SELECT work.*,
+               receipt.command_id AS receipt_command_id,
+               receipt.payload_fingerprint AS receipt_payload_fingerprint,
+               receipt.draft_id AS receipt_draft_id,
+               receipt.draft_revision_number AS receipt_draft_revision_number,
+               receipt.problem_id AS receipt_problem_id,
+               receipt.problem_revision_id AS receipt_problem_revision_id,
+               receipt.practice_unit_id AS receipt_practice_unit_id,
+               receipt.error_book_entry_id AS receipt_error_book_entry_id,
+               receipt.committed_at_epoch_millis AS receipt_committed_at_epoch_millis
+        FROM problem_organization_work AS work
+        INNER JOIN problem_draft_commit_receipt AS receipt
+          ON receipt.command_id = work.commit_receipt_command_id
+        WHERE receipt.problem_id = :problemId
+          AND receipt.problem_revision_id = :problemRevisionId
+          AND receipt.error_book_entry_id = :errorBookEntryId
+        ORDER BY receipt.committed_at_epoch_millis DESC,
+                 work.created_at_epoch_millis DESC,
+                 work.work_id DESC
+        LIMIT 1
+        """,
+    )
+    abstract suspend fun readLatestPreparation(
+        problemId: String,
+        problemRevisionId: String,
+        errorBookEntryId: String,
+    ): ProblemOrganizationWorkPreparationRow?
+
+    @Query(
+        """
         SELECT * FROM problem_organization_work
         WHERE (
             status IN ('PENDING', 'RETRY')
@@ -109,12 +180,28 @@ internal abstract class ProblemOrganizationWorkDao {
         SELECT * FROM problem_organization_work
         WHERE status = 'RUNNING'
           AND lease_expires_at_epoch_millis IS NOT NULL
+          AND (
+              :afterLeaseExpiresAtEpochMillis IS NULL
+              OR lease_expires_at_epoch_millis > :afterLeaseExpiresAtEpochMillis
+              OR (
+                  lease_expires_at_epoch_millis = :afterLeaseExpiresAtEpochMillis
+                  AND updated_at_epoch_millis > :afterUpdatedAtEpochMillis
+              )
+              OR (
+                  lease_expires_at_epoch_millis = :afterLeaseExpiresAtEpochMillis
+                  AND updated_at_epoch_millis = :afterUpdatedAtEpochMillis
+                  AND work_id > :afterWorkId
+              )
+          )
         ORDER BY lease_expires_at_epoch_millis ASC, updated_at_epoch_millis ASC, work_id ASC
         LIMIT :limit
         """,
     )
     abstract suspend fun readRunning(
         limit: Int,
+        afterLeaseExpiresAtEpochMillis: Long?,
+        afterUpdatedAtEpochMillis: Long?,
+        afterWorkId: String?,
     ): List<ProblemOrganizationWorkEntity>
 
     @Query(
@@ -264,6 +351,26 @@ internal abstract class ProblemOrganizationWorkDao {
         requestId: String,
         requestSnapshot: String,
         notBeforeEpochMillis: Long,
+        updatedAtEpochMillis: Long,
+    ): Int
+
+    @Query(
+        """
+        UPDATE problem_organization_work
+        SET state_version = state_version + 1,
+            authorization_grant_snapshot = :authorizationGrantSnapshot,
+            updated_at_epoch_millis = :updatedAtEpochMillis
+        WHERE work_id = :workId
+          AND state_version = :expectedStateVersion
+          AND status = 'WAITING_AUTHORIZATION'
+          AND request_id IS NULL
+          AND request_snapshot IS NULL
+        """,
+    )
+    abstract suspend fun reauthorize(
+        workId: String,
+        expectedStateVersion: Long,
+        authorizationGrantSnapshot: String,
         updatedAtEpochMillis: Long,
     ): Int
 

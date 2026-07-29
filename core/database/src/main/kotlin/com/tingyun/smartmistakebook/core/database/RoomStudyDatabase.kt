@@ -45,10 +45,16 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEn
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentCodec
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
+import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
+import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
+import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
-import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrantCodec
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -882,6 +888,42 @@ internal class RoomStudyDatabase(
             ?.toProblemDraftCommitReceipt()
     }
 
+    override suspend fun readWaitingProblemOrganizationWork(
+        problemId: String,
+        problemRevisionId: String,
+        errorBookEntryId: String,
+    ): ProblemOrganizationWorkPreparationRecord? {
+        require(problemId.isNotBlank()) { "problemId must not be blank" }
+        require(problemRevisionId.isNotBlank()) { "problemRevisionId must not be blank" }
+        require(errorBookEntryId.isNotBlank()) { "errorBookEntryId must not be blank" }
+        return database.problemOrganizationWorkDao()
+            .readWaitingPreparation(problemId, problemRevisionId, errorBookEntryId)
+            ?.let { row ->
+                ProblemOrganizationWorkPreparationRecord(
+                    work = row.work.toRecord(),
+                    commitReceipt = row.receipt.toProblemDraftCommitReceipt(),
+                )
+            }
+    }
+
+    override suspend fun readLatestProblemOrganizationWork(
+        problemId: String,
+        problemRevisionId: String,
+        errorBookEntryId: String,
+    ): ProblemOrganizationWorkPreparationRecord? {
+        require(problemId.isNotBlank()) { "problemId must not be blank" }
+        require(problemRevisionId.isNotBlank()) { "problemRevisionId must not be blank" }
+        require(errorBookEntryId.isNotBlank()) { "errorBookEntryId must not be blank" }
+        return database.problemOrganizationWorkDao()
+            .readLatestPreparation(problemId, problemRevisionId, errorBookEntryId)
+            ?.let { row ->
+                ProblemOrganizationWorkPreparationRecord(
+                    work = row.work.toRecord(),
+                    commitReceipt = row.receipt.toProblemDraftCommitReceipt(),
+                )
+            }
+    }
+
     override suspend fun claimNextProblemOrganizationWork(
         leaseOwner: String,
         nowEpochMillis: Long,
@@ -918,10 +960,27 @@ internal class RoomStudyDatabase(
 
     override suspend fun readRunningProblemOrganizationWorks(
         limit: Int,
+        afterLeaseExpiresAtEpochMillis: Long?,
+        afterUpdatedAtEpochMillis: Long?,
+        afterWorkId: String?,
     ): List<ProblemOrganizationWorkRecord> {
         require(limit in 1..100) { "limit must be between 1 and 100" }
+        val cursorIsEmpty = afterLeaseExpiresAtEpochMillis == null &&
+            afterUpdatedAtEpochMillis == null &&
+            afterWorkId == null
+        val cursorIsComplete = afterLeaseExpiresAtEpochMillis != null &&
+            afterUpdatedAtEpochMillis != null &&
+            afterWorkId != null
+        require(cursorIsEmpty || cursorIsComplete) {
+            "Running organization work cursor must be entirely absent or present"
+        }
         return database.problemOrganizationWorkDao()
-            .readRunning(limit)
+            .readRunning(
+                limit = limit,
+                afterLeaseExpiresAtEpochMillis = afterLeaseExpiresAtEpochMillis,
+                afterUpdatedAtEpochMillis = afterUpdatedAtEpochMillis,
+                afterWorkId = afterWorkId,
+            )
             .map(ProblemOrganizationWorkEntity::toRecord)
     }
 
@@ -1022,6 +1081,105 @@ internal class RoomStudyDatabase(
             notBeforeEpochMillis = command.notBeforeEpochMillis,
             updatedAtEpochMillis = command.authorizedAtEpochMillis,
         ) == 1
+    }
+
+    override suspend fun reauthorizeProblemOrganizationWork(
+        command: ReauthorizeProblemOrganizationWorkCommand,
+    ): ReauthorizeProblemOrganizationWorkResult {
+        require(command.workId.isNotBlank()) { "workId must not be blank" }
+        require(command.expectedStateVersion in 0L until Long.MAX_VALUE) {
+            "expectedStateVersion is outside the supported range"
+        }
+        require(command.problemId.isNotBlank()) { "problemId must not be blank" }
+        require(command.problemRevisionId.isNotBlank()) {
+            "problemRevisionId must not be blank"
+        }
+        require(command.errorBookEntryId.isNotBlank()) {
+            "errorBookEntryId must not be blank"
+        }
+        return database.withWriteTransaction {
+            val workDao = database.problemOrganizationWorkDao()
+            val work = workDao.readWork(command.workId)
+                ?: return@withWriteTransaction reauthorizationNotApplied()
+            val receipt = workDao.readCommitReceipt(work.commitReceiptCommandId)
+                ?: throw DatabaseContractViolationException(
+                    "Organization work commit receipt is missing",
+                )
+            if (
+                receipt.problemId != command.problemId ||
+                receipt.problemRevisionId != command.problemRevisionId ||
+                receipt.errorBookEntryId != command.errorBookEntryId
+            ) {
+                return@withWriteTransaction reauthorizationNotApplied()
+            }
+
+            val authorizationSnapshot = ProblemOrganizationAuthorizationGrantCodec.encode(
+                command.authorizationGrant,
+            )
+            val replayStateVersion = command.expectedStateVersion + 1
+            if (
+                work.stateVersion == replayStateVersion &&
+                work.status == StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION &&
+                work.requestId == null &&
+                work.requestSnapshot == null
+            ) {
+                if (work.authorizationGrantSnapshot != authorizationSnapshot) {
+                    throw ProblemOrganizationWorkReauthorizationConflictException(command.workId)
+                }
+                val replayNowEpochMillis = clock()
+                require(replayNowEpochMillis >= 0) { "Database clock must not be negative" }
+                validateProblemOrganizationReauthorization(
+                    authorization = command.authorizationGrant,
+                    provider = command.provider,
+                    receipt = receipt.toProblemDraftCommitReceipt(),
+                    draft = database.problemDraftTransactionDao().read(receipt.draftId)
+                        ?: throw DatabaseContractViolationException(
+                            "Organization work source draft is missing",
+                        ),
+                    nowEpochMillis = replayNowEpochMillis,
+                )
+                return@withWriteTransaction ReauthorizeProblemOrganizationWorkResult(
+                    outcome = ReauthorizeProblemOrganizationWorkOutcome.REPLAYED,
+                    work = work.toRecord(),
+                )
+            }
+            if (
+                work.stateVersion != command.expectedStateVersion ||
+                work.status !=
+                StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION ||
+                work.requestId != null ||
+                work.requestSnapshot != null
+            ) {
+                return@withWriteTransaction reauthorizationNotApplied()
+            }
+
+            val nowEpochMillis = clock()
+            require(nowEpochMillis >= 0) { "Database clock must not be negative" }
+            validateProblemOrganizationReauthorization(
+                authorization = command.authorizationGrant,
+                provider = command.provider,
+                receipt = receipt.toProblemDraftCommitReceipt(),
+                draft = database.problemDraftTransactionDao().read(receipt.draftId)
+                    ?: throw DatabaseContractViolationException(
+                        "Organization work source draft is missing",
+                    ),
+                nowEpochMillis = nowEpochMillis,
+            )
+            if (
+                workDao.reauthorize(
+                    workId = command.workId,
+                    expectedStateVersion = command.expectedStateVersion,
+                    authorizationGrantSnapshot = authorizationSnapshot,
+                    updatedAtEpochMillis = nowEpochMillis,
+                ) != 1
+            ) {
+                return@withWriteTransaction reauthorizationNotApplied()
+            }
+            ReauthorizeProblemOrganizationWorkResult(
+                outcome = ReauthorizeProblemOrganizationWorkOutcome.REAUTHORIZED,
+                work = checkNotNull(workDao.readWork(command.workId)).toRecord(),
+            )
+        }
     }
 
     override suspend fun markProblemOrganizationWorkWaitingAuthorization(
@@ -1782,6 +1940,65 @@ private data class OrganizationSourceAssetIdentity(
     val height: Int,
     val pageIndex: Int,
 )
+
+private fun reauthorizationNotApplied() = ReauthorizeProblemOrganizationWorkResult(
+    outcome = ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED,
+    work = null,
+)
+
+private fun validateProblemOrganizationReauthorization(
+    authorization: ProblemOrganizationAuthorizationGrant,
+    provider: ProviderCapabilitySnapshot,
+    receipt: ProblemDraftCommitReceipt,
+    draft: ProblemDraftRecord,
+    nowEpochMillis: Long,
+) {
+    require(authorization.schemaVersion == ProblemOrganizationAuthorizationGrant.CURRENT_SCHEMA_VERSION) {
+        "Problem organization authorization schema is not current"
+    }
+    require(
+        authorization.authorizationPolicyVersion ==
+            ProblemOrganizationAuthorizationGrant.CURRENT_AUTHORIZATION_POLICY_VERSION,
+    ) { "Problem organization authorization policy is not current" }
+    require(authorization.purpose == ModelEgressPurpose.CLASSIFICATION) {
+        "Problem organization authorization purpose does not match"
+    }
+    require(authorization.authorizedTaskKind == ModelTaskKind.PROBLEM_CLASSIFY) {
+        "Problem organization authorization task does not match"
+    }
+    require(authorization.requestSchemaVersion == ModelEgressManifest.CURRENT_SCHEMA_VERSION) {
+        "Problem organization authorization request schema is not current"
+    }
+    require(
+        authorization.promptPolicyVersion == ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,
+    ) { "Problem organization authorization prompt policy is not current" }
+    require(authorization.matchesCurrent(provider, nowEpochMillis)) {
+        "Problem organization authorization does not match the current provider"
+    }
+    require(authorization.sourceDraftId == receipt.draftId) {
+        "Problem organization authorization belongs to another source draft"
+    }
+    require(
+        draft.draftId == receipt.draftId &&
+            draft.status == StudyDbValue.ProblemDraftStatus.COMMITTED &&
+            draft.currentRevision.revisionNumber == receipt.draftRevisionNumber,
+    ) { "Organization work no longer points to its committed source revision" }
+
+    val authorizedAssetsById = authorization.assets.associateBy { it.assetId }
+    require(
+        authorizedAssetsById.size == draft.sourceAssets.size &&
+            draft.sourceAssets.all { source ->
+                val canonical = source.sourceAsset
+                val authorized = authorizedAssetsById[canonical.sourceAssetId]
+                authorized != null &&
+                    authorized.sha256 == canonical.contentSha256 &&
+                    authorized.byteSize == canonical.byteSize &&
+                    authorized.width == canonical.width &&
+                    authorized.height == canonical.height &&
+                    authorized.selectedRegion == null
+            },
+    ) { "Problem organization authorization assets do not match its exact import occurrence" }
+}
 
 private fun validateOrganizationWorkTransition(
     command: ProblemOrganizationWorkTransitionCommand,

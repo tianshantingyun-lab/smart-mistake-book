@@ -19,11 +19,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,9 +36,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationPreparation
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationOutcome
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationPreparation
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationDurableStatus
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
@@ -49,6 +54,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_CONTENT_DIMENSIONS
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_RELATION_KINDS
@@ -61,6 +67,7 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @Composable
@@ -77,8 +84,21 @@ internal fun MistakeOrganizationSection(
     var provider by remember { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var capabilityLoadFailed by rememberSaveable(key) { mutableStateOf(false) }
     var capabilityLoadAttempt by rememberSaveable(key) { mutableStateOf(0) }
+    var reauthorization by remember(key) {
+        mutableStateOf<ProblemOrganizationReauthorizationPreparation?>(null)
+    }
+    var reauthorizationLookupComplete by remember(key) { mutableStateOf(false) }
+    var reauthorizationLookupFailed by remember(key) { mutableStateOf(false) }
+    var reauthorizationLookupAttempt by remember(key) { mutableStateOf(0) }
+    var isReauthorizing by remember(key) { mutableStateOf(false) }
+    var reauthorizationJob by remember(key) { mutableStateOf<Job?>(null) }
+    val currentKey = rememberUpdatedState(key)
+    var reauthorizationHidden by remember(key) { mutableStateOf(false) }
     var preparation by remember(key) { mutableStateOf<MistakeOrganizationPreparation?>(null) }
     var task by remember(key) { mutableStateOf<ModelTaskSnapshot?>(null) }
+    var durableTaskStatus by remember(key, modelTasks) {
+        mutableStateOf<ModelTaskStatus?>(null)
+    }
     var recoveryComplete by remember(key, modelTasks) { mutableStateOf(false) }
     var trackedRequestId by remember(key, modelTasks) { mutableStateOf<String?>(null) }
     var requestToResume by remember(key, modelTasks) {
@@ -104,6 +124,11 @@ internal fun MistakeOrganizationSection(
     val confirmed by confirmedFlow.collectAsStateWithLifecycle(
         initialValue = ConfirmedMistakeOrganization(),
     )
+    DisposableEffect(key) {
+        onDispose {
+            reauthorizationJob?.cancel()
+        }
+    }
     val restartOrganization: () -> Unit = {
         attempt += 1
         preparation = null
@@ -186,6 +211,57 @@ internal fun MistakeOrganizationSection(
             }
         }
     }
+    val continueDurableOrganization: () -> Unit = continueDurableOrganization@{
+        if (isReauthorizing) return@continueDurableOrganization
+        val pending = reauthorization ?: return@continueDurableOrganization
+        val availableProvider = provider ?: return@continueDurableOrganization
+        val requestedKey = key
+        isReauthorizing = true
+        reauthorizationJob = scope.launch {
+            if (currentKey.value != requestedKey) return@launch
+            message = null
+            try {
+                val currentProvider = modelTasks.capabilities()
+                if (currentKey.value != requestedKey) return@launch
+                if (currentProvider != availableProvider) {
+                    provider = currentProvider
+                    reauthorization = null
+                    reauthorizationLookupAttempt += 1
+                    message = "模型配置已变化，请重新确认"
+                    return@launch
+                }
+                val outcome = organizationRepository.reauthorize(
+                    preparation = pending,
+                    provider = currentProvider,
+                    approvedAtEpochMillis = System.currentTimeMillis(),
+                )
+                if (currentKey.value != requestedKey) return@launch
+                when (outcome) {
+                    ProblemOrganizationReauthorizationOutcome.REAUTHORIZED,
+                    ProblemOrganizationReauthorizationOutcome.REPLAYED,
+                    -> reauthorization = pending.copy(requiresStudentConfirmation = false)
+
+                    ProblemOrganizationReauthorizationOutcome.LOST_AUTHORITY -> {
+                        reauthorization = null
+                        reauthorizationLookupAttempt += 1
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                if (currentKey.value == requestedKey) {
+                    reauthorization = null
+                    capabilityLoadAttempt += 1
+                    reauthorizationLookupAttempt += 1
+                    message = "模型配置已变化，请重新确认"
+                }
+            } finally {
+                if (currentKey.value == requestedKey) {
+                    isReauthorizing = false
+                }
+            }
+        }
+    }
 
     LaunchedEffect(modelTasks, capabilityLoadAttempt) {
         capabilityLoadFailed = false
@@ -200,10 +276,66 @@ internal fun MistakeOrganizationSection(
         }
     }
 
+    LaunchedEffect(key, provider, reauthorizationLookupAttempt) {
+        reauthorizationLookupComplete = false
+        reauthorizationLookupFailed = false
+        reauthorization = null
+        reauthorizationHidden = false
+        val availableProvider = provider
+        if (availableProvider != null) {
+            reauthorization = try {
+                organizationRepository.prepareReauthorization(
+                    key = key,
+                    provider = availableProvider,
+                    occurredAtEpochMillis = System.currentTimeMillis(),
+                )
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                reauthorizationLookupFailed = true
+                message = "暂时无法读取整理进度"
+                null
+            }
+        }
+        reauthorizationLookupComplete = true
+    }
+
     // Preparing before durable history arrives can reuse a request id with a different timestamp.
-    LaunchedEffect(key, modelTasks) {
+    LaunchedEffect(
+        key,
+        modelTasks,
+        reauthorizationLookupComplete,
+        reauthorizationLookupFailed,
+        reauthorization?.workId,
+        reauthorizationHidden,
+    ) {
+        if (
+            !reauthorizationLookupComplete ||
+            reauthorizationLookupFailed ||
+            reauthorization != null ||
+            reauthorizationHidden
+        ) {
+            return@LaunchedEffect
+        }
         modelTasks.observeBySubject(key.problemRevisionId, ModelTaskKind.PROBLEM_CLASSIFY)
             .collect { snapshots ->
+                val durableTask = snapshots.filter { it.matchesDurableOrganization(key) }
+                    .maxWithOrNull(
+                        compareBy<ModelTaskSnapshot> { it.updatedAtEpochMillis }
+                            .thenBy { it.stateVersion }
+                            .thenBy { it.createdAtEpochMillis }
+                            .thenBy { it.request.requestId },
+                    )
+                if (durableTask != null) {
+                    durableTaskStatus = durableTask.status
+                    recoveryComplete = true
+                    trackedRequestId = null
+                    preparation = null
+                    task = null
+                    recoveredPendingRequest = null
+                    return@collect
+                }
+                if (durableTaskStatus != null) return@collect
                 if (!recoveryComplete) {
                     val matchingTasks = snapshots.filter { it.matchesOrganization(key) }
                     val recovered = matchingTasks.maxWithOrNull(
@@ -277,8 +409,28 @@ internal fun MistakeOrganizationSection(
         }
     }
 
-    LaunchedEffect(key, provider, attempt, preparationDismissed, recoveryComplete) {
-        if (!recoveryComplete) return@LaunchedEffect
+    LaunchedEffect(
+        key,
+        provider,
+        attempt,
+        preparationDismissed,
+        recoveryComplete,
+        reauthorizationLookupComplete,
+        reauthorizationLookupFailed,
+        reauthorization?.workId,
+        reauthorizationHidden,
+        durableTaskStatus,
+    ) {
+        if (
+            !recoveryComplete ||
+            !reauthorizationLookupComplete ||
+            reauthorizationLookupFailed ||
+            reauthorization != null ||
+            reauthorizationHidden ||
+            durableTaskStatus != null
+        ) {
+            return@LaunchedEffect
+        }
         val availableProvider = provider ?: return@LaunchedEffect
         if (
             preparationDismissed ||
@@ -371,7 +523,54 @@ internal fun MistakeOrganizationSection(
             applyState = applyState,
         ),
     )
-    when (val state = surfaceState) {
+    val durableReauthorization = reauthorization
+    if (reauthorizationLookupFailed) {
+        OutlinedButton(
+            onClick = {
+                message = null
+                reauthorizationLookupAttempt += 1
+            },
+            modifier = Modifier.testTag("mistake_organization_reauthorization_retry"),
+        ) {
+            Text("重试")
+        }
+    } else if (reauthorizationHidden) {
+        Unit
+    } else if (durableReauthorization != null) {
+        when (durableReauthorization.durableStatus) {
+            ProblemOrganizationDurableStatus.ACTIVE ->
+                OrganizationRunning("正在继续整理")
+
+            ProblemOrganizationDurableStatus.TERMINAL -> Unit
+            ProblemOrganizationDurableStatus.WAITING_AUTHORIZATION -> {
+                if (
+                    currentProvider == null ||
+                    currentProvider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER ||
+                    !currentProvider.supportsImageInput ||
+                    !currentProvider.supports(ModelTaskKind.PROBLEM_CLASSIFY)
+                ) {
+                    ModelUnavailable(onOpenModelSettings)
+                } else if (durableReauthorization.requiresStudentConfirmation) {
+                    ProblemOrganizationReauthorizationCard(
+                        providerDisplayName = currentProvider.providerDisplayName,
+                        isRunning = isReauthorizing,
+                        onCancel = {
+                            reauthorizationHidden = true
+                            message = null
+                        },
+                        onApprove = continueDurableOrganization,
+                    )
+                } else {
+                    OrganizationRunning("正在继续整理")
+                }
+            }
+        }
+    } else if (durableTaskStatus != null) {
+        if (durableTaskStatus?.isTerminal == false) {
+            OrganizationRunning("正在继续整理")
+        }
+    } else {
+        when (val state = surfaceState) {
         MistakeOrganizationSurfaceState.CapabilityLoadFailed -> ModelCapabilityFailure(
             onRetry = { capabilityLoadAttempt += 1 },
             onOpenModelSettings = onOpenModelSettings,
@@ -462,32 +661,33 @@ internal fun MistakeOrganizationSection(
             modifier = Modifier.testTag("mistake_organization_user_correction_preserved"),
         )
 
-        MistakeOrganizationSurfaceState.Applied -> {
-            Text(
-                text = "已自动整理到错题本",
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.testTag("mistake_organization_applied"),
-            )
-            TextButton(
-                onClick = { correctionVisible = !correctionVisible },
-                modifier = Modifier.testTag("mistake_organization_correct_toggle"),
-            ) {
-                Text(if (correctionVisible) "收起修改" else "分类有误，修改")
-            }
-            if (correctionVisible) {
-                OrganizationCorrectionEditor(
-                    requestId = checkNotNull(task).request.requestId,
-                    input = checkNotNull(task).request.input as ProblemOrganizationInput,
-                    output = checkNotNull(output),
-                    confirmed = confirmed,
-                    organizationRepository = organizationRepository,
-                    onConfirmed = {
-                        correctionVisible = false
-                        message = "已保存分类修改"
-                    },
-                    onFailure = { failure -> message = failure },
+            MistakeOrganizationSurfaceState.Applied -> {
+                Text(
+                    text = "已自动整理到错题本",
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("mistake_organization_applied"),
                 )
+                TextButton(
+                    onClick = { correctionVisible = !correctionVisible },
+                    modifier = Modifier.testTag("mistake_organization_correct_toggle"),
+                ) {
+                    Text(if (correctionVisible) "收起修改" else "分类有误，修改")
+                }
+                if (correctionVisible) {
+                    OrganizationCorrectionEditor(
+                        requestId = checkNotNull(task).request.requestId,
+                        input = checkNotNull(task).request.input as ProblemOrganizationInput,
+                        output = checkNotNull(output),
+                        confirmed = confirmed,
+                        organizationRepository = organizationRepository,
+                        onConfirmed = {
+                            correctionVisible = false
+                            message = "已保存分类修改"
+                        },
+                        onFailure = { failure -> message = failure },
+                    )
+                }
             }
         }
     }
@@ -505,6 +705,11 @@ internal fun MistakeOrganizationSection(
 
 private fun ModelTaskSnapshot.matchesOrganization(key: MistakeRevisionKey): Boolean {
     val input = request.input as? ProblemOrganizationInput ?: return false
+    return input.problemId == key.problemId && input.problemRevisionId == key.problemRevisionId
+}
+
+private fun ModelTaskSnapshot.matchesDurableOrganization(key: MistakeRevisionKey): Boolean {
+    val input = request.input as? ProblemOrganizationV3Input ?: return false
     return input.problemId == key.problemId && input.problemRevisionId == key.problemRevisionId
 }
 
@@ -757,6 +962,57 @@ private fun ModelCapabilityFailure(
         }
     }
 }
+
+@Composable
+private fun ProblemOrganizationReauthorizationCard(
+    providerDisplayName: String,
+    isRunning: Boolean,
+    onCancel: () -> Unit,
+    onApprove: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().testTag("mistake_organization_reauthorization"),
+        shape = RoundedCornerShape(10.dp),
+        color = JadeSoft.copy(alpha = 0.35f),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Text(
+                text = "继续整理这道题",
+                color = Ink,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = problemOrganizationReauthorizationDisclosure(providerDisplayName),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(onClick = onCancel, enabled = !isRunning) { Text("暂不整理") }
+                Button(
+                    onClick = onApprove,
+                    enabled = !isRunning,
+                    colors = ButtonDefaults.buttonColors(containerColor = JadeActive),
+                    modifier = Modifier.testTag("mistake_organization_reauthorize"),
+                ) {
+                    if (isRunning) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(end = 8.dp).height(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    Text(if (isRunning) "正在继续" else "继续整理")
+                }
+            }
+        }
+    }
+}
+
+internal fun problemOrganizationReauthorizationDisclosure(
+    providerDisplayName: String,
+): String = "本次题图、整理后的题面和相关知识资料会交给$providerDisplayName，" +
+    "用于保存后继续整理；不会发送其他题目或学习记录。"
 
 @Composable
 private fun OrganizationConsentCard(

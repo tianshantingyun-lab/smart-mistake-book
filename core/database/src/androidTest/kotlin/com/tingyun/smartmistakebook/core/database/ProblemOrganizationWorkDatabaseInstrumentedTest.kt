@@ -10,7 +10,9 @@ import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.KnowledgeGroundingFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
+import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrantCodec
@@ -20,6 +22,7 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import kotlinx.coroutines.async
@@ -93,6 +96,172 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
             store.readSchedulableProblemOrganizationWorks(nowEpochMillis = 10_000, limit = 10)
                 .any { it.workId == work.workId },
         )
+    }
+
+    @Test
+    fun waitingPreparationAndReauthorizationRequireExactMistakeScope() = runBlocking {
+        val commit = prepareCommit("reauthorize-scope")
+        store.commitProblemDraft(commit)
+        val waiting = checkNotNull(
+            store.readProblemOrganizationWorkByCommitReceipt(commit.commandId),
+        )
+        val prepared = checkNotNull(
+            store.readWaitingProblemOrganizationWork(
+                commit.problemId,
+                commit.problemRevisionId,
+                commit.errorBookEntryId,
+            ),
+        )
+        val before = checkNotNull(store.readProblemOrganizationWork(waiting.workId))
+        val freshGrant = requireNotNull(commit.problemOrganizationAuthorization).copy(
+            authorizationId = "fresh-authorization-scope",
+        )
+
+        assertEquals(waiting, prepared.work)
+        assertEquals(commit.commandId, prepared.commitReceipt.commandId)
+        assertNull(
+            store.readWaitingProblemOrganizationWork(
+                commit.problemId,
+                commit.problemRevisionId,
+                "another-entry",
+            ),
+        )
+        val rejected = store.reauthorizeProblemOrganizationWork(
+            reauthorizationCommand(commit, waiting, freshGrant).copy(
+                errorBookEntryId = "another-entry",
+            ),
+        )
+
+        assertEquals(ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED, rejected.outcome)
+        assertNull(rejected.work)
+        assertEquals(before, store.readProblemOrganizationWork(waiting.workId))
+    }
+
+    @Test
+    fun reauthorizationIsGrantOnlyAndExactReplayIsIdempotent() = runBlocking {
+        val commit = prepareCommit("reauthorize-replay")
+        store.commitProblemDraft(commit)
+        val waiting = checkNotNull(
+            store.readProblemOrganizationWorkByCommitReceipt(commit.commandId),
+        )
+        val freshGrant = requireNotNull(commit.problemOrganizationAuthorization).copy(
+            authorizationId = "fresh-authorization-replay",
+        )
+        val command = reauthorizationCommand(commit, waiting, freshGrant)
+        setDatabaseClockReadings(3_000)
+
+        val first = store.reauthorizeProblemOrganizationWork(command)
+        val replay = store.reauthorizeProblemOrganizationWork(command)
+        val persisted = checkNotNull(store.readProblemOrganizationWork(waiting.workId))
+
+        assertEquals(ReauthorizeProblemOrganizationWorkOutcome.REAUTHORIZED, first.outcome)
+        assertEquals(ReauthorizeProblemOrganizationWorkOutcome.REPLAYED, replay.outcome)
+        assertEquals(waiting.stateVersion + 1, persisted.stateVersion)
+        assertEquals(StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION, persisted.status)
+        assertNull(persisted.requestId)
+        assertNull(persisted.requestSnapshot)
+        assertEquals(3_000, persisted.updatedAtEpochMillis)
+        assertEquals(
+            freshGrant,
+            ProblemOrganizationAuthorizationGrantCodec.decode(
+                requireNotNull(persisted.authorizationGrantSnapshot),
+            ),
+        )
+        assertEquals(first.work, replay.work)
+
+        val conflicting = command.copy(
+            authorizationGrant = freshGrant.copy(
+                authorizationId = "different-authorization-replay",
+            ),
+        )
+        assertThrows(ProblemOrganizationWorkReauthorizationConflictException::class.java) {
+            runBlocking { store.reauthorizeProblemOrganizationWork(conflicting) }
+        }
+        assertEquals(persisted, store.readProblemOrganizationWork(waiting.workId))
+        setDatabaseClockReadings(4_000)
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { store.reauthorizeProblemOrganizationWork(command) }
+        }
+        assertEquals(persisted, store.readProblemOrganizationWork(waiting.workId))
+    }
+
+    @Test
+    fun reauthorizationRejectsProviderDraftAndByteSizeMismatchWithoutWrites() = runBlocking {
+        val commit = prepareCommit("reauthorize-validation")
+        store.commitProblemDraft(commit)
+        val waiting = checkNotNull(
+            store.readProblemOrganizationWorkByCommitReceipt(commit.commandId),
+        )
+        val before = checkNotNull(store.readProblemOrganizationWork(waiting.workId))
+        val exactGrant = requireNotNull(commit.problemOrganizationAuthorization).copy(
+            authorizationId = "fresh-authorization-validation",
+        )
+        val exact = reauthorizationCommand(commit, waiting, exactGrant)
+        val invalidCommands = listOf(
+            exact.copy(provider = exact.provider.copy(modelId = "another-model")),
+            exact.copy(authorizationGrant = exactGrant.copy(sourceDraftId = "another-draft")),
+            exact.copy(
+                authorizationGrant = exactGrant.copy(
+                    assets = exactGrant.assets.map { it.copy(byteSize = it.byteSize + 1) },
+                ),
+            ),
+        )
+
+        invalidCommands.forEach { invalid ->
+            setDatabaseClockReadings(3_000)
+            assertThrows(IllegalArgumentException::class.java) {
+                runBlocking { store.reauthorizeProblemOrganizationWork(invalid) }
+            }
+            assertEquals(before, store.readProblemOrganizationWork(waiting.workId))
+        }
+        setDatabaseClockReadings(4_000)
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { store.reauthorizeProblemOrganizationWork(exact) }
+        }
+        assertEquals(before, store.readProblemOrganizationWork(waiting.workId))
+    }
+
+    @Test
+    fun lateOrWrongVersionReauthorizationCannotOverwriteBoundRequest() = runBlocking {
+        val commit = prepareCommit("reauthorize-late")
+        store.commitProblemDraft(commit)
+        val waiting = checkNotNull(
+            store.readProblemOrganizationWorkByCommitReceipt(commit.commandId),
+        )
+        assertTrue(authorizeWaiting(commit, waiting))
+        val bound = checkNotNull(store.readProblemOrganizationWork(waiting.workId))
+        assertNull(
+            store.readWaitingProblemOrganizationWork(
+                commit.problemId,
+                commit.problemRevisionId,
+                commit.errorBookEntryId,
+            ),
+        )
+        val latest = checkNotNull(
+            store.readLatestProblemOrganizationWork(
+                commit.problemId,
+                commit.problemRevisionId,
+                commit.errorBookEntryId,
+            ),
+        )
+        assertEquals(bound, latest.work)
+        assertEquals(commit.commandId, latest.commitReceipt.commandId)
+        val freshGrant = requireNotNull(commit.problemOrganizationAuthorization).copy(
+            authorizationId = "fresh-authorization-late",
+        )
+        val late = reauthorizationCommand(commit, waiting, freshGrant)
+
+        assertEquals(
+            ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED,
+            store.reauthorizeProblemOrganizationWork(late).outcome,
+        )
+        assertEquals(
+            ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED,
+            store.reauthorizeProblemOrganizationWork(
+                late.copy(expectedStateVersion = bound.stateVersion),
+            ).outcome,
+        )
+        assertEquals(bound, store.readProblemOrganizationWork(waiting.workId))
     }
 
     @Test
@@ -763,6 +932,32 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
             ),
         )
     }
+
+    private fun reauthorizationCommand(
+        commit: CommitProblemDraftCommand,
+        waiting: ProblemOrganizationWorkRecord,
+        authorizationGrant: ProblemOrganizationAuthorizationGrant,
+    ) = ReauthorizeProblemOrganizationWorkCommand(
+        workId = waiting.workId,
+        expectedStateVersion = waiting.stateVersion,
+        problemId = commit.problemId,
+        problemRevisionId = commit.problemRevisionId,
+        errorBookEntryId = commit.errorBookEntryId,
+        provider = organizationProvider(),
+        authorizationGrant = authorizationGrant,
+    )
+
+    private fun organizationProvider() = ProviderCapabilitySnapshot(
+        providerId = "provider",
+        providerDisplayName = "组织测试模型",
+        modelId = "model",
+        supportedTasks = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
+        supportsImageInput = true,
+        supportsStructuredOutput = true,
+        supportsStreaming = false,
+        executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+        providerConfigurationVersion = "configuration-1",
+    )
 
     private fun authorizationGrant(suffix: String) = ProblemOrganizationAuthorizationGrant(
         authorizationId = "organization-authorization-$suffix",

@@ -167,3 +167,62 @@ internal class ProblemOrganizationWorkScheduler(
             "problem-organization-recovery:$workId:$stateVersion"
     }
 }
+
+internal data class ProblemOrganizationWorkRecoveryCursor(
+    val leaseExpiresAtEpochMillis: Long,
+    val updatedAtEpochMillis: Long,
+    val workId: String,
+) : Comparable<ProblemOrganizationWorkRecoveryCursor> {
+    override fun compareTo(other: ProblemOrganizationWorkRecoveryCursor): Int =
+        compareValuesBy(
+            this,
+            other,
+            ProblemOrganizationWorkRecoveryCursor::leaseExpiresAtEpochMillis,
+            ProblemOrganizationWorkRecoveryCursor::updatedAtEpochMillis,
+            ProblemOrganizationWorkRecoveryCursor::workId,
+        )
+
+    companion object {
+        fun from(record: ProblemOrganizationWorkRecord) = ProblemOrganizationWorkRecoveryCursor(
+            leaseExpiresAtEpochMillis = requireNotNull(record.leaseExpiresAtEpochMillis) {
+                "Running work recovery requires a lease expiry"
+            },
+            updatedAtEpochMillis = record.updatedAtEpochMillis,
+            workId = record.workId,
+        )
+    }
+}
+
+internal suspend fun recoverRunningProblemOrganizationWorks(
+    pageSize: Int,
+    readPage: suspend (
+        limit: Int,
+        afterLeaseExpiresAtEpochMillis: Long?,
+        afterUpdatedAtEpochMillis: Long?,
+        afterWorkId: String?,
+    ) -> List<ProblemOrganizationWorkRecord>,
+    enqueue: (ProblemOrganizationWorkRecord) -> Unit,
+) {
+    require(pageSize in 1..100) { "pageSize must be between 1 and 100" }
+    var cursor: ProblemOrganizationWorkRecoveryCursor? = null
+    val recoveredStates =
+        linkedMapOf<Pair<String, Long>, ProblemOrganizationWorkRecord>()
+    do {
+        val page = readPage(
+            pageSize,
+            cursor?.leaseExpiresAtEpochMillis,
+            cursor?.updatedAtEpochMillis,
+            cursor?.workId,
+        )
+        check(page.size <= pageSize) { "Running recovery page exceeds its requested limit" }
+        page.forEach { record ->
+            val nextCursor = ProblemOrganizationWorkRecoveryCursor.from(record)
+            check(cursor?.let { previousCursor -> nextCursor > previousCursor } != false) {
+                "Running recovery pages must use stable keyset order"
+            }
+            recoveredStates.putIfAbsent(record.workId to record.stateVersion, record)
+            cursor = nextCursor
+        }
+    } while (page.size == pageSize)
+    recoveredStates.values.forEach(enqueue)
+}

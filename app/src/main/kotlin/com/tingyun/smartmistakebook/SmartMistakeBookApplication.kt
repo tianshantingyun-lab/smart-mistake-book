@@ -167,9 +167,11 @@ class SmartMistakeBookApplication : Application(), Configuration.Provider {
     private fun startProblemOrganizationWorkScheduling() {
         applicationScope.launch {
             try {
-                database.readRunningProblemOrganizationWorks(
-                    limit = ORGANIZATION_RUNNING_RECOVERY_LIMIT,
-                ).forEach(problemOrganizationWorkScheduler::enqueueRunningRecovery)
+                recoverRunningProblemOrganizationWorks(
+                    pageSize = ORGANIZATION_RUNNING_RECOVERY_PAGE_SIZE,
+                    readPage = database::readRunningProblemOrganizationWorks,
+                    enqueue = problemOrganizationWorkScheduler::enqueueRunningRecovery,
+                )
                 val scheduledVersions = mutableMapOf<String, Long>()
                 database.observeSchedulableProblemOrganizationWorks().collect { works ->
                     scheduledVersions.keys.retainAll(works.mapTo(hashSetOf()) { it.workId })
@@ -243,6 +245,6 @@ class SmartMistakeBookApplication : Application(), Configuration.Provider {
     }
 
     private companion object {
-        const val ORGANIZATION_RUNNING_RECOVERY_LIMIT = 100
+        const val ORGANIZATION_RUNNING_RECOVERY_PAGE_SIZE = 100
     }
 }

@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.feature.library
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -20,9 +21,13 @@ import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.MistakeSourceSet
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationConfirmation
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationDurableStatus
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationOutcome
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationPreparation
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
+import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ClassificationDimension
 import com.tingyun.smartmistakebook.core.model.ContentBlock
@@ -45,11 +50,18 @@ import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationPlan
 import com.tingyun.smartmistakebook.core.model.ProblemRelationKind
 import com.tingyun.smartmistakebook.core.model.ProblemStepKnowledgeAttribution
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationV3Input
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
+import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
+import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -66,6 +78,234 @@ import org.junit.runner.RunWith
 class MistakeOrganizationInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Test
+    fun durableReauthorizationUsesTheExactWorkAndNeverResumesTheLegacyRequest() {
+        val pending = ProblemOrganizationReauthorizationPreparation(
+            key = KEY,
+            workId = "organization-work-exact",
+            expectedStateVersion = 7,
+            requiresStudentConfirmation = true,
+        )
+        val organization = FakeOrganizationRepository(reauthorization = pending)
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = readyState(),
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = FakeModelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        waitForTag("mistake_organization_reauthorization")
+        composeRule.onNodeWithText(
+            "本次题图、整理后的题面和相关知识资料会交给测试模型，用于保存后继续整理；" +
+                "不会发送其他题目或学习记录。",
+        ).assertExists()
+        composeRule.onNodeWithText("同科目题面", substring = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("mistake_organization_reauthorize").performClick()
+        waitForTag("mistake_organization_running")
+
+        assertEquals(pending, organization.reauthorizedPreparation)
+        assertEquals(0, organization.prepareCallCount)
+    }
+
+    @Test
+    fun switchingProblemCancelsInFlightDurableReauthorization() {
+        val nextKey = MistakeRevisionKey("entry-2", "problem-2", "revision-2")
+        val firstPending = ProblemOrganizationReauthorizationPreparation(
+            key = KEY,
+            workId = "organization-work-first",
+            expectedStateVersion = 7,
+            requiresStudentConfirmation = true,
+        )
+        val nextPending = ProblemOrganizationReauthorizationPreparation(
+            key = nextKey,
+            workId = "organization-work-next",
+            expectedStateVersion = 3,
+            requiresStudentConfirmation = true,
+        )
+        val reauthorizationStarted = CompletableDeferred<Unit>()
+        val reauthorizationCancelled = CompletableDeferred<Unit>()
+        val organization = FakeOrganizationRepository(
+            reauthorizationByKey = mapOf(KEY to firstPending, nextKey to nextPending),
+            onReauthorize = { preparation ->
+                check(preparation.key == KEY)
+                reauthorizationStarted.complete(Unit)
+                try {
+                    awaitCancellation()
+                } finally {
+                    reauthorizationCancelled.complete(Unit)
+                }
+            },
+        )
+        val detailState = mutableStateOf(readyState())
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = detailState.value,
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = FakeModelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        waitForTag("mistake_organization_reauthorization")
+        composeRule.onNodeWithTag("mistake_organization_reauthorize").performClick()
+        composeRule.waitUntil(timeoutMillis = 20_000) { reauthorizationStarted.isCompleted }
+        composeRule.runOnIdle { detailState.value = readyState(nextKey) }
+        composeRule.waitUntil(timeoutMillis = 20_000) {
+            nextKey in organization.prepareReauthorizationKeys
+        }
+        composeRule.waitUntil(timeoutMillis = 20_000) { reauthorizationCancelled.isCompleted }
+
+        waitForTag("mistake_organization_reauthorization")
+        composeRule.onNodeWithTag("mistake_organization_message").assertDoesNotExist()
+    }
+
+    @Test
+    fun providerChangeBeforeApprovalRequiresTheStudentToConfirmAgain() {
+        val pending = ProblemOrganizationReauthorizationPreparation(
+            key = KEY,
+            workId = "organization-work-provider-change",
+            expectedStateVersion = 9,
+            requiresStudentConfirmation = true,
+        )
+        val organization = FakeOrganizationRepository(reauthorization = pending)
+        val modelTasks = ChangingCapabilityModelTasks()
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = readyState(),
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = modelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        waitForTag("mistake_organization_reauthorization")
+        composeRule.onNodeWithTag("mistake_organization_reauthorize").performClick()
+        waitForTag("mistake_organization_message")
+
+        composeRule.onNodeWithText("模型配置已变化，请重新确认").assertExists()
+        assertNull(organization.reauthorizedPreparation)
+    }
+
+    @Test
+    fun durableLookupFailureNeverFallsBackToLegacyOrganization() {
+        val organization = FakeOrganizationRepository(reauthorizationFailure = true)
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = readyState(),
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = StrictDurableModelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        waitForTag("mistake_organization_reauthorization_retry")
+
+        composeRule.onNodeWithText("暂时无法读取整理进度").assertExists()
+        assertEquals(0, organization.prepareCallCount)
+    }
+
+    @Test
+    fun durableActiveOccurrenceNeverFallsBackToLegacyOrganization() {
+        val active = ProblemOrganizationReauthorizationPreparation(
+            key = KEY,
+            workId = "organization-work-active",
+            expectedStateVersion = 11,
+            requiresStudentConfirmation = false,
+            durableStatus = ProblemOrganizationDurableStatus.ACTIVE,
+        )
+        val organization = FakeOrganizationRepository(reauthorization = active)
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = readyState(),
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = StrictDurableModelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        waitForTag("mistake_organization_running")
+
+        assertEquals(0, organization.prepareCallCount)
+    }
+
+    @Test
+    fun durableTerminalOccurrenceNeverFallsBackToLegacyOrganization() {
+        val terminal = ProblemOrganizationReauthorizationPreparation(
+            key = KEY,
+            workId = "organization-work-terminal",
+            expectedStateVersion = 12,
+            requiresStudentConfirmation = false,
+            durableStatus = ProblemOrganizationDurableStatus.TERMINAL,
+        )
+        val organization = FakeOrganizationRepository(reauthorization = terminal)
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = readyState(),
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = StrictDurableModelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        composeRule.waitUntil(timeoutMillis = 20_000) {
+            organization.prepareReauthorizationCallCount >= 1
+        }
+
+        assertEquals(0, organization.prepareCallCount)
+        composeRule.onNodeWithTag("mistake_organization_consent").assertDoesNotExist()
+    }
+
+    @Test
+    fun pendingAndRunningV3SnapshotsNeverEnterTheLegacyOrganizationPath() {
+        val organization = FakeOrganizationRepository()
+        val modelTasks = DurableV3ModelTasks(v3Snapshot(ModelTaskStatus.WAITING_FOR_MODEL))
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                MistakeDetailContent(
+                    state = readyState(),
+                    onBack = {},
+                    onExport = {},
+                    organizationRepository = organization,
+                    modelTasks = modelTasks,
+                    profile = StudyProfileOverview(),
+                )
+            }
+        }
+
+        waitForTag("mistake_organization_running")
+        composeRule.runOnIdle { modelTasks.update(v3Snapshot(ModelTaskStatus.RUNNING)) }
+        waitForTag("mistake_organization_running")
+
+        assertEquals(0, organization.prepareCallCount)
+        assertEquals(0, modelTasks.executeCallCount)
+    }
 
     @Test
     fun studentSeesExactDisclosureAndCanLeaveWithoutSending() {
@@ -487,12 +727,12 @@ class MistakeOrganizationInstrumentedTest {
         )
     }
 
-    private fun readyState() = MistakeDetailState.Ready(
+    private fun readyState(key: MistakeRevisionKey = KEY) = MistakeDetailState.Ready(
         detail = MistakeDetail(
             identity = MistakeDetailIdentity(
-                errorBookEntryId = KEY.entryId,
-                problemId = KEY.problemId,
-                problemRevisionId = KEY.problemRevisionId,
+                errorBookEntryId = key.entryId,
+                problemId = key.problemId,
+                problemRevisionId = key.problemRevisionId,
                 revisionNumber = 1,
                 title = "函数最值",
                 subject = "MATH",
@@ -510,12 +750,43 @@ class MistakeOrganizationInstrumentedTest {
         private val automaticApplied: Boolean = true,
         private var applyFailuresBeforeSuccess: Int = 0,
         private val relationsAfterApply: List<ConfirmedProblemRelation> = emptyList(),
+        private val reauthorization: ProblemOrganizationReauthorizationPreparation? = null,
+        private val reauthorizationFailure: Boolean = false,
+        private val reauthorizationByKey:
+            Map<MistakeRevisionKey, ProblemOrganizationReauthorizationPreparation> = emptyMap(),
+        private val onReauthorize:
+            (suspend (ProblemOrganizationReauthorizationPreparation) ->
+            ProblemOrganizationReauthorizationOutcome)? = null,
     ) : MistakeOrganizationRepository {
         var lastSelection: ProblemOrganizationSelection? = null
         var appliedRequestId: String? = null
+        var reauthorizedPreparation: ProblemOrganizationReauthorizationPreparation? = null
         var applyCallCount: Int = 0
         var prepareCallCount: Int = 0
+        var prepareReauthorizationCallCount: Int = 0
+        val prepareReauthorizationKeys = mutableListOf<MistakeRevisionKey>()
         private val confirmed = MutableStateFlow(ConfirmedMistakeOrganization())
+
+        override suspend fun prepareReauthorization(
+            key: MistakeRevisionKey,
+            provider: ProviderCapabilitySnapshot,
+            occurredAtEpochMillis: Long,
+        ): ProblemOrganizationReauthorizationPreparation? {
+            prepareReauthorizationCallCount += 1
+            prepareReauthorizationKeys += key
+            if (reauthorizationFailure) error("durable lookup failed")
+            return reauthorizationByKey[key] ?: reauthorization
+        }
+
+        override suspend fun reauthorize(
+            preparation: ProblemOrganizationReauthorizationPreparation,
+            provider: ProviderCapabilitySnapshot,
+            approvedAtEpochMillis: Long,
+        ): ProblemOrganizationReauthorizationOutcome {
+            reauthorizedPreparation = preparation
+            return onReauthorize?.invoke(preparation)
+                ?: ProblemOrganizationReauthorizationOutcome.REAUTHORIZED
+        }
 
         override suspend fun prepare(
             key: MistakeRevisionKey,
@@ -637,6 +908,59 @@ class MistakeOrganizationInstrumentedTest {
         }
     }
 
+    private inner class DurableV3ModelTasks(initialTask: ModelTaskSnapshot) : ModelTaskRepository {
+        private val persistedTasks = MutableStateFlow(listOf(initialTask))
+        var executeCallCount: Int = 0
+            private set
+
+        override suspend fun capabilities() = PROVIDER
+
+        override fun observe(requestId: String): Flow<ModelTaskSnapshot?> =
+            flowOf(persistedTasks.value.singleOrNull { it.request.requestId == requestId })
+
+        override fun observeBySubject(
+            subjectId: String,
+            kind: ModelTaskKind,
+        ): Flow<List<ModelTaskSnapshot>> = persistedTasks
+
+        override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> {
+            executeCallCount += 1
+            error("A durable v3 task must not enter the legacy execution path")
+        }
+
+        fun update(snapshot: ModelTaskSnapshot) {
+            persistedTasks.value = listOf(snapshot)
+        }
+    }
+
+    private class ChangingCapabilityModelTasks : ModelTaskRepository {
+        private var capabilityReads = 0
+
+        override suspend fun capabilities(): ProviderCapabilitySnapshot {
+            capabilityReads += 1
+            return if (capabilityReads == 1) {
+                PROVIDER
+            } else {
+                PROVIDER.copy(
+                    providerDisplayName = "更新后的测试模型",
+                    modelId = "model-v2",
+                    providerConfigurationVersion = "config-v2",
+                )
+            }
+        }
+
+        override fun observe(requestId: String): Flow<ModelTaskSnapshot?> = flowOf(null)
+
+        override fun observeBySubject(
+            subjectId: String,
+            kind: ModelTaskKind,
+        ): Flow<List<ModelTaskSnapshot>> =
+            error("Durable reauthorization must not inspect legacy organization tasks")
+
+        override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
+            error("Durable reauthorization must not execute a legacy request")
+    }
+
     private fun organizationRequest(
         requestId: String,
         occurredAtEpochMillis: Long,
@@ -692,6 +1016,60 @@ class MistakeOrganizationInstrumentedTest {
         createdAtEpochMillis = request.occurredAtEpochMillis,
         updatedAtEpochMillis = request.occurredAtEpochMillis,
     )
+
+    private fun v3Snapshot(status: ModelTaskStatus): ModelTaskSnapshot {
+        val request = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION,
+            requestId = "organization-v3-existing",
+            input = ProblemOrganizationV3Input(
+                problemId = KEY.problemId,
+                problemRevisionId = KEY.problemRevisionId,
+                practiceUnitId = "practice-1",
+                subject = SubjectKind.MATH,
+                capturedDocument = CapturedQuestionDocument(
+                    document = document("question-v3", "求函数最值。"),
+                    blockEvidence = listOf(
+                        QuestionBlockEvidence(
+                            blockId = "question-v3-block",
+                            sourceAssetId = "asset-v3",
+                            writingLayer = WritingLayer.PRINTED,
+                            provenance = QuestionBlockProvenance.IMPORTED_STRUCTURE,
+                            reviewStatus = QuestionBlockReviewStatus.LOCAL_POLICY_ACCEPTED,
+                            producerVersion = "test-v1",
+                        ),
+                    ),
+                ),
+                sourceAssets = listOf(
+                    CaptureSourceAssetRef(
+                        assetId = "asset-v3",
+                        sha256 = "a".repeat(64),
+                        width = 1_200,
+                        height = 1_600,
+                        pageIndex = 0,
+                    ),
+                ),
+                relationCandidates = emptyList(),
+            ),
+            occurredAtEpochMillis = 50_000L,
+        )
+        return ModelTaskSnapshot(
+            taskId = "task-${request.requestId}",
+            request = request,
+            requestFingerprint = ModelTaskFingerprint.of(request),
+            status = status,
+            stateVersion = if (status == ModelTaskStatus.RUNNING) 1 else 0,
+            stage = if (status == ModelTaskStatus.RUNNING) {
+                ModelTaskStage.READING_IMAGE
+            } else {
+                ModelTaskStage.WAITING
+            },
+            userMessage = "正在整理",
+            attemptCount = if (status == ModelTaskStatus.RUNNING) 1 else 0,
+            createdAtEpochMillis = request.occurredAtEpochMillis,
+            updatedAtEpochMillis = request.occurredAtEpochMillis +
+                if (status == ModelTaskStatus.RUNNING) 1 else 0,
+        )
+    }
 
     private fun retryableSnapshot(request: ModelTaskRequest) = pendingSnapshot(request).copy(
         status = ModelTaskStatus.RETRYABLE_FAILURE,
@@ -805,6 +1183,21 @@ class MistakeOrganizationInstrumentedTest {
 
         override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
             error("The consent test must not execute a model request")
+    }
+
+    private object StrictDurableModelTasks : ModelTaskRepository {
+        override suspend fun capabilities() = PROVIDER
+
+        override fun observe(requestId: String): Flow<ModelTaskSnapshot?> = flowOf(null)
+
+        override fun observeBySubject(
+            subjectId: String,
+            kind: ModelTaskKind,
+        ): Flow<List<ModelTaskSnapshot>> =
+            error("A failed durable lookup must not inspect legacy organization tasks")
+
+        override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
+            error("A failed durable lookup must not execute a legacy organization request")
     }
 
     private companion object {

@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.data.mistake
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.database.AuthorizeProblemOrganizationWorkCommand
 import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CreateProblemDraftCommand
@@ -21,6 +22,9 @@ import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationRelationKey
+import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationDurableStatus
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationOutcome
 import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
@@ -44,6 +48,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ProblemClassificationSuggestion
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
+import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrantCodec
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationPlan
@@ -158,6 +163,99 @@ class MistakeOrganizationRepositoryInstrumentedTest {
         val manifest = checkNotNull(preparation.request.egressManifest)
         assertFalse(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES in manifest.disclosedData)
         assertTrue(ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE in manifest.disclosedData)
+    }
+
+    @Test
+    fun waitingWorkReauthorizationRebuildsTheExactCommittedAssetScope() = runBlocking {
+        commitPrivacyMistake(
+            suffix = "reauthorize",
+            title = "待继续整理的题",
+            markdown = "只允许发送这一道题。",
+            committedAtEpochMillis = 6_000,
+        )
+        val key = MistakeRevisionKey(
+            entryId = "entry-reauthorize",
+            problemId = "problem-reauthorize",
+            problemRevisionId = "revision-reauthorize",
+        )
+        val now = System.currentTimeMillis()
+        val pending = checkNotNull(
+            repository.prepareReauthorization(
+                key = key,
+                provider = V3_PROVIDER,
+                occurredAtEpochMillis = now,
+            ),
+        )
+
+        assertTrue(pending.requiresStudentConfirmation)
+        assertEquals(
+            ProblemOrganizationReauthorizationOutcome.REAUTHORIZED,
+            repository.reauthorize(
+                preparation = pending,
+                provider = V3_PROVIDER,
+                approvedAtEpochMillis = now,
+            ),
+        )
+
+        val work = checkNotNull(database.readProblemOrganizationWork(pending.workId))
+        val grant = checkNotNull(
+            ProblemOrganizationAuthorizationGrantCodec.decodeOrNull(
+                work.authorizationGrantSnapshot,
+            ),
+        )
+        assertEquals(pending.expectedStateVersion + 1, work.stateVersion)
+        assertEquals(null, work.requestId)
+        assertEquals(null, work.requestSnapshot)
+        assertEquals("draft-reauthorize", grant.sourceDraftId)
+        assertEquals(
+            listOf(
+                ModelEgressAssetGrant(
+                    assetId = "asset-reauthorize",
+                    sha256 = privacyAssetHash("reauthorize"),
+                    byteSize = 4_096,
+                    width = 1_200,
+                    height = 1_600,
+                ),
+            ),
+            grant.assets,
+        )
+        assertFalse(
+            checkNotNull(
+                repository.prepareReauthorization(
+                    key = key,
+                    provider = V3_PROVIDER,
+                    occurredAtEpochMillis = now + 1,
+                ),
+            ).requiresStudentConfirmation,
+        )
+        val request = repository.prepareCommittedWork(
+            workId = work.workId,
+            provider = V3_PROVIDER,
+            authorization = grant,
+            requestVersion = work.stateVersion,
+            occurredAtEpochMillis = now + 1,
+        ).request
+        assertTrue(
+            database.authorizeProblemOrganizationWork(
+                AuthorizeProblemOrganizationWorkCommand(
+                    workId = work.workId,
+                    expectedStateVersion = work.stateVersion,
+                    requestId = request.requestId,
+                    requestSnapshot = ModelTaskCodec.encodeRequest(request),
+                    notBeforeEpochMillis = now + 1,
+                    authorizedAtEpochMillis = now + 1,
+                ),
+            ),
+        )
+        val active = checkNotNull(
+            repository.prepareReauthorization(
+                key = key,
+                provider = V3_PROVIDER,
+                occurredAtEpochMillis = now + 2,
+            ),
+        )
+        assertEquals(ProblemOrganizationDurableStatus.ACTIVE, active.durableStatus)
+        assertFalse(active.requiresStudentConfirmation)
     }
 
     @Test

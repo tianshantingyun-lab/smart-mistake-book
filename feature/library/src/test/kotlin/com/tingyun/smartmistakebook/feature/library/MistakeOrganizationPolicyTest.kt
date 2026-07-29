@@ -14,6 +14,15 @@ import org.junit.Test
 
 class MistakeOrganizationPolicyTest {
     @Test
+    fun durableReauthorizationDisclosureNamesOnlyTheExactQuestionScope() {
+        assertEquals(
+            "本次题图、整理后的题面和相关知识资料会交给测试模型，用于保存后继续整理；" +
+                "不会发送其他题目或学习记录。",
+            problemOrganizationReauthorizationDisclosure("测试模型"),
+        )
+    }
+
+    @Test
     fun correctionCanSaveWithOnlyUserAddedChapterAndKnowledge() {
         assertTrue(
             canSaveOrganizationCorrection(
