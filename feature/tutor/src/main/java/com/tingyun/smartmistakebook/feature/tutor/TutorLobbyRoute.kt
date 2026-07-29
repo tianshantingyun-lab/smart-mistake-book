@@ -24,6 +24,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
+import com.tingyun.smartmistakebook.core.model.TutorConversation
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -60,6 +63,7 @@ import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun TutorLobbyRoute(
@@ -70,6 +74,8 @@ internal fun TutorLobbyRoute(
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
     modelTasks: ModelTaskRepository,
+    learningMemory: TutorLearningMemoryRepository,
+    learnerScopeId: String,
     catalogEntries: List<StudyCatalogEntry>,
     profile: StudyProfileOverview,
     explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
@@ -77,7 +83,131 @@ internal fun TutorLobbyRoute(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val activeStreamOwner = remember(modelTasks, scope) {
+    val controller = remember(learningMemory, learnerScopeId) {
+        TutorLobbyConversationController(learningMemory, learnerScopeId)
+    }
+    var conversationState by remember(controller) {
+        mutableStateOf<TutorLobbyConversationState>(TutorLobbyConversationState.Loading)
+    }
+    var observedMode by remember { mutableStateOf(explanationMode) }
+    var modeVersion by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(explanationMode) {
+        if (observedMode != explanationMode) {
+            observedMode = explanationMode
+            modeVersion += 1
+        }
+    }
+    LaunchedEffect(controller) {
+        conversationState = try {
+            TutorLobbyConversationState.Ready(controller.loadInitialConversation())
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            TutorLobbyConversationState.Failed
+        }
+    }
+    when (val state = conversationState) {
+        TutorLobbyConversationState.Loading -> TutorLobbyConversationStatus(
+            message = "正在打开对话…",
+            modifier = modifier,
+        )
+
+        TutorLobbyConversationState.Failed -> TutorLobbyConversationStatus(
+            message = "暂时无法打开对话，请重试。",
+            onRetry = {
+                scope.launch {
+                    conversationState = try {
+                        TutorLobbyConversationState.Ready(controller.loadInitialConversation())
+                    } catch (_: Exception) {
+                        TutorLobbyConversationState.Failed
+                    }
+                }
+            },
+            modifier = modifier,
+        )
+
+        is TutorLobbyConversationState.Ready -> TutorLobbyConversationRoute(
+            onCapture = onCapture,
+            onGallery = onGallery,
+            onChooseExisting = onChooseExisting,
+            onOpenCapabilitySettings = onOpenCapabilitySettings,
+            onOpenMistakeNotebook = onOpenMistakeNotebook,
+            onOpenProfile = onOpenProfile,
+            modelTasks = modelTasks,
+            controller = controller,
+            conversation = state.conversation,
+            catalogEntries = catalogEntries,
+            profile = profile,
+            explanationMode = explanationMode,
+            modeVersion = modeVersion,
+            onExplanationModeChange = onExplanationModeChange,
+            onStartNewConversation = {
+                val currentConversation = state.conversation
+                scope.launch {
+                    conversationState = TutorLobbyConversationState.Loading
+                    conversationState = try {
+                        TutorLobbyConversationState.Ready(
+                            controller.startNewConversation(currentConversation),
+                        )
+                    } catch (_: Exception) {
+                        TutorLobbyConversationState.Failed
+                    }
+                }
+            },
+            modifier = modifier,
+        )
+    }
+}
+
+private sealed interface TutorLobbyConversationState {
+    data object Loading : TutorLobbyConversationState
+    data object Failed : TutorLobbyConversationState
+    data class Ready(val conversation: TutorConversation) : TutorLobbyConversationState
+}
+
+@Composable
+private fun TutorLobbyConversationStatus(
+    message: String,
+    onRetry: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    RootPageLazyColumn(modifier = modifier.testTag("tutor_lobby")) {
+        item {
+            TutorTopBar(onOpenCapabilitySettings = {})
+            PaperDivider(Modifier.padding(top = 8.dp, bottom = 14.dp))
+            TutorPrompt(text = message)
+            onRetry?.let { retry ->
+                OutlineActionChip(
+                    text = "重试",
+                    onClick = retry,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TutorLobbyConversationRoute(
+    onCapture: () -> Unit,
+    onGallery: () -> Unit = onCapture,
+    onChooseExisting: () -> Unit,
+    onOpenCapabilitySettings: () -> Unit,
+    onOpenMistakeNotebook: () -> Unit,
+    onOpenProfile: () -> Unit,
+    modelTasks: ModelTaskRepository,
+    controller: TutorLobbyConversationController,
+    conversation: TutorConversation,
+    catalogEntries: List<StudyCatalogEntry>,
+    profile: StudyProfileOverview,
+    explanationMode: TutorExplanationMode,
+    modeVersion: Long,
+    onExplanationModeChange: (TutorExplanationMode) -> Unit,
+    onStartNewConversation: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val scope = rememberCoroutineScope()
+    val activeStreamOwner = remember(modelTasks, scope, conversation.conversationId) {
         TutorActiveStreamOwner(
             scope = scope,
             initialMode = explanationMode,
@@ -92,9 +222,9 @@ internal fun TutorLobbyRoute(
     }
     val activeStreamState by activeStreamOwner.state.collectAsState()
     val activeMessage = activeStreamState.active
-    val persistedTasks by remember(modelTasks) {
+    val persistedTasks by remember(modelTasks, conversation.conversationId) {
         modelTasks.observeRecentBySubject(
-            TUTOR_LOBBY_CONVERSATION_ID,
+            conversation.conversationId,
             ModelTaskKind.TUTOR_LOBBY,
             MAX_PERSISTED_TASKS,
         )
@@ -102,21 +232,23 @@ internal fun TutorLobbyRoute(
     val conversationTasks = remember(
         persistedTasks,
         activeStreamState.supersededRequestIds,
+        conversation.conversationId,
     ) {
         latestTutorLobbyConversationTasks(
             persistedTasks.filterNot { task ->
                 task.request.requestId in activeStreamState.supersededRequestIds
             },
+            conversation.conversationId,
         )
     }
     val visibleTasks = remember(conversationTasks) { conversationTasks.takeLast(MAX_VISIBLE_MESSAGES) }
-    var provider by remember { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
-    var providerLoadFailed by rememberSaveable { mutableStateOf(false) }
-    var draft by rememberSaveable { mutableStateOf("") }
-    var pendingDisclosureMessage by rememberSaveable { mutableStateOf<String?>(null) }
-    var sendError by rememberSaveable { mutableStateOf<String?>(null) }
-    var draftToClearOnDurableStart by rememberSaveable { mutableStateOf<String?>(null) }
-    var disclosureToClearOnDurableStart by rememberSaveable { mutableStateOf<String?>(null) }
+    var provider by remember(conversation.conversationId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
+    var providerLoadFailed by rememberSaveable(conversation.conversationId) { mutableStateOf(false) }
+    var draft by rememberSaveable(conversation.conversationId) { mutableStateOf("") }
+    var pendingDisclosureMessage by rememberSaveable(conversation.conversationId) { mutableStateOf<String?>(null) }
+    var sendError by rememberSaveable(conversation.conversationId) { mutableStateOf<String?>(null) }
+    var draftToClearOnDurableStart by rememberSaveable(conversation.conversationId) { mutableStateOf<String?>(null) }
+    var disclosureToClearOnDurableStart by rememberSaveable(conversation.conversationId) { mutableStateOf<String?>(null) }
     val hasActiveTask = activeMessage?.activityVisible == true || conversationTasks.any { task ->
         task.status in setOf(
             ModelTaskStatus.WAITING_FOR_MODEL,
@@ -155,7 +287,7 @@ internal fun TutorLobbyRoute(
         disclosureToClearOnDurableStart = null
     }
 
-    LaunchedEffect(modelTasks) {
+    LaunchedEffect(modelTasks, conversation.conversationId) {
         try {
             provider = modelTasks.capabilities()
             providerLoadFailed = false
@@ -177,26 +309,32 @@ internal fun TutorLobbyRoute(
             return
         }
         val tasksForRequest = conversationTasks
+        val conversationForRequest = conversation
+        val turnIdentity = controller.newTurnIdentity()
+        val modeForTurn = explanationMode
+        val modeVersionForTurn = modeVersion
         draftToClearOnDurableStart = draft
         disclosureToClearOnDurableStart =
             pendingDisclosureMessage?.takeIf { it == message }
         sendError = null
         activeStreamOwner.submit(studentMessage = message) {
             val occurredAt = System.currentTimeMillis()
-            val nextOrdinal = tasksForRequest
-                .mapNotNull { task ->
-                    (task.request.input as? TutorLobbyInput)?.messageOrdinal
-                }
-                .maxOrNull()
-                ?.plus(1)
-                ?: 1
+            val allocated = controller.allocateTurn(
+                conversation = conversationForRequest,
+                message = message,
+                mode = modeForTurn,
+                modeVersion = modeVersionForTurn,
+                identity = turnIdentity,
+                occurredAtEpochMillis = occurredAt,
+            )
             val request = buildTutorLobbyRequest(
                 provider = currentProvider,
-                messageOrdinal = nextOrdinal,
+                messageOrdinal = allocated.receipt.turnOrdinal,
                 studentMessage = message,
                 priorMessages = tasksForRequest.toLobbyHistory(),
                 occurredAtEpochMillis = occurredAt,
                 approvedAtEpochMillis = approvedAtEpochMillis,
+                conversationId = allocated.receipt.conversationId,
             )
             TutorPreparedStream(request.requestId) { identity ->
                 modelTasks.executeTutorStream(request, identity)
@@ -223,6 +361,7 @@ internal fun TutorLobbyRoute(
                 priorMessages = input.priorMessages,
                 occurredAtEpochMillis = occurredAt,
                 attempt = nextAttempt,
+                conversationId = input.conversationId,
             )
         } else {
             task.request
@@ -311,6 +450,16 @@ internal fun TutorLobbyRoute(
         ) {
             item(key = "lobby-header") {
                 TutorTopBar(onOpenCapabilitySettings = onOpenCapabilitySettings)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    OutlineActionChip(
+                        text = "新对话",
+                        onClick = onStartNewConversation,
+                        modifier = Modifier.testTag("tutor_lobby_new_conversation"),
+                    )
+                }
                 PaperDivider(Modifier.padding(top = 8.dp, bottom = 14.dp))
             }
             if (visibleTasks.isEmpty()) {

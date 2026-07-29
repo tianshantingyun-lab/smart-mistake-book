@@ -19,8 +19,11 @@ internal const val TUTOR_LOBBY_PROMPT_POLICY_VERSION = ModelPromptPolicyVersions
 
 internal fun latestTutorLobbyConversationTasks(
     tasks: List<ModelTaskSnapshot>,
+    conversationId: String = TUTOR_LOBBY_CONVERSATION_ID,
 ): List<ModelTaskSnapshot> = tasks
-    .filter { it.request.input is TutorLobbyInput }
+    .filter { task ->
+        (task.request.input as? TutorLobbyInput)?.conversationId == conversationId
+    }
     .groupBy { (it.request.input as TutorLobbyInput).messageOrdinal }
     .values
     .map { attempts ->
@@ -61,13 +64,14 @@ internal fun buildTutorLobbyRequest(
     occurredAtEpochMillis: Long,
     approvedAtEpochMillis: Long = occurredAtEpochMillis,
     attempt: Int = 0,
+    conversationId: String = TUTOR_LOBBY_CONVERSATION_ID,
 ): ModelTaskRequest {
     require(provider.supports(ModelTaskKind.TUTOR_LOBBY)) {
         "The current provider does not support tutor lobby messages"
     }
     require(attempt >= 0) { "Tutor lobby attempt must not be negative" }
     val input = TutorLobbyInput(
-        conversationId = TUTOR_LOBBY_CONVERSATION_ID,
+        conversationId = conversationId,
         messageOrdinal = messageOrdinal,
         studentMessage = studentMessage,
         priorMessages = priorMessages.takeLast(TutorLobbyInput.MAX_PRIOR_MESSAGES),

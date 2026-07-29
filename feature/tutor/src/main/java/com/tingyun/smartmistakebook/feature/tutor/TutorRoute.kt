@@ -68,6 +68,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityDecision
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityBlockReason
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityGate
+import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
@@ -112,6 +113,8 @@ fun TutorRoute(
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
     modelTasks: ModelTaskRepository,
+    learningMemory: TutorLearningMemoryRepository,
+    learnerScopeId: String = DEFAULT_TUTOR_LEARNER_SCOPE_ID,
     catalogEntries: List<StudyCatalogEntry>,
     capabilities: AppCapabilitySnapshot,
     explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
@@ -127,6 +130,8 @@ fun TutorRoute(
             onOpenMistakeNotebook = onOpenMistakeNotebook,
             onOpenProfile = onOpenProfile,
             modelTasks = modelTasks,
+            learningMemory = learningMemory,
+            learnerScopeId = learnerScopeId,
             catalogEntries = catalogEntries,
             profile = profile,
             explanationMode = explanationMode,

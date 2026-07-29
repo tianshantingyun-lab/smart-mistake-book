@@ -373,6 +373,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
                     onOpenProfile = { navController.navigate(Routes.Profile) },
                     modelTasks = application.modelTaskRepository,
+                    learningMemory = application.tutorLearningMemoryRepository,
                     catalogEntries = experience.catalog,
                     explanationMode = tutorExplanationMode,
                     onExplanationModeChange = setTutorExplanationMode,

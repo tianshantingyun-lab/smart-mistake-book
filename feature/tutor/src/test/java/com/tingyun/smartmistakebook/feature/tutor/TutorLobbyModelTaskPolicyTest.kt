@@ -58,6 +58,30 @@ class TutorLobbyModelTaskPolicyTest {
     }
 
     @Test
+    fun dynamicConversationIdScopesInputManifestHashAndRequestIdentity() {
+        val first = buildTutorLobbyRequest(
+            provider = provider(ModelExecutionLocation.EXTERNAL_PROVIDER),
+            conversationId = "tutor-lobby:first",
+            messageOrdinal = 1,
+            studentMessage = "同一条消息",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = 2_000,
+        )
+        val second = buildTutorLobbyRequest(
+            provider = provider(ModelExecutionLocation.EXTERNAL_PROVIDER),
+            conversationId = "tutor-lobby:second",
+            messageOrdinal = 1,
+            studentMessage = "同一条消息",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = 2_000,
+        )
+
+        assertEquals("tutor-lobby:first", (first.input as TutorLobbyInput).conversationId)
+        assertEquals("tutor-lobby:first", first.egressManifest?.subjectId)
+        assertTrue(first.requestId != second.requestId)
+    }
+
+    @Test
     fun navigationRecoverySelectsTheLatestPendingLobbyTask() {
         val olderPending = lobbyTask(messageOrdinal = 1, status = ModelTaskStatus.QUEUED)
         val latestPending = lobbyTask(messageOrdinal = 2, status = ModelTaskStatus.STREAMING)
@@ -81,6 +105,28 @@ class TutorLobbyModelTaskPolicyTest {
 
         assertTrue(pending.canResumeTutorLobby())
         assertFalse(failed.canResumeTutorLobby())
+    }
+
+    @Test
+    fun routeProjectionDoesNotCarryHistoryOrPendingWorkAcrossConversationIds() {
+        val oldConversation = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.STREAMING,
+            conversationId = "tutor-lobby:old",
+        )
+        val newConversation = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.QUEUED,
+            conversationId = "tutor-lobby:new",
+        )
+
+        val projected = latestTutorLobbyConversationTasks(
+            tasks = listOf(oldConversation, newConversation),
+            conversationId = "tutor-lobby:new",
+        )
+
+        assertEquals(listOf(newConversation.request.requestId), projected.map { it.request.requestId })
+        assertEquals("tutor-lobby:new", (projected.single().request.input as TutorLobbyInput).conversationId)
     }
 
     @Test
@@ -125,6 +171,7 @@ class TutorLobbyModelTaskPolicyTest {
         messageOrdinal: Int,
         status: ModelTaskStatus,
         attempt: Int = 0,
+        conversationId: String = TUTOR_LOBBY_CONVERSATION_ID,
     ): ModelTaskSnapshot {
         val provider = provider(ModelExecutionLocation.LOCAL_NO_EGRESS)
         val request = buildTutorLobbyRequest(
@@ -134,6 +181,7 @@ class TutorLobbyModelTaskPolicyTest {
             priorMessages = emptyList(),
             occurredAtEpochMillis = messageOrdinal.toLong(),
             attempt = attempt,
+            conversationId = conversationId,
         )
         return ModelTaskSnapshot(
             taskId = "task-$messageOrdinal",
