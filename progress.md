@@ -4273,3 +4273,30 @@
 
 - B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3736 行，仍待继续拆分；`CaptureScreen.kt`（1960 行）、`CurrentTutorSessionHostCoordinator.kt`（1942 行）、`RoomStudyDatabase.kt`（1853 行）等也在剩余清单。
 - I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-07 实施批次：工作区稳定与 B02 ModelPanel 决策纯函数化
+
+### 已完成
+
+- 稳定 ui-rebuild 工作树：把上个会话遗留的 641 个未提交文件按 docs/tools、core、feature/app 三组整理提交（`2b4883a`、`ff98254`、`1b7e137`），并推送 `codex/ui-rebuild-continuous-response` 到 origin。
+- 验证工作树健康：`:core:data:compileDebugKotlin` 与全工程 `testDebugUnitTest`（215 tasks）通过后才提交；无密钥、无构建产物混入。
+- 按既有 B02 模式继续拆分 `CapturedTutorSessionModelPanel.kt`，把交互/计划判定抽为顶层纯函数并逐个带单测：
+  - `tutorEvidenceCancellation`、`tutorPendingTutorResponseMessage`（可见选择题身份解析，含过期/越界拒绝）；
+  - `tutorCancellationIsConfirmed`、`tutorPendingInteractionIsCurrentlyBlocked`；
+  - `tutorRecoverySourceMatchesRuntime`（恢复权威与运行时身份精确匹配）；
+  - `tutorPlanAttemptCount`、`tutorPlanApprovedAtOrNull`（首轮一次性授权、外部租约、本地执行回退）。
+- `CapturedTutorSessionModelPanel.kt` 从 3627 行降至 3579 行；`CapturedTutorSessionSupport.kt` 相应增长为纯函数载体。
+- 提交记录：`50f00c0`、`af496c7`、`c78e560`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` | 327/327 通过（UiPolicy 26/26） |
+| 全工程 `testDebugUnitTest` | BUILD SUCCESSFUL |
+| `:feature:tutor:lintDebug` | 通过，0 errors |
+
+### 状态
+
+- B02 继续“部分落实”：`CapturedTutorSessionModelPanel.kt`（3579 行）、`CaptureScreen.kt`（1960 行）、`CurrentTutorSessionHostCoordinator.kt`（1942 行）、`RoomStudyDatabase.kt`（1853 行）仍在剩余清单；本轮仅处理了 ModelPanel 的纯判定函数，剩余 30 余个状态耦合局部函数需后续批次继续。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
