@@ -1,4 +1,10 @@
-package com.tingyun.smartmistakebook.feature.library
+package com.tingyun.smartmistakebook.feature.library
+import com.tingyun.smartmistakebook.core.ui.ErrorWarm
+import com.tingyun.smartmistakebook.core.ui.Ink
+import com.tingyun.smartmistakebook.core.ui.InkMuted
+import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.Jade
+import com.tingyun.smartmistakebook.core.ui.Outline
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -78,8 +84,9 @@ fun LibraryRoute(
     onExportVisible: (List<String>) -> Unit,
     onOpenItem: (String) -> Unit,
     modifier: Modifier = Modifier,
+    viewModelKey: String? = null,
 ) {
-    val libraryViewModel: LibraryViewModel = viewModel()
+    val libraryViewModel: LibraryViewModel = viewModel(key = viewModelKey)
     LaunchedEffect(entries) {
         libraryViewModel.updateCatalog(entries.map(StudyCatalogEntry::toLibraryMistake))
     }
@@ -313,13 +320,13 @@ private fun LibrarySearchField(
         },
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = SmartColors.Jade,
-            unfocusedBorderColor = SmartColors.Outline,
-            focusedTextColor = SmartColors.Ink,
-            unfocusedTextColor = SmartColors.Ink,
-            focusedLeadingIconColor = SmartColors.Jade,
-            unfocusedLeadingIconColor = SmartColors.InkSecondary,
-            cursorColor = SmartColors.Jade,
+            focusedBorderColor = Jade,
+            unfocusedBorderColor = Outline,
+            focusedTextColor = Ink,
+            unfocusedTextColor = Ink,
+            focusedLeadingIconColor = Jade,
+            unfocusedLeadingIconColor = InkSecondary,
+            cursorColor = Jade,
         ),
     )
 }
@@ -331,11 +338,6 @@ private fun LibraryHierarchy(
     onSelectOption: (LibraryFacet, String?) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Text(
-            text = "科目 → 板块/章节 → 知识点 → 掌握程度",
-            color = SmartColors.InkSecondary,
-            style = MaterialTheme.typography.bodySmall,
-        )
         LibraryFacet.entries.forEach { facet ->
             val selected = facet == uiState.activeFacet
             Row(
@@ -355,14 +357,14 @@ private fun LibraryHierarchy(
                 Text(
                     text = facet.label,
                     modifier = Modifier.weight(1f),
-                    color = if (selected) SmartColors.Jade else SmartColors.Ink,
+                    color = if (selected) Jade else Ink,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                 )
                 selectedFacetLabel(facet, uiState.selections)?.let { label ->
                     Text(
                         text = label,
-                        color = SmartColors.InkSecondary,
+                        color = InkSecondary,
                         style = MaterialTheme.typography.labelMedium,
                         maxLines = 1,
                     )
@@ -370,7 +372,7 @@ private fun LibraryHierarchy(
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = SmartColors.InkSecondary,
+                    tint = InkSecondary,
                 )
             }
             if (selected) {
@@ -467,7 +469,7 @@ private fun LibraryItemRow(
             Text(
                 text = mistake.title,
                 style = MaterialTheme.typography.titleMedium,
-                color = SmartColors.Ink,
+                color = Ink,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -476,7 +478,7 @@ private fun LibraryItemRow(
             Text(
                 text = mistake.summary,
                 style = MaterialTheme.typography.bodySmall,
-                color = SmartColors.InkSecondary,
+                color = InkSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -492,19 +494,19 @@ private fun LibraryItemRow(
         Icon(
             imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = "打开 ${mistake.title}",
-            tint = SmartColors.InkSecondary,
+            tint = InkSecondary,
         )
     }
 }
 
 @Composable
 private fun masteryColor(mastery: MasteryState) = when (mastery) {
-    MasteryState.MASTERED -> SmartColors.Jade
-    MasteryState.UNKNOWN -> SmartColors.InkSecondary
+    MasteryState.MASTERED -> Jade
+    MasteryState.UNKNOWN -> InkSecondary
     MasteryState.LEARNING,
     MasteryState.CONFLICTED,
     MasteryState.STALE,
-    -> SmartColors.ErrorWarm
+    -> ErrorWarm
 }
 
 @Composable
@@ -527,13 +529,13 @@ private fun EmptyLibraryResult(
             },
             contentDescription = null,
             modifier = Modifier.size(42.dp),
-            tint = SmartColors.InkMuted,
+            tint = InkMuted,
         )
         Spacer(Modifier.height(10.dp))
         Text(
             text = state.title,
             style = MaterialTheme.typography.titleMedium,
-            color = SmartColors.Ink,
+            color = Ink,
             fontWeight = FontWeight.SemiBold,
         )
         if (state == LibraryEmptyState.FILTERED_EMPTY && canClear) {

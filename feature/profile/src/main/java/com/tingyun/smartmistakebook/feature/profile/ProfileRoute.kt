@@ -95,7 +95,7 @@ fun ProfileRoute(
 
 internal data class ProfileSubjectSummary(
     val subject: SubjectKind,
-    val statuses: List<MasteryStatus>,
+    val status: MasteryStatus,
 )
 
 internal data class ProfileRecentChange(
@@ -110,7 +110,7 @@ internal fun profileSubjectSummaries(
     .map { (subject, summaries) ->
         ProfileSubjectSummary(
             subject = subject,
-            statuses = summaries.map(StudyKnowledgeSummary::status).distinct(),
+            status = summaries.minBy(::profileStatusPriority).status,
         )
     }
     .sortedBy { group ->
@@ -195,7 +195,7 @@ private fun SubjectMasterySection(
 
 @Composable
 private fun SubjectStatusRow(summary: ProfileSubjectSummary) {
-    val statusText = summary.statuses.joinToString("、") { it.studentLabel() }
+    val statusText = summary.status.studentLabel()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,6 +220,15 @@ private fun SubjectStatusRow(summary: ProfileSubjectSummary) {
         )
     }
 }
+
+private fun profileStatusPriority(summary: StudyKnowledgeSummary): Int =
+    when (summary.status) {
+        MasteryStatus.CONFLICTED -> 0
+        MasteryStatus.STALE -> 1
+        MasteryStatus.LEARNING -> 2
+        MasteryStatus.UNKNOWN -> 3
+        MasteryStatus.MASTERED -> 4
+    }
 
 @Composable
 private fun RecentChangesSection(
@@ -326,7 +335,7 @@ private fun WeaknessSummarySection(weaknesses: List<StudyKnowledgeSummary>) {
 }
 
 @Composable
-private fun SettingsSection(
+internal fun SettingsSection(
     onOpenCapability: () -> Unit,
     onOpenDataPrivacy: () -> Unit,
     onOpenReminder: () -> Unit,

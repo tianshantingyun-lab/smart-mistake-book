@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
@@ -80,9 +81,14 @@ internal class CaptureExternalExecutionLaunchGuard {
         }
         val exactManifest = manifest ?: return false
         val activeAuthorization = activeAuthorizationId ?: return false
+        val requestManifest = request.egressManifest ?: return false
+        val boundManifest = exactManifest.copy(
+            authorizationId =
+                ModelEgressAuthorizationId.forInput(request.requestId, request.input),
+        )
         if (
             exactManifest.authorizationId != activeAuthorization ||
-            request.egressManifest != exactManifest ||
+            requestManifest != boundManifest ||
             !exactManifest.isModelEgressApprovalFresh(nowEpochMillis)
         ) {
             return false
@@ -177,16 +183,20 @@ internal fun rebuildCaptureRequestAfterApproval(
     require(
         freshManifest.authorizationId != failedTask.request.egressManifest?.authorizationId,
     ) { "Capture recovery must not reuse the failed authorization" }
+    val requestId = captureRecoveryRequestId(
+        failedRequest = failedTask.request,
+        provider = provider,
+        authorizationId = freshManifest.authorizationId,
+        approvedAtEpochMillis = freshManifest.approvedAtEpochMillis,
+    )
+    val input = failedTask.request.input
     return ModelTaskRequest(
-        requestId = captureRecoveryRequestId(
-            failedRequest = failedTask.request,
-            provider = provider,
-            authorizationId = freshManifest.authorizationId,
-            approvedAtEpochMillis = freshManifest.approvedAtEpochMillis,
-        ),
-        input = failedTask.request.input,
+        requestId = requestId,
+        input = input,
         occurredAtEpochMillis = failedTask.request.occurredAtEpochMillis,
-        egressManifest = freshManifest,
+        egressManifest = freshManifest.copy(
+            authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
+        ),
     )
 }
 

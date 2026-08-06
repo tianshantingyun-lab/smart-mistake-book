@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -134,6 +135,63 @@ class TutorVisualPipelineTest {
                 .reasonCodes
                 .contains("local_integrity_error"),
         )
+    }
+
+    @Test
+    fun sameDocumentIdCannotReuseGenerationFromDifferentQuestionContent() {
+        val generation = generationTask(scene = lowRiskScene(), confidence = 0.97)
+        val input = generation.request.input as TutorVisualGenerateInput
+        val changedInput = input.copy(
+            questionDocument = QuestionDocument(
+                id = input.questionDocument.id,
+                blocks = listOf(ContentBlock.Paragraph("stem", "另一道题")),
+            ),
+        )
+        val changedRequest = generation.request.copy(input = changedInput)
+        val changedGeneration = generation.copy(
+            request = changedRequest,
+            requestFingerprint = ModelTaskFingerprint.of(changedRequest),
+        )
+
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = listOf(changedGeneration),
+            reviewTasks = emptyList(),
+        )
+
+        assertSame(TutorVisualResolution.Preparing, resolved)
+    }
+
+    @Test
+    fun reviewCannotChangeGenerationFocusOrRequiredReviewReasons() {
+        val scene = latticeScene()
+        val generation = generationTask(scene = scene, confidence = 0.99)
+        val review = reviewTask(
+            candidate = scene,
+            decision = TutorVisualReviewDecision.APPROVED,
+            repairedScene = null,
+            confidence = 0.96,
+        )
+        val input = review.request.input as TutorVisualReviewInput
+        val changedInput = input.copy(
+            focusMarkdown = "改写后的焦点",
+            reviewReasonCodes = setOf("different_reason"),
+        )
+        val changedRequest = review.request.copy(input = changedInput)
+        val changedReview = review.copy(
+            request = changedRequest,
+            requestFingerprint = ModelTaskFingerprint.of(changedRequest),
+        )
+
+        val resolved = resolveTutorVisual(
+            anchor = anchor,
+            question = question,
+            generationTasks = listOf(generation),
+            reviewTasks = listOf(changedReview),
+        )
+
+        assertTrue(resolved is TutorVisualResolution.Reviewing)
     }
 
     @Test
@@ -553,7 +611,10 @@ class TutorVisualPipelineTest {
 
         assertEquals("${fresh.requestId}:retry:5", retry.requestId)
         assertEquals(100L, retry.occurredAtEpochMillis)
-        assertEquals("authorization:${retry.requestId}", retry.egressManifest?.authorizationId)
+        assertEquals(
+            ModelEgressAuthorizationId.forInput(retry.requestId, retry.input),
+            retry.egressManifest?.authorizationId,
+        )
         assertEquals(100L, retry.egressManifest?.approvedAtEpochMillis)
         assertNotEquals(failed.request, retry)
         assertEquals(
@@ -837,6 +898,7 @@ class TutorVisualPipelineTest {
         ),
         fallbackMarkdown = "先看物体的方向关系。",
         accessibilitySummary = "一个标有物体的矩形。",
+        provenanceSchemaVersion = TutorVisualDocumentScene.CURRENT_PROVENANCE_SCHEMA_VERSION,
     )
 
     private fun latticeScene() = TutorVisualDocumentScene(
@@ -876,6 +938,7 @@ class TutorVisualPipelineTest {
         ),
         fallbackMarkdown = "按分数坐标核对晶胞位置。",
         accessibilitySummary = "一个可旋转的晶胞结构。",
+        provenanceSchemaVersion = TutorVisualDocumentScene.CURRENT_PROVENANCE_SCHEMA_VERSION,
     )
 
     private fun invalidDirectionScene() = TutorVisualDocumentScene(
@@ -916,6 +979,7 @@ class TutorVisualPipelineTest {
         ),
         fallbackMarkdown = "根据题面核对方向。",
         accessibilitySummary = "起点和终点之间的方向关系。",
+        provenanceSchemaVersion = TutorVisualDocumentScene.CURRENT_PROVENANCE_SCHEMA_VERSION,
     )
 
     private companion object {

@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.assertCountEquals
@@ -21,9 +23,12 @@ import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.NetworkMode
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.ui.Paper
+import com.tingyun.smartmistakebook.core.ui.SmartDarkColors
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
 import com.tingyun.smartmistakebook.feature.profile.ProfileRoute
 import com.tingyun.smartmistakebook.feature.review.ReviewRoute
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -209,6 +214,53 @@ class ReviewContinuityInstrumentedTest {
         assertNoC4StudentCopy()
     }
 
+    @Test
+    fun darkThemeRendersProfileRootAndCapturesScreenshot() {
+        var darkBackground = Color.Unspecified
+        var darkPaper = Color.Unspecified
+        composeRule.setContent {
+            SmartMistakeBookTheme(darkTheme = true) {
+                darkBackground = MaterialTheme.colorScheme.background
+                darkPaper = Paper
+                ProfileRoute(
+                    overview = StudyProfileOverview(
+                        hasLearningEvidence = true,
+                        recordedAttemptCount = 8,
+                        weaknesses = listOf(
+                            summary("weak-1", "函数单调性", 3_000L),
+                            summary("weak-2", "受力分析", 2_000L),
+                            summary("weak-3", "化学平衡", 1_000L),
+                        ),
+                    ),
+                    review = StudyReviewOverview(
+                        completedToday = true,
+                        completionStreakDays = 3,
+                    ),
+                    capabilities = AppCapabilitySnapshot(
+                        networkMode = NetworkMode.LOCAL_FIRST,
+                        cameraCaptureAvailable = true,
+                        trustedOcrAvailable = false,
+                        tutorTeachingEnabled = true,
+                        remoteModelConfigured = false,
+                    ),
+                    onOpenCapability = {},
+                    onOpenLearningMastery = {},
+                    onOpenDataPrivacy = {},
+                    onOpenReminder = {},
+                    onOpenStorage = {},
+                    nowEpochMillis = 3_000L,
+                )
+            }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("profile_screen").assertIsDisplayed()
+        composeRule.onNodeWithTag("profile_subject_mastery").assertIsDisplayed()
+        assertEquals(SmartDarkColors.Paper, darkBackground)
+        assertEquals(SmartDarkColors.Paper, darkPaper)
+        saveAuditScreenshot("profile-home-dark.png")
+    }
+
     private fun summary(
         id: String,
         name: String,
@@ -221,6 +273,12 @@ class ReviewContinuityInstrumentedTest {
         lastEvidenceAtEpochMillis = lastEvidenceAtEpochMillis,
         subject = SubjectKind.MATH,
     )
+
+    private fun saveAuditScreenshot(fileName: String) {
+        InstrumentationRegistry.getInstrumentation().uiAutomation
+            .executeShellCommand("screencap -p /sdcard/Download/$fileName")
+            .close()
+    }
 
     private fun assertNoC4StudentCopy() {
         (C4_FORBIDDEN_TERMS + "%").forEach { term ->

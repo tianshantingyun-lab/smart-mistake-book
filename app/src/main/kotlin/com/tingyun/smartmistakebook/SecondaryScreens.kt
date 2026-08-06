@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook
 
 import android.view.WindowManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Box
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +27,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +55,8 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
 import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
+import com.tingyun.smartmistakebook.core.domain.LearningMasteryDisplayRepository
+import com.tingyun.smartmistakebook.core.domain.LearningMasteryPrivacyRepository
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.NetworkMode
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -432,8 +438,61 @@ private fun CapabilityRow(icon: ImageVector, title: String, detail: String) {
 @Composable
 internal fun DataPrivacyScreen(
     capabilities: AppCapabilitySnapshot,
+    learningMasteryPrivacy: LearningMasteryPrivacyRepository?,
     onBack: () -> Unit,
 ) {
+    val screenScope = rememberCoroutineScope()
+    var showEraseConfirmation by rememberSaveable { mutableStateOf(false) }
+    var erasing by remember { mutableStateOf(false) }
+    var eraseStatus by remember { mutableStateOf<String?>(null) }
+
+    if (showEraseConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showEraseConfirmation = false },
+            title = { Text("清除学习记录？") },
+            text = {
+                Text("会清除本机掌握情况与学习记录，错题本里的题目不会删除。")
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !erasing,
+                    onClick = {
+                        val repository = learningMasteryPrivacy
+                        if (repository == null) {
+                            eraseStatus = "暂时无法清除学习记录"
+                            showEraseConfirmation = false
+                            return@TextButton
+                        }
+                        erasing = true
+                        eraseStatus = null
+                        screenScope.launch {
+                            try {
+                                repository.eraseAllLearningData()
+                                eraseStatus = "学习记录已清除"
+                            } catch (cancelled: CancellationException) {
+                                throw cancelled
+                            } catch (failure: Throwable) {
+                                eraseStatus = "清除失败，请稍后重试"
+                            } finally {
+                                erasing = false
+                                showEraseConfirmation = false
+                            }
+                        }
+                    },
+                ) {
+                    Text(if (erasing) "正在清除" else "清除")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showEraseConfirmation = false },
+                ) {
+                    Text("取消")
+                }
+            },
+        )
+    }
+
     RootPageColumn {
         SecondaryHeader(title = "数据与隐私", onBack = onBack)
         SectionHeader("本机数据清单")
@@ -442,6 +501,30 @@ internal fun DataPrivacyScreen(
             modifier = Modifier.padding(top = 10.dp),
             color = InkSecondary,
         )
+        PrimaryActionButton(
+            text = if (erasing) "正在清除" else "清除学习记录",
+            onClick = {
+                eraseStatus = null
+                showEraseConfirmation = true
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .height(52.dp)
+                    .testTag("privacy_erase_learning_memory"),
+        )
+        eraseStatus?.let { message ->
+            Text(
+                text = message,
+                modifier =
+                    Modifier
+                        .padding(top = 10.dp)
+                        .testTag("privacy_erase_status"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader("智能服务")
         Text(
@@ -459,7 +542,33 @@ internal fun DataPrivacyScreen(
 }
 
 @Composable
-internal fun StorageScreen(onBack: () -> Unit) {
+internal fun StorageScreen(
+    learningMasteryDisplay: LearningMasteryDisplayRepository?,
+    onBack: () -> Unit,
+) {
+    val context = LocalContext.current
+    val screenScope = rememberCoroutineScope()
+    var exporting by remember { mutableStateOf(false) }
+    var exportStatus by remember { mutableStateOf<String?>(null) }
+    var pendingExport by remember { mutableStateOf<LearningMemoryExportDocument?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain"),
+    ) { uri ->
+        val document = pendingExport
+        if (uri == null || document == null) {
+            pendingExport = null
+            exportStatus = "已取消导出"
+            return@rememberLauncherForActivityResult
+        }
+        val wrote = runCatching {
+            context.contentResolver.openOutputStream(uri)?.use { output ->
+                output.write(document.text.toByteArray(Charsets.UTF_8))
+            } != null
+        }.getOrDefault(false)
+        pendingExport = null
+        exportStatus = if (wrote) "学习记录已导出" else "导出失败，请稍后重试"
+    }
+
     RootPageColumn {
         SecondaryHeader(title = "存储与导出", onBack = onBack)
         SectionHeader("本机存储")
@@ -471,10 +580,60 @@ internal fun StorageScreen(onBack: () -> Unit) {
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader("导出")
         Text(
-            "单道错题可在详情页保存或打印 PDF；错题本还能把当前筛选结果整理成一份 A4 练习。两种方式都只使用已经确认的正式题面。",
+            "单道错题可在详情页保存或打印 PDF；错题本还能把当前筛选结果整理成一份 A4 练习。学习记录可导出为文本文件。",
             modifier = Modifier.padding(top = 10.dp),
             color = InkSecondary,
         )
+        PrimaryActionButton(
+            text = if (exporting) "正在准备" else "导出学习记录",
+            onClick = {
+                val repository = learningMasteryDisplay
+                if (repository == null) {
+                    exportStatus = "暂时无法导出学习记录"
+                    return@PrimaryActionButton
+                }
+                if (exporting) return@PrimaryActionButton
+                exporting = true
+                exportStatus = null
+                screenScope.launch {
+                    try {
+                        when (val result = repository.loadLearningMemoryExport()) {
+                            is LearningMemoryExportLoadResult.Ready -> {
+                                pendingExport = result.document
+                                exportLauncher.launch("学习记录.txt")
+                            }
+
+                            LearningMemoryExportLoadResult.Unavailable -> {
+                                exportStatus = "暂时无法导出学习记录"
+                            }
+                        }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (failure: Throwable) {
+                        exportStatus = "导出失败，请稍后重试"
+                    } finally {
+                        exporting = false
+                    }
+                }
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .height(52.dp)
+                    .testTag("storage_export_learning_memory"),
+        )
+        exportStatus?.let { message ->
+            Text(
+                text = message,
+                modifier =
+                    Modifier
+                        .padding(top = 10.dp)
+                        .testTag("storage_export_status"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 

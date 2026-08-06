@@ -5,6 +5,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
@@ -109,17 +110,21 @@ class CaptureModelEgressPolicyTest {
             sourcePages = pages,
             approvedAtEpochMillis = 1_000,
         )
+        val requestId = "capture-assess:fresh-current"
+        val input = CaptureAssessmentInput(
+            draftId = "draft-current",
+            sourceAssetId = pages.first().sourceAssetId,
+            origin = CaptureAssessmentOrigin.TUTOR,
+            imageWidth = pages.first().width,
+            imageHeight = pages.first().height,
+        )
         val request = ModelTaskRequest(
-            requestId = "capture-assess:fresh-current",
-            input = CaptureAssessmentInput(
-                draftId = "draft-current",
-                sourceAssetId = pages.first().sourceAssetId,
-                origin = CaptureAssessmentOrigin.TUTOR,
-                imageWidth = pages.first().width,
-                imageHeight = pages.first().height,
-            ),
+            requestId = requestId,
+            input = input,
             occurredAtEpochMillis = 1_000,
-            egressManifest = manifest,
+            egressManifest = manifest.copy(
+                authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
+            ),
         )
         val launchGuard = CaptureExternalExecutionLaunchGuard()
 
@@ -428,9 +433,16 @@ class CaptureModelEgressPolicyTest {
             sourcePages = listOf(page),
             approvedAtEpochMillis = now,
         )
+        val continuedRequestId = "capture-assess:explicit-continue"
         val continuedRequest = staleRequest.copy(
-            requestId = "capture-assess:explicit-continue",
-            egressManifest = freshManifest,
+            requestId = continuedRequestId,
+            egressManifest = freshManifest.copy(
+                authorizationId =
+                    ModelEgressAuthorizationId.forInput(
+                        continuedRequestId,
+                        staleRequest.input,
+                    ),
+            ),
         )
         assertTrue(
             guard.claim(

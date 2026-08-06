@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
@@ -18,6 +19,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewOutput
 import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
 import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
+import com.tingyun.smartmistakebook.core.model.TutorVisualSourceFactExtractor
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
@@ -25,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationRequest
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
+import com.tingyun.smartmistakebook.core.visual.runtime.CompiledTutorVisualDocument
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualRiskAssessor
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualRiskLevel
@@ -44,10 +47,22 @@ internal sealed interface TutorVisualResolution {
         val sourceKind: TutorVisualSceneSourceKind? = null,
         val sceneTaskRequestId: String? = null,
         val sceneFingerprint: String = TutorVisualSceneFingerprint.of(scene),
+        val compiledDocument: CompiledTutorVisualDocument? = null,
     ) : TutorVisualResolution {
         init {
             require((sourceKind == null) == (sceneTaskRequestId == null))
             require(sceneTaskRequestId == null || sceneTaskRequestId.isNotBlank())
+            require(compiledDocument == null || compiledDocument.scene == scene)
+            require(
+                compiledDocument == null ||
+                    (compiledDocument.integrity.canRender &&
+                        compiledDocument.provenance?.canPresent == true),
+            )
+            require(
+                sourceKind != TutorVisualSceneSourceKind.GENERATED ||
+                    scene !is TutorVisualDocumentScene ||
+                    compiledDocument != null,
+            ) { "Generated visual documents require a locally verified compiled artifact" }
         }
     }
 
@@ -201,7 +216,8 @@ internal fun freshTutorVisualRetryRequest(
     return freshRequest.copy(
         requestId = retryRequestId,
         egressManifest = freshRequest.egressManifest?.copy(
-            authorizationId = "authorization:$retryRequestId",
+            authorizationId =
+                ModelEgressAuthorizationId.forInput(retryRequestId, freshRequest.input),
         ),
     )
 }
@@ -222,7 +238,9 @@ internal fun resolveTutorVisual(
             input?.anchor == anchor &&
                 input.sessionId == question.sessionId &&
                 input.draftRevisionNumber == question.revisionNumber &&
-                input.questionDocument.id == question.questionDocument.document.id &&
+                input.subject == question.subject &&
+                input.questionDocument == question.questionDocument.document &&
+                input.hasCurrentLocallyMintedFacts(question) &&
                 task.request.matchesSemanticRequest(expectedGenerationRequestId)
         } ?: return TutorVisualResolution.Preparing
     if (generationTask.status != ModelTaskStatus.SUCCEEDED) {
@@ -238,6 +256,14 @@ internal fun resolveTutorVisual(
     }
     val generated = generationTask.output as? TutorVisualGenerateOutput
         ?: return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
+    if (
+        generated.sessionId != question.sessionId ||
+        generated.draftRevisionNumber != question.revisionNumber ||
+        generated.questionDocumentId != question.questionDocument.document.id ||
+        generated.anchor != anchor
+    ) {
+        return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
+    }
     if (generated.decision != TutorVisualGenerationDecision.GENERATED) {
         return TutorVisualResolution.Fallback(TutorVisualFallbackReason.DECLINED)
     }
@@ -253,13 +279,15 @@ internal fun resolveTutorVisual(
         providerConfigurationVersion = generationTask.visualProviderConfigurationVersion(),
         requestIdentity = generationTask.request.requestId,
     )
-    val reasons = generated.reviewReasonCodes()
+    val compiledCandidate = compileForPresentation(candidate, generationInput)
+    val reasons = generated.reviewReasonCodes(compiledCandidate)
     if (reasons.isEmpty()) {
         return TutorVisualResolution.Ready(
             scene = candidate,
             cacheKey = generationCacheKey,
             sourceKind = TutorVisualSceneSourceKind.GENERATED,
             sceneTaskRequestId = generationTask.request.requestId,
+            compiledDocument = requireNotNull(compiledCandidate),
         )
     }
     if (
@@ -286,7 +314,13 @@ internal fun resolveTutorVisual(
                 TutorVisualSceneFingerprint.of(candidate) &&
                 input.sessionId == question.sessionId &&
                 input.draftRevisionNumber == question.revisionNumber &&
-                input.questionDocument.id == question.questionDocument.document.id &&
+                input.subject == question.subject &&
+                input.questionDocument == generationInput.questionDocument &&
+                input.sourceAssets == generationInput.sourceAssets &&
+                input.sourceFacts == generationInput.sourceFacts &&
+                input.focusMarkdown == generationInput.focusMarkdown &&
+                input.explanationMarkdown == generationInput.explanationMarkdown &&
+                input.reviewReasonCodes == reasons &&
                 task.request.matchesSemanticRequest(semanticReviewRequestId)
         }
     val reviewCandidate = TutorVisualResolution.Reviewing(
@@ -309,24 +343,37 @@ internal fun resolveTutorVisual(
     }
     val reviewed = reviewOutput.output as? TutorVisualReviewOutput
         ?: return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
+    val reviewInput = reviewOutput.request.input as? TutorVisualReviewInput
+        ?: return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
+    if (
+        reviewed.sessionId != reviewInput.sessionId ||
+        reviewed.draftRevisionNumber != reviewInput.draftRevisionNumber ||
+        reviewed.questionDocumentId != reviewInput.questionDocument.id ||
+        reviewed.anchor != reviewInput.anchor
+    ) {
+        return TutorVisualResolution.Fallback(TutorVisualFallbackReason.INVALID_OUTPUT)
+    }
 
     return when (reviewed.decision) {
         TutorVisualReviewDecision.APPROVED -> candidate
             .takeIf { reviewed.confidence >= MIN_REVIEW_CONFIDENCE }
-            ?.takeIf(::isLocallyRenderable)
-            ?.let { scene ->
+            ?.let { scene -> scene to compileForPresentation(scene, reviewInput) }
+            ?.takeIf { (_, compiled) -> compiled != null }
+            ?.let { (scene, compiled) ->
                 TutorVisualResolution.Ready(
                     scene = scene,
                     cacheKey = generationCacheKey,
                     sourceKind = TutorVisualSceneSourceKind.GENERATED,
                     sceneTaskRequestId = reviewOutput.request.requestId,
+                    compiledDocument = requireNotNull(compiled),
                 )
             }
             ?: TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
         TutorVisualReviewDecision.REPAIRED -> reviewed.scene
             ?.takeIf { reviewed.confidence >= MIN_REVIEW_CONFIDENCE }
-            ?.takeIf(::isLocallyRenderable)
-            ?.let { scene ->
+            ?.let { scene -> scene to compileForPresentation(scene, reviewInput) }
+            ?.takeIf { (_, compiled) -> compiled != null }
+            ?.let { (scene, compiled) ->
                 TutorVisualResolution.Ready(
                     scene = scene,
                     cacheKey = visualCacheKey(
@@ -341,6 +388,7 @@ internal fun resolveTutorVisual(
                     ),
                     sourceKind = TutorVisualSceneSourceKind.GENERATED,
                     sceneTaskRequestId = reviewOutput.request.requestId,
+                    compiledDocument = requireNotNull(compiled),
                 )
             }
             ?: TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
@@ -353,6 +401,15 @@ private fun ModelTaskRequest.matchesSemanticRequest(expectedRequestId: String?):
     expectedRequestId == null ||
         requestId == expectedRequestId ||
         requestId.startsWith("$expectedRequestId:retry:")
+
+private fun TutorVisualGenerateInput.hasCurrentLocallyMintedFacts(
+    question: TutorQuestionContext,
+): Boolean = runCatching {
+    TutorVisualSourceFactExtractor.extract(
+        capturedDocument = question.questionDocument,
+        sourceAssets = sourceAssets,
+    ) == sourceFacts
+}.getOrDefault(false)
 
 internal fun ModelTaskSnapshot.matchesTutorVisualRequest(request: ModelTaskRequest): Boolean =
     this.request.matchesSemanticRequest(request.requestId)
@@ -382,10 +439,12 @@ private fun ModelTaskStatus.isVisualFailure(): Boolean =
         this == ModelTaskStatus.PERMANENT_FAILURE ||
         this == ModelTaskStatus.CANCELLED
 
-private fun TutorVisualGenerateOutput.reviewReasonCodes(): Set<String> {
+private fun TutorVisualGenerateOutput.reviewReasonCodes(
+    compiled: CompiledTutorVisualDocument?,
+): Set<String> {
     val candidate = scene ?: return emptySet()
     return buildSet {
-        if (!isLocallyRenderable(candidate)) add(LOCAL_INTEGRITY_REASON)
+        if (compiled == null) add(LOCAL_INTEGRITY_REASON)
         if (confidence < MIN_GENERATION_CONFIDENCE) add(LOW_CONFIDENCE_REASON)
         TutorVisualRiskAssessor.assess(candidate)
             .takeIf { assessment -> assessment.level == TutorVisualRiskLevel.REVIEW_REQUIRED }
@@ -394,10 +453,25 @@ private fun TutorVisualGenerateOutput.reviewReasonCodes(): Set<String> {
     }
 }
 
-private fun isLocallyRenderable(scene: TutorVisualDocumentScene): Boolean =
-    !scene.containsVisibleIllustrativeValue() &&
-        runCatching { TutorVisualDocumentCompiler.compile(scene).integrity.canRender }
-            .getOrDefault(false)
+private fun compileForPresentation(
+    scene: TutorVisualDocumentScene,
+    input: TutorVisualGenerateInput,
+): CompiledTutorVisualDocument? {
+    if (scene.containsVisibleIllustrativeValue()) return null
+    return runCatching {
+        TutorVisualDocumentCompiler.compileForPresentation(scene, input)
+    }.getOrNull()
+}
+
+private fun compileForPresentation(
+    scene: TutorVisualDocumentScene,
+    input: TutorVisualReviewInput,
+): CompiledTutorVisualDocument? {
+    if (scene.containsVisibleIllustrativeValue()) return null
+    return runCatching {
+        TutorVisualDocumentCompiler.compileForPresentation(scene, input)
+    }.getOrNull()
+}
 
 private fun visualCacheKey(
     question: TutorQuestionContext,

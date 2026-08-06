@@ -4,13 +4,21 @@ import com.tingyun.smartmistakebook.core.domain.TutorGuidancePolicy
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceRequest
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
+import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.TutorVisualTargetEvidence
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
-import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
-import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeGuidance
+import com.tingyun.smartmistakebook.core.model.TutorTeachingConstraint
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorFreeResponseEvaluation
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 
 internal data class TutorTurnPresentation(
     val showDiagnostic: Boolean,
@@ -254,12 +262,12 @@ internal fun TutorGuidanceState.authorizeEvidence(requestId: String) =
 
 internal fun masteryTargetsAreRelevant(
     targetedEvidenceLabels: List<String>,
-    relevantLearningEvidence: List<TutorKnowledgeEvidence>,
+    teachingConstraints: List<TutorKnowledgeGuidance>,
 ): Boolean {
     if (targetedEvidenceLabels.isEmpty()) return false
-    val evidenceByLabel = relevantLearningEvidence.associateBy(TutorKnowledgeEvidence::displayName)
+    val guidanceByLabel = teachingConstraints.associateBy(TutorKnowledgeGuidance::label)
     return targetedEvidenceLabels.all { label ->
-        evidenceByLabel[label]?.level?.let { level -> level != TutorEvidenceLevel.MASTERED } == true
+        guidanceByLabel[label]?.constraint == TutorTeachingConstraint.MAY_GUIDE
     }
 }
 
@@ -270,4 +278,131 @@ internal inline fun requestTutorExplanationModeChange(
 ) {
     if (mode == TutorExplanationMode.DIRECT) cancelPendingEvidence()
     persistMode(mode)
+}
+
+internal fun buildTutorGuidanceEvents(
+    questionDocumentId: String,
+    revisionNumber: Int,
+    currentCycleTasks: List<ModelTaskSnapshot>,
+    currentCycleResponses: List<TutorTurnResponse>,
+    tutorRespondTasks: List<ModelTaskSnapshot>,
+    visualTargetEvidence: List<TutorVisualTargetEvidence>,
+): List<TutorGuidanceEvent> {
+    val visualEvidenceByRequestId = visualTargetEvidence
+        .filter { evidence ->
+            evidence.questionDocumentId == questionDocumentId &&
+                evidence.revisionNumber == revisionNumber
+        }
+        .associateBy { evidence -> evidence.modelTaskRequestId }
+    return buildList {
+        currentCycleTasks
+            .sortedBy { task -> (task.request.input as TutorPlanInput).turnOrdinal }
+            .forEach { task ->
+                val input = task.request.input as TutorPlanInput
+                val output = task.output as? TutorPlanOutput ?: return@forEach
+                var pendingDirective: Pair<String, TutorInteractionDirective>? = null
+                if (output.plan.hasGuidedInteraction()) {
+                    add(
+                        TutorGuidanceEvent.Question(
+                            requestId = task.request.requestId,
+                            masteryRelevant = output.isMasteryRelevantTo(input),
+                        ),
+                    )
+                }
+                if (output.plan.interactionDirective.isEvidencePrompt()) {
+                    pendingDirective = task.request.requestId to
+                        requireNotNull(output.plan.interactionDirective)
+                }
+                currentCycleResponses
+                    .firstOrNull { response -> response.turnOrdinal == input.turnOrdinal }
+                    ?.takeIf(TutorTurnResponse::hasChoicePayload)
+                    ?.let { response ->
+                        add(
+                            TutorGuidanceEvent.Evidence(
+                                requestId = task.request.requestId,
+                                selectionWasCorrect = response.selectionWasCorrect == true,
+                            ),
+                        )
+                    }
+                visualEvidenceByRequestId[task.request.requestId]
+                    ?.takeIf { evidence ->
+                        evidence.anchor == TutorVisualTurnAnchor(
+                            surface = TutorVisualTurnSurface.PLAN,
+                            cycleOrdinal = input.cycleOrdinal,
+                            turnOrdinal = input.turnOrdinal,
+                        )
+                    }
+                    ?.let { evidence ->
+                        add(
+                            TutorGuidanceEvent.Evidence(
+                                requestId = evidence.modelTaskRequestId,
+                                selectionWasCorrect = evidence.selectionWasCorrect,
+                            ),
+                        )
+                        pendingDirective = null
+                    }
+                tutorRespondTasks
+                    .filter { respondTask ->
+                        val respondInput = respondTask.request.input as? TutorRespondInput
+                        respondInput?.cycleOrdinal == input.cycleOrdinal &&
+                            respondInput.turnOrdinal == input.turnOrdinal
+                    }
+                    .sortedBy { respondTask ->
+                        (respondTask.request.input as TutorRespondInput).responseOrdinal
+                    }
+                    .forEach { respondTask ->
+                        val respondInput = respondTask.request.input as TutorRespondInput
+                        if (respondInput.studentMessage.isTutorHintRequest()) {
+                            add(TutorGuidanceEvent.Hint(respondTask.request.requestId))
+                        } else {
+                            val pending = pendingDirective
+                            val respondOutput =
+                                respondTask.output as? TutorRespondOutput ?: return@forEach
+                            if (pending?.second is TutorInteractionDirective.FreeResponse) {
+                                freeResponseEvidenceEvent(
+                                    requestId = pending.first,
+                                    output = respondOutput,
+                                )?.let {
+                                    add(it)
+                                    pendingDirective = null
+                                }
+                            }
+                        }
+                        val respondOutput =
+                            respondTask.output as? TutorRespondOutput ?: return@forEach
+                        if (respondOutput.solutionRevealed) {
+                            add(TutorGuidanceEvent.Exposure(respondTask.request.requestId))
+                            pendingDirective = null
+                        } else if (respondOutput.interactionDirective.isEvidencePrompt()) {
+                            add(
+                                TutorGuidanceEvent.Question(
+                                    requestId = respondTask.request.requestId,
+                                    masteryRelevant = output.isMasteryRelevantTo(input),
+                                ),
+                            )
+                            pendingDirective = respondTask.request.requestId to
+                                requireNotNull(respondOutput.interactionDirective)
+                            visualEvidenceByRequestId[respondTask.request.requestId]
+                                ?.takeIf { evidence ->
+                                    evidence.anchor == TutorVisualTurnAnchor(
+                                        surface = TutorVisualTurnSurface.FOLLOW_UP,
+                                        cycleOrdinal = respondInput.cycleOrdinal,
+                                        turnOrdinal = respondInput.turnOrdinal,
+                                        responseOrdinal = respondInput.responseOrdinal,
+                                    )
+                                }
+                                ?.let { evidence ->
+                                    add(
+                                        TutorGuidanceEvent.Evidence(
+                                            requestId = evidence.modelTaskRequestId,
+                                            selectionWasCorrect =
+                                                evidence.selectionWasCorrect,
+                                        ),
+                                    )
+                                    pendingDirective = null
+                                }
+                        }
+                    }
+            }
+    }
 }

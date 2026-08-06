@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
@@ -9,6 +11,8 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorSceneStep
 import com.tingyun.smartmistakebook.core.model.TutorStepFlowScene
+import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
+import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualProvenanceContext
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -28,10 +32,41 @@ class TutorVisualTargetPolicyTest {
                 sceneReported = false,
             ),
         )
-        assertTrue(
+        assertFalse(
             isTutorVisualTargetReady(
                 state = TutorVisualResolution.Hidden,
                 inlineScene = documentScene(),
+            ),
+        )
+        val legacyV2 = inlineTutorVisualResolution(
+            scene = documentScene(),
+            ownerModelTaskRequestId = "legacy-v2",
+        )
+        assertTrue(legacyV2 is TutorVisualResolution.Fallback)
+        assertTrue(
+            (legacyV2 as TutorVisualResolution.Fallback).reason ==
+                TutorVisualFallbackReason.VALIDATION_FAILED,
+        )
+        val scene = documentScene()
+        val compiled = TutorVisualDocumentCompiler.compileForPresentation(
+            scene = scene,
+            provenanceContext = TutorVisualProvenanceContext(
+                questionDocument = QuestionDocument(
+                    id = "question",
+                    blocks = listOf(ContentBlock.Paragraph("stem", "判断方向")),
+                ),
+                sourceAssets = emptyList(),
+                sourceFacts = emptyList(),
+            ),
+        )
+        assertTrue(
+            isTutorVisualTargetReady(
+                state = TutorVisualResolution.Ready(
+                    scene = scene,
+                    cacheKey = "verified",
+                    compiledDocument = compiled,
+                ),
+                inlineScene = null,
             ),
         )
         assertFalse(
@@ -90,14 +125,14 @@ class TutorVisualTargetPolicyTest {
             ),
         )
         assertNotEquals(
-            inlineTutorVisualResolution(
+            (inlineTutorVisualResolution(
                 scene = legacyScene,
                 ownerModelTaskRequestId = "plan-request-a",
-            ).presentationStateKey("plan-request-a"),
-            inlineTutorVisualResolution(
+            ) as TutorVisualResolution.Ready).presentationStateKey("plan-request-a"),
+            (inlineTutorVisualResolution(
                 scene = legacyScene,
                 ownerModelTaskRequestId = "plan-request-b",
-            ).presentationStateKey("plan-request-b"),
+            ) as TutorVisualResolution.Ready).presentationStateKey("plan-request-b"),
         )
     }
 
@@ -123,5 +158,6 @@ class TutorVisualTargetPolicyTest {
         ),
         fallbackMarkdown = "先看物体。",
         accessibilitySummary = "一个物体。",
+        provenanceSchemaVersion = TutorVisualDocumentScene.CURRENT_PROVENANCE_SCHEMA_VERSION,
     )
 }

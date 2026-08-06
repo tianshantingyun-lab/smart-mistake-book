@@ -1,4 +1,9 @@
-package com.tingyun.smartmistakebook.feature.review
+package com.tingyun.smartmistakebook.feature.review
+import com.tingyun.smartmistakebook.core.ui.ErrorWarm
+import com.tingyun.smartmistakebook.core.ui.Ink
+import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.Jade
+import com.tingyun.smartmistakebook.core.ui.Track
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +52,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /** Reviews the student's exact saved transcription without inventing an answer key or another task. */
+@Deprecated(
+    message = "Use DailyReviewSessionRoute with student-only pacing actions",
+)
 @Composable
 fun CapturedReviewSessionScreen(
     onBack: () -> Unit,
@@ -90,13 +98,13 @@ fun CapturedReviewSessionScreen(
                 text = "今日复习",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = SmartColors.Ink,
+                color = Ink,
             )
             Spacer(Modifier.weight(1f))
             Text(
                 text = entry.subject.studentSubjectLabel(),
                 style = MaterialTheme.typography.labelLarge,
-                color = SmartColors.InkSecondary,
+                color = InkSecondary,
             )
         }
         Spacer(Modifier.height(10.dp))
@@ -105,8 +113,8 @@ fun CapturedReviewSessionScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(5.dp),
-            color = SmartColors.Jade,
-            trackColor = SmartColors.Track,
+            color = Jade,
+            trackColor = Track,
         )
         Spacer(Modifier.height(12.dp))
         LocalModeLine(text = "第 $safeQueuePosition / $safeQueueSize 题 · 复做你保存的原题")
@@ -115,7 +123,7 @@ fun CapturedReviewSessionScreen(
         Spacer(Modifier.height(12.dp))
         SafeMarkdownText(
             markdown = entry.problemMarkdown,
-            color = SmartColors.Ink,
+            color = Ink,
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 19.sp,
                 lineHeight = 30.sp,
@@ -125,7 +133,7 @@ fun CapturedReviewSessionScreen(
         Text(
             text = "按这次的实际完成情况选一下",
             style = MaterialTheme.typography.bodyMedium,
-            color = SmartColors.InkSecondary,
+            color = InkSecondary,
         )
         Spacer(Modifier.height(12.dp))
         PrimaryActionButton(
@@ -167,7 +175,7 @@ fun CapturedReviewSessionScreen(
                 text = "这次记录还没保存，点原来的选项重试即可。",
                 modifier = Modifier.testTag("review_self_report_retry_message"),
                 style = MaterialTheme.typography.bodySmall,
-                color = SmartColors.ErrorWarm,
+                color = ErrorWarm,
             )
         }
         Spacer(Modifier.height(20.dp))

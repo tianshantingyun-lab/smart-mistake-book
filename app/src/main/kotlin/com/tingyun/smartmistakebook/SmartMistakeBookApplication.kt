@@ -3,76 +3,76 @@ package com.tingyun.smartmistakebook
 import android.app.Application
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
-import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.mistake.MistakeDetailRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.mistake.MistakeOrganizationRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.model.ConfiguredModelGatewayFactory
-import com.tingyun.smartmistakebook.core.data.model.ConfiguredModelCapabilityTesterFactory
-import com.tingyun.smartmistakebook.core.data.model.ModelTaskRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.model.RestrictedModelAssetSourceFactory
-import com.tingyun.smartmistakebook.core.data.model.UnavailableModelGateway
-import com.tingyun.smartmistakebook.core.data.study.StudyExperienceRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.tutor.TutorLearningMemoryRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.authority.ProductionAuthorityBootstrap
+import com.tingyun.smartmistakebook.core.data.authority.ProductionAuthorityBootstrapFactory
+import com.tingyun.smartmistakebook.core.data.authority.ProductionAuthorityStartupState
+import com.tingyun.smartmistakebook.core.data.mistake.StudentMistakeLibraryCatalogRepository
+import com.tingyun.smartmistakebook.core.data.production.ProductionCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.data.production.ProductionProblemOrganizationExecutionResolver
+import com.tingyun.smartmistakebook.core.data.production.AuditedProductionAdapterAvailability
+import com.tingyun.smartmistakebook.core.data.review.ReviewHomeRequest
+import com.tingyun.smartmistakebook.core.data.review.ReviewHomeState
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreTutorSettingsRepository
-import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
-import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.BatchImportRepository
+import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
+import com.tingyun.smartmistakebook.core.domain.LearningMasteryDisplayRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
-import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
-import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
-import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
-import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
-import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
-import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.domain.TutorMasteryContextRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSettingsRepository
+import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.model.provider.ConfiguredModelCapabilityTesterFactory
+import com.tingyun.smartmistakebook.core.model.provider.ConfiguredModelExecutionLeaseFactory
 import com.tingyun.smartmistakebook.feature.capture.CaptureCacheMaintenance
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 
 class SmartMistakeBookApplication : Application(), Configuration.Provider {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    lateinit var studyRepository: StudyExperienceRepository
-        private set
+    /*
+     * Every getter resolves one field from the same atomic snapshot. There are no independently
+     * initialized repositories for Root or WorkManager to observe during publication.
+     */
+    val captureRepository: CaptureWorkflowRepository
+        get() = requirePublishedCapabilities().captureWorkflow
 
-    lateinit var captureRepository: CaptureWorkflowRepository
-        private set
+    val batchImportRepository: BatchImportRepository
+        get() = requirePublishedCapabilities().batchImport
 
-    lateinit var batchImportRepository: BatchImportRepository
-        private set
+    val mistakeDetailRepository: MistakeDetailRepository
+        get() = requirePublishedCapabilities().mistakeDetail
 
-    lateinit var mistakeDetailRepository: MistakeDetailRepository
-        private set
+    val studentMistakeLibraryCatalogRepository: StudentMistakeLibraryCatalogRepository
+        get() = requirePublishedCapabilities().studentMistakeCatalog
 
-    lateinit var mistakeOrganizationRepository: MistakeOrganizationRepository
-        private set
+    val mistakeOrganizationRepository: MistakeOrganizationRepository
+        get() = requirePublishedCapabilities().mistakeOrganization
 
-    lateinit var modelTaskRepository: ModelTaskRepository
-        private set
+    val tutorMasteryContextRepository: TutorMasteryContextRepository
+        get() = requirePublishedCapabilities()
+            .tutorMasteryAndProfile
+            .tutorMasteryContext
 
-    lateinit var tutorInteractionRepository: TutorInteractionRepository
-        private set
+    val learningMasteryDisplayRepository: LearningMasteryDisplayRepository
+        get() = requirePublishedCapabilities()
+            .tutorMasteryAndProfile
+            .learningMasteryDisplay
 
-    lateinit var tutorLearningMemoryRepository: TutorLearningMemoryRepository
-        private set
-
-    lateinit var tutorTeachingReferenceRepository: TutorTeachingReferenceRepository
-        private set
+    val tutorTeachingReferenceRepository: TutorTeachingReferenceRepository
+        get() = requirePublishedCapabilities().tutorTeachingReference
 
     lateinit var reviewReminderRepository: ReviewReminderRepository
         private set
@@ -80,150 +80,119 @@ class SmartMistakeBookApplication : Application(), Configuration.Provider {
     lateinit var tutorSettingsRepository: TutorSettingsRepository
         private set
 
-    private lateinit var database: StudyDatabasePort
+    private lateinit var authorityBootstrap: ProductionAuthorityBootstrap
     private lateinit var reviewReminderCoordinator: ReviewReminderCoordinator
-    private lateinit var problemOrganizationWorkScheduler: ProblemOrganizationWorkScheduler
-    private val problemOrganizationWorkerFactory = ProblemOrganizationWorkerFactory {
-        if (
-            !::database.isInitialized ||
-            !::modelTaskRepository.isInitialized ||
-            !::mistakeOrganizationRepository.isInitialized ||
-            !::problemOrganizationWorkScheduler.isInitialized
-        ) {
-            null
-        } else {
-            ProblemOrganizationWorkerDependencies(
-                database = database,
-                modelTasks = modelTaskRepository,
-                organizations = mistakeOrganizationRepository,
-                scheduler = problemOrganizationWorkScheduler,
-            )
+    private lateinit var reviewReminderBroadcastHandoff: ReviewReminderBroadcastHandoff
+    private lateinit var problemOrganizationWorkSchedulingCoordinator:
+        ProblemOrganizationWorkSchedulingCoordinator
+    private lateinit var longTaskRecoveryScheduler: LongTaskRecoveryScheduler
+    private val productionCapabilityPublicationGraph =
+        ProductionCapabilityPublicationGraph()
+    private val problemOrganizationExecutionResolver =
+        AtomicReference<ProductionProblemOrganizationExecutionResolver?>(null)
+
+    val productionAuthorityStartupState: StateFlow<ProductionAuthorityStartupState>
+        get() = authorityBootstrap.state
+
+    internal val publishedProductionCapabilities: ProductionCapabilitySnapshot?
+        get() =
+            if (
+                ::authorityBootstrap.isInitialized &&
+                authorityBootstrap.state.value == ProductionAuthorityStartupState.Ready
+            ) {
+                productionCapabilityPublicationGraph.publishedCapabilities
+            } else {
+                null
+            }
+
+    internal val productionAdapterAvailability
+        get() = AuditedProductionAdapterAvailability
+
+    private val problemOrganizationWorkerFactory =
+        ProblemOrganizationWorkerFactory {
+            problemOrganizationExecutionResolver.get()
         }
-    }
 
     override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(problemOrganizationWorkerFactory)
-            .build()
+        get() =
+            Configuration.Builder()
+                .setWorkerFactory(problemOrganizationWorkerFactory)
+                .build()
 
     override fun onCreate() {
         super.onCreate()
         CaptureCacheMaintenance.pruneExpiredFiles(this)
-        database = StudyDatabaseFactory.open(this)
-        studyRepository = StudyExperienceRepositoryFactory.create(
-            database = database,
-            applicationScope = applicationScope,
-        )
-        captureRepository = CaptureWorkflowRepositoryFactory.create(this, database)
-        mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)
-        mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)
-        tutorInteractionRepository = TutorInteractionRepositoryFactory.create(database)
-        tutorLearningMemoryRepository = TutorLearningMemoryRepositoryFactory.create(database)
-        tutorTeachingReferenceRepository =
-            TutorTeachingReferenceRepositoryFactory.create(database)
+
+        // Preference stores are application settings, not any of the three business authorities.
         reviewReminderRepository = DataStoreReviewReminderRepository(this, applicationScope)
         tutorSettingsRepository = DataStoreTutorSettingsRepository(this, applicationScope)
-        reviewReminderCoordinator = ReviewReminderCoordinator(
-            repository = reviewReminderRepository,
-            platform = ReviewReminderPlatform(this),
-            pendingReviewCount = {
-                studyRepository.refresh()
-                val review = studyRepository.snapshot.value.review
-                if (review.completedToday) {
-                    0
-                } else {
-                    (review.scheduledCount - review.currentOrdinal).coerceAtLeast(0)
-                }
-            },
-            scope = applicationScope,
-        ).also(ReviewReminderCoordinator::start)
-        val gateway = modelConfigurationStore?.let { configurationStore ->
-            ConfiguredModelGatewayFactory.create(
-                configurationStore = configurationStore,
-                assetSource = RestrictedModelAssetSourceFactory.create(this, database),
-            )
-        } ?: UnavailableModelGateway()
-        modelTaskRepository = ModelTaskRepositoryFactory.create(
-            database = database,
-            gateway = gateway,
-        )
-        problemOrganizationWorkScheduler = ProblemOrganizationWorkScheduler(
-            workManager = WorkManager.getInstance(this),
-        )
-        startProblemOrganizationWorkScheduling()
-        batchImportRepository = BatchImportRepositoryFactory.create(
-            context = this,
-            database = database,
-            capture = captureRepository,
-            processingScope = applicationScope,
-            modelTasks = modelTaskRepository,
-        )
-        applicationScope.launch {
-            try {
-                BundledKnowledgeBaseInstaller.install(database)
-                studyRepository.initialize()
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Throwable) {
-                // The repository publishes the fail-closed state consumed by the UI.
-            }
-        }
-    }
-
-    private fun startProblemOrganizationWorkScheduling() {
-        applicationScope.launch {
-            try {
-                recoverRunningProblemOrganizationWorks(
-                    pageSize = ORGANIZATION_RUNNING_RECOVERY_PAGE_SIZE,
-                    readPage = database::readRunningProblemOrganizationWorks,
-                    enqueue = problemOrganizationWorkScheduler::enqueueRunningRecovery,
-                )
-                val scheduledVersions = mutableMapOf<String, Long>()
-                database.observeSchedulableProblemOrganizationWorks().collect { works ->
-                    scheduledVersions.keys.retainAll(works.mapTo(hashSetOf()) { it.workId })
-                    works.forEach { work ->
-                        if (scheduledVersions.put(work.workId, work.stateVersion) != work.stateVersion) {
-                            problemOrganizationWorkScheduler.enqueue(work)
-                        }
+        reviewReminderBroadcastHandoff =
+            ReviewReminderBroadcastHandoff(
+                store = SharedPreferencesReviewReminderPendingBroadcastStore(this),
+                scope = applicationScope,
+                handlerProvider = {
+                    if (::reviewReminderCoordinator.isInitialized) {
+                        reviewReminderCoordinator
+                    } else {
+                        null
                     }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Throwable) {
-                // Durable work remains in the database and is recovered on the next process start.
-            }
+                },
+            )
+        longTaskRecoveryScheduler = LongTaskRecoveryScheduler(applicationScope)
+
+        authorityBootstrap =
+            ProductionAuthorityBootstrapFactory.createProduction(
+                context = this,
+                adapterAvailability = AuditedProductionAdapterAvailability,
+                modelExecutionLeaseProvider = {
+                    ConfiguredModelExecutionLeaseFactory.create(
+                        checkNotNull(modelConfigurationStore) {
+                            "Production model configuration is unavailable"
+                        },
+                    )
+                },
+                publishCapabilities = { assembly ->
+                    val publication = productionCapabilityPublicationGraph.publish(assembly)
+                    check(publication is ProductionCapabilityPublicationState.Published) {
+                        "Production capability publication did not complete atomically"
+                    }
+                    val capabilities =
+                        checkNotNull(productionCapabilityPublicationGraph.publishedCapabilities)
+                    longTaskRecoveryScheduler.register(
+                        "problem-organization",
+                    ) {
+                        startProblemOrganizationWorkScheduling(capabilities)
+                    }
+                    longTaskRecoveryScheduler.register(
+                        "batch-import",
+                    ) {
+                        capabilities.batchImport.recoverInterruptedBatchImportWork()
+                    }
+                    longTaskRecoveryScheduler.register(
+                        "review-reminder",
+                    ) {
+                        startReviewReminderCoordinator(capabilities)
+                    }
+                    longTaskRecoveryScheduler.start()
+                },
+            )
+        applicationScope.launch {
+            authorityBootstrap.start()
         }
     }
 
     fun handleReviewReminderBroadcast(action: String?, onFinished: () -> Unit) {
-        applicationScope.launch {
-            try {
-                reviewReminderCoordinator.handleBroadcast(action)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                // A reminder must never crash app startup; the next preference emission repairs it.
-            } finally {
-                onFinished()
-            }
+        if (!ReviewReminderContract.acceptsBroadcastAction(action)) {
+            onFinished()
+            return
         }
+        reviewReminderBroadcastHandoff.accept(checkNotNull(action), onFinished)
     }
 
     fun refreshReviewReminderSchedule() {
+        if (!::reviewReminderCoordinator.isInitialized) return
         applicationScope.launch {
             reviewReminderCoordinator.refresh()
-        }
-    }
-
-    fun refreshStudyExperience() {
-        applicationScope.launch {
-            try {
-                studyRepository.refresh()
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Throwable) {
-                // The repository publishes the recoverable state consumed by the root UI.
-            }
         }
     }
 
@@ -244,13 +213,80 @@ class SmartMistakeBookApplication : Application(), Configuration.Provider {
     }
 
     override fun onTerminate() {
-        studyRepository.close()
-        database.close()
+        if (::problemOrganizationWorkSchedulingCoordinator.isInitialized) {
+            problemOrganizationWorkSchedulingCoordinator.close()
+        }
+        problemOrganizationExecutionResolver.set(null)
         applicationScope.cancel()
+        runCatching(productionCapabilityPublicationGraph::close)
         super.onTerminate()
     }
 
-    private companion object {
-        const val ORGANIZATION_RUNNING_RECOVERY_PAGE_SIZE = 100
+    private fun requirePublishedCapabilities(): ProductionCapabilitySnapshot =
+        checkNotNull(publishedProductionCapabilities) {
+            "Production capabilities are not published"
+        }
+
+    private fun startProblemOrganizationWorkScheduling(
+        capabilities: ProductionCapabilitySnapshot,
+    ) {
+        check(!::problemOrganizationWorkSchedulingCoordinator.isInitialized) {
+            "Problem organization scheduling coordinator was already initialized"
+        }
+        val scheduling =
+            capabilities.workManagerCoordination.currentProblemOrganizationScheduling()
+        val resolver =
+            capabilities.workManagerCoordination.currentProblemOrganizationExecutionResolver()
+        check(problemOrganizationExecutionResolver.compareAndSet(null, resolver)) {
+            "Problem organization execution resolver was already published"
+        }
+        val scheduler = ProblemOrganizationWorkScheduler(WorkManager.getInstance(this))
+        problemOrganizationWorkSchedulingCoordinator =
+            ProblemOrganizationWorkSchedulingCoordinator(
+                parentScope = applicationScope,
+                observeSchedulable = scheduling::observeSchedulable,
+                readRunningRecoveryPage = scheduling::readRunningRecoveryPage,
+                enqueueSchedulable = { schedule -> scheduler.enqueue(schedule) },
+                enqueueRunningRecovery = { schedule ->
+                    scheduler.enqueueRunningRecovery(schedule)
+                },
+            )
+        problemOrganizationWorkSchedulingCoordinator.start()
+    }
+
+    private fun startReviewReminderCoordinator(capabilities: ProductionCapabilitySnapshot) {
+        check(!::reviewReminderCoordinator.isInitialized) {
+            "Review reminder coordinator was already initialized"
+        }
+        val reviewRepository = capabilities.reviewPlanning.planning.repository
+        reviewReminderCoordinator =
+            ReviewReminderCoordinator(
+                repository = reviewReminderRepository,
+                platform = ReviewReminderPlatform(this),
+                pendingReviewCount = {
+                    val zone = ZoneId.systemDefault()
+                    when (
+                        val home =
+                            reviewRepository.readHome(
+                                ReviewHomeRequest(
+                                    localDayEpochDay = LocalDate.now(zone).toEpochDay(),
+                                    timeZoneId = zone.id,
+                                    requestedAtEpochMillis = System.currentTimeMillis(),
+                                ),
+                            )
+                    ) {
+                        is ReviewHomeState.Ready -> home.plan.remainingItemCount
+                        is ReviewHomeState.Unavailable -> 0
+                    }
+                },
+                scope = applicationScope,
+            )
+        reviewReminderCoordinator.start()
+        reviewReminderBroadcastHandoff.onHandlerReady()
     }
 }
+
+/**
+ * Capability availability is derived from the audited owner-source inventory. A complete
+ * inventory still cannot create Ready without the owner-issued current-generation assembly.
+ */

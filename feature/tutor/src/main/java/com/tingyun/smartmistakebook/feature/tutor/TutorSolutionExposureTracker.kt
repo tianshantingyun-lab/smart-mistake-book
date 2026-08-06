@@ -76,25 +76,24 @@ internal fun rememberTutorSolutionExposureTracker(
     clock: () -> Long,
 ): TutorSolutionExposureTracker {
     val documentId = question.questionDocument.document.id
-    val transientAnswerExposureKeysState = remember(
+    val lifecycleIdentity = remember(
         question.sessionId,
-        documentId,
         question.revisionNumber,
+        question.questionDocument,
+    ) {
+        question.toCapturedTutorQuestionLifecycleIdentity()
+    }
+    val transientAnswerExposureKeysState = remember(
+        lifecycleIdentity,
     ) { mutableStateOf(emptySet<TutorAnswerExposureKey>()) }
     val viewportBounds = remember(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
     ) { mutableStateOf<Rect?>(null) }
     val solutionBottomAnchors = remember(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
     ) { mutableStateMapOf<String, TutorSolutionBottomAnchor>() }
     val inFlightExposureKeys = remember(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
         interactions,
     ) { mutableSetOf<TutorAnswerExposureKey>() }
     val candidateKeys = remember(timeline, responses, longTermWritesBlocked) {
@@ -105,22 +104,16 @@ internal fun rememberTutorSolutionExposureTracker(
         )
     }
     val recordedAnswerExposureKeysState = remember(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
         interactions,
     ) { mutableStateOf(emptySet<TutorAnswerExposureKey>()) }
     val hydrationScope = remember(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
         candidateKeys,
         interactions,
     ) { Any() }
     val hydratedScopeState = remember(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
         interactions,
     ) { mutableStateOf<Any?>(null) }
     val targets = remember(timeline, responses, previewKeys, longTermWritesBlocked) {
@@ -135,9 +128,7 @@ internal fun rememberTutorSolutionExposureTracker(
     val currentHydrationScope by rememberUpdatedState(hydrationScope)
 
     LaunchedEffect(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
         candidateKeys,
         interactions,
         hydrationScope,
@@ -162,9 +153,7 @@ internal fun rememberTutorSolutionExposureTracker(
     }
 
     LaunchedEffect(
-        question.sessionId,
-        documentId,
-        question.revisionNumber,
+        lifecycleIdentity,
         longTermWritesBlocked,
         targets,
         interactions,

@@ -82,13 +82,21 @@ internal fun canSubmitTutorVisualTarget(attempt: VisualTargetAttempt): Boolean =
 internal fun isTutorVisualTargetReady(
     state: TutorVisualResolution,
     inlineScene: TutorVisualScene?,
-): Boolean =
-    (inlineScene ?: (state as? TutorVisualResolution.Ready)?.scene) is TutorVisualDocumentScene
+): Boolean {
+    val ready = state as? TutorVisualResolution.Ready ?: return false
+    val scene = inlineScene ?: ready.scene
+    return scene is TutorVisualDocumentScene &&
+        scene == ready.scene &&
+        ready.compiledDocument?.scene == scene
+}
 
 internal fun inlineTutorVisualResolution(
     scene: TutorVisualScene,
     ownerModelTaskRequestId: String,
-): TutorVisualResolution.Ready {
+): TutorVisualResolution {
+    if (scene is TutorVisualDocumentScene) {
+        return TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
+    }
     val sceneFingerprint = TutorVisualSceneFingerprint.of(scene)
     return TutorVisualResolution.Ready(
         scene = scene,
@@ -102,7 +110,7 @@ internal fun inlineTutorVisualResolution(
 internal fun TutorVisualResolution.Ready.hitPresentation(
     ownerModelTaskRequestId: String?,
 ): TutorVisualPresentationIdentity? {
-    if (scene !is TutorVisualDocumentScene) return null
+    if (scene !is TutorVisualDocumentScene || compiledDocument?.scene != scene) return null
     return presentationIdentity(ownerModelTaskRequestId)
 }
 
@@ -197,6 +205,7 @@ internal fun TutorVisualPresentation(
             ) {
                 TutorVisualSceneRenderer(
                     scene = state.scene,
+                    compiledDocument = state.compiledDocument,
                     onOpenOriginal = onOpenOriginal.takeIf { originalAvailable },
                     onReportIncorrect = { onReportIncorrect(state.scene.sceneId) },
                     hitPresentation = hitPresentation,

@@ -10,11 +10,21 @@ internal object ReviewReminderContract {
     const val ACTION_OPEN_REVIEW =
         "com.tingyun.smartmistakebook.action.OPEN_REVIEW"
     const val EXTRA_OPEN_REVIEW = "open_review"
+
+    val broadcastActionOrder = listOf(
+        ACTION_DAILY_REMINDER,
+        Intent.ACTION_BOOT_COMPLETED,
+        Intent.ACTION_TIME_CHANGED,
+        Intent.ACTION_TIMEZONE_CHANGED,
+    )
+
+    fun acceptsBroadcastAction(action: String?): Boolean =
+        action in broadcastActionOrder
 }
 
 class ReviewReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action !in ACCEPTED_ACTIONS) return
+        if (!ReviewReminderContract.acceptsBroadcastAction(intent.action)) return
         val pendingResult = goAsync()
         val application = context.applicationContext as? SmartMistakeBookApplication
         if (application == null) {
@@ -22,14 +32,5 @@ class ReviewReminderReceiver : BroadcastReceiver() {
             return
         }
         application.handleReviewReminderBroadcast(intent.action, pendingResult::finish)
-    }
-
-    private companion object {
-        val ACCEPTED_ACTIONS = setOf(
-            ReviewReminderContract.ACTION_DAILY_REMINDER,
-            Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED,
-        )
     }
 }

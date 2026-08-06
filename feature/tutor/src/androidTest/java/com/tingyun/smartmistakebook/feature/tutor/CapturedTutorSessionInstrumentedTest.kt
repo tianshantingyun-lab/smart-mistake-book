@@ -1,7 +1,6 @@
 package com.tingyun.smartmistakebook.feature.tutor
-
-import android.content.ContentValues
-import android.provider.MediaStore
+import android.content.Context
+import android.os.Environment
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -51,20 +52,23 @@ import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorSolutionExposureCommand
 import com.tingyun.smartmistakebook.core.domain.RevealTutorSolutionCommand
-import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorConversationReference
+import com.tingyun.smartmistakebook.core.domain.TutorMasteryContext
+import com.tingyun.smartmistakebook.core.domain.TutorMasteryContextRepository
+import com.tingyun.smartmistakebook.core.domain.TutorMasteryStatus
+import com.tingyun.smartmistakebook.core.domain.TutorMasterySummary
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.toTutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.GUIDED_INTERACTION_MESSAGE
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
-import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
@@ -89,6 +93,8 @@ import com.tingyun.smartmistakebook.core.model.TutorConceptRelation
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationStep
+import com.tingyun.smartmistakebook.core.model.TutorResponseIntent
+import com.tingyun.smartmistakebook.core.model.locallyConstrainedFor
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
@@ -111,12 +117,15 @@ import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.WritingLayer
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeNodeRef
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -135,6 +144,49 @@ import kotlinx.coroutines.flow.flowOf
 class CapturedTutorSessionInstrumentedTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Before
+    fun clearDurableRecoveryCredentials() {
+        InstrumentationRegistry.getInstrumentation().targetContext
+            .getSharedPreferences(
+                "tutor_local_recovery_presentation_v1",
+                Context.MODE_PRIVATE,
+            )
+            .edit()
+            .clear()
+            .commit()
+    }
+
+    private val derivativeKnowledgeNode = KnowledgeNodeRef(
+        subject = SubjectKind.MATH,
+        knowledgeNodeId = "node-derivative",
+        taxonomyVersion = "taxonomy-test-v1",
+        knowledgePackVersion = "knowledge-test-v1",
+    )
+    private val guidedMasteryContext = TutorMasteryContext(
+        summaries = listOf(
+            TutorMasterySummary(
+                knowledgeNode = derivativeKnowledgeNode,
+                displayName = "导数",
+                status = TutorMasteryStatus.LEARNING,
+            ),
+        ),
+    )
+    private val guidedMasteryContextRepository = TutorMasteryContextRepository { request ->
+        guidedMasteryContext.boundedTo(request)
+    }
+    private val guidedKnowledgeLabelResolver = TutorTrustedKnowledgeLabelResolver { ref ->
+        ref.takeIf { candidate -> candidate == derivativeKnowledgeNode }?.let { current ->
+            TutorTrustedKnowledgeLabel(
+                ref = current,
+                displayName = "导数",
+                activatedTaxonomyVersion = current.taxonomyVersion,
+                activatedKnowledgePackVersion = current.knowledgePackVersion,
+                manifestFingerprint = "a".repeat(64),
+                activationGeneration = 1,
+            )
+        }
+    }
 
     @Test
     fun tutorEmptyStateOffersRealConversationCaptureAndExistingQuestionEntry() {
@@ -174,10 +226,8 @@ class CapturedTutorSessionInstrumentedTest {
                     onOpenMistakeNotebook = {},
                     onOpenProfile = {},
                     modelTasks = modelTasks,
-                    learningMemory = TestLobbyMemoryRepository(),
-                    learnerScopeId = "instrumented-learner",
+                    conversationLobby = TestTutorConversationLobbyPort(),
                     catalogEntries = emptyList(),
-                    profile = StudyProfileOverview(),
                 )
             }
         }
@@ -832,11 +882,8 @@ class CapturedTutorSessionInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("saved_mistake_learning_memory").assertExists()
-        composeRule.onNodeWithText("这道题的学习记忆").assertExists()
-        composeRule.onNodeWithText(
-            "独立答对 2 次 · 提示后答对 1 次 · 遗忘 3 次 · 看过答案 1 次",
-        ).assertExists()
-        composeRule.onNodeWithText("已到复习时间", substring = true).assertExists()
+        composeRule.onNodeWithText("掌握情况").assertExists()
+        composeRule.onNodeWithText("需要再巩固").assertExists()
     }
 
     @Test
@@ -880,9 +927,16 @@ class CapturedTutorSessionInstrumentedTest {
             val input = modelTasks.respondRequests.single().input as TutorRespondInput
             assertEquals(exactMessage, input.studentMessage)
             assertEquals(1, modelTasks.executeRespondCalls)
-            assertEquals(emptyList<TutorTurnResponse>(), interactions.responses.value)
+            assertTrue(
+                interactions.responses.value.all { response ->
+                    response.selectedChoiceId == null &&
+                        response.evidenceRequestId == null &&
+                        response.requestedMove == null
+                },
+            )
+            assertEquals(1, interactions.responses.value.size)
+            assertTrue(interactions.responses.value.single().solutionRevealed)
             assertEquals(null, interactions.moveCommand)
-            assertEquals(null, interactions.revealCommand)
             mounted.value = false
         }
         composeRule.runOnIdle { mounted.value = true }
@@ -893,7 +947,7 @@ class CapturedTutorSessionInstrumentedTest {
     }
 
     @Test
-    fun directiveChoiceClickSendsTheCapturedChoiceId() {
+    fun uncertifiedDirectiveChoiceFallsBackToFreeResponseWithoutChoiceEvidence() {
         val modelTasks = ChatModelTaskRepository(
             session = session(),
             masteryRelevantPlan = true,
@@ -915,15 +969,22 @@ class CapturedTutorSessionInstrumentedTest {
                     onSave = {},
                     modelTasks = modelTasks,
                     interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
+                    masteryContextRepository = guidedMasteryContextRepository,
+                    questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
                     onOpenModelSettings = {},
                 )
             }
         }
 
         composeRule.onNodeWithTag("captured_tutor_directive_choice_directive-choice-b")
-            .performScrollTo()
-            .performClick()
+            .assertDoesNotExist()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("captured_tutor_directive_free_response")
+                .fetchSemanticsNodes().size == 1
+        }
+        composeRule.onNodeWithTag("tutor_chat_composer")
+            .performTextInput("继续")
+        composeRule.onNodeWithTag("tutor_chat_send").performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) {
             modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
         }
@@ -931,7 +992,7 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.runOnIdle {
             val input = modelTasks.respondRequests.single().input as TutorRespondInput
             assertEquals("继续", input.studentMessage)
-            assertEquals("directive-choice-b", input.selectedChoiceId)
+            assertEquals(null, input.selectedChoiceId)
         }
     }
 
@@ -954,6 +1015,8 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = interactions,
                     profile = StudyProfileOverview(),
+                    masteryContextRepository = guidedMasteryContextRepository,
+                    questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
                     onOpenModelSettings = {},
                 )
             }
@@ -977,55 +1040,27 @@ class CapturedTutorSessionInstrumentedTest {
     }
 
     private fun captureCurrentTutorScreen(displayName: String = "tutor-active-current.png") {
-        val resolver = InstrumentationRegistry.getInstrumentation()
-            .targetContext
-            .contentResolver
-        val collection = MediaStore.Images.Media.getContentUri(
-            MediaStore.VOLUME_EXTERNAL_PRIMARY,
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val directory = java.io.File(
+            requireNotNull(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)),
+            "SmartMistakeBookQA",
         )
-        val relativePath = "Pictures/SmartMistakeBookQA/"
-        resolver.delete(
-            collection,
-            "${MediaStore.Images.Media.DISPLAY_NAME} = ?",
-            arrayOf(displayName),
-        )
-        val uri = checkNotNull(
-            resolver.insert(
-                collection,
-                ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, displayName)
-                    put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                    put(MediaStore.Images.Media.RELATIVE_PATH, relativePath)
-                    put(MediaStore.Images.Media.IS_PENDING, 1)
-                },
-            ),
-        )
+        check(directory.mkdirs() || directory.isDirectory) {
+            "Tutor screenshot directory could not be created"
+        }
+        val target = java.io.File(directory, displayName)
         val screenshot = composeRule.onRoot().captureToImage().asAndroidBitmap()
-        val saved = checkNotNull(resolver.openOutputStream(uri)).use { stream ->
+        val saved = target.outputStream().use { stream ->
             screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
         }
         check(saved) { "Tutor screenshot could not be encoded" }
-        resolver.update(
-            uri,
-            ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) },
-            null,
-            null,
-        )
     }
 
     @Test
-    fun diagnosticManualRevealWaitsForTheSuccessfulReplyBottomBeforeRecordingExposure() {
+    fun directReplyWaitsForTheSuccessfulReplyBottomBeforeRecordingExposure() {
         val session = session()
-        val revealMove = TutorSuggestedMove(
-            id = "reveal-diagnostic-answer",
-            label = "直接展示完整答案",
-            type = TutorMoveType.REVEAL_SOLUTION,
-        )
         val modelTasks = ChatModelTaskRepository(
             session = session,
-            restoredSucceededMessage = "我还是不明白，请给我一个可选动作",
-            restoredSucceededSuggestedMoves = listOf(revealMove),
-            restoredExplanationMode = TutorExplanationMode.DIRECT,
             holdRespondExecution = true,
         )
         val interactions = RecordingTutorInteractions()
@@ -1046,25 +1081,31 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("tutor_chat_move_${revealMove.id}")
-            .performScrollTo()
-            .performClick()
+        composeRule.onNodeWithTag("tutor_chat_composer")
+            .performTextInput("为什么要分区间？")
+        composeRule.onNodeWithTag("tutor_chat_send").performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) {
             modelTasks.executeRespondCalls == 1 &&
                 modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.RUNNING
         }
         composeRule.waitForIdle()
         composeRule.runOnIdle {
-            assertTrue(interactions.revealCommands.isEmpty())
-            assertTrue(interactions.exposureCommands.isEmpty())
+            assertTrue(
+                interactions.exposureCommands.none { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
+            )
         }
 
         composeRule.runOnIdle { modelTasks.publishLatestResponseFailure() }
         composeRule.waitForIdle()
         composeRule.runOnIdle {
             assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, modelTasks.respondTasks.value.last().status)
-            assertTrue(interactions.revealCommands.isEmpty())
-            assertTrue(interactions.exposureCommands.isEmpty())
+            assertTrue(
+                interactions.exposureCommands.none { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
+            )
         }
         composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) {
@@ -1099,28 +1140,35 @@ class CapturedTutorSessionInstrumentedTest {
         }
         composeRule.onNodeWithTag("tutor_stream_placeholder").assertDoesNotExist()
         composeRule.runOnIdle {
-            assertTrue(interactions.revealCommands.isEmpty())
-            assertTrue(interactions.exposureCommands.isEmpty())
+            assertTrue(
+                interactions.exposureCommands.none { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
+            )
         }
 
-        composeRule.onNodeWithTag("tutor_chat_assistant_bottom_2")
+        composeRule.onNodeWithTag("tutor_chat_assistant_bottom_1")
             .performScrollTo()
             .assertIsDisplayed()
         advanceThroughExposureStabilityWindow()
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            interactions.recordedExposureKeys.size == 1
+            interactions.exposureCommands.count { command ->
+                command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+            } == 1
         }
         composeRule.runOnIdle {
-            assertEquals(1, interactions.exposureCommands.size)
+            val responseExposure = interactions.exposureCommands.single { command ->
+                command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+            }
             assertEquals(
                 TutorAnswerExposureSurfaceKind.RESPOND_REPLY,
-                interactions.exposureCommands.single().surfaceKind,
+                responseExposure.surfaceKind,
             )
-            assertEquals(1, interactions.exposureCommands.single().cycleOrdinal)
-            assertEquals(1, interactions.exposureCommands.single().turnOrdinal)
+            assertEquals(1, responseExposure.cycleOrdinal)
+            assertEquals(1, responseExposure.turnOrdinal)
             assertEquals(
                 maxOf(10_000L, modelTasks.respondTasks.value.last().updatedAtEpochMillis),
-                interactions.exposureCommands.single().occurredAtEpochMillis,
+                responseExposure.occurredAtEpochMillis,
             )
         }
     }
@@ -1359,8 +1407,6 @@ class CapturedTutorSessionInstrumentedTest {
             session = session,
             restoredSucceededMessage = "请直接告诉我这道题的答案",
             restoredSucceededRevealsSolution = true,
-            restoredCycleOrdinal = 2,
-            restoredTurnOrdinal = 3,
             restoredExplanationMode = TutorExplanationMode.DIRECT,
         )
         val interactions = RecordingTutorInteractions()
@@ -1384,6 +1430,9 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
+        composeRule.onNodeWithTag("tutor_chat_assistant_bottom_1")
+            .performScrollTo()
+            .assertIsDisplayed()
         composeRule.waitUntil(timeoutMillis = 5_000) {
             interactions.recordedExposureKeys.size == 1 &&
                 interactions.responses.value.singleOrNull()?.solutionRevealed == true
@@ -1393,8 +1442,8 @@ class CapturedTutorSessionInstrumentedTest {
             assertEquals(session.sessionId, command.sessionId)
             assertEquals(session.questionDocument.document.id, command.questionDocumentId)
             assertEquals(session.draftRevisionNumber, command.revisionNumber)
-            assertEquals(2, command.cycleOrdinal)
-            assertEquals(3, command.turnOrdinal)
+            assertEquals(1, command.cycleOrdinal)
+            assertEquals(1, command.turnOrdinal)
             assertEquals(10_000L, command.occurredAtEpochMillis)
             assertEquals(0, modelTasks.executeRespondCalls)
             assertEquals(null, interactions.responses.value.single().selectedChoiceId)
@@ -1475,14 +1524,18 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = interactions,
                     profile = StudyProfileOverview(),
+                    explanationMode = TutorExplanationMode.DIRECT,
                     onOpenModelSettings = {},
                 )
             }
         }
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.executeRespondCalls == 1 &&
-                modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.RUNNING
+            val ready =
+                modelTasks.executeRespondCalls == 1 &&
+                    modelTasks.respondTasks.value.lastOrNull()?.status ==
+                    ModelTaskStatus.RUNNING
+            ready
         }
         composeRule.waitForIdle()
         composeRule.waitUntil(timeoutMillis = 5_000) {
@@ -1500,10 +1553,15 @@ class CapturedTutorSessionInstrumentedTest {
 
         composeRule.runOnIdle { modelTasks.publishRestoredSolutionReply() }
         composeRule.waitForIdle()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("tutor_stream_placeholder")
+                .fetchSemanticsNodes().isEmpty()
+        }
         composeRule.runOnIdle {
-            assertEquals(
-                emptyList<RecordTutorSolutionExposureCommand>(),
-                interactions.exposureCommands,
+            assertTrue(
+                interactions.exposureCommands.none { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
             )
         }
 
@@ -1520,7 +1578,7 @@ class CapturedTutorSessionInstrumentedTest {
             assertEquals(10_000L, command.occurredAtEpochMillis)
             assertTrue(
                 command.occurredAtEpochMillis >
-                    modelTasks.respondTasks.value.single().updatedAtEpochMillis,
+                    modelTasks.respondTasks.value.last().updatedAtEpochMillis,
             )
         }
 
@@ -1552,6 +1610,7 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = interactions,
                     profile = StudyProfileOverview(),
+                    explanationMode = TutorExplanationMode.DIRECT,
                     onOpenModelSettings = {},
                 )
             }
@@ -1559,7 +1618,7 @@ class CapturedTutorSessionInstrumentedTest {
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
             modelTasks.executeRespondCalls == 1 &&
-                modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.RUNNING
+                modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.RUNNING
         }
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithTag("tutor_stream_placeholder")
@@ -1586,9 +1645,10 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.runOnIdle { modelTasks.publishRestoredSolutionReply(longReply) }
         composeRule.waitForIdle()
         composeRule.runOnIdle {
-            assertEquals(
-                emptyList<RecordTutorSolutionExposureCommand>(),
-                interactions.exposureCommands,
+            assertTrue(
+                interactions.exposureCommands.none { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
             )
         }
 
@@ -1596,9 +1656,10 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.onNodeWithTag("tutor_chat_assistant_1").assertIsDisplayed()
         composeRule.waitForIdle()
         composeRule.runOnIdle {
-            assertEquals(
-                emptyList<RecordTutorSolutionExposureCommand>(),
-                interactions.exposureCommands,
+            assertTrue(
+                interactions.exposureCommands.none { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
             )
         }
 
@@ -1617,7 +1678,12 @@ class CapturedTutorSessionInstrumentedTest {
             .assertIsDisplayed()
         composeRule.waitForIdle()
         composeRule.runOnIdle {
-            assertEquals(1, interactions.exposureCommands.size)
+            assertEquals(
+                1,
+                interactions.exposureCommands.count { command ->
+                    command.surfaceKind == TutorAnswerExposureSurfaceKind.RESPOND_REPLY
+                },
+            )
             assertEquals(1, interactions.recordedExposureKeys.size)
         }
     }
@@ -1828,7 +1894,7 @@ class CapturedTutorSessionInstrumentedTest {
             assertEquals(1, modelTasks.executeRespondCalls)
             val request = modelTasks.respondRequests.single()
             val input = request.input as TutorRespondInput
-            assertEquals("tutor-respond-restored", request.requestId)
+            assertTrue(request.requestId.startsWith("tutor-respond:approved-recovery:"))
             assertEquals(exactMessage, input.studentMessage)
             assertEquals(1, input.cycleOrdinal)
             assertEquals(1, input.turnOrdinal)
@@ -1837,16 +1903,10 @@ class CapturedTutorSessionInstrumentedTest {
     }
 
     @Test
-    fun externalFollowUpChoiceRestoresItsVisibleDirectiveAfterApproval() {
+    fun externalFollowUpFreeResponseRestoresItsVisibleDirectiveAfterApproval() {
         val session = session()
         var now = 10_000L
-        val directive = TutorInteractionDirective.Choices(
-            promptMarkdown = "选择下一步。",
-            choices = listOf(
-                TutorInteractionChoice("follow-up-a", "继续"),
-                TutorInteractionChoice("follow-up-b", "继续"),
-            ),
-        )
+        val directive = TutorInteractionDirective.FreeResponse("请写下你认为关键的关系。")
         val modelTasks = ChatModelTaskRepository(
             session = session,
             restoredSucceededMessage = "我还是不明白。",
@@ -1865,6 +1925,8 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = RecordingTutorInteractions(),
                     profile = StudyProfileOverview(),
+                    masteryContextRepository = guidedMasteryContextRepository,
+                    questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
                     onOpenModelSettings = {},
                 )
             }
@@ -1874,9 +1936,12 @@ class CapturedTutorSessionInstrumentedTest {
             .performScrollTo()
             .performClick()
         composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
-        composeRule.onNodeWithTag("captured_tutor_directive_choice_follow-up-b")
-            .performScrollTo()
-            .performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("captured_tutor_directive_free_response")
+                .fetchSemanticsNodes().size == 2
+        }
+        composeRule.onNodeWithTag("tutor_chat_composer").performTextInput("继续")
+        composeRule.onNodeWithTag("tutor_chat_send").performClick()
         composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
             .performScrollTo()
             .performClick()
@@ -1887,24 +1952,20 @@ class CapturedTutorSessionInstrumentedTest {
             val request = modelTasks.respondRequests.single()
             val input = request.input as TutorRespondInput
             assertEquals("继续", input.studentMessage)
-            assertEquals("follow-up-b", input.selectedChoiceId)
+            assertEquals(null, input.selectedChoiceId)
         }
         composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
     }
 
     @Test
-    fun staleExternalFollowUpChoiceClearsPendingApprovalWithoutSendingIt() {
+    fun staleExternalFollowUpFreeResponseClearsPendingApprovalWithoutSendingIt() {
         val session = session()
         var now = 10_000L
         val modelTasks = ChatModelTaskRepository(
             session = session,
             restoredSucceededMessage = "我还是不明白。",
-            restoredSucceededInteractionDirective = TutorInteractionDirective.Choices(
-                promptMarkdown = "选择下一步。",
-                choices = listOf(
-                    TutorInteractionChoice("follow-up-a", "继续"),
-                    TutorInteractionChoice("follow-up-b", "继续"),
-                ),
+            restoredSucceededInteractionDirective = TutorInteractionDirective.FreeResponse(
+                "请写下你认为关键的关系。",
             ),
             externalProvider = true,
             masteryRelevantPlan = true,
@@ -1920,6 +1981,8 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = RecordingTutorInteractions(),
                     profile = StudyProfileOverview(),
+                    masteryContextRepository = guidedMasteryContextRepository,
+                    questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
                     onOpenModelSettings = {},
                 )
             }
@@ -1929,9 +1992,12 @@ class CapturedTutorSessionInstrumentedTest {
             .performScrollTo()
             .performClick()
         composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
-        composeRule.onNodeWithTag("captured_tutor_directive_choice_follow-up-b")
-            .performScrollTo()
-            .performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("captured_tutor_directive_free_response")
+                .fetchSemanticsNodes().size == 2
+        }
+        composeRule.onNodeWithTag("tutor_chat_composer").performTextInput("继续")
+        composeRule.onNodeWithTag("tutor_chat_send").performClick()
         composeRule.onNodeWithTag("tutor_respond_disclosure_approve").assertExists()
         composeRule.runOnIdle {
             modelTasks.respondTasks.value = emptyList()
@@ -1984,7 +2050,7 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.runOnIdle {
             assertEquals(1, modelTasks.executePlanCalls)
             val resumed = modelTasks.planRequests.single()
-            assertEquals(originalRequest.requestId, resumed.requestId)
+            assertTrue(resumed.requestId.startsWith("tutor-plan:approved-recovery:"))
             assertEquals(originalRequest.input, resumed.input)
         }
         composeRule.onNodeWithTag("captured_tutor_disclosure").assertDoesNotExist()
@@ -2072,7 +2138,9 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.runOnIdle {
             assertEquals(1, modelTasks.executePlanCalls)
             assertEquals(0, modelTasks.executeRespondCalls)
-            assertEquals(originalRequest, modelTasks.planRequests.single())
+            val resumed = modelTasks.planRequests.single()
+            assertTrue(resumed.requestId.startsWith("tutor-plan:local-recovery:"))
+            assertEquals(originalRequest.input, resumed.input)
         }
     }
 
@@ -2084,6 +2152,7 @@ class CapturedTutorSessionInstrumentedTest {
         val modelTasks = ChatModelTaskRepository(
             session = session,
             externalProvider = true,
+            masteryRelevantPlan = true,
         )
         val restorationTester = StateRestorationTester(composeRule)
         restorationTester.setContent {
@@ -2097,6 +2166,8 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = RecordingTutorInteractions(),
                     profile = StudyProfileOverview(),
+                    masteryContextRepository = guidedMasteryContextRepository,
+                    questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
                     onOpenModelSettings = {},
                 )
             }
@@ -2219,6 +2290,8 @@ class CapturedTutorSessionInstrumentedTest {
                     modelTasks = modelTasks,
                     interactions = interactions,
                     profile = StudyProfileOverview(),
+                    masteryContextRepository = guidedMasteryContextRepository,
+                    questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
                     onOpenModelSettings = {},
                 )
             }
@@ -2300,6 +2373,7 @@ class CapturedTutorSessionInstrumentedTest {
             modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
         }
         composeRule.runOnIdle { modelTasks.publishLatestResponseFailure() }
+        scrollConversationToTail()
         composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().assertExists()
         composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
         composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().performClick()
@@ -2349,6 +2423,7 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
+        scrollConversationToTail()
         composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
             .performScrollTo()
             .performClick()
@@ -2361,6 +2436,11 @@ class CapturedTutorSessionInstrumentedTest {
         }
         composeRule.runOnIdle { modelTasks.publishLatestResponseFailure() }
         composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
+        composeRule.waitForIdle()
+        scrollConversationToTail()
+        composeRule.waitUntil(timeoutMillis = 30_000) {
+            composeRule.onAllNodesWithTag("tutor_chat_retry").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().performClick()
         composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
         composeRule.runOnIdle {
@@ -2383,10 +2463,8 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.runOnIdle {
             val original = modelTasks.respondRequests.first()
             val resumed = modelTasks.respondRequests.last()
-            assertEquals(
-                original.requestId.substringBeforeLast(':') + ":1",
-                resumed.requestId,
-            )
+            assertTrue(resumed.requestId.startsWith("tutor-respond:local-recovery:"))
+            assertTrue(resumed.requestId.endsWith(":retry:1"))
             assertEquals(original.input, resumed.input)
             assertEquals(null, resumed.egressManifest)
             assertEquals(
@@ -2401,10 +2479,7 @@ class CapturedTutorSessionInstrumentedTest {
         val session = session()
         val modelTasks = ChatModelTaskRepository(
             session = session,
-            restoredFailureStatus = ModelTaskStatus.RETRYABLE_FAILURE,
-            masteryRelevantPlan = true,
         )
-        val originalRequest = modelTasks.respondTasks.value.single().request
         composeRule.setContent {
             MaterialTheme {
                 ReadyCapturedSession(
@@ -2421,15 +2496,38 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
+        val exactMessage = "请解释为什么要分区间"
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            modelTasks.planTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tutor_chat_composer").performTextInput(exactMessage)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tutor_chat_send").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            modelTasks.executeRespondCalls == 1 &&
+                modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.SUCCEEDED
+        }
+        composeRule.runOnIdle { modelTasks.publishLatestResponseFailure() }
+        composeRule.waitForIdle()
+        scrollConversationToTail()
+        composeRule.waitUntil(timeoutMillis = 30_000) {
+            composeRule.onAllNodesWithTag("tutor_chat_retry").fetchSemanticsNodes().isNotEmpty()
+        }
+        val originalRequest = modelTasks.respondTasks.value.single().request
+        composeRule.waitForIdle()
         composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.SUCCEEDED
+            modelTasks.executeRespondCalls == 2 &&
+                modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.SUCCEEDED
         }
         composeRule.runOnIdle {
-            assertEquals(1, modelTasks.executeRespondCalls)
+            assertEquals(2, modelTasks.executeRespondCalls)
             assertEquals(2, modelTasks.respondTasks.value.size)
-            val retriedRequest = modelTasks.respondRequests.single()
-            assertEquals("tutor-respond-restored:1", retriedRequest.requestId)
+            val retriedRequest = modelTasks.respondRequests.last()
+            assertNotEquals(modelTasks.respondRequests.first().requestId, retriedRequest.requestId)
+            assertTrue(retriedRequest.requestId.startsWith("tutor-respond:local-recovery:"))
+            assertTrue(retriedRequest.requestId.endsWith(":retry:1"))
             assertEquals(originalRequest.input, retriedRequest.input)
             assertEquals(null, retriedRequest.egressManifest)
         }
@@ -2480,6 +2578,7 @@ class CapturedTutorSessionInstrumentedTest {
             session = session,
             restoredFailureStatus = ModelTaskStatus.PERMANENT_FAILURE,
             restoredFailureCode = ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
+            restoredExplanationMode = TutorExplanationMode.DIRECT,
             externalProvider = true,
         )
         val originalRequest = modelTasks.respondTasks.value.single().request
@@ -2541,6 +2640,7 @@ class CapturedTutorSessionInstrumentedTest {
             restoredFailureCode = ModelFailureCode.AUTHENTICATION_FAILED,
             restoredFailureMessage = exactMessage,
             restoredRequestedMove = TutorMoveType.CHANGE_REPRESENTATION,
+            restoredExplanationMode = TutorExplanationMode.DIRECT,
             restoredCycleOrdinal = 2,
             restoredTurnOrdinal = 4,
             externalProvider = true,
@@ -2721,7 +2821,7 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithText("先判断导数的正负变化。")
+        composeRule.onNodeWithText("完整主解法内容")
             .performScrollTo()
             .assertExists()
         composeRule.onNodeWithText("先看导数在临界点两侧的符号。")
@@ -2795,7 +2895,7 @@ class CapturedTutorSessionInstrumentedTest {
 
         composeRule.onNodeWithTag("tutor_conversation_list").assertExists()
         composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
-        composeRule.onNodeWithText("已存入错题本 · 再次打开会接着上次讲题").assertExists()
+        composeRule.onNodeWithText("本题已存入错题本").assertExists()
     }
 
     @Test
@@ -2942,6 +3042,17 @@ class CapturedTutorSessionInstrumentedTest {
         repeat(12) {
             composeRule.mainClock.advanceTimeByFrame()
             composeRule.waitForIdle()
+        }
+    }
+
+    private fun scrollConversationToTail() {
+        val itemCount = composeRule.onNodeWithTag("tutor_conversation_list")
+            .fetchSemanticsNode()
+            .config[SemanticsProperties.CollectionInfo]
+            .rowCount
+        if (itemCount > 0) {
+            composeRule.onNodeWithTag("tutor_conversation_list")
+                .performScrollToIndex(itemCount - 1)
         }
     }
 
@@ -3414,43 +3525,71 @@ class CapturedTutorSessionInstrumentedTest {
                 ModelExecutionLocation.LOCAL_NO_EGRESS
             },
         )
-        private fun configuredTutorOutput(): TutorPlanOutput = tutorOutput().let { output ->
-            output.copy(
-                plan = output.plan.copy(
-                    targetedEvidenceLabels = listOf("导数").takeIf { masteryRelevantPlan }
-                        ?: output.plan.targetedEvidenceLabels,
-                    interactionDirective = initialInteractionDirective,
-                ),
-            )
+        private val masteryContext = if (masteryRelevantPlan) {
+            guidedMasteryContext
+        } else {
+            TutorMasteryContext.EMPTY
         }
+        private fun configuredTutorOutput(input: TutorPlanInput): TutorPlanOutput =
+            tutorOutput().let { output ->
+                output.copy(
+                    sessionId = input.sessionId,
+                    draftRevisionNumber = input.draftRevisionNumber,
+                    questionDocumentId = input.questionDocument.id,
+                    cycleOrdinal = input.cycleOrdinal,
+                    turnOrdinal = input.turnOrdinal,
+                    plan = output.plan.copy(
+                        targetedEvidenceLabels = input.teachingConstraints
+                            .map { guidance -> guidance.label }
+                            .takeIf { masteryRelevantPlan }
+                            .orEmpty(),
+                        interactionDirective = initialInteractionDirective,
+                    ),
+                )
+            }
         private var currentCapabilitiesOverride = currentCapabilities
+        private val restoredPriorTurns =
+            (1 until restoredTurnOrdinal).map { turnOrdinal ->
+                TutorTurnHistoryEntry(
+                    turnOrdinal = turnOrdinal,
+                    diagnosticStemMarkdown = "先比较哪个条件？",
+                    selectedChoiceMarkdown = "先检查定义域",
+                    selectionWasCorrect = true,
+                    feedbackMarkdown = "继续。",
+                    requestedMove = TutorMoveType.CHANGE_REPRESENTATION,
+                )
+            }
         private val planRequest = buildTutorPlanRequest(
             question = session.toTutorQuestionContext().let { question ->
                 if (masteryRelevantPlan) {
-                    question.copy(relatedKnowledgeNodeIds = setOf("node-derivative"))
+                    question.copy(
+                        relatedKnowledgeNodeIds = setOf(derivativeKnowledgeNode.knowledgeNodeId),
+                        questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
+                        trustedKnowledgeLabelResolver = guidedKnowledgeLabelResolver,
+                    )
                 } else {
                     question
                 }
             },
-            profile = if (masteryRelevantPlan) {
-                StudyProfileOverview(
-                    hasLearningEvidence = true,
-                    weaknesses = listOf(
-                        StudyKnowledgeSummary(
-                            knowledgeNodeId = "node-derivative",
-                            displayName = "导数",
-                            status = MasteryStatus.LEARNING,
-                            lowerBoundIndependentCorrect = 0.35,
-                        ),
-                    ),
-                )
-            } else {
-                StudyProfileOverview()
-            },
+            masteryContext = masteryContext,
             provider = provider,
             requestId = "tutor-plan-chat",
             occurredAtEpochMillis = 100,
             approvedAtEpochMillis = 100,
+            cycleOrdinal = restoredCycleOrdinal,
+            priorConversationMemory =
+                if (restoredCycleOrdinal > 1) {
+                    TutorConversationMemory(
+                        completedCycleCount = 1,
+                        answeredTurnCount = 3,
+                        correctChoiceCount = 3,
+                        lastFeedbackMarkdown = "继续。",
+                        lastRequestedMove = TutorMoveType.CHANGE_REPRESENTATION,
+                    )
+                } else {
+                    null
+                },
+            priorTurns = restoredPriorTurns,
         ).let { request ->
             if (legacyPlanDisclosure) {
                 request.copy(
@@ -3480,7 +3619,8 @@ class CapturedTutorSessionInstrumentedTest {
             },
             attemptCount = 1,
             provider = provider,
-            output = configuredTutorOutput()
+            output = configuredTutorOutput(planRequest.input as TutorPlanInput)
+                .locallyConstrainedFor(planRequest.input as TutorPlanInput)
                 .takeIf { restoredPlanStatus == ModelTaskStatus.SUCCEEDED },
             createdAtEpochMillis = 100,
             updatedAtEpochMillis = 200,
@@ -3520,8 +3660,20 @@ class CapturedTutorSessionInstrumentedTest {
                 ?: restoredFailureStatus?.let { restoredFailureMessage }
             if (restoredMessage != null) {
                 val restoredRequest = buildTutorRespondRequest(
-                    question = session.toTutorQuestionContext(),
-                    profile = StudyProfileOverview(),
+                    question = session.toTutorQuestionContext().let { question ->
+                        if (masteryRelevantPlan) {
+                            question.copy(
+                                relatedKnowledgeNodeIds = setOf(
+                                    derivativeKnowledgeNode.knowledgeNodeId,
+                                ),
+                                questionKnowledgeNodes = listOf(derivativeKnowledgeNode),
+                                trustedKnowledgeLabelResolver = guidedKnowledgeLabelResolver,
+                            )
+                        } else {
+                            question
+                        }
+                    },
+                    masteryContext = masteryContext,
                     provider = provider,
                     requestId = "tutor-respond-restored",
                     occurredAtEpochMillis = 300,
@@ -3555,9 +3707,28 @@ class CapturedTutorSessionInstrumentedTest {
                                 cycleOrdinal = restoredInput.cycleOrdinal,
                                 turnOrdinal = restoredInput.turnOrdinal,
                                 messageMarkdown = "先看导数在临界点两侧的符号。",
-                                solutionRevealed = restoredSucceededRevealsSolution,
+                                responseIntent = if (
+                                    restoredExplanationMode == TutorExplanationMode.GUIDED &&
+                                    restoredRequestedMove != TutorMoveType.REVEAL_SOLUTION
+                                ) {
+                                    TutorResponseIntent.ASK
+                                } else {
+                                    TutorResponseIntent.EXPLAIN
+                                },
+                                solutionRevealed = restoredSucceededRevealsSolution ||
+                                    restoredExplanationMode == TutorExplanationMode.DIRECT,
                                 suggestedMoves = restoredSucceededSuggestedMoves,
-                                interactionDirective = restoredSucceededInteractionDirective,
+                                interactionDirective = if (
+                                    restoredExplanationMode == TutorExplanationMode.GUIDED &&
+                                    restoredRequestedMove != TutorMoveType.REVEAL_SOLUTION
+                                ) {
+                                    restoredSucceededInteractionDirective
+                                        ?: TutorInteractionDirective.FreeResponse(
+                                            "请写下你认为关键的关系。",
+                                        )
+                                } else {
+                                    null
+                                },
                                 intentDecision = restoredSucceededIntentDecision,
                                 modelVersion = "model-v1",
                             )
@@ -3614,7 +3785,7 @@ class CapturedTutorSessionInstrumentedTest {
                             questionDocumentId = input.questionDocument.id,
                             cycleOrdinal = input.cycleOrdinal,
                             turnOrdinal = input.turnOrdinal,
-                        ),
+                        ).locallyConstrainedFor(input),
                     )
                     planTasks.value = listOf(succeeded)
                     emit(succeeded)
@@ -3667,10 +3838,19 @@ class CapturedTutorSessionInstrumentedTest {
                             } else {
                                 "先看导数在临界点两侧的符号。"
                             },
-                            interactionDirective = TutorInteractionDirective.Continue
-                                .takeIf {
-                                    input.explanationMode == TutorExplanationMode.GUIDED
-                                },
+                            solutionRevealed = input.explanationMode == TutorExplanationMode.DIRECT,
+                            responseIntent = if (
+                                input.explanationMode == TutorExplanationMode.GUIDED
+                            ) {
+                                TutorResponseIntent.ASK
+                            } else {
+                                TutorResponseIntent.EXPLAIN
+                            },
+                            interactionDirective = TutorInteractionDirective.FreeResponse(
+                                "请写下你认为关键的关系。",
+                            ).takeIf {
+                                input.explanationMode == TutorExplanationMode.GUIDED
+                            },
                             intentDecision = TutorIntentDecision.currentQuestionDefault(),
                             modelVersion = "model-v1",
                         ),
@@ -3755,7 +3935,7 @@ class CapturedTutorSessionInstrumentedTest {
                         candidate.providerConfigurationVersion
                 }
             } ?: currentCapabilitiesOverride ?: provider,
-            output = output,
+            output = output?.locallyConstrainedFor(request.input as TutorRespondInput),
             failure = when (status) {
                 ModelTaskStatus.RETRYABLE_FAILURE -> ModelTaskFailure(
                     code = restoredFailureCode ?: ModelFailureCode.TIMEOUT,

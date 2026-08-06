@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerationRequest
+import com.tingyun.smartmistakebook.core.model.TutorLobbyVisualKind
+import com.tingyun.smartmistakebook.core.model.TutorLobbyVisualRequest
 
 internal enum class VisualIntentKind {
     DIAGRAM,
@@ -20,6 +22,16 @@ internal data class VisualIntent(
     val focusMarkdown: String,
 ) {
     fun toGenerationRequest() = TutorVisualGenerationRequest(focusMarkdown)
+
+    fun toLobbyRequest() = TutorLobbyVisualRequest(
+        kind = when (kind) {
+            VisualIntentKind.DIAGRAM -> TutorLobbyVisualKind.DIAGRAM
+            VisualIntentKind.ANIMATION -> TutorLobbyVisualKind.ANIMATION
+            VisualIntentKind.THREE_DIMENSIONAL -> TutorLobbyVisualKind.THREE_DIMENSIONAL
+            VisualIntentKind.VISUALIZATION -> TutorLobbyVisualKind.VISUALIZATION
+        },
+        focusMarkdown = focusMarkdown,
+    )
 
     companion object {
         fun detect(studentMessage: String): VisualIntent? {

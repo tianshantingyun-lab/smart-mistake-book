@@ -42,7 +42,7 @@ import com.tingyun.smartmistakebook.core.domain.MistakeDetailState
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionSummary
-import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ScopedModelTaskPort
 import com.tingyun.smartmistakebook.core.domain.MistakeSourceAsset
 import com.tingyun.smartmistakebook.core.domain.MistakeSourceLocation
 import com.tingyun.smartmistakebook.core.domain.MistakeSourceSet
@@ -74,8 +74,8 @@ fun MistakeDetailRoute(
     errorBookEntryId: String,
     repository: MistakeDetailRepository,
     organizationRepository: MistakeOrganizationRepository,
-    modelTasks: ModelTaskRepository,
-    profile: StudyProfileOverview,
+    modelTasks: ScopedModelTaskPort,
+    profile: StudyProfileOverview? = null,
     catalogEntries: List<StudyCatalogEntry>,
     onBack: () -> Unit,
     onExport: (MistakeRevisionKey) -> Unit,
@@ -83,12 +83,17 @@ fun MistakeDetailRoute(
     onOpenRelatedMistake: (String) -> Unit,
     onOpenModelSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    historicalRevisionsEnabled: Boolean = true,
 ) {
     var selectedRevisionId by rememberSaveable(errorBookEntryId) {
         mutableStateOf<String?>(null)
     }
-    val revisionHistoryFlow = remember(errorBookEntryId, repository) {
-        if (errorBookEntryId.isBlank()) {
+    val revisionHistoryFlow = remember(
+        errorBookEntryId,
+        repository,
+        historicalRevisionsEnabled,
+    ) {
+        if (errorBookEntryId.isBlank() || !historicalRevisionsEnabled) {
             flowOf(emptyList())
         } else {
             repository.observeRevisionHistory(errorBookEntryId)
@@ -97,9 +102,12 @@ fun MistakeDetailRoute(
     val revisionHistory by revisionHistoryFlow.collectAsStateWithLifecycle(
         initialValue = emptyList(),
     )
-    val selectedRevision = revisionHistory.firstOrNull { summary ->
-        summary.problemRevisionId == selectedRevisionId && !summary.isCurrent
-    }
+    val selectedRevision =
+        revisionHistory
+            .takeIf { historicalRevisionsEnabled }
+            ?.firstOrNull { summary ->
+                summary.problemRevisionId == selectedRevisionId && !summary.isCurrent
+            }
     val stateFlow: Flow<MistakeDetailState> = remember(
         errorBookEntryId,
         repository,
@@ -128,7 +136,9 @@ fun MistakeDetailRoute(
         revisionHistory = revisionHistory,
         selectedRevisionId = selectedRevision?.problemRevisionId,
         onSelectRevision = { summary ->
-            selectedRevisionId = summary.problemRevisionId.takeUnless { summary.isCurrent }
+            if (historicalRevisionsEnabled) {
+                selectedRevisionId = summary.problemRevisionId.takeUnless { summary.isCurrent }
+            }
         },
         onOpenRelatedMistake = onOpenRelatedMistake,
         onOpenModelSettings = onOpenModelSettings,
@@ -143,8 +153,8 @@ internal fun MistakeDetailContent(
     onExport: (MistakeRevisionKey) -> Unit,
     onTutor: (MistakeRevisionKey) -> Unit = {},
     organizationRepository: MistakeOrganizationRepository? = null,
-    modelTasks: ModelTaskRepository? = null,
-    profile: StudyProfileOverview = StudyProfileOverview(),
+    modelTasks: ScopedModelTaskPort? = null,
+    profile: StudyProfileOverview? = null,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     revisionHistory: List<MistakeRevisionSummary> = emptyList(),
     selectedRevisionId: String? = null,
@@ -285,8 +295,8 @@ private fun ReadyDetail(
     onExport: () -> Unit,
     onTutor: () -> Unit,
     organizationRepository: MistakeOrganizationRepository?,
-    modelTasks: ModelTaskRepository?,
-    profile: StudyProfileOverview,
+    modelTasks: ScopedModelTaskPort?,
+    profile: StudyProfileOverview?,
     catalogEntries: List<StudyCatalogEntry>,
     revisionHistory: List<MistakeRevisionSummary>,
     isViewingHistoricalRevision: Boolean,

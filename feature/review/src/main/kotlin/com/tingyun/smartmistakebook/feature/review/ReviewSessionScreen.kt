@@ -1,4 +1,13 @@
-package com.tingyun.smartmistakebook.feature.review
+package com.tingyun.smartmistakebook.feature.review
+import com.tingyun.smartmistakebook.core.ui.ErrorWarm
+import com.tingyun.smartmistakebook.core.ui.Ink
+import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.Jade
+import com.tingyun.smartmistakebook.core.ui.JadeDark
+import com.tingyun.smartmistakebook.core.ui.JadeSoft
+import com.tingyun.smartmistakebook.core.ui.Outline
+import com.tingyun.smartmistakebook.core.ui.Paper
+import com.tingyun.smartmistakebook.core.ui.Track
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -73,6 +82,9 @@ import com.tingyun.smartmistakebook.core.ui.SubjectIcon
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
+@Deprecated(
+    message = "Use DailyReviewSessionRoute with narrow review action ports",
+)
 @Composable
 fun ReviewSessionScreen(
     onBack: () -> Unit,
@@ -157,13 +169,13 @@ private fun ReviewSessionContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(5.dp),
-            color = SmartColors.Jade,
-            trackColor = SmartColors.Track,
+            color = Jade,
+            trackColor = Track,
         )
         Spacer(Modifier.height(12.dp))
         Text(
             text = "第 $safeQueuePosition / $safeQueueSize 题",
-            color = SmartColors.InkSecondary,
+            color = InkSecondary,
             style = MaterialTheme.typography.labelMedium,
         )
         PaperDivider(Modifier.padding(vertical = 18.dp))
@@ -172,12 +184,12 @@ private fun ReviewSessionContent(
         Text(
             text = reviewAdaptationMessage(profile),
             style = MaterialTheme.typography.bodyMedium,
-            color = SmartColors.InkSecondary,
+            color = InkSecondary,
         )
         Spacer(Modifier.height(16.dp))
         SafeMarkdownText(
             markdown = assessmentItem.stemMarkdown,
-            color = SmartColors.Ink,
+            color = Ink,
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 19.sp,
                 lineHeight = 30.sp,
@@ -232,13 +244,13 @@ private fun ReviewSessionContent(
         if (sessionViewModel.submissionStatus == ReviewSubmissionStatus.RECORDING) {
             Text(
                 text = "正在记录本次作答…",
-                color = SmartColors.InkSecondary,
+                color = InkSecondary,
                 style = MaterialTheme.typography.bodySmall,
             )
         } else if (sessionViewModel.submissionStatus == ReviewSubmissionStatus.FAILED) {
             Text(
                 text = "作答尚未确认写入。为保证安全重试，当前选择已锁定；请点击“重新提交答案”。",
-                color = SmartColors.ErrorWarm,
+                color = ErrorWarm,
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -274,7 +286,7 @@ private fun ReviewSessionContent(
         if (sessionViewModel.revealStatus == ReviewRevealStatus.FAILED) {
             Text(
                 text = "讲解尚未安全记录，因此暂未显示。",
-                color = SmartColors.ErrorWarm,
+                color = ErrorWarm,
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -315,7 +327,7 @@ private fun ReviewSessionUnavailable(
                 TutorCapabilityBlockReason.NO_ASSESSMENT_ITEM -> "当前复习内容没有可作答的问题。"
             },
             modifier = Modifier.testTag("review_session_unavailable"),
-            color = SmartColors.InkSecondary,
+            color = InkSecondary,
             style = MaterialTheme.typography.bodyLarge,
         )
     }
@@ -334,14 +346,14 @@ private fun SessionHeader(onBack: () -> Unit, subject: String = "GENERAL") {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = "返回复习首页",
-                tint = SmartColors.Ink,
+                tint = Ink,
             )
         }
         Spacer(Modifier.width(4.dp))
         Column(Modifier.weight(1f)) {
             Text(
                 text = "复习中",
-                color = SmartColors.Ink,
+                color = Ink,
                 fontSize = 28.sp,
                 lineHeight = 36.sp,
                 fontWeight = FontWeight.Bold,
@@ -369,12 +381,12 @@ private fun ChoiceRow(
     val isSubmitted = submittedChoice != null
     val isSubmittedSelection = submittedChoice == choice.id
     val outlineColor = when {
-        isSubmittedSelection && isCorrect -> SmartColors.Jade
-        isSubmittedSelection -> SmartColors.ErrorWarm
-        isSelected -> SmartColors.Jade
-        else -> SmartColors.Outline
+        isSubmittedSelection && isCorrect -> Jade
+        isSubmittedSelection -> ErrorWarm
+        isSelected -> Jade
+        else -> Outline
     }
-    val backgroundColor = if (isSelected) SmartColors.JadeSoft else SmartColors.Paper
+    val backgroundColor = if (isSelected) JadeSoft else Paper
     val shape = RoundedCornerShape(8.dp)
     val stateLabel = when {
         isSubmittedSelection && isCorrect -> "已提交，回答正确"
@@ -415,7 +427,7 @@ private fun ChoiceRow(
         ) {
             Text(
                 text = choice.id,
-                color = SmartColors.Ink,
+                color = Ink,
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -423,7 +435,7 @@ private fun ChoiceRow(
         SafeMarkdownText(
             markdown = choice.markdown,
             modifier = Modifier.weight(1f),
-            color = SmartColors.Ink,
+            color = Ink,
             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 25.sp),
         )
     }
@@ -438,17 +450,17 @@ private fun RecordedAttemptFeedback(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("review_explanation"),
-        color = if (correct) SmartColors.JadeSoft else SmartColors.Paper,
+        color = if (correct) JadeSoft else Paper,
         shape = RoundedCornerShape(8.dp),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            if (correct) SmartColors.Jade else SmartColors.ErrorWarm,
+            if (correct) Jade else ErrorWarm,
         ),
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
                 text = if (correct) "选择正确" else "这次选择还差一步",
-                color = if (correct) SmartColors.JadeDark else SmartColors.ErrorWarm,
+                color = if (correct) JadeDark else ErrorWarm,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -462,21 +474,21 @@ private fun AnswerExplanation(explanation: String) {
         modifier = Modifier
             .fillMaxWidth()
             .testTag("review_explanation"),
-        color = SmartColors.JadeSoft,
+        color = JadeSoft,
         shape = RoundedCornerShape(8.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Jade),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Jade),
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
                 text = "完整讲解",
-                color = SmartColors.JadeDark,
+                color = JadeDark,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(8.dp))
             SafeMarkdownText(
                 markdown = explanation,
-                color = SmartColors.Ink,
+                color = Ink,
                 style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 27.sp),
             )
         }

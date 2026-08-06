@@ -33,7 +33,7 @@ internal fun TutorLocalIntentPanel(
     output: TutorRespondOutput,
     studentMessage: String,
     catalogEntries: List<StudyCatalogEntry>,
-    profile: StudyProfileOverview,
+    profile: StudyProfileOverview? = null,
     onRequestSave: () -> Unit,
     onRequestEnd: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
@@ -56,7 +56,7 @@ internal fun TutorLocalIntentPanel(
     decision: TutorIntentDecision,
     studentMessage: String,
     catalogEntries: List<StudyCatalogEntry>,
-    profile: StudyProfileOverview,
+    profile: StudyProfileOverview? = null,
     onRequestSave: () -> Unit = {},
     onRequestEnd: () -> Unit = {},
     onOpenMistakeNotebook: () -> Unit,
@@ -88,7 +88,9 @@ internal fun TutorLocalIntentPanel(
         }
         if (TutorAuthorizedCapability.READ_LEARNING_PROGRESS in authorization.capabilities) {
             val progress = remember(profile, authorization) {
-                TutorLocalReadProjection.learningProgress(profile, authorization)
+                profile?.let { current ->
+                    TutorLocalReadProjection.learningProgress(current, authorization)
+                }
             }
             Surface(
                 color = JadeSoft.copy(alpha = 0.48f),
@@ -99,28 +101,30 @@ internal fun TutorLocalIntentPanel(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(7.dp),
                 ) {
-                    Text(
-                        text = if (progress.recordedAttemptCount == 0) {
-                            "还没有形成学习记录"
-                        } else {
-                            "已记录 ${progress.recordedAttemptCount} 次学习反馈"
-                        },
-                        color = Ink,
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    progress.needsAttention.take(3).forEach { item ->
+                    progress?.let { current ->
                         Text(
-                            text = "需要再看看 · ${item.displayName}",
-                            color = InkSecondary,
-                            style = MaterialTheme.typography.bodySmall,
+                            text = if (current.recordedAttemptCount == 0) {
+                                "还没有形成学习记录"
+                            } else {
+                                "已记录 ${current.recordedAttemptCount} 次学习反馈"
+                            },
+                            color = Ink,
+                            style = MaterialTheme.typography.titleSmall,
                         )
-                    }
-                    progress.goingWell.take(2).forEach { item ->
-                        Text(
-                            text = "比较稳 · ${item.displayName}",
-                            color = InkSecondary,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
+                        current.needsAttention.take(3).forEach { item ->
+                            Text(
+                                text = "需要再看看 · ${item.displayName}",
+                                color = InkSecondary,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        current.goingWell.take(2).forEach { item ->
+                            Text(
+                                text = "比较稳 · ${item.displayName}",
+                                color = InkSecondary,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                     }
                     OutlineActionChip(
                         text = "查看学习数据",

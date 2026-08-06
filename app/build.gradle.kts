@@ -26,7 +26,7 @@ android {
         versionCode = 1
         versionName = "0.1.0-phase0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.tingyun.smartmistakebook.SmartMistakeBookTestRunner"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -76,9 +76,9 @@ android {
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":core:model"))
+    implementation(project(":core:model-provider"))
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
-    implementation(project(":core:database"))
     implementation(project(":core:ui"))
     implementation(project(":feature:capture"))
     implementation(project(":feature:review"))
@@ -109,6 +109,7 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.work.testing)
     testImplementation(libs.junit)
     testImplementation(libs.androidx.work.testing)
 }

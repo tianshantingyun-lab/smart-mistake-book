@@ -34,20 +34,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ScopedModelTaskPort
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
-import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
-import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
-import com.tingyun.smartmistakebook.core.model.TutorConversation
+import com.tingyun.smartmistakebook.core.domain.TutorConversationLobbyPort
+import com.tingyun.smartmistakebook.core.domain.TutorLobbyConversation
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorCurrentSessionVisualIntent
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
+import com.tingyun.smartmistakebook.core.model.TutorLobbyVisualRequest
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -66,34 +68,34 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun TutorLobbyRoute(
+fun TutorLobbyRoute(
     onCapture: () -> Unit,
     onGallery: () -> Unit = onCapture,
+    onCaptureWithVisualIntent: (TutorCurrentSessionVisualIntent) -> Unit = { onCapture() },
+    onGalleryWithVisualIntent: (TutorCurrentSessionVisualIntent) -> Unit = { onGallery() },
     onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
-    modelTasks: ModelTaskRepository,
-    learningMemory: TutorLearningMemoryRepository,
-    learnerScopeId: String,
+    modelTasks: ScopedModelTaskPort,
+    conversationLobby: TutorConversationLobbyPort,
     catalogEntries: List<StudyCatalogEntry>,
-    profile: StudyProfileOverview,
     explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
     onExplanationModeChange: (TutorExplanationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val controller = remember(learningMemory, learnerScopeId) {
-        TutorLobbyConversationController(learningMemory, learnerScopeId)
+    val controller = remember(conversationLobby) {
+        TutorLobbyConversationController(conversationLobby)
     }
     var conversationState by remember(controller) {
         mutableStateOf<TutorLobbyConversationState>(TutorLobbyConversationState.Loading)
     }
-    var observedMode by remember { mutableStateOf(explanationMode) }
-    var modeVersion by remember { mutableLongStateOf(0L) }
+    var observedModeName by rememberSaveable { mutableStateOf(explanationMode.name) }
+    var modeVersion by rememberSaveable { mutableLongStateOf(0L) }
     LaunchedEffect(explanationMode) {
-        if (observedMode != explanationMode) {
-            observedMode = explanationMode
+        if (observedModeName != explanationMode.name) {
+            observedModeName = explanationMode.name
             modeVersion += 1
         }
     }
@@ -129,6 +131,8 @@ internal fun TutorLobbyRoute(
         is TutorLobbyConversationState.Ready -> TutorLobbyConversationRoute(
             onCapture = onCapture,
             onGallery = onGallery,
+            onCaptureWithVisualIntent = onCaptureWithVisualIntent,
+            onGalleryWithVisualIntent = onGalleryWithVisualIntent,
             onChooseExisting = onChooseExisting,
             onOpenCapabilitySettings = onOpenCapabilitySettings,
             onOpenMistakeNotebook = onOpenMistakeNotebook,
@@ -137,7 +141,6 @@ internal fun TutorLobbyRoute(
             controller = controller,
             conversation = state.conversation,
             catalogEntries = catalogEntries,
-            profile = profile,
             explanationMode = explanationMode,
             modeVersion = modeVersion,
             onExplanationModeChange = onExplanationModeChange,
@@ -162,7 +165,7 @@ internal fun TutorLobbyRoute(
 private sealed interface TutorLobbyConversationState {
     data object Loading : TutorLobbyConversationState
     data object Failed : TutorLobbyConversationState
-    data class Ready(val conversation: TutorConversation) : TutorLobbyConversationState
+    data class Ready(val conversation: TutorLobbyConversation) : TutorLobbyConversationState
 }
 
 @Composable
@@ -191,15 +194,16 @@ private fun TutorLobbyConversationStatus(
 private fun TutorLobbyConversationRoute(
     onCapture: () -> Unit,
     onGallery: () -> Unit = onCapture,
+    onCaptureWithVisualIntent: (TutorCurrentSessionVisualIntent) -> Unit,
+    onGalleryWithVisualIntent: (TutorCurrentSessionVisualIntent) -> Unit,
     onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
-    modelTasks: ModelTaskRepository,
+    modelTasks: ScopedModelTaskPort,
     controller: TutorLobbyConversationController,
-    conversation: TutorConversation,
+    conversation: TutorLobbyConversation,
     catalogEntries: List<StudyCatalogEntry>,
-    profile: StudyProfileOverview,
     explanationMode: TutorExplanationMode,
     modeVersion: Long,
     onExplanationModeChange: (TutorExplanationMode) -> Unit,
@@ -207,10 +211,7 @@ private fun TutorLobbyConversationRoute(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    var committedConversation by remember(
-        conversation.conversationId,
-        conversation.generation,
-    ) {
+    var committedConversation by remember(conversation) {
         mutableStateOf(conversation)
     }
     val activeStreamOwner = remember(modelTasks, scope, conversation.conversationId) {
@@ -246,6 +247,12 @@ private fun TutorLobbyConversationRoute(
             },
             conversation.conversationId,
         )
+    }
+    var consumedVisualSourceRequestId by rememberSaveable(conversation.conversationId) {
+        mutableStateOf<String?>(null)
+    }
+    val latestVisualSourceTask = conversationTasks.lastOrNull()?.takeIf { task ->
+        task.tutorLobbyVisualPresentation() == TutorLobbyVisualPresentation.SourceRequired
     }
     val visibleTasks = remember(conversationTasks) { conversationTasks.takeLast(MAX_VISIBLE_MESSAGES) }
     var provider by remember(conversation.conversationId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
@@ -316,7 +323,6 @@ private fun TutorLobbyConversationRoute(
         }
         val tasksForRequest = conversationTasks
         val conversationForRequest = committedConversation
-        val turnIdentity = controller.newTurnIdentity()
         val modeForTurn = explanationMode
         val modeVersionForTurn = modeVersion
         draftToClearOnDurableStart = draft
@@ -330,23 +336,21 @@ private fun TutorLobbyConversationRoute(
                 message = message,
                 mode = modeForTurn,
                 modeVersion = modeVersionForTurn,
-                identity = turnIdentity,
-                occurredAtEpochMillis = occurredAt,
             )
-            if (
-                committedConversation.conversationId == conversationForRequest.conversationId &&
-                    committedConversation.generation == conversationForRequest.generation
-            ) {
+            if (committedConversation == conversationForRequest) {
                 committedConversation = allocated.conversation
             }
             val request = buildTutorLobbyRequest(
                 provider = currentProvider,
-                messageOrdinal = allocated.receipt.turnOrdinal,
+                messageOrdinal = allocated.turnOrdinal,
                 studentMessage = message,
                 priorMessages = tasksForRequest.toLobbyHistory(),
                 occurredAtEpochMillis = occurredAt,
                 approvedAtEpochMillis = approvedAtEpochMillis,
-                conversationId = allocated.receipt.conversationId,
+                conversationId = allocated.conversation.conversationId,
+                explanationMode = modeForTurn,
+                modeVersion = modeVersionForTurn,
+                explicitVisualRequest = VisualIntent.detect(message)?.toLobbyRequest(),
             )
             TutorPreparedStream(request.requestId) { identity ->
                 modelTasks.executeTutorStream(request, identity)
@@ -374,6 +378,11 @@ private fun TutorLobbyConversationRoute(
                 occurredAtEpochMillis = occurredAt,
                 attempt = nextAttempt,
                 conversationId = input.conversationId,
+                explanationMode = input.explanationMode,
+                modeVersion = input.modeVersion,
+                explicitVisualRequest = input.explicitVisualRequest,
+                choiceInteractionAuthorized = input.choiceInteractionAuthorized,
+                allowedVisualTargetIds = input.allowedVisualTargetIds,
             )
         } else {
             task.request
@@ -412,8 +421,7 @@ private fun TutorLobbyConversationRoute(
         }
     }
 
-    fun submitDraft() {
-        val message = draft.trim()
+    fun submitMessage(message: String) {
         if (message.isBlank() || hasActiveTask) return
         val currentProvider = provider
         if (currentProvider == null || !currentProvider.supports(ModelTaskKind.TUTOR_LOBBY)) {
@@ -426,6 +434,27 @@ private fun TutorLobbyConversationRoute(
         } else {
             startMessage(message, System.currentTimeMillis())
         }
+    }
+
+    fun submitDraft() {
+        submitMessage(draft.trim())
+    }
+
+    fun launchComposerCapture(
+        callback: (TutorCurrentSessionVisualIntent) -> Unit,
+    ) {
+        val sourceTask = latestVisualSourceTask.takeIf { draft.isBlank() }
+        val sourceRequest = (sourceTask?.request?.input as? TutorLobbyInput)?.explicitVisualRequest
+        val intent = tutorCaptureVisualIntent(
+            studentDraft = draft,
+            explicitVisualRequest = sourceRequest,
+            visualSourceRequestId = sourceTask?.request?.requestId,
+            consumedVisualSourceRequestId = consumedVisualSourceRequestId,
+        )
+        if (sourceTask != null && intent == TutorCurrentSessionVisualIntent.USER_EXPLICIT) {
+            consumedVisualSourceRequestId = sourceTask.request.requestId
+        }
+        callback(intent)
     }
 
     val listState = rememberLazyListState()
@@ -516,10 +545,13 @@ private fun TutorLobbyConversationRoute(
                         it.identity?.requestId == task.request.requestId
                     },
                     catalogEntries = catalogEntries,
-                    profile = profile,
                     onOpenMistakeNotebook = onOpenMistakeNotebook,
                     onOpenProfile = onOpenProfile,
                     onOpenCapabilitySettings = onOpenCapabilitySettings,
+                    onCapture = onCaptureWithVisualIntent,
+                    onGuidedResponse = { response -> submitMessage(response) },
+                    currentMode = explanationMode,
+                    currentModeVersion = modeVersion,
                     onRetry = { retryTask(task) },
                     modifier = Modifier.padding(top = 12.dp),
                 )
@@ -575,8 +607,8 @@ private fun TutorLobbyConversationRoute(
                     draft = value.take(TutorLobbyInput.MAX_STUDENT_MESSAGE_CHARS)
                     if (pendingDisclosureMessage != null) pendingDisclosureMessage = null
                 },
-                onCapture = onCapture,
-                onGallery = onGallery,
+                onCapture = { launchComposerCapture(onCaptureWithVisualIntent) },
+                onGallery = { launchComposerCapture(onGalleryWithVisualIntent) },
                 onChooseExisting = onChooseExisting,
                 onSend = ::submitDraft,
                 explanationMode = explanationMode,
@@ -603,10 +635,13 @@ private fun TutorLobbyTask(
     canRetry: Boolean,
     activeMessage: TutorActiveStreamMessage?,
     catalogEntries: List<StudyCatalogEntry>,
-    profile: StudyProfileOverview,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
+    onCapture: (TutorCurrentSessionVisualIntent) -> Unit,
+    onGuidedResponse: (String) -> Unit,
+    currentMode: TutorExplanationMode,
+    currentModeVersion: Long,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -648,10 +683,20 @@ private fun TutorLobbyTask(
                 decision = output.intentDecision,
                 studentMessage = input.studentMessage,
                 catalogEntries = catalogEntries,
-                profile = profile,
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
             )
+            visibleTutorLobbyDirective(
+                input = input,
+                output = output,
+                currentMode = currentMode,
+                currentModeVersion = currentModeVersion,
+            )?.let { directive ->
+                TutorLobbyInteraction(
+                    directive = directive,
+                    onResponse = onGuidedResponse,
+                )
+            }
         } else if (
             task.status == ModelTaskStatus.RETRYABLE_FAILURE ||
             task.status == ModelTaskStatus.PERMANENT_FAILURE
@@ -690,6 +735,113 @@ private fun TutorLobbyTask(
                 text = task.userMessage.ifBlank { "正在理解你的消息…" },
                 modifier = Modifier.testTag("tutor_lobby_task_progress"),
             )
+        }
+        TutorLobbyVisualStatus(
+            presentation = task.tutorLobbyVisualPresentation(),
+            onCapture = {
+                onCapture(
+                    tutorCaptureVisualIntent(
+                        explicitVisualRequest = input.explicitVisualRequest,
+                    ),
+                )
+            },
+        )
+    }
+}
+
+internal fun tutorCaptureVisualIntent(
+    studentDraft: String = "",
+    explicitVisualRequest: TutorLobbyVisualRequest? = null,
+    visualSourceRequestId: String? = null,
+    consumedVisualSourceRequestId: String? = null,
+): TutorCurrentSessionVisualIntent =
+    if (
+        VisualIntent.detect(studentDraft) != null ||
+        explicitVisualRequest != null &&
+        (visualSourceRequestId == null || visualSourceRequestId != consumedVisualSourceRequestId)
+    ) {
+        TutorCurrentSessionVisualIntent.USER_EXPLICIT
+    } else {
+        TutorCurrentSessionVisualIntent.NONE
+    }
+
+@Composable
+private fun TutorLobbyInteraction(
+    directive: TutorInteractionDirective,
+    onResponse: (String) -> Unit,
+) {
+    when (directive) {
+        TutorInteractionDirective.Continue -> Unit
+        is TutorInteractionDirective.FreeResponse -> SafeMarkdownText(
+            directive.promptMarkdown,
+            modifier = Modifier.testTag("tutor_lobby_free_response"),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        is TutorInteractionDirective.Choices -> {
+            SafeMarkdownText(
+                directive.promptMarkdown,
+                modifier = Modifier.testTag("tutor_lobby_choices"),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            directive.choices.forEach { choice ->
+                OutlineActionChip(
+                    text = choice.labelMarkdown,
+                    onClick = { onResponse(choice.labelMarkdown) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("tutor_lobby_choice_${choice.id}"),
+                )
+            }
+        }
+        is TutorInteractionDirective.VisualTarget -> SafeMarkdownText(
+            directive.promptMarkdown,
+            modifier = Modifier.testTag("tutor_lobby_visual_target"),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun TutorLobbyVisualStatus(
+    presentation: TutorLobbyVisualPresentation,
+    onCapture: () -> Unit,
+) {
+    when (presentation) {
+        TutorLobbyVisualPresentation.Hidden -> Unit
+        TutorLobbyVisualPresentation.Preparing -> Surface(
+            color = JadeSoft.copy(alpha = 0.4f),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("tutor_lobby_visual_preparing"),
+        ) {
+            Text(
+                text = "正在准备图解…",
+                modifier = Modifier.padding(12.dp),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        TutorLobbyVisualPresentation.SourceRequired -> Surface(
+            color = JadeSoft.copy(alpha = 0.4f),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("tutor_lobby_visual_fallback"),
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "发题图后可以准确生成",
+                    modifier = Modifier.weight(1f),
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                OutlineActionChip(text = "拍题", onClick = onCapture)
+            }
         }
     }
 }
@@ -735,9 +887,18 @@ private fun List<ModelTaskSnapshot>.toLobbyHistory(): List<TutorChatHistoryEntry
         val output = task.output as? TutorLobbyOutput ?: return@mapNotNull null
         TutorChatHistoryEntry(
             studentMessage = input.studentMessage,
-            assistantMarkdown = output.messageMarkdown,
+            assistantMarkdown = output.lobbyHistoryMarkdown(),
         ).takeIf { task.status == ModelTaskStatus.SUCCEEDED }
     }.takeLast(MAX_CONTEXT_MESSAGES)
+
+private fun TutorLobbyOutput.lobbyHistoryMarkdown(): String = when (val directive = interactionDirective) {
+    null,
+    TutorInteractionDirective.Continue,
+    -> messageMarkdown
+    is TutorInteractionDirective.FreeResponse -> directive.promptMarkdown
+    is TutorInteractionDirective.Choices -> directive.promptMarkdown
+    is TutorInteractionDirective.VisualTarget -> directive.promptMarkdown
+}
 
 private const val MAX_VISIBLE_MESSAGES = 20
 private const val MAX_CONTEXT_MESSAGES = 8

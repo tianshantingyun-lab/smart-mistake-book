@@ -58,11 +58,13 @@ private fun ModelTaskSnapshot.matches(question: TutorQuestionContext): Boolean =
 ) {
     is TutorPlanInput -> input.sessionId == question.sessionId &&
         input.draftRevisionNumber == question.revisionNumber &&
-        input.questionDocument.id == question.questionDocument.document.id
+        input.questionDocument.id == question.questionDocument.document.id &&
+        input.teachingConstraints.matchesTutorGuidanceBoundary(question)
 
     is TutorRespondInput -> input.sessionId == question.sessionId &&
         input.draftRevisionNumber == question.revisionNumber &&
-        input.questionDocument.id == question.questionDocument.document.id
+        input.questionDocument.id == question.questionDocument.document.id &&
+        input.teachingConstraints.matchesTutorGuidanceBoundary(question)
 
     else -> false
 }

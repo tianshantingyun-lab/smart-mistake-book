@@ -11,7 +11,7 @@ import org.junit.Test
 
 class ProfileLearningStatusTest {
     @Test
-    fun subjectSummariesUseEachRealKnowledgeRecordOnce() {
+    fun eachSubjectShowsOneActionableStatus() {
         val duplicate = summary(
             id = "math:function",
             subject = SubjectKind.MATH,
@@ -37,11 +37,8 @@ class ProfileLearningStatusTest {
         val groups = profileSubjectSummaries(overview)
 
         assertEquals(listOf(SubjectKind.MATH, SubjectKind.PHYSICS), groups.map { it.subject })
-        assertEquals(
-            listOf(MasteryStatus.LEARNING, MasteryStatus.MASTERED),
-            groups.first().statuses,
-        )
-        assertEquals(listOf(MasteryStatus.CONFLICTED), groups.last().statuses)
+        assertEquals(MasteryStatus.LEARNING, groups.first().status)
+        assertEquals(MasteryStatus.CONFLICTED, groups.last().status)
     }
 
     @Test

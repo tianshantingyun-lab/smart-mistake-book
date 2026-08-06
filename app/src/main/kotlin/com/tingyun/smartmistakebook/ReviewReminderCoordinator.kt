@@ -16,12 +16,16 @@ internal class ReviewReminderCoordinator(
     private val scope: CoroutineScope,
     private val clock: () -> Long = System::currentTimeMillis,
     private val zoneId: () -> ZoneId = ZoneId::systemDefault,
-) {
+) : ReviewReminderBroadcastHandler {
     fun start() {
         platform.ensureNotificationChannel()
         scope.launch {
             repository.preferences.collectLatest(::reconcile)
         }
+    }
+
+    override suspend fun handle(action: String) {
+        handleBroadcast(action)
     }
 
     suspend fun handleBroadcast(action: String?) {

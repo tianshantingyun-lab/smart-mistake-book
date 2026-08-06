@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.RecordTutorSolutionExposureCommand
 import com.tingyun.smartmistakebook.core.domain.RevealTutorSolutionCommand
+import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -107,7 +108,7 @@ internal fun buildTutorSolutionExposureTargets(
 ): List<TutorSolutionExposureTarget> {
     if (longTermWritesBlocked) return emptyList()
     val responsesByTurn = responses.associateBy(TutorTurnResponse::turnIdentity)
-    return timeline.mapNotNull { item ->
+    val mapped = timeline.mapNotNull { item ->
         when (item) {
             is TutorConversationTimelineItem.Plan -> {
                 val task = item.task
@@ -206,6 +207,26 @@ internal fun buildTutorSolutionExposureTargets(
             }
         }
     }
+    return mapped
+        .groupBy { target ->
+            val command = target.exposureCommand
+            listOf(
+                command.sessionId,
+                command.questionDocumentId,
+                command.revisionNumber,
+                command.cycleOrdinal,
+                command.turnOrdinal,
+            )
+        }
+        .values
+        .map { group ->
+            group.maxBy { target ->
+                when (target.exposureCommand.surfaceKind) {
+                    TutorAnswerExposureSurfaceKind.RESPOND_REPLY -> 1
+                    else -> 0
+                }
+            }
+        }
 }
 
 private fun TutorAnswerExposureKey.toRecordCommand() = RecordTutorSolutionExposureCommand(

@@ -4,6 +4,8 @@ import android.content.Intent
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderDelivery
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderPreferences
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
+import com.tingyun.smartmistakebook.core.domain.ReviewPacingLevel
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.CoroutineScope
@@ -154,6 +156,20 @@ class ReviewReminderCoordinatorTest {
 
         override suspend fun setReminderTime(minutesAfterMidnight: Int) {
             state.value = state.value.copy(minutesAfterMidnight = minutesAfterMidnight)
+        }
+
+        override suspend fun setPacingLevel(pacingLevel: ReviewPacingLevel) {
+            state.value = state.value.copy(pacingLevel = pacingLevel)
+        }
+
+        override suspend fun setExamTarget(
+            subject: SubjectKind?,
+            examEpochDay: Long?,
+        ) {
+            state.value = state.value.copy(
+                examSubject = subject,
+                examEpochDay = examEpochDay,
+            )
         }
 
         override suspend fun claimNotificationDelivery(

@@ -69,9 +69,9 @@ class ReviewRoutePolicyTest {
             ),
         )
 
-        assertEquals("开始今日复习", planned.actionLabel)
+        assertEquals("开始复习", planned.actionLabel)
         assertTrue(planned.actionEnabled)
-        assertEquals("继续今日复习", active.actionLabel)
+        assertEquals("继续复习", active.actionLabel)
         assertTrue(active.actionEnabled)
     }
 
@@ -82,9 +82,9 @@ class ReviewRoutePolicyTest {
         )
         val empty = reviewLandingState(StudyReviewOverview())
 
-        assertEquals("今日复习已完成", completed.actionLabel)
+        assertEquals("今日完成", completed.actionLabel)
         assertFalse(completed.actionEnabled)
-        assertEquals("今天没有待复习", empty.actionLabel)
+        assertEquals("今日无复习", empty.actionLabel)
         assertFalse(empty.actionEnabled)
     }
 }

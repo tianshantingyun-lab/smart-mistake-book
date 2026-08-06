@@ -95,7 +95,7 @@ internal data class TutorPreparedStream(
 
 /**
  * Process-local owner for one visible Tutor reply. Durable history still belongs to
- * [com.tingyun.smartmistakebook.core.domain.ModelTaskRepository].
+ * [com.tingyun.smartmistakebook.core.domain.ScopedModelTaskPort].
  */
 internal class TutorActiveStreamOwner(
     private val scope: CoroutineScope,
@@ -117,6 +117,9 @@ internal class TutorActiveStreamOwner(
     private var activeJob: Job? = null
     private var closed = false
     private var retryPreparation: (suspend () -> TutorPreparedStream)? = null
+    private var retryExecutionAuthorized: (() -> Boolean)? = null
+    private var retryResultAuthorized: (() -> Boolean)? = null
+    private var retryOnAuthorizedCompletion: (suspend (String) -> Boolean)? = null
     private var preparedForRetry: TutorPreparedStream? = null
 
     init {
@@ -133,6 +136,9 @@ internal class TutorActiveStreamOwner(
         studentMessage: String,
         startsNewTurn: Boolean = true,
         retryConsumed: Boolean = false,
+        executionAuthorized: () -> Boolean = { true },
+        resultAuthorized: () -> Boolean = executionAuthorized,
+        onAuthorizedCompletion: suspend (String) -> Boolean = { true },
         prepare: suspend () -> TutorPreparedStream,
     ) {
         require(studentMessage.isNotEmpty()) { "Tutor stream student message must not be empty" }
@@ -148,7 +154,7 @@ internal class TutorActiveStreamOwner(
                 ?.identity
                 ?.requestId
             durableRequestIdToCancel = superseded.takeIf { startsNewTurn }
-            if (startsNewTurn || turnVersion == 0L) turnVersion += 1
+            if (startsNewTurn) turnVersion += 1
             submission = Submission(ownerVersion, turnVersion, modeVersion)
             val retainedSnapshot = current.active
                 ?.takeIf { !startsNewTurn && it.studentMessage == studentMessage }
@@ -166,8 +172,18 @@ internal class TutorActiveStreamOwner(
                     .plusIfNotNull(superseded),
             )
             retryPreparation = prepare
+            retryExecutionAuthorized = executionAuthorized
+            retryResultAuthorized = resultAuthorized
+            retryOnAuthorizedCompletion = onAuthorizedCompletion
             preparedForRetry = null
-            activeJob = launchSubmission(submission, prepare, prepared = null)
+            activeJob = launchSubmission(
+                submission = submission,
+                prepare = prepare,
+                prepared = null,
+                executionAuthorized = executionAuthorized,
+                resultAuthorized = resultAuthorized,
+                onAuthorizedCompletion = onAuthorizedCompletion,
+            )
         }
         previousJob?.cancel()
         cancelDurableInWorker(durableRequestIdToCancel)
@@ -180,6 +196,9 @@ internal class TutorActiveStreamOwner(
             val active = mutableState.value.active ?: return false
             if (TutorActiveStreamRecovery.RETRY !in active.recoveryActions) return false
             val prepare = retryPreparation ?: return false
+            val executionAuthorized = retryExecutionAuthorized ?: return false
+            val resultAuthorized = retryResultAuthorized ?: return false
+            val onAuthorizedCompletion = retryOnAuthorizedCompletion ?: return false
             val submission = active.toSubmission()
             val retainedIdentity = active.identity?.takeIf { identity ->
                 preparedForRetry?.requestId == identity.requestId
@@ -197,7 +216,14 @@ internal class TutorActiveStreamOwner(
                     ),
                 )
             }
-            activeJob = launchSubmission(submission, prepare, preparedForRetry)
+            activeJob = launchSubmission(
+                submission = submission,
+                prepare = prepare,
+                prepared = preparedForRetry,
+                executionAuthorized = executionAuthorized,
+                resultAuthorized = resultAuthorized,
+                onAuthorizedCompletion = onAuthorizedCompletion,
+            )
         }
         previousJob?.cancel()
         return true
@@ -223,11 +249,27 @@ internal class TutorActiveStreamOwner(
                     .plusIfNotNull(superseded),
             )
             retryPreparation = null
+            retryExecutionAuthorized = null
+            retryResultAuthorized = null
+            retryOnAuthorizedCompletion = null
             preparedForRetry = null
             activeJob = null
         }
         job?.cancel()
         cancelDurableInWorker(durableRequestIdToCancel)
+    }
+
+    fun currentConversationGeneration(): Long = synchronized(lock) { turnVersion }
+
+    fun currentOwnerEpoch(): Long = ownerVersion
+
+    fun recoveryAuthorityIsOpen(
+        expectedConversationGeneration: Long,
+        expectedMode: TutorExplanationMode,
+    ): Boolean = synchronized(lock) {
+        !closed &&
+            turnVersion == expectedConversationGeneration &&
+            mode == expectedMode
     }
 
     fun acknowledgeDurableSuccess(requestId: String) {
@@ -252,6 +294,9 @@ internal class TutorActiveStreamOwner(
             job = activeJob
             activeJob = null
             retryPreparation = null
+            retryExecutionAuthorized = null
+            retryResultAuthorized = null
+            retryOnAuthorizedCompletion = null
             preparedForRetry = null
             mutableState.update { it.copy(active = null) }
         }
@@ -275,6 +320,9 @@ internal class TutorActiveStreamOwner(
         submission: Submission,
         prepare: suspend () -> TutorPreparedStream,
         prepared: TutorPreparedStream?,
+        executionAuthorized: () -> Boolean,
+        resultAuthorized: () -> Boolean,
+        onAuthorizedCompletion: suspend (String) -> Boolean,
     ): Job = scope.launch(workerDispatcher) {
         coroutineScope {
             val placeholderJob = launch {
@@ -293,11 +341,17 @@ internal class TutorActiveStreamOwner(
             var coalesceJob: Job? = null
             var pendingSnapshot: TutorMarkdownSnapshot? = null
             var terminalSeen = false
-            var preparationCompleted = false
             val previewLock = Any()
             try {
+                if (!executionAuthorized.safely()) {
+                    removeActive(submission)
+                    return@coroutineScope
+                }
                 val resolved = prepared ?: prepare()
-                preparationCompleted = true
+                if (!executionAuthorized.safely()) {
+                    removeActive(submission)
+                    return@coroutineScope
+                }
                 val identity = TutorStreamIdentity(
                     requestId = resolved.requestId,
                     ownerVersion = submission.ownerVersion,
@@ -308,7 +362,16 @@ internal class TutorActiveStreamOwner(
                 synchronized(lock) {
                     if (isCurrentLocked(submission)) preparedForRetry = resolved
                 }
+                if (!executionAuthorized.safely()) {
+                    removeActive(submission)
+                    return@coroutineScope
+                }
                 resolved.events(identity).collect { event ->
+                    if (!resultAuthorized.safely()) {
+                        removeActive(submission)
+                        cancelDurableInWorker(identity.requestId)
+                        throw CancellationException("Tutor stream authority was revoked")
+                    }
                     if (
                         terminalSeen ||
                         event.identity != identity ||
@@ -374,6 +437,15 @@ internal class TutorActiveStreamOwner(
                                 pendingSnapshot = null
                                 coalesceJob?.cancel()
                                 coalesceJob = null
+                            }
+                            val completionAccepted =
+                                onAuthorizedCompletion.safelyAccept(identity.requestId) &&
+                                    resultAuthorized.safely() &&
+                                    isCurrent(submission, identity)
+                            if (!completionAccepted) {
+                                removeActive(submission)
+                                cancelDurableInWorker(identity.requestId)
+                                return@collect
                             }
                             updateActive(submission) {
                                 it.copy(
@@ -515,6 +587,16 @@ internal class TutorActiveStreamOwner(
         }
     }
 
+    private fun removeActive(submission: Submission) {
+        mutableState.update { current ->
+            if (current.active?.toSubmission() == submission) {
+                current.copy(active = null)
+            } else {
+                current
+            }
+        }
+    }
+
     private fun isCurrent(
         submission: Submission,
         identity: TutorStreamIdentity,
@@ -537,6 +619,23 @@ internal class TutorActiveStreamOwner(
         turnVersion = turnVersion,
         modeVersion = modeVersion,
     )
+
+    private fun (() -> Boolean).safely(): Boolean =
+        try {
+            invoke()
+        } catch (_: Exception) {
+            false
+        }
+
+    private suspend fun (suspend (String) -> Boolean).safelyAccept(
+        requestId: String,
+    ): Boolean = try {
+        invoke(requestId)
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (_: Exception) {
+        false
+    }
 
     private companion object {
         const val DEFAULT_COALESCE_MILLIS = 64L

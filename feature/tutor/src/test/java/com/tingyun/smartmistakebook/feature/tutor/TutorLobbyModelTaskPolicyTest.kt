@@ -11,7 +11,14 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
+import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
+import com.tingyun.smartmistakebook.core.model.TutorLobbyVisualKind
+import com.tingyun.smartmistakebook.core.model.TutorLobbyVisualRequest
+import com.tingyun.smartmistakebook.core.model.TutorResponseIntent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertFalse
@@ -19,6 +26,88 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TutorLobbyModelTaskPolicyTest {
+    @Test
+    fun requestIdentityPersistentlyBindsModeVersionAndExplicitVisualIntent() {
+        val provider = provider(ModelExecutionLocation.LOCAL_NO_EGRESS)
+        val direct = buildTutorLobbyRequest(
+            provider = provider,
+            messageOrdinal = 1,
+            studentMessage = "请用动画解释这个过程",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = 1,
+        )
+        val guided = buildTutorLobbyRequest(
+            provider = provider,
+            messageOrdinal = 1,
+            studentMessage = "请用动画解释这个过程",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = 1,
+            explanationMode = TutorExplanationMode.GUIDED,
+            modeVersion = 3,
+            explicitVisualRequest = TutorLobbyVisualRequest(
+                TutorLobbyVisualKind.ANIMATION,
+                "请用动画解释这个过程",
+            ),
+        )
+        val input = guided.input as TutorLobbyInput
+
+        assertEquals(TutorExplanationMode.GUIDED, input.explanationMode)
+        assertEquals(3L, input.modeVersion)
+        assertEquals(TutorLobbyVisualKind.ANIMATION, input.explicitVisualRequest?.kind)
+        assertTrue(direct.requestId != guided.requestId)
+    }
+
+    @Test
+    fun explicitVisualRequestCannotDisappearWhenTextTaskOmitsVisualOutput() {
+        val visual = TutorLobbyVisualRequest(
+            TutorLobbyVisualKind.THREE_DIMENSIONAL,
+            "请用3D展示空间关系",
+        )
+        val pending = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.STREAMING,
+            visualRequest = visual,
+        )
+        val completed = lobbyTask(
+            messageOrdinal = 1,
+            status = ModelTaskStatus.SUCCEEDED,
+            visualRequest = visual,
+        )
+
+        assertEquals(TutorLobbyVisualPresentation.Preparing, pending.tutorLobbyVisualPresentation())
+        assertEquals(
+            TutorLobbyVisualPresentation.SourceRequired,
+            completed.tutorLobbyVisualPresentation(),
+        )
+    }
+
+    @Test
+    fun modeChangeSuppressesLateGuidedDirective() {
+        val input = TutorLobbyInput(
+            conversationId = TUTOR_LOBBY_CONVERSATION_ID,
+            messageOrdinal = 1,
+            studentMessage = "这一步为什么这样处理？",
+            explanationMode = TutorExplanationMode.GUIDED,
+            modeVersion = 2,
+        )
+        val output = TutorLobbyOutput(
+            conversationId = input.conversationId,
+            messageOrdinal = input.messageOrdinal,
+            messageMarkdown = "先判断关键关系。",
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+            explanationMode = TutorExplanationMode.GUIDED,
+            modeVersion = 2,
+            responseIntent = TutorResponseIntent.ASK,
+            interactionDirective = TutorInteractionDirective.FreeResponse("哪个关系最关键？"),
+            modelVersion = "model-v1",
+        )
+
+        assertTrue(
+            visibleTutorLobbyDirective(input, output, TutorExplanationMode.GUIDED, 2) != null,
+        )
+        assertNull(visibleTutorLobbyDirective(input, output, TutorExplanationMode.DIRECT, 3))
+    }
+
     @Test
     fun externalRequestBindsExactMessageAndLeastDisclosure() {
         val request = buildTutorLobbyRequest(
@@ -172,6 +261,7 @@ class TutorLobbyModelTaskPolicyTest {
         status: ModelTaskStatus,
         attempt: Int = 0,
         conversationId: String = TUTOR_LOBBY_CONVERSATION_ID,
+        visualRequest: TutorLobbyVisualRequest? = null,
     ): ModelTaskSnapshot {
         val provider = provider(ModelExecutionLocation.LOCAL_NO_EGRESS)
         val request = buildTutorLobbyRequest(
@@ -182,7 +272,9 @@ class TutorLobbyModelTaskPolicyTest {
             occurredAtEpochMillis = messageOrdinal.toLong(),
             attempt = attempt,
             conversationId = conversationId,
+            explicitVisualRequest = visualRequest,
         )
+        val input = request.input as TutorLobbyInput
         return ModelTaskSnapshot(
             taskId = "task-$messageOrdinal",
             request = request,
@@ -193,6 +285,18 @@ class TutorLobbyModelTaskPolicyTest {
             userMessage = "处理中",
             attemptCount = 1,
             provider = provider,
+            output = if (status == ModelTaskStatus.SUCCEEDED) {
+                TutorLobbyOutput(
+                    conversationId = input.conversationId,
+                    messageOrdinal = input.messageOrdinal,
+                    messageMarkdown = "已完成当前回复。",
+                    explanationMode = input.explanationMode,
+                    modeVersion = input.modeVersion,
+                    modelVersion = "model-v1",
+                )
+            } else {
+                null
+            },
             failure = if (status == ModelTaskStatus.RETRYABLE_FAILURE) {
                 ModelTaskFailure(
                     code = ModelFailureCode.TIMEOUT,

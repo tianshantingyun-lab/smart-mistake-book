@@ -19,8 +19,10 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.GUIDED_INTERACTION_MESSAGE
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
+import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
@@ -516,10 +518,15 @@ class TutorConversationTimelineTest {
         updatedAtEpochMillis: Long = occurredAtEpochMillis,
         studentMessage: String = "为什么这样做？",
         target: TutorQuestionContext = question,
-        solutionRevealed: Boolean = false,
         intentDecision: TutorIntentDecision = TutorIntentDecision.currentQuestionDefault(),
-        explanationMode: com.tingyun.smartmistakebook.core.model.TutorExplanationMode =
-            com.tingyun.smartmistakebook.core.model.TutorExplanationMode.DIRECT,
+        explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+        solutionRevealed: Boolean = explanationMode == TutorExplanationMode.DIRECT,
+        interactionDirective: TutorInteractionDirective? =
+            if (explanationMode == TutorExplanationMode.GUIDED) {
+                TutorInteractionDirective.Continue
+            } else {
+                null
+            },
     ): ModelTaskSnapshot {
         val request = buildTutorRespondRequest(
             question = target,
@@ -554,12 +561,13 @@ class TutorConversationTimelineTest {
                 responseOrdinal = input.responseOrdinal,
                 cycleOrdinal = input.cycleOrdinal,
                 turnOrdinal = input.turnOrdinal,
-                messageMarkdown = if (solutionRevealed) {
-                    "完整解答与最终答案。"
+                messageMarkdown = if (explanationMode == TutorExplanationMode.DIRECT) {
+                    "完整讲解如下：根据题目条件逐步推导，最终答案已经明确给出。"
                 } else {
-                    "因为符号在这里改变。"
+                    GUIDED_INTERACTION_MESSAGE
                 },
                 solutionRevealed = solutionRevealed,
+                interactionDirective = interactionDirective,
                 intentDecision = intentDecision,
                 modelVersion = "model-v1",
             ),

@@ -1,6 +1,9 @@
 package com.tingyun.smartmistakebook.feature.library
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -12,9 +15,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.ui.Paper
+import com.tingyun.smartmistakebook.core.ui.SmartDarkColors
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -102,6 +108,12 @@ class LibraryBatchExportEntryInstrumentedTest {
         val mathOptionTag =
             "library_filter_subject_${SubjectKind.MATH.name.hashCode().toUInt()}"
         composeRule.onNodeWithTag("library_facet_subject").assertIsSelected()
+        composeRule.onNodeWithTag("library_facet_chapter").assertIsNotSelected()
+        composeRule.onNodeWithTag("library_facet_knowledge").assertIsNotSelected()
+        composeRule.onNodeWithTag("library_facet_mastery").assertIsNotSelected()
+        composeRule.onAllNodesWithText(
+            "科目 → 板块/章节 → 知识点 → 掌握程度",
+        ).assertCountEquals(0)
         composeRule.onNodeWithTag("library_filter_all").assertIsSelected()
         composeRule.onNodeWithTag(mathOptionTag).assertIsNotSelected().performClick()
         composeRule.onNodeWithTag("library_facet_chapter").assertIsSelected()
@@ -148,6 +160,33 @@ class LibraryBatchExportEntryInstrumentedTest {
         assertNoC4StudentCopy()
     }
 
+    @Test
+    fun darkThemeRendersLibraryRootAndCapturesScreenshot() {
+        var darkBackground = Color.Unspecified
+        var darkPaper = Color.Unspecified
+
+        composeRule.setContent {
+            SmartMistakeBookTheme(darkTheme = true) {
+                darkBackground = MaterialTheme.colorScheme.background
+                darkPaper = Paper
+                LibraryRoute(
+                    entries = listOf(entry("math-1", SubjectKind.MATH.name, "导数题")),
+                    pendingCaptureCount = 1,
+                    onCapture = {},
+                    onBatchImport = {},
+                    onOpenPendingCaptures = {},
+                    onExportVisible = {},
+                    onOpenItem = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("library_more").assertIsDisplayed()
+        assertEquals(SmartDarkColors.Paper, darkBackground)
+        assertEquals(SmartDarkColors.Paper, darkPaper)
+        saveAuditScreenshot("library-home-dark.png")
+    }
+
     private fun entry(
         id: String,
         subject: String,
@@ -181,6 +220,12 @@ class LibraryBatchExportEntryInstrumentedTest {
                 useUnmergedTree = true,
             ).assertCountEquals(0)
         }
+    }
+
+    private fun saveAuditScreenshot(fileName: String) {
+        InstrumentationRegistry.getInstrumentation().uiAutomation
+            .executeShellCommand("screencap -p /sdcard/Download/$fileName")
+            .close()
     }
 
     private companion object {

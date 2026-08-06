@@ -119,9 +119,39 @@ class TutorVisualExecutionSchedulerTest {
         assertTrue(newCompleted.get())
     }
 
+    @Test
+    fun documentFingerprintSwitchCancelsStaleWorkBeforeStartingTheNewRequest() = runTest {
+        val scheduler = TutorVisualAnchorScheduler(this)
+        val oldKey = executionKey(turnOrdinal = 1, questionDocumentFingerprint = "document-v1")
+        val newKey = oldKey.copy(questionDocumentFingerprint = "document-v2")
+        val oldStarted = CompletableDeferred<Unit>()
+        val oldCancelled = CompletableDeferred<Unit>()
+        val newCompleted = AtomicBoolean(false)
+
+        assertTrue(
+            scheduler.launch(oldKey) {
+                oldStarted.complete(Unit)
+                try {
+                    awaitCancellation()
+                } finally {
+                    oldCancelled.complete(Unit)
+                }
+            },
+        )
+        oldStarted.await()
+
+        scheduler.cancelExcept(setOf(newKey))
+        withTimeout(1_000) { oldCancelled.await() }
+        assertTrue(scheduler.launch(newKey) { newCompleted.set(true) })
+        advanceUntilIdle()
+
+        assertTrue(newCompleted.get())
+    }
+
     private fun executionKey(
         turnOrdinal: Int,
         semanticRequestId: String = "visual-request-$turnOrdinal",
+        questionDocumentFingerprint: String = "document-v1",
     ) = TutorVisualExecutionKey(
         anchor = TutorVisualTurnAnchor(
             surface = TutorVisualTurnSurface.PLAN,
@@ -130,5 +160,6 @@ class TutorVisualExecutionSchedulerTest {
         ),
         taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
         semanticRequestId = semanticRequestId,
+        questionDocumentFingerprint = questionDocumentFingerprint,
     )
 }

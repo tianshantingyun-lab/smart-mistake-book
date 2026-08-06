@@ -18,6 +18,7 @@ class PendingTutorEgressStateInstrumentedTest {
                 clearDraftOnPersist = false,
                 selectedChoiceId = "choice-b",
                 choiceSourceRequestId = "visible-reply-request",
+                conversationAuthorityFingerprint = "conversation-fingerprint",
             ),
         )
         val saved = with(pendingTutorEgressStateSaver) {
@@ -28,15 +29,21 @@ class PendingTutorEgressStateInstrumentedTest {
 
         assertEquals("choice-b", restored.selectedChoiceId)
         assertEquals("visible-reply-request", restored.choiceSourceRequestId)
+        assertEquals(
+            "conversation-fingerprint",
+            restored.conversationAuthorityFingerprint,
+        )
         assertEquals("继续", restored.message)
 
         saved.remove("selected_choice_id")
         saved.remove("choice_source_request_id")
+        saved.remove("conversation_authority_fingerprint")
         val legacyRestored = requireNotNull(pendingTutorEgressStateSaver.restore(saved)).action
             as PendingTutorEgressAction.NewResponse
 
         assertNull(legacyRestored.selectedChoiceId)
         assertNull(legacyRestored.choiceSourceRequestId)
+        assertNull(legacyRestored.conversationAuthorityFingerprint)
         assertEquals("继续", legacyRestored.message)
     }
 }

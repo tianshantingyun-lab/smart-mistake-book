@@ -17,6 +17,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -762,6 +763,205 @@ class TutorActiveStreamOwnerTest {
 
         assertTrue(owner.state.value.active?.durablyStarted == true)
         owner.close()
+    }
+
+    @Test
+    fun revokedRecoveryIsRemovedBeforePreparationWithoutCallingTheProvider() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+        var prepared = false
+
+        owner.submit(
+            studentMessage = "继续",
+            startsNewTurn = false,
+            executionAuthorized = { false },
+        ) {
+            prepared = true
+            prepared("request-revoked") { flow { error("provider must not run") } }
+        }
+        runCurrent()
+
+        assertFalse(prepared)
+        assertNull(owner.state.value.active)
+        owner.close()
+    }
+
+    @Test
+    fun authorityIsCheckedAgainImmediatelyBeforeOpeningTheEventFlow() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+        var checks = 0
+        var eventFlowOpened = false
+
+        owner.submit(
+            studentMessage = "继续",
+            startsNewTurn = false,
+            executionAuthorized = {
+                checks += 1
+                checks < 3
+            },
+        ) {
+            prepared("request-revoked-after-prepare") {
+                eventFlowOpened = true
+                flow { error("provider must not run") }
+            }
+        }
+        runCurrent()
+
+        assertEquals(3, checks)
+        assertFalse(eventFlowOpened)
+        assertNull(owner.state.value.active)
+        owner.close()
+    }
+
+    @Test
+    fun revokedAuthorityDropsLateEventsAndCancelsTheDurableRequest() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val events = MutableSharedFlow<TutorStreamEvent>(extraBufferCapacity = 2)
+        val cancelled = CompletableDeferred<String>()
+        val acceptedCompletions = mutableListOf<String>()
+        var authorized = true
+        val owner = owner(dispatcher) { requestId ->
+            cancelled.complete(requestId)
+        }
+
+        owner.submit(
+            studentMessage = "继续",
+            startsNewTurn = false,
+            executionAuthorized = { authorized },
+            onAuthorizedCompletion = { requestId ->
+                acceptedCompletions += requestId
+                true
+            },
+        ) {
+            prepared("request-in-flight") { events }
+        }
+        runCurrent()
+        val identity = requireNotNull(owner.state.value.active?.identity)
+        events.tryEmit(TutorStreamEvent.Started(identity))
+        runCurrent()
+        assertTrue(owner.state.value.active?.durablyStarted == true)
+
+        authorized = false
+        events.tryEmit(
+            TutorStreamEvent.Completed(
+                identity,
+                TutorMarkdownSnapshot("迟到内容", ""),
+            ),
+        )
+        runCurrent()
+
+        assertNull(owner.state.value.active)
+        assertEquals("request-in-flight", cancelled.await())
+        assertTrue(acceptedCompletions.isEmpty())
+        owner.close()
+    }
+
+    @Test
+    fun authorizedCompletionIsPublishedOnlyAfterTheFinalAuthorityCheck() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val acceptedCompletions = mutableListOf<String>()
+        val owner = owner(dispatcher)
+
+        owner.submit(
+            studentMessage = "继续",
+            startsNewTurn = false,
+            executionAuthorized = { true },
+            onAuthorizedCompletion = { requestId ->
+                acceptedCompletions += requestId
+                true
+            },
+        ) {
+            prepared("request-authorized") { identity ->
+                flowOf(
+                    TutorStreamEvent.Completed(
+                        identity,
+                        TutorMarkdownSnapshot("最终可信讲解", ""),
+                    ),
+                )
+            }
+        }
+        runCurrent()
+
+        assertEquals(listOf("request-authorized"), acceptedCompletions)
+        assertEquals(TutorActiveStreamPhase.COMPLETED, owner.state.value.active?.phase)
+        owner.close()
+    }
+
+    @Test
+    fun completionRejectedAfterItsEventArrivesNeverPublishesTerminalContent() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val completionEntered = CompletableDeferred<Unit>()
+        val allowCompletionDecision = CompletableDeferred<Unit>()
+        val cancelled = CompletableDeferred<String>()
+        var authorized = true
+        val owner = owner(dispatcher) { requestId -> cancelled.complete(requestId) }
+
+        owner.submit(
+            studentMessage = "继续",
+            startsNewTurn = false,
+            resultAuthorized = { authorized },
+            onAuthorizedCompletion = {
+                completionEntered.complete(Unit)
+                allowCompletionDecision.await()
+                authorized
+            },
+        ) {
+            prepared("request-revoked-in-callback") { identity ->
+                flowOf(
+                    TutorStreamEvent.Completed(
+                        identity,
+                        TutorMarkdownSnapshot("不得出现的迟到讲解", ""),
+                    ),
+                )
+            }
+        }
+        runCurrent()
+        completionEntered.await()
+
+        authorized = false
+        allowCompletionDecision.complete(Unit)
+        runCurrent()
+
+        assertNull(owner.state.value.active)
+        assertEquals("request-revoked-in-callback", cancelled.await())
+        owner.close()
+    }
+
+    @Test
+    fun onlyAStudentTurnAdvancesTheConversationGeneration() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val owner = owner(dispatcher)
+        assertEquals(7L, owner.currentOwnerEpoch())
+        assertTrue(
+            owner.recoveryAuthorityIsOpen(
+                expectedConversationGeneration = 0,
+                expectedMode = TutorExplanationMode.DIRECT,
+            ),
+        )
+
+        owner.submit(studentMessage = "恢复", startsNewTurn = false) {
+            prepared("recovery") { flow { awaitCancellation() } }
+        }
+        assertEquals(0, owner.currentConversationGeneration())
+
+        owner.submit(studentMessage = "新的回答", startsNewTurn = true) {
+            prepared("new-turn") { flow { awaitCancellation() } }
+        }
+        assertEquals(1, owner.currentConversationGeneration())
+        assertFalse(
+            owner.recoveryAuthorityIsOpen(
+                expectedConversationGeneration = 0,
+                expectedMode = TutorExplanationMode.DIRECT,
+            ),
+        )
+        owner.close()
+        assertFalse(
+            owner.recoveryAuthorityIsOpen(
+                expectedConversationGeneration = 1,
+                expectedMode = TutorExplanationMode.DIRECT,
+            ),
+        )
     }
 
     private fun TestScope.owner(

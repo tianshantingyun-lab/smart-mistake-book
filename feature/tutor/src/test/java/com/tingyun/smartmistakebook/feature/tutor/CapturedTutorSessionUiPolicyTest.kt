@@ -2,12 +2,18 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
+import com.tingyun.smartmistakebook.core.domain.TutorCurrentSessionHint
+import com.tingyun.smartmistakebook.core.domain.TutorCurrentSessionHintStatus
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CapturedTutorSessionUiPolicyTest {
@@ -115,6 +121,264 @@ class CapturedTutorSessionUiPolicyTest {
         )
     }
 
+    @Test
+    fun hintVisibleButNotRecordedBlocksAnswerSubmission() {
+        val hint = hint(status = TutorCurrentSessionHintStatus.AVAILABLE)
+
+        assertTrue(
+            isHintSubmissionBlocked(
+                hint = hint,
+                locallyVisibleHintToken = hint.slotToken,
+                hintCommitBusyToken = hint.slotToken,
+                hintCommitFailedToken = null,
+            ),
+        )
+    }
+
+    @Test
+    fun failedHintCommitKeepsAnswersBlockedUntilRetrySucceeds() {
+        val hint = hint(status = TutorCurrentSessionHintStatus.AVAILABLE)
+
+        assertTrue(
+            isHintSubmissionBlocked(
+                hint = hint,
+                locallyVisibleHintToken = hint.slotToken,
+                hintCommitBusyToken = null,
+                hintCommitFailedToken = hint.slotToken,
+            ),
+        )
+    }
+
+    @Test
+    fun durablyShownHintDoesNotBlockAnswerSubmission() {
+        val hint = hint(status = TutorCurrentSessionHintStatus.SHOWN)
+
+        assertFalse(
+            isHintSubmissionBlocked(
+                hint = hint,
+                locallyVisibleHintToken = hint.slotToken,
+                hintCommitBusyToken = null,
+                hintCommitFailedToken = null,
+            ),
+        )
+    }
+
+    @Test
+    fun hintStillAvailableBeforeRevealDoesNotBlockAnswerSubmission() {
+        val hint = hint(status = TutorCurrentSessionHintStatus.AVAILABLE)
+
+        assertFalse(
+            isHintSubmissionBlocked(
+                hint = hint,
+                locallyVisibleHintToken = null,
+                hintCommitBusyToken = null,
+                hintCommitFailedToken = null,
+            ),
+        )
+    }
+
+    @Test
+    fun disclosureFlagsFollowProviderAndPendingActionState() {
+        assertTrue(
+            tutorShowPlanRecoveryDisclosure(
+                hasPlanFreshApproval = true,
+                hasPendingPlanAction = false,
+                executableProviderIsExternal = true,
+            ),
+        )
+        assertFalse(
+            tutorShowPlanRecoveryDisclosure(
+                hasPlanFreshApproval = true,
+                hasPendingPlanAction = false,
+                executableProviderIsExternal = false,
+            ),
+        )
+        assertTrue(
+            tutorShowVisualRetryDisclosure(
+                hasPendingVisualRetry = true,
+                currentProviderIsExternal = true,
+            ),
+        )
+        assertFalse(
+            tutorShowVisualRetryDisclosure(
+                hasPendingVisualRetry = true,
+                currentProviderIsExternal = false,
+            ),
+        )
+        assertTrue(
+            tutorShowRespondDisclosure(
+                respondSupported = true,
+                hasCurrentPlan = true,
+                respondAuthorized = false,
+                hasPlanFreshApproval = false,
+                hasPendingVisualRetry = false,
+                pendingResponseRetryIsRebuildable = true,
+            ),
+        )
+        assertFalse(
+            tutorShowRespondDisclosure(
+                respondSupported = true,
+                hasCurrentPlan = true,
+                respondAuthorized = true,
+                hasPlanFreshApproval = false,
+                hasPendingVisualRetry = false,
+                pendingResponseRetryIsRebuildable = true,
+            ),
+        )
+        assertTrue(
+            tutorShowChatStartError(
+                composerAvailable = false,
+                chatStartError = "稍后重试",
+            ),
+        )
+        assertFalse(
+            tutorShowChatStartError(
+                composerAvailable = true,
+                chatStartError = "稍后重试",
+            ),
+        )
+    }
+
+    @Test
+    fun activeReplyDisclosureFollowsStreamState() {
+        val active = activeMessage(snapshot = null)
+
+        assertTrue(tutorShowActiveReply(activeMessage = active, activeReplyExists = false))
+        assertFalse(tutorShowActiveReply(activeMessage = active, activeReplyExists = true))
+        assertFalse(tutorShowActiveReply(activeMessage = null, activeReplyExists = false))
+    }
+
+    @Test
+    fun currentTurnComparesCycleAndTurnOrdinals() {
+        assertTrue(
+            tutorIsCurrentTurn(
+                taskCycleOrdinal = 2,
+                taskTurnOrdinal = 3,
+                currentCycleOrdinal = 2,
+                currentTurnOrdinal = 3,
+            ),
+        )
+        assertFalse(
+            tutorIsCurrentTurn(
+                taskCycleOrdinal = 2,
+                taskTurnOrdinal = 3,
+                currentCycleOrdinal = 2,
+                currentTurnOrdinal = 4,
+            ),
+        )
+    }
+
+    @Test
+    fun missingVisualResolutionFallsBackToHidden() {
+        val anchor = TutorVisualTurnAnchor(
+            surface = TutorVisualTurnSurface.PLAN,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        )
+
+        assertEquals(
+            TutorVisualResolution.Hidden,
+            tutorResolvedVisual(
+                visualAnchor = anchor,
+                resolvedVisualStates = emptyMap(),
+            ),
+        )
+        assertEquals(
+            TutorVisualResolution.Hidden,
+            tutorResolvedVisual(
+                visualAnchor = null,
+                resolvedVisualStates = emptyMap(),
+            ),
+        )
+    }
+
+    @Test
+    fun awaitingContinuationMatchesExactTaskRequest() {
+        assertTrue(
+            tutorAwaitingContinuation(
+                awaitingRequestId = "request-7",
+                taskRequestId = "request-7",
+            ),
+        )
+        assertFalse(
+            tutorAwaitingContinuation(
+                awaitingRequestId = null,
+                taskRequestId = "request-7",
+            ),
+        )
+    }
+
+    @Test
+    fun planInteractionRequiresTailCurrentAndNoPendingGate() {
+        assertTrue(
+            tutorPlanInteractionEnabled(
+                isTail = true,
+                isCurrentTurn = true,
+                hasFreshApproval = false,
+                pendingInteractionBlocked = false,
+                responseActionAwaitingAuthorization = false,
+            ),
+        )
+        assertFalse(
+            tutorPlanInteractionEnabled(
+                isTail = true,
+                isCurrentTurn = false,
+                hasFreshApproval = false,
+                pendingInteractionBlocked = false,
+                responseActionAwaitingAuthorization = false,
+            ),
+        )
+        assertFalse(
+            tutorPlanInteractionEnabled(
+                isTail = true,
+                isCurrentTurn = true,
+                hasFreshApproval = true,
+                pendingInteractionBlocked = false,
+                responseActionAwaitingAuthorization = false,
+            ),
+        )
+    }
+
+    @Test
+    fun hintRequestRequiresGuidedAuthorizedAndIdle() {
+        assertTrue(
+            tutorHintRequestEnabled(
+                guidedMode = true,
+                hintsUsed = 2,
+                maxHints = 3,
+                respondSupported = true,
+                respondAuthorized = true,
+                chatSending = false,
+                pendingInteractionBlocked = false,
+                responseActionAwaitingAuthorization = false,
+            ),
+        )
+        assertFalse(
+            tutorHintRequestEnabled(
+                guidedMode = false,
+                hintsUsed = 2,
+                maxHints = 3,
+                respondSupported = true,
+                respondAuthorized = true,
+                chatSending = false,
+                pendingInteractionBlocked = false,
+                responseActionAwaitingAuthorization = false,
+            ),
+        )
+        assertFalse(
+            tutorHintRequestEnabled(
+                guidedMode = true,
+                hintsUsed = 3,
+                maxHints = 3,
+                respondSupported = true,
+                respondAuthorized = true,
+                chatSending = false,
+                pendingInteractionBlocked = false,
+                responseActionAwaitingAuthorization = false,
+            ),
+        )
+    }
+
     private fun activeMessage(
         snapshot: TutorMarkdownSnapshot?,
         phase: TutorActiveStreamPhase = TutorActiveStreamPhase.STREAMING,
@@ -144,5 +408,11 @@ class CapturedTutorSessionUiPolicyTest {
         surfaceKind = TutorAnswerExposureSurfaceKind.RESPOND_REPLY,
         modelTaskRequestId = "request-direct",
         responseOrdinal = 1,
+    )
+
+    private fun hint(status: TutorCurrentSessionHintStatus) = TutorCurrentSessionHint(
+        markdown = "先比较两个时刻的磁通量。",
+        slotToken = "a".repeat(64),
+        status = status,
     )
 }

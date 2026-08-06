@@ -6,8 +6,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import java.time.LocalDate
+import java.time.ZoneId
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -39,11 +44,14 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderPreferences
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
+import com.tingyun.smartmistakebook.core.domain.ReviewPacingLevel
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
+import com.tingyun.smartmistakebook.core.ui.studentLabel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -59,6 +67,7 @@ internal fun ReminderScreen(
     val preferences by repository.preferences.collectAsStateWithLifecycle(
         initialValue = ReviewReminderPreferences(),
     )
+    val todayEpochDay = remember { LocalDate.now(ZoneId.systemDefault()).toEpochDay() }
     var permissionGranted by remember { mutableStateOf(context.canPostReviewNotifications()) }
     var statusMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -77,6 +86,7 @@ internal fun ReminderScreen(
     }
 
     fun saveEnabled(enabled: Boolean) {
+        statusMessage = null
         scope.launch {
             try {
                 repository.setEnabled(enabled)
@@ -90,6 +100,7 @@ internal fun ReminderScreen(
     }
 
     fun saveTime(minutesAfterMidnight: Int) {
+        statusMessage = null
         scope.launch {
             try {
                 repository.setReminderTime(minutesAfterMidnight)
@@ -98,6 +109,48 @@ internal fun ReminderScreen(
                 throw cancelled
             } catch (_: Exception) {
                 statusMessage = "时间保存失败，请稍后再试。"
+            }
+        }
+    }
+
+    fun savePacing(pacingLevel: ReviewPacingLevel) {
+        statusMessage = null
+        scope.launch {
+            try {
+                repository.setPacingLevel(pacingLevel)
+                statusMessage = "每日复习强度已改为 ${pacingLevel.studentLabel()}"
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                statusMessage = "复习强度保存失败，请稍后再试。"
+            }
+        }
+    }
+
+    fun saveExamTarget(
+        subject: SubjectKind?,
+        days: Int?,
+    ) {
+        statusMessage = null
+        scope.launch {
+            try {
+                val examEpochDay =
+                    if (subject == null || days == null) {
+                        null
+                    } else {
+                        todayEpochDay + days
+                    }
+                repository.setExamTarget(subject, examEpochDay)
+                statusMessage =
+                    if (subject == null) {
+                        "已清除考试目标"
+                    } else {
+                        "${subject.studentLabel()}安排在 ${days} 天后"
+                    }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                statusMessage = "考试目标保存失败，请稍后再试。"
             }
         }
     }
@@ -130,7 +183,7 @@ internal fun ReminderScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    RootPageColumn {
+    RootPageColumn(modifier = Modifier.testTag("review_reminder_screen")) {
         SecondaryHeader(title = "复习提醒", onBack = onBack)
         SectionHeader("复习节奏")
         Row(
@@ -167,6 +220,116 @@ internal fun ReminderScreen(
                     }
                 },
                 modifier = Modifier.testTag("reminder_enabled_switch"),
+            )
+        }
+        Text(
+            "每日复习强度",
+            modifier = Modifier.padding(top = 18.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = Ink,
+        )
+        Text(
+            "按当天可用时间选择；保存后次日计划按新强度安排。",
+            modifier = Modifier.padding(top = 4.dp),
+            color = InkSecondary,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+        ) {
+            ReviewPacingChoice(
+                label = "轻量",
+                level = ReviewPacingLevel.LIGHT,
+                selected = preferences.pacingLevel == ReviewPacingLevel.LIGHT,
+                onSelect = ::savePacing,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(8.dp))
+            ReviewPacingChoice(
+                label = "标准",
+                level = ReviewPacingLevel.STANDARD,
+                selected = preferences.pacingLevel == ReviewPacingLevel.STANDARD,
+                onSelect = ::savePacing,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(8.dp))
+            ReviewPacingChoice(
+                label = "加强",
+                level = ReviewPacingLevel.STRONG,
+                selected = preferences.pacingLevel == ReviewPacingLevel.STRONG,
+                onSelect = ::savePacing,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Text(
+            "当前：${preferences.pacingLevel.studentLabel()} · ${preferences.pacingLevel.studentDescription()}",
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .testTag("reminder_pacing_summary"),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Ink,
+        )
+        PaperDivider(Modifier.padding(vertical = 18.dp))
+        SectionHeader("考试目标")
+        Text(
+            "考试前优先排对应科目；不设置就不会额外加权。",
+            modifier = Modifier.padding(top = 6.dp),
+            color = InkSecondary,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            SubjectKind.entries
+                .filterNot { it == SubjectKind.GENERAL }
+                .forEach { subject ->
+                    FilterChip(
+                        selected = preferences.examSubject == subject,
+                        onClick = { saveExamTarget(subject, 14) },
+                        label = { Text(subject.studentLabel()) },
+                        modifier = Modifier.testTag("reminder_exam_${subject.name}"),
+                    )
+                }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            ExamDayChoice(
+                label = "7天后",
+                days = 7,
+                todayEpochDay = todayEpochDay,
+                preferences = preferences,
+                onSelect = { days -> preferences.examSubject?.let { saveExamTarget(it, days) } },
+                modifier = Modifier.weight(1f),
+            )
+            ExamDayChoice(
+                label = "14天后",
+                days = 14,
+                todayEpochDay = todayEpochDay,
+                preferences = preferences,
+                onSelect = { days -> preferences.examSubject?.let { saveExamTarget(it, days) } },
+                modifier = Modifier.weight(1f),
+            )
+            ExamDayChoice(
+                label = "30天后",
+                days = 30,
+                todayEpochDay = todayEpochDay,
+                preferences = preferences,
+                onSelect = { days -> preferences.examSubject?.let { saveExamTarget(it, days) } },
+                modifier = Modifier.weight(1f),
+            )
+            FilterChip(
+                selected = preferences.examSubject == null,
+                onClick = { saveExamTarget(null, null) },
+                label = { Text("清除") },
+                modifier = Modifier.weight(1f).testTag("reminder_exam_clear"),
             )
         }
 
@@ -254,7 +417,9 @@ internal fun ReminderScreen(
         statusMessage?.let { message ->
             Text(
                 message,
-                modifier = Modifier.padding(top = 12.dp),
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .testTag("reminder_status_message"),
                 color = InkSecondary,
             )
         }
@@ -283,6 +448,57 @@ private fun ReminderTimePreset(
         modifier = modifier.testTag("reminder_preset_$minutes"),
     )
 }
+
+@Composable
+private fun ReviewPacingChoice(
+    label: String,
+    level: ReviewPacingLevel,
+    selected: Boolean,
+    onSelect: (ReviewPacingLevel) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FilterChip(
+        selected = selected,
+        onClick = { onSelect(level) },
+        label = { Text(label) },
+        modifier = modifier.testTag("reminder_pacing_${level.name}"),
+    )
+}
+
+@Composable
+private fun ExamDayChoice(
+    label: String,
+    days: Int,
+    todayEpochDay: Long,
+    preferences: ReviewReminderPreferences,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val selected =
+        preferences.examSubject != null &&
+            preferences.examEpochDay == todayEpochDay + days
+    FilterChip(
+        selected = selected,
+        enabled = preferences.examSubject != null,
+        onClick = { onSelect(days) },
+        label = { Text(label) },
+        modifier = modifier.testTag("reminder_exam_days_$days"),
+    )
+}
+
+private fun ReviewPacingLevel.studentLabel(): String =
+    when (this) {
+        ReviewPacingLevel.LIGHT -> "轻量"
+        ReviewPacingLevel.STANDARD -> "标准"
+        ReviewPacingLevel.STRONG -> "加强"
+    }
+
+private fun ReviewPacingLevel.studentDescription(): String =
+    when (this) {
+        ReviewPacingLevel.LIGHT -> "约10分钟，最多4题"
+        ReviewPacingLevel.STANDARD -> "约15分钟，最多5题"
+        ReviewPacingLevel.STRONG -> "约25分钟，最多8题"
+    }
 
 private fun formatReminderTime(minutesAfterMidnight: Int): String =
     "%02d:%02d".format(minutesAfterMidnight / 60, minutesAfterMidnight % 60)

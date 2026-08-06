@@ -720,7 +720,7 @@ private fun TutorAssistantReplyBubble(
                         val actionLabel = when {
                             recoveryEnabled && executionMatchesCurrentProvider && settingsRequired ->
                                 "检查模型设置"
-                            showActions && task.canRetryTutorResponseFor(explanationMode) -> "重试"
+                            showActions && task.canRetryTutorResponse() -> "重试"
                             else -> null
                         }
                         TutorReplyFailure(
@@ -1019,6 +1019,8 @@ internal fun TutorChatComposer(
     onCameraAttachment: () -> Unit = {},
     onGalleryAttachment: () -> Unit = {},
     onLibraryAttachment: () -> Unit = {},
+    showAttachments: Boolean = true,
+    showGuidanceControl: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -1076,35 +1078,41 @@ internal fun TutorChatComposer(
                 style = MaterialTheme.typography.labelSmall,
             )
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(
-                onClick = onCameraAttachment,
-                enabled = enabled,
-                modifier = Modifier.testTag("tutor_chat_camera"),
+        if (showAttachments || showGuidanceControl) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Outlined.PhotoCamera, contentDescription = "拍摄新题")
+                if (showAttachments) {
+                    IconButton(
+                        onClick = onCameraAttachment,
+                        enabled = enabled,
+                        modifier = Modifier.testTag("tutor_chat_camera"),
+                    ) {
+                        Icon(Icons.Outlined.PhotoCamera, contentDescription = "拍摄新题")
+                    }
+                    IconButton(
+                        onClick = onGalleryAttachment,
+                        enabled = enabled,
+                        modifier = Modifier.testTag("tutor_chat_gallery"),
+                    ) {
+                        Icon(Icons.Outlined.PhotoLibrary, contentDescription = "从相册选择")
+                    }
+                    IconButton(
+                        onClick = onLibraryAttachment,
+                        enabled = enabled,
+                        modifier = Modifier.testTag("tutor_chat_library"),
+                    ) {
+                        Icon(Icons.Outlined.AutoStories, contentDescription = "从错题本选择")
+                    }
+                }
+                if (showGuidanceControl) {
+                    TutorGuidanceModeControl(
+                        mode = explanationMode,
+                        onModeChange = onExplanationModeChange,
+                    )
+                }
             }
-            IconButton(
-                onClick = onGalleryAttachment,
-                enabled = enabled,
-                modifier = Modifier.testTag("tutor_chat_gallery"),
-            ) {
-                Icon(Icons.Outlined.PhotoLibrary, contentDescription = "从相册选择")
-            }
-            IconButton(
-                onClick = onLibraryAttachment,
-                enabled = enabled,
-                modifier = Modifier.testTag("tutor_chat_library"),
-            ) {
-                Icon(Icons.Outlined.AutoStories, contentDescription = "从错题本选择")
-            }
-            TutorGuidanceModeControl(
-                mode = explanationMode,
-                onModeChange = onExplanationModeChange,
-            )
         }
     }
 }

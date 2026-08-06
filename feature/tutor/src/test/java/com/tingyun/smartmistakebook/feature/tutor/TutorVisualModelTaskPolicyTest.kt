@@ -9,6 +9,11 @@ import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
+import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
+import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
+import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
@@ -44,6 +49,8 @@ class TutorVisualModelTaskPolicyTest {
 
         assertEquals(ModelTaskKind.TUTOR_VISUAL_GENERATE, input.kind)
         assertEquals(assets.map { it.toSourceRef() }, input.sourceAssets)
+        assertEquals(1, input.sourceFacts.size)
+        assertEquals("30 cm", input.sourceFacts.single().literal)
         assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
         assertEquals(setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE), manifest.authorizedTaskKinds)
         assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in manifest.disclosedData)
@@ -85,9 +92,33 @@ class TutorVisualModelTaskPolicyTest {
             occurredAtEpochMillis = 2_000,
             approvedAtEpochMillis = 2_000,
         )
+        val changedQuestion = question.copy(
+            questionDocument = question.questionDocument.copy(
+                document = QuestionDocument(
+                    id = question.questionDocument.document.id,
+                    blocks = listOf(
+                        ContentBlock.Paragraph(
+                            "stem",
+                            "液柱长 30 cm，先判断连通关系，再比较两侧液面",
+                        ),
+                    ),
+                ),
+            ),
+        )
+        val changedQuestionRequest = buildTutorVisualGenerateRequest(
+            question = changedQuestion,
+            provider = provider,
+            sourceAssets = assets,
+            anchor = anchor,
+            focusMarkdown = "聚焦液面高度关系",
+            explanationMarkdown = "先比较两侧液面。",
+            occurredAtEpochMillis = 2_000,
+            approvedAtEpochMillis = 2_000,
+        )
 
         assertEquals(first.requestId, later.requestId)
         assertTrue(first.requestId != changedSource.requestId)
+        assertTrue(first.requestId != changedQuestionRequest.requestId)
     }
 
     @Test
@@ -127,6 +158,10 @@ class TutorVisualModelTaskPolicyTest {
 
         assertEquals(scene, input.candidateScene)
         assertEquals(assets.map { it.toSourceRef() }, input.sourceAssets)
+        assertEquals(
+            (generationRequest.input as TutorVisualGenerateInput).sourceFacts,
+            input.sourceFacts,
+        )
         assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
         assertTrue(ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE in manifest.disclosedData)
         assertFalse(ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE in manifest.disclosedData)
@@ -173,9 +208,20 @@ class TutorVisualModelTaskPolicyTest {
             questionDocument = CapturedQuestionDocument(
                 document = QuestionDocument(
                     id = "question",
-                    blocks = listOf(ContentBlock.Paragraph("stem", "比较两侧液面")),
+                    blocks = listOf(
+                        ContentBlock.Paragraph("stem", "液柱长 30 cm，比较两侧液面"),
+                    ),
                 ),
-                blockEvidence = emptyList(),
+                blockEvidence = listOf(
+                    QuestionBlockEvidence(
+                        blockId = "stem",
+                        sourceAssetId = "asset",
+                        sourceRegion = NormalizedSourceRegion(0.0, 0.0, 1.0, 1.0),
+                        writingLayer = WritingLayer.PRINTED,
+                        provenance = QuestionBlockProvenance.USER_TRANSCRIPTION,
+                        reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+                    ),
+                ),
             ),
         )
         val provider = ProviderCapabilitySnapshot(

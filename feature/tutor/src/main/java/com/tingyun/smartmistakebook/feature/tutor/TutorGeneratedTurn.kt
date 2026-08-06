@@ -27,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualHitProof
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
@@ -123,7 +124,9 @@ internal fun TutorTurnContent(
             .testTag("captured_tutor_model_ready"),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        SafeMarkdownText(plan.openingMarkdown, style = MaterialTheme.typography.bodyLarge)
+        if (plan.showOpening) {
+            SafeMarkdownText(plan.openingMarkdown, style = MaterialTheme.typography.bodyLarge)
+        }
         val visualTarget = directive as? TutorInteractionDirective.VisualTarget
         val visualTargetHitHandler = visualTarget
             ?.takeIf {
@@ -145,10 +148,14 @@ internal fun TutorTurnContent(
                 TutorVisualPresentation(
                     state = ownerModelTaskRequestId?.let { requestId ->
                         inlineTutorVisualResolution(scene, requestId)
-                    } ?: TutorVisualResolution.Ready(
-                        scene = scene,
-                        cacheKey = "display-only",
-                    ),
+                    } ?: if (scene is TutorVisualDocumentScene) {
+                        TutorVisualResolution.Fallback(TutorVisualFallbackReason.VALIDATION_FAILED)
+                    } else {
+                        TutorVisualResolution.Ready(
+                            scene = scene,
+                            cacheKey = "display-only",
+                        )
+                    },
                     mode = visualPresentationMode,
                     originalAvailable = visualOriginalAvailable,
                     onRetry = {},
@@ -193,17 +200,11 @@ internal fun TutorTurnContent(
                 )
             }
             if (!submitted && onRequestHint != null) {
-                TextButton(
+                TutorHintAction(
                     onClick = onRequestHint,
                     enabled = interactionEnabled &&
                         !interactionBusy && pendingChoiceId == null,
-                    colors = ButtonDefaults.textButtonColors(contentColor = JadeActive),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("captured_tutor_request_hint"),
-                ) {
-                    Text("我不确定，给我一点提示")
-                }
+                )
             }
         }
         directive?.let {
@@ -217,6 +218,12 @@ internal fun TutorTurnContent(
                     inlineScene = plan.visualScene,
                 ),
             )
+            if (it !is TutorInteractionDirective.Continue && onRequestHint != null) {
+                TutorHintAction(
+                    onClick = onRequestHint,
+                    enabled = interactionEnabled && !interactionBusy,
+                )
+            }
         }
         if (item == null) {
             TutorMoveButtons(
@@ -532,6 +539,23 @@ private fun TutorMoveButtons(
                 .fillMaxWidth()
                 .testTag(tag),
         )
+    }
+}
+
+@Composable
+private fun TutorHintAction(
+    onClick: () -> Unit,
+    enabled: Boolean,
+) {
+    TextButton(
+        onClick = onClick,
+        enabled = enabled,
+        colors = ButtonDefaults.textButtonColors(contentColor = JadeActive),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("captured_tutor_request_hint"),
+    ) {
+        Text("提示一下")
     }
 }
 

@@ -40,10 +40,11 @@ import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizati
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationPreparation
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
-import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ScopedModelTaskPort
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationDurableStatus
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -74,8 +75,8 @@ import kotlinx.coroutines.launch
 internal fun MistakeOrganizationSection(
     key: MistakeRevisionKey,
     organizationRepository: MistakeOrganizationRepository,
-    modelTasks: ModelTaskRepository,
-    profile: StudyProfileOverview,
+    modelTasks: ScopedModelTaskPort,
+    profile: StudyProfileOverview?,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     onOpenRelatedMistake: (String) -> Unit = {},
     onOpenModelSettings: () -> Unit,
@@ -420,6 +421,7 @@ internal fun MistakeOrganizationSection(
         reauthorization?.workId,
         reauthorizationHidden,
         durableTaskStatus,
+        profile,
     ) {
         if (
             !recoveryComplete ||
@@ -432,6 +434,7 @@ internal fun MistakeOrganizationSection(
             return@LaunchedEffect
         }
         val availableProvider = provider ?: return@LaunchedEffect
+        val currentProfile = profile ?: return@LaunchedEffect
         if (
             preparationDismissed ||
             preparation != null ||
@@ -447,7 +450,7 @@ internal fun MistakeOrganizationSection(
             val now = System.currentTimeMillis()
             preparation = organizationRepository.prepare(
                 key = key,
-                profile = profile,
+                profile = currentProfile,
                 provider = availableProvider,
                 attempt = attempt,
                 occurredAtEpochMillis = now,
@@ -733,7 +736,7 @@ private fun ModelTaskRequest.renewOrganizationRequest(
     val newRequestId = "problem-organization-resume:${UUID.randomUUID()}"
     val newManifest = when (provider.executionLocation) {
         ModelExecutionLocation.EXTERNAL_PROVIDER -> ModelEgressManifest(
-            authorizationId = "authorization:${UUID.randomUUID()}",
+            authorizationId = ModelEgressAuthorizationId.forInput(newRequestId, input),
             subjectId = input.subjectId,
             purpose = ModelEgressPurpose.CLASSIFICATION,
             authorizedTaskKinds = setOf(ModelTaskKind.PROBLEM_CLASSIFY),

@@ -2,7 +2,9 @@ package com.tingyun.smartmistakebook
 
 import androidx.work.ListenableWorker
 import androidx.work.NetworkType
-import com.tingyun.smartmistakebook.core.database.ProblemOrganizationWorkRecord
+import com.tingyun.smartmistakebook.core.data.production.ProductionProblemOrganizationRecoveryCursor
+import com.tingyun.smartmistakebook.core.data.production.ProductionProblemOrganizationWorkSchedule
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,6 +22,34 @@ class ProblemOrganizationWorkSchedulerTest {
         assertEquals(
             ListenableWorker.Result.failure(),
             ProblemOrganizationWorker.missingWorkIdResult(),
+        )
+    }
+
+    @Test
+    fun malformedLeaseFailsButUnknownOrRevokedLeaseIsTerminallyDiscarded() {
+        assertEquals(
+            ListenableWorker.Result.failure(),
+            ProblemOrganizationWorker.invalidExecutionLeaseResult(),
+        )
+        assertEquals(
+            ListenableWorker.Result.success(),
+            ProblemOrganizationWorker.staleExecutionLeaseResult(),
+        )
+        assertEquals(
+            ListenableWorker.Result.retry(),
+            ProblemOrganizationWorker.executionFailureResult(IOException("temporary")),
+        )
+        assertEquals(
+            ListenableWorker.Result.failure(),
+            ProblemOrganizationWorker.executionFailureResult(IllegalStateException("bug")),
+        )
+    }
+
+    @Test
+    fun publishedAuthorityThatIsStillStartingLeavesReschedulingToThePersistedFeed() {
+        assertEquals(
+            ListenableWorker.Result.success(),
+            ProblemOrganizationWorker.unavailableCapabilityResult(),
         )
     }
 
@@ -50,39 +80,38 @@ class ProblemOrganizationWorkSchedulerTest {
     }
 
     @Test
-    fun runningRecoveryIsDeduplicatedByWorkAndClaimedStateVersion() {
+    fun workManagerIdentityIncludesExactOccurrenceAndOwnerLease() {
+        val schedule = runningRecord(index = 1)
         assertEquals(
-            "problem-organization-recovery:work-1:7",
-            ProblemOrganizationWorkScheduler.recoveryWorkName("work-1", 7),
+            "problem-organization:${schedule.workId}:${schedule.stateVersion}:" +
+                schedule.executionLeaseToken,
+            ProblemOrganizationWorkScheduler.uniqueWorkName(schedule),
+        )
+        assertEquals(
+            "problem-organization-recovery:${schedule.workId}:${schedule.stateVersion}:" +
+                schedule.executionLeaseToken,
+            ProblemOrganizationWorkScheduler.recoveryWorkName(
+                schedule.workId,
+                schedule.stateVersion,
+                schedule.executionLeaseToken,
+            ),
         )
         assertFalse(
-            ProblemOrganizationWorkScheduler.recoveryWorkName("work-1", 7) ==
-                ProblemOrganizationWorkScheduler.recoveryWorkName("work-1", 8),
+            ProblemOrganizationWorkScheduler.uniqueWorkName(schedule) ==
+                ProblemOrganizationWorkScheduler.uniqueWorkName(
+                    schedule.copy(executionLeaseToken = "f".repeat(64)),
+                ),
         )
     }
 
     @Test
-    fun runningRecoveryWaitsForThePersistedLeaseExpiry() {
+    fun runningRecoveryCursorUsesThePersistedLeaseExpiry() {
         assertEquals(
             145_000L,
-            ProblemOrganizationWorkScheduler.eligibleAtEpochMillis(
-                ProblemOrganizationWorkRecord(
-                    workId = "work-1",
-                    commitReceiptCommandId = "receipt-1",
-                    status = "RUNNING",
-                    stateVersion = 7,
-                    attemptCount = 1,
-                    notBeforeEpochMillis = 90_000L,
-                    requestId = "request-1",
-                    requestSnapshot = "{}",
-                    leaseOwner = "worker-1",
-                    leaseExpiresAtEpochMillis = 145_000L,
-                    failureCode = null,
-                    failureMessage = null,
-                    createdAtEpochMillis = 80_000L,
-                    updatedAtEpochMillis = 100_000L,
-                ),
-            ),
+            runningRecord(index = 1)
+                .copy(eligibleAtEpochMillis = 145_000L)
+                .toRecoveryCursor()
+                .eligibleAtEpochMillis,
         )
     }
 
@@ -90,51 +119,41 @@ class ProblemOrganizationWorkSchedulerTest {
     fun startupRecoveryPagesEveryRunningStateVersionAtItsOwnExpiry() = runBlocking {
         val running = (0 until 500)
             .map(::runningRecord)
-            .sortedBy { ProblemOrganizationWorkRecoveryCursor.from(it) }
+            .sortedWith { left, right -> compareRecoverySnapshots(left, right) }
         val scheduled = mutableListOf<Pair<String, Long>>()
-        val requestedCursors = mutableListOf<ProblemOrganizationWorkRecoveryCursor?>()
+        val requestedCursors = mutableListOf<ProductionProblemOrganizationRecoveryCursor?>()
 
-        recoverRunningProblemOrganizationWorks(
+        recoverPublishedRunningProblemOrganizationWorks(
             pageSize = 100,
-            readPage = { limit, afterLease, afterUpdated, afterWorkId ->
-                val cursor = when {
-                    afterLease == null &&
-                        afterUpdated == null &&
-                        afterWorkId == null -> null
-                    afterLease != null &&
-                        afterUpdated != null &&
-                        afterWorkId != null -> ProblemOrganizationWorkRecoveryCursor(
-                        leaseExpiresAtEpochMillis = afterLease,
-                        updatedAtEpochMillis = afterUpdated,
-                        workId = afterWorkId,
-                    )
-                    else -> error("Cursor must be entirely absent or present")
-                }
+            readPage = { query ->
+                val cursor = query.after
                 requestedCursors += cursor
                 running
                     .asSequence()
-                    .filter { record ->
+                    .filter { snapshot ->
                         cursor?.let {
-                            ProblemOrganizationWorkRecoveryCursor.from(record) > it
+                            comparePublishedRecoveryCursors(snapshot.toRecoveryCursor(), it) > 0
                         } != false
                     }
-                    .take(limit)
+                    .take(query.limit)
                     .toList()
             },
-            enqueue = { record ->
+            enqueue = { snapshot ->
                 scheduled +=
                     ProblemOrganizationWorkScheduler.recoveryWorkName(
-                        record.workId,
-                        record.stateVersion,
-                    ) to ProblemOrganizationWorkScheduler.eligibleAtEpochMillis(record)
+                        snapshot.workId,
+                        snapshot.stateVersion,
+                        snapshot.executionLeaseToken,
+                    ) to snapshot.eligibleAtEpochMillis
             },
         )
 
-        val expected = running.map { record ->
+        val expected = running.map { snapshot ->
             ProblemOrganizationWorkScheduler.recoveryWorkName(
-                record.workId,
-                record.stateVersion,
-            ) to requireNotNull(record.leaseExpiresAtEpochMillis)
+                snapshot.workId,
+                snapshot.stateVersion,
+                snapshot.executionLeaseToken,
+            ) to snapshot.eligibleAtEpochMillis
         }
         assertEquals(expected, scheduled)
         assertEquals(500, scheduled.distinct().size)
@@ -142,15 +161,15 @@ class ProblemOrganizationWorkSchedulerTest {
         val pageCursors = requestedCursors.filterNotNull()
         assertEquals(
             running.filterIndexed { index, _ -> index % 100 == 99 }
-                .map { ProblemOrganizationWorkRecoveryCursor.from(it) },
+                .map(ProductionProblemOrganizationWorkSchedule::toRecoveryCursor),
             pageCursors,
         )
-        assertEquals(pageCursors[0].leaseExpiresAtEpochMillis, pageCursors[1].leaseExpiresAtEpochMillis)
+        assertEquals(pageCursors[0].eligibleAtEpochMillis, pageCursors[1].eligibleAtEpochMillis)
         assertTrue(pageCursors[0].updatedAtEpochMillis < pageCursors[1].updatedAtEpochMillis)
-        assertEquals(pageCursors[1].leaseExpiresAtEpochMillis, pageCursors[2].leaseExpiresAtEpochMillis)
+        assertEquals(pageCursors[1].eligibleAtEpochMillis, pageCursors[2].eligibleAtEpochMillis)
         assertEquals(pageCursors[1].updatedAtEpochMillis, pageCursors[2].updatedAtEpochMillis)
         assertTrue(pageCursors[1].workId < pageCursors[2].workId)
-        assertTrue(pageCursors[2].leaseExpiresAtEpochMillis < pageCursors[3].leaseExpiresAtEpochMillis)
+        assertTrue(pageCursors[2].eligibleAtEpochMillis < pageCursors[3].eligibleAtEpochMillis)
         assertTrue(scheduled.map { it.second }.distinct().size > 1)
     }
 
@@ -161,19 +180,16 @@ class ProblemOrganizationWorkSchedulerTest {
         val rows = listOf(first, moved)
         val scheduled = mutableListOf<String>()
 
-        recoverRunningProblemOrganizationWorks(
+        recoverPublishedRunningProblemOrganizationWorks(
             pageSize = 1,
-            readPage = { limit, afterLease, afterUpdated, afterWorkId ->
-                val cursor = afterLease?.let {
-                    ProblemOrganizationWorkRecoveryCursor(
-                        leaseExpiresAtEpochMillis = it,
-                        updatedAtEpochMillis = requireNotNull(afterUpdated),
-                        workId = requireNotNull(afterWorkId),
-                    )
-                }
+            readPage = { query ->
+                val cursor = query.after
                 rows.asSequence()
-                    .filter { cursor == null || ProblemOrganizationWorkRecoveryCursor.from(it) > cursor }
-                    .take(limit)
+                    .filter {
+                        cursor == null ||
+                            comparePublishedRecoveryCursors(it.toRecoveryCursor(), cursor) > 0
+                    }
+                    .take(query.limit)
                     .toList()
             },
             enqueue = { scheduled += it.workId },
@@ -186,34 +202,31 @@ class ProblemOrganizationWorkSchedulerTest {
     fun startupRecoveryFinishesItsKeysetSnapshotBeforeEnqueueCanMoveRows() = runBlocking {
         val rows = (0 until 250)
             .map(::runningRecord)
-            .sortedBy { ProblemOrganizationWorkRecoveryCursor.from(it) }
+            .sortedWith { left, right -> compareRecoverySnapshots(left, right) }
             .toMutableList()
         val scheduled = mutableListOf<String>()
         var allPagesRead = false
 
-        recoverRunningProblemOrganizationWorks(
+        recoverPublishedRunningProblemOrganizationWorks(
             pageSize = 100,
-            readPage = { limit, afterLease, afterUpdated, afterWorkId ->
-                val cursor = afterLease?.let {
-                    ProblemOrganizationWorkRecoveryCursor(
-                        leaseExpiresAtEpochMillis = it,
-                        updatedAtEpochMillis = requireNotNull(afterUpdated),
-                        workId = requireNotNull(afterWorkId),
-                    )
-                }
+            readPage = { query ->
+                val cursor = query.after
                 rows.asSequence()
-                    .filter { cursor == null || ProblemOrganizationWorkRecoveryCursor.from(it) > cursor }
-                    .take(limit)
+                    .filter {
+                        cursor == null ||
+                            comparePublishedRecoveryCursors(it.toRecoveryCursor(), cursor) > 0
+                    }
+                    .take(query.limit)
                     .toList()
-                    .also { page -> allPagesRead = page.size < limit }
+                    .also { page -> allPagesRead = page.size < query.limit }
             },
-            enqueue = { record ->
+            enqueue = { snapshot ->
                 assertTrue("Enqueue started before the paging snapshot completed", allPagesRead)
-                scheduled += record.workId
-                val index = rows.indexOfFirst { it.workId == record.workId }
+                scheduled += snapshot.workId
+                val index = rows.indexOfFirst { it.workId == snapshot.workId }
                 rows[index] = rows[index].copy(
-                    stateVersion = record.stateVersion + 1,
-                    updatedAtEpochMillis = record.updatedAtEpochMillis + 10_000,
+                    stateVersion = snapshot.stateVersion + 1,
+                    updatedAtEpochMillis = snapshot.updatedAtEpochMillis + 10_000,
                 )
             },
         )
@@ -222,7 +235,7 @@ class ProblemOrganizationWorkSchedulerTest {
         assertEquals(rows.map { it.workId }.toSet(), scheduled.toSet())
     }
 
-    private fun runningRecord(index: Int): ProblemOrganizationWorkRecord {
+    private fun runningRecord(index: Int): ProductionProblemOrganizationWorkSchedule {
         val leaseGroup = if (index < 300) 0 else 1
         val updatedGroup = when {
             index < 100 -> 0
@@ -230,21 +243,18 @@ class ProblemOrganizationWorkSchedulerTest {
             index < 400 -> 0
             else -> 1
         }
-        return ProblemOrganizationWorkRecord(
+        return ProductionProblemOrganizationWorkSchedule(
             workId = "work-${index.toString().padStart(4, '0')}",
-            commitReceiptCommandId = "receipt-$index",
-            status = "RUNNING",
             stateVersion = index.toLong() + 1,
-            attemptCount = 1,
-            notBeforeEpochMillis = 50_000L,
-            requestId = "request-$index",
-            requestSnapshot = "{}",
-            leaseOwner = "worker-$index",
-            leaseExpiresAtEpochMillis = 100_000L + leaseGroup,
-            failureCode = null,
-            failureMessage = null,
-            createdAtEpochMillis = 40_000L + index,
+            eligibleAtEpochMillis = 100_000L + leaseGroup,
             updatedAtEpochMillis = 90_000L + updatedGroup,
+            executionLeaseToken = index.toString(16).padStart(64, '0'),
         )
     }
+
+    private fun compareRecoverySnapshots(
+        left: ProductionProblemOrganizationWorkSchedule,
+        right: ProductionProblemOrganizationWorkSchedule,
+    ): Int =
+        comparePublishedRecoveryCursors(left.toRecoveryCursor(), right.toRecoveryCursor())
 }

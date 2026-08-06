@@ -29,6 +29,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
 import com.tingyun.smartmistakebook.core.model.WritingLayer
+import com.tingyun.smartmistakebook.core.model.locallyConstrainedFor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -297,16 +298,16 @@ class TutorChatConversationTest {
             succeededResponse(
                 responseOrdinal = ordinal,
                 studentMessage = "student-$ordinal",
-                assistantMarkdown = "assistant-$ordinal",
+                assistantMarkdown = completeDirectExplanation("assistant-$ordinal"),
             )
         }
 
-        val history = tutorChatHistory(tasks, answerExposureKeys = emptySet())
+        val history = tutorChatHistory(tasks, answerExposureKeys = answerExposureKeysFor(tasks))
 
         val firstRetainedOrdinal = taskCount - TutorRespondInput.MAX_PRIOR_MESSAGES + 1
         assertEquals(
             (firstRetainedOrdinal..taskCount).map { ordinal ->
-                "student-$ordinal" to "assistant-$ordinal"
+                "student-$ordinal" to completeDirectExplanation("assistant-$ordinal")
             },
             history.map { it.studentMessage to it.assistantMarkdown },
         )
@@ -314,13 +315,19 @@ class TutorChatConversationTest {
 
     @Test
     fun historyKeepsMostRecentWholeExchangesWithinTheCharacterLimit() {
-        val middleAssistant = "m".repeat(TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1)
-        val newestAssistant = "n".repeat(TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1)
+        val middleAssistant = completeDirectExplanationOfLength(
+            length = TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1,
+            fill = 'm',
+        )
+        val newestAssistant = completeDirectExplanationOfLength(
+            length = TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1,
+            fill = 'n',
+        )
         val tasks = listOf(
             succeededResponse(
                 responseOrdinal = 1,
                 studentMessage = "older",
-                assistantMarkdown = "exchange",
+                assistantMarkdown = completeDirectExplanation("older exchange"),
             ),
             succeededResponse(
                 responseOrdinal = 2,
@@ -334,7 +341,7 @@ class TutorChatConversationTest {
             ),
         )
 
-        val history = tutorChatHistory(tasks, answerExposureKeys = emptySet())
+        val history = tutorChatHistory(tasks, answerExposureKeys = answerExposureKeysFor(tasks))
 
         assertEquals(
             listOf(
@@ -347,17 +354,23 @@ class TutorChatConversationTest {
 
     @Test
     fun historyDoesNotSkipAnOverBudgetExchangeToIncludeAnOlderOne() {
-        val almostMaximumAssistant = "n".repeat(TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1)
+        val almostMaximumAssistant = completeDirectExplanationOfLength(
+            length = TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1,
+            fill = 'n',
+        )
         val tasks = listOf(
             succeededResponse(
                 responseOrdinal = 1,
                 studentMessage = "old",
-                assistantMarkdown = "small exchange",
+                assistantMarkdown = completeDirectExplanation("small exchange"),
             ),
             succeededResponse(
                 responseOrdinal = 2,
                 studentMessage = "mm",
-                assistantMarkdown = "m".repeat(TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1),
+                assistantMarkdown = completeDirectExplanationOfLength(
+                    length = TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS - 1,
+                    fill = 'm',
+                ),
             ),
             succeededResponse(
                 responseOrdinal = 3,
@@ -366,7 +379,7 @@ class TutorChatConversationTest {
             ),
         )
 
-        val history = tutorChatHistory(tasks, answerExposureKeys = emptySet())
+        val history = tutorChatHistory(tasks, answerExposureKeys = answerExposureKeysFor(tasks))
 
         assertEquals(
             listOf("n" to almostMaximumAssistant),
@@ -377,17 +390,19 @@ class TutorChatConversationTest {
     @Test
     fun historyPreservesLeadingAndTrailingWhitespaceAndNewlinesExactly() {
         val studentMessage = " \n  Why does this step work?  \n\n"
-        val assistantMarkdown = "\n  Because the sign changes here.  \n "
+        val assistantMarkdown =
+            "\n  Complete explanation: the sign changes here, so the final result follows.  \n "
+        val tasks = listOf(
+            succeededResponse(
+                responseOrdinal = 1,
+                studentMessage = studentMessage,
+                assistantMarkdown = assistantMarkdown,
+            ),
+        )
 
         val history = tutorChatHistory(
-            listOf(
-                succeededResponse(
-                    responseOrdinal = 1,
-                    studentMessage = studentMessage,
-                    assistantMarkdown = assistantMarkdown,
-                ),
-            ),
-            answerExposureKeys = emptySet(),
+            tasks,
+            answerExposureKeys = answerExposureKeysFor(tasks),
         )
 
         assertEquals(
@@ -398,10 +413,11 @@ class TutorChatConversationTest {
 
     @Test
     fun historyHidesACompleteAnswerUntilItsBottomWasDurablyExposed() {
+        val completeAnswer = completeDirectExplanation("逐步计算得到 42")
         val task = succeededResponse(
             responseOrdinal = 1,
             studentMessage = "请告诉我答案",
-            assistantMarkdown = "完整答案是 42",
+            assistantMarkdown = completeAnswer,
             solutionRevealed = true,
         )
 
@@ -414,33 +430,36 @@ class TutorChatConversationTest {
 
     @Test
     fun historyKeepsACompleteAnswerAfterItsExactExposureWasRecorded() {
+        val completeAnswer = completeDirectExplanation("逐步计算得到 42")
         val task = succeededResponse(
             responseOrdinal = 1,
             studentMessage = "请告诉我答案",
-            assistantMarkdown = "完整答案是 42",
+            assistantMarkdown = completeAnswer,
             solutionRevealed = true,
         )
         val exposureKey = requireNotNull(task.toRespondAnswerExposureKey())
 
         val history = tutorChatHistory(listOf(task), answerExposureKeys = setOf(exposureKey))
 
-        assertEquals("完整答案是 42", history.single().assistantMarkdown)
+        assertEquals(completeAnswer, history.single().assistantMarkdown)
     }
 
     @Test
     fun exactExposureKeysKeepTwoRevealedRepliesOnTheSameTurnIndependent() {
+        val firstCompleteAnswer = completeDirectExplanation("第一个追问已经完整作答")
+        val secondCompleteAnswer = completeDirectExplanation("第二个追问已经完整作答")
         val firstReply = succeededResponse(
             responseOrdinal = 1,
             requestId = "same-turn-first-reply",
             studentMessage = "请告诉我答案，先回答第一个追问",
-            assistantMarkdown = "第一个完整答案",
+            assistantMarkdown = firstCompleteAnswer,
             solutionRevealed = true,
         )
         val secondReply = succeededResponse(
             responseOrdinal = 2,
             requestId = "same-turn-second-reply",
             studentMessage = "请告诉我答案，再回答第二个追问",
-            assistantMarkdown = "第二个完整答案",
+            assistantMarkdown = secondCompleteAnswer,
             solutionRevealed = true,
         )
         val firstExposureKey = requireNotNull(firstReply.toRespondAnswerExposureKey())
@@ -450,8 +469,8 @@ class TutorChatConversationTest {
             answerExposureKeys = setOf(firstExposureKey),
         )
 
-        assertEquals("第一个完整答案", history[0].assistantMarkdown)
-        assertFalse(history[1].assistantMarkdown.contains("第二个完整答案"))
+        assertEquals(firstCompleteAnswer, history[0].assistantMarkdown)
+        assertFalse(history[1].assistantMarkdown.contains(secondCompleteAnswer))
         assertTrue(history[1].assistantMarkdown.contains("还没有完整看到"))
         assertFalse(firstExposureKey == secondReply.toRespondAnswerExposureKey())
     }
@@ -520,9 +539,10 @@ class TutorChatConversationTest {
         responseOrdinal: Int,
         requestId: String = "response-$responseOrdinal-attempt-1",
         studentMessage: String = "student-$responseOrdinal",
-        assistantMarkdown: String = "assistant-$responseOrdinal",
-        solutionRevealed: Boolean = false,
+        assistantMarkdown: String =
+            "完整讲解如下：第 $responseOrdinal 次回复包含完整推导和最终答案。",
         explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
+        solutionRevealed: Boolean = explanationMode == TutorExplanationMode.DIRECT,
         executionLocation: ModelExecutionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
         createdAtEpochMillis: Long = responseOrdinal.toLong(),
         updatedAtEpochMillis: Long = createdAtEpochMillis,
@@ -544,6 +564,44 @@ class TutorChatConversationTest {
             priorMessages = emptyList(),
             explanationMode = explanationMode,
         )
+        val constrainedOutput =
+            checkNotNull(
+                TutorRespondOutput(
+                    sessionId = question.sessionId,
+                    draftRevisionNumber = question.revisionNumber,
+                    questionDocumentId = question.questionDocument.document.id,
+                    responseOrdinal = responseOrdinal,
+                    messageMarkdown =
+                        if (explanationMode == TutorExplanationMode.GUIDED) {
+                            com.tingyun.smartmistakebook.core.model.GUIDED_INTERACTION_MESSAGE
+                        } else {
+                            assistantMarkdown
+                        },
+                    responseIntent =
+                        if (explanationMode == TutorExplanationMode.GUIDED) {
+                            com.tingyun.smartmistakebook.core.model.TutorResponseIntent.ASK
+                        } else {
+                            com.tingyun.smartmistakebook.core.model.TutorResponseIntent.EXPLAIN
+                        },
+                    solutionRevealed = solutionRevealed,
+                    interactionDirective =
+                        if (explanationMode == TutorExplanationMode.GUIDED) {
+                            com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
+                                .FreeResponse("请写下你认为关键的关系。")
+                        } else {
+                            null
+                        },
+                    intentDecision =
+                        TutorIntentDecision(
+                            intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
+                            confidence = 1.0,
+                            explicitActionRequest = false,
+                            memoryPreference = TutorMemoryPreference.UNCHANGED,
+                            requestedLocalCapability = TutorRequestedLocalCapability.NONE,
+                        ),
+                    modelVersion = "model-v1",
+                ).locallyConstrainedFor(request.input as TutorRespondInput),
+            )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",
             request = request,
@@ -554,34 +612,24 @@ class TutorChatConversationTest {
             userMessage = "Tutor response ready",
             attemptCount = 1,
             provider = provider,
-            output = TutorRespondOutput(
-                sessionId = question.sessionId,
-                draftRevisionNumber = question.revisionNumber,
-                questionDocumentId = question.questionDocument.document.id,
-                responseOrdinal = responseOrdinal,
-                messageMarkdown = if (explanationMode == TutorExplanationMode.GUIDED) {
-                    com.tingyun.smartmistakebook.core.model.GUIDED_INTERACTION_MESSAGE
-                } else {
-                    assistantMarkdown
-                },
-                solutionRevealed = solutionRevealed,
-                interactionDirective = if (explanationMode == TutorExplanationMode.GUIDED) {
-                    com.tingyun.smartmistakebook.core.model.TutorInteractionDirective.Continue
-                } else {
-                    null
-                },
-                intentDecision = TutorIntentDecision(
-                    intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
-                    confidence = 1.0,
-                    explicitActionRequest = false,
-                    memoryPreference = TutorMemoryPreference.UNCHANGED,
-                    requestedLocalCapability = TutorRequestedLocalCapability.NONE,
-                ),
-                modelVersion = "model-v1",
-            ),
+            output = constrainedOutput,
             createdAtEpochMillis = createdAtEpochMillis,
             updatedAtEpochMillis = updatedAtEpochMillis,
         )
+    }
+
+    private fun answerExposureKeysFor(
+        tasks: List<ModelTaskSnapshot>,
+    ) = tasks.mapNotNull(ModelTaskSnapshot::toRespondAnswerExposureKey).toSet()
+
+    private fun completeDirectExplanation(detail: String): String =
+        "完整讲解如下：$detail，最终答案已经给出。"
+
+    private fun completeDirectExplanationOfLength(length: Int, fill: Char): String {
+        val prefix = "完整讲解如下："
+        val suffix = "，最终答案已经给出。"
+        require(length >= prefix.length + suffix.length)
+        return prefix + fill.toString().repeat(length - prefix.length - suffix.length) + suffix
     }
 
     private fun provider(

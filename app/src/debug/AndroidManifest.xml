@@ -5,6 +5,9 @@
         <activity
             android:name=".debug.DynamicGuiPerformanceActivity"
             android:exported="true" />
+        <activity
+            android:name="com.tingyun.smartmistakebook.ReviewReminderActivityRecreationHarness"
+            android:exported="false" />
     </application>
 
 </manifest>

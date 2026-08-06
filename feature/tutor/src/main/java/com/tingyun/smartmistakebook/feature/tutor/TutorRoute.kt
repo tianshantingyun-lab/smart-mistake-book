@@ -64,11 +64,11 @@ import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
-import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.ScopedModelTaskPort
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityDecision
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityBlockReason
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityGate
-import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
+import com.tingyun.smartmistakebook.core.domain.TutorConversationLobbyPort
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
@@ -99,6 +99,7 @@ import com.tingyun.smartmistakebook.core.ui.SmartDimens
 fun TutorRoute(
     isSaved: Boolean,
     onSave: suspend () -> Unit,
+    showSaveAction: Boolean = true,
     practiceUnitId: String,
     teachingArtifact: VerifiedTeachingArtifact?,
     adaptiveDecision: AdaptiveDecision?,
@@ -112,9 +113,8 @@ fun TutorRoute(
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
-    modelTasks: ModelTaskRepository,
-    learningMemory: TutorLearningMemoryRepository,
-    learnerScopeId: String = DEFAULT_TUTOR_LEARNER_SCOPE_ID,
+    modelTasks: ScopedModelTaskPort,
+    conversationLobby: TutorConversationLobbyPort,
     catalogEntries: List<StudyCatalogEntry>,
     capabilities: AppCapabilitySnapshot,
     explanationMode: TutorExplanationMode = TutorExplanationMode.DIRECT,
@@ -130,10 +130,8 @@ fun TutorRoute(
             onOpenMistakeNotebook = onOpenMistakeNotebook,
             onOpenProfile = onOpenProfile,
             modelTasks = modelTasks,
-            learningMemory = learningMemory,
-            learnerScopeId = learnerScopeId,
+            conversationLobby = conversationLobby,
             catalogEntries = catalogEntries,
-            profile = profile,
             explanationMode = explanationMode,
             onExplanationModeChange = onExplanationModeChange,
             modifier = modifier,
@@ -203,6 +201,7 @@ fun TutorRoute(
                             artifact = decision.artifact,
                             assessmentItem = assessmentItem,
                             isSaved = isSaved || viewModel.saveStatus == TutorSaveStatus.SAVED,
+                            showSaveAction = showSaveAction,
                             saveStatus = viewModel.saveStatus,
                             submissionStatus = viewModel.submissionStatus,
                             revealStatus = viewModel.revealStatus,
@@ -368,6 +367,7 @@ private fun TutorScreen(
     artifact: VerifiedTeachingArtifact,
     assessmentItem: TutorAssessmentItem,
     isSaved: Boolean,
+    showSaveAction: Boolean,
     saveStatus: TutorSaveStatus,
     submissionStatus: TutorSubmissionStatus,
     revealStatus: TutorRevealStatus,
@@ -427,29 +427,35 @@ private fun TutorScreen(
         SectionHeader(
             title = artifact.title,
             modifier = Modifier.padding(top = 8.dp),
-            action = {
-                OutlineActionChip(
-                    text = when {
-                        isSaved -> "已存入"
-                        saveStatus == TutorSaveStatus.SAVING -> "保存中"
-                        saveStatus == TutorSaveStatus.FAILED -> "重试保存"
-                        else -> "存入错题本"
-                    },
-                    onClick = onSave,
-                    enabled = !isSaved && saveStatus != TutorSaveStatus.SAVING,
-                    icon = Icons.Outlined.LibraryAddCheck,
-                    modifier = Modifier.testTag("tutor_save_button"),
-                    contentDescription = when {
-                        isSaved -> "本题已存入错题本"
-                        saveStatus == TutorSaveStatus.SAVING -> "本题正在保存"
-                        saveStatus == TutorSaveStatus.FAILED -> "保存失败，重试存入错题本"
-                        else -> "将本题存入错题本"
-                    },
-                )
-            },
+            action =
+                if (shouldShowTutorSaveAction(showSaveAction)) {
+                    {
+                        OutlineActionChip(
+                            text = when {
+                                isSaved -> "已存入"
+                                saveStatus == TutorSaveStatus.SAVING -> "保存中"
+                                saveStatus == TutorSaveStatus.FAILED -> "重试保存"
+                                else -> "存入错题本"
+                            },
+                            onClick = onSave,
+                            enabled = !isSaved && saveStatus != TutorSaveStatus.SAVING,
+                            icon = Icons.Outlined.LibraryAddCheck,
+                            modifier = Modifier.testTag("tutor_save_button"),
+                            contentDescription = when {
+                                isSaved -> "本题已存入错题本"
+                                saveStatus == TutorSaveStatus.SAVING -> "本题正在保存"
+                                saveStatus == TutorSaveStatus.FAILED ->
+                                    "保存失败，重试存入错题本"
+                                else -> "将本题存入错题本"
+                            },
+                        )
+                    }
+                } else {
+                    null
+                },
         )
 
-        if (saveStatus == TutorSaveStatus.FAILED) {
+        if (showSaveAction && saveStatus == TutorSaveStatus.FAILED) {
             Text(
                 text = "保存失败，请检查本机存储后重试。",
                 modifier = Modifier
@@ -929,6 +935,8 @@ internal fun TutorComposer(
         }
     }
 }
+
+internal fun shouldShowTutorSaveAction(showSaveAction: Boolean): Boolean = showSaveAction
 
 @Composable
 private fun UnverifiedQuestionNotice(modifier: Modifier = Modifier) {

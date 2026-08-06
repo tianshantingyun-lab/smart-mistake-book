@@ -11,6 +11,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderDelivery
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderPreferences
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
+import com.tingyun.smartmistakebook.core.domain.ReviewPacingLevel
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import java.time.ZoneId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -81,6 +83,11 @@ class ReviewReminderPlatformInstrumentedTest {
         override suspend fun current(): ReviewReminderPreferences = value
         override suspend fun setEnabled(enabled: Boolean) = Unit
         override suspend fun setReminderTime(minutesAfterMidnight: Int) = Unit
+        override suspend fun setPacingLevel(pacingLevel: ReviewPacingLevel) = Unit
+        override suspend fun setExamTarget(
+            subject: SubjectKind?,
+            examEpochDay: Long?,
+        ) = Unit
         override suspend fun claimNotificationDelivery(delivery: ReviewReminderDelivery): Boolean = true
     }
 }

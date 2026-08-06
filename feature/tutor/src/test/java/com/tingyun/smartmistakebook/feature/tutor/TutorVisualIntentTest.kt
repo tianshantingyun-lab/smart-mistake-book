@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import org.junit.Assert.assertEquals
@@ -109,8 +110,7 @@ class TutorVisualIntentTest {
                 id = "question",
                 blocks = listOf(ContentBlock.Paragraph("stem", "判断受力")),
             ),
-            relevantLearningEvidence = emptyList(),
-            projectionIsCurrent = true,
+            teachingConstraints = emptyList(),
             responseOrdinal = 1,
             studentMessage = "请画一个受力图解释",
             explanationMode = TutorExplanationMode.DIRECT,
@@ -120,7 +120,10 @@ class TutorVisualIntentTest {
             draftRevisionNumber = input.draftRevisionNumber,
             questionDocumentId = input.questionDocument.id,
             responseOrdinal = input.responseOrdinal,
-            messageMarkdown = "先确定研究对象，再逐个标出力。",
+            messageMarkdown =
+                "完整讲解如下：先确定研究对象，再逐个标出所有受力，最终受力关系已经给出。",
+            solutionRevealed = true,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
             modelVersion = "model-v1",
         )
         val request = ModelTaskRequest(
@@ -158,8 +161,7 @@ class TutorVisualIntentTest {
                 id = "question",
                 blocks = listOf(ContentBlock.Paragraph("stem", "判断受力")),
             ),
-            relevantLearningEvidence = emptyList(),
-            projectionIsCurrent = true,
+            teachingConstraints = emptyList(),
             responseOrdinal = 1,
             studentMessage = "请画一个受力图解释",
             explanationMode = TutorExplanationMode.DIRECT,
@@ -183,7 +185,10 @@ class TutorVisualIntentTest {
                 draftRevisionNumber = input.draftRevisionNumber,
                 questionDocumentId = input.questionDocument.id,
                 responseOrdinal = input.responseOrdinal,
-                messageMarkdown = "旧讲解",
+                messageMarkdown =
+                    "完整讲解如下：旧回复已经完成全部推导，并明确给出最终答案。",
+                solutionRevealed = true,
+                intentDecision = TutorIntentDecision.currentQuestionDefault(),
                 modelVersion = "model-v1",
             ),
             createdAtEpochMillis = 1,

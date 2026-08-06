@@ -12,8 +12,8 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
-import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
-import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeGuidance
+import com.tingyun.smartmistakebook.core.model.TutorTeachingConstraint
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceOutcome
 import com.tingyun.smartmistakebook.core.domain.TutorGuidanceState
 import com.tingyun.smartmistakebook.core.domain.TutorProblemScope
@@ -337,16 +337,33 @@ class TutorModePresentationPolicyTest {
         assertFalse(
             masteryTargetsAreRelevant(
                 targetedEvidenceLabels = emptyList(),
-                relevantLearningEvidence = listOf(
-                    TutorKnowledgeEvidence(
-                        knowledgeNodeId = "node-1",
-                        displayName = "导数符号",
-                        level = TutorEvidenceLevel.LEARNING,
-                        independentCorrectLowerBound = 0.2,
+                teachingConstraints = listOf(
+                    TutorKnowledgeGuidance(
+                        ref = "current-question-point-1",
+                        label = "导数符号",
+                        constraint = TutorTeachingConstraint.MAY_GUIDE,
                     ),
                 ),
             ),
         )
+    }
+
+    @Test
+    fun onlyMayGuidePointsCanAuthorizeAQuestion() {
+        fun relevant(constraint: TutorTeachingConstraint) = masteryTargetsAreRelevant(
+            targetedEvidenceLabels = listOf("导数符号"),
+            teachingConstraints = listOf(
+                TutorKnowledgeGuidance(
+                    ref = "current-question-point-1",
+                    label = "导数符号",
+                    constraint = constraint,
+                ),
+            ),
+        )
+
+        assertTrue(relevant(TutorTeachingConstraint.MAY_GUIDE))
+        assertFalse(relevant(TutorTeachingConstraint.SKIP_BASIC_PROMPT))
+        assertFalse(relevant(TutorTeachingConstraint.EXPLAIN_DIRECTLY))
     }
 
     @Test

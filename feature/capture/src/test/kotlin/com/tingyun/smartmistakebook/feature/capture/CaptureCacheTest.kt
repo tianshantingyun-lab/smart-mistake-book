@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.capture
 
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -92,6 +93,41 @@ class CaptureCacheTest {
             ),
         )
         assertFalse(unsupported.exists())
+    }
+
+    @Test
+    fun `picker stream fails closed when wall clock budget is exceeded`() {
+        val directory = temporaryFolder.newFolder("picker_timeout")
+        val stalled = File(directory, "question_stalled.img")
+
+        assertFalse(
+            copyCaptureStreamWithinLimit(
+                SlowStream(jpegBytes(8)),
+                stalled,
+                maxBytes = 8,
+                timeoutMillis = 20L,
+            ),
+        )
+        assertFalse(stalled.exists())
+    }
+
+    private class SlowStream(private val bytes: ByteArray) : InputStream() {
+        private var index = 0
+
+        override fun read(): Int {
+            Thread.sleep(50L)
+            if (index >= bytes.size) return -1
+            return bytes[index++].toInt() and 0xFF
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+            Thread.sleep(200L)
+            if (index >= bytes.size) return -1
+            val count = minOf(length, bytes.size - index)
+            bytes.copyInto(buffer, offset, index, index + count)
+            index += count
+            return count
+        }
     }
 
     private fun File.capture(name: String, modifiedAt: Long): File =

@@ -26,6 +26,7 @@ internal sealed interface PendingTutorEgressAction {
         val clearDraftOnPersist: Boolean,
         val selectedChoiceId: String? = null,
         val choiceSourceRequestId: String? = null,
+        val conversationAuthorityFingerprint: String? = null,
     ) : PendingTutorEgressAction
 
     data class RetryResponse(
@@ -143,6 +144,7 @@ private const val MEMORY_SOLUTION_REVEALED = "memory_solution_revealed"
 private const val MESSAGE = "message"
 private const val SELECTED_CHOICE_ID = "selected_choice_id"
 private const val CHOICE_SOURCE_REQUEST_ID = "choice_source_request_id"
+private const val CONVERSATION_AUTHORITY_FINGERPRINT = "conversation_authority_fingerprint"
 private const val REQUESTED_MOVE = "requested_move"
 private const val CLEAR_DRAFT = "clear_draft"
 private const val REQUEST_ID = "request_id"
@@ -172,6 +174,10 @@ internal object PendingTutorEgressStateCodec {
                 put(MESSAGE, action.message)
                 put(SELECTED_CHOICE_ID, action.selectedChoiceId)
                 put(CHOICE_SOURCE_REQUEST_ID, action.choiceSourceRequestId)
+                put(
+                    CONVERSATION_AUTHORITY_FINGERPRINT,
+                    action.conversationAuthorityFingerprint,
+                )
                 put(REQUESTED_MOVE, action.requestedMove?.name)
                 put(CLEAR_DRAFT, action.clearDraftOnPersist)
             }
@@ -264,6 +270,8 @@ private fun Map<String, Any?>.restoreNewResponse(): PendingTutorEgressAction.New
         message = message,
         selectedChoiceId = optionalString(SELECTED_CHOICE_ID),
         choiceSourceRequestId = optionalString(CHOICE_SOURCE_REQUEST_ID),
+        conversationAuthorityFingerprint =
+        optionalString(CONVERSATION_AUTHORITY_FINGERPRINT),
         requestedMove = optionalString(REQUESTED_MOVE)?.let(TutorMoveType::valueOf),
         clearDraftOnPersist = optionalBoolean(CLEAR_DRAFT) ?: false,
     )

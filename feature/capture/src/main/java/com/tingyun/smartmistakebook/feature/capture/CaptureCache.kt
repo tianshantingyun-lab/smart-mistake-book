@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 private const val CAPTURE_CACHE_TTL_MILLIS = 24L * 60L * 60L * 1_000L
 private const val MAX_CAPTURE_BYTES = 20L * 1_024L * 1_024L
+private const val CAPTURE_COPY_TIMEOUT_MILLIS = 30_000L
 internal val captureCleanupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 object CaptureCacheMaintenance {
@@ -145,14 +146,20 @@ internal fun copyCaptureStreamWithinLimit(
     input: InputStream,
     destination: File,
     maxBytes: Long = MAX_CAPTURE_BYTES,
+    timeoutMillis: Long = CAPTURE_COPY_TIMEOUT_MILLIS,
 ): Boolean {
     if (maxBytes <= 0L) return false
+    if (timeoutMillis <= 0L) return false
     val copied = runCatching {
         var totalBytes = 0L
         var consecutiveEmptyReads = 0
+        val startedAt = System.nanoTime()
         destination.outputStream().buffered().use { output ->
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
             while (true) {
+                check(copyElapsedMillis(startedAt) <= timeoutMillis) {
+                    "Capture stream exceeded its wall-clock budget"
+                }
                 val read = input.read(buffer)
                 if (read < 0) break
                 if (read == 0) {
@@ -164,6 +171,9 @@ internal fun copyCaptureStreamWithinLimit(
                 totalBytes += read
                 check(totalBytes <= maxBytes) { "Capture exceeds byte budget" }
                 output.write(buffer, 0, read)
+                check(copyElapsedMillis(startedAt) <= timeoutMillis) {
+                    "Capture stream exceeded its wall-clock budget"
+                }
             }
         }
         totalBytes > 0L && hasSupportedImageSignature(destination)
@@ -171,6 +181,9 @@ internal fun copyCaptureStreamWithinLimit(
     if (!copied) destination.delete()
     return copied
 }
+
+private fun copyElapsedMillis(startedAtNanos: Long): Long =
+    (System.nanoTime() - startedAtNanos) / 1_000_000L
 
 private fun hasSupportedImageSignature(file: File): Boolean = runCatching {
     val header = ByteArray(32)

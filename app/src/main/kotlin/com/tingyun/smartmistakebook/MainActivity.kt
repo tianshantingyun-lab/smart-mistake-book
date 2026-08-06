@@ -13,7 +13,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        recordReviewOpenRequest(intent)
+        recordReviewOpenRequest(
+            intent = intent,
+            isFreshDelivery = savedInstanceState == null,
+        )
         enableEdgeToEdge()
         setContent {
             SmartMistakeBookTheme {
@@ -25,24 +28,36 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        recordReviewOpenRequest(intent)
+        recordReviewOpenRequest(intent = intent, isFreshDelivery = true)
     }
 
-    override fun onResume() {
-        super.onResume()
-        (application as SmartMistakeBookApplication).refreshStudyExperience()
-    }
+    private fun recordReviewOpenRequest(intent: Intent?, isFreshDelivery: Boolean) {
+        val opensReview = shouldConsumeReviewOpenRequest(
+            action = intent?.action,
+            requested = intent?.getBooleanExtra(
+                ReviewReminderContract.EXTRA_OPEN_REVIEW,
+                false,
+            ) == true,
+            isFreshDelivery = isFreshDelivery,
+        )
+        if (!opensReview) return
 
-    private fun recordReviewOpenRequest(intent: Intent?) {
-        if (
-            intent?.action == ReviewReminderContract.ACTION_OPEN_REVIEW &&
-            intent.getBooleanExtra(ReviewReminderContract.EXTRA_OPEN_REVIEW, false)
-        ) {
-            requestReviewOpen()
-        }
+        requestReviewOpen()
     }
 
     internal fun requestReviewOpen() {
         reviewOpenRequests.value += 1L
     }
+
+    internal val reviewOpenRequestCount: Long
+        get() = reviewOpenRequests.value
 }
+
+internal fun shouldConsumeReviewOpenRequest(
+    action: String?,
+    requested: Boolean,
+    isFreshDelivery: Boolean,
+): Boolean =
+    isFreshDelivery &&
+        requested &&
+        action == ReviewReminderContract.ACTION_OPEN_REVIEW

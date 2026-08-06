@@ -1,4 +1,11 @@
-package com.tingyun.smartmistakebook.feature.library
+package com.tingyun.smartmistakebook.feature.library
+import com.tingyun.smartmistakebook.core.ui.ErrorWarm
+import com.tingyun.smartmistakebook.core.ui.Ink
+import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.Jade
+import com.tingyun.smartmistakebook.core.ui.JadeSoft
+import com.tingyun.smartmistakebook.core.ui.Outline
+import com.tingyun.smartmistakebook.core.ui.Paper
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -217,7 +224,7 @@ internal fun BatchImportContent(
             BatchImportHeader(onBack)
             Text(
                 text = "选择多张照片，或导入一份 PDF。系统按页保存，某一页失败不会影响其他页。",
-                color = SmartColors.InkSecondary,
+                color = InkSecondary,
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(14.dp))
@@ -256,7 +263,7 @@ internal fun BatchImportContent(
             )
             message?.let {
                 Spacer(Modifier.height(8.dp))
-                Text(it, color = SmartColors.ErrorWarm, style = MaterialTheme.typography.bodySmall)
+                Text(it, color = ErrorWarm, style = MaterialTheme.typography.bodySmall)
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -317,9 +324,9 @@ private fun BatchOrganizationCard(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth().testTag("batch_import_organization"),
-        color = SmartColors.Paper,
+        color = Paper,
         shape = RoundedCornerShape(10.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Outline),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Outline),
     ) {
         Column(
             modifier = Modifier.padding(14.dp),
@@ -327,7 +334,7 @@ private fun BatchOrganizationCard(
         ) {
             Text(
                 text = if (isOrganizing) "正在分好每一道题" else "自动分好题目",
-                color = SmartColors.Ink,
+                color = Ink,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -339,14 +346,14 @@ private fun BatchOrganizationCard(
                             "只判断前后页面是不是同一道题；不会发送其他题目或学习记录。"
                     else -> "自动识别跨页题目，之后会按一道道题显示，不需要手工合并。"
                 },
-                color = SmartColors.InkSecondary,
+                color = InkSecondary,
                 style = MaterialTheme.typography.bodySmall,
             )
             when {
                 isOrganizing -> LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
-                    color = SmartColors.Jade,
-                    trackColor = SmartColors.Outline.copy(alpha = 0.6f),
+                    color = Jade,
+                    trackColor = Outline.copy(alpha = 0.6f),
                 )
                 offer == null -> PrimaryActionButton(
                     text = "开始分题",
@@ -392,9 +399,9 @@ private fun BatchImportSummary(
     val completed = batchImportCompletedCount(job)
     Surface(
         modifier = Modifier.fillMaxWidth().testTag("batch_import_summary"),
-        color = SmartColors.JadeSoft.copy(alpha = 0.45f),
+        color = JadeSoft.copy(alpha = 0.45f),
         shape = RoundedCornerShape(10.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Outline),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Outline),
     ) {
         Column(
             modifier = Modifier.padding(14.dp),
@@ -404,13 +411,13 @@ private fun BatchImportSummary(
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = batchImportTitle(job),
-                        color = SmartColors.Ink,
+                        color = Ink,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = batchImportSummaryLine(job),
-                        color = SmartColors.InkSecondary,
+                        color = InkSecondary,
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -423,12 +430,12 @@ private fun BatchImportSummary(
             LinearProgressIndicator(
                 progress = { completed.toFloat() / job.pages.size },
                 modifier = Modifier.fillMaxWidth(),
-                color = SmartColors.Jade,
-                trackColor = SmartColors.Outline.copy(alpha = 0.6f),
+                color = Jade,
+                trackColor = Outline.copy(alpha = 0.6f),
             )
             Text(
                 text = "可以离开本页；已保存的题会继续留在待处理题目中。",
-                color = SmartColors.InkSecondary,
+                color = InkSecondary,
                 style = MaterialTheme.typography.labelSmall,
             )
         }
@@ -463,9 +470,9 @@ private fun BatchImportPageRow(
             },
             contentDescription = null,
             tint = if (page.status == BatchImportPageStatus.FAILED) {
-                SmartColors.ErrorWarm
+                ErrorWarm
             } else {
-                SmartColors.Jade
+                Jade
             },
         )
         Column(Modifier.weight(1f).padding(start = 12.dp)) {
@@ -476,7 +483,7 @@ private fun BatchImportPageRow(
                     "第 ${page.pageIndex + 1} 页"
                 },
                 style = MaterialTheme.typography.titleSmall,
-                color = SmartColors.Ink,
+                color = Ink,
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
@@ -487,9 +494,9 @@ private fun BatchImportPageRow(
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = if (page.status == BatchImportPageStatus.FAILED) {
-                    SmartColors.ErrorWarm
+                    ErrorWarm
                 } else {
-                    SmartColors.InkSecondary
+                    InkSecondary
                 },
             )
         }
@@ -503,11 +510,11 @@ private fun BatchImportPageRow(
             readyDraft != null -> Icon(
                 Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                 contentDescription = "打开这道题",
-                tint = SmartColors.InkSecondary,
+                tint = InkSecondary,
             )
         }
     }
-    PaperDivider(color = SmartColors.Outline.copy(alpha = 0.7f))
+    PaperDivider(color = Outline.copy(alpha = 0.7f))
 }
 
 @Composable
@@ -518,7 +525,7 @@ private fun BatchImportEmpty() {
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text("还没有批量导入", style = MaterialTheme.typography.titleMedium)
-        Text("可选择多张照片，也可直接导入 PDF。", color = SmartColors.InkSecondary)
+        Text("可选择多张照片，也可直接导入 PDF。", color = InkSecondary)
     }
 }
 

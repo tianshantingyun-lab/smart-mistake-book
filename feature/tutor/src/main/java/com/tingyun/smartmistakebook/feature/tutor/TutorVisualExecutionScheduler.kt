@@ -21,6 +21,7 @@ internal data class TutorVisualExecutionKey(
     val anchor: TutorVisualTurnAnchor,
     val taskKind: ModelTaskKind,
     val semanticRequestId: String,
+    val questionDocumentFingerprint: String = "",
 )
 
 internal suspend fun collectTutorVisualExecution(
