@@ -4300,3 +4300,28 @@
 
 - B02 继续“部分落实”：`CapturedTutorSessionModelPanel.kt`（3579 行）、`CaptureScreen.kt`（1960 行）、`CurrentTutorSessionHostCoordinator.kt`（1942 行）、`RoomStudyDatabase.kt`（1853 行）仍在剩余清单；本轮仅处理了 ModelPanel 的纯判定函数，剩余 30 余个状态耦合局部函数需后续批次继续。
 - I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-07 实施批次：开放教学资料再下载与来源登记
+
+### 已完成
+
+- 在互联网搜索并补充可合法使用的开放教学资料：
+  - 从 OpenStax 官方直链下载两本新 PDF 并核验 SHA-256：`World History, Volume 2: from 1400`（132663448 字节，历史科目补充）与 `Concepts of Biology`（185858638 字节，生物科目独立参考），均存于 `D:\智能错题本\.artifacts\research\open-teaching-references\openstax\`。
+  - 两本均为 CC BY-NC-SA 4.0 且 OpenStax 禁止未经许可的生成式 AI 摄入，登记为 `REFERENCE_ONLY` + `REVIEWED_SYNTHESIS_ONLY`，原文不得进入模型、嵌入或检索上下文。
+- 重新运行 `epub_cli.py --write --artifact-root` 验证全部 10 份既有开放 EPUB（6 份 Siyavula + 4 份 Pressbooks）的哈希、EPUB 结构、许可 URI 和教学结构标记仍一致，审计输出保持 `CONTENT_ACQUIRED_UNREVIEWED`，未把机械审计冒充中国课标映射。
+- `source-register-2025-v1.json` 从 32 条扩展到 34 条；`audit-knowledge-source-register.ps1` 结构审计通过（34 条，`acquiredUnreviewed` 21 条），`sourceProductionReady=false` 保持正确（九科课标正文仍未完成人工审校）。
+- 搜索确认：语文、思想政治科目的中文开放许可（CC BY/CC BY-SA）第三方教学资料在公开互联网上仍不可得，国内平台资源无公开分发许可；这两个科目的第三方参考只能继续等待可授权资料或走独立归纳路线。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| OpenStax 新 PDF 下载 | 2/2 完成，字节数与登记一致，SHA-256 匹配 |
+| 既有 10 份 EPUB 重新审计 | 全部通过（哈希、结构、许可、教学标记），10 份 `CONTENT_ACQUIRED_UNREVIEWED` |
+| 来源登记 | 34 条；结构审计通过；`sourceProductionReady=false`（诚实保持未审校状态） |
+| 语文/思政开放资料搜索 | 未找到公开 CC 许可的第三方资料（现实约束，已在登记与文档中记录） |
+
+### 状态
+
+- C01 继续“部分落实”：第三方教学资料候选扩展到 22 条已取得未审校；仍需逐份完成中国高中课标映射、中文独立改写与人工审校。
+- 语文、思想政治仍缺第三方参考来源；只有取得可授权资料后才能满足每科 2 个独立来源门。

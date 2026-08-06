@@ -26,10 +26,15 @@
       "archiveEntryCount": 10247,
       "xhtmlDocumentCount": 99,
       "totalUncompressedBytes": 54801810,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OPS/xhtml/maths10/front-matter-epubs/copyright_acknowledgements_ccby.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "A1037226FE0F6C7D558065B47DFF480D2D2AE65E1940182FFF362FDF13D8FC2C",
+      "canonicalProviderIdentity": "siyavula",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "workedExample": 1,
         "solution": 1
@@ -71,10 +76,15 @@
       "archiveEntryCount": 7255,
       "xhtmlDocumentCount": 80,
       "totalUncompressedBytes": 39926295,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OPS/xhtml/maths11/front-matter-epubs/copyright_acknowledgements_ccby.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "D075C5E20319E2201C3D3E7854B278BE62529E18C1E9CF93EAE60BC9396EEA9C",
+      "canonicalProviderIdentity": "siyavula",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "workedExample": 1,
         "solution": 1
@@ -116,10 +126,15 @@
       "archiveEntryCount": 8121,
       "xhtmlDocumentCount": 75,
       "totalUncompressedBytes": 45876601,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OPS/xhtml/maths12/front-matter-epubs/copyright_acknowledgements_ccby.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "53584B9EC13BD9CEB8EC7D7603669395A486CD80C97B8B2FFBBC6E646667D33B",
+      "canonicalProviderIdentity": "siyavula",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "workedExample": 1,
         "solution": 1
@@ -162,10 +177,15 @@
       "archiveEntryCount": 2775,
       "xhtmlDocumentCount": 152,
       "totalUncompressedBytes": 36941537,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OPS/xhtml/science10/front-matter-epubs/copyright_acknowledgements_ccby.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "05B0C7C23D38B1FE2847DCE9CB9C95DEAE0DBEC5B4F6A40E4B4A91D77345B7B5",
+      "canonicalProviderIdentity": "siyavula",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "workedExample": 1,
         "solution": 1
@@ -208,10 +228,15 @@
       "archiveEntryCount": 4072,
       "xhtmlDocumentCount": 82,
       "totalUncompressedBytes": 53187236,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OPS/xhtml/science11/front-matter-epubs/copyright_acknowledgements_ccby.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "09D4259CA97D686EF74B19DA1BC16C122F5412DDBDA4D57072D7EF416688698B",
+      "canonicalProviderIdentity": "siyavula",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "workedExample": 1,
         "solution": 1
@@ -254,10 +279,15 @@
       "archiveEntryCount": 5295,
       "xhtmlDocumentCount": 89,
       "totalUncompressedBytes": 85469567,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OPS/xhtml/science12/front-matter-epubs/copyright_acknowledgements_ccby.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "3FEE354D266C632BC7902A07F00E90F21F3F4A98523A11D778F4B650B5CDFDEC",
+      "canonicalProviderIdentity": "siyavula",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "workedExample": 1,
         "solution": 1
@@ -299,10 +329,15 @@
       "archiveEntryCount": 61,
       "xhtmlDocumentCount": 34,
       "totalUncompressedBytes": 2719610,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OEBPS/copyright.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "64FE17A5099E7497A03546DAFD92E5BD8C9764DA88AFDB81073C1CCC1EB253D4",
+      "canonicalProviderIdentity": "uh-pressbooks",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "example": 1,
         "writingProcess": 1,
@@ -345,10 +380,15 @@
       "archiveEntryCount": 348,
       "xhtmlDocumentCount": 21,
       "totalUncompressedBytes": 64502225,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by-sa/4.0/",
       "licenseEvidencePaths": [
         "EPUB/copyright.xhtml"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "685DFCF9402534A99B5129DEB250799DA0E63A6D3E8C3ED2A1CB1C0F30DECE2F",
+      "canonicalProviderIdentity": "uh-pressbooks",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "summary": 1,
         "activity": 1,
@@ -391,10 +431,15 @@
       "archiveEntryCount": 532,
       "xhtmlDocumentCount": 187,
       "totalUncompressedBytes": 25459131,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "EPUB/copyright.xhtml"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "12FDB769C4E1A6025D4ACC601AFB8AAD3F0C4BFD72BB9E8FC447912194D4F7F1",
+      "canonicalProviderIdentity": "open-oregon",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "example": 1,
         "scientificMethod": 1,
@@ -437,10 +482,15 @@
       "archiveEntryCount": 484,
       "xhtmlDocumentCount": 86,
       "totalUncompressedBytes": 63959373,
-      "licenseUriVerified": "https://creativecommons.org/licenses/by/4.0/",
+      "normalizedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
       "licenseEvidencePaths": [
         "OEBPS/copyright.html"
       ],
+      "licenseEvidenceState": "URI_EVIDENCE_LOCATED_REVIEW_REQUIRED",
+      "rightsReviewState": "REVIEW_REQUIRED",
+      "providerIdentityEvidenceSha256": "5AF237F0866DA14A7007CD5BCBEC24888F614D8FC8F2A8642ECCA0BCC286A2A0",
+      "canonicalProviderIdentity": "bccampus",
+      "providerIdentityReviewState": "REVIEW_REQUIRED",
       "requiredTeachingMarkers": {
         "example": 1,
         "summary": 1,

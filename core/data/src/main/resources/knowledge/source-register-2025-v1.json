@@ -919,6 +919,63 @@
       "modelUsePolicy": "FULL_CONTENT_ALLOWED",
       "reviewedAtEpochMillis": 1784908800000,
       "independenceGroup": "bccampus"
+    },
+    {
+      "sourceId": "candidate:openstax:world-history-volume-2",
+      "title": "World History, Volume 2: from 1400",
+      "publisher": "OpenStax",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "HISTORY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://openstax.org/details/books/world-history-volume-2",
+      "documentUri": "https://assets.openstax.org/oscms-prodcms/media/documents/World_History_Volume_2-WEB.pdf",
+      "contentLengthBytes": 132663448,
+      "contentFingerprint": "57BE7BA027ED9F66D9E4594493F56E6A9028BD72C166E62DCD07E72A5266F948",
+      "sourceLocator": "OpenStax 官方 Web PDF 直链下载并核验 SHA-256。许可 CC BY-NC-SA 4.0，且 OpenStax 禁止未经许可将原文用于大模型训练或生成式 AI 摄入；本项目只能人工参考后独立重写，原文不得进入模型、嵌入或检索上下文。中国高中课程映射和逐节审校未完成。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "licenseExpression": "CC BY-NC-SA 4.0; raw generative-AI ingestion prohibited without permission",
+      "licenseUri": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "attributionText": "Copyright Rice University, OpenStax; access for free at https://openstax.org/books/world-history-volume-2/pages/1-introduction",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "openstax"
+    },
+    {
+      "sourceId": "candidate:openstax:concepts-biology",
+      "title": "Concepts of Biology",
+      "publisher": "OpenStax",
+      "baselineId": "external-teaching-reference",
+      "subjects": [
+        "BIOLOGY"
+      ],
+      "purposes": [
+        "TEACHING_REFERENCE",
+        "METHOD_REFERENCE",
+        "WORKED_EXAMPLE_REFERENCE"
+      ],
+      "authorityLevel": "THIRD_PARTY_EDUCATION",
+      "acquisitionState": "ACQUIRED_UNREVIEWED",
+      "discoveryUri": "https://openstax.org/details/books/concepts-biology",
+      "documentUri": "https://assets.openstax.org/oscms-prodcms/media/documents/Concepts-Biology_-_WEB.pdf",
+      "contentLengthBytes": 185858638,
+      "contentFingerprint": "DA0FFC8585E172F04EB0ABB08949087BAF85CC229EF2736EF06E5AA17094B1F6",
+      "sourceLocator": "OpenStax 官方 Web PDF 直链下载并核验 SHA-256。许可 CC BY-NC-SA 4.0，且 OpenStax 禁止未经许可将原文用于大模型训练或生成式 AI 摄入；本项目只能人工参考后独立重写，原文不得进入模型、嵌入或检索上下文。中国高中课程映射和逐节审校未完成。",
+      "licenseStatus": "REFERENCE_ONLY",
+      "licenseExpression": "CC BY-NC-SA 4.0; raw generative-AI ingestion prohibited without permission",
+      "licenseUri": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "attributionText": "Copyright Rice University, OpenStax; access for free at https://openstax.org/books/concepts-biology/pages/1-introduction",
+      "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+      "modelUsePolicy": "DERIVED_CONTENT_ONLY",
+      "reviewedAtEpochMillis": 1784908800000,
+      "independenceGroup": "openstax"
     }
   ]
 }
