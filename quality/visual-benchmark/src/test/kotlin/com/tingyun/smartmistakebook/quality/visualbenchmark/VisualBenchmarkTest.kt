@@ -2,10 +2,14 @@ package com.tingyun.smartmistakebook.quality.visualbenchmark
 
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
+import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualStep
+import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
+import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualProvenanceContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -71,13 +75,25 @@ class VisualBenchmarkTest {
     @Test
     fun candidateFactoryRunsTheRealVisualCompiler() {
         val benchmarkCase = releaseManifest().cases.first()
+        val compiled = TutorVisualDocumentCompiler.compileForPresentation(
+            scene = simpleScene(),
+            provenanceContext = TutorVisualProvenanceContext(
+                questionDocument = QuestionDocument(
+                    id = "benchmark_question",
+                    blocks = listOf(ContentBlock.Paragraph("stem", "判断关键对象关系")),
+                ),
+                sourceAssets = emptyList(),
+                sourceFacts = emptyList(),
+            ),
+        )
         val attempt = VisualBenchmarkAttemptFactory.generated(
             stage = VisualBenchmarkAttemptStage.INITIAL,
-            scene = simpleScene(),
+            compiled = compiled,
             observation = observationFor(benchmarkCase),
         )
 
         assertTrue(attempt.runtimeCompiled)
+        assertTrue(attempt.provenanceVerified)
         assertFalse(attempt.visibleIllustrativeValue)
     }
 
@@ -201,6 +217,35 @@ class VisualBenchmarkTest {
         )
     }
 
+    @Test
+    fun structurallyCompiledButUnprovenSceneIsRejected() {
+        val manifest = releaseManifest()
+        val firstCase = manifest.cases.first()
+        val providerA = passingRun("provider-a", manifest).copy(
+            cases = passingRun("provider-a", manifest).cases.map { caseRun ->
+                if (caseRun.caseId == firstCase.caseId) {
+                    caseRun.copy(
+                        attempts = listOf(
+                            caseRun.attempts.single().copy(provenanceVerified = false),
+                        ),
+                    )
+                } else {
+                    caseRun
+                }
+            },
+        )
+
+        val report = VisualProviderBenchmarkScorer.evaluate(
+            manifest,
+            listOf(providerA, passingRun("provider-b", manifest)),
+        )
+
+        assertEquals(
+            VisualBenchmarkCaseOutcome.RUNTIME_REJECTED,
+            report.providerReports.first().caseScores.first().outcome,
+        )
+    }
+
     private fun passingRun(
         providerId: String,
         manifest: VisualBenchmarkManifest,
@@ -223,6 +268,7 @@ class VisualBenchmarkTest {
         stage = stage,
         status = VisualBenchmarkAttemptStatus.GENERATED,
         runtimeCompiled = true,
+        provenanceVerified = true,
         visibleIllustrativeValue = false,
         observation = observation,
         failureReason = null,
@@ -334,5 +380,6 @@ class VisualBenchmarkTest {
         ),
         fallbackMarkdown = "查看关键对象。",
         accessibilitySummary = "一个关键对象。",
+        provenanceSchemaVersion = TutorVisualDocumentScene.CURRENT_PROVENANCE_SCHEMA_VERSION,
     )
 }

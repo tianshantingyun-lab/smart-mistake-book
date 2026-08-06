@@ -2,12 +2,14 @@
 param(
     [int]$Port = 0,
     [switch]$ShowWindow,
-    [switch]$WipeData
+    [switch]$WipeData,
+    [switch]$AllowExistingAndroidProfileArtifacts
 )
 
 $ErrorActionPreference = 'Stop'
 
-. (Join-Path $PSScriptRoot 'android-env.ps1')
+. (Join-Path $PSScriptRoot 'android-env.ps1') `
+    -AllowExistingAndroidProfileArtifacts:$AllowExistingAndroidProfileArtifacts
 
 $Port = Resolve-AndroidEmulatorPort -Port $Port
 $serial = Get-AndroidEmulatorSerial -Port $Port
@@ -109,14 +111,17 @@ try {
             $adbInitializationObserved = $true
         }
 
-        if ((Test-Path -LiteralPath $profileAndroidDirectory) -or
-            (Test-Path -LiteralPath $profileConsoleToken)) {
+        if (-not $AllowExistingAndroidProfileArtifacts -and
+            ((Test-Path -LiteralPath $profileAndroidDirectory) -or
+                (Test-Path -LiteralPath $profileConsoleToken))) {
             Move-GeneratedAndroidProfileArtifactsToWorkspace -ExpectedEmulatorPort $Port
         }
 
         $profileArtifactsRemain = (Test-Path -LiteralPath $profileAndroidDirectory) -or
             (Test-Path -LiteralPath $profileConsoleToken)
-        if ($adbInitializationObserved -and -not $profileArtifactsRemain) {
+        $profileArtifactsAccepted =
+            $AllowExistingAndroidProfileArtifacts -or -not $profileArtifactsRemain
+        if ($adbInitializationObserved -and $profileArtifactsAccepted) {
             if (-not $profileCleanupStableSince) {
                 $profileCleanupStableSince = [DateTime]::UtcNow
             } elseif (([DateTime]::UtcNow - $profileCleanupStableSince).TotalSeconds -ge 15) {
@@ -218,16 +223,20 @@ try {
         $cleanupFailures.Add($_.Exception.Message)
     }
     try {
-        Move-GeneratedAndroidProfileArtifactsToWorkspace -Attempts 20 -DelayMilliseconds 250 -ExpectedEmulatorPort $Port
+        if (-not $AllowExistingAndroidProfileArtifacts) {
+            Move-GeneratedAndroidProfileArtifactsToWorkspace -Attempts 20 -DelayMilliseconds 250 -ExpectedEmulatorPort $Port
+        }
     } catch {
         $cleanupFailures.Add($_.Exception.Message)
     }
 
-    $outsideWorkspaceArtifacts = @(@($profileAndroidDirectory, $profileConsoleToken) | Where-Object {
-        Test-Path -LiteralPath $_
-    })
-    if ($outsideWorkspaceArtifacts) {
-        $cleanupFailures.Add("Profile artifacts remain outside the workspace: $($outsideWorkspaceArtifacts -join ', ')")
+    if (-not $AllowExistingAndroidProfileArtifacts) {
+        $outsideWorkspaceArtifacts = @(@($profileAndroidDirectory, $profileConsoleToken) | Where-Object {
+            Test-Path -LiteralPath $_
+        })
+        if ($outsideWorkspaceArtifacts) {
+            $cleanupFailures.Add("Profile artifacts remain outside the workspace: $($outsideWorkspaceArtifacts -join ', ')")
+        }
     }
 
     if ($cleanupFailures) {

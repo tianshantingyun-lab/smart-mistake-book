@@ -1,7 +1,6 @@
 package com.tingyun.smartmistakebook.quality.visualbenchmark
 
-import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
-import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
+import com.tingyun.smartmistakebook.core.visual.runtime.CompiledTutorVisualDocument
 import com.tingyun.smartmistakebook.core.visual.runtime.containsVisibleIllustrativeValue
 
 enum class VisualBenchmarkCaseOutcome {
@@ -53,21 +52,21 @@ data class VisualBenchmarkGateReport(
 object VisualBenchmarkAttemptFactory {
     fun generated(
         stage: VisualBenchmarkAttemptStage,
-        scene: TutorVisualDocumentScene,
+        compiled: CompiledTutorVisualDocument,
         observation: VisualBenchmarkObservation,
     ): VisualBenchmarkAttempt {
-        val compiled = runCatching { TutorVisualDocumentCompiler.compile(scene) }.getOrNull()
+        val provenanceVerified = compiled.provenance?.canPresent == true
         return VisualBenchmarkAttempt(
             stage = stage,
             status = VisualBenchmarkAttemptStatus.GENERATED,
-            runtimeCompiled = compiled?.integrity?.canRender == true,
-            visibleIllustrativeValue = scene.containsVisibleIllustrativeValue(),
+            runtimeCompiled = compiled.integrity.canRender,
+            provenanceVerified = provenanceVerified,
+            visibleIllustrativeValue = compiled.scene.containsVisibleIllustrativeValue(),
             observation = observation,
-            failureReason = compiled
-                ?.integrity
-                ?.issues
-                ?.takeIf { it.isNotEmpty() }
-                ?.joinToString { it.code.name },
+            failureReason = buildList {
+                compiled.integrity.issues.mapTo(this) { it.code.name }
+                compiled.provenance?.issues.orEmpty().mapTo(this) { it.code.name }
+            }.distinct().takeIf { it.isNotEmpty() }?.joinToString(),
         )
     }
 
@@ -76,6 +75,7 @@ object VisualBenchmarkAttemptFactory {
             stage = stage,
             status = VisualBenchmarkAttemptStatus.DECLINED_UNCERTAIN,
             runtimeCompiled = false,
+            provenanceVerified = false,
             visibleIllustrativeValue = false,
         )
 
@@ -86,6 +86,7 @@ object VisualBenchmarkAttemptFactory {
         stage = stage,
         status = VisualBenchmarkAttemptStatus.FAILED,
         runtimeCompiled = false,
+        provenanceVerified = false,
         visibleIllustrativeValue = false,
         failureReason = reason,
     )
@@ -219,6 +220,10 @@ object VisualProviderBenchmarkScorer {
         }
         if (!attempt.runtimeCompiled) {
             return VisualBenchmarkCaseOutcome.RUNTIME_REJECTED to listOf("Local runtime rejected the scene.")
+        }
+        if (!attempt.provenanceVerified) {
+            return VisualBenchmarkCaseOutcome.RUNTIME_REJECTED to
+                listOf("Local numeric provenance verification did not pass.")
         }
         if (attempt.visibleIllustrativeValue) {
             return VisualBenchmarkCaseOutcome.RUNTIME_REJECTED to

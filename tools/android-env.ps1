@@ -118,7 +118,9 @@ foreach ($writableRoot in @(
     }
 }
 
-# QEMU's Windows launcher corrupts non-ASCII executable paths, so S: aliases this same D: workspace.
+# Java worker argfiles and QEMU corrupt non-ASCII executable/classpath entries on this host.
+# T: is reserved for an ASCII alias of this same physical D: workspace; S: remains available for
+# the independently managed Android SDK alias.
 $systemDirectory = [Environment]::SystemDirectory
 $substExecutable = Join-Path $systemDirectory 'subst.exe'
 $fsutilExecutable = Join-Path $systemDirectory 'fsutil.exe'
@@ -127,7 +129,7 @@ foreach ($systemTool in @($substExecutable, $fsutilExecutable)) {
         throw "Required Windows system tool is missing: $systemTool"
     }
 }
-$runtimeDrive = 'S:'
+$runtimeDrive = 'T:'
 $runtimeDriveRoot = "$runtimeDrive\"
 $storageProbe = Join-Path $workspaceRoot 'tools\android-env.ps1'
 $runtimeProbe = $runtimeDriveRoot + 'tools\android-env.ps1'
@@ -247,8 +249,10 @@ $env:Path = ($toolPaths + ($currentPaths | Where-Object { $toolPaths -notcontain
 $profileRoot = [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
 $profileAndroidDirectory = Join-Path $profileRoot '.android'
 $profileConsoleToken = Join-Path $profileRoot '.emulator_console_auth_token'
+$profileAndroidDirectoryExists =
+    Test-Path -LiteralPath $profileAndroidDirectory -PathType Container
 $profileAndroidDirectoryHasArtifacts =
-    (Test-Path -LiteralPath $profileAndroidDirectory -PathType Container) -and
+    $profileAndroidDirectoryExists -and
     (Get-ChildItem -Force -LiteralPath $profileAndroidDirectory | Select-Object -First 1)
 $preexistingProfileArtifacts = @(
     @(
@@ -260,7 +264,68 @@ if ($preexistingProfileArtifacts -and -not $AllowExistingAndroidProfileArtifacts
     throw "Refusing to use Android tools while profile artifacts exist outside the workspace: $($preexistingProfileArtifacts -join ', ')"
 }
 
-$androidProfileArtifactTrackingEnabled = -not $AllowExistingAndroidProfileArtifacts
+function Get-ExternalAndroidProfileSnapshot {
+    $lines = [Collections.Generic.List[string]]::new()
+    foreach ($rootPath in @($profileAndroidDirectory, $profileConsoleToken)) {
+        if (-not (Test-Path -LiteralPath $rootPath)) {
+            $lines.Add("MISSING|$rootPath")
+            continue
+        }
+        $rootItem = Get-Item -Force -LiteralPath $rootPath
+        $items = @($rootItem)
+        if ($rootItem.PSIsContainer) {
+            $items += @(Get-ChildItem -Force -Recurse -LiteralPath $rootPath)
+        }
+        foreach ($item in $items) {
+            if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "Refusing to inspect Android profile reparse point: $($item.FullName)"
+            }
+            $relativePath = [IO.Path]::GetRelativePath($profileRoot, $item.FullName)
+            if ($item.PSIsContainer) {
+                $lines.Add("D|$relativePath|$($item.LastWriteTimeUtc.Ticks)")
+            } else {
+                $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $item.FullName).Hash
+                $lines.Add(
+                    "F|$relativePath|$($item.Length)|$($item.LastWriteTimeUtc.Ticks)|$hash"
+                )
+            }
+        }
+    }
+    $lines.Sort([StringComparer]::Ordinal)
+    $canonical = [Text.Encoding]::UTF8.GetBytes($lines -join "`n")
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try {
+        ($sha256.ComputeHash($canonical) | ForEach-Object { $_.ToString('x2') }) -join ''
+    } finally {
+        $sha256.Dispose()
+    }
+}
+
+function Assert-ExternalAndroidProfileUnchanged {
+    if ($null -eq $preexistingAndroidProfileSnapshot) {
+        return
+    }
+    $afterSnapshot = Get-ExternalAndroidProfileSnapshot
+    if (-not [string]::Equals(
+        $afterSnapshot,
+        $preexistingAndroidProfileSnapshot,
+        [StringComparison]::Ordinal
+    )) {
+        throw 'Android device work changed pre-existing user profile artifacts outside the workspace.'
+    }
+}
+
+$preexistingAndroidProfileSnapshot = if (
+    $AllowExistingAndroidProfileArtifacts -and
+    ($profileAndroidDirectoryExists -or (Test-Path -LiteralPath $profileConsoleToken))
+) {
+    Get-ExternalAndroidProfileSnapshot
+} else {
+    $null
+}
+$androidProfileArtifactTrackingEnabled =
+    -not $profileAndroidDirectoryExists -and
+    -not (Test-Path -LiteralPath $profileConsoleToken)
 $profileArtifactTrackingStartedAt = [DateTime]::UtcNow.AddSeconds(-1)
 
 function Assert-NoConflictingAndroidProcesses {

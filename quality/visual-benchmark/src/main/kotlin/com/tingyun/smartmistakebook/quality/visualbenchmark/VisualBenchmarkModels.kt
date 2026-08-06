@@ -158,6 +158,8 @@ data class VisualBenchmarkAttempt(
     val stage: VisualBenchmarkAttemptStage,
     val status: VisualBenchmarkAttemptStatus,
     val runtimeCompiled: Boolean,
+    /** Old provider-run files default to false and therefore fail closed. */
+    val provenanceVerified: Boolean = false,
     val visibleIllustrativeValue: Boolean,
     val observation: VisualBenchmarkObservation? = null,
     val failureReason: String? = null,

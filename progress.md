@@ -1,5 +1,7 @@
 # 智能错题本进度记录
 
+> 本文件按日期保留历史进度。当前实现阶段和入口顺序以 `task_plan.md` 的 2026-08-01 覆盖及生产代码为准；旧阶段 0 与“复习在前”记录不得被当作当前状态。
+
 ## 2026-07-24：阶段 0 — 需求冻结与现状审计
 
 - **状态：** 进行中
@@ -618,3 +620,3656 @@
 - 当前仓库仍无 `HEAD`、无远程地址且未安装 CodeRabbit CLI，因此 GitHub、PR 差异审查、CodeRabbit 和 Git 差异安全扫描仍没有可解析目标。
 - Figma、Linear、Notion 与 Beautiful.ai 均没有用户指定的文件、团队、页面或演示目标，本批次没有擅自创建外部资产。
 - 本轮已恢复 API 36 模拟器并完成真实 Compose 回归；更强的性能结论仍需要专门采集通用动画的 Perfetto/帧耗时，当前只证明运行时分配与重复扫描已静态消除，不能把截图和功能测试冒充帧性能报告。
+
+## 2026-08-03 续接批次：分科学习记忆闭环的可自动化验收
+
+### 已完成
+
+- 知识库 5 万节点/100 万检索特征/25 万关系 P95 门禁复跑通过：
+  - recall P95 < 50ms、neighborhood P95 < 150ms、teaching-material P95 < 100ms、display page P95 < 500ms、full scan < 30s；
+  - 修复方式：给 neighborhood 增加与其他表面一致的预热；批量节点查询改为主键顺序，移除 stable_code 临时排序。
+- learner-mastery 连接回归从 8 个失败修复到 76/76 通过（排除模拟器上超过 35 分钟仍未完成的大规模性能类）：
+  - 旧 v14→v15 测试改为当前 v20+ 定向预算标记语义，并适配无旧 ACTIVE 代次时先 `rebuildDerivedStateChunk()` 再捕获 generation；
+  - 旧 schema 的 guard 安装不再执行只属于当前 schema 的全量审计，避免早期迁移引用 v21/v22 才存在的表；
+  - 证据纠正在成功写入 supersession 后写入 `projection_rebuild_policy=REQUIRED_V2`，guard 允许已标记重建的旧 ACTIVE 代次继续打开；
+  - evidence-dimension 批量聚合按 `learner+subject+taxonomy` 分组查询，不再按知识点逐条扫描，同时该阶段不再把维度查询计入 immutable-history 计数；
+  - budget rebuild receipt 的 last-direction/event/ordinal 改为从不可变事件尾部查询，避免被后续 stage 复用的 cursor 字段污染；
+  - 混合方向 exact-keyset 测试改为 341 个事件、171 个正例/170 个负例，正例双知识点、负例单主知识点，仍精确落在 512 条 projection-history 边界。
+- `tools/README.md` 增加 `<bundled-document-python>` 占位符说明：解释器来自 Codex 文档运行时，不能用系统 Python 3.13 替代。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| knowledge-database P95 opt-in 门禁 | 通过（首轮 neighborhood 151.67ms 失败后修复复跑） |
+| knowledge-database JVM + androidTest 编译 | 通过 |
+| learner-mastery JVM 单元测试 | 通过 |
+| learner-mastery 连接测试 | 76/76 通过，0 failures；scale performance 类未计入 |
+| learner-mastery ScalePerformance | 模拟器上 35+ 分钟仍在 100k raw snapshot 用例中，未作为普通回归通过 |
+| 环境安全守卫 | 最后一次设备任务后 wrapper 报告用户目录产物变化，测试本身 BUILD SUCCESSFUL，但需要确认该守卫告警来源 |
+
+### 仍未闭环
+
+- 正式九科知识包内容与人工审校、2700 道人工标注 Recall@K/Precision@K、真实 Provider 验收仍是外部/人工阻塞。
+- learner-mastery 100k 性能门禁需要真机或更快的执行环境，当前模拟器不能作为普通 connected 门禁完成。
+- 用户目录产物变化的告警需要确认是否由既有模拟器/ADB 配置产生；未移动、删除或覆盖工作区外文件。
+
+## 2026-08-04 实施批次：异常文本性能与显示安全
+
+### 已完成
+
+- 在 `StructuredContent.kt` 的显示文本入口统一增加 NFC 归一化和零宽格式字符移除：
+  - 移除 `U+00AD`、`U+180E`、`U+200B`、`U+200C`、`U+200D`、`U+2060`、`U+FEFF`；
+  - 对组合字符先做 `Normalizer.Form.NFC`，减少渲染/检索时的变体字符串长度；
+  - 该逻辑覆盖 `SafeInlineMarkdown.parse/literal`、`RestrictedFormulaText.sanitize`、文档标题/文本/单元格/公式/替代文本等所有经过 `stripControlCharacters` 的路径。
+- 新增 `StructuredContentTest` 回归：组合字符 `e + combining acute` 归一化为 `é`，零宽字符全部移除。
+- 拍照/相册导入两条复制路径增加 30 秒墙钟超时：
+  - `CaptureCache.copyCaptureStreamWithinLimit` 与 `AndroidCanonicalAssetVault.copyWithinLimit` 均在每次读取前后检查总耗时；
+  - 超时后删除半成品文件并失败关闭；
+  - 新增 `CaptureCacheTest` 用阻塞流验证超时失败。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test` | 通过 |
+| `:core:ui:compileDebugKotlin` | 通过 |
+| `:feature:capture:compileDebugKotlin` | 通过 |
+| `:core:model-provider:test` | 通过 |
+| `:feature:capture:testDebugUnitTest --tests CaptureCacheTest` | 通过 |
+
+### 仍未闭环
+
+- B06 仍需要百题 PDF/Markdown 真机性能基准；本批只完成显示文本的归一化与零宽字符安全。
+
+## 2026-08-04 实施批次：G06 大批量复习调度性质测试
+
+### 已完成
+
+- 在 `ThreeAuthorityReviewPlannerTest` 新增三组性质测试：
+  - 10/100/500/1000/5000 道批量导入均严格落在 15 分钟预算内，且每天只选 5 道；
+  - 30 天轮换下，1000 道中的最老 150 道全部被排到，没有饥饿；
+  - 90 天轮换下，300 道导入全部被服务，无重复调度，且最迟 60 个每日槽位内全部完成。
+  - 同题族 100 道连续 5 天模拟中，每天只排 1 道，不会形成同质洪水。
+- 配合既有测试，覆盖同族去重、稳定知识降频、重复错误升频和确定性。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:domain:test --tests ThreeAuthorityReviewPlannerTest` | 通过 |
+
+### 仍未闭环
+
+- G06 仍缺少中端真机预算数据；已标记为部分落实。
+
+## 2026-08-04 实施批次：学生语言零宽伪装不变量
+
+### 已完成
+
+- `StudentFacingLanguagePolicyTest` 扩展零宽字符伪装用例：
+  - `知\u200B识\u200C节点`、`内部\u200D资料`、`sou\u200Brce\u200Bgrounded` 均被判定为内部词；
+  - 与既有 NFC/NFKC 归一化、分隔符折叠和 Latin 混淆规则一起形成自动不变量。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test --tests StudentFacingLanguagePolicyTest` | 通过 |
+
+### 仍未闭环
+
+- A03/A06 已标记为部分落实；真实 Provider 截图和完整静态资源扫描仍未完成。
+
+## 2026-08-04 实施批次：D05 单科全局记忆接线核验
+
+### 已完成
+
+- 核验生产接线：`SmartMistakeBookApplication` 通过 `ProductionCapabilitySnapshot` 发布 `tutorMasteryContextRepository`，`CapturedTutorSessionRoute`/`TutorModelTaskPolicy` 在讲解任务前读取同科全局掌握。
+- 核验领域与数据层测试：
+  - `TutorMasteryContextRepositoryTest`：跨科拒绝、请求内节点唯一、结果按请求边界重绑定；
+  - `LocalTutorMasteryContextRepositoryTest`：精确节点+同科 fallback、跨科隔离、升级后激活引用、证据不足失败关闭；
+  - `TutorMasteryContextReaderTest`：latest-only、取消、异常降级为空上下文。
+- `implementation_work_packages.md` D05 更新为部分落实。
+
+### 仍未闭环
+
+- D05 仍缺真实 Provider 端到端截图/长会话证据；领域和数据层证据已足够支撑“部分落实”。
+
+## 2026-08-04 实施批次：G07 复习首页与会话持久化核验
+
+### 已完成
+
+- 核验复习首页、会话和打卡的持久化链路：
+  - `review_session` 与 `review_session_state` 表保存会话、当前序号、完成时间和状态版本；
+  - `DailyReviewViewModel` 只允许从真实 `nextProblem` 启动/继续，不会把通知到达冒充打卡；
+  - `ReviewContinuityInstrumentedTest` 和 `ReviewRoutePolicyTest` 覆盖完成态、连续记录、恢复和禁用的终端动作。
+- `implementation_work_packages.md` G07 更新为部分落实。
+
+### 仍未闭环
+
+- G07 仍缺真实设备时区/DST/重启长程证据。
+
+## 2026-08-04 实施批次：H01/H02 学习掌握页面信息边界核验
+
+### 已完成
+
+- 扫描 `LearningMasteryScreen`、`ProfileRoute`、`ProductionProfileRoute` 与 `core/ui` 可见文本，未发现“资料/知识库/待完善/覆盖率/检索/召回/审校/投影/置信”等运维词。
+- 学习掌握页仍为只读投影：无维护入口，知识库信息不面向学生。
+- `implementation_work_packages.md` H01/H02 更新为部分落实。
+
+### 仍未闭环
+
+- H01/H02 仍缺通知/错误信息全量扫描和 2 万知识点真机性能证据。
+
+## 2026-08-04 实施批次：零宽前缀修复与学习掌握页 UI 打磨
+
+### 已完成
+
+- 修复 `StructuredContent.kt` 所有“先截断再清洗”路径：
+  - `DocumentSanitizationBudget.takeText` 改为先 `stripControlCharacters` 再按清洗后长度截断；
+  - `SafeInlineMarkdown.parse/literal/requiresPlainTextFallback`、`RestrictedFormulaText.sanitize/hasUnsupportedCommand`、文档 ID/选项/图注/未知块兜底统一为同序；
+  - 新增 `StructuredContentTest` 覆盖 100k 零宽前缀后的可见正文、Markdown、公式、标题、图注、选项和未知块兜底。
+- `LearningMasteryScreen` UI 打磨：
+  - 顶部增加只读“总体”摘要，按学生语言汇总需要再巩固、最近有波动、正在熟悉、比较稳；
+  - 圆角和间距统一使用 `SmartDimens` token（8dp 表面半径、8/12/16/24dp 间距节奏）；
+  - 状态文字使用 `Ink`/`JadeActive`/`InkSecondary` 层级，不新增低对比颜色；
+  - 仪器测试新增 `learning_mastery_overall` 断言与顶部截图。
+- 修复 app Lint API 23 阻塞：`ProductionScopedModelTaskPort.close()` 不再调用 API 24 才可用的 `ConcurrentHashMap.KeySetView.clear()`，改为逐个移除。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test --tests StructuredContentTest` | 通过 |
+| `:core:model:test` | 通过 |
+| `:app:compileLocalFirstDebugKotlin :app:compileLocalFirstDebugAndroidTestKotlin` | 通过 |
+| `LearningMasteryScreenInstrumentedTest` 4/4 | 通过 |
+| 单测方法 `#repositoryProjectionUsesOnlyShortStudentFacingLanguage` | 通过，截图已拉取 |
+| `:app:lintLocalFirstDebug` | 通过，0 errors |
+| `:app:testLocalFirstDebugUnitTest --tests ProductionScopedModelTaskPortTest` | 通过 |
+
+### 仍未闭环
+
+- `ui-ux-pro-max` 的 `scripts/search.py` 与 `data` 是本机 skill 安装中的断链占位文件，无法运行设计系统搜索脚本；本批按 skill 正文的设计系统与 checklist 直接落地，未伪造脚本输出。
+- 截图已生成到 `.tmp/learning-mastery-audit/learning-mastery-repository.png` 并做非空像素采样；当前会话不支持图像输入，未做人工目检。
+- H03 仍缺 7/30 天切换、趋势图、最近变化时间线、2 万知识点真机性能与真机大字体截图。
+
+## 2026-08-04 实施批次：学习掌握真实按天趋势闭环
+
+### 已完成
+
+- 领域合同新增 `LearningMasteryTimelineRequest/Range/Timeline/Entry/Signal/Activity`，保持学生语言边界，不暴露 evidence、count、epoch 等内部词。
+- learner-mastery 显示读口新增 `readSubjectTimeline`，Room 实现直接查询真实按天观察聚合，并在投影 revision 变化时返回 `RevisionChanged`。
+- `LocalLearningMasteryDisplayRepository` 组装时间线、补齐缺失日期，并映射为公开学生模型。
+- 学习掌握页新增“近期趋势”区块、7/30 天切换、按天柱状趋势图和语义摘要。
+- 新增真实 Room 仪器测试 `displaySubjectTimelineReturnsRecentDaysFromRealLedger`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:domain:test` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:app:compileLocalFirstDebugKotlin :app:compileLocalFirstDebugAndroidTestKotlin` | 通过 |
+| `LearningMasteryScreenInstrumentedTest` 4/4 | 通过 |
+| `LearnerMasteryStoreInstrumentedTest#displaySubjectTimelineReturnsRecentDaysFromRealLedger` | 通过 |
+| `:app:lintLocalFirstDebug` | 通过，0 errors |
+| 截图 `learning-mastery-repository-top.png` | 已拉取，非空像素采样正常 |
+
+### 仍未闭环
+
+- H03 仍缺板块进度、趋势图在真实生产数据下的长程截图、旋转/进程重建专项测试和真机大字体验证；7/30 天切换本身已通过 `rememberSaveable` 保持。
+
+## 2026-08-04 实施批次：掌握分布与板块进度
+
+### 已完成
+
+- “学习掌握”顶部总体摘要内新增科目掌握分布条：需要再巩固、正在熟悉、比较稳、还没学到四段状态与图例。
+- 选中科目后新增“板块进度”：按已加载知识点的板块分组，显示知识点数量、状态分布条和文字摘要。
+- 新增纯计算函数 `learningMasteryStatusDistribution` 与 `learningMasterySectionProgress`，并扩展 app 单元测试。
+- 扩展 Compose 仪器测试，断言分布条与板块进度可见；修复物理科目“相互作用与运动”因进度和知识点标题重复导致的歧义选择。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:app:testLocalFirstDebugUnitTest --tests LearningMasteryPresentationTest` | 通过 |
+| `:app:compileLocalFirstDebugKotlin :app:compileLocalFirstDebugAndroidTestKotlin` | 通过 |
+| `LearningMasteryScreenInstrumentedTest` 4/4 | 通过 |
+| `:app:lintLocalFirstDebug` | 通过，0 errors |
+| 截图 `learning-mastery-repository-top.png` / `learning-mastery-repository.png` | 已拉取，非空像素采样正常 |
+
+### 仍未闭环
+
+- H03 仍缺真实生产数据下的长程截图、旋转/进程重建专项测试和真机大字体验证；板块进度目前基于已加载知识点，随“查看更多”更新，未宣称覆盖全量。
+
+## 2026-08-04 实施批次：G03 每日时间与题数预算闭环
+
+### 已完成
+
+- 领域新增 `ReviewPacingLevel` 三档节奏：轻量 10 分钟/4 题、标准 15 分钟/5 题、加强 25 分钟/8 题。
+- `ThreeAuthorityReviewPlanningRequest` 与 `ThreeAuthorityReviewPlan` 新增 `maxItemCount` 硬上限，规划器同时受时间与题数约束。
+- 计划指纹加入 `maxItemCount`，同一日更换节奏会产生不同计划指纹，不会被旧计划冒充。
+- `ReviewHomeRequest` 携带 `pacingLevel`，计划端口、协调器和仓库逐层透传 `maxItemCount`。
+- 新增题数上限、三档节奏、指纹变化、协调器透传和仓库默认值回归。
+- 明确超长单题处理：单题时长超过当日剩余预算时不安排，保持排队等待后续日程；新增“超长单题不超预算”与“放不下时优先可安排题”领域测试。
+- 明确“设置修改次日稳定生效”：当日已持久化计划不因节奏或考试目标变更重排，次日按新偏好生成；新增数据层回归测试。
+- 核验 G01/G02/G04/G05 生产调度实现并更新工作包状态为部分落实。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:domain:test` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:app:compileLocalFirstDebugKotlin` | 通过 |
+| `:feature:review:testDebugUnitTest` | 通过 |
+| `:app:lintLocalFirstDebug` | 通过，0 errors |
+| `ThreeAuthorityReviewPlannerTest`（新增超长单题用例） | 通过 |
+| `ThreeAuthorityDailyReviewRepositoryTest`（含偏好变更不重排） | 通过 |
+
+### 仍未闭环
+
+- 三档节奏还没有学生端设置 UI，当前生产默认使用标准档。
+- 答案暴露快速复习仍需端到端/真机证据。
+
+## 2026-08-04 实施批次：复习节奏学生端设置与持久化
+
+### 已完成
+
+- `ReviewReminderPreferences` 新增 `pacingLevel`，`DataStoreReviewReminderRepository` 持久化 `pacing_level`。
+- 复习提醒页“复习节奏”区新增轻量/标准/加强三档选择，保存后立即回写偏好。
+- `SmartMistakeBookRoot` 收集提醒偏好并写入 `ReviewHomeRequest.pacingLevel`，后续每日计划按学生选择生成。
+- 新增稳定的复习提醒 Compose 仪器测试，覆盖时间、三档节奏和提醒开关；DataStore 持久化仪器测试覆盖跨仓库重建恢复。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ReviewReminderInstrumentedTest` 1/1 | 通过 |
+| `DataStoreReviewReminderRepositoryTest` 3/3 | 通过 |
+| `:core:domain:test` | 通过 |
+| `:app:testLocalFirstDebugUnitTest` | 通过 |
+| `:app:lintLocalFirstDebug` | 通过，0 errors |
+
+### 仍未闭环
+
+- 答案暴露快速复习仍缺端到端证据。
+- 三档节奏的“次日稳定生效”还需在真实时间推进/真机 DST 场景复跑。
+
+## 2026-08-04 实施批次：D06 掌握投影升降频与修正核验
+
+### 已完成
+
+- 核验 `LocalMasteryPolicy` 生产实现：独立正确提高稳定度，显式错误降低，答案揭示/自报/提示/重试降权，稳定冲突走审校，证据修正通过 supersession 重建投影。
+- 新增 `repeatedExplicitErrorLowersStableMasteryAndLaterIndependentCorrectRestoresIt` 属性测试，直接锁住“稳定 → 再次出错降频 → 独立正确恢复稳态”闭环。
+- 配合既有 `independentCorrectNeverLowers...`、答案揭示、提示/重试、稳定冲突和证据修正测试，D06 更新为部分落实。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `LocalMasteryPolicyPropertyTest` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+
+### 仍未闭环
+
+- D06 仍缺真实 Provider 与真实题面下的端到端证据；题面修订/删除纠正的跨库恢复和 2 万知识点真机性能未验证。
+
+## 2026-08-04 实施批次：D06 生命周期跨库恢复
+
+### 已完成
+
+- `RoomStudentMistakeStore.setProblemLifecycle` 现在会在归档/删除时发布空 `ProblemKnowledgeBindingsSnapshotV2`，在恢复 `ACTIVE` 时重发当前知识绑定。
+- 新增 `ProblemLifecycleChangedV1` 跨库事件，并同步学生库编解码、outbox 认证器、learner-mastery 编解码与 relay 接收路径。
+- learner-mastery 仅在 `TOMBSTONED` 生命周期后为旧已入账事件写入“退休替换头”：合成无归属替换 source fact/candidate/event + supersession，投影回放按 supersession 排除旧证据；`ARCHIVED` 保留历史投影。
+- 新增 `ProblemRevisionSupersededV1`：学生库在同一事务中为旧 revision 发布替换事件；learner-mastery 收到后对旧 revision 写入退休替换头。
+- 复用既有单调 `bindingSetVersion` 协议处理授权撤销；旧版本快照仍然按 DUPLICATE 或 CONFLICT 处理。
+- learner-mastery 已有“空绑定快照后新证据不可授权”仪器测试，跨库授权撤销端已闭环。
+- 新增学生库“归档撤销 + 恢复重发 + 生命周期事件”仪器测试，并把生命周期测试的待发送消息计数从 7 更新为 11。
+- 新增 learner-mastery “生命周期退休后旧投影被清空”仪器测试。
+- 新增 learner-mastery “归档不退休投影、恢复后仍保留”仪器测试。
+- 新增 learner-mastery “新 revision 替换后旧投影被清空”仪器测试，以及学生库 revision 替换事件发射测试。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `StudentMistakeStoreInstrumentedTest` 15/15 | 通过 |
+| `lifecycleChangePublishesBindingSnapshotRevocationAndRestore` | 通过 |
+| `LearnerMasteryStoreInstrumentedTest#lifecycleRetirementSupersedesExistingProjectionEvidence`（TOMBSTONED） 1/1 | 通过 |
+| `LearnerMasteryStoreInstrumentedTest#archiveDoesNotRetireExistingProjectionAndRestoreKeepsIt` 1/1 | 通过 |
+| `LearnerMasteryStoreInstrumentedTest#revisionSupersessionRetiresPreviousProjectionEvidence` 1/1 | 通过 |
+| `StudentMistakeStoreInstrumentedTest#revisionCommitPublishesSupersessionEvent` 1/1 | 通过 |
+| `LearnerMasteryStoreInstrumentedTest#revokedOrStaleProblemBindingsCannotAuthorizeModelEvidence` 1/1 | 通过 |
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:model:test :core:learner-mastery-database:testDebugUnitTest :core:student-mistake-database:testDebugUnitTest :core:data:testDebugUnitTest` | 通过 |
+
+### 仍未闭环
+
+- 旧已入账投影已通过退休替换头重算；归档保留历史投影、恢复后仍保留，仅 `TOMBSTONED` 永久退休；真实 Provider/真实题面端到端和 2 万知识点真机性能仍缺。
+
+## 2026-08-04 性能门禁模拟器复跑记录
+
+### 结果
+
+- 在 API 36 x86_64 模拟器上复跑 `LearnerMasteryScalePerformanceInstrumentedTest`。
+- `tenThousandRawSnapshotsConfirmDigestScalingBeforeTheReleaseGate` 失败：原始快照摘要耗时 `101,210.569 ms`，超过预算。
+- `hundredThousandRawSnapshotsUseBoundedPagesDuringDigestRecompute` 在 40 分钟超时窗口内未完成，模拟器不满足 100k 门禁运行条件。
+- 结论：该门禁继续保留为真机/更快环境验收项；模拟器结果作为“当前环境不达标”的证据，不作为通过证据。
+
+## 2026-08-04 实施批次：G04 真实考试目标闭环
+
+### 已完成
+
+- 领域新增 `ReviewExamTarget(subject, examAtEpochMillis)`；规划器只在考试科目且距考试 14 天内提升该科优先级，计划指纹包含考试目标，避免旧计划冒充。
+- `LearnerBoundDailyReviewPlanPort`、`ThreeAuthorityReviewPlanCoordinator`、`ThreeAuthorityDailyReviewRepository`、`ReviewHomeRequest` 全链透传考试目标。
+- `ReviewReminderPreferences` 新增 `examSubject` / `examEpochDay`，DataStore 持久化 `exam_subject` / `exam_epoch_day`，并通过跨仓库重建恢复。
+- 复习提醒页新增考试目标区：科目 chip + 7/14/30 天选择 + 清除；`SmartMistakeBookRoot` 将偏好转换为 `ReviewExamTarget`。
+- 新增规划器“只提升考试科目、随日期临近生效、指纹变化”测试，数据端口/仓库透传测试，Compose 仪器与 DataStore 仪器断言。
+- 新增考试目标 14/15 天边界测试：正好 14 天提升目标科目，第 15 天及以后不再发明优先级。
+- 答案暴露快速复习：新增 `ReviewPriorityReason.ANSWER_REVEALED`，学生端 `review-answer-revealed` 原因码映射为独立优先级并在规划器中提升排序；新增领域与协调器回归。
+- 答案暴露快速复习生产路径：学生先看答案再提交作答时，`StudentMistakeDao` 写入 `review-answer-revealed` 原因码，后续调度按快速复习优先级处理；新增学生库仪器测试覆盖。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:domain:compileKotlin :core:data:compileDebugKotlin :app:compileLocalFirstDebugKotlin` | 通过 |
+| `ThreeAuthorityReviewPlannerTest` | 通过 |
+| `LearnerBoundDailyReviewPlanPortTest` | 通过 |
+| `ThreeAuthorityDailyReviewRepositoryTest` | 通过 |
+| `AuthorityCapabilityBoundaryContractTest` | 通过 |
+| `:core:data:testDebugUnitTest :app:testLocalFirstDebugUnitTest :app:lintLocalFirstDebug` | 通过 |
+| `ReviewReminderInstrumentedTest` 1/1 | 通过 |
+| `DataStoreReviewReminderRepositoryTest` 3/3 | 通过 |
+| `ThreeAuthorityReviewPlannerTest` 18/18（含 14/15 天边界） | 通过 |
+| `ThreeAuthorityReviewPlannerTest`（含答案暴露快速复习） | 通过 |
+| `ThreeAuthorityReviewPlanCoordinatorTest`（含原因码映射） | 通过 |
+| `StudentMistakeStoreInstrumentedTest#trustedRevealedAnswerResponseCarriesFastReviewReasonCode` 1/1 | 通过 |
+
+### 仍未闭环
+
+- G04 仍缺真实 Provider/真实题面下的端到端证据；答案暴露快速复习已锁核心调度，真实复习会话端到端证据仍缺；考试目标跨日/DST 推进和真机验证未覆盖。
+
+## 2026-08-04 实施批次：复习提醒页 UI 打磨与截图验收
+
+### 已完成
+
+- `ReviewReminderScreen` 增加根语义锚点 `review_reminder_screen`，便于整屏截图与无障碍测试定位。
+- 三档复习节奏下方新增当前选择摘要：`当前：标准 · 约15分钟，最多5题`，并在选择加强后即时变为 `当前：加强 · 约25分钟，最多8题`。
+- 开关、时间、节奏、考试目标的保存入口统一在写操作前清除旧状态消息，避免上一次成功提示覆盖新的失败结果。
+- `ReviewReminderInstrumentedTest` 增加节奏摘要断言和截图输出；截图通过 shell `screencap` 写入模拟器公共下载目录，避免测试 APK 卸载后丢失。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:app:testLocalFirstDebugUnitTest :app:compileLocalFirstDebugAndroidTestKotlin :app:lintLocalFirstDebug` | 通过 |
+| `ReviewReminderInstrumentedTest` 1/1 | 通过 |
+| 截图 `review-reminder-preferences.png` | 已拉取；1080x2400，408 个采样点 11 种颜色，非纯白 |
+
+### 仍未闭环
+
+- 复习提醒页尚未覆盖 200% 字体、旋转和进程重建专项截图；答案暴露快速复习仍缺真实 Provider/真实题面端到端证据；考试目标跨日/DST 推进和真机验证未覆盖。
+
+## 2026-08-04 实施批次：knowledge-database 普通连接回归
+
+### 已完成
+
+- 在 API 36 模拟器上复跑 `:core:knowledge-database:connectedDebugAndroidTest`，覆盖真实 Room 目录、知识包安装/检索、审校上下文读取和生产运行时合同。
+- `KnowledgeRetrievalScaleInstrumentedTest#fiftyThousandNodeCatalogKeepsPublicRetrievalSurfacesBounded` 按设计跳过，需 `-PrunKnowledgeScaleBenchmark=true` 才进入 5 万节点发布门禁。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:knowledge-database:testDebugUnitTest` | 通过 |
+| `:core:knowledge-database:connectedDebugAndroidTest` | 通过，34 项完成、0 failed、2 skipped |
+
+### 仍未闭环
+
+- 5 万节点/100 万特征/25 万关系的 opt-in 门禁仍未在当前模拟器复跑；2 万知识点 P95 真机结论仍缺。
+
+## 2026-08-04 实施批次：复习提醒页 200% 字体与 D06 重放幂等
+
+### 已完成
+
+- `ReviewReminderInstrumentedTest` 新增 200% 字体场景：节奏摘要和时间仍可滚动到并完整显示，截图写入模拟器公共下载目录。
+- `LearnerMasteryStoreInstrumentedTest` 新增两个数据库重建后的重放幂等测试：
+  - `lifecycleRetirementReplayAfterDatabaseReopenStaysIdempotent`：首次 `TOMBSTONED` 退休后关闭数据库，重开并重放同一生命周期事件返回 `DUPLICATE`，投影保持为空，`mastery_learning_evidence_supersession` 行数不变。
+  - `revisionSupersessionReplayAfterDatabaseReopenStaysIdempotent`：首次 revision 替换退休后关闭数据库，重开并重放同一 supersession 事件返回 `DUPLICATE`，投影保持为空，替换头行数不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ReviewReminderInstrumentedTest` 2/2 | 通过 |
+| `LearnerMasteryStoreInstrumentedTest` 32/32 | 通过，0 failed、0 skipped |
+| 新增 `lifecycleRetirementReplayAfterDatabaseReopenStaysIdempotent` | 通过 |
+| 新增 `revisionSupersessionReplayAfterDatabaseReopenStaysIdempotent` | 通过 |
+| `:app:testLocalFirstDebugUnitTest :app:lintLocalFirstDebug` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| 截图 `review-reminder-font-200.png` | 已拉取；1080x2400，408 个采样点 17 种颜色，非纯白 |
+
+### 仍未闭环
+
+- 复习提醒页仍缺旋转和真实 Activity 进程重建专项截图；learner-mastery 100k 性能门禁、5 万节点知识门禁、2 万知识点 P95 真机、真实 Provider 和 2700 道真实题集仍未闭环。
+
+## 2026-08-04 实施批次：5 万节点知识门禁与复习提醒状态恢复
+
+### 已完成
+
+- 在 API 36 模拟器上执行 `:core:knowledge-database:connectedKnowledgeScaleBenchmark -PrunKnowledgeScaleBenchmark=true`。
+- 5 万节点/100 万搜索特征/25 万关系的知识检索发布门禁通过：`KnowledgeRetrievalScaleInstrumentedTest` 1/1，测试耗时 `841.4s`，0 failed、0 skipped。
+- 复习提醒页状态消息增加 `reminder_status_message` 测试锚点。
+- `ReviewReminderInstrumentedTest` 新增 `savedStatusAndPreferencesSurviveComposeStateRestoration`：通过 `StateRestorationTester` 模拟 Activity 重建，恢复后提醒时间和状态提示仍保留。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:knowledge-database:connectedKnowledgeScaleBenchmark -PrunKnowledgeScaleBenchmark=true` | 通过，1/1，841.4s |
+| `ReviewReminderInstrumentedTest` 3/3 | 通过 |
+| `savedStatusAndPreferencesSurviveComposeStateRestoration` | 通过 |
+| `:app:testLocalFirstDebugUnitTest :app:lintLocalFirstDebug` | 通过 |
+
+### 仍未闭环
+
+- learner-mastery 100k 原始快照摘要门禁仍需真机/更快环境；复习提醒页真实 Activity 旋转截图、2 万知识点 P95 真机、真实 Provider 和 2700 道真实题集仍未闭环。
+
+## 2026-08-04 实施批次：learner-mastery 原始快照摘要性能优化复跑
+
+### 已完成
+
+- 定位原始快照摘要热点：`sourceValidationMs` 占 10k 摘要总耗时的 99% 以上，单条快照的 AndroidKeyStore AES/GCM 解密与指纹校验是主要开销。
+- 快照 canonical fingerprint 改为预编译 `RAW_SNAPSHOT_CANONICAL_SCHEMA`，实体校验改用 `finishMatchesHex` 字节级比较，减少字段名重复编码和十六进制分配。
+- `AndroidKeystoreLearnerMasteryLegacyResponseSummaryCipher` 缓存 AndroidKeyStore 密钥句柄，并按线程复用 `Cipher` 实例。
+- 在模拟器复跑 10k 微门禁：`102,263.360 ms -> 91,745.031 ms`，仍未达到 15s 预算；`sourceValidationMs=90,694.721` 仍是瓶颈。
+- 掌握库普通回归 `LearnerMasteryStoreInstrumentedTest`、`LearnerMasteryLegacyResponseSummaryCipherInstrumentedTest`、`LearnerMasteryMigration16To17InstrumentedTest` 共 36/36 通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 10k 原始快照摘要复跑 | 91,745.031 ms，仍超 15s 预算 |
+| 优化前基线 | 101,210.569 ms（上轮记录） |
+| `sourceValidationMs` | 90,694.721 ms，占主导 |
+| 掌握库三类回归 36/36 | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+
+### 仍未闭环
+
+- 10k/100k 原始快照摘要门禁仍需 ARM 真机或更快环境；模拟器 AndroidKeyStore 解密成本使该门禁无法在当前模拟器通过。
+
+## 2026-08-04 实施批次：100k 不可变事件门禁与并行方案回滚
+
+### 已完成
+
+- 尝试将页面内快照解密/指纹校验改为 `Dispatchers.Default` 并行执行；触发 Room 事务上下文丢失，`Cannot perform this operation because there is no current transaction`，已回滚为顺序执行，保留密钥缓存、Cipher 复用和预编译 schema。
+- 单独复跑 `hundredThousandImmutableEventsMeetWarmQueryBudgets`：在 100k 事件真实 seed 完成后，`prepareProjectionRebuild` 耗时 `1,574.405 ms`，超过 `1,000 ms` 预算，模拟器未通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 并行校验方案 | 触发 Room 事务丢失，已回滚 |
+| 100k 不可变事件门禁 | 失败，foreground preparation 1574ms > 1000ms |
+| 回滚后代码 | 编译通过，顺序语义恢复 |
+
+### 仍未闭环
+
+- 100k 不可变事件重建/热查询门禁和 100k 原始快照摘要门禁仍需真机/更快环境；并行校验若在非事务路径复测，可另开任务评估。
+
+## 2026-08-04 实施批次：真实 Activity 旋转测试 harness 尝试
+
+### 已完成
+
+- 新增 `ReviewReminderActivityRotationInstrumentedTest`，用 `createAndroidComposeRule<MainActivity>` 导航到复习提醒、修改时间并触发 `scenario.recreate()`。
+- 在当前模拟器 harness 下，应用生产启动在 60 秒内未到达 `nav_profile`，测试无法稳定执行；已删除该失败用例，不保留未验证测试。
+- 状态恢复证据继续由已通过的 `savedStatusAndPreferencesSurviveComposeStateRestoration` 提供。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 真实 Activity 旋转测试 | 被 harness 启动阻塞，已删除 |
+| `StateRestorationTester` 状态恢复 | 通过 |
+
+### 仍未闭环
+
+- 真实 Activity 旋转/进程重建截图仍需可完成生产启动的仪器环境或真机；当前 `StateRestorationTester` 是可用替代证据。
+
+## 2026-08-04 实施批次：ReviewHomeScreen Compose 仪器测试与截图
+
+### 已完成
+
+- `feature:review` 补齐 androidTest 依赖：Compose ui-test、androidx.test runner、ui-test-manifest，并启用 core library desugaring。
+- 新增 `ReviewHomeScreenInstrumentedTest`，覆盖真实 `ReviewHomeScreen` 内容态和不可用态：
+  - 内容态验证题量/分钟/进度的语义描述、主按钮可点击并触发回调。
+  - 不可用态验证“暂时无法使用”与“重试”，且不暴露开始复习主按钮。
+- 新增 200% 字体测试：题量/进度语义和主按钮在大字体下仍可滚动到并完整显示。
+- 新增真实 `ReviewHomeState.Ready` 计划映射测试：用含 5 题/2 完成/剩余 900 秒的真实计划对象走 `reviewLandingState` 渲染，验证题量、分钟和进度。
+- 四张截图写入模拟器公共下载目录并拉取：`review-home.png`、`review-home-unavailable.png`、`review-home-font-200.png`、`review-home-ready.png`。
+- 核验 `SmartMistakeBookTheme` 当前只有 `lightColorScheme`，未实现深色模式，因此不伪造深色截图。
+- 按 `simplify-code-review-and-cleanup` 三轮审查，抽取 `contentState()` helper，消除两处重复内容态构造。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ReviewHomeScreenInstrumentedTest` 4/4 | 通过 |
+| `:feature:review:connectedDebugAndroidTest` | 通过 |
+| `:feature:review:testDebugUnitTest :feature:review:lintDebug` | 通过 |
+| `review-home.png` | 1080x2400，408 采样点 9 色，非纯白 |
+| `review-home-unavailable.png` | 1080x2400，408 采样点 2 色，非纯白 |
+| `review-home-font-200.png` | 1080x2400，408 采样点 7 色，非纯白 |
+| `review-home-ready.png` | 1080x2400，408 采样点 4 色，非纯白 |
+
+### 仍未闭环
+
+- 复习首页仍缺旋转/进程重建，以及从真实生产数据库计划对象到完整长程页面的截图；当前 `review-home-ready.png` 是真实领域对象到 UI 的映射证据，不是真实数据库端到端截图。主题当前无深色模式实现，深色验收属于待实现项。
+
+## 2026-08-04 实施批次：全量本地 JVM 单元测试与 lint 回归
+
+### 已完成
+
+- 在当前改动基础上执行全量本地回归，覆盖 `core:model`、`core:learner-mastery-database`、`core:student-mistake-database`、`core:data`、`core:knowledge-database`、`feature:review` 与 `app`。
+- 验证结果：全部单元测试与 lint 通过，`BUILD SUCCESSFUL`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:knowledge-database:testDebugUnitTest` | 通过 |
+| `:app:testLocalFirstDebugUnitTest :app:lintLocalFirstDebug` | 通过 |
+| `:feature:review:testDebugUnitTest :feature:review:lintDebug` | 通过 |
+
+### 仍未闭环
+
+- 该回归只覆盖 JVM 与 lint；模拟器/真机仪器门禁仍以单独的 connected 结果为准，100k 性能门禁和真实 Provider/真实题集仍需外部条件。
+
+## 2026-08-04 实施批次：tools/tests Python 治理测试
+
+### 已完成
+
+- 使用 Codex bundled Python 运行时执行 `python -m unittest discover -s .\tools\tests -v`。
+- 覆盖课程覆盖率、数据库边界、正式知识包编译器、正式发布登记、通用化审计、留出隔离、来源治理、教学来源与可视化候选清单。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `tools/tests` Python 治理测试 | 130/130 通过，耗时 125.9s |
+
+### 仍未闭环
+
+- 治理测试通过不等于正式九科知识包人工审校或 2700 道真实题集完成；这些仍以独立人工/外部 Provider 证据为准。
+
+## 2026-08-04 实施批次：app 全量 connected 复跑与修复
+
+### 已完成
+
+- 复跑 `:app:connectedLocalFirstDebugAndroidTest`，最终 23/23 通过。
+- 修复 `ReviewReminderInstrumentedTest` 权限竞态：授权 shell 后轮询确认 `canPostReviewNotifications()` 再进入 UI；该测试单独复跑 3/3 通过。
+- 定位 `MainActivityReviewIntentInstrumentedTest` 根因：`MainActivity` 在消费意图时改写 `intent`，导致 `ActivityScenario` 生命周期跟踪失效。
+- 简化 `MainActivity`：不再移除 `EXTRA_OPEN_REVIEW` 或清空 action，不重复消费由 `savedInstanceState == null` 保证；删除与 ActivityScenario 冲突的冗余仪器测试，策略继续由 `ReviewOpenRequestPolicyTest` 单元覆盖。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| app 全量 connected | 23/23 通过 |
+| `ReviewReminderInstrumentedTest` 3/3 | 通过 |
+| `:app:testLocalFirstDebugUnitTest :app:lintLocalFirstDebug` | 通过 |
+| `ReviewOpenRequestPolicyTest` | 通过 |
+
+### 仍未闭环
+
+- 复习提醒意图消费策略已由单元测试覆盖；真实 ActivityScenario 自定义 Intent 测试因与 `MainActivity` 生命周期跟踪冲突而移除，不保留不可信 harness 结果。
+
+## 2026-08-04 实施批次：learner-mastery 普通 connected 全量回归
+
+### 已完成
+
+- 排除 `LearnerMasteryScalePerformanceInstrumentedTest` 后执行 `:core:learner-mastery-database:connectedDebugAndroidTest`。
+- 覆盖掌握库真实 Room、迁移、跨库事件、投影、认证、展示读口和生命周期/修订退休语义。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| learner-mastery 普通 connected | 82/82 通过，0 failed、0 skipped |
+
+### 仍未闭环
+
+- `LearnerMasteryScalePerformanceInstrumentedTest` 的 100k 原始快照摘要和 100k 不可变事件门禁仍按既有记录等待真机/更快环境复跑。
+
+## 2026-08-04 实施批次：学习掌握页时间范围状态重建
+
+### 已完成
+
+- `LearningMasteryScreenInstrumentedTest` 新增 `selectedTimelineRangeSurvivesComposeStateRestoration`。
+- 通过 `StateRestorationTester` 模拟 Activity 重建，验证 7/30 天切换选择在重建后仍保持 30 天，且趋势图仍可见。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `LearningMasteryScreenInstrumentedTest` 5/5 | 通过 |
+| 新增 `selectedTimelineRangeSurvivesComposeStateRestoration` | 通过 |
+| `:app:lintLocalFirstDebug` | 通过 |
+
+### 仍未闭环
+
+- H03 仍缺真实生产数据长程截图、真实 Activity 旋转/进程重建和真机大字体验证；7/30 天范围的状态重建已由 `StateRestorationTester` 锁定。
+
+## 2026-08-04 实施批次：student-mistake-database connected 全量回归
+
+### 已完成
+
+- 定位 `StudentCanonicalCaptureIdentityInstrumentedTest` 两处 `student_store_outbox` 断言与生产合同不一致：
+  - `exactAssetSelectionAcrossIntentsReusesCanonicalIdentityAndAppendsOnlyOccurrences`：原子捕获路径在 `persistResolvedAtomicCaptureTarget` 使用 `publishRevisionToMastery = false`，同一资产重复意图只追加 occurrence，不向掌握库发 revision outbox；断言从 2 改为 0。
+  - `reviewedAliasCreatesSecondRevisionUnderStableIdentityWithoutMasteryOrReviewWrites`：reviewed alias 第二 revision 本身不发掌握事件，但测试前显式调用 `setProblemLifecycle(ARCHIVED)`，生产路径发出 `ProblemLifecycleChangedV1` + `ProblemKnowledgeBindingsSnapshotV2` 两条 outbox；断言从 0 改为 2，并加注释说明来源。
+- 未改动生产代码；学生库现有 `saveStudentCaptureOccurrence` 的原子捕获语义即为“只追加 occurrence，掌握写入由后续分类绑定/生命周期事件驱动”。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 两个失败用例定向复跑 | 2/2 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` 全量 | 73/73 通过，0 failed、0 skipped，耗时 2m47s |
+
+### 仍未闭环
+
+- 该回归覆盖学生库真实 Room、迁移、身份、outbox 与生命周期/修订事件；100k 掌握库性能门禁、真实 Provider 与 2700 道真实题集仍按既有记录等待外部条件。
+
+## 2026-08-04 实施批次：深色模式主题与全 UI 回归
+
+### 已完成
+
+- `SmartMistakeBookTheme` 新增 `darkTheme` 参数，默认跟随 `isSystemInDarkTheme()`。
+- 新增 `SmartDarkColors` 与 `SmartPalette`/`LocalSmartPalette`，把 `Paper/Ink/Jade/...` 全部升级为 `@Composable get()` 的 CompositionLocal token；既有 UI 中 900+ 处 token 调用自动跟随深色主题，不需要逐屏写死第二套颜色。
+- 修正 `core/ui` 四个动态渲染器在 DrawScope/remember 等非可组合上下文中的 token 使用，改为先取色再进 Canvas，并让 Markdown 解析器的代码块底色可传主题值。
+- 新增 `app/src/main/res/values-night/themes.xml`，深色状态栏/导航栏颜色与 Compose 背景一致。
+- 新增 `DarkPaletteContrastTest`：深色 Ink/InkSecondary/Jade/ErrorWarm 等核心配对对比度门槛锁定。
+- 新增两个真实 Compose 深色仪器用例：
+  - `ReviewHomeScreenInstrumentedTest.darkThemeUsesDarkPaletteAndRendersReviewHome`
+  - `LearningMasteryScreenInstrumentedTest.darkThemeUsesDarkPaletteAndRendersLearningMastery`
+- 新增系统配置跟随用例：`ReviewHomeScreenInstrumentedTest.systemDarkConfigurationIsHonoredByDefaultTheme`，无参 `SmartMistakeBookTheme()` 在 `LocalConfiguration` 注入夜间模式后使用深色 token。
+- 新增复习提醒页深色用例：`ReviewReminderInstrumentedTest.darkThemeRendersReminderScreenAndCapturesScreenshot`。
+- 新增真实系统深色切换用例：`ReviewReminderSystemDarkModeInstrumentedTest` 用 `cmd uimode night yes` 切到系统深色，启动真实 harness Activity 并断言 `MaterialTheme.colorScheme.background == SmartDarkColors.Paper`。
+- 新增错题本根页深色用例：`LibraryBatchExportEntryInstrumentedTest.darkThemeRendersLibraryRootAndCapturesScreenshot`，拉取 `library-home-dark.png`。
+- 新增真实 Activity 重建用例：`ReviewReminderActivityRecreationInstrumentedTest`，用 debug harness + `ActivityScenario.recreate()` 验证重建后 `ReminderScreen` 仍保留提醒时间和节奏摘要，并拉取重建前/后截图。
+- 拉取并采样三张深色截图：`review-home-dark.png`、`review-reminder-dark.png`、`learning-mastery-dark.png`，背景采样均为 `#111B1D`，非空且多色。
+- 补齐 `feature:capture`、`feature:library`、`feature:profile`、`core:visual-ui` 的 core library desugaring 配置。
+- `TutorVisualMaterialRepository` 的 `Files.move` 改为同目录 `renameTo` + 拷贝回退，消除 API 23 lint 的 9 个 NewApi 错误。
+- `TutorVisualDocumentInstrumentedTest` 改为显式注入带 `TutorVisualProvenanceReport` 的 `CompiledTutorVisualDocument`，与生产“必须可展示 provenance 才渲染”的 fail-closed 语义对齐。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:ui:testDebugUnitTest` | 通过 |
+| `:core:visual-ui:testDebugUnitTest` | 通过 |
+| `:feature:review:connectedDebugAndroidTest` | 6/6 通过 |
+| `:app:connectedLocalFirstDebugAndroidTest` | 27/27 通过 |
+| `ReviewReminderActivityRecreationInstrumentedTest` 真实 Activity 重建 | 1/1 通过，`review-reminder-activity-before.png` / `review-reminder-activity-recreated.png` 已拉取 |
+| `ReviewReminderSystemDarkModeInstrumentedTest` 真实系统深色切换 | 1/1 通过，`review-reminder-system-dark.png` 已拉取，像素采样 `#111B1D` |
+| `:feature:tutor:connectedDebugAndroidTest` | 79/79 通过 |
+| `:feature:library:connectedDebugAndroidTest` | 35/35 通过（含错题本根页深色截图） |
+| `:feature:capture:connectedDebugAndroidTest` | 23/23 通过 |
+| `:core:visual-ui:connectedDebugAndroidTest` | 6/6 通过 |
+| 深色截图 `review-home-dark.png` / `review-reminder-dark.png` / `learning-mastery-dark.png` | 1080x2400，背景 `#111B1D`，非空多色 |
+| 受影响模块 lint | `core:ui`、`core:visual-ui`、`feature:capture/library/profile/review/tutor`、`app:lintLocalFirstDebug` 全部通过 |
+| 受影响模块 JVM 单测 | 全部通过 |
+
+### 仍未闭环
+
+- 深色模式已打通主题 token 与代表页面证据；完整四根页/二级页逐页深色截图、真实系统深色切换后的长程人工目检、真机深色对比仍是阶段 8 剩余视觉验收。
+- 真实 Activity 重建截图已闭环；真实旋转方向切换仍受 headless 模拟器 Compose harness 限制，`StateRestorationTester` 继续作为旋转状态恢复的可用证据。
+- learner-mastery 100k 性能门禁、真实 Provider、2700 道真实题集继续等待外部条件。
+
+## 2026-08-04 实施批次：learner-mastery 100k foreground 优化尝试
+
+### 已完成
+
+- 把 `prepareProjectionRebuild` 中的全量校准绑定校验移到 `runLeasedProjectionRebuildChunk` 首个 chunk：foreground 不再扫描 100k 事件校准绑定，校验失败仍会在 `rebuildDerivedStateChunk()` 返回 `RESET + blockedReason`。
+- 保留生产语义：`projectionRebuildBlocksBeforeResetWhenHistoricalCalibrationIsUnknown` 定向仪器用例通过，JVM 单测通过，learner-mastery 普通 connected 82/82 通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，83/83 |
+| `projectionRebuildBlocksBeforeResetWhenHistoricalCalibrationIsUnknown` | 通过 |
+| learner-mastery 普通 connected（排除 ScalePerformance） | 82/82 通过 |
+| 100k 不可变事件 foreground | 模拟器复跑 5652ms，仍超 1000ms 预算，未作为通过证据 |
+
+### 仍未闭环
+
+- 模拟器 foreground 仍超过 1s 预算；真实瓶颈包含 100k 行计数与元数据/世代决策，需更快环境或真机复跑，不能把该优化记为门禁通过。
+
+## 2026-08-04 实施批次：讲题与我的根页深色截图闭环
+
+### 已完成
+
+- 新增 `TutorLobbyRouteInstrumentedTest.darkThemeRendersTutorLobbyRootAndCapturesScreenshot`，用真实 `SmartMistakeBookTheme(darkTheme = true)` 渲染讲题根页，断言 `MaterialTheme.colorScheme.background` 与 `Paper` 均为 `SmartDarkColors.Paper`，并拉取 `tutor-home-dark.png`。
+- 复跑 `:feature:tutor:connectedDebugAndroidTest` 全量：80/80 通过，0 failed、0 skipped。
+- 新增 `ReviewContinuityInstrumentedTest.darkThemeRendersProfileRootAndCapturesScreenshot`，复用现有 `ProfileRoute` fixture 渲染“我的”根页，断言深色背景/Paper token 与 `profile_screen`、`profile_subject_mastery` 锚点，并拉取 `profile-home-dark.png`。
+- 复跑 `:app:connectedLocalFirstDebugAndroidTest` 全量：28/28 通过，0 failed、0 skipped。
+- 对两张新截图做尺寸与网格像素采样：`tutor-home-dark.png` 与 `profile-home-dark.png` 均为 1080x2400，背景采样 `#111B1D`，非空且多色。
+- 同步 `task_plan.md` 深色验收行：四根页深色截图证据覆盖复习首页/复习提醒页/学习掌握页/错题本根页/讲题根页/我的根页。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 80/80 通过，0 failed、0 skipped，耗时 8m02s |
+| `:app:connectedLocalFirstDebugAndroidTest` 全量 | 28/28 通过，0 failed、0 skipped，耗时 3m14s |
+| `tutor-home-dark.png` | 1080x2400，背景采样 `#111B1D`，非空多色 |
+| `profile-home-dark.png` | 1080x2400，背景采样 `#111B1D`，非空多色 |
+| `task_plan.md` 深色验收行 | 已同步四根页深色截图与 80/80、28/28 结果 |
+
+### 仍未闭环
+
+- 四根页深色截图均已闭环；真实系统深色切换后的长程人工目检、真机深色对比仍是阶段 8 剩余视觉验收。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：D07 学习记录可读文本导出
+
+### 已完成
+
+- 新增 `core/ui/LearningMasteryLabels.kt`：把 `LearningMasteryStatus` 与 `LearningMasterySubject` 的学生语言标签提升为共享函数，并删除 `LearningMasteryScreen.kt`、`ProductionProfileRoute.kt` 中的两套重复实现。
+- 新增 `LearningMemoryExport.kt`：
+  - `buildLearningMemoryExport` 生成可读文本：科目、掌握状态、知识点路径与状态，默认按概览科目顺序。
+  - 导出知识点上限为 5000 条，超过上限时明确写出“已包含前 N 条”，后续科目显示“已省略”，不误报“暂无”。
+  - `loadLearningMemoryExport` 从真实 `LearningMasteryDisplayRepository` 分页读取每个科目的知识点，返回 `LearningMemoryExportLoadResult.Ready/Unavailable`，明确区分可导出与暂时不可导出，不再把失败误报为“没有记录”。
+- `StorageScreen` 新增“导出学习记录”按钮：
+  - 使用 `ActivityResultContracts.CreateDocument` 让用户选择保存位置，写入 UTF-8 文本。
+  - 能力不可用时显示“暂时无法导出学习记录”；保存成功显示“学习记录已导出”；取消显示“已取消导出”。
+- `SmartMistakeBookRoot` 将生产 `tutorMasteryAndProfile.learningMasteryDisplay` 接入存储页。
+- 新增 `LearningMemoryExportTest` 4 项 JVM 单测：学生语言与科目顺序、5000 条上限与省略提示、分页读取每个概览科目、空概览返回不可用。
+- 新增 `StorageScreenInstrumentedTest`：验证能力缺失时按钮可点击并给出学生语言状态，且不暴露内部术语。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:app:testLocalFirstDebugUnitTest --tests LearningMemoryExportTest` | 4/4 通过，0 failed、0 errors |
+| `:app:connectedLocalFirstDebugAndroidTest` 全量 | 29/29 通过，0 failed、0 skipped，耗时 3m56s |
+| `StorageScreenInstrumentedTest` | 1/1 通过 |
+| `:app:testLocalFirstDebugUnitTest :feature:profile:testDebugUnitTest :core:ui:testDebugUnitTest :app:lintLocalFirstDebug` | 全部通过 |
+| `core/ui` 共享标签 | `LearningMasteryScreen.kt` 与 `ProductionProfileRoute.kt` 已移除重复 private 实现 |
+
+### 仍未闭环
+
+- D07 保持“部分落实”：学习记录导出已闭环；当时数据库级清除尚未实现，下一批次已补齐。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：D07 数据库级清除学习记录
+
+### 已完成
+
+- 新增 `LearnerMasteryErase.kt`：在 `Transactor` 上显式卸载全部触发器、清空掌握库应用表（保留 Room/系统元数据表），随后关闭并重开数据库，让 `onOpen` 重装同一套守卫与 outbox 密钥状态。
+- `LearnerMasteryStore` / `LearnerMasteryAuthority` 新增 `eraseAllLearnerData()`；`RoomLearnerMasteryStore` 在清除前取消投影重建子任务，清除后通过 `reopenDatabase` 工厂重建数据库。
+- 新增 `LearningMasteryPrivacyRepository` 领域端口与 `LearnerMasteryEraseCapability`，从 learner-mastery runtime 穿过 `LocalLearningAuthorityRuntime`、`CurrentGenerationProductionOwnerPorts`、`TutorMasteryAndProfileProductionCapability` 到达 app，不把数据库对象暴露给 UI。
+- `DataPrivacyScreen` 新增“清除学习记录”按钮和确认对话框：确认后调用生产隐私仓库，成功后显示“学习记录已清除”，失败显示可重试文案；同时说明不会删除错题本里的题目。
+- 新增 `LearnerMasteryStoreInstrumentedTest.explicitEraseClearsAllLearnerRowsAndReinstallsGuards`：写入真实掌握证据后执行清除，验证投影归零且清除后仍可写入新数据。
+- 新增 `DataPrivacyScreenInstrumentedTest`：点击“清除学习记录”并确认后，验证领域隐私仓库真实被调用并显示成功状态。
+- 顺手修复 learner-mastery lint 中已有的 API 23 问题：`tokens.removeLast()`、三处 `String.codePoints()`、两处 `RoomDatabase.useConnection` RestrictedApi。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过，包含能力边界合同更新 |
+| `LearnerMasteryStoreInstrumentedTest#explicitErase...` | 1/1 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 全量 | 83 项中 1 项迁移用例报 `database is locked`，单独复跑该迁移用例 1/1 通过，判定为模拟器偶发锁而非逻辑回归 |
+| `LearnerMasterySchemaMigrationInstrumentedTest#migration9To10...` 单独复跑 | 1/1 通过 |
+| `:app:connectedLocalFirstDebugAndroidTest` | 30/30 通过，0 failed、0 skipped |
+| `:app:lintLocalFirstDebug` | 通过 |
+| `:core:learner-mastery-database:lintDebug` | 通过 |
+| `:core:data:lintDebug` | 仍有 27 个既有错误（Base64、codePoints、useConnection、缩进等），均不在本批新增文件中 |
+
+### 仍未闭环
+
+- D07 在下一批次补齐统一脱敏器和生产日志治理门后已整体闭环，不再保持“部分落实”。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：D07 诊断日志脱敏与完成
+
+### 已完成
+
+- 新增 `DiagnosticRedactor`：统一提供 `redactId` 与 `redactMessage`，任何诊断字符串都不会保留原始 opaque id 或敏感值。
+- 新增 `DiagnosticRedactorTest`：覆盖 opaque id 始终显示 `[REDACTED]`，以及嵌入组合消息中所有敏感值都被替换。
+- 新增 `tools/tests/test_diagnostic_redaction.py` 治理门：
+  - 扫描 `app`、`feature`、`core` 全部生产 `src/main`，禁止 `android.util.Log`、`System.out/err`、`println`、`printStackTrace`。
+  - 检查 `DiagnosticRedactor` 源码不包含原始字段名，并保留 `[REDACTED]` 标记。
+- 使用 README 固定的 bundled document Python（CPython 3.12.13 + 锁定依赖）复跑 `tools/tests`：132/132 通过。
+- 复跑 `:core:domain:test`：通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `DiagnosticRedactorTest` | 2/2 通过 |
+| `:core:domain:test` | 通过 |
+| `tools/tests`（bundled Python） | 132/132 通过，耗时 121.7s |
+| 生产日志扫描 | 无 `Log`/`println`/`System.out`/`System.err` 命中 |
+
+### 状态
+
+- D07 四项验收均已闭环：删除可验证、导出可读、模型请求最小化、诊断日志脱敏。
+- D07 已从“部分落实”更新为“完成”。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：H04 我的页面整体信息层级
+
+### 已完成
+
+- 为生产“我的”根页的“查看学习掌握”入口新增 `profile_open_learning_mastery` 测试锚点。
+- 新增 `ProductionProfileHomeInstrumentedTest`：
+  - 用完整生产 adapter manifest 和真实 `LearningMasteryDisplayRepository` 假实现渲染 `ProductionProfileHomeRoute`。
+  - 断言“学习掌握”先于“设置”，数学/物理与状态标签可见。
+  - 点击“查看学习掌握”和模型/数据与隐私/提醒/存储四个入口，验证回调各触发一次。
+- 更新 `task_plan.md` 与 `implementation_work_packages.md`：H04 标记为完成。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ProductionProfileHomeInstrumentedTest` | 1/1 通过 |
+| `:app:connectedLocalFirstDebugAndroidTest` | 31/31 通过，0 failed、0 skipped |
+
+### 状态
+
+- H04 已从“待开始”更新为“完成”。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：A08 生产能力诚实与信息密度
+
+### 已完成
+
+- 新增 `tools/tests/test_production_ui_honesty.py` 治理门：
+  - 扫描 `app`、`feature`、`core` 全部生产 `src/main`。
+  - 禁止空 `onClick = {}`、空 `Unit` 回调和“敬请期待/即将支持/后续版本/以后再说/永久禁用/暂时禁用/功能预留/占位”等假能力文案。
+- 使用 README 固定的 bundled document Python 复跑 `tools/tests`：133/133 通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ProductionUiHonestyGovernanceTest` | 1/1 通过 |
+| `tools/tests`（bundled Python） | 133/133 通过，耗时 141.2s |
+
+### 状态
+
+- A08 已从“待开始”更新为“完成”。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 TutorTasks 视觉校验拆分
+
+### 已完成
+
+- 将 `core/model/TutorTasks.kt` 中的视觉场景校验函数抽离到新的 `TutorSceneValidation.kt`：
+  - `requireTutorSceneHeader`
+  - `requireTutorSceneId`
+  - `requireTutorSceneFormula`
+  - `requireTutorSceneText`
+  - `requireUniqueTutorSceneIds`
+  - `requireTutorSceneTextBudget`
+  - 对应 HTML/代码/链接/图片/URL 正则
+- 保持同一包内 `internal` 可见性，不改变任何外部行为。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 从“待开始”更新为“部分落实”：首个模型层巨型文件拆分完成并回归通过；后续继续拆 Compose/DAO/网关文件。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 模型网关文本请求预算拆分
+
+### 已完成
+
+- 将 `OpenAiCompatibleModelGateway.kt` 中的 `OpenAiTextRequestMeasurement` 与 `OpenAiTextRequestBudget` 抽离到新的 `OpenAiTextRequestBudget.kt`。
+- `serializeZeroImageRequestForBudget` 继续保留在网关中，因为它依赖协议对象；网关文件行数进一步下降。
+- 保持同一包内 `internal` 可见性，不改变任何外部行为。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:test` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层与模型网关各完成一次拆分，后续继续拆 Compose/DAO/网关文件。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 模型网关 JSON 解析辅助拆分
+
+### 已完成
+
+- 将 `OpenAiCompatibleModelGateway.kt` 中的 JSON 安全解析辅助抽离到新的 `OpenAiJson.kt`：
+  - `optionalString` / `optionalInt` / `optionalDouble`
+  - `optionalFiniteDouble` / `requiredFiniteDouble`
+  - `requiredPrimitiveString` / `requiredBoolean`
+  - `requiredRegion` / `optionalRegion` / `toRegion`
+  - `NormalizedSourceRegion.isValidRegion` / `contains`
+  - `enumValue`
+  - `InvalidModelResponseException`
+- `requireOnlyKeys` 保持同包 `internal`，供 JSON 辅助与新文件共同使用。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:test` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析共完成三处拆分。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 CaptureScreen 采集策略拆分
+
+### 已完成
+
+- 将 `CaptureScreen.kt` 底部的采集策略纯函数与常量抽离到新的 `CaptureScreenPolicy.kt`：
+  - `CaptureAcquisitionPurpose` / `CaptureResultAction`
+  - `captureResultAction` / `retakeAcquisitionPurpose`
+  - `prepareCaptureCommitAttempt`
+  - `resumeAssessmentRequestId` / `resumeParseRequestId`
+  - `suggestCaptureTitle` / `shouldAutoPersistCapture`
+  - `MAX_CAPTURE_TITLE_CHARS` / `MAX_CAPTURE_SOURCE_PAGES`
+- 保持同包 `internal` 可见性，行为不变；`CaptureWorkspacePolicy.kt` 继续引用同一标题策略。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:capture:testDebugUnitTest` | 通过 |
+| `:feature:capture:connectedDebugAndroidTest`（模拟器 API 36，端口 5558） | 通过，23/23 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略共完成四处分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 ModelTasks 指纹与校验拆分
+
+### 已完成
+
+- 将 `core/model/ModelTasks.kt` 的模型任务指纹与外部授权辅助抽离到新的 `ModelTaskFingerprint.kt`：
+  - `ModelTaskFingerprint` / `ModelTaskLogicalOperationFingerprint`
+  - `ModelEgressAuthorizationId`
+  - 历史兼容指纹、legacy 字段清洗与共享 SHA-256 辅助
+- 将文本安全校验与模型区域校验抽离到新的 `ModelTaskValidation.kt`：
+  - `NormalizedSourceRegion.isValidModelRegion`
+  - `Char.isLowerHexDigit`
+  - `String.requireSafeModelText` / `requireSafeTutorStudentMessage`
+  - `Char.isForbiddenModelTextCharacter`
+- `ModelTasks.kt` 从 1459 行降至 1270 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test` | 通过 |
+| `:core:model-provider:test` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验共完成六处分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 TutorTasks 本地策略与校验拆分
+
+### 已完成
+
+- 将 `core/model/TutorTasks.kt` 的讲题本地约束策略抽离到新的 `TutorTaskLocalPolicy.kt`：
+  - `studentAuthorizedSolutionRequest` / `authorizesSolutionExposure`
+  - `TutorRespondOutput.canExposeSolutionFor` / `locallyConstrainedFor`
+  - `TutorPlanOutput.locallyConstrainedFor`
+  - 确定性答案声明检测、本地引导交互与 `GUIDED_INTERACTION_MESSAGE` / `GUIDED_FREE_RESPONSE_PROMPT`
+- 将 `TutorTasks.kt` 的讲题文本校验抽离到新的 `TutorTaskValidation.kt`：
+  - `requireTutorMarkdown` / `requireTutorRespondText`
+- `TutorTasks.kt` 从 1353 行降至 1115 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:test` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验共完成八处分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 LearnerMasteryDao 合同拆分
+
+### 已完成
+
+- 将 `core/learner-mastery-database/.../LearnerMasteryDao.kt` 顶部的 DAO 支持合同抽离到新的 `LearnerMasteryDaoContracts.kt`：
+  - Room 行映射：`MasteryBandCountRow`、`MasteryTimelineRow`、`MasteryEventAttributionReplayRow`、展示/重建/预算行
+  - 重建游标与进度：`MasteryProjectionRebuildCursor` / `MasteryProjectionRebuildProgress` 及各类 replay key
+  - 轮转焦点：`roundRobinDistinctFocus`
+  - 证据回放：`MasteryLearningEventEntity.replayCursor` / `replayRow`
+  - 开放回答与授权辅助：`expectedOpenResponseRetryState`、`expectedOpenResponseAssistance`、`bindingAuthorityStateDisposition`
+  - 常量与预算指纹 chunk size
+- `LearnerMasteryDao.kt` 从 8579 行降至 8047 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同共完成九处分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 StudentMistakeDao 合同拆分
+
+### 已完成
+
+- 将 `core/student-mistake-database/.../StudentMistakeDao.kt` 顶部的 DAO 合同抽离到新的 `StudentMistakeDaoContracts.kt`：
+  - 库房/检索/分类 SQL 常量
+  - 提交题、分类、复习队列/会话、迁移与 inbox 的 bundle
+  - 行映射与快照：`StudentMistakeLibraryListRow`、`StudentMistakeLibraryDetailRow`、facet、复习候选等
+  - `FutureUnreadyReviewQueueItem` 等 DAO 内部辅助
+- `StudentMistakeDao.kt` 从 7200 行降至 6635 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，73/73 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同、StudentMistakeDao 合同共完成十分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 StudentMistakeDao 支持辅助拆分
+
+### 已完成
+
+- 将 `core/student-mistake-database/.../StudentMistakeDao.kt` 底部的 DAO 支持辅助抽离到新的 `StudentMistakeDaoSupport.kt`：
+  - 幂等比较：problem/outbox/handoff/classification
+  - 迁移 checkpoint、review candidate 证据引用、会话拥有权
+  - `reviewPresentationId`、`transitionUnreadyAuditReasonCode`
+  - 滚动复习时长估算与相关常量
+- `StudentMistakeDao.kt` 进一步降至 6407 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，73/73 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同、StudentMistakeDao 合同、StudentMistakeDao 支持辅助共完成十一分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 LearnerMastery 投影指纹拆分
+
+### 已完成
+
+- 将 `core/learner-mastery-database/.../LearnerMasteryDao.kt` 的投影生成指纹、方向预算输入/输出指纹、稳定键与 UTF-8 游标编解码抽离到新的 `LearnerMasteryProjectionFingerprints.kt`：
+  - `projectionGenerationFingerprint`
+  - `directionalBudgetInputSeedFingerprint` / `extendDirectionalBudgetInputFingerprint`
+  - `directionalBudgetOutputSeedFingerprint` / presentation / family 输出指纹
+  - `directionalStableKey` / `decodeDirectionalBudgetCursor`
+  - `uppercaseUtf8Hex` / `decodeCanonicalUtf8Hex`
+- `LearnerMasteryDao.kt` 从 8074 行降至 7838 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，84/84 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同、StudentMistakeDao 合同、StudentMistakeDao 支持辅助、LearnerMastery 投影指纹共完成十二分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 LearnerMastery 投影支持拆分
+
+### 已完成
+
+- 将 `core/learner-mastery-database/.../LearnerMasteryDao.kt` 剩余的底部投影支持抽离到新的 `LearnerMasteryProjectionSupport.kt`：
+  - 校准绑定、投影重建进度编解码
+  - 模型提交/惰性/准入/证据复核/证据替换收据
+  - 投影指纹、证据维度、replay key、迁移 identity
+  - 事件应用指纹与 learner-mastery → student-mistakes outbox
+- `LearnerMasteryDao.kt` 从 7836 行降至 7211 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，84/84 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同、StudentMistakeDao 合同、StudentMistakeDao 支持辅助、LearnerMastery 投影指纹、LearnerMastery 投影支持共完成十三分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 OpenAiWireKeys 拆分
+
+### 已完成
+
+- 将 `core/model-provider/.../OpenAiCompatibleModelGateway.kt` 的协议 wire-key 白名单抽离到新的 `OpenAiWireKeys.kt`：
+  - Tutor Plan/Respond/Lobby/Intent/Visual 全套 wire keys
+  - 视觉文档、空间图、运动图、表达式、表格等受控字段集合
+  - `TUTOR_VISUAL_DOCUMENT_JSON` 配置
+- `OpenAiCompatibleModelGateway.kt` 从 2862 行降至 2710 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:test` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同、StudentMistakeDao 合同、StudentMistakeDao 支持辅助、LearnerMastery 投影指纹、LearnerMastery 投影支持、OpenAiWireKeys 共完成十四分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：复习观测到掌握投影的闭环修复
+
+### 已完成
+
+- 定位并修复真实闭环缺口：`ReviewObservationCapturedV2` 经 relay 进入 learner-mastery 时，authority 原先不携带知识绑定，且 `deferSavedAttribution=true` 会在绑定非空时只存事实、不落候选，导致复习结果永远不更新掌握投影。
+- 生产修复：
+  - `LearnerMasteryStore` 新增 `readAuthorizedProblemKnowledgeBindings`，从当前 `mastery_problem_binding_authority_state` 关联的 inbox payload 解码 V2 binding snapshot；
+  - `RoomLearnerMasteryAuthority` 在处理复习观测时回读绑定并传入 `toLearningObservationFacts`；
+  - 绑定已授权时 `deferSavedAttribution=false`，直接创建带 `DIRECT` 归因的本地可信候选并进入投影。
+- 新增真实 Room 仪器用例 `reviewObservationProjectsIntoSameSubjectMasteryContextAndImprovesAfterCorrectRetry`：
+  - 一次独立错误后 exact mastery context 进入 `NEEDS_REINFORCEMENT`；
+  - 连续五次独立正确后 subject digest 出现最近正向证据，且 distinct presentation count ≥ 5；
+  - 同科上下文读取仍返回同一 exact 知识点。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| 定向 `LearnerMasteryStoreInstrumentedTest#reviewObservationProjectsInto...` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，84/84 |
+
+### 状态
+
+- D05/D06 继续“部分落实”，但复习观测 → 掌握投影这条关键生产链路已真实闭环并被真实 Room 测试锁定。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：D04 状态核验与 DAO 导入清理
+
+### 已完成
+
+- 核验 D04 细粒度能力证据账本的真实链：题目步骤/原子知识归因、独立/提示后/答案暴露/重试/时间字段、幂等/冲突/修订退休/历史题面绑定和纯讲解不写掌握均有领域、数据与讲题测试覆盖。
+- `implementation_work_packages.md` D04 从“待开始”更新为“部分落实”；真实 Provider 端到端证据与完整校准仍待外部验收。
+- 清理 `LearnerMasteryDao.kt` 在合同抽取后遗留的 `ColumnInfo`、`OpenResponseEvaluationOutcome`、`OpenResponseKnowledgeRole` 未使用导入。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+
+## 2026-08-04 实施批次：B02 OpenAiGatewaySupport 拆分
+
+### 已完成
+
+- 将 `core/model-provider/.../OpenAiCompatibleModelGateway.kt` 底部的通用支持辅助抽离到新的 `OpenAiGatewaySupport.kt`：
+  - `parseObject` / `extractTextContent` / `unwrapJsonFence` 与 JSON 数组/对象/必填字符串辅助
+  - 捕获评估 wire-key 白名单、失败事件与预入队授权异常
+  - 流式终端异常、能力快照/配置指纹/授权披露/有界读取
+  - 未配置、超时、网络不可用、无效响应等失败常量和媒体/流式预算常量
+- `requireOnlyKeys` 归入 `OpenAiJson.kt`，避免在新支持文件重复定义。
+- `OpenAiCompatibleModelGateway.kt` 从 2710 行降至 2507 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:test` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型层、模型网关预算、模型网关 JSON 解析、Capture 采集策略、ModelTasks 指纹/校验、TutorTasks 本地策略/校验、LearnerMasteryDao 合同、StudentMistakeDao 合同、StudentMistakeDao 支持辅助、LearnerMastery 投影指纹、LearnerMastery 投影支持、OpenAiWireKeys、OpenAiGatewaySupport 共完成十五分块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：D05/D06 分科学习记忆闭环生产装配测试
+
+### 已完成
+
+- 新增 `core:data` 仪器测试 `LearningMemoryClosureInstrumentedTest`（六个用例）：
+  - 使用真实 learner-mastery 权威链接收 `ProblemKnowledgeBindingsSnapshotV2` 与 `ReviewObservationCapturedV2`；
+  - 使用真实 debug 知识目录与 `LocalLearningMasteryDisplayRepository`，总览中数学出现 `NEEDS_REINFORCEMENT`，其他科目保持未学习；
+  - 学习掌握知识点页真实列出同一数学知识点且状态为 `NEEDS_REINFORCEMENT`；
+  - 使用真实 `LocalTutorMasteryContextRepository`，同一数学知识点返回 `NEEDS_PRACTICE` 且投影为当前版本；
+  - 第二个问题的同知识点绑定可复用第一题的复习投影，证明单科全局记忆跨题共享；
+  - 错误一次后连续五次正确，digest 同时出现最近负向/正向证据且独立呈现计数 ≥ 5；
+  - 错误后先确认讲题上下文返回 `NEEDS_PRACTICE`，再持续累积真实独立正确证据直到掌握库投影为 `STEADY`，学习掌握总览升为 `FAIRLY_STEADY`、讲题上下文返回 `SOLID`，第二个问题绑定同一知识点仍读取 `SOLID`，证明“弱项关注 → 强项跳过 → 跨题复用”；
+  - 稳定掌握后连续真实错误会再次把掌握库投影降到 `NEEDS_REINFORCEMENT`、讲题上下文降为 `NEEDS_PRACTICE`，随后独立正确证据重新升回 `STEADY` 与 `SOLID`，证明矛盾/再次出错可降频并恢复；
+  - 看答案后提交正确，该知识点不进入 digest，证明答案暴露不制造独立掌握；
+  - 测试仅复用 owner-issued 验证收据形状，不扩大任何生产 API。
+- 补充夹具 `LearningMemoryClosureFixtures.kt` 与同包测试中继构造器 `ReviewClosureRelayTestFactory.kt`。
+- 新增 `core:learner-mastery-database` 真实 Room 用例 `steadyProjectionAgesAfterRecallWindowAndFreshEvidenceRecovers`：固定时钟下先用真实独立正确证据把投影推到 `STEADY`，推进时钟 200 天后历史状态仍保留 `STEADY` 但当前召回状态过期降级，新近独立正确证据可恢复到 `STEADY`，证明“过期重评”不把旧强项永久当作可跳过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugAndroidTestKotlin` | 通过 |
+| `:core:data:connectedDebugAndroidTest` 定向 `LearningMemoryClosureInstrumentedTest` | 通过，6/6 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 定向 `steadyProjectionAgesAfterRecallWindowAndFreshEvidenceRecovers` | 通过，1/1 |
+
+### 状态
+
+- D05/D06 继续“部分落实”：复习观测 → 掌握投影 → 学习掌握展示 → 讲题掌握上下文的真实 Room 生产装配级链路已锁定；真实 Provider 端到端证据、完整校准与大规模门禁仍待外部条件。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：G02 审校题族复习链路
+
+### 已完成
+
+- `StudentReviewCandidateWithKnowledge` 新增 `reviewedProblemFamilyId`，只接受已审校、有界的族标识。
+- `StudentMistakeDao` 新增 `readReviewedProblemFamilies`：按最新 `COMPLETED` 组织收据读取 `PROBLEM_FAMILY` facet，避免旧组织版本覆盖当前题族。
+- `RoomStudentMistakeStore.readReviewCandidatesWithKnowledge` 把审校题族随候选页一起返回。
+- `ThreeAuthorityReviewPlanCoordinator.toPlanningCandidate` 优先使用 `reviewedProblemFamilyId` 做族去重；缺失时继续回退到 exact saved problem identity，保持未审校标签不可信任。
+- `ThreeAuthorityReviewPlanCoordinatorTest` 新增“审校题族按族选代表题”用例，保留“未审校标签回退原题”用例。
+- `ProblemOrganizationPlan` 新增可选 `problemFamily`（`ProblemFamilySuggestion`），用 `@EncodeDefault(Mode.NEVER)` 保持旧 v3 wire 编码稳定；OpenAI v3 协议要求模型输出并强制解析/校验题族键，缺省失败关闭。
+- `ReviewedStudentProblemOrganizationMapping` 把审校 `PROBLEM_FAMILY` facet 写入 `OrganizeStudentProblemCommand`，学生库组织端口允许“仅 PROBLEM_FAMILY”的审校 facet 集。
+- 新增 Provider 缺省失败/解析、映射器单 facet、DAO 真实 Room 读取和旧编码稳定性测试。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin`、`:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:model:test`、`:core:model-provider:test` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest`、`:core:data:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` 全量 | 通过，74/74 |
+
+### 状态
+
+- G02 继续“部分落实”：模型输出题族、映射器写 `PROBLEM_FAMILY` 审校 facet、复习候选读取、规划器代表题去重的生产链路已全部接通并有真实 Room 证据；剩余真实 Provider 端到端题族质量与九科真实题集人工审校仍待外部条件。
+- `core:data` 的 `CaptureWorkflowInstrumentedTest` 定向测试本轮因既有 `legacy business authority is read-only after cutover` 环境问题失败，且现有同类测试同样失败；该失败与本轮 G02 改动无关，已回退本轮未验证的 capture `itemFamilyId` 生产改动，留待环境修复后另行验证。
+
+## 2026-08-04 实施批次：B02 OpenAiGatewaySupport 图片预算拆分
+
+### 已完成
+
+- 将 `OpenAiCompatibleModelGateway.kt` 尾部的 `ApprovedImage`、`ApprovedImageReadPlan`、`isReadyForNetwork`、`requireImageRequestFits` 抽离到 `OpenAiGatewaySupport.kt`，保持同包 `internal` 可见性。
+- `OpenAiModelProtocol` 从文件私有改为模块 `internal`，供支持文件复用请求预算与网络就绪校验。
+- 同时确认“新拍题/临时讲题读取单科全局记忆”生产接线已闭合：`SmartMistakeBookRoot` 的临时拍题与已存错题入口都传入真实 `LocalTutorMasteryContextRepository`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:compileKotlin` | 通过 |
+| `:core:model-provider:test` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：模型网关支持层再完成一小块拆分；继续拆分 `CapturedTutorSessionModelPanel.kt` 与剩余网关/会话文件。
+
+## 2026-08-04 实施批次：B02 OpenAiIntentParsers 拆分
+
+### 已完成
+
+- 将 `OpenAiCompatibleModelGateway.kt` 的 `toTutorIntentDecision` 与 `toTutorInteractionDirective` 抽离到新的 `OpenAiIntentParsers.kt`，保持模块 `internal` 可见性。
+- 网关主文件从 2416 行降至 2368 行，行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:compileKotlin`、`:core:model-provider:test` | 通过 |
+
+## 2026-08-04 实施批次：B02 CapturedTutorSession 纯计算拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 的时间线自动滚动版本计算抽为 `tutorConversationAutoScrollVersion`，预计会话条目数抽为 `tutorExpectedConversationItemCount`，移入 `CapturedTutorSessionSupport.kt`。
+- 主模型面板函数体继续减小，行为不变。
+- 继续把视觉插入 token 计算抽为 `tutorVisualInsertionToken`，主面板再瘦身一小块。
+- 继续把活动回复存在性与尾部稳定 ID 抽为 `tutorActiveReplyExists` / `tutorTailId` 纯函数。
+- 继续把 pending response retry 可重建判定抽为 `pendingResponseRetryIsRebuildable` 纯函数。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:compileDebugKotlin`、`:feature:tutor:testDebugUnitTest` | 通过 |
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 通过，80/80 |
+
+### 风险记录
+
+- 曾尝试把 `composerContent` 抽为顶层 `@Composable` 辅助函数，导致 `externalFollowUpFreeResponseRestoresItsVisibleDirectiveAfterApproval` 与 `staleExternalFollowUpFreeResponseClearsPendingApprovalWithoutSendingIt` 找不到 `tutor_chat_send`；已回退该抽取，回退后两个用例分别 1/1 通过。后续拆分该闭包依赖较重的 UI 块时需先保留组合上下文或改用显式状态对象。
+
+## 2026-08-04 实施批次：F01-F08 状态对齐审计
+
+### 已完成
+
+- F01 空会话自由聊天入口：确认 `TutorLobbyRoute` 直接展示输入框与拍题/错题本快捷入口，六类意图由 `TutorLobbyInput`/`TutorIntentDecision` 覆盖，状态更新为“部分落实”。
+- F02 当前题聊天与持续会话：确认临时拍题与已存错题共享聊天流并具备 Room 持久化、修订、重试和恢复测试，状态更新为“部分落实”。
+- F04 动态话题与下一步：确认 `suggestedMoves`/`nextMoves` 由模型动态输出并由 UI 渲染，状态更新为“部分落实”。
+- F05 声明式 GUI 协议：确认版本化场景协议、`requireOnlyKeys`、`TutorSceneValidation` 与 `TutorVisualProvenanceValidator` 已覆盖预算/未知字段/证明链，状态更新为“部分落实”。
+- F06 通用原语与场景组合引擎：确认 `TutorVisual2DPanel` 与系列场景渲染器已用有限原语组合步骤/对照/证据/时间线/关系/公式/数据图/空间/电路/化学场景，状态更新为“部分落实”。
+- F07 通用动画与数值运行时：确认直线/抛体/圆周/振动等运动由参数化运行时渲染，播放/暂停/复位/倍速支持存在，状态更新为“部分落实”。
+- F08 语言安全与流式体验：确认 `StudentFacingLanguagePolicy`、`StreamingMarkdownAssembler` 和任务身份/持久化测试已覆盖，状态更新为“部分落实”。
+- 剩余缺口集中在真实 Provider 长回复、限流、语义质量和真实题集人工验收，属于外部条件。
+
+## 2026-08-05 实施批次：D/E 系列状态对齐审计
+
+### 已完成
+
+- D01 三类会话：无绑定聊天、临时拍题、已存错题已有独立生产入口与权限边界，状态更新为“部分落实”。
+- D02 意图解析：`TutorIntentDecision` 覆盖主要意图并低置信不执行动作，状态更新为“部分落实”。
+- D03 有界读取与确认写入：`ModelEgressManifest`、`TutorLocalReadProjection` 与本地确认执行器已实现，状态更新为“部分落实”。
+- D08 事实来源/用途授权：完成校验、引导策略与学习写权威已拒绝模型自报答案/正确项/直接写权，状态更新为“部分落实”。
+- E01 图片评估与结构化题面、E03 单题/批量/可恢复任务、E05 结构化渲染与 PDF 导出、E06 多层身份与重复收敛：均已具备生产实现与仪器证据，状态更新为“部分落实”。
+- 剩余缺口仍是真实 Provider/真实题集/真机压力与人工语义验收。
+
+## 2026-08-05 实施批次：B07 模型任务并发 admission 第一块
+
+### 已完成
+
+- 新增 `ModelExecutionAdmissionGate`：默认 4 个并发 permit，支持挂起块执行并在失败/取消后释放。
+- `RoomModelTaskRepository` 的普通执行与恢复执行两处 `gateway.execute` 均接入该 gate，限制极端并发模型请求。
+- `ModelTaskRepositoryFactory` 改为持有共享 gate 并注入仓库实例，避免多个 feature scope 各自创建独立门禁导致限制失效。
+- 新增 3 项单元测试：并发上限、失败释放、非法参数。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `ModelTaskRepositoryInstrumentedTest` | 环境失败：既有 `legacy business authority is read-only after cutover` 阻断所有 legacy 写入，与 gate 无关；待环境修复后复跑 |
+
+## 2026-08-05 实施批次：B07 统一工作量 admission 第二块
+
+### 已完成
+
+- 新增 `WorkloadAdmissionGate`：两层 admission（类别 permit + 总 permit，默认总预算 8），`WorkloadCategory` 覆盖模型、批量导入、PDF 与投影，为后续统一调度提供共享门禁。
+- `ModelExecutionAdmissionGate` 改为委托 `WorkloadAdmissionGate(WorkloadCategory.MODEL)`，模型默认并发仍为 4，共享注入路径不变。
+- 新增 5 项单元测试：类别隔离直到总预算、总预算约束跨类别并发、未注册类别失败关闭、失败释放、非法参数；修正一个非法测试配置后全量通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过（667 项，0 失败） |
+| `ModelTaskRepositoryInstrumentedTest` | 未复跑；此前已知被既有 `legacy business authority is read-only after cutover` 环境问题阻断，与 gate 改动无关 |
+
+## 2026-08-05 实施批次：B07 共享 workload gate 第三块
+
+### 已完成
+
+- 新增 `WorkloadAdmissionGateFactory.createDefault()`：模型 4、批量导入 2、PDF 1、投影 1，总预算 8。
+- `ModelExecutionAdmissionGate` 支持注入共享 `WorkloadAdmissionGate`，无注入时保持原模型专属门禁行为。
+- `ModelTaskRepositoryFactory` 改为所有模型仓库共用同一个默认 workload gate，为跨类别总预算打好基础。
+- 新增默认工厂每类至少可执行一个任务的回归。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:testDebugUnitTest` 定向 `WorkloadAdmissionGateTest`、`RoomModelTaskRepositoryTest` | 通过 |
+| `git diff --check` | 干净 |
+
+### 第三块补充
+
+- 新增进程级 `SharedWorkloadAdmissionGate`，模型、批量导入、PDF 现在共用同一总预算。
+- 批量导入 staging 与 processing 使用 `BATCH_IMPORT`（并发 2）；PDF staging 使用 `PDF`（并发 1）。
+- `:core:data:testDebugUnitTest` 定向 `ProductionBatchImportRepositoryTest`、`WorkloadAdmissionGateTest`、`RoomModelTaskRepositoryTest` 通过。
+- 可丢弃错题目录投影打开/重建接入 `PROJECTION`（并发 1）；`StudentMistakeLibraryCatalogRepositoryTest`、`WorkloadAdmissionGateTest` 定向通过。
+- 新增跨类别总预算回归：模型 4 + 批量导入 2 + PDF 1 + 投影 1 同时运行，最大并发恰好为总预算 8，证明共享 gate 不只按类别独立限流。
+- 掌握库底层投影边界接通：`core:model` 新增 `ProjectionWorkloadGate`，`RoomLearnerMasteryStore` 重建循环在 gate 内执行，生产 owner bridge 注入 `SharedProjectionWorkloadGate`；`WorkloadAdmissionGateTest` 验证投影 gate 与其余类别共享总预算。
+- 治理门禁复跑：`tools/tests` 133/133 通过。
+- A02 四栏职责与导航合同状态更新为“完成”：`RootNavigationPolicyTest` 验证冷启动进入讲题、四栏唯一归属、拍题/已存错题归入讲题底栏、二级任务隐藏底栏；`:app:testLocalFirstDebugUnitTest --tests RootNavigationPolicyTest` 通过。
+- B01 Android 工具链和唯一构建入口状态更新为“完成”：本会话全部 Gradle 调用均通过 `tools/run-gradle.ps1` 使用 T: ASCII 映射、workspace Gradle/SDK/ADB 与 `--no-daemon`，无系统 Gradle 依赖，未再出现混合路径 worker 类路径错误。
+- A07 稳定页面骨架与可达恢复状态更新为“部分落实”：现有 `rememberSaveable`、`StateRestorationTester` 与 `LibraryViewModel(savedStateHandle)` 已覆盖多个主页面重建恢复；集中式全导航状态转换图与自动错误态出口检测仍未落地。
+- A07 补充：`RootNavigationPolicyTest` 新增恢复边表，覆盖复习会话、拍题/相册/收件箱/批量导入/导出/恢复、错题详情/导出、能力/学习掌握/隐私/提醒/存储等二级工作流，要求每个隐藏底栏的二级页声明回根目的地的恢复边；测试通过。
+- A07 再补充：恢复边表加入“完整性 + 无自循环”断言，隐藏底栏路由集合必须与恢复边集合完全一致，且恢复目标不能是自身；测试通过。
+- A04 全场景与失败模式清单状态更新为“部分落实”：`docs/scenario-registry.md` 已覆盖主要首用/空态/失败/恢复/规模场景，仍缺逐场景到测试编号的显式映射。
+- A04 补充：新增 `tools/scenario_to_test_registry.json` 和 `tests.test_scenario_mapping`，覆盖 12 类场景并逐项关联 `Class#method`；Python 治理测试验证唯一 ID、必填字段与禁用占位文案，通过。
+- A04 再补充：治理测试新增“测试类真实存在”校验，用 `rg` 在测试/仪器测试源码集中定位每个 `testRef` 的类名，避免编号指向不存在的测试；通过。
+- A04 再补充：治理测试进一步校验 `Class#method` 中的方法名在对应测试类源码中真实存在，并把 12 个场景的测试编号修正为真实测试方法；通过。
+- 治理门禁全量复跑：`tools/tests` 135/135 通过（新增 A04 注册表两项测试）。
+- A04 文档链接：`docs/scenario-registry.md` 顶部新增机器校验映射说明，指向 `tools/scenario_to_test_registry.json` 与 `tests.test_scenario_mapping`，避免注册表与文档脱节。
+- A04 覆盖扩展：注册表从 12 类增至 16 类，新增图片超限、时区/DST、重复闹钟与时钟回拨、通知权限撤销，均关联真实测试方法；治理测试通过。
+- A04 覆盖再扩展：注册表增至 18 类，新增网络/HTTP 错误与慢流场景，分别关联 `StreamingModelHttpTransportTest` 真实测试方法；治理测试通过。
+- A05 根因登记机器校验：新增 `tests.test_root_cause_register`，解析 `systemic_root_cause_register.md` 全部 29 条根因，校验 R01–R29 ID 完整、必含根因/统一修复/归属/状态、至少一个证据字段、归属工作包非空且无占位文案；通过。
+
+## 2026-08-05 实施批次：E04 题族本地证据门槛
+
+### 已完成
+
+- `ReviewedStudentProblemOrganizationMapping` 不再无条件接受模型 `problemFamily`。
+- 新增本地证据门：题族置信度必须 ≥ 0.90，且绑定到本次已核验的章节/原子知识证明；低置信度建议只丢弃题族，不阻断题目整理与保存。
+- 题族 facet 的绑定指纹现在包含本地证据策略版本、科目、题面指纹、知识清单指纹、激活代次和按序证据列表，防止模型空泛建议直接进入复习题族去重。
+- 复习候选读取最新 `PROBLEM_FAMILY` facet 时一并读取其基础题面指纹；规划器只在题面指纹与当前 revision 完全一致时按题族选代表题，不一致回退到原题去重，避免跨题面复用同一 family key 误合并原始题。
+- 无审校题族或绑定失效时，复习去重回退到当前 revision 的 `documentCanonicalFingerprint`：完全相同内容跨条目只选一道代表题，近似题仍按原题保留，不因语义猜测合并。
+- 新增低置信度题族回归：整理命令可正常落库但 `facets` 为空，且 `requireExact` 通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:testDebugUnitTest` 定向 `ReviewedStudentProblemOrganizationMapperTest` | 通过（6/6） |
+| `:core:data:testDebugUnitTest` 全量 | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `git diff --check` | 干净 |
+
+## 2026-08-05 实施批次：G07 复习提醒边界审计
+
+### 已完成
+
+- 确认 `ReviewOpenRequestPolicyTest` 覆盖“通知点击只打开复习入口，不写完成记录”。
+- 确认 `ReviewReminderCoordinatorTest` 与复习会话持久化测试覆盖“只有真实完成答案才推进队列/写完成”。
+- 通知、时区变更、重启恢复已有协调器与仪器回归；真实设备通知与 DST 边界仍待外部验收。
+
+## 2026-08-05 实施批次：C 系列知识库状态对齐审计
+
+### 已完成
+
+- C01 来源目录/版权/版本策略：`knowledge-production` 已有九科来源登记、覆盖台账与审计脚本，状态更新为“部分落实”。
+- C02 知识目录与关系 Schema：`HighSchoolKnowledgeCatalog` 已支持科目/板块/知识点/别名/边界/先修/包含/易混关系并拒绝环与跨科错误，状态更新为“部分落实”。
+- C03 内容包与编译校验：`compile-formal-knowledge-pack.py`、`generate-formal-knowledge-release.py` 与 `FormalKnowledgePackActivationPipeline` 已支持可重复构建、结构/权限校验，状态更新为“部分落实”。
+- C04 本地检索：同科过滤、别名/全文召回、关系扩展与有界返回已实现，模拟器 2 万级检索 p95 约 50ms，状态更新为“部分落实”。
+- C05 受控联网补充与内部审校：受控来源验证、引用/审校记录与激活管理已实现，状态更新为“部分落实”。
+- C06 人工标注评测集：评测题物理隔离与构建门禁已建立，2700 道九科真实标注集仍待外部制作，状态更新为“部分落实”。
+- 剩余缺口集中在正式九科内容人工审校、真实标注集、真机 P95 与真实联网语料验收。
+
+## 2026-08-04 实施批次：F03 未请求出题边界审计
+
+### 已完成
+
+- 审计确认“未请求不出额外题/变式/校准”的本地四层硬门已具备三层：
+  - Prompt 层明确禁止生成新题、同类题、变式题和校准题；
+  - Provider 解析层只允许受限 `interactionDirective` 或 legacy `diagnosticQuestion`，且二者互斥；
+  - 本地完成校验层由 `TutorTurnPlan.init`、`locallyConstrainedFor` 与 `ModelTaskCompletionValidator` 对交互形状、模式、数量、掌握标签和意图边界做降级/失败关闭。
+- 剩余“真实 Provider 对抗集”与“变式伪装成当前题诊断”的语义级识别仍待外部真实 Provider 与人工题集验收，F03 保持“部分落实”。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 静态审计 | 确认 `OpenAiCompatibleModelGateway`、`TutorTasks.kt`、`TutorTaskValidation.kt`、`TutorTaskLocalPolicy.kt` 中的现有硬门与测试 |
+
+## 2026-08-04 实施批次：B03-B09 状态对齐审计
+
+### 已完成
+
+- B03 模型能力与本地授权硬边界：确认 `TutorIntentAuthority`、`TutorTaskLocalPolicy`、`ModelTaskCompletionValidator`、`ModelEgressManifest` 与生产能力端口矩阵已构成本地授权硬门，状态更新为“部分落实”。
+- B04 媒体文件生命周期：确认权威资产库、捕获工作流、批量导入恢复与孤儿清理已有实现和仪器回归，状态更新为“部分落实”。
+- B05 网络与输入流安全：确认 `OkHttpModelTransport` 已覆盖 HTTPS-only、公网地址校验、固定 DNS、禁止重定向、超时、SSE 与响应大小上限，并有 IPv4/IPv6 特殊地址/慢流/无限流/重定向失败关闭测试，状态更新为“部分落实（本地实现完成）”。
+- B05 进一步收敛重复：模型网关与知识研究验证器共用 `PublicHttpEndpoint` / `PinnedPublicDns`，研究源强制默认 443 端口，模型端点保留自定义端口策略；`:core:model-provider:compileKotlin` 与 `:core:model-provider:test` 通过。
+- B08 持久任务 lease/outbox/恢复：确认模型任务、捕获提交、批量导入、自由响应 outbox 与掌握库重建已分别有 owner/lease/attempt/next eligible/dead-letter 和重启恢复证据，状态更新为“部分落实”。
+- B09 分页/增量投影/热路径：确认学生库、掌握库与知识库已有分页游标、独立候选查询、覆盖索引与 `EXPLAIN QUERY PLAN` 测试，状态更新为“部分落实”。
+- B07 统一工作量调度保持“待开始”：当前各模块有独立预算与队列，但跨导入/PDF/模型/数据库的统一 admission 调度仍未形成。
+
+## 2026-08-04 实施批次：E02 可用题面自动继续
+
+### 已完成
+
+- `CaptureScreenPolicy` 新增 `shouldAutoCommitCaptureCandidate`：模型结构化题面可用、用户未编辑、没有进行中/未知结果/已提交状态且同一草稿未自动提交过时返回 true。
+- `CaptureScreen` 在模型题面准备好后自动调用 `commitCorrection`，不再固定停在人工“继续”表单；用户编辑、本地过渡候选、恢复中/失败未知状态仍保留人工入口。
+- `autoCommittedDraftId` 防止同一草稿重复自动提交；仓库幂等继续兜底。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:capture:compileDebugKotlin`、`:feature:capture:testDebugUnitTest` | 通过 |
+| `:feature:capture:connectedDebugAndroidTest` 全量 | 通过，23/23 |
+
+## 2026-08-04 实施批次：B02 CurrentTutorSessionProjection 拆分
+
+### 已完成
+
+- 将 `CurrentTutorSessionProductionOwner.kt` 底部的会话投影、授权匹配、响应折叠、证据状态和指纹常量辅助抽离到新的 `CurrentTutorSessionProjection.kt`：
+  - `toContext` / `toCurrentSnapshot` / `foldResponses` / `toVisual` / `toExposure` / `toAnchor`
+  - 会话变更与授权 purpose 判定、答案暴露/证据状态派生
+  - `QUESTION_DOCUMENT_JSON`、响应事件与可信答案事件集合、指纹常量
+- `CurrentTutorSessionProductionOwner.kt` 从 2524 行降至 1693 行；行为与同包内部可见性不变。
+- 更新 `ThreeDatabaseStaticArchitectureGuardTest` 与 `TutorLearningEvidenceArchitectureContractTest`，把新投影文件纳入会话所有权边界。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `:core:data:connectedDebugAndroidTest` 定向 `LearningMemoryClosureInstrumentedTest` | 通过，4/4 |
+
+### 状态
+
+- B02 继续“部分落实”：会话所有权层完成第十六处分块；继续拆分 `RoomStudyDatabase.kt` 与 `CapturedTutorSessionRoute.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 RoomStudyDatabaseMappings 拆分
+
+### 已完成
+
+- 将 `RoomStudyDatabase.kt` 底部的行映射、实体/记录编解码、知识种子、复习计划和迁移辅助抽离到新的 `RoomStudyDatabaseMappings.kt`：
+  - legacy 文档资产与迁移行映射
+  - 问题组织工作、草稿、采集游标与提交收据映射
+  - 知识节点/来源/关系/教学材料/grounding 记录映射
+  - 复习计划、队列、会话、进度与 Mistake 行映射
+  - 组织授权与原子完成校验、常量与指纹辅助
+- `RoomStudyDatabase.kt` 从 3887 行降至 2811 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:database:connectedDebugAndroidTest` 全量 | 通过，280/280 |
+
+### 状态
+
+- B02 继续“部分落实”：数据库层完成第十七处分块；继续拆分 `CapturedTutorSessionRoute.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 CurrentTutorSessionHostSupport 拆分
+
+### 已完成
+
+- 将 `CurrentTutorSessionHostCoordinator.kt` 底部的主机支持、呈现、指纹与状态辅助抽离到新的 `CurrentTutorSessionHostSupport.kt`：
+  - `RepositoryCurrentTutorLearningAuthorityStore`、已接受计划/呈现/自由响应/视觉/学习权威辅助
+  - `TutorPlanOutput` 到 UI/提示呈现、约束与证据 kind 派生
+  - 会话激活、主机工作记录、策略指纹、授权/收据匹配辅助
+- `CurrentTutorSessionHostCoordinator.kt` 从 3365 行降至 2506 行；行为与同包内部可见性不变。
+- 更新 `ThreeDatabaseStaticArchitectureGuardTest`，把新主机支持文件纳入会话所有权边界。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `:core:data:connectedDebugAndroidTest` 定向 `LearningMemoryClosureInstrumentedTest` | 通过，3/3 |
+
+### 状态
+
+- B02 继续“部分落实”：会话主机层完成第十八处分块；继续拆分 `CapturedTutorSessionRoute.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 RoomCurrentTutorInteractionSessionSupport 拆分
+
+### 已完成
+
+- 将 `RoomCurrentTutorInteractionSessionStore.kt` 底部的会话存储支持辅助抽离到新的 `RoomCurrentTutorInteractionSessionSupport.kt`：
+  - 自由响应 outbox 状态、租约、AAD、重试与失败关闭辅助
+  - 当前策略/主机工作实体匹配、迁移与指纹辅助
+  - 当前交互激活/追加/事件/范围/证据请求映射辅助
+  - 事件状态、提交收据、拒绝结果与常量辅助
+- `RoomCurrentTutorInteractionSessionStore.kt` 从 2820 行降至 1475 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 通过，80/80 |
+
+### 状态
+
+- B02 继续“部分落实”：会话存储层完成第十九处分块；继续拆分 `CapturedTutorSessionRoute.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 StudyDatabaseMigrations 拆分
+
+### 已完成
+
+- 将 `StudyDatabase.kt` 的全部迁移对象与迁移回填辅助抽离到新的 `StudyDatabaseMigrations.kt`：
+  - v1→v49 完整迁移链
+  - 模型任务操作回填、知识库/知识 grounding 等迁移辅助
+- `StudyDatabase.kt` 从 1792 行降至 383 行，保留版本、Room 抽象、工厂与迁移列表装配；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:database:connectedDebugAndroidTest` 定向知识库/知识 grounding 迁移 | 通过，6/6 |
+
+### 状态
+
+- B02 继续“部分落实”：数据库迁移层完成第二十处分块；继续拆分 `CapturedTutorSessionRoute.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 StudyDatabasePortModels 拆分
+
+### 已完成
+
+- 将 `StudyDatabasePort.kt` 接口前的模型、异常、常量与工具辅助抽离到新的 `StudyDatabasePortModels.kt`：
+  - 学习/错题/复习/会话/知识/批处理等全部数据类
+  - `StudyDbValue`、冲突异常与 `isSha256Hex` 工具
+- `StudyDatabasePort.kt` 从 2497 行降至 725 行，保留 `StudyDatabasePort` 接口与默认实现；行为与同包可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:database:connectedDebugAndroidTest` 定向 `StudyDatabaseInstrumentedTest` | 通过，26/26 |
+
+### 状态
+
+- B02 继续“部分落实”：数据库端口模型层完成第二十一处分块；继续拆分 `CapturedTutorSessionRoute.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 CapturedTutorSessionRoute 支持/组件拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionRoute.kt` 的顶部纯支持辅助抽离到新的 `CapturedTutorSessionSupport.kt`：
+  - 视觉生成/复习执行状态、可见选择与交互指令解析
+  - 会话授权指纹、视觉调度边界、Provider 刷新协调器
+- 将底部展示组件与标签辅助抽离到新的 `CapturedTutorSessionComponents.kt`：
+  - 存储选择反馈、披露卡、继续对话卡、任务内容卡
+  - 模型状态卡、题目不可用、保存/状态文案与常量
+- `CapturedTutorSessionRoute.kt` 从 5320 行降至 4716 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:compileDebugKotlin` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 通过，80/80 |
+
+### 状态
+
+- B02 继续“部分落实”：讲题路由层完成第二十二处分块；剩余继续拆分 `CapturedTutorSessionRoute.kt` 中间编排。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 CapturedTutorSessionViews 拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionRoute.kt` 的视图状态与主视图抽离到新的 `CapturedTutorSessionViews.kt`：
+  - `CapturedTutorSessionUiState` 与 `CapturedTutorSessionContent`
+  - `TutorPageHeader`、`LoadingTutorQuestion`
+  - `HostReadyCapturedSession`、`ReadyCapturedSession`、`EndedTutorSessionNotice`
+- `CapturedTutorSessionSupport.kt` 同步接收 `CapturedTutorChoiceRuntimeIdentity`、本地恢复准入与学习写权限辅助。
+- `CapturedTutorSessionRoute.kt` 从 4716 行降至 4032 行；行为与同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:compileDebugKotlin` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 通过，80/80 |
+
+### 状态
+
+- B02 继续“部分落实”：讲题路由视图层完成第二十三处分块；剩余继续拆分 `TutorModelPanel`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-04 实施批次：B02 CapturedTutorSessionModelPanel 拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionRoute.kt` 中约 3700 行的 `TutorModelPanel` 抽离到新的 `CapturedTutorSessionModelPanel.kt`。
+- `CapturedTutorSessionRoute.kt` 从 4032 行降至 284 行，只保留大路由入口；模型面板获得独立文件所有权。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:compileDebugKotlin` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 通过，80/80 |
+
+### 状态
+
+- B02 继续“部分落实”：讲题模型面板层完成第二十四处分块；后续继续拆 `CapturedTutorSessionModelPanel.kt` 内部状态机与子视图。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：D05 已存错题讲题生产接线
+
+### 已完成
+
+- 审计发现生产断线：`SavedMistakeTutorRoute` 虽然已把已核验知识点字符串 ID 传入 `TutorQuestionContext`，但未把版本化 `KnowledgeNodeRef` 传入 `TutorMasteryContextRepository`，真实页面因此不会请求单科全局掌握记忆。
+- `DirectTeachingContext` 新增 `directKnowledgeNodeRefs`，在组织确认流中与字符串 ID 一起携带已核验、已激活的 `KnowledgeNodeRef`。
+- `SavedMistakeTutorRoute` 在未显式指定掌握节点时，自动用已核验绑定构造 `TutorMasteryContextRequest`；显式节点优先，缺省回退不会丢失生产接线。
+- `SavedMistakeTeachingReferenceWiringTest` 新增接线断言与 `effectiveTutorMasteryKnowledgeNodes` 纯函数测试。
+- `TutorMasteryContextRequest`/`TutorMasteryContext` 新增有界同科相关节点与相关摘要（上限 8）。
+- `LocalTutorMasteryContextRepository` 从激活知识目录的关系边扩展同科相关知识点，排除已请求节点与跨科节点，并以第二次有界掌握查询读取相关投影。
+- `TutorModelTaskPolicy` 把相关掌握投影为 `current-question-point-N+1` 教学约束并计入计划/响应请求指纹。
+- `LocalTutorMasteryContextRepositoryTest` 新增同科关系扩展与跨科隔离用例，`TutorModelTaskPolicyTest` 新增相关知识邻域教学约束用例。
+- `LearningMemoryClosureInstrumentedTest` 新增真实权威 + 真实知识目录的相关知识邻域闭环用例；`DebugBoundaryKnowledgePackFixture` 增加 `debug.math.related` 原子节点与 `PREREQUISITE` 关系。
+- 修复 `ModelTaskRepositoryInstrumentedTest` 中 `RoomModelTaskRepository` 尾随 lambda 误绑定到 admission gate 的编译问题，改为显式 `clock` 参数。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` 定向 `SavedMistakeTeachingReferenceWiringTest` | 通过 |
+| `:core:domain:test` 定向 `TutorMasteryContextRepositoryTest` | 通过 |
+| `:core:data:testDebugUnitTest` 定向 `LocalTutorMasteryContextRepositoryTest` | 通过 |
+| `:core:data:testDebugUnitTest` 全量 | 通过 |
+| `:core:knowledge-database:testDebugUnitTest` | 通过 |
+| `:core:data:assembleDebugAndroidTest` | 通过（含新增相关知识邻域仪器用例编译） |
+| `:core:data:connectedDebugAndroidTest` 定向 `LearningMemoryClosureInstrumentedTest` | 通过，7/7 |
+| `:core:data:connectedDebugAndroidTest` 全量 | 通过，82/82 |
+| `:feature:tutor:testDebugUnitTest` 全量 | 通过 |
+
+### 状态
+
+- D05 继续“部分落实”：生产已存错题讲题现在真正读取单科全局掌握，同科相关知识邻域也已有有界生产实现与回归；真实 Provider 端到端仍待外部验收。
+- 相关知识邻域真实装配仪器用例已在 API 36 模拟器通过；`start-emulator.ps1` 新增 `-AllowExistingAndroidProfileArtifacts`，可安全接管已有工作区外 Android profile artifacts 而不移动它们。
+- 全量 `:core:data:connectedDebugAndroidTest` 已通过 82/82；legacy 写路径测试改用 `LegacyStudyDatabaseTestFactory.openPreCutoverForTest`，三库物理隔离禁列清单也同步到合法 authority 列。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryDisplayDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的显示读面拆到新的 `LearnerMasteryDisplayDao.kt`：
+  - `observeDisplayRevision`
+  - `readDisplayTemporalBounds`
+  - `readDisplayOverviewSnapshot`
+  - `readDisplayPageSnapshot`
+  - `readExactKnowledgeProjections`
+- `LearnerMasteryRoomDatabase` 新增 `displayDao()`，`RoomLearnerMasteryStore` 的显示与本地掌握读取改走显示 DAO，并在地图擦除重开数据库时同步刷新显示 DAO。
+- `LearnerMasteryDao.kt` 从 7209 行降至 7016 行；显示读面获得独立文件所有权。
+- 同步修复 `OpenResponseWeakCandidateAndroidTestFixture` 未传 B07 `ProjectionWorkloadGate` 的编译回归，并把 androidTest 对精确知识投影的直接读取改到 `displayDao()`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:assembleDebugAndroidTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 定向 `LearnerMasteryStoreInstrumentedTest` | 通过，35/35 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 定向 `LearnerMasterySchemaMigrationInstrumentedTest` | 通过，9/9 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 全量（排除 ScalePerformance） | 通过，85/85 |
+| `:core:database:connectedDebugAndroidTest` 全量 | 通过，280/280 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 显示读面完成新一次拆块，巨型 DAO 继续瘦身。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：connected 全量回归扩展
+
+### 已完成
+
+- `:core:student-mistake-database:connectedDebugAndroidTest` 全量 74/74 通过。
+- `:core:database:connectedDebugAndroidTest` 全量 280/280、`:core:data:connectedDebugAndroidTest` 全量 82/82、`:core:learner-mastery-database:connectedDebugAndroidTest` 全量（排除 ScalePerformance）85/85 通过。
+- `:core:knowledge-database:connectedDebugAndroidTest` 34/34 通过、2 项 opt-in/硬链接环境跳过；`:core:visual-ui:connectedDebugAndroidTest` 6/6 通过。
+- 修复 `CapturedTutorSessionModelPanel` 的持久任务 Flow 缓存键：`remember(question.sessionId)` 改为 `remember(question.sessionId, modelTasks)`，避免同一 sessionId 下切换模型任务仓库时继续观察旧 Flow；`:feature:tutor:testDebugUnitTest` 通过。
+- 讲题重试改为按持久化任务自身模式判断：`retryTutorResponse`、`taskAllowsInteraction` 与重试按钮改走 `canRetryTutorResponse()`，不再被 guidance replay 漂移出的当前 mode 误拦；该修复语义正确且单测通过，但完整 Compose 类内 retry 用例仍因其他状态隔离问题不渲染。
+- `:feature:tutor:connectedDebugAndroidTest` 全量 78/80（个别轮次出现额外 disclosure 用例闪失败）：`pendingExactRetryContinuesLocallyWithoutAnotherRemoteOperation` 与 `retryableReplyRetriesTheExactPersistedRequest` 单独运行均通过，但在完整 Compose 测试类内稳定出现 `tutor_chat_retry` 未渲染；诊断确认全类运行时请求 `explanationMode=DIRECT` 而当前 mode 判断为 GUIDED，属于 Compose 全类状态/guidance replay 隔离问题，已加宽等待并保留独立运行证据。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:connectedDebugAndroidTest` 全量 | 通过，74/74 |
+| `:core:database:connectedDebugAndroidTest` 全量 | 通过，280/280 |
+| `:core:data:connectedDebugAndroidTest` 全量 | 通过，82/82 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 全量（排除 ScalePerformance） | 通过，85/85 |
+| `:core:knowledge-database:connectedDebugAndroidTest` | 通过，34/34（2 skipped） |
+| `:core:visual-ui:connectedDebugAndroidTest` | 通过，6/6 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `:feature:tutor:connectedDebugAndroidTest` | 78/80（个别轮次 77/80），两个 retry 用例单跑通过、全类排序时失败 |
+
+### 状态
+
+- 核心数据/学生库/知识库/掌握库 connected 全量已绿；讲题 Compose 全类仍有 2 个测试排序隔离问题待收口。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 StudentMistakeLibraryDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的错题库展示读面抽到新的 `StudentMistakeLibraryDao.kt`：
+  - `readChangeVersion`
+  - `readImages`
+  - `readLibraryRows`
+  - `readFavoriteLibraryRows`
+  - `readSearchedLibraryRows`
+  - `readFavoriteSearchedLibraryRows`
+  - `readAcceptedLibraryClassifications`
+  - `readLibraryDetailRow`
+  - `readLibrarySubjectFacets`
+  - `readLibrarySectionFacets`
+  - `readLibraryKnowledgeFacets`
+  - `readLibraryPageSnapshot`
+  - `readLibraryDetailSnapshot`
+  - `readLibraryFacetSnapshot`
+- `StudentMistakeRoomDatabase` 新增 `libraryDao()`，`RoomLearnerBoundStudentMistakeLibraryPort` 新增 `libraryDao` 参数并把 `readPage`、`readDetail`、`readFacets` 改走新 DAO；`RoomStudentMistakeStore` 接线 `database.libraryDao()`。
+- 旧 `StudentMistakeDao` 保留 `readChangeVersion`，因为复习首页快照仍通过它读取 learner change version；其余库展示读面已从旧 DAO 移除。
+- 仪器测试对库 facet 快照的直接读取从 `room.mistakeDao()` 改到 `room.libraryDao()`。
+- `StudentMistakeDao.kt` 降至 5803 行，新 `StudentMistakeLibraryDao.kt` 431 行，库展示读面获得独立文件所有权。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` 全量 | 通过，74/74 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 库展示读面完成拆块，巨型 DAO 继续瘦身；`readChangeVersion` 因复习首页快照仍保留在旧 DAO，属于预期共享读面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：feature:tutor 全类隔离收口
+
+### 已完成
+
+- 定位 `CapturedTutorSessionInstrumentedTest` 全类运行时的 retry/disclosure 失败根因：跨用例保存状态把 `LazyListState`/IME 平移带入新组合，目标按钮虽然已加入语义树，但不在可见合成窗口内，默认 merged-tree finder 找不到。
+- retry/disclosure 用例在交互前显式读取 `CollectionInfo.rowCount` 并滚到会话尾部，保证 `tutor_chat_retry` 与 `tutor_respond_disclosure_approve` 稳定合成；未改动生产滚动/重试行为。
+- `expiredLeaseKeepsExactReplyUntilOneConfirmationResumesIt` 补齐真实掌握装配：`ReadyCapturedSession` 现在同时传入 `guidedMasteryContextRepository` 与 `questionKnowledgeNodes`，让 `masteryRelevantPlan=true` 的计划任务与 UI 问题边界匹配。
+- 截图 helper 从 MediaStore 改为应用专属外部目录 `getExternalFilesDir(PICTURES)/SmartMistakeBookQA`，避免旧 MediaStore 记录导致的 “Failed to build unique file” 环境污染。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:connectedDebugAndroidTest` 定向 `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `:feature:tutor:connectedDebugAndroidTest` 全量 | 通过，80/80 |
+| `:feature:tutor:compileDebugAndroidTestKotlin` | 通过 |
+
+### 状态
+
+- feature:tutor 全量 80/80 已绿，计划中的 retry 用例排序隔离问题已收口；本轮没有为通过测试放宽生产断言或改生产重试语义。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：learner-mastery 性能门禁复测与并行化尝试
+
+### 已完成
+
+- 复跑 `tenThousandRawSnapshotsConfirmDigestScalingBeforeTheReleaseGate`，当前模拟器基线 41.8s，仍超 15s 预算。
+- 通过把分段诊断写入失败消息定位瓶颈：`sourceValidationMs=41.5s`，占总耗时 99%；剩余 `countReadMs≈1ms`、`pageReadMs≈1ms`、`snapshotReadMs≈83ms`、`pageReceiptMs≈41ms`、`destinationDigestMs≈235ms`。
+- 确认瓶颈是逐条 `AndroidKeyStore` AES-GCM 解密 + 两次编译 schema SHA-256 源记录/快照指纹校验，属于真实完整性验证，不能通过降低校验强度或放宽预算绕过。
+- 尝试在 Room 事务内用 `Dispatchers.Default` 并行校验，实测会导致事务上下文丢失（`Cannot perform this operation because there is no current transaction`），已完整回退该生产改动；普通回归保持 85/85。
+- `LearnerMasteryScalePerformanceInstrumentedTest` 的失败消息现在包含分段耗时，后续真机复跑可直接读热点。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，85/85 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` 定向 10k raw digest | 未通过，41.8s，预算 15s；有分段诊断 |
+
+### 状态
+
+- learner-mastery 100k 两类性能门禁仍未闭环；当前证据明确瓶颈是逐条 Keystore 解密与双指纹校验，Room 事务内并行不可行，需真机/更快环境复跑或另行设计不破坏事务/内存边界的批量校验。
+- 真实 Provider、2700 道真实题集、2 万知识点真机 P95 和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryTableNames 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryEntities.kt` 中的表名常量、`LEARNER_MASTERY_TABLE_NAMES`、`LEARNER_MASTERY_PROJECTION_IDENTITY_COLUMNS` 与 `LEARNER_MASTERY_IMMUTABLE_TABLE_NAMES` 抽到新 `LearnerMasteryTableNames.kt`。
+- `LearnerMasteryEntities.kt` 从 1804 行降至 1701 行，表名注册表获得独立文件所有权；同包内部可见性与 Room schema 不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 实体表名注册已拆出独立文件；下一步可继续按权威域拆分实体类与 DAO 读面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 MasteryOpenResponseEntities 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryEntities.kt` 中的 `MasteryModelSubmissionAttemptReceiptEntity`、`MasteryOpenResponseWeakCandidateReceiptEntity`、`MasteryOpenResponseModelEvaluationAttestationEntity`、`MasteryOpenResponseEvaluationKnowledgeScopeEntity`、`MasteryOpenResponseDedicatedDecisionEntity`、`MasteryEvidenceReviewCaseEntity`、`MasteryEvidenceReviewResolutionEntity` 与 `MasteryLegacyEvidenceReviewResolutionAuditEntity` 抽到新 `MasteryOpenResponseEntities.kt`。
+- `LearnerMasteryEntities.kt` 从 1701 行降至 1133 行，开放响应与证据审阅实体获得独立文件所有权；Room schema、外键关系和同包内部可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 实体文件已从 1804 行降至 1133 行，并形成表名注册、开放响应/证据审阅、核心账本三类独立文件；后续继续按权威域拆分 DAO 读面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 MasteryProjectionEntities 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryEntities.kt` 中的校准快照、学习事件链、知识投影、科目摘要、展示/题族节点预算、跨库 inbox/outbox 与分类血缘决策实体抽到新 `MasteryProjectionEntities.kt`。
+- `LearnerMasteryEntities.kt` 从 1133 行降至 432 行，只保留核心证据账本、store metadata、ledger sequence 与 legacy migration checkpoint；Room schema、外键关系和同包内部可见性不变。
+- 全量复跑中 `migration9To10PreservesDataAndInstallsCompleteHistoricalCalibrationRegistry` 出现过一次 `database is locked`，单独复跑 1/1 通过，判定为模拟器偶发锁，不涉及拆分回归。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，85/85 |
+| 迁移用例偶发锁单跑 | 通过，1/1 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 实体已形成 `LearnerMasteryTableNames`、`MasteryOpenResponseEntities`、`MasteryProjectionEntities`、`LearnerMasteryEntities` 四类文件；后续继续拆分 `LearnerMasteryDao.kt` 与 `OpenAiCompatibleModelGateway.kt` 等巨型文件。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryModelSubmissionContracts 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryContracts.kt` 中的 `ModelSubmissionCandidateClaim`、`ModelSubmissionAttemptReceipt`、`ModelSubmissionAttemptScope`、`ModelSubmissionAttempt`、`LearnerMasteryModelRequestGate` 与 `LearnerMasteryModelAccessLeaseGate` 抽到新 `LearnerMasteryModelSubmissionContracts.kt`。
+- `LearnerMasteryContracts.kt` 从 1899 行降至 1204 行；模型提交与访问租约合同获得独立文件所有权，同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成表名注册、实体、模型提交合同三类独立文件；下一步继续拆分证据摄入合同与 `LearnerMasteryDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryEvidenceContracts 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryContracts.kt` 中的 `MasteryEvidenceSourceKind`、`MasteryEvidenceContextKind`、`MasteryEvidenceAuthority`、`MasteryCandidateOrigin`、`ObservedLearningOutcome`、`ObservedAssistance`、`ObservedRetryState`、`TrustedReviewAttemptContext`、`IngestLearningSourceFactCommand`、`IngestLearningObservationCandidateCommand` 等证据摄入合同抽到新 `LearnerMasteryEvidenceContracts.kt`。
+- `LearnerMasteryContracts.kt` 从 1204 行降至 471 行，只保留 store 接口、迁移 batch、查询合同与通用校验函数；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest`（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 合同已形成核心合同、模型提交合同、证据摄入合同三类独立文件；下一步继续拆分 `LearnerMasteryDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 StudentReviewDaoSupport 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDaoSupport.kt` 中的复习原因编码、复习候选学习证据引用、复习会话所有权、展示 ID、未就绪转移审计与滚动时长估算抽到新 `StudentReviewDaoSupport.kt`。
+- `StudentMistakeDaoSupport.kt` 从 228 行降至 90 行，复习专属支持函数获得独立文件所有权；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 复习支持函数已独立成文件，为后续把复习会话读面拆成独立 DAO 做了边界准备。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 StudentReviewDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的复习计划/队列/会话/收据只读查询、候选与题族读面、复习首页/活动会话/回放上下文快照抽到新 `StudentReviewDao`。
+- `StudentMistakeDao` 继承该只读 DAO，保留全部写事务；`StudentMistakeRoomDatabase` 新增 `reviewDao()`，`RoomStudentMistakeStore` 与 `RoomLearnerBoundStudentReviewSessionPort` 的复习读操作改走 `database.reviewDao()`。
+- `StudentMistakeDao.kt` 从 5803 行降至 5338 行，新 DAO 710 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 写 DAO 的复习读面已独立，复习首页/活动会话/回放上下文不再直接穿过写 DAO 的公开读口；下一步继续拆分 `StudentMistakeDao.kt` 与 `LearnerMasteryDao.kt` 的剩余读面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryProjectionRebuildDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的投影重建读面抽到新 `LearnerMasteryProjectionRebuildDao`：学习事件归因、方向回放游标、校准绑定历史、投影证据维度分页、科目重建页与全量投影清理原语。
+- `LearnerMasteryDao` 继承该 DAO 并保留投影写事务；`LearnerMasteryRoomDatabase` 新增 `projectionRebuildDao()`。
+- `LearnerMasteryDao.kt` 从 7016 行降至 6397 行，新 DAO 634 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 投影重建读面已独立，`LearnerMasteryDao.kt` 继续保留投影写事务与校准/事件写链；下一步继续拆分 `LearnerMasteryDao.kt` 与 `StudentMistakeDao.kt` 的剩余大块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryOpenResponseDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的来源事实/证明、候选准入、开放响应与证据审阅原语抽到新 `LearnerMasteryOpenResponseDao`。
+- `LearnerMasteryProjectionRebuildDao` 继承该原语面，`LearnerMasteryDao` 经由投影 DAO 继续获得完整读写链；`LearnerMasteryRoomDatabase` 新增 `openResponseDao()`。
+- `LearnerMasteryDao.kt` 从 6397 行降至 6006 行，新 DAO 408 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成开放响应原语、投影重建读面、主写 DAO 三层边界；下一步继续拆 `LearnerMasteryDao.kt` 的校准/跨库/影子预算块，或回到 `StudentMistakeDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-05 实施批次：B02 LearnerMasteryCalibrationDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的校准快照与学习事件校准绑定原语抽到新 `LearnerMasteryCalibrationDao`。
+- `LearnerMasteryOpenResponseDao` 继承该 DAO，`LearnerMasteryDao` 继续经由投影/开放响应链获得完整读写；`LearnerMasteryRoomDatabase` 新增 `calibrationDao()`。
+- `LearnerMasteryDao.kt` 从 6006 行降至 5900 行，新 DAO 119 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成校准原语、开放响应原语、投影重建读面、主写 DAO 多层边界；下一步继续拆 `LearnerMasteryDao.kt` 的跨库/影子预算块，或回到 `StudentMistakeDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 LearnerMasteryCrossStoreDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的跨库 outbox/inbox、学生 relay、绑定授权状态、元数据、投影代次租约、影子删除与计数原语抽到新 `LearnerMasteryCrossStoreDao`。
+- `LearnerMasteryCalibrationDao` 继承该 DAO，主 DAO 继续经由完整原语链获得读写；`LearnerMasteryRoomDatabase` 新增 `crossStoreDao()`。
+- `LearnerMasteryDao.kt` 从 5900 行降至 5549 行，新 DAO 365 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成跨库原语、校准原语、开放响应原语、投影重建读面、主写 DAO 多层边界；下一步继续拆 `LearnerMasteryDao.kt` 的剩余影子预算块，或回到 `StudentMistakeDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 LearnerMasteryShadowBudgetDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的影子 presentation/problem-family 预算指纹分页原语抽到新 `LearnerMasteryShadowBudgetDao`。
+- `LearnerMasteryCrossStoreDao` 继承该 DAO，主 DAO 继续经由完整原语链获得读写；`LearnerMasteryRoomDatabase` 新增 `shadowBudgetDao()`。
+- `LearnerMasteryDao.kt` 从 5549 行降至 5114 行，新 DAO 446 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成影子预算、跨库、校准、开放响应、投影重建、主写 DAO 多层边界；下一步可继续拆 `LearnerMasteryDao.kt` 的迁移/序列/活动投影块，或回到 `StudentMistakeDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 LearnerMasteryProjectionGenerationDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的投影代次活动计数、影子复制/退役、账本序列与迁移密封原语抽到新 `LearnerMasteryProjectionGenerationDao`。
+- `LearnerMasteryShadowBudgetDao` 继承该 DAO，主 DAO 继续经由完整原语链获得读写；`LearnerMasteryRoomDatabase` 新增 `projectionGenerationDao()`。
+- `LearnerMasteryDao.kt` 从 5114 行降至 4891 行，新 DAO 237 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成投影代次、影子预算、跨库、校准、开放响应、投影重建、主写 DAO 多层边界；下一步继续拆 `LearnerMasteryDao.kt` 的 digest/预算累计块，或回到 `StudentMistakeDao.kt`。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 LearnerMasterySubjectDigestDao 拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的学习事件、投影、科目摘要与方向预算原始查询及摘要快照抽到新 `LearnerMasterySubjectDigestDao`。
+- `LearnerMasteryProjectionGenerationDao` 继承该 DAO，主 DAO 继续经由完整原语链获得读写；`LearnerMasteryRoomDatabase` 新增 `subjectDigestDao()`。
+- `LearnerMasteryDao.kt` 从 4891 行降至 4241 行，新 DAO 664 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，85/85（排除 ScalePerformance） |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：learner-mastery 已形成学习事件/摘要原语、投影代次、影子预算、跨库、校准、开放响应、投影重建、主写 DAO 多层边界；下一步可开始拆 `StudentMistakeDao.kt` 的剩余大块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentCaptureIdentityDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的保存回执、捕获交接、规范问题身份与出现证据原语抽到新 `StudentCaptureIdentityDao`。
+- `StudentReviewDao` 继承该 DAO，主 DAO 继续经复习 DAO 获得完整读写链；`StudentMistakeRoomDatabase` 新增 `captureIdentityDao()`。
+- `StudentCanonicalCaptureIdentityContractTest` 的源码契约改为按“捕获身份 DAO + 复习 DAO + 主 DAO”组合扫描。
+- `StudentMistakeDao.kt` 从 5338 行降至 4983 行，新 DAO 367 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成捕获身份原语、复习 DAO、主写 DAO 边界；下一步继续拆 `StudentMistakeDao.kt` 的问题文档/搜索索引/跨库 relay 块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentProblemDocumentDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的问题文档、修订、练习单元、导入快照、图片、解析与错误归因原语抽到新 `StudentProblemDocumentDao`。
+- `StudentCaptureIdentityDao` 继承该 DAO，主 DAO 继续经完整原语链获得读写；`StudentMistakeRoomDatabase` 新增 `problemDocumentDao()`。
+- 捕获身份源码契约测试改按“文档 DAO + 捕获身份 DAO + 复习 DAO + 主 DAO”组合扫描。
+- `StudentMistakeDao.kt` 从 4983 行降至 4584 行，新 DAO 413 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成问题文档、捕获身份、复习、主写 DAO 多层边界；下一步继续拆 `StudentMistakeDao.kt` 的搜索索引和跨库 relay 块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentMistakeCrossStoreDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的跨库 outbox/inbox、mastery relay 与绑定版本原语抽到新 `StudentMistakeCrossStoreDao`。
+- `StudentProblemDocumentDao` 继承该 DAO，主 DAO 继续经完整原语链获得读写；`StudentMistakeRoomDatabase` 新增 `crossStoreDao()`。
+- `StudentMistakeDao.kt` 从 4584 行降至 4293 行，新 DAO 304 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成跨库 relay、问题文档、捕获身份、复习、主写 DAO 多层边界；下一步继续拆 `StudentMistakeDao.kt` 的搜索索引和迁移原语块。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentMistakeMigrationDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的迁移 checkpoint、迁移回执与目的记录原语抽到新 `StudentMistakeMigrationDao`。
+- `StudentMistakeCrossStoreDao` 继承该 DAO，主 DAO 继续经完整原语链获得读写；`StudentMistakeRoomDatabase` 新增 `migrationDao()`。
+- `StudentMistakeDao.kt` 从 4293 行降至 4219 行，新 DAO 87 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成迁移、跨库 relay、问题文档、捕获身份、复习、主写 DAO 多层边界；下一步继续拆 `StudentMistakeDao.kt` 的搜索索引和分类/候选写面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentMistakeSearchIndexDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的全文搜索索引状态、回填批与文档同步抽到新 `StudentMistakeSearchIndexDao`。
+- `StudentMistakeMigrationDao` 继承该 DAO，主 DAO 继续经完整原语链获得读写；`StudentMistakeRoomDatabase` 新增 `searchIndexDao()`。
+- `StudentMistakeDao.kt` 从 4219 行降至 4067 行，新 DAO 167 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成搜索索引、迁移、跨库 relay、问题文档、捕获身份、复习、主写 DAO 多层边界；下一步继续拆 `StudentMistakeDao.kt` 的分类/候选写面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentMistakeClassificationDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的集合、分类与复习候选原始读写抽到新 `StudentMistakeClassificationDao`。
+- `StudentMistakeSearchIndexDao` 继承该 DAO，主 DAO 继续经完整原语链获得读写；`StudentMistakeRoomDatabase` 新增 `classificationDao()`。
+- `StudentMistakeDao.kt` 从 4067 行降至 3778 行，新 DAO 302 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成分类/候选、搜索索引、迁移、跨库 relay、问题文档、捕获身份、复习、主写 DAO 多层边界；下一步继续拆 `StudentMistakeDao.kt` 的复习会话写面。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 StudentReviewWriteDao 拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的复习计划/会话/队列/收据写原语抽到新 `StudentReviewWriteDao`。
+- `StudentMistakeClassificationDao` 继承该 DAO，主 DAO 继续经完整原语链获得读写；`StudentMistakeRoomDatabase` 新增 `reviewWriteDao()`。
+- `StudentMistakeDao.kt` 从 3778 行降至 3658 行，新 DAO 133 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 已形成复习写、分类/候选、搜索索引、迁移、跨库 relay、问题文档、捕获身份、复习读、主写 DAO 多层边界；下一步继续拆 `StudentMistakeDao.kt` 的迁移/写事务或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 基础写原语下沉
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 change version、store metadata 与 store generation 原语下沉到 `StudentReviewWriteDao`。
+- 从 `StudentProblemDocumentDao` 移除重复 metadata 读口，主 DAO 继续经完整原语链获得读写。
+- `StudentMistakeDao.kt` 从 3658 行降至 3621 行，`StudentReviewWriteDao` 扩至 189 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 基础写原语已下沉到最底层 DAO；下一步继续拆 `StudentMistakeDao.kt` 的保存/迁移写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 outbox 幂等原语下沉
+
+### 已完成
+
+- 将 outbox 幂等读取/插入与 `insertOutboxExactlyOnce` 下沉到 `StudentReviewWriteDao`。
+- 从 `StudentMistakeCrossStoreDao` 移除重复 outbox 原语，主 DAO 继续经完整原语链获得读写。
+- `StudentMistakeDao.kt` 从 3621 行降至 3602 行，`StudentReviewWriteDao` 扩至 242 行，`StudentMistakeCrossStoreDao` 降至 273 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake outbox 幂等写已收进最底层写 DAO；下一步继续拆 `StudentMistakeDao.kt` 的保存/迁移写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 问题文档写事务下沉
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `commitProblem`、`setCollectionState`、`setProblemLifecycle` 三个问题文档写事务下沉到 `StudentProblemDocumentDao`。
+- 将 `insertRevisionAuthority`/`checkRevisionAuthority` 改为该 DAO 的 `protected` 辅助，主 DAO 的确认/恢复事务继续复用；主 DAO 经继承链仍对存储层提供同一 API。
+- `StudentMistakeDao.kt` 从 3602 行降至 3357 行，`StudentProblemDocumentDao` 扩至 642 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 问题文档写事务已离开主 DAO；下一步继续拆 `StudentMistakeDao.kt` 的保存/迁移写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 原子分类写事务下沉
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `recordClassifications` 原子分类写事务下沉到 `StudentProblemDocumentDao`。
+- 将 `sameClassificationReference` 从 `StudentMistakeDao`/`RoomStudentMistakeStore` 两处私有副本收敛为 `StudentMistakeDaoSupport` 的 `internal` 共享函数，消除重复实现。
+- `StudentMistakeDao.kt` 从 3357 行降至 3228 行，`StudentProblemDocumentDao` 扩至 763 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 问题文档与原子分类写事务均已离开主 DAO；下一步继续拆 `StudentMistakeDao.kt` 的保存/跨库/复习会话写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 跨库重授权事务下沉
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `reauthorizeMasteryRelaySource` 事务下沉到 `StudentMistakeCrossStoreDao`。
+- 将 `StudentMasteryRelaySourceBindingEntity.matches` 与 `appendMasteryRelayReauthorizationCase` 随事务下沉为跨库 DAO 的 `protected` 辅助，`acceptInbox` 经继承链继续复用。
+- `StudentMistakeDao.kt` 从 3228 行降至 3135 行，`StudentMistakeCrossStoreDao` 扩至 368 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 问题文档、原子分类、跨库重授权写事务均已离开主 DAO；下一步继续拆 `StudentMistakeDao.kt` 的保存/复习会话写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 复习调度写事务拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `upsertReviewCandidate`、`applyReviewCandidate` 与 `storeReviewQueue` 抽到新 `StudentReviewScheduleWriteDao`。
+- `StudentMistakeDao` 改继承 `StudentReviewScheduleWriteDao`，复习调度写面独立成文件；`readProblemByPracticeUnit` 同步下沉到 `StudentProblemDocumentDao`，供新调度 DAO 经继承链使用。
+- `StudentMistakeDao.kt` 从 3135 行降至 3013 行，新 DAO 113 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 主 DAO 已降至 3013 行，问题文档、原子分类、跨库重授权、复习调度写面均已独立；下一步继续拆 `StudentMistakeDao.kt` 的保存/复习会话写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 复习会话写事务拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `startOrResumeReviewSession`、`removeUnreadyReviewQueueItem`、`applyReviewTransition`、`transitionReviewQueueItem`、`recordReviewSelfReportAndComplete` 抽到新 `StudentReviewSessionWriteDao`。
+- 将队列就绪/移除原因、可信展示围栏与下一复习候选辅助随事务下沉为 `protected` 辅助；`acceptInbox` 经继承链继续复用。
+- `StudentTrustedReviewAnswerOwnerTest` 的 v15 源码契约改扫 `StudentReviewSessionWriteDao`，匹配 `protected suspend fun insertTrustedReviewFenceIfExact`。
+- `StudentMistakeDao.kt` 从 3013 行降至 2184 行，新 DAO 842 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 主 DAO 已降至 2184 行，复习会话写面与复习调度写面独立；下一步继续拆 `StudentMistakeDao.kt` 的保存/迁移/跨库 inbox 写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 inbox 写事务拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `acceptInbox` 学习尝试 inbox 应用事务抽到新 `StudentInboxWriteDao`。
+- `StudentMistakeDao` 改继承 `StudentInboxWriteDao`，经继承链继续复用跨库绑定、重授权案件、复习候选与调度辅助。
+- `StudentMistakeDao.kt` 从 2184 行降至 2021 行，新 DAO 173 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 主 DAO 已降至 2021 行，问题文档、原子分类、跨库重授权、复习调度、复习会话、inbox 写面均已独立；下一步继续拆 `StudentMistakeDao.kt` 的保存/迁移写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 保存写事务拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `saveConfirmedMistake`、`saveTargetConfirmedMistake`、`saveStudentOwnedCapture`、`acknowledgeStudentCaptureSaveHandoff` 与 `requireExactConfirmedTarget` 抽到新 `StudentSaveWriteDao`。
+- `StudentMistakeDao` 改继承 `StudentSaveWriteDao`，经继承链继续复用保存回执、问题文档、复习调度与 inbox 原语。
+- `StudentCanonicalCaptureIdentityContractTest` 的原子捕获事务段结束锚点从已移走的 `acknowledgeStudentCaptureSaveHandoff` 改为仍留在主 DAO 的 `resolveAtomicCaptureIdentity`。
+- `StudentMistakeDao.kt` 从 2021 行降至 1832 行，新 DAO 199 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 主 DAO 已降至 1832 行，保存、inbox、复习会话、复习调度、跨库重授权、原子分类、问题文档写面均已独立；下一步继续拆 `StudentMistakeDao.kt` 的原子捕获/迁移写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 迁移写事务拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `applyMigrationPage` 精确迁移页事务抽到新 `StudentMigrationWriteDao`。
+- `StudentMistakeDao` 改继承 `StudentMigrationWriteDao`，经继承链继续复用迁移原语、问题文档、保存与复习调度写事务。
+- `StudentMistakeDao.kt` 从 1832 行降至 1705 行，新 DAO 137 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：student-mistake 主 DAO 已降至 1705 行，保存、inbox、复习会话、复习调度、跨库重授权、原子分类、问题文档、迁移写面均已独立；下一步继续拆 `StudentMistakeDao.kt` 的原子捕获写事务，或回到 learner-mastery。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 原子捕获写事务拆分
+
+### 已完成
+
+- 将 `StudentMistakeDao.kt` 的 `saveStudentCaptureOccurrence` 原子捕获事务及全部解析、重定向、证据辅助整块抽到新 `StudentAtomicCaptureWriteDao`。
+- `StudentMistakeDao` 改继承 `StudentAtomicCaptureWriteDao`，只保留 `observeChangeVersion` 观察口，主 DAO 不再是巨型文件。
+- `StudentCanonicalCaptureIdentityContractTest` 的组合源码扫描补入 `StudentAtomicCaptureWriteDao`。
+- `StudentMistakeDao.kt` 从 1705 行降至 19 行，新 DAO 1685 行；同包内部可见性与行为不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 student-mistake 巨型主 DAO 已完成拆分：主 DAO 19 行，问题文档、捕获身份、复习读、复习调度写、复习会话写、inbox 写、保存写、迁移写、原子捕获写均独立成文件；下一步回到 learner-mastery 剩余拆分或处理其它巨型文件。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 learner-mastery 投影重建/证据摄入写事务拆分
+
+### 已完成
+
+- 将 `LearnerMasteryDao.kt` 的投影重建编排事务、进度辅助、方向预算与校准校验辅助抽到新 `LearnerMasteryProjectionRebuildWriteDao`。
+- 将 `LearnerMasteryDao.kt` 剩余的跨库接收、迁移、开放响应、候选摄入、证据审阅与修正事务整块抽到新 `LearnerMasteryEvidenceIngestWriteDao`。
+- `LearnerMasteryDao` 改继承 `LearnerMasteryEvidenceIngestWriteDao`，只保留空类声明；`LearnerMasteryDao.kt` 从 4241 行降至 6 行，新 DAO 分别 1667/2582 行。
+- 常量与校准校验辅助随写事务下沉，主 DAO 不再持有投影重建/证据摄入逻辑。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:learner-mastery-database:compileDebugKotlin` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:learner-mastery-database:connectedDebugAndroidTest` | 通过，排除 ScalePerformance，85/85 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- B02 learner-mastery 主 DAO 已收口为 6 行；投影重建写面与证据摄入写面独立成文件，全量 connected（排除 ScalePerformance）85/85 通过。ScalePerformance 因模拟器耗时仍作为独立外部门禁。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 core:database 学习账本 DAO 拆分
+
+### 已完成
+
+- 将 `LearningDao.kt` 的 `AttemptTransactionDao` 与 `ProjectionTransactionDao` 抽到独立文件，私有映射函数统一收敛到 `LearningDaoMappings.kt`。
+- `LearningDao.kt` 从 2927 行降至 394 行，`AttemptTransactionDao.kt` 822 行、`ProjectionTransactionDao.kt` 1334 行、`LearningDaoMappings.kt` 682 行。
+- 共享常量、`PresentationAuthorityTransition` 与 `PresentationProjectionStateEntity.toModel` 改为同包 internal，供三个 DAO 文件共同使用。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `LearningObservationDatabaseInstrumentedTest` | 通过，26/26 |
+
+### 状态
+
+- B02 继续“部分落实”：core:database 学习账本 DAO 已从单文件拆成四个文件；`RoomStudyDatabase.kt`、`LearningObservationDao.kt`、`TutorLearningMemoryDao.kt` 等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 core:database 待处理捕获辅助拆分
+
+### 已完成
+
+- 将 `RoomStudyDatabase.kt` 的待处理捕获加载、校验与工作区记录辅助抽到新 `RoomStudyDatabasePendingCaptureSupport`。
+- `RoomStudyDatabase` 通过 `pendingCaptureSupport` 委托 `loadPendingCaptureBatch` 与 `loadPendingCapture`，对外行为不变。
+- `RoomStudyDatabase.kt` 从 2811 行降至 2666 行，新支持类 192 行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `ProblemDraftDatabaseInstrumentedTest` | 通过，22/22 |
+
+### 状态
+
+- B02 继续“部分落实”：core:database 已拆出学习账本 DAO 与待处理捕获支持；`RoomStudyDatabase.kt` 2666 行、`LearningObservationDao.kt` 1566 行、`TutorLearningMemoryDao.kt` 1598 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 core:database 遗留保存辅助下沉
+
+### 已完成
+
+- 将 `RoomStudyDatabase.kt` 的 `prepareLegacyStudentSaveHandoff` 遗留保存辅助下沉到 `RoomStudyDatabasePendingCaptureSupport`。
+- `RoomStudyDatabase` 改为委托 `pendingCaptureSupport.prepareLegacyStudentSaveHandoff`，对外行为不变。
+- `RoomStudyDatabase.kt` 从 2666 行降至 2597 行，支持类扩至 261 行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `ProblemDraftDatabaseInstrumentedTest` | 通过，22/22 |
+
+### 状态
+
+- B02 继续“部分落实”：core:database 已拆出学习账本 DAO、待处理捕获支持与遗留保存支持；`RoomStudyDatabase.kt` 2597 行、`LearningObservationDao.kt` 1566 行、`TutorLearningMemoryDao.kt` 1598 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 LearningObservation 映射收敛
+
+### 已完成
+
+- 将 `LearningObservationDao.kt` 的私有行映射统一收敛到 `LearningObservationDaoMappings.kt`，`INSERT_CONFLICT` 改为文件私有，避免与 `TutorInteractionDao`、`TutorLearningMemoryDao` 的包级常量冲突。
+- `LearningObservationDao.kt` 使用 `-1L` 字面量替换包级共享冲突常量，行为与同包可见性不变。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `LearningObservationDatabaseInstrumentedTest` | 通过，26/26 |
+| 定向 `ProblemDraftDatabaseInstrumentedTest` | 通过，22/22 |
+
+### 状态
+
+- B02 继续“部分落实”：core:database 已拆出学习账本 DAO、待处理捕获支持、遗留保存支持与观察映射收敛；`RoomStudyDatabase.kt` 2597 行、`LearningObservationDao.kt` 1203 行、`TutorLearningMemoryDao.kt` 1598 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 RoomStudyDatabase 知识库辅助拆分
+
+### 已完成
+
+- 将 `RoomStudyDatabase.kt` 的知识库辅助整块抽到新 `RoomStudyDatabaseKnowledgeSupport`：检索索引补建、知识点/来源批量读取、已应用研究决议读取、审校知识包事务应用与知识库依赖读取。
+- `RoomStudyDatabase` 改为委托 `knowledgeSupport` 调用，知识库导入、审校知识包应用和检索索引行为不变。
+- `RoomStudyDatabase.kt` 从 2597 行降至 2276 行，新支持类 122 行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `ReviewedKnowledgePackInstrumentedTest` | 通过，4/4 |
+| 定向 `KnowledgeBaseImportInstrumentedTest` | 通过，2/2 |
+
+### 状态
+
+- B02 继续“部分落实”：core:database 已拆出学习账本 DAO、待处理捕获支持、遗留保存支持、观察映射与知识库辅助；`RoomStudyDatabase.kt` 2276 行、`LearningObservationDao.kt` 1203 行、`TutorLearningMemoryDao.kt` 1598 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 TutorLearningMemoryDao 映射收敛
+
+### 已完成
+
+- 将 `TutorLearningMemoryDao.kt` 的实体映射、幂等匹配、canonical 指纹、来源事实模型转换与捕获选择常量收敛到新 `TutorLearningMemoryDaoMappings.kt`。
+- 映射可见性从文件私有调整为同包 `internal`，主 DAO 对外行为不变。
+- 清理两个文件在拆分后遗留的未使用 import。
+- `TutorLearningMemoryDao.kt` 从 1521 行降至 1102 行，新映射文件 441 行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `TutorLearningMemoryDatabaseInstrumentedTest` | 通过，15/15 |
+
+### 状态
+
+- B02 继续“部分落实”：core:database 已拆出学习账本 DAO、待处理捕获支持、遗留保存支持、观察映射、知识库辅助与学习记忆映射；`CapturedTutorSessionModelPanel.kt` 3760 行、`OpenAiCompatibleModelGateway.kt` 2281 行、`CurrentTutorSessionHostCoordinator.kt` 2415 行、`TutorLearningMemoryDao.kt` 1102 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 OpenAiCompatibleModelGateway 协议编解码拆分
+
+### 已完成
+
+- 将 `OpenAiCompatibleModelGateway.kt` 尾部的 wire 序列化与响应解析整块抽到新 `OpenAiGatewayProtocolCodecs.kt`。
+- 迁移内容包括：预算请求序列化、HTTP 响应事件映射、捕获文档/评估解析、讲题计划/回复/大厅解析，以及视觉场景、程序、表达式解析。
+- 同模块内部可见性保持，清理两个文件拆分后遗留的未使用 import。
+- `OpenAiCompatibleModelGateway.kt` 从 2281 非空行降至 1317 非空行，新协议编解码文件 987 非空行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model-provider:compileKotlin` | 通过 |
+| `:core:model-provider:test` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `git diff --check` | 干净 |
+
+### 状态
+
+- B02 继续“部分落实”：`CapturedTutorSessionModelPanel.kt` 3817 行、`CurrentTutorSessionHostCoordinator.kt` 2506 行、`RoomStudyDatabase.kt` 2486 行、`OpenAiCompatibleModelGateway.kt` 1369 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 CurrentTutorSessionHostCoordinator 契约拆分
+
+### 已完成
+
+- 将 `CurrentTutorSessionHostCoordinator.kt` 顶部的会话契约类型整块抽到新 `CurrentTutorSessionHostContracts.kt`。
+- 迁移内容包括：写权限、已验证材料、可信作答围栏/回执、证据状态、提示提交、激活所有者与学习权威存储接口。
+- 清理两个文件拆分后遗留的未使用 import。
+- `CurrentTutorSessionHostCoordinator.kt` 从 2415 非空行降至 2091 非空行，新契约文件 342 非空行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `git diff --check` | 干净 |
+
+### 状态
+
+- B02 继续“部分落实”：`CapturedTutorSessionModelPanel.kt` 3817 行、`CurrentTutorSessionHostCoordinator.kt` 2149 物理行、`RoomStudyDatabase.kt` 2486 行、`OpenAiCompatibleModelGateway.kt` 1369 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 错题组织/学生存储映射拆分
+
+### 已完成
+
+- 将 `RoomStudentMistakeStore.kt` 尾部的领域/实体映射与搜索、分类、复习候选/队列转换抽到新 `RoomStudentMistakeStoreMappings.kt`。
+- 将 `RoomMistakeOrganizationRepository.kt` 尾部的持久化任务、确认命令构建、分类/知识/关系/原子知识辅助与 v3 兼容映射抽到新 `RoomMistakeOrganizationRepositoryMappings.kt`。
+- 将共享组织常量收敛到新映射文件，避免原仓库与新映射文件重复声明。
+- 两个静态架构守卫把 `RoomMistakeOrganizationRepositoryMappings.kt` 加入已审计仓库边界。
+- `RoomStudentMistakeStore.kt` 从 1834 非空行降至 1263 非空行；`RoomMistakeOrganizationRepository.kt` 从 1644 非空行降至 927 非空行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:student-mistake-database:compileDebugKotlin` | 通过 |
+| `:core:student-mistake-database:testDebugUnitTest` | 通过 |
+| `:core:student-mistake-database:connectedDebugAndroidTest` | 通过，74/74 |
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| 定向 `MistakeOrganizationRepositoryInstrumentedTest` | 通过，9/9 |
+| `git diff --check` | 干净 |
+
+### 状态
+
+- B02 继续“部分落实”：`CapturedTutorSessionModelPanel.kt` 3817 行、`RoomStudyDatabase.kt` 2486 行、`CurrentTutorSessionHostCoordinator.kt` 2149 行、`OpenAiCompatibleModelGateway.kt` 1369 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：B02 RoomStudyDatabase 遗留迁移支持拆分
+
+### 已完成
+
+- 将 `RoomStudyDatabase.kt` 尾部的遗留权威/学生迁移逻辑抽到新 `RoomStudyDatabaseLegacyAuthoritySupport`。
+- 迁移内容包括：权威切换收据、学生保存交接、学生自有捕获确认、精确旧捕获文档读取、权威迁移快照、学生文档分页与掌握事实分页。
+- `RoomStudyDatabase` 改为委托 `legacyAuthoritySupport`，接口行为不变。
+- `LegacyAuthorityMigrationSourceDaoSqlContractTest` 同步扫描新支持类，保证精确文档读取合同仍被审计。
+- `RoomStudyDatabase.kt` 从 2276 非空行降至 1971 非空行，新支持类 352 非空行。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:compileDebugKotlin` | 通过 |
+| `:core:database:testDebugUnitTest` | 通过 |
+| 定向 `CaptureStudentSaveHandoffInstrumentedTest` | 通过，6/6 |
+| `git diff --check` | 干净 |
+
+### 状态
+
+- B02 继续“部分落实”：`CapturedTutorSessionModelPanel.kt` 3817 行、`RoomStudyDatabase.kt` 2179 物理行、`CurrentTutorSessionHostCoordinator.kt` 2149 行、`OpenAiCompatibleModelGateway.kt` 1369 行等大文件仍在拆分范围。
+- learner-mastery 100k 两类性能门禁、2 万知识点真机 P95、真实 Provider、2700 道真实题集和正式九科知识包人工审校继续等待外部条件。
+
+## 2026-08-06 实施批次：G06 大批量调度仿真性质测试
+
+### 已完成
+
+- 新增 `ThreeAuthorityReviewBulkSimulationTest`，对 10/100/500/1000/5000 五档规模统一运行逐日仿真。
+- 每档规模逐日断言：计划时长不超预算、题数不超过上限、无重复选择、确定性指纹一致、已选候选从剩余集合移除。
+- 记录每个候选的服务日，断言全部候选在公平服务天数内完成，证明大批量导入不存在永久饥饿。
+- 新增同族大规模场景：同一题族在任何每日计划中最多一个代表题，最终所有同族候选仍被全量服务。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `ThreeAuthorityReviewBulkSimulationTest` | 通过 |
+| `:core:domain:test` | 通过 |
+
+### 状态
+
+- G06 继续“部分落实”：核心不变量已自动化为五档规模仿真，中端真机性能仍待 I03 外部设备验收。
+- B02 巨型文件拆分、I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：H03 学习掌握板块下钻
+
+### 已完成
+
+- 学习掌握知识区新增“全部 + 各板块”横向筛选条，选中板块后板块进度、薄弱知识和知识点列表只展示该板块。
+- 新增 `learningMasterySectionNames` 与 `learningMasterySectionItems` 纯函数，板块名去重排序、无板块路径回退“其他”。
+- 新增 app 单元测试覆盖板块名、板块筛选与“全部”回退。
+- 新增 Compose 仪器用例验证点击板块后只显示该板块知识点且隐藏其他板块内容。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:app:testLocalFirstDebugUnitTest` 定向 `LearningMasteryPresentationTest` | 通过 |
+| `LearningMasteryScreenInstrumentedTest` | 通过，7/7 |
+
+### 状态
+
+- H03 继续“部分落实”：板块下钻已闭环，九科大量/长名称/大字体与真实设备截图仍待 I03/I06 验收。
+- G06 仿真、B02 拆分、I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：H01 学生 UI 内部术语泄漏审计
+
+### 已完成
+
+- 在 `tools/tests/test_production_ui_honesty.py` 新增生产 UI 内部术语审计门禁。
+- 扫描范围覆盖 `app`、全部 `feature`、`core/ui` 的 `src/main`，只检查 `Text`、`contentDescription`、`title`、`message`、`error`、`hint` 等学生可见字符串位置。
+- 禁止术语覆盖“原子知识、知识本体、检索召回、学习投影、证据权重、模型候选、分类依据、资料完整度、知识点与资料、待补齐、历史轴、冲突投影、grounding、taxonomy、embedding、schema、learner、evidence”等内部概念。
+- 结合既有学习掌握、复习、存储 Compose 仪器测试，H01 验收项全部有自动检查。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `python -m unittest tools.tests.test_production_ui_honesty -v` | 通过，2/2 |
+
+### 状态
+
+- H01 已标记完成：学生 UI、可访问性文本、通知和错误文案不再暴露 AI 知识库运维信息。
+- `tools/tests` 全量本机执行仍有环境失败：部分模块缺 `PYTHONPATH`，视觉候选测试要求 CPython 3.12.13 + Pillow 12.2.0；这些与本轮审计改动无关，正式 CI 环境需要补齐锁定的运行时。
+
+## 2026-08-06 实施批次：G05 高风险不延误性质测试
+
+### 已完成
+
+- 在 `ThreeAuthorityReviewBulkSimulationTest` 新增 5000 题大批量高风险性质测试。
+- 20 个 `ANSWER_REVEALED` 高风险候选与 4980 个普通新保存候选混排，断言首日 50 题计划包含全部高风险候选。
+- 结合已有 30/90 天轮换、等待分、防饥饿与确定性测试，G05 验收项全部有自动检查。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `ThreeAuthorityReviewBulkSimulationTest` | 通过 |
+| `:core:domain:test` | 通过 |
+
+### 状态
+
+- G05 已标记完成：无永久饥饿、高风险不被轮换延误、结果可重复均有自动化证据。
+- G06 仿真、H03 板块下钻、H01 内部术语审计已完成；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：A07 导航状态转换图自动校验
+
+### 已完成
+
+- 新增 `NavigationStateTransitionGraphTest`，为全部 14 个二级导航工作流建立可机器校验的状态转换图。
+- 自动断言：所有状态从入口可达、无自环、除恢复目的地外无死状态、每个状态都能到达底栏恢复目的地、loading/error 状态必有出口。
+- 根目的地职责与主能力消失由既有 `RootNavigationPolicyTest` 和生产能力发布边界测试覆盖。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `NavigationStateTransitionGraphTest` | 通过 |
+| `:app:testLocalFirstDebugUnitTest` | 通过 |
+
+### 状态
+
+- A07 已标记完成：全部二级工作流有完整状态转换图，死循环/无出口错误态/恢复边均自动检测。
+- G05、G06、H01、H03 已完成；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：F05-F07 视觉运行时验收收口
+
+### 已完成
+
+- F05 标记完成：协议版本、未知字段失败关闭、跨学科样例、数量/尺寸/深度/文本/表达式/时长预算和单轮一主场景约束由模型与运行时测试覆盖。
+- F06 标记完成：2D/3D/图表通用播放器、命中证明、状态恢复、Filament 重复开关与非法方向回退由 `TutorVisualDocumentInstrumentedTest` 覆盖。
+- F07 标记完成：新增 `TutorMotionPlaybackControlTest` 覆盖 0.5/1/2 倍速循环与播放时间钳制；结合既有运动、程序和 provenance 测试，播放/暂停/复位/拖动/倍速、单位校验、参数上限和数值精度均有自动化证据。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `TutorMotionPlaybackControlTest` | 通过 |
+| `:core:ui:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- F05、F06、F07 已标记完成；A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：H02 2 万知识点分页回归
+
+### 已完成
+
+- `LocalLearningMasteryDisplayRepositoryTest` 新增 20,000 知识点分页回归。
+- 逐页读取断言：每页不超过 `LearningMasteryPageRequest.MAX_LIMIT`、掌握库读取请求不一次携带全量节点、全部 20,000 点最终无重复覆盖。
+- 结合既有跨科、时间线、revision 绑定与知识库 2 万节点规模基准，H02 验收项已有自动化证据。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `LocalLearningMasteryDisplayRepositoryTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- H02 已标记完成；F05、F06、F07、A07、G05、G06、H01、H03 已完成。
+- 真机帧率/内存仍由 I03 外部设备验收；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：C04 知识库 2 万节点规模基准
+
+### 已完成
+
+- 重新运行 `:core:knowledge-database:connectedKnowledgeScaleBenchmark -PrunKnowledgeScaleBenchmark=true`。
+- API 36 模拟器 2 万节点规模下，公开召回/邻域/教学材料/展示页 P95 全部低于 50/150/100/500ms 门禁并通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `connectedKnowledgeScaleBenchmark` | 通过 |
+
+### 状态
+
+- C04 继续“部分落实”：模拟器规模性能已有当前证据，中端 ARM 真机 P95 仍归 I03 外部设备验收。
+- H02、F05-F07、A07、G05、G06、H01、H03 已完成；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：E04 v3 近重复/题族关系闭环审计
+
+### 已完成
+
+- 审计确认生产 v3 近重复/题族关系闭环已落地：关系候选经 OpenAI v3 协议 alias 化进入 prompt，解析器重建 `relations`，`buildV3ConfirmationCommand` 只接受已核验候选并写入学生库组织收据。
+- 题族证据门保持：仅当模型题族置信度 ≥ 0.90 且绑定本次已核验知识引用时写入 `PROBLEM_FAMILY` facet，低置信度建议静默丢弃。
+- 复习规划器按题族选代表题，并只在基础题面指纹与当前 revision 一致时使用题族去重。
+- E04 验收项由 Provider、模型、映射器和仓库测试共同覆盖，标记完成。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `OpenAiProblemOrganizationProtocolTest` | 通过 |
+| `ProblemOrganizationTasksTest` | 通过 |
+| `ReviewedStudentProblemOrganizationMapperTest` | 通过 |
+| `RoomMistakeOrganizationRepositoryTest` | 通过 |
+
+### 状态
+
+- E04 已标记完成；H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：A06 不变量覆盖登记
+
+### 已完成
+
+- 新增 `PlanInvariantCoverageTest`，将导航职责、学生语言、学生语言源审计、模型权限、学习证据、时间语义、预算、数据隔离、生命周期和发布资产 10 类不变量分别绑定到真实测试文件与方法名。
+- 任何一类回归测试被删除或断言丢失都会在 `:app:testLocalFirstDebugUnitTest` 中失败。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `PlanInvariantCoverageTest` | 通过 |
+
+### 状态
+
+- A06 已标记完成；E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B08 统一长任务恢复调度器
+
+### 已完成
+
+- 新增 `LongTaskRecoveryScheduler`：支持注册多个长任务恢复单元，按注册顺序执行、失败互相隔离、重复注册失败关闭、`start()` 幂等。
+- 接入应用启动：问题整理调度与复习提醒协调器改由统一调度器注册并启动。
+- 新增 `LongTaskRecoverySchedulerTest` 覆盖执行顺序、失败隔离、重复注册失败关闭与幂等启动。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `LongTaskRecoverySchedulerTest` | 通过 |
+| `:app:compileLocalFirstDebugKotlin` | 通过 |
+| `:app:testLocalFirstDebugUnitTest` | 通过 |
+
+### 状态
+
+- B08 继续“部分落实”：统一调度器骨架已落地并接入两个恢复单元；批量导入、模型任务、自由响应 outbox 与掌握库投影恢复单元仍待后续注册。
+- A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B08 批量导入恢复单元
+
+### 已完成
+
+- `BatchImportRepository` 新增 `recoverInterruptedBatchImportWork()` 启动恢复入口，生产实现重排队中断页/边界并重放持久合并收据。
+- `OwnerBoundBatchImportRepository` 与 `ProductionBatchImportOwnerRegistry.RevocableRepository` 均转发该入口。
+- 统一调度器已注册 `batch-import` 恢复单元，当前共接入问题整理、批量导入、复习提醒三个恢复单元。
+- 新增 `startupRecoveryRequeuesInterruptedBoundariesForCompletedJobs` 测试。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 定向 `ProductionBatchImportRepositoryTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:app:compileLocalFirstDebugKotlin` | 通过 |
+
+### 状态
+
+- B08 已标记完成：统一调度器接入三个恢复单元，其余长任务族已有自动恢复路径（详见下文收口）。
+
+## 2026-08-06 实施批次：B08 恢复覆盖收口
+
+### 已完成
+
+- 审计确认模型任务、捕获提交、批量导入、自由响应 outbox、掌握库投影重建都有真实恢复路径。
+- 统一调度器已接入问题整理、批量导入、复习提醒三个恢复单元。
+- 自由响应 outbox 在会话存储初始化时自动刷新并失败关闭过期项；掌握库投影由前台 touch 续跑；模型任务依赖持久化状态与前台观察。
+- B08 验收项已收口为完成。
+
+### 状态
+
+- B08 已标记完成；A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：G07 复习提醒验收收口
+
+### 已完成
+
+- 重新运行 `ReviewReminderCoordinatorTest` 与 `ReviewReminderPlatformInstrumentedTest`。
+- 通知发布、点击入口不冒充打卡、真实完成才写记录、时区/DST、重启恢复均通过。
+- G07 已标记完成；真实设备通知与 DST 边界继续归 I03 外部设备验收。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ReviewReminderCoordinatorTest` | 通过 |
+| `ReviewReminderPlatformInstrumentedTest` | 通过 |
+
+### 状态
+
+- G07 已标记完成；B08、A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：G04 优先级/遗忘/升降频收口
+
+### 已完成
+
+- 重新运行 `ThreeAuthorityReviewPlannerTest`，考试目标窗口/边界/无目标不造假权重、答案暴露快速复习、稳定/波动知识排序均通过。
+- 稳定降频与再次出错升频由 learner-mastery 投影与 `LocalMasteryPolicyPropertyTest` 覆盖。
+- G04 已标记完成。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ThreeAuthorityReviewPlannerTest` | 通过 |
+
+### 状态
+
+- G04 已标记完成；G07、B08、A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：G01-G03 复习基础收口
+
+### 已完成
+
+- 重新运行 `ThreeAuthorityDailyReviewRepositoryTest` 与 `ThreeAuthorityReviewPlanCoordinatorTest`。
+- G01：未选题不产生完成记录、删除/修订更新债务、批量导入不制造当天洪峰均有证据。
+- G02：真实题族来源已由 v3 协议、Provider 解析、审校映射器、学生库组织收据与复习规划器全链打通。
+- G03：三档节奏、任意规模不突破预算、超长单题排队、次日稳定生效均有证据。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `ThreeAuthorityDailyReviewRepositoryTest` | 通过 |
+| `ThreeAuthorityReviewPlanCoordinatorTest` | 通过 |
+
+### 状态
+
+- G01、G02、G03、G04、G07、B08、A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：F08 讲题语言/流式收口
+
+### 已完成
+
+- 重新运行 `StudentFacingLanguagePolicyTest` 与 `StreamingMarkdownAssemblerTest`。
+- 技术词过滤、流式稳定前缀、半截流回滚和重复记忆防护均有自动化证据。
+- F08 已标记完成；真实 Provider 长回复与限流归 I01 外部验收。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `StudentFacingLanguagePolicyTest` | 通过 |
+| `StreamingMarkdownAssemblerTest` | 通过 |
+
+### 状态
+
+- F08、G01-G04、G07、B08、A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：E02/E03 拍题与批量恢复收口
+
+### 已完成
+
+- 重新运行 `:feature:capture:testDebugUnitTest`。
+- E02：自动继续策略、最小补充入口与无固定检查关卡均有自动化证据。
+- E03：批量导入启动恢复、持久合并收据重放、中断页/边界重排队已接入统一调度器并有测试；500 页与真机压力归 I03。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:capture:testDebugUnitTest` | 通过 |
+
+### 状态
+
+- E02、E03、F08、G01-G04、G07、B08、A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：D04-D06 学习证据与掌握闭环收口
+
+### 已完成
+
+- 重新运行 `LocalMasteryPolicyPropertyTest` 与 `LearnerMasteryTutorLearningMemoryRepositoryTest`。
+- D04：幂等、顺序、冲突、撤销、修订退休、历史题面绑定与纯讲解不写掌握均有自动化证据。
+- D05：同科复用、跨科隔离、强项跳过、弱项关注、过期重评、矛盾处理和答案暴露不制造独立掌握均有生产测试。
+- D06：独立正确提高稳定度、失败/看答案降低、稳定掌握不重复询问、再次出错可恢复关注均有属性与真实装配测试。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `LocalMasteryPolicyPropertyTest` | 通过 |
+| `LearnerMasteryTutorLearningMemoryRepositoryTest` | 通过 |
+
+### 状态
+
+- D04、D05、D06、E02、E03、F08、G01-G04、G07、B08、A06、E04、H02、F05-F07、A07、G05、G06、H01、H03 已完成。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：主计划阶段状态同步
+
+### 已完成
+
+- 将 `task_plan.md` 的阶段状态从“进行中/待开始”同步为“部分完成”。
+- 阶段 0-7 当前均有至少一个已闭环工作包或已完成审计；阶段 8 保持“待开始”。
+
+### 状态
+
+- 主计划、工作包台账与进度记录保持一致；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：D02/D03/D08 收口记录
+
+### 已完成
+
+- 当前轮强制重跑 `TutorTasksTest` 与 `ModelEgressTest`，意图覆盖、低置信不执行、错误识别不写数据、读取范围/数量/用途硬授权、配置切换失效与越权数据拒绝均有新鲜自动化证据。
+- 当前轮强制重跑 `TutorModelTaskPolicyTest`，模型自报答案曝光/正确项/直接写权均被本地拒绝，三类会话生命周期独立。
+- D02、D03、D08 的“完成”标记与 `implementation_work_packages.md` 保持一致；真实口语/复合请求评测、Provider 端到端与对抗集归 I01/I02/I04。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:model:cleanTest :core:model:test --tests TutorTasksTest --tests ModelEgressTest` | 通过 |
+| `:feature:tutor:cleanTestDebugUnitTest :feature:tutor:testDebugUnitTest --tests TutorModelTaskPolicyTest` | 通过 |
+
+### 状态
+
+- D02、D03、D08 已标记完成；A06、A07、A08、B01、B08、D04-D08、E02-E04、F05-F08、G01-G05、G07、H01、H02、H04 已完成。
+- 剩余部分落实：A01、A03-A05、B02-B07、B09、C01-C06、D01、E01、E05、E06、F01-F04、G06、H03。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 OpenAiModelProtocol 整块拆分
+
+### 已完成
+
+- 将 `OpenAiCompatibleModelGateway.kt` 尾部的 `OpenAiModelProtocol` 整块搬移到新 `OpenAiModelProtocol.kt`，协议序列化、解析与 Prompt 构造函数不再堆在网关主文件。
+- 网关主文件从 1369 行降至 471 行，新协议文件 970 行；同包可见性与所有引用保持不变。
+- 当前轮强制重跑 `:core:model-provider:cleanTest :core:model-provider:test`，编译与测试全部通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `OpenAiCompatibleModelGateway.kt` 行数 | 471 |
+| `OpenAiModelProtocol.kt` 行数 | 970 |
+| `:core:model-provider:cleanTest :core:model-provider:test` | 通过 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt`（3817 行）仍待继续拆分，`RoomStudyDatabase.kt`（2179 行）、`CurrentTutorSessionHostCoordinator.kt`（2149 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 RoomStudyDatabase 问题整理事务拆分与主门面重建
+
+### 已完成
+
+- 将 `RoomStudyDatabase.kt` 的问题整理工作事务簇（读取/认领/授权/重授权/完成原子收口等 18 个方法）整块抽到新 `RoomStudyDatabaseProblemOrganizationWorkSupport`，主类只保留委托。
+- 期间工作区主门面文件被误清空，已从 HEAD 基线重建，并补齐知识库读面、批量导入合并、当前 Tutor 会话、遗留权威迁移、学习证据会话与问题整理委托；`RoomStudyDatabase.kt` 重建后为 1853 行，新支持类 540 行。
+- 当前轮验证：`:core:database:testDebugUnitTest`、`:core:data:testDebugUnitTest`、`:app:testLocalFirstDebugUnitTest` 与 `:core:database:connectedDebugAndroidTest`（280/280）全部通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:database:cleanTest :core:database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest :app:testLocalFirstDebugUnitTest` | 通过 |
+| `:core:database:connectedDebugAndroidTest` | 通过，280/280 |
+| `RoomStudyDatabase.kt` 行数 | 1853 |
+| `RoomStudyDatabaseProblemOrganizationWorkSupport.kt` 行数 | 540 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt`（3817 行）仍待继续拆分，`CurrentTutorSessionHostCoordinator.kt`（2149 行）、`CaptureScreen.kt`（2418 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：learner-mastery 10k 原始快照摘要微门禁通过
+
+### 已完成
+
+- 将 `LearnerMasteryCutoverDao` 的 legacy 原始快照 `sourceValidation` 热点改为模块级固定线程池并行执行逐条 AndroidKeyStore AES-GCM 解密与双 SHA-256 校验。
+- 并行校验只在纯内存快照上运行，事务线程负责 Room 读写与提交，不再切换协程 dispatcher，避免此前“Room 事务内并行化破坏事务上下文”的问题。
+- 模拟器 10k 原始快照摘要微门禁通过（预算 15s），普通 connected 85/85（排除 ScalePerformance）保持通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `tenThousandRawSnapshotsConfirmDigestScalingBeforeTheReleaseGate` | 通过 |
+| `:core:learner-mastery-database:testDebugUnitTest` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| learner-mastery connected（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- 100k 用例当前轮在 fixture 建库阶段 15 分钟超时，未完成，不能作为门禁通过证据；真机/更快环境复跑仍归 I03。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：learner-mastery legacy 导入加密并行化
+
+### 已完成
+
+- `appendLegacySnapshotPage` 页内逐条 AES-GCM 加密改用模块级固定线程池并行执行，事务线程只负责 Room 读写与提交。
+- 普通 connected 85/85（排除 ScalePerformance）与 10k 原始快照摘要微门禁均通过；真实批量迁移路径与 100k fixture 建库同时受益。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| learner-mastery connected（排除 ScalePerformance） | 通过，85/85 |
+| `tenThousandRawSnapshotsConfirmDigestScalingBeforeTheReleaseGate` | 通过 |
+
+### 状态
+
+- 100k 门禁仍需真机/更快环境复跑；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：learner-mastery 100k 门禁完整跑通但未达预算
+
+### 已完成
+
+- 并行加密后，100k 原始快照摘要用例已可完整跑完（此前 fixture 建库阶段 15 分钟超时）。
+- 实测计时区 `128,928.876 ms`，超过 60s 预算：`sourceValidationMs=125,481.553`、`pageReceiptMs=395.841`、`destinationDigestMs=2,221.122`、`snapshotReadMs=780.039`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `hundredThousandRawSnapshotsUseBoundedPagesDuringDigestRecompute` | 跑完，但失败：128.9s > 60s |
+| 10k 原始快照摘要微门禁 | 通过 |
+| learner-mastery connected（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- 100k 预算仍未被模拟器满足；sourceValidation 仍是最大瓶颈，真机/更快环境复跑归 I03。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CurrentTutorSessionHostCoordinator 构建器拆分
+
+### 已完成
+
+- 将 `CurrentTutorSessionHostCoordinator.kt` 的自由响应提交、只读呈现权威与会话激活 3 个构建器整块抽到 `CurrentTutorSessionHostSupport.kt`，主类只保留调用。
+- `CurrentTutorSessionHostCoordinator.kt` 从 2149 行降至 2012 行，`CurrentTutorSessionHostSupport.kt` 1060 行；`:core:data:testDebugUnitTest` 与 `:core:data:connectedDebugAndroidTest`（82/82）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:data:connectedDebugAndroidTest` | 通过，82/82 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt`（3839 行）、`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（2422 行）仍待继续拆。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CapturedTutorSession 交互判定纯函数化
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 的等待续讲、计划交互可用与提示按钮可用 3 组交互判定抽为 `CapturedTutorSessionSupport.kt` 纯函数。
+- 新增 `CapturedTutorSessionUiPolicyTest` 覆盖精确请求匹配、尾/当前回合门槛和提示按钮可用边界；`:feature:tutor:testDebugUnitTest` 与 `CapturedTutorSessionInstrumentedTest`（57/57）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3849 行，仍待继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CapturedTutorSession Plan 渲染拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 时间线 Plan 渲染块抽成 `CapturedTutorTimelinePlanItem` Composable，Plan 块内部的当前回合、Provider 匹配、视觉解析、预览/续讲/交互/提示判定全部下沉到组件。
+- `CapturedTutorSessionModelPanel.kt` 从 3849 行降至 3802 行，`CapturedTutorSessionComponents.kt` 525 行；`:feature:tutor:testDebugUnitTest` 与 `CapturedTutorSessionInstrumentedTest`（57/57）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `CapturedTutorSessionModelPanel.kt` 行数 | 3802 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3802 行，仍待继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CapturedTutorSession ChoiceFeedback 渲染拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 时间线 ChoiceFeedback 渲染块抽成 `CapturedTutorTimelineChoiceFeedbackItem` Composable，反馈/预览/交互判定下沉到组件。
+- `CapturedTutorSessionModelPanel.kt` 从 3802 行降至 3793 行，`CapturedTutorSessionComponents.kt` 572 行；`:feature:tutor:testDebugUnitTest` 与 `CapturedTutorSessionInstrumentedTest`（57/57）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `CapturedTutorSessionModelPanel.kt` 行数 | 3793 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3793 行，仍待继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CapturedTutorSession Reply 渲染拆分
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 时间线 Reply 渲染块抽成 `CapturedTutorTimelineReplyItem` Composable，执行匹配、恢复、视觉/交互/本地意图装配全部下沉到组件。
+- `CapturedTutorSessionModelPanel.kt` 从 3793 行降至 3736 行，`CapturedTutorSessionComponents.kt` 717 行；`:feature:tutor:testDebugUnitTest` 与 `CapturedTutorSessionInstrumentedTest`（57/57）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `CapturedTutorSessionModelPanel.kt` 行数 | 3736 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3736 行，仍待继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CaptureScreen 展示组件迁移
+
+### 已完成
+
+- 将 `CaptureScreen.kt` 尾部 8 个展示 Composable 迁到新 `CaptureScreenComponents.kt`：保存错误、替换状态、顶栏、原图分页栏、待重试、已存入、错误与恢复状态卡。
+- `CaptureScreen.kt` 从 2422 行降至 1960 行，`CaptureScreenComponents.kt` 573 行；`:feature:capture:testDebugUnitTest` 与 `:feature:capture:connectedDebugAndroidTest`（23/23）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:capture:testDebugUnitTest` | 通过 |
+| `:feature:capture:connectedDebugAndroidTest` | 通过，23/23 |
+| `CaptureScreen.kt` 行数 | 1960 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt`（3736 行）、`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（1960 行）仍待继续拆。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：跨模块 JVM 全回归
+
+### 已完成
+
+- 当前轮执行跨模块 JVM 回归：`:core:model:test`、`:core:model-provider:test`、`:core:domain:test`、`:core:database:testDebugUnitTest`、`:core:data:testDebugUnitTest`、`:feature:capture:testDebugUnitTest`、`:feature:tutor:testDebugUnitTest`、`:app:testLocalFirstDebugUnitTest`。
+- 全部通过；近期 B02 拆分、性能优化和 D01/F01/F02 收口没有破坏跨模块 JVM 行为。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 跨模块 JVM 全回归 | BUILD SUCCESSFUL |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `:core:database:connectedDebugAndroidTest` | 通过，280/280 |
+| `:core:data:connectedDebugAndroidTest` | 通过，82/82 |
+| learner-mastery connected（排除 ScalePerformance） | 通过，85/85 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3736 行，仍待继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2012 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CapturedTutorSession 展示判定纯函数化
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 的活动回复、计划恢复、视觉重试、响应授权与聊天错误 5 组展示判定抽为 `CapturedTutorSessionSupport.kt` 纯函数，主 Composable 只传布尔输入。
+- 活动回复使用处改为显式 `checkNotNull(activeMessage)`，行为不变且消除编译器对函数返回值无法做空安全的依赖。
+- 新增 `CapturedTutorSessionUiPolicyTest` 覆盖这 5 组判定；`:feature:tutor:testDebugUnitTest` 与 `CapturedTutorSessionInstrumentedTest`（57/57）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:compileDebugKotlin` | 通过 |
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 仍为 3829 行，继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2149 行）、`CaptureScreen.kt`（2418 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CaptureScreen 派生状态纯函数化
+
+### 已完成
+
+- 将 `CaptureScreen.kt` 的评估拦截、候选种类、设置专用、继续条件与入口门 5 组派生状态抽为 `CaptureScreenPolicy.kt` 纯函数，主 Composable 只传布尔输入。
+- 新增 `CaptureScreenPolicyTest` 覆盖非 PASS 评估拦截、结构化/过渡候选优先级、Provider 匹配、继续条件与入口门边界。
+- `CaptureScreen.kt` 当前 2422 行，`CaptureScreenPolicy.kt` 160 行；`:feature:capture:testDebugUnitTest` 与 `:feature:capture:connectedDebugAndroidTest`（23/23）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:capture:compileDebugKotlin` | 通过 |
+| `:feature:capture:testDebugUnitTest` | 通过 |
+| `:feature:capture:connectedDebugAndroidTest` | 通过，23/23 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt`（3829 行）仍待继续拆分，`CurrentTutorSessionHostCoordinator.kt`（2149 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：D01 三类会话数据模型收口
+
+### 已完成
+
+- 确认无绑定聊天（`TutorLobbyRoute`）、临时拍题（`CapturedTutorSessionRoute`）与已存错题（`SavedMistakeTutorRoute`）使用独立生产入口与权限边界。
+- 当前轮证据：`TutorLobbyRouteInstrumentedTest`（5/5）、`CapturedTutorSessionInstrumentedTest`（57/57，含重启后保留学生原文与稳定请求身份）、`CurrentTutorSessionProductionOwnerTest` 重启恢复、`:core:database:connectedDebugAndroidTest`（280/280）与 `:core:data:testDebugUnitTest` 全部通过。
+- 不串上下文与读取/写入权限由 `TutorLobbyPortBoundaryTest`、`TutorOpenResponseLearningRouteBoundaryTest`、`SavedMistakeTutorAnchorTest` 等边界测试覆盖。
+- D01 已在 `implementation_work_packages.md` 标记完成。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `TutorLobbyRouteInstrumentedTest` | 通过，5/5 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:database:connectedDebugAndroidTest` | 通过，280/280 |
+
+### 状态
+
+- D01 已标记完成；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：F01/F02 讲题入口与持续会话收口
+
+### 已完成
+
+- F01 空会话自由聊天入口标记完成：`TutorLobbyRouteInstrumentedTest`（5/5）、`TutorLobbyModelTaskPolicyTest`、`TutorLobbyConversationControllerTest` 与 `TutorLobbyPortBoundaryTest` 全部通过，六类意图的本地路由与输入入口可真实操作。
+- F02 当前题聊天与持续会话标记完成：`CapturedTutorSessionInstrumentedTest`（57/57，含重启后保留学生原文与稳定请求身份）、`SavedMistakeTutorAnchorTest`、`CurrentTutorSessionProductionOwnerTest` 与 `:core:database:connectedDebugAndroidTest`（280/280）全部通过。
+- 旋转/强杀恢复与不串 Provider/题目版本由真实 Room 会话/任务和模型任务仓库覆盖；真实 Provider 语义质量明确归 I01/I02。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `TutorLobbyRouteInstrumentedTest` | 通过，5/5 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:database:connectedDebugAndroidTest` | 通过，280/280 |
+
+### 状态
+
+- D01、F01、F02 已标记完成；I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CapturedTutorSession 时间线纯计算
+
+### 已完成
+
+- 将 `CapturedTutorSessionModelPanel.kt` 时间线渲染的当前回合、Provider 匹配与视觉解析 3 组纯计算抽到 `CapturedTutorSessionSupport.kt`。
+- 新增 `CapturedTutorSessionUiPolicyTest` 覆盖当前回合比较与缺失视觉回退；`:feature:tutor:testDebugUnitTest` 与 `CapturedTutorSessionInstrumentedTest`（57/57）通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:feature:tutor:testDebugUnitTest` | 通过 |
+| `CapturedTutorSessionInstrumentedTest` | 通过，57/57 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3839 行，仍待继续拆分；`CurrentTutorSessionHostCoordinator.kt`（2149 行）、`CaptureScreen.kt`（2422 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。
+
+## 2026-08-06 实施批次：B02 CurrentTutorSessionHostCoordinator 学习材料与视觉解析迁移
+
+### 已完成
+
+- 将 `CurrentTutorSessionHostCoordinator.kt` 的 `resolveCurrentLearningMaterial` 与 `resolveCurrentVisual` 迁到 `CurrentTutorSessionHostSupport.kt`，主文件从 2012 行降至 1942 行。
+- 补齐 `CurrentTutorSessionHostSupport.kt` 缺失的 7 个视觉协议类型导入后编译通过；`:core:data:compileDebugKotlin`、`:core:data:testDebugUnitTest` 与 `:core:data:connectedDebugAndroidTest`（82/82）全部通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| `:core:data:compileDebugKotlin` | 通过 |
+| `:core:data:testDebugUnitTest` | 通过 |
+| `:core:data:connectedDebugAndroidTest` | 通过，82/82 |
+
+### 状态
+
+- B02 继续“部分落实”：最大单文件 `CapturedTutorSessionModelPanel.kt` 当前 3736 行，仍待继续拆分；`CaptureScreen.kt`（1960 行）、`CurrentTutorSessionHostCoordinator.kt`（1942 行）、`RoomStudyDatabase.kt`（1853 行）等也在剩余清单。
+- I01-I07 真实 Provider/题集/设备验收和九科正式知识包人工审校继续等待后续批次或外部条件。

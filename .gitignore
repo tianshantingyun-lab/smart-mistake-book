@@ -1,4 +1,5 @@
 .android/
+.codex-tmp/
 .cache/
 .artifacts/
 artifacts/
@@ -6,6 +7,8 @@ artifacts/
 .jez/
 .kotlin/
 .tmp/
+.tmp-*/
+.sdk-short/
 .toolchains/
 .workspace-tools/
 __pycache__/
@@ -19,6 +22,9 @@ local.properties
 keystore.properties
 captures/
 design/qa/
+tmp/
+*.err
+*.out
 *.apk
 *.aab
 *.parc

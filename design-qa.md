@@ -1,5 +1,7 @@
 # Design QA
 
+> **历史证据说明（2026-08-01）：** 旧截图保留拍摄当时的导航顺序；当前生产根导航为 `讲题 / 复习 / 错题本 / 我的`，冷启动进入讲题。不得为了让旧截图一致而恢复旧顺序。
+
 治理边界：本文件是带日期的视觉与交互回归记录，不是 M1–M4 验收报告；当前阶段、实现状态和证据等级见 [`docs/scenario-registry.md`](docs/scenario-registry.md)。本文的 P0/P1/P2 仅表示 QA 缺陷严重度，旧 Phase 0 统一称为 pre-M1。
 
 - 基准画面：`design/screens/review-home.png`、`tutor-chat.png`、`mistake-library.png`、`my-profile.png`；`*-draft.png` 只记录被否决或过渡方案，不参与最终对照。

@@ -23,6 +23,6 @@
 .\gradlew.bat :quality:visual-benchmark:run --args="score D:\private-benchmark\manifest.json D:\private-benchmark\provider-runs.json"
 ```
 
-`validate` 是真实发布门槛，不会因缺少本地数据而静默跳过。`score` 除语义标注比对外，还要求场景已通过本地编译，且没有可见的示意数值。
+`validate` 是真实发布门槛，不会因缺少本地数据而静默跳过。`score` 除语义标注比对外，还要求场景通过生产级本地来源校验与编译，且没有可见的示意数值；旧的 provider-run 文件没有来源校验结果时会安全判为不合格。
 
 五张首批图片只用于本机人工标注和验收；未经明确同意，不复制到 Git，也不上传到模型基准仓库。

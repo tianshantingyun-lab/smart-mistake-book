@@ -17,14 +17,9 @@ if ($GradleArguments -match '^-Duser\.home=') {
     throw 'Gradle user.home is owned by the workspace wrapper and cannot be overridden.'
 }
 
-if ($usesAndroidDevice) {
-    . (Join-Path $PSScriptRoot 'android-env.ps1')
-} else {
-    # Compilation, lint and JVM tests do not use ADB or the emulator. They can
-    # safely coexist with user-owned Android profile files while every Gradle
-    # writable path remains pinned to this workspace.
-    . (Join-Path $PSScriptRoot 'android-env.ps1') -AllowExistingAndroidProfileArtifacts
-}
+# Existing user Android files are never moved or deleted. Device work snapshots them and verifies
+# that workspace-scoped ADB/Gradle execution left them byte-for-byte unchanged.
+. (Join-Path $PSScriptRoot 'android-env.ps1') -AllowExistingAndroidProfileArtifacts
 
 # AGP 9 rejects the deprecated environment variable when the supported JVM
 # property is also present. The workspace property keeps Android preferences on D:.
@@ -35,6 +30,9 @@ $resolvedEmulatorPort = if ($EmulatorPort -gt 0) {
     Resolve-AndroidEmulatorPort -Port $EmulatorPort
 } else {
     0
+}
+if ($resolvedEmulatorPort -gt 0 -and $androidProfileArtifactTrackingEnabled) {
+    Assert-NoConflictingAndroidProcesses -ExpectedEmulatorPort $resolvedEmulatorPort
 }
 $adbExecutable = Join-Path $env:ANDROID_HOME 'platform-tools\adb.exe'
 $gradleExecutable = Join-Path $gradleRoot 'bin\gradle.bat'
@@ -83,6 +81,7 @@ try {
         # recreate keys in the Windows profile after the command returns.
         if ($resolvedEmulatorPort -gt 0) {
             Stop-WorkspaceAdbServer
+            Assert-ExternalAndroidProfileUnchanged
         }
     } finally {
         $env:ANDROID_USER_HOME = $workspaceAndroidUserHome

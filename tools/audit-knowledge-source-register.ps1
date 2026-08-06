@@ -26,6 +26,7 @@ $allowedPurposes = @(
     'REVISION_INTERPRETATION',
     'IMPLEMENTATION_NOTICE',
     'TEXTBOOK_CATALOG',
+    'TEXTBOOK_EDITION_MAPPING',
     'LESSON_ACTIVITY_CATALOG',
     'TEACHING_REFERENCE',
     'METHOD_REFERENCE',
@@ -59,12 +60,6 @@ $allowedModelUsePolicies = @(
     'FULL_CONTENT_ALLOWED'
 )
 $uppercaseSha256 = '^[A-F0-9]{64}$'
-
-if ([string]::IsNullOrWhiteSpace($RegisterPath)) {
-    $RegisterPath = Join-Path $ProjectRoot (
-        'core\data\src\main\resources\knowledge\source-register-2025-v1.json'
-    )
-}
 
 function Assert-TrimmedText {
     param(
@@ -127,8 +122,55 @@ function Test-HasPurpose {
     return $Purpose -in @($Source.purposes)
 }
 
+function Resolve-CanonicalFileSystemPath {
+    param(
+        [string]$Path,
+        [string]$Label
+    )
+    $resolved = Resolve-Path -LiteralPath $Path -ErrorAction Stop
+    if ($resolved.Provider.Name -ne 'FileSystem') {
+        throw "$Label must use the file-system provider"
+    }
+    return [System.IO.Path]::GetFullPath($resolved.ProviderPath)
+}
+
+function Test-IsPathWithinRoot {
+    param(
+        [string]$Candidate,
+        [string]$Root
+    )
+    $rootPrefix = $Root
+    if (
+        -not $rootPrefix.EndsWith([string][System.IO.Path]::DirectorySeparatorChar) -and
+        -not $rootPrefix.EndsWith([string][System.IO.Path]::AltDirectorySeparatorChar)
+    ) {
+        $rootPrefix += [System.IO.Path]::DirectorySeparatorChar
+    }
+    return $Candidate.StartsWith(
+        $rootPrefix,
+        [System.StringComparison]::OrdinalIgnoreCase
+    )
+}
+
+$ProjectRoot = Resolve-CanonicalFileSystemPath `
+    -Path $ProjectRoot `
+    -Label 'ProjectRoot'
+if (-not (Test-Path -LiteralPath $ProjectRoot -PathType Container)) {
+    throw "ProjectRoot is not a directory: $ProjectRoot"
+}
+if ([string]::IsNullOrWhiteSpace($RegisterPath)) {
+    $RegisterPath = Join-Path $ProjectRoot (
+        'core\data\src\main\resources\knowledge\source-register-2025-v1.json'
+    )
+}
 if (-not (Test-Path -LiteralPath $RegisterPath -PathType Leaf)) {
     throw "Knowledge source register does not exist: $RegisterPath"
+}
+$RegisterPath = Resolve-CanonicalFileSystemPath `
+    -Path $RegisterPath `
+    -Label 'RegisterPath'
+if (-not (Test-IsPathWithinRoot -Candidate $RegisterPath -Root $ProjectRoot)) {
+    throw "RegisterPath must stay within ProjectRoot: $RegisterPath"
 }
 
 $manifest = Get-Content -Raw -LiteralPath $RegisterPath | ConvertFrom-Json
@@ -230,7 +272,8 @@ $sourceOptionalKeys = @(
     'contentFingerprint',
     'licenseExpression',
     'licenseUri',
-    'attributionText'
+    'attributionText',
+    'textbookEditionId'
 )
 
 foreach ($source in $sources) {
@@ -291,6 +334,39 @@ foreach ($source in $sources) {
     if ($source.licenseStatus -notin $allowedLicenseStatuses) {
         throw "$label has an invalid licenseStatus"
     }
+    $licenseMetadataFields = @(
+        'licenseExpression',
+        'licenseUri',
+        'attributionText'
+    )
+    $sourcePropertyNames = @($source.PSObject.Properties.Name)
+    $declaredLicenseMetadata = @(
+        $licenseMetadataFields |
+            Where-Object { $_ -in $sourcePropertyNames }
+    )
+    if (
+        $source.licenseStatus -eq 'LICENSED' -and
+        $declaredLicenseMetadata.Count -ne $licenseMetadataFields.Count
+    ) {
+        throw "$label licensed content requires licenseExpression, licenseUri, and attributionText"
+    }
+    if (
+        $declaredLicenseMetadata.Count -ne 0 -and
+        $declaredLicenseMetadata.Count -ne $licenseMetadataFields.Count
+    ) {
+        throw "$label license metadata must be declared as a complete set"
+    }
+    if ($declaredLicenseMetadata.Count -eq $licenseMetadataFields.Count) {
+        Assert-TrimmedText `
+            -Value $source.licenseExpression `
+            -Label "$label.licenseExpression" `
+            -MaximumLength 256
+        Assert-HttpsUri -Value $source.licenseUri -Label "$label.licenseUri"
+        Assert-TrimmedText `
+            -Value $source.attributionText `
+            -Label "$label.attributionText" `
+            -MaximumLength 2048
+    }
     if ($source.contentUsePolicy -notin $allowedContentUsePolicies) {
         throw "$label has an invalid contentUsePolicy"
     }
@@ -344,17 +420,6 @@ foreach ($source in $sources) {
         if ($source.licenseStatus -notin @('PUBLIC_OFFICIAL', 'LICENSED')) {
             throw "$label direct expression reuse requires public-official or licensed status"
         }
-        if ($source.licenseStatus -eq 'LICENSED') {
-            Assert-TrimmedText `
-                -Value $source.licenseExpression `
-                -Label "$label.licenseExpression" `
-                -MaximumLength 256
-            Assert-HttpsUri -Value $source.licenseUri -Label "$label.licenseUri"
-            Assert-TrimmedText `
-                -Value $source.attributionText `
-                -Label "$label.attributionText" `
-                -MaximumLength 2048
-        }
     }
 
     $hasFingerprint = $null -ne $source.contentFingerprint
@@ -390,6 +455,68 @@ foreach ($source in $sources) {
         $source.baselineId -ne $currentBaselineId
     ) {
         throw "$label current text or revision delta must identify the 2025 baseline"
+    }
+    $isTextbookEditionMapping = Test-HasPurpose `
+        -Source $source `
+        -Purpose 'TEXTBOOK_EDITION_MAPPING'
+    if ($isTextbookEditionMapping) {
+        if (@($source.purposes).Count -ne 1) {
+            throw "$label textbook edition mapping must use only TEXTBOOK_EDITION_MAPPING"
+        }
+        if (@($source.subjects).Count -ne 1) {
+            throw "$label textbook edition mapping must bind exactly one subject"
+        }
+        if ($source.acquisitionState -ne 'ACQUIRED_REVIEWED') {
+            throw "$label textbook edition mapping must be ACQUIRED_REVIEWED"
+        }
+        Assert-TrimmedText `
+            -Value $source.textbookEditionId `
+            -Label "$label.textbookEditionId" `
+            -MaximumLength 256
+        $editionTokens = @(
+            $source.textbookEditionId.ToLowerInvariant() -split '[-_:./\s]+' |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+        $specificEditionTokens = @(
+            $editionTokens |
+                Where-Object {
+                    $_ -notin @(
+                        'baseline',
+                        'edition',
+                        'generic',
+                        'latest',
+                        'pending',
+                        'textbook',
+                        'unknown'
+                    ) -and
+                    $_ -notmatch '^(?:19|20)\d{2}$' -and
+                    $_ -notmatch '^v\d+$'
+                }
+        )
+        if (
+            $source.textbookEditionId -notmatch '(?i)(?:19|20)\d{2}|(?:^|[-_])v\d+(?:$|[-_])' -or
+            $specificEditionTokens.Count -eq 0
+        ) {
+            throw "$label textbookEditionId must identify a concrete version"
+        }
+        if ($source.sourceLocator.Length -lt 12) {
+            throw "$label textbook edition mapping requires a concrete sourceLocator"
+        }
+        if (
+            $null -eq $source.documentUri -or
+            $null -eq $source.contentLengthBytes -or
+            $source.contentFingerprint -notmatch $uppercaseSha256
+        ) {
+            throw "$label textbook edition mapping requires documentUri, contentLengthBytes, and uppercase SHA-256"
+        }
+        if (
+            $source.contentUsePolicy -ne 'REVIEWED_SYNTHESIS_ONLY' -or
+            $source.modelUsePolicy -ne 'DERIVED_CONTENT_ONLY'
+        ) {
+            throw "$label textbook edition mapping must remain reviewed-synthesis and derived-content only"
+        }
+    } elseif ($null -ne $source.textbookEditionId) {
+        throw "$label may declare textbookEditionId only for TEXTBOOK_EDITION_MAPPING"
     }
     $isReviewedTeachingEvidence = (
         $source.acquisitionState -eq 'ACQUIRED_REVIEWED' -and

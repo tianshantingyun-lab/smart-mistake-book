@@ -11,6 +11,7 @@
       "expectedSha256": "881F0968936E797A6F0FA4DF305B92641C52ADD3812871AE39A791C2EE1E4A99",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "siyavula",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "MATH"
@@ -27,6 +28,7 @@
       "expectedSha256": "45BE47ABFDB209BAD368522C49643DC431D285D6B0A8261DA55D0B597C7DB807",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "siyavula",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "MATH"
@@ -43,6 +45,7 @@
       "expectedSha256": "0D7554F2D0DF805133F3BE38A3A5FFE20E5963FD5318E40E77C63490A413ADC8",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "siyavula",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "MATH"
@@ -59,6 +62,7 @@
       "expectedSha256": "366C2F0BEB5D3C4CF0789E0DC49CD12DD07C20D47CD5C9E3E4DC5D1CA49CE3DB",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "siyavula",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "PHYSICS",
@@ -76,6 +80,7 @@
       "expectedSha256": "3D893A4364F52EFE1991360302CFCCB06030E03AD67D725867FB48F0F177A0F9",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "siyavula",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "PHYSICS",
@@ -93,6 +98,7 @@
       "expectedSha256": "FB8824B216007B8310A3EBE2531005C4CDFABB2E6F07157D03173F0864D2C627",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "siyavula",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "PHYSICS",
@@ -110,6 +116,7 @@
       "expectedSha256": "A5A4A9A3783EF966A6A2F86F12937F6BBFF6CD438CD589DE37E2A1173D1EACA6",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "uh-pressbooks",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "ENGLISH"
@@ -127,6 +134,7 @@
       "expectedSha256": "18515A27D514B3EDF3F1E4BECEA6CBBD31B4D3AA4551A52CD4E274F74A9F2991",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "expectedProviderIdentity": "uh-pressbooks",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "HISTORY"
@@ -144,6 +152,7 @@
       "expectedSha256": "1367ADD470F33D5D5D642C44DCC7AF98321AC7CA558D228B1FD14A274C2BED88",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "open-oregon",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "BIOLOGY"
@@ -161,6 +170,7 @@
       "expectedSha256": "C16A7DDD2528E8F92BF41758BA399DBA58FBCD90D7C75B5C4A3D87A6A8D3674B",
       "expectedMediaType": "application/epub+zip",
       "expectedLicenseUri": "https://creativecommons.org/licenses/by/4.0/",
+      "expectedProviderIdentity": "bccampus",
       "expectedLanguage": "en",
       "expectedSubjects": [
         "GEOGRAPHY"

@@ -1,13 +1,15 @@
 [CmdletBinding()]
 param(
     [int]$Port = 0,
+    [switch]$AllowExistingAndroidProfileArtifacts,
     [Parameter(Mandatory = $true, Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$AdbArguments
 )
 
 $ErrorActionPreference = 'Stop'
 
-. (Join-Path $PSScriptRoot 'android-env.ps1')
+. (Join-Path $PSScriptRoot 'android-env.ps1') `
+    -AllowExistingAndroidProfileArtifacts:$AllowExistingAndroidProfileArtifacts
 
 $Port = Resolve-AndroidEmulatorPort -Port $Port
 $adbExecutable = Join-Path $env:ANDROID_HOME 'platform-tools\adb.exe'
@@ -48,9 +50,11 @@ try {
             Stop-WorkspaceAdbServer
         }
     } finally {
-        Move-GeneratedAndroidProfileArtifactsToWorkspace `
-            -Attempts 20 `
-            -DelayMilliseconds 250 `
-            -ExpectedEmulatorPort $Port
+        if ($adbStartedForCommand -and -not $AllowExistingAndroidProfileArtifacts) {
+            Move-GeneratedAndroidProfileArtifactsToWorkspace `
+                -Attempts 20 `
+                -DelayMilliseconds 250 `
+                -ExpectedEmulatorPort $Port
+        }
     }
 }

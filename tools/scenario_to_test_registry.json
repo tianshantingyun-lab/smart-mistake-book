@@ -1,0 +1,164 @@
+[
+  {
+    "id": "first-use",
+    "scenario": "首次使用",
+    "entry": "讲题空会话",
+    "userVisibleBehavior": "显示聊天输入框，可输入或选择拍题/错题",
+    "dataChange": "不写入学习证据",
+    "retryStrategy": "输入错误可直接重发",
+    "testRef": "RootNavigationPolicyTest#root destinations put tutor first and preserve module order"
+  },
+  {
+    "id": "empty-library",
+    "scenario": "空错题本",
+    "entry": "错题本空态",
+    "userVisibleBehavior": "显示空态说明，无统计噪声",
+    "dataChange": "无",
+    "retryStrategy": "返回后重进",
+    "testRef": "RootNavigationPolicyTest#secondary workflows declare a bottom-bar recovery destination"
+  },
+  {
+    "id": "blurry-photo",
+    "scenario": "拍糊照片",
+    "entry": "拍题后模型评估",
+    "userVisibleBehavior": "保留原图并提供重拍/重试/稍后继续",
+    "dataChange": "保留草稿，不写入正式题面",
+    "retryStrategy": "重拍或重试模型评估",
+    "testRef": "MistakeOrganizationInstrumentedTest#capabilityFailureOffersWorkingRetryAndSettingsActions"
+  },
+  {
+    "id": "missing-page",
+    "scenario": "缺页",
+    "entry": "拍题跨页",
+    "userVisibleBehavior": "提示可补拍，不强制重拍",
+    "dataChange": "保留已读页面",
+    "retryStrategy": "补拍后继续",
+    "testRef": "CaptureWorkflowInstrumentedTest#additionalPageSurvivesResumeWithStableOrderAndIdempotentReplay"
+  },
+  {
+    "id": "multiple-questions-one-image",
+    "scenario": "多题一图",
+    "entry": "拍题拆题",
+    "userVisibleBehavior": "本地按模型边界拆分并逐个保留草稿",
+    "dataChange": "生成多个独立草稿",
+    "retryStrategy": "单题失败不影响其他题",
+    "testRef": "CaptureWorkflowInstrumentedTest#splitDraftCropsOnePageAtomicallyAndReplaysWithoutNewFiles"
+  },
+  {
+    "id": "batch-interruption",
+    "scenario": "批量中断",
+    "entry": "批量导入",
+    "userVisibleBehavior": "暂停/继续，已完成页不回退",
+    "dataChange": "权威会话持久化进度",
+    "retryStrategy": "恢复时从断点继续",
+    "testRef": "ProductionBatchImportRepositoryTest#processRecoveryConsumesTheDurableMergeReceiptWithoutMergingAgain"
+  },
+  {
+    "id": "no-model-config",
+    "scenario": "无模型配置",
+    "entry": "讲题启动",
+    "userVisibleBehavior": "显示配置模型入口，不伪造讲解",
+    "dataChange": "无",
+    "retryStrategy": "配置后重新开始",
+    "testRef": "RootNavigationPolicyTest#cold start opens tutor"
+  },
+  {
+    "id": "rate-limit",
+    "scenario": "限流",
+    "entry": "模型任务执行",
+    "userVisibleBehavior": "可恢复失败，不丢草稿",
+    "dataChange": "任务保持可重试",
+    "retryStrategy": "限流后自动重试或学生重试",
+    "testRef": "WorkloadAdmissionGateTest#defaultFactorySharedTotalBindsAllCategoriesTogether"
+  },
+  {
+    "id": "process-kill",
+    "scenario": "进程强杀",
+    "entry": "任意持久工作",
+    "userVisibleBehavior": "恢复时回到未完成动作",
+    "dataChange": "不可变记录与 outbox 保持原子",
+    "retryStrategy": "重启后按精确恢复路径继续",
+    "testRef": "ReviewReminderBroadcastHandoffTest#a recreated handoff drains work persisted by the previous process"
+  },
+  {
+    "id": "db-migration",
+    "scenario": "数据库迁移",
+    "entry": "应用升级",
+    "userVisibleBehavior": "旧数据可读，不自动写入演示题",
+    "dataChange": "按版本迁移，旧证据不伪造",
+    "retryStrategy": "迁移失败回滚到原版本",
+    "testRef": "StudyDatabaseInstrumentedTest#legacyMultipleActiveSessionsFailClosedWithoutAdvancingEither"
+  },
+  {
+    "id": "huge-data",
+    "scenario": "超大数据",
+    "entry": "知识库与掌握库读取",
+    "userVisibleBehavior": "分页/有界读取，不卡主线程",
+    "dataChange": "不触发全量扫描",
+    "retryStrategy": "分页重试",
+    "testRef": "LearnerMasteryStoreInstrumentedTest#displayProjectionUsesAtomicLedgerRevisionAndBoundedExactLookups"
+  },
+  {
+    "id": "ambiguous-intent",
+    "scenario": "模糊意图",
+    "entry": "自由聊天",
+    "userVisibleBehavior": "不写学习证据，只给最小澄清",
+    "dataChange": "无",
+    "retryStrategy": "澄清后重发",
+    "testRef": "TutorIntentAuthorityTest#ambiguousMessageCannotReadOrWriteAnything"
+  },
+  {
+    "id": "image-too-large",
+    "scenario": "图片超限",
+    "entry": "拍题/相册导入",
+    "userVisibleBehavior": "拒绝超限图片但不破坏已有草稿",
+    "dataChange": "不写入权威资产",
+    "retryStrategy": "换图或压缩后重试",
+    "testRef": "CaptureWorkflowInstrumentedTest#dimensionBudgetRejectsImageBeforeCanonicalAssetOrDraftExists"
+  },
+  {
+    "id": "timezone-dst",
+    "scenario": "时区与夏令时",
+    "entry": "复习提醒调度",
+    "userVisibleBehavior": "同一天在另一时区只提醒一次",
+    "dataChange": "按本地日生成计划",
+    "retryStrategy": "跨时区推进后重新计算",
+    "testRef": "ReviewReminderCoordinatorTest#aDifferentLocalDayInAnotherTimeZoneCanNotifyOnce"
+  },
+  {
+    "id": "duplicate-alarm",
+    "scenario": "重复闹钟与回拨",
+    "entry": "复习提醒通知",
+    "userVisibleBehavior": "重复闹钟或时钟回拨不再次打扰",
+    "dataChange": "已消费通知不重复打卡",
+    "retryStrategy": "仅下一次真实提醒",
+    "testRef": "ReviewReminderCoordinatorTest#duplicateAlarmAndClockRollbackDoNotDistractTheStudentAgain"
+  },
+  {
+    "id": "permission-revoked",
+    "scenario": "通知权限撤销",
+    "entry": "复习提醒",
+    "userVisibleBehavior": "无权限时不发通知也不假装成功",
+    "dataChange": "取消已排提醒",
+    "retryStrategy": "重新授权后恢复",
+    "testRef": "ReviewReminderCoordinatorTest#disabledOrPermissionRevokedCancelsWithoutPosting"
+  },
+  {
+    "id": "network-error",
+    "scenario": "网络/HTTP 错误",
+    "entry": "模型流式传输",
+    "userVisibleBehavior": "HTTP 错误不使用 SSE 解码，任务进入可恢复失败",
+    "dataChange": "不落不可信输出",
+    "retryStrategy": "重试模型任务",
+    "testRef": "StreamingModelHttpTransportTest#httpErrorUsesFallbackContractWithoutDecodingSse"
+  },
+  {
+    "id": "slow-stream",
+    "scenario": "慢流",
+    "entry": "模型流式响应",
+    "userVisibleBehavior": "慢消费者不丢事件、不阻塞通道",
+    "dataChange": "不截断流式输出",
+    "retryStrategy": "无需重试，事件按序消费",
+    "testRef": "StreamingModelHttpTransportTest#slowCollectorReceivesMoreThanChannelCapacity"
+  }
+]

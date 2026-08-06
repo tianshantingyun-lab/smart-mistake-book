@@ -22,6 +22,15 @@ def build_argument_parser() -> argparse.ArgumentParser:
     default_root = Path(__file__).resolve().parent.parent.parent
     parser.add_argument("--project-root", type=Path, default=default_root)
     parser.add_argument(
+        "--artifact-root",
+        type=Path,
+        default=None,
+        help=(
+            "Optional private artifact root. Manifests and outputs remain relative to "
+            "--project-root; EPUB localPath values are resolved under this root."
+        ),
+    )
+    parser.add_argument(
         "--manifest",
         type=Path,
         default=Path(
@@ -49,6 +58,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
 def main(argv: Iterable[str] | None = None) -> int:
     args = build_argument_parser().parse_args(argv)
     project_root = args.project_root.resolve()
+    artifact_root = (
+        args.artifact_root.resolve()
+        if args.artifact_root is not None
+        else project_root
+    )
     try:
         manifest = read_json(
             resolve_project_path(project_root, args.manifest, "EPUB manifest")
@@ -60,7 +74,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 "knowledge source register",
             )
         )
-        report, summary = audit_manifest(project_root, manifest, register)
+        report, summary = audit_manifest(artifact_root, manifest, register)
         output = resolve_project_path(project_root, args.output, "EPUB audit output")
         if args.write:
             write_output(output, report)
