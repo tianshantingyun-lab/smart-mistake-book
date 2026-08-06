@@ -23,7 +23,10 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
+import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorInteractionChoice
 import com.tingyun.smartmistakebook.core.model.TutorInteractionDirective
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
@@ -640,6 +643,138 @@ class CapturedTutorSessionUiPolicyTest {
         )
     }
 
+    @Test
+    fun planAttemptCountsExactPriorContext() {
+        val q = question()
+        val first = TutorPlanInput(
+            sessionId = q.sessionId,
+            draftRevisionNumber = q.revisionNumber,
+            subject = q.subject,
+            questionDocument = q.questionDocument.document,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        )
+        val memory = TutorConversationMemory(
+            completedCycleCount = 1,
+            answeredTurnCount = 0,
+            correctChoiceCount = 0,
+            lastRequestedMove = TutorMoveType.DEEPEN_REASONING,
+        )
+        val request = ModelTaskRequest(
+            requestId = "plan-1",
+            input = first,
+            occurredAtEpochMillis = 1,
+        )
+        val tasks = listOf(
+            taskFor(request),
+            taskFor(request),
+            taskFor(
+                request.copy(
+                    requestId = "plan-2",
+                    input = first.copy(
+                        cycleOrdinal = 2,
+                        priorConversationMemory = memory,
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals(
+            2,
+            tutorPlanAttemptCount(
+                tasks = tasks,
+                cycleOrdinal = 1,
+                priorConversationMemory = null,
+                priorCycleStudentMessages = emptyList(),
+                priorTurns = emptyList(),
+            ),
+        )
+    }
+
+    @Test
+    fun planApprovedAtFallsBackToOneShotAuthorizationOnlyForFirstTurn() {
+        val q = question()
+        val oneShot = TutorAutoStartAuthorization.grant(
+            authorizationId = "auth-1",
+            sessionId = q.sessionId,
+            questionDocumentId = q.questionDocument.document.id,
+            revisionNumber = q.revisionNumber,
+            provider = externalProvider(),
+            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+            approvedAtEpochMillis = 100,
+        )
+
+        assertEquals(
+            100L,
+            tutorPlanApprovedAtOrNull(
+                provider = externalProvider(),
+                leaseApprovedAt = null,
+                oneShotAutoStartAuthorization = oneShot,
+                occurredAt = 200,
+                cycleOrdinal = 1,
+                priorConversationMemory = null,
+                priorCycleStudentMessages = emptyList(),
+                priorTurns = emptyList(),
+                question = q,
+            ),
+        )
+        assertNull(
+            tutorPlanApprovedAtOrNull(
+                provider = externalProvider(),
+                leaseApprovedAt = null,
+                oneShotAutoStartAuthorization = oneShot,
+                occurredAt = 200,
+                cycleOrdinal = 2,
+                priorConversationMemory = null,
+                priorCycleStudentMessages = emptyList(),
+                priorTurns = emptyList(),
+                question = q,
+            ),
+        )
+        assertEquals(
+            200L,
+            tutorPlanApprovedAtOrNull(
+                provider = externalProvider(),
+                leaseApprovedAt = 200,
+                oneShotAutoStartAuthorization = oneShot,
+                occurredAt = 200,
+                cycleOrdinal = 2,
+                priorConversationMemory = null,
+                priorCycleStudentMessages = emptyList(),
+                priorTurns = emptyList(),
+                question = q,
+            ),
+        )
+        assertEquals(
+            200L,
+            tutorPlanApprovedAtOrNull(
+                provider = localProvider(),
+                leaseApprovedAt = null,
+                oneShotAutoStartAuthorization = null,
+                occurredAt = 200,
+                cycleOrdinal = 1,
+                priorConversationMemory = null,
+                priorCycleStudentMessages = emptyList(),
+                priorTurns = emptyList(),
+                question = q,
+            ),
+        )
+    }
+
+    private fun taskFor(request: ModelTaskRequest) = ModelTaskSnapshot(
+        taskId = "task-${request.requestId}",
+        request = request,
+        requestFingerprint = ModelTaskFingerprint.of(request),
+        status = ModelTaskStatus.QUEUED,
+        stateVersion = 1,
+        stage = ModelTaskStage.PREPARING,
+        userMessage = "处理中",
+        attemptCount = 0,
+        provider = externalProvider(),
+        createdAtEpochMillis = 1,
+        updatedAtEpochMillis = 1,
+    )
+
     private fun planTaskWithDirective() = ModelTaskSnapshot(
         taskId = "task-plan-choice",
         request = ModelTaskRequest(
@@ -718,6 +853,30 @@ class CapturedTutorSessionUiPolicyTest {
         supportsStreaming = false,
         executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
         providerConfigurationVersion = "configuration-v1",
+    )
+
+    private fun externalProvider() = ProviderCapabilitySnapshot(
+        providerId = "external-provider",
+        providerDisplayName = "External model",
+        modelId = "external-model",
+        supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.TUTOR_RESPOND),
+        supportsImageInput = false,
+        supportsStructuredOutput = true,
+        supportsStreaming = false,
+        executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+        providerConfigurationVersion = "external-configuration-v1",
+    )
+
+    private fun localProvider() = ProviderCapabilitySnapshot(
+        providerId = "local-provider",
+        providerDisplayName = "Local model",
+        modelId = "local-model",
+        supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.TUTOR_RESPOND),
+        supportsImageInput = false,
+        supportsStructuredOutput = true,
+        supportsStreaming = false,
+        executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+        providerConfigurationVersion = "local-configuration-v1",
     )
 
     private fun question() = ConfirmedTutorSession(

@@ -331,6 +331,53 @@ internal fun tutorRecoverySourceMatchesRuntime(
     else -> false
 }
 
+internal fun tutorPlanAttemptCount(
+    tasks: List<ModelTaskSnapshot>,
+    cycleOrdinal: Int,
+    priorConversationMemory: TutorConversationMemory?,
+    priorCycleStudentMessages: List<String>,
+    priorTurns: List<TutorTurnHistoryEntry>,
+): Int = tasks.count { task ->
+    val input = task.request.input as? TutorPlanInput
+    input?.cycleOrdinal == cycleOrdinal &&
+        input.priorConversationMemory == priorConversationMemory &&
+        input.priorCycleStudentMessages == priorCycleStudentMessages &&
+        input.priorTurns == priorTurns
+}
+
+internal fun tutorPlanApprovedAtOrNull(
+    provider: ProviderCapabilitySnapshot,
+    leaseApprovedAt: Long?,
+    oneShotAutoStartAuthorization: TutorAutoStartAuthorization?,
+    occurredAt: Long,
+    cycleOrdinal: Int,
+    priorConversationMemory: TutorConversationMemory?,
+    priorCycleStudentMessages: List<String>,
+    priorTurns: List<TutorTurnHistoryEntry>,
+    question: TutorQuestionContext,
+): Long? = when (provider.executionLocation) {
+    ModelExecutionLocation.EXTERNAL_PROVIDER -> leaseApprovedAt
+        ?: oneShotAutoStartAuthorization
+            ?.takeIf {
+                cycleOrdinal == 1 &&
+                    priorConversationMemory == null &&
+                    priorCycleStudentMessages.isEmpty() &&
+                    priorTurns.isEmpty() &&
+                    it.matches(
+                        sessionId = question.sessionId,
+                        questionDocumentId = question.questionDocument.document.id,
+                        revisionNumber = question.revisionNumber,
+                        provider = provider,
+                        promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
+                        nowEpochMillis = occurredAt,
+                    )
+            }
+            ?.approvedAtEpochMillis
+    ModelExecutionLocation.LOCAL_NO_EGRESS,
+    ModelExecutionLocation.UNAVAILABLE,
+    -> occurredAt
+}
+
 internal fun tutorConversationAutoScrollVersion(
     timeline: List<TutorConversationTimelineItem>,
 ): List<List<*>> =

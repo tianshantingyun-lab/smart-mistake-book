@@ -675,13 +675,13 @@ internal fun TutorModelPanel(
         if (!masteryContextReady) return
         if (pendingEgressState.action.awaitsResponseAuthorization()) return
         val providerForExecution = executablePlanProvider ?: return
-        val attempt = tutorTasks.count { task ->
-            val input = task.request.input as? TutorPlanInput
-            input?.cycleOrdinal == cycleOrdinal &&
-                input.priorConversationMemory == priorConversationMemory &&
-                input.priorCycleStudentMessages == priorCycleStudentMessages &&
-                input.priorTurns == priorTurns
-        }
+        val attempt = tutorPlanAttemptCount(
+            tasks = tutorTasks,
+            cycleOrdinal = cycleOrdinal,
+            priorConversationMemory = priorConversationMemory,
+            priorCycleStudentMessages = priorCycleStudentMessages,
+            priorTurns = priorTurns,
+        )
         val requestId = tutorPlanRequestId(
             question = question,
             masteryContext = masteryContext,
@@ -696,42 +696,32 @@ internal fun TutorModelPanel(
             learningWritePermissionVersion = learningWritePermissionVersion,
         )
         val occurredAt = clock()
-        val approvedAt = when (providerForExecution.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
+        val approvedAt = tutorPlanApprovedAtOrNull(
+            provider = providerForExecution,
+            leaseApprovedAt = externalEgressLease?.approvedAtFor(
                 question = question,
                 provider = providerForExecution,
                 taskKind = ModelTaskKind.TUTOR_PLAN,
                 nowEpochMillis = occurredAt,
-            ) ?: oneShotAutoStartAuthorization
-                ?.takeIf {
-                    cycleOrdinal == 1 &&
-                        priorConversationMemory == null &&
-                        priorCycleStudentMessages.isEmpty() &&
-                        priorTurns.isEmpty() &&
-                        it.matches(
-                            sessionId = question.sessionId,
-                            questionDocumentId = question.questionDocument.document.id,
-                            revisionNumber = question.revisionNumber,
-                            provider = providerForExecution,
-                            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
-                            nowEpochMillis = occurredAt,
-                        )
-                }
-                ?.approvedAtEpochMillis ?: run {
-                externalEgressLease = null
-                pendingEgressState = PendingTutorEgressState(
-                    PendingTutorEgressAction.Plan(
-                        cycleOrdinal = cycleOrdinal,
-                        priorConversationMemory = priorConversationMemory,
-                        priorCycleStudentMessages = priorCycleStudentMessages,
-                        priorTurns = priorTurns,
-                    ),
-                )
-                return
-            }
-            ModelExecutionLocation.LOCAL_NO_EGRESS,
-            ModelExecutionLocation.UNAVAILABLE,
-            -> occurredAt
+            ),
+            oneShotAutoStartAuthorization = oneShotAutoStartAuthorization,
+            occurredAt = occurredAt,
+            cycleOrdinal = cycleOrdinal,
+            priorConversationMemory = priorConversationMemory,
+            priorCycleStudentMessages = priorCycleStudentMessages,
+            priorTurns = priorTurns,
+            question = question,
+        ) ?: run {
+            externalEgressLease = null
+            pendingEgressState = PendingTutorEgressState(
+                PendingTutorEgressAction.Plan(
+                    cycleOrdinal = cycleOrdinal,
+                    priorConversationMemory = priorConversationMemory,
+                    priorCycleStudentMessages = priorCycleStudentMessages,
+                    priorTurns = priorTurns,
+                ),
+            )
+            return
         }
         val request = buildTutorPlanRequest(
             question = question,
