@@ -566,6 +566,80 @@ class CapturedTutorSessionUiPolicyTest {
         )
     }
 
+    @Test
+    fun recoverySourceMatchesExactRuntimeAuthority() {
+        val q = question()
+        val writeAuthority = TutorLearningWriteAuthority(
+            allowed = true,
+            permissionVersion = 3,
+        )
+        val currentTurn = TutorTurnKey(cycleOrdinal = 1, turnOrdinal = 1)
+
+        assertTrue(
+            tutorRecoverySourceMatchesRuntime(
+                input = TutorPlanInput(
+                    sessionId = q.sessionId,
+                    draftRevisionNumber = q.revisionNumber,
+                    subject = q.subject,
+                    questionDocument = q.questionDocument.document,
+                    cycleOrdinal = 1,
+                    turnOrdinal = 1,
+                    explanationMode = TutorExplanationMode.GUIDED,
+                    modeVersion = 2,
+                    learningWritePermissionVersion = 3,
+                    allowLongTermLearningWrites = true,
+                ),
+                question = q,
+                currentTurn = currentTurn,
+                effectiveMode = TutorExplanationMode.GUIDED,
+                modeVersion = 2,
+                writeAuthority = writeAuthority,
+            ),
+        )
+        assertFalse(
+            tutorRecoverySourceMatchesRuntime(
+                input = TutorPlanInput(
+                    sessionId = q.sessionId,
+                    draftRevisionNumber = q.revisionNumber,
+                    subject = q.subject,
+                    questionDocument = q.questionDocument.document,
+                    cycleOrdinal = 1,
+                    turnOrdinal = 1,
+                    explanationMode = TutorExplanationMode.DIRECT,
+                    modeVersion = 2,
+                    learningWritePermissionVersion = 3,
+                    allowLongTermLearningWrites = true,
+                ),
+                question = q,
+                currentTurn = currentTurn,
+                effectiveMode = TutorExplanationMode.GUIDED,
+                modeVersion = 2,
+                writeAuthority = writeAuthority,
+            ),
+        )
+        assertFalse(
+            tutorRecoverySourceMatchesRuntime(
+                input = TutorPlanInput(
+                    sessionId = q.sessionId,
+                    draftRevisionNumber = q.revisionNumber,
+                    subject = q.subject,
+                    questionDocument = q.questionDocument.document,
+                    cycleOrdinal = 1,
+                    turnOrdinal = 1,
+                    explanationMode = TutorExplanationMode.GUIDED,
+                    modeVersion = 2,
+                    learningWritePermissionVersion = 4,
+                    allowLongTermLearningWrites = true,
+                ),
+                question = q,
+                currentTurn = currentTurn,
+                effectiveMode = TutorExplanationMode.GUIDED,
+                modeVersion = 2,
+                writeAuthority = writeAuthority,
+            ),
+        )
+    }
+
     private fun planTaskWithDirective() = ModelTaskSnapshot(
         taskId = "task-plan-choice",
         request = ModelTaskRequest(

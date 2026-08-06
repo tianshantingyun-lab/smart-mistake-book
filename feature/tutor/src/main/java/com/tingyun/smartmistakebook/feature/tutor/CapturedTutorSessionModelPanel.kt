@@ -1232,31 +1232,14 @@ internal fun TutorModelPanel(
         val writeAuthority = latestRecoveryLearningWriteAuthority.value
         val currentRequestedMode = latestRecoveryExplanationMode.value
         val currentEffectiveMode = latestRecoveryEffectiveMode.value
-        val sourceMatchesRuntime = when (val input = currentTask.request.input) {
-            is TutorPlanInput ->
-                input.sessionId == question.sessionId &&
-                    input.draftRevisionNumber == question.revisionNumber &&
-                    input.subject == question.subject &&
-                    input.questionDocument == question.questionDocument.document &&
-                    input.cycleOrdinal == currentTurn.cycleOrdinal &&
-                    input.turnOrdinal == currentTurn.turnOrdinal &&
-                    input.explanationMode == currentEffectiveMode &&
-                    input.modeVersion == latestExplanationModeVersion.value &&
-                    input.learningWritePermissionVersion == writeAuthority.permissionVersion &&
-                    input.allowLongTermLearningWrites == writeAuthority.allowed
-            is TutorRespondInput ->
-                input.sessionId == question.sessionId &&
-                    input.draftRevisionNumber == question.revisionNumber &&
-                    input.subject == question.subject &&
-                    input.questionDocument == question.questionDocument.document &&
-                    input.cycleOrdinal == currentTurn.cycleOrdinal &&
-                    input.turnOrdinal == currentTurn.turnOrdinal &&
-                    input.explanationMode == currentEffectiveMode &&
-                    input.modeVersion == latestExplanationModeVersion.value &&
-                    input.learningWritePermissionVersion == writeAuthority.permissionVersion &&
-                    input.allowLongTermLearningWrites == writeAuthority.allowed
-            else -> false
-        }
+        val sourceMatchesRuntime = tutorRecoverySourceMatchesRuntime(
+            input = currentTask.request.input,
+            question = question,
+            currentTurn = currentTurn,
+            effectiveMode = currentEffectiveMode,
+            modeVersion = latestExplanationModeVersion.value,
+            writeAuthority = writeAuthority,
+        )
         if (!sourceMatchesRuntime) return null
         val approvedAt = when (currentProviderForRecovery.executionLocation) {
             ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(

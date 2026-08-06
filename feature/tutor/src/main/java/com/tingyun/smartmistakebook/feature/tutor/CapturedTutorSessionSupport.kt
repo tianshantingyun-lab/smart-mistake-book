@@ -72,6 +72,8 @@ import com.tingyun.smartmistakebook.core.domain.toTutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.CanonicalSha256
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelTaskInput
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -295,6 +297,39 @@ internal fun tutorPendingInteractionIsCurrentlyBlocked(
             replayedCancellationRequestId in cancellationPendingEvidenceRequestIds &&
                 replayedCancellationRequestId?.let(cancellationIsConfirmed) != true
             )
+
+internal fun tutorRecoverySourceMatchesRuntime(
+    input: ModelTaskInput,
+    question: TutorQuestionContext,
+    currentTurn: TutorTurnKey,
+    effectiveMode: TutorExplanationMode,
+    modeVersion: Long,
+    writeAuthority: TutorLearningWriteAuthority,
+): Boolean = when (input) {
+    is TutorPlanInput ->
+        input.sessionId == question.sessionId &&
+            input.draftRevisionNumber == question.revisionNumber &&
+            input.subject == question.subject &&
+            input.questionDocument == question.questionDocument.document &&
+            input.cycleOrdinal == currentTurn.cycleOrdinal &&
+            input.turnOrdinal == currentTurn.turnOrdinal &&
+            input.explanationMode == effectiveMode &&
+            input.modeVersion == modeVersion &&
+            input.learningWritePermissionVersion == writeAuthority.permissionVersion &&
+            input.allowLongTermLearningWrites == writeAuthority.allowed
+    is TutorRespondInput ->
+        input.sessionId == question.sessionId &&
+            input.draftRevisionNumber == question.revisionNumber &&
+            input.subject == question.subject &&
+            input.questionDocument == question.questionDocument.document &&
+            input.cycleOrdinal == currentTurn.cycleOrdinal &&
+            input.turnOrdinal == currentTurn.turnOrdinal &&
+            input.explanationMode == effectiveMode &&
+            input.modeVersion == modeVersion &&
+            input.learningWritePermissionVersion == writeAuthority.permissionVersion &&
+            input.allowLongTermLearningWrites == writeAuthority.allowed
+    else -> false
+}
 
 internal fun tutorConversationAutoScrollVersion(
     timeline: List<TutorConversationTimelineItem>,
