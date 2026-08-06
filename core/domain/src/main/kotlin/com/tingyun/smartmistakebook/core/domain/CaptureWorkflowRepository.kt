@@ -502,6 +502,7 @@ data class ConfirmedTutorSession(
     val isSaved: Boolean,
     val isEndedWithoutSave: Boolean = false,
     val errorBookEntryId: String?,
+    val savedProblemRevisionId: String? = null,
 ) {
     init {
         require(sessionId.isNotBlank()) { "Tutor session id must not be blank" }
@@ -519,6 +520,9 @@ data class ConfirmedTutorSession(
         }
         require(isSaved == (errorBookEntryId != null)) {
             "Tutor session save state and error-book entry must agree"
+        }
+        require(savedProblemRevisionId == null || isSaved) {
+            "Only a saved tutor session may carry a problem revision"
         }
     }
 

@@ -69,6 +69,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationIdentity
 import com.tingyun.smartmistakebook.core.model.TutorVisualPresentationStateKey
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualProgramScene
+import com.tingyun.smartmistakebook.core.visual.runtime.CompiledTutorVisualDocument
 import com.tingyun.smartmistakebook.core.visual.ui.TutorVisualDocumentContent
 
 /**
@@ -84,6 +85,7 @@ fun TutorVisualSceneRenderer(
     hitPresentation: TutorVisualPresentationIdentity? = null,
     onTargetHit: ((TutorVisualHitProof) -> Unit)? = null,
     presentationStateKey: String = TutorVisualPresentationStateKey.of(scene, hitPresentation),
+    compiledDocument: CompiledTutorVisualDocument? = null,
 ) {
     if (scene !is TutorVisualDocumentScene) {
         LegacyTutorVisualSceneRenderer(
@@ -95,18 +97,57 @@ fun TutorVisualSceneRenderer(
         )
         return
     }
+    val verifiedDocument = compiledDocument?.takeIf { compiled ->
+        compiled.scene == scene &&
+            compiled.integrity.canRender &&
+            compiled.provenance?.canPresent == true
+    }
+    if (verifiedDocument == null) {
+        TutorVisualDocumentUnavailable(
+            onOpenOriginal = onOpenOriginal,
+            modifier = modifier,
+        )
+        return
+    }
     SceneFrame(
         scene = scene,
         modifier = modifier,
     ) {
         TutorVisualDocumentContent(
-            scene = scene,
+            compiled = verifiedDocument,
             presentationStateKey = presentationStateKey,
             onOpenOriginal = onOpenOriginal,
             onReportIncorrect = onReportIncorrect,
             hitPresentation = hitPresentation,
             onTargetHit = onTargetHit,
         )
+    }
+}
+
+@Composable
+private fun TutorVisualDocumentUnavailable(
+    onOpenOriginal: (() -> Unit)?,
+    modifier: Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = Paper,
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(Icons.Rounded.BrokenImage, contentDescription = null, tint = InkSecondary)
+            Text("图形暂时无法显示", color = InkSecondary)
+            onOpenOriginal?.let { openOriginal ->
+                IconButton(onClick = openOriginal) {
+                    Icon(Icons.Rounded.Image, contentDescription = "查看原图")
+                }
+            }
+        }
     }
 }
 

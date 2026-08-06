@@ -7,7 +7,7 @@ import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorRevealCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorSessionAnchorCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorVisualTargetEvidenceCommand
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.LegacyPreCutoverTutorInteractionSessionDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.TutorVisualTargetEvidenceRecord
@@ -24,6 +24,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorVisualTargetEvidence
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.LOCAL_LEARNER_ID
 import com.tingyun.smartmistakebook.core.model.TutorVisualHitProofRegistry
 import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
@@ -38,14 +39,14 @@ import kotlinx.coroutines.ensureActive
 import java.util.concurrent.ConcurrentHashMap
 
 internal class RoomTutorInteractionRepository(
-    private val database: StudyDatabasePort,
-    private val learnerId: String = "learner:local",
+    private val legacyInteractions: LegacyPreCutoverTutorInteractionSessionDatabasePort,
+    private val learnerId: String = LOCAL_LEARNER_ID,
 ) : TutorInteractionRepository {
     private val evidenceWriteGate = TutorEvidenceWriteGate()
 
     override fun observe(sessionId: String): Flow<List<TutorTurnResponse>> {
         require(sessionId.isNotBlank())
-        return database.observeTutorTurnResponses(sessionId).map { records ->
+        return legacyInteractions.observeTutorTurnResponses(sessionId).map { records ->
             records.map(TutorTurnResponseRecord::toDomain)
         }
     }
@@ -54,7 +55,7 @@ internal class RoomTutorInteractionRepository(
         sessionId: String,
     ): Flow<List<TutorVisualTargetEvidence>> {
         require(sessionId.isNotBlank())
-        return database.observeTutorVisualTargetEvidence(sessionId).map { records ->
+        return legacyInteractions.observeTutorVisualTargetEvidence(sessionId).map { records ->
             records.map(TutorVisualTargetEvidenceRecord::toDomain)
         }
     }
@@ -63,13 +64,15 @@ internal class RoomTutorInteractionRepository(
         val persisted = command.toPersistedChoice()
         val requestId = command.evidenceRequestId
         return if (requestId == null) {
-            withContext(Dispatchers.IO) { database.recordTutorChoice(persisted).toDomain() }
+            withContext(Dispatchers.IO) {
+                legacyInteractions.recordTutorChoice(persisted).toDomain()
+            }
         } else {
             evidenceWriteGate.persist(
                 requestId = requestId,
                 write = {
                     withContext(Dispatchers.IO) {
-                        database.recordTutorChoiceUnlessCancelled(
+                        legacyInteractions.recordTutorChoiceUnlessCancelled(
                             persisted,
                             command.toPersistedCancellation(learnerId),
                         )?.toDomain() ?: throw TutorEvidenceRejectedException(requestId)
@@ -102,7 +105,7 @@ internal class RoomTutorInteractionRepository(
             isDefinitelyNotCommitted = { true },
             write = {
                 withContext(Dispatchers.IO) {
-                    database.recordTutorVisualTargetEvidenceUnlessCancelled(
+                    legacyInteractions.recordTutorVisualTargetEvidenceUnlessCancelled(
                         persisted,
                         command.toPersistedCancellation(learnerId),
                     )
@@ -118,20 +121,24 @@ internal class RoomTutorInteractionRepository(
 
     override suspend fun cancelEvidence(command: CancelTutorEvidenceCommand) {
         withContext(Dispatchers.IO) {
-            database.recordTutorEvidenceCancellation(command.toPersistedCancellation(learnerId))
+            legacyInteractions.recordTutorEvidenceCancellation(
+                command.toPersistedCancellation(learnerId),
+            )
         }
         evidenceWriteGate.cancel(command.evidenceRequestId)
     }
 
     override suspend fun isEvidenceCancelled(command: CancelTutorEvidenceCommand): Boolean =
         withContext(Dispatchers.IO) {
-            database.isTutorEvidenceCancelled(command.toPersistedCancellation(learnerId))
+            legacyInteractions.isTutorEvidenceCancelled(
+                command.toPersistedCancellation(learnerId),
+            )
         }
 
     override suspend fun recordMove(command: RecordTutorMoveCommand): TutorTurnResponse =
         withContext(Dispatchers.IO) {
             require(command.requestedMove != TutorMoveType.REVEAL_SOLUTION)
-            database.recordTutorMove(
+            legacyInteractions.recordTutorMove(
                 PersistTutorMoveCommand(
                     sessionId = command.sessionId,
                     questionDocumentId = command.questionDocumentId,
@@ -146,7 +153,7 @@ internal class RoomTutorInteractionRepository(
 
     override suspend fun revealSolution(command: RevealTutorSolutionCommand): TutorTurnResponse =
         withContext(Dispatchers.IO) {
-            database.revealTutorSolution(
+            legacyInteractions.revealTutorSolution(
                 PersistTutorRevealCommand(
                     learnerId = learnerId,
                     sessionId = command.sessionId,
@@ -161,7 +168,7 @@ internal class RoomTutorInteractionRepository(
 
     override suspend fun recordSolutionExposure(command: RecordTutorSolutionExposureCommand) {
         withContext(Dispatchers.IO) {
-            database.recordTutorSolutionExposure(
+            legacyInteractions.recordTutorSolutionExposure(
                 PersistTutorAnswerExposureCommand(
                     learnerId = learnerId,
                     sessionId = command.sessionId,
@@ -180,7 +187,7 @@ internal class RoomTutorInteractionRepository(
 
     override suspend fun hasAnswerExposure(key: TutorAnswerExposureKey): Boolean =
         withContext(Dispatchers.IO) {
-            database.readTutorAnswerExposure(
+            legacyInteractions.readTutorAnswerExposure(
                 modelTaskRequestId = key.modelTaskRequestId,
             )?.matchesAnswerExposure(
                 expectedLearnerId = learnerId,
@@ -192,7 +199,7 @@ internal class RoomTutorInteractionRepository(
         keys: Set<TutorAnswerExposureKey>,
     ): Set<TutorAnswerExposureKey> = withContext(Dispatchers.IO) {
         if (keys.isEmpty()) return@withContext emptySet()
-        val records = database.readTutorAnswerExposures(
+        val records = legacyInteractions.readTutorAnswerExposures(
             keys.mapTo(linkedSetOf(), TutorAnswerExposureKey::modelTaskRequestId),
         )
         records.matchingAnswerExposureKeys(
@@ -203,7 +210,7 @@ internal class RoomTutorInteractionRepository(
 
     override suspend fun anchorSession(anchor: TutorSessionProblemAnchor) {
         withContext(Dispatchers.IO) {
-            database.bindTutorSessionProblemAnchor(
+            legacyInteractions.bindTutorSessionProblemAnchor(
                 PersistTutorSessionAnchorCommand(
                     learnerId = learnerId,
                     sessionId = anchor.sessionId,
@@ -584,6 +591,15 @@ private fun TutorVisualTargetEvidenceRecord.toDomain() = TutorVisualTargetEviden
 )
 
 object TutorInteractionRepositoryFactory {
-    fun create(database: StudyDatabasePort): TutorInteractionRepository =
-        RoomTutorInteractionRepository(database)
+    /**
+     * Opens the terminally frozen pre-cutover interaction rows for migration compatibility.
+     *
+     * There is deliberately no production overload accepting
+     * [com.tingyun.smartmistakebook.core.database.TrustedTutorSessionDatabaseCapability]: the
+     * owner-issued tutor capability does not authorize these historical business rows.
+     */
+    fun createLegacyPreCutover(
+        legacyInteractions: LegacyPreCutoverTutorInteractionSessionDatabasePort,
+    ): TutorInteractionRepository =
+        RoomTutorInteractionRepository(legacyInteractions)
 }

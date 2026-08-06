@@ -8,16 +8,17 @@ import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.data.session.LegacyRoomCaptureSessionPortFactory
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureAssetBridge
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureSessionStateStore
+import com.tingyun.smartmistakebook.core.database.LegacyStudyDatabaseTestFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
-import com.tingyun.smartmistakebook.core.data.model.FakeModelGateway
+import com.tingyun.smartmistakebook.core.model.provider.FakeModelGateway
 import com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftImportRequest
 import com.tingyun.smartmistakebook.core.domain.AppendCaptureDraftPageRequest
-import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
-import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
 import com.tingyun.smartmistakebook.core.domain.ConsumeCaptureDraftWorkspaceRequest
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
@@ -25,7 +26,6 @@ import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
 import com.tingyun.smartmistakebook.core.domain.CaptureTranscriptionReview
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
 import com.tingyun.smartmistakebook.core.domain.ConfirmCapturedProblemRequest
-import com.tingyun.smartmistakebook.core.domain.CreateBatchImportRequest
 import com.tingyun.smartmistakebook.core.domain.EndTutorSessionWithoutSaveRequest
 import com.tingyun.smartmistakebook.core.domain.PendingCaptureStage
 import com.tingyun.smartmistakebook.core.domain.ReplaceCaptureDraftRequest
@@ -48,23 +48,28 @@ import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
+import com.tingyun.smartmistakebook.core.model.ProblemErrorAttributionResolutionStatus
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.WritingLayer
+import com.tingyun.smartmistakebook.core.student.mistake.database.AcknowledgeStudentCaptureSaveHandoffCommand
+import com.tingyun.smartmistakebook.core.student.mistake.database.AppendStudentProblemErrorOccurrenceCommand
+import com.tingyun.smartmistakebook.core.student.mistake.database.ReadPendingStudentCaptureSaveHandoffsQuery
+import com.tingyun.smartmistakebook.core.student.mistake.database.SaveStudentOwnedCaptureCommand
+import com.tingyun.smartmistakebook.core.student.mistake.database.StudentCaptureSaveHandoffRecord
+import com.tingyun.smartmistakebook.core.student.mistake.database.StudentOwnedCaptureSaveReceipt
+import com.tingyun.smartmistakebook.core.student.mistake.database.StudentProblemCanonicalIdentityKey
+import com.tingyun.smartmistakebook.core.student.mistake.database.StudentProblemErrorOccurrence
+import com.tingyun.smartmistakebook.core.student.mistake.database.TargetConfirmedStudentMistakeSaveOutcome
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -78,7 +83,7 @@ import org.junit.runner.RunWith
 class CaptureWorkflowInstrumentedTest {
     private lateinit var context: Context
     private lateinit var database: StudyDatabasePort
-    private lateinit var repository: RoomCaptureWorkflowRepository
+    private lateinit var repository: LegacyRoomCaptureSessionStateStore
     private lateinit var databaseName: String
 
     @Before
@@ -89,10 +94,11 @@ class CaptureWorkflowInstrumentedTest {
         clearOwnedFlatDirectory(context.cacheDir, "captured_images")
         clearOwnedFlatDirectory(context.filesDir, "source-assets")
         clearOwnedDirectoryTree(context.filesDir, BATCH_IMPORT_STAGING_DIRECTORY)
-        database = StudyDatabaseFactory.open(context, databaseName)
-        repository = RoomCaptureWorkflowRepository(
+        database =
+            LegacyStudyDatabaseTestFactory.openPreCutoverForTest(context, databaseName)
+        repository = LegacyRoomCaptureSessionStateStore(
             database,
-            AndroidCanonicalAssetVault(context),
+            legacyAssetBridge(),
             noTextRecognizer(),
         )
     }
@@ -107,67 +113,176 @@ class CaptureWorkflowInstrumentedTest {
     }
 
     @Test
-    fun batchImportKeepsSuccessfulPagesAndRetriesOnlyTheFailedPage() = runBlocking {
-        val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        val batchRepository = RoomBatchImportRepository(
-            database = database,
-            capture = repository,
-            processingScope = processingScope,
-            sourceStaging = AndroidBatchImportSourceStaging(context),
-        )
-        try {
-            val first = createPng(72, 96)
-            val second = createPng(80, 104)
-            val recoverable = createInvalidImage()
-
-            val created = batchRepository.createBatchImport(
-                CreateBatchImportRequest(
-                    requestId = "batch-partial-retry",
-                    localUris = listOf(
-                        privateUri(first).toString(),
-                        privateUri(second).toString(),
-                        privateUri(recoverable).toString(),
+    fun productionCaptureFinalizationUsesStudentGateAndRecoversBeforeTheNextItem() = runBlocking {
+        val transition = RecoveringCaptureCommitPort()
+        val capturePorts =
+            LegacyRoomCaptureSessionPortFactory.create(
+                context = context,
+                database = database,
+                learnerId = "learner:local",
+            )
+        val gatedCapture =
+            ProductionCaptureWorkflowRepositoryFactory.create(
+                session = capturePorts.session,
+                commitPreparation = capturePorts.commitPreparation,
+                commitPortProvider = { transition },
+            )
+        val drafts =
+            listOf(createPng(72, 96), createPng(80, 104)).mapIndexed { index, source ->
+                gatedCapture.importDraft(
+                    CaptureDraftImportRequest(
+                        requestId = "production-capture-$index",
+                        localUri = privateUri(source).toString(),
+                        source = CaptureInputSource.PHOTO_PICKER,
+                        origin = CaptureEntryOrigin.LIBRARY,
+                        occurredAtEpochMillis = 1_000L + index,
                     ),
-                    occurredAtEpochMillis = 1_000,
+                ).draftId
+            }
+
+        val firstConfirmation =
+            ConfirmCapturedProblemRequest(
+                requestId = "production-confirm-0",
+                draftId = drafts[0],
+                expectedRevisionNumber =
+                    checkNotNull(gatedCapture.readPendingCapture(drafts[0]))
+                        .currentRevisionNumber,
+                subject = "MATH",
+                title = "学生错题 1",
+                transcription = "第一道学生错题。",
+                writingLayer = CaptureWritingLayer.PRINTED,
+                transcriptionReview = CaptureTranscriptionReview.MANUAL_ENTRY,
+                occurredAtEpochMillis = 2_000,
+            )
+        transition.failNextAcknowledgement = true
+        assertTrue(gatedCapture.confirmAndCommit(firstConfirmation).created)
+
+        assertEquals(0, database.countMistakes())
+        assertEquals(1, transition.pendingCommandIds.size)
+        assertEquals(1, transition.studentOwnedSaves.size)
+
+        val secondConfirmation =
+            ConfirmCapturedProblemRequest(
+                requestId = "production-confirm-1",
+                draftId = drafts[1],
+                expectedRevisionNumber =
+                    checkNotNull(gatedCapture.readPendingCapture(drafts[1]))
+                        .currentRevisionNumber,
+                subject = "MATH",
+                title = "学生错题 2",
+                transcription = "第二道学生错题。",
+                writingLayer = CaptureWritingLayer.PRINTED,
+                transcriptionReview = CaptureTranscriptionReview.MANUAL_ENTRY,
+                occurredAtEpochMillis = 3_000,
+            )
+        assertTrue(gatedCapture.confirmAndCommit(secondConfirmation).created)
+
+        assertTrue(transition.pendingCommandIds.isEmpty())
+        assertEquals(2, transition.finalizedCommandIds.size)
+        assertEquals(2, transition.studentOwnedSaves.size)
+        assertEquals(0, database.countMistakes())
+
+        assertFalse(gatedCapture.confirmAndCommit(firstConfirmation).created)
+        assertEquals(2, transition.finalizedCommandIds.size)
+        assertEquals(2, transition.studentOwnedSaves.size)
+        assertEquals(0, database.countMistakes())
+    }
+
+    @Test
+    fun captureOwnsReplayableAdjacentDraftMergeReceiptWithoutBusinessWrites() = runBlocking {
+        val session =
+            LegacyRoomCaptureSessionPortFactory.create(
+                context = context,
+                database = database,
+                learnerId = "learner:local",
+            ).session
+        val primaryId =
+            session.importDraft(
+                ImportCaptureDraftSessionCommand(
+                    CaptureDraftImportRequest(
+                        requestId = "merge-primary",
+                        localUri = privateUri(createPng(72, 96)).toString(),
+                        source = CaptureInputSource.PHOTO_PICKER,
+                        origin = CaptureEntryOrigin.LIBRARY,
+                        occurredAtEpochMillis = 1_000,
+                    ),
                 ),
             )
-            val partiallyCompleted = withTimeout(15_000) {
-                batchRepository.observeBatchImports().first { jobs ->
-                    jobs.firstOrNull()?.status == BatchImportStatus.COMPLETED
-                }.first()
-            }
-
-            assertEquals(created.jobId, partiallyCompleted.jobId)
-            assertEquals(2, partiallyCompleted.readyCount)
-            assertEquals(1, partiallyCompleted.failedCount)
-            assertEquals(
-                setOf(BatchImportPageStatus.READY, BatchImportPageStatus.FAILED),
-                partiallyCompleted.pages.map { it.status }.toSet(),
+        val followingId =
+            session.importDraft(
+                ImportCaptureDraftSessionCommand(
+                    CaptureDraftImportRequest(
+                        requestId = "merge-following",
+                        localUri = privateUri(createPng(80, 104)).toString(),
+                        source = CaptureInputSource.PHOTO_PICKER,
+                        origin = CaptureEntryOrigin.LIBRARY,
+                        occurredAtEpochMillis = 1_001,
+                    ),
+                ),
+            )
+        val primary =
+            checkNotNull(
+                session.readCanonicalSourceAssets(
+                    ReadCaptureDraftCanonicalAssetsQuery(primaryId),
+                ),
+            )
+        val following =
+            checkNotNull(
+                session.readCanonicalSourceAssets(
+                    ReadCaptureDraftCanonicalAssetsQuery(followingId),
+                ),
+            )
+        val merge =
+            MergeAdjacentCaptureDraftsCommand(
+                batchJobId = "batch-merge-receipt",
+                batchPageIndex = 0,
+                primaryDraftSessionId = primaryId,
+                followingDraftSessionId = followingId,
+                expectedPrimarySessionVersion = primary.sessionVersion,
+                expectedFollowingSessionVersion = following.sessionVersion,
+                expectedPrimaryAssetOrderFingerprint = primary.assetOrderFingerprint,
+                expectedFollowingAssetOrderFingerprint = following.assetOrderFingerprint,
+                occurredAtEpochMillis = 2_000,
             )
 
-            val failedPage = partiallyCompleted.pages.single {
-                it.status == BatchImportPageStatus.FAILED
-            }
-            val failedSourceUri = checkNotNull(database.readBatchImportJob(created.jobId))
-                .pages.single { it.pageIndex == failedPage.pageIndex }
-                .sourceUri
-            writePng(stagedSourceFile(failedSourceUri), 88, 112)
-            batchRepository.retryBatchImportPage(created.jobId, failedPage.pageIndex)
-            val completed = withTimeout(15_000) {
-                batchRepository.observeBatchImports().first { jobs ->
-                    jobs.firstOrNull()?.let {
-                        it.readyCount == 3 && it.status == BatchImportStatus.COMPLETED
-                    } == true
-                }.first()
-            }
+        val receipt = session.mergeAdjacentDrafts(merge)
+        val receiptQuery =
+            ReadCaptureDraftMergeReceiptQuery(
+                batchJobId = merge.batchJobId,
+                batchPageIndex = merge.batchPageIndex,
+                primaryDraftSessionId = primaryId,
+                followingDraftSessionId = followingId,
+            )
+        assertEquals(captureMergeSessionReceiptReference(merge), receipt.receiptReference)
+        assertEquals(2_000L, receipt.mergedAtEpochMillis)
+        assertEquals(receipt, session.readMergeReceipt(receiptQuery))
+        assertNull(session.readPendingCapture(followingId.value))
 
-            assertEquals(BatchImportStatus.COMPLETED, completed.status)
-            assertEquals(3, completed.readyCount)
-            assertEquals(0, completed.failedCount)
-            assertEquals(3, completed.pages.mapNotNull { it.draftId }.distinct().size)
-        } finally {
-            processingScope.cancel()
-        }
+        session.appendDraftPage(
+            AppendCaptureDraftPageRequest(
+                requestId = "merge-primary-later-page",
+                draftId = primaryId.value,
+                expectedRevisionNumber = primary.revisionNumber,
+                expectedPageCount = receipt.sourceAssetCount,
+                localUri = privateUri(createPng(88, 112)).toString(),
+                source = CaptureInputSource.CAMERA,
+                occurredAtEpochMillis = 3_000,
+            ),
+        )
+
+        assertEquals(receipt, session.readMergeReceipt(receiptQuery))
+        assertEquals(receipt, session.mergeAdjacentDrafts(merge))
+        assertTrue(
+            runCatching {
+                session.mergeAdjacentDrafts(
+                    merge.copy(
+                        expectedPrimarySessionVersion =
+                            merge.expectedPrimarySessionVersion + 1,
+                    ),
+                )
+            }.isFailure,
+        )
+        assertEquals(0, database.countMistakes())
     }
 
     @Test
@@ -292,9 +407,9 @@ class CaptureWorkflowInstrumentedTest {
                     ),
                 )
             }
-            val secondRepository = RoomCaptureWorkflowRepository(
+            val secondRepository = LegacyRoomCaptureSessionStateStore(
                 database,
-                AndroidCanonicalAssetVault(context),
+                legacyAssetBridge(),
                 noTextRecognizer(),
             )
             val second = async {
@@ -594,9 +709,9 @@ class CaptureWorkflowInstrumentedTest {
         assertTrue(session.sourceImageUri.startsWith("file:"))
         assertEquals(0, database.countMistakes())
 
-        val reopenedRepository = RoomCaptureWorkflowRepository(
+        val reopenedRepository = LegacyRoomCaptureSessionStateStore(
             database,
-            AndroidCanonicalAssetVault(context),
+            legacyAssetBridge(),
             noTextRecognizer(),
         )
         assertEquals(session, reopenedRepository.readTutorSession(session.sessionId))
@@ -751,9 +866,9 @@ class CaptureWorkflowInstrumentedTest {
                 occurredAtEpochMillis = 18_400,
             ),
         )
-        val failingOcrRepository = RoomCaptureWorkflowRepository(
+        val failingOcrRepository = LegacyRoomCaptureSessionStateStore(
             database,
-            AndroidCanonicalAssetVault(context),
+            legacyAssetBridge(),
             LocalQuestionTextRecognizer { _, _, _ -> error("forced OCR failure") },
         )
 
@@ -892,6 +1007,17 @@ class CaptureWorkflowInstrumentedTest {
                 )
             }.isFailure,
         )
+        assertTrue(
+            runCatching {
+                repository.studentOwnedTutorCaptureSource(
+                    SaveTutorSessionRequest(
+                        requestId = "student-save-after-end",
+                        sessionId = session.sessionId,
+                        occurredAtEpochMillis = 20_100,
+                    ),
+                )
+            }.isFailure,
+        )
         assertEquals(0, database.countMistakes())
     }
 
@@ -907,9 +1033,9 @@ class CaptureWorkflowInstrumentedTest {
                 occurredAtEpochMillis = 30_000,
             ),
         )
-        val reopenedRepository = RoomCaptureWorkflowRepository(
+        val reopenedRepository = LegacyRoomCaptureSessionStateStore(
             database,
-            AndroidCanonicalAssetVault(context),
+            legacyAssetBridge(),
             noTextRecognizer(),
         )
 
@@ -1179,9 +1305,9 @@ class CaptureWorkflowInstrumentedTest {
     @Test
     fun localOcrPersistsOnlyAnUnconfirmedCandidateBeforeUserCommit() = runBlocking {
         val source = createPng(width = 96, height = 64)
-        val candidateRepository = RoomCaptureWorkflowRepository(
+        val candidateRepository = LegacyRoomCaptureSessionStateStore(
             database,
-            AndroidCanonicalAssetVault(context),
+            legacyAssetBridge(),
             LocalQuestionTextRecognizer { _, _, _ ->
                 LocalTextRecognition(
                     blocks = listOf(
@@ -1488,27 +1614,6 @@ class CaptureWorkflowInstrumentedTest {
         return file
     }
 
-    private fun createInvalidImage(): File {
-        val directory = File(context.cacheDir, "captured_images").also { it.mkdirs() }
-        val file = File.createTempFile("question_", ".img", directory)
-        FileOutputStream(file).use { stream -> stream.write("not-an-image".toByteArray()) }
-        return file
-    }
-
-    private fun stagedSourceFile(sourceUri: String): File {
-        val uri = Uri.parse(sourceUri)
-        assertEquals(batchImportProviderAuthority(context), uri.authority)
-        assertEquals("batch_import_staging", uri.pathSegments.first())
-        val session = File(context.filesDir, BATCH_IMPORT_STAGING_DIRECTORY)
-            .resolve(uri.pathSegments[1])
-            .canonicalFile
-        val root = File(context.filesDir, BATCH_IMPORT_STAGING_DIRECTORY).canonicalFile
-        check(session.parentFile == root)
-        return session.resolve(uri.pathSegments[2]).canonicalFile.also { source ->
-            check(source.parentFile == session)
-        }
-    }
-
     private fun writePng(file: File, width: Int, height: Int) {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.WHITE)
@@ -1531,6 +1636,9 @@ class CaptureWorkflowInstrumentedTest {
     private fun noTextRecognizer() = LocalQuestionTextRecognizer { _, _, _ ->
         LocalTextRecognition(emptyList(), "fixture-no-text-v1")
     }
+
+    private fun legacyAssetBridge() =
+        LegacyRoomCaptureAssetBridge(AndroidCanonicalAssetVault(context))
 
 
     private fun clearOwnedFlatDirectory(
@@ -1561,4 +1669,145 @@ class CaptureWorkflowInstrumentedTest {
             check(child.delete())
         }
     }
+}
+
+private class RecoveringCaptureCommitPort : ProductionCaptureOccurrenceCommitPort {
+    override val learnerId: String = "learner:local"
+    private val pending = linkedMapOf<String, StudentCaptureSaveHandoffRecord>()
+    private val finalized = linkedMapOf<String, StudentCaptureSaveHandoffRecord>()
+
+    val studentOwnedSaves = mutableListOf<SaveStudentOwnedCaptureCommand>()
+    var failNextAcknowledgement: Boolean = false
+
+    val pendingCommandIds: Set<String>
+        get() = pending.keys
+
+    val finalizedCommandIds: Set<String>
+        get() = finalized.keys
+
+    override suspend fun save(
+        prepared: PreparedStudentOwnedCaptureCommit,
+        identityEvidenceRequest: ProductionStudentProblemIdentityEvidenceRequest,
+    ): ProductionCaptureOccurrenceCommitReceipt {
+        check(
+            identityEvidenceRequest ==
+                ProductionStudentProblemIdentityEvidenceRequest.ExactAssetSelectionOrUnresolved,
+        )
+        val command = prepared.command
+        studentOwnedSaves += command
+        val existing = finalized[command.source.intentId] ?: pending[command.source.intentId]
+        existing?.let {
+            check(it.source == command.source)
+            return prepared.toInstrumentedReceipt(
+                outcome = TargetConfirmedStudentMistakeSaveOutcome.DUPLICATE,
+                handoff = it,
+            )
+        }
+        val target = command.target
+        val created =
+            StudentCaptureSaveHandoffRecord(
+                source = command.source,
+                learnerId = target.problem.revision.problem.learnerId,
+                targetProblem = target.problem.revision.problem,
+                targetRevision = target.problem.revision,
+                errorBookEntryId = checkNotNull(target.problem.errorBookEntryId),
+                targetCanonicalFingerprint = target.targetCanonicalFingerprint,
+                acknowledgedAtEpochMillis = null,
+            )
+        pending[command.source.intentId] = created
+        return prepared.toInstrumentedReceipt(
+            outcome = TargetConfirmedStudentMistakeSaveOutcome.CREATED,
+            handoff = created,
+        )
+    }
+
+    override suspend fun readPending(
+        query: ReadPendingStudentCaptureSaveHandoffsQuery,
+    ): List<StudentCaptureSaveHandoffRecord> =
+        pending.values.take(query.limit)
+
+    override suspend fun readByDraftIds(
+        draftIds: Set<String>,
+    ): List<StudentCaptureSaveHandoffRecord> =
+        (finalized.values + pending.values)
+            .filter { handoff -> handoff.source.draftId in draftIds }
+
+    override suspend fun readBySessionId(
+        sessionId: String,
+    ): StudentCaptureSaveHandoffRecord? =
+        (finalized.values + pending.values)
+            .singleOrNull { handoff -> handoff.source.sessionId == sessionId }
+
+    override suspend fun acknowledge(
+        command: AcknowledgeStudentCaptureSaveHandoffCommand,
+    ): StudentCaptureSaveHandoffRecord {
+        if (failNextAcknowledgement) {
+            failNextAcknowledgement = false
+            error("simulated student acknowledgement failure")
+        }
+        val current = checkNotNull(pending[command.intentId] ?: finalized[command.intentId])
+        check(current.source.sourceCanonicalFingerprint == command.sourceCanonicalFingerprint)
+        check(current.targetCanonicalFingerprint == command.targetCanonicalFingerprint)
+        val acknowledged =
+            current.copy(
+                acknowledgedAtEpochMillis = command.acknowledgedAtEpochMillis,
+            )
+        pending.remove(command.intentId)
+        finalized[command.intentId] = acknowledged
+        return acknowledged
+    }
+}
+
+private fun PreparedStudentOwnedCaptureCommit.toInstrumentedReceipt(
+    outcome: TargetConfirmedStudentMistakeSaveOutcome,
+    handoff: StudentCaptureSaveHandoffRecord,
+): ProductionCaptureOccurrenceCommitReceipt {
+    val source = command.source
+    val occurrenceCommand =
+        AppendStudentProblemErrorOccurrenceCommand(
+            occurrenceId = "occurrence-${source.intentId}",
+            idempotencyKey = source.intentId,
+            problemRevision = command.target.problem.revision,
+            batchCanonicalFingerprint = "7".repeat(64),
+            importSourceCanonicalFingerprint = "8".repeat(64),
+            occurredAtEpochMillis = source.occurredAtEpochMillis,
+            importedAtEpochMillis = source.occurredAtEpochMillis,
+            attributionStatus = ProblemErrorAttributionResolutionStatus.UNRESOLVED,
+        )
+    val occurrence =
+        StudentProblemErrorOccurrence(
+            ref = occurrenceCommand.ref,
+            idempotencyKey = occurrenceCommand.idempotencyKey,
+            batchCanonicalFingerprint = occurrenceCommand.batchCanonicalFingerprint,
+            importSourceCanonicalFingerprint =
+                occurrenceCommand.importSourceCanonicalFingerprint,
+            occurredAtEpochMillis = occurrenceCommand.occurredAtEpochMillis,
+            importedAtEpochMillis = occurrenceCommand.importedAtEpochMillis,
+            attributionStatus = occurrenceCommand.attributionStatus,
+            evidenceRefs = occurrenceCommand.evidenceRefs,
+        )
+    return ProductionCaptureOccurrenceCommitReceipt(
+        transactionId = "transaction-${source.intentId}",
+        transactionCanonicalFingerprint = "9".repeat(64),
+        assetManifestCanonicalFingerprint = "a".repeat(64),
+        selectedRegionCanonicalFingerprint = "b".repeat(64),
+        resolvedIdentity = instrumentedIdentity(source.intentId),
+        save = StudentOwnedCaptureSaveReceipt(outcome = outcome, handoff = handoff),
+        occurrence = occurrence,
+    )
+}
+
+private fun instrumentedIdentity(
+    stableKey: String,
+): StudentProblemCanonicalIdentityKey {
+    val constructor =
+        StudentProblemCanonicalIdentityKey::class.java.declaredConstructors.single {
+            it.parameterCount == 3
+        }
+    constructor.isAccessible = true
+    return constructor.newInstance(
+        "instrumented-student-owner",
+        "v1",
+        stableKey,
+    ) as StudentProblemCanonicalIdentityKey
 }

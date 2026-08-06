@@ -6,6 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.domain.DEFAULT_REVIEW_REMINDER_MINUTES_AFTER_MIDNIGHT
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderDelivery
+import com.tingyun.smartmistakebook.core.domain.ReviewPacingLevel
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,9 +42,17 @@ class DataStoreReviewReminderRepositoryTest {
         val defaults = firstRepository.preferences.first()
         assertFalse(defaults.enabled)
         assertEquals(DEFAULT_REVIEW_REMINDER_MINUTES_AFTER_MIDNIGHT, defaults.minutesAfterMidnight)
+        assertEquals(ReviewPacingLevel.STANDARD, defaults.pacingLevel)
+        assertNull(defaults.examSubject)
+        assertNull(defaults.examEpochDay)
         firstRepository.setReminderTime(18 * 60 + 30)
         firstRepository.setEnabled(true)
+        firstRepository.setPacingLevel(ReviewPacingLevel.STRONG)
+        firstRepository.setExamTarget(SubjectKind.MATH, 20_700L)
         assertTrue(firstRepository.current().enabled)
+        assertEquals(ReviewPacingLevel.STRONG, firstRepository.current().pacingLevel)
+        assertEquals(SubjectKind.MATH, firstRepository.current().examSubject)
+        assertEquals(20_700L, firstRepository.current().examEpochDay)
         firstJob.cancelAndJoin()
 
         val secondJob = SupervisorJob()
@@ -53,6 +64,9 @@ class DataStoreReviewReminderRepositoryTest {
             val restored = secondRepository.current()
             assertTrue(restored.enabled)
             assertEquals(18 * 60 + 30, restored.minutesAfterMidnight)
+            assertEquals(ReviewPacingLevel.STRONG, restored.pacingLevel)
+            assertEquals(SubjectKind.MATH, restored.examSubject)
+            assertEquals(20_700L, restored.examEpochDay)
         } finally {
             secondJob.cancelAndJoin()
         }

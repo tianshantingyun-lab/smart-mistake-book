@@ -39,22 +39,10 @@ class ProblemOrganizationTasksTest {
     fun classificationEgressIsDocumentOnlyAndExact() {
         val input = input()
         val provider = provider()
-        val manifest = ModelEgressManifest(
-            authorizationId = "organization-authorization",
-            subjectId = input.subjectId,
-            purpose = ModelEgressPurpose.CLASSIFICATION,
-            authorizedTaskKinds = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
-            providerId = provider.providerId,
-            modelId = provider.modelId,
-            providerConfigurationVersion = provider.providerConfigurationVersion,
-            promptPolicyVersion = ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,
-            approvedAtEpochMillis = 2,
-            assets = emptyList(),
-            disclosedData = ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE,
-            prohibitedData = ModelEgressManifest.PROBLEM_ORGANIZATION_PROHIBITED_DATA,
-        )
+        val requestId = "organization-request"
+        val manifest = organizationManifest(requestId, input, provider)
         val request = ModelTaskRequest(
-            requestId = "organization-request",
+            requestId = requestId,
             input = input,
             occurredAtEpochMillis = 1,
             egressManifest = manifest,
@@ -72,6 +60,64 @@ class ProblemOrganizationTasksTest {
             manifest.disclosedData,
         )
         assertFalse(ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE in manifest.disclosedData)
+    }
+
+    @Test
+    fun classificationApprovalRejectsChangedRequestAndCanonicalContext() {
+        val requestId = "organization-request"
+        val input = input()
+        val provider = provider()
+        val manifest = organizationManifest(requestId, input, provider)
+        val changedRequests = listOf(
+            ModelTaskRequest(
+                requestId = "organization-request-2",
+                input = input,
+                occurredAtEpochMillis = 1,
+                egressManifest = manifest,
+            ),
+            ModelTaskRequest(
+                requestId = requestId,
+                input = input.copy(subject = SubjectKind.PHYSICS),
+                occurredAtEpochMillis = 1,
+                egressManifest = manifest,
+            ),
+            ModelTaskRequest(
+                requestId = requestId,
+                input = input.copy(
+                    questionDocument = document("question-1", "求函数的极值"),
+                ),
+                occurredAtEpochMillis = 1,
+                egressManifest = manifest,
+            ),
+            ModelTaskRequest(
+                requestId = requestId,
+                input = input.copy(
+                    relationCandidates = input.relationCandidates.map { candidate ->
+                        candidate.copy(title = "同意后替换的关联题")
+                    },
+                ),
+                occurredAtEpochMillis = 1,
+                egressManifest = manifest,
+            ),
+            ModelTaskRequest(
+                requestId = requestId,
+                input = input.copy(
+                    knowledgeBaseNodes = listOf(
+                        knowledgeNode("knowledge-1", "利用导数研究函数单调性"),
+                    ),
+                ),
+                occurredAtEpochMillis = 1,
+                egressManifest = manifest,
+            ),
+        )
+
+        changedRequests.forEach { changedRequest ->
+            val failure = runCatching {
+                ModelEgressPolicy.authorize(changedRequest, provider, 2)
+            }.exceptionOrNull() as ModelEgressAuthorizationException
+
+            assertEquals(ModelFailureCode.EGRESS_AUTHORIZATION_INVALID, failure.failureCode)
+        }
     }
 
     @Test
@@ -105,6 +151,78 @@ class ProblemOrganizationTasksTest {
         assertEquals(request, ModelTaskCodec.decodeRequest(ModelTaskCodec.encodeRequest(request)))
         assertEquals(output, ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(output)))
         assertTrue(ModelTaskCompletionValidator.validate(request, output).isEmpty())
+    }
+
+    @Test
+    fun defaultProblemFamilyDoesNotChangeLegacyV3WireEncoding() {
+        val legacyV3 =
+            output().copy(
+                plan =
+                    output().plan.copy(
+                        schemaVersion = ProblemOrganizationPlan.SCHEMA_VERSION,
+                    ),
+            )
+        val encoded = ModelTaskCodec.encodeOutput(legacyV3)
+
+        assertFalse(encoded.contains("problemFamily"))
+
+        val withFamily =
+            legacyV3.copy(
+                plan =
+                    legacyV3.plan.copy(
+                        problemFamily =
+                            ProblemFamilySuggestion(
+                                familyKey = "monotonic_interval_family",
+                                rationaleMarkdown = "同题不同录入与近似变式归入同一族。",
+                                confidence = 0.94,
+                            ),
+                    ),
+            )
+        assertTrue(ModelTaskCodec.encodeOutput(withFamily).contains("problemFamily"))
+    }
+
+    @Test
+    fun legacyOrganizationContextWithoutCatalogProvenanceFailsClosedOnDecode() {
+        val input =
+            input().copy(
+                knowledgeBaseNodes =
+                    listOf(knowledgeNode("knowledge-context", "根据导数符号判断单调性")),
+            )
+        val requestId = "organization-provenance-request"
+        val request =
+            ModelTaskRequest(
+                requestId = requestId,
+                input = input,
+                occurredAtEpochMillis = 1L,
+                egressManifest = organizationManifest(requestId, input, provider()),
+            )
+        val encoded = ModelTaskCodec.encodeRequest(request)
+        val legacy =
+            encoded.replace(
+                Regex(",\\\"catalogProvenance\\\":\\{[^{}]*}"),
+                "",
+            )
+
+        assertTrue(encoded != legacy)
+        assertTrue(runCatching { ModelTaskCodec.decodeRequest(legacy) }.isFailure)
+    }
+
+    @Test
+    fun knowledgeContextUsesTheCatalogTaxonomyVersionBoundary() {
+        val maximumTaxonomyVersion = "t".repeat(160)
+        val provenance = knowledgeCatalogProvenance(maximumTaxonomyVersion)
+        val node =
+            knowledgeNode("knowledge-context", "根据导数符号判断单调性").copy(
+                taxonomyVersion = maximumTaxonomyVersion,
+                catalogProvenance = provenance,
+            )
+
+        assertEquals(maximumTaxonomyVersion, node.taxonomyVersion)
+        assertTrue(
+            runCatching {
+                knowledgeCatalogProvenance("t".repeat(161))
+            }.isFailure,
+        )
     }
 
     @Test
@@ -177,7 +295,8 @@ class ProblemOrganizationTasksTest {
             includesSelectedRegion = true,
         )
         val manifest = ModelEgressManifest(
-            authorizationId = "organization-v3-authorization",
+            authorizationId =
+                ModelEgressAuthorizationId.forInput("organization-v3-request", input),
             subjectId = input.subjectId,
             purpose = ModelEgressPurpose.CLASSIFICATION,
             authorizedTaskKinds = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
@@ -304,6 +423,7 @@ class ProblemOrganizationTasksTest {
             granularity = KnowledgeNodeGranularity.ATOMIC,
             parentCanonicalName = "力学",
             taxonomyVersion = "physics-v1",
+            catalogProvenance = knowledgeCatalogProvenance("physics-v1"),
             verificationStatus = KnowledgeNodeVerificationStatus.CURATED,
         )
 
@@ -505,6 +625,25 @@ class ProblemOrganizationTasksTest {
         occurredAtEpochMillis = 1,
     )
 
+    private fun organizationManifest(
+        requestId: String,
+        input: ProblemOrganizationInput,
+        provider: ProviderCapabilitySnapshot,
+    ) = ModelEgressManifest(
+        authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
+        subjectId = input.subjectId,
+        purpose = ModelEgressPurpose.CLASSIFICATION,
+        authorizedTaskKinds = setOf(ModelTaskKind.PROBLEM_CLASSIFY),
+        providerId = provider.providerId,
+        modelId = provider.modelId,
+        providerConfigurationVersion = provider.providerConfigurationVersion,
+        promptPolicyVersion = ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,
+        approvedAtEpochMillis = 2,
+        assets = emptyList(),
+        disclosedData = ModelEgressManifest.PROBLEM_ORGANIZATION_DISCLOSURE,
+        prohibitedData = ModelEgressManifest.PROBLEM_ORGANIZATION_PROHIBITED_DATA,
+    )
+
     private fun input() = ProblemOrganizationInput(
         problemId = "problem-1",
         problemRevisionId = "revision-1",
@@ -642,9 +781,19 @@ class ProblemOrganizationTasksTest {
         granularity = KnowledgeNodeGranularity.ATOMIC,
         parentCanonicalName = "利用导数研究函数单调性",
         taxonomyVersion = "math-v1",
+        catalogProvenance = knowledgeCatalogProvenance("math-v1"),
         verificationStatus = KnowledgeNodeVerificationStatus.SOURCE_GROUNDED,
         prerequisiteKnowledgeNodeIds = prerequisites,
     )
+
+    private fun knowledgeCatalogProvenance(taxonomyVersion: String) =
+        KnowledgeBaseCatalogProvenance(
+            packId = "reviewed-test-pack",
+            knowledgePackVersion = "reviewed-test-pack-v1",
+            taxonomyVersion = taxonomyVersion,
+            manifestFingerprint = "a".repeat(64),
+            activationGeneration = 1L,
+        )
 
     private fun document(id: String, markdown: String) = QuestionDocument(
         id = id,

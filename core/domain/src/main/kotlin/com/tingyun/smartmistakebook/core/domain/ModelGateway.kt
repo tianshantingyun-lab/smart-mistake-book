@@ -29,10 +29,13 @@ interface ModelGateway {
 }
 
 /**
- * Durable application boundary for model work. Every emitted state has already been persisted, so
- * UI collectors may leave and return without owning the operation's source of truth.
+ * A model-task view already narrowed to one feature-owned subject scope.
+ *
+ * Production UI receives this interface, never [ModelTaskRepository]. The production scope owner
+ * rechecks the task kind, subject and request identity for every call. Test repositories may
+ * implement the wider repository below and are therefore still valid substitutes.
  */
-interface ModelTaskRepository {
+interface ScopedModelTaskPort {
     suspend fun capabilities(): ProviderCapabilitySnapshot
 
     fun observe(requestId: String): Flow<ModelTaskSnapshot?>
@@ -156,4 +159,20 @@ interface ModelTaskRepository {
             )
         }
     }
+}
+
+/**
+ * Process-wide durable queue owner. This capability is reserved for trusted production
+ * coordinators which mint [ScopedModelTaskPort] views; feature modules must not receive it.
+ */
+interface ModelTaskRepository : ScopedModelTaskPort {
+    /**
+     * Executes a raw-answer task without writing its request to the ordinary model-task database.
+     * Production implementations must keep the request process-local; durability belongs to the
+     * encrypted owner outbox and downstream idempotent candidate owner.
+     */
+    fun executeSensitiveEphemeral(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
+        flow {
+            error("Sensitive model execution is unavailable for this repository")
+        }
 }

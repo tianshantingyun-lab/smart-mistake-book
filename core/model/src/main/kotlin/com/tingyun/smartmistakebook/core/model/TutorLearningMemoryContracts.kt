@@ -133,7 +133,7 @@ data class TutorEvidenceRequest(
     val stateVersion: Long,
     val createdAtEpochMillis: Long,
     val resolvedAtEpochMillis: Long?,
-    val terminalSourceFactId: String?,
+    val terminalReceiptId: String?,
 ) {
     init {
         evidenceRequestId.requireLearningMemoryId("Tutor evidence request id")
@@ -165,19 +165,19 @@ data class TutorEvidenceRequest(
                 "Tutor evidence resolution must not precede its request"
             }
         }
-        terminalSourceFactId?.requireLearningMemoryId("Tutor evidence terminal source-fact id")
+        terminalReceiptId?.requireLearningMemoryId("Tutor evidence terminal receipt id")
         when (status) {
             TutorEvidenceRequestStatus.PENDING -> require(
-                resolvedAtEpochMillis == null && terminalSourceFactId == null,
+                resolvedAtEpochMillis == null && terminalReceiptId == null,
             ) { "Pending tutor evidence cannot contain a terminal resolution" }
 
-            TutorEvidenceRequestStatus.SUBMITTED -> require(
-                resolvedAtEpochMillis != null && terminalSourceFactId != null,
-            ) { "Submitted tutor evidence requires exactly one source fact and resolution time" }
+            TutorEvidenceRequestStatus.SUBMITTED -> require(resolvedAtEpochMillis != null) {
+                "Submitted tutor evidence requires a resolution time"
+            }
 
             TutorEvidenceRequestStatus.CANCELLED,
-            -> require(resolvedAtEpochMillis != null && terminalSourceFactId == null) {
-                "Non-submitted tutor evidence must resolve without a source fact"
+            -> require(resolvedAtEpochMillis != null && terminalReceiptId == null) {
+                "Non-submitted tutor evidence must resolve without a mastery receipt"
             }
         }
     }

@@ -66,4 +66,36 @@ internal data class BatchImportPageEntity(
     val updatedAtEpochMillis: Long,
     @ColumnInfo(name = "boundary_after_status", defaultValue = "PENDING")
     val boundaryAfterStatus: String,
+    @ColumnInfo(name = "boundary_claimed_at_epoch_millis")
+    val boundaryClaimedAtEpochMillis: Long?,
+)
+
+@Entity(
+    tableName = "batch_import_boundary_resolution_receipt",
+    primaryKeys = ["job_id", "page_index"],
+    foreignKeys = [
+        ForeignKey(
+            entity = BatchImportPageEntity::class,
+            parentColumns = ["job_id", "page_index"],
+            childColumns = ["job_id", "page_index"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+)
+internal data class BatchImportBoundaryResolutionReceiptEntity(
+    @ColumnInfo(name = "job_id")
+    val jobId: String,
+    @ColumnInfo(name = "page_index")
+    val pageIndex: Int,
+    @ColumnInfo(name = "primary_draft_session_id")
+    val primaryDraftSessionId: String,
+    @ColumnInfo(name = "following_draft_session_id")
+    val followingDraftSessionId: String,
+    val resolution: String,
+    @ColumnInfo(name = "boundary_claimed_at_epoch_millis")
+    val boundaryClaimedAtEpochMillis: Long,
+    @ColumnInfo(name = "capture_merge_receipt_ref")
+    val captureMergeReceiptRef: String?,
+    @ColumnInfo(name = "occurred_at_epoch_millis")
+    val occurredAtEpochMillis: Long,
 )

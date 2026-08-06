@@ -5,6 +5,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ProblemRelationKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationAuthorizationGrant
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeNodeRef
 import kotlinx.coroutines.flow.Flow
 
 /** Exact, reviewable context for one model-assisted organization request. */
@@ -108,7 +109,28 @@ data class ConfirmedMistakeOrganization(
     val relations: List<ConfirmedProblemRelation> = emptyList(),
     /** Exact accepted bindings for this problem revision; never inferred from display labels. */
     val knowledgeNodeIds: Set<String> = emptySet(),
+    /** Version-bound local witnesses. Legacy id-only snapshots intentionally leave this empty. */
+    val directKnowledgeNodes: List<ConfirmedKnowledgeNodeBinding> = emptyList(),
 )
+
+data class ConfirmedKnowledgeNodeBinding(
+    val ref: KnowledgeNodeRef,
+    val manifestFingerprint: String,
+    val activationGeneration: Long,
+) {
+    init {
+        require(SHA_256.matches(manifestFingerprint)) {
+            "Confirmed knowledge binding requires a manifest fingerprint"
+        }
+        require(activationGeneration > 0L) {
+            "Confirmed knowledge binding requires an activated catalog generation"
+        }
+    }
+
+    private companion object {
+        val SHA_256 = Regex("^[0-9a-f]{64}$")
+    }
+}
 
 data class ProblemOrganizationConfirmation(
     val created: Boolean,
@@ -136,6 +158,11 @@ enum class ProblemOrganizationWorkCompletionOutcome {
     COMPLETED,
     LOST_AUTHORITY,
 }
+
+class ProblemOrganizationImmutableConflictException(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalStateException(message, cause)
 
 data class ProblemOrganizationReauthorizationPreparation(
     val key: MistakeRevisionKey,

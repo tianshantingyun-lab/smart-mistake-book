@@ -291,12 +291,12 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
         val originalStore = store
         context.deleteDatabase(databaseName)
         try {
-            store = StudyDatabaseFactory.open(context, databaseName)
+            store = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             val command = prepareCommit("restart")
             store.commitProblemDraft(command)
             store.close()
 
-            store = StudyDatabaseFactory.open(context, databaseName)
+            store = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             val waiting = checkNotNull(
                 store.readProblemOrganizationWorkByCommitReceipt(command.commandId),
             )
@@ -735,17 +735,7 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
             problemId = problemId,
             problemRevisionId = revisionId,
             practiceUnitId = practiceUnitId,
-            knowledgeNodes = listOf(
-                KnowledgeNodeSeedRecord(
-                    knowledgeNodeId = knowledgeNodeId,
-                    stableCode = stableCode,
-                    subject = SubjectKind.MATH.name,
-                    displayName = "二次函数最值",
-                    parentKnowledgeNodeId = null,
-                    taxonomyVersion = "organization-test-v1",
-                    createdAtEpochMillis = acceptedAtEpochMillis,
-                ),
-            ),
+            knowledgeNodes = emptyList(),
             knowledgeBindings = listOf(
                 KnowledgeBindingSeedRecord(
                     bindingId = "knowledge-binding-$suffix",
@@ -756,6 +746,8 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
                     sourceType = "LOCAL_POLICY_ACCEPTED",
                     taxonomyVersion = "organization-test-v1",
                     acceptedAtEpochMillis = acceptedAtEpochMillis,
+                    verifiedKnowledgeReference =
+                        verifiedOrganizationKnowledgeReference(knowledgeNodeId),
                 ),
             ),
             classifications = listOf(
@@ -898,28 +890,30 @@ class ProblemOrganizationWorkDatabaseInstrumentedTest {
     ): Boolean {
         val grant = requireNotNull(command.problemOrganizationAuthorization)
         val draft = checkNotNull(store.readProblemDraft(command.draftId))
+        val requestId = "organization-request:${command.commandId}"
+        val input = ProblemOrganizationV3Input(
+            problemId = command.problemId,
+            problemRevisionId = command.problemRevisionId,
+            practiceUnitId = command.practiceUnitId,
+            subject = SubjectKind.MATH,
+            capturedDocument = draft.currentRevision.questionDocument,
+            sourceAssets = draft.sourceAssets.map { source ->
+                CaptureSourceAssetRef(
+                    assetId = source.sourceAsset.sourceAssetId,
+                    sha256 = source.sourceAsset.contentSha256,
+                    width = source.sourceAsset.width,
+                    height = source.sourceAsset.height,
+                    pageIndex = source.pageIndex,
+                )
+            },
+            relationCandidates = emptyList(),
+        )
         val request = ModelTaskRequest(
             schemaVersion = ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION,
-            requestId = "organization-request:${command.commandId}",
-            input = ProblemOrganizationV3Input(
-                problemId = command.problemId,
-                problemRevisionId = command.problemRevisionId,
-                practiceUnitId = command.practiceUnitId,
-                subject = SubjectKind.MATH,
-                capturedDocument = draft.currentRevision.questionDocument,
-                sourceAssets = draft.sourceAssets.map { source ->
-                    CaptureSourceAssetRef(
-                        assetId = source.sourceAsset.sourceAssetId,
-                        sha256 = source.sourceAsset.contentSha256,
-                        width = source.sourceAsset.width,
-                        height = source.sourceAsset.height,
-                        pageIndex = source.pageIndex,
-                    )
-                },
-                relationCandidates = emptyList(),
-            ),
+            requestId = requestId,
+            input = input,
             occurredAtEpochMillis = 3_000,
-            egressManifest = grant.toEgressManifest(command.problemRevisionId),
+            egressManifest = grant.toEgressManifest(requestId, input),
         )
         return store.authorizeProblemOrganizationWork(
             AuthorizeProblemOrganizationWorkCommand(

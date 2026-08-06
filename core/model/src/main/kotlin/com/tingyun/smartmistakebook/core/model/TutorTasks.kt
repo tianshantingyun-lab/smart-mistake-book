@@ -1,7 +1,10 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package com.tingyun.smartmistakebook.core.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 
 /** Coarse, privacy-preserving evidence disclosed for one tutor plan. */
 @Serializable
@@ -117,6 +120,44 @@ data class TutorKnowledgeEvidence(
         const val MAX_LABEL_CHARS = 96
         const val MAX_DISCLOSED_EVIDENCE_MASS = 100.0
         const val MAX_DISCLOSED_OBSERVATIONS = 100
+    }
+}
+
+/** Host-projected teaching behavior for one semantic point of the confirmed question. */
+@Serializable
+enum class TutorTeachingConstraint {
+    SKIP_BASIC_PROMPT,
+    MAY_GUIDE,
+    EXPLAIN_DIRECTLY,
+}
+
+/**
+ * The complete model-facing projection of local learning state.
+ *
+ * [ref] is a question-local ordinal, never a catalog, learner, row, or storage identifier.
+ */
+@Serializable
+data class TutorKnowledgeGuidance(
+    val ref: String,
+    val label: String,
+    val constraint: TutorTeachingConstraint,
+) {
+    init {
+        ref.requireSafeModelText(
+            "Tutor question knowledge point ref",
+            MAX_REF_CHARS,
+            false,
+        )
+        require(REF_PATTERN.matches(ref)) {
+            "Tutor question knowledge point ref must be question-local"
+        }
+        label.requireSafeModelText("Tutor guidance label", MAX_LABEL_CHARS, false)
+    }
+
+    companion object {
+        const val MAX_REF_CHARS = 32
+        const val MAX_LABEL_CHARS = 96
+        private val REF_PATTERN = Regex("""current-question-point-[1-9][0-9]?""")
     }
 }
 
@@ -538,26 +579,33 @@ data class TutorFormulaDerivationScene(
 }
 
 /**
- * A model receives only the confirmed question and a small relevance candidate set. It never
- * receives the full learning ledger and cannot mutate mastery state.
+ * A model receives only the confirmed question and question-local semantic teaching constraints.
+ * It never receives the learning ledger and cannot mutate mastery state.
  */
 @Serializable
 @SerialName("tutor_plan")
+@JsonIgnoreUnknownKeys
 data class TutorPlanInput(
     val sessionId: String,
     val draftRevisionNumber: Int,
     val subject: String,
     val questionDocument: QuestionDocument,
-    val relevantLearningEvidence: List<TutorKnowledgeEvidence>,
-    val projectionIsCurrent: Boolean,
+    val teachingConstraints: List<TutorKnowledgeGuidance> = emptyList(),
     val reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
-    val questionLearningEvidence: TutorQuestionLearningEvidence? = null,
     val cycleOrdinal: Int = 1,
     val priorConversationMemory: TutorConversationMemory? = null,
     /** Exact, bounded student messages retained from earlier cycles of this same question. */
     val priorCycleStudentMessages: List<String> = emptyList(),
     val turnOrdinal: Int = 1,
     val priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+    /** Host-owned presentation authority; legacy cached requests remain guided. */
+    val explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    /** Invalidates model work issued before a mode change. */
+    val modeVersion: Long = 0,
+    /** Host-owned epoch for the current long-term-write permission. */
+    val learningWritePermissionVersion: Long = 0,
+    /** Model-visible behavior is unchanged; this field is local write authority only. */
+    val allowLongTermLearningWrites: Boolean = true,
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_PLAN
@@ -570,13 +618,17 @@ data class TutorPlanInput(
         require(draftRevisionNumber > 0) { "Tutor draft revision must be positive" }
         subject.requireSafeModelText("Tutor subject", MAX_SUBJECT_CHARS, false)
         require(questionDocument.blocks.isNotEmpty()) { "Tutor planning requires a confirmed question" }
-        require(relevantLearningEvidence.size <= MAX_RELEVANT_EVIDENCE) {
-            "Tutor planning disclosed too many learning summaries"
+        require(teachingConstraints.size <= MAX_TEACHING_CONSTRAINTS) {
+            "Tutor planning disclosed too many teaching constraints"
         }
         require(
-            relevantLearningEvidence.map(TutorKnowledgeEvidence::knowledgeNodeId).distinct().size ==
-                relevantLearningEvidence.size,
-        ) { "Tutor learning evidence ids must be unique" }
+            teachingConstraints.map(TutorKnowledgeGuidance::ref).distinct().size ==
+                teachingConstraints.size,
+        ) { "Tutor teaching constraint refs must be unique" }
+        require(
+            teachingConstraints.map(TutorKnowledgeGuidance::label).distinct().size ==
+                teachingConstraints.size,
+        ) { "Tutor teaching constraint labels must be unique" }
         reviewedTeachingReferences.requireValidTutorTeachingReferences(
             subject = subject,
             label = "Tutor planning",
@@ -609,10 +661,56 @@ data class TutorPlanInput(
         require(priorTurns.map(TutorTurnHistoryEntry::turnOrdinal) == (1 until turnOrdinal).toList()) {
             "Tutor history ordinals must be contiguous"
         }
+        require(modeVersion >= 0) { "Tutor mode version must not be negative" }
+        require(learningWritePermissionVersion >= 0) {
+            "Tutor learning-write permission version must not be negative"
+        }
     }
 
+    /**
+     * Source-compatible safe downgrade for callers compiled against the pre-redaction contract.
+     * Legacy learning fields are accepted only as constructor arguments and are never retained.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    @Deprecated("Use teachingConstraints; legacy learning detail is discarded")
+    constructor(
+        sessionId: String,
+        draftRevisionNumber: Int,
+        subject: String,
+        questionDocument: QuestionDocument,
+        relevantLearningEvidence: List<TutorKnowledgeEvidence>,
+        projectionIsCurrent: Boolean,
+        reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+        questionLearningEvidence: TutorQuestionLearningEvidence? = null,
+        cycleOrdinal: Int = 1,
+        priorConversationMemory: TutorConversationMemory? = null,
+        priorCycleStudentMessages: List<String> = emptyList(),
+        turnOrdinal: Int = 1,
+        priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+        explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+        modeVersion: Long = 0,
+        learningWritePermissionVersion: Long = 0,
+        allowLongTermLearningWrites: Boolean = true,
+    ) : this(
+        sessionId = sessionId,
+        draftRevisionNumber = draftRevisionNumber,
+        subject = subject,
+        questionDocument = questionDocument,
+        teachingConstraints = emptyList(),
+        reviewedTeachingReferences = reviewedTeachingReferences,
+        cycleOrdinal = cycleOrdinal,
+        priorConversationMemory = priorConversationMemory,
+        priorCycleStudentMessages = priorCycleStudentMessages,
+        turnOrdinal = turnOrdinal,
+        priorTurns = priorTurns,
+        explanationMode = explanationMode,
+        modeVersion = modeVersion,
+        learningWritePermissionVersion = learningWritePermissionVersion,
+        allowLongTermLearningWrites = allowLongTermLearningWrites,
+    )
+
     companion object {
-        const val MAX_RELEVANT_EVIDENCE = 12
+        const val MAX_TEACHING_CONSTRAINTS = 12
         const val MAX_TEACHING_REFERENCES = 4
         const val MAX_TEACHING_REFERENCE_MARKDOWN_CHARS = 20_000
         const val MAX_SUBJECT_CHARS = 32
@@ -647,15 +745,14 @@ data class TutorChatHistoryEntry(
  */
 @Serializable
 @SerialName("tutor_respond")
+@JsonIgnoreUnknownKeys
 data class TutorRespondInput(
     val sessionId: String,
     val draftRevisionNumber: Int,
     val subject: String,
     val questionDocument: QuestionDocument,
-    val relevantLearningEvidence: List<TutorKnowledgeEvidence>,
-    val projectionIsCurrent: Boolean,
+    val teachingConstraints: List<TutorKnowledgeGuidance> = emptyList(),
     val reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
-    val questionLearningEvidence: TutorQuestionLearningEvidence? = null,
     val responseOrdinal: Int,
     val cycleOrdinal: Int = 1,
     val turnOrdinal: Int = 1,
@@ -667,6 +764,12 @@ data class TutorRespondInput(
     val requestedMove: TutorMoveType? = null,
     /** Local authority selected for this reply; legacy cached requests remain guided. */
     val explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+    /** Invalidates replies issued before a mode change. */
+    val modeVersion: Long = 0,
+    /** Host-owned epoch for the current long-term-write permission. */
+    val learningWritePermissionVersion: Long = 0,
+    /** This value can remove write authority but can never grant model authority. */
+    val allowLongTermLearningWrites: Boolean = true,
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
@@ -681,13 +784,17 @@ data class TutorRespondInput(
         require(questionDocument.blocks.isNotEmpty()) {
             "Tutor response requires the confirmed question"
         }
-        require(relevantLearningEvidence.size <= TutorPlanInput.MAX_RELEVANT_EVIDENCE) {
-            "Tutor response disclosed too many learning summaries"
+        require(teachingConstraints.size <= TutorPlanInput.MAX_TEACHING_CONSTRAINTS) {
+            "Tutor response disclosed too many teaching constraints"
         }
         require(
-            relevantLearningEvidence.map(TutorKnowledgeEvidence::knowledgeNodeId).distinct().size ==
-                relevantLearningEvidence.size,
-        ) { "Tutor response learning evidence ids must be unique" }
+            teachingConstraints.map(TutorKnowledgeGuidance::ref).distinct().size ==
+                teachingConstraints.size,
+        ) { "Tutor response teaching constraint refs must be unique" }
+        require(
+            teachingConstraints.map(TutorKnowledgeGuidance::label).distinct().size ==
+                teachingConstraints.size,
+        ) { "Tutor response teaching constraint labels must be unique" }
         reviewedTeachingReferences.requireValidTutorTeachingReferences(
             subject = subject,
             label = "Tutor response",
@@ -696,6 +803,10 @@ data class TutorRespondInput(
         require(cycleOrdinal > 0) { "Tutor response cycle ordinal must be positive" }
         require(turnOrdinal in 1..TutorPlanInput.MAX_TURNS) {
             "Tutor response turn ordinal exceeds the conversation budget"
+        }
+        require(modeVersion >= 0) { "Tutor response mode version must not be negative" }
+        require(learningWritePermissionVersion >= 0) {
+            "Tutor response learning-write permission version must not be negative"
         }
         studentMessage.requireSafeTutorStudentMessage(
             "Tutor response student message",
@@ -720,6 +831,54 @@ data class TutorRespondInput(
         ) { "Tutor response prior chat exceeds its total text budget" }
     }
 
+    /**
+     * Source-compatible safe downgrade for callers compiled against the pre-redaction contract.
+     * Legacy learning fields are accepted only as constructor arguments and are never retained.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    @Deprecated("Use teachingConstraints; legacy learning detail is discarded")
+    constructor(
+        sessionId: String,
+        draftRevisionNumber: Int,
+        subject: String,
+        questionDocument: QuestionDocument,
+        relevantLearningEvidence: List<TutorKnowledgeEvidence>,
+        projectionIsCurrent: Boolean,
+        reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+        questionLearningEvidence: TutorQuestionLearningEvidence? = null,
+        responseOrdinal: Int,
+        cycleOrdinal: Int = 1,
+        turnOrdinal: Int = 1,
+        studentMessage: String,
+        selectedChoiceId: String? = null,
+        visibleTutorContextMarkdown: String? = null,
+        priorMessages: List<TutorChatHistoryEntry> = emptyList(),
+        requestedMove: TutorMoveType? = null,
+        explanationMode: TutorExplanationMode = TutorExplanationMode.GUIDED,
+        modeVersion: Long = 0,
+        learningWritePermissionVersion: Long = 0,
+        allowLongTermLearningWrites: Boolean = true,
+    ) : this(
+        sessionId = sessionId,
+        draftRevisionNumber = draftRevisionNumber,
+        subject = subject,
+        questionDocument = questionDocument,
+        teachingConstraints = emptyList(),
+        reviewedTeachingReferences = reviewedTeachingReferences,
+        responseOrdinal = responseOrdinal,
+        cycleOrdinal = cycleOrdinal,
+        turnOrdinal = turnOrdinal,
+        studentMessage = studentMessage,
+        selectedChoiceId = selectedChoiceId,
+        visibleTutorContextMarkdown = visibleTutorContextMarkdown,
+        priorMessages = priorMessages,
+        requestedMove = requestedMove,
+        explanationMode = explanationMode,
+        modeVersion = modeVersion,
+        learningWritePermissionVersion = learningWritePermissionVersion,
+        allowLongTermLearningWrites = allowLongTermLearningWrites,
+    )
+
     companion object {
         const val MAX_STUDENT_MESSAGE_CHARS = 1_200
         const val MAX_VISIBLE_CONTEXT_CHARS = 12_000
@@ -728,196 +887,25 @@ data class TutorRespondInput(
     }
 }
 
-/** Local, fail-closed answer authority. Open text and model declarations never grant permission. */
-fun TutorRespondInput.studentAuthorizedSolutionRequest(): Boolean =
-    requestedMove == TutorMoveType.REVEAL_SOLUTION
-
-/** Single local authority shared by preview, completion, rendering, exposure, and history. */
-fun TutorRespondInput.authorizesSolutionExposure(): Boolean =
-    explanationMode == TutorExplanationMode.DIRECT || studentAuthorizedSolutionRequest()
-
-/** Shared defense-in-depth boundary for validation, rendering, exposure recording, and history. */
-fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
-    solutionRevealed &&
-        input.authorizesSolutionExposure() &&
-        sessionId == input.sessionId &&
-        draftRevisionNumber == input.draftRevisionNumber &&
-        questionDocumentId == input.questionDocument.id &&
-        responseOrdinal == input.responseOrdinal &&
-        cycleOrdinal == input.cycleOrdinal &&
-        turnOrdinal == input.turnOrdinal
-
-/**
- * Applies the deterministic part of the explanation boundary. It constrains every visible field by
- * its UI role, but plain Markdown cannot prove semantic non-disclosure; an independent semantic
- * review remains required for higher-risk guided explanations.
- */
-fun TutorRespondOutput.locallyConstrainedFor(input: TutorRespondInput): TutorRespondOutput? {
-    if (input.studentAuthorizedSolutionRequest()) {
-        return takeIf {
-            solutionRevealed &&
-                interactionDirective == null &&
-                messageMarkdown.hasDirectAnswerShape()
-        }
-    }
-    if (intentDecision.intent != TutorMessageIntent.CURRENT_QUESTION_HELP) {
-        return takeIf {
-            !solutionRevealed &&
-                visualScene == null &&
-                visualRequest == null &&
-                suggestedMoves.isEmpty() &&
-                interactionDirective == null &&
-                !messageMarkdown.containsDeterministicSolutionClaim()
-        }
-    }
-    if (input.authorizesSolutionExposure()) {
-        return takeIf {
-            solutionRevealed &&
-                interactionDirective == null &&
-                messageMarkdown.hasDirectAnswerShape()
-        }
-    }
-    if (
-        solutionRevealed ||
-        visualScene != null ||
-        visualRequest != null ||
-        suggestedMoves.isNotEmpty()
-    ) {
-        return null
-    }
-    val directive = interactionDirective
-    if (directive == null) {
-        return takeIf {
-            !messageMarkdown.containsTutorQuestionMark() &&
-                !messageMarkdown.containsDeterministicSolutionClaim()
-        }
-    }
-    if (!directive.hasSafeVisibleInteractionShape()) return null
-    return copy(messageMarkdown = GUIDED_INTERACTION_MESSAGE)
-}
-
-private fun TutorInteractionDirective.hasSafeVisibleInteractionShape(): Boolean = when (this) {
-    TutorInteractionDirective.Continue -> true
-    is TutorInteractionDirective.FreeResponse ->
-        promptMarkdown.isSafeTutorPrompt(allowImperative = true)
-    is TutorInteractionDirective.VisualTarget ->
-        promptMarkdown.isSafeTutorPrompt(allowImperative = true)
-    is TutorInteractionDirective.Choices ->
-        promptMarkdown.isSafeTutorPrompt(allowImperative = false) &&
-            choices.all { choice -> choice.labelMarkdown.isSafeTutorChoiceLabel() }
-}
-
-private fun String.hasDirectAnswerShape(): Boolean {
-    val normalized = normalizedTutorBoundaryText()
-    return normalized.length >= MIN_DIRECT_ANSWER_CHARS &&
-        !normalized.containsTutorQuestionMark() &&
-        DIRECT_DECLARATIVE_END.containsMatchIn(normalized) &&
-        !DIRECT_DEFERRAL.containsMatchIn(normalized)
-}
-
-private fun String.isSafeTutorPrompt(allowImperative: Boolean): Boolean {
-    val normalized = normalizedTutorBoundaryText()
-    return (
-        normalized.containsTutorQuestionMark() ||
-            allowImperative && SAFE_TUTOR_IMPERATIVE_PROMPT.containsMatchIn(normalized)
-        ) &&
-        !normalized.containsDeterministicSolutionClaim() &&
-        !normalized.containsBareGuidedAnswer()
-}
-
-private fun String.isSafeTutorChoiceLabel(): Boolean {
-    val normalized = normalizedTutorBoundaryText()
-    return !normalized.containsDeterministicSolutionClaim() &&
-        !CHOICE_META_ANSWER_MARKER.containsMatchIn(normalized)
-}
-
-private fun String.containsTutorQuestionMark(): Boolean =
-    any { character -> character == '？' || character == '?' }
-
-private fun String.containsDeterministicSolutionClaim(): Boolean {
-    val normalized = normalizedTutorBoundaryText()
-    return EXPLICIT_RESULT_CLAIM.containsMatchIn(normalized) ||
-        FINAL_SELECTION_CLAIM.containsMatchIn(normalized) ||
-        FINAL_EQUATION_CLAIM.containsMatchIn(normalized) ||
-        COMPLETE_SOLUTION_CLAIM.containsMatchIn(normalized)
-}
-
-private fun String.containsBareGuidedAnswer(): Boolean =
-    GUIDED_BARE_OPTION.containsMatchIn(this) ||
-        GUIDED_BARE_EQUATION.containsMatchIn(this) ||
-        GUIDED_BARE_VALUE.containsMatchIn(this)
-
-private fun String.normalizedTutorBoundaryText(): String =
-    replace(TUTOR_BOUNDARY_MARKDOWN_DECORATION, "")
-        .replace('\u00a0', ' ')
-        .trim()
-
-private const val MIN_DIRECT_ANSWER_CHARS = 12
-
-private val DIRECT_DECLARATIVE_END = Regex("""[。.!！；;]\s*$""")
-private val DIRECT_DEFERRAL = Regex(
-    """(?i)(?:先|再|请)?\s*(?:想一想|自己想|自己试|尝试一下|再看看|先思考)""",
-)
-private val TUTOR_BOUNDARY_MARKDOWN_DECORATION = Regex("""[*_~#>]""")
-private val SAFE_TUTOR_IMPERATIVE_PROMPT = Regex(
-    """^(?:请\s*)?(?:写下|指出|点出|选择|判断|说说|算出|圈出|标出)\s*\S+""",
-)
-private val GUIDED_BARE_OPTION = Regex(
-    """^(?:请\s*)?(?:选择|写下|指出|点出|圈出|标出)\s*(?:选项\s*)?(?:[a-hＡ-Ｈ]|[甲乙丙丁①②③④⑤⑥⑦⑧])(?:\s*[。.!！])?$""",
-    RegexOption.IGNORE_CASE,
-)
-private val GUIDED_BARE_EQUATION = Regex(
-    """[=＝]\s*\S+""",
-)
-private val GUIDED_BARE_VALUE = Regex(
-    """^(?:请\s*)?(?:写下|指出|点出|选择|算出|圈出|标出)\s*[-+]?\d+(?:\.\d+)?(?:\s*[。.!！])?$""",
-)
-private val EXPLICIT_RESULT_CLAIM = Regex(
-    pattern =
-        """(?ix)""" +
-            """(?:最终\s*(?:答案|结果|结论)|正确\s*(?:答案|选项)|本题\s*(?:答案|结论)|答案|结论)""" +
-            """\s*(?:是|为|[:：])\s*""" +
-            """(?!什么|多少|哪(?:个|项)?|谁|如何|怎么|是否|能否|由\s*(?:哪个|什么)|[?？])\S""" +
-            """|\b(?:final\s+answer|answer|conclusion)\s*(?:is|:)\s*""" +
-            """(?!what|which|who|how)\S""",
-)
-private val FINAL_SELECTION_CLAIM = Regex(
-    pattern =
-        """(?ix)(?:所以|因此|故|从而|可见|可知|应当|应该)""" +
-            """\s*(?:应当|应该|要|可)?\s*(?:选择|选)\s*(?:项\s*)?""" +
-            """(?:[a-hＡ-Ｈ]\b|[甲乙丙丁①②③④⑤⑥⑦⑧])""" +
-            """|\b(?:therefore|thus)\s+(?:choose|select)\s+[a-h]\b""",
-)
-private val FINAL_EQUATION_CLAIM = Regex(
-    pattern =
-        """(?ix)(?:最终|综上|解得|求得|算得|得到|推出|可得)\s*[,，:：]?\s*""" +
-            """[^\r\n。；;]{0,64}[=＝]\s*\S+""" +
-            """|\b(?:solving\s+gives|therefore)\s+[^.\r\n]{0,48}=\s*\S+""",
-)
-private val COMPLETE_SOLUTION_CLAIM = Regex(
-    """(?ix)完整\s*(?:解法|解答|解析|过程)\s*(?:是|如下|[:：])""" +
-        """|\bcomplete\s+solution\s*(?:is|follows|:)\b""",
-)
-private val CHOICE_META_ANSWER_MARKER = Regex(
-    pattern =
-        """(?ix)^(?:正确|错误|对|错)\s*$""" +
-            """|(?:最终|正确)\s*(?:答案|选项)""" +
-            """|(?:答案|选项)\s*(?:是|为|[:：])?\s*(?:[a-hＡ-Ｈ]|[甲乙丙丁①②③④⑤⑥⑦⑧])""" +
-            """|(?:应当|应该|应)\s*选(?:择)?""" +
-            """|(?:答对|答错)|[✓✔✗✘]|\b(?:correct|incorrect|final\s+answer)\b""",
-)
-
-const val GUIDED_INTERACTION_MESSAGE = "先完成下面这个小步骤。"
-const val GUIDED_FREE_RESPONSE_PROMPT = "下一步应该怎么做？"
-
 /** Model-authored content. This is intentionally not a [VerifiedTeachingArtifact]. */
 @Serializable
 data class TutorTurnPlan(
     val openingMarkdown: String,
+    /** Host-derived presentation flag. Model payloads cannot select it. */
+    val showOpening: Boolean = true,
+    /** Null is accepted only for legacy cached output; provider output always declares an intent. */
+    val responseIntent: TutorResponseIntent? = null,
+    /** Whether the complete solution is authorized for immediate presentation. */
+    val solutionRevealed: Boolean = false,
     /** Optional interaction about the confirmed question; explanation-only turns omit it. */
     val diagnosticItem: TutorAssessmentItem? = null,
     /** Optional v2 interaction contract; absent on legacy cached outputs. */
     val interactionDirective: TutorInteractionDirective? = null,
+    /**
+     * Untrusted model proposal retained for the Host's exact-content certification seam. Existing
+     * presentation consumers must continue to use [interactionDirective].
+     */
+    val guidedInteractionProposal: TutorGuidedInteractionProposal? = null,
     /** Optional single local-rendered scene; the complete Markdown solution remains the fallback. */
     val visualScene: TutorVisualScene? = null,
     /** Optional asynchronous v2 visual request; text remains immediately usable without it. */
@@ -928,6 +916,8 @@ data class TutorTurnPlan(
     val targetedEvidenceLabels: List<String>,
     val inferredKnowledgeLabels: List<String>,
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
+    /** One optional, non-scoring hint for the current guided step; absent on legacy outputs. */
+    val hintMarkdown: String? = null,
 ) {
     init {
         require(visualScene == null || visualRequest == null) {
@@ -937,6 +927,28 @@ data class TutorTurnPlan(
         solutionMarkdown.requireTutorMarkdown("Tutor solution", MAX_SOLUTION_CHARS)
         alternateMethodMarkdown.requireTutorMarkdown("Tutor alternate method", MAX_SOLUTION_CHARS)
         difficultyReasonMarkdown.requireTutorMarkdown("Tutor difficulty reason", MAX_REASON_CHARS)
+        hintMarkdown?.let { hint ->
+            hint.requireTutorMarkdown("Tutor guided hint", MAX_HINT_CHARS)
+            require(responseIntent == TutorResponseIntent.ASK && !solutionRevealed) {
+                "Tutor guided hint requires an unrevealed guided interaction"
+            }
+            require(
+                diagnosticItem != null ||
+                    interactionDirective != null ||
+                    guidedInteractionProposal != null,
+            ) {
+                "Tutor guided hint requires one current-step interaction"
+            }
+            require(!hint.containsDeterministicSolutionClaim()) {
+                "Tutor guided hint must not reveal a deterministic answer"
+            }
+            require(
+                hint.normalizedTutorContentForComparison() !=
+                    solutionMarkdown.normalizedTutorContentForComparison(),
+            ) {
+                "Tutor guided hint must not duplicate the complete solution"
+            }
+        }
         diagnosticItem?.let { item ->
             require(item.choices.size <= MAX_INTERACTION_CHOICES) {
                 "A tutor interaction must stay within the bounded choice count"
@@ -951,7 +963,7 @@ data class TutorTurnPlan(
                 choice.feedbackMarkdown.requireTutorMarkdown("Tutor choice feedback", MAX_FEEDBACK_CHARS)
             }
         }
-        require(targetedEvidenceLabels.size <= TutorPlanInput.MAX_RELEVANT_EVIDENCE) {
+        require(targetedEvidenceLabels.size <= TutorPlanInput.MAX_TEACHING_CONSTRAINTS) {
             "Tutor plan targeted too many evidence labels"
         }
         require(inferredKnowledgeLabels.size in 1..MAX_INFERRED_LABELS) {
@@ -963,7 +975,7 @@ data class TutorTurnPlan(
         }
         require(targetedEvidenceLabels.distinct().size == targetedEvidenceLabels.size)
         require(inferredKnowledgeLabels.distinct().size == inferredKnowledgeLabels.size)
-        require(openingMarkdown != solutionMarkdown) {
+        require(!showOpening || openingMarkdown != solutionMarkdown) {
             "Tutor opening must not reveal the complete solution"
         }
         require(alternateMethodMarkdown != solutionMarkdown) {
@@ -990,6 +1002,7 @@ data class TutorTurnPlan(
         const val MAX_FEEDBACK_CHARS = 2_000
         const val MAX_SOLUTION_CHARS = 12_000
         const val MAX_REASON_CHARS = 1_000
+        const val MAX_HINT_CHARS = 600
         const val MAX_INFERRED_LABELS = 8
         const val MAX_INTERACTION_CHOICES = 5
         const val MAX_SUGGESTED_MOVES = 3
@@ -1041,7 +1054,12 @@ data class TutorRespondOutput(
     val cycleOrdinal: Int = 1,
     val turnOrdinal: Int = 1,
     val messageMarkdown: String,
-    /** True only when this exact reply displays the current question's answer or full solution. */
+    /** Null is accepted only for legacy cached output; provider output always declares an intent. */
+    val responseIntent: TutorResponseIntent? = null,
+    /**
+     * True when this reply may disclose answer-bearing explanation. Guided fail-closed reduction
+     * sets it conservatively so the host revokes learning evidence before presentation.
+     */
     val solutionRevealed: Boolean = false,
     val visualScene: TutorVisualScene? = null,
     val visualRequest: TutorVisualGenerationRequest? = null,
@@ -1095,74 +1113,3 @@ data class TutorRespondOutput(
     }
 }
 
-internal fun String.requireTutorMarkdown(label: String, maxChars: Int) {
-    requireSafeModelText(label, maxChars, true)
-    StudentFacingLanguagePolicy.requirePlainLanguage(this, label)
-    val normalized = lowercase()
-    require("<script" !in normalized && "javascript:" !in normalized) {
-        "$label contains active content"
-    }
-}
-
-private fun String.requireTutorRespondText(label: String, maxChars: Int) {
-    requireTutorSceneText(label, maxChars, true)
-}
-
-internal fun requireTutorSceneHeader(
-    sceneId: String,
-    title: String,
-    schemaVersion: Int,
-    expectedSchemaVersion: Int = TutorVisualScene.SCHEMA_VERSION,
-) {
-    sceneId.requireTutorSceneId("Tutor visual scene id")
-    title.requireTutorSceneText("Tutor visual scene title", TutorVisualScene.MAX_TITLE_CHARS, false)
-    require(schemaVersion == expectedSchemaVersion) {
-        "Unsupported tutor visual scene schema version"
-    }
-}
-
-internal fun String.requireTutorSceneId(label: String) {
-    requireSafeModelText(label, ModelTaskRequest.MAX_ID_CHARS, false)
-}
-
-internal fun String.requireTutorSceneFormula(label: String) {
-    requireTutorSceneText(label, TutorVisualScene.MAX_FORMULA_CHARS, false)
-    require(!RestrictedFormulaText.hasUnsupportedCommand(this)) {
-        "$label contains an unsupported formula command"
-    }
-}
-
-internal fun String.requireTutorSceneText(label: String, maxChars: Int, allowLineBreaks: Boolean) {
-    requireSafeModelText(label, maxChars, allowLineBreaks)
-    StudentFacingLanguagePolicy.requirePlainLanguage(this, label)
-    require(!TUTOR_SCENE_HTML.containsMatchIn(this)) { "$label contains HTML" }
-    require(!TUTOR_SCENE_CODE_MARKUP.containsMatchIn(this)) { "$label contains code markup" }
-    require(!TUTOR_SCENE_MARKDOWN_LINK.containsMatchIn(this)) { "$label contains a Markdown link" }
-    require(!TUTOR_SCENE_REFERENCE_LINK.containsMatchIn(this)) { "$label contains a reference link" }
-    require(!TUTOR_SCENE_IMAGE_MARKER.containsMatchIn(this)) { "$label contains image markup" }
-    require(!TUTOR_SCENE_URL.containsMatchIn(this)) { "$label contains a URL" }
-}
-
-internal fun requireUniqueTutorSceneIds(sceneId: String, itemIds: List<String>) {
-    val allIds = listOf(sceneId) + itemIds
-    require(allIds.distinct().size == allIds.size) { "Tutor visual scene ids must be unique" }
-}
-
-internal fun requireTutorSceneTextBudget(parts: List<String>) {
-    require(parts.sumOf(String::length) <= TutorVisualScene.MAX_TOTAL_TEXT_CHARS) {
-        "Tutor visual scene exceeds its total text budget"
-    }
-}
-
-private val TUTOR_SCENE_HTML = Regex("(?is)<!--|<\\s*/?\\s*[a-z][^>]*>")
-private val TUTOR_SCENE_CODE_MARKUP = Regex("`|~~~")
-private val TUTOR_SCENE_MARKDOWN_LINK = Regex(
-    """!?\[[^\r\n]{0,256}]\s*\([^\r\n)]{0,2048}\)""",
-)
-private val TUTOR_SCENE_REFERENCE_LINK = Regex(
-    """\[[^\r\n]{1,256}]\s*\[[^\r\n]{0,256}]""",
-)
-private val TUTOR_SCENE_IMAGE_MARKER = Regex("!\\s*\\[")
-private val TUTOR_SCENE_URL = Regex(
-    "(?i)(?:\\b(?:https?|ftp|file|mailto|data|javascript):\\S*|\\bwww\\.[^\\s]+)",
-)

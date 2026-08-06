@@ -8,6 +8,7 @@ import androidx.room3.Transaction
 import com.tingyun.smartmistakebook.core.database.DatabaseContractViolationException
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.ResolveKnowledgeGroundingCommand
+import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.ValidatedKnowledgeGroundingResolution
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeRelationEntity
@@ -348,6 +349,13 @@ internal interface KnowledgeGroundingDao {
                     ),
                     practiceUnitId = occurrence.practiceUnitId,
                     knowledgeNodeId = target.knowledgeNodeId,
+                    knowledgeSubject = null,
+                    knowledgeTaxonomyVersion = null,
+                    knowledgePackVersion = null,
+                    knowledgeManifestFingerprint = null,
+                    knowledgeActivationGeneration = null,
+                    knowledgeReferenceStatus =
+                        StudyDbValue.KnowledgeReferenceStatus.PENDING_REATTRIBUTION,
                     basisRevisionId = occurrence.problemRevisionId,
                     strength = 1.0,
                     sourceType = BindingAcceptanceSource.CURATED_REFERENCE.name,

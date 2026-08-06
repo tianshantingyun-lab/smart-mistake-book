@@ -35,6 +35,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -63,6 +64,12 @@ internal class TutorMotionPlaybackState(
     val isPlayingState = mutableStateOf(isPlaying)
     val speedIndexState = mutableIntStateOf(speedIndex)
 }
+
+internal fun nextPlaybackSpeedIndex(current: Int): Int =
+    (current + 1) % PLAYBACK_SPEEDS.size
+
+internal fun coercePlaybackTimeSeconds(timeSeconds: Float, durationSeconds: Float): Float =
+    timeSeconds.coerceIn(0f, durationSeconds)
 
 private val TutorMotionPlaybackStateSaver = listSaver<TutorMotionPlaybackState, Any>(
     save = { state ->
@@ -174,7 +181,7 @@ internal fun TutorMotionSceneContent(
                     },
             )
             TextButton(
-                onClick = { speedIndex = (speedIndex + 1) % PLAYBACK_SPEEDS.size },
+                onClick = { speedIndex = nextPlaybackSpeedIndex(speedIndex) },
                 modifier = Modifier
                     .height(48.dp)
                     .testTag("tutor-motion-speed-${scene.sceneId}"),
@@ -198,6 +205,10 @@ private fun MotionCanvas(
         }
     }
     val bounds = remember(sampledStates) { MotionBounds.from(sampledStates) }
+    val axisColor = Outline
+    val traceColor = JadeMuted
+    val objectColor = JadeActive
+    val vectorColor = InkSecondary
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
@@ -230,7 +241,7 @@ private fun MotionCanvas(
             bottom
         }
         drawLine(
-            color = Outline,
+            color = axisColor,
             start = Offset(left, horizontalAxisY),
             end = Offset(right, horizontalAxisY),
             strokeWidth = 1.dp.toPx(),
@@ -243,13 +254,13 @@ private fun MotionCanvas(
         }
         drawPath(
             path = trace,
-            color = JadeMuted,
+            color = traceColor,
             style = Stroke(width = 2.dp.toPx()),
         )
 
         val objectCenter = worldToCanvas(state)
         drawCircle(
-            color = JadeActive,
+            color = objectColor,
             radius = 10.dp.toPx(),
             center = objectCenter,
         )
@@ -266,13 +277,13 @@ private fun MotionCanvas(
                     (state.velocityYMetersPerSecond / speedMagnitude * arrowLength).toFloat(),
             )
             drawLine(
-                color = InkSecondary,
+                color = vectorColor,
                 start = objectCenter,
                 end = velocityEnd,
                 strokeWidth = 2.dp.toPx(),
                 cap = StrokeCap.Round,
             )
-            drawVelocityArrowHead(objectCenter, velocityEnd)
+            drawVelocityArrowHead(objectCenter, velocityEnd, vectorColor)
         }
     }
 }
@@ -280,6 +291,7 @@ private fun MotionCanvas(
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawVelocityArrowHead(
     start: Offset,
     end: Offset,
+    color: Color,
 ) {
     val deltaX = end.x - start.x
     val deltaY = end.y - start.y
@@ -291,14 +303,14 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawVelocityArrowHe
     val base = Offset(end.x - unitX * arrowSize, end.y - unitY * arrowSize)
     val perpendicular = Offset(-unitY * arrowSize * 0.55f, unitX * arrowSize * 0.55f)
     drawLine(
-        color = InkSecondary,
+        color = color,
         start = end,
         end = base + perpendicular,
         strokeWidth = 2.dp.toPx(),
         cap = StrokeCap.Round,
     )
     drawLine(
-        color = InkSecondary,
+        color = color,
         start = end,
         end = base - perpendicular,
         strokeWidth = 2.dp.toPx(),
@@ -481,7 +493,7 @@ private fun Double.asDisplayNumber(): String =
 private fun Float.asSpeedLabel(): String =
     if (this == 1f || this == 2f) toInt().toString() else toString()
 
-private val PLAYBACK_SPEEDS = floatArrayOf(0.5f, 1f, 2f)
+internal val PLAYBACK_SPEEDS = floatArrayOf(0.5f, 1f, 2f)
 private const val DEFAULT_SPEED_INDEX = 1
 private const val TRACE_SAMPLE_COUNT = 72
 private const val MIN_VISIBLE_VECTOR = 1e-8

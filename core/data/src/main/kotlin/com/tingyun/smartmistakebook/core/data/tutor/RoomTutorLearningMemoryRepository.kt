@@ -2,13 +2,12 @@ package com.tingyun.smartmistakebook.core.data.tutor
 
 import com.tingyun.smartmistakebook.core.database.AllocateTutorTurnCommand as DatabaseAllocateTurnCommand
 import com.tingyun.smartmistakebook.core.database.ArchiveTutorConversationCommand as DatabaseArchiveConversationCommand
+import com.tingyun.smartmistakebook.core.database.CancelTutorEvidenceRequestCommand as DatabaseCancelEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.CreateTutorConversationCommand as DatabaseCreateConversationCommand
-import com.tingyun.smartmistakebook.core.database.FinalizeTutorEvidenceRequestCommand as DatabaseFinalizeEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.PrepareTutorEvidenceRequestCommand as DatabasePrepareEvidenceCommand
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorConversationConflictException
+import com.tingyun.smartmistakebook.core.database.TutorConversationSessionDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorEvidenceConflictException
-import com.tingyun.smartmistakebook.core.database.TutorEvidenceSubmission
 import com.tingyun.smartmistakebook.core.database.TutorMemoryScopeConflictException
 import com.tingyun.smartmistakebook.core.database.TutorTurnConflictException
 import com.tingyun.smartmistakebook.core.database.TutorTurnReadResult
@@ -34,7 +33,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryRepository
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestStatus
 
 internal class RoomTutorLearningMemoryRepository(
-    private val database: StudyDatabasePort,
+    private val database: TutorConversationSessionDatabasePort,
 ) : TutorLearningMemoryRepository {
     override suspend fun createConversation(
         command: CreateTutorConversationCommand,
@@ -170,25 +169,26 @@ internal class RoomTutorLearningMemoryRepository(
 
     override suspend fun finalizeEvidence(
         command: FinalizeTutorEvidenceCommand,
-    ): FinalizeTutorEvidenceResult = mapDatabaseConflict(
-        TutorLearningMemoryOperation.FINALIZE_EVIDENCE,
-        TutorLearningMemoryConflictReason.EVIDENCE_NOT_PENDING,
-    ) {
-        database.finalizeTutorEvidenceRequest(command.toDatabaseCommand()).let { result ->
-            if (result.replayed) {
-                FinalizeTutorEvidenceResult.Replayed(result.request, result.sourceFact)
-            } else if (result.request.status == TutorEvidenceRequestStatus.SUBMITTED) {
-                FinalizeTutorEvidenceResult.Submitted(
-                    result.request,
-                    checkNotNull(result.sourceFact),
-                )
-            } else if (result.request.status == TutorEvidenceRequestStatus.CANCELLED) {
-                FinalizeTutorEvidenceResult.Cancelled(result.request)
-            } else {
-                throw conflict(
-                    TutorLearningMemoryOperation.FINALIZE_EVIDENCE,
-                    TutorLearningMemoryConflictReason.TERMINAL_OUTCOME_MISMATCH,
-                )
+    ): FinalizeTutorEvidenceResult {
+        check(command.terminal is TutorLearningEvidenceTerminal.Cancelled) {
+            "Legacy tutor learning-fact submission is disabled"
+        }
+        return mapDatabaseConflict(
+            TutorLearningMemoryOperation.FINALIZE_EVIDENCE,
+            TutorLearningMemoryConflictReason.EVIDENCE_NOT_PENDING,
+        ) {
+            database.cancelTutorEvidenceRequest(command.toDatabaseCancellation()).let { result ->
+                if (result.request.status != TutorEvidenceRequestStatus.CANCELLED) {
+                    throw conflict(
+                        TutorLearningMemoryOperation.FINALIZE_EVIDENCE,
+                        TutorLearningMemoryConflictReason.TERMINAL_OUTCOME_MISMATCH,
+                    )
+                }
+                if (result.replayed) {
+                    FinalizeTutorEvidenceResult.Replayed(result.request, receipt = null)
+                } else {
+                    FinalizeTutorEvidenceResult.Cancelled(result.request)
+                }
             }
         }
     }
@@ -216,8 +216,71 @@ internal class RoomTutorLearningMemoryRepository(
 }
 
 object TutorLearningMemoryRepositoryFactory {
-    fun create(database: StudyDatabasePort): TutorLearningMemoryRepository =
+    fun create(database: TutorConversationSessionDatabasePort): TutorLearningMemoryRepository =
         RoomTutorLearningMemoryRepository(database)
+
+    fun createDeferred(
+        repositoryProvider: suspend () -> TutorLearningMemoryRepository,
+    ): TutorLearningMemoryRepository =
+        DeferredTutorLearningMemoryRepository(repositoryProvider)
+}
+
+private class DeferredTutorLearningMemoryRepository(
+    private val repositoryProvider: suspend () -> TutorLearningMemoryRepository,
+) : TutorLearningMemoryRepository {
+    override suspend fun createConversation(
+        command: CreateTutorConversationCommand,
+    ): CreateTutorConversationResult =
+        repositoryProvider().createConversation(command)
+
+    override suspend fun openConversation(
+        command: OpenTutorConversationCommand,
+    ): OpenTutorConversationResult =
+        repositoryProvider().openConversation(command)
+
+    override suspend fun latestActiveConversation(
+        learnerScopeId: String,
+    ) = repositoryProvider().latestActiveConversation(learnerScopeId)
+
+    override suspend fun latestActiveConversationInNamespace(
+        learnerScopeId: String,
+        conversationIdPrefix: String,
+    ) = repositoryProvider().latestActiveConversationInNamespace(
+        learnerScopeId = learnerScopeId,
+        conversationIdPrefix = conversationIdPrefix,
+    )
+
+    override suspend fun openTurn(
+        learnerScopeId: String,
+        turnReceiptId: String,
+    ): OpenTutorTurnResult =
+        repositoryProvider().openTurn(learnerScopeId, turnReceiptId)
+
+    override suspend fun openEvidenceRequest(
+        learnerScopeId: String,
+        evidenceRequestId: String,
+    ): OpenTutorEvidenceResult =
+        repositoryProvider().openEvidenceRequest(learnerScopeId, evidenceRequestId)
+
+    override suspend fun archiveConversation(
+        command: ArchiveTutorConversationCommand,
+    ): ArchiveTutorConversationResult =
+        repositoryProvider().archiveConversation(command)
+
+    override suspend fun allocateTurn(
+        command: AllocateTutorTurnCommand,
+    ): AllocateTutorTurnResult =
+        repositoryProvider().allocateTurn(command)
+
+    override suspend fun prepareEvidenceRequest(
+        command: PrepareTutorEvidenceCommand,
+    ): PrepareTutorEvidenceResult =
+        repositoryProvider().prepareEvidenceRequest(command)
+
+    override suspend fun finalizeEvidence(
+        command: FinalizeTutorEvidenceCommand,
+    ): FinalizeTutorEvidenceResult =
+        repositoryProvider().finalizeEvidence(command)
 }
 
 private fun CreateTutorConversationCommand.toDatabaseCommand() = DatabaseCreateConversationCommand(
@@ -276,7 +339,7 @@ private fun PrepareTutorEvidenceCommand.toDatabaseCommand() = DatabasePrepareEvi
     payloadFingerprint = payloadFingerprint,
 )
 
-private fun FinalizeTutorEvidenceCommand.toDatabaseCommand() = DatabaseFinalizeEvidenceCommand(
+private fun FinalizeTutorEvidenceCommand.toDatabaseCancellation() = DatabaseCancelEvidenceCommand(
     learnerId = learnerScopeId,
     conversationId = conversationId,
     conversationGeneration = conversationGeneration,
@@ -292,26 +355,8 @@ private fun FinalizeTutorEvidenceCommand.toDatabaseCommand() = DatabaseFinalizeE
     explanationMode = mode,
     modeVersion = modeVersion,
     directiveFingerprint = directiveFingerprint,
-    terminalStatus = when (terminal) {
-        is TutorLearningEvidenceTerminal.Submitted -> TutorEvidenceRequestStatus.SUBMITTED
-        is TutorLearningEvidenceTerminal.Cancelled -> TutorEvidenceRequestStatus.CANCELLED
-    },
     idempotencyKey = clientIdempotencyKey,
     payloadFingerprint = payloadFingerprint,
-    submission = (terminal as? TutorLearningEvidenceTerminal.Submitted)?.toDatabaseSubmission(),
-)
-
-private fun TutorLearningEvidenceTerminal.Submitted.toDatabaseSubmission() = TutorEvidenceSubmission(
-    sourceFactId = sourceFact.sourceFactId,
-    source = sourceFact.source,
-    factKind = sourceFact.factKind,
-    questionFingerprint = anchors.questionFingerprint,
-    revisionFingerprint = anchors.problemRevisionFingerprint,
-    fingerprintVersion = anchors.fingerprintVersion,
-    responseFingerprint = sourceFact.responseFingerprint,
-    responseSummary = sourceFact.responseSummary,
-    occurredAtEpochMillis = sourceFact.occurredAtEpochMillis,
-    sourceVersion = sourceFact.sourceVersion,
 )
 
 private fun requireLearnerScopeId(learnerScopeId: String) {

@@ -92,6 +92,13 @@ class MistakeDetailDatabaseInstrumentedTest {
         val current = store.readMistakeDetail(ENTRY_ID)
         val pinnedAfter = store.readExactMistakeDetail(ENTRY_ID, PROBLEM_ID, REVISION_ONE)
         val history = store.readMistakeRevisionHistory(ENTRY_ID)
+        val migrationSnapshot =
+            store.readLegacyAuthorityMigrationSnapshot("learner:local")
+        val migrated =
+            store.readLegacyStudentDocumentMigrationPage(
+                afterExclusive = null,
+                limit = 10,
+            ).records.single()
 
         assertEquals(REVISION_TWO, current?.problemRevisionId)
         assertEquals("d".repeat(64), current?.contentFingerprint)
@@ -110,6 +117,10 @@ class MistakeDetailDatabaseInstrumentedTest {
         assertEquals(listOf(REVISION_TWO, REVISION_ONE), history.map { it.problemRevisionId })
         assertEquals(listOf(2, 1), history.map { it.revisionNumber })
         assertEquals(listOf(true, false), history.map { it.isCurrent })
+        assertEquals(1L, migrationSnapshot.studentDocumentRevisionCount)
+        assertEquals(REVISION_TWO, migrated.revisionId)
+        assertEquals(REVISION_TWO, migrated.entryCurrentRevisionId)
+        assertEquals(REVISION_ONE, migrated.practiceUnitRevisionId)
 
         assertNull(store.readExactMistakeDetail(ENTRY_ID, OTHER_PROBLEM_ID, OTHER_REVISION_ID))
         assertNull(store.readExactMistakeDetail(ENTRY_ID, PROBLEM_ID, OTHER_REVISION_ID))

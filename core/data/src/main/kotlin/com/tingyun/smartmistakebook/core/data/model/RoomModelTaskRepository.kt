@@ -1,9 +1,12 @@
 package com.tingyun.smartmistakebook.core.data.model
 
 import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
+import com.tingyun.smartmistakebook.core.database.LegacyModelAssetDocumentReadPort
+import com.tingyun.smartmistakebook.core.database.LegacyModelTaskAndAssetDocumentDatabasePort
+import com.tingyun.smartmistakebook.core.database.ModelTaskDatabasePort
 import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
+import com.tingyun.smartmistakebook.core.database.TrustedModelTaskDatabaseCapability
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
@@ -34,6 +37,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
+import com.tingyun.smartmistakebook.core.model.TutorOpenResponseEvaluationInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
@@ -54,32 +58,243 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.withTimeout
 
 class RoomModelTaskRepository internal constructor(
-    private val database: StudyDatabasePort,
+    database: LegacyModelTaskAndAssetDocumentDatabasePort,
     private val gateway: ModelGateway,
     private val clock: () -> Long = System::currentTimeMillis,
+    private val executionAdmission: ModelExecutionAdmissionGate = ModelExecutionAdmissionGate(),
 ) : ModelTaskRepository {
+    private val modelTasks: ModelTaskDatabasePort = database
+    private val assetDocuments: LegacyModelAssetDocumentReadPort = database
+
     override suspend fun capabilities(): ProviderCapabilitySnapshot = gateway.capabilities()
 
     override fun observe(requestId: String): Flow<ModelTaskSnapshot?> =
-        database.observeModelTask(requestId)
+        modelTasks.observeModelTask(requestId)
 
     override fun observeBySubject(
         subjectId: String,
         kind: ModelTaskKind,
-    ): Flow<List<ModelTaskSnapshot>> = database.observeModelTasks(subjectId, kind)
+    ): Flow<List<ModelTaskSnapshot>> = modelTasks.observeModelTasks(subjectId, kind)
 
     override fun observeRecentBySubject(
         subjectId: String,
         kind: ModelTaskKind,
         limit: Int,
-    ): Flow<List<ModelTaskSnapshot>> = database.observeRecentModelTasks(subjectId, kind, limit)
+    ): Flow<List<ModelTaskSnapshot>> = modelTasks.observeRecentModelTasks(subjectId, kind, limit)
 
-    override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
-        executeInternal(request) {}
+    override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> {
+        require(request.input !is TutorOpenResponseEvaluationInput) {
+            "Raw open responses must use the sensitive ephemeral execution path"
+        }
+        return executeInternal(request) {}
+    }
+
+    /** Raw open responses are never encoded into the ordinary model_task table or its WAL. */
+    override fun executeSensitiveEphemeral(
+        request: ModelTaskRequest,
+    ): Flow<ModelTaskSnapshot> = flow {
+        require(request.input is TutorOpenResponseEvaluationInput) {
+            "Only open-response evaluation may use the sensitive ephemeral path"
+        }
+        val requestFingerprint = ModelTaskFingerprint.of(request)
+        val createdAt = maxOf(request.occurredAtEpochMillis, clock())
+        var stateVersion = 0L
+        fun snapshot(
+            status: ModelTaskStatus,
+            stage: ModelTaskStage,
+            message: String,
+            provider: ProviderCapabilitySnapshot? = null,
+            output: com.tingyun.smartmistakebook.core.model.ModelTaskOutput? = null,
+            failure: ModelTaskFailure? = null,
+        ): ModelTaskSnapshot = ModelTaskSnapshot(
+            taskId = stableTaskId(request.requestId),
+            request = request,
+            requestFingerprint = requestFingerprint,
+            status = status,
+            stateVersion = stateVersion++,
+            stage = stage,
+            userMessage = message,
+            attemptCount = 0,
+            provider = provider,
+            output = output,
+            failure = failure,
+            createdAtEpochMillis = createdAt,
+            updatedAtEpochMillis = maxOf(createdAt, clock()),
+        )
+
+        emit(snapshot(ModelTaskStatus.QUEUED, ModelTaskStage.PREPARING, "正在准备"))
+        val declaredProvider = try {
+            gateway.capabilities()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            emit(
+                snapshot(
+                    status = ModelTaskStatus.RETRYABLE_FAILURE,
+                    stage = ModelTaskStage.PREPARING,
+                    message = "暂时无法连接模型",
+                    failure = ModelTaskFailure(
+                        code = ModelFailureCode.NETWORK_UNAVAILABLE,
+                        message = "暂时无法连接模型",
+                        retryable = true,
+                    ),
+                ),
+            )
+            return@flow
+        }
+        capabilityFailure(request, declaredProvider)?.let { failure ->
+            emit(
+                snapshot(
+                    status = ModelTaskStatus.PERMANENT_FAILURE,
+                    stage = ModelTaskStage.PREPARING,
+                    message = failure.message,
+                    provider = declaredProvider,
+                    failure = failure,
+                ),
+            )
+            return@flow
+        }
+        val execution = try {
+            ModelEgressPolicy.authorize(
+                request = request,
+                provider = declaredProvider,
+                nowEpochMillis = clock(),
+            )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (denied: ModelEgressAuthorizationException) {
+            emit(
+                snapshot(
+                    status = ModelTaskStatus.PERMANENT_FAILURE,
+                    stage = ModelTaskStage.PREPARING,
+                    message = denied.message,
+                    provider = declaredProvider,
+                    failure = ModelTaskFailure(
+                        code = denied.failureCode,
+                        message = denied.message,
+                        retryable = false,
+                    ),
+                ),
+            )
+            return@flow
+        }
+
+        emit(
+            snapshot(
+                status = ModelTaskStatus.RUNNING,
+                stage = ModelTaskStage.PREPARING,
+                message = "正在核对",
+                provider = declaredProvider,
+            ),
+        )
+        var providerStarted = false
+        var terminalSeen = false
+        try {
+            executionAdmission.withPermit {
+                withTimeout(MODEL_TASK_TIMEOUT_MILLIS) {
+                    gateway.execute(execution).takeWhile { event ->
+                        when (event) {
+                        is ModelGatewayEvent.Started -> {
+                            if (providerStarted || event.provider != declaredProvider) {
+                                throw InvalidProviderProtocol("模型返回了重复或不匹配的开始事件")
+                            }
+                            providerStarted = true
+                        }
+                        is ModelGatewayEvent.Progress -> {
+                            if (!providerStarted) {
+                                throw InvalidProviderProtocol("模型在开始任务前返回了进度")
+                            }
+                            emit(
+                                snapshot(
+                                    status = ModelTaskStatus.STREAMING,
+                                    stage = event.stage,
+                                    message = event.userMessage,
+                                    provider = declaredProvider,
+                                ),
+                            )
+                        }
+                        is ModelGatewayEvent.Completed -> {
+                            if (!providerStarted) {
+                                throw InvalidProviderProtocol("模型在开始任务前返回了内容")
+                            }
+                            ModelTaskCompletionValidator.requireValid(request, event.output)
+                            emit(
+                                snapshot(
+                                    status = ModelTaskStatus.SUCCEEDED,
+                                    stage = ModelTaskStage.COMPLETE,
+                                    message = "回答已核对",
+                                    provider = declaredProvider,
+                                    output = event.output,
+                                ),
+                            )
+                            terminalSeen = true
+                        }
+                        is ModelGatewayEvent.Failed -> {
+                            if (!providerStarted) {
+                                throw InvalidProviderProtocol("模型在开始任务前返回了失败")
+                            }
+                            emit(
+                                snapshot(
+                                    status = if (event.failure.retryable) {
+                                        ModelTaskStatus.RETRYABLE_FAILURE
+                                    } else {
+                                        ModelTaskStatus.PERMANENT_FAILURE
+                                    },
+                                    stage = ModelTaskStage.VALIDATING_OUTPUT,
+                                    message = event.failure.message,
+                                    provider = declaredProvider,
+                                    failure = event.failure,
+                                ),
+                            )
+                            terminalSeen = true
+                        }
+                        is ModelGatewayEvent.TutorPreview ->
+                            throw InvalidProviderProtocol("回答核对任务不接受预览内容")
+                        }
+                        !terminalSeen
+                    }.collect {}
+                }
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            if (!terminalSeen) {
+                emit(
+                    snapshot(
+                        status = ModelTaskStatus.RETRYABLE_FAILURE,
+                        stage = ModelTaskStage.VALIDATING_OUTPUT,
+                        message = "核对暂时未完成",
+                        provider = declaredProvider,
+                        failure = ModelTaskFailure(
+                            code = ModelFailureCode.UNKNOWN,
+                            message = "核对暂时未完成",
+                            retryable = true,
+                        ),
+                    ),
+                )
+                terminalSeen = true
+            }
+        }
+        if (!terminalSeen) {
+            emit(
+                snapshot(
+                    status = ModelTaskStatus.RETRYABLE_FAILURE,
+                    stage = ModelTaskStage.VALIDATING_OUTPUT,
+                    message = "核对暂时未完成",
+                    provider = declaredProvider,
+                    failure = ModelTaskFailure(
+                        code = ModelFailureCode.INVALID_RESPONSE,
+                        message = "核对暂时未完成",
+                        retryable = true,
+                    ),
+                ),
+            )
+        }
+    }
 
     override suspend fun cancel(requestId: String) {
         while (true) {
-            val current = database.readModelTask(requestId) ?: return
+            val current = modelTasks.readModelTask(requestId) ?: return
             if (current.status.isTerminal) return
             try {
                 transition(
@@ -179,7 +394,7 @@ class RoomModelTaskRepository internal constructor(
             }
         }
         if (!terminalEmitted) {
-            val latest = database.readModelTask(request.requestId)
+            val latest = modelTasks.readModelTask(request.requestId)
             send(
                 TutorStreamEvent.Failed(
                     identity = identity,
@@ -197,7 +412,7 @@ class RoomModelTaskRepository internal constructor(
     ): Flow<ModelTaskSnapshot> = flow {
         val requestFingerprint = ModelTaskFingerprint.of(request)
         val operationFingerprint = ModelTaskLogicalOperationFingerprint.of(request)
-        val initial = database.createModelTask(
+        val initial = modelTasks.createModelTask(
             CreateModelTaskCommand(
                 taskId = stableTaskId(request.requestId),
                 request = request,
@@ -217,7 +432,7 @@ class RoomModelTaskRepository internal constructor(
             if (activeOwnerCompletion == null) break
 
             activeOwnerCompletion.await()
-            val latest = database.readModelTask(request.requestId) ?: return@flow
+            val latest = modelTasks.readModelTask(request.requestId) ?: return@flow
             emit(latest)
             if (latest.status.isTerminal || latest.status == ModelTaskStatus.RETRYABLE_FAILURE) {
                 return@flow
@@ -279,7 +494,7 @@ class RoomModelTaskRepository internal constructor(
             }
             current = when (execution.permit) {
                 is ModelExecutionPermit.External -> {
-                    val reservation = database.reserveModelTaskRemoteDispatch(
+                    val reservation = modelTasks.reserveModelTaskRemoteDispatch(
                         ReserveModelTaskRemoteDispatchCommand(
                             taskId = current.taskId,
                             expectedStateVersion = current.stateVersion,
@@ -318,9 +533,10 @@ class RoomModelTaskRepository internal constructor(
             var previewEventCount = 0
             var terminalEventSeen = false
             var providerStarted = false
-            withTimeout(MODEL_TASK_TIMEOUT_MILLIS) {
-                gateway.execute(execution)
-                    .onEach { event ->
+            executionAdmission.withPermit {
+                withTimeout(MODEL_TASK_TIMEOUT_MILLIS) {
+                    gateway.execute(execution)
+                        .onEach { event ->
                         if (event is ModelGatewayEvent.TutorPreview) {
                             if (
                                 current.request.input !is TutorRespondInput &&
@@ -375,17 +591,18 @@ class RoomModelTaskRepository internal constructor(
                         emit(current)
                         terminalEventSeen = event is ModelGatewayEvent.Completed ||
                             event is ModelGatewayEvent.Failed
-                    }
-                    .takeWhile { !terminalEventSeen }
-                    .collect {}
+                        }
+                        .takeWhile { !terminalEventSeen }
+                        .collect {}
+                }
             }
             if (!terminalEventSeen) {
                 throw InvalidProviderProtocol("模型没有返回完成状态")
             }
         } catch (concurrent: ConcurrentModelTaskTransition) {
-            database.readModelTask(request.requestId)?.let { latest -> emit(latest) }
+            modelTasks.readModelTask(request.requestId)?.let { latest -> emit(latest) }
         } catch (timeout: TimeoutCancellationException) {
-            val latest = database.readModelTask(request.requestId) ?: throw timeout
+            val latest = modelTasks.readModelTask(request.requestId) ?: throw timeout
             if (!latest.status.isTerminal && latest.status != ModelTaskStatus.RETRYABLE_FAILURE) {
                 emit(
                     transitionRemoteFailure(
@@ -402,7 +619,7 @@ class RoomModelTaskRepository internal constructor(
                 )
             }
         } catch (invalid: InvalidProviderProtocol) {
-            val latest = database.readModelTask(request.requestId) ?: throw invalid
+            val latest = modelTasks.readModelTask(request.requestId) ?: throw invalid
             if (!latest.status.isTerminal) {
                 emit(
                     transition(
@@ -421,7 +638,7 @@ class RoomModelTaskRepository internal constructor(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (failure: Exception) {
-            val latest = database.readModelTask(request.requestId) ?: throw failure
+            val latest = modelTasks.readModelTask(request.requestId) ?: throw failure
             if (!latest.status.isTerminal && latest.status != ModelTaskStatus.RETRYABLE_FAILURE) {
                 emit(
                     transitionRemoteFailure(
@@ -527,6 +744,7 @@ class RoomModelTaskRepository internal constructor(
                     is TutorPlanInput -> "讲解已准备好"
                     is TutorLobbyInput -> "回复已准备好"
                     is TutorRespondInput -> "回复已准备好"
+                    is TutorOpenResponseEvaluationInput -> "回答已核对"
                     is com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput ->
                         "图形讲解已准备好"
                     is com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput ->
@@ -599,7 +817,7 @@ class RoomModelTaskRepository internal constructor(
         provider: com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot? = null,
         output: com.tingyun.smartmistakebook.core.model.ModelTaskOutput? = null,
         failure: ModelTaskFailure? = null,
-    ): ModelTaskSnapshot = database.transitionModelTask(
+    ): ModelTaskSnapshot = modelTasks.transitionModelTask(
         TransitionModelTaskCommand(
             taskId = current.taskId,
             expectedStateVersion = current.stateVersion,
@@ -623,7 +841,7 @@ class RoomModelTaskRepository internal constructor(
         declaredProvider: ProviderCapabilitySnapshot,
     ): ModelTaskFailure? {
         val input = request.input as? CaptureParseInput ?: return null
-        val draft = database.readProblemDraft(input.draftId)
+        val draft = assetDocuments.readProblemDraft(input.draftId)
             ?: return invalidDependency("原题草稿已不存在，请重新录入")
         if (draft.currentRevision.revisionNumber != input.basisRevisionNumber) {
             return invalidDependency("题面已更新，请基于最新版本重新转写")
@@ -645,7 +863,7 @@ class RoomModelTaskRepository internal constructor(
         }
         input.assessmentRequestIds.zip(requestedSources).forEach { (requestId, source) ->
             val draftSource = draftSources[source.pageIndex].sourceAsset
-            val assessment = database.readModelTask(requestId)
+            val assessment = modelTasks.readModelTask(requestId)
                 ?: return invalidDependency("请先完成每一页题图的范围检查")
             val assessmentInput = assessment.request.input as? CaptureAssessmentInput
                 ?: return invalidDependency("题图检查任务类型不匹配")
@@ -719,10 +937,18 @@ class RoomModelTaskRepository internal constructor(
 }
 
 object ModelTaskRepositoryFactory {
+    private val sharedExecutionAdmission =
+        ModelExecutionAdmissionGate(delegate = SharedWorkloadAdmissionGate.gate)
+
     fun create(
-        database: StudyDatabasePort,
+        modelTasksAndAssetDocuments: TrustedModelTaskDatabaseCapability,
         gateway: ModelGateway,
-    ): ModelTaskRepository = RoomModelTaskRepository(database = database, gateway = gateway)
+    ): ModelTaskRepository =
+        RoomModelTaskRepository(
+            database = modelTasksAndAssetDocuments,
+            gateway = gateway,
+            executionAdmission = sharedExecutionAdmission,
+        )
 }
 
 private class ConcurrentModelTaskTransition : RuntimeException()

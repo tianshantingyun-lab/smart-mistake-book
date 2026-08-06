@@ -3,6 +3,8 @@ package com.tingyun.smartmistakebook.core.data.mistake
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.data.knowledge.ReviewedProblemKnowledgeConfirmationRequest
+import com.tingyun.smartmistakebook.core.data.knowledge.ReviewedProblemKnowledgeContextRepository
 import com.tingyun.smartmistakebook.core.database.AuthorizeProblemOrganizationWorkCommand
 import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
@@ -15,7 +17,7 @@ import com.tingyun.smartmistakebook.core.database.ProblemDraftRevisionRecord
 import com.tingyun.smartmistakebook.core.database.ProblemRevisionSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
-import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.database.LegacyStudyDatabaseTestFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
@@ -27,6 +29,7 @@ import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationDurableStatus
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationReauthorizationOutcome
 import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
+import com.tingyun.smartmistakebook.core.model.KnowledgeBaseCatalogProvenance
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.ClassificationDimension
@@ -64,6 +67,9 @@ import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.WritingLayer
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeNodeRef
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeReferenceProofAuthority
+import com.tingyun.smartmistakebook.core.model.storage.VerifiedKnowledgeReferenceProof
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -80,15 +86,59 @@ class MistakeOrganizationRepositoryInstrumentedTest {
     private lateinit var repository: RoomMistakeOrganizationRepository
     private lateinit var context: Context
     private lateinit var databaseName: String
+    private val knowledgeProofAuthority = KnowledgeReferenceProofAuthority.create()
+    private val verifiedKnowledgeReference =
+        knowledgeProofAuthority.issuer.issue(
+            KnowledgeNodeRef(
+                subject = SubjectKind.MATH,
+                knowledgeNodeId = ATOMIC_KNOWLEDGE_NODE,
+                taxonomyVersion = "math-v1",
+                knowledgePackVersion = "test-pack-v1",
+            ),
+            "a".repeat(64),
+            1,
+        )
 
     @Before
     fun setUp() = runBlocking {
         context = ApplicationProvider.getApplicationContext()
         databaseName = "organization-repository-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
-        database = StudyDatabaseFactory.open(context, databaseName)
+        database =
+            LegacyStudyDatabaseTestFactory.openPreCutoverForTest(context, databaseName)
         database.seedFixture(seed())
-        repository = RoomMistakeOrganizationRepository(database)
+        repository =
+            RoomMistakeOrganizationRepository(
+                legacyBusiness = database,
+                organizationWork = database,
+                legacyReauthorization = database,
+                modelTasks = database,
+                assetDocuments = database,
+                knowledgeContext =
+                    object : ReviewedProblemKnowledgeContextRepository {
+                        override suspend fun read(
+                            subject: SubjectKind,
+                            questionText: String,
+                        ): List<KnowledgeBaseNodeContext> =
+                            if (subject == SubjectKind.MATH) {
+                                listOf(knowledgeContext())
+                            } else {
+                                emptyList()
+                            }
+
+                        override suspend fun verifyConfirmationReferences(
+                            request: ReviewedProblemKnowledgeConfirmationRequest,
+                        ): List<VerifiedKnowledgeReferenceProof> {
+                            assertEquals(SubjectKind.MATH, request.subject)
+                            assertTrue(
+                                request.preferredKnowledgeNodeIds.isEmpty() ||
+                                    request.preferredKnowledgeNodeIds ==
+                                    setOf(ATOMIC_KNOWLEDGE_NODE),
+                            )
+                            return listOf(verifiedKnowledgeReference)
+                        }
+                    },
+            )
     }
 
     @After
@@ -449,6 +499,7 @@ class MistakeOrganizationRepositoryInstrumentedTest {
                 ),
                 relations = listOf(relation()),
                 acceptedAtEpochMillis = 250,
+                verifiedKnowledgeReferences = listOf(verifiedKnowledgeReference),
                 acceptanceSource = acceptanceSource,
                 replaceRelations = true,
             ),
@@ -795,6 +846,14 @@ class MistakeOrganizationRepositoryInstrumentedTest {
         granularity = KnowledgeNodeGranularity.ATOMIC,
         parentCanonicalName = "函数最值",
         taxonomyVersion = "math-v1",
+        catalogProvenance =
+            KnowledgeBaseCatalogProvenance(
+                packId = "pack",
+                knowledgePackVersion = "pack-v1",
+                taxonomyVersion = "math-v1",
+                manifestFingerprint = "a".repeat(64),
+                activationGeneration = 1L,
+            ),
         verificationStatus = KnowledgeNodeVerificationStatus.SOURCE_GROUNDED,
         boundaryMarkdown = "不包含导数公式的机械计算。",
     )

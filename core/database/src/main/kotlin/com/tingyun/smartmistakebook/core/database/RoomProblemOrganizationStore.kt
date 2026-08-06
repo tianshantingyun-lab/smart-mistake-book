@@ -1,7 +1,6 @@
 package com.tingyun.smartmistakebook.core.database
 
 import androidx.room3.withWriteTransaction
-import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemClassificationBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemErrorAttributionCandidateEntity
@@ -15,7 +14,6 @@ import com.tingyun.smartmistakebook.core.model.ClassificationDimension
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_CONTENT_DIMENSIONS
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_RELATION_KINDS
 import com.tingyun.smartmistakebook.core.model.ProblemErrorAttributionCandidate
-import com.tingyun.smartmistakebook.core.model.SubjectKind
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlinx.coroutines.flow.Flow
@@ -34,12 +32,25 @@ internal class RoomProblemOrganizationStore(
         return combine(
             dao.observeClassifications(problemId, problemRevisionId),
             dao.observeRelations(problemId, problemRevisionId),
-            dao.observeCurrentKnowledgeNodeIds(problemId, problemRevisionId),
-        ) { classifications, relations, knowledgeNodeIds ->
+            dao.observeCurrentKnowledgeBindings(problemId, problemRevisionId),
+        ) { classifications, relations, knowledgeBindings ->
+            val confirmedKnowledgeBindings = knowledgeBindings.map { binding ->
+                ConfirmedKnowledgeBindingRecord(
+                    knowledgeNodeId = binding.knowledgeNodeId,
+                    subject = binding.knowledgeSubject,
+                    taxonomyVersion = binding.knowledgeTaxonomyVersion,
+                    knowledgePackVersion = binding.knowledgePackVersion,
+                    manifestFingerprint = binding.knowledgeManifestFingerprint,
+                    activationGeneration = binding.knowledgeActivationGeneration,
+                )
+            }
             ConfirmedProblemOrganizationRecord(
                 classifications = classifications.map(ProblemClassificationBindingEntity::toRecord),
                 relations = relations.map(ProblemRelationEntity::toRecord),
-                knowledgeNodeIds = knowledgeNodeIds.toSet(),
+                knowledgeNodeIds = confirmedKnowledgeBindings.mapTo(linkedSetOf()) {
+                    it.knowledgeNodeId
+                },
+                knowledgeBindings = confirmedKnowledgeBindings,
             )
         }
     }
@@ -113,32 +124,9 @@ internal class RoomProblemOrganizationStore(
                     command.relationIdsToRemove.sorted(),
                 )
             }
-            val knowledgeNodes = command.knowledgeNodes.map(KnowledgeNodeSeedRecord::toOrganizationEntity)
-            if (knowledgeNodes.isNotEmpty()) {
-                dao.insertKnowledgeNodes(knowledgeNodes).zip(knowledgeNodes).forEach { (rowId, entity) ->
-                    if (
-                        rowId == -1L &&
-                        !dao.readKnowledgeNode(entity.knowledgeNodeId).sameAcceptedFact(entity)
-                    ) {
-                        throw ImmutablePayloadConflictException("knowledge_node", entity.knowledgeNodeId)
-                    }
-                }
-            }
             val knowledgeBindings = command.knowledgeBindings
                 .map(KnowledgeBindingSeedRecord::toOrganizationEntity)
             if (knowledgeBindings.isNotEmpty()) {
-                val expectedSubject = knowledgeNodes.mapTo(linkedSetOf()) { it.subject }.single()
-                knowledgeBindings.forEach { binding ->
-                    val boundNode = dao.readKnowledgeNode(binding.knowledgeNodeId)
-                        ?: throw DatabaseContractViolationException(
-                            "Knowledge binding references an unknown node",
-                        )
-                    if (boundNode.subject != expectedSubject) {
-                        throw DatabaseContractViolationException(
-                            "Knowledge binding crosses subject boundaries",
-                        )
-                    }
-                }
                 dao.insertKnowledgeBindings(knowledgeBindings).zip(knowledgeBindings)
                     .forEach { (rowId, entity) ->
                         val acceptedExistingFact = rowId == -1L && listOfNotNull(
@@ -146,6 +134,9 @@ internal class RoomProblemOrganizationStore(
                             dao.readKnowledgeBindingByIdentity(
                                 entity.practiceUnitId,
                                 entity.knowledgeNodeId,
+                                checkNotNull(entity.knowledgeSubject),
+                                checkNotNull(entity.knowledgeTaxonomyVersion),
+                                checkNotNull(entity.knowledgePackVersion),
                                 entity.basisRevisionId,
                                 entity.taxonomyVersion,
                             ),
@@ -300,6 +291,12 @@ private suspend fun buildDetailedOrganizationPersistence(
     val stepIdsByOrdinal = command.solutionSteps.associate { step ->
         step.stepOrdinal to detailedIdentity("solution-step", command.commandId, step.stepOrdinal)
     }
+    val verifiedReferenceByNodeId =
+        command.knowledgeBindings.associate { binding ->
+            binding.knowledgeNodeId to checkNotNull(binding.verifiedKnowledgeReference) {
+                "Organization knowledge binding is missing catalog proof"
+            }
+        }
     val steps = command.solutionSteps.map { step ->
         ProblemSolutionStepEntity(
             solutionStepId = checkNotNull(stepIdsByOrdinal[step.stepOrdinal]),
@@ -316,9 +313,19 @@ private suspend fun buildDetailedOrganizationPersistence(
     val stepKnowledgeBindings = command.solutionSteps.flatMap { step ->
         val stepId = checkNotNull(stepIdsByOrdinal[step.stepOrdinal])
         step.knowledgeReferences.map { reference ->
+            val proof = checkNotNull(verifiedReferenceByNodeId[reference.knowledgeNodeId]) {
+                "Solution-step knowledge reference is not an accepted catalog binding"
+            }
             ProblemStepKnowledgeBindingEntity(
                 solutionStepId = stepId,
                 knowledgeNodeId = reference.knowledgeNodeId,
+                knowledgeSubject = proof.ref.subject.name,
+                knowledgeTaxonomyVersion = proof.ref.taxonomyVersion,
+                knowledgePackVersion = proof.ref.knowledgePackVersion,
+                knowledgeManifestFingerprint = proof.manifestFingerprint,
+                knowledgeActivationGeneration = proof.activationGeneration,
+                knowledgeReferenceStatus =
+                    StudyDbValue.KnowledgeReferenceStatus.VERIFIED_AT_CONFIRMATION,
                 knowledgeReferenceId = reference.knowledgeReferenceId,
             )
         }
@@ -361,6 +368,7 @@ private suspend fun buildDetailedOrganizationPersistence(
                     candidate.evidence.isEmpty()
             ) { "Unresolved error attribution cannot invent precise references" }
         }
+        val proof = candidate.knowledgeNodeId?.let(verifiedReferenceByNodeId::get)
         ProblemErrorAttributionCandidateEntity(
             errorAttributionCandidateId = detailedIdentity(
                 "error-attribution",
@@ -376,6 +384,15 @@ private suspend fun buildDetailedOrganizationPersistence(
             resolutionStatus = candidate.resolutionStatus,
             solutionStepId = stepId,
             knowledgeNodeId = candidate.knowledgeNodeId,
+            knowledgeSubject = proof?.ref?.subject?.name,
+            knowledgeTaxonomyVersion = proof?.ref?.taxonomyVersion,
+            knowledgePackVersion = proof?.ref?.knowledgePackVersion,
+            knowledgeManifestFingerprint = proof?.manifestFingerprint,
+            knowledgeActivationGeneration = proof?.activationGeneration,
+            knowledgeReferenceStatus =
+                proof?.let {
+                    StudyDbValue.KnowledgeReferenceStatus.VERIFIED_AT_CONFIRMATION
+                },
             knowledgeReferenceId = candidate.knowledgeReferenceId,
             rationaleMarkdown = candidate.rationaleMarkdown,
             confidence = candidate.confidence,
@@ -422,7 +439,6 @@ private fun detailedIdentity(prefix: String, commandId: String, ordinal: Int): S
 
 private val SHA_256_HEX = Regex("^[0-9a-f]{64}$")
 private val ERROR_EVIDENCE_KIND = Regex("^[A-Z][A-Z0-9_]{0,47}$")
-private val SUBJECTS = SubjectKind.entries.mapTo(hashSetOf()) { it.name }
 private val ORGANIZATION_CLASSIFICATION_DIMENSIONS =
     PROBLEM_ORGANIZATION_CONTENT_DIMENSIONS.mapTo(hashSetOf()) { it.name }
 private val ORGANIZATION_ACCEPTANCE_SOURCES = setOf(
@@ -446,8 +462,12 @@ private fun validateCommand(command: ConfirmProblemOrganizationCommand) {
     require(command.practiceUnitId.isNotBlank()) { "practiceUnitId must not be blank" }
     require(command.acceptedAtEpochMillis > 0) { "acceptedAtEpochMillis must be positive" }
     require(command.planSchemaVersion in 1..3) { "Unsupported organization plan schema" }
-    require(command.knowledgeNodes.size <= 24) { "At most 24 knowledge nodes may be accepted" }
-    require(command.knowledgeBindings.size <= 24) { "At most 24 knowledge bindings may be accepted" }
+    require(command.knowledgeNodes.isEmpty()) {
+        "Organization commands cannot seed the legacy knowledge-node authority"
+    }
+    require(command.knowledgeBindings.size in 1..24) {
+        "Between 1 and 24 catalog knowledge bindings are required"
+    }
     require(command.classifications.size in 1..32) { "Between 1 and 32 classifications are required" }
     require(command.relations.size <= 8) { "At most 8 relations may be accepted" }
     require(command.relationIdsToRemove.size <= 64) { "At most 64 relations may be removed" }
@@ -524,8 +544,11 @@ private fun validateCommand(command: ConfirmProblemOrganizationCommand) {
         },
     ) { "Knowledge bindings and classifications must share an acceptance authority" }
     require(command.relations.map { it.relationId }.distinct().size == command.relations.size)
-    require(command.knowledgeNodes.map { it.knowledgeNodeId }.distinct().size == command.knowledgeNodes.size)
     require(command.knowledgeBindings.map { it.bindingId }.distinct().size == command.knowledgeBindings.size)
+    require(
+        command.knowledgeBindings.map { it.knowledgeNodeId }.distinct().size ==
+            command.knowledgeBindings.size,
+    ) { "Knowledge bindings must reference distinct catalog nodes" }
     require(command.classifications.all {
         it.bindingId.isNotBlank() &&
             it.problemId == command.problemId &&
@@ -544,6 +567,7 @@ private fun validateCommand(command: ConfirmProblemOrganizationCommand) {
         "At least one chapter classification is required"
     }
     require(command.knowledgeBindings.all {
+        val proof = it.verifiedKnowledgeReference
         it.bindingId.isNotBlank() &&
             it.practiceUnitId == command.practiceUnitId &&
             it.knowledgeNodeId.isNotBlank() &&
@@ -552,31 +576,25 @@ private fun validateCommand(command: ConfirmProblemOrganizationCommand) {
             it.strength in 0.0..1.0 &&
             it.sourceType in ORGANIZATION_ACCEPTANCE_SOURCES &&
             it.taxonomyVersion.isNotBlank() &&
-            it.acceptedAtEpochMillis == command.acceptedAtEpochMillis
-    }) { "Every knowledge binding must target the confirmed practice unit revision" }
-    require(command.knowledgeNodes.all {
-        it.knowledgeNodeId.isNotBlank() &&
-            it.stableCode.isNotBlank() &&
-            it.subject in SUBJECTS &&
-            it.displayName.isNotBlank() &&
-            it.taxonomyVersion.isNotBlank() &&
-            it.createdAtEpochMillis == command.acceptedAtEpochMillis
-    }) { "Every accepted knowledge node must be complete and current" }
-    val knowledgeLabels = command.classifications
-        .filter { it.dimension == ClassificationDimension.KNOWLEDGE.name }
-        .mapTo(linkedSetOf()) { it.labelId }
-    require(command.knowledgeNodes.mapTo(linkedSetOf()) { it.stableCode } == knowledgeLabels) {
-        "Visible topic nodes must exactly match the accepted knowledge classifications"
+            it.acceptedAtEpochMillis == command.acceptedAtEpochMillis &&
+            proof != null &&
+            proof.ref.knowledgeNodeId == it.knowledgeNodeId
+    }) {
+        "Every knowledge binding must carry matching active-catalog proof"
     }
-    val visibleTopicNodeIds = command.knowledgeNodes.mapTo(linkedSetOf()) { it.knowledgeNodeId }
-    val boundKnowledgeNodes = command.knowledgeBindings.mapTo(linkedSetOf()) { it.knowledgeNodeId }
-    require(boundKnowledgeNodes.isNotEmpty()) {
-        "At least one topic or grounded atomic node must bind to the confirmed practice unit"
-    }
+    val verifiedReferences =
+        command.knowledgeBindings.map { binding ->
+            checkNotNull(binding.verifiedKnowledgeReference)
+        }
     require(
-        boundKnowledgeNodes == visibleTopicNodeIds ||
-            boundKnowledgeNodes.intersect(visibleTopicNodeIds).isEmpty(),
-    ) { "A command must bind either visible topics or grounded atomic nodes, not a mixture" }
+        verifiedReferences.map { proof -> proof.ref.subject }.distinct().size == 1 &&
+            verifiedReferences.map { proof -> proof.ref.taxonomyVersion }.distinct().size == 1 &&
+            verifiedReferences.map { proof -> proof.ref.knowledgePackVersion }.distinct().size == 1 &&
+            verifiedReferences.map { proof -> proof.manifestFingerprint }.distinct().size == 1 &&
+            verifiedReferences.map { proof -> proof.activationGeneration }.distinct().size == 1,
+    ) {
+        "One organization command must use one verified catalog snapshot"
+    }
     require(command.relations.all {
         it.relationId.isNotBlank() &&
             it.sourceProblemId == command.problemId &&
@@ -592,13 +610,6 @@ private fun validateCommand(command: ConfirmProblemOrganizationCommand) {
             it.updatedAtEpochMillis == command.acceptedAtEpochMillis
     }) { "Every relation must originate from the confirmed problem revision" }
 }
-
-private fun KnowledgeNodeEntity?.sameAcceptedFact(other: KnowledgeNodeEntity): Boolean =
-    this != null && copy(
-        displayName = other.displayName,
-        taxonomyVersion = other.taxonomyVersion,
-        createdAtEpochMillis = other.createdAtEpochMillis,
-    ) == other
 
 private fun PracticeUnitKnowledgeBindingEntity?.sameAcceptedFact(
     other: PracticeUnitKnowledgeBindingEntity,
@@ -618,33 +629,26 @@ private fun ProblemRelationEntity?.sameAcceptedFact(other: ProblemRelationEntity
         updatedAtEpochMillis = other.updatedAtEpochMillis,
     ) == other
 
-private fun KnowledgeNodeSeedRecord.toOrganizationEntity() = KnowledgeNodeEntity(
-    knowledgeNodeId = knowledgeNodeId,
-    stableCode = stableCode,
-    subject = subject,
-    displayName = displayName,
-    canonicalName = canonicalName,
-    nodeKind = nodeKind,
-    granularity = granularity,
-    aliasesText = aliases.sorted().joinToString("\u001F"),
-    boundaryMarkdown = boundaryMarkdown,
-    verificationStatus = verificationStatus,
-    parentKnowledgeNodeId = parentKnowledgeNodeId,
-    taxonomyVersion = taxonomyVersion,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
 private fun KnowledgeBindingSeedRecord.toOrganizationEntity() =
-    PracticeUnitKnowledgeBindingEntity(
-        bindingId,
-        practiceUnitId,
-        knowledgeNodeId,
-        basisRevisionId,
-        strength,
-        sourceType,
-        taxonomyVersion,
-        acceptedAtEpochMillis,
-    )
+    checkNotNull(verifiedKnowledgeReference).let { proof ->
+        PracticeUnitKnowledgeBindingEntity(
+            bindingId = bindingId,
+            practiceUnitId = practiceUnitId,
+            knowledgeNodeId = knowledgeNodeId,
+            knowledgeSubject = proof.ref.subject.name,
+            knowledgeTaxonomyVersion = proof.ref.taxonomyVersion,
+            knowledgePackVersion = proof.ref.knowledgePackVersion,
+            knowledgeManifestFingerprint = proof.manifestFingerprint,
+            knowledgeActivationGeneration = proof.activationGeneration,
+            knowledgeReferenceStatus =
+                StudyDbValue.KnowledgeReferenceStatus.VERIFIED_AT_CONFIRMATION,
+            basisRevisionId = basisRevisionId,
+            strength = strength,
+            sourceType = sourceType,
+            taxonomyVersion = taxonomyVersion,
+            acceptedAtEpochMillis = acceptedAtEpochMillis,
+        )
+    }
 
 private fun ProblemClassificationBindingRecord.toOrganizationEntity() =
     ProblemClassificationBindingEntity(

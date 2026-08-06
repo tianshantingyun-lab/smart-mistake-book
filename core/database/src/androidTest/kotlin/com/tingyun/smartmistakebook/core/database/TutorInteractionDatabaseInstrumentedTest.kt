@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.GUIDED_FREE_RESPONSE_PROMPT
+import com.tingyun.smartmistakebook.core.model.GUIDED_INTERACTION_MESSAGE
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -21,6 +23,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorResponseIntent
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisual2DNodeKind
@@ -485,6 +488,7 @@ class TutorInteractionDatabaseInstrumentedTest {
                 selectionWasCorrect = choice.selectionWasCorrect,
                 feedbackMarkdown = choice.feedbackMarkdown,
                 choiceSubmittedAtEpochMillis = choice.choiceSubmittedAtEpochMillis,
+                evidenceRequestId = choice.evidenceRequestId,
             ),
             recorded,
         )
@@ -528,6 +532,7 @@ class TutorInteractionDatabaseInstrumentedTest {
                 selectionWasCorrect = choice.selectionWasCorrect,
                 feedbackMarkdown = choice.feedbackMarkdown,
                 choiceSubmittedAtEpochMillis = choice.choiceSubmittedAtEpochMillis,
+                evidenceRequestId = choice.evidenceRequestId,
             ),
             recorded,
         )
@@ -557,7 +562,8 @@ class TutorInteractionDatabaseInstrumentedTest {
         val databaseName = "tutor-action-reopen-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
         try {
-            var persistentStore = StudyDatabaseFactory.open(context, databaseName)
+            var persistentStore =
+                StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             val move = PersistTutorMoveCommand(
                 sessionId = "explanation-session",
                 questionDocumentId = "question-document-action",
@@ -668,7 +674,8 @@ class TutorInteractionDatabaseInstrumentedTest {
             assertTrue(revealThenMove.solutionRevealed)
 
             persistentStore.close()
-            persistentStore = StudyDatabaseFactory.open(context, databaseName)
+            persistentStore =
+                StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             assertEquals(
                 listOf(revealed, revealThenMove),
                 persistentStore.observeTutorTurnResponses(move.sessionId).first(),
@@ -1073,6 +1080,7 @@ class TutorInteractionDatabaseInstrumentedTest {
         responseOrdinal: Int,
         solutionRevealed: Boolean,
     ) {
+        val guided = !solutionRevealed
         val input = TutorRespondInput(
             sessionId = sessionId,
             draftRevisionNumber = 1,
@@ -1085,7 +1093,8 @@ class TutorInteractionDatabaseInstrumentedTest {
             turnOrdinal = 1,
             studentMessage = if (solutionRevealed) "请告诉我答案。" else "请继续解释。",
             requestedMove = if (solutionRevealed) TutorMoveType.REVEAL_SOLUTION else null,
-            explanationMode = TutorExplanationMode.DIRECT,
+            explanationMode =
+                if (guided) TutorExplanationMode.GUIDED else TutorExplanationMode.DIRECT,
         )
         persistSucceededModelTask(
             request = ModelTaskRequest(
@@ -1100,12 +1109,25 @@ class TutorInteractionDatabaseInstrumentedTest {
                 responseOrdinal = responseOrdinal,
                 cycleOrdinal = 1,
                 turnOrdinal = 1,
-                messageMarkdown = if (solutionRevealed) {
-                    "完整解法与最终答案。"
-                } else {
-                    "先检查题目条件。"
-                },
+                messageMarkdown =
+                    if (solutionRevealed) {
+                        "完整解法与最终答案。"
+                    } else {
+                        GUIDED_INTERACTION_MESSAGE
+                    },
+                responseIntent =
+                    if (solutionRevealed) {
+                        TutorResponseIntent.EXPLAIN
+                    } else {
+                        TutorResponseIntent.ASK
+                    },
                 solutionRevealed = solutionRevealed,
+                interactionDirective =
+                    if (guided) {
+                        TutorInteractionDirective.FreeResponse(GUIDED_FREE_RESPONSE_PROMPT)
+                    } else {
+                        null
+                    },
                 intentDecision = TutorIntentDecision.currentQuestionDefault(),
                 modelVersion = "instrumented-test-model",
             ),

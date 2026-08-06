@@ -7,6 +7,7 @@ import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Relation
 import androidx.room3.Transaction
+import com.tingyun.smartmistakebook.core.database.entity.BatchImportBoundaryResolutionReceiptEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,24 @@ internal interface BatchImportDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertPages(pages: List<BatchImportPageEntity>)
+
+    @Query(
+        """
+        SELECT *
+        FROM batch_import_boundary_resolution_receipt
+        WHERE job_id = :jobId
+          AND page_index = :pageIndex
+        """,
+    )
+    suspend fun readBoundaryResolutionReceipt(
+        jobId: String,
+        pageIndex: Int,
+    ): BatchImportBoundaryResolutionReceiptEntity?
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertBoundaryResolutionReceipt(
+        receipt: BatchImportBoundaryResolutionReceiptEntity,
+    )
 
     @Query(
         """
@@ -97,11 +116,14 @@ internal interface BatchImportDao {
     @Query(
         """
         UPDATE batch_import_page
-        SET boundary_after_status = 'CHECKING', updated_at_epoch_millis = :updatedAtEpochMillis
+        SET boundary_after_status = 'CHECKING',
+            boundary_claimed_at_epoch_millis = :updatedAtEpochMillis,
+            updated_at_epoch_millis = :updatedAtEpochMillis
         WHERE job_id = :jobId
           AND page_index = :pageIndex
           AND status = 'READY'
           AND boundary_after_status IN ('PENDING', 'FAILED')
+          AND updated_at_epoch_millis <= :updatedAtEpochMillis
           AND EXISTS (
               SELECT 1 FROM batch_import_page AS next_page
               WHERE next_page.job_id = :jobId
@@ -119,26 +141,36 @@ internal interface BatchImportDao {
     @Query(
         """
         UPDATE batch_import_page
-        SET boundary_after_status = :resolution, updated_at_epoch_millis = :updatedAtEpochMillis
+        SET boundary_after_status = :resolution,
+            boundary_claimed_at_epoch_millis = NULL,
+            updated_at_epoch_millis = :updatedAtEpochMillis
         WHERE job_id = :jobId
           AND page_index = :pageIndex
           AND boundary_after_status = 'CHECKING'
+          AND boundary_claimed_at_epoch_millis IS NOT NULL
+          AND boundary_claimed_at_epoch_millis <= :updatedAtEpochMillis
+          AND boundary_claimed_at_epoch_millis = :boundaryClaimedAtEpochMillis
         """,
     )
     suspend fun resolveBoundary(
         jobId: String,
         pageIndex: Int,
         resolution: String,
+        boundaryClaimedAtEpochMillis: Long,
         updatedAtEpochMillis: Long,
     ): Int
 
     @Query(
         """
         UPDATE batch_import_page
-        SET boundary_after_status = 'FAILED', updated_at_epoch_millis = :updatedAtEpochMillis
+        SET boundary_after_status = 'FAILED',
+            boundary_claimed_at_epoch_millis = NULL,
+            updated_at_epoch_millis = :updatedAtEpochMillis
         WHERE job_id = :jobId
           AND page_index = :pageIndex
           AND boundary_after_status = 'CHECKING'
+          AND boundary_claimed_at_epoch_millis IS NOT NULL
+          AND boundary_claimed_at_epoch_millis <= :updatedAtEpochMillis
         """,
     )
     suspend fun failBoundary(
@@ -150,8 +182,13 @@ internal interface BatchImportDao {
     @Query(
         """
         UPDATE batch_import_page
-        SET boundary_after_status = 'FAILED', updated_at_epoch_millis = :updatedAtEpochMillis
-        WHERE job_id = :jobId AND boundary_after_status = 'CHECKING'
+        SET boundary_after_status = 'FAILED',
+            boundary_claimed_at_epoch_millis = NULL,
+            updated_at_epoch_millis = :updatedAtEpochMillis
+        WHERE job_id = :jobId
+          AND boundary_after_status = 'CHECKING'
+          AND boundary_claimed_at_epoch_millis IS NOT NULL
+          AND boundary_claimed_at_epoch_millis <= :updatedAtEpochMillis
         """,
     )
     suspend fun requeueInterruptedBoundaries(

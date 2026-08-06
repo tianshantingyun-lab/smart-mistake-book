@@ -173,7 +173,13 @@ sealed interface ModelCredentialReadResult {
     data object Unavailable : ModelCredentialReadResult
 }
 
-interface ModelConfigurationStore {
+/**
+ * Least-privilege capability used by the external model gateway.
+ *
+ * It can observe non-secret metadata and lease the current credential for one request, but it
+ * cannot save, rotate, verify, or clear configuration.
+ */
+interface ModelConfigurationReadCapability {
     /**
      * Presentation-only metadata and configured state. It never emits API-key material.
      *
@@ -182,16 +188,17 @@ interface ModelConfigurationStore {
      */
     val configuration: Flow<ModelConfigurationSnapshot>
 
-    suspend fun save(
-        update: ModelConfigurationUpdate,
-        apiKey: ModelApiKey,
-    ): ModelConfigurationMutationResult
-
-    suspend fun rotateApiKey(apiKey: ModelApiKey): ModelConfigurationMutationResult
-
     /** One-shot atomic credential lease; callers must close an available key. */
     suspend fun readCredential(): ModelCredentialReadResult
+}
 
+/**
+ * Narrow capability used only by the explicit settings-screen compatibility test.
+ *
+ * The test may reserve and record its own result, but it cannot mutate endpoint or credential
+ * configuration.
+ */
+interface ModelCapabilityTestConfigurationCapability : ModelConfigurationReadCapability {
     /** Atomically reserves the next test-start order for one exact configuration generation. */
     suspend fun beginCapabilityTest(
         configuration: ModelConfigurationSnapshot,
@@ -205,6 +212,16 @@ interface ModelConfigurationStore {
         verification: ModelCapabilityVerification,
     ): ModelCapabilityVerificationWriteResult =
         ModelCapabilityVerificationWriteResult.STORAGE_UNAVAILABLE
+}
+
+/** Settings-owned mutable store; external provider code must depend on narrower capabilities. */
+interface ModelConfigurationStore : ModelCapabilityTestConfigurationCapability {
+    suspend fun save(
+        update: ModelConfigurationUpdate,
+        apiKey: ModelApiKey,
+    ): ModelConfigurationMutationResult
+
+    suspend fun rotateApiKey(apiKey: ModelApiKey): ModelConfigurationMutationResult
 
     suspend fun clear(): ModelConfigurationMutationResult
 }

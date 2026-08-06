@@ -1,11 +1,15 @@
 package com.tingyun.smartmistakebook.core.ui
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -32,20 +36,106 @@ object SmartColors {
     val OnJade = Color(0xFFFFFDFC)
 }
 
-val Paper = SmartColors.Paper
-val Ink = SmartColors.Ink
-val InkSecondary = SmartColors.InkSecondary
-val InkMuted = SmartColors.InkMuted
-val Jade = SmartColors.Jade
-val JadeDark = SmartColors.JadeDark
-val JadeActive = SmartColors.JadeActive
-val JadeSoft = SmartColors.JadeSoft
-val JadeMuted = SmartColors.JadeMuted
-val Divider = SmartColors.Divider
-val Outline = SmartColors.Outline
-val Track = SmartColors.Track
-val ErrorWarm = SmartColors.ErrorWarm
-val OnJade = SmartColors.OnJade
+object SmartDarkColors {
+    val Paper = Color(0xFF111B1D)
+    val Ink = Color(0xFFEAF2EE)
+    val InkSecondary = Color(0xFFB6C5C0)
+    val InkMuted = Color(0xFF8A9994)
+    val Jade = Color(0xFF82D1A8)
+    val JadeDark = Color(0xFF66B78F)
+    val JadeActive = Color(0xFF95E1BC)
+    val JadeSoft = Color(0xFF1D3B30)
+    val JadeMuted = Color(0xFF5FA181)
+    val Divider = Color(0xFF35433E)
+    val Outline = Color(0xFF475852)
+    val Track = Color(0xFF2A3632)
+    val ErrorWarm = Color(0xFFF2AC71)
+    val OnJade = Color(0xFF102018)
+}
+
+internal data class SmartPalette(
+    val paper: Color,
+    val ink: Color,
+    val inkSecondary: Color,
+    val inkMuted: Color,
+    val jade: Color,
+    val jadeDark: Color,
+    val jadeActive: Color,
+    val jadeSoft: Color,
+    val jadeMuted: Color,
+    val divider: Color,
+    val outline: Color,
+    val track: Color,
+    val errorWarm: Color,
+    val onJade: Color,
+)
+
+private val LightSmartPalette =
+    SmartPalette(
+        paper = SmartColors.Paper,
+        ink = SmartColors.Ink,
+        inkSecondary = SmartColors.InkSecondary,
+        inkMuted = SmartColors.InkMuted,
+        jade = SmartColors.Jade,
+        jadeDark = SmartColors.JadeDark,
+        jadeActive = SmartColors.JadeActive,
+        jadeSoft = SmartColors.JadeSoft,
+        jadeMuted = SmartColors.JadeMuted,
+        divider = SmartColors.Divider,
+        outline = SmartColors.Outline,
+        track = SmartColors.Track,
+        errorWarm = SmartColors.ErrorWarm,
+        onJade = SmartColors.OnJade,
+    )
+
+private val DarkSmartPalette =
+    SmartPalette(
+        paper = SmartDarkColors.Paper,
+        ink = SmartDarkColors.Ink,
+        inkSecondary = SmartDarkColors.InkSecondary,
+        inkMuted = SmartDarkColors.InkMuted,
+        jade = SmartDarkColors.Jade,
+        jadeDark = SmartDarkColors.JadeDark,
+        jadeActive = SmartDarkColors.JadeActive,
+        jadeSoft = SmartDarkColors.JadeSoft,
+        jadeMuted = SmartDarkColors.JadeMuted,
+        divider = SmartDarkColors.Divider,
+        outline = SmartDarkColors.Outline,
+        track = SmartDarkColors.Track,
+        errorWarm = SmartDarkColors.ErrorWarm,
+        onJade = SmartDarkColors.OnJade,
+    )
+
+private val LocalSmartPalette = staticCompositionLocalOf { LightSmartPalette }
+
+val Paper: Color
+    @Composable get() = LocalSmartPalette.current.paper
+val Ink: Color
+    @Composable get() = LocalSmartPalette.current.ink
+val InkSecondary: Color
+    @Composable get() = LocalSmartPalette.current.inkSecondary
+val InkMuted: Color
+    @Composable get() = LocalSmartPalette.current.inkMuted
+val Jade: Color
+    @Composable get() = LocalSmartPalette.current.jade
+val JadeDark: Color
+    @Composable get() = LocalSmartPalette.current.jadeDark
+val JadeActive: Color
+    @Composable get() = LocalSmartPalette.current.jadeActive
+val JadeSoft: Color
+    @Composable get() = LocalSmartPalette.current.jadeSoft
+val JadeMuted: Color
+    @Composable get() = LocalSmartPalette.current.jadeMuted
+val Divider: Color
+    @Composable get() = LocalSmartPalette.current.divider
+val Outline: Color
+    @Composable get() = LocalSmartPalette.current.outline
+val Track: Color
+    @Composable get() = LocalSmartPalette.current.track
+val ErrorWarm: Color
+    @Composable get() = LocalSmartPalette.current.errorWarm
+val OnJade: Color
+    @Composable get() = LocalSmartPalette.current.onJade
 
 object SmartDimens {
     val Space8 = 8.dp
@@ -172,35 +262,67 @@ val SmartShapes = Shapes(
 )
 
 private val SmartLightColorScheme = lightColorScheme(
-    primary = Jade,
-    onPrimary = OnJade,
-    primaryContainer = JadeSoft,
-    onPrimaryContainer = Ink,
-    secondary = JadeDark,
-    onSecondary = OnJade,
-    secondaryContainer = JadeSoft,
-    onSecondaryContainer = Ink,
-    tertiary = JadeMuted,
-    onTertiary = Ink,
-    background = Paper,
-    onBackground = Ink,
-    surface = Paper,
-    onSurface = Ink,
-    surfaceVariant = JadeSoft,
-    onSurfaceVariant = InkSecondary,
-    error = ErrorWarm,
-    onError = OnJade,
-    outline = Outline,
-    outlineVariant = Divider,
-    scrim = Ink,
+    primary = SmartColors.Jade,
+    onPrimary = SmartColors.OnJade,
+    primaryContainer = SmartColors.JadeSoft,
+    onPrimaryContainer = SmartColors.Ink,
+    secondary = SmartColors.JadeDark,
+    onSecondary = SmartColors.OnJade,
+    secondaryContainer = SmartColors.JadeSoft,
+    onSecondaryContainer = SmartColors.Ink,
+    tertiary = SmartColors.JadeMuted,
+    onTertiary = SmartColors.Ink,
+    background = SmartColors.Paper,
+    onBackground = SmartColors.Ink,
+    surface = SmartColors.Paper,
+    onSurface = SmartColors.Ink,
+    surfaceVariant = SmartColors.JadeSoft,
+    onSurfaceVariant = SmartColors.InkSecondary,
+    error = SmartColors.ErrorWarm,
+    onError = SmartColors.OnJade,
+    outline = SmartColors.Outline,
+    outlineVariant = SmartColors.Divider,
+    scrim = SmartColors.Ink,
 )
 
-@Composable
-fun SmartMistakeBookTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = SmartLightColorScheme,
-        typography = SmartTypography,
-        shapes = SmartShapes,
-        content = content,
+private val SmartDarkColorScheme =
+    darkColorScheme(
+        primary = SmartDarkColors.Jade,
+        onPrimary = SmartDarkColors.OnJade,
+        primaryContainer = SmartDarkColors.JadeSoft,
+        onPrimaryContainer = SmartDarkColors.Ink,
+        secondary = SmartDarkColors.JadeDark,
+        onSecondary = SmartDarkColors.OnJade,
+        secondaryContainer = SmartDarkColors.JadeSoft,
+        onSecondaryContainer = SmartDarkColors.Ink,
+        tertiary = SmartDarkColors.JadeMuted,
+        onTertiary = SmartDarkColors.Ink,
+        background = SmartDarkColors.Paper,
+        onBackground = SmartDarkColors.Ink,
+        surface = SmartDarkColors.Paper,
+        onSurface = SmartDarkColors.Ink,
+        surfaceVariant = SmartDarkColors.JadeSoft,
+        onSurfaceVariant = SmartDarkColors.InkSecondary,
+        error = SmartDarkColors.ErrorWarm,
+        onError = SmartDarkColors.OnJade,
+        outline = SmartDarkColors.Outline,
+        outlineVariant = SmartDarkColors.Divider,
+        scrim = SmartDarkColors.Ink,
     )
+
+@Composable
+fun SmartMistakeBookTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
+    val palette = if (darkTheme) DarkSmartPalette else LightSmartPalette
+    val colorScheme = if (darkTheme) SmartDarkColorScheme else SmartLightColorScheme
+    CompositionLocalProvider(LocalSmartPalette provides palette) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = SmartTypography,
+            shapes = SmartShapes,
+            content = content,
+        )
+    }
 }

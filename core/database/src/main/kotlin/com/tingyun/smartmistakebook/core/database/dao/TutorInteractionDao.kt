@@ -451,6 +451,11 @@ internal abstract class TutorInteractionDao {
         return expectedTargetId
     }
 
+    /** Read-only proof verification used by the v46 session append store. */
+    internal suspend fun verifyCurrentVisualTargetEvidence(
+        command: PersistTutorVisualTargetEvidenceCommand,
+    ): Boolean = command.selectedTargetId == validateVisualTargetEvidence(command)
+
     private suspend fun validateGeneratedVisualScene(
         command: PersistTutorVisualTargetEvidenceCommand,
         expectedFocusMarkdown: String?,

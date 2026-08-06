@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database.dao
 
 import androidx.room3.Dao
+import androidx.room3.ColumnInfo
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
@@ -9,6 +10,8 @@ import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictExcept
 import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateStatusCasResult
 import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateStatusChangeCommand
 import com.tingyun.smartmistakebook.core.database.LearningObservationCandidateWriteResult
+import com.tingyun.smartmistakebook.core.database.LEARNING_OBSERVATION_ADMISSION_POLICY_VERSION
+import com.tingyun.smartmistakebook.core.database.LearningObservationSourceFactProofFingerprint
 import com.tingyun.smartmistakebook.core.database.LearningObservationMaterializationResult
 import com.tingyun.smartmistakebook.core.database.LearningObservationSourceAuthorityException
 import com.tingyun.smartmistakebook.core.database.LearningObservationSourceAuthorityRecord
@@ -21,11 +24,14 @@ import com.tingyun.smartmistakebook.core.database.entity.LearningEventIdentityEn
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationCandidateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAttributionEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationEventAdmissionEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceAuthorityEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceFactProofEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceFactEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
+import com.tingyun.smartmistakebook.core.model.CapturedTutorProblemIdentity
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewCase
@@ -38,19 +44,15 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
 import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
-import com.tingyun.smartmistakebook.core.model.LearningObservationProjectionDisposition
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
+import com.tingyun.smartmistakebook.core.model.LearningObservationSourceFact
+import com.tingyun.smartmistakebook.core.model.LearningObservationProjectionAdmission
 import com.tingyun.smartmistakebook.core.model.SourceFactEvidencePolicy
 import com.tingyun.smartmistakebook.core.model.allowedExternalTransitions
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
 internal const val EVENT_KIND_LEARNING_OBSERVATION = "ATTRIBUTED_LEARNING_OBSERVATION"
-
-internal data class LearningObservationAnchorAuthorityRow(
-    val subject: String,
-    val sourceAnchorId: String?,
-)
 
 internal data class LearningObservationAttributionAuthorityRow(
     val bindingId: String,
@@ -62,12 +64,61 @@ internal data class LearningObservationAttributionAuthorityRow(
     val knowledgeSubject: String,
 )
 
+internal data class CapturedTutorSourceFactProofCandidateRow(
+    @ColumnInfo(name = "source_fact_id")
+    val sourceFactId: String,
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    val subject: String,
+    @ColumnInfo(name = "anchor_id")
+    val anchorId: String,
+    @ColumnInfo(name = "source_reference_id")
+    val sourceReferenceId: String,
+    @ColumnInfo(name = "source_fingerprint")
+    val sourceFingerprint: String,
+    @ColumnInfo(name = "conversation_id")
+    val conversationId: String?,
+    @ColumnInfo(name = "conversation_generation")
+    val conversationGeneration: Long?,
+    @ColumnInfo(name = "turn_receipt_id")
+    val turnReceiptId: String?,
+    @ColumnInfo(name = "evidence_request_id")
+    val evidenceRequestId: String?,
+    val source: String,
+    @ColumnInfo(name = "request_kind")
+    val requestKind: String,
+    @ColumnInfo(name = "anchor_question_fingerprint")
+    val anchorQuestionFingerprint: String,
+    @ColumnInfo(name = "anchor_revision_fingerprint")
+    val anchorRevisionFingerprint: String,
+    @ColumnInfo(name = "anchor_fingerprint_version")
+    val anchorFingerprintVersion: String,
+    @ColumnInfo(name = "draft_id")
+    val draftId: String,
+    @ColumnInfo(name = "draft_revision_fingerprint")
+    val draftRevisionFingerprint: String,
+    @ColumnInfo(name = "source_locator_kind")
+    val sourceLocatorKind: String,
+    @ColumnInfo(name = "source_locator_id")
+    val sourceLocatorId: String,
+    @ColumnInfo(name = "interaction_submitted_at_epoch_millis")
+    val interactionSubmittedAtEpochMillis: Long,
+    @ColumnInfo(name = "target_id")
+    val targetId: String,
+    @ColumnInfo(name = "target_version")
+    val targetVersion: String,
+    @ColumnInfo(name = "target_fingerprint")
+    val targetFingerprint: String,
+    @ColumnInfo(name = "target_created_at_epoch_millis")
+    val targetCreatedAtEpochMillis: Long,
+)
+
 @Dao
 internal abstract class LearningObservationDao {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertSourceAuthority(
         entity: LearningObservationSourceAuthorityEntity,
-    )
+    ): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertCandidate(entity: LearningObservationCandidateEntity)
@@ -79,6 +130,18 @@ internal abstract class LearningObservationDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertEvent(entity: AttributedLearningObservationEventEntity)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    protected abstract suspend fun insertEventAdmission(
+        entity: LearningObservationEventAdmissionEntity,
+    )
+
+    @Query(
+        "SELECT * FROM learning_observation_event_admission WHERE event_id = :eventId LIMIT 1",
+    )
+    internal abstract suspend fun findEventAdmission(
+        eventId: String,
+    ): LearningObservationEventAdmissionEntity?
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertEventAttributions(
@@ -154,6 +217,22 @@ internal abstract class LearningObservationDao {
     protected abstract suspend fun findCanonicalSourceFact(
         sourceFactId: String,
     ): LearningObservationSourceFactEntity?
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    protected abstract suspend fun insertSourceFactProof(
+        entity: LearningObservationSourceFactProofEntity,
+    )
+
+    @Query(
+        """
+        SELECT * FROM learning_observation_source_fact_proof
+        WHERE source_fact_id = :sourceFactId
+        LIMIT 1
+        """,
+    )
+    internal abstract suspend fun findSourceFactProof(
+        sourceFactId: String,
+    ): LearningObservationSourceFactProofEntity?
 
     @Query(
         """
@@ -264,30 +343,177 @@ internal abstract class LearningObservationDao {
 
     @Query(
         """
-        SELECT problem.subject AS subject,
-               source_anchor.anchor_id AS sourceAnchorId
-        FROM practice_unit AS unit
-        JOIN problem ON problem.problem_id = unit.problem_id
-        JOIN problem_revision AS revision
-          ON revision.problem_id = unit.problem_id
-         AND revision.revision_id = unit.problem_revision_id
-        LEFT JOIN learning_problem_anchor AS source_anchor
-          ON source_anchor.anchor_id = :sourceAnchorId
-         AND source_anchor.learner_id = :learnerId
-         AND source_anchor.subject = problem.subject
-         AND source_anchor.question_fingerprint = problem.canonical_fingerprint
-         AND source_anchor.revision_fingerprint = revision.content_fingerprint
-        WHERE unit.practice_unit_id = :practiceUnitId
-          AND unit.problem_revision_id = :problemRevisionId
-        LIMIT 1
+        SELECT source_fact.source_fact_id AS source_fact_id,
+               source_fact.learner_id AS learner_id,
+               source_fact.subject AS subject,
+               source_fact.anchor_id AS anchor_id,
+               request.evidence_request_id AS source_reference_id,
+               source_fact.payload_fingerprint AS source_fingerprint,
+               source_fact.conversation_id AS conversation_id,
+               source_fact.conversation_generation AS conversation_generation,
+               source_fact.turn_receipt_id AS turn_receipt_id,
+               source_fact.evidence_request_id AS evidence_request_id,
+               source_fact.source AS source,
+               request.kind AS request_kind,
+               anchor.question_fingerprint AS anchor_question_fingerprint,
+               anchor.revision_fingerprint AS anchor_revision_fingerprint,
+               anchor.fingerprint_version AS anchor_fingerprint_version,
+               session.draft_id AS draft_id,
+               draft_revision.document_fingerprint AS draft_revision_fingerprint,
+               'TUTOR_RESPONSE' AS source_locator_kind,
+               response.session_id || ':' || response.cycle_ordinal || ':' ||
+                   response.turn_ordinal AS source_locator_id,
+               response.choice_submitted_at_epoch_millis
+                   AS interaction_submitted_at_epoch_millis,
+               receipt.practice_unit_id AS target_id,
+               receipt.problem_revision_id AS target_version,
+               receipt.payload_fingerprint AS target_fingerprint,
+               receipt.committed_at_epoch_millis AS target_created_at_epoch_millis
+        FROM learning_observation_source_fact AS source_fact
+        JOIN learning_problem_anchor AS anchor
+          ON anchor.anchor_id = source_fact.anchor_id
+         AND anchor.learner_id = source_fact.learner_id
+         AND anchor.subject = source_fact.subject
+        JOIN tutor_evidence_request AS request
+          ON request.evidence_request_id = source_fact.evidence_request_id
+         AND request.learner_id = source_fact.learner_id
+         AND request.conversation_id = source_fact.conversation_id
+         AND request.conversation_generation = source_fact.conversation_generation
+         AND request.turn_receipt_id = source_fact.turn_receipt_id
+         AND request.problem_anchor_id = source_fact.anchor_id
+         AND request.subject = source_fact.subject
+         AND request.status = 'SUBMITTED'
+         AND request.terminal_source_fact_id = source_fact.source_fact_id
+        JOIN tutor_turn_receipt AS turn
+          ON turn.turn_receipt_id = source_fact.turn_receipt_id
+         AND turn.learner_id = source_fact.learner_id
+         AND turn.conversation_id = source_fact.conversation_id
+         AND turn.conversation_generation = source_fact.conversation_generation
+         AND turn.turn_ordinal = request.turn_ordinal
+         AND turn.problem_anchor_id = source_fact.anchor_id
+         AND turn.subject = source_fact.subject
+        JOIN tutor_turn_response AS response
+          ON response.evidence_request_id = source_fact.evidence_request_id
+         AND response.turn_ordinal = request.turn_ordinal
+         AND response.diagnostic_stem_markdown IS NOT NULL
+         AND response.selected_choice_id IS NOT NULL
+         AND response.selected_choice_markdown IS NOT NULL
+         AND response.selection_was_correct IS NOT NULL
+         AND response.choice_submitted_at_epoch_millis IS NOT NULL
+        JOIN tutor_session AS session
+          ON session.session_id = response.session_id
+         AND session.draft_revision_number = response.revision_number
+         AND response.question_document_id = 'document-' || session.draft_id
+        JOIN problem_draft_revision AS draft_revision
+          ON draft_revision.draft_id = session.draft_id
+         AND draft_revision.revision_number = session.draft_revision_number
+         AND draft_revision.subject = source_fact.subject
+        JOIN problem_draft AS draft
+          ON draft.draft_id = session.draft_id
+         AND draft.current_revision_number = session.draft_revision_number
+         AND draft.status = 'COMMITTED'
+        JOIN problem_draft_commit_receipt AS receipt
+          ON receipt.draft_id = session.draft_id
+         AND receipt.draft_revision_number = session.draft_revision_number
+        JOIN practice_unit AS unit
+          ON unit.practice_unit_id = receipt.practice_unit_id
+         AND unit.problem_revision_id = receipt.problem_revision_id
+         AND unit.problem_id = receipt.problem_id
+        JOIN problem AS problem
+          ON problem.problem_id = unit.problem_id
+         AND problem.subject = source_fact.subject
+        WHERE source_fact.source_fact_id = :sourceFactId
+          AND source_fact.source = 'TUTOR_CHOICE'
+          AND request.kind = 'CHOICE'
         """,
     )
-    protected abstract suspend fun findAnchorAuthority(
-        practiceUnitId: String,
-        problemRevisionId: String,
-        sourceAnchorId: String,
-        learnerId: String,
-    ): LearningObservationAnchorAuthorityRow?
+    protected abstract suspend fun findCapturedTutorResponseProofCandidates(
+        sourceFactId: String,
+    ): List<CapturedTutorSourceFactProofCandidateRow>
+
+    @Query(
+        """
+        SELECT source_fact.source_fact_id AS source_fact_id,
+               source_fact.learner_id AS learner_id,
+               source_fact.subject AS subject,
+               source_fact.anchor_id AS anchor_id,
+               request.evidence_request_id AS source_reference_id,
+               source_fact.payload_fingerprint AS source_fingerprint,
+               source_fact.conversation_id AS conversation_id,
+               source_fact.conversation_generation AS conversation_generation,
+               source_fact.turn_receipt_id AS turn_receipt_id,
+               source_fact.evidence_request_id AS evidence_request_id,
+               source_fact.source AS source,
+               request.kind AS request_kind,
+               anchor.question_fingerprint AS anchor_question_fingerprint,
+               anchor.revision_fingerprint AS anchor_revision_fingerprint,
+               anchor.fingerprint_version AS anchor_fingerprint_version,
+               session.draft_id AS draft_id,
+               draft_revision.document_fingerprint AS draft_revision_fingerprint,
+               'TUTOR_VISUAL_EVIDENCE' AS source_locator_kind,
+               visual.hit_proof_id AS source_locator_id,
+               visual.submitted_at_epoch_millis
+                   AS interaction_submitted_at_epoch_millis,
+               receipt.practice_unit_id AS target_id,
+               receipt.problem_revision_id AS target_version,
+               receipt.payload_fingerprint AS target_fingerprint,
+               receipt.committed_at_epoch_millis AS target_created_at_epoch_millis
+        FROM learning_observation_source_fact AS source_fact
+        JOIN learning_problem_anchor AS anchor
+          ON anchor.anchor_id = source_fact.anchor_id
+         AND anchor.learner_id = source_fact.learner_id
+         AND anchor.subject = source_fact.subject
+        JOIN tutor_evidence_request AS request
+          ON request.evidence_request_id = source_fact.evidence_request_id
+         AND request.learner_id = source_fact.learner_id
+         AND request.conversation_id = source_fact.conversation_id
+         AND request.conversation_generation = source_fact.conversation_generation
+         AND request.turn_receipt_id = source_fact.turn_receipt_id
+         AND request.problem_anchor_id = source_fact.anchor_id
+         AND request.subject = source_fact.subject
+         AND request.status = 'SUBMITTED'
+         AND request.terminal_source_fact_id = source_fact.source_fact_id
+        JOIN tutor_turn_receipt AS turn
+          ON turn.turn_receipt_id = source_fact.turn_receipt_id
+         AND turn.learner_id = source_fact.learner_id
+         AND turn.conversation_id = source_fact.conversation_id
+         AND turn.conversation_generation = source_fact.conversation_generation
+         AND turn.turn_ordinal = request.turn_ordinal
+         AND turn.problem_anchor_id = source_fact.anchor_id
+         AND turn.subject = source_fact.subject
+        JOIN tutor_visual_target_evidence AS visual
+          ON visual.model_task_request_id = source_fact.evidence_request_id
+         AND visual.turn_ordinal = request.turn_ordinal
+        JOIN tutor_session AS session
+          ON session.session_id = visual.session_id
+         AND session.draft_revision_number = visual.revision_number
+         AND visual.question_document_id = 'document-' || session.draft_id
+        JOIN problem_draft_revision AS draft_revision
+          ON draft_revision.draft_id = session.draft_id
+         AND draft_revision.revision_number = session.draft_revision_number
+         AND draft_revision.subject = source_fact.subject
+        JOIN problem_draft AS draft
+          ON draft.draft_id = session.draft_id
+         AND draft.current_revision_number = session.draft_revision_number
+         AND draft.status = 'COMMITTED'
+        JOIN problem_draft_commit_receipt AS receipt
+          ON receipt.draft_id = session.draft_id
+         AND receipt.draft_revision_number = session.draft_revision_number
+        JOIN practice_unit AS unit
+          ON unit.practice_unit_id = receipt.practice_unit_id
+         AND unit.problem_revision_id = receipt.problem_revision_id
+         AND unit.problem_id = receipt.problem_id
+        JOIN problem AS problem
+          ON problem.problem_id = unit.problem_id
+         AND problem.subject = source_fact.subject
+        WHERE source_fact.source_fact_id = :sourceFactId
+          AND source_fact.source = 'TUTOR_VISUAL_TARGET'
+          AND request.kind = 'VISUAL_TARGET'
+        """,
+    )
+    protected abstract suspend fun findCapturedTutorVisualProofCandidates(
+        sourceFactId: String,
+    ): List<CapturedTutorSourceFactProofCandidateRow>
 
     @Query(
         """
@@ -338,40 +564,34 @@ internal abstract class LearningObservationDao {
     open suspend fun registerSourceAuthority(
         authority: LearningObservationSourceAuthorityRecord,
     ): LearningObservationSourceAuthorityWriteResult {
-        validateSourceAuthority(authority)
-        val sourceFactId = requireNotNull(authority.sourceFactId)
-        findSourceAuthorityBySourceFact(sourceFactId)?.let { existing ->
-            val persisted = existing.toModel()
-            if (persisted != authority) {
-                throw ImmutablePayloadConflictException(
-                    "learning_observation_source_authority_source_fact",
-                    sourceFactId,
-                )
+        val proof = validateSourceAuthority(authority)
+        if (insertSourceAuthority(authority.toEntity()) != -1L) {
+            require(proof.matches(authority)) {
+                "Source authority must match the immutable source-fact target proof"
+            }
+            return LearningObservationSourceAuthorityWriteResult(created = true, authority = authority)
+        }
+        val existing = listOfNotNull(
+            authority.sourceFactId?.let { findSourceAuthorityBySourceFact(it) },
+            findSourceAuthorityEntity(
+                authority.learnerId,
+                authority.source.name,
+                authority.sourceReferenceId,
+            ),
+        ).distinct()
+        if (existing.size == 1 && existing.single().toModel() == authority) {
+            require(proof.matches(authority)) {
+                "Source authority must match the immutable source-fact target proof"
             }
             return LearningObservationSourceAuthorityWriteResult(
                 created = false,
-                authority = persisted,
+                authority = authority,
             )
         }
-        findSourceAuthorityEntity(
-            authority.learnerId,
-            authority.source.name,
-            authority.sourceReferenceId,
-        )?.let { existing ->
-            val persisted = existing.toModel()
-            if (persisted != authority) {
-                throw ImmutablePayloadConflictException(
-                    "learning_observation_source_authority",
-                    authority.provenanceKey(),
-                )
-            }
-            return LearningObservationSourceAuthorityWriteResult(
-                created = false,
-                authority = persisted,
-            )
-        }
-        insertSourceAuthority(authority.toEntity())
-        return LearningObservationSourceAuthorityWriteResult(created = true, authority = authority)
+        throw ImmutablePayloadConflictException(
+            "learning_observation_source_authority",
+            authority.provenanceKey(),
+        )
     }
 
     @Transaction
@@ -529,6 +749,18 @@ internal abstract class LearningObservationDao {
         sourceAuthorityFailure(candidate)?.let { (reason, detail) ->
             return review(candidate, command, reason, detail)
         }
+        val sourceProof = findSourceFactProof(sourceFactId)
+            ?.takeIf(LearningObservationSourceFactProofFingerprint::isValid)
+            ?.takeIf { proof ->
+                proof.matches(sourceFact, sourceFactEntity.payloadFingerprint) &&
+                    command.confirmedAtEpochMillis >= proof.attestedAtEpochMillis
+            }
+            ?: return review(
+                candidate,
+                command,
+                LearningEvidenceReviewReason.MISSING_AUTHORITY,
+                "The source fact has no valid local projection proof.",
+            )
 
         findEventEntity(command.eventId)?.let { existing ->
             if (existing.candidateId == command.candidateId &&
@@ -616,18 +848,6 @@ internal abstract class LearningObservationDao {
                 "At least one explicit DIRECT attribution is required before materialization.",
             )
         }
-        val anchor = findAnchorAuthority(
-            practiceUnitId,
-            problemRevisionId,
-            sourceFact.anchorId,
-            sourceFact.learnerScopeId,
-        )
-            ?: return review(
-                candidate,
-                command,
-                LearningEvidenceReviewReason.MISSING_AUTHORITY,
-                "The practice-unit and problem-revision anchor is not authoritative.",
-            )
         for (attribution in candidate.proposedAttributions) {
             val authority = findAttributionAuthority(attribution.bindingId)
                 ?: return review(
@@ -649,8 +869,8 @@ internal abstract class LearningObservationDao {
                     "An attribution differs from its accepted practice-unit knowledge binding.",
                 )
             }
-            if (authority.problemSubject != anchor.subject ||
-                authority.knowledgeSubject != anchor.subject
+            if (authority.problemSubject != sourceFact.subject.name ||
+                authority.knowledgeSubject != sourceFact.subject.name
             ) {
                 return review(
                     candidate,
@@ -729,9 +949,25 @@ internal abstract class LearningObservationDao {
             eventSequence = sequence,
         )
         val fingerprint = LearningLedgerFingerprint.learningObservation(event)
-        val entity = event.toEntity(anchor.subject, fingerprint)
+        val entity = event.toEntity(sourceFact.subject.name, fingerprint)
+        val admission = LearningObservationProjectionAdmission.create(
+            observation = event,
+            sourceFactProofFingerprint = sourceProof.proofFingerprint,
+            policyVersion = LEARNING_OBSERVATION_ADMISSION_POLICY_VERSION,
+        )
         val outbox = entity.toOutbox()
         insertEvent(entity)
+        insertEventAdmission(
+            LearningObservationEventAdmissionEntity(
+                eventId = event.eventId,
+                sourceFactId = sourceFactId,
+                rawEventCanonicalFingerprint = admission.rawEventCanonicalFingerprint,
+                sourceFactProofFingerprint = admission.sourceFactProofFingerprint,
+                policyVersion = admission.policyVersion,
+                admissionFingerprint = admission.admissionFingerprint,
+                admittedAtEpochMillis = command.confirmedAtEpochMillis,
+            ),
+        )
         event.toAttributionEntities().insertWhenNotEmpty(::insertEventAttributions)
         insertOutbox(outbox)
         resolveOpenReviewCases(
@@ -873,33 +1109,30 @@ internal abstract class LearningObservationDao {
             return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH to
                 "The candidate fact or anchor differs from its immutable local source authority."
         }
-        val anchor = findAnchorAuthority(
-            authority.practiceUnitId,
-            authority.problemRevisionId,
-            sourceFact.anchorId,
-            sourceFact.learnerScopeId,
-        ) ?: return LearningEvidenceReviewReason.MISSING_AUTHORITY to
-            "The source authority no longer names an authoritative practice-unit anchor."
-        if (anchor.sourceAnchorId != sourceFact.anchorId) {
+        val proof = ensureSourceFactProof(
+            sourceFact = sourceFact,
+            sourceFingerprint = sourceFactEntity.payloadFingerprint,
+            attestedAtEpochMillis = authority.verifiedAtEpochMillis,
+        )
+            ?: return LearningEvidenceReviewReason.MISSING_AUTHORITY to
+                "The source fact has no trusted local target proof."
+        if (!proof.matches(sourceFact, sourceFactEntity.payloadFingerprint, authority)) {
             return LearningEvidenceReviewReason.SOURCE_AUTHORITY_MISMATCH to
-                "The canonical source-fact anchor does not match the authoritative problem fingerprints."
-        }
-        if (anchor.subject != sourceFact.subject.name) {
-            return LearningEvidenceReviewReason.SUBJECT_MISMATCH to
-                "The canonical source fact subject differs from the authoritative problem subject."
+                "The source authority differs from its immutable target proof."
         }
         return null
     }
 
     private suspend fun validateSourceAuthority(
         authority: LearningObservationSourceAuthorityRecord,
-    ) {
+    ): LearningObservationSourceFactProofEntity {
         val sourceFactId = requireNotNull(authority.sourceFactId) {
             "New learning-observation source authorities require a canonical source-fact id"
         }
-        val sourceFact = requireNotNull(findCanonicalSourceFact(sourceFactId)) {
+        val sourceFactEntity = requireNotNull(findCanonicalSourceFact(sourceFactId)) {
             "Learning-observation source fact is not canonical"
-        }.toModel()
+        }
+        val sourceFact = sourceFactEntity.toModel()
         require(authority.learnerId == sourceFact.learnerScopeId) {
             "Source authority learner must match the canonical source fact"
         }
@@ -912,21 +1145,47 @@ internal abstract class LearningObservationDao {
         ) {
             "Source authority reference must match the canonical source fact"
         }
-        val anchor = requireNotNull(
-            findAnchorAuthority(
-                authority.practiceUnitId,
-                authority.problemRevisionId,
-                sourceFact.anchorId,
-                sourceFact.learnerScopeId,
+        val proof = requireNotNull(
+            ensureSourceFactProof(
+                sourceFact = sourceFact,
+                sourceFingerprint = sourceFactEntity.payloadFingerprint,
+                attestedAtEpochMillis = authority.verifiedAtEpochMillis,
             ),
         ) {
-            "Source authority must name an authoritative practice-unit anchor"
+            "Source authority requires one exact trusted local source-fact proof"
         }
-        require(anchor.sourceAnchorId == sourceFact.anchorId) {
-            "Source authority problem fingerprints must match the canonical source-fact anchor"
+        require(proof.matches(sourceFact, sourceFactEntity.payloadFingerprint)) {
+            "Source authority requires a proof for the exact canonical source fact"
         }
-        require(anchor.subject == sourceFact.subject.name) {
-            "Source authority problem subject must match the canonical source fact"
+        return proof
+    }
+
+    private suspend fun ensureSourceFactProof(
+        sourceFact: LearningObservationSourceFact,
+        sourceFingerprint: String,
+        attestedAtEpochMillis: Long,
+    ): LearningObservationSourceFactProofEntity? {
+        findSourceFactProof(sourceFact.sourceFactId)?.let { existing ->
+            return existing.takeIf { proof ->
+                proof.attestedAtEpochMillis == attestedAtEpochMillis &&
+                    proof.matches(sourceFact, sourceFingerprint)
+            }
+        }
+        val candidates = (
+            findCapturedTutorResponseProofCandidates(sourceFact.sourceFactId) +
+                findCapturedTutorVisualProofCandidates(sourceFact.sourceFactId)
+            ).distinct().mapNotNull { candidate ->
+                candidate.toProof(
+                    sourceFact = sourceFact,
+                    sourceFingerprint = sourceFingerprint,
+                    attestedAtEpochMillis = attestedAtEpochMillis,
+                )
+            }
+        if (candidates.size != 1) return null
+        val candidate = candidates.single()
+        insertSourceFactProof(candidate)
+        return findSourceFactProof(sourceFact.sourceFactId)?.takeIf { proof ->
+            proof == candidate && LearningObservationSourceFactProofFingerprint.isValid(proof)
         }
     }
 
@@ -942,232 +1201,3 @@ internal abstract class LearningObservationDao {
     }
 }
 
-private fun LearningObservationSourceAuthorityRecord.toEntity() =
-    LearningObservationSourceAuthorityEntity(
-        learnerId = learnerId,
-        source = source.name,
-        sourceReferenceId = sourceReferenceId,
-        practiceUnitId = practiceUnitId,
-        problemRevisionId = problemRevisionId,
-        sourcePayloadFingerprint = sourcePayloadFingerprint,
-        verifiedAtEpochMillis = verifiedAtEpochMillis,
-        sourceFactId = sourceFactId,
-    )
-
-private fun LearningObservationSourceAuthorityEntity.toModel() =
-    LearningObservationSourceAuthorityRecord(
-        learnerId = learnerId,
-        source = LearningObservationSource.valueOf(source),
-        sourceReferenceId = sourceReferenceId,
-        practiceUnitId = practiceUnitId,
-        problemRevisionId = problemRevisionId,
-        sourcePayloadFingerprint = sourcePayloadFingerprint,
-        verifiedAtEpochMillis = verifiedAtEpochMillis,
-        sourceFactId = sourceFactId,
-    )
-
-private fun LearningObservationSourceAuthorityRecord.provenanceKey(): String =
-    "$learnerId:${source.name}:$sourceReferenceId"
-
-private fun LearningObservationCandidate.provenanceKey(): String =
-    "$learnerId:${source.name}:$sourceReferenceId"
-
-private fun LearningObservationCandidate.toEntity(
-    fingerprint: String,
-) = LearningObservationCandidateEntity(
-    candidateId = candidateId,
-    learnerId = learnerId,
-    source = source.name,
-    sourceReferenceId = sourceReferenceId,
-    sourceFactId = sourceFactId,
-    practiceUnitId = practiceUnitId,
-    problemRevisionId = problemRevisionId,
-    direction = direction.name,
-    evidenceLevel = evidenceLevel.name,
-    evidenceWeight = evidenceWeight,
-    independence = independence.name,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    modelVersion = modelVersion,
-    evidenceLocator = evidenceLocator,
-    status = status.name,
-    retryCount = retryCount,
-    payloadFingerprint = fingerprint,
-    createdAtEpochMillis = createdAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun LearningObservationCandidate.toAttributionEntities() =
-    proposedAttributions.sortedBy(LearningObservationKnowledgeAttribution::bindingId)
-        .mapIndexed { index, attribution ->
-            LearningObservationCandidateAttributionEntity(
-                candidateId = candidateId,
-                ordinal = index,
-                bindingId = attribution.bindingId,
-                knowledgeNodeId = attribution.knowledgeNodeId,
-                weight = attribution.weight,
-                basisRevisionId = attribution.basisRevisionId,
-                taxonomyVersion = attribution.taxonomyVersion,
-                role = attribution.role.name,
-                certainty = attribution.certainty.name,
-            )
-        }
-
-private fun LearningObservationCandidateEntity.toModel(
-    attributions: List<LearningObservationCandidateAttributionEntity>,
-) = LearningObservationCandidate(
-    candidateId = candidateId,
-    learnerId = learnerId,
-    source = LearningObservationSource.valueOf(source),
-    sourceReferenceId = sourceReferenceId,
-    sourceFactId = sourceFactId,
-    practiceUnitId = practiceUnitId,
-    problemRevisionId = problemRevisionId,
-    direction = LearningObservationDirection.valueOf(direction),
-    evidenceLevel = LearningObservationEvidenceLevel.valueOf(evidenceLevel),
-    evidenceWeight = evidenceWeight,
-    independence = LearningObservationIndependence.valueOf(independence),
-    proposedAttributions = attributions.map {
-        LearningObservationKnowledgeAttribution(
-            bindingId = it.bindingId,
-            knowledgeNodeId = it.knowledgeNodeId,
-            weight = it.weight,
-            basisRevisionId = it.basisRevisionId,
-            taxonomyVersion = it.taxonomyVersion,
-            role = EvidenceAttributionRole.valueOf(it.role),
-            certainty = EvidenceAttributionCertainty.valueOf(it.certainty),
-        )
-    },
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    modelVersion = modelVersion,
-    evidenceLocator = evidenceLocator,
-    status = LearningObservationCandidateStatus.valueOf(status),
-    retryCount = retryCount,
-    createdAtEpochMillis = createdAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun AttributedLearningObservationEvent.toEntity(
-    subject: String,
-    fingerprint: String,
-) = AttributedLearningObservationEventEntity(
-    eventId = eventId,
-    candidateId = candidateId,
-    sourceFactId = sourceFactId,
-    learnerId = learnerId,
-    practiceUnitId = practiceUnitId,
-    problemRevisionId = problemRevisionId,
-    subject = subject,
-    direction = direction.name,
-    evidenceLevel = evidenceLevel.name,
-    evidenceWeight = evidenceWeight,
-    independence = independence.name,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    confirmedAtEpochMillis = confirmedAtEpochMillis,
-    modelVersion = modelVersion,
-    evidenceLocator = evidenceLocator,
-    eventSequence = eventSequence,
-    canonicalFingerprint = fingerprint,
-)
-
-private fun AttributedLearningObservationEvent.toAttributionEntities() =
-    attributions.sortedBy(LearningObservationKnowledgeAttribution::bindingId)
-        .mapIndexed { index, attribution ->
-            LearningObservationEventAttributionEntity(
-                eventId = eventId,
-                practiceUnitId = practiceUnitId,
-                ordinal = index,
-                bindingId = attribution.bindingId,
-                knowledgeNodeId = attribution.knowledgeNodeId,
-                weight = attribution.weight,
-                basisRevisionId = attribution.basisRevisionId,
-                taxonomyVersion = attribution.taxonomyVersion,
-                role = attribution.role.name,
-                certainty = attribution.certainty.name,
-            )
-        }
-
-internal fun AttributedLearningObservationEventEntity.toModel(
-    attributions: List<LearningObservationEventAttributionEntity>,
-) = AttributedLearningObservationEvent(
-    eventId = eventId,
-    candidateId = candidateId,
-    sourceFactId = sourceFactId,
-    learnerId = learnerId,
-    practiceUnitId = practiceUnitId,
-    problemRevisionId = problemRevisionId,
-    direction = LearningObservationDirection.valueOf(direction),
-    evidenceLevel = LearningObservationEvidenceLevel.valueOf(evidenceLevel),
-    evidenceWeight = evidenceWeight,
-    independence = LearningObservationIndependence.valueOf(independence),
-    attributions = attributions.map {
-        LearningObservationKnowledgeAttribution(
-            bindingId = it.bindingId,
-            knowledgeNodeId = it.knowledgeNodeId,
-            weight = it.weight,
-            basisRevisionId = it.basisRevisionId,
-            taxonomyVersion = it.taxonomyVersion,
-            role = EvidenceAttributionRole.valueOf(it.role),
-            certainty = EvidenceAttributionCertainty.valueOf(it.certainty),
-        )
-    },
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    confirmedAtEpochMillis = confirmedAtEpochMillis,
-    modelVersion = modelVersion,
-    evidenceLocator = evidenceLocator,
-    eventSequence = eventSequence,
-    projectionDisposition = if (sourceFactId == null) {
-        LearningObservationProjectionDisposition.QUARANTINED_LEGACY
-    } else {
-        LearningObservationProjectionDisposition.APPLY
-    },
-)
-
-internal fun AttributedLearningObservationEventEntity.toOutbox() = ProjectionOutboxEntity(
-    outboxId = "learning-outbox:$learnerId:$EVENT_KIND_LEARNING_OBSERVATION:$eventId",
-    learnerId = learnerId,
-    outboxSequence = eventSequence,
-    eventKind = EVENT_KIND_LEARNING_OBSERVATION,
-    eventId = eventId,
-    canonicalFingerprint = canonicalFingerprint,
-    status = StudyDbValue.OutboxStatus.PENDING,
-    createdAtEpochMillis = confirmedAtEpochMillis,
-)
-
-private fun LearningEvidenceReviewCase.toEntity() = LearningEvidenceReviewCaseEntity(
-    reviewCaseId = reviewCaseId,
-    candidateId = candidateId,
-    learnerId = learnerId,
-    proposedEventId = proposedEventId,
-    reason = reason.name,
-    detail = detail,
-    status = status.name,
-    createdAtEpochMillis = createdAtEpochMillis,
-    resolvedAtEpochMillis = resolvedAtEpochMillis,
-)
-
-private fun LearningEvidenceReviewCaseEntity.toModel() = LearningEvidenceReviewCase(
-    reviewCaseId = reviewCaseId,
-    candidateId = candidateId,
-    learnerId = learnerId,
-    proposedEventId = proposedEventId,
-    reason = LearningEvidenceReviewReason.valueOf(reason),
-    detail = detail,
-    status = LearningEvidenceReviewStatus.valueOf(status),
-    createdAtEpochMillis = createdAtEpochMillis,
-    resolvedAtEpochMillis = resolvedAtEpochMillis,
-)
-
-private fun stableReviewCaseId(
-    candidateId: String,
-    eventId: String,
-    reason: LearningEvidenceReviewReason,
-): String {
-    val digest = MessageDigest.getInstance("SHA-256").digest(
-        "$candidateId\u0000$eventId\u0000${reason.name}".toByteArray(StandardCharsets.UTF_8),
-    ).joinToString("") { "%02x".format(it.toInt() and 0xff) }
-    return "learning-review:$digest"
-}
-
-private suspend fun <T> List<T>.insertWhenNotEmpty(insert: suspend (List<T>) -> Unit) {
-    if (isNotEmpty()) insert(this)
-}

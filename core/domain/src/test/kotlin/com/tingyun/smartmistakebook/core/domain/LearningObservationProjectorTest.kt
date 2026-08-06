@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
+import com.tingyun.smartmistakebook.core.model.AdmittedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
@@ -18,6 +19,7 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
 import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
+import com.tingyun.smartmistakebook.core.model.LearningObservationProjectionAdmission
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.ProjectionStatus
@@ -29,6 +31,28 @@ import org.junit.Test
 
 class LearningObservationProjectorTest {
     private val projector = LearningProjector()
+
+    @Test
+    fun `raw observation remains a tombstone even with a source fact id`() {
+        val raw = rawObservation(
+            sequence = 1,
+            direction = LearningObservationDirection.POSITIVE,
+        )
+
+        val incremental = projector.project(
+            previous = LearnerSnapshot.empty("learner-1"),
+            events = listOf(raw),
+            knownLedgerHeadSequence = 1,
+        )
+        val replay = projector.replay("learner-1", listOf(raw))
+
+        listOf(incremental.snapshot, replay.snapshot).forEach { snapshot ->
+            assertEquals(1L, snapshot.checkpoint.lastSequence)
+            assertEquals(0L, snapshot.checkpoint.projectedAtEpochMillis)
+            assertTrue(snapshot.knowledgeMasteryStates.isEmpty())
+            assertTrue(snapshot.appliedLearningObservationRecords.isEmpty())
+        }
+    }
 
     @Test
     fun `confirmed observation updates only direct mastery and never problem memory`() {
@@ -473,7 +497,11 @@ class LearningObservationProjectorTest {
     @Test
     fun `same observation event id with different payload conflicts`() {
         val original = observation(1, LearningObservationDirection.POSITIVE)
-        val conflicting = original.copy(evidenceWeight = 0.4)
+        val conflicting = observation(
+            sequence = 1,
+            direction = LearningObservationDirection.POSITIVE,
+            evidenceWeight = 0.4,
+        )
 
         val result = projector.project(
             LearnerSnapshot.empty("learner-1", LearningProjector.VERSION),
@@ -546,15 +574,55 @@ class LearningObservationProjectorTest {
                 certainty = EvidenceAttributionCertainty.DIRECT,
             ),
         ),
+        evidenceWeight: Double = 0.8,
+    ): AdmittedLearningObservationEvent {
+        val raw = rawObservation(
+            sequence = sequence,
+            direction = direction,
+            eventId = eventId,
+            candidateId = candidateId,
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            confirmedAtEpochMillis = confirmedAtEpochMillis,
+            attributions = attributions,
+            evidenceWeight = evidenceWeight,
+        )
+        return AdmittedLearningObservationEvent(
+            observation = raw,
+            admission = LearningObservationProjectionAdmission.create(
+                observation = raw,
+                sourceFactProofFingerprint = "a".repeat(64),
+                policyVersion =
+                    com.tingyun.smartmistakebook.core.model
+                        .LEARNING_OBSERVATION_PROJECTION_ADMISSION_POLICY_VERSION,
+            ),
+        )
+    }
+
+    private fun rawObservation(
+        sequence: Long,
+        direction: LearningObservationDirection,
+        eventId: String = "observation-$sequence",
+        candidateId: String = "candidate-$sequence",
+        occurredAtEpochMillis: Long = 1_000,
+        confirmedAtEpochMillis: Long = occurredAtEpochMillis,
+        attributions: List<LearningObservationKnowledgeAttribution> = listOf(
+            attribution(
+                bindingId = "binding-direct",
+                knowledgeNodeId = "knowledge-direct",
+                certainty = EvidenceAttributionCertainty.DIRECT,
+            ),
+        ),
+        evidenceWeight: Double = 0.8,
     ) = AttributedLearningObservationEvent(
         eventId = eventId,
         candidateId = candidateId,
+        sourceFactId = "source-fact-$eventId",
         learnerId = "learner-1",
         practiceUnitId = "unit-1",
         problemRevisionId = "revision-1",
         direction = direction,
         evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
-        evidenceWeight = 0.8,
+        evidenceWeight = evidenceWeight,
         independence = LearningObservationIndependence.INDEPENDENT,
         attributions = attributions,
         occurredAtEpochMillis = occurredAtEpochMillis,

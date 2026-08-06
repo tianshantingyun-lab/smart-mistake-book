@@ -3,7 +3,7 @@ package com.tingyun.smartmistakebook.core.domain
 /** Single source of truth for persisted learning-algorithm version identities. */
 object LearningCoreVersions {
     const val EVIDENCE = "evidence-v3"
-    const val PROJECTOR = "projector-v5"
+    const val PROJECTOR = "projector-v6"
     const val FORGETTING_CURVE = "curve-v2"
     const val SKIP_POLICY = "skip-v4"
     const val ATTRIBUTION = "attribution-v1"
@@ -13,9 +13,9 @@ object LearningCoreVersions {
     const val SELECTOR = "selector-v5"
 
     const val PROJECTION_COMPOSITE =
-        "learning-core-v5($PROJECTOR,$EVIDENCE,$FORGETTING_CURVE,$SKIP_POLICY,$ATTRIBUTION,$LEDGER)"
+        "learning-core-v6($PROJECTOR,$EVIDENCE,$FORGETTING_CURVE,$SKIP_POLICY,$ATTRIBUTION,$LEDGER)"
     const val REVIEW_COMPOSITE =
-        "learning-core-v5($REVIEW_PLANNER,$PROJECTOR,$FORGETTING_CURVE,$SKIP_POLICY,$LEDGER)"
+        "learning-core-v6($REVIEW_PLANNER,$PROJECTOR,$FORGETTING_CURVE,$SKIP_POLICY,$LEDGER)"
     const val SELECTOR_COMPOSITE =
-        "learning-core-v5($SELECTOR,$PROJECTOR,$SKIP_POLICY,$PREDICTION_INTERVAL,$LEDGER)"
+        "learning-core-v6($SELECTOR,$PROJECTOR,$SKIP_POLICY,$PREDICTION_INTERVAL,$LEDGER)"
 }

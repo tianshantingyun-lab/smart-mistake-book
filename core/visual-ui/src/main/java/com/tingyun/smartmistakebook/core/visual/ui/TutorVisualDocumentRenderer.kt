@@ -77,8 +77,41 @@ fun TutorVisualDocumentContent(
     val compiledResult = remember(presentationStateKey, scene) {
         runCatching { TutorVisualDocumentCompiler.compile(scene) }
     }
-    val compiled = compiledResult.getOrNull()?.takeIf { it.integrity.canRender }
+    val compiled = compiledResult.getOrNull()
     if (compiled == null) {
+        TutorVisualFallback(
+            markdown = LOCAL_VISUAL_FAILURE_MESSAGE,
+            accessibilitySummary = LOCAL_VISUAL_FAILURE_SUMMARY,
+            modifier = modifier,
+        )
+        return
+    }
+    TutorVisualDocumentContent(
+        compiled = compiled,
+        modifier = modifier,
+        onOpenOriginal = onOpenOriginal,
+        onReportIncorrect = onReportIncorrect,
+        hitPresentation = hitPresentation,
+        onTargetHit = onTargetHit,
+        presentationStateKey = presentationStateKey,
+    )
+}
+
+/** Production entry point. The caller must use TutorVisualDocumentCompiler.compileForPresentation. */
+@Composable
+fun TutorVisualDocumentContent(
+    compiled: CompiledTutorVisualDocument,
+    modifier: Modifier = Modifier,
+    onOpenOriginal: (() -> Unit)? = null,
+    onReportIncorrect: (() -> Unit)? = null,
+    hitPresentation: TutorVisualPresentationIdentity? = null,
+    onTargetHit: ((TutorVisualHitProof) -> Unit)? = null,
+    presentationStateKey: String = TutorVisualPresentationStateKey.of(
+        compiled.scene,
+        hitPresentation,
+    ),
+) {
+    if (!compiled.isVerifiedForPresentation()) {
         TutorVisualFallback(
             markdown = LOCAL_VISUAL_FAILURE_MESSAGE,
             accessibilitySummary = LOCAL_VISUAL_FAILURE_SUMMARY,
@@ -96,6 +129,9 @@ fun TutorVisualDocumentContent(
         presentationStateKey = presentationStateKey,
     )
 }
+
+internal fun CompiledTutorVisualDocument.isVerifiedForPresentation(): Boolean =
+    integrity.canRender && provenance?.canPresent == true
 
 @Composable
 private fun TutorVisualDocumentPlayer(

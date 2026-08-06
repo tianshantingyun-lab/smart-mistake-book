@@ -106,6 +106,8 @@ private fun DiagramEdges(scene: TutorSpatialDiagramScene) {
             }
         }
     }
+    val edgeColor = JadeMuted
+    val arrowColor = JadeActive
     Canvas(
         modifier = Modifier
             .fillMaxSize()
@@ -126,7 +128,7 @@ private fun DiagramEdges(scene: TutorSpatialDiagramScene) {
             val start = rawStart + direction * fromNode.shape.edgeInset().toPx()
             val end = rawEnd - direction * toNode.shape.edgeInset().toPx()
             drawLine(
-                color = if (edge.style == TutorDiagramEdgeStyle.ARROW) JadeActive else JadeMuted,
+                color = if (edge.style == TutorDiagramEdgeStyle.ARROW) arrowColor else edgeColor,
                 start = start,
                 end = end,
                 strokeWidth = strokeWidth,
@@ -150,7 +152,7 @@ private fun DiagramEdges(scene: TutorSpatialDiagramScene) {
                         y = end.y + unitY * arrowSize,
                     )
                     drawLine(
-                        color = JadeActive,
+                        color = arrowColor,
                         start = end,
                         end = Offset(
                             x = arrowBase.x + perpendicularX * arrowSize * 0.55f,
@@ -160,7 +162,7 @@ private fun DiagramEdges(scene: TutorSpatialDiagramScene) {
                         cap = StrokeCap.Round,
                     )
                     drawLine(
-                        color = JadeActive,
+                        color = arrowColor,
                         start = end,
                         end = Offset(
                             x = arrowBase.x - perpendicularX * arrowSize * 0.55f,
@@ -345,6 +347,8 @@ private fun CircuitComponentNode(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        val symbolColor = JadeActive
+        val wireColor = JadeMuted
         Box(
             modifier = Modifier.size(52.dp),
             contentAlignment = Alignment.Center,
@@ -352,14 +356,13 @@ private fun CircuitComponentNode(
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val strokeWidth = 2.dp.toPx()
                 val centerY = size.height / 2f
-                val symbolColor = JadeActive
                 rotate(if (orientation == CircuitOrientation.VERTICAL) 90f else 0f) {
                     when (node.shape) {
                         TutorDiagramNodeShape.BATTERY -> {
                             val longPlateX = size.width / 2f - 6.dp.toPx()
                             val shortPlateX = size.width / 2f + 6.dp.toPx()
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(0f, centerY),
                                 Offset(longPlateX, centerY),
                                 strokeWidth,
@@ -377,7 +380,7 @@ private fun CircuitComponentNode(
                                 strokeWidth,
                             )
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(shortPlateX, centerY),
                                 Offset(size.width, centerY),
                                 strokeWidth,
@@ -389,7 +392,7 @@ private fun CircuitComponentNode(
                             val right = size.width - 10.dp.toPx()
                             val halfHeight = 7.dp.toPx()
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(0f, centerY),
                                 Offset(left, centerY),
                                 strokeWidth,
@@ -401,7 +404,7 @@ private fun CircuitComponentNode(
                                 style = Stroke(strokeWidth),
                             )
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(right, centerY),
                                 Offset(size.width, centerY),
                                 strokeWidth,
@@ -412,7 +415,7 @@ private fun CircuitComponentNode(
                             val radius = 14.dp.toPx()
                             val center = Offset(size.width / 2f, centerY)
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(0f, centerY),
                                 Offset(center.x - radius, centerY),
                                 strokeWidth,
@@ -432,7 +435,7 @@ private fun CircuitComponentNode(
                                 strokeWidth,
                             )
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(center.x + radius, centerY),
                                 Offset(size.width, centerY),
                                 strokeWidth,
@@ -446,13 +449,13 @@ private fun CircuitComponentNode(
                             val right = size.width - 12.dp.toPx()
                             val terminalRadius = 2.5.dp.toPx()
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(0f, centerY),
                                 Offset(left, centerY),
                                 strokeWidth,
                             )
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(right, centerY),
                                 Offset(size.width, centerY),
                                 strokeWidth,
@@ -479,7 +482,7 @@ private fun CircuitComponentNode(
                             val radius = 14.dp.toPx()
                             val centerX = size.width / 2f
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(0f, centerY),
                                 Offset(centerX - radius, centerY),
                                 strokeWidth,
@@ -491,7 +494,7 @@ private fun CircuitComponentNode(
                                 style = Stroke(strokeWidth),
                             )
                             drawLine(
-                                JadeMuted,
+                                wireColor,
                                 Offset(centerX + radius, centerY),
                                 Offset(size.width, centerY),
                                 strokeWidth,

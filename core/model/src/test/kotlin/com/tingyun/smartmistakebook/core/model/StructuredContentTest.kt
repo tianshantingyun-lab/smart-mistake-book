@@ -446,6 +446,111 @@ class StructuredContentTest {
     }
 
     @Test
+    fun `zero width and combining characters are normalized away from sanitized text`() {
+        val dangerous = "e\u0301\u200B函数\uFEFFa\u0301\u200D"
+        val result =
+            StructuredContentSanitizer.sanitize(
+                QuestionDocument(
+                    id = "question",
+                    title = dangerous,
+                    blocks = listOf(ContentBlock.Paragraph("paragraph", dangerous)),
+                ),
+            )
+        val paragraph = result.document.blocks.single() as ContentBlock.Paragraph
+
+        assertEquals("é函数á", result.document.title)
+        assertEquals("é函数á", paragraph.markdown)
+        assertFalse(
+            paragraph.markdown.any { character ->
+                character == '\u00AD' ||
+                    character == '\u180E' ||
+                    character == '\u200B' ||
+                    character == '\u200C' ||
+                    character == '\u200D' ||
+                    character == '\u2060' ||
+                    character == '\uFEFF'
+            },
+        )
+    }
+
+    @Test
+    fun `huge zero width input is bounded before normalization and leaves no residue`() {
+        val dangerous = "\u200B".repeat(100_000) + "函数"
+        val result =
+            StructuredContentSanitizer.sanitize(
+                QuestionDocument(
+                    id = "question",
+                    blocks = listOf(ContentBlock.Paragraph("paragraph", dangerous)),
+                ),
+            )
+        val paragraph = result.document.blocks.single() as ContentBlock.Paragraph
+
+        assertTrue(paragraph.markdown.length <= StructuredContentLimits.MAX_TEXT_CHARS)
+        assertEquals("函数", paragraph.markdown)
+        assertFalse(paragraph.markdown.contains('\u200B'))
+    }
+
+    @Test
+    fun `zero width prefixes cannot swallow visible text in any sanitization path`() {
+        val prefix = "\u200B".repeat(100_000)
+
+        assertEquals(
+            listOf(
+                InlineToken.Text("函数"),
+                InlineToken.LineBreak,
+                InlineToken.Text("f(x)=x^2"),
+            ),
+            SafeInlineMarkdown.parse("${prefix}函数\nf(x)=x^2"),
+        )
+        assertEquals("函数", SafeInlineMarkdown.literal("${prefix}函数"))
+        assertTrue(SafeInlineMarkdown.requiresPlainTextFallback("${prefix}<b>不能执行</b>"))
+        assertTrue(
+            SafeInlineMarkdown.parse("${prefix}<b>不能执行</b> **也不解析强调**")
+                .all { it is InlineToken.Text || it is InlineToken.LineBreak },
+        )
+        assertTrue(RestrictedFormulaText.sanitize("${prefix}\\frac{1}{2}").startsWith("\\frac"))
+        assertTrue(RestrictedFormulaText.hasUnsupportedCommand("${prefix}\\href{x}{y}"))
+
+        val result = StructuredContentSanitizer.sanitize(
+            QuestionDocument(
+                id = "${prefix}question",
+                title = "${prefix}标题",
+                blocks = listOf(
+                    ContentBlock.Figure(
+                        id = "${prefix}figure",
+                        alternativeText = "${prefix}函数折线图",
+                        schema = FigureSchema.SymbolTable(
+                            headers = listOf("${prefix}列"),
+                            rows = listOf(listOf("${prefix}值")),
+                        ),
+                    ),
+                    ContentBlock.ChoiceGroup(
+                        id = "${prefix}choices",
+                        promptMarkdown = "${prefix}请选择",
+                        choices = listOf(StructuredChoice("${prefix}choice", "${prefix}选项")),
+                    ),
+                    ContentBlock.Unknown(
+                        id = "${prefix}unknown",
+                        type = "future-block",
+                        fallbackText = "${prefix}未知内容兜底",
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals("question", result.document.id)
+        assertEquals("标题", result.document.title)
+        val figure = result.document.blocks[0] as ContentBlock.Figure
+        assertEquals("函数折线图", figure.alternativeText)
+        assertEquals(listOf("列"), (figure.schema as FigureSchema.SymbolTable).headers)
+        val choiceGroup = result.document.blocks[1] as ContentBlock.ChoiceGroup
+        assertEquals("请选择", choiceGroup.promptMarkdown)
+        assertEquals("选项", choiceGroup.choices.single().markdown)
+        val paragraph = result.document.blocks[2] as ContentBlock.Paragraph
+        assertEquals("未知内容兜底", paragraph.markdown)
+    }
+
+    @Test
     fun `empty figure descriptions and choice text receive accessible fallbacks`() {
         val result = StructuredContentSanitizer.sanitize(
             QuestionDocument(

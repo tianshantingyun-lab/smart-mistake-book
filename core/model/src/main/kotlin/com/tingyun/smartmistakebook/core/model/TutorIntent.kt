@@ -69,6 +69,9 @@ data class TutorIntentDecision(
         ) {
             "Tutor intent lookup terms are invalid"
         }
+        lookupTerms.forEach { term ->
+            StudentFacingLanguagePolicy.requirePlainLanguage(term, "Tutor intent lookup term")
+        }
         require(
             lookupTerms.isEmpty() ||
                 requestedLocalCapability in lookupCapabilities,

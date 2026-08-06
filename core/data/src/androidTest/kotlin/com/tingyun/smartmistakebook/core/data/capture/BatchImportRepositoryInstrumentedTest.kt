@@ -13,10 +13,12 @@ import android.provider.MediaStore
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.core.content.FileProvider
-import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureAssetBridge
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureSessionStateStore
+import com.tingyun.smartmistakebook.core.database.LegacyStudyDatabaseTestFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
-import com.tingyun.smartmistakebook.core.data.model.ModelTaskRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationApproval
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
@@ -76,7 +78,8 @@ class BatchImportRepositoryInstrumentedTest {
         context.deleteDatabase(databaseName)
         clearOwnedDirectory(File(context.filesDir, BATCH_IMPORT_STAGING_DIRECTORY))
         clearOwnedDirectory(File(context.filesDir, "source-assets"))
-        database = StudyDatabaseFactory.open(context, databaseName)
+            database =
+                LegacyStudyDatabaseTestFactory.openPreCutoverForTest(context, databaseName)
     }
 
     @After
@@ -105,7 +108,7 @@ class BatchImportRepositoryInstrumentedTest {
         }.exceptionOrNull()
         assertTrue(directFailure is IllegalArgumentException)
         val stoppedScope = CoroutineScope(SupervisorJob().also { it.cancel() } + Dispatchers.Default)
-        val initialRepository = BatchImportRepositoryFactory.create(
+        val initialRepository = TestOnlyLegacyBatchImportRepositoryFactory.create(
             context = context,
             database = database,
             capture = captureRepository(database),
@@ -133,10 +136,11 @@ class BatchImportRepositoryInstrumentedTest {
         database.close()
         selected.forEach { uri -> assertEquals(1, context.contentResolver.delete(uri, null, null)) }
         externalUris.removeAll(selected.toSet())
-        database = StudyDatabaseFactory.open(context, databaseName)
+        database =
+            LegacyStudyDatabaseTestFactory.openPreCutoverForTest(context, databaseName)
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
-            val rebuiltRepository = BatchImportRepositoryFactory.create(
+            val rebuiltRepository = TestOnlyLegacyBatchImportRepositoryFactory.create(
                 context = context,
                 database = database,
                 capture = captureRepository(database),
@@ -160,7 +164,7 @@ class BatchImportRepositoryInstrumentedTest {
         val selected = listOf(insertImage(), insertInvalidImage())
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
-            val repository = BatchImportRepositoryFactory.create(
+            val repository = TestOnlyLegacyBatchImportRepositoryFactory.create(
                 context = context,
                 database = database,
                 capture = captureRepository(database),
@@ -194,7 +198,7 @@ class BatchImportRepositoryInstrumentedTest {
     fun concurrentRequestReplayKeepsOnlyTheCommittedStagingSession() = runBlocking {
         val selected = listOf(insertImage(), insertImage())
         val stoppedScope = CoroutineScope(SupervisorJob().also { it.cancel() } + Dispatchers.Default)
-        val repository = BatchImportRepositoryFactory.create(
+        val repository = TestOnlyLegacyBatchImportRepositoryFactory.create(
             context = context,
             database = database,
             capture = captureRepository(database),
@@ -254,7 +258,7 @@ class BatchImportRepositoryInstrumentedTest {
         assertTrue(sessionDirectory(oldOrphan).setLastModified(1))
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
-            BatchImportRepositoryFactory.create(
+            TestOnlyLegacyBatchImportRepositoryFactory.create(
                 context = context,
                 database = database,
                 capture = captureRepository(database),
@@ -277,7 +281,7 @@ class BatchImportRepositoryInstrumentedTest {
         val source = createPdf(pageCount = 3)
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
-            val repository = BatchImportRepositoryFactory.create(
+            val repository = TestOnlyLegacyBatchImportRepositoryFactory.create(
                 context = context,
                 database = database,
                 capture = captureRepository(database),
@@ -342,11 +346,11 @@ class BatchImportRepositoryInstrumentedTest {
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
             val gateway = PageRelationGateway(CapturePageRelation.SAME_QUESTION)
-            val modelTasks = ModelTaskRepositoryFactory.create(
+            val modelTasks = RoomModelTaskRepository(
                 database = database,
                 gateway = gateway,
             )
-            val repository = BatchImportRepositoryFactory.create(
+            val repository = TestOnlyLegacyBatchImportRepositoryFactory.create(
                 context = context,
                 database = database,
                 capture = captureRepository(database),
@@ -413,11 +417,11 @@ class BatchImportRepositoryInstrumentedTest {
         val selected = listOf(insertImage(Color.YELLOW), insertImage(Color.CYAN))
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
-            val modelTasks = ModelTaskRepositoryFactory.create(
+            val modelTasks = RoomModelTaskRepository(
                 database = database,
                 gateway = PageRelationGateway(CapturePageRelation.UNSURE),
             )
-            val repository = BatchImportRepositoryFactory.create(
+            val repository = TestOnlyLegacyBatchImportRepositoryFactory.create(
                 context = context,
                 database = database,
                 capture = captureRepository(database),
@@ -460,13 +464,14 @@ class BatchImportRepositoryInstrumentedTest {
         }
     }
 
-    private fun captureRepository(store: StudyDatabasePort) = RoomCaptureWorkflowRepository(
-        store,
-        AndroidCanonicalAssetVault(context),
-        LocalQuestionTextRecognizer { _, _, _ ->
-            LocalTextRecognition(emptyList(), "fixture-no-text-v1")
-        },
-    )
+    private fun captureRepository(store: StudyDatabasePort) =
+        LegacyRoomCaptureSessionStateStore(
+            store,
+            LegacyRoomCaptureAssetBridge(AndroidCanonicalAssetVault(context)),
+            LocalQuestionTextRecognizer { _, _, _ ->
+                LocalTextRecognition(emptyList(), "fixture-no-text-v1")
+            },
+        )
 
     private fun insertImage(color: Int = Color.WHITE): Uri = insertMediaStoreImage { stream ->
         val bitmap = Bitmap.createBitmap(72, 96, Bitmap.Config.ARGB_8888).apply {

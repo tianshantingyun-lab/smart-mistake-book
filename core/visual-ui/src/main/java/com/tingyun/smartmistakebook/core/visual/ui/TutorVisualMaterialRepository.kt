@@ -4,7 +4,6 @@ import android.content.Context
 import com.google.android.filament.filamat.MaterialBuilder
 import java.io.File
 import java.nio.ByteBuffer
-import java.nio.file.StandardCopyOption
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -25,19 +24,11 @@ internal object TutorVisualMaterialRepository {
             cacheFile.parentFile?.mkdirs()
             val staging = File(cacheFile.parentFile, "${cacheFile.name}.staging")
             staging.outputStream().use { it.write(bytes) }
-            runCatching {
-                java.nio.file.Files.move(
-                    staging.toPath(),
-                    cacheFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.ATOMIC_MOVE,
-                )
-            }.getOrElse {
-                java.nio.file.Files.move(
-                    staging.toPath(),
-                    cacheFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING,
-                )
+            if (!staging.renameTo(cacheFile)) {
+                cacheFile.outputStream().use { output ->
+                    staging.inputStream().use { it.copyTo(output) }
+                }
+                if (!staging.delete()) staging.deleteOnExit()
             }
         }
         ByteBuffer.wrap(bytes)

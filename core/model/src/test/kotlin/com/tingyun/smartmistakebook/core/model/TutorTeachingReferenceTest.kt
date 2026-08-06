@@ -1,10 +1,48 @@
 package com.tingyun.smartmistakebook.core.model
 
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeNodeRef
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TutorTeachingReferenceTest {
+    @Test
+    fun `model task codec durably round trips exact teaching provenance`() {
+        val node = KnowledgeNodeRef(
+            subject = SubjectKind.MATH,
+            knowledgeNodeId = "knowledge:math:function-monotonicity",
+            taxonomyVersion = "taxonomy-v1",
+            knowledgePackVersion = "pack-v3",
+        )
+        val reference = workedExample().copy(
+            boundKnowledgeNodes = listOf(node),
+            manifestFingerprint = "a".repeat(64),
+            activationGeneration = 9,
+        )
+        val request = ModelTaskRequest(
+            requestId = "tutor-plan-provenance-round-trip",
+            input = TutorPlanInput(
+                sessionId = "session-1",
+                draftRevisionNumber = 1,
+                subject = SubjectKind.MATH.name,
+                questionDocument = question(),
+                reviewedTeachingReferences = listOf(reference),
+            ),
+            occurredAtEpochMillis = 1,
+        )
+
+        val encoded = ModelTaskCodec.encodeRequest(request)
+        val decoded = ModelTaskCodec.decodeRequest(encoded)
+        val decodedReference = (decoded.input as TutorPlanInput)
+            .reviewedTeachingReferences
+            .single()
+
+        assertEquals(reference, decodedReference)
+        assertTrue(decodedReference.hasCompleteCatalogProvenance)
+        assertTrue(encoded.contains("\"refSchemaVersion\":1"))
+        assertTrue(encoded.contains("\"packVersion\":\"pack-v3\""))
+    }
+
     @Test
     fun `worked examples are valid bounded teaching context for a learner supplied question`() {
         val reference = workedExample()

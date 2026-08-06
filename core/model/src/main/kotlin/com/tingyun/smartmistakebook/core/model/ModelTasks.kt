@@ -1,10 +1,10 @@
 package com.tingyun.smartmistakebook.core.model
 
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 
 @Serializable
 enum class ModelTaskKind {
@@ -283,6 +283,12 @@ data class ModelTaskRequest(
     val occurredAtEpochMillis: Long,
     val egressManifest: ModelEgressManifest? = null,
 ) {
+    @Transient
+    internal var decodedRequestFingerprintOverride: String? = null
+
+    @Transient
+    internal var decodedOperationFingerprintOverride: String? = null
+
     init {
         require(schemaVersion in MIN_SUPPORTED_SCHEMA_VERSION..CURRENT_SCHEMA_VERSION) {
             "Unsupported model task schema"
@@ -310,6 +316,10 @@ data class ModelTaskRequest(
             schemaVersion >= TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION ||
                 (input as? TutorRespondInput)?.selectedChoiceId == null,
         ) { "Legacy tutor response requests cannot contain a selected choice id" }
+        require(
+            schemaVersion >= OPEN_RESPONSE_EVALUATION_SCHEMA_VERSION ||
+                input !is TutorOpenResponseEvaluationInput,
+        ) { "Legacy model task requests cannot contain open-response evaluation work" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -324,7 +334,9 @@ data class ModelTaskRequest(
         const val TUTOR_VISUAL_SCHEMA_VERSION = 5
         const val PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION = 6
         const val TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION = 7
-        const val CURRENT_SCHEMA_VERSION = TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION
+        const val TUTOR_TEACHING_CONSTRAINT_SCHEMA_VERSION = 8
+        const val OPEN_RESPONSE_EVALUATION_SCHEMA_VERSION = 9
+        const val CURRENT_SCHEMA_VERSION = OPEN_RESPONSE_EVALUATION_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -508,6 +520,9 @@ private fun NormalizedSourceRegion.overlapRatioOfSmaller(other: NormalizedSource
     return if (smallerArea == 0.0) 1.0 else overlap / smallerArea
 }
 
+private fun NormalizedSourceRegion.contains(other: NormalizedSourceRegion): Boolean =
+    other.left >= left && other.top >= top && other.right <= right && other.bottom <= bottom
+
 @Serializable
 sealed interface ModelTaskOutput
 
@@ -561,6 +576,7 @@ enum class ModelTaskCompletionIssueCode {
     ORGANIZATION_UNKNOWN_ERROR_EVIDENCE,
     ORGANIZATION_ERROR_EVIDENCE_LAYER_MISMATCH,
     ORGANIZATION_RESOLVED_ERROR_REQUIRES_NON_QUESTION_EVIDENCE,
+    OPEN_RESPONSE_AUTHORITY_OR_SCOPE_MISMATCH,
 }
 
 data class ModelTaskCompletionIssue(
@@ -626,6 +642,24 @@ object ModelTaskCompletionValidator {
         } else {
             listOf(typeMismatch())
         }
+        is TutorOpenResponseEvaluationInput ->
+            if (output is TutorOpenResponseEvaluationCandidateOutput) {
+                runCatching {
+                    OpenResponseEvaluationModelTaskProtocol.requireValidCompletion(input, output)
+                }.fold(
+                    onSuccess = { emptyList() },
+                    onFailure = {
+                        listOf(
+                            ModelTaskCompletionIssue(
+                                ModelTaskCompletionIssueCode
+                                    .OPEN_RESPONSE_AUTHORITY_OR_SCOPE_MISMATCH,
+                            ),
+                        )
+                    },
+                )
+            } else {
+                listOf(typeMismatch())
+            }
         is ProblemOrganizationInput -> if (output is ProblemOrganizationOutput) {
             validateProblemOrganization(
                 input = input,
@@ -778,8 +812,8 @@ object ModelTaskCompletionValidator {
         ) {
             add(ModelTaskCompletionIssue(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH))
         }
-        val disclosedLabels = input.relevantLearningEvidence
-            .mapTo(mutableSetOf(), TutorKnowledgeEvidence::displayName)
+        val disclosedLabels = input.teachingConstraints
+            .mapTo(mutableSetOf(), TutorKnowledgeGuidance::label)
         if (output.plan.targetedEvidenceLabels.any { it !in disclosedLabels }) {
             add(
                 ModelTaskCompletionIssue(
@@ -787,10 +821,10 @@ object ModelTaskCompletionValidator {
                 ),
             )
         }
-        val masteredLabels = input.relevantLearningEvidence
-            .filter { it.level == TutorEvidenceLevel.MASTERED }
-            .mapTo(mutableSetOf(), TutorKnowledgeEvidence::displayName)
-        if (output.plan.targetedEvidenceLabels.any { it in masteredLabels }) {
+        val skippedLabels = input.teachingConstraints
+            .filter { it.constraint == TutorTeachingConstraint.SKIP_BASIC_PROMPT }
+            .mapTo(mutableSetOf(), TutorKnowledgeGuidance::label)
+        if (output.plan.targetedEvidenceLabels.any { it in skippedLabels }) {
             add(
                 ModelTaskCompletionIssue(
                     ModelTaskCompletionIssueCode.MODEL_TARGETED_MASTERED_EVIDENCE,
@@ -801,6 +835,16 @@ object ModelTaskCompletionValidator {
             add(
                 ModelTaskCompletionIssue(
                     ModelTaskCompletionIssueCode.MODEL_ASSIGNED_TRUSTED_KNOWLEDGE_IDS,
+                ),
+            )
+        }
+        if (
+            output.plan.responseIntent != null &&
+            output.locallyConstrainedFor(input) != output
+        ) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION,
                 ),
             )
         }
@@ -876,16 +920,25 @@ object ModelTaskCompletionValidator {
         input: TutorLobbyInput,
         output: TutorLobbyOutput,
     ): List<ModelTaskCompletionIssue> = buildList {
-        if (
+        val hasContextMismatch =
             output.conversationId != input.conversationId ||
-            output.messageOrdinal != input.messageOrdinal
-        ) {
+            output.messageOrdinal != input.messageOrdinal ||
+            output.explanationMode != input.explanationMode ||
+            output.modeVersion != input.modeVersion
+        if (hasContextMismatch) {
             add(ModelTaskCompletionIssue(ModelTaskCompletionIssueCode.TUTOR_CONTEXT_MISMATCH))
         }
         if (
             output.intentDecision.requestedLocalCapability !in
             TutorLobbyOutput.ALLOWED_LOCAL_CAPABILITIES
         ) {
+            add(
+                ModelTaskCompletionIssue(
+                    ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION,
+                ),
+            )
+        }
+        if (!hasContextMismatch && output.locallyConstrainedFor(input) != output) {
             add(
                 ModelTaskCompletionIssue(
                     ModelTaskCompletionIssueCode.TUTOR_INTENT_BOUNDARY_VIOLATION,
@@ -1167,8 +1220,22 @@ object ModelTaskCodec {
     fun encodeRequest(value: ModelTaskRequest): String =
         json.encodeToString(ModelTaskRequest.serializer(), value).bounded()
 
-    fun decodeRequest(value: String): ModelTaskRequest =
-        json.decodeFromString(ModelTaskRequest.serializer(), value.bounded())
+    fun decodeRequest(value: String): ModelTaskRequest {
+        val encoded = value.bounded()
+        val request = json.decodeFromString(ModelTaskRequest.serializer(), encoded)
+        val rawInput = json.parseToJsonElement(encoded).jsonObject
+            .getValue("input")
+            .jsonObject
+        if (
+            (request.input is TutorPlanInput || request.input is TutorRespondInput) &&
+            rawInput.keys.any(LEGACY_TUTOR_LEARNING_FIELDS::contains)
+        ) {
+            request.decodedRequestFingerprintOverride = encoded.sha256()
+            request.decodedOperationFingerprintOverride =
+                "${request.input.kind.name}\n$rawInput".sha256()
+        }
+        return request
+    }
 
     fun encodeOutput(value: ModelTaskOutput): String =
         json.encodeToString(ModelTaskOutput.serializer(), value).bounded()
@@ -1185,168 +1252,12 @@ object ModelTaskCodec {
     private fun String.bounded(): String = also {
         require(length <= MAX_ENCODED_CHARS) { "Model task snapshot exceeds budget" }
     }
-}
 
-object ModelTaskFingerprint {
-    fun of(request: ModelTaskRequest): String = MessageDigest.getInstance("SHA-256")
-        .digest(request.fingerprintPayload().toByteArray(StandardCharsets.UTF_8))
-        .joinToString(separator = "") { byte -> "%02x".format(byte) }
-}
-
-/**
- * Stable identity for one semantic model operation across transport envelopes.
- *
- * A request id, consent receipt, provider choice, configuration version, scheduling time, or
- * retry timestamp may legitimately change when the student explicitly resumes an operation. None
- * of those changes creates a fresh remote-dispatch budget. Only the immutable typed task input
- * participates in this fingerprint.
- */
-object ModelTaskLogicalOperationFingerprint {
-    fun of(request: ModelTaskRequest): String = fingerprint(
-        operationPayload(request.input, request.schemaVersion),
+    private val LEGACY_TUTOR_LEARNING_FIELDS = setOf(
+        "relevantLearningEvidence",
+        "projectionIsCurrent",
+        "questionLearningEvidence",
     )
-
-    fun of(input: ModelTaskInput): String = fingerprint(
-        operationPayload(input, ModelTaskRequest.CURRENT_SCHEMA_VERSION),
-    )
-
-    private fun fingerprint(payload: String): String = MessageDigest.getInstance("SHA-256")
-        .digest(payload.toByteArray(StandardCharsets.UTF_8))
-        .joinToString(separator = "") { byte -> "%02x".format(byte) }
-
-    private fun operationPayload(input: ModelTaskInput, schemaVersion: Int): String =
-        buildString {
-            append(input.kind.name)
-            append('\n')
-            append(
-                logicalOperationJson.encodeToString(ModelTaskInput.serializer(), input)
-                    .withoutEmptyPageComparison(input)
-                    .withoutLegacyTutorRespondChoiceId(input, schemaVersion),
-            )
-        }
-}
-
-private val logicalOperationJson = Json {
-    classDiscriminator = "type"
-    encodeDefaults = true
-    explicitNulls = true
-    ignoreUnknownKeys = false
-}
-
-private val legacyFingerprintJson = Json {
-    classDiscriminator = "type"
-    encodeDefaults = true
-    explicitNulls = true
-    ignoreUnknownKeys = false
-}
-
-@Serializable
-private data class LegacyModelTaskRequest(
-    val schemaVersion: Int,
-    val requestId: String,
-    val input: ModelTaskInput,
-    val occurredAtEpochMillis: Long,
-)
-
-private fun ModelTaskRequest.fingerprintPayload(): String =
-    if (schemaVersion == ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION) {
-        legacyFingerprintJson.encodeToString(
-            LegacyModelTaskRequest.serializer(),
-            LegacyModelTaskRequest(schemaVersion, requestId, input, occurredAtEpochMillis),
-        )
-            .withoutLegacyTutorStudentContext(input)
-            .withoutEmptyPageComparison(input)
-    } else {
-        ModelTaskCodec.encodeRequest(this).let { encoded ->
-            encoded
-                .let {
-                    if (schemaVersion < ModelTaskRequest.TUTOR_STUDENT_CONTEXT_SCHEMA_VERSION) {
-                        it.withoutLegacyTutorStudentContext(input)
-                    } else {
-                        it
-                    }
-                }
-                .let {
-                    if (schemaVersion < ModelTaskRequest.CAPTURE_PAGE_RELATION_SCHEMA_VERSION) {
-                        it.withoutEmptyPageComparison(input)
-                    } else {
-                        it
-                    }
-                }
-                .let {
-                    it.withoutLegacyTutorRespondChoiceId(input, schemaVersion)
-                }
-        }
-    }
-
-private fun String.withoutLegacyTutorStudentContext(input: ModelTaskInput): String =
-    if (input is TutorPlanInput) {
-        replace(",\"priorCycleStudentMessages\":[]", "")
-    } else {
-        this
-    }
-
-private fun String.withoutEmptyPageComparison(input: ModelTaskInput): String =
-    if (input is CaptureAssessmentInput && input.followingSourceAssets.isEmpty()) {
-        replace(",\"followingSourceAssets\":[]", "")
-    } else {
-        this
-    }
-
-private fun String.withoutLegacyTutorRespondChoiceId(
-    input: ModelTaskInput,
-    schemaVersion: Int,
-): String =
-    if (
-        schemaVersion < ModelTaskRequest.TUTOR_RESPOND_CHOICE_ID_SCHEMA_VERSION &&
-        input is TutorRespondInput &&
-        input.selectedChoiceId == null
-    ) {
-        replace(",\"selectedChoiceId\":null", "")
-    } else {
-        this
-    }
-
-internal fun NormalizedSourceRegion.isValidModelRegion(): Boolean =
-    left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite() &&
-        left in 0.0..1.0 && top in 0.0..1.0 && right in 0.0..1.0 && bottom in 0.0..1.0 &&
-        left < right && top < bottom
-
-private fun NormalizedSourceRegion.contains(other: NormalizedSourceRegion): Boolean =
-    other.left >= left && other.top >= top && other.right <= right && other.bottom <= bottom
-
-internal fun Char.isLowerHexDigit(): Boolean = this in '0'..'9' || this in 'a'..'f'
-
-internal fun String.requireSafeModelText(
-    label: String,
-    maxChars: Int,
-    allowLineBreaks: Boolean,
-) {
-    require(isNotBlank()) { "$label must not be blank" }
-    require(length <= maxChars) { "$label exceeds budget" }
-    require(none { it.isForbiddenModelTextCharacter(allowLineBreaks) }) {
-        "$label contains unsafe control characters"
-    }
-}
-
-internal fun String.requireSafeTutorStudentMessage(label: String, maxChars: Int) {
-    try {
-        requireSafeModelText(label, maxChars, allowLineBreaks = true)
-    } catch (invalid: IllegalArgumentException) {
-        throw InvalidTutorStudentMessageException(
-            invalid.message ?: "$label is invalid",
-        )
-    }
-}
-
-private fun Char.isForbiddenModelTextCharacter(allowLineBreaks: Boolean): Boolean {
-    val allowedControl = allowLineBreaks && (this == '\n' || this == '\r' || this == '\t')
-    return (isISOControl() && !allowedControl) ||
-        this == '\u061C' ||
-        this == '\u200E' ||
-        this == '\u200F' ||
-        this in '\u202A'..'\u202E' ||
-        this in '\u2066'..'\u2069'
 }
 
 internal const val MAX_CAPTURE_SOURCE_DIMENSION = 20_000

@@ -1,0 +1,494 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "cbdbc58a43dac2223d91aaa9ccde101a",
+    "entities": [
+      {
+        "tableName": "derived_non_authoritative_catalog_generation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`generation_id` TEXT NOT NULL, `learner_fingerprint` TEXT NOT NULL, `state` TEXT NOT NULL, `revision_fingerprint` TEXT NOT NULL, `student_change_version` INTEGER NOT NULL, `mastery_ledger_sequence` INTEGER NOT NULL, `mastery_as_of_epoch_millis` INTEGER NOT NULL, `knowledge_activation_generation` INTEGER NOT NULL, `knowledge_manifest_fingerprint` TEXT NOT NULL, `knowledge_taxonomy_version` TEXT NOT NULL, `knowledge_pack_version` TEXT NOT NULL, `cursor_authentication_key` TEXT NOT NULL, `indexed_entry_count` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`generation_id`))",
+        "fields": [
+          {
+            "fieldPath": "generationId",
+            "columnName": "generation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerFingerprint",
+            "columnName": "learner_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revisionFingerprint",
+            "columnName": "revision_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "studentChangeVersion",
+            "columnName": "student_change_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "masteryLedgerSequence",
+            "columnName": "mastery_ledger_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "masteryAsOfEpochMillis",
+            "columnName": "mastery_as_of_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeActivationGeneration",
+            "columnName": "knowledge_activation_generation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeManifestFingerprint",
+            "columnName": "knowledge_manifest_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeTaxonomyVersion",
+            "columnName": "knowledge_taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgePackVersion",
+            "columnName": "knowledge_pack_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cursorAuthenticationKey",
+            "columnName": "cursor_authentication_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "indexedEntryCount",
+            "columnName": "indexed_entry_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "generation_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_derived_non_authoritative_catalog_generation_learner_fingerprint_state",
+            "unique": false,
+            "columnNames": [
+              "learner_fingerprint",
+              "state"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_generation_learner_fingerprint_state` ON `${TABLE_NAME}` (`learner_fingerprint`, `state`)"
+          },
+          {
+            "name": "index_derived_non_authoritative_catalog_generation_revision_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "revision_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_generation_revision_fingerprint` ON `${TABLE_NAME}` (`revision_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "derived_non_authoritative_catalog_entry",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`rowid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `generation_id` TEXT NOT NULL, `entry_id` TEXT NOT NULL, `problem_id` TEXT NOT NULL, `problem_revision_id` TEXT NOT NULL, `practice_unit_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `title` TEXT NOT NULL, `practice_unit_title` TEXT NOT NULL, `section_stable_ids_wire` TEXT NOT NULL, `knowledge_nodes_wire` TEXT NOT NULL, `knowledge_display_names_wire` TEXT NOT NULL, `mastery_status` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `changed_at_epoch_millis` INTEGER NOT NULL, `normalized_search_text` TEXT NOT NULL, `tokenized_search_text` TEXT NOT NULL, FOREIGN KEY(`generation_id`) REFERENCES `derived_non_authoritative_catalog_generation`(`generation_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "rowId",
+            "columnName": "rowid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generationId",
+            "columnName": "generation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entryId",
+            "columnName": "entry_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemRevisionId",
+            "columnName": "problem_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceUnitTitle",
+            "columnName": "practice_unit_title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectionStableIdsWire",
+            "columnName": "section_stable_ids_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodesWire",
+            "columnName": "knowledge_nodes_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeDisplayNamesWire",
+            "columnName": "knowledge_display_names_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "masteryStatus",
+            "columnName": "mastery_status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favorite",
+            "columnName": "favorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "changedAtEpochMillis",
+            "columnName": "changed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normalizedSearchText",
+            "columnName": "normalized_search_text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tokenizedSearchText",
+            "columnName": "tokenized_search_text",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowid"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_derived_non_authoritative_catalog_entry_generation_id_entry_id",
+            "unique": true,
+            "columnNames": [
+              "generation_id",
+              "entry_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_entry_generation_id_entry_id` ON `${TABLE_NAME}` (`generation_id`, `entry_id`)"
+          },
+          {
+            "name": "index_derived_non_authoritative_catalog_entry_generation_id_changed_at_epoch_millis_problem_id_entry_id",
+            "unique": false,
+            "columnNames": [
+              "generation_id",
+              "changed_at_epoch_millis",
+              "problem_id",
+              "entry_id"
+            ],
+            "orders": [
+              "ASC",
+              "DESC",
+              "DESC",
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_entry_generation_id_changed_at_epoch_millis_problem_id_entry_id` ON `${TABLE_NAME}` (`generation_id` ASC, `changed_at_epoch_millis` DESC, `problem_id` DESC, `entry_id` DESC)"
+          },
+          {
+            "name": "index_derived_non_authoritative_catalog_entry_generation_id_subject_mastery_status",
+            "unique": false,
+            "columnNames": [
+              "generation_id",
+              "subject",
+              "mastery_status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_entry_generation_id_subject_mastery_status` ON `${TABLE_NAME}` (`generation_id`, `subject`, `mastery_status`)"
+          },
+          {
+            "name": "index_derived_non_authoritative_catalog_entry_generation_id_mastery_status",
+            "unique": false,
+            "columnNames": [
+              "generation_id",
+              "mastery_status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_entry_generation_id_mastery_status` ON `${TABLE_NAME}` (`generation_id`, `mastery_status`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "derived_non_authoritative_catalog_generation",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "generation_id"
+            ],
+            "referencedColumns": [
+              "generation_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "derived_non_authoritative_catalog_entry_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`tokenized_search_text` TEXT NOT NULL, tokenize=unicode61, content=`derived_non_authoritative_catalog_entry`)",
+        "fields": [
+          {
+            "fieldPath": "tokenizedSearchText",
+            "columnName": "tokenized_search_text",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": []
+        },
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "unicode61",
+          "tokenizerArgs": [],
+          "contentTable": "derived_non_authoritative_catalog_entry",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_derived_non_authoritative_catalog_entry_fts_BEFORE_UPDATE BEFORE UPDATE ON `derived_non_authoritative_catalog_entry` BEGIN DELETE FROM `derived_non_authoritative_catalog_entry_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_derived_non_authoritative_catalog_entry_fts_BEFORE_DELETE BEFORE DELETE ON `derived_non_authoritative_catalog_entry` BEGIN DELETE FROM `derived_non_authoritative_catalog_entry_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_derived_non_authoritative_catalog_entry_fts_AFTER_UPDATE AFTER UPDATE ON `derived_non_authoritative_catalog_entry` BEGIN INSERT INTO `derived_non_authoritative_catalog_entry_fts`(`docid`, `tokenized_search_text`) VALUES (NEW.`rowid`, NEW.`tokenized_search_text`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_derived_non_authoritative_catalog_entry_fts_AFTER_INSERT AFTER INSERT ON `derived_non_authoritative_catalog_entry` BEGIN INSERT INTO `derived_non_authoritative_catalog_entry_fts`(`docid`, `tokenized_search_text`) VALUES (NEW.`rowid`, NEW.`tokenized_search_text`); END"
+        ]
+      },
+      {
+        "tableName": "derived_non_authoritative_catalog_section",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_rowid` INTEGER NOT NULL, `generation_id` TEXT NOT NULL, `section_stable_id` TEXT NOT NULL, PRIMARY KEY(`entry_rowid`, `section_stable_id`), FOREIGN KEY(`entry_rowid`) REFERENCES `derived_non_authoritative_catalog_entry`(`rowid`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "entryRowId",
+            "columnName": "entry_rowid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generationId",
+            "columnName": "generation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectionStableId",
+            "columnName": "section_stable_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "entry_rowid",
+            "section_stable_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_derived_non_authoritative_catalog_section_entry_rowid",
+            "unique": false,
+            "columnNames": [
+              "entry_rowid"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_section_entry_rowid` ON `${TABLE_NAME}` (`entry_rowid`)"
+          },
+          {
+            "name": "index_derived_non_authoritative_catalog_section_generation_id_section_stable_id",
+            "unique": false,
+            "columnNames": [
+              "generation_id",
+              "section_stable_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_section_generation_id_section_stable_id` ON `${TABLE_NAME}` (`generation_id`, `section_stable_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "derived_non_authoritative_catalog_entry",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "entry_rowid"
+            ],
+            "referencedColumns": [
+              "rowid"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "derived_non_authoritative_catalog_knowledge",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_rowid` INTEGER NOT NULL, `generation_id` TEXT NOT NULL, `knowledge_subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `knowledge_taxonomy_version` TEXT NOT NULL, `knowledge_pack_version` TEXT NOT NULL, PRIMARY KEY(`entry_rowid`, `knowledge_subject`, `knowledge_node_id`, `knowledge_taxonomy_version`, `knowledge_pack_version`), FOREIGN KEY(`entry_rowid`) REFERENCES `derived_non_authoritative_catalog_entry`(`rowid`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "entryRowId",
+            "columnName": "entry_rowid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generationId",
+            "columnName": "generation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeSubject",
+            "columnName": "knowledge_subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeTaxonomyVersion",
+            "columnName": "knowledge_taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgePackVersion",
+            "columnName": "knowledge_pack_version",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "entry_rowid",
+            "knowledge_subject",
+            "knowledge_node_id",
+            "knowledge_taxonomy_version",
+            "knowledge_pack_version"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_derived_non_authoritative_catalog_knowledge_entry_rowid",
+            "unique": false,
+            "columnNames": [
+              "entry_rowid"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_knowledge_entry_rowid` ON `${TABLE_NAME}` (`entry_rowid`)"
+          },
+          {
+            "name": "index_derived_non_authoritative_catalog_knowledge_generation_id_knowledge_subject_knowledge_node_id_knowledge_taxonomy_version_knowledge_pack_version",
+            "unique": false,
+            "columnNames": [
+              "generation_id",
+              "knowledge_subject",
+              "knowledge_node_id",
+              "knowledge_taxonomy_version",
+              "knowledge_pack_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_derived_non_authoritative_catalog_knowledge_generation_id_knowledge_subject_knowledge_node_id_knowledge_taxonomy_version_knowledge_pack_version` ON `${TABLE_NAME}` (`generation_id`, `knowledge_subject`, `knowledge_node_id`, `knowledge_taxonomy_version`, `knowledge_pack_version`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "derived_non_authoritative_catalog_entry",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "entry_rowid"
+            ],
+            "referencedColumns": [
+              "rowid"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cbdbc58a43dac2223d91aaa9ccde101a')"
+    ]
+  }
+}

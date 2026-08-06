@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":core:model"))
     implementation(libs.androidx.room3.runtime)
     implementation(libs.androidx.sqlite.framework)
+    implementation(libs.kotlinx.serialization.json)
     ksp(libs.androidx.room3.compiler)
 
     testImplementation(libs.junit)

@@ -324,9 +324,16 @@ private fun ProgramCanvas(
     dashPathEffect: PathEffect,
 ) {
     val density = LocalDensity.current
+    val axisColor = Outline
+    val pathColor = JadeMuted
+    val linkColor = InkSecondary
+    val vectorColor = JadeActive
+    val entityAccentColor = JadeActive
+    val entityFillColor = JadeSoft
+    val labelColor = InkSecondary
     val labelPaint = remember(density) {
         AndroidPaint(AndroidPaint.ANTI_ALIAS_FLAG).apply {
-            color = InkSecondary.toArgb()
+            color = labelColor.toArgb()
             textSize = with(density) { 12.sp.toPx() }
             textAlign = AndroidPaint.Align.LEFT
         }
@@ -351,9 +358,15 @@ private fun ProgramCanvas(
                 xUnit = scene.xUnit,
                 yUnit = scene.yUnit,
                 labelPaint = labelPaint,
+                axisColor = axisColor,
             )
         }
-        drawProgramPaths(plan.paths, plan.bounds, viewport)
+        drawProgramPaths(
+            paths = plan.paths,
+            bounds = plan.bounds,
+            viewport = viewport,
+            color = pathColor,
+        )
         drawProgramLinks(
             links = plan.links,
             entities = frame.entities,
@@ -361,6 +374,8 @@ private fun ProgramCanvas(
             viewport = viewport,
             labelPaint = labelPaint,
             dashPathEffect = dashPathEffect,
+            linkColor = linkColor,
+            arrowColor = vectorColor,
         )
         drawProgramVectors(
             vectors = frame.vectors,
@@ -368,11 +383,14 @@ private fun ProgramCanvas(
             bounds = plan.bounds,
             viewport = viewport,
             labelPaint = labelPaint,
+            color = vectorColor,
         )
         frame.entities.forEach { entity ->
             drawProgramEntity(
                 entity = entity,
                 position = plan.bounds.toCanvas(entity.x, entity.y, viewport),
+                accentColor = entityAccentColor,
+                fillColor = entityFillColor,
             )
         }
     }
@@ -384,8 +402,8 @@ private fun DrawScope.drawProgramAxes(
     xUnit: String?,
     yUnit: String?,
     labelPaint: AndroidPaint,
+    axisColor: Color,
 ) {
-    val axisColor = Outline
     if (0.0 in bounds.minX..bounds.maxX) {
         val x = bounds.toCanvas(0.0, bounds.minY, viewport).x
         drawLine(axisColor, Offset(x, viewport.top), Offset(x, viewport.bottom), 1.dp.toPx())
@@ -416,13 +434,14 @@ private fun DrawScope.drawProgramPaths(
     paths: List<ProgramPath>,
     bounds: ProgramBounds,
     viewport: Rect,
+    color: Color,
 ) {
     paths.forEach { path ->
         for (index in 0 until path.points.lastIndex) {
             val start = path.points[index].let { bounds.toCanvas(it.x, it.y, viewport) }
             val end = path.points[index + 1].let { bounds.toCanvas(it.x, it.y, viewport) }
             drawLine(
-                color = JadeMuted,
+                color = color,
                 start = start,
                 end = end,
                 strokeWidth = 2.dp.toPx(),
@@ -439,6 +458,8 @@ private fun DrawScope.drawProgramLinks(
     viewport: Rect,
     labelPaint: AndroidPaint,
     dashPathEffect: PathEffect,
+    linkColor: Color,
+    arrowColor: Color,
 ) {
     links.forEach { command ->
         val startEntity =
@@ -448,7 +469,7 @@ private fun DrawScope.drawProgramLinks(
         val start = bounds.toCanvas(startEntity.x, startEntity.y, viewport)
         val end = bounds.toCanvas(endEntity.x, endEntity.y, viewport)
         drawLine(
-            color = InkSecondary,
+            color = linkColor,
             start = start,
             end = end,
             strokeWidth = 2.dp.toPx(),
@@ -458,7 +479,7 @@ private fun DrawScope.drawProgramLinks(
             cap = StrokeCap.Round,
         )
         if (command.style == TutorVisualLineStyle.ARROW) {
-            drawArrowHead(start, end, InkSecondary)
+            drawArrowHead(start, end, arrowColor)
         }
         command.label?.let { label ->
             drawProgramLabel(
@@ -477,6 +498,7 @@ private fun DrawScope.drawProgramVectors(
     bounds: ProgramBounds,
     viewport: Rect,
     labelPaint: AndroidPaint,
+    color: Color,
 ) {
     vectors.forEach { vector ->
         val origin =
@@ -484,13 +506,13 @@ private fun DrawScope.drawProgramVectors(
         val start = bounds.toCanvas(origin.x, origin.y, viewport)
         val end = bounds.toCanvas(origin.x + vector.x, origin.y + vector.y, viewport)
         drawLine(
-            color = JadeActive,
+            color = color,
             start = start,
             end = end,
             strokeWidth = 3.dp.toPx(),
             cap = StrokeCap.Round,
         )
-        drawArrowHead(start, end, JadeActive)
+        drawArrowHead(start, end, color)
         drawProgramLabel(
             text = vector.label,
             anchor = (start + end) / 2f - Offset(0f, 7.dp.toPx()),
@@ -536,17 +558,22 @@ private fun DrawScope.drawArrowHead(start: Offset, end: Offset, color: Color) {
     drawLine(color, end, base - perpendicular * headWidth, 2.dp.toPx(), cap = StrokeCap.Round)
 }
 
-private fun DrawScope.drawProgramEntity(entity: TutorVisualEntityState, position: Offset) {
+private fun DrawScope.drawProgramEntity(
+    entity: TutorVisualEntityState,
+    position: Offset,
+    accentColor: Color,
+    fillColor: Color,
+) {
     when (entity.shape) {
         TutorVisualEntityShape.POINT -> drawCircle(
-            color = JadeActive,
+            color = accentColor,
             radius = 5.dp.toPx(),
             center = position,
         )
         TutorVisualEntityShape.CIRCLE -> {
-            drawCircle(color = JadeSoft, radius = 15.dp.toPx(), center = position)
+            drawCircle(color = fillColor, radius = 15.dp.toPx(), center = position)
             drawCircle(
-                color = JadeActive,
+                color = accentColor,
                 radius = 15.dp.toPx(),
                 center = position,
                 style = Stroke(width = 2.dp.toPx()),
@@ -555,13 +582,13 @@ private fun DrawScope.drawProgramEntity(entity: TutorVisualEntityState, position
         TutorVisualEntityShape.BLOCK -> {
             val blockSize = Size(34.dp.toPx(), 26.dp.toPx())
             drawRoundRect(
-                color = JadeSoft,
+                color = fillColor,
                 topLeft = position - Offset(blockSize.width / 2f, blockSize.height / 2f),
                 size = blockSize,
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(7.dp.toPx()),
             )
             drawRoundRect(
-                color = JadeActive,
+                color = accentColor,
                 topLeft = position - Offset(blockSize.width / 2f, blockSize.height / 2f),
                 size = blockSize,
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(7.dp.toPx()),

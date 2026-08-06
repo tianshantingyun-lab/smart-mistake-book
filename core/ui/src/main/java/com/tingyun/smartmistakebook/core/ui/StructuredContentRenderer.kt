@@ -153,6 +153,7 @@ fun SafeMarkdownText(
     onContentReady: (() -> Unit)? = null,
 ) {
     val displayText = markdown.ifBlank { emptyFallback.orEmpty() }
+    val codeBackground = JadeSoft
     val parsed = produceState(
         initialValue = SafeMarkdownParseResult(
             source = "",
@@ -165,7 +166,7 @@ fun SafeMarkdownText(
         value = SafeMarkdownParseResult(
             source = displayText,
             contentIdentity = contentIdentity,
-            annotated = parseSafeMarkdown(displayText),
+            annotated = parseSafeMarkdown(displayText, codeBackground = codeBackground),
         )
     }.value
     val readyNotificationSent = remember(displayText, contentIdentity) {
@@ -205,8 +206,9 @@ fun StreamingSafeMarkdownText(
     modifier: Modifier = Modifier,
     color: Color = Ink,
 ) {
+    val codeBackground = JadeSoft
     val parser = remember(contentIdentity) {
-        IncrementalSafeMarkdownParser()
+        IncrementalSafeMarkdownParser(codeBackground = codeBackground)
     }
     val parseKey = StreamingMarkdownParseKey(
         stableContent = snapshot.stableContent,
@@ -252,6 +254,7 @@ fun StreamingSafeMarkdownText(
     color: Color = Ink,
 ) {
     val visibleMarkdown = stableMarkdown + provisionalMarkdown
+    val codeBackground = JadeSoft
     val parsedStable = produceState(
         initialValue = SafeMarkdownParseResult(
             source = "",
@@ -264,7 +267,7 @@ fun StreamingSafeMarkdownText(
         value = SafeMarkdownParseResult(
             source = stableMarkdown,
             contentIdentity = contentIdentity,
-            annotated = parseSafeMarkdown(stableMarkdown),
+            annotated = parseSafeMarkdown(stableMarkdown, codeBackground = codeBackground),
         )
     }.value
     val parsedVisible = produceState(
@@ -279,7 +282,7 @@ fun StreamingSafeMarkdownText(
         value = SafeMarkdownParseResult(
             source = visibleMarkdown,
             contentIdentity = contentIdentity,
-            annotated = parseSafeMarkdown(visibleMarkdown),
+            annotated = parseSafeMarkdown(visibleMarkdown, codeBackground = codeBackground),
         )
     }.value
     Text(
@@ -495,6 +498,7 @@ private fun CartesianFigure(
     val primaryColor = JadeActive
     val secondaryColor = InkSecondary
     val emphasisColor = ErrorWarm
+    val dataLabelColor = Ink
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
@@ -532,7 +536,7 @@ private fun CartesianFigure(
             textSize = 11.sp.toPx()
         }
         val dataLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Ink.toArgb()
+            color = dataLabelColor.toArgb()
             textSize = 12.sp.toPx()
         }
 
@@ -733,13 +737,16 @@ private fun SymbolTableRow(
 internal suspend fun parseSafeMarkdown(
     markdown: String,
     dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    codeBackground: Color = SmartColors.JadeSoft,
 ): AnnotatedString = withContext(dispatcher) {
-    markdown.toSafeAnnotatedString()
+    markdown.toSafeAnnotatedString(codeBackground)
 }
 
 internal class IncrementalSafeMarkdownParser(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
-    private val chunkParser: (String) -> AnnotatedString = { it.toSafeAnnotatedString() },
+    private val codeBackground: Color = SmartColors.JadeSoft,
+    private val chunkParser: (String) -> AnnotatedString =
+        { markdown -> markdown.toSafeAnnotatedString(codeBackground) },
     private val afterStatePublished: (StreamingMarkdownParseKey) -> Unit = {},
     private val afterCacheEntriesStaged: (StreamingMarkdownParseKey) -> Unit = {},
 ) {
@@ -1346,37 +1353,38 @@ private fun SafeMarkdownParseResult.matchesPrefixOf(
     (source.isNotEmpty() || currentText.isEmpty()) &&
     currentText.startsWith(source)
 
-private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedString {
-    SafeInlineMarkdown.parse(this@toSafeAnnotatedString).forEach { token ->
-        when (token) {
-            is InlineToken.Text -> append(token.value)
-            is InlineToken.Strong -> withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(token.value)
-            }
+private fun String.toSafeAnnotatedString(codeBackground: Color): AnnotatedString =
+    buildAnnotatedString {
+        SafeInlineMarkdown.parse(this@toSafeAnnotatedString).forEach { token ->
+            when (token) {
+                is InlineToken.Text -> append(token.value)
+                is InlineToken.Strong -> withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(token.value)
+                }
 
-            is InlineToken.Emphasis -> withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
-                append(token.value)
-            }
+                is InlineToken.Emphasis -> withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+                    append(token.value)
+                }
 
-            is InlineToken.Code -> withStyle(
-                SpanStyle(
-                    background = JadeSoft,
-                    fontFamily = FontFamily.Monospace,
-                ),
-            ) {
-                append(token.value)
-            }
+                is InlineToken.Code -> withStyle(
+                    SpanStyle(
+                        background = codeBackground,
+                        fontFamily = FontFamily.Monospace,
+                    ),
+                ) {
+                    append(token.value)
+                }
 
-            is InlineToken.Formula -> withStyle(
-                SpanStyle(fontFamily = FontFamily.Serif),
-            ) {
-                append(ReadableMathText.formula(token.value))
-            }
+                is InlineToken.Formula -> withStyle(
+                    SpanStyle(fontFamily = FontFamily.Serif),
+                ) {
+                    append(ReadableMathText.formula(token.value))
+                }
 
-            InlineToken.LineBreak -> append('\n')
+                InlineToken.LineBreak -> append('\n')
+            }
         }
     }
-}
 
 private fun String.toPlainText(): String = ReadableMathText.inlineMarkdown(this)
 

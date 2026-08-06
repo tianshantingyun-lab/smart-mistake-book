@@ -2,7 +2,9 @@ package com.tingyun.smartmistakebook.core.data.model
 
 import android.content.Context
 import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureAssetBridge
+import com.tingyun.smartmistakebook.core.database.LegacyModelAssetDocumentReadPort
+import com.tingyun.smartmistakebook.core.database.TrustedModelTaskDatabaseCapability
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAsset
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAssetSource
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
@@ -10,9 +12,12 @@ import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 
 internal class AndroidRestrictedModelAssetSource(
     context: Context,
-    private val database: StudyDatabasePort,
+    private val assetDocuments: LegacyModelAssetDocumentReadPort,
 ) : RestrictedModelAssetSource {
-    private val vault = AndroidCanonicalAssetVault(context.applicationContext)
+    private val vault =
+        LegacyRoomCaptureAssetBridge(
+            AndroidCanonicalAssetVault(context.applicationContext),
+        )
 
     override suspend fun open(
         execution: ModelGatewayExecution,
@@ -28,7 +33,7 @@ internal class AndroidRestrictedModelAssetSource(
         require(grant.selectedRegion == null) {
             "Region-scoped image egress remains blocked until a trusted crop stream is available"
         }
-        val record = database.readCanonicalSourceAsset(assetId)
+        val record = assetDocuments.readCanonicalSourceAsset(assetId)
             ?: throw SecurityException("Approved model asset is unavailable")
         check(
             record.contentSha256 == grant.sha256 &&
@@ -52,6 +57,10 @@ internal class AndroidRestrictedModelAssetSource(
 object RestrictedModelAssetSourceFactory {
     fun create(
         context: Context,
-        database: StudyDatabasePort,
-    ): RestrictedModelAssetSource = AndroidRestrictedModelAssetSource(context, database)
+        modelTasksAndAssetDocuments: TrustedModelTaskDatabaseCapability,
+    ): RestrictedModelAssetSource =
+        AndroidRestrictedModelAssetSource(
+            context = context,
+            assetDocuments = modelTasksAndAssetDocuments,
+        )
 }

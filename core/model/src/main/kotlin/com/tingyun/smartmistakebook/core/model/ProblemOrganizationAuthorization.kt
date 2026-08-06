@@ -130,6 +130,31 @@ data class ProblemOrganizationAuthorizationGrant(
         )
     }
 
+    fun toEgressManifest(
+        requestId: String,
+        input: ProblemOrganizationV3Input,
+    ): ModelEgressManifest {
+        require(input.kind == authorizedTaskKind) {
+            "Problem organization authorization does not allow this task"
+        }
+        require(input.sourceAssets.size == assets.size) {
+            "Problem organization authorization asset scope changed"
+        }
+        input.sourceAssets.forEach { source ->
+            val grant = assets.singleOrNull { it.assetId == source.assetId }
+                ?: error("Problem organization source asset is outside authorization")
+            require(
+                grant.sha256 == source.sha256 &&
+                    grant.width == source.width &&
+                    grant.height == source.height &&
+                    grant.selectedRegion == source.selectedRegion,
+            ) { "Problem organization source asset changed after authorization" }
+        }
+        return toEgressManifest(input.subjectId).copy(
+            authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
+        )
+    }
+
     companion object {
         const val CURRENT_SCHEMA_VERSION = 1
         const val CURRENT_AUTHORIZATION_POLICY_VERSION =

@@ -1,16 +1,28 @@
 package com.tingyun.smartmistakebook.core.data.mistake
 
-import com.tingyun.smartmistakebook.core.database.AuthorizeProblemOrganizationWorkCommand
-import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
-import com.tingyun.smartmistakebook.core.database.ProblemDraftCommitReceipt
-import com.tingyun.smartmistakebook.core.database.ProblemOrganizationWorkRecord
-import com.tingyun.smartmistakebook.core.database.ProblemOrganizationWorkTransitionCommand
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.data.session.AuthorizeProblemOrganizationWorkSessionCommand
+import com.tingyun.smartmistakebook.core.data.session.ClaimProblemOrganizationWorkSessionCommand
+import com.tingyun.smartmistakebook.core.data.session.OrganizationSourceCommitSessionReceipt
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkRecoveryQuery
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkSessionMutationResult
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkSessionPort
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkSessionReadQuery
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkSessionSnapshot
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkSessionStatus
+import com.tingyun.smartmistakebook.core.data.session.ProblemOrganizationWorkSessionTransition
+import com.tingyun.smartmistakebook.core.data.session.SessionMutationDisposition
+import com.tingyun.smartmistakebook.core.data.session.SessionMutationReceipt
+import com.tingyun.smartmistakebook.core.data.session.SessionOpaquePayload
+import com.tingyun.smartmistakebook.core.data.session.SessionOperationIdentity
+import com.tingyun.smartmistakebook.core.data.session.SessionScope
+import com.tingyun.smartmistakebook.core.data.session.SessionVersion
+import com.tingyun.smartmistakebook.core.data.production.ProductionProblemOrganizationExecutionRevokedException
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationPreparation
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationConfirmation
+import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationImmutableConflictException
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionAuthority
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationWorkCompletionOutcome
@@ -42,7 +54,8 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.SubjectKind
-import java.lang.reflect.Proxy
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -53,8 +66,54 @@ import org.junit.Test
 
 class ProblemOrganizationWorkProcessorTest {
     @Test
+    fun revokedGenerationCannotCrossASuspendedReadIntoAClaimMutation() = runBlocking {
+        val fixture = SessionFixture(work = runningWork(requestSnapshot = null))
+        val readStarted = CompletableDeferred<Unit>()
+        val resumeRead = CompletableDeferred<Unit>()
+        var executionIsCurrent = true
+        val suspendingSessions =
+            object : ProblemOrganizationWorkSessionPort by fixture {
+                override suspend fun read(
+                    query: ProblemOrganizationWorkSessionReadQuery,
+                ): ProblemOrganizationWorkSessionSnapshot? {
+                    readStarted.complete(Unit)
+                    resumeRead.await()
+                    return fixture.read(query)
+                }
+            }
+        val processor =
+            ProblemOrganizationWorkProcessor(
+                scope = TEST_SCOPE,
+                sessions = suspendingSessions,
+                modelTasks = NoOpModelTaskRepository,
+                organizations = NoOpMistakeOrganizationRepository,
+                executionIsCurrent = { executionIsCurrent },
+            )
+
+        val outcome =
+            async {
+                runCatching {
+                    processor.process(
+                        workId = WORK_ID,
+                        leaseOwner = LEASE_OWNER,
+                        nowEpochMillis = NOW,
+                    )
+                }
+            }
+        readStarted.await()
+        executionIsCurrent = false
+        resumeRead.complete(Unit)
+
+        assertTrue(
+            outcome.await().exceptionOrNull() is
+                ProductionProblemOrganizationExecutionRevokedException,
+        )
+        assertEquals(0, fixture.claims)
+    }
+
+    @Test
     fun missingRequestSnapshotMovesClaimedWorkToWaitingAuthorization() = runBlocking {
-        val fixture = DatabaseFixture(work = runningWork(requestSnapshot = null))
+        val fixture = SessionFixture(work = runningWork(requestSnapshot = null))
         val result = processor(fixture).process(
             workId = WORK_ID,
             leaseOwner = LEASE_OWNER,
@@ -65,22 +124,16 @@ class ProblemOrganizationWorkProcessorTest {
         assertEquals(1, fixture.claims)
         assertEquals(listOf(300_000L), fixture.claimLeaseDurations)
         assertEquals(1, fixture.waitingTransitions.size)
-        assertEquals(
-            ProblemOrganizationWorkTransitionCommand(
-                workId = WORK_ID,
-                expectedStateVersion = 7,
-                leaseOwner = LEASE_OWNER,
-                occurredAtEpochMillis = NOW,
-                failureCode = "EGRESS_AUTHORIZATION_REQUIRED",
-                failureMessage = "需要重新确认本次题目整理的发送范围",
-            ),
-            fixture.waitingTransitions.single(),
-        )
+        val transition = fixture.waitingTransitions.single()
+        assertEquals(7, transition.expectedVersion.sequence)
+        assertEquals(NOW, transition.occurredAtEpochMillis)
+        assertEquals("EGRESS_AUTHORIZATION_REQUIRED", transition.failureCode)
+        assertEquals("需要重新确认本次题目整理的发送范围", transition.failureMessage)
     }
 
     @Test
     fun lostClaimNeverWritesACompetingTransition() = runBlocking {
-        val fixture = DatabaseFixture(work = null)
+        val fixture = SessionFixture(work = null)
 
         val result = processor(fixture).process(
             workId = WORK_ID,
@@ -89,13 +142,13 @@ class ProblemOrganizationWorkProcessorTest {
         )
 
         assertEquals(ProblemOrganizationWorkProcessResult.LostLease, result)
-        assertEquals(1, fixture.claims)
+        assertEquals(0, fixture.claims)
         assertTrue(fixture.waitingTransitions.isEmpty())
     }
 
     @Test
     fun undecodableRequestSnapshotIsAProtocolFailure() = runBlocking {
-        val fixture = DatabaseFixture(work = runningWork(requestSnapshot = "not-json"))
+        val fixture = SessionFixture(work = runningWork(requestSnapshot = "not-json"))
 
         val result = processor(fixture).process(
             workId = WORK_ID,
@@ -104,25 +157,20 @@ class ProblemOrganizationWorkProcessorTest {
         )
 
         assertEquals(ProblemOrganizationWorkProcessResult.PermanentFailure, result)
-        assertEquals(
-            ProblemOrganizationWorkTransitionCommand(
-                workId = WORK_ID,
-                expectedStateVersion = 7,
-                leaseOwner = LEASE_OWNER,
-                occurredAtEpochMillis = NOW,
-                failureCode = "INVALID_REQUEST_SNAPSHOT",
-                failureMessage = "组织任务请求快照无法解码",
-            ),
-            fixture.permanentFailureTransitions.single(),
-        )
+        val transition = fixture.permanentFailureTransitions.single()
+        assertEquals(7, transition.expectedVersion.sequence)
+        assertEquals(NOW, transition.occurredAtEpochMillis)
+        assertEquals("INVALID_REQUEST_SNAPSHOT", transition.failureCode)
+        assertEquals("组织任务请求快照无法解码", transition.failureMessage)
     }
 
     @Test
     fun expiredLeaseRejectsAWaitingTransitionAtTheActualCommitTime() = runBlocking {
-        val fixture = DatabaseFixture(work = runningWork(requestSnapshot = null))
+        val fixture = SessionFixture(work = runningWork(requestSnapshot = null))
         val expiredAt = NOW + 300_001
         val result = ProblemOrganizationWorkProcessor(
-            database = fixture.port,
+            scope = TEST_SCOPE,
+            sessions = fixture,
             modelTasks = NoOpModelTaskRepository,
             organizations = NoOpMistakeOrganizationRepository,
             clock = { expiredAt },
@@ -134,11 +182,21 @@ class ProblemOrganizationWorkProcessorTest {
 
     @Test
     fun authorizeDoesNotPrepareWorkOutsideWaitingAuthorization() = runBlocking {
-        val fixture = DatabaseFixture(work = runningWork(requestSnapshot = null).copy(status = "PENDING"))
+        val fixture =
+            SessionFixture(
+                work =
+                    runningWork(requestSnapshot = null).copy(
+                        status = ProblemOrganizationWorkSessionStatus.PENDING,
+                    ),
+            )
         val organizations = PreparingOrganizationRepository(authorizationRequest())
 
-        val result = ProblemOrganizationWorkProcessor(fixture.port, NoOpModelTaskRepository, organizations)
-            .authorizeStoredGrant(WORK_ID, NOW)
+        val result = ProblemOrganizationWorkProcessor(
+            TEST_SCOPE,
+            fixture,
+            NoOpModelTaskRepository,
+            organizations,
+        ).authorizeStoredGrant(WORK_ID, NOW)
 
         assertEquals(ProblemOrganizationWorkAuthorizationResult.NotWaiting, result)
         assertEquals(0, organizations.prepareCalls)
@@ -149,17 +207,24 @@ class ProblemOrganizationWorkProcessorTest {
     fun authorizeBindsExactEncodedRequestOnlyWhenCasWins() = runBlocking {
         val authorization = authorizationGrant()
         val request = authorizationRequest(authorization)
-        val fixture = DatabaseFixture(
+        val fixture = SessionFixture(
             work = runningWork(requestSnapshot = null).copy(
-                status = "WAITING_AUTHORIZATION",
-                authorizationGrantSnapshot =
-                    ProblemOrganizationAuthorizationGrantCodec.encode(authorization),
+                status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                authorizationPayload =
+                    SessionOpaquePayload(
+                        "organization-authorization-v1",
+                        ProblemOrganizationAuthorizationGrantCodec.encode(authorization),
+                    ),
             ),
         )
         val organizations = PreparingOrganizationRepository(request)
 
-        val result = ProblemOrganizationWorkProcessor(fixture.port, NoOpModelTaskRepository, organizations)
-            .authorizeStoredGrant(WORK_ID, NOW)
+        val result = ProblemOrganizationWorkProcessor(
+            TEST_SCOPE,
+            fixture,
+            NoOpModelTaskRepository,
+            organizations,
+        ).authorizeStoredGrant(WORK_ID, NOW)
 
         assertEquals(
             ProblemOrganizationWorkAuthorizationResult.Authorized(request.requestId, NOW),
@@ -167,25 +232,32 @@ class ProblemOrganizationWorkProcessorTest {
         )
         assertEquals(1, organizations.prepareCalls)
         assertEquals(authorization, organizations.authorization)
-        assertEquals(request, ModelTaskCodec.decodeRequest(fixture.authorizationCommands.single().requestSnapshot))
-        assertEquals(7, fixture.authorizationCommands.single().expectedStateVersion)
+        assertEquals(
+            request,
+            ModelTaskCodec.decodeRequest(fixture.authorizationCommands.single().requestPayload.content),
+        )
+        assertEquals(7, fixture.authorizationCommands.single().expectedVersion.sequence)
         assertEquals(NOW, fixture.authorizationCommands.single().notBeforeEpochMillis)
     }
 
     @Test
     fun authorizeCasRaceFailsClosed() = runBlocking {
         val authorization = authorizationGrant()
-        val fixture = DatabaseFixture(
+        val fixture = SessionFixture(
             work = runningWork(requestSnapshot = null).copy(
-                status = "WAITING_AUTHORIZATION",
-                authorizationGrantSnapshot =
-                    ProblemOrganizationAuthorizationGrantCodec.encode(authorization),
+                status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                authorizationPayload =
+                    SessionOpaquePayload(
+                        "organization-authorization-v1",
+                        ProblemOrganizationAuthorizationGrantCodec.encode(authorization),
+                    ),
             ),
             authorizeApplied = false,
         )
 
         val result = ProblemOrganizationWorkProcessor(
-            fixture.port,
+            TEST_SCOPE,
+            fixture,
             NoOpModelTaskRepository,
             PreparingOrganizationRepository(authorizationRequest(authorization)),
         ).authorizeStoredGrant(WORK_ID, NOW)
@@ -196,23 +268,25 @@ class ProblemOrganizationWorkProcessorTest {
     @Test
     fun missingOrMalformedPersistedGrantStaysWaitingWithoutPreparing() = runBlocking {
         val organizations = PreparingOrganizationRepository(authorizationRequest())
-        val missing = DatabaseFixture(
+        val missing = SessionFixture(
             work = runningWork(null).copy(
-                status = "WAITING_AUTHORIZATION",
-                authorizationGrantSnapshot = null,
+                status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                authorizationPayload = null,
             ),
         )
-        val malformed = DatabaseFixture(
+        val malformed = SessionFixture(
             work = runningWork(null).copy(
-                status = "WAITING_AUTHORIZATION",
-                authorizationGrantSnapshot = "{",
+                status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                authorizationPayload =
+                    SessionOpaquePayload("organization-authorization-v1", "{"),
             ),
         )
 
         assertEquals(
             ProblemOrganizationWorkAuthorizationResult.WaitingAuthorization,
             ProblemOrganizationWorkProcessor(
-                missing.port,
+                TEST_SCOPE,
+                missing,
                 NoOpModelTaskRepository,
                 organizations,
             ).authorizeStoredGrant(WORK_ID, NOW),
@@ -220,7 +294,8 @@ class ProblemOrganizationWorkProcessorTest {
         assertEquals(
             ProblemOrganizationWorkAuthorizationResult.WaitingAuthorization,
             ProblemOrganizationWorkProcessor(
-                malformed.port,
+                TEST_SCOPE,
+                malformed,
                 NoOpModelTaskRepository,
                 organizations,
             ).authorizeStoredGrant(WORK_ID, NOW),
@@ -236,25 +311,32 @@ class ProblemOrganizationWorkProcessorTest {
         )
         val validGrant = authorizationGrant()
         val organizations = PreparingOrganizationRepository(authorizationRequest(validGrant))
-        val expired = DatabaseFixture(
+        val expired = SessionFixture(
             work = runningWork(null).copy(
-                status = "WAITING_AUTHORIZATION",
-                authorizationGrantSnapshot =
-                    ProblemOrganizationAuthorizationGrantCodec.encode(expiredGrant),
+                status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                authorizationPayload =
+                    SessionOpaquePayload(
+                        "organization-authorization-v1",
+                        ProblemOrganizationAuthorizationGrantCodec.encode(expiredGrant),
+                    ),
             ),
         )
-        val providerChanged = DatabaseFixture(
+        val providerChanged = SessionFixture(
             work = runningWork(null).copy(
-                status = "WAITING_AUTHORIZATION",
-                authorizationGrantSnapshot =
-                    ProblemOrganizationAuthorizationGrantCodec.encode(validGrant),
+                status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                authorizationPayload =
+                    SessionOpaquePayload(
+                        "organization-authorization-v1",
+                        ProblemOrganizationAuthorizationGrantCodec.encode(validGrant),
+                    ),
             ),
         )
 
         assertEquals(
             ProblemOrganizationWorkAuthorizationResult.WaitingAuthorization,
             ProblemOrganizationWorkProcessor(
-                expired.port,
+                TEST_SCOPE,
+                expired,
                 NoOpModelTaskRepository,
                 organizations,
             ).authorizeStoredGrant(WORK_ID, NOW),
@@ -262,7 +344,8 @@ class ProblemOrganizationWorkProcessorTest {
         assertEquals(
             ProblemOrganizationWorkAuthorizationResult.WaitingAuthorization,
             ProblemOrganizationWorkProcessor(
-                providerChanged.port,
+                TEST_SCOPE,
+                providerChanged,
                 CapabilityModelTaskRepository(provider().copy(modelId = "changed-model")),
                 organizations,
             ).authorizeStoredGrant(WORK_ID, NOW),
@@ -273,12 +356,13 @@ class ProblemOrganizationWorkProcessorTest {
     @Test
     fun immutableApplyConflictIsPermanentAndNeverRetries() = runBlocking {
         val request = authorizationRequest().copy(requestId = "request-id")
-        val fixture = DatabaseFixture(
+        val fixture = SessionFixture(
             work = runningWork(ModelTaskCodec.encodeRequest(request)),
-            receipt = commitReceipt(),
+            receipt = sourceReceipt(),
         )
         val result = ProblemOrganizationWorkProcessor(
-            database = fixture.port,
+            scope = TEST_SCOPE,
+            sessions = fixture,
             modelTasks = SuccessfulModelTaskRepository(request),
             organizations = ImmutableConflictOrganizationRepository,
             clock = { NOW },
@@ -295,16 +379,19 @@ class ProblemOrganizationWorkProcessorTest {
     @Test
     fun successfulResultUsesOneAtomicCompletionAuthority() = runBlocking {
         val request = authorizationRequest().copy(requestId = "request-id")
-        val fixture = DatabaseFixture(
+        val fixture = SessionFixture(
             work = runningWork(ModelTaskCodec.encodeRequest(request)),
-            receipt = commitReceipt(),
+            receipt = sourceReceipt(),
         )
         val organizations = AtomicCompletionOrganizationRepository()
+        val ruleHook = CapturingTrustedAnswerRuleCompletionPort()
 
         val result = ProblemOrganizationWorkProcessor(
-            database = fixture.port,
+            scope = TEST_SCOPE,
+            sessions = fixture,
             modelTasks = SuccessfulModelTaskRepository(request),
             organizations = organizations,
+            trustedAnswerRules = ruleHook,
             clock = { NOW },
         ).process(WORK_ID, LEASE_OWNER, NOW)
 
@@ -320,21 +407,58 @@ class ProblemOrganizationWorkProcessorTest {
         )
         assertTrue(fixture.retryTransitions.isEmpty())
         assertTrue(fixture.permanentFailureTransitions.isEmpty())
+        assertEquals(
+            listOf(TEST_SCOPE.learnerId to (request.input as ProblemOrganizationV3Input).problemRevisionId),
+            ruleHook.revisions,
+        )
+        assertTrue(
+            ProblemOrganizationTrustedAnswerRuleCompletionPort::class.java.methods
+                .flatMap { it.parameterTypes.asList() }
+                .none { it == ModelTaskSnapshot::class.java || it == ProblemOrganizationOutput::class.java },
+        )
+    }
+
+    @Test
+    fun unavailableTrustedRuleAdmissionKeepsOrganizationSavedAndEvidenceClosed() = runBlocking {
+        val request = authorizationRequest().copy(requestId = "request-id")
+        val fixture =
+            SessionFixture(
+                work = runningWork(ModelTaskCodec.encodeRequest(request)),
+                receipt = sourceReceipt(),
+            )
+
+        val result =
+            ProblemOrganizationWorkProcessor(
+                scope = TEST_SCOPE,
+                sessions = fixture,
+                modelTasks = SuccessfulModelTaskRepository(request),
+                organizations = AtomicCompletionOrganizationRepository(),
+                trustedAnswerRules =
+                    ProblemOrganizationTrustedAnswerRuleCompletionPort { _, _ ->
+                        error("trusted credential unavailable")
+                    },
+                clock = { NOW },
+            ).process(WORK_ID, LEASE_OWNER, NOW)
+
+        assertEquals(ProblemOrganizationWorkProcessResult.Succeeded, result)
+        assertTrue(fixture.retryTransitions.isEmpty())
+        assertTrue(fixture.permanentFailureTransitions.isEmpty())
     }
 
     @Test
     fun lostAtomicCompletionAuthorityNeverFallsBackToASecondTransition() = runBlocking {
         val request = authorizationRequest().copy(requestId = "request-id")
-        val fixture = DatabaseFixture(
+        val fixture = SessionFixture(
             work = runningWork(ModelTaskCodec.encodeRequest(request)),
-            receipt = commitReceipt(),
+            receipt = sourceReceipt(),
         )
         val organizations = AtomicCompletionOrganizationRepository(
             outcome = ProblemOrganizationWorkCompletionOutcome.LOST_AUTHORITY,
         )
 
         val result = ProblemOrganizationWorkProcessor(
-            database = fixture.port,
+            scope = TEST_SCOPE,
+            sessions = fixture,
             modelTasks = SuccessfulModelTaskRepository(request),
             organizations = organizations,
             clock = { NOW },
@@ -346,63 +470,190 @@ class ProblemOrganizationWorkProcessorTest {
         assertTrue(fixture.permanentFailureTransitions.isEmpty())
     }
 
-    private fun processor(fixture: DatabaseFixture) = ProblemOrganizationWorkProcessor(
-        database = fixture.port,
+    private fun processor(fixture: SessionFixture) = ProblemOrganizationWorkProcessor(
+        scope = TEST_SCOPE,
+        sessions = fixture,
         modelTasks = NoOpModelTaskRepository,
         organizations = NoOpMistakeOrganizationRepository,
         clock = { NOW },
     )
 
-    private class DatabaseFixture(
-        val work: ProblemOrganizationWorkRecord?,
+    private class SessionFixture(
+        private val work: ProblemOrganizationWorkSessionSnapshot?,
         private val authorizeApplied: Boolean = true,
-        private val receipt: ProblemDraftCommitReceipt? = null,
-    ) {
+        private val receipt: OrganizationSourceCommitSessionReceipt? = null,
+    ) : ProblemOrganizationWorkSessionPort {
         var claims = 0
         val claimLeaseDurations = mutableListOf<Long>()
-        val waitingTransitions = mutableListOf<ProblemOrganizationWorkTransitionCommand>()
-        val retryTransitions = mutableListOf<ProblemOrganizationWorkTransitionCommand>()
-        val permanentFailureTransitions = mutableListOf<ProblemOrganizationWorkTransitionCommand>()
-        val authorizationCommands = mutableListOf<AuthorizeProblemOrganizationWorkCommand>()
+        val waitingTransitions =
+            mutableListOf<ProblemOrganizationWorkSessionTransition.WaitForAuthorization>()
+        val retryTransitions = mutableListOf<ProblemOrganizationWorkSessionTransition.Retry>()
+        val permanentFailureTransitions =
+            mutableListOf<ProblemOrganizationWorkSessionTransition.FailPermanently>()
+        val authorizationCommands =
+            mutableListOf<AuthorizeProblemOrganizationWorkSessionCommand>()
+        private var current = work?.beforeClaim()
 
-        val port: StudyDatabasePort = Proxy.newProxyInstance(
-            StudyDatabasePort::class.java.classLoader,
-            arrayOf(StudyDatabasePort::class.java),
-        ) { _, method, args ->
-            when (method.name) {
-                "claimProblemOrganizationWork" -> {
-                    claims += 1
-                    claimLeaseDurations += args!![3] as Long
-                    work
+        override fun observeSchedulable(
+            scope: SessionScope,
+        ): Flow<List<ProblemOrganizationWorkSessionSnapshot>> = flowOf(
+            listOfNotNull(current),
+        )
+
+        override suspend fun read(
+            query: ProblemOrganizationWorkSessionReadQuery,
+        ): ProblemOrganizationWorkSessionSnapshot? =
+            current?.takeIf { snapshot ->
+                when (query) {
+                    is ProblemOrganizationWorkSessionReadQuery.ByWorkId ->
+                        snapshot.workId == query.workId
+                    is ProblemOrganizationWorkSessionReadQuery.ByRequestId ->
+                        snapshot.requestId == query.requestId
+                    is ProblemOrganizationWorkSessionReadQuery.BySourceReceiptId ->
+                        snapshot.sourceCommitReceiptId == query.sourceCommitReceiptId
                 }
-                "readProblemOrganizationWork" -> work
-                "readProblemOrganizationWorkCommitReceipt" -> receipt
-                "authorizeProblemOrganizationWork" -> {
-                    authorizationCommands += args!![0] as AuthorizeProblemOrganizationWorkCommand
-                    authorizeApplied
-                }
-                "markProblemOrganizationWorkWaitingAuthorization" -> {
-                    val command = args!![0] as ProblemOrganizationWorkTransitionCommand
-                    waitingTransitions += command
-                    command.occursBeforeLeaseExpiry()
-                }
-                "failProblemOrganizationWorkPermanently" -> {
-                    val command = args!![0] as ProblemOrganizationWorkTransitionCommand
-                    permanentFailureTransitions += command
-                    command.occursBeforeLeaseExpiry()
-                }
-                "retryProblemOrganizationWork" -> {
-                    val command = args!![0] as ProblemOrganizationWorkTransitionCommand
-                    retryTransitions += command
-                    command.occursBeforeLeaseExpiry()
-                }
-                "close" -> Unit
-                else -> error("Unexpected database call: ${method.name}")
             }
-        } as StudyDatabasePort
 
-        private fun ProblemOrganizationWorkTransitionCommand.occursBeforeLeaseExpiry(): Boolean =
-            work?.leaseExpiresAtEpochMillis?.let { occurredAtEpochMillis < it } ?: false
+        override suspend fun readSourceReceipt(
+            scope: SessionScope,
+            sourceCommitReceiptId: String,
+        ): OrganizationSourceCommitSessionReceipt? =
+            receipt?.takeIf { it.scope == scope && it.receiptId == sourceCommitReceiptId }
+
+        override suspend fun authorize(
+            command: AuthorizeProblemOrganizationWorkSessionCommand,
+        ): ProblemOrganizationWorkSessionMutationResult {
+            authorizationCommands += command
+            if (!authorizeApplied) {
+                return result(command.operation, SessionMutationDisposition.RELOAD_REQUIRED, current)
+            }
+            val authorized =
+                checkNotNull(current).copy(
+                    status = ProblemOrganizationWorkSessionStatus.PENDING,
+                    version = nextVersion(checkNotNull(current).version),
+                    requestId = command.operation.requestId,
+                    requestPayload = command.requestPayload,
+                    authorizationPayload = null,
+                    notBeforeEpochMillis = command.notBeforeEpochMillis,
+                    updatedAtEpochMillis = command.occurredAtEpochMillis,
+                )
+            current = authorized
+            return result(command.operation, SessionMutationDisposition.APPLIED, authorized)
+        }
+
+        override suspend fun claim(
+            command: ClaimProblemOrganizationWorkSessionCommand,
+        ): ProblemOrganizationWorkSessionMutationResult {
+            claims += 1
+            claimLeaseDurations += command.leaseDurationMillis
+            val claimed = work
+                ?: return result(command.operation, SessionMutationDisposition.NOT_FOUND, null)
+            current = claimed
+            return result(command.operation, SessionMutationDisposition.APPLIED, claimed)
+        }
+
+        override suspend fun transition(
+            command: ProblemOrganizationWorkSessionTransition,
+        ): ProblemOrganizationWorkSessionMutationResult {
+            when (command) {
+                is ProblemOrganizationWorkSessionTransition.WaitForAuthorization ->
+                    waitingTransitions += command
+                is ProblemOrganizationWorkSessionTransition.Retry -> retryTransitions += command
+                is ProblemOrganizationWorkSessionTransition.FailPermanently ->
+                    permanentFailureTransitions += command
+                is ProblemOrganizationWorkSessionTransition.Complete -> Unit
+            }
+            val before = current
+            if (
+                before == null ||
+                before.leaseExpiresAtEpochMillis?.let {
+                    command.occurredAtEpochMillis >= it
+                } != false
+            ) {
+                return result(
+                    command.operation,
+                    SessionMutationDisposition.RELOAD_REQUIRED,
+                    before,
+                )
+            }
+            val transitioned =
+                when (command) {
+                    is ProblemOrganizationWorkSessionTransition.WaitForAuthorization ->
+                        before.copy(
+                            status = ProblemOrganizationWorkSessionStatus.WAITING_AUTHORIZATION,
+                            requestId = null,
+                            requestPayload = null,
+                            failureCode = command.failureCode,
+                            failureMessage = command.failureMessage,
+                        )
+                    is ProblemOrganizationWorkSessionTransition.Retry ->
+                        before.copy(
+                            status = ProblemOrganizationWorkSessionStatus.RETRY,
+                            notBeforeEpochMillis = command.notBeforeEpochMillis,
+                            failureCode = command.failureCode,
+                            failureMessage = command.failureMessage,
+                        )
+                    is ProblemOrganizationWorkSessionTransition.FailPermanently ->
+                        before.copy(
+                            status = ProblemOrganizationWorkSessionStatus.PERMANENT_FAILURE,
+                            failureCode = command.failureCode,
+                            failureMessage = command.failureMessage,
+                        )
+                    is ProblemOrganizationWorkSessionTransition.Complete ->
+                        before.copy(status = ProblemOrganizationWorkSessionStatus.SUCCEEDED)
+                }.copy(
+                    version = nextVersion(before.version),
+                    leaseOwner = null,
+                    leaseExpiresAtEpochMillis = null,
+                    updatedAtEpochMillis = command.occurredAtEpochMillis,
+                )
+            current = transitioned
+            return result(command.operation, SessionMutationDisposition.APPLIED, transitioned)
+        }
+
+        override suspend fun readRunningRecoveryPage(
+            query: ProblemOrganizationWorkRecoveryQuery,
+        ): List<ProblemOrganizationWorkSessionSnapshot> =
+            listOfNotNull(
+                current?.takeIf { it.status == ProblemOrganizationWorkSessionStatus.RUNNING },
+            )
+
+        private fun result(
+            operation: SessionOperationIdentity,
+            disposition: SessionMutationDisposition,
+            snapshot: ProblemOrganizationWorkSessionSnapshot?,
+        ) = ProblemOrganizationWorkSessionMutationResult(
+            receipt =
+                SessionMutationReceipt(
+                    operation = operation,
+                    disposition = disposition,
+                    currentVersion = snapshot?.version,
+                    recordedAtEpochMillis = NOW,
+                ),
+            snapshot = snapshot,
+        )
+
+        private fun ProblemOrganizationWorkSessionSnapshot.beforeClaim() =
+            if (status == ProblemOrganizationWorkSessionStatus.RUNNING) {
+                copy(
+                    status = ProblemOrganizationWorkSessionStatus.PENDING,
+                    version = SessionVersion(
+                        sequence = (version.sequence - 1).coerceAtLeast(0),
+                        fingerprint = "6".repeat(64),
+                    ),
+                    attemptCount = (attemptCount - 1).coerceAtLeast(0),
+                    leaseOwner = null,
+                    leaseExpiresAtEpochMillis = null,
+                )
+            } else {
+                this
+            }
+
+        private fun nextVersion(version: SessionVersion) =
+            SessionVersion(
+                sequence = version.sequence + 1,
+                fingerprint = "8".repeat(64),
+            )
     }
 
     private object NoOpModelTaskRepository : ModelTaskRepository {
@@ -477,9 +728,8 @@ class ProblemOrganizationWorkProcessorTest {
         override suspend fun completeSuccessfulOrganizationWork(
             authority: ProblemOrganizationWorkCompletionAuthority,
         ): ProblemOrganizationWorkCompletionOutcome {
-            throw ImmutablePayloadConflictException(
-                "problem_organization_stale_confirmation",
-                authority.requestId,
+            throw ProblemOrganizationImmutableConflictException(
+                "problem organization conflicts with immutable state: ${authority.requestId}",
             )
         }
     }
@@ -496,6 +746,18 @@ class ProblemOrganizationWorkProcessorTest {
         ): ProblemOrganizationWorkCompletionOutcome {
             this.authority = authority
             return outcome
+        }
+    }
+
+    private class CapturingTrustedAnswerRuleCompletionPort :
+        ProblemOrganizationTrustedAnswerRuleCompletionPort {
+        val revisions = mutableListOf<Pair<String, String>>()
+
+        override suspend fun afterSuccessfulOrganization(
+            learnerId: String,
+            problemRevisionId: String,
+        ) {
+            revisions += learnerId to problemRevisionId
         }
     }
 
@@ -520,9 +782,9 @@ class ProblemOrganizationWorkProcessorTest {
 
     private fun authorizationRequest(
         authorization: ProblemOrganizationAuthorizationGrant = authorizationGrant(),
-    ) = ModelTaskRequest(
-        requestId = "authorization-request",
-        input = ProblemOrganizationV3Input(
+    ): ModelTaskRequest {
+        val requestId = "authorization-request"
+        val input = ProblemOrganizationV3Input(
             problemId = "problem",
             problemRevisionId = "revision",
             practiceUnitId = "unit",
@@ -551,10 +813,14 @@ class ProblemOrganizationWorkProcessorTest {
                 ),
             ),
             relationCandidates = emptyList(),
-        ),
-        occurredAtEpochMillis = NOW,
-        egressManifest = authorization.toEgressManifest("revision"),
-    )
+        )
+        return ModelTaskRequest(
+            requestId = requestId,
+            input = input,
+            occurredAtEpochMillis = NOW,
+            egressManifest = authorization.toEgressManifest(requestId, input),
+        )
+    }
 
     private fun authorizationGrant() = ProblemOrganizationAuthorizationGrant(
         authorizationId = "organization-authorization",
@@ -624,27 +890,27 @@ class ProblemOrganizationWorkProcessorTest {
         modelVersion = "model-v3",
     )
 
-    private fun commitReceipt() = ProblemDraftCommitReceipt(
-        commandId = "commit-receipt",
+    private fun sourceReceipt() = OrganizationSourceCommitSessionReceipt(
+        scope = TEST_SCOPE,
+        receiptId = "commit-receipt",
         payloadFingerprint = "b".repeat(64),
-        draftId = "draft",
-        draftRevisionNumber = 1,
-        problemId = "problem",
-        problemRevisionId = "revision",
-        practiceUnitId = "unit",
-        errorBookEntryId = "entry",
-        committedAtEpochMillis = NOW - 20,
+        recordedAtEpochMillis = NOW - 20,
     )
 
-    private fun runningWork(requestSnapshot: String?) = ProblemOrganizationWorkRecord(
+    private fun runningWork(requestSnapshot: String?) = ProblemOrganizationWorkSessionSnapshot(
+        scope = TEST_SCOPE,
         workId = WORK_ID,
-        commitReceiptCommandId = "commit-receipt",
-        status = "RUNNING",
-        stateVersion = 7,
+        sourceCommitReceiptId = "commit-receipt",
+        status = ProblemOrganizationWorkSessionStatus.RUNNING,
+        version = SessionVersion(7, "7".repeat(64)),
         attemptCount = 1,
         notBeforeEpochMillis = NOW,
         requestId = "request-id",
-        requestSnapshot = requestSnapshot,
+        requestPayload =
+            requestSnapshot?.let {
+                SessionOpaquePayload("organization-request-v1", it)
+            },
+        authorizationPayload = null,
         leaseOwner = LEASE_OWNER,
         leaseExpiresAtEpochMillis = NOW + 300_000,
         failureCode = null,
@@ -657,6 +923,8 @@ class ProblemOrganizationWorkProcessorTest {
         const val WORK_ID = "organization-work"
         const val LEASE_OWNER = "processor"
         const val NOW = 1_000L
+
+        val TEST_SCOPE = SessionScope("learner")
 
         fun provider() = ProviderCapabilitySnapshot(
             providerId = "provider",

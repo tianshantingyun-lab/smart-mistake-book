@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.model.storage
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -134,6 +135,58 @@ class CrossStoreEventTest {
                     ),
                 ),
                 acceptedAtEpochMillis = 200,
+            )
+        }
+    }
+
+    @Test
+    fun `knowledge binding payload snapshots caller collections`() {
+        val revision = revision()
+        val binding = binding(bindingId = "binding-1", problemRevision = revision)
+        val callerBindings = mutableListOf(binding)
+        val payload = ProblemKnowledgeBindingsAcceptedV1(
+            problemRevision = revision,
+            bindings = callerBindings,
+            acceptedAtEpochMillis = 200,
+        )
+        val fingerprint = payload.payloadCanonicalFingerprint
+
+        callerBindings.clear()
+
+        assertEquals(listOf(binding), payload.bindings)
+        assertEquals(fingerprint, payload.payloadCanonicalFingerprint)
+        assertTrue(
+            runCatching {
+                @Suppress("UNCHECKED_CAST")
+                (payload.bindings as MutableList<ProblemKnowledgeBindingRef>).clear()
+            }.isFailure,
+        )
+    }
+
+    @Test
+    fun `knowledge binding snapshot can revoke the final binding monotonically`() {
+        val revision = revision()
+        val bound = ProblemKnowledgeBindingsSnapshotV2(
+            problemRevision = revision,
+            bindings = listOf(binding(bindingId = "binding-1", problemRevision = revision)),
+            bindingSetVersion = 1,
+            changedAtEpochMillis = 200,
+        )
+        val revoked = ProblemKnowledgeBindingsSnapshotV2(
+            problemRevision = revision,
+            bindings = emptyList(),
+            bindingSetVersion = 2,
+            changedAtEpochMillis = 300,
+        )
+
+        assertEquals(emptyList<ProblemKnowledgeBindingRef>(), revoked.bindings)
+        assertNotEquals(bound.payloadCanonicalFingerprint, revoked.payloadCanonicalFingerprint)
+        assertIllegalArgument {
+            ProblemKnowledgeBindingsSnapshotV2(
+                problemRevision = revision,
+                bindings = emptyList(),
+                bindingSetVersion = 0,
+                changedAtEpochMillis = 300,
             )
         }
     }

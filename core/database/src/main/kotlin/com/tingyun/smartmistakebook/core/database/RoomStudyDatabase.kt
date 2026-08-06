@@ -63,12 +63,35 @@ import kotlinx.coroutines.flow.mapLatest
 internal class RoomStudyDatabase(
     internal val database: StudyDatabase,
     private val clock: () -> Long = System::currentTimeMillis,
-) : StudyDatabasePort {
+    freeResponseOutboxCipher: TutorFreeResponseOutboxCipher,
+    freeResponseOutboxExpirySchedulerFactory: TutorFreeResponseOutboxExpirySchedulerFactory =
+        CoroutineTutorFreeResponseOutboxExpirySchedulerFactory,
+) : StudyDatabasePort,
+    BatchCaptureDraftImportPort,
+    TutorConversationSessionDatabasePort,
+    TutorLearningEvidenceSessionDatabasePort,
+    CurrentTutorInteractionSessionDatabasePort,
+    CurrentTutorSessionHostWorkDatabasePort {
     private val knowledgeResearchReviewStore = RoomKnowledgeResearchReviewStore(database)
 
     private val problemOrganization = RoomProblemOrganizationStore(database)
     private val batchImports = RoomBatchImportStore(database)
-
+    private val batchCaptureImports = RoomBatchCaptureDraftImportStore(database)
+    private val pendingCaptureSupport =
+        RoomStudyDatabasePendingCaptureSupport(database)
+    private val knowledgeSupport =
+        RoomStudyDatabaseKnowledgeSupport(database)
+    private val legacyAuthoritySupport =
+        RoomStudyDatabaseLegacyAuthoritySupport(database)
+    private val problemOrganizationWork =
+        RoomStudyDatabaseProblemOrganizationWorkSupport(database, problemOrganization, clock)
+    private val currentTutorInteractions =
+        RoomCurrentTutorInteractionSessionStore(
+            database,
+            ::trustedClockEpochMillis,
+            freeResponseOutboxCipher,
+            freeResponseOutboxExpirySchedulerFactory,
+        )
     override suspend fun createTutorConversation(
         command: CreateTutorConversationCommand,
     ): TutorConversationWriteResult =
@@ -184,9 +207,13 @@ internal class RoomStudyDatabase(
     ): com.tingyun.smartmistakebook.core.model.TutorEvidenceRequest? {
         requireOpaque(learnerId, "learnerId")
         requireOpaque(evidenceRequestId, "evidenceRequestId")
-        return database.tutorLearningMemoryDao()
+        val request = database.tutorLearningMemoryDao()
             .openEvidenceRequest(learnerId, evidenceRequestId)
             ?.toModel()
+            ?: return null
+        val session = database.tutorLearningEvidenceSessionDao()
+            .openForLearner(learnerId, evidenceRequestId)
+        return session?.let { request.withLearningEvidenceSession(it) } ?: request
     }
 
     override suspend fun prepareTutorEvidenceRequest(
@@ -276,9 +303,9 @@ internal class RoomStudyDatabase(
     ): List<KnowledgeNodeSeedRecord> {
         require(subject.isNotBlank()) { "subject must not be blank" }
         require(limit in 1..256) { "knowledge-node limit is outside the supported range" }
-        return database.problemOrganizationDao().readSubjectKnowledgeNodes(subject, limit).map {
-            it.toSeedRecord()
-        }
+        return database.legacyKnowledgeCatalogDao()
+            .readSubjectKnowledgeNodes(subject, limit)
+            .map(KnowledgeNodeEntity::toSeedRecord)
     }
 
     override suspend fun readSubjectKnowledgeRecallCandidates(
@@ -297,7 +324,7 @@ internal class RoomStudyDatabase(
             return readSubjectKnowledgeNodes(subject, limit.coerceAtMost(256))
         }
         ensureKnowledgeSearchIndex(subject)
-        val dao = database.problemOrganizationDao()
+        val dao = database.legacyKnowledgeCatalogDao()
         val matched = dao.searchSubjectKnowledgeRecallCandidates(subject, searchFeatures, limit)
         val matchedIds = matched.mapTo(hashSetOf(), KnowledgeNodeEntity::knowledgeNodeId)
         val parents = dao.readKnowledgeNodesByIds(
@@ -308,36 +335,31 @@ internal class RoomStudyDatabase(
             .map(KnowledgeNodeEntity::toSeedRecord)
     }
 
-    private suspend fun ensureKnowledgeSearchIndex(subject: String) {
-        val dao = database.problemOrganizationDao()
-        val reviewedCount = dao.countReviewedKnowledgeNodesBySubject(subject)
-        if (reviewedCount == 0 || dao.countIndexedKnowledgeNodesBySubject(subject) >= reviewedCount) return
-        database.withWriteTransaction {
-            val missingCheckCount = dao.countReviewedKnowledgeNodesBySubject(subject)
-            if (dao.countIndexedKnowledgeNodesBySubject(subject) < missingCheckCount) {
-                val nodes = dao.readSubjectKnowledgeRecallCandidates(subject, missingCheckCount)
-                dao.insertKnowledgeSearchFeatures(nodes.flatMap(KnowledgeNodeEntity::toSearchFeatures))
-            }
-        }
-    }
+    private suspend fun ensureKnowledgeSearchIndex(subject: String) =
+        knowledgeSupport.ensureKnowledgeSearchIndex(subject)
 
-    override suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord> {
-        if (ids.isEmpty()) return emptyList()
-        return ids.chunked(KNOWLEDGE_NODE_QUERY_CHUNK_SIZE)
-            .flatMap { chunk ->
-                database.problemOrganizationDao().readKnowledgeNodesByIds(chunk.toSet())
-            }
-            .map(KnowledgeNodeEntity::toSeedRecord)
-    }
+    override suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord> =
+        knowledgeSupport.readKnowledgeNodesByIds(ids)
 
-    override suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceSeedRecord> {
-        if (ids.isEmpty()) return emptyList()
-        return ids.chunked(KNOWLEDGE_NODE_QUERY_CHUNK_SIZE)
-            .flatMap { chunk ->
-                database.problemOrganizationDao().readKnowledgeSourcesByIds(chunk.toSet())
-            }
-            .map(KnowledgeSourceEntity::toSeedRecord)
-    }
+    override suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceSeedRecord> =
+        knowledgeSupport.readKnowledgeSourcesByIds(ids)
+
+    private suspend fun readAppliedKnowledgeResearchResolutions(
+        command: ApplyApprovedKnowledgeResearchPackCommand,
+    ): List<KnowledgeGroundingResolutionRecord> =
+        knowledgeSupport.readAppliedKnowledgeResearchResolutions(command)
+
+    private suspend fun applyReviewedKnowledgePackInTransaction(
+        command: ApplyReviewedKnowledgePackCommand,
+    ): List<KnowledgeGroundingResolutionRecord> =
+        knowledgeSupport.applyReviewedKnowledgePackInTransaction(command)
+
+    private suspend fun readKnowledgeBaseDependencies(
+        sources: List<KnowledgeSourceSeedRecord>,
+        nodes: List<KnowledgeNodeSeedRecord>,
+        bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
+    ): KnowledgeBaseDependencies =
+        knowledgeSupport.readKnowledgeBaseDependencies(sources, nodes, bindings)
 
     override suspend fun readSubjectKnowledgeNodeRelations(
         subject: String,
@@ -467,7 +489,7 @@ internal class RoomStudyDatabase(
                 sources = validatedSources,
             )
             if (sourcesToInsert.isNotEmpty()) {
-                database.problemOrganizationDao().insertKnowledgeSources(
+                database.legacyKnowledgeCatalogDao().insertKnowledgeSources(
                     sourcesToInsert.map(KnowledgeSourceSeedRecord::toEntity),
                 )
             }
@@ -484,7 +506,7 @@ internal class RoomStudyDatabase(
         if (knowledgeNodeIds.isEmpty()) return emptyList()
         return knowledgeNodeIds.chunked(KNOWLEDGE_NODE_QUERY_CHUNK_SIZE)
             .flatMap { chunk ->
-                database.problemOrganizationDao().readKnowledgeNodeSourceBindings(chunk.toSet())
+                database.legacyKnowledgeCatalogDao().readKnowledgeNodeSourceBindings(chunk.toSet())
             }
             .map(KnowledgeNodeSourceBindingEntity::toSeedRecord)
     }
@@ -502,7 +524,7 @@ internal class RoomStudyDatabase(
             existingSources = dependencies.sources,
             existingParentNodes = dependencies.parentNodes,
         )
-        database.problemOrganizationDao().importKnowledgeBase(
+        database.legacyKnowledgeCatalogDao().importKnowledgeBase(
             sources = sources.map(KnowledgeSourceSeedRecord::toEntity),
             nodes = nodes.map(KnowledgeNodeSeedRecord::toEntity),
             bindings = bindings.map(KnowledgeNodeSourceBindingSeedRecord::toEntity),
@@ -545,93 +567,6 @@ internal class RoomStudyDatabase(
         resolutions
     }
 
-    private suspend fun readAppliedKnowledgeResearchResolutions(
-        command: ApplyApprovedKnowledgeResearchPackCommand,
-    ): List<KnowledgeGroundingResolutionRecord> {
-        val groundingKeys = command.pack.resolutions
-            .mapTo(mutableSetOf(), ResolveKnowledgeGroundingCommand::groundingKey)
-        val byGroundingKey = database.knowledgeGroundingDao().readResolutions(groundingKeys)
-            .associateBy(KnowledgeGroundingResolutionEntity::groundingKey)
-        return command.pack.resolutions.map { expected ->
-            byGroundingKey[expected.groundingKey]?.toRecord()
-                ?: throw DatabaseContractViolationException(
-                    "Applied knowledge research resolution is missing",
-                )
-        }
-    }
-
-    private suspend fun applyReviewedKnowledgePackInTransaction(
-        command: ApplyReviewedKnowledgePackCommand,
-    ): List<KnowledgeGroundingResolutionRecord> {
-        val dependencies = readKnowledgeBaseDependencies(
-            command.sources,
-            command.nodes,
-            command.bindings,
-        )
-        val resolutions = ReviewedKnowledgePackContract.validate(
-            command = command,
-            existingSources = dependencies.sources,
-            existingParentNodes = dependencies.parentNodes,
-        )
-        val relationNodeIds = command.relations.flatMapTo(mutableSetOf()) {
-            listOf(it.prerequisiteKnowledgeNodeId, it.dependentKnowledgeNodeId)
-        }
-        val relationSourceIds = command.relations.mapTo(
-            mutableSetOf(),
-            KnowledgeNodeRelationRecord::sourceId,
-        )
-        val relationSubjects = command.relations.mapTo(
-            mutableSetOf(),
-            KnowledgeNodeRelationRecord::subject,
-        )
-        KnowledgeNodeRelationContract.validate(
-            incoming = command.relations,
-            nodes = (command.nodes + readKnowledgeNodesByIds(
-                relationNodeIds - command.nodes.mapTo(mutableSetOf(), KnowledgeNodeSeedRecord::knowledgeNodeId),
-            )).distinctBy(KnowledgeNodeSeedRecord::knowledgeNodeId),
-            sources = (command.sources + readKnowledgeSourcesByIds(
-                relationSourceIds - command.sources.mapTo(mutableSetOf(), KnowledgeSourceSeedRecord::sourceId),
-            )).distinctBy(KnowledgeSourceSeedRecord::sourceId),
-            existing = relationSubjects.flatMap { subject ->
-                require(database.knowledgeNodeRelationDao().countBySubject(subject) <= 16_384) {
-                    "knowledge relation graph exceeds the supported validation budget"
-                }
-                database.knowledgeNodeRelationDao().readBySubject(subject, 16_384)
-            }.map(KnowledgeNodeRelationEntity::toRecord),
-        )
-        return database.knowledgeGroundingDao().applyReviewedPack(
-            sources = command.sources.map(KnowledgeSourceSeedRecord::toEntity),
-            nodes = command.nodes.map(KnowledgeNodeSeedRecord::toEntity),
-            sourceBindings = command.bindings.map(KnowledgeNodeSourceBindingSeedRecord::toEntity),
-            relations = command.relations.map(KnowledgeNodeRelationRecord::toEntity),
-            searchFeatures = command.nodes.flatMap(KnowledgeNodeSeedRecord::toSearchFeatures),
-            resolutions = resolutions,
-        ).map(KnowledgeGroundingResolutionEntity::toRecord)
-    }
-
-    private suspend fun readKnowledgeBaseDependencies(
-        sources: List<KnowledgeSourceSeedRecord>,
-        nodes: List<KnowledgeNodeSeedRecord>,
-        bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
-    ): KnowledgeBaseDependencies {
-        val newNodeIds = nodes.mapTo(mutableSetOf(), KnowledgeNodeSeedRecord::knowledgeNodeId)
-        val newSourceIds = sources.mapTo(mutableSetOf(), KnowledgeSourceSeedRecord::sourceId)
-        return KnowledgeBaseDependencies(
-            parentNodes = readKnowledgeNodesByIds(
-                nodes.mapNotNullTo(
-                    mutableSetOf(),
-                    KnowledgeNodeSeedRecord::parentKnowledgeNodeId,
-                ) - newNodeIds,
-            ),
-            sources = readKnowledgeSourcesByIds(
-                bindings.mapTo(
-                    mutableSetOf(),
-                    KnowledgeNodeSourceBindingSeedRecord::sourceId,
-                ) - newSourceIds,
-            ),
-        )
-    }
-
     override fun observePendingKnowledgeGroundingRequests(
         limit: Int,
     ): Flow<List<KnowledgeGroundingRequestRecord>> {
@@ -651,7 +586,7 @@ internal class RoomStudyDatabase(
     }
 
     override fun observeReviewedKnowledgeCoverage(): Flow<List<ReviewedKnowledgeCoverageRecord>> =
-        database.problemOrganizationDao().observeReviewedKnowledgeCoverage().map { rows ->
+        database.legacyKnowledgeCatalogDao().observeReviewedKnowledgeCoverage().map { rows ->
             rows.map(ReviewedKnowledgeCoverageRow::toRecord)
         }
 
@@ -926,6 +861,8 @@ internal class RoomStudyDatabase(
                     jobId = command.jobId,
                     pageIndex = command.pageIndex,
                     resolution = command.resolution,
+                    boundaryClaimedAtEpochMillis =
+                        checkNotNull(primaryPage.boundaryClaimedAtEpochMillis),
                     updatedAtEpochMillis = command.occurredAtEpochMillis,
                 ) == 1,
             ) { "Claimed batch boundary could not be resolved" }
@@ -984,478 +921,243 @@ internal class RoomStudyDatabase(
 
     override suspend fun commitProblemDraft(
         command: CommitProblemDraftCommand,
-    ): CommitProblemDraftResult = database.problemDraftTransactionDao().commit(command)
+    ): CommitProblemDraftResult = database.withWriteTransaction {
+        val result = database.problemDraftTransactionDao().commit(command)
+        pendingCaptureSupport.prepareLegacyStudentSaveHandoff(command, result.receipt)
+        result
+    }
+
+    override suspend fun mergeProblemDraftSourceBundle(
+        command: MergeProblemDraftSourceBundleCommand,
+    ): CaptureDraftMergeSessionReceiptRecord = database.withWriteTransaction {
+        val receiptDao = database.captureDraftMergeSessionReceiptDao()
+        receiptDao.read(command.batchJobId, command.batchPageIndex)?.let { existing ->
+            if (existing.receiptReference != command.receiptReference) {
+                throw ImmutablePayloadConflictException(
+                    entityType = "capture_draft_merge_session_receipt",
+                    entityId = "${command.batchJobId}:${command.batchPageIndex}",
+                )
+            }
+            return@withWriteTransaction existing.toRecord()
+        }
+        val draftDao = database.problemDraftTransactionDao()
+        val primary = draftDao.read(command.primaryDraftId)
+            ?: throw ImmutablePayloadConflictException(
+                entityType = "problem_draft",
+                entityId = command.primaryDraftId,
+            )
+        val following = draftDao.read(command.followingDraftId)
+            ?: throw ImmutablePayloadConflictException(
+                entityType = "problem_draft",
+                entityId = command.followingDraftId,
+            )
+        require(primary.currentRevision.revisionNumber == command.expectedPrimaryRevisionNumber) {
+            "Primary draft revision does not match the merge command"
+        }
+        require(following.currentRevision.revisionNumber == command.expectedFollowingRevisionNumber) {
+            "Following draft revision does not match the merge command"
+        }
+        require(
+            primary.captureAssetOrderFingerprint() == command.expectedPrimaryAssetOrderFingerprint,
+        ) { "Primary draft asset order does not match the merge command" }
+        require(
+            following.captureAssetOrderFingerprint() == command.expectedFollowingAssetOrderFingerprint,
+        ) { "Following draft asset order does not match the merge command" }
+        require(
+            captureDraftSessionVersion(
+                revisionNumber = primary.currentRevision.revisionNumber,
+                sourceAssetCount = primary.sourceAssets.size,
+            ) == command.expectedPrimarySessionVersion,
+        ) { "Primary draft session version does not match the merge command" }
+        require(
+            captureDraftSessionVersion(
+                revisionNumber = following.currentRevision.revisionNumber,
+                sourceAssetCount = following.sourceAssets.size,
+            ) == command.expectedFollowingSessionVersion,
+        ) { "Following draft session version does not match the merge command" }
+        require(
+            primary.sourceAssets.map { it.sourceAsset.sourceAssetId } ==
+                command.expectedPrimarySourceAssetIds,
+        ) { "Primary draft source assets do not match the merge command" }
+        require(
+            following.sourceAssets.map { it.sourceAsset.sourceAssetId } ==
+                command.expectedFollowingSourceAssetIds,
+        ) { "Following draft source assets do not match the merge command" }
+        draftDao.mergeSourceBundle(
+            primaryDraftId = command.primaryDraftId,
+            expectedPrimaryRevisionNumber = command.expectedPrimaryRevisionNumber,
+            followingDraftId = command.followingDraftId,
+            expectedFollowingRevisionNumber = command.expectedFollowingRevisionNumber,
+            mergedAtEpochMillis = command.mergedAtEpochMillis,
+        )
+        val mergedSourceAssetCount = primary.sourceAssets.size + following.sourceAssets.size
+        require(
+            captureDraftSessionVersion(
+                revisionNumber = command.expectedPrimaryRevisionNumber,
+                sourceAssetCount = mergedSourceAssetCount,
+            ) == command.mergedSessionVersion,
+        ) { "Merged session version does not match the merge command" }
+        val receipt = com.tingyun.smartmistakebook.core.database.entity
+            .CaptureDraftMergeSessionReceiptEntity(
+                receiptReference = command.receiptReference,
+                batchJobId = command.batchJobId,
+                batchPageIndex = command.batchPageIndex,
+                primaryDraftId = command.primaryDraftId,
+                followingDraftId = command.followingDraftId,
+                mergedDraftId = command.primaryDraftId,
+                assetOrderFingerprint = command.mergedAssetOrderFingerprint,
+                sessionVersion = command.mergedSessionVersion,
+                sourceAssetCount = mergedSourceAssetCount,
+                requestCanonicalFingerprint = command.requestCanonicalFingerprint,
+                mergedAtEpochMillis = command.mergedAtEpochMillis,
+            )
+        check(receiptDao.insert(receipt) != -1L) {
+            "Merge receipt was not persisted"
+        }
+        checkNotNull(
+            receiptDao.read(command.batchJobId, command.batchPageIndex),
+        ).toRecord()
+    }
+
+    override suspend fun readProblemDraftMergeSessionReceipt(
+        batchJobId: String,
+        batchPageIndex: Int,
+    ): CaptureDraftMergeSessionReceiptRecord? =
+        database.captureDraftMergeSessionReceiptDao()
+            .read(batchJobId, batchPageIndex)
+            ?.toRecord()
 
     override suspend fun readProblemOrganizationWork(
         workId: String,
-    ): ProblemOrganizationWorkRecord? {
-        require(workId.isNotBlank()) { "workId must not be blank" }
-        return database.problemOrganizationWorkDao().readWork(workId)?.toRecord()
-    }
+    ): ProblemOrganizationWorkRecord? =
+        problemOrganizationWork.readProblemOrganizationWork(workId)
 
     override suspend fun readProblemOrganizationWorkByCommitReceipt(
         commitReceiptCommandId: String,
-    ): ProblemOrganizationWorkRecord? {
-        require(commitReceiptCommandId.isNotBlank()) {
-            "commitReceiptCommandId must not be blank"
-        }
-        return database.problemOrganizationWorkDao()
-            .readWorkByCommitReceipt(commitReceiptCommandId)
-            ?.toRecord()
-    }
+    ): ProblemOrganizationWorkRecord? =
+        problemOrganizationWork.readProblemOrganizationWorkByCommitReceipt(commitReceiptCommandId)
 
     override suspend fun readProblemOrganizationWorkByRequestId(
         requestId: String,
-    ): ProblemOrganizationWorkRecord? {
-        require(requestId.isNotBlank()) { "requestId must not be blank" }
-        return database.problemOrganizationWorkDao()
-            .readWorkByRequestId(requestId)
-            ?.toRecord()
-    }
+    ): ProblemOrganizationWorkRecord? =
+        problemOrganizationWork.readProblemOrganizationWorkByRequestId(requestId)
 
     override suspend fun readProblemOrganizationWorkCommitReceipt(
         commitReceiptCommandId: String,
-    ): ProblemDraftCommitReceipt? {
-        require(commitReceiptCommandId.isNotBlank()) {
-            "commitReceiptCommandId must not be blank"
-        }
-        return database.problemOrganizationWorkDao()
-            .readCommitReceipt(commitReceiptCommandId)
-            ?.toProblemDraftCommitReceipt()
-    }
+    ): ProblemDraftCommitReceipt? =
+        problemOrganizationWork.readProblemOrganizationWorkCommitReceipt(commitReceiptCommandId)
 
     override suspend fun readWaitingProblemOrganizationWork(
         problemId: String,
         problemRevisionId: String,
         errorBookEntryId: String,
-    ): ProblemOrganizationWorkPreparationRecord? {
-        require(problemId.isNotBlank()) { "problemId must not be blank" }
-        require(problemRevisionId.isNotBlank()) { "problemRevisionId must not be blank" }
-        require(errorBookEntryId.isNotBlank()) { "errorBookEntryId must not be blank" }
-        return database.problemOrganizationWorkDao()
-            .readWaitingPreparation(problemId, problemRevisionId, errorBookEntryId)
-            ?.let { row ->
-                ProblemOrganizationWorkPreparationRecord(
-                    work = row.work.toRecord(),
-                    commitReceipt = row.receipt.toProblemDraftCommitReceipt(),
-                )
-            }
-    }
+    ): ProblemOrganizationWorkPreparationRecord? =
+        problemOrganizationWork.readWaitingProblemOrganizationWork(
+            problemId = problemId,
+            problemRevisionId = problemRevisionId,
+            errorBookEntryId = errorBookEntryId,
+        )
 
     override suspend fun readLatestProblemOrganizationWork(
         problemId: String,
         problemRevisionId: String,
         errorBookEntryId: String,
-    ): ProblemOrganizationWorkPreparationRecord? {
-        require(problemId.isNotBlank()) { "problemId must not be blank" }
-        require(problemRevisionId.isNotBlank()) { "problemRevisionId must not be blank" }
-        require(errorBookEntryId.isNotBlank()) { "errorBookEntryId must not be blank" }
-        return database.problemOrganizationWorkDao()
-            .readLatestPreparation(problemId, problemRevisionId, errorBookEntryId)
-            ?.let { row ->
-                ProblemOrganizationWorkPreparationRecord(
-                    work = row.work.toRecord(),
-                    commitReceipt = row.receipt.toProblemDraftCommitReceipt(),
-                )
-            }
-    }
+    ): ProblemOrganizationWorkPreparationRecord? =
+        problemOrganizationWork.readLatestProblemOrganizationWork(
+            problemId = problemId,
+            problemRevisionId = problemRevisionId,
+            errorBookEntryId = errorBookEntryId,
+        )
 
     override suspend fun claimNextProblemOrganizationWork(
         leaseOwner: String,
         nowEpochMillis: Long,
         leaseDurationMillis: Long,
-    ): ProblemOrganizationWorkRecord? = database.problemOrganizationWorkDao()
-        .claimNext(leaseOwner, nowEpochMillis, leaseDurationMillis)
-        ?.toRecord()
+    ): ProblemOrganizationWorkRecord? =
+        problemOrganizationWork.claimNextProblemOrganizationWork(
+            leaseOwner = leaseOwner,
+            nowEpochMillis = nowEpochMillis,
+            leaseDurationMillis = leaseDurationMillis,
+        )
 
     override suspend fun claimProblemOrganizationWork(
         workId: String,
         leaseOwner: String,
         nowEpochMillis: Long,
         leaseDurationMillis: Long,
-    ): ProblemOrganizationWorkRecord? = database.problemOrganizationWorkDao()
-        .claim(workId, leaseOwner, nowEpochMillis, leaseDurationMillis)
-        ?.toRecord()
+    ): ProblemOrganizationWorkRecord? =
+        problemOrganizationWork.claimProblemOrganizationWork(
+            workId = workId,
+            leaseOwner = leaseOwner,
+            nowEpochMillis = nowEpochMillis,
+            leaseDurationMillis = leaseDurationMillis,
+        )
 
     override suspend fun readSchedulableProblemOrganizationWorks(
         nowEpochMillis: Long,
         limit: Int,
-    ): List<ProblemOrganizationWorkRecord> {
-        require(nowEpochMillis >= 0) { "nowEpochMillis must not be negative" }
-        require(limit in 1..100) { "limit must be between 1 and 100" }
-        return database.problemOrganizationWorkDao()
-            .readSchedulable(limit)
-            .map { it.toRecord() }
-    }
+    ): List<ProblemOrganizationWorkRecord> =
+        problemOrganizationWork.readSchedulableProblemOrganizationWorks(
+            nowEpochMillis = nowEpochMillis,
+            limit = limit,
+        )
 
     override fun observeSchedulableProblemOrganizationWorks():
         Flow<List<ProblemOrganizationWorkRecord>> =
-        database.problemOrganizationWorkDao()
-            .observeSchedulable()
-            .map { works -> works.map(ProblemOrganizationWorkEntity::toRecord) }
+        problemOrganizationWork.observeSchedulableProblemOrganizationWorks()
 
     override suspend fun readRunningProblemOrganizationWorks(
         limit: Int,
         afterLeaseExpiresAtEpochMillis: Long?,
         afterUpdatedAtEpochMillis: Long?,
         afterWorkId: String?,
-    ): List<ProblemOrganizationWorkRecord> {
-        require(limit in 1..100) { "limit must be between 1 and 100" }
-        val cursorIsEmpty = afterLeaseExpiresAtEpochMillis == null &&
-            afterUpdatedAtEpochMillis == null &&
-            afterWorkId == null
-        val cursorIsComplete = afterLeaseExpiresAtEpochMillis != null &&
-            afterUpdatedAtEpochMillis != null &&
-            afterWorkId != null
-        require(cursorIsEmpty || cursorIsComplete) {
-            "Running organization work cursor must be entirely absent or present"
-        }
-        return database.problemOrganizationWorkDao()
-            .readRunning(
-                limit = limit,
-                afterLeaseExpiresAtEpochMillis = afterLeaseExpiresAtEpochMillis,
-                afterUpdatedAtEpochMillis = afterUpdatedAtEpochMillis,
-                afterWorkId = afterWorkId,
-            )
-            .map(ProblemOrganizationWorkEntity::toRecord)
-    }
+    ): List<ProblemOrganizationWorkRecord> =
+        problemOrganizationWork.readRunningProblemOrganizationWorks(
+            limit = limit,
+            afterLeaseExpiresAtEpochMillis = afterLeaseExpiresAtEpochMillis,
+            afterUpdatedAtEpochMillis = afterUpdatedAtEpochMillis,
+            afterWorkId = afterWorkId,
+        )
 
     override suspend fun authorizeProblemOrganizationWork(
         command: AuthorizeProblemOrganizationWorkCommand,
-    ): Boolean {
-        require(command.workId.isNotBlank()) { "workId must not be blank" }
-        require(command.expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
-        require(command.requestId.isNotBlank()) { "requestId must not be blank" }
-        require(command.notBeforeEpochMillis >= command.authorizedAtEpochMillis) {
-            "Authorized organization work cannot be scheduled in the past"
-        }
-        val request = ModelTaskCodec.decodeRequest(command.requestSnapshot)
-        require(request.requestId == command.requestId) {
-            "Organization work request snapshot id does not match"
-        }
-        require(request.input.kind == com.tingyun.smartmistakebook.core.model.ModelTaskKind.PROBLEM_CLASSIFY) {
-            "Organization work can only authorize a problem-classification task"
-        }
-        require(request.schemaVersion == ModelTaskRequest.PROBLEM_ORGANIZATION_V3_SCHEMA_VERSION) {
-            "Organization work requires the current image-grounded request schema"
-        }
-        request.egressManifest?.let { manifest ->
-            require(
-                manifest.schemaVersion ==
-                    com.tingyun.smartmistakebook.core.model.ModelEgressManifest.CURRENT_SCHEMA_VERSION,
-            ) { "Organization work requires the current egress schema" }
-        }
-        val work = database.problemOrganizationWorkDao().readWork(command.workId)
-            ?: return false
-        val authorization = ProblemOrganizationAuthorizationGrantCodec.decodeOrNull(
-            work.authorizationGrantSnapshot,
-        ) ?: return false
-        val receipt = database.problemOrganizationWorkDao()
-            .readCommitReceipt(work.commitReceiptCommandId)
-            ?: throw DatabaseContractViolationException(
-                "Organization work commit receipt is missing",
-            )
-        val input = request.input as? ProblemOrganizationV3Input
-            ?: throw IllegalArgumentException(
-                "Persistent organization work requires ProblemOrganizationV3Input",
-            )
-        require(authorization.sourceDraftId == receipt.draftId) {
-            "Organization authorization belongs to another source draft"
-        }
-        require(
-            command.authorizedAtEpochMillis in
-                authorization.approvedAtEpochMillis until authorization.expiresAtEpochMillis,
-        ) { "Organization authorization is not current" }
-        require(request.egressManifest == authorization.toEgressManifest(input.subjectId)) {
-            "Organization request does not match its persisted authorization"
-        }
-        require(
-            input.problemId == receipt.problemId &&
-                input.problemRevisionId == receipt.problemRevisionId &&
-                input.practiceUnitId == receipt.practiceUnitId,
-        ) { "Organization work request does not match its exact commit receipt" }
-        val draft = database.problemDraftTransactionDao().read(receipt.draftId)
-            ?: throw DatabaseContractViolationException(
-                "Organization work source draft is missing",
-            )
-        require(draft.currentRevision.revisionNumber == receipt.draftRevisionNumber) {
-            "Organization work source revision no longer matches its receipt"
-        }
-        require(
-            CapturedQuestionDocumentFingerprint.of(input.capturedDocument) ==
-                draft.currentRevision.documentFingerprint,
-        ) { "Organization work document does not match its committed revision" }
-        val expectedAssets = draft.sourceAssets.map { source ->
-            OrganizationSourceAssetIdentity(
-                assetId = source.sourceAsset.sourceAssetId,
-                sha256 = source.sourceAsset.contentSha256,
-                width = source.sourceAsset.width,
-                height = source.sourceAsset.height,
-                pageIndex = source.pageIndex,
-            )
-        }
-        val requestedAssets = input.sourceAssets.map { source ->
-            require(source.selectedRegion == null) {
-                "Persistent organization work must reference the committed full source page"
-            }
-            OrganizationSourceAssetIdentity(
-                assetId = source.assetId,
-                sha256 = source.sha256,
-                width = source.width,
-                height = source.height,
-                pageIndex = source.pageIndex,
-            )
-        }
-        require(requestedAssets == expectedAssets) {
-            "Organization work assets do not match its exact import occurrence"
-        }
-        return database.problemOrganizationWorkDao().authorize(
-            workId = command.workId,
-            expectedStateVersion = command.expectedStateVersion,
-            requestId = command.requestId,
-            requestSnapshot = command.requestSnapshot,
-            notBeforeEpochMillis = command.notBeforeEpochMillis,
-            updatedAtEpochMillis = command.authorizedAtEpochMillis,
-        ) == 1
-    }
+    ): Boolean =
+        problemOrganizationWork.authorizeProblemOrganizationWork(command)
 
     override suspend fun reauthorizeProblemOrganizationWork(
         command: ReauthorizeProblemOrganizationWorkCommand,
-    ): ReauthorizeProblemOrganizationWorkResult {
-        require(command.workId.isNotBlank()) { "workId must not be blank" }
-        require(command.expectedStateVersion in 0L until Long.MAX_VALUE) {
-            "expectedStateVersion is outside the supported range"
-        }
-        require(command.problemId.isNotBlank()) { "problemId must not be blank" }
-        require(command.problemRevisionId.isNotBlank()) {
-            "problemRevisionId must not be blank"
-        }
-        require(command.errorBookEntryId.isNotBlank()) {
-            "errorBookEntryId must not be blank"
-        }
-        return database.withWriteTransaction {
-            val workDao = database.problemOrganizationWorkDao()
-            val work = workDao.readWork(command.workId)
-                ?: return@withWriteTransaction reauthorizationNotApplied()
-            val receipt = workDao.readCommitReceipt(work.commitReceiptCommandId)
-                ?: throw DatabaseContractViolationException(
-                    "Organization work commit receipt is missing",
-                )
-            if (
-                receipt.problemId != command.problemId ||
-                receipt.problemRevisionId != command.problemRevisionId ||
-                receipt.errorBookEntryId != command.errorBookEntryId
-            ) {
-                return@withWriteTransaction reauthorizationNotApplied()
-            }
-
-            val authorizationSnapshot = ProblemOrganizationAuthorizationGrantCodec.encode(
-                command.authorizationGrant,
-            )
-            val replayStateVersion = command.expectedStateVersion + 1
-            if (
-                work.stateVersion == replayStateVersion &&
-                work.status == StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION &&
-                work.requestId == null &&
-                work.requestSnapshot == null
-            ) {
-                if (work.authorizationGrantSnapshot != authorizationSnapshot) {
-                    throw ProblemOrganizationWorkReauthorizationConflictException(command.workId)
-                }
-                val replayNowEpochMillis = clock()
-                require(replayNowEpochMillis >= 0) { "Database clock must not be negative" }
-                validateProblemOrganizationReauthorization(
-                    authorization = command.authorizationGrant,
-                    provider = command.provider,
-                    receipt = receipt.toProblemDraftCommitReceipt(),
-                    draft = database.problemDraftTransactionDao().read(receipt.draftId)
-                        ?: throw DatabaseContractViolationException(
-                            "Organization work source draft is missing",
-                        ),
-                    nowEpochMillis = replayNowEpochMillis,
-                )
-                return@withWriteTransaction ReauthorizeProblemOrganizationWorkResult(
-                    outcome = ReauthorizeProblemOrganizationWorkOutcome.REPLAYED,
-                    work = work.toRecord(),
-                )
-            }
-            if (
-                work.stateVersion != command.expectedStateVersion ||
-                work.status !=
-                StudyDbValue.ProblemOrganizationWorkStatus.WAITING_AUTHORIZATION ||
-                work.requestId != null ||
-                work.requestSnapshot != null
-            ) {
-                return@withWriteTransaction reauthorizationNotApplied()
-            }
-
-            val nowEpochMillis = clock()
-            require(nowEpochMillis >= 0) { "Database clock must not be negative" }
-            validateProblemOrganizationReauthorization(
-                authorization = command.authorizationGrant,
-                provider = command.provider,
-                receipt = receipt.toProblemDraftCommitReceipt(),
-                draft = database.problemDraftTransactionDao().read(receipt.draftId)
-                    ?: throw DatabaseContractViolationException(
-                        "Organization work source draft is missing",
-                    ),
-                nowEpochMillis = nowEpochMillis,
-            )
-            if (
-                workDao.reauthorize(
-                    workId = command.workId,
-                    expectedStateVersion = command.expectedStateVersion,
-                    authorizationGrantSnapshot = authorizationSnapshot,
-                    updatedAtEpochMillis = nowEpochMillis,
-                ) != 1
-            ) {
-                return@withWriteTransaction reauthorizationNotApplied()
-            }
-            ReauthorizeProblemOrganizationWorkResult(
-                outcome = ReauthorizeProblemOrganizationWorkOutcome.REAUTHORIZED,
-                work = checkNotNull(workDao.readWork(command.workId)).toRecord(),
-            )
-        }
-    }
+    ): ReauthorizeProblemOrganizationWorkResult =
+        problemOrganizationWork.reauthorizeProblemOrganizationWork(command)
 
     override suspend fun markProblemOrganizationWorkWaitingAuthorization(
         command: ProblemOrganizationWorkTransitionCommand,
-    ): Boolean {
-        validateOrganizationWorkTransition(command, requireFailure = true)
-        return database.problemOrganizationWorkDao().markWaitingAuthorization(
-            workId = command.workId,
-            expectedStateVersion = command.expectedStateVersion,
-            leaseOwner = command.leaseOwner,
-            failureCode = requireNotNull(command.failureCode),
-            failureMessage = requireNotNull(command.failureMessage),
-            updatedAtEpochMillis = command.occurredAtEpochMillis,
-        ) == 1
-    }
+    ): Boolean =
+        problemOrganizationWork.markProblemOrganizationWorkWaitingAuthorization(command)
 
     override suspend fun retryProblemOrganizationWork(
         command: ProblemOrganizationWorkTransitionCommand,
-    ): Boolean {
-        validateOrganizationWorkTransition(command, requireFailure = true)
-        val notBefore = requireNotNull(command.notBeforeEpochMillis) {
-            "Retry requires a not-before time"
-        }
-        require(notBefore >= command.occurredAtEpochMillis) {
-            "Retry not-before time must not precede its transition"
-        }
-        return database.problemOrganizationWorkDao().markRetry(
-            workId = command.workId,
-            expectedStateVersion = command.expectedStateVersion,
-            leaseOwner = command.leaseOwner,
-            notBeforeEpochMillis = notBefore,
-            failureCode = requireNotNull(command.failureCode),
-            failureMessage = requireNotNull(command.failureMessage),
-            updatedAtEpochMillis = command.occurredAtEpochMillis,
-        ) == 1
-    }
+    ): Boolean =
+        problemOrganizationWork.retryProblemOrganizationWork(command)
 
     override suspend fun failProblemOrganizationWorkPermanently(
         command: ProblemOrganizationWorkTransitionCommand,
-    ): Boolean {
-        validateOrganizationWorkTransition(command, requireFailure = true)
-        return database.problemOrganizationWorkDao().markPermanentFailure(
-            workId = command.workId,
-            expectedStateVersion = command.expectedStateVersion,
-            leaseOwner = command.leaseOwner,
-            failureCode = requireNotNull(command.failureCode),
-            failureMessage = requireNotNull(command.failureMessage),
-            updatedAtEpochMillis = command.occurredAtEpochMillis,
-        ) == 1
-    }
+    ): Boolean =
+        problemOrganizationWork.failProblemOrganizationWorkPermanently(command)
 
     override suspend fun completeProblemOrganizationWork(
         command: ProblemOrganizationWorkTransitionCommand,
-    ): Boolean {
-        validateOrganizationWorkTransition(command, requireFailure = false)
-        val requestId = requireNotNull(command.requestId) { "Success requires a request id" }
-        require(requestId.isNotBlank()) { "requestId must not be blank" }
-        return database.problemOrganizationWorkDao().markSucceeded(
-            workId = command.workId,
-            expectedStateVersion = command.expectedStateVersion,
-            leaseOwner = command.leaseOwner,
-            requestId = requestId,
-            updatedAtEpochMillis = command.occurredAtEpochMillis,
-        ) == 1
-    }
+    ): Boolean =
+        problemOrganizationWork.completeProblemOrganizationWork(command)
 
     override suspend fun confirmAndCompleteProblemOrganizationWork(
         command: CompleteProblemOrganizationWorkAtomicallyCommand,
-    ): ConfirmAndCompleteProblemOrganizationWorkResult {
-        validateAtomicOrganizationCompletion(command)
-        KnowledgeGroundingRequestContract.validate(command.groundingRequests)
-        return database.withWriteTransaction {
-            val authorizationNowEpochMillis = trustedClockEpochMillis()
-            val workDao = database.problemOrganizationWorkDao()
-            val work = workDao.readWork(command.workId)
-            if (
-                work == null ||
-                !work.matchesCompletionAuthority(command, authorizationNowEpochMillis)
-            ) {
-                return@withWriteTransaction ConfirmAndCompleteProblemOrganizationWorkResult(
-                    completed = false,
-                    organizationResult = null,
-                )
-            }
-            val sourceReceipt = workDao.readCommitReceipt(work.commitReceiptCommandId)
-                ?: throw DatabaseContractViolationException(
-                    "Organization work commit receipt is missing",
-                )
-            command.confirmation?.let { confirmation ->
-                require(
-                    confirmation.sourceCommitReceiptCommandId == work.commitReceiptCommandId,
-                ) { "Organization confirmation belongs to another import occurrence" }
-            }
-            require(
-                command.groundingRequests.all { request ->
-                    request.organizationRequestId == command.requestId &&
-                        request.problemId == sourceReceipt.problemId &&
-                        request.problemRevisionId == sourceReceipt.problemRevisionId &&
-                        request.practiceUnitId == sourceReceipt.practiceUnitId
-                },
-            ) { "Knowledge grounding belongs to another organization work" }
-            if (command.groundingRequests.isNotEmpty()) {
-                problemOrganization.requireLocalPolicyAuthority(
-                    sourceReceipt.problemId,
-                    sourceReceipt.problemRevisionId,
-                )
-            }
-
-            val organizationResult = command.confirmation?.let {
-                problemOrganization.confirmInCurrentTransaction(it)
-            }
-            database.knowledgeGroundingDao().recordAllInCurrentTransaction(
-                command.groundingRequests.map(KnowledgeGroundingRequestRecord::toEntity),
-            )
-            val completionNowEpochMillis = maxOf(
-                authorizationNowEpochMillis,
-                trustedClockEpochMillis(),
-            )
-            if (
-                workDao.markSucceeded(
-                    workId = command.workId,
-                    expectedStateVersion = command.expectedStateVersion,
-                    leaseOwner = command.leaseOwner,
-                    requestId = command.requestId,
-                    updatedAtEpochMillis = completionNowEpochMillis,
-                ) != 1
-            ) {
-                throw DatabaseContractViolationException(
-                    "Organization work lease changed during atomic completion",
-                )
-            }
-            ConfirmAndCompleteProblemOrganizationWorkResult(
-                completed = true,
-                organizationResult = organizationResult,
-            )
-        }
-    }
+    ): ConfirmAndCompleteProblemOrganizationWorkResult =
+        problemOrganizationWork.confirmAndCompleteProblemOrganizationWork(command)
 
     private fun trustedClockEpochMillis(): Long =
         clock().also { require(it >= 0) { "clock must not be negative" } }
+
+    internal fun trustedBarrierClockEpochMillis(): Long = trustedClockEpochMillis()
 
     override suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
@@ -1617,152 +1319,12 @@ internal class RoomStudyDatabase(
         database.tutorExposureDao().readExposures(modelTaskRequestIds)
 
     private suspend fun loadPendingCaptureBatch(): List<PendingCaptureDraftRecord> =
-        database.withReadTransaction {
-            val pending = database.pendingCaptureDao()
-            val heads = pending.readPendingHeads()
-            if (heads.isEmpty()) return@withReadTransaction emptyList()
-
-            val sourceAssetsByDraft = pending.readPendingSourceAssets().groupBy { it.draftId }
-            val assessmentTasksByDraft = pending.readRecentPendingAssessmentTasks()
-                .groupBy { it.subjectId }
-                .mapValues { (_, tasks) -> tasks.map { it.toSnapshot() } }
-            val parseTasksByDraft = pending.readLatestPendingParseTasks()
-                .groupBy { it.subjectId }
-                .mapValues { (draftId, tasks) ->
-                    if (tasks.size != 1) {
-                        throw LearningLedgerIntegrityException(
-                            "Pending draft $draftId has multiple latest parse tasks",
-                        )
-                    }
-                    tasks.single().toSnapshot()
-                }
-
-            heads.map { head ->
-                val draft = head.toProblemDraftRecord(
-                    sourceAssetsByDraft[head.draftId].orEmpty(),
-                )
-                validatePendingTutorSession(
-                    draft = draft,
-                    sessionId = head.tutorSessionId,
-                    sessionRevision = head.tutorSessionDraftRevisionNumber,
-                )
-                val assessments = assessmentTasksByDraft[head.draftId].orEmpty()
-                PendingCaptureDraftRecord(
-                    draft = draft,
-                    editWorkspace = head.toValidatedWorkspaceRecord(draft),
-                    latestAssessmentTask = assessments.firstOrNull(),
-                    assessmentTasks = assessments,
-                    latestParseTask = parseTasksByDraft[head.draftId],
-                    tutorSessionId = head.tutorSessionId,
-                    tutorSessionDraftRevisionNumber = head.tutorSessionDraftRevisionNumber,
-                )
-            }
-        }
+        pendingCaptureSupport.loadPendingCaptureBatch()
 
     private suspend fun loadPendingCapture(
         index: PendingCaptureIndexRow,
-    ): PendingCaptureDraftRecord? {
-        val draft = database.problemDraftTransactionDao().read(index.draftId) ?: return null
-        if (
-            draft.status != StudyDbValue.ProblemDraftStatus.EDITING ||
-            draft.updatedAtEpochMillis != index.draftUpdatedAtEpochMillis
-        ) {
-            return null
-        }
-        val sessionId = index.tutorSessionId
-        val sessionRevision = index.tutorSessionDraftRevisionNumber
-        validatePendingTutorSession(draft, sessionId, sessionRevision)
-        return PendingCaptureDraftRecord(
-            draft = draft,
-            editWorkspace = index.toValidatedWorkspaceRecord(draft),
-            latestAssessmentTask = index.latestAssessmentRequestId?.let {
-                database.modelTaskTransactionDao().read(it)
-            },
-            assessmentTasks = database.pendingCaptureDao()
-                .readAssessmentRequestIds(index.draftId)
-                .mapNotNull { database.modelTaskTransactionDao().read(it) },
-            latestParseTask = index.latestParseRequestId?.let {
-                database.modelTaskTransactionDao().read(it)
-            },
-            tutorSessionId = sessionId,
-            tutorSessionDraftRevisionNumber = sessionRevision,
-        )
-    }
-
-    private fun validatePendingTutorSession(
-        draft: ProblemDraftRecord,
-        sessionId: String?,
-        sessionRevision: Int?,
-    ) {
-        if ((sessionId == null) != (sessionRevision == null)) {
-            throw LearningLedgerIntegrityException("Pending tutor-session columns are incomplete")
-        }
-        if (
-            sessionId != null &&
-            (draft.origin != StudyDbValue.CaptureOrigin.TUTOR ||
-                sessionRevision != draft.currentRevision.revisionNumber)
-        ) {
-            throw LearningLedgerIntegrityException("Pending tutor session disagrees with its draft")
-        }
-    }
-
-    private fun PendingCaptureWorkspaceColumns.toValidatedWorkspaceRecord(
-        draft: ProblemDraftRecord,
-    ): ProblemDraftEditWorkspaceRecord? {
-        val columns = listOf(
-            workspaceBasisRevisionNumber,
-            workspaceVersion,
-            workspaceSnapshotSchemaVersion,
-            workspaceSnapshot,
-            workspaceFingerprint,
-            workspaceCreatedAtEpochMillis,
-            workspaceUpdatedAtEpochMillis,
-        )
-        if (columns.all { it == null }) return null
-        if (columns.any { it == null }) {
-            throw ProblemDraftEditWorkspaceIntegrityException(
-                "Pending workspace ${draft.draftId} has incomplete columns",
-            )
-        }
-        val record = ProblemDraftEditWorkspaceRecord(
-            draftId = draft.draftId,
-            basisRevisionNumber = checkNotNull(workspaceBasisRevisionNumber),
-            workspaceVersion = checkNotNull(workspaceVersion),
-            snapshotSchemaVersion = checkNotNull(workspaceSnapshotSchemaVersion),
-            workspaceSnapshot = checkNotNull(workspaceSnapshot),
-            workspaceFingerprint = checkNotNull(workspaceFingerprint),
-            createdAtEpochMillis = checkNotNull(workspaceCreatedAtEpochMillis),
-            updatedAtEpochMillis = checkNotNull(workspaceUpdatedAtEpochMillis),
-        )
-        val workspace = try {
-            DatabaseContractValidator.decodeProblemDraftEditWorkspace(
-                snapshotSchemaVersion = record.snapshotSchemaVersion,
-                workspaceSnapshot = record.workspaceSnapshot,
-                workspaceFingerprint = record.workspaceFingerprint,
-            )
-        } catch (failure: Exception) {
-            throw ProblemDraftEditWorkspaceIntegrityException(
-                "Pending workspace ${draft.draftId} is corrupted",
-                failure,
-            )
-        }
-        if (
-            draft.status != StudyDbValue.ProblemDraftStatus.EDITING ||
-            record.basisRevisionNumber != draft.currentRevision.revisionNumber ||
-            record.workspaceVersion <= 0 ||
-            record.createdAtEpochMillis < draft.currentRevision.createdAtEpochMillis ||
-            record.updatedAtEpochMillis < record.createdAtEpochMillis ||
-            workspace.baseCandidateFingerprint != draft.currentRevision.documentFingerprint ||
-            workspace.workingDocument.blockEvidence.any {
-                it.sourceAssetId != draft.sourceAsset.sourceAssetId
-            }
-        ) {
-            throw ProblemDraftEditWorkspaceIntegrityException(
-                "Pending workspace ${draft.draftId} has a stale or invalid binding",
-            )
-        }
-        return record
-    }
+    ): PendingCaptureDraftRecord? =
+        pendingCaptureSupport.loadPendingCapture(index)
 
     override fun observeModelTask(
         requestId: String,
@@ -2064,836 +1626,228 @@ internal class RoomStudyDatabase(
         command: ConfirmProblemOrganizationCommand,
     ): ConfirmProblemOrganizationResult = problemOrganization.confirm(command)
 
-    override fun close() = database.close()
-}
-
-private const val KNOWLEDGE_NODE_QUERY_CHUNK_SIZE = 400
-
-private data class OrganizationSourceAssetIdentity(
-    val assetId: String,
-    val sha256: String,
-    val width: Int,
-    val height: Int,
-    val pageIndex: Int,
-)
-
-private fun reauthorizationNotApplied() = ReauthorizeProblemOrganizationWorkResult(
-    outcome = ReauthorizeProblemOrganizationWorkOutcome.NOT_APPLIED,
-    work = null,
-)
-
-private fun validateProblemOrganizationReauthorization(
-    authorization: ProblemOrganizationAuthorizationGrant,
-    provider: ProviderCapabilitySnapshot,
-    receipt: ProblemDraftCommitReceipt,
-    draft: ProblemDraftRecord,
-    nowEpochMillis: Long,
-) {
-    require(authorization.schemaVersion == ProblemOrganizationAuthorizationGrant.CURRENT_SCHEMA_VERSION) {
-        "Problem organization authorization schema is not current"
-    }
-    require(
-        authorization.authorizationPolicyVersion ==
-            ProblemOrganizationAuthorizationGrant.CURRENT_AUTHORIZATION_POLICY_VERSION,
-    ) { "Problem organization authorization policy is not current" }
-    require(authorization.purpose == ModelEgressPurpose.CLASSIFICATION) {
-        "Problem organization authorization purpose does not match"
-    }
-    require(authorization.authorizedTaskKind == ModelTaskKind.PROBLEM_CLASSIFY) {
-        "Problem organization authorization task does not match"
-    }
-    require(authorization.requestSchemaVersion == ModelEgressManifest.CURRENT_SCHEMA_VERSION) {
-        "Problem organization authorization request schema is not current"
-    }
-    require(
-        authorization.promptPolicyVersion == ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,
-    ) { "Problem organization authorization prompt policy is not current" }
-    require(authorization.matchesCurrent(provider, nowEpochMillis)) {
-        "Problem organization authorization does not match the current provider"
-    }
-    require(authorization.sourceDraftId == receipt.draftId) {
-        "Problem organization authorization belongs to another source draft"
-    }
-    require(
-        draft.draftId == receipt.draftId &&
-            draft.status == StudyDbValue.ProblemDraftStatus.COMMITTED &&
-            draft.currentRevision.revisionNumber == receipt.draftRevisionNumber,
-    ) { "Organization work no longer points to its committed source revision" }
-
-    val authorizedAssetsById = authorization.assets.associateBy { it.assetId }
-    require(
-        authorizedAssetsById.size == draft.sourceAssets.size &&
-            draft.sourceAssets.all { source ->
-                val canonical = source.sourceAsset
-                val authorized = authorizedAssetsById[canonical.sourceAssetId]
-                authorized != null &&
-                    authorized.sha256 == canonical.contentSha256 &&
-                    authorized.byteSize == canonical.byteSize &&
-                    authorized.width == canonical.width &&
-                    authorized.height == canonical.height &&
-                    authorized.selectedRegion == null
-            },
-    ) { "Problem organization authorization assets do not match its exact import occurrence" }
-}
-
-private fun validateOrganizationWorkTransition(
-    command: ProblemOrganizationWorkTransitionCommand,
-    requireFailure: Boolean,
-) {
-    require(command.workId.isNotBlank()) { "workId must not be blank" }
-    require(command.expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
-    require(command.leaseOwner.isNotBlank()) { "leaseOwner must not be blank" }
-    require(command.occurredAtEpochMillis >= 0) { "occurredAtEpochMillis must not be negative" }
-    if (requireFailure) {
-        require(!command.failureCode.isNullOrBlank()) { "failureCode must not be blank" }
-        require(!command.failureMessage.isNullOrBlank()) { "failureMessage must not be blank" }
-    } else {
-        require(command.failureCode == null && command.failureMessage == null) {
-            "Successful organization work cannot contain a failure"
-        }
-    }
-}
-
-private fun validateAtomicOrganizationCompletion(
-    command: CompleteProblemOrganizationWorkAtomicallyCommand,
-) {
-    require(command.workId.isNotBlank()) { "workId must not be blank" }
-    require(command.expectedStateVersion >= 0) { "expectedStateVersion must not be negative" }
-    require(command.leaseOwner.isNotBlank()) { "leaseOwner must not be blank" }
-    require(command.requestId.isNotBlank()) { "requestId must not be blank" }
-}
-
-private fun ProblemOrganizationWorkEntity.matchesCompletionAuthority(
-    command: CompleteProblemOrganizationWorkAtomicallyCommand,
-    authorizationNowEpochMillis: Long,
-): Boolean =
-    stateVersion == command.expectedStateVersion &&
-        status == StudyDbValue.ProblemOrganizationWorkStatus.RUNNING &&
-        leaseOwner == command.leaseOwner &&
-        requestId == command.requestId &&
-        leaseExpiresAtEpochMillis != null &&
-        leaseExpiresAtEpochMillis > authorizationNowEpochMillis
-
-private fun ProblemOrganizationWorkEntity.toRecord() = ProblemOrganizationWorkRecord(
-    workId = workId,
-    commitReceiptCommandId = commitReceiptCommandId,
-    status = status,
-    stateVersion = stateVersion,
-    attemptCount = attemptCount,
-    notBeforeEpochMillis = notBeforeEpochMillis,
-    requestId = requestId,
-    requestSnapshot = requestSnapshot,
-    authorizationGrantSnapshot = authorizationGrantSnapshot,
-    leaseOwner = leaseOwner,
-    leaseExpiresAtEpochMillis = leaseExpiresAtEpochMillis,
-    failureCode = failureCode,
-    failureMessage = failureMessage,
-    createdAtEpochMillis = createdAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun ProblemDraftCommitReceiptEntity.toProblemDraftCommitReceipt() =
-    ProblemDraftCommitReceipt(
-        commandId = commandId,
-        payloadFingerprint = payloadFingerprint,
-        draftId = draftId,
-        draftRevisionNumber = draftRevisionNumber,
-        problemId = problemId,
-        problemRevisionId = problemRevisionId,
-        practiceUnitId = practiceUnitId,
-        errorBookEntryId = errorBookEntryId,
-        committedAtEpochMillis = committedAtEpochMillis,
-    )
-
-private fun PendingCaptureHeadRow.toProblemDraftRecord(
-    sourceRows: List<PendingCaptureSourceAssetRow>,
-): ProblemDraftRecord {
-    val persistedRevisionNumber = revisionNumber
-        ?: throw LearningLedgerIntegrityException("Pending draft $draftId has no current revision")
-    if (persistedRevisionNumber != draftCurrentRevisionNumber) {
-        throw LearningLedgerIntegrityException("Pending draft $draftId has a mismatched current revision")
-    }
-    val sourceAssets = sourceRows.map { row ->
-        ProblemDraftSourceAssetRecord(
-            pageIndex = row.pageIndex,
-            sourceAsset = CanonicalSourceAssetRecord(
-                sourceAssetId = row.sourceAssetId,
-                contentSha256 = row.contentSha256,
-                relativePath = row.relativePath,
-                mimeType = row.mimeType,
-                byteSize = row.byteSize,
-                width = row.width,
-                height = row.height,
-                sourceType = row.sourceType,
-                createdAtEpochMillis = row.createdAtEpochMillis,
+    override suspend fun cancelTutorEvidenceRequest(
+        command: CancelTutorEvidenceRequestCommand,
+    ): TutorEvidenceCancellationResult {
+        val result = database.tutorLearningMemoryDao().finalizeEvidence(
+            command = FinalizeTutorEvidenceRequestCommand(
+                learnerId = command.learnerId,
+                conversationId = command.conversationId,
+                conversationGeneration = command.conversationGeneration,
+                conversationStateVersion = command.conversationStateVersion,
+                turnReceiptId = command.turnReceiptId,
+                turnOrdinal = command.turnOrdinal,
+                subject = command.subject,
+                problemAnchorId = command.problemAnchorId,
+                evidenceRequestId = command.evidenceRequestId,
+                expectedEvidenceStateVersion = command.expectedEvidenceStateVersion,
+                kind = command.kind,
+                requestVersion = command.requestVersion,
+                explanationMode = command.explanationMode,
+                modeVersion = command.modeVersion,
+                directiveFingerprint = command.directiveFingerprint,
+                terminalStatus = com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestStatus.CANCELLED,
+                idempotencyKey = command.idempotencyKey,
+                payloadFingerprint = command.payloadFingerprint,
+                submission = null,
             ),
+            nowEpochMillis = trustedClockEpochMillis(),
+        )
+        return TutorEvidenceCancellationResult(
+            replayed = result.replayed,
+            request = result.request,
         )
     }
-    val primarySource = sourceAssets.firstOrNull()?.sourceAsset
-        ?: throw LearningLedgerIntegrityException("Pending draft $draftId has no source asset")
-    if (primarySource.sourceAssetId != primarySourceAssetId) {
-        throw LearningLedgerIntegrityException("Pending draft $draftId has a mismatched primary source")
-    }
-    return ProblemDraftRecord(
-        draftId = draftId,
-        sourceAsset = primarySource,
-        sourceAssets = sourceAssets,
-        origin = draftOrigin,
-        status = draftStatus,
-        currentRevision = ProblemDraftRevisionRecord(
-            draftId = draftId,
-            revisionNumber = persistedRevisionNumber,
-            basisRevisionNumber = revisionBasisRevisionNumber,
-            subject = revisionSubject,
-            title = revisionTitle
-                ?: throw LearningLedgerIntegrityException("Pending draft $draftId has no revision title"),
-            questionDocument = CapturedQuestionDocumentCodec.decode(
-                revisionQuestionDocumentSnapshot ?: throw LearningLedgerIntegrityException(
-                    "Pending draft $draftId has no question document",
-                ),
-            ),
-            documentFingerprint = revisionDocumentFingerprint
-                ?: throw LearningLedgerIntegrityException(
-                    "Pending draft $draftId has no document fingerprint",
-                ),
-            author = revisionAuthor
-                ?: throw LearningLedgerIntegrityException("Pending draft $draftId has no revision author"),
-            createdAtEpochMillis = revisionCreatedAtEpochMillis
-                ?: throw LearningLedgerIntegrityException(
-                    "Pending draft $draftId has no revision creation time",
-                ),
-        ),
-        createdAtEpochMillis = draftCreatedAtEpochMillis,
-        updatedAtEpochMillis = draftUpdatedAtEpochMillis,
-        requestFingerprint = draftRequestFingerprint,
+
+    override suspend fun beginTutorLearningEvidenceSessionIntent(
+        command: BeginTutorLearningEvidenceSessionIntentCommand,
+    ): TutorLearningEvidenceSessionRecord =
+        database.tutorLearningEvidenceSessionDao().begin(command, trustedClockEpochMillis())
+
+    override suspend fun acknowledgeTutorLearningEvidenceSession(
+        command: AcknowledgeTutorLearningEvidenceSessionCommand,
+    ): TutorLearningEvidenceSessionAcknowledgeDatabaseResult =
+        database.tutorLearningEvidenceSessionDao().acknowledge(command, trustedClockEpochMillis())
+
+    override suspend fun importOrReuseBatchDraft(
+        command: ImportOrReuseBatchCaptureDraftCommand,
+    ): CaptureDraftBatchImportReceipt = batchCaptureImports.importOrReuse(command)
+
+    override suspend fun readBatchCaptureDraftReceipt(
+        batchJobId: String,
+        batchPageIndex: Int,
+    ): CaptureDraftBatchImportReceipt? = batchCaptureImports.readExact(batchJobId, batchPageIndex)
+
+    override suspend fun readBatchCaptureDraftReceipts(
+        batchJobId: String,
+        afterReceiptSequenceExclusive: Long,
+        limit: Int,
+    ): CaptureDraftBatchImportReceiptPage = batchCaptureImports.readPage(
+        batchJobId = batchJobId,
+        afterReceiptSequenceExclusive = afterReceiptSequenceExclusive,
+        limit = limit,
     )
+
+    override suspend fun appendLegacyAuthorityCutoverStageReceipt(
+        command: AppendLegacyAuthorityCutoverStageCommand,
+    ): LegacyAuthorityCutoverJournalWriteResult =
+        legacyAuthoritySupport.appendLegacyAuthorityCutoverStageReceipt(command)
+
+    override suspend fun readLegacyAuthorityCutoverStageReceipts():
+        List<LegacyAuthorityCutoverStageReceipt> =
+        legacyAuthoritySupport.readLegacyAuthorityCutoverStageReceipts()
+
+    override suspend fun prepareCaptureStudentSaveHandoff(
+        command: PrepareCaptureStudentSaveHandoffCommand,
+    ): CaptureStudentSaveHandoffWriteResult =
+        legacyAuthoritySupport.prepareCaptureStudentSaveHandoff(command)
+
+    override suspend fun finalizeCaptureStudentSaveHandoff(
+        command: FinalizeCaptureStudentSaveHandoffCommand,
+    ): CaptureStudentSaveHandoffWriteResult =
+        legacyAuthoritySupport.finalizeCaptureStudentSaveHandoff(command)
+
+    override suspend fun readPendingCaptureStudentSaveHandoffs(
+        query: ReadPendingCaptureStudentSaveHandoffsQuery,
+    ): List<CaptureStudentSaveHandoffRecord> =
+        legacyAuthoritySupport.readPendingCaptureStudentSaveHandoffs(query)
+
+    override suspend fun acknowledgeStudentOwnedCaptureSession(
+        command: AcknowledgeStudentOwnedCaptureSessionCommand,
+    ): StudentOwnedCaptureSessionAckResult =
+        legacyAuthoritySupport.acknowledgeStudentOwnedCaptureSession(command)
+
+    override suspend fun readExactLegacyCaptureStudentDocument(
+        query: ExactLegacyCaptureStudentDocumentQuery,
+    ): LegacyStudentDocumentMigrationRecord? =
+        legacyAuthoritySupport.readExactLegacyCaptureStudentDocument(query)
+
+    override suspend fun readLegacyAuthorityMigrationSnapshot(
+        learnerId: String,
+    ): LegacyAuthorityMigrationSnapshot =
+        legacyAuthoritySupport.readLegacyAuthorityMigrationSnapshot(learnerId)
+
+    override suspend fun readLegacyStudentDocumentMigrationPage(
+        afterExclusive: LegacyStudentDocumentMigrationCursor?,
+        limit: Int,
+    ): LegacyStudentDocumentMigrationPage =
+        legacyAuthoritySupport.readLegacyStudentDocumentMigrationPage(afterExclusive, limit)
+
+    override suspend fun readLegacyMasteryFactMigrationPage(
+        learnerId: String,
+        afterExclusive: LegacyMasteryFactMigrationCursor?,
+        limit: Int,
+    ): LegacyMasteryFactMigrationPage =
+        legacyAuthoritySupport.readLegacyMasteryFactMigrationPage(learnerId, afterExclusive, limit)
+
+    override suspend fun activateCurrentTutorInteraction(
+        command: ActivateCurrentTutorInteractionCommand,
+    ): CurrentTutorInteractionActivationResult =
+        currentTutorInteractions.activateCurrentTutorInteraction(command)
+
+    override suspend fun readCurrentTutorInteraction(
+        learnerId: String,
+        conversationId: String,
+    ): CurrentTutorInteractionBundle? =
+        currentTutorInteractions.readCurrentTutorInteraction(learnerId, conversationId)
+
+    override fun observeCurrentTutorInteraction(
+        learnerId: String,
+        conversationId: String,
+    ): Flow<CurrentTutorInteractionBundle?> =
+        currentTutorInteractions.observeCurrentTutorInteraction(learnerId, conversationId)
+
+    override fun observeTutorInteractionHistory(
+        learnerId: String,
+        conversationId: String,
+    ): Flow<List<CurrentTutorInteractionEventRecord>> =
+        currentTutorInteractions.observeTutorInteractionHistory(learnerId, conversationId)
+
+    override suspend fun readTutorAnswerExposureEvents(
+        learnerId: String,
+        modelTaskRequestIds: Set<String>,
+    ): List<CurrentTutorInteractionEventRecord> =
+        currentTutorInteractions.readTutorAnswerExposureEvents(learnerId, modelTaskRequestIds)
+
+    override suspend fun appendCurrentTutorInteraction(
+        command: AppendCurrentTutorInteractionCommand,
+    ): CurrentTutorInteractionAppendResult =
+        currentTutorInteractions.appendCurrentTutorInteraction(command)
+
+    override suspend fun consumeCurrentTutorOpenResponseAuthorization(
+        command: ConsumeCurrentTutorOpenResponseAuthorizationCommand,
+    ): CurrentTutorOpenResponseAuthorizationConsumeResult =
+        currentTutorInteractions.consumeCurrentTutorOpenResponseAuthorization(command)
+
+    override suspend fun persistCurrentTutorSessionPolicy(
+        command: PersistCurrentTutorSessionPolicyCommand,
+    ): CurrentTutorSessionPolicyWriteResult =
+        currentTutorInteractions.persistCurrentTutorSessionPolicy(command)
+
+    override suspend fun readCurrentTutorSessionPolicy(
+        learnerId: String,
+        sessionId: String,
+    ): CurrentTutorSessionPolicyRecord? =
+        currentTutorInteractions.readCurrentTutorSessionPolicy(learnerId, sessionId)
+
+    override suspend fun stageCurrentTutorSessionHostWork(
+        command: StageCurrentTutorSessionHostWorkCommand,
+    ): CurrentTutorSessionHostWorkWriteResult =
+        currentTutorInteractions.stageCurrentTutorSessionHostWork(command)
+
+    override suspend fun readCurrentTutorSessionHostWork(
+        learnerId: String,
+        sessionId: String,
+    ): CurrentTutorSessionHostWorkRecord? =
+        currentTutorInteractions.readCurrentTutorSessionHostWork(learnerId, sessionId)
+
+    override fun observeCurrentTutorSessionHostWork(
+        learnerId: String,
+        sessionId: String,
+    ): Flow<CurrentTutorSessionHostWorkRecord?> =
+        currentTutorInteractions.observeCurrentTutorSessionHostWork(learnerId, sessionId)
+
+    override suspend fun markCurrentTutorSessionHostWorkActive(
+        command: MarkCurrentTutorSessionHostWorkActiveCommand,
+    ): CurrentTutorSessionHostWorkWriteResult =
+        currentTutorInteractions.markCurrentTutorSessionHostWorkActive(command)
+
+    override suspend fun revokeCurrentTutorSessionHostWork(
+        command: RevokeCurrentTutorSessionHostWorkCommand,
+    ): CurrentTutorSessionHostWorkWriteResult =
+        currentTutorInteractions.revokeCurrentTutorSessionHostWork(command)
+
+    override suspend fun claimCurrentTutorFreeResponseAction(
+        command: ClaimCurrentTutorFreeResponseActionCommand,
+    ): CurrentTutorFreeResponseActionClaimResult =
+        currentTutorInteractions.claimCurrentTutorFreeResponseAction(command)
+
+    override suspend fun readCurrentTutorFreeResponseDispatchState(
+        query: CurrentTutorFreeResponseActionClaimQuery,
+    ): CurrentTutorFreeResponseDispatchState =
+        currentTutorInteractions.readCurrentTutorFreeResponseDispatchState(query)
+
+    override suspend fun acquireCurrentTutorFreeResponseDispatch(
+        command: AcquireCurrentTutorFreeResponseDispatchCommand,
+    ): CurrentTutorFreeResponseDispatchAcquireResult =
+        currentTutorInteractions.acquireCurrentTutorFreeResponseDispatch(command)
+
+    override suspend fun completeCurrentTutorFreeResponseDispatch(
+        command: CompleteCurrentTutorFreeResponseDispatchCommand,
+    ): CurrentTutorFreeResponseDispatchMutationResult =
+        currentTutorInteractions.completeCurrentTutorFreeResponseDispatch(command)
+
+    override suspend fun releaseCurrentTutorFreeResponseDispatch(
+        command: ReleaseCurrentTutorFreeResponseDispatchCommand,
+    ): CurrentTutorFreeResponseDispatchMutationResult =
+        currentTutorInteractions.releaseCurrentTutorFreeResponseDispatch(command)
+
+    override suspend fun failCurrentTutorFreeResponseDispatchClosed(
+        command: FailCurrentTutorFreeResponseDispatchClosedCommand,
+    ): CurrentTutorFreeResponseDispatchMutationResult =
+        currentTutorInteractions.failCurrentTutorFreeResponseDispatchClosed(command)
+    override fun close() {
+        currentTutorInteractions.close()
+        database.close()
+    }
 }
-
-private val PENDING_CAPTURE_TABLES = arrayOf(
-    "problem_draft",
-    "problem_draft_revision",
-    "problem_draft_source_asset",
-    "canonical_source_asset",
-    "problem_draft_edit_snapshot",
-    "tutor_session",
-    "model_task",
-)
-
-private fun ProblemSeedRecord.toEntity() = ProblemEntity(
-    problemId = problemId,
-    canonicalFingerprint = canonicalFingerprint,
-    subject = subject,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun ProblemRevisionSeedRecord.toEntity() = ProblemRevisionEntity(
-    revisionId = revisionId,
-    problemId = problemId,
-    revisionNumber = revisionNumber,
-    title = title,
-    problemMarkdown = problemMarkdown,
-    questionDocumentSnapshot = questionDocumentSnapshot,
-    answerSpecId = answerSpecId,
-    answerSpecSnapshot = answerSpecSnapshot,
-    answerVerificationStatus = answerVerificationStatus,
-    sourceType = sourceType,
-    sourceReference = sourceReference,
-    contentFingerprint = contentFingerprint,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun PracticeUnitSeedRecord.toEntity() = PracticeUnitEntity(
-    practiceUnitId = practiceUnitId,
-    problemId = problemId,
-    problemRevisionId = problemRevisionId,
-    unitKey = unitKey,
-    unitKind = unitKind,
-    title = title,
-    promptMarkdown = promptMarkdown,
-    estimatedSeconds = estimatedSeconds,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun ErrorBookEntrySeedRecord.toEntity() = ErrorBookEntryEntity(
-    entryId = entryId,
-    practiceUnitId = practiceUnitId,
-    problemId = problemId,
-    currentRevisionId = currentRevisionId,
-    sourceKey = sourceKey,
-    status = status,
-    acceptedAtEpochMillis = acceptedAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun KnowledgeNodeSeedRecord.toEntity() = KnowledgeNodeEntity(
-    knowledgeNodeId = knowledgeNodeId,
-    stableCode = stableCode,
-    subject = subject,
-    displayName = displayName,
-    canonicalName = canonicalName,
-    nodeKind = nodeKind,
-    granularity = granularity,
-    aliasesText = aliases.sorted().joinToString("\u001F"),
-    boundaryMarkdown = boundaryMarkdown,
-    verificationStatus = verificationStatus,
-    parentKnowledgeNodeId = parentKnowledgeNodeId,
-    taxonomyVersion = taxonomyVersion,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun KnowledgeNodeSeedRecord.toSearchFeatures(): List<KnowledgeSearchFeatureEntity> =
-    KnowledgeSearchFeatureExtractor.fromNode(this).map { feature ->
-        KnowledgeSearchFeatureEntity(
-            subject = subject,
-            searchFeature = feature,
-            knowledgeNodeId = knowledgeNodeId,
-        )
-    }
-
-private fun KnowledgeNodeEntity.toSearchFeatures(): List<KnowledgeSearchFeatureEntity> =
-    toSeedRecord().toSearchFeatures()
-
-private fun KnowledgeNodeEntity.toSeedRecord() = KnowledgeNodeSeedRecord(
-    knowledgeNodeId = knowledgeNodeId,
-    stableCode = stableCode,
-    subject = subject,
-    displayName = displayName,
-    parentKnowledgeNodeId = parentKnowledgeNodeId,
-    taxonomyVersion = taxonomyVersion,
-    createdAtEpochMillis = createdAtEpochMillis,
-    canonicalName = canonicalName,
-    nodeKind = nodeKind,
-    granularity = granularity,
-    aliases = aliasesText.split("\u001F").filter(String::isNotBlank).toSet(),
-    boundaryMarkdown = boundaryMarkdown,
-    verificationStatus = verificationStatus,
-)
-
-private fun KnowledgeSourceSeedRecord.toEntity() = KnowledgeSourceEntity(
-    sourceId = sourceId,
-    subject = subject,
-    sourceType = sourceType,
-    title = title,
-    publisher = publisher,
-    edition = edition,
-    sourceUri = sourceUri,
-    licenseStatus = licenseStatus,
-    contentFingerprint = contentFingerprint,
-    importedAtEpochMillis = importedAtEpochMillis,
-    contentUsePolicy = contentUsePolicy,
-    licenseExpression = licenseExpression,
-    licenseUri = licenseUri,
-    attributionText = attributionText,
-)
-
-private fun KnowledgeSourceEntity.toSeedRecord() = KnowledgeSourceSeedRecord(
-    sourceId = sourceId,
-    subject = subject,
-    sourceType = sourceType,
-    title = title,
-    publisher = publisher,
-    edition = edition,
-    sourceUri = sourceUri,
-    licenseStatus = licenseStatus,
-    contentFingerprint = contentFingerprint,
-    importedAtEpochMillis = importedAtEpochMillis,
-    contentUsePolicy = contentUsePolicy,
-    licenseExpression = licenseExpression,
-    licenseUri = licenseUri,
-    attributionText = attributionText,
-)
-
-private fun KnowledgeNodeRelationRecord.toEntity() = KnowledgeNodeRelationEntity(
-    relationId = relationId,
-    subject = subject,
-    prerequisiteKnowledgeNodeId = prerequisiteKnowledgeNodeId,
-    dependentKnowledgeNodeId = dependentKnowledgeNodeId,
-    relationType = relationType,
-    sourceId = sourceId,
-    sourceLocator = sourceLocator,
-    reviewedAtEpochMillis = reviewedAtEpochMillis,
-)
-
-private fun KnowledgeNodeRelationEntity.toRecord() = KnowledgeNodeRelationRecord(
-    relationId = relationId,
-    subject = subject,
-    prerequisiteKnowledgeNodeId = prerequisiteKnowledgeNodeId,
-    dependentKnowledgeNodeId = dependentKnowledgeNodeId,
-    relationType = relationType,
-    sourceId = sourceId,
-    sourceLocator = sourceLocator,
-    reviewedAtEpochMillis = reviewedAtEpochMillis,
-)
-
-private fun KnowledgeTeachingMaterialRecord.toEntity() = KnowledgeTeachingMaterialEntity(
-    materialId = materialId,
-    stableCode = stableCode,
-    subject = subject,
-    materialType = materialType,
-    title = title,
-    summaryMarkdown = summaryMarkdown,
-    applicabilityMarkdown = applicabilityMarkdown,
-    contentMarkdown = contentMarkdown,
-    boundaryMarkdown = boundaryMarkdown,
-    derivationKind = derivationKind,
-    sourceId = sourceId,
-    sourceLocator = sourceLocator,
-    contentFingerprint = contentFingerprint,
-    reviewedAtEpochMillis = reviewedAtEpochMillis,
-)
-
-private fun KnowledgeTeachingMaterialEntity.toRecord() = KnowledgeTeachingMaterialRecord(
-    materialId = materialId,
-    stableCode = stableCode,
-    subject = subject,
-    materialType = materialType,
-    title = title,
-    summaryMarkdown = summaryMarkdown,
-    applicabilityMarkdown = applicabilityMarkdown,
-    contentMarkdown = contentMarkdown,
-    boundaryMarkdown = boundaryMarkdown,
-    derivationKind = derivationKind,
-    sourceId = sourceId,
-    sourceLocator = sourceLocator,
-    contentFingerprint = contentFingerprint,
-    reviewedAtEpochMillis = reviewedAtEpochMillis,
-)
-
-private fun KnowledgeTeachingMaterialNodeBindingRecord.toEntity() =
-    KnowledgeTeachingMaterialNodeBindingEntity(
-        materialId = materialId,
-        knowledgeNodeId = knowledgeNodeId,
-        role = role,
-    )
-
-private fun KnowledgeTeachingMaterialNodeBindingEntity.toRecord() =
-    KnowledgeTeachingMaterialNodeBindingRecord(
-        materialId = materialId,
-        knowledgeNodeId = knowledgeNodeId,
-        role = role,
-    )
-
-private fun KnowledgeGroundingRequestRecord.toEntity() = KnowledgeGroundingRequestEntity(
-    groundingRequestId = groundingRequestId,
-    groundingKey = groundingKey,
-    organizationRequestId = organizationRequestId,
-    organizationRequestFingerprint = organizationRequestFingerprint,
-    requestOrdinal = requestOrdinal,
-    problemId = problemId,
-    problemRevisionId = problemRevisionId,
-    practiceUnitId = practiceUnitId,
-    subject = subject,
-    query = query,
-    expectedParentKnowledgeDisplayName = expectedParentKnowledgeDisplayName,
-    reasonMarkdown = reasonMarkdown,
-    status = status,
-    createdAtEpochMillis = createdAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun KnowledgeGroundingRequestEntity.toRecord() = KnowledgeGroundingRequestRecord(
-    groundingRequestId = groundingRequestId,
-    groundingKey = groundingKey,
-    organizationRequestId = organizationRequestId,
-    organizationRequestFingerprint = organizationRequestFingerprint,
-    requestOrdinal = requestOrdinal,
-    problemId = problemId,
-    problemRevisionId = problemRevisionId,
-    practiceUnitId = practiceUnitId,
-    subject = subject,
-    query = query,
-    expectedParentKnowledgeDisplayName = expectedParentKnowledgeDisplayName,
-    reasonMarkdown = reasonMarkdown,
-    status = status,
-    createdAtEpochMillis = createdAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun KnowledgeGroundingSummaryRow.toRecord() = KnowledgeGroundingSummaryRecord(
-    groundingKey = groundingKey,
-    subject = subject,
-    expectedParentKnowledgeDisplayName = expectedParentKnowledgeDisplayName,
-    query = query,
-    relatedQuestionCount = relatedQuestionCount,
-    firstObservedAtEpochMillis = firstObservedAtEpochMillis,
-    lastObservedAtEpochMillis = lastObservedAtEpochMillis,
-)
-
-private data class KnowledgeBaseDependencies(
-    val sources: List<KnowledgeSourceSeedRecord>,
-    val parentNodes: List<KnowledgeNodeSeedRecord>,
-)
-
-private fun KnowledgeGroundingResolutionEntity.toRecord() = KnowledgeGroundingResolutionRecord(
-    resolutionId = resolutionId,
-    groundingKey = groundingKey,
-    subject = subject,
-    knowledgeNodeId = knowledgeNodeId,
-    taxonomyVersion = taxonomyVersion,
-    resolvedOccurrenceCount = resolvedOccurrenceCount,
-    linkedPracticeUnitCount = linkedPracticeUnitCount,
-    resolvedAtEpochMillis = resolvedAtEpochMillis,
-)
-
-private fun ReviewedKnowledgeCoverageRow.toRecord() = ReviewedKnowledgeCoverageRecord(
-    subject = subject,
-    topicCount = topicCount,
-    atomicKnowledgeCount = atomicKnowledgeCount,
-    reviewedSourceCount = reviewedSourceCount,
-    latestReviewedAtEpochMillis = latestReviewedAtEpochMillis,
-)
-
-private fun KnowledgeNodeSourceBindingSeedRecord.toEntity() = KnowledgeNodeSourceBindingEntity(
-    knowledgeNodeId = knowledgeNodeId,
-    sourceId = sourceId,
-    sourceLocator = sourceLocator,
-    derivationNote = derivationNote,
-    reviewedAtEpochMillis = reviewedAtEpochMillis,
-)
-
-private fun KnowledgeNodeSourceBindingEntity.toSeedRecord() =
-    KnowledgeNodeSourceBindingSeedRecord(
-        knowledgeNodeId = knowledgeNodeId,
-        sourceId = sourceId,
-        sourceLocator = sourceLocator,
-        derivationNote = derivationNote,
-        reviewedAtEpochMillis = reviewedAtEpochMillis,
-    )
-
-private fun KnowledgeBindingSeedRecord.toEntity() = PracticeUnitKnowledgeBindingEntity(
-    bindingId = bindingId,
-    practiceUnitId = practiceUnitId,
-    knowledgeNodeId = knowledgeNodeId,
-    basisRevisionId = basisRevisionId,
-    strength = strength,
-    sourceType = sourceType,
-    taxonomyVersion = taxonomyVersion,
-    acceptedAtEpochMillis = acceptedAtEpochMillis,
-)
-
-private fun ProblemRelationSeedRecord.toEntity() = ProblemRelationEntity(
-    relationId = relationId,
-    sourceProblemId = sourceProblemId,
-    targetProblemId = targetProblemId,
-    relationType = relationType,
-    status = status,
-    sourceBasisRevisionId = sourceBasisRevisionId,
-    targetBasisRevisionId = targetBasisRevisionId,
-    confidence = confidence,
-    createdAtEpochMillis = createdAtEpochMillis,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun AssessmentItemSnapshotSeedRecord.toEntity() = AssessmentItemSnapshotEntity(
-    assessmentItemSnapshotId = assessmentItemSnapshotId,
-    itemRevision = itemRevision,
-    practiceUnitId = practiceUnitId,
-    problemRevisionId = problemRevisionId,
-    tutorContentSnapshotId = tutorContentSnapshotId,
-    promptMarkdown = promptMarkdown,
-    optionsSnapshot = optionsSnapshot,
-    answerSpecSnapshot = answerSpecSnapshot,
-    verificationStatus = verificationStatus,
-    assessmentEligibility = assessmentEligibility,
-    scoringMode = scoringMode,
-    learnerSnapshotVersion = learnerSnapshotVersion,
-    projectionCheckpoint = projectionCheckpoint,
-    hintLevelAtPresentation = hintLevelAtPresentation,
-    answerRevealState = answerRevealState,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun AssessmentItemSnapshotEntity.toRecord() = AssessmentItemSnapshotSeedRecord(
-    assessmentItemSnapshotId = assessmentItemSnapshotId,
-    itemRevision = itemRevision,
-    practiceUnitId = practiceUnitId,
-    problemRevisionId = problemRevisionId,
-    tutorContentSnapshotId = tutorContentSnapshotId,
-    promptMarkdown = promptMarkdown,
-    optionsSnapshot = optionsSnapshot,
-    answerSpecSnapshot = answerSpecSnapshot,
-    verificationStatus = verificationStatus,
-    assessmentEligibility = assessmentEligibility,
-    scoringMode = scoringMode,
-    learnerSnapshotVersion = learnerSnapshotVersion,
-    projectionCheckpoint = projectionCheckpoint,
-    hintLevelAtPresentation = hintLevelAtPresentation,
-    answerRevealState = answerRevealState,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun AssessmentEventSeedRecord.toEntity() = AssessmentEventEntity(
-    assessmentEventId = assessmentEventId,
-    assessmentItemSnapshotId = assessmentItemSnapshotId,
-    eventSequence = eventSequence,
-    eventType = eventType,
-    hintLevel = hintLevel,
-    submittedResponse = submittedResponse,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-)
-
-private fun ProblemMemoryStateRecord.toEntity() = ProblemMemoryStateEntity(
-    practiceUnitId = practiceUnitId,
-    stabilityDays = stabilityDays,
-    difficulty = difficulty,
-    lastReviewedAtEpochMillis = lastReviewedAtEpochMillis,
-    nextReviewAtEpochMillis = nextReviewAtEpochMillis,
-    reviewCount = reviewCount,
-    lapseCount = lapseCount,
-    retrievability = retrievability,
-    projectionCheckpoint = projectionCheckpoint,
-    projectorVersion = projectorVersion,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun KnowledgeMasteryStateRecord.toEntity() = KnowledgeMasteryStateEntity(
-    knowledgeNodeId = knowledgeNodeId,
-    masteryProbability = masteryProbability,
-    independentCorrectCount = independentCorrectCount,
-    assistedCorrectCount = assistedCorrectCount,
-    incorrectCount = incorrectCount,
-    evidenceWeightTotal = evidenceWeightTotal,
-    lastEvidenceAtEpochMillis = lastEvidenceAtEpochMillis,
-    projectionCheckpoint = projectionCheckpoint,
-    projectorVersion = projectorVersion,
-    updatedAtEpochMillis = updatedAtEpochMillis,
-)
-
-private fun ReviewPlanRecord.toEntity() = ReviewPlanEntity(
-    reviewPlanId = reviewPlanId,
-    learnerId = learnerId,
-    localDate = localDate,
-    localDayEpochDay = localDayEpochDay,
-    timeZoneId = timeZoneId,
-    timeBudgetSeconds = timeBudgetSeconds,
-    planningAtEpochMillis = planningAtEpochMillis,
-    status = status,
-    plannerVersion = plannerVersion,
-    projectionCheckpoint = projectionCheckpoint,
-    inputFingerprint = inputFingerprint,
-    planFingerprint = planFingerprint,
-    planRevision = planRevision,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun ReviewQueueItemRecord.toEntity() = ReviewQueueItemEntity(
-    reviewQueueItemId = reviewQueueItemId,
-    reviewPlanId = reviewPlanId,
-    practiceUnitId = practiceUnitId,
-    itemFamilyId = itemFamilyId,
-    sourceBundleId = sourceBundleId,
-    ordinal = ordinal,
-    priorityScore = priorityScore,
-    difficultyBand = difficultyBand,
-    dueAtEpochMillis = dueAtEpochMillis,
-    estimatedSeconds = estimatedSeconds,
-    reasonSnapshot = reasonSnapshot,
-    status = status,
-)
-
-private fun ReviewQueueItemRecord.toKnowledgeNodeEntities() = knowledgeNodeIds
-    .sorted()
-    .map { ReviewQueueKnowledgeNodeEntity(reviewQueueItemId, it) }
-
-private fun ReviewQueueItemRecord.toReasonEntities() = reasons
-    .sorted()
-    .map { ReviewQueueReasonEntity(reviewQueueItemId, it) }
-
-private fun ReviewSessionRecord.toEntity() = ReviewSessionEntity(
-    reviewSessionId = reviewSessionId,
-    reviewPlanId = reviewPlanId,
-    status = status,
-    activeSessionKey = reviewPlanId.takeIf { status == StudyDbValue.ReviewStatus.IN_PROGRESS },
-    startedAtEpochMillis = startedAtEpochMillis,
-    lastActiveAtEpochMillis = lastActiveAtEpochMillis,
-    completedAtEpochMillis = completedAtEpochMillis,
-    currentOrdinal = currentOrdinal,
-    timeBudgetSeconds = timeBudgetSeconds,
-    projectionCheckpoint = projectionCheckpoint,
-    stateVersion = stateVersion,
-)
-
-private fun ReviewSessionRecord.toRevisionEntity() = ReviewSessionRevisionEntity(
-    reviewSessionId = reviewSessionId,
-    stateVersion = stateVersion,
-    reviewPlanId = reviewPlanId,
-    status = status,
-    startedAtEpochMillis = startedAtEpochMillis,
-    lastActiveAtEpochMillis = lastActiveAtEpochMillis,
-    completedAtEpochMillis = completedAtEpochMillis,
-    currentOrdinal = currentOrdinal,
-    timeBudgetSeconds = timeBudgetSeconds,
-    projectionCheckpoint = projectionCheckpoint,
-)
-
-private fun ReviewPlanAggregate.toRecord(): ReviewPlanBundle {
-    val sortedQueue = queue.sortedBy { it.item.ordinal }
-    return ReviewPlanBundle(
-        plan = ReviewPlanRecord(
-            reviewPlanId = plan.reviewPlanId,
-            learnerId = plan.learnerId,
-            localDate = plan.localDate,
-            localDayEpochDay = plan.localDayEpochDay,
-            timeZoneId = plan.timeZoneId,
-            timeBudgetSeconds = plan.timeBudgetSeconds,
-            planningAtEpochMillis = plan.planningAtEpochMillis,
-            status = plan.status,
-            plannerVersion = plan.plannerVersion,
-            projectionCheckpoint = plan.projectionCheckpoint,
-            inputFingerprint = plan.inputFingerprint,
-            planFingerprint = plan.planFingerprint,
-            planRevision = plan.planRevision,
-            createdAtEpochMillis = plan.createdAtEpochMillis,
-        ),
-        queue = sortedQueue.map { aggregate ->
-            val item = aggregate.item
-            ReviewQueueItemRecord(
-                reviewQueueItemId = item.reviewQueueItemId,
-                reviewPlanId = item.reviewPlanId,
-                practiceUnitId = item.practiceUnitId,
-                knowledgeNodeIds = aggregate.knowledgeNodes.mapTo(linkedSetOf()) { it.knowledgeNodeId },
-                itemFamilyId = item.itemFamilyId,
-                sourceBundleId = item.sourceBundleId,
-                reasons = aggregate.reasons.mapTo(linkedSetOf()) { it.reason },
-                ordinal = item.ordinal,
-                priorityScore = item.priorityScore,
-                difficultyBand = item.difficultyBand,
-                dueAtEpochMillis = item.dueAtEpochMillis,
-                estimatedSeconds = item.estimatedSeconds,
-                reasonSnapshot = item.reasonSnapshot,
-                status = item.status,
-            )
-        },
-        activeSession = activeSessionHead()?.toRecord(),
-        isCurrent = currentSlots.isNotEmpty(),
-        latestSession = latestSessionHead()?.toRecord(),
-    )
-}
-
-private fun ReviewSessionEntity.toRecord() = ReviewSessionRecord(
-    reviewSessionId = reviewSessionId,
-    reviewPlanId = reviewPlanId,
-    status = status,
-    startedAtEpochMillis = startedAtEpochMillis,
-    lastActiveAtEpochMillis = lastActiveAtEpochMillis,
-    completedAtEpochMillis = completedAtEpochMillis,
-    currentOrdinal = currentOrdinal,
-    timeBudgetSeconds = timeBudgetSeconds,
-    projectionCheckpoint = projectionCheckpoint,
-    stateVersion = stateVersion,
-)
-
-private fun ProblemDraftEditWorkspaceRecord.toConfirmedRevision(
-    expected: ExpectedProblemDraftEditWorkspace,
-): ProblemDraftRevisionRecord {
-    val workspace = try {
-        DatabaseContractValidator.decodeProblemDraftEditWorkspace(
-            snapshotSchemaVersion = snapshotSchemaVersion,
-            workspaceSnapshot = workspaceSnapshot,
-            workspaceFingerprint = workspaceFingerprint,
-        )
-    } catch (failure: Exception) {
-        throw ProblemDraftEditWorkspaceIntegrityException(
-            "Problem-draft workspace $draftId is corrupted",
-            failure,
-        )
-    }
-    val finalRequest = workspace.finalConfirmationRequest
-        ?: throw ProblemDraftEditWorkspaceConflictException(
-            "Problem-draft workspace $draftId has no final confirmation identity",
-        )
-    if (
-        draftId != expected.draftId ||
-        basisRevisionNumber != expected.basisRevisionNumber ||
-        workspaceVersion != expected.workspaceVersion ||
-        workspaceFingerprint != expected.workspaceFingerprint ||
-        finalRequest.requestId != expected.finalRequestId ||
-        finalRequest.occurredAtEpochMillis != expected.finalOccurredAtEpochMillis ||
-        expected.finalOccurredAtEpochMillis < updatedAtEpochMillis
-    ) {
-        throw ProblemDraftEditWorkspaceConflictException(
-            "Problem-draft workspace $draftId does not match the final request",
-        )
-    }
-    val subject = workspace.subject
-        ?: throw ProblemDraftEditWorkspaceConflictException(
-            "Problem-draft workspace $draftId has no confirmed subject",
-        )
-    val title = workspace.workingDocument.document.title
-        ?.takeIf(String::isNotBlank)
-        ?: throw ProblemDraftEditWorkspaceConflictException(
-            "Problem-draft workspace $draftId has no confirmed title",
-        )
-    if (CapturedQuestionDocumentValidator.validateForCommit(workspace.workingDocument).isNotEmpty()) {
-        throw ProblemDraftEditWorkspaceConflictException(
-            "Problem-draft workspace $draftId is not ready to confirm",
-        )
-    }
-    return ProblemDraftRevisionRecord(
-        draftId = draftId,
-        revisionNumber = basisRevisionNumber + 1,
-        basisRevisionNumber = basisRevisionNumber,
-        subject = subject,
-        title = title,
-        questionDocument = workspace.workingDocument,
-        documentFingerprint = CapturedQuestionDocumentFingerprint.of(workspace.workingDocument),
-        author = StudyDbValue.ProblemDraftAuthor.USER,
-        createdAtEpochMillis = expected.finalOccurredAtEpochMillis,
-    )
-}
-
-private fun ExpectedProblemDraftEditWorkspace.toConsumeCommand() =
-    ConsumeProblemDraftEditWorkspaceCommand(
-        draftId = draftId,
-        basisRevisionNumber = basisRevisionNumber,
-        expectedWorkspaceVersion = workspaceVersion,
-        expectedWorkspaceFingerprint = workspaceFingerprint,
-    )
-
-private fun ProblemDraftEditWorkspaceRecord.toConsumeCommand() =
-    ConsumeProblemDraftEditWorkspaceCommand(
-        draftId = draftId,
-        basisRevisionNumber = basisRevisionNumber,
-        expectedWorkspaceVersion = workspaceVersion,
-        expectedWorkspaceFingerprint = workspaceFingerprint,
-    )
-
-private fun ReviewSessionAdvanceReceiptEntity.toRecord() = ReviewSessionAdvanceReceipt(
-    sessionId = reviewSessionId,
-    fromVersion = fromVersion,
-    toVersion = toVersion,
-    reviewQueueItemId = reviewQueueItemId,
-    practiceUnitId = practiceUnitId,
-    attemptId = attemptId,
-    submissionId = submissionId,
-    presentationId = presentationId,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-)
-
-private fun MistakeRow.toRecord() = MistakeRecord(
-    entryId = entryId,
-    problemId = problemId,
-    problemRevisionId = problemRevisionId,
-    practiceUnitId = practiceUnitId,
-    sourceKey = sourceKey,
-    subject = subject,
-    title = title,
-    problemMarkdown = problemMarkdown,
-    status = status,
-    createdAtEpochMillis = createdAtEpochMillis,
-    nextReviewAtEpochMillis = nextReviewAtEpochMillis,
-    retrievability = retrievability,
-    estimatedSeconds = estimatedSeconds,
-    knowledgeNodeIds = knowledgeNodeIds.toCatalogLabels().toCollection(linkedSetOf()),
-    chapterLabels = chapterLabels.toCatalogLabels(),
-    knowledgeLabels = knowledgeLabels.toCatalogLabels(),
-    captureOccurrenceCount = maxOf(1, captureOccurrenceCount),
-)
-
-private fun String?.toCatalogLabels(): List<String> = this
-    ?.split("\u001F")
-    ?.map(String::trim)
-    ?.filter(String::isNotEmpty)
-    ?.distinct()
-    ?.sorted()
-    .orEmpty()

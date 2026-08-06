@@ -1,13 +1,14 @@
 package com.tingyun.smartmistakebook.core.data.tutor
 
+import com.tingyun.smartmistakebook.core.database.CancelTutorEvidenceRequestCommand as DatabaseCancelEvidenceCommand
 import com.tingyun.smartmistakebook.core.database.TutorConversationConflictException
 import com.tingyun.smartmistakebook.core.database.TutorConversationArchiveWriteResult
+import com.tingyun.smartmistakebook.core.database.TutorConversationSessionDatabasePort
 import com.tingyun.smartmistakebook.core.database.TutorConversationWriteResult
-import com.tingyun.smartmistakebook.core.database.TutorEvidenceFinalizationResult
+import com.tingyun.smartmistakebook.core.database.TutorEvidenceCancellationResult
 import com.tingyun.smartmistakebook.core.database.TutorEvidencePreparationResult
 import com.tingyun.smartmistakebook.core.database.TutorTurnAllocationResult
 import com.tingyun.smartmistakebook.core.database.TutorTurnReadResult
-import com.tingyun.smartmistakebook.core.database.FinalizeTutorEvidenceRequestCommand as DatabaseFinalizeEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.AllocateTutorTurnCommand
 import com.tingyun.smartmistakebook.core.domain.AllocateTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.ArchiveTutorConversationCommand
@@ -23,15 +24,15 @@ import com.tingyun.smartmistakebook.core.domain.OpenTutorTurnResult
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceCommand
 import com.tingyun.smartmistakebook.core.domain.PrepareTutorEvidenceResult
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceAnchorFingerprints
+import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceAssistance
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCancellationReason
+import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceCurrentSessionReference
+import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceOutcome
+import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceSubmission
 import com.tingyun.smartmistakebook.core.domain.TutorLearningEvidenceTerminal
 import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryConflictException
 import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryConflictReason
 import com.tingyun.smartmistakebook.core.domain.TutorLearningMemoryOperation
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
-import com.tingyun.smartmistakebook.core.model.LearningObservationFactKind
-import com.tingyun.smartmistakebook.core.model.LearningObservationSource
-import com.tingyun.smartmistakebook.core.model.LearningObservationSourceFact
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorConversation
 import com.tingyun.smartmistakebook.core.model.TutorConversationStatus
@@ -44,7 +45,6 @@ import java.lang.reflect.Proxy
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -57,7 +57,7 @@ class RoomTutorLearningMemoryRepositoryTest {
         var finalizeCalls = 0
         var openTurnCalls = 0
         var openEvidenceCalls = 0
-        var finalizeCommand: DatabaseFinalizeEvidenceCommand? = null
+        var finalizeCommand: DatabaseCancelEvidenceCommand? = null
         val repository = RoomTutorLearningMemoryRepository(database { method, arguments ->
             when (method) {
                 "createTutorConversation" -> TutorConversationWriteResult(
@@ -90,23 +90,13 @@ class RoomTutorLearningMemoryRepositoryTest {
                     request = pendingRequest,
                 )
 
-                "finalizeTutorEvidenceRequest" -> {
-                    finalizeCommand = arguments?.first() as DatabaseFinalizeEvidenceCommand
-                    if (finalizeCalls++ == 0) {
-                        TutorEvidenceFinalizationResult(
-                            replayed = false,
-                            request = submittedRequest,
-                            anchor = null,
-                            sourceFact = sourceFact,
-                        )
-                    } else {
-                        TutorEvidenceFinalizationResult(
-                            replayed = false,
-                            request = cancelledRequest,
-                            anchor = null,
-                            sourceFact = null,
-                        )
-                    }
+                "cancelTutorEvidenceRequest" -> {
+                    finalizeCommand = arguments?.first() as DatabaseCancelEvidenceCommand
+                    finalizeCalls += 1
+                    TutorEvidenceCancellationResult(
+                        replayed = false,
+                        request = cancelledRequest,
+                    )
                 }
 
                 "close" -> Unit
@@ -155,12 +145,10 @@ class RoomTutorLearningMemoryRepositoryTest {
         assertTrue(repository.archiveConversation(archiveCommand) is ArchiveTutorConversationResult.Replayed)
         assertTrue(repository.allocateTurn(allocateCommand) is AllocateTutorTurnResult.Replayed)
         assertTrue(repository.prepareEvidenceRequest(prepareCommand) is PrepareTutorEvidenceResult.Replayed)
-        assertTrue(repository.finalizeEvidence(submitCommand) is FinalizeTutorEvidenceResult.Submitted)
-        assertEquals(
-            "problem-fingerprint-v1",
-            finalizeCommand?.submission?.fingerprintVersion,
-        )
+        assertTrue(runCatching { repository.finalizeEvidence(submitCommand) }.isFailure)
+        assertEquals(0, finalizeCalls)
         assertTrue(repository.finalizeEvidence(cancelCommand) is FinalizeTutorEvidenceResult.Cancelled)
+        assertEquals(pendingRequest.evidenceRequestId, finalizeCommand?.evidenceRequestId)
     }
 
     @Test
@@ -184,10 +172,10 @@ class RoomTutorLearningMemoryRepositoryTest {
 
     private fun database(
         call: (String, Array<out Any?>?) -> Any?,
-    ): StudyDatabasePort = Proxy.newProxyInstance(
-        StudyDatabasePort::class.java.classLoader,
-        arrayOf(StudyDatabasePort::class.java),
-    ) { _, method, arguments -> call(method.name, arguments) } as StudyDatabasePort
+    ): TutorConversationSessionDatabasePort = Proxy.newProxyInstance(
+        TutorConversationSessionDatabasePort::class.java.classLoader,
+        arrayOf(TutorConversationSessionDatabasePort::class.java),
+    ) { _, method, arguments -> call(method.name, arguments) } as TutorConversationSessionDatabasePort
 
     private companion object {
         const val LEARNER_ID = "learner-1"
@@ -239,29 +227,7 @@ class RoomTutorLearningMemoryRepositoryTest {
             stateVersion = 0,
             createdAtEpochMillis = 160,
             resolvedAtEpochMillis = null,
-            terminalSourceFactId = null,
-        )
-        val sourceFact = LearningObservationSourceFact(
-            sourceFactId = "source-fact-1",
-            learnerScopeId = LEARNER_ID,
-            source = LearningObservationSource.TUTOR_CHOICE,
-            factKind = LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE,
-            anchorId = pendingRequest.problemAnchorId,
-            subject = pendingRequest.subject,
-            conversationId = pendingRequest.conversationId,
-            conversationGeneration = pendingRequest.conversationGeneration,
-            turnReceiptId = pendingRequest.turnReceiptId,
-            evidenceRequestId = pendingRequest.evidenceRequestId,
-            responseFingerprint = hash('c'),
-            responseSummary = "选择不正确。",
-            occurredAtEpochMillis = 170,
-            sourceVersion = "tutor-source-v1",
-        )
-        val submittedRequest = pendingRequest.copy(
-            status = TutorEvidenceRequestStatus.SUBMITTED,
-            stateVersion = 1,
-            resolvedAtEpochMillis = 200,
-            terminalSourceFactId = sourceFact.sourceFactId,
+            terminalReceiptId = null,
         )
         val cancelledRequest = pendingRequest.copy(
             status = TutorEvidenceRequestStatus.CANCELLED,
@@ -326,13 +292,30 @@ class RoomTutorLearningMemoryRepositoryTest {
         )
         val submitCommand = finalizeCommand(
             TutorLearningEvidenceTerminal.Submitted(
-                sourceFact = sourceFact,
-                anchors = TutorLearningEvidenceAnchorFingerprints(
-                    questionFingerprint = hash('2'),
-                    problemRevisionFingerprint = hash('3'),
-                    fingerprintVersion = "problem-fingerprint-v1",
-                    turnFingerprint = hash('4'),
-                    directiveFingerprint = pendingRequest.directiveFingerprint,
+                TutorLearningEvidenceSubmission(
+                    anchors =
+                        TutorLearningEvidenceAnchorFingerprints(
+                            questionFingerprint = hash('2'),
+                            problemRevisionFingerprint = hash('3'),
+                            fingerprintVersion = "problem-fingerprint-v1",
+                            turnFingerprint = hash('4'),
+                            directiveFingerprint = pendingRequest.directiveFingerprint,
+                        ),
+                    responseFingerprint = hash('c'),
+                    outcome = TutorLearningEvidenceOutcome.INCORRECT,
+                    occurredAtEpochMillis = 170,
+                    producerVersion = "tutor-evidence-v2",
+                    currentSessionReference =
+                        TutorLearningEvidenceCurrentSessionReference(
+                            authorizationFingerprint = hash('7'),
+                            learningWritePermissionVersion = 3,
+                        ),
+                    attemptOrdinal = 1,
+                    retryCount = 0,
+                    hintCount = 0,
+                    answerWasRevealed = false,
+                    independentlyAnswered = true,
+                    assistance = TutorLearningEvidenceAssistance.INDEPENDENT,
                 ),
             ),
         )

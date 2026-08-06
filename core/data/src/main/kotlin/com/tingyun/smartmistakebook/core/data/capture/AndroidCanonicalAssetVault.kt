@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
-import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import java.io.File
 import java.io.FileOutputStream
@@ -17,15 +16,56 @@ import kotlin.math.floor
 
 internal const val MAX_CANONICAL_SOURCE_INPUT_BYTES = 20L * 1_024L * 1_024L
 
-/** Bounded decoder and EXIF-stripping vault for app-private capture URIs. */
-internal class AndroidCanonicalAssetVault(
-    private val context: Context,
+internal data class CaptureAssetDescriptor(
+    val assetId: String,
+    val contentSha256: String,
+    val relativePath: String,
+    val mimeType: String,
+    val byteSize: Long,
+    val width: Int,
+    val height: Int,
+    val sourceType: String,
+    val createdAtEpochMillis: Long,
 ) {
+    init {
+        require(assetId.isNotBlank())
+        require(contentSha256.matches(Regex("[0-9a-f]{64}")))
+        require(relativePath.isNotBlank())
+        require(mimeType.startsWith("image/"))
+        require(byteSize > 0)
+        require(width > 0 && height > 0)
+        require(sourceType.isNotBlank())
+        require(createdAtEpochMillis >= 0)
+    }
+}
+
+internal interface CaptureAssetSessionPort {
     fun import(
         localUri: String,
         sourceType: String,
         createdAtEpochMillis: Long,
-    ): CanonicalSourceAssetRecord {
+    ): CaptureAssetDescriptor
+
+    fun crop(
+        source: CaptureAssetDescriptor,
+        region: NormalizedSourceRegion,
+        createdAtEpochMillis: Long,
+    ): CaptureAssetDescriptor
+
+    fun delete(descriptor: CaptureAssetDescriptor)
+
+    fun resolve(descriptor: CaptureAssetDescriptor): File
+}
+
+/** Bounded decoder and EXIF-stripping vault for app-private capture URIs. */
+internal class AndroidCanonicalAssetVault(
+    private val context: Context,
+) : CaptureAssetSessionPort {
+    override fun import(
+        localUri: String,
+        sourceType: String,
+        createdAtEpochMillis: Long,
+    ): CaptureAssetDescriptor {
         val uri = Uri.parse(localUri)
         require(uri.scheme == "content") { "Capture input must be a content URI" }
         require(
@@ -82,11 +122,11 @@ internal class AndroidCanonicalAssetVault(
         }
     }
 
-    fun crop(
-        source: CanonicalSourceAssetRecord,
+    override fun crop(
+        source: CaptureAssetDescriptor,
         region: NormalizedSourceRegion,
         createdAtEpochMillis: Long,
-    ): CanonicalSourceAssetRecord {
+    ): CaptureAssetDescriptor {
         val sourceFile = resolve(source)
         var decoded: Bitmap? = null
         try {
@@ -124,19 +164,19 @@ internal class AndroidCanonicalAssetVault(
         }
     }
 
-    fun delete(record: CanonicalSourceAssetRecord) {
-        val file = resolve(record)
+    override fun delete(descriptor: CaptureAssetDescriptor) {
+        val file = resolve(descriptor)
         check(file.delete() || !file.exists()) { "Cannot delete unreferenced canonical asset" }
     }
 
-    fun resolve(record: CanonicalSourceAssetRecord): File {
+    override fun resolve(descriptor: CaptureAssetDescriptor): File {
         val assetRoot = File(context.filesDir, ASSET_DIRECTORY).canonicalFile
-        val file = File(context.filesDir, record.relativePath).canonicalFile
+        val file = File(context.filesDir, descriptor.relativePath).canonicalFile
         check(file.parentFile == assetRoot) { "Canonical source asset escaped its vault" }
         check(
             file.isFile &&
-                file.length() == record.byteSize &&
-                sha256(file) == record.contentSha256,
+                file.length() == descriptor.byteSize &&
+                sha256(file) == descriptor.contentSha256,
         ) {
             "Canonical source asset is missing or changed"
         }
@@ -189,7 +229,7 @@ internal class AndroidCanonicalAssetVault(
         preferJpeg: Boolean,
         sourceType: String,
         createdAtEpochMillis: Long,
-    ): CanonicalSourceAssetRecord {
+    ): CaptureAssetDescriptor {
         val assetRoot = File(context.filesDir, ASSET_DIRECTORY).canonicalFile
         check(assetRoot.isDirectory) { "Canonical asset vault is unavailable" }
         val canonical = File.createTempFile(".canonical-", ".tmp", assetRoot)
@@ -226,8 +266,8 @@ internal class AndroidCanonicalAssetVault(
                         (destination.isFile && sha256(destination) == sha256),
                 ) { "Cannot finalize canonical source asset" }
             }
-            return CanonicalSourceAssetRecord(
-                sourceAssetId = "asset-${sha256.take(32)}",
+            return CaptureAssetDescriptor(
+                assetId = "asset-${sha256.take(32)}",
                 contentSha256 = sha256,
                 relativePath = "$ASSET_DIRECTORY/$sha256.$extension",
                 mimeType = mimeType,
@@ -260,13 +300,26 @@ internal class AndroidCanonicalAssetVault(
         )
     }
 
-    private fun copyWithinLimit(input: InputStream, destination: File, maxBytes: Long): Boolean {
+    private fun copyWithinLimit(
+        input: InputStream,
+        destination: File,
+        maxBytes: Long,
+        timeoutMillis: Long = CAPTURE_COPY_TIMEOUT_MILLIS,
+    ): Boolean {
+        if (timeoutMillis <= 0L) return false
         var total = 0L
         var emptyReads = 0
         return runCatching {
+            val startedAt = System.nanoTime()
             destination.outputStream().buffered().use { output ->
                 val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                 while (true) {
+                    check(
+                        (System.nanoTime() - startedAt) / 1_000_000L <=
+                            timeoutMillis,
+                    ) {
+                        "Capture stream exceeded its wall-clock budget"
+                    }
                     val read = input.read(buffer)
                     if (read < 0) break
                     if (read == 0) {
@@ -278,6 +331,12 @@ internal class AndroidCanonicalAssetVault(
                     total += read
                     check(total <= maxBytes) { "Capture input exceeds byte budget" }
                     output.write(buffer, 0, read)
+                    check(
+                        (System.nanoTime() - startedAt) / 1_000_000L <=
+                            timeoutMillis,
+                    ) {
+                        "Capture stream exceeded its wall-clock budget"
+                    }
                 }
             }
             total > 0
@@ -318,6 +377,7 @@ internal class AndroidCanonicalAssetVault(
         const val MAX_DIMENSION = 8_192
         const val MAX_PIXELS = 16_000_000L
         const val MAX_EMPTY_READS = 16
+        const val CAPTURE_COPY_TIMEOUT_MILLIS = 30_000L
         const val JPEG_QUALITY = 95
         const val CROP_PADDING_FRACTION = 0.015
     }

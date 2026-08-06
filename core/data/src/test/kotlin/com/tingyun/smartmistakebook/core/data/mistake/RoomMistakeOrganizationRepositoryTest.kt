@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
 import com.tingyun.smartmistakebook.core.model.ClassificationDimension
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.KnowledgeBaseCatalogProvenance
 import com.tingyun.smartmistakebook.core.model.KnowledgeBaseNodeContext
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeKind
@@ -25,12 +26,27 @@ import com.tingyun.smartmistakebook.core.model.ProblemStepKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeNodeRef
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeReferenceProofAuthority
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RoomMistakeOrganizationRepositoryTest {
+    private val knowledgeProofAuthority = KnowledgeReferenceProofAuthority.create()
+    private val verifiedKnowledgeReference =
+        knowledgeProofAuthority.issuer.issue(
+            KnowledgeNodeRef(
+                subject = SubjectKind.MATH,
+                knowledgeNodeId = "math-atomic-core-operation",
+                taxonomyVersion = "math-v1",
+                knowledgePackVersion = "pack-v1",
+            ),
+            "a".repeat(64),
+            1,
+        )
+
     @Test
     fun repeatedOntologyGapKeepsOccurrencesButSharesOneGroundingKey() {
         val first = buildKnowledgeGroundingRecords(
@@ -74,6 +90,7 @@ class RoomMistakeOrganizationRepositoryTest {
             classifications = classifications(),
             relations = relations(),
             acceptedAtEpochMillis = 2_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
         )
         val replay = buildConfirmationCommand(
             requestId = "organization-request",
@@ -81,13 +98,18 @@ class RoomMistakeOrganizationRepositoryTest {
             classifications = classifications(),
             relations = relations(),
             acceptedAtEpochMillis = 2_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
         )
 
         assertEquals(first, replay)
         assertEquals(2, first.classifications.size)
         assertEquals(setOf("CHAPTER", "KNOWLEDGE"), first.classifications.map { it.dimension }.toSet())
-        assertEquals(1, first.knowledgeNodes.size)
+        assertTrue(first.knowledgeNodes.isEmpty())
         assertEquals(1, first.knowledgeBindings.size)
+        assertEquals(
+            verifiedKnowledgeReference.ref,
+            first.knowledgeBindings.single().verifiedKnowledgeReference?.ref,
+        )
         assertEquals("USER_CORRECTED", first.classifications.first().acceptanceSource)
         assertEquals("USER_CORRECTED", first.knowledgeBindings.single().sourceType)
         assertEquals("user-corrected-v1", first.classifications.first().taxonomyVersion)
@@ -125,6 +147,7 @@ class RoomMistakeOrganizationRepositoryTest {
                 relations = emptyList(),
                 atomicKnowledge = output().plan.atomicKnowledge,
                 stepAttributions = output().plan.stepAttributions,
+                verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
                 errorAttributionCandidates = listOf(errorCandidate),
                 modelVersion = "test-model-v3",
                 sourceCommitReceiptCommandId = "draft-commit-receipt-1",
@@ -152,7 +175,7 @@ class RoomMistakeOrganizationRepositoryTest {
         )
         assertFalse(
             command.payloadFingerprint ==
-                commandFor(candidate.copy(rationaleMarkdown = "不同的错误归因说明。")).payloadFingerprint,
+                commandFor(candidate.copy(rationaleMarkdown = "这里容易把运算方向看反。")).payloadFingerprint,
         )
     }
 
@@ -164,6 +187,7 @@ class RoomMistakeOrganizationRepositoryTest {
             classifications = classifications(),
             relations = emptyList(),
             acceptedAtEpochMillis = 2_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
             acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
         )
         val corrected = buildConfirmationCommand(
@@ -172,17 +196,18 @@ class RoomMistakeOrganizationRepositoryTest {
             classifications = classifications(),
             relations = emptyList(),
             acceptedAtEpochMillis = 3_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
             acceptanceSource = BindingAcceptanceSource.USER_CORRECTED,
         )
 
         assertEquals(
-            automatic.knowledgeNodes.single().knowledgeNodeId,
-            corrected.knowledgeNodes.single().knowledgeNodeId,
+            automatic.knowledgeBindings.single().verifiedKnowledgeReference?.ref,
+            corrected.knowledgeBindings.single().verifiedKnowledgeReference?.ref,
         )
         assertEquals("LOCAL_POLICY_ACCEPTED", automatic.knowledgeBindings.single().sourceType)
         assertEquals("USER_CORRECTED", corrected.knowledgeBindings.single().sourceType)
-        assertEquals("organization-v1", automatic.knowledgeNodes.single().taxonomyVersion)
-        assertEquals("organization-v1", corrected.knowledgeNodes.single().taxonomyVersion)
+        assertTrue(automatic.knowledgeNodes.isEmpty())
+        assertTrue(corrected.knowledgeNodes.isEmpty())
     }
 
     @Test
@@ -194,6 +219,7 @@ class RoomMistakeOrganizationRepositoryTest {
                 classification(ClassificationDimension.KNOWLEDGE, "链式法则", 0.99),
             relations = emptyList(),
             acceptedAtEpochMillis = 2_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
             acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
         ).classifications
         val incoming = listOf(
@@ -217,6 +243,7 @@ class RoomMistakeOrganizationRepositoryTest {
             classifications = classifications(),
             relations = emptyList(),
             acceptedAtEpochMillis = 4_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
             relationRemovals = setOf(
                 ProblemOrganizationRelationKey(
                     targetProblemId = "problem-2",
@@ -245,6 +272,7 @@ class RoomMistakeOrganizationRepositoryTest {
                     classifications = selectedKnowledge,
                     relations = emptyList(),
                     acceptedAtEpochMillis = 2_000,
+                    verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
                 )
             }.isFailure,
         )
@@ -273,6 +301,7 @@ class RoomMistakeOrganizationRepositoryTest {
             acceptedAtEpochMillis = 2_000,
             atomicKnowledge = accepted.atomicKnowledge,
             stepAttributions = accepted.stepAttributions,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
             acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
         )
         assertEquals("LOCAL_POLICY_ACCEPTED", command.classifications.single {
@@ -338,6 +367,7 @@ class RoomMistakeOrganizationRepositoryTest {
             classifications = accepted.classifications,
             relations = accepted.relations,
             acceptedAtEpochMillis = 2_000,
+            verifiedKnowledgeReferences = verifiedKnowledgeReferences(),
             acceptanceSource = BindingAcceptanceSource.LOCAL_POLICY_ACCEPTED,
         )
         assertFalse(command.replaceRelations)
@@ -400,11 +430,21 @@ class RoomMistakeOrganizationRepositoryTest {
                 granularity = KnowledgeNodeGranularity.ATOMIC,
                 parentCanonicalName = "二次函数最值",
                 taxonomyVersion = "math-v1",
+                catalogProvenance =
+                    KnowledgeBaseCatalogProvenance(
+                        packId = "pack",
+                        knowledgePackVersion = "pack-v1",
+                        taxonomyVersion = "math-v1",
+                        manifestFingerprint = "a".repeat(64),
+                        activationGeneration = 1L,
+                    ),
                 verificationStatus = KnowledgeNodeVerificationStatus.SOURCE_GROUNDED,
                 boundaryMarkdown = "只记录本题实际使用的运算能力。",
             ),
         ),
     )
+
+    private fun verifiedKnowledgeReferences() = listOf(verifiedKnowledgeReference)
 
     private fun classifications() = listOf(
         ProblemClassificationSuggestion(

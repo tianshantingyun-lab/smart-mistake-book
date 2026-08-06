@@ -36,6 +36,8 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualSceneFingerprint
 import com.tingyun.smartmistakebook.core.model.TutorVisualSceneSourceKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorVisualValueSource
+import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
+import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualProvenanceReport
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -54,7 +56,7 @@ class TutorVisualDocumentInstrumentedTest {
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    TutorVisualDocumentContent(scene = multiPanelScene())
+                    TutorVisualDocumentContent(compiled = verifiedCompiled())
                 }
             }
         }
@@ -92,7 +94,7 @@ class TutorVisualDocumentInstrumentedTest {
         composeRule.setContent {
             MaterialTheme {
                 TutorVisualDocumentContent(
-                    scene = scene,
+                    compiled = verifiedCompiled(setOf("diagram_object")),
                     hitPresentation = presentation,
                     onTargetHit = { proof ->
                         selectedTargetId = proof.selectedTargetId
@@ -125,7 +127,7 @@ class TutorVisualDocumentInstrumentedTest {
                         .verticalScroll(rememberScrollState()),
                 ) {
                     TutorVisualDocumentContent(
-                        scene = multiPanelScene(),
+                        compiled = verifiedCompiled(),
                         onOpenOriginal = { originalClicks += 1 },
                         onReportIncorrect = { reportClicks += 1 },
                     )
@@ -157,7 +159,7 @@ class TutorVisualDocumentInstrumentedTest {
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    TutorVisualDocumentContent(scene = multiPanelScene())
+                    TutorVisualDocumentContent(compiled = verifiedCompiled())
                 }
             }
         }
@@ -184,7 +186,7 @@ class TutorVisualDocumentInstrumentedTest {
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    TutorVisualDocumentContent(scene = multiPanelScene())
+                    TutorVisualDocumentContent(compiled = verifiedCompiled())
                 }
             }
         }
@@ -234,6 +236,17 @@ class TutorVisualDocumentInstrumentedTest {
         composeRule.onNodeWithText("装置关系").performScrollTo().performClick()
         composeRule.waitForIdle()
     }
+
+    private fun verifiedCompiled(
+        evidenceEligibleElementIds: Set<String> = emptySet(),
+    ) = TutorVisualDocumentCompiler.compile(multiPanelScene()).copy(
+        provenance =
+            TutorVisualProvenanceReport(
+                issues = emptyList(),
+                verifiedVariableIds = emptySet(),
+                evidenceEligibleElementIds = evidenceEligibleElementIds,
+            ),
+    )
 
     private fun multiPanelScene() = TutorVisualDocumentScene(
         sceneId = "instrumented_scene",

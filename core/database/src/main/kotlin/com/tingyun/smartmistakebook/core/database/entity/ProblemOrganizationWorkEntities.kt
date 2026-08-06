@@ -4,6 +4,7 @@ import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.ForeignKey
 import androidx.room3.Index
+import com.tingyun.smartmistakebook.core.database.StudyDbValue
 
 @Entity(
     tableName = "problem_solution_step",
@@ -65,12 +66,6 @@ internal data class ProblemSolutionStepEntity(
             childColumns = ["solution_step_id"],
             onDelete = ForeignKey.RESTRICT,
         ),
-        ForeignKey(
-            entity = KnowledgeNodeEntity::class,
-            parentColumns = ["knowledge_node_id"],
-            childColumns = ["knowledge_node_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
     ],
     indices = [
         Index(value = ["knowledge_node_id"]),
@@ -81,9 +76,33 @@ internal data class ProblemStepKnowledgeBindingEntity(
     val solutionStepId: String,
     @ColumnInfo(name = "knowledge_node_id")
     val knowledgeNodeId: String,
+    @ColumnInfo(name = "knowledge_subject")
+    val knowledgeSubject: String?,
+    @ColumnInfo(name = "knowledge_taxonomy_version")
+    val knowledgeTaxonomyVersion: String?,
+    @ColumnInfo(name = "knowledge_pack_version")
+    val knowledgePackVersion: String?,
+    @ColumnInfo(name = "knowledge_manifest_fingerprint")
+    val knowledgeManifestFingerprint: String?,
+    @ColumnInfo(name = "knowledge_activation_generation")
+    val knowledgeActivationGeneration: Long?,
+    @ColumnInfo(name = "knowledge_reference_status")
+    val knowledgeReferenceStatus: String,
     @ColumnInfo(name = "knowledge_reference_id")
     val knowledgeReferenceId: String,
-)
+) {
+    init {
+        requireKnowledgeReferenceProvenance(
+            knowledgeNodeId = knowledgeNodeId,
+            knowledgeSubject = knowledgeSubject,
+            knowledgeTaxonomyVersion = knowledgeTaxonomyVersion,
+            knowledgePackVersion = knowledgePackVersion,
+            knowledgeManifestFingerprint = knowledgeManifestFingerprint,
+            knowledgeActivationGeneration = knowledgeActivationGeneration,
+            knowledgeReferenceStatus = knowledgeReferenceStatus,
+        )
+    }
+}
 
 @Entity(
     tableName = "problem_error_attribution_candidate",
@@ -111,12 +130,6 @@ internal data class ProblemStepKnowledgeBindingEntity(
             entity = ProblemSolutionStepEntity::class,
             parentColumns = ["solution_step_id"],
             childColumns = ["solution_step_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
-        ForeignKey(
-            entity = KnowledgeNodeEntity::class,
-            parentColumns = ["knowledge_node_id"],
-            childColumns = ["knowledge_node_id"],
             onDelete = ForeignKey.RESTRICT,
         ),
     ],
@@ -150,6 +163,18 @@ internal data class ProblemErrorAttributionCandidateEntity(
     val solutionStepId: String?,
     @ColumnInfo(name = "knowledge_node_id")
     val knowledgeNodeId: String?,
+    @ColumnInfo(name = "knowledge_subject")
+    val knowledgeSubject: String?,
+    @ColumnInfo(name = "knowledge_taxonomy_version")
+    val knowledgeTaxonomyVersion: String?,
+    @ColumnInfo(name = "knowledge_pack_version")
+    val knowledgePackVersion: String?,
+    @ColumnInfo(name = "knowledge_manifest_fingerprint")
+    val knowledgeManifestFingerprint: String?,
+    @ColumnInfo(name = "knowledge_activation_generation")
+    val knowledgeActivationGeneration: Long?,
+    @ColumnInfo(name = "knowledge_reference_status")
+    val knowledgeReferenceStatus: String?,
     @ColumnInfo(name = "knowledge_reference_id")
     val knowledgeReferenceId: String?,
     @ColumnInfo(name = "rationale_markdown")
@@ -160,7 +185,68 @@ internal data class ProblemErrorAttributionCandidateEntity(
     val modelVersion: String,
     @ColumnInfo(name = "created_at_epoch_millis")
     val createdAtEpochMillis: Long,
-)
+) {
+    init {
+        if (knowledgeNodeId == null) {
+            require(
+                knowledgeSubject == null &&
+                    knowledgeTaxonomyVersion == null &&
+                    knowledgePackVersion == null &&
+                    knowledgeManifestFingerprint == null &&
+                    knowledgeActivationGeneration == null &&
+                    knowledgeReferenceStatus == null,
+            ) {
+                "Unresolved error attribution cannot carry knowledge reference provenance"
+            }
+        } else {
+            requireKnowledgeReferenceProvenance(
+                knowledgeNodeId = knowledgeNodeId,
+                knowledgeSubject = knowledgeSubject,
+                knowledgeTaxonomyVersion = knowledgeTaxonomyVersion,
+                knowledgePackVersion = knowledgePackVersion,
+                knowledgeManifestFingerprint = knowledgeManifestFingerprint,
+                knowledgeActivationGeneration = knowledgeActivationGeneration,
+                knowledgeReferenceStatus = knowledgeReferenceStatus,
+            )
+        }
+    }
+}
+
+private fun requireKnowledgeReferenceProvenance(
+    knowledgeNodeId: String,
+    knowledgeSubject: String?,
+    knowledgeTaxonomyVersion: String?,
+    knowledgePackVersion: String?,
+    knowledgeManifestFingerprint: String?,
+    knowledgeActivationGeneration: Long?,
+    knowledgeReferenceStatus: String?,
+) {
+    require(knowledgeNodeId.isNotBlank()) { "Knowledge reference node id must not be blank" }
+    val hasCompleteReference =
+        knowledgeSubject != null &&
+            knowledgeTaxonomyVersion != null &&
+            knowledgePackVersion != null &&
+            knowledgeManifestFingerprint != null &&
+            knowledgeActivationGeneration != null
+    require(
+        when (knowledgeReferenceStatus) {
+            StudyDbValue.KnowledgeReferenceStatus.VERIFIED_AT_CONFIRMATION ->
+                hasCompleteReference && (knowledgeActivationGeneration ?: 0L) > 0L
+
+            StudyDbValue.KnowledgeReferenceStatus.PENDING_REATTRIBUTION ->
+                !hasCompleteReference &&
+                    knowledgeSubject == null &&
+                    knowledgeTaxonomyVersion == null &&
+                    knowledgePackVersion == null &&
+                    knowledgeManifestFingerprint == null &&
+                    knowledgeActivationGeneration == null
+
+            else -> false
+        },
+    ) {
+        "Knowledge reference provenance is incomplete"
+    }
+}
 
 @Entity(
     tableName = "problem_error_candidate_evidence",

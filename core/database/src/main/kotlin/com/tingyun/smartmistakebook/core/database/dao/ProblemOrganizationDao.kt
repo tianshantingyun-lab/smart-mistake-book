@@ -1,55 +1,18 @@
 package com.tingyun.smartmistakebook.core.database.dao
 
 import androidx.room3.Dao
+import androidx.room3.ColumnInfo
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
-import androidx.room3.Transaction
-import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
-import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeSourceBindingEntity
-import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchFeatureEntity
-import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSourceEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemClassificationBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationReceiptEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRelationEntity
 import kotlinx.coroutines.flow.Flow
 
-internal data class ReviewedKnowledgeCoverageRow(
-    val subject: String,
-    val topicCount: Int,
-    val atomicKnowledgeCount: Int,
-    val reviewedSourceCount: Int,
-    val latestReviewedAtEpochMillis: Long,
-)
-
 @Dao
 internal interface ProblemOrganizationDao {
-    @Query(
-        """
-        SELECT
-            node.subject AS subject,
-            COUNT(DISTINCT CASE
-                WHEN node.granularity = 'TOPIC' AND node.verification_status = 'CURATED'
-                THEN node.knowledge_node_id
-            END) AS topicCount,
-            COUNT(DISTINCT CASE
-                WHEN node.granularity = 'ATOMIC' AND node.verification_status = 'SOURCE_GROUNDED'
-                THEN node.knowledge_node_id
-            END) AS atomicKnowledgeCount,
-            COUNT(DISTINCT provenance.source_id) AS reviewedSourceCount,
-            MAX(provenance.reviewed_at_epoch_millis) AS latestReviewedAtEpochMillis
-        FROM knowledge_node AS node
-        INNER JOIN knowledge_node_source_binding AS provenance
-            ON provenance.knowledge_node_id = node.knowledge_node_id
-           AND provenance.reviewed_at_epoch_millis IS NOT NULL
-        WHERE node.verification_status IN ('CURATED', 'SOURCE_GROUNDED')
-        GROUP BY node.subject
-        ORDER BY node.subject ASC
-        """,
-    )
-    fun observeReviewedKnowledgeCoverage(): Flow<List<ReviewedKnowledgeCoverageRow>>
-
     @Query(
         """
         SELECT COUNT(*) FROM practice_unit
@@ -65,123 +28,6 @@ internal interface ProblemOrganizationDao {
     ): Int
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertKnowledgeNodes(nodes: List<KnowledgeNodeEntity>): List<Long>
-
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertKnowledgeSources(sources: List<KnowledgeSourceEntity>): List<Long>
-
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertKnowledgeNodeSourceBindings(
-        bindings: List<KnowledgeNodeSourceBindingEntity>,
-    ): List<Long>
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertKnowledgeSearchFeatures(features: List<KnowledgeSearchFeatureEntity>): List<Long>
-
-    @Transaction
-    suspend fun importKnowledgeBase(
-        sources: List<KnowledgeSourceEntity>,
-        nodes: List<KnowledgeNodeEntity>,
-        bindings: List<KnowledgeNodeSourceBindingEntity>,
-        searchFeatures: List<KnowledgeSearchFeatureEntity>,
-    ) {
-        insertKnowledgeSources(sources)
-        insertKnowledgeNodes(nodes)
-        insertKnowledgeNodeSourceBindings(bindings)
-        insertKnowledgeSearchFeatures(searchFeatures)
-    }
-
-    @Query("SELECT * FROM knowledge_node WHERE knowledge_node_id = :id")
-    suspend fun readKnowledgeNode(id: String): KnowledgeNodeEntity?
-
-    @Query(
-        """
-        SELECT * FROM knowledge_node
-        WHERE subject = :subject
-        ORDER BY
-            CASE verification_status
-                WHEN 'CURATED' THEN 0
-                WHEN 'SOURCE_GROUNDED' THEN 1
-                ELSE 2
-            END,
-            CASE granularity WHEN 'ATOMIC' THEN 0 ELSE 1 END,
-            canonical_name ASC,
-            knowledge_node_id ASC
-        LIMIT :limit
-        """,
-    )
-    suspend fun readSubjectKnowledgeNodes(subject: String, limit: Int): List<KnowledgeNodeEntity>
-
-    @Query(
-        """
-        SELECT * FROM knowledge_node
-        WHERE subject = :subject
-          AND verification_status IN ('CURATED', 'SOURCE_GROUNDED')
-        ORDER BY canonical_name ASC
-        LIMIT :limit
-        """,
-    )
-    suspend fun readSubjectKnowledgeRecallCandidates(
-        subject: String,
-        limit: Int,
-    ): List<KnowledgeNodeEntity>
-
-    @Query(
-        """
-        SELECT node.*
-        FROM knowledge_search_feature AS feature
-        INNER JOIN knowledge_node AS node
-          ON node.knowledge_node_id = feature.knowledge_node_id
-        WHERE feature.subject = :subject
-          AND feature.search_feature IN (:searchFeatures)
-          AND node.verification_status IN ('CURATED', 'SOURCE_GROUNDED')
-        GROUP BY node.knowledge_node_id
-        ORDER BY
-            COUNT(DISTINCT feature.search_feature) DESC,
-            CASE node.granularity WHEN 'ATOMIC' THEN 0 ELSE 1 END,
-            node.canonical_name ASC,
-            node.knowledge_node_id ASC
-        LIMIT :limit
-        """,
-    )
-    suspend fun searchSubjectKnowledgeRecallCandidates(
-        subject: String,
-        searchFeatures: Set<String>,
-        limit: Int,
-    ): List<KnowledgeNodeEntity>
-
-    @Query(
-        """
-        SELECT COUNT(*) FROM knowledge_node
-        WHERE subject = :subject
-          AND verification_status IN ('CURATED', 'SOURCE_GROUNDED')
-        """,
-    )
-    suspend fun countReviewedKnowledgeNodesBySubject(subject: String): Int
-
-    @Query(
-        """
-        SELECT COUNT(DISTINCT knowledge_node_id)
-        FROM knowledge_search_feature
-        WHERE subject = :subject
-        """,
-    )
-    suspend fun countIndexedKnowledgeNodesBySubject(subject: String): Int
-
-    @Query("SELECT * FROM knowledge_node WHERE knowledge_node_id IN (:ids)")
-    suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeEntity>
-
-    @Query("SELECT * FROM knowledge_source WHERE source_id IN (:ids)")
-    suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceEntity>
-
-    @Query(
-        "SELECT * FROM knowledge_node_source_binding WHERE knowledge_node_id IN (:knowledgeNodeIds)",
-    )
-    suspend fun readKnowledgeNodeSourceBindings(
-        knowledgeNodeIds: Set<String>,
-    ): List<KnowledgeNodeSourceBindingEntity>
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertKnowledgeBindings(
         bindings: List<PracticeUnitKnowledgeBindingEntity>,
     ): List<Long>
@@ -194,29 +40,46 @@ internal interface ProblemOrganizationDao {
         SELECT * FROM practice_unit_knowledge_binding
         WHERE practice_unit_id = :practiceUnitId
           AND knowledge_node_id = :knowledgeNodeId
+          AND knowledge_subject = :knowledgeSubject
+          AND knowledge_taxonomy_version = :knowledgeTaxonomyVersion
+          AND knowledge_pack_version = :knowledgePackVersion
           AND basis_revision_id = :problemRevisionId
           AND taxonomy_version = :taxonomyVersion
+          AND knowledge_reference_status = 'VERIFIED_AT_CONFIRMATION'
         LIMIT 1
         """,
     )
     suspend fun readKnowledgeBindingByIdentity(
         practiceUnitId: String,
         knowledgeNodeId: String,
+        knowledgeSubject: String,
+        knowledgeTaxonomyVersion: String,
+        knowledgePackVersion: String,
         problemRevisionId: String,
         taxonomyVersion: String,
     ): PracticeUnitKnowledgeBindingEntity?
 
     @Query(
         """
-        SELECT DISTINCT binding.knowledge_node_id
+        SELECT DISTINCT
+            binding.knowledge_node_id,
+            binding.knowledge_subject,
+            binding.knowledge_taxonomy_version,
+            binding.knowledge_pack_version,
+            binding.knowledge_manifest_fingerprint,
+            binding.knowledge_activation_generation
         FROM practice_unit_knowledge_binding AS binding
         INNER JOIN practice_unit AS unit
           ON unit.practice_unit_id = binding.practice_unit_id
          AND unit.problem_revision_id = binding.basis_revision_id
-        INNER JOIN knowledge_node AS node
-          ON node.knowledge_node_id = binding.knowledge_node_id
         WHERE unit.problem_id = :problemId
           AND unit.problem_revision_id = :problemRevisionId
+          AND binding.knowledge_reference_status = 'VERIFIED_AT_CONFIRMATION'
+          AND binding.knowledge_subject IS NOT NULL
+          AND binding.knowledge_taxonomy_version IS NOT NULL
+          AND binding.knowledge_pack_version IS NOT NULL
+          AND binding.knowledge_manifest_fingerprint IS NOT NULL
+          AND binding.knowledge_activation_generation > 0
           AND (
               NOT EXISTS (
                   SELECT 1
@@ -246,10 +109,10 @@ internal interface ProblemOrganizationDao {
         ORDER BY binding.knowledge_node_id
         """,
     )
-    fun observeCurrentKnowledgeNodeIds(
+    fun observeCurrentKnowledgeBindings(
         problemId: String,
         problemRevisionId: String,
-    ): Flow<List<String>>
+    ): Flow<List<CurrentKnowledgeBindingProjection>>
 
     @Query(
         """
@@ -382,3 +245,18 @@ internal interface ProblemOrganizationDao {
         problemRevisionId: String,
     ): Flow<List<ProblemRelationEntity>>
 }
+
+internal data class CurrentKnowledgeBindingProjection(
+    @ColumnInfo(name = "knowledge_node_id")
+    val knowledgeNodeId: String,
+    @ColumnInfo(name = "knowledge_subject")
+    val knowledgeSubject: String,
+    @ColumnInfo(name = "knowledge_taxonomy_version")
+    val knowledgeTaxonomyVersion: String,
+    @ColumnInfo(name = "knowledge_pack_version")
+    val knowledgePackVersion: String,
+    @ColumnInfo(name = "knowledge_manifest_fingerprint")
+    val knowledgeManifestFingerprint: String,
+    @ColumnInfo(name = "knowledge_activation_generation")
+    val knowledgeActivationGeneration: Long,
+)

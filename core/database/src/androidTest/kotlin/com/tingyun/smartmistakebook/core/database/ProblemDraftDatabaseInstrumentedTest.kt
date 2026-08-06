@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
@@ -143,6 +144,285 @@ class ProblemDraftDatabaseInstrumentedTest {
     }
 
     @Test
+    fun exactLegacyCaptureReadRequiresAReceiptBoundHandoffAndReplayCanClaimOldReceipt() =
+        runBlocking {
+            createConfirmedLibraryDraft()
+            val unclaimed = store.commitProblemDraft(commitCommand())
+            val exactQuery = unclaimed.receipt.toExactLegacyQuery()
+
+            assertEquals(null, store.readExactLegacyCaptureStudentDocument(exactQuery))
+            assertTrue(
+                store.readPendingCaptureStudentSaveHandoffs(
+                    ReadPendingCaptureStudentSaveHandoffsQuery("learner:local"),
+                ).isEmpty(),
+            )
+
+            val replay =
+                store.commitProblemDraft(
+                    commitCommand().copy(
+                        legacyStudentSaveClaim =
+                            LegacyCaptureStudentSaveClaim("learner:local"),
+                    ),
+                )
+
+            assertFalse(replay.created)
+            val pending =
+                store.readPendingCaptureStudentSaveHandoffs(
+                    ReadPendingCaptureStudentSaveHandoffsQuery("learner:local"),
+                ).single()
+            assertEquals(unclaimed.receipt.commandId, pending.intentId)
+            assertEquals(unclaimed.receipt.payloadFingerprint, pending.intentCanonicalFingerprint)
+            assertEquals(unclaimed.receipt.problemId, pending.targetProblemRef.problemId)
+            assertEquals(
+                unclaimed.receipt.problemRevisionId,
+                pending.targetProblemRevisionRef.revisionId,
+            )
+            val preparedReplayQuery =
+                ExactLegacyPreparedHandoffReplayQuery(
+                    learnerId = pending.learnerId,
+                    intentId = pending.intentId,
+                    intentCanonicalFingerprint = pending.intentCanonicalFingerprint,
+                    draftId = pending.draftId,
+                    draftRevisionNumber = pending.draftRevisionNumber,
+                    tutorSessionId = pending.sessionId,
+                    subject = pending.targetProblemRef.subject.name,
+                    problemId = pending.targetProblemRef.problemId,
+                    problemRevisionId = pending.targetProblemRevisionRef.revisionId,
+                    problemRevisionNumber = pending.targetProblemRevisionRef.revisionNumber,
+                    practiceUnitId = pending.targetProblemRef.practiceUnitId,
+                    documentCanonicalFingerprint =
+                        pending.targetProblemRevisionRef.documentCanonicalFingerprint,
+                )
+            val preparedRecord =
+                store.readExactLegacyCaptureStudentDocument(preparedReplayQuery)
+            assertNotNull(preparedRecord)
+            assertEquals(
+                preparedRecord,
+                store.readExactLegacyCaptureStudentDocument(exactQuery),
+            )
+            assertEquals(
+                null,
+                store.readExactLegacyCaptureStudentDocument(
+                    exactQuery.copy(errorBookEntryId = "entry:wrong"),
+                ),
+            )
+            listOf(
+                exactQuery.copy(intentId = "intent:wrong"),
+                exactQuery.copy(intentCanonicalFingerprint = "0".repeat(64)),
+                exactQuery.copy(draftId = "draft:wrong"),
+                exactQuery.copy(draftRevisionNumber = exactQuery.draftRevisionNumber + 1),
+                exactQuery.copy(problemId = "problem:wrong"),
+                exactQuery.copy(problemRevisionId = "revision:wrong"),
+                exactQuery.copy(practiceUnitId = "practice-unit:wrong"),
+            ).forEach { mismatched ->
+                assertEquals(
+                    null,
+                    store.readExactLegacyCaptureStudentDocument(mismatched),
+                )
+            }
+            assertEquals(
+                null,
+                store.readExactLegacyCaptureStudentDocument(
+                    preparedReplayQuery.copy(subject = "PHYSICS"),
+                ),
+            )
+            listOf(
+                preparedReplayQuery.copy(intentId = "intent:wrong"),
+                preparedReplayQuery.copy(intentCanonicalFingerprint = "0".repeat(64)),
+                preparedReplayQuery.copy(draftId = "draft:wrong"),
+                preparedReplayQuery.copy(
+                    draftRevisionNumber = preparedReplayQuery.draftRevisionNumber + 1,
+                ),
+                preparedReplayQuery.copy(problemId = "problem:wrong"),
+                preparedReplayQuery.copy(problemRevisionId = "revision:wrong"),
+                preparedReplayQuery.copy(
+                    problemRevisionNumber = preparedReplayQuery.problemRevisionNumber + 1,
+                ),
+                preparedReplayQuery.copy(practiceUnitId = "practice-unit:wrong"),
+                preparedReplayQuery.copy(
+                    documentCanonicalFingerprint = "0".repeat(64),
+                ),
+            ).forEach { mismatched ->
+                assertEquals(
+                    null,
+                    store.readExactLegacyCaptureStudentDocument(mismatched),
+                )
+            }
+            assertEquals(
+                null,
+                store.readExactLegacyCaptureStudentDocument(
+                    preparedReplayQuery.copy(tutorSessionId = "session:wrong"),
+                ),
+            )
+
+            store.finalizeCaptureStudentSaveHandoff(
+                FinalizeCaptureStudentSaveHandoffCommand(
+                    intentId = pending.intentId,
+                    intentCanonicalFingerprint = pending.intentCanonicalFingerprint,
+                    learnerId = pending.learnerId,
+                    targetSaveReceiptFingerprint = "f".repeat(64),
+                    finalizedAtEpochMillis = 5_000,
+                ),
+            )
+            assertFalse(
+                store.commitProblemDraft(
+                    commitCommand().copy(
+                        legacyStudentSaveClaim =
+                            LegacyCaptureStudentSaveClaim("learner:local"),
+                    ),
+                ).created,
+            )
+            assertTrue(
+                store.readPendingCaptureStudentSaveHandoffs(
+                    ReadPendingCaptureStudentSaveHandoffsQuery("learner:local"),
+                ).isEmpty(),
+            )
+            assertNotNull(store.readExactLegacyCaptureStudentDocument(exactQuery))
+            assertEquals(
+                preparedRecord,
+                store.readExactLegacyCaptureStudentDocument(preparedReplayQuery),
+            )
+        }
+
+    @Test
+    fun invalidSessionClaimRollsBackTheLegacyCommitInsteadOfLeavingAnUnclaimedSave() =
+        runBlocking {
+            createConfirmedLibraryDraft()
+            val invalid =
+                commitCommand().copy(
+                    legacyStudentSaveClaim =
+                        LegacyCaptureStudentSaveClaim(
+                            learnerId = "learner:local",
+                            tutorSessionId = "tutor-session:not-this-draft",
+                        ),
+                )
+
+            val failure = runCatching { store.commitProblemDraft(invalid) }.exceptionOrNull()
+
+            assertTrue(failure is CaptureStudentSaveHandoffIntegrityException)
+            assertEquals(0, store.countMistakes())
+            assertEquals(
+                StudyDbValue.ProblemDraftStatus.EDITING,
+                checkNotNull(store.readProblemDraft(DRAFT_ID)).status,
+            )
+            assertTrue(
+                store.readPendingCaptureStudentSaveHandoffs(
+                    ReadPendingCaptureStudentSaveHandoffsQuery("learner:local"),
+                ).isEmpty(),
+            )
+
+            val valid =
+                store.commitProblemDraft(
+                    invalid.copy(
+                        legacyStudentSaveClaim =
+                            LegacyCaptureStudentSaveClaim("learner:local"),
+                    ),
+                )
+            assertTrue(valid.created)
+            assertEquals(
+                valid.receipt.commandId,
+                store.readPendingCaptureStudentSaveHandoffs(
+                    ReadPendingCaptureStudentSaveHandoffsQuery("learner:local"),
+                ).single().intentId,
+            )
+        }
+
+    @Test
+    fun legacyStudentMigrationFailsClosedForABrokenSourceAssetLink() =
+        runBlocking {
+            withCorruptedLegacyStudentSource(
+                mutation = { database ->
+                    database.execSQL("PRAGMA foreign_keys=OFF")
+                    database.execSQL(
+                        "DELETE FROM canonical_source_asset WHERE source_asset_id = ?",
+                        arrayOf(ASSET_ID),
+                    )
+                },
+            ) { legacySource, receipt ->
+                val snapshot =
+                    legacySource.readLegacyAuthorityMigrationSnapshot("learner:local")
+                assertEquals(1L, snapshot.studentSourceAssetLinkCount)
+                assertEquals(1L, snapshot.studentBrokenSourceAssetLinkCount)
+                assertEquals(
+                    null,
+                    legacySource.readExactLegacyCaptureStudentDocument(
+                        receipt.toExactLegacyQuery(),
+                    ),
+                )
+                assertTrue(
+                    runCatching {
+                        legacySource.readLegacyStudentDocumentMigrationPage(
+                            afterExclusive = null,
+                            limit = 1,
+                        )
+                    }.exceptionOrNull() is IllegalStateException,
+                )
+            }
+        }
+
+    @Test
+    fun legacyStudentMigrationFailsClosedWhenSourceAssetsExceedTheByteBudget() =
+        runBlocking {
+            withCorruptedLegacyStudentSource(
+                mutation = { database ->
+                    database.execSQL(
+                        "UPDATE canonical_source_asset SET byte_size = ? WHERE source_asset_id = ?",
+                        arrayOf<Any>(
+                            MAX_LEGACY_STUDENT_SOURCE_ASSET_BYTES_PER_RECORD + 1L,
+                            ASSET_ID,
+                        ),
+                    )
+                },
+            ) { legacySource, receipt ->
+                val snapshot =
+                    legacySource.readLegacyAuthorityMigrationSnapshot("learner:local")
+                assertEquals(
+                    MAX_LEGACY_STUDENT_SOURCE_ASSET_BYTES_PER_RECORD + 1L,
+                    snapshot.studentSourceAssetByteCount,
+                )
+                assertEquals(
+                    null,
+                    legacySource.readExactLegacyCaptureStudentDocument(
+                        receipt.toExactLegacyQuery(),
+                    ),
+                )
+                assertTrue(
+                    runCatching {
+                        legacySource.readLegacyStudentDocumentMigrationPage(
+                            afterExclusive = null,
+                            limit = 1,
+                        )
+                    }.exceptionOrNull() is IllegalStateException,
+                )
+            }
+        }
+
+    @Test
+    fun exactLegacyCaptureReadFailsClosedWithoutItsQuestionSourceLink() =
+        runBlocking {
+            withCorruptedLegacyStudentSource(
+                mutation = { database ->
+                    database.delete(
+                        "problem_revision_source_asset",
+                        "problem_revision_id = ? AND source_asset_id = ? AND role = ?",
+                        arrayOf(
+                            commitCommand().problemRevisionId,
+                            ASSET_ID,
+                            "QUESTION_SOURCE",
+                        ),
+                    )
+                },
+            ) { legacySource, receipt ->
+                assertEquals(
+                    null,
+                    legacySource.readExactLegacyCaptureStudentDocument(
+                        receipt.toExactLegacyQuery(),
+                    ),
+                )
+            }
+        }
+
+    @Test
     fun userRevisionWinsOverLateOcrAndCommitIsAtomicAndIdempotent() = runBlocking {
         val created = store.createProblemDraft(createCommand())
         assertTrue(created.created)
@@ -219,7 +499,7 @@ class ProblemDraftDatabaseInstrumentedTest {
     }
 
     @Test
-    fun exactRepeatedCaptureReusesOneMistakeAndKeepsEverySourceImage() = runBlocking {
+    fun repeatedCaptureKeepsEveryImageWithoutInventingCrossDraftPageOrder() = runBlocking {
         val firstDocument = capturedDocument(
             markdown = "已知函数 \$f(x)=x^2-2x\$，求单调区间。",
             provenance = QuestionBlockProvenance.USER_CORRECTION,
@@ -287,6 +567,7 @@ class ProblemDraftDatabaseInstrumentedTest {
             practiceUnitId = "practice-repeat",
             errorBookEntryId = "entry-repeat",
             committedAtEpochMillis = 7_000,
+            legacyStudentSaveClaim = LegacyCaptureStudentSaveClaim("learner:local"),
         )
 
         val repeatedCommit = store.commitProblemDraft(secondCommand)
@@ -305,6 +586,45 @@ class ProblemDraftDatabaseInstrumentedTest {
         assertEquals(
             setOf(ASSET_ID, secondAssetId),
             detail.sourceAssets.map { it.sourceAsset.sourceAssetId }.toSet(),
+        )
+        val exact =
+            checkNotNull(
+                store.readExactLegacyCaptureStudentDocument(
+                    repeatedCommit.receipt.toExactLegacyQuery(),
+                ),
+            )
+        assertEquals(
+            setOf(ASSET_ID, secondAssetId),
+            exact.sourceAssets.map { it.sourceAsset.sourceAssetId }.toSet(),
+        )
+        assertEquals(
+            null,
+            exact.sourceAssets.single { it.sourceAsset.sourceAssetId == ASSET_ID }.pageIndex,
+        )
+        assertEquals(
+            0,
+            exact.sourceAssets.single { it.sourceAsset.sourceAssetId == secondAssetId }.pageIndex,
+        )
+        val bulkRecord =
+            store.readLegacyStudentDocumentMigrationPage(
+                afterExclusive = null,
+                limit = 10,
+            ).records.single()
+        assertEquals(
+            setOf(ASSET_ID, secondAssetId),
+            bulkRecord.sourceAssets.map { it.sourceAsset.sourceAssetId }.toSet(),
+        )
+        assertEquals(
+            null,
+            bulkRecord.sourceAssets
+                .single { it.sourceAsset.sourceAssetId == ASSET_ID }
+                .pageIndex,
+        )
+        assertEquals(
+            0,
+            bulkRecord.sourceAssets
+                .single { it.sourceAsset.sourceAssetId == secondAssetId }
+                .pageIndex,
         )
     }
 
@@ -474,7 +794,7 @@ class ProblemDraftDatabaseInstrumentedTest {
         val databaseName = "capture-draft-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
         try {
-            var persistent = StudyDatabaseFactory.open(context, databaseName)
+            var persistent = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             persistent.createProblemDraft(createCommand())
             val confirmed = capturedDocument(
                 markdown = "化学反应速率与浓度关系。",
@@ -503,7 +823,7 @@ class ProblemDraftDatabaseInstrumentedTest {
             val before = persistent.commitProblemDraft(command)
             persistent.close()
 
-            persistent = StudyDatabaseFactory.open(context, databaseName)
+            persistent = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             assertEquals(StudyDbValue.ProblemDraftStatus.COMMITTED, persistent.readProblemDraft(DRAFT_ID)?.status)
             assertEquals(before.receipt, persistent.commitProblemDraft(command).receipt)
             assertEquals(1, persistent.countMistakes())
@@ -1209,6 +1529,84 @@ class ProblemDraftDatabaseInstrumentedTest {
             ),
         )
     }
+
+    private suspend fun createConfirmedLibraryDraft() {
+        store.createProblemDraft(createCommand())
+        val confirmed =
+            capturedDocument(
+                markdown = "已知函数 \$f(x)=x^2-2x\$，求单调区间。",
+                provenance = QuestionBlockProvenance.USER_CORRECTION,
+                reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+                writingLayer = WritingLayer.PRINTED,
+            )
+        store.reviseProblemDraft(
+            ReviseProblemDraftCommand(
+                draftId = DRAFT_ID,
+                expectedRevisionNumber = 1,
+                revision =
+                    ProblemDraftRevisionRecord(
+                        draftId = DRAFT_ID,
+                        revisionNumber = 2,
+                        basisRevisionNumber = 1,
+                        subject = "MATH",
+                        title = "函数单调性",
+                        questionDocument = confirmed,
+                        documentFingerprint = CapturedQuestionDocumentFingerprint.of(confirmed),
+                        author = StudyDbValue.ProblemDraftAuthor.USER,
+                        createdAtEpochMillis = 2_000,
+                    ),
+            ),
+        )
+    }
+
+    private suspend fun withCorruptedLegacyStudentSource(
+        mutation: (SQLiteDatabase) -> Unit,
+        assertion: suspend (StudyDatabasePort, ProblemDraftCommitReceipt) -> Unit,
+    ) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "legacy-student-source-guard-${System.nanoTime()}.db"
+        store.close()
+        context.deleteDatabase(databaseName)
+        try {
+            store = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
+            createConfirmedLibraryDraft()
+            val receipt =
+                store.commitProblemDraft(
+                    commitCommand().copy(
+                        legacyStudentSaveClaim =
+                            LegacyCaptureStudentSaveClaim("learner:local"),
+                    ),
+                ).receipt
+            store.close()
+
+            SQLiteDatabase.openDatabase(
+                context.getDatabasePath(databaseName).path,
+                null,
+                SQLiteDatabase.OPEN_READWRITE,
+            ).use(mutation)
+
+            store = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
+            assertion(store, receipt)
+        } finally {
+            runCatching { store.close() }
+            context.deleteDatabase(databaseName)
+            store = StudyDatabaseFactory.openInMemory(context)
+        }
+    }
+
+    private fun ProblemDraftCommitReceipt.toExactLegacyQuery() =
+        ExactLegacyCaptureReceiptReplayQuery(
+            learnerId = "learner:local",
+            intentId = commandId,
+            intentCanonicalFingerprint = payloadFingerprint,
+            draftId = draftId,
+            draftRevisionNumber = draftRevisionNumber,
+            tutorSessionId = null,
+            errorBookEntryId = errorBookEntryId,
+            problemId = problemId,
+            problemRevisionId = problemRevisionId,
+            practiceUnitId = practiceUnitId,
+        )
 
     private fun splitCreateCommand(
         draftId: String,

@@ -167,6 +167,12 @@ data class CreatePdfImportRequest(
 interface BatchImportRepository {
     fun observeBatchImports(): Flow<List<BatchImportJob>>
 
+    /**
+     * Durable startup recovery for interrupted pages, boundary merges, and orphan source staging.
+     * Production implementations must be idempotent; legacy/test implementations may no-op.
+     */
+    suspend fun recoverInterruptedBatchImportWork() = Unit
+
     suspend fun createBatchImport(request: CreateBatchImportRequest): BatchImportJob
 
     suspend fun createPdfImport(request: CreatePdfImportRequest): BatchImportJob

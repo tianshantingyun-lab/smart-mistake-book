@@ -1,0 +1,2632 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "05710b1fe25a02450e233994f307a701",
+    "entities": [
+      {
+        "tableName": "mastery_source_fact",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`source_fact_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `source_kind` TEXT NOT NULL, `source_reference_id` TEXT NOT NULL, `presentation_id` TEXT NOT NULL, `problem_revision_ref_fingerprint` TEXT, `problem_revision_id` TEXT, `problem_id` TEXT, `practice_unit_id` TEXT, `problem_revision_number` INTEGER, `problem_document_fingerprint` TEXT, `review_session_id` TEXT, `review_queue_item_id` TEXT, `review_submission_id` TEXT, `outcome` TEXT NOT NULL, `assistance` TEXT NOT NULL, `retry_state` TEXT NOT NULL, `authority` TEXT NOT NULL, `source_payload_fingerprint` TEXT NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `attested_at_epoch_millis` INTEGER NOT NULL, `received_at_epoch_millis` INTEGER NOT NULL, `source_policy_version` TEXT NOT NULL, `idempotency_key` TEXT NOT NULL, `canonical_fingerprint` TEXT NOT NULL, `problem_family_fingerprint` TEXT, `presentation_fingerprint` TEXT NOT NULL DEFAULT '', `response_form` TEXT NOT NULL DEFAULT 'IMPORTED_RECORD', `independently_answered` INTEGER NOT NULL DEFAULT 0, `hint_count` INTEGER NOT NULL DEFAULT 0, `answer_revealed` INTEGER NOT NULL DEFAULT 0, `elapsed_duration_millis` INTEGER, `verification_kind` TEXT NOT NULL DEFAULT 'SELF_REPORTED', `evidence_context_kind` TEXT NOT NULL DEFAULT 'SAVED_MISTAKE', `ephemeral_problem_fingerprint` TEXT, `tutor_turn_reference_id` TEXT, `submission_evidence_fingerprint` TEXT, `attribution_model_version` TEXT, `authorized_problem_bindings_fingerprint` TEXT, `authorized_knowledge_refs_fingerprint` TEXT, `knowledge_manifest_fingerprint` TEXT, `knowledge_activation_generation` INTEGER, PRIMARY KEY(`source_fact_id`))",
+        "fields": [
+          {
+            "fieldPath": "sourceFactId",
+            "columnName": "source_fact_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceKind",
+            "columnName": "source_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceReferenceId",
+            "columnName": "source_reference_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "presentationId",
+            "columnName": "presentation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemRevisionRefFingerprint",
+            "columnName": "problem_revision_ref_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "problemRevisionId",
+            "columnName": "problem_revision_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "problemRevisionNumber",
+            "columnName": "problem_revision_number",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "problemDocumentFingerprint",
+            "columnName": "problem_document_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reviewSessionId",
+            "columnName": "review_session_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reviewQueueItemId",
+            "columnName": "review_queue_item_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reviewSubmissionId",
+            "columnName": "review_submission_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "outcome",
+            "columnName": "outcome",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assistance",
+            "columnName": "assistance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "retryState",
+            "columnName": "retry_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "authority",
+            "columnName": "authority",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePayloadFingerprint",
+            "columnName": "source_payload_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurred_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attestedAtEpochMillis",
+            "columnName": "attested_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receivedAtEpochMillis",
+            "columnName": "received_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePolicyVersion",
+            "columnName": "source_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotency_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "canonicalFingerprint",
+            "columnName": "canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemFamilyFingerprint",
+            "columnName": "problem_family_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "presentationFingerprint",
+            "columnName": "presentation_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "responseForm",
+            "columnName": "response_form",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'IMPORTED_RECORD'"
+          },
+          {
+            "fieldPath": "independentlyAnswered",
+            "columnName": "independently_answered",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "hintCount",
+            "columnName": "hint_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "answerRevealed",
+            "columnName": "answer_revealed",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "elapsedDurationMillis",
+            "columnName": "elapsed_duration_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "verificationKind",
+            "columnName": "verification_kind",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'SELF_REPORTED'"
+          },
+          {
+            "fieldPath": "evidenceContextKind",
+            "columnName": "evidence_context_kind",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'SAVED_MISTAKE'"
+          },
+          {
+            "fieldPath": "ephemeralProblemFingerprint",
+            "columnName": "ephemeral_problem_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tutorTurnReferenceId",
+            "columnName": "tutor_turn_reference_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "submissionEvidenceFingerprint",
+            "columnName": "submission_evidence_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "attributionModelVersion",
+            "columnName": "attribution_model_version",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "authorizedProblemBindingsFingerprint",
+            "columnName": "authorized_problem_bindings_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "authorizedKnowledgeRefsFingerprint",
+            "columnName": "authorized_knowledge_refs_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeManifestFingerprint",
+            "columnName": "knowledge_manifest_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeActivationGeneration",
+            "columnName": "knowledge_activation_generation",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "source_fact_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_source_fact_learner_id_subject_occurred_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "occurred_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_source_fact_learner_id_subject_occurred_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `occurred_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_source_fact_learner_id_source_kind_source_reference_id",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "source_kind",
+              "source_reference_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_source_fact_learner_id_source_kind_source_reference_id` ON `${TABLE_NAME}` (`learner_id`, `source_kind`, `source_reference_id`)"
+          },
+          {
+            "name": "index_mastery_source_fact_idempotency_key",
+            "unique": true,
+            "columnNames": [
+              "idempotency_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_source_fact_idempotency_key` ON `${TABLE_NAME}` (`idempotency_key`)"
+          },
+          {
+            "name": "index_mastery_source_fact_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_source_fact_canonical_fingerprint` ON `${TABLE_NAME}` (`canonical_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_source_proof",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`source_fact_id` TEXT NOT NULL, `source_fact_canonical_fingerprint` TEXT NOT NULL, `source_policy_version` TEXT NOT NULL, `policy_supported` INTEGER NOT NULL, `proof_fingerprint` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`source_fact_id`), FOREIGN KEY(`source_fact_id`) REFERENCES `mastery_source_fact`(`source_fact_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "sourceFactId",
+            "columnName": "source_fact_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceFactCanonicalFingerprint",
+            "columnName": "source_fact_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePolicyVersion",
+            "columnName": "source_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "policySupported",
+            "columnName": "policy_supported",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proofFingerprint",
+            "columnName": "proof_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "source_fact_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_source_proof_source_fact_id_proof_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "source_fact_id",
+              "proof_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_source_proof_source_fact_id_proof_fingerprint` ON `${TABLE_NAME}` (`source_fact_id`, `proof_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_source_proof_proof_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "proof_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_source_proof_proof_fingerprint` ON `${TABLE_NAME}` (`proof_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_source_fact",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "source_fact_id"
+            ],
+            "referencedColumns": [
+              "source_fact_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_problem_binding_authority",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`binding_ref_fingerprint` TEXT NOT NULL, `inbox_event_id` TEXT NOT NULL, `source_store_generation` TEXT NOT NULL, `envelope_canonical_fingerprint` TEXT NOT NULL, `payload_canonical_fingerprint` TEXT NOT NULL, `binding_protocol_version` INTEGER NOT NULL, `binding_set_version` INTEGER NOT NULL, `problem_revision_ref_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `taxonomy_version` TEXT NOT NULL, `knowledge_pack_version` TEXT NOT NULL, `knowledge_node_ref_fingerprint` TEXT NOT NULL, `accepted_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`binding_ref_fingerprint`), FOREIGN KEY(`inbox_event_id`) REFERENCES `mastery_cross_store_inbox`(`event_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "bindingRefFingerprint",
+            "columnName": "binding_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inboxEventId",
+            "columnName": "inbox_event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStoreGeneration",
+            "columnName": "source_store_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopeCanonicalFingerprint",
+            "columnName": "envelope_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadCanonicalFingerprint",
+            "columnName": "payload_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bindingProtocolVersion",
+            "columnName": "binding_protocol_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bindingSetVersion",
+            "columnName": "binding_set_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemRevisionRefFingerprint",
+            "columnName": "problem_revision_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxonomyVersion",
+            "columnName": "taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgePackVersion",
+            "columnName": "knowledge_pack_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeRefFingerprint",
+            "columnName": "knowledge_node_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "acceptedAtEpochMillis",
+            "columnName": "accepted_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "binding_ref_fingerprint"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_problem_binding_authority_inbox_event_id",
+            "unique": false,
+            "columnNames": [
+              "inbox_event_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_problem_binding_authority_inbox_event_id` ON `${TABLE_NAME}` (`inbox_event_id`)"
+          },
+          {
+            "name": "index_mastery_problem_binding_authority_problem_revision_ref_fingerprint_binding_ref_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "problem_revision_ref_fingerprint",
+              "binding_ref_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_problem_binding_authority_problem_revision_ref_fingerprint_binding_ref_fingerprint` ON `${TABLE_NAME}` (`problem_revision_ref_fingerprint`, `binding_ref_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_problem_binding_authority_problem_revision_ref_fingerprint_learner_id_subject_knowledge_node_id_taxonomy_version_knowledge_pack_version",
+            "unique": false,
+            "columnNames": [
+              "problem_revision_ref_fingerprint",
+              "learner_id",
+              "subject",
+              "knowledge_node_id",
+              "taxonomy_version",
+              "knowledge_pack_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_problem_binding_authority_problem_revision_ref_fingerprint_learner_id_subject_knowledge_node_id_taxonomy_version_knowledge_pack_version` ON `${TABLE_NAME}` (`problem_revision_ref_fingerprint`, `learner_id`, `subject`, `knowledge_node_id`, `taxonomy_version`, `knowledge_pack_version`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_cross_store_inbox",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "inbox_event_id"
+            ],
+            "referencedColumns": [
+              "event_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_problem_binding_authority_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`problem_revision_ref_fingerprint` TEXT NOT NULL, `inbox_event_id` TEXT NOT NULL, `source_store_generation` TEXT NOT NULL, `envelope_canonical_fingerprint` TEXT NOT NULL, `payload_canonical_fingerprint` TEXT NOT NULL, `binding_protocol_version` INTEGER NOT NULL, `binding_set_version` INTEGER NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `changed_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`problem_revision_ref_fingerprint`), FOREIGN KEY(`inbox_event_id`) REFERENCES `mastery_cross_store_inbox`(`event_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "problemRevisionRefFingerprint",
+            "columnName": "problem_revision_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inboxEventId",
+            "columnName": "inbox_event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStoreGeneration",
+            "columnName": "source_store_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopeCanonicalFingerprint",
+            "columnName": "envelope_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadCanonicalFingerprint",
+            "columnName": "payload_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bindingProtocolVersion",
+            "columnName": "binding_protocol_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bindingSetVersion",
+            "columnName": "binding_set_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "changedAtEpochMillis",
+            "columnName": "changed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "problem_revision_ref_fingerprint"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_problem_binding_authority_state_inbox_event_id",
+            "unique": false,
+            "columnNames": [
+              "inbox_event_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_problem_binding_authority_state_inbox_event_id` ON `${TABLE_NAME}` (`inbox_event_id`)"
+          },
+          {
+            "name": "index_mastery_problem_binding_authority_state_learner_id_subject",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_problem_binding_authority_state_learner_id_subject` ON `${TABLE_NAME}` (`learner_id`, `subject`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_cross_store_inbox",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "inbox_event_id"
+            ],
+            "referencedColumns": [
+              "event_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_observation_candidate",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`candidate_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `source_fact_id` TEXT NOT NULL, `confidence` TEXT NOT NULL, `model_version` TEXT NOT NULL, `requested_policy_version` TEXT NOT NULL, `proposed_at_epoch_millis` INTEGER NOT NULL, `received_at_epoch_millis` INTEGER NOT NULL, `idempotency_key` TEXT NOT NULL, `canonical_fingerprint` TEXT NOT NULL, `candidate_origin` TEXT NOT NULL DEFAULT 'TRUSTED_LOCAL', PRIMARY KEY(`candidate_id`))",
+        "fields": [
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceFactId",
+            "columnName": "source_fact_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidence",
+            "columnName": "confidence",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelVersion",
+            "columnName": "model_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestedPolicyVersion",
+            "columnName": "requested_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proposedAtEpochMillis",
+            "columnName": "proposed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receivedAtEpochMillis",
+            "columnName": "received_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotency_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "canonicalFingerprint",
+            "columnName": "canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateOrigin",
+            "columnName": "candidate_origin",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'TRUSTED_LOCAL'"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "candidate_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_observation_candidate_learner_id_subject_proposed_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "proposed_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_observation_candidate_learner_id_subject_proposed_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `proposed_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_observation_candidate_source_fact_id",
+            "unique": true,
+            "columnNames": [
+              "source_fact_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_observation_candidate_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
+          },
+          {
+            "name": "index_mastery_observation_candidate_idempotency_key",
+            "unique": true,
+            "columnNames": [
+              "idempotency_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_observation_candidate_idempotency_key` ON `${TABLE_NAME}` (`idempotency_key`)"
+          },
+          {
+            "name": "index_mastery_observation_candidate_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_observation_candidate_canonical_fingerprint` ON `${TABLE_NAME}` (`canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_observation_candidate_candidate_id_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "candidate_id",
+              "canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_observation_candidate_candidate_id_canonical_fingerprint` ON `${TABLE_NAME}` (`candidate_id`, `canonical_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_candidate_attribution",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`candidate_id` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `taxonomy_version` TEXT NOT NULL, `knowledge_pack_version` TEXT NOT NULL, `knowledge_node_ref_fingerprint` TEXT NOT NULL, `problem_binding_ref_fingerprint` TEXT, `binding_problem_revision_ref_fingerprint` TEXT, `role` TEXT NOT NULL, `certainty` TEXT NOT NULL, `proposal_fingerprint` TEXT NOT NULL, PRIMARY KEY(`candidate_id`, `ordinal`), FOREIGN KEY(`candidate_id`) REFERENCES `mastery_observation_candidate`(`candidate_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxonomyVersion",
+            "columnName": "taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgePackVersion",
+            "columnName": "knowledge_pack_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeRefFingerprint",
+            "columnName": "knowledge_node_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemBindingRefFingerprint",
+            "columnName": "problem_binding_ref_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "bindingProblemRevisionRefFingerprint",
+            "columnName": "binding_problem_revision_ref_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "certainty",
+            "columnName": "certainty",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proposalFingerprint",
+            "columnName": "proposal_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "candidate_id",
+            "ordinal"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_candidate_attribution_candidate_id_knowledge_node_id_taxonomy_version_knowledge_pack_version",
+            "unique": true,
+            "columnNames": [
+              "candidate_id",
+              "knowledge_node_id",
+              "taxonomy_version",
+              "knowledge_pack_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_candidate_attribution_candidate_id_knowledge_node_id_taxonomy_version_knowledge_pack_version` ON `${TABLE_NAME}` (`candidate_id`, `knowledge_node_id`, `taxonomy_version`, `knowledge_pack_version`)"
+          },
+          {
+            "name": "index_mastery_candidate_attribution_knowledge_node_ref_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "knowledge_node_ref_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_candidate_attribution_knowledge_node_ref_fingerprint` ON `${TABLE_NAME}` (`knowledge_node_ref_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_candidate_attribution_problem_binding_ref_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "problem_binding_ref_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_candidate_attribution_problem_binding_ref_fingerprint` ON `${TABLE_NAME}` (`problem_binding_ref_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_observation_candidate",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "candidate_id"
+            ],
+            "referencedColumns": [
+              "candidate_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_admission_receipt",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`candidate_id` TEXT NOT NULL, `candidate_canonical_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `disposition` TEXT NOT NULL, `inert_reason` TEXT, `source_proof_fingerprint` TEXT, `policy_version` TEXT NOT NULL, `admission_policy_version` TEXT NOT NULL DEFAULT 'learner-mastery-admission-legacy', `calibration_version` TEXT NOT NULL DEFAULT 'learner-mastery-calibration-legacy', `event_id` TEXT, `receipt_fingerprint` TEXT NOT NULL, `decided_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`candidate_id`), FOREIGN KEY(`candidate_id`, `candidate_canonical_fingerprint`) REFERENCES `mastery_observation_candidate`(`candidate_id`, `canonical_fingerprint`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateCanonicalFingerprint",
+            "columnName": "candidate_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "disposition",
+            "columnName": "disposition",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inertReason",
+            "columnName": "inert_reason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceProofFingerprint",
+            "columnName": "source_proof_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "policyVersion",
+            "columnName": "policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "admissionPolicyVersion",
+            "columnName": "admission_policy_version",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'learner-mastery-admission-legacy'"
+          },
+          {
+            "fieldPath": "calibrationVersion",
+            "columnName": "calibration_version",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'learner-mastery-calibration-legacy'"
+          },
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiptFingerprint",
+            "columnName": "receipt_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "decidedAtEpochMillis",
+            "columnName": "decided_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "candidate_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_admission_receipt_candidate_id_candidate_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "candidate_id",
+              "candidate_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_admission_receipt_candidate_id_candidate_canonical_fingerprint` ON `${TABLE_NAME}` (`candidate_id`, `candidate_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_admission_receipt_receipt_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "receipt_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_admission_receipt_receipt_fingerprint` ON `${TABLE_NAME}` (`receipt_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_admission_receipt_learner_id_disposition_decided_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "disposition",
+              "decided_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_admission_receipt_learner_id_disposition_decided_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `disposition`, `decided_at_epoch_millis`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_observation_candidate",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "candidate_id",
+              "candidate_canonical_fingerprint"
+            ],
+            "referencedColumns": [
+              "candidate_id",
+              "canonical_fingerprint"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_evidence_review_case",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`review_case_id` TEXT NOT NULL, `candidate_id` TEXT NOT NULL, `candidate_canonical_fingerprint` TEXT NOT NULL, `source_fact_id` TEXT NOT NULL, `source_proof_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `reason` TEXT NOT NULL, `admission_policy_version` TEXT NOT NULL, `calibration_version` TEXT NOT NULL, `review_case_fingerprint` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`review_case_id`), FOREIGN KEY(`candidate_id`, `candidate_canonical_fingerprint`) REFERENCES `mastery_observation_candidate`(`candidate_id`, `canonical_fingerprint`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`source_fact_id`, `source_proof_fingerprint`) REFERENCES `mastery_source_proof`(`source_fact_id`, `proof_fingerprint`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "reviewCaseId",
+            "columnName": "review_case_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateCanonicalFingerprint",
+            "columnName": "candidate_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceFactId",
+            "columnName": "source_fact_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceProofFingerprint",
+            "columnName": "source_proof_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "admissionPolicyVersion",
+            "columnName": "admission_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calibrationVersion",
+            "columnName": "calibration_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewCaseFingerprint",
+            "columnName": "review_case_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "review_case_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_evidence_review_case_candidate_id_candidate_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "candidate_id",
+              "candidate_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_evidence_review_case_candidate_id_candidate_canonical_fingerprint` ON `${TABLE_NAME}` (`candidate_id`, `candidate_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_evidence_review_case_source_fact_id_source_proof_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "source_fact_id",
+              "source_proof_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_evidence_review_case_source_fact_id_source_proof_fingerprint` ON `${TABLE_NAME}` (`source_fact_id`, `source_proof_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_evidence_review_case_learner_id_subject_created_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "created_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_evidence_review_case_learner_id_subject_created_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `created_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_evidence_review_case_review_case_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "review_case_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_evidence_review_case_review_case_fingerprint` ON `${TABLE_NAME}` (`review_case_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_observation_candidate",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "candidate_id",
+              "candidate_canonical_fingerprint"
+            ],
+            "referencedColumns": [
+              "candidate_id",
+              "canonical_fingerprint"
+            ]
+          },
+          {
+            "table": "mastery_source_proof",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "source_fact_id",
+              "source_proof_fingerprint"
+            ],
+            "referencedColumns": [
+              "source_fact_id",
+              "proof_fingerprint"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_learning_event",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `candidate_id` TEXT NOT NULL, `source_fact_id` TEXT NOT NULL, `source_proof_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `direction` TEXT NOT NULL, `event_sequence` INTEGER NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `admitted_at_epoch_millis` INTEGER NOT NULL, `projection_policy_version` TEXT NOT NULL, `admission_policy_version` TEXT NOT NULL DEFAULT 'learner-mastery-admission-legacy', `calibration_version` TEXT NOT NULL DEFAULT 'learner-mastery-calibration-legacy', `canonical_fingerprint` TEXT NOT NULL, `problem_family_fingerprint` TEXT, `presentation_fingerprint` TEXT NOT NULL DEFAULT '', `evidence_quality_micros` INTEGER NOT NULL DEFAULT 0, `independently_answered` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`event_id`), FOREIGN KEY(`candidate_id`) REFERENCES `mastery_observation_candidate`(`candidate_id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`source_fact_id`) REFERENCES `mastery_source_fact`(`source_fact_id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`source_fact_id`, `source_proof_fingerprint`) REFERENCES `mastery_source_proof`(`source_fact_id`, `proof_fingerprint`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceFactId",
+            "columnName": "source_fact_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceProofFingerprint",
+            "columnName": "source_proof_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventSequence",
+            "columnName": "event_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurred_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "admittedAtEpochMillis",
+            "columnName": "admitted_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectionPolicyVersion",
+            "columnName": "projection_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "admissionPolicyVersion",
+            "columnName": "admission_policy_version",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'learner-mastery-admission-legacy'"
+          },
+          {
+            "fieldPath": "calibrationVersion",
+            "columnName": "calibration_version",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'learner-mastery-calibration-legacy'"
+          },
+          {
+            "fieldPath": "canonicalFingerprint",
+            "columnName": "canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemFamilyFingerprint",
+            "columnName": "problem_family_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "presentationFingerprint",
+            "columnName": "presentation_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "evidenceQualityMicros",
+            "columnName": "evidence_quality_micros",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "independentlyAnswered",
+            "columnName": "independently_answered",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_learning_event_candidate_id",
+            "unique": true,
+            "columnNames": [
+              "candidate_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_candidate_id` ON `${TABLE_NAME}` (`candidate_id`)"
+          },
+          {
+            "name": "index_mastery_learning_event_source_fact_id",
+            "unique": true,
+            "columnNames": [
+              "source_fact_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_source_fact_id` ON `${TABLE_NAME}` (`source_fact_id`)"
+          },
+          {
+            "name": "index_mastery_learning_event_source_fact_id_source_proof_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "source_fact_id",
+              "source_proof_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_source_fact_id_source_proof_fingerprint` ON `${TABLE_NAME}` (`source_fact_id`, `source_proof_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_learning_event_learner_id_event_sequence",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "event_sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_learner_id_event_sequence` ON `${TABLE_NAME}` (`learner_id`, `event_sequence`)"
+          },
+          {
+            "name": "index_mastery_learning_event_learner_id_subject_occurred_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "occurred_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_learning_event_learner_id_subject_occurred_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `occurred_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_learning_event_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_canonical_fingerprint` ON `${TABLE_NAME}` (`canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_learning_event_event_id_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "event_id",
+              "canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_event_id_canonical_fingerprint` ON `${TABLE_NAME}` (`event_id`, `canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_observation_candidate",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "candidate_id"
+            ],
+            "referencedColumns": [
+              "candidate_id"
+            ]
+          },
+          {
+            "table": "mastery_source_fact",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "source_fact_id"
+            ],
+            "referencedColumns": [
+              "source_fact_id"
+            ]
+          },
+          {
+            "table": "mastery_source_proof",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "source_fact_id",
+              "source_proof_fingerprint"
+            ],
+            "referencedColumns": [
+              "source_fact_id",
+              "proof_fingerprint"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_learning_event_attribution",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `taxonomy_version` TEXT NOT NULL, `knowledge_pack_version` TEXT NOT NULL, `knowledge_node_ref_fingerprint` TEXT NOT NULL, `evidence_mass_micros` INTEGER NOT NULL, PRIMARY KEY(`event_id`, `ordinal`), FOREIGN KEY(`event_id`) REFERENCES `mastery_learning_event`(`event_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxonomyVersion",
+            "columnName": "taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgePackVersion",
+            "columnName": "knowledge_pack_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeRefFingerprint",
+            "columnName": "knowledge_node_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "evidenceMassMicros",
+            "columnName": "evidence_mass_micros",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id",
+            "ordinal"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_learning_event_attribution_event_id_knowledge_node_id_taxonomy_version_knowledge_pack_version",
+            "unique": true,
+            "columnNames": [
+              "event_id",
+              "knowledge_node_id",
+              "taxonomy_version",
+              "knowledge_pack_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_learning_event_attribution_event_id_knowledge_node_id_taxonomy_version_knowledge_pack_version` ON `${TABLE_NAME}` (`event_id`, `knowledge_node_id`, `taxonomy_version`, `knowledge_pack_version`)"
+          },
+          {
+            "name": "index_mastery_learning_event_attribution_knowledge_node_ref_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "knowledge_node_ref_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_learning_event_attribution_knowledge_node_ref_fingerprint` ON `${TABLE_NAME}` (`knowledge_node_ref_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_learning_event",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "event_id"
+            ],
+            "referencedColumns": [
+              "event_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_applied_event",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `event_canonical_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `event_sequence` INTEGER NOT NULL, `projection_policy_version` TEXT NOT NULL, `application_fingerprint` TEXT NOT NULL, `applied_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`event_id`), FOREIGN KEY(`event_id`, `event_canonical_fingerprint`) REFERENCES `mastery_learning_event`(`event_id`, `canonical_fingerprint`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventCanonicalFingerprint",
+            "columnName": "event_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventSequence",
+            "columnName": "event_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectionPolicyVersion",
+            "columnName": "projection_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "applicationFingerprint",
+            "columnName": "application_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appliedAtEpochMillis",
+            "columnName": "applied_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_applied_event_event_id_event_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "event_id",
+              "event_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_applied_event_event_id_event_canonical_fingerprint` ON `${TABLE_NAME}` (`event_id`, `event_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_applied_event_learner_id_event_sequence",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "event_sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_applied_event_learner_id_event_sequence` ON `${TABLE_NAME}` (`learner_id`, `event_sequence`)"
+          },
+          {
+            "name": "index_mastery_applied_event_application_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "application_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_applied_event_application_fingerprint` ON `${TABLE_NAME}` (`application_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "mastery_learning_event",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "event_id",
+              "event_canonical_fingerprint"
+            ],
+            "referencedColumns": [
+              "event_id",
+              "canonical_fingerprint"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_knowledge_projection",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `taxonomy_version` TEXT NOT NULL, `latest_evidence_knowledge_pack_version` TEXT NOT NULL, `stable_node_identity_fingerprint` TEXT NOT NULL, `positive_evidence_micros` INTEGER NOT NULL, `negative_evidence_micros` INTEGER NOT NULL, `mastery_score_micros` INTEGER NOT NULL, `mastery_state` TEXT NOT NULL, `trend` TEXT NOT NULL, `observation_count` INTEGER NOT NULL, `memory_stability_millis` INTEGER NOT NULL, `recall_due_at_epoch_millis` INTEGER NOT NULL, `last_positive_at_epoch_millis` INTEGER, `last_negative_at_epoch_millis` INTEGER, `last_evidence_at_epoch_millis` INTEGER NOT NULL, `last_event_sequence` INTEGER NOT NULL, `last_ordered_event_id` TEXT NOT NULL, `projection_policy_version` TEXT NOT NULL, `evidence_quality_micros` INTEGER NOT NULL DEFAULT 0, `independent_problem_family_count` INTEGER NOT NULL DEFAULT 0, `distinct_presentation_count` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`learner_id`, `subject`, `knowledge_node_id`, `taxonomy_version`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxonomyVersion",
+            "columnName": "taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latestEvidenceKnowledgePackVersion",
+            "columnName": "latest_evidence_knowledge_pack_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stableNodeIdentityFingerprint",
+            "columnName": "stable_node_identity_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "positiveEvidenceMicros",
+            "columnName": "positive_evidence_micros",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "negativeEvidenceMicros",
+            "columnName": "negative_evidence_micros",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "masteryScoreMicros",
+            "columnName": "mastery_score_micros",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "masteryState",
+            "columnName": "mastery_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trend",
+            "columnName": "trend",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observationCount",
+            "columnName": "observation_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "memoryStabilityMillis",
+            "columnName": "memory_stability_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recallDueAtEpochMillis",
+            "columnName": "recall_due_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastPositiveAtEpochMillis",
+            "columnName": "last_positive_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastNegativeAtEpochMillis",
+            "columnName": "last_negative_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastEvidenceAtEpochMillis",
+            "columnName": "last_evidence_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEventSequence",
+            "columnName": "last_event_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastOrderedEventId",
+            "columnName": "last_ordered_event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectionPolicyVersion",
+            "columnName": "projection_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "evidenceQualityMicros",
+            "columnName": "evidence_quality_micros",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "independentProblemFamilyCount",
+            "columnName": "independent_problem_family_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "distinctPresentationCount",
+            "columnName": "distinct_presentation_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id",
+            "subject",
+            "knowledge_node_id",
+            "taxonomy_version"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_knowledge_projection_learner_id_subject_mastery_state_last_evidence_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "mastery_state",
+              "last_evidence_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_knowledge_projection_learner_id_subject_mastery_state_last_evidence_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `mastery_state`, `last_evidence_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_knowledge_projection_learner_id_subject_recall_due_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "recall_due_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_knowledge_projection_learner_id_subject_recall_due_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `recall_due_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_knowledge_projection_learner_id_subject_stable_node_identity_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "stable_node_identity_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_knowledge_projection_learner_id_subject_stable_node_identity_fingerprint` ON `${TABLE_NAME}` (`learner_id`, `subject`, `stable_node_identity_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_knowledge_projection_stable_node_identity_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "stable_node_identity_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_knowledge_projection_stable_node_identity_fingerprint` ON `${TABLE_NAME}` (`stable_node_identity_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_subject_digest",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `needs_reinforcement_count` INTEGER NOT NULL, `familiarizing_count` INTEGER NOT NULL, `steady_count` INTEGER NOT NULL, `last_event_sequence` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, `projection_policy_version` TEXT NOT NULL, PRIMARY KEY(`learner_id`, `subject`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "needsReinforcementCount",
+            "columnName": "needs_reinforcement_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "familiarizingCount",
+            "columnName": "familiarizing_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "steadyCount",
+            "columnName": "steady_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEventSequence",
+            "columnName": "last_event_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectionPolicyVersion",
+            "columnName": "projection_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id",
+            "subject"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_subject_digest_learner_id_updated_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "updated_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_subject_digest_learner_id_updated_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `updated_at_epoch_millis`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_presentation_node_budget",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `presentation_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `taxonomy_version` TEXT NOT NULL, `stable_node_identity_fingerprint` TEXT NOT NULL, `consumed_mass_micros` INTEGER NOT NULL, `last_event_id` TEXT NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`learner_id`, `presentation_id`, `subject`, `knowledge_node_id`, `taxonomy_version`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "presentationId",
+            "columnName": "presentation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxonomyVersion",
+            "columnName": "taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stableNodeIdentityFingerprint",
+            "columnName": "stable_node_identity_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consumedMassMicros",
+            "columnName": "consumed_mass_micros",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEventId",
+            "columnName": "last_event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id",
+            "presentation_id",
+            "subject",
+            "knowledge_node_id",
+            "taxonomy_version"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_presentation_node_budget_learner_id_subject_updated_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "updated_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_presentation_node_budget_learner_id_subject_updated_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `updated_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_presentation_node_budget_stable_node_identity_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "stable_node_identity_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_presentation_node_budget_stable_node_identity_fingerprint` ON `${TABLE_NAME}` (`stable_node_identity_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_problem_family_node_budget",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `problem_family_fingerprint` TEXT NOT NULL, `subject` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `taxonomy_version` TEXT NOT NULL, `stable_node_identity_fingerprint` TEXT NOT NULL, `observation_count` INTEGER NOT NULL, `consumed_mass_micros` INTEGER NOT NULL, `last_event_id` TEXT NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`learner_id`, `problem_family_fingerprint`, `subject`, `knowledge_node_id`, `taxonomy_version`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemFamilyFingerprint",
+            "columnName": "problem_family_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taxonomyVersion",
+            "columnName": "taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stableNodeIdentityFingerprint",
+            "columnName": "stable_node_identity_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observationCount",
+            "columnName": "observation_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consumedMassMicros",
+            "columnName": "consumed_mass_micros",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastEventId",
+            "columnName": "last_event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id",
+            "problem_family_fingerprint",
+            "subject",
+            "knowledge_node_id",
+            "taxonomy_version"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_problem_family_node_budget_learner_id_subject_updated_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "updated_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_problem_family_node_budget_learner_id_subject_updated_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `updated_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_problem_family_node_budget_stable_node_identity_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "stable_node_identity_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_problem_family_node_budget_stable_node_identity_fingerprint` ON `${TABLE_NAME}` (`stable_node_identity_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_cross_store_inbox",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `source_store` TEXT NOT NULL, `destination_store` TEXT NOT NULL, `aggregate_id` TEXT NOT NULL, `aggregate_version` INTEGER NOT NULL, `payload_type` TEXT NOT NULL, `payload_version` INTEGER NOT NULL, `payload_canonical_fingerprint` TEXT NOT NULL, `payload_wire` TEXT NOT NULL, `envelope_canonical_fingerprint` TEXT NOT NULL, `idempotency_key` TEXT NOT NULL, `source_store_generation` TEXT NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `received_at_epoch_millis` INTEGER NOT NULL, `processed_at_epoch_millis` INTEGER, PRIMARY KEY(`event_id`))",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStore",
+            "columnName": "source_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationStore",
+            "columnName": "destination_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateId",
+            "columnName": "aggregate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateVersion",
+            "columnName": "aggregate_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadType",
+            "columnName": "payload_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadVersion",
+            "columnName": "payload_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadCanonicalFingerprint",
+            "columnName": "payload_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadWire",
+            "columnName": "payload_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopeCanonicalFingerprint",
+            "columnName": "envelope_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotency_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStoreGeneration",
+            "columnName": "source_store_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurred_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receivedAtEpochMillis",
+            "columnName": "received_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "processedAtEpochMillis",
+            "columnName": "processed_at_epoch_millis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_cross_store_inbox_idempotency_key",
+            "unique": true,
+            "columnNames": [
+              "idempotency_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_cross_store_inbox_idempotency_key` ON `${TABLE_NAME}` (`idempotency_key`)"
+          },
+          {
+            "name": "index_mastery_cross_store_inbox_envelope_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "envelope_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_cross_store_inbox_envelope_canonical_fingerprint` ON `${TABLE_NAME}` (`envelope_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_cross_store_inbox_source_store_source_store_generation_aggregate_id_aggregate_version_payload_type_payload_version",
+            "unique": true,
+            "columnNames": [
+              "source_store",
+              "source_store_generation",
+              "aggregate_id",
+              "aggregate_version",
+              "payload_type",
+              "payload_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_cross_store_inbox_source_store_source_store_generation_aggregate_id_aggregate_version_payload_type_payload_version` ON `${TABLE_NAME}` (`source_store`, `source_store_generation`, `aggregate_id`, `aggregate_version`, `payload_type`, `payload_version`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_cross_store_outbox",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `source_store` TEXT NOT NULL, `source_store_generation` TEXT NOT NULL, `destination_store` TEXT NOT NULL, `aggregate_id` TEXT NOT NULL, `aggregate_version` INTEGER NOT NULL, `payload_type` TEXT NOT NULL, `payload_version` INTEGER NOT NULL, `learning_evidence_ref_fingerprint` TEXT NOT NULL, `problem_revision_ref_fingerprint` TEXT, `payload_canonical_fingerprint` TEXT NOT NULL, `payload_wire` TEXT NOT NULL, `envelope_canonical_fingerprint` TEXT NOT NULL, `idempotency_key` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `published_at_epoch_millis` INTEGER, `learner_id` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`event_id`))",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStore",
+            "columnName": "source_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStoreGeneration",
+            "columnName": "source_store_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationStore",
+            "columnName": "destination_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateId",
+            "columnName": "aggregate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateVersion",
+            "columnName": "aggregate_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadType",
+            "columnName": "payload_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadVersion",
+            "columnName": "payload_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learningEvidenceRefFingerprint",
+            "columnName": "learning_evidence_ref_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemRevisionRefFingerprint",
+            "columnName": "problem_revision_ref_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payloadCanonicalFingerprint",
+            "columnName": "payload_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadWire",
+            "columnName": "payload_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopeCanonicalFingerprint",
+            "columnName": "envelope_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotency_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurred_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publishedAtEpochMillis",
+            "columnName": "published_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_cross_store_outbox_idempotency_key",
+            "unique": true,
+            "columnNames": [
+              "idempotency_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_cross_store_outbox_idempotency_key` ON `${TABLE_NAME}` (`idempotency_key`)"
+          },
+          {
+            "name": "index_mastery_cross_store_outbox_envelope_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "envelope_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_cross_store_outbox_envelope_canonical_fingerprint` ON `${TABLE_NAME}` (`envelope_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_mastery_cross_store_outbox_destination_store_published_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "destination_store",
+              "published_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_cross_store_outbox_destination_store_published_at_epoch_millis` ON `${TABLE_NAME}` (`destination_store`, `published_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_cross_store_outbox_learner_id_published_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "published_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_cross_store_outbox_learner_id_published_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `published_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_cross_store_outbox_aggregate_id_aggregate_version",
+            "unique": true,
+            "columnNames": [
+              "aggregate_id",
+              "aggregate_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_cross_store_outbox_aggregate_id_aggregate_version` ON `${TABLE_NAME}` (`aggregate_id`, `aggregate_version`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_taxonomy_lineage_decision",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`decision_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `lineage_kind` TEXT NOT NULL, `from_knowledge_node_id` TEXT NOT NULL, `from_taxonomy_version` TEXT NOT NULL, `to_node_refs_fingerprint` TEXT, `status` TEXT NOT NULL, `catalog_manifest_fingerprint` TEXT NOT NULL, `reviewed_at_epoch_millis` INTEGER, `decision_fingerprint` TEXT NOT NULL, PRIMARY KEY(`decision_id`))",
+        "fields": [
+          {
+            "fieldPath": "decisionId",
+            "columnName": "decision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lineageKind",
+            "columnName": "lineage_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromKnowledgeNodeId",
+            "columnName": "from_knowledge_node_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromTaxonomyVersion",
+            "columnName": "from_taxonomy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "toNodeRefsFingerprint",
+            "columnName": "to_node_refs_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogManifestFingerprint",
+            "columnName": "catalog_manifest_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewedAtEpochMillis",
+            "columnName": "reviewed_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "decisionFingerprint",
+            "columnName": "decision_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "decision_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_taxonomy_lineage_decision_learner_id_subject_status_reviewed_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "status",
+              "reviewed_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_taxonomy_lineage_decision_learner_id_subject_status_reviewed_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `status`, `reviewed_at_epoch_millis`)"
+          },
+          {
+            "name": "index_mastery_taxonomy_lineage_decision_learner_id_subject_from_knowledge_node_id_from_taxonomy_version",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "from_knowledge_node_id",
+              "from_taxonomy_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mastery_taxonomy_lineage_decision_learner_id_subject_from_knowledge_node_id_from_taxonomy_version` ON `${TABLE_NAME}` (`learner_id`, `subject`, `from_knowledge_node_id`, `from_taxonomy_version`)"
+          },
+          {
+            "name": "index_mastery_taxonomy_lineage_decision_decision_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "decision_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_taxonomy_lineage_decision_decision_fingerprint` ON `${TABLE_NAME}` (`decision_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "mastery_store_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`metadata_key` TEXT NOT NULL, `metadata_value` TEXT NOT NULL, PRIMARY KEY(`metadata_key`))",
+        "fields": [
+          {
+            "fieldPath": "metadataKey",
+            "columnName": "metadata_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadataValue",
+            "columnName": "metadata_value",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "metadata_key"
+          ]
+        }
+      },
+      {
+        "tableName": "mastery_ledger_sequence",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `last_allocated_sequence` INTEGER NOT NULL, PRIMARY KEY(`learner_id`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAllocatedSequence",
+            "columnName": "last_allocated_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id"
+          ]
+        }
+      },
+      {
+        "tableName": "mastery_legacy_fact_migration_checkpoint",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `source_generation` TEXT NOT NULL, `batch_sequence` INTEGER NOT NULL, `batch_fingerprint` TEXT NOT NULL, `observation_count` INTEGER NOT NULL, `final_batch` INTEGER NOT NULL, `source_policy_version` TEXT NOT NULL, `projection_policy_version` TEXT NOT NULL, `completed_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`learner_id`, `source_generation`, `batch_sequence`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceGeneration",
+            "columnName": "source_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batchSequence",
+            "columnName": "batch_sequence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batchFingerprint",
+            "columnName": "batch_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observationCount",
+            "columnName": "observation_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finalBatch",
+            "columnName": "final_batch",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePolicyVersion",
+            "columnName": "source_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectionPolicyVersion",
+            "columnName": "projection_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedAtEpochMillis",
+            "columnName": "completed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id",
+            "source_generation",
+            "batch_sequence"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mastery_legacy_fact_migration_checkpoint_learner_id_source_generation_batch_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "source_generation",
+              "batch_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_mastery_legacy_fact_migration_checkpoint_learner_id_source_generation_batch_fingerprint` ON `${TABLE_NAME}` (`learner_id`, `source_generation`, `batch_fingerprint`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '05710b1fe25a02450e233994f307a701')"
+    ]
+  }
+}

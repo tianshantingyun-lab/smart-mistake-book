@@ -5,6 +5,7 @@ import androidx.room3.Entity
 import androidx.room3.ForeignKey
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
+import com.tingyun.smartmistakebook.core.database.StudyDbValue
 
 @Entity(
     tableName = "problem",
@@ -418,12 +419,6 @@ internal data class KnowledgeGroundingResolutionEntity(
             childColumns = ["practice_unit_id", "basis_revision_id"],
             onDelete = ForeignKey.CASCADE,
         ),
-        ForeignKey(
-            entity = KnowledgeNodeEntity::class,
-            parentColumns = ["knowledge_node_id"],
-            childColumns = ["knowledge_node_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
     ],
     indices = [
         Index(value = ["practice_unit_id"]),
@@ -444,6 +439,9 @@ internal data class KnowledgeGroundingResolutionEntity(
             value = [
                 "practice_unit_id",
                 "knowledge_node_id",
+                "knowledge_subject",
+                "knowledge_taxonomy_version",
+                "knowledge_pack_version",
                 "basis_revision_id",
                 "taxonomy_version",
             ],
@@ -459,6 +457,18 @@ internal data class PracticeUnitKnowledgeBindingEntity(
     val practiceUnitId: String,
     @ColumnInfo(name = "knowledge_node_id")
     val knowledgeNodeId: String,
+    @ColumnInfo(name = "knowledge_subject")
+    val knowledgeSubject: String?,
+    @ColumnInfo(name = "knowledge_taxonomy_version")
+    val knowledgeTaxonomyVersion: String?,
+    @ColumnInfo(name = "knowledge_pack_version")
+    val knowledgePackVersion: String?,
+    @ColumnInfo(name = "knowledge_manifest_fingerprint")
+    val knowledgeManifestFingerprint: String?,
+    @ColumnInfo(name = "knowledge_activation_generation")
+    val knowledgeActivationGeneration: Long?,
+    @ColumnInfo(name = "knowledge_reference_status")
+    val knowledgeReferenceStatus: String,
     @ColumnInfo(name = "basis_revision_id")
     val basisRevisionId: String,
     val strength: Double,
@@ -468,7 +478,34 @@ internal data class PracticeUnitKnowledgeBindingEntity(
     val taxonomyVersion: String,
     @ColumnInfo(name = "accepted_at_epoch_millis")
     val acceptedAtEpochMillis: Long,
-)
+) {
+    init {
+        val hasCompleteReference =
+            knowledgeSubject != null &&
+                knowledgeTaxonomyVersion != null &&
+                knowledgePackVersion != null &&
+                knowledgeManifestFingerprint != null &&
+                knowledgeActivationGeneration != null
+        require(
+            when (knowledgeReferenceStatus) {
+                StudyDbValue.KnowledgeReferenceStatus.VERIFIED_AT_CONFIRMATION ->
+                    hasCompleteReference && (knowledgeActivationGeneration ?: 0L) > 0L
+
+                StudyDbValue.KnowledgeReferenceStatus.PENDING_REATTRIBUTION ->
+                    !hasCompleteReference &&
+                        knowledgeSubject == null &&
+                        knowledgeTaxonomyVersion == null &&
+                        knowledgePackVersion == null &&
+                        knowledgeManifestFingerprint == null &&
+                        knowledgeActivationGeneration == null
+
+                else -> false
+            },
+        ) {
+            "Knowledge binding reference provenance is incomplete"
+        }
+    }
+}
 
 @Entity(
     tableName = "problem_relation",

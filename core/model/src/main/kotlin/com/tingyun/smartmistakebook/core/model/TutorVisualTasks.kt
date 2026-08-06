@@ -59,6 +59,8 @@ data class TutorVisualGenerateInput(
     val anchor: TutorVisualTurnAnchor,
     val focusMarkdown: String,
     val explanationMarkdown: String,
+    /** Locally minted facts available for GIVEN references. Empty only on legacy persisted work. */
+    val sourceFacts: List<TutorVisualSourceFact> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_VISUAL_GENERATE
@@ -82,6 +84,7 @@ data class TutorVisualGenerateInput(
             "Tutor visual generation explanation",
             MAX_EXPLANATION_MARKDOWN_CHARS,
         )
+        TutorVisualSourceFactCatalog.requireValid(questionDocument, sourceAssets, sourceFacts)
     }
 
     companion object {
@@ -139,6 +142,8 @@ data class TutorVisualReviewInput(
     val explanationMarkdown: String,
     val candidateScene: TutorVisualDocumentScene,
     val reviewReasonCodes: Set<String>,
+    /** Must be copied unchanged from the generation request. */
+    val sourceFacts: List<TutorVisualSourceFact> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_VISUAL_REVIEW
@@ -166,6 +171,7 @@ data class TutorVisualReviewInput(
         reviewReasonCodes.forEach { reason ->
             reason.requireSafeModelText("Tutor visual review reason", MAX_REVIEW_REASON_CHARS, false)
         }
+        TutorVisualSourceFactCatalog.requireValid(questionDocument, sourceAssets, sourceFacts)
     }
 
     companion object {

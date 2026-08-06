@@ -1,7 +1,5 @@
 package com.tingyun.smartmistakebook.core.domain
 
-import com.tingyun.smartmistakebook.core.model.LearningObservationSource
-import com.tingyun.smartmistakebook.core.model.LearningObservationSourceFact
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorConversation
 import com.tingyun.smartmistakebook.core.model.TutorConversationStatus
@@ -334,17 +332,152 @@ enum class TutorLearningEvidenceCancellationReason {
     POLICY_REJECTED,
 }
 
-sealed interface TutorLearningEvidenceTerminal {
+enum class TutorLearningEvidenceOutcome {
+    CORRECT,
+    INCORRECT,
+    ASSISTED_CORRECT,
+    SPECIFIC_STUCK,
+}
+
+/** Opaque reference to the locally held current-session authorization used for this submission. */
+data class TutorLearningEvidenceCurrentSessionReference(
+    val authorizationFingerprint: String,
+    val learningWritePermissionVersion: Long,
+) {
+    init {
+        authorizationFingerprint.requireTutorMemoryFingerprint(
+            "Tutor learning current-session authorization fingerprint",
+        )
+        require(learningWritePermissionVersion >= 0) {
+            "Tutor learning write-permission version must not be negative"
+        }
+    }
+}
+
+/** Bounded assistance behavior; this is an observed fact, not a mastery classification. */
+enum class TutorLearningEvidenceAssistance {
+    INDEPENDENT,
+    ONE_HINT,
+    MULTIPLE_HINTS,
+    ANSWER_REVEALED,
+    UNKNOWN,
+}
+
+/**
+ * Trusted local semantic evidence submitted to the learner-mastery owner.
+ *
+ * The candidate contains bounded behavior facts and an opaque current-session reference. It is
+ * neither a persisted learning fact nor a session-store entity, and it deliberately carries no
+ * proof, source classification, mastery value, data-layer type, or raw answer body.
+ */
+data class TutorLearningEvidenceSubmission(
+    val anchors: TutorLearningEvidenceAnchorFingerprints,
+    val responseFingerprint: String,
+    val outcome: TutorLearningEvidenceOutcome,
+    val occurredAtEpochMillis: Long,
+    val producerVersion: String,
+    val currentSessionReference: TutorLearningEvidenceCurrentSessionReference,
+    val attemptOrdinal: Int,
+    val retryCount: Int,
+    val hintCount: Int,
+    val answerWasRevealed: Boolean,
+    val independentlyAnswered: Boolean,
+    val assistance: TutorLearningEvidenceAssistance,
+) {
+    init {
+        responseFingerprint.requireTutorMemoryFingerprint("Evidence response fingerprint")
+        require(occurredAtEpochMillis >= 0) {
+            "Evidence occurrence time must not be negative"
+        }
+        producerVersion.requireTutorMemoryId("Evidence producer version")
+        require(attemptOrdinal in 1..MAX_TUTOR_LEARNING_ATTEMPT_ORDINAL) {
+            "Evidence attempt ordinal is outside the supported range"
+        }
+        require(retryCount in 0..MAX_TUTOR_LEARNING_RETRY_COUNT) {
+            "Evidence retry count is outside the supported range"
+        }
+        require(retryCount == attemptOrdinal - 1) {
+            "Evidence retry count must describe the exact attempt ordinal"
+        }
+        require(hintCount in 0..MAX_TUTOR_LEARNING_HINT_COUNT) {
+            "Evidence hint count is outside the supported range"
+        }
+        require(!independentlyAnswered || retryCount == 0) {
+            "A retried answer cannot be reported as independently answered"
+        }
+        require(!independentlyAnswered || hintCount == 0) {
+            "A hinted answer cannot be reported as independently answered"
+        }
+        require(!independentlyAnswered || !answerWasRevealed) {
+            "A revealed answer cannot be reported as independently answered"
+        }
+        require(assistance == derivedAssistance()) {
+            "Evidence assistance must match its bounded behavior facts"
+        }
+        require(outcome != TutorLearningEvidenceOutcome.CORRECT || !answerWasRevealed) {
+            "Revealed correctness must be reported as assisted correctness"
+        }
+        require(
+            outcome != TutorLearningEvidenceOutcome.ASSISTED_CORRECT ||
+                !independentlyAnswered,
+        ) {
+            "Assisted correctness cannot be reported as independently answered"
+        }
+    }
+
     /**
-     * A trusted local fact only. It contains no attribution, weight, SQL command, or model-selected
-     * database identity.
+     * Source-compatible fail-closed boundary for callers that have not yet supplied current
+     * permission and behavior facts. It deliberately never invents defaults.
      */
+    @Deprecated(
+        message = "Supply current-session authorization and exact behavior facts",
+        level = DeprecationLevel.WARNING,
+    )
+    constructor(
+        anchors: TutorLearningEvidenceAnchorFingerprints,
+        responseFingerprint: String,
+        outcome: TutorLearningEvidenceOutcome,
+        occurredAtEpochMillis: Long,
+        producerVersion: String,
+    ) : this(
+        anchors = anchors,
+        responseFingerprint = responseFingerprint,
+        outcome = outcome,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        producerVersion = producerVersion,
+        currentSessionReference =
+            error(
+                "Tutor learning evidence requires a current-session authorization reference " +
+                    "and exact behavior facts",
+            ),
+        attemptOrdinal = 1,
+        retryCount = 0,
+        hintCount = 0,
+        answerWasRevealed = false,
+        independentlyAnswered = false,
+        assistance = TutorLearningEvidenceAssistance.UNKNOWN,
+    )
+
+    private fun derivedAssistance(): TutorLearningEvidenceAssistance =
+        when {
+            answerWasRevealed -> TutorLearningEvidenceAssistance.ANSWER_REVEALED
+            independentlyAnswered -> TutorLearningEvidenceAssistance.INDEPENDENT
+            hintCount == 1 -> TutorLearningEvidenceAssistance.ONE_HINT
+            hintCount > 1 -> TutorLearningEvidenceAssistance.MULTIPLE_HINTS
+            else -> TutorLearningEvidenceAssistance.UNKNOWN
+        }
+}
+
+private const val MAX_TUTOR_LEARNING_HINT_COUNT = 32
+private const val MAX_TUTOR_LEARNING_RETRY_COUNT = 16
+private const val MAX_TUTOR_LEARNING_ATTEMPT_ORDINAL = MAX_TUTOR_LEARNING_RETRY_COUNT + 1
+
+sealed interface TutorLearningEvidenceTerminal {
     data class Submitted(
-        val sourceFact: LearningObservationSourceFact,
-        val anchors: TutorLearningEvidenceAnchorFingerprints,
+        val evidence: TutorLearningEvidenceSubmission,
     ) : TutorLearningEvidenceTerminal
 
-    /** Cancellation deliberately has no source-fact field and therefore cannot affect mastery. */
+    /** Cancellation deliberately has no semantic candidate and therefore cannot affect mastery. */
     data class Cancelled(
         val reason: TutorLearningEvidenceCancellationReason,
     ) : TutorLearningEvidenceTerminal
@@ -413,54 +546,47 @@ data class FinalizeTutorEvidenceCommand(
     private fun requireSubmissionMatchesScope(
         submitted: TutorLearningEvidenceTerminal.Submitted,
     ) {
-        val fact = submitted.sourceFact
-        require(fact.learnerScopeId == learnerScopeId) {
-            "Evidence source fact belongs to a different learner scope"
+        require(submitted.evidence.occurredAtEpochMillis <= occurredAtEpochMillis) {
+            "Evidence candidate cannot occur after finalization"
         }
-        require(fact.conversationId == conversationId) {
-            "Evidence source fact belongs to a different conversation"
-        }
-        require(fact.conversationGeneration == conversationGeneration) {
-            "Evidence source fact belongs to a different conversation generation"
-        }
-        require(fact.turnReceiptId == turnReceiptId) {
-            "Evidence source fact belongs to a different turn"
-        }
-        require(fact.evidenceRequestId == evidenceRequestId) {
-            "Evidence source fact belongs to a different request"
-        }
-        require(fact.anchorId == problemAnchorId && fact.subject == subject) {
-            "Evidence source fact belongs to a different problem scope"
-        }
-        require(fact.source == kind.expectedLearningObservationSource()) {
-            "Evidence source-fact type does not match the prepared request"
-        }
-        require(fact.occurredAtEpochMillis <= occurredAtEpochMillis) {
-            "Evidence source fact cannot occur after finalization"
-        }
-        require(submitted.anchors.directiveFingerprint == directiveFingerprint) {
+        require(submitted.evidence.anchors.directiveFingerprint == directiveFingerprint) {
             "Evidence directive fingerprint does not match the prepared request"
         }
+        require(kind.accepts(submitted.evidence.outcome)) {
+            "Evidence outcome does not match the prepared request kind"
+        }
+    }
+}
+
+data class TutorLearningEvidenceReceipt(
+    val receiptId: String,
+    val receiptFingerprint: String,
+) {
+    init {
+        receiptId.requireTutorMemoryId("Tutor learning evidence receipt id")
+        receiptFingerprint.requireTutorMemoryFingerprint(
+            "Tutor learning evidence receipt fingerprint",
+        )
     }
 }
 
 sealed interface FinalizeTutorEvidenceResult {
     val request: TutorEvidenceRequest
-    val sourceFact: LearningObservationSourceFact?
+    val receipt: TutorLearningEvidenceReceipt?
 
     data class Submitted(
         override val request: TutorEvidenceRequest,
-        override val sourceFact: LearningObservationSourceFact,
+        override val receipt: TutorLearningEvidenceReceipt,
     ) : FinalizeTutorEvidenceResult {
         init {
-            requireSubmittedResult(request, sourceFact)
+            requireSubmittedResult(request, receipt)
         }
     }
 
     data class Cancelled(
         override val request: TutorEvidenceRequest,
     ) : FinalizeTutorEvidenceResult {
-        override val sourceFact: LearningObservationSourceFact? = null
+        override val receipt: TutorLearningEvidenceReceipt? = null
 
         init {
             require(request.status == TutorEvidenceRequestStatus.CANCELLED) {
@@ -469,10 +595,10 @@ sealed interface FinalizeTutorEvidenceResult {
         }
     }
 
-    /** Exact same idempotency key and payload; no terminal fact is created a second time. */
+    /** Exact same idempotency key and payload; no mastery fact/event is created a second time. */
     data class Replayed(
         override val request: TutorEvidenceRequest,
-        override val sourceFact: LearningObservationSourceFact?,
+        override val receipt: TutorLearningEvidenceReceipt?,
     ) : FinalizeTutorEvidenceResult {
         init {
             require(request.status.isTerminal) {
@@ -480,10 +606,10 @@ sealed interface FinalizeTutorEvidenceResult {
             }
             when (request.status) {
                 TutorEvidenceRequestStatus.SUBMITTED ->
-                    requireSubmittedResult(request, requireNotNull(sourceFact))
+                    requireSubmittedResult(request, requireNotNull(receipt))
 
-                TutorEvidenceRequestStatus.CANCELLED -> require(sourceFact == null) {
-                    "A cancelled finalization replay cannot contain a source fact"
+                TutorEvidenceRequestStatus.CANCELLED -> require(receipt == null) {
+                    "A cancelled finalization replay cannot contain a mastery receipt"
                 }
 
                 TutorEvidenceRequestStatus.PENDING ->
@@ -661,41 +787,27 @@ private fun requireExactEvidenceScope(
     directiveFingerprint.requireTutorMemoryFingerprint("Evidence directive fingerprint")
 }
 
-private fun TutorEvidenceRequestKind.expectedLearningObservationSource():
-    LearningObservationSource = when (this) {
-    TutorEvidenceRequestKind.CHOICE -> LearningObservationSource.TUTOR_CHOICE
-    TutorEvidenceRequestKind.FREE_RESPONSE -> LearningObservationSource.TUTOR_FREE_RESPONSE
-    TutorEvidenceRequestKind.VISUAL_TARGET -> LearningObservationSource.TUTOR_VISUAL_TARGET
-    TutorEvidenceRequestKind.SPECIFIC_STUCK -> LearningObservationSource.TUTOR_SPECIFIC_STUCK
-}
+private fun TutorEvidenceRequestKind.accepts(outcome: TutorLearningEvidenceOutcome): Boolean =
+    when (this) {
+        TutorEvidenceRequestKind.CHOICE,
+        TutorEvidenceRequestKind.VISUAL_TARGET,
+        -> outcome != TutorLearningEvidenceOutcome.SPECIFIC_STUCK
+
+        TutorEvidenceRequestKind.SPECIFIC_STUCK ->
+            outcome == TutorLearningEvidenceOutcome.SPECIFIC_STUCK
+
+        TutorEvidenceRequestKind.FREE_RESPONSE -> false
+    }
 
 private fun requireSubmittedResult(
     request: TutorEvidenceRequest,
-    fact: LearningObservationSourceFact,
+    receipt: TutorLearningEvidenceReceipt,
 ) {
     require(request.status == TutorEvidenceRequestStatus.SUBMITTED) {
         "A submitted result must contain a submitted request"
     }
-    require(request.terminalSourceFactId == fact.sourceFactId) {
-        "Submitted evidence request and source fact do not match"
-    }
-    require(request.conversationId == fact.conversationId) {
-        "Submitted source fact belongs to a different conversation"
-    }
-    require(request.conversationGeneration == fact.conversationGeneration) {
-        "Submitted source fact belongs to a different conversation generation"
-    }
-    require(request.turnReceiptId == fact.turnReceiptId) {
-        "Submitted source fact belongs to a different turn"
-    }
-    require(request.evidenceRequestId == fact.evidenceRequestId) {
-        "Submitted source fact belongs to a different evidence request"
-    }
-    require(request.problemAnchorId == fact.anchorId && request.subject == fact.subject) {
-        "Submitted source fact belongs to a different problem scope"
-    }
-    require(request.kind.expectedLearningObservationSource() == fact.source) {
-        "Submitted source-fact type does not match the evidence request"
+    require(request.terminalReceiptId == receipt.receiptId) {
+        "Submitted evidence request and mastery receipt do not match"
     }
 }
 

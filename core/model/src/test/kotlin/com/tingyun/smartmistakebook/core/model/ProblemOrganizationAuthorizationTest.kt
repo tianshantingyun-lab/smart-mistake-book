@@ -10,6 +10,8 @@ class ProblemOrganizationAuthorizationTest {
     @Test
     fun persistedGrantRoundTripsAndBuildsOnlyTheBoundedV3Manifest() {
         val grant = grant()
+        val input = input()
+        val requestId = "organization-request"
 
         assertEquals(
             grant,
@@ -17,11 +19,31 @@ class ProblemOrganizationAuthorizationTest {
                 ProblemOrganizationAuthorizationGrantCodec.encode(grant),
             ),
         )
-        val manifest = grant.toEgressManifest("revision-1")
+        val manifest = grant.toEgressManifest(requestId, input)
         assertEquals(setOf(ModelTaskKind.PROBLEM_CLASSIFY), manifest.authorizedTaskKinds)
         assertEquals(ModelEgressPurpose.CLASSIFICATION, manifest.purpose)
         assertEquals(grant.assets, manifest.assets)
         assertEquals("revision-1", manifest.subjectId)
+        assertEquals(
+            ModelEgressAuthorizationId.forInput(requestId, input),
+            manifest.authorizationId,
+        )
+    }
+
+    @Test
+    fun grantCannotBuildAManifestForAChangedImageSet() {
+        val input = input()
+        val changedInput = input.copy(
+            sourceAssets = input.sourceAssets.map { source ->
+                source.copy(sha256 = "b".repeat(64))
+            },
+        )
+
+        assertTrue(
+            runCatching {
+                grant().toEgressManifest("organization-request", changedInput)
+            }.isFailure,
+        )
     }
 
     @Test
@@ -73,6 +95,37 @@ class ProblemOrganizationAuthorizationTest {
                 height = 1_600,
             ),
         ),
+    )
+
+    private fun input() = ProblemOrganizationV3Input(
+        problemId = "problem-1",
+        problemRevisionId = "revision-1",
+        practiceUnitId = "unit-1",
+        subject = SubjectKind.MATH,
+        capturedDocument = CapturedQuestionDocument(
+            document = QuestionDocument(
+                id = "question-1",
+                blocks = listOf(ContentBlock.Paragraph("block-1", "求函数的单调区间")),
+            ),
+            blockEvidence = listOf(
+                QuestionBlockEvidence(
+                    blockId = "block-1",
+                    sourceAssetId = "asset-1",
+                    provenance = QuestionBlockProvenance.USER_TRANSCRIPTION,
+                    reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+                ),
+            ),
+        ),
+        sourceAssets = listOf(
+            CaptureSourceAssetRef(
+                assetId = "asset-1",
+                sha256 = "a".repeat(64),
+                width = 1_200,
+                height = 1_600,
+                pageIndex = 0,
+            ),
+        ),
+        relationCandidates = emptyList(),
     )
 
     private fun provider() = ProviderCapabilitySnapshot(

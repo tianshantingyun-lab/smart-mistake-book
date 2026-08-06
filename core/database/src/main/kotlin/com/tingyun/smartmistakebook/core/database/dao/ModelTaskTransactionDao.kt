@@ -9,6 +9,7 @@ import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.LearningLedgerIntegrityException
 import com.tingyun.smartmistakebook.core.database.ModelTaskDispatchReservationResult
+import com.tingyun.smartmistakebook.core.database.ModelTaskCacheHygiene
 import com.tingyun.smartmistakebook.core.database.ModelTaskWriteResult
 import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
@@ -27,10 +28,28 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+internal data class ModelTaskCacheHygieneCandidate(
+    val cacheRowId: Long,
+    val taskId: String,
+    val requestId: String,
+    val operationFingerprint: String,
+    val requestSnapshot: String,
+    val taskKind: String,
+)
 
 @Dao
 internal abstract class ModelTaskTransactionDao {
+    private val cacheHygieneMutex = Mutex()
+
+    @Volatile
+    private var cacheHygieneCompleted = false
+
     @Query("SELECT * FROM model_task WHERE request_id = :requestId LIMIT 1")
     protected abstract fun observeEntity(requestId: String): Flow<ModelTaskEntity?>
 
@@ -58,6 +77,62 @@ internal abstract class ModelTaskTransactionDao {
 
     @Query("SELECT * FROM model_task WHERE task_id = :taskId LIMIT 1")
     protected abstract suspend fun findByTaskId(taskId: String): ModelTaskEntity?
+
+    @Query(
+        """
+        SELECT rowid AS cacheRowId,
+               task_id AS taskId,
+               request_id AS requestId,
+               operation_fingerprint AS operationFingerprint,
+               SUBSTR(request_snapshot, 1, :snapshotReadLimit) AS requestSnapshot,
+               task_kind AS taskKind
+        FROM model_task
+        WHERE (task_kind = 'TUTOR_PLAN' OR task_kind = 'TUTOR_RESPOND')
+          AND rowid > :afterRowId
+        ORDER BY rowid ASC
+        LIMIT :limit
+        """,
+    )
+    protected abstract suspend fun findTutorCacheHygieneCandidates(
+        afterRowId: Long,
+        limit: Int,
+        snapshotReadLimit: Int,
+    ): List<ModelTaskCacheHygieneCandidate>
+
+    @Query(
+        """
+        SELECT CASE WHEN
+            EXISTS (
+                SELECT 1 FROM tutor_answer_exposure
+                WHERE model_task_request_id = :requestId
+            ) OR EXISTS (
+                SELECT 1 FROM tutor_visual_target_evidence
+                WHERE model_task_request_id = :requestId
+            )
+        THEN 1 ELSE 0 END
+        """,
+    )
+    protected abstract suspend fun hasDurableTutorDependents(requestId: String): Boolean
+
+    @Query("DELETE FROM model_task_event WHERE task_id = :taskId")
+    protected abstract suspend fun deleteTaskEventsForCacheHygiene(taskId: String): Int
+
+    @Query("DELETE FROM model_task WHERE task_id = :taskId")
+    protected abstract suspend fun deleteTaskForCacheHygiene(taskId: String): Int
+
+    @Query(
+        """
+        DELETE FROM model_task_operation
+        WHERE operation_fingerprint = :operationFingerprint
+          AND NOT EXISTS (
+              SELECT 1 FROM model_task
+              WHERE operation_fingerprint = :operationFingerprint
+          )
+        """,
+    )
+    protected abstract suspend fun deleteOrphanOperationForCacheHygiene(
+        operationFingerprint: String,
+    ): Int
 
     @Query(
         "SELECT operation_fingerprint FROM model_task " +
@@ -142,12 +217,22 @@ internal abstract class ModelTaskTransactionDao {
 
     fun observe(requestId: String): Flow<ModelTaskSnapshot?> {
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
-        return observeEntity(requestId).map { it?.toSnapshot() }
+        return flow {
+            ensureCacheHygiene()
+            emitAll(observeEntity(requestId).map { it?.toSnapshot() })
+        }
     }
 
     fun observeBySubject(subjectId: String, kind: ModelTaskKind): Flow<List<ModelTaskSnapshot>> {
         require(subjectId.isNotBlank()) { "Model task subject id must not be blank" }
-        return observeEntities(subjectId, kind.name).map { entities -> entities.map { it.toSnapshot() } }
+        return flow {
+            ensureCacheHygiene()
+            emitAll(
+                observeEntities(subjectId, kind.name).map { entities ->
+                    entities.map { it.toSnapshot() }
+                },
+            )
+        }
     }
 
     fun observeRecentBySubject(
@@ -157,18 +242,32 @@ internal abstract class ModelTaskTransactionDao {
     ): Flow<List<ModelTaskSnapshot>> {
         require(subjectId.isNotBlank()) { "Model task subject id must not be blank" }
         require(limit > 0) { "Recent model-task limit must be positive" }
-        return observeRecentEntities(subjectId, kind.name, limit).map { entities ->
-            entities.asReversed().map { it.toSnapshot() }
+        return flow {
+            ensureCacheHygiene()
+            emitAll(observeRecentEntities(subjectId, kind.name, limit).map { entities ->
+                entities.asReversed().map { it.toSnapshot() }
+            })
         }
     }
 
     suspend fun read(requestId: String): ModelTaskSnapshot? {
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
+        ensureCacheHygiene()
         return findByRequestId(requestId)?.toSnapshot()
     }
 
+    suspend fun create(command: CreateModelTaskCommand): ModelTaskWriteResult {
+        ensureCacheHygiene()
+        return createAfterCacheHygiene(command)
+    }
+
     @Transaction
-    open suspend fun create(command: CreateModelTaskCommand): ModelTaskWriteResult {
+    protected open suspend fun createAfterCacheHygiene(
+        command: CreateModelTaskCommand,
+    ): ModelTaskWriteResult {
+        require(command.request.input.kind != ModelTaskKind.TUTOR_EVALUATE) {
+            "Raw open-response evaluation input must not enter the ordinary model-task database"
+        }
         val requestSnapshot = ModelTaskCodec.encodeRequest(command.request)
         val operationCandidate = ModelTaskOperationEntity(
             operationFingerprint = command.operationFingerprint,
@@ -238,8 +337,15 @@ internal abstract class ModelTaskTransactionDao {
         return ModelTaskWriteResult(applied = created, snapshot = persisted.toSnapshot())
     }
 
+    suspend fun reserveRemoteDispatch(
+        command: ReserveModelTaskRemoteDispatchCommand,
+    ): ModelTaskDispatchReservationResult {
+        ensureCacheHygiene()
+        return reserveRemoteDispatchAfterCacheHygiene(command)
+    }
+
     @Transaction
-    open suspend fun reserveRemoteDispatch(
+    protected open suspend fun reserveRemoteDispatchAfterCacheHygiene(
         command: ReserveModelTaskRemoteDispatchCommand,
     ): ModelTaskDispatchReservationResult {
         val current = findByTaskId(command.taskId)
@@ -310,8 +416,15 @@ internal abstract class ModelTaskTransactionDao {
         )
     }
 
+    suspend fun transition(command: TransitionModelTaskCommand): ModelTaskWriteResult {
+        ensureCacheHygiene()
+        return transitionAfterCacheHygiene(command)
+    }
+
     @Transaction
-    open suspend fun transition(command: TransitionModelTaskCommand): ModelTaskWriteResult {
+    protected open suspend fun transitionAfterCacheHygiene(
+        command: TransitionModelTaskCommand,
+    ): ModelTaskWriteResult {
         val current = findByTaskId(command.taskId)
             ?: throw ImmutablePayloadConflictException("model_task", command.taskId)
         if (
@@ -347,6 +460,53 @@ internal abstract class ModelTaskTransactionDao {
             insertEvent(persisted.toEvent(previousStatus = current.status))
         }
         return ModelTaskWriteResult(applied = applied, snapshot = persisted.toSnapshot())
+    }
+
+    private suspend fun ensureCacheHygiene() {
+        if (cacheHygieneCompleted) return
+        cacheHygieneMutex.withLock {
+            if (cacheHygieneCompleted) return@withLock
+            sanitizeLegacyTutorTaskCache()
+            cacheHygieneCompleted = true
+        }
+    }
+
+    /**
+     * One atomic, restart-safe purge. A process death rolls the transaction back; the next access
+     * retries it. The operation row is removed only after its final task envelope is gone.
+     */
+    @Transaction
+    protected open suspend fun sanitizeLegacyTutorTaskCache() {
+        var afterRowId = Long.MIN_VALUE
+        while (true) {
+            val page = findTutorCacheHygieneCandidates(
+                afterRowId = afterRowId,
+                limit = CACHE_HYGIENE_PAGE_SIZE,
+                snapshotReadLimit = ModelTaskCodec.MAX_ENCODED_CHARS + 1,
+            )
+            if (page.isEmpty()) return
+            page.forEach { candidate ->
+                afterRowId = candidate.cacheRowId
+                if (
+                    !ModelTaskCacheHygiene.containsDeprecatedTutorMasteryNumbers(
+                        taskKind = candidate.taskKind,
+                        requestSnapshot = candidate.requestSnapshot,
+                    )
+                ) {
+                    return@forEach
+                }
+                if (hasDurableTutorDependents(candidate.requestId)) return@forEach
+
+                deleteTaskEventsForCacheHygiene(candidate.taskId)
+                if (deleteTaskForCacheHygiene(candidate.taskId) == 1) {
+                    deleteOrphanOperationForCacheHygiene(candidate.operationFingerprint)
+                }
+            }
+        }
+    }
+
+    private companion object {
+        const val CACHE_HYGIENE_PAGE_SIZE = 64
     }
 }
 

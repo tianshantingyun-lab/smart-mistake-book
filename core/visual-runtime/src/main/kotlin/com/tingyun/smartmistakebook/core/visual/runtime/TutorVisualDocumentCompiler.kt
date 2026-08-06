@@ -15,11 +15,13 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpression
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentExpressionOperation
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualGeometry3DElement
+import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualLatticeElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualParticleGroupElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualStep
+import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualValueSource
 import com.tingyun.smartmistakebook.core.model.TutorVisualVariable
 import java.security.MessageDigest
@@ -44,6 +46,9 @@ enum class TutorVisualIssueCode {
     CHART_AXIS_MISSING,
     EMPTY_FOCUS_STEP,
     UNREVIEWED_HIGH_RISK_SCENE,
+    UNVERIFIED_VALUE_SOURCE,
+    UNVERIFIED_VISIBLE_TEXT,
+    UNSAFE_CHART_DATA,
 }
 
 data class TutorVisualIntegrityIssue(
@@ -59,6 +64,22 @@ data class TutorVisualIntegrityReport(
     val canRender: Boolean = issues.none { it.severity == TutorVisualIssueSeverity.ERROR }
 }
 
+private fun TutorVisualProvenanceIssueCode.toIntegrityIssueCode(): TutorVisualIssueCode = when (this) {
+    TutorVisualProvenanceIssueCode.UNSAFE_VISIBLE_NUMBER ->
+        TutorVisualIssueCode.UNVERIFIED_VISIBLE_TEXT
+    TutorVisualProvenanceIssueCode.UNSAFE_CHART_DATA ->
+        TutorVisualIssueCode.UNSAFE_CHART_DATA
+    TutorVisualProvenanceIssueCode.INVALID_SOURCE_FACT_CATALOG,
+    TutorVisualProvenanceIssueCode.MISSING_PROVENANCE_ENVELOPE,
+    TutorVisualProvenanceIssueCode.MISSING_VALUE_PROOF,
+    TutorVisualProvenanceIssueCode.SOURCE_FACT_MISMATCH,
+    TutorVisualProvenanceIssueCode.INVALID_DERIVATION,
+    TutorVisualProvenanceIssueCode.DERIVATION_CYCLE,
+    TutorVisualProvenanceIssueCode.DERIVATION_VALUE_MISMATCH,
+    TutorVisualProvenanceIssueCode.DERIVATION_DIMENSION_MISMATCH,
+    -> TutorVisualIssueCode.UNVERIFIED_VALUE_SOURCE
+}
+
 data class CompiledTutorVisualPanel(
     val source: TutorVisualPanel,
     val staticElementIds: Set<String>,
@@ -72,6 +93,7 @@ data class CompiledTutorVisualDocument(
     val elements: Map<String, TutorVisualDocumentElement>,
     val bindingsByTarget: Map<String, List<TutorVisualBinding>>,
     val integrity: TutorVisualIntegrityReport,
+    val provenance: TutorVisualProvenanceReport? = null,
 ) {
     fun evaluate(
         requestedTimeSeconds: Double,
@@ -167,7 +189,59 @@ data class TutorVisualFrame(
 }
 
 object TutorVisualDocumentCompiler {
-    fun compile(scene: TutorVisualDocumentScene): CompiledTutorVisualDocument {
+    /** Structural compilation for legacy replay and internal authoring tools. */
+    fun compile(scene: TutorVisualDocumentScene): CompiledTutorVisualDocument =
+        compileInternal(scene, provenance = null)
+
+    /**
+     * Fail-closed production compilation. A pre-provenance v2 document can still be decoded, but
+     * this overload refuses to present it until every visible semantic number is locally proven.
+     */
+    fun compileForPresentation(
+        scene: TutorVisualDocumentScene,
+        provenanceContext: TutorVisualProvenanceContext,
+        provenancePolicy: TutorVisualProvenancePolicy = TutorVisualProvenancePolicy(),
+    ): CompiledTutorVisualDocument = compileInternal(
+        scene = scene,
+        provenance = TutorVisualProvenanceValidator.validate(
+            scene = scene,
+            context = provenanceContext,
+            policy = provenancePolicy,
+        ),
+    )
+
+    fun compileForPresentation(
+        scene: TutorVisualDocumentScene,
+        generationInput: TutorVisualGenerateInput,
+        provenancePolicy: TutorVisualProvenancePolicy = TutorVisualProvenancePolicy(),
+    ): CompiledTutorVisualDocument = compileForPresentation(
+        scene = scene,
+        provenanceContext = TutorVisualProvenanceContext(
+            questionDocument = generationInput.questionDocument,
+            sourceAssets = generationInput.sourceAssets,
+            sourceFacts = generationInput.sourceFacts,
+        ),
+        provenancePolicy = provenancePolicy,
+    )
+
+    fun compileForPresentation(
+        scene: TutorVisualDocumentScene,
+        reviewInput: TutorVisualReviewInput,
+        provenancePolicy: TutorVisualProvenancePolicy = TutorVisualProvenancePolicy(),
+    ): CompiledTutorVisualDocument = compileForPresentation(
+        scene = scene,
+        provenanceContext = TutorVisualProvenanceContext(
+            questionDocument = reviewInput.questionDocument,
+            sourceAssets = reviewInput.sourceAssets,
+            sourceFacts = reviewInput.sourceFacts,
+        ),
+        provenancePolicy = provenancePolicy,
+    )
+
+    private fun compileInternal(
+        scene: TutorVisualDocumentScene,
+        provenance: TutorVisualProvenanceReport?,
+    ): CompiledTutorVisualDocument {
         val variables = scene.variables.associateBy(TutorVisualVariable::variableId)
         val bindingsByTarget = scene.bindings.groupBy(TutorVisualBinding::targetId)
         val panels = scene.panels.associateBy(TutorVisualPanel::panelId)
@@ -241,6 +315,16 @@ object TutorVisualDocumentCompiler {
                     )
                 }
             }
+            provenance?.issues?.forEach { provenanceIssue ->
+                add(
+                    TutorVisualIntegrityIssue(
+                        code = provenanceIssue.code.toIntegrityIssueCode(),
+                        severity = TutorVisualIssueSeverity.ERROR,
+                        targetId = provenanceIssue.targetId,
+                        detail = provenanceIssue.detail,
+                    ),
+                )
+            }
             scene.elements.filterIsInstance<TutorVisualChartSeriesElement>().forEach { series ->
                 if (
                     series.axis.name == "RIGHT" &&
@@ -298,6 +382,7 @@ object TutorVisualDocumentCompiler {
             elements = elements,
             bindingsByTarget = bindingsByTarget,
             integrity = report,
+            provenance = provenance,
         )
     }
 

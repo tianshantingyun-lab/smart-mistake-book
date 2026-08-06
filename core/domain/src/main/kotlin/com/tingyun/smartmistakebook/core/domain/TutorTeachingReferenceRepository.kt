@@ -14,6 +14,28 @@ fun interface TutorTeachingReferenceRepository {
         limit: Int,
     ): List<TutorTeachingReference>
 
+    /**
+     * Version-bound lookup used by production tutoring. Implementations backed by a catalog must
+     * re-resolve these witnesses against the active manifest before returning any material.
+     */
+    suspend fun referencesForConfirmedNodes(
+        subject: String,
+        directKnowledgeNodes: Set<ConfirmedKnowledgeNodeBinding>,
+        limit: Int,
+    ): List<TutorTeachingReference> {
+        require(directKnowledgeNodes.size <= TutorTeachingReference.MAX_KNOWLEDGE_NODES)
+        require(directKnowledgeNodes.all { it.ref.subject.name == subject }) {
+            "Teaching-reference bindings must stay within the current subject"
+        }
+        return referencesFor(
+            subject = subject,
+            knowledgeNodeIds = directKnowledgeNodes.mapTo(linkedSetOf()) {
+                it.ref.knowledgeNodeId
+            },
+            limit = limit,
+        )
+    }
+
     companion object {
         const val DEFAULT_LIMIT = TutorPlanInput.MAX_TEACHING_REFERENCES
     }

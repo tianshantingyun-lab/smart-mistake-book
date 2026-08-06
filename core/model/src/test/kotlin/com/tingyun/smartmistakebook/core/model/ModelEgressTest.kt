@@ -55,6 +55,98 @@ class ModelEgressTest {
     }
 
     @Test
+    fun captureApprovalCannotBeReusedForChangedRequestSubjectOrOrigin() {
+        val requestId = "capture-assess:request-1"
+        val input = captureAssessmentInput()
+        val manifest = manifest(requestId, input)
+        val changedRequests = listOf(
+            request(manifest, requestId = "capture-assess:request-2", input = input),
+            request(manifest, requestId = requestId, input = input.copy(draftId = "draft-2")),
+            request(
+                manifest,
+                requestId = requestId,
+                input = input.copy(origin = CaptureAssessmentOrigin.TUTOR),
+            ),
+        )
+
+        changedRequests.forEach { changedRequest ->
+            assertAuthorizationInvalid(changedRequest, externalProvider())
+        }
+    }
+
+    @Test
+    fun captureParseApprovalCannotBeReusedForAReorderedImageSet() {
+        val requestId = "capture-parse:request-1"
+        val sources = listOf(
+            CaptureSourceAssetRef(
+                assetId = "asset-1",
+                sha256 = "a".repeat(64),
+                width = 1_080,
+                height = 1_440,
+                pageIndex = 0,
+            ),
+            CaptureSourceAssetRef(
+                assetId = "asset-2",
+                sha256 = "b".repeat(64),
+                width = 1_000,
+                height = 1_300,
+                pageIndex = 1,
+            ),
+        )
+        val input = CaptureParseInput(
+            draftId = "draft-1",
+            origin = CaptureAssessmentOrigin.LIBRARY,
+            basisRevisionNumber = 1,
+            sourceAssets = sources,
+            assessmentRequestId = "capture-assess:1",
+            assessmentRequestIds = listOf("capture-assess:1", "capture-assess:2"),
+        )
+        val manifest = ModelEgressManifest(
+            authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
+            subjectId = input.subjectId,
+            purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
+            authorizedTaskKinds = setOf(
+                ModelTaskKind.CAPTURE_ASSESS,
+                ModelTaskKind.CAPTURE_PARSE,
+            ),
+            providerId = "provider-1",
+            modelId = "vision-model-1",
+            providerConfigurationVersion = "provider-config-v1",
+            promptPolicyVersion = ModelPromptPolicyVersions.CAPTURE_DOCUMENT,
+            approvedAtEpochMillis = 101,
+            assets = sources.map { source ->
+                ModelEgressAssetGrant(
+                    assetId = source.assetId,
+                    sha256 = source.sha256,
+                    byteSize = 2_048,
+                    width = source.width,
+                    height = source.height,
+                )
+            },
+            disclosedData = ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE,
+            prohibitedData = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
+        )
+        val request = ModelTaskRequest(
+            requestId = requestId,
+            input = input,
+            occurredAtEpochMillis = 100,
+            egressManifest = manifest,
+        )
+        val reorderedInput = input.copy(
+            sourceAssets = listOf(
+                sources[1].copy(pageIndex = 0),
+                sources[0].copy(pageIndex = 1),
+            ),
+        )
+
+        assertTrue(
+            ModelEgressPolicy.authorize(request, externalProvider(), 101)
+                .permit is ModelExecutionPermit.External,
+        )
+        assertAuthorizationInvalid(request.copy(input = reorderedInput), externalProvider())
+    }
+
+    @Test
     fun externalProviderCannotRunWithoutStudentApproval() {
         val failure = runCatching {
             ModelEgressPolicy.authorize(request(manifest = null), externalProvider(), 101)
@@ -181,9 +273,11 @@ class ModelEgressTest {
     }
 
     @Test
-    fun currentTutorPlanDisclosureIncludesBoundedConversationContext() {
+    fun currentTutorPlanDisclosureReplacesLearningEvidenceWithTeachingConstraints() {
         assertEquals(
-            ModelEgressManifest.LEGACY_TUTOR_PLAN_DISCLOSURE + setOf(
+            setOf(
+                ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
+                ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
                 ModelEgressDataClass.STUDENT_TUTOR_MESSAGE,
                 ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
                 ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE,
@@ -200,8 +294,7 @@ class ModelEgressTest {
         assertEquals(
             setOf(
                 ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
-                ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE,
-                ModelEgressDataClass.QUESTION_LEARNING_EVIDENCE,
+                ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
                 ModelEgressDataClass.STUDENT_TUTOR_MESSAGE,
                 ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
                 ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE,
@@ -263,9 +356,11 @@ class ModelEgressTest {
 
     @Test
     fun tutorConversationGrantMayPrecedeANewPlanWhileItIsStillFresh() {
+        val input = tutorPlanInput()
+        val requestId = "tutor-plan:legacy-request"
         val request = legacyTutorPlanRequest().copy(
             schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
-            egressManifest = currentTutorPlanManifest().copy(approvedAtEpochMillis = 90),
+            egressManifest = currentTutorPlanManifest(requestId, input).copy(approvedAtEpochMillis = 90),
         )
 
         val execution = ModelEgressPolicy.authorize(
@@ -277,22 +372,60 @@ class ModelEgressTest {
         assertTrue(execution.permit is ModelExecutionPermit.External)
     }
 
-    private fun request(manifest: ModelEgressManifest?) = ModelTaskRequest(
-        requestId = "capture-assess:request-1",
-        input = CaptureAssessmentInput(
-            draftId = "draft-1",
-            sourceAssetId = "asset-1",
-            origin = CaptureAssessmentOrigin.LIBRARY,
-            imageWidth = 1080,
-            imageHeight = 1440,
-        ),
+    @Test
+    fun tutorApprovalCannotBeReusedForChangedPayloadOrRequestId() {
+        val requestId = "tutor-respond:request-1"
+        val input = tutorRespondInput()
+        val manifest = tutorRespondManifest(requestId, input)
+
+        val changedMessage = tutorRespondRequest(
+            manifest = manifest,
+            input = input.copy(studentMessage = "请直接告诉我答案。"),
+        )
+        val changedRequestId = tutorRespondRequest(
+            manifest = manifest,
+            requestId = "tutor-respond:request-2",
+            input = input,
+        )
+
+        listOf(changedMessage, changedRequestId).forEach { changedRequest ->
+            val failure = runCatching {
+                ModelEgressPolicy.authorize(
+                    changedRequest,
+                    tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+                    101,
+                )
+            }.exceptionOrNull() as ModelEgressAuthorizationException
+
+            assertEquals(ModelFailureCode.EGRESS_AUTHORIZATION_INVALID, failure.failureCode)
+        }
+    }
+
+    private fun request(
+        manifest: ModelEgressManifest?,
+        requestId: String = "capture-assess:request-1",
+        input: CaptureAssessmentInput = captureAssessmentInput(),
+    ) = ModelTaskRequest(
+        requestId = requestId,
+        input = input,
         occurredAtEpochMillis = 100,
         egressManifest = manifest,
     )
 
-    private fun manifest() = ModelEgressManifest(
-        authorizationId = "approval-1",
-        subjectId = "draft-1",
+    private fun captureAssessmentInput() = CaptureAssessmentInput(
+        draftId = "draft-1",
+        sourceAssetId = "asset-1",
+        origin = CaptureAssessmentOrigin.LIBRARY,
+        imageWidth = 1080,
+        imageHeight = 1440,
+    )
+
+    private fun manifest(
+        requestId: String = "capture-assess:request-1",
+        input: CaptureAssessmentInput = captureAssessmentInput(),
+    ) = ModelEgressManifest(
+        authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
+        subjectId = input.subjectId,
         purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
         authorizedTaskKinds = setOf(
             ModelTaskKind.CAPTURE_ASSESS,
@@ -319,18 +452,30 @@ class ModelEgressTest {
         prohibitedData = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
     )
 
+    private fun assertAuthorizationInvalid(
+        request: ModelTaskRequest,
+        provider: ProviderCapabilitySnapshot,
+    ) {
+        val failure = runCatching {
+            ModelEgressPolicy.authorize(request, provider, 101)
+        }.exceptionOrNull() as ModelEgressAuthorizationException
+
+        assertEquals(ModelFailureCode.EGRESS_AUTHORIZATION_INVALID, failure.failureCode)
+    }
+
     private fun legacyTutorPlanRequest() = ModelTaskRequest(
         requestId = "tutor-plan:legacy-request",
-        input = TutorPlanInput(
-            sessionId = "tutor-session-1",
-            draftRevisionNumber = 2,
-            subject = "MATH",
-            questionDocument = confirmedQuestion(),
-            relevantLearningEvidence = emptyList(),
-            projectionIsCurrent = true,
-        ),
+        input = tutorPlanInput(),
         occurredAtEpochMillis = 100,
         egressManifest = legacyTutorPlanManifest(),
+    )
+
+    private fun tutorPlanInput() = TutorPlanInput(
+        sessionId = "tutor-session-1",
+        draftRevisionNumber = 2,
+        subject = "MATH",
+        questionDocument = confirmedQuestion(),
+        teachingConstraints = emptyList(),
     )
 
     private fun legacyTutorPlanManifest() = ModelEgressManifest(
@@ -350,8 +495,11 @@ class ModelEgressTest {
             ModelEgressManifest.LEGACY_TUTOR_PLAN_DISCLOSURE,
     )
 
-    private fun currentTutorPlanManifest() = ModelEgressManifest(
-        authorizationId = "tutor-plan-current-approval",
+    private fun currentTutorPlanManifest(
+        requestId: String = "tutor-plan:legacy-request",
+        input: TutorPlanInput = tutorPlanInput(),
+    ) = ModelEgressManifest(
+        authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
         subjectId = "tutor-session-1",
         purpose = ModelEgressPurpose.TUTORING,
         authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_PLAN),
@@ -365,24 +513,32 @@ class ModelEgressTest {
         prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
     )
 
-    private fun tutorRespondRequest(manifest: ModelEgressManifest) = ModelTaskRequest(
-        requestId = "tutor-respond:request-1",
-        input = TutorRespondInput(
-            sessionId = "tutor-session-1",
-            draftRevisionNumber = 2,
-            subject = "MATH",
-            questionDocument = confirmedQuestion(),
-            relevantLearningEvidence = emptyList(),
-            projectionIsCurrent = true,
-            responseOrdinal = 1,
-            studentMessage = "请解释当前题这一步。",
-        ),
+    private fun tutorRespondRequest(
+        manifest: ModelEgressManifest,
+        requestId: String = "tutor-respond:request-1",
+        input: TutorRespondInput = tutorRespondInput(),
+    ) = ModelTaskRequest(
+        requestId = requestId,
+        input = input,
         occurredAtEpochMillis = 100,
         egressManifest = manifest,
     )
 
-    private fun tutorRespondManifest() = ModelEgressManifest(
-        authorizationId = "tutor-respond-approval",
+    private fun tutorRespondInput() = TutorRespondInput(
+        sessionId = "tutor-session-1",
+        draftRevisionNumber = 2,
+        subject = "MATH",
+        questionDocument = confirmedQuestion(),
+        teachingConstraints = emptyList(),
+        responseOrdinal = 1,
+        studentMessage = "请解释当前题这一步。",
+    )
+
+    private fun tutorRespondManifest(
+        requestId: String = "tutor-respond:request-1",
+        input: TutorRespondInput = tutorRespondInput(),
+    ) = ModelEgressManifest(
+        authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
         subjectId = "tutor-session-1",
         purpose = ModelEgressPurpose.TUTORING,
         authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_RESPOND),

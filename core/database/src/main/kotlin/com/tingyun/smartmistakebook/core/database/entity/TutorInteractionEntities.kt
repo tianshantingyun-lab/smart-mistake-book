@@ -11,6 +11,14 @@ import androidx.room3.PrimaryKey
     primaryKeys = ["session_id", "cycle_ordinal", "turn_ordinal"],
     indices = [
         Index(value = ["question_document_id", "revision_number"]),
+        Index(
+            value = [
+                "evidence_request_id",
+                "session_id",
+                "cycle_ordinal",
+                "turn_ordinal",
+            ],
+        ),
     ],
 )
 internal data class TutorTurnResponseEntity(
@@ -117,6 +125,15 @@ internal data class TutorVisualTargetEvidenceEntity(
     ],
     indices = [
         Index(value = ["session_id", "question_document_id", "revision_number"]),
+        Index(
+            value = [
+                "learner_id",
+                "evidence_request_id",
+                "session_id",
+                "question_document_id",
+                "revision_number",
+            ],
+        ),
     ],
 )
 internal data class TutorEvidenceCancellationEntity(

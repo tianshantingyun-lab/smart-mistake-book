@@ -46,6 +46,75 @@ internal data class LearningObservationSourceAuthorityEntity(
     val sourceFactId: String?,
 )
 
+/**
+ * Immutable, locally-attested bridge from a source fact to a versioned projection target.
+ *
+ * Target references are intentionally self-contained instead of foreign-keying into problem or
+ * knowledge tables so the proof remains valid when those stores are physically separated.
+ */
+@Entity(
+    tableName = "learning_observation_source_fact_proof",
+    foreignKeys = [
+        ForeignKey(
+            entity = LearningObservationSourceFactEntity::class,
+            parentColumns = ["source_fact_id"],
+            childColumns = ["source_fact_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [
+        Index(value = ["learner_id", "subject", "anchor_id"]),
+        Index(value = ["target_database", "target_id", "target_version"]),
+        Index(value = ["proof_kind", "target_kind"]),
+        Index(value = ["proof_fingerprint"], unique = true),
+        Index(value = ["source_fact_id", "proof_fingerprint"], unique = true),
+    ],
+)
+internal data class LearningObservationSourceFactProofEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "source_fact_id")
+    val sourceFactId: String,
+    @ColumnInfo(name = "proof_kind")
+    val proofKind: String,
+    @ColumnInfo(name = "target_kind")
+    val targetKind: String,
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    val subject: String,
+    @ColumnInfo(name = "anchor_id")
+    val anchorId: String,
+    @ColumnInfo(name = "source_reference_id")
+    val sourceReferenceId: String,
+    @ColumnInfo(name = "source_fingerprint")
+    val sourceFingerprint: String,
+    @ColumnInfo(name = "conversation_id")
+    val conversationId: String?,
+    @ColumnInfo(name = "conversation_generation")
+    val conversationGeneration: Long?,
+    @ColumnInfo(name = "turn_receipt_id")
+    val turnReceiptId: String?,
+    @ColumnInfo(name = "evidence_request_id")
+    val evidenceRequestId: String?,
+    @ColumnInfo(name = "source_locator_kind")
+    val sourceLocatorKind: String,
+    @ColumnInfo(name = "source_locator_id")
+    val sourceLocatorId: String,
+    @ColumnInfo(name = "target_database")
+    val targetDatabase: String,
+    @ColumnInfo(name = "target_id")
+    val targetId: String,
+    @ColumnInfo(name = "target_version")
+    val targetVersion: String,
+    @ColumnInfo(name = "target_fingerprint")
+    val targetFingerprint: String,
+    @ColumnInfo(name = "target_created_at_epoch_millis")
+    val targetCreatedAtEpochMillis: Long,
+    @ColumnInfo(name = "attested_at_epoch_millis")
+    val attestedAtEpochMillis: Long,
+    @ColumnInfo(name = "proof_fingerprint")
+    val proofFingerprint: String,
+)
+
 @Entity(
     tableName = "learning_observation_candidate",
     foreignKeys = [
@@ -172,6 +241,7 @@ internal data class LearningObservationCandidateAttributionEntity(
         Index(value = ["learner_id", "subject", "occurred_at_epoch_millis"]),
         Index(value = ["canonical_fingerprint"], unique = true),
         Index(value = ["event_id", "practice_unit_id"], unique = true),
+        Index(value = ["event_id", "canonical_fingerprint"], unique = true),
     ],
 )
 internal data class AttributedLearningObservationEventEntity(
@@ -207,6 +277,52 @@ internal data class AttributedLearningObservationEventEntity(
     val eventSequence: Long,
     @ColumnInfo(name = "canonical_fingerprint")
     val canonicalFingerprint: String,
+)
+
+/**
+ * Persistence capability that admits one otherwise inert observation event to projection.
+ *
+ * Both composite foreign keys bind the receipt to the exact immutable event and source proof,
+ * instead of merely asserting that rows with the same ids happen to exist.
+ */
+@Entity(
+    tableName = "learning_observation_event_admission",
+    foreignKeys = [
+        ForeignKey(
+            entity = AttributedLearningObservationEventEntity::class,
+            parentColumns = ["event_id", "canonical_fingerprint"],
+            childColumns = ["event_id", "raw_event_canonical_fingerprint"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+        ForeignKey(
+            entity = LearningObservationSourceFactProofEntity::class,
+            parentColumns = ["source_fact_id", "proof_fingerprint"],
+            childColumns = ["source_fact_id", "source_fact_proof_fingerprint"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [
+        Index(value = ["event_id", "raw_event_canonical_fingerprint"], unique = true),
+        Index(value = ["source_fact_id", "source_fact_proof_fingerprint"], unique = true),
+        Index(value = ["admission_fingerprint"], unique = true),
+    ],
+)
+internal data class LearningObservationEventAdmissionEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "event_id")
+    val eventId: String,
+    @ColumnInfo(name = "source_fact_id")
+    val sourceFactId: String,
+    @ColumnInfo(name = "raw_event_canonical_fingerprint")
+    val rawEventCanonicalFingerprint: String,
+    @ColumnInfo(name = "source_fact_proof_fingerprint")
+    val sourceFactProofFingerprint: String,
+    @ColumnInfo(name = "policy_version")
+    val policyVersion: String,
+    @ColumnInfo(name = "admission_fingerprint")
+    val admissionFingerprint: String,
+    @ColumnInfo(name = "admitted_at_epoch_millis")
+    val admittedAtEpochMillis: Long,
 )
 
 @Entity(

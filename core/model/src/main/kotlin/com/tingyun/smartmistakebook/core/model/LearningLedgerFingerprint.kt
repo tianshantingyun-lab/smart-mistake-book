@@ -13,8 +13,28 @@ object LearningLedgerFingerprint {
         is Attempt -> attempt(event)
         is AnswerRevealOutcome -> answerReveal(event)
         is TutorAnswerExposureOutcome -> tutorAnswerExposure(event)
+        is AdmittedLearningObservationEvent -> admittedLearningObservation(event)
         is AttributedLearningObservationEvent -> learningObservation(event)
         is AttemptCorrection -> correction(event)
+    }
+
+    fun admittedLearningObservation(event: AdmittedLearningObservationEvent): String {
+        require(event.admission.matches(event.observation)) {
+            "Admitted learning observation must match its canonical admission proof"
+        }
+        return event.admission.admissionFingerprint
+    }
+
+    fun learningObservationAdmission(
+        rawEventCanonicalFingerprint: String,
+        sourceFactProofFingerprint: String,
+        policyVersion: String,
+    ): String = digest {
+        observationField("payloadType", "ADMITTED_LEARNING_OBSERVATION")
+        observationField("schemaVersion", LEARNING_OBSERVATION_ADMISSION_SCHEMA_VERSION)
+        observationField("rawEventCanonicalFingerprint", rawEventCanonicalFingerprint)
+        observationField("sourceFactProofFingerprint", sourceFactProofFingerprint)
+        observationField("policyVersion", policyVersion)
     }
 
     fun learningObservation(event: AttributedLearningObservationEvent): String = digest {
@@ -235,6 +255,8 @@ object LearningLedgerFingerprint {
         "learning-ledger-observation-canonical-v1"
     private const val LEARNING_OBSERVATION_SCHEMA_VERSION_V2 =
         "learning-ledger-observation-canonical-v2"
+    private const val LEARNING_OBSERVATION_ADMISSION_SCHEMA_VERSION =
+        "learning-ledger-observation-admission-canonical-v1"
     private const val LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION_V1 =
         "learning-observation-candidate-canonical-v1"
     private const val LEARNING_OBSERVATION_CANDIDATE_SCHEMA_VERSION_V2 =

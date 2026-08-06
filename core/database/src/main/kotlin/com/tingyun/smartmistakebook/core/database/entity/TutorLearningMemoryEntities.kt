@@ -179,6 +179,71 @@ internal data class TutorEvidenceRequestEntity(
 )
 
 @Entity(
+    tableName = "tutor_learning_evidence_finalization_receipt",
+    foreignKeys = [
+        ForeignKey(
+            entity = TutorEvidenceRequestEntity::class,
+            parentColumns = ["evidence_request_id"],
+            childColumns = ["evidence_request_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [
+        Index(
+            value = [
+                "learner_id",
+                "conversation_id",
+                "conversation_generation",
+                "idempotency_key",
+            ],
+            unique = true,
+        ),
+        Index(value = ["turn_receipt_id"]),
+    ],
+)
+internal data class TutorLearningEvidenceFinalizationReceiptEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "evidence_request_id")
+    val evidenceRequestId: String,
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    @ColumnInfo(name = "conversation_id")
+    val conversationId: String,
+    @ColumnInfo(name = "conversation_generation")
+    val conversationGeneration: Long,
+    @ColumnInfo(name = "conversation_state_version")
+    val conversationStateVersion: Long,
+    @ColumnInfo(name = "turn_receipt_id")
+    val turnReceiptId: String,
+    @ColumnInfo(name = "turn_ordinal")
+    val turnOrdinal: Int,
+    val subject: String,
+    @ColumnInfo(name = "session_anchor_id")
+    val sessionAnchorId: String,
+    @ColumnInfo(name = "evidence_kind")
+    val evidenceKind: String,
+    @ColumnInfo(name = "request_version")
+    val requestVersion: Long,
+    @ColumnInfo(name = "mode_version")
+    val modeVersion: Long,
+    @ColumnInfo(name = "idempotency_key")
+    val idempotencyKey: String,
+    @ColumnInfo(name = "candidate_fingerprint")
+    val candidateFingerprint: String,
+    val state: String,
+    @ColumnInfo(name = "mastery_receipt_id")
+    val masteryReceiptId: String?,
+    @ColumnInfo(name = "mastery_receipt_fingerprint")
+    val masteryReceiptFingerprint: String?,
+    @ColumnInfo(name = "state_version")
+    val stateVersion: Long,
+    @ColumnInfo(name = "intent_created_at_epoch_millis")
+    val intentCreatedAtEpochMillis: Long,
+    @ColumnInfo(name = "acknowledged_at_epoch_millis")
+    val acknowledgedAtEpochMillis: Long?,
+)
+
+@Entity(
     tableName = "learning_problem_anchor",
     indices = [
         Index(

@@ -23,6 +23,8 @@ data class TutorVisualDocumentScene(
     val durationSeconds: Double = 0.0,
     val fallbackMarkdown: String,
     val accessibilitySummary: String,
+    /** Null on persisted pre-provenance v2 documents; presentation must fail closed. */
+    val provenanceSchemaVersion: Int? = null,
     override val schemaVersion: Int = TutorVisualScene.DOCUMENT_SCHEMA_VERSION,
 ) : TutorVisualScene {
     init {
@@ -46,6 +48,7 @@ data class TutorVisualDocumentScene(
         const val MAX_TOTAL_TEXT_CHARS = 18_000
         const val MAX_POLYLINE_POINTS = 128
         const val MAX_LATTICE_BASIS_SITES = 64
+        const val CURRENT_PROVENANCE_SCHEMA_VERSION = 1
     }
 }
 
@@ -171,6 +174,8 @@ data class TutorVisualVariable(
     val source: TutorVisualValueSource,
     val derivationMarkdown: String? = null,
     val display: Boolean = source != TutorVisualValueSource.ILLUSTRATIVE,
+    /** Null only for persisted pre-provenance v2 scenes, which presentation validation rejects. */
+    val proof: TutorVisualValueProof? = null,
 ) {
     init {
         variableId.requireTutorSceneId("Tutor visual variable id")
@@ -190,6 +195,15 @@ data class TutorVisualVariable(
         }
         require(source != TutorVisualValueSource.ILLUSTRATIVE || !display) {
             "Illustrative tutor visual variables must never be displayed"
+        }
+        proof?.let { valueProof ->
+            require(
+                when (valueProof) {
+                    is TutorVisualValueProof.Given -> source == TutorVisualValueSource.GIVEN
+                    is TutorVisualValueProof.Derived -> source == TutorVisualValueSource.DERIVED
+                    is TutorVisualValueProof.Illustrative -> source == TutorVisualValueSource.ILLUSTRATIVE
+                },
+            ) { "Tutor visual variable proof does not match its declared source" }
         }
     }
 
@@ -595,6 +609,8 @@ data class TutorVisualChartSeriesElement(
     val axis: TutorVisualChartAxis = TutorVisualChartAxis.LEFT,
     val points: List<TutorVisualChartPoint>,
     val source: TutorVisualValueSource,
+    /** Null only for persisted pre-provenance v2 scenes, which presentation validation rejects. */
+    val proof: TutorVisualChartSeriesProof? = null,
     override val layer: TutorVisualLayer = TutorVisualLayer.CONTENT,
     override val initiallyVisible: Boolean = true,
     override val accessibilityLabel: String? = label,
@@ -603,8 +619,21 @@ data class TutorVisualChartSeriesElement(
         requireDocumentElementHeader(elementId, panelId, accessibilityLabel)
         label.requireTutorDocumentText("Tutor chart series label", TutorVisualDocumentScene.MAX_LABEL_CHARS)
         require(points.isNotEmpty() && points.size <= TutorVisualDocumentScene.MAX_CHART_POINTS_PER_SERIES)
-        require(source != TutorVisualValueSource.ILLUSTRATIVE) {
-            "Illustrative values cannot be plotted on a student-visible chart"
+        require(
+            source != TutorVisualValueSource.ILLUSTRATIVE ||
+                proof is TutorVisualChartSeriesProof.IllustrativeTrend,
+        ) { "Illustrative chart points must be declared as a non-readable trend" }
+        proof?.let { seriesProof ->
+            require(
+                when (seriesProof) {
+                    is TutorVisualChartSeriesProof.ProvenPoints ->
+                        source != TutorVisualValueSource.ILLUSTRATIVE
+                    is TutorVisualChartSeriesProof.DerivedCurve ->
+                        source == TutorVisualValueSource.DERIVED
+                    is TutorVisualChartSeriesProof.IllustrativeTrend ->
+                        source == TutorVisualValueSource.ILLUSTRATIVE
+                },
+            ) { "Tutor visual chart proof does not match its declared source" }
         }
         require(points.zipWithNext().all { (left, right) -> left.x <= right.x }) {
             "Tutor chart points must be ordered by x"

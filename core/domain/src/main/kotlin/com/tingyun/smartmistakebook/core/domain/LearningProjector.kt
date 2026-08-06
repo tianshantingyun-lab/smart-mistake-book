@@ -5,6 +5,7 @@ import com.tingyun.smartmistakebook.core.model.AppliedAnswerRevealRecord
 import com.tingyun.smartmistakebook.core.model.AppliedCorrectionRecord
 import com.tingyun.smartmistakebook.core.model.AppliedTutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.model.AppliedLearningObservationRecord
+import com.tingyun.smartmistakebook.core.model.AdmittedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -22,6 +23,7 @@ import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.LearningLedgerEvent
 import com.tingyun.smartmistakebook.core.model.LearningLedgerFingerprint
+import com.tingyun.smartmistakebook.core.model.LearningObservationLedgerEvent
 import com.tingyun.smartmistakebook.core.model.LearningObservationDirection
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
@@ -103,15 +105,15 @@ class LearningProjector(
         require(authoritativePresentationStates.all { (id, state) -> id == state.presentationId }) {
             "Authoritative presentation-state keys must match their values"
         }
-        require(events.filterIsInstance<AttributedLearningObservationEvent>().all {
-            it.learnerId == previous.learnerId
+        require(events.filterIsInstance<LearningObservationLedgerEvent>().all {
+            it.observation.learnerId == previous.learnerId
         }) { "Learning observation learner must match the projected snapshot" }
         val incomingPresentationIds = events.mapNotNullTo(linkedSetOf()) { event ->
             when (event) {
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
                 is TutorAnswerExposureOutcome -> null
-                is AttributedLearningObservationEvent -> null
+                is LearningObservationLedgerEvent -> null
             }
         }
         require(incomingPresentationIds.all(authoritativePresentationStates::containsKey)) {
@@ -126,8 +128,8 @@ class LearningProjector(
             .mapTo(linkedSetOf(), AnswerRevealOutcome::outcomeId)
         val incomingTutorExposureIds = events.filterIsInstance<TutorAnswerExposureOutcome>()
             .mapTo(linkedSetOf(), TutorAnswerExposureOutcome::outcomeId)
-        val incomingObservationIds = events.filterIsInstance<AttributedLearningObservationEvent>()
-            .mapTo(linkedSetOf(), AttributedLearningObservationEvent::eventId)
+        val incomingObservationIds = events.filterIsInstance<LearningObservationLedgerEvent>()
+            .mapTo(linkedSetOf()) { it.observation.eventId }
         val fingerprinted = events.map { it to LearningLedgerFingerprint.event(it) }
         val byEventId = fingerprinted.groupBy { it.first.ledgerEventId }
         val sameIdConflictVariants = byEventId
@@ -164,8 +166,8 @@ class LearningProjector(
                     previous.appliedTutorAnswerExposureRecords[event.outcomeId]?.let {
                         it.eventSequence to it.canonicalFingerprint
                     }
-                is AttributedLearningObservationEvent ->
-                    previous.appliedLearningObservationRecords[event.eventId]?.let {
+                is LearningObservationLedgerEvent ->
+                    previous.appliedLearningObservationRecords[event.observation.eventId]?.let {
                         it.eventSequence to it.canonicalFingerprint
                     }
             }
@@ -179,10 +181,10 @@ class LearningProjector(
                 is TutorAnswerExposureOutcome -> event.outcomeId in previous.appliedAttemptRecords ||
                     event.outcomeId in previous.appliedAnswerRevealRecords ||
                     event.outcomeId in previous.appliedLearningObservationRecords
-                is AttributedLearningObservationEvent ->
-                    event.eventId in previous.appliedAttemptRecords ||
-                        event.eventId in previous.appliedAnswerRevealRecords ||
-                        event.eventId in previous.appliedTutorAnswerExposureRecords
+                is LearningObservationLedgerEvent ->
+                    event.observation.eventId in previous.appliedAttemptRecords ||
+                        event.observation.eventId in previous.appliedAnswerRevealRecords ||
+                        event.observation.eventId in previous.appliedTutorAnswerExposureRecords
             }
             when {
                 recorded != null &&
@@ -242,7 +244,7 @@ class LearningProjector(
         val appliedReveals = linkedSetOf<String>()
         val appliedTutorExposures = linkedSetOf<String>()
         val appliedObservations = linkedSetOf<String>()
-        val quarantinedObservations = linkedSetOf<String>()
+        val consumedQuarantinedObservationIds = linkedSetOf<String>()
         val ambiguous = linkedSetOf<String>()
         val ambiguousObservations = linkedSetOf<String>()
         val sequenceConflicts = linkedSetOf<String>()
@@ -351,33 +353,38 @@ class LearningProjector(
                     )
                     appliedTutorExposures += event.outcomeId
                 }
-                is AttributedLearningObservationEvent -> {
-                    if (event.isProjectionQuarantined) {
-                        quarantinedObservations += event.eventId
-                    } else {
+                is LearningObservationLedgerEvent -> {
+                    if (event is AdmittedLearningObservationEvent) {
+                        val observation = event.observation
                         applyLearningObservation(
                             masteryStates = masteryStates,
-                            event = event,
+                            event = observation,
                             ambiguousEventIds = ambiguousObservations,
-                            effectiveAtEpochMillis = event.occurredAtEpochMillis,
+                            effectiveAtEpochMillis = observation.occurredAtEpochMillis,
                         )
-                        observationRecords[event.eventId] = AppliedLearningObservationRecord(
-                            observationEventId = event.eventId,
+                        observationRecords[observation.eventId] = AppliedLearningObservationRecord(
+                            observationEventId = observation.eventId,
                             canonicalFingerprint = fingerprint,
-                            eventSequence = event.eventSequence,
+                            eventSequence = observation.eventSequence,
                         )
-                        appliedObservations += event.eventId
+                        appliedObservations += observation.eventId
+                    } else {
+                        consumedQuarantinedObservationIds += event.observation.eventId
                     }
                 }
             }
             expectedSequence++
-            if (event !is AttributedLearningObservationEvent || !event.isProjectionQuarantined) {
+            if (
+                event !is LearningObservationLedgerEvent ||
+                event is AdmittedLearningObservationEvent
+            ) {
                 projectedAt = effectiveAt
             }
         }
 
         val appliedEventCount = appliedAttempts.size + appliedReveals.size +
-            appliedTutorExposures.size + appliedObservations.size + quarantinedObservations.size
+            appliedTutorExposures.size + appliedObservations.size +
+            consumedQuarantinedObservationIds.size
         val lastSequence = previous.checkpoint.lastSequence + appliedEventCount
         val projectionStatus = when {
             sequenceConflicts.isNotEmpty() -> ProjectionStatus.CONFLICTED
@@ -450,8 +457,8 @@ class LearningProjector(
         require(ordered.map(LearningLedgerEvent::ledgerEventId).distinct().size == ordered.size) {
             "Ledger event ids must be unique"
         }
-        require(ordered.filterIsInstance<AttributedLearningObservationEvent>().all {
-            it.learnerId == learnerId
+        require(ordered.filterIsInstance<LearningObservationLedgerEvent>().all {
+            it.observation.learnerId == learnerId
         }) { "Learning observation learner must match the replay learner" }
 
         val attemptsById = linkedMapOf<String, Attempt>()
@@ -473,7 +480,7 @@ class LearningProjector(
                     answerRevealSequences.put(event.presentationId, event.eventSequence) == null,
                 ) { "A presentation may have only one terminal answer-reveal outcome" }
                 is TutorAnswerExposureOutcome -> Unit
-                is AttributedLearningObservationEvent -> Unit
+                is LearningObservationLedgerEvent -> Unit
                 is AttemptCorrection -> {
                     require(event.attemptId in attemptsById) {
                         "A correction must follow the attempt it replaces"
@@ -583,13 +590,15 @@ class LearningProjector(
                         eventSequence = event.eventSequence,
                     )
                 }
-                is AttributedLearningObservationEvent -> {
-                    if (!event.isProjectionQuarantined) {
+                is LearningObservationLedgerEvent -> {
+                    if (event is AdmittedLearningObservationEvent) {
+                        val observation = event.observation
                         masteryTimeline += event
-                        observationRecords[event.eventId] = AppliedLearningObservationRecord(
-                            observationEventId = event.eventId,
-                            canonicalFingerprint = LearningLedgerFingerprint.learningObservation(event),
-                            eventSequence = event.eventSequence,
+                        observationRecords[observation.eventId] = AppliedLearningObservationRecord(
+                            observationEventId = observation.eventId,
+                            canonicalFingerprint = LearningLedgerFingerprint
+                                .admittedLearningObservation(event),
+                            eventSequence = observation.eventSequence,
                         )
                     }
                 }
@@ -603,7 +612,10 @@ class LearningProjector(
                     correctionWatermark = maxOf(correctionWatermark ?: 0L, effectiveAt)
                 }
             }
-            if (event !is AttributedLearningObservationEvent || !event.isProjectionQuarantined) {
+            if (
+                event !is LearningObservationLedgerEvent ||
+                event is AdmittedLearningObservationEvent
+            ) {
                 replayAt = effectiveAt
             }
         }
@@ -623,12 +635,17 @@ class LearningProjector(
                         behaviorAtEpochMillis = event.occurredAtEpochMillis,
                         isStudyDayTrusted = attemptStudyDayTrust.getValue(event.attemptId),
                     )
-                    is AttributedLearningObservationEvent -> applyLearningObservation(
-                        masteryStates = masteryStates,
-                        event = event,
-                        ambiguousEventIds = ambiguousObservations,
-                        effectiveAtEpochMillis = event.occurredAtEpochMillis,
-                    )
+                    is LearningObservationLedgerEvent -> {
+                        require(event is AdmittedLearningObservationEvent) {
+                            "Only admitted observations belong in the mastery timeline"
+                        }
+                        applyLearningObservation(
+                            masteryStates = masteryStates,
+                            event = event.observation,
+                            ambiguousEventIds = ambiguousObservations,
+                            effectiveAtEpochMillis = event.occurredAtEpochMillis,
+                        )
+                    }
                     is AnswerRevealOutcome,
                     is TutorAnswerExposureOutcome,
                     -> error("Only mastery evidence belongs in the mastery timeline")
@@ -696,7 +713,7 @@ class LearningProjector(
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
                 is TutorAnswerExposureOutcome -> null
-                is AttributedLearningObservationEvent -> null
+                is LearningObservationLedgerEvent -> null
             }
         }
         .distinct()
@@ -823,11 +840,11 @@ class LearningProjector(
                 } else {
                     emptySet()
                 }
-                is AttributedLearningObservationEvent ->
-                    if (event.isProjectionQuarantined) {
+                is LearningObservationLedgerEvent ->
+                    if (event !is AdmittedLearningObservationEvent) {
                         emptySet()
                     } else {
-                        event.attributions
+                        event.observation.attributions
                             .asSequence()
                             .filter { it.certainty == EvidenceAttributionCertainty.DIRECT }
                             .map(LearningObservationKnowledgeAttribution::knowledgeNodeId)

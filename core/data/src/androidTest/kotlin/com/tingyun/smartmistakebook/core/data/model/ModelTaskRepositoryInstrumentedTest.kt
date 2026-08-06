@@ -1,16 +1,23 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.model.provider.FakeModelGateway
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.database.LegacyStudyDatabaseTestFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.data.authority.CurrentOpenResponseEvaluationBinding
+import com.tingyun.smartmistakebook.core.data.authority.CurrentOpenResponseEvaluationScopeAuthorization
+import com.tingyun.smartmistakebook.core.data.authority.ProductionOpenResponseEvaluationTaskProducerFactory
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
+import com.tingyun.smartmistakebook.core.model.CanonicalSha256
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
@@ -23,20 +30,24 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
+import com.tingyun.smartmistakebook.core.model.OpenResponseEvaluatorKind
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorMarkdownSnapshot
 import com.tingyun.smartmistakebook.core.model.TutorStreamEvent
 import com.tingyun.smartmistakebook.core.model.TutorStreamIdentity
 import com.tingyun.smartmistakebook.core.model.WritingLayer
+import com.tingyun.smartmistakebook.core.model.storage.KnowledgeReferenceProofAuthority
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.LongSupplier
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
@@ -51,6 +62,8 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -67,7 +80,8 @@ class ModelTaskRepositoryInstrumentedTest {
         context = ApplicationProvider.getApplicationContext()
         databaseName = "model-task-repository-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
-        database = StudyDatabaseFactory.open(context, databaseName)
+        database =
+            LegacyStudyDatabaseTestFactory.openPreCutoverForTest(context, databaseName)
     }
 
     @After
@@ -75,6 +89,59 @@ class ModelTaskRepositoryInstrumentedTest {
         database.close()
         context.deleteDatabase(databaseName)
     }
+
+    @Test
+    fun openResponseEvaluationIsRejectedByDurablePathAndEphemeralExecutionCreatesNoRows() =
+        runBlocking {
+            val provider = ProviderCapabilitySnapshot(
+                providerId = "local-open-response-test",
+                providerDisplayName = "Local evaluator",
+                modelId = "local-evaluator-v1",
+                supportedTasks = setOf(ModelTaskKind.TUTOR_EVALUATE),
+                supportsImageInput = false,
+                supportsStructuredOutput = true,
+                supportsStreaming = false,
+                executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+            )
+            val gateway = object : ModelGateway {
+                override suspend fun capabilities(): ProviderCapabilitySnapshot = provider
+
+                override fun execute(execution: ModelGatewayExecution) = flow {
+                    emit(ModelGatewayEvent.Started(provider))
+                    emit(
+                        ModelGatewayEvent.Failed(
+                            com.tingyun.smartmistakebook.core.model.ModelTaskFailure(
+                                code = ModelFailureCode.PROVIDER_REJECTED_INPUT,
+                                message = "测试评价未执行",
+                                retryable = false,
+                            ),
+                        ),
+                    )
+                }
+            }
+            val repository =
+                RoomModelTaskRepository(
+                    database = database,
+                    gateway = gateway,
+                    clock = { 1_000L },
+                )
+            val request = sensitiveOpenResponseRequest()
+
+            assertThrows(IllegalArgumentException::class.java) {
+                repository.execute(request)
+            }
+            assertNull(repository.observe(request.requestId).first())
+
+            repository.executeSensitiveEphemeral(request).toList()
+
+            assertNull(repository.observe(request.requestId).first())
+            assertTrue(
+                repository.observeBySubject(request.input.subjectId, ModelTaskKind.TUTOR_EVALUATE)
+                    .first()
+                    .isEmpty(),
+            )
+            assertNoDurableModelTaskRows()
+        }
 
     @Test
     fun fakeProviderPersistsEveryUserVisibleStageBeforeEmission() = runBlocking {
@@ -676,6 +743,68 @@ class ModelTaskRepositoryInstrumentedTest {
         occurredAtEpochMillis = 1_000,
     )
 
+    private fun sensitiveOpenResponseRequest(): ModelTaskRequest {
+        val question = QuestionDocument(
+            id = "open-response-question-content",
+            blocks = listOf(
+                ContentBlock.Paragraph(
+                    id = "open-response-question-paragraph",
+                    markdown = "判断函数在该区间的单调性。",
+                ),
+            ),
+        )
+        val binding = CurrentOpenResponseEvaluationBinding(
+            learnerId = "local-learner",
+            conversationId = "local-conversation",
+            questionDocumentId = "local-question",
+            questionRevisionNumber = 1,
+            subject = SubjectKind.MATH,
+            questionDocument = question,
+            rubricCanonicalFingerprint = fingerprint("rubric"),
+            operationBinding = fingerprint("operation-binding"),
+            currentAnswer = "高熵回答-7f9c2a41-单调递减",
+            teachingReferences = emptyList(),
+            evaluator = OpenResponseEvaluatorKind.RUBRIC,
+            evaluatorPolicyFingerprint = fingerprint("evaluator-policy"),
+        )
+        val knowledgeAuthority = KnowledgeReferenceProofAuthority.create()
+        val input = ProductionOpenResponseEvaluationTaskProducerFactory.create(
+            binding = binding,
+            knowledgeReferenceVerifier = knowledgeAuthority.verifier,
+            expiresAtEpochMillis = 10_000L,
+            nowEpochMillis = LongSupplier { 1_000L },
+            currentScopeAuthorization =
+                CurrentOpenResponseEvaluationScopeAuthorization { expected ->
+                    expected == binding.scopeIdentity
+                },
+        ).createTask(requestVersion = 1L)
+        return ModelTaskRequest(
+            requestId = "tutor-evaluate:ephemeral-only",
+            input = input,
+            occurredAtEpochMillis = 1_000L,
+        )
+    }
+
+    private fun assertNoDurableModelTaskRows() {
+        SQLiteDatabase.openDatabase(
+            context.getDatabasePath(databaseName).path,
+            null,
+            SQLiteDatabase.OPEN_READONLY,
+        ).use { sqlite ->
+            listOf("model_task", "model_task_operation", "model_task_event").forEach { table ->
+                sqlite.rawQuery("SELECT COUNT(*) FROM $table", null).use { cursor ->
+                    assertTrue(cursor.moveToFirst())
+                    assertEquals("Unexpected durable row in $table", 0, cursor.getInt(0))
+                }
+            }
+        }
+    }
+
+    private fun fingerprint(seed: String): String =
+        CanonicalSha256("open-response-ephemeral-instrumented-test")
+            .field("seed", seed)
+            .finish()
+
     private fun externalRequest(
         requestId: String = "capture-assess:repository-test-external",
         occurredAtEpochMillis: Long = 1_000,
@@ -684,7 +813,8 @@ class ModelTaskRepositoryInstrumentedTest {
         requestId = requestId,
         occurredAtEpochMillis = occurredAtEpochMillis,
         egressManifest = ModelEgressManifest(
-            authorizationId = "authorization:$requestId",
+            authorizationId =
+                ModelEgressAuthorizationId.forInput(requestId, request().input),
             subjectId = "draft-repository-test",
             purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
             authorizedTaskKinds = setOf(

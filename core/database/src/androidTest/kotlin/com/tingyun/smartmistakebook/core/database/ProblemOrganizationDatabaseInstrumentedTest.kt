@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -41,7 +42,7 @@ class ProblemOrganizationDatabaseInstrumentedTest {
     @Test
     fun confirmationIsAtomicObservableAndIdempotent() = runBlocking {
         val command = command(commandId = "confirm-organization", fingerprint = "a".repeat(64))
-        val catalogUpdate = async {
+        val catalogUpdate = async(Dispatchers.Default) {
             store.observeMistakes().first { rows ->
                 rows.first { it.problemId == PROBLEM }.knowledgeLabels.isNotEmpty()
             }
@@ -217,9 +218,6 @@ class ProblemOrganizationDatabaseInstrumentedTest {
             commandId = "automatic-after-user",
             payloadFingerprint = "c".repeat(64),
             acceptedAtEpochMillis = 4_000,
-            knowledgeNodes = replacementCommand().knowledgeNodes.map {
-                it.copy(createdAtEpochMillis = 4_000)
-            },
             knowledgeBindings = replacementCommand().knowledgeBindings.map {
                 it.copy(
                     sourceType = "LOCAL_POLICY_ACCEPTED",
@@ -245,11 +243,8 @@ class ProblemOrganizationDatabaseInstrumentedTest {
     }
 
     @Test
-    fun userCorrectionReusesLegacyAutomaticKnowledgeNodeIdentity() = runBlocking {
-        val legacyAutomatic = command("legacy-automatic-node", "d".repeat(64)).copy(
-            knowledgeNodes = command("unused-node", "e".repeat(64)).knowledgeNodes.map {
-                it.copy(taxonomyVersion = "local-policy-v1")
-            },
+    fun userCorrectionReusesVerifiedCatalogReferenceIdentity() = runBlocking {
+        val automatic = command("automatic-catalog-reference", "d".repeat(64)).copy(
             knowledgeBindings = command("unused-binding", "f".repeat(64)).knowledgeBindings.map {
                 it.copy(sourceType = "LOCAL_POLICY_ACCEPTED", taxonomyVersion = "local-policy-v1")
             },
@@ -257,20 +252,17 @@ class ProblemOrganizationDatabaseInstrumentedTest {
                 it.copy(acceptanceSource = "LOCAL_POLICY_ACCEPTED", taxonomyVersion = "local-policy-v1")
             },
         )
-        store.confirmProblemOrganization(legacyAutomatic)
+        store.confirmProblemOrganization(automatic)
         val corrected = command("corrected-same-node", "1".repeat(64)).copy(
             acceptedAtEpochMillis = 3_000,
-            knowledgeNodes = legacyAutomatic.knowledgeNodes.map {
-                it.copy(taxonomyVersion = "organization-v1", createdAtEpochMillis = 3_000)
-            },
-            knowledgeBindings = legacyAutomatic.knowledgeBindings.map {
+            knowledgeBindings = automatic.knowledgeBindings.map {
                 it.copy(
                     sourceType = "USER_CORRECTED",
                     taxonomyVersion = "user-corrected-v1",
                     acceptedAtEpochMillis = 3_000,
                 )
             },
-            classifications = legacyAutomatic.classifications.map {
+            classifications = automatic.classifications.map {
                 it.copy(
                     acceptanceSource = "USER_CORRECTED",
                     taxonomyVersion = "user-corrected-v1",
@@ -374,17 +366,7 @@ class ProblemOrganizationDatabaseInstrumentedTest {
             problemId = PROBLEM,
             problemRevisionId = REVISION,
             practiceUnitId = PRACTICE,
-            knowledgeNodes = listOf(
-                KnowledgeNodeSeedRecord(
-                    knowledgeNodeId = KNOWLEDGE,
-                    stableCode = "math:knowledge:test",
-                    subject = "MATH",
-                    displayName = "二次函数最值",
-                    parentKnowledgeNodeId = null,
-                    taxonomyVersion = "user-corrected-v1",
-                    createdAtEpochMillis = 2_000,
-                ),
-            ),
+            knowledgeNodes = emptyList(),
             knowledgeBindings = listOf(
                 KnowledgeBindingSeedRecord(
                     bindingId = "binding-test",
@@ -395,6 +377,8 @@ class ProblemOrganizationDatabaseInstrumentedTest {
                     sourceType = "USER_CORRECTED",
                     taxonomyVersion = "user-corrected-v1",
                     acceptedAtEpochMillis = 2_000,
+                    verifiedKnowledgeReference =
+                        verifiedOrganizationKnowledgeReference(KNOWLEDGE),
                 ),
             ),
             classifications = listOf(
@@ -444,17 +428,7 @@ class ProblemOrganizationDatabaseInstrumentedTest {
         problemId = PROBLEM,
         problemRevisionId = REVISION,
         practiceUnitId = PRACTICE,
-        knowledgeNodes = listOf(
-            KnowledgeNodeSeedRecord(
-                knowledgeNodeId = "knowledge-replacement",
-                stableCode = "math:knowledge:root",
-                subject = "MATH",
-                displayName = "函数零点",
-                parentKnowledgeNodeId = null,
-                taxonomyVersion = "user-corrected-v1",
-                createdAtEpochMillis = 3_000,
-            ),
-        ),
+        knowledgeNodes = emptyList(),
         knowledgeBindings = listOf(
             KnowledgeBindingSeedRecord(
                 bindingId = "binding-replacement",
@@ -465,6 +439,8 @@ class ProblemOrganizationDatabaseInstrumentedTest {
                 sourceType = "USER_CORRECTED",
                 taxonomyVersion = "user-corrected-v1",
                 acceptedAtEpochMillis = 3_000,
+                verifiedKnowledgeReference =
+                    verifiedOrganizationKnowledgeReference("knowledge-replacement"),
             ),
         ),
         classifications = listOf(
@@ -547,6 +523,26 @@ class ProblemOrganizationDatabaseInstrumentedTest {
         errorBookEntries = listOf(
             entry("entry-main", PRACTICE, PROBLEM, REVISION),
             entry("entry-related", RELATED_PRACTICE, RELATED_PROBLEM, RELATED_REVISION),
+        ),
+        knowledgeNodes = listOf(
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = KNOWLEDGE,
+                stableCode = "test:math:quadratic",
+                subject = "MATH",
+                displayName = "二次函数最值",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "catalog-taxonomy-v1",
+                createdAtEpochMillis = 1_000,
+            ),
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge-replacement",
+                stableCode = "test:math:function-root",
+                subject = "MATH",
+                displayName = "函数零点",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "catalog-taxonomy-v1",
+                createdAtEpochMillis = 1_000,
+            ),
         ),
     )
 

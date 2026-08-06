@@ -1,11 +1,18 @@
 package com.tingyun.smartmistakebook.core.model.storage
 
 import com.tingyun.smartmistakebook.core.model.CanonicalSha256
+import java.util.Collections
 
 enum class StudyStoreKind {
     STUDENT_MISTAKES,
     LEARNER_MASTERY,
     HIGH_SCHOOL_KNOWLEDGE,
+}
+
+enum class ProblemLifecycleState {
+    ACTIVE,
+    ARCHIVED,
+    TOMBSTONED,
 }
 
 sealed interface CrossStoreEventPayload {
@@ -61,11 +68,100 @@ data class ProblemRevisionCommittedV1(
     }
 }
 
-data class ProblemKnowledgeBindingsAcceptedV1(
+data class ProblemLifecycleChangedV1(
     val problemRevision: StudentProblemRevisionRef,
-    val bindings: List<ProblemKnowledgeBindingRef>,
+    val previousState: ProblemLifecycleState,
+    val nextState: ProblemLifecycleState,
+    val changedAtEpochMillis: Long,
+) : CrossStoreEventPayload {
+    init {
+        require(previousState != nextState) {
+            "Problem lifecycle change must move between different states"
+        }
+        require(changedAtEpochMillis >= 0) {
+            "Problem lifecycle change time must not be negative"
+        }
+    }
+
+    override val payloadType: String = PAYLOAD_TYPE
+    override val payloadVersion: Int = PAYLOAD_VERSION
+    override val sourceStore: StudyStoreKind = StudyStoreKind.STUDENT_MISTAKES
+    override val allowedDestinationStores: Set<StudyStoreKind> =
+        setOf(StudyStoreKind.LEARNER_MASTERY)
+    override val aggregateId: String
+        get() = problemRevision.revisionId
+    override val occurredAtEpochMillis: Long
+        get() = changedAtEpochMillis
+    override val payloadCanonicalFingerprint: String
+        get() = CanonicalSha256(DOMAIN)
+            .field("payloadType", payloadType)
+            .field("payloadVersion", payloadVersion)
+            .field("revisionRef", problemRevision.canonicalFingerprint)
+            .field("previousState", previousState.name)
+            .field("nextState", nextState.name)
+            .field("changedAtEpochMillis", changedAtEpochMillis)
+            .finish()
+
+    companion object {
+        const val PAYLOAD_TYPE = "problem_lifecycle_changed"
+        const val PAYLOAD_VERSION = 1
+        private const val DOMAIN = "$PAYLOAD_TYPE-v$PAYLOAD_VERSION"
+    }
+}
+
+data class ProblemRevisionSupersededV1(
+    val previousRevision: StudentProblemRevisionRef,
+    val nextRevision: StudentProblemRevisionRef,
+    val changedAtEpochMillis: Long,
+) : CrossStoreEventPayload {
+    init {
+        require(previousRevision != nextRevision) {
+            "Problem revision supersession must move to a different revision"
+        }
+        require(
+            previousRevision.problem == nextRevision.problem &&
+                nextRevision.revisionNumber == previousRevision.revisionNumber + 1,
+        ) {
+            "Problem revision supersession must stay within one contiguous problem revision chain"
+        }
+        require(changedAtEpochMillis >= 0) {
+            "Problem revision supersession time must not be negative"
+        }
+    }
+
+    override val payloadType: String = PAYLOAD_TYPE
+    override val payloadVersion: Int = PAYLOAD_VERSION
+    override val sourceStore: StudyStoreKind = StudyStoreKind.STUDENT_MISTAKES
+    override val allowedDestinationStores: Set<StudyStoreKind> =
+        setOf(StudyStoreKind.LEARNER_MASTERY)
+    override val aggregateId: String
+        get() = previousRevision.revisionId
+    override val occurredAtEpochMillis: Long
+        get() = changedAtEpochMillis
+    override val payloadCanonicalFingerprint: String
+        get() = CanonicalSha256(DOMAIN)
+            .field("payloadType", payloadType)
+            .field("payloadVersion", payloadVersion)
+            .field("previousRevisionRef", previousRevision.canonicalFingerprint)
+            .field("nextRevisionRef", nextRevision.canonicalFingerprint)
+            .field("changedAtEpochMillis", changedAtEpochMillis)
+            .finish()
+
+    companion object {
+        const val PAYLOAD_TYPE = "problem_revision_superseded"
+        const val PAYLOAD_VERSION = 1
+        private const val DOMAIN = "$PAYLOAD_TYPE-v$PAYLOAD_VERSION"
+    }
+}
+
+class ProblemKnowledgeBindingsAcceptedV1(
+    val problemRevision: StudentProblemRevisionRef,
+    bindings: List<ProblemKnowledgeBindingRef>,
     val acceptedAtEpochMillis: Long,
 ) : CrossStoreEventPayload {
+    val bindings: List<ProblemKnowledgeBindingRef> =
+        Collections.unmodifiableList(bindings.toList())
+
     init {
         require(bindings.isNotEmpty()) { "Accepted knowledge bindings must not be empty" }
         require(bindings.size <= MAX_BINDINGS) {
@@ -109,11 +205,336 @@ data class ProblemKnowledgeBindingsAcceptedV1(
                 .finish()
         }
 
+    override fun equals(other: Any?): Boolean =
+        this === other ||
+            (
+                other is ProblemKnowledgeBindingsAcceptedV1 &&
+                    problemRevision == other.problemRevision &&
+                    bindings == other.bindings &&
+                    acceptedAtEpochMillis == other.acceptedAtEpochMillis
+            )
+
+    override fun hashCode(): Int {
+        var result = problemRevision.hashCode()
+        result = 31 * result + bindings.hashCode()
+        result = 31 * result + acceptedAtEpochMillis.hashCode()
+        return result
+    }
+
+    override fun toString(): String =
+        "ProblemKnowledgeBindingsAcceptedV1(" +
+            "problemRevision=$problemRevision, " +
+            "bindings=$bindings, " +
+            "acceptedAtEpochMillis=$acceptedAtEpochMillis)"
+
     companion object {
         const val PAYLOAD_TYPE = "problem_knowledge_bindings_accepted"
         const val PAYLOAD_VERSION = 1
         private const val DOMAIN = "$PAYLOAD_TYPE-v$PAYLOAD_VERSION"
         private const val MAX_BINDINGS = 512
+    }
+}
+
+/**
+ * Current, versioned knowledge-binding authority for one immutable problem revision.
+ *
+ * Unlike the legacy accepted-only event, an empty snapshot is meaningful: it revokes every
+ * previously accepted binding for the revision. Destinations must apply snapshots monotonically
+ * by [bindingSetVersion] and must not merge them as append-only facts.
+ */
+class ProblemKnowledgeBindingsSnapshotV2(
+    val problemRevision: StudentProblemRevisionRef,
+    bindings: List<ProblemKnowledgeBindingRef>,
+    val bindingSetVersion: Long,
+    val changedAtEpochMillis: Long,
+) : CrossStoreEventPayload {
+    val bindings: List<ProblemKnowledgeBindingRef> =
+        Collections.unmodifiableList(bindings.toList())
+
+    init {
+        require(this.bindings.size <= MAX_BINDINGS) {
+            "Knowledge binding snapshot exceeds the supported event budget"
+        }
+        require(this.bindings == this.bindings.sortedBy(ProblemKnowledgeBindingRef::bindingId)) {
+            "Knowledge binding snapshot must use canonical binding-id order"
+        }
+        require(
+            this.bindings
+                .map(ProblemKnowledgeBindingRef::bindingId)
+                .distinct()
+                .size == this.bindings.size,
+        ) {
+            "Knowledge binding snapshot must have unique ids"
+        }
+        require(this.bindings.all { binding -> binding.problemRevision == problemRevision }) {
+            "Knowledge binding snapshot must target the event problem revision"
+        }
+        require(bindingSetVersion > 0) {
+            "Knowledge binding snapshot version must be positive"
+        }
+        require(changedAtEpochMillis >= 0) {
+            "Knowledge binding snapshot time must not be negative"
+        }
+    }
+
+    override val payloadType: String = PAYLOAD_TYPE
+    override val payloadVersion: Int = PAYLOAD_VERSION
+    override val sourceStore: StudyStoreKind = StudyStoreKind.STUDENT_MISTAKES
+    override val allowedDestinationStores: Set<StudyStoreKind> =
+        setOf(StudyStoreKind.LEARNER_MASTERY)
+    override val aggregateId: String
+        get() = problemRevision.revisionId
+    override val occurredAtEpochMillis: Long
+        get() = changedAtEpochMillis
+    override val payloadCanonicalFingerprint: String
+        get() {
+            val hash = CanonicalSha256(DOMAIN)
+                .field("payloadType", payloadType)
+                .field("payloadVersion", payloadVersion)
+                .field("problemRevisionRef", problemRevision.canonicalFingerprint)
+                .field("bindingSetVersion", bindingSetVersion)
+                .field("bindingCount", bindings.size)
+            bindings.forEachIndexed { index, binding ->
+                hash.field("binding[$index]", binding.canonicalFingerprint)
+            }
+            return hash
+                .field("changedAtEpochMillis", changedAtEpochMillis)
+                .finish()
+        }
+
+    override fun equals(other: Any?): Boolean =
+        this === other ||
+            (
+                other is ProblemKnowledgeBindingsSnapshotV2 &&
+                    problemRevision == other.problemRevision &&
+                    bindings == other.bindings &&
+                    bindingSetVersion == other.bindingSetVersion &&
+                    changedAtEpochMillis == other.changedAtEpochMillis
+            )
+
+    override fun hashCode(): Int {
+        var result = problemRevision.hashCode()
+        result = 31 * result + bindings.hashCode()
+        result = 31 * result + bindingSetVersion.hashCode()
+        result = 31 * result + changedAtEpochMillis.hashCode()
+        return result
+    }
+
+    override fun toString(): String =
+        "ProblemKnowledgeBindingsSnapshotV2(" +
+            "problemRevision=$problemRevision, " +
+            "bindings=$bindings, " +
+            "bindingSetVersion=$bindingSetVersion, " +
+            "changedAtEpochMillis=$changedAtEpochMillis)"
+
+    companion object {
+        const val PAYLOAD_TYPE = "problem_knowledge_bindings_snapshot"
+        const val PAYLOAD_VERSION = 2
+        private const val DOMAIN = "$PAYLOAD_TYPE-v$PAYLOAD_VERSION"
+        private const val MAX_BINDINGS = 512
+    }
+}
+
+enum class ReviewResponseForm {
+    CHOICE,
+    NUMERIC,
+    VISUAL_TARGET,
+}
+
+enum class ReviewVerificationOutcome {
+    CORRECT,
+    INCORRECT,
+}
+
+/**
+ * A verified response fact captured by the student-mistake authority.
+ *
+ * This payload deliberately carries no knowledge attribution, score, evidence weight, confidence,
+ * or mastery conclusion. The learner-mastery authority combines it with an independently delivered
+ * knowledge-binding snapshot before deciding whether the response is admissible learning evidence.
+ */
+data class ReviewObservationCapturedV1(
+    val problemRevision: StudentProblemRevisionRef,
+    val reviewSessionId: String,
+    val reviewQueueItemId: String,
+    val observationId: String,
+    val submissionId: String,
+    val presentationId: String,
+    val responseForm: ReviewResponseForm,
+    val responseCanonicalFingerprint: String,
+    val verificationOutcome: ReviewVerificationOutcome,
+    val attemptOrdinal: Int,
+    val hintCount: Int,
+    val answerWasRevealed: Boolean,
+    val verificationPolicyVersion: String,
+    val elapsedDurationMillis: Long?,
+    val capturedAtEpochMillis: Long,
+) : CrossStoreEventPayload {
+    init {
+        requireStoreIdentity(reviewSessionId, "Review session id")
+        requireStoreIdentity(reviewQueueItemId, "Review queue item id")
+        requireStoreIdentity(observationId, "Review observation id")
+        requireStoreIdentity(submissionId, "Review submission id")
+        requireStoreIdentity(presentationId, "Review presentation id")
+        requireCanonicalFingerprint(
+            responseCanonicalFingerprint,
+            "Review response canonical fingerprint",
+        )
+        require(attemptOrdinal >= 1) {
+            "Review attempt ordinal must be positive"
+        }
+        require(hintCount >= 0) {
+            "Review hint count must not be negative"
+        }
+        requireStoreVersion(
+            verificationPolicyVersion,
+            "Review verification-policy version",
+        )
+        require(
+            elapsedDurationMillis == null ||
+                elapsedDurationMillis in 0..MAX_ELAPSED_DURATION_MILLIS,
+        ) {
+            "Review elapsed duration is outside the supported range"
+        }
+        require(capturedAtEpochMillis >= 0) {
+            "Review capture time must not be negative"
+        }
+    }
+
+    override val payloadType: String = PAYLOAD_TYPE
+    override val payloadVersion: Int = PAYLOAD_VERSION
+    override val sourceStore: StudyStoreKind = StudyStoreKind.STUDENT_MISTAKES
+    override val allowedDestinationStores: Set<StudyStoreKind> =
+        setOf(StudyStoreKind.LEARNER_MASTERY)
+    override val aggregateId: String
+        get() = observationId
+    override val occurredAtEpochMillis: Long
+        get() = capturedAtEpochMillis
+    override val payloadCanonicalFingerprint: String
+        get() = CanonicalSha256(DOMAIN)
+            .field("payloadType", payloadType)
+            .field("payloadVersion", payloadVersion)
+            .field("problemRevisionRef", problemRevision.canonicalFingerprint)
+            .field("reviewSessionId", reviewSessionId)
+            .field("reviewQueueItemId", reviewQueueItemId)
+            .field("observationId", observationId)
+            .field("submissionId", submissionId)
+            .field("presentationId", presentationId)
+            .field("responseForm", responseForm.name)
+            .field("responseCanonicalFingerprint", responseCanonicalFingerprint)
+            .field("verificationOutcome", verificationOutcome.name)
+            .field("attemptOrdinal", attemptOrdinal)
+            .field("hintCount", hintCount)
+            .field("answerWasRevealed", answerWasRevealed)
+            .field("verificationPolicyVersion", verificationPolicyVersion)
+            .nullableField("elapsedDurationMillis", elapsedDurationMillis?.toString())
+            .field("capturedAtEpochMillis", capturedAtEpochMillis)
+            .finish()
+
+    companion object {
+        const val PAYLOAD_TYPE = "review_observation_captured"
+        const val PAYLOAD_VERSION = 1
+        private const val DOMAIN = "$PAYLOAD_TYPE-v$PAYLOAD_VERSION"
+        private const val MAX_ELAPSED_DURATION_MILLIS = 24L * 60L * 60L * 1_000L
+    }
+}
+
+/**
+ * A review-response claim whose authority comes from the outer student-outbox proof.
+ *
+ * Unlike V1, this payload never contains a public deterministic digest of the learner's raw
+ * response. [responseOpaqueBinding] is an owner-keyed, scope-bound value. It can be compared for
+ * exact replay but cannot be used to enumerate a low-entropy choice, number, or visual target.
+ * This public DTO is intentionally constructible for bounded codecs and archives; its fields must
+ * never be treated as verified evidence unless the containing [StudentMistakeRelayMessage] passes
+ * the final verify-only capability issued by the student-store owner.
+ */
+data class ReviewObservationCapturedV2(
+    val problemRevision: StudentProblemRevisionRef,
+    val reviewSessionId: String,
+    val reviewQueueItemId: String,
+    val observationId: String,
+    val submissionId: String,
+    val presentationId: String,
+    val responseForm: ReviewResponseForm,
+    val responseOpaqueBinding: String,
+    val responseBindingAlgorithmVersion: String,
+    val verificationOutcome: ReviewVerificationOutcome,
+    val attemptOrdinal: Int,
+    val hintCount: Int,
+    val answerWasRevealed: Boolean,
+    val verificationPolicyVersion: String,
+    val elapsedDurationMillis: Long?,
+    val capturedAtEpochMillis: Long,
+) : CrossStoreEventPayload {
+    init {
+        requireStoreIdentity(reviewSessionId, "Review session id")
+        requireStoreIdentity(reviewQueueItemId, "Review queue item id")
+        requireStoreIdentity(observationId, "Review observation id")
+        requireStoreIdentity(submissionId, "Review submission id")
+        requireStoreIdentity(presentationId, "Review presentation id")
+        requireCanonicalFingerprint(responseOpaqueBinding, "Review response opaque binding")
+        requireStoreVersion(
+            responseBindingAlgorithmVersion,
+            "Review response-binding algorithm version",
+        )
+        require(attemptOrdinal >= 1) {
+            "Review attempt ordinal must be positive"
+        }
+        require(hintCount >= 0) {
+            "Review hint count must not be negative"
+        }
+        requireStoreVersion(
+            verificationPolicyVersion,
+            "Review verification-policy version",
+        )
+        require(
+            elapsedDurationMillis == null ||
+                elapsedDurationMillis in 0..MAX_ELAPSED_DURATION_MILLIS,
+        ) {
+            "Review elapsed duration is outside the supported range"
+        }
+        require(capturedAtEpochMillis >= 0) {
+            "Review capture time must not be negative"
+        }
+    }
+
+    override val payloadType: String = PAYLOAD_TYPE
+    override val payloadVersion: Int = PAYLOAD_VERSION
+    override val sourceStore: StudyStoreKind = StudyStoreKind.STUDENT_MISTAKES
+    override val allowedDestinationStores: Set<StudyStoreKind> =
+        setOf(StudyStoreKind.LEARNER_MASTERY)
+    override val aggregateId: String
+        get() = observationId
+    override val occurredAtEpochMillis: Long
+        get() = capturedAtEpochMillis
+    override val payloadCanonicalFingerprint: String
+        get() = CanonicalSha256(DOMAIN)
+            .field("payloadType", payloadType)
+            .field("payloadVersion", payloadVersion)
+            .field("problemRevisionRef", problemRevision.canonicalFingerprint)
+            .field("reviewSessionId", reviewSessionId)
+            .field("reviewQueueItemId", reviewQueueItemId)
+            .field("observationId", observationId)
+            .field("submissionId", submissionId)
+            .field("presentationId", presentationId)
+            .field("responseForm", responseForm.name)
+            .field("responseOpaqueBinding", responseOpaqueBinding)
+            .field("responseBindingAlgorithmVersion", responseBindingAlgorithmVersion)
+            .field("verificationOutcome", verificationOutcome.name)
+            .field("attemptOrdinal", attemptOrdinal)
+            .field("hintCount", hintCount)
+            .field("answerWasRevealed", answerWasRevealed)
+            .field("verificationPolicyVersion", verificationPolicyVersion)
+            .nullableField("elapsedDurationMillis", elapsedDurationMillis?.toString())
+            .field("capturedAtEpochMillis", capturedAtEpochMillis)
+            .finish()
+
+    companion object {
+        const val PAYLOAD_TYPE = "review_observation_captured"
+        const val PAYLOAD_VERSION = 2
+        private const val DOMAIN = "$PAYLOAD_TYPE-v$PAYLOAD_VERSION"
+        private const val MAX_ELAPSED_DURATION_MILLIS = 24L * 60L * 60L * 1_000L
     }
 }
 

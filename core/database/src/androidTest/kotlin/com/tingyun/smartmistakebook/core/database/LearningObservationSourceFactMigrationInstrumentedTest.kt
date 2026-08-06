@@ -6,6 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
+import com.tingyun.smartmistakebook.core.model.CanonicalSha256
+import com.tingyun.smartmistakebook.core.model.CapturedTutorProblemIdentity
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReviewReason
@@ -28,9 +30,110 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class LearningObservationSourceFactMigrationInstrumentedTest {
     @Test
+    fun versionThirtySixQuarantinesUnverifiableTutorEvidenceAndClearsMastery() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "learning-observation-source-proof-v36-${System.nanoTime()}.db"
+        val fixtures = listOf(
+            V36TutorFixture(
+                caseId = "unique-looking",
+                responses = listOf(V36TutorResponse(sessionSuffix = "only")),
+            ),
+            V36TutorFixture(
+                caseId = "same-draft-different-session",
+                responses = listOf(
+                    V36TutorResponse(sessionSuffix = "first"),
+                    V36TutorResponse(
+                        sessionSuffix = "second",
+                        submittedAtOffsetMillis = 1,
+                        evidenceRequestIdOverride = "unrelated-session-response",
+                    ),
+                ),
+            ),
+            V36TutorFixture(
+                caseId = "same-time-different-answer",
+                responses = listOf(
+                    V36TutorResponse(sessionSuffix = "answer-a"),
+                    V36TutorResponse(
+                        sessionSuffix = "answer-b",
+                        selectedChoiceId = "choice-b",
+                        selectedChoiceMarkdown = "B",
+                        selectionWasCorrect = false,
+                        feedbackMarkdown = "Incorrect",
+                    ),
+                ),
+            ),
+            V36TutorFixture(
+                caseId = "terminal-payload-mismatch",
+                terminalPayloadFingerprint = FINGERPRINT_C,
+                responses = listOf(V36TutorResponse(sessionSuffix = "only")),
+            ),
+            V36TutorFixture(
+                caseId = "source-content-mismatch",
+                responseFingerprintOverride = FINGERPRINT_C,
+                responseSummaryOverride = "B",
+                factKind = "MODEL_EVALUATED_INCORRECT_RESPONSE",
+                responses = listOf(V36TutorResponse(sessionSuffix = "only")),
+            ),
+            V36TutorFixture(
+                caseId = "duplicate-response",
+                responses = listOf(
+                    V36TutorResponse(sessionSuffix = "first"),
+                    V36TutorResponse(sessionSuffix = "second"),
+                ),
+            ),
+            V36TutorFixture(
+                caseId = "ambiguous-response",
+                responses = listOf(
+                    V36TutorResponse(sessionSuffix = "same", cycleOrdinal = 1),
+                    V36TutorResponse(sessionSuffix = "same", cycleOrdinal = 2),
+                ),
+            ),
+        )
+        context.deleteDatabase(databaseName)
+        try {
+            createDatabaseFromExportedSchema(context, databaseName, version = 36)
+            SQLiteDatabase.openDatabase(
+                context.getDatabasePath(databaseName).path,
+                null,
+                SQLiteDatabase.OPEN_READWRITE,
+            ).use { database ->
+                database.seedV36TutorObservations(fixtures)
+            }
+
+            StudyDatabaseFactory.open(context, databaseName).use { store ->
+                checkNotNull(
+                    store.readLearningObservationCandidate(
+                        "candidate-${fixtures.first().caseId}",
+                    ),
+                )
+            }
+            assertV36FixturesRemainQuarantined(context, databaseName, fixtures)
+
+            // A deterministic receipt and INSERT OR IGNORE make the data migration restart-safe.
+            SQLiteDatabase.openDatabase(
+                context.getDatabasePath(databaseName).path,
+                null,
+                SQLiteDatabase.OPEN_READWRITE,
+            ).use { database ->
+                database.execSQL("PRAGMA user_version = 36")
+            }
+            StudyDatabaseFactory.open(context, databaseName).use { store ->
+                checkNotNull(
+                    store.readLearningObservationCandidate(
+                        "candidate-${fixtures.first().caseId}",
+                    ),
+                )
+            }
+            assertV36FixturesRemainQuarantined(context, databaseName, fixtures)
+        } finally {
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
     fun versionThirtyFiveQuarantinesLegacyProjectionWithoutChangingAuditFingerprints() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val databaseName = "learning-observation-source-fact-v36-${System.nanoTime()}.db"
+        val databaseName = "learning-observation-source-fact-v37-${System.nanoTime()}.db"
         val legacyCandidate = legacyCandidate()
         val legacyEvent = legacyEvent(legacyCandidate)
         val legacyCandidateFingerprint =
@@ -86,10 +189,6 @@ class LearningObservationSourceFactMigrationInstrumentedTest {
                 )
                 assertEquals(1L, incremental.ledgerHeadSequence)
                 assertEquals(1, incremental.events.size)
-                assertTrue(
-                    (incremental.events.single().event as AttributedLearningObservationEvent)
-                        .isProjectionQuarantined,
-                )
                 assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, incremental.stopReason)
                 assertNull(incremental.blockedAtSequence)
                 val projected = LearningProjector().project(
@@ -207,6 +306,28 @@ class LearningObservationSourceFactMigrationInstrumentedTest {
                 assertTrue(
                     database.hasSourceFactForeignKey("attributed_learning_observation_event"),
                 )
+                assertEquals(
+                    0,
+                    database.scalarInt(
+                        "SELECT COUNT(*) FROM learning_observation_source_fact_proof",
+                    ),
+                )
+                assertTrue(
+                    database.hasSourceFactForeignKey(
+                        "learning_observation_source_fact_proof",
+                    ),
+                )
+                assertEquals(
+                    1,
+                    database.scalarInt(
+                        """
+                        SELECT COUNT(*)
+                        FROM pragma_foreign_key_list(
+                            'learning_observation_source_fact_proof'
+                        )
+                        """.trimIndent(),
+                    ),
+                )
                 assertEquals(1, database.scalarInt("SELECT COUNT(*) FROM projection_outbox"))
                 assertEquals(1, database.scalarInt("SELECT COUNT(*) FROM learning_sequence"))
                 assertEquals(1, database.scalarInt("SELECT COUNT(*) FROM learning_event_identity"))
@@ -241,6 +362,432 @@ class LearningObservationSourceFactMigrationInstrumentedTest {
         } finally {
             context.deleteDatabase(databaseName)
         }
+    }
+
+    private fun assertV36FixturesRemainQuarantined(
+        context: Context,
+        databaseName: String,
+        fixtures: List<V36TutorFixture>,
+    ) {
+        SQLiteDatabase.openDatabase(
+            context.getDatabasePath(databaseName).path,
+            null,
+            SQLiteDatabase.OPEN_READONLY,
+        ).use { database ->
+            assertEquals(STUDY_DATABASE_VERSION, database.version)
+            assertEquals(
+                0,
+                database.scalarInt("SELECT COUNT(*) FROM learning_observation_source_fact_proof"),
+            )
+            assertEquals(
+                0,
+                database.scalarInt("SELECT COUNT(*) FROM learning_observation_event_admission"),
+            )
+            assertEquals(
+                fixtures.size,
+                database.scalarInt(
+                    """
+                    SELECT COUNT(*)
+                    FROM learning_evidence_review_case
+                    WHERE review_case_id LIKE 'migration-v36-source-proof-quarantine:%'
+                      AND reason = 'SOURCE_FACT_POLICY_REJECTED'
+                      AND status = 'OPEN'
+                    """.trimIndent(),
+                ),
+            )
+            fixtures.forEach { fixture ->
+                assertEquals(
+                    1,
+                    database.scalarInt(
+                        """
+                        SELECT COUNT(*)
+                        FROM learning_evidence_review_case
+                        WHERE review_case_id =
+                            'migration-v36-source-proof-quarantine:event-${fixture.caseId}'
+                          AND candidate_id = 'candidate-${fixture.caseId}'
+                          AND proposed_event_id = 'event-${fixture.caseId}'
+                        """.trimIndent(),
+                    ),
+                )
+            }
+            assertEquals(
+                fixtures.size,
+                database.scalarInt("SELECT COUNT(*) FROM attributed_learning_observation_event"),
+            )
+            assertEquals(
+                fixtures.size,
+                database.scalarInt("SELECT COUNT(*) FROM learning_observation_source_fact"),
+            )
+            assertEquals(
+                fixtures.size,
+                database.scalarInt("SELECT COUNT(*) FROM learning_observation_candidate"),
+            )
+            assertEquals(
+                fixtures.size,
+                database.scalarInt("SELECT COUNT(*) FROM projection_outbox"),
+            )
+            assertEquals(
+                0,
+                database.projectionRowCount("learner_knowledge_mastery_state", V36_LEARNER),
+            )
+            assertEquals(
+                0,
+                database.projectionRowCount("learner_projection_snapshot", V36_LEARNER),
+            )
+            assertEquals(0, database.foreignKeyViolationCount())
+            assertEquals("ok", database.scalarText("PRAGMA integrity_check"))
+        }
+    }
+
+    private fun SQLiteDatabase.seedV36TutorObservations(fixtures: List<V36TutorFixture>) {
+        execSQL("PRAGMA foreign_keys = ON")
+        execSQL(
+            """
+            INSERT INTO problem(
+                problem_id, canonical_fingerprint, subject, created_at_epoch_millis
+            ) VALUES('$PROBLEM_ID', 'problem-fingerprint', 'MATH', 900)
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO problem_revision(
+                revision_id, problem_id, revision_number, title, problem_markdown,
+                answer_verification_status, source_type, content_fingerprint,
+                created_at_epoch_millis
+            ) VALUES(
+                '$REVISION_ID', '$PROBLEM_ID', 1, 'Legacy', 'Legacy problem',
+                'UNVERIFIED', 'MANUAL', 'revision-fingerprint', 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO practice_unit(
+                practice_unit_id, problem_id, problem_revision_id, unit_key, unit_kind,
+                title, prompt_markdown, estimated_seconds, created_at_epoch_millis
+            ) VALUES(
+                '$UNIT_ID', '$PROBLEM_ID', '$REVISION_ID', 'legacy-unit', 'SHORT_ANSWER',
+                'Legacy', 'Legacy prompt', 30, 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO error_book_entry(
+                entry_id, practice_unit_id, problem_id, current_revision_id,
+                status, accepted_at_epoch_millis, updated_at_epoch_millis
+            ) VALUES(
+                '$V36_ERROR_BOOK_ENTRY', '$UNIT_ID', '$PROBLEM_ID', '$REVISION_ID',
+                'ACTIVE', 900, 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO knowledge_node(
+                knowledge_node_id, stable_code, subject, display_name, taxonomy_version,
+                created_at_epoch_millis
+            ) VALUES(
+                '$KNOWLEDGE_NODE_ID', 'legacy.math', 'MATH', 'Legacy math', 'taxonomy-v1', 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO practice_unit_knowledge_binding(
+                binding_id, practice_unit_id, knowledge_node_id, basis_revision_id, strength,
+                source_type, taxonomy_version, accepted_at_epoch_millis
+            ) VALUES(
+                '$BINDING_ID', '$UNIT_ID', '$KNOWLEDGE_NODE_ID', '$REVISION_ID',
+                1.0, 'VERIFIED', 'taxonomy-v1', 900
+            )
+            """.trimIndent(),
+        )
+
+        fixtures.forEachIndexed { index, fixture ->
+            seedV36TutorObservation(fixture, eventSequence = index + 1L)
+        }
+        execSQL(
+            """
+            INSERT INTO learning_sequence(learner_id, last_allocated_sequence)
+            VALUES('$V36_LEARNER', ${fixtures.size})
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learner_projection_snapshot(
+                projection_name, learner_id, state_version, checkpoint_sequence,
+                known_ledger_head_sequence, projector_version, projected_at_epoch_millis,
+                generated_at_epoch_millis, freshness, projection_status
+            ) VALUES(
+                '$PROJECTION', '$V36_LEARNER', 1, ${fixtures.size}, ${fixtures.size},
+                'legacy-projector', 2000, 2000, 'CURRENT', 'CURRENT'
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learner_knowledge_mastery_state(
+                projection_name, learner_id, knowledge_node_id,
+                probability_independent_correct, lower_bound_independent_correct, evidence_mass,
+                status, calibration_support, projector_version, checkpoint_sequence,
+                last_evidence_at_epoch_millis
+            ) VALUES(
+                '$PROJECTION', '$V36_LEARNER', '$KNOWLEDGE_NODE_ID',
+                0.90, 0.80, 3.0, 'MASTERED', 'CALIBRATED', 'legacy-projector',
+                ${fixtures.size}, 2000
+            )
+            """.trimIndent(),
+        )
+    }
+
+    private fun SQLiteDatabase.seedV36TutorObservation(
+        fixture: V36TutorFixture,
+        eventSequence: Long,
+    ) {
+        val candidate = legacyCandidate().copy(
+            candidateId = "candidate-${fixture.caseId}",
+            learnerId = V36_LEARNER,
+            sourceReferenceId = "request-${fixture.caseId}",
+            sourceFactId = "source-fact-${fixture.caseId}",
+            occurredAtEpochMillis = fixture.submittedAtEpochMillis,
+            createdAtEpochMillis = fixture.submittedAtEpochMillis,
+            updatedAtEpochMillis = fixture.submittedAtEpochMillis,
+        )
+        val event = legacyEvent(candidate).copy(
+            eventId = "event-${fixture.caseId}",
+            sourceFactId = candidate.sourceFactId,
+            occurredAtEpochMillis = fixture.submittedAtEpochMillis,
+            confirmedAtEpochMillis = fixture.submittedAtEpochMillis + 20,
+            eventSequence = eventSequence,
+        )
+        val draftId = "draft-${fixture.caseId}"
+        val anchorId = "anchor-${fixture.caseId}"
+        val conversationId = "conversation-${fixture.caseId}"
+        val turnReceiptId = "turn-${fixture.caseId}"
+        val evidenceRequestId = candidate.sourceReferenceId
+        val sourceFactId = requireNotNull(candidate.sourceFactId)
+        val canonicalResponse = fixture.responses.first()
+        val canonicalSessionId = "session-${fixture.caseId}-${canonicalResponse.sessionSuffix}"
+        val responseFingerprint = canonicalResponse.canonicalFingerprint(
+            sessionId = canonicalSessionId,
+            questionDocumentId = "document-$draftId",
+            evidenceRequestId = evidenceRequestId,
+            submittedAtEpochMillis =
+                fixture.submittedAtEpochMillis + canonicalResponse.submittedAtOffsetMillis,
+        )
+        val sourceFactPayload = fixture.sourceFactPayloadFingerprint
+        execSQL(
+            """
+            INSERT INTO canonical_source_asset VALUES(
+                'asset-${fixture.caseId}', 'sha-${fixture.caseId}',
+                'captured/${fixture.caseId}.png', 'image/png', 1, 1, 1, 'TEST', 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO problem_draft VALUES(
+                '$draftId', 'asset-${fixture.caseId}', 'CAPTURE', 'COMMITTED',
+                1, 900, 900, NULL
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO problem_draft_revision VALUES(
+                '$draftId', 1, NULL, 'MATH', 'Captured problem', '{}',
+                'revision-fingerprint', 'TEST', 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO problem_draft_commit_receipt VALUES(
+                'commit-${fixture.caseId}', 'commit-payload-${fixture.caseId}',
+                '$draftId', 1, '$PROBLEM_ID', '$REVISION_ID', '$UNIT_ID',
+                '$V36_ERROR_BOOK_ENTRY', 950
+            )
+            """.trimIndent(),
+        )
+        fixture.responses.map(V36TutorResponse::sessionSuffix).distinct().forEachIndexed {
+                index, sessionSuffix ->
+            val sessionDraftId =
+                if (index == 0) {
+                    draftId
+                } else {
+                    "$draftId-$sessionSuffix"
+                }
+            if (sessionDraftId != draftId) {
+                execSQL(
+                    """
+                    INSERT INTO problem_draft VALUES(
+                        '$sessionDraftId', 'asset-${fixture.caseId}', 'CAPTURE', 'COMMITTED',
+                        1, 900, 900, NULL
+                    )
+                    """.trimIndent(),
+                )
+                execSQL(
+                    """
+                    INSERT INTO problem_draft_revision VALUES(
+                        '$sessionDraftId', 1, NULL, 'MATH', 'Captured problem', '{}',
+                        'revision-fingerprint-$sessionSuffix', 'TEST', 900
+                    )
+                    """.trimIndent(),
+                )
+            }
+            execSQL(
+                """
+                INSERT INTO tutor_session VALUES(
+                    'session-${fixture.caseId}-$sessionSuffix', '$sessionDraftId', 1, 900
+                )
+                """.trimIndent(),
+            )
+        }
+        execSQL(
+            """
+            INSERT INTO learning_problem_anchor VALUES(
+                '$anchorId', '$V36_LEARNER', 'MATH',
+                '${CapturedTutorProblemIdentity.questionFingerprint(draftId)}',
+                'revision-fingerprint', '${CapturedTutorProblemIdentity.fingerprintVersion}', 900
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO tutor_conversation VALUES(
+                '$conversationId', '$V36_LEARNER', 1, 'ACTIVE', 2, 1,
+                'create-${fixture.caseId}', '$FINGERPRINT_A',
+                NULL, NULL, 900, 900, NULL
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO tutor_turn_receipt VALUES(
+                '$turnReceiptId', '$conversationId', '$V36_LEARNER', 1, 1, 1,
+                'client-${fixture.caseId}', '$FINGERPRINT_A', 'MATH', '$anchorId',
+                1, 'GUIDED', 1, '$FINGERPRINT_B', '$FINGERPRINT_C',
+                'Answer this question.', ${fixture.submittedAtEpochMillis - 10},
+                ${fixture.submittedAtEpochMillis - 10}
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO tutor_evidence_request VALUES(
+                '$evidenceRequestId', '$V36_LEARNER', '$conversationId', 1, 1,
+                '$turnReceiptId', 1, 'MATH', '$anchorId', 'CHOICE', 1, 'GUIDED', 1,
+                '$FINGERPRINT_B', 'SUBMITTED', 1, 'prepare-${fixture.caseId}',
+                '$FINGERPRINT_A', 'terminal-${fixture.caseId}',
+                '${fixture.terminalPayloadFingerprint}', '$sourceFactId', 900,
+                ${fixture.submittedAtEpochMillis + 10}
+            )
+            """.trimIndent(),
+        )
+        fixture.responses.forEach { response ->
+            val responseSubmittedAt =
+                fixture.submittedAtEpochMillis + response.submittedAtOffsetMillis
+            val responseEvidenceRequestId =
+                response.evidenceRequestIdOverride ?: evidenceRequestId
+            execSQL(
+                """
+                INSERT INTO tutor_turn_response VALUES(
+                    'session-${fixture.caseId}-${response.sessionSuffix}',
+                    'document-$draftId', 1, ${response.cycleOrdinal}, 1,
+                    'Diagnostic', '${response.selectedChoiceId}',
+                    '${response.selectedChoiceMarkdown}',
+                    ${if (response.selectionWasCorrect) 1 else 0},
+                    '${response.feedbackMarkdown}', '$responseEvidenceRequestId',
+                    NULL, 0, $responseSubmittedAt,
+                    $responseSubmittedAt, $responseSubmittedAt
+                )
+                """.trimIndent(),
+            )
+        }
+        execSQL(
+            """
+            INSERT INTO learning_observation_source_fact VALUES(
+                '$sourceFactId', '$V36_LEARNER', 'TUTOR_CHOICE',
+                '${fixture.factKind}', '$anchorId', 'MATH', '$conversationId', 1,
+                '$turnReceiptId', '$evidenceRequestId',
+                '${fixture.responseFingerprintOverride ?: responseFingerprint}',
+                '${fixture.responseSummaryOverride ?: canonicalResponse.selectedChoiceMarkdown}',
+                '$sourceFactPayload',
+                ${fixture.submittedAtEpochMillis}, 'captured-choice-source-v1'
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learning_observation_source_authority VALUES(
+                '$V36_LEARNER', 'TUTOR_CHOICE', '$evidenceRequestId', '$UNIT_ID',
+                '$REVISION_ID', 'authority-${fixture.caseId}',
+                ${fixture.submittedAtEpochMillis + 15}, '$sourceFactId'
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learning_observation_candidate VALUES(
+                '${candidate.candidateId}', '${candidate.learnerId}', '${candidate.source.name}',
+                '${candidate.sourceReferenceId}', '$sourceFactId', '${candidate.practiceUnitId}',
+                '${candidate.problemRevisionId}', '${candidate.direction.name}',
+                '${candidate.evidenceLevel.name}', ${candidate.evidenceWeight},
+                '${candidate.independence.name}', ${candidate.occurredAtEpochMillis},
+                '${candidate.modelVersion}', '${candidate.evidenceLocator}',
+                '${candidate.status.name}', ${candidate.retryCount},
+                '${LearningLedgerFingerprint.learningObservationCandidate(candidate)}',
+                ${candidate.createdAtEpochMillis}, ${candidate.updatedAtEpochMillis}
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learning_observation_candidate_attribution VALUES(
+                '${candidate.candidateId}', 0, '$BINDING_ID', '$KNOWLEDGE_NODE_ID',
+                1.0, '$REVISION_ID', 'taxonomy-v1', 'PRIMARY', 'DIRECT'
+            )
+            """.trimIndent(),
+        )
+        val eventFingerprint = LearningLedgerFingerprint.learningObservation(event)
+        execSQL(
+            """
+            INSERT INTO attributed_learning_observation_event VALUES(
+                '${event.eventId}', '${event.candidateId}', '$sourceFactId',
+                '${event.learnerId}', '${event.practiceUnitId}', '${event.problemRevisionId}',
+                'MATH', '${event.direction.name}', '${event.evidenceLevel.name}',
+                ${event.evidenceWeight}, '${event.independence.name}',
+                ${event.occurredAtEpochMillis}, ${event.confirmedAtEpochMillis},
+                '${event.modelVersion}', '${event.evidenceLocator}', ${event.eventSequence},
+                '$eventFingerprint'
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learning_observation_event_attribution VALUES(
+                '${event.eventId}', '$UNIT_ID', 0, '$BINDING_ID', '$KNOWLEDGE_NODE_ID',
+                1.0, '$REVISION_ID', 'taxonomy-v1', 'PRIMARY', 'DIRECT'
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO learning_event_identity VALUES(
+                '${event.eventId}', 'ATTRIBUTED_LEARNING_OBSERVATION'
+            )
+            """.trimIndent(),
+        )
+        execSQL(
+            """
+            INSERT INTO projection_outbox VALUES(
+                'outbox-${fixture.caseId}', '$V36_LEARNER', ${event.eventSequence},
+                'ATTRIBUTED_LEARNING_OBSERVATION', '${event.eventId}',
+                '$eventFingerprint', 'PENDING', ${event.confirmedAtEpochMillis}
+            )
+            """.trimIndent(),
+        )
     }
 
     private fun SQLiteDatabase.seedLegacyObservation(
@@ -752,6 +1299,14 @@ class LearningObservationSourceFactMigrationInstrumentedTest {
         rawQuery("PRAGMA foreign_key_check", null).use { cursor -> cursor.count }
 
     private companion object {
+        const val V36_LEARNER = "v36-proof-learner"
+        const val V36_ERROR_BOOK_ENTRY = "v36-error-book-entry"
+        const val FINGERPRINT_A =
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        const val FINGERPRINT_B =
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        const val FINGERPRINT_C =
+            "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
         const val PROBLEM_ID = "legacy-problem"
         const val REVISION_ID = "legacy-revision"
         const val UNIT_ID = "legacy-unit"
@@ -775,4 +1330,56 @@ class LearningObservationSourceFactMigrationInstrumentedTest {
             "learner_projection_snapshot",
         )
     }
+}
+
+private data class V36TutorFixture(
+    val caseId: String,
+    val terminalPayloadFingerprint: String =
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    val sourceFactPayloadFingerprint: String =
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    val responseFingerprintOverride: String? = null,
+    val responseSummaryOverride: String? = null,
+    val factKind: String = "MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE",
+    val submittedAtEpochMillis: Long = 1_000,
+    val responses: List<V36TutorResponse>,
+) {
+    init {
+        require(responses.isNotEmpty())
+    }
+}
+
+private data class V36TutorResponse(
+    val sessionSuffix: String,
+    val cycleOrdinal: Int = 1,
+    val submittedAtOffsetMillis: Long = 0,
+    val evidenceRequestIdOverride: String? = null,
+    val selectedChoiceId: String = "choice-a",
+    val selectedChoiceMarkdown: String = "A",
+    val selectionWasCorrect: Boolean = true,
+    val feedbackMarkdown: String = "Correct",
+) {
+    fun canonicalFingerprint(
+        sessionId: String,
+        questionDocumentId: String,
+        evidenceRequestId: String,
+        submittedAtEpochMillis: Long,
+    ): String = CanonicalSha256("captured-choice-response-v1")
+        .field("sessionId", sessionId)
+        .field("questionDocumentId", questionDocumentId)
+        .field("revisionNumber", 1)
+        .field("cycleOrdinal", cycleOrdinal)
+        .field("turnOrdinal", 1)
+        .nullableField("diagnosticStemMarkdown", "Diagnostic")
+        .nullableField("selectedChoiceId", selectedChoiceId)
+        .nullableField("selectedChoiceMarkdown", selectedChoiceMarkdown)
+        .nullableField("selectionWasCorrect", selectionWasCorrect.toString())
+        .nullableField("feedbackMarkdown", feedbackMarkdown)
+        .nullableField("requestedMove", null)
+        .field("solutionRevealed", false)
+        .field("submittedAtEpochMillis", submittedAtEpochMillis)
+        .field("updatedAtEpochMillis", submittedAtEpochMillis)
+        .nullableField("choiceSubmittedAtEpochMillis", submittedAtEpochMillis.toString())
+        .nullableField("evidenceRequestId", evidenceRequestId)
+        .finish()
 }

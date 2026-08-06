@@ -1,6 +1,9 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package com.tingyun.smartmistakebook.core.model
 
 import java.util.Locale
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -28,6 +31,40 @@ data class RelatedProblemCandidate(
     }
 }
 
+/** Immutable catalog snapshot that produced one bounded model knowledge context. */
+@Serializable
+data class KnowledgeBaseCatalogProvenance(
+    val packId: String,
+    val knowledgePackVersion: String,
+    val taxonomyVersion: String,
+    val manifestFingerprint: String,
+    val activationGeneration: Long,
+) {
+    init {
+        packId.requireSafeModelText(
+            "Knowledge-base pack id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        knowledgePackVersion.requireSafeModelText(
+            "Knowledge-base pack version",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        taxonomyVersion.requireSafeModelText(
+            "Knowledge-base taxonomy version",
+            KnowledgeBaseNodeContext.MAX_TAXONOMY_VERSION_CHARS,
+            false,
+        )
+        require(KNOWLEDGE_MANIFEST_FINGERPRINT.matches(manifestFingerprint)) {
+            "Knowledge-base manifest fingerprint must be lowercase SHA-256"
+        }
+        require(activationGeneration > 0L) {
+            "Knowledge-base activation generation must be positive"
+        }
+    }
+}
+
 /** A bounded slice of the local subject knowledge base. Local ids are aliased before egress. */
 @Serializable
 data class KnowledgeBaseNodeContext(
@@ -39,6 +76,7 @@ data class KnowledgeBaseNodeContext(
     val granularity: KnowledgeNodeGranularity,
     val parentCanonicalName: String?,
     val taxonomyVersion: String,
+    val catalogProvenance: KnowledgeBaseCatalogProvenance,
     val verificationStatus: KnowledgeNodeVerificationStatus,
     val boundaryMarkdown: String? = null,
     val prerequisiteKnowledgeNodeIds: List<String> = emptyList(),
@@ -63,6 +101,9 @@ data class KnowledgeBaseNodeContext(
             MAX_TAXONOMY_VERSION_CHARS,
             false,
         )
+        require(taxonomyVersion == catalogProvenance.taxonomyVersion) {
+            "Knowledge-base node and catalog provenance must share one taxonomy"
+        }
         require((kind == KnowledgeNodeKind.TOPIC) == (granularity == KnowledgeNodeGranularity.TOPIC)) {
             "Only topic knowledge-base nodes may use topic granularity"
         }
@@ -82,7 +123,7 @@ data class KnowledgeBaseNodeContext(
     companion object {
         const val MAX_LABEL_CHARS = 96
         const val MAX_ALIASES = 8
-        const val MAX_TAXONOMY_VERSION_CHARS = 64
+        const val MAX_TAXONOMY_VERSION_CHARS = 160
     }
 }
 
@@ -143,6 +184,11 @@ data class ProblemOrganizationInput(
         require(knowledgeBaseNodes.map(KnowledgeBaseNodeContext::knowledgeNodeId).distinct().size == knowledgeBaseNodes.size) {
             "Organization knowledge context ids must be unique"
         }
+        require(
+            knowledgeBaseNodes.map(KnowledgeBaseNodeContext::catalogProvenance).distinct().size <= 1,
+        ) {
+            "Organization knowledge context must come from one catalog snapshot"
+        }
         val disclosedKnowledgeIds = knowledgeBaseNodes.mapTo(hashSetOf()) { it.knowledgeNodeId }
         require(knowledgeBaseNodes.all { node ->
             node.prerequisiteKnowledgeNodeIds.all(disclosedKnowledgeIds::contains)
@@ -155,6 +201,8 @@ data class ProblemOrganizationInput(
         const val MAX_KNOWLEDGE_BASE_NODES = 64
     }
 }
+
+private val KNOWLEDGE_MANIFEST_FINGERPRINT = Regex("[0-9a-f]{64}")
 
 /**
  * Image-grounded organization request. The model receives only aliased identifiers; source
@@ -232,6 +280,11 @@ data class ProblemOrganizationV3Input(
         }
         require(knowledgeBaseNodes.map(KnowledgeBaseNodeContext::knowledgeNodeId).distinct().size == knowledgeBaseNodes.size) {
             "Organization knowledge context ids must be unique"
+        }
+        require(
+            knowledgeBaseNodes.map(KnowledgeBaseNodeContext::catalogProvenance).distinct().size <= 1,
+        ) {
+            "Organization knowledge context must come from one catalog snapshot"
         }
         val disclosedKnowledgeIds = knowledgeBaseNodes.mapTo(hashSetOf()) { it.knowledgeNodeId }
         require(knowledgeBaseNodes.all { node ->
@@ -499,6 +552,33 @@ data class ProblemErrorAttributionCandidate(
     }
 }
 
+/** Reviewed-stable problem-family identity proposed by the model for one saved mistake. */
+@Serializable
+data class ProblemFamilySuggestion(
+    val familyKey: String,
+    val rationaleMarkdown: String,
+    val confidence: Double,
+) {
+    init {
+        familyKey.requireSafeModelText("Problem family key", MAX_FAMILY_KEY_CHARS, false)
+        require(PROBLEM_FAMILY_KEY.matches(familyKey)) {
+            "Problem family key must be a stable lowercase opaque identity"
+        }
+        rationaleMarkdown.requireOrganizationMarkdown(
+            "Problem family rationale",
+            MAX_RATIONALE_CHARS,
+        )
+        rationaleMarkdown.requireStudentFacingOrganizationText("Problem family rationale")
+        require(confidence.isFinite() && confidence in 0.0..1.0)
+    }
+
+    companion object {
+        const val MAX_FAMILY_KEY_CHARS = 64
+        val PROBLEM_FAMILY_KEY = Regex("[a-z0-9][a-z0-9._-]{7,63}")
+        const val MAX_RATIONALE_CHARS = 600
+    }
+}
+
 @Serializable
 data class ProblemOrganizationPlan(
     val summaryMarkdown: String,
@@ -506,6 +586,8 @@ data class ProblemOrganizationPlan(
     val targetedEvidenceLabels: List<String>,
     val classifications: List<ProblemClassificationSuggestion>,
     val relations: List<ProblemRelationSuggestion>,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val problemFamily: ProblemFamilySuggestion? = null,
     /** Version one remains readable for persisted tasks; all new requests require version two. */
     val schemaVersion: Int = 1,
     val atomicKnowledge: List<AtomicKnowledgeSuggestion> = emptyList(),
@@ -539,6 +621,9 @@ data class ProblemOrganizationPlan(
             "Organization must identify at least one knowledge label"
         }
         require(schemaVersion in 1..SCHEMA_VERSION) { "Unsupported organization schema version" }
+        require(schemaVersion >= 3 || problemFamily == null) {
+            "Problem-family suggestions require organization schema three"
+        }
         require(errorAttributionCandidates.size <= MAX_ERROR_ATTRIBUTION_CANDIDATES)
         require(schemaVersion >= 3 || errorAttributionCandidates.isEmpty()) {
             "Legacy organization plans cannot contain error attribution candidates"

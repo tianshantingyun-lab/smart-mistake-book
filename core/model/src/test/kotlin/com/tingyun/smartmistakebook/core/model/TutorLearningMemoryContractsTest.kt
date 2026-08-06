@@ -116,7 +116,7 @@ class TutorLearningMemoryContractsTest {
         val submitted = pending.copy(
             status = TutorEvidenceRequestStatus.SUBMITTED,
             resolvedAtEpochMillis = 1_100,
-            terminalSourceFactId = "fact-1",
+            terminalReceiptId = "receipt-1",
         )
         val cancelled = pending.copy(
             status = TutorEvidenceRequestStatus.CANCELLED,
@@ -138,11 +138,12 @@ class TutorLearningMemoryContractsTest {
         assertIllegalArgument {
             pending.copy(resolvedAtEpochMillis = 1_100)
         }
+        assertEquals(
+            null,
+            submitted.copy(terminalReceiptId = null).terminalReceiptId,
+        )
         assertIllegalArgument {
-            submitted.copy(terminalSourceFactId = null)
-        }
-        assertIllegalArgument {
-            cancelled.copy(terminalSourceFactId = "fact-1")
+            cancelled.copy(terminalReceiptId = "receipt-1")
         }
         assertIllegalArgument {
             pending.copy(problemAnchorId = "")
@@ -293,7 +294,7 @@ class TutorLearningMemoryContractsTest {
         stateVersion = 0,
         createdAtEpochMillis = 1_000,
         resolvedAtEpochMillis = null,
-        terminalSourceFactId = null,
+        terminalReceiptId = null,
     )
 
     private fun sourceFact(

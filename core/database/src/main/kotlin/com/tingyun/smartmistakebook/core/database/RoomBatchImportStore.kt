@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.database
 
 import androidx.room3.withWriteTransaction
 import com.tingyun.smartmistakebook.core.database.dao.BatchImportJobWithPages
+import com.tingyun.smartmistakebook.core.database.entity.BatchImportBoundaryResolutionReceiptEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
 import kotlinx.coroutines.flow.Flow
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.map
 
 internal class RoomBatchImportStore(
     private val database: StudyDatabase,
+    private val beforeBoundaryResolutionCommit: suspend () -> Unit = {},
 ) {
     fun observe(): Flow<List<BatchImportJobRecord>> =
         database.batchImportDao().observeJobsWithPages().map { jobs ->
@@ -49,6 +51,7 @@ internal class RoomBatchImportStore(
                     createdAtEpochMillis = command.occurredAtEpochMillis,
                     updatedAtEpochMillis = command.occurredAtEpochMillis,
                     boundaryAfterStatus = StudyDbValue.BatchImportBoundaryStatus.PENDING,
+                    boundaryClaimedAtEpochMillis = null,
                 )
             }
             dao.insertJob(job)
@@ -144,6 +147,85 @@ internal class RoomBatchImportStore(
         changed
     }
 
+    /**
+     * Records only batch-owned state after capture has independently merged distinct drafts.
+     *
+     * This transaction never opens the problem-draft transaction DAO and therefore cannot append
+     * assets, revise a draft, or abandon a draft.
+     */
+    suspend fun recordBoundaryResolution(
+        command: RecordBatchImportBoundarySessionResolutionCommand,
+    ): BatchImportJobRecord = database.withWriteTransaction {
+        val dao = database.batchImportDao()
+        val pages = dao.readPages(command.jobId)
+        val primaryPage =
+            pages.getOrNull(command.pageIndex)
+                ?.takeIf { it.pageIndex == command.pageIndex }
+                ?: boundaryConflict(command)
+        val followingPage =
+            pages.getOrNull(command.pageIndex + 1)
+                ?.takeIf { it.pageIndex == command.pageIndex + 1 }
+                ?: boundaryConflict(command)
+        val expectedReceipt = command.toReceiptEntity()
+        val existingReceipt =
+            dao.readBoundaryResolutionReceipt(command.jobId, command.pageIndex)
+        if (existingReceipt != null) {
+            if (
+                existingReceipt != expectedReceipt ||
+                !command.matchesResolvedState(primaryPage, followingPage)
+            ) {
+                boundaryConflict(command)
+            }
+            return@withWriteTransaction checkNotNull(dao.readJobWithPages(command.jobId)).toRecord()
+        }
+        val alreadyResolved =
+            primaryPage.boundaryAfterStatus in TERMINAL_BOUNDARY_RESOLUTIONS
+        if (alreadyResolved) {
+            boundaryConflict(command)
+        }
+        if (
+            primaryPage.status != StudyDbValue.BatchImportPageStatus.READY ||
+            followingPage.status != StudyDbValue.BatchImportPageStatus.READY ||
+            primaryPage.boundaryAfterStatus != StudyDbValue.BatchImportBoundaryStatus.CHECKING ||
+            primaryPage.boundaryClaimedAtEpochMillis !=
+                command.boundaryClaimedAtEpochMillis ||
+            command.occurredAtEpochMillis <
+                command.boundaryClaimedAtEpochMillis ||
+            primaryPage.resultDraftId != command.primaryDraftSessionId ||
+            followingPage.resultDraftId != command.followingDraftSessionId
+        ) {
+            boundaryConflict(command)
+        }
+
+        if (
+            command.resolution == StudyDbValue.BatchImportBoundaryStatus.SAME_QUESTION &&
+            command.primaryDraftSessionId != command.followingDraftSessionId
+        ) {
+            checkNotNull(command.captureMergeReceiptRef)
+            check(
+                dao.remapDraft(
+                    jobId = command.jobId,
+                    followingDraftId = command.followingDraftSessionId,
+                    primaryDraftId = command.primaryDraftSessionId,
+                    updatedAtEpochMillis = command.occurredAtEpochMillis,
+                ) > 0,
+            ) { "Capture-merged draft was not referenced by its batch" }
+        }
+        beforeBoundaryResolutionCommit()
+        check(
+            dao.resolveBoundary(
+                jobId = command.jobId,
+                pageIndex = command.pageIndex,
+                resolution = command.resolution,
+                boundaryClaimedAtEpochMillis = command.boundaryClaimedAtEpochMillis,
+                updatedAtEpochMillis = command.occurredAtEpochMillis,
+            ) == 1,
+        ) { "Claimed batch boundary could not be resolved" }
+        dao.insertBoundaryResolutionReceipt(expectedReceipt)
+        dao.touchJob(command.jobId, command.occurredAtEpochMillis)
+        checkNotNull(dao.readJobWithPages(command.jobId)).toRecord()
+    }
+
     suspend fun retryPage(
         jobId: String,
         pageIndex: Int,
@@ -217,7 +299,45 @@ internal class RoomBatchImportStore(
     }
 }
 
+private fun RecordBatchImportBoundarySessionResolutionCommand.matchesResolvedState(
+    primaryPage: BatchImportPageEntity,
+    followingPage: BatchImportPageEntity,
+): Boolean {
+    if (primaryPage.boundaryAfterStatus != resolution) return false
+    if (primaryPage.resultDraftId != primaryDraftSessionId) return false
+    return if (resolution == StudyDbValue.BatchImportBoundaryStatus.SAME_QUESTION) {
+        followingPage.resultDraftId == primaryDraftSessionId
+    } else {
+        followingPage.resultDraftId == followingDraftSessionId
+    }
+}
+
+private fun RecordBatchImportBoundarySessionResolutionCommand.toReceiptEntity() =
+    BatchImportBoundaryResolutionReceiptEntity(
+        jobId = jobId,
+        pageIndex = pageIndex,
+        primaryDraftSessionId = primaryDraftSessionId,
+        followingDraftSessionId = followingDraftSessionId,
+        resolution = resolution,
+        boundaryClaimedAtEpochMillis = boundaryClaimedAtEpochMillis,
+        captureMergeReceiptRef = captureMergeReceiptRef,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+    )
+
+private fun boundaryConflict(
+    command: RecordBatchImportBoundarySessionResolutionCommand,
+): Nothing = throw ImmutablePayloadConflictException(
+    "batch_import_session_boundary",
+    "${command.jobId}:${command.pageIndex}",
+)
+
 private val SHA_256 = Regex("[a-f0-9]{64}")
+private val TERMINAL_BOUNDARY_RESOLUTIONS =
+    setOf(
+        StudyDbValue.BatchImportBoundaryStatus.SAME_QUESTION,
+        StudyDbValue.BatchImportBoundaryStatus.NEXT_QUESTION,
+        StudyDbValue.BatchImportBoundaryStatus.KEPT_SEPARATE,
+    )
 
 private fun BatchImportJobEntity.toRecord(pages: List<BatchImportPageEntity>) =
     BatchImportJobRecord(
@@ -242,6 +362,7 @@ private fun BatchImportPageEntity.toRecord() = BatchImportPageRecord(
     createdAtEpochMillis = createdAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
     boundaryAfterStatus = boundaryAfterStatus,
+    boundaryClaimedAtEpochMillis = boundaryClaimedAtEpochMillis,
 )
 
 private fun BatchImportJobWithPages.toRecord() = job.toRecord(pages)

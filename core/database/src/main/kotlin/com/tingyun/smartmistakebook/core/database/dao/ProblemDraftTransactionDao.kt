@@ -8,6 +8,7 @@ import androidx.room3.Query
 import androidx.room3.Transaction
 import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetCommand
 import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetResult
+import com.tingyun.smartmistakebook.core.database.AcknowledgeStudentOwnedCaptureSessionCommand
 import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftResult
@@ -29,6 +30,8 @@ import com.tingyun.smartmistakebook.core.database.ReplaceProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.SplitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
+import com.tingyun.smartmistakebook.core.database.StudentOwnedLibraryCaptureSessionAckSource
+import com.tingyun.smartmistakebook.core.database.StudentOwnedTutorCaptureSessionAckSource
 import com.tingyun.smartmistakebook.core.database.TutorSessionRecord
 import com.tingyun.smartmistakebook.core.database.TutorSessionWriteResult
 import com.tingyun.smartmistakebook.core.database.entity.CanonicalSourceAssetEntity
@@ -680,6 +683,106 @@ internal abstract class ProblemDraftTransactionDao {
         return commitValidated(command.commit, allowTutorDraft = true)
     }
 
+    /**
+     * Advances only the temporary capture lifecycle after student-mistakes committed the business
+     * document. No legacy business entity or commit receipt is inserted here.
+     */
+    @Transaction
+    open suspend fun acknowledgeStudentOwnedCaptureSession(
+        command: AcknowledgeStudentOwnedCaptureSessionCommand,
+    ): Boolean {
+        val source = command.source
+        val draft =
+            findDraftEntity(source.draftId)
+                ?: throw ImmutablePayloadConflictException("problem_draft", source.draftId)
+        check(findCommitReceiptByDraft(source.draftId) == null) {
+            "Student-owned capture acknowledgement cannot coexist with a legacy business commit"
+        }
+        when (source) {
+            is StudentOwnedLibraryCaptureSessionAckSource -> {
+                if (
+                    draft.origin != StudyDbValue.CaptureOrigin.LIBRARY ||
+                    findTutorSessionByDraft(source.draftId) != null
+                ) {
+                    throw ImmutablePayloadConflictException(
+                        "student_owned_library_capture_session",
+                        source.draftId,
+                    )
+                }
+            }
+
+            is StudentOwnedTutorCaptureSessionAckSource -> {
+                if (draft.origin != StudyDbValue.CaptureOrigin.TUTOR) {
+                    throw ImmutablePayloadConflictException(
+                        "student_owned_tutor_capture_session",
+                        source.sessionId,
+                    )
+                }
+                val session =
+                    findTutorSessionById(source.sessionId)
+                        ?: throw ImmutablePayloadConflictException(
+                            "tutor_session",
+                            source.sessionId,
+                        )
+                if (
+                    session.draftId != source.draftId ||
+                    session.draftRevisionNumber != source.draftRevisionNumber
+                ) {
+                    throw ImmutablePayloadConflictException(
+                        "tutor_session_revision",
+                        source.sessionId,
+                    )
+                }
+            }
+        }
+        if (draft.currentRevisionNumber != source.draftRevisionNumber) {
+            throw ImmutablePayloadConflictException("problem_draft_head", source.draftId)
+        }
+        if (source.occurredAtEpochMillis < draft.updatedAtEpochMillis) {
+            throw ImmutablePayloadConflictException("problem_draft_time", source.draftId)
+        }
+        val revision =
+            findDraftRevision(source.draftId, source.draftRevisionNumber)
+                ?: throw ImmutablePayloadConflictException(
+                    "problem_draft_revision",
+                    source.draftId,
+                )
+        if (
+            revision.subject != command.targetProblem.subject.name ||
+            revision.documentFingerprint !=
+                command.targetRevision.documentCanonicalFingerprint
+        ) {
+            throw ImmutablePayloadConflictException(
+                "student_owned_capture_target",
+                source.draftId,
+            )
+        }
+        return when (draft.status) {
+            StudyDbValue.ProblemDraftStatus.EDITING -> {
+                if (
+                    markDraftCommitted(
+                        draftId = source.draftId,
+                        expectedRevisionNumber = source.draftRevisionNumber,
+                        committedAtEpochMillis = source.occurredAtEpochMillis,
+                    ) != 1
+                ) {
+                    throw ImmutablePayloadConflictException(
+                        "problem_draft_head",
+                        source.draftId,
+                    )
+                }
+                true
+            }
+
+            StudyDbValue.ProblemDraftStatus.COMMITTED -> false
+            else ->
+                throw ImmutablePayloadConflictException(
+                    "problem_draft_status",
+                    source.draftId,
+                )
+        }
+    }
+
     @Transaction
     open suspend fun endTutorSession(
         command: EndTutorSessionCommand,
@@ -1083,7 +1186,7 @@ internal abstract class ProblemDraftTransactionDao {
                 throw ImmutablePayloadConflictException("tutor_session_commit", entity.sessionId)
             }
             StudyDbValue.ProblemDraftStatus.COMMITTED -> if (
-                receipt == null || receipt.draftRevisionNumber != entity.draftRevisionNumber
+                receipt != null && receipt.draftRevisionNumber != entity.draftRevisionNumber
             ) {
                 throw ImmutablePayloadConflictException("tutor_session_commit", entity.sessionId)
             }

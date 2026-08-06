@@ -7,12 +7,16 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.tingyun.smartmistakebook.core.domain.DEFAULT_REVIEW_REMINDER_MINUTES_AFTER_MIDNIGHT
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderDelivery
+import com.tingyun.smartmistakebook.core.domain.ReviewPacingLevel
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderPreferences
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -41,9 +45,24 @@ class DataStoreReviewReminderRepository(
             val storedMinutes = values[REMINDER_MINUTES]
                 ?.takeIf { it in 0 until MINUTES_PER_DAY }
                 ?: DEFAULT_REVIEW_REMINDER_MINUTES_AFTER_MIDNIGHT
+            val storedPacing =
+                values[PACING_LEVEL]
+                    ?.let { name ->
+                        ReviewPacingLevel.entries.firstOrNull { it.name == name }
+                    }
+                    ?: ReviewPacingLevel.STANDARD
+            val storedExamSubject =
+                values[EXAM_SUBJECT]
+                    ?.let { name ->
+                        SubjectKind.entries.firstOrNull { it.name == name }
+                    }
+            val storedExamDay = values[EXAM_EPOCH_DAY]?.takeIf { it >= 0L }
             ReviewReminderPreferences(
                 enabled = values[ENABLED] == true,
                 minutesAfterMidnight = storedMinutes,
+                pacingLevel = storedPacing,
+                examSubject = storedExamSubject,
+                examEpochDay = storedExamDay,
             )
         }
         .distinctUntilChanged()
@@ -59,6 +78,31 @@ class DataStoreReviewReminderRepository(
             "Reminder time must be within one local day."
         }
         dataStore.edit { values -> values[REMINDER_MINUTES] = minutesAfterMidnight }
+    }
+
+    override suspend fun setPacingLevel(pacingLevel: ReviewPacingLevel) {
+        dataStore.edit { values -> values[PACING_LEVEL] = pacingLevel.name }
+    }
+
+    override suspend fun setExamTarget(
+        subject: SubjectKind?,
+        examEpochDay: Long?,
+    ) {
+        require((subject == null) == (examEpochDay == null)) {
+            "Exam target subject and day must appear together"
+        }
+        require(examEpochDay == null || examEpochDay >= 0L) {
+            "Exam target day must not be negative"
+        }
+        dataStore.edit { values ->
+            if (subject == null) {
+                values.remove(EXAM_SUBJECT)
+                values.remove(EXAM_EPOCH_DAY)
+            } else {
+                values[EXAM_SUBJECT] = subject.name
+                values[EXAM_EPOCH_DAY] = checkNotNull(examEpochDay)
+            }
+        }
     }
 
     override suspend fun claimNotificationDelivery(delivery: ReviewReminderDelivery): Boolean {
@@ -96,6 +140,9 @@ class DataStoreReviewReminderRepository(
         const val DELIVERY_PREFIX = "delivery-v1|"
         val ENABLED = booleanPreferencesKey("enabled")
         val REMINDER_MINUTES = intPreferencesKey("minutes_after_midnight")
+        val PACING_LEVEL = stringPreferencesKey("pacing_level")
+        val EXAM_SUBJECT = stringPreferencesKey("exam_subject")
+        val EXAM_EPOCH_DAY = longPreferencesKey("exam_epoch_day")
         val DELIVERY_HISTORY = stringSetPreferencesKey("notification_delivery_history")
     }
 }

@@ -24,6 +24,7 @@ enum class ModelEgressDataClass {
     IMAGE_DIMENSIONS,
     SELECTED_IMAGE_REGION,
     CONFIRMED_QUESTION_DOCUMENT,
+    CURRENT_QUESTION_TEACHING_CONSTRAINTS,
     RELEVANT_LEARNING_EVIDENCE,
     QUESTION_LEARNING_EVIDENCE,
     RELATED_QUESTION_CANDIDATES,
@@ -36,16 +37,22 @@ enum class ModelEgressDataClass {
     TUTOR_CONVERSATION_CONTEXT,
     MODEL_AUTHORED_VISUAL_CANDIDATE,
     CAPTURED_QUESTION_BLOCK_EVIDENCE,
+    CURRENT_OPEN_RESPONSE_ANSWER,
+    QUESTION_LOCAL_EVALUATION_SCOPE,
+    CURRENT_TUTOR_INTERACTION_POLICY,
 }
 
 /** One source of truth for the prompt whose exact scope the student approved. */
 object ModelPromptPolicyVersions {
     const val CAPTURE_DOCUMENT = "capture-document-policy-v1"
-    const val TUTOR_PLAN = "tutor-plan-v10-subject-memory-and-reviewed-teaching"
-    const val TUTOR_RESPOND = "tutor-respond-v5-guidance-mode"
-    const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
-    const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
-    const val TUTOR_LOBBY = "tutor-lobby-v1-intent-boundary"
+    const val TUTOR_PLAN = "tutor-plan-v13-guided-single-step-hint"
+    const val TUTOR_RESPOND = "tutor-respond-v7-semantic-teaching-constraints"
+    const val TUTOR_VISUAL_GENERATE =
+        "tutor-visual-generate-v2-local-facts-and-provenance"
+    const val TUTOR_VISUAL_REVIEW =
+        "tutor-visual-review-v2-local-facts-one-repair"
+    const val TUTOR_LOBBY = "tutor-lobby-v4-canonical-interaction-policy-wire"
+    const val TUTOR_EVALUATE = "tutor-evaluate-v1-host-scoped-candidate"
     const val PROBLEM_ORGANIZATION = "problem-organization-v5-v3-error-attribution"
 
     fun currentFor(kind: ModelTaskKind): String? = when (kind) {
@@ -57,9 +64,9 @@ object ModelPromptPolicyVersions {
         ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE
         ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW
         ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY
+        ModelTaskKind.TUTOR_EVALUATE -> TUTOR_EVALUATE
         ModelTaskKind.PROBLEM_CLASSIFY -> PROBLEM_ORGANIZATION
         ModelTaskKind.PROBLEM_RELATE,
-        ModelTaskKind.TUTOR_EVALUATE,
         ModelTaskKind.REVIEW_RERANK,
         ModelTaskKind.LEARNING_SUMMARIZE,
         -> null
@@ -189,18 +196,20 @@ data class ModelEgressManifest(
                     schemaVersion >= 2 && tutoringKind == ModelTaskKind.TUTOR_RESPOND ||
                     schemaVersion >= 4 && tutoringKind == ModelTaskKind.TUTOR_LOBBY ||
                     schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
-                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
+                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW ||
+                    schemaVersion >= 8 && tutoringKind == ModelTaskKind.TUTOR_EVALUATE,
             ) {
                 "Tutor egress must authorize exactly one supported tutoring task"
             }
             val expectedDisclosure = when (tutoringKind) {
                 ModelTaskKind.TUTOR_PLAN -> tutorPlanDisclosureForSchema(schemaVersion)
                 ModelTaskKind.TUTOR_RESPOND -> tutorRespondDisclosureForSchema(schemaVersion)
-                ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY_DISCLOSURE
+                ModelTaskKind.TUTOR_LOBBY -> tutorLobbyDisclosureForSchema(schemaVersion)
                 ModelTaskKind.TUTOR_VISUAL_GENERATE ->
                     tutorVisualGenerateDisclosure(assets.any { it.selectedRegion != null })
                 ModelTaskKind.TUTOR_VISUAL_REVIEW ->
                     tutorVisualReviewDisclosure(assets.any { it.selectedRegion != null })
+                ModelTaskKind.TUTOR_EVALUATE -> TUTOR_EVALUATE_DISCLOSURE
             }
             if (
                 tutoringKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
@@ -242,7 +251,8 @@ data class ModelEgressManifest(
     }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 6
+        const val TUTOR_INTERACTION_POLICY_SCHEMA_VERSION = 9
+        const val CURRENT_SCHEMA_VERSION = TUTOR_INTERACTION_POLICY_SCHEMA_VERSION
         private const val MIN_SUPPORTED_SCHEMA_VERSION = 1
 
         val SCHEMA_V1_DATA_CLASSES = setOf(
@@ -278,8 +288,17 @@ data class ModelEgressManifest(
             ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
         )
 
-        val TUTOR_PLAN_DISCLOSURE = SCHEMA_THREE_TUTOR_PLAN_DISCLOSURE +
+        private val SCHEMA_SIX_TUTOR_PLAN_DISCLOSURE =
+            SCHEMA_THREE_TUTOR_PLAN_DISCLOSURE +
             ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE
+
+        val TUTOR_PLAN_DISCLOSURE = setOf(
+            ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
+            ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
+            ModelEgressDataClass.STUDENT_TUTOR_MESSAGE,
+            ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
+            ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE,
+        )
 
         val TUTOR_PLAN_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - TUTOR_PLAN_DISCLOSURE
@@ -287,7 +306,8 @@ data class ModelEgressManifest(
         internal fun tutorPlanDisclosureForSchema(
             schemaVersion: Int,
         ): Set<ModelEgressDataClass> = when {
-            schemaVersion >= 4 -> TUTOR_PLAN_DISCLOSURE
+            schemaVersion >= 7 -> TUTOR_PLAN_DISCLOSURE
+            schemaVersion >= 4 -> SCHEMA_SIX_TUTOR_PLAN_DISCLOSURE
             schemaVersion >= 3 -> SCHEMA_THREE_TUTOR_PLAN_DISCLOSURE
             else -> LEGACY_TUTOR_PLAN_DISCLOSURE
         }
@@ -300,27 +320,63 @@ data class ModelEgressManifest(
             ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
         )
 
-        val TUTOR_RESPOND_DISCLOSURE = LEGACY_TUTOR_RESPOND_DISCLOSURE +
+        private val SCHEMA_SIX_TUTOR_RESPOND_DISCLOSURE =
+            LEGACY_TUTOR_RESPOND_DISCLOSURE +
             ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE
+
+        val TUTOR_RESPOND_DISCLOSURE = setOf(
+            ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
+            ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
+            ModelEgressDataClass.STUDENT_TUTOR_MESSAGE,
+            ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
+            ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE,
+        )
 
         val TUTOR_RESPOND_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - TUTOR_RESPOND_DISCLOSURE
 
         internal fun tutorRespondDisclosureForSchema(
             schemaVersion: Int,
-        ): Set<ModelEgressDataClass> = if (schemaVersion >= 4) {
-            TUTOR_RESPOND_DISCLOSURE
-        } else {
-            LEGACY_TUTOR_RESPOND_DISCLOSURE
+        ): Set<ModelEgressDataClass> = when {
+            schemaVersion >= 7 -> TUTOR_RESPOND_DISCLOSURE
+            schemaVersion >= 4 -> SCHEMA_SIX_TUTOR_RESPOND_DISCLOSURE
+            else -> LEGACY_TUTOR_RESPOND_DISCLOSURE
         }
 
-        val TUTOR_LOBBY_DISCLOSURE = setOf(
+        private val LEGACY_TUTOR_LOBBY_DISCLOSURE = setOf(
             ModelEgressDataClass.STUDENT_TUTOR_MESSAGE,
             ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT,
         )
 
+        val TUTOR_LOBBY_DISCLOSURE = LEGACY_TUTOR_LOBBY_DISCLOSURE +
+            ModelEgressDataClass.CURRENT_TUTOR_INTERACTION_POLICY
+
         val TUTOR_LOBBY_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - TUTOR_LOBBY_DISCLOSURE
+
+        fun tutorLobbyDisclosureForSchema(schemaVersion: Int): Set<ModelEgressDataClass> {
+            require(schemaVersion in MIN_SUPPORTED_SCHEMA_VERSION..CURRENT_SCHEMA_VERSION) {
+                "Unsupported tutor lobby egress schema"
+            }
+            return if (schemaVersion >= TUTOR_INTERACTION_POLICY_SCHEMA_VERSION) {
+                TUTOR_LOBBY_DISCLOSURE
+            } else {
+                LEGACY_TUTOR_LOBBY_DISCLOSURE
+            }
+        }
+
+        fun tutorLobbyProhibitedDataForSchema(schemaVersion: Int): Set<ModelEgressDataClass> =
+            dataClassUniverseForSchema(schemaVersion) - tutorLobbyDisclosureForSchema(schemaVersion)
+
+        val TUTOR_EVALUATE_DISCLOSURE = setOf(
+            ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT,
+            ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
+            ModelEgressDataClass.CURRENT_OPEN_RESPONSE_ANSWER,
+            ModelEgressDataClass.QUESTION_LOCAL_EVALUATION_SCOPE,
+        )
+
+        val TUTOR_EVALUATE_PROHIBITED_DATA =
+            ModelEgressDataClass.entries.toSet() - TUTOR_EVALUATE_DISCLOSURE
 
         private val TUTOR_VISUAL_GENERATE_BASE_DISCLOSURE = setOf(
             ModelEgressDataClass.SANITIZED_IMAGE_BYTES,
@@ -347,18 +403,46 @@ data class ModelEgressManifest(
 
         internal fun dataClassUniverseForSchema(
             schemaVersion: Int,
-        ): Set<ModelEgressDataClass> = when {
-            schemaVersion == 1 -> SCHEMA_V1_DATA_CLASSES
-            schemaVersion < 5 ->
-                ModelEgressDataClass.entries.toSet() -
-                    setOf(
-                        ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE,
-                        ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE,
-                    )
-            schemaVersion < 6 ->
-                ModelEgressDataClass.entries.toSet() -
-                    ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE
-            else -> ModelEgressDataClass.entries.toSet()
+        ): Set<ModelEgressDataClass> {
+            val versionUniverse = when {
+                schemaVersion == 1 -> SCHEMA_V1_DATA_CLASSES
+                schemaVersion < 5 ->
+                    ModelEgressDataClass.entries.toSet() -
+                        setOf(
+                            ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE,
+                            ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE,
+                            ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
+                            ModelEgressDataClass.CURRENT_OPEN_RESPONSE_ANSWER,
+                            ModelEgressDataClass.QUESTION_LOCAL_EVALUATION_SCOPE,
+                        )
+                schemaVersion < 6 ->
+                    ModelEgressDataClass.entries.toSet() -
+                        setOf(
+                            ModelEgressDataClass.CAPTURED_QUESTION_BLOCK_EVIDENCE,
+                            ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
+                            ModelEgressDataClass.CURRENT_OPEN_RESPONSE_ANSWER,
+                            ModelEgressDataClass.QUESTION_LOCAL_EVALUATION_SCOPE,
+                        )
+                schemaVersion < 7 ->
+                    ModelEgressDataClass.entries.toSet() -
+                        setOf(
+                            ModelEgressDataClass.CURRENT_QUESTION_TEACHING_CONSTRAINTS,
+                            ModelEgressDataClass.CURRENT_OPEN_RESPONSE_ANSWER,
+                            ModelEgressDataClass.QUESTION_LOCAL_EVALUATION_SCOPE,
+                        )
+                schemaVersion < 8 ->
+                    ModelEgressDataClass.entries.toSet() -
+                        setOf(
+                            ModelEgressDataClass.CURRENT_OPEN_RESPONSE_ANSWER,
+                            ModelEgressDataClass.QUESTION_LOCAL_EVALUATION_SCOPE,
+                        )
+                else -> ModelEgressDataClass.entries.toSet()
+            }
+            return if (schemaVersion >= TUTOR_INTERACTION_POLICY_SCHEMA_VERSION) {
+                versionUniverse
+            } else {
+                versionUniverse - ModelEgressDataClass.CURRENT_TUTOR_INTERACTION_POLICY
+            }
         }
 
         val PROBLEM_ORGANIZATION_DISCLOSURE = setOf(
@@ -462,24 +546,35 @@ object ModelEgressPolicy {
         request: ModelTaskRequest,
         provider: ProviderCapabilitySnapshot,
         nowEpochMillis: Long = System.currentTimeMillis(),
-    ): ModelGatewayExecution = when (provider.executionLocation) {
-        ModelExecutionLocation.LOCAL_NO_EGRESS,
-        ModelExecutionLocation.UNAVAILABLE,
-        -> ModelGatewayExecution(request, ModelExecutionPermit.LocalOnly)
-
-        ModelExecutionLocation.EXTERNAL_PROVIDER -> {
-            val manifest = request.egressManifest ?: throw ModelEgressAuthorizationException(
-                ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED,
-                "需要你确认本次发送范围后，才能交给模型处理",
-            )
-            runCatching { manifest.requireAuthorizes(request, provider, nowEpochMillis) }
+    ): ModelGatewayExecution {
+        if (request.input is TutorOpenResponseEvaluationInput) {
+            runCatching { request.input.requireCurrentHostAuthorization() }
                 .getOrElse { cause ->
                     throw ModelEgressAuthorizationException(
                         ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
-                        "本次发送范围与当前模型或题图不一致，请重新确认",
+                        "当前回答的评价授权已失效，请重新提交本次回答",
                     ).apply { initCause(cause) }
                 }
-            ModelGatewayExecution(request, ModelExecutionPermit.External(manifest))
+        }
+        return when (provider.executionLocation) {
+            ModelExecutionLocation.LOCAL_NO_EGRESS,
+            ModelExecutionLocation.UNAVAILABLE,
+            -> ModelGatewayExecution(request, ModelExecutionPermit.LocalOnly)
+
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> {
+                val manifest = request.egressManifest ?: throw ModelEgressAuthorizationException(
+                    ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED,
+                    "需要你确认本次发送范围后，才能交给模型处理",
+                )
+                runCatching { manifest.requireAuthorizes(request, provider, nowEpochMillis) }
+                    .getOrElse { cause ->
+                        throw ModelEgressAuthorizationException(
+                            ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
+                            "本次发送范围与当前模型或题图不一致，请重新确认",
+                        ).apply { initCause(cause) }
+                    }
+                ModelGatewayExecution(request, ModelExecutionPermit.External(manifest))
+            }
         }
     }
 
@@ -531,6 +626,12 @@ private fun ModelEgressManifest.requireAuthorizes(
     }
     require(isModelEgressApprovalFresh(nowEpochMillis)) {
         "Egress approval expired or has an invalid timestamp"
+    }
+    require(
+        authorizationId ==
+            ModelEgressAuthorizationId.forInput(request.requestId, request.input),
+    ) {
+        "Egress authorization does not match the exact request payload"
     }
     // Tutor consent is a short-lived, question-bound conversation lease. The UI must hold a
     // current in-memory lease; the manifest still binds every exact plan/response payload here.
@@ -638,8 +739,34 @@ private fun ModelEgressManifest.requireAuthorizes(
             require(schemaVersion >= 4) { "Tutor lobby requires egress manifest schema four" }
             require(purpose == ModelEgressPurpose.TUTORING)
             require(assets.isEmpty()) { "Tutor lobby cannot disclose image assets" }
-            require(disclosedData == ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE)
-            require(prohibitedData == ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA)
+            val expectedDisclosure = ModelEgressManifest.tutorLobbyDisclosureForSchema(schemaVersion)
+            require(disclosedData == expectedDisclosure)
+            require(
+                prohibitedData == ModelEgressManifest.tutorLobbyProhibitedDataForSchema(schemaVersion),
+            )
+            require(
+                schemaVersion >= ModelEgressManifest.TUTOR_INTERACTION_POLICY_SCHEMA_VERSION ||
+                    input.hasLegacyDirectInteractionPolicy(),
+            ) {
+                "Legacy tutor lobby egress cannot disclose a current interaction policy"
+            }
+        }
+
+        is TutorOpenResponseEvaluationInput -> {
+            require(schemaVersion >= 8) {
+                "Open-response evaluation requires egress manifest schema eight"
+            }
+            input.requireCurrentHostAuthorization()
+            require(purpose == ModelEgressPurpose.TUTORING)
+            require(assets.isEmpty()) {
+                "Open-response evaluation cannot disclose image assets"
+            }
+            require(disclosedData == ModelEgressManifest.TUTOR_EVALUATE_DISCLOSURE)
+            require(
+                prohibitedData ==
+                    ModelEgressManifest.dataClassUniverseForSchema(schemaVersion) -
+                    ModelEgressManifest.TUTOR_EVALUATE_DISCLOSURE,
+            )
         }
 
         is ProblemOrganizationInput -> {

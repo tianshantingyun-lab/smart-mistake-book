@@ -76,17 +76,6 @@ enum class LearningObservationIndependence {
     UNKNOWN,
 }
 
-/**
- * Projection-only disposition assigned by the trusted persistence adapter.
- *
- * It is not part of the immutable event fingerprint. Version-35 rows are marked as quarantined
- * when read from storage, while ordinary domain fixtures and all version-36 writes remain active.
- */
-enum class LearningObservationProjectionDisposition {
-    APPLY,
-    QUARANTINED_LEGACY,
-}
-
 data class LearningObservationKnowledgeAttribution(
     val bindingId: String,
     val knowledgeNodeId: String,
@@ -109,7 +98,7 @@ data class LearningObservationKnowledgeAttribution(
 
 /**
  * Immutable evidence proposed by an ingestion/model boundary. It is deliberately not a ledger
- * event: only a locally gated [AttributedLearningObservationEvent] can reach projection.
+ * event: only a locally admitted [AdmittedLearningObservationEvent] can reach projection.
  */
 data class LearningObservationCandidate(
     val candidateId: String,
@@ -178,11 +167,33 @@ data class LearningObservationCandidate(
 }
 
 /**
- * A reviewed, anchored and attributed observation admitted by the local persistence gate.
+ * Common ledger shape for raw and locally admitted observations.
+ *
+ * A raw [AttributedLearningObservationEvent] is an immutable audit fact, not projection
+ * authority. Only [AdmittedLearningObservationEvent] may change mastery.
+ */
+sealed interface LearningObservationLedgerEvent : IncrementalLearningEvent {
+    val observation: AttributedLearningObservationEvent
+
+    val eventId: String
+        get() = observation.eventId
+    override val ledgerEventId: String
+        get() = eventId
+    override val occurredAtEpochMillis: Long
+        get() = observation.occurredAtEpochMillis
+    override val eventSequence: Long
+        get() = observation.eventSequence
+}
+
+/**
+ * A reviewed, anchored and attributed observation persisted in the immutable ledger.
  * Subject is intentionally absent: storage derives it from the authoritative problem chain.
+ *
+ * This raw event is checkpoint-only until a trusted local gate wraps it in
+ * [AdmittedLearningObservationEvent].
  */
 data class AttributedLearningObservationEvent(
-    val eventId: String,
+    override val eventId: String,
     val candidateId: String,
     val learnerId: String,
     val practiceUnitId: String,
@@ -198,9 +209,7 @@ data class AttributedLearningObservationEvent(
     val evidenceLocator: String,
     override val eventSequence: Long,
     val sourceFactId: String? = null,
-    val projectionDisposition: LearningObservationProjectionDisposition =
-        LearningObservationProjectionDisposition.APPLY,
-) : IncrementalLearningEvent {
+) : LearningObservationLedgerEvent {
     init {
         requireObservationId(eventId, "Learning observation event id")
         requireObservationId(candidateId, "Learning observation candidate id")
@@ -225,18 +234,110 @@ data class AttributedLearningObservationEvent(
         requireObservationId(modelVersion, "Learning observation model version")
         requireObservationLocator(evidenceLocator)
         require(eventSequence > 0) { "Learning observation sequence must be positive" }
-        require(
-            projectionDisposition != LearningObservationProjectionDisposition.QUARANTINED_LEGACY ||
-                sourceFactId == null,
-        ) { "Only a legacy observation without a source fact may be projection-quarantined" }
     }
 
-    override val ledgerEventId: String
-        get() = eventId
+    override val observation: AttributedLearningObservationEvent
+        get() = this
+}
 
-    val isProjectionQuarantined: Boolean
-        get() = projectionDisposition ==
-            LearningObservationProjectionDisposition.QUARANTINED_LEGACY
+/**
+ * Canonical proof that a trusted local admission policy matched a raw observation to an immutable
+ * source-fact proof. It contains no database handle and grants no model or SQL capability.
+ */
+const val LEARNING_OBSERVATION_PROJECTION_ADMISSION_POLICY_VERSION =
+    "learning-observation-admission-v1"
+
+@ConsistentCopyVisibility
+data class LearningObservationProjectionAdmission private constructor(
+    val rawEventCanonicalFingerprint: String,
+    val sourceFactProofFingerprint: String,
+    val policyVersion: String,
+    val admissionFingerprint: String,
+) {
+    fun matches(observation: AttributedLearningObservationEvent): Boolean =
+        observation.sourceFactId != null &&
+            rawEventCanonicalFingerprint ==
+            LearningLedgerFingerprint.learningObservation(observation) &&
+            admissionFingerprint == LearningLedgerFingerprint.learningObservationAdmission(
+                rawEventCanonicalFingerprint = rawEventCanonicalFingerprint,
+                sourceFactProofFingerprint = sourceFactProofFingerprint,
+                policyVersion = policyVersion,
+            )
+
+    companion object {
+        fun create(
+            observation: AttributedLearningObservationEvent,
+            sourceFactProofFingerprint: String,
+            policyVersion: String,
+        ): LearningObservationProjectionAdmission {
+            val rawFingerprint = LearningLedgerFingerprint.learningObservation(observation)
+            return restore(
+                observation = observation,
+                rawEventCanonicalFingerprint = rawFingerprint,
+                sourceFactProofFingerprint = sourceFactProofFingerprint,
+                policyVersion = policyVersion,
+                admissionFingerprint = LearningLedgerFingerprint.learningObservationAdmission(
+                    rawEventCanonicalFingerprint = rawFingerprint,
+                    sourceFactProofFingerprint = sourceFactProofFingerprint,
+                    policyVersion = policyVersion,
+                ),
+            )
+        }
+
+        fun restore(
+            observation: AttributedLearningObservationEvent,
+            rawEventCanonicalFingerprint: String,
+            sourceFactProofFingerprint: String,
+            policyVersion: String,
+            admissionFingerprint: String,
+        ): LearningObservationProjectionAdmission {
+            require(observation.sourceFactId != null) {
+                "A learning observation requires an immutable source fact before admission"
+            }
+            requireCanonicalObservationFingerprint(
+                rawEventCanonicalFingerprint,
+                "Raw learning-observation fingerprint",
+            )
+            requireCanonicalObservationFingerprint(
+                sourceFactProofFingerprint,
+                "Source-fact-proof fingerprint",
+            )
+            require(
+                policyVersion == LEARNING_OBSERVATION_PROJECTION_ADMISSION_POLICY_VERSION,
+            ) {
+                "Unsupported learning-observation admission policy version"
+            }
+            requireCanonicalObservationFingerprint(
+                admissionFingerprint,
+                "Learning-observation admission fingerprint",
+            )
+            val admission = LearningObservationProjectionAdmission(
+                rawEventCanonicalFingerprint = rawEventCanonicalFingerprint,
+                sourceFactProofFingerprint = sourceFactProofFingerprint,
+                policyVersion = policyVersion,
+                admissionFingerprint = admissionFingerprint,
+            )
+            require(admission.matches(observation)) {
+                "Learning-observation admission does not match its raw event and source proof"
+            }
+            return admission
+        }
+    }
+}
+
+/**
+ * The only observation event accepted as active mastery evidence by projection.
+ * Construction rechecks the complete canonical binding so copied or mismatched fields fail closed.
+ */
+data class AdmittedLearningObservationEvent(
+    override val observation: AttributedLearningObservationEvent,
+    val admission: LearningObservationProjectionAdmission,
+) : LearningObservationLedgerEvent {
+    init {
+        require(admission.matches(observation)) {
+            "Admitted learning observation must match its canonical admission proof"
+        }
+    }
 }
 
 enum class LearningEvidenceReviewReason {
@@ -337,4 +438,10 @@ private fun requireObservationLocator(value: String) {
             value.length <= 2_048 &&
             value.none { it.isISOControl() && it !in "\n\r\t" },
     ) { "Observation evidence locator must be a trimmed non-blank value of at most 2048 characters" }
+}
+
+private fun requireCanonicalObservationFingerprint(value: String, label: String) {
+    require(value.length == 64 && value.all { it in '0'..'9' || it in 'a'..'f' }) {
+        "$label must be a canonical lowercase SHA-256 fingerprint"
+    }
 }

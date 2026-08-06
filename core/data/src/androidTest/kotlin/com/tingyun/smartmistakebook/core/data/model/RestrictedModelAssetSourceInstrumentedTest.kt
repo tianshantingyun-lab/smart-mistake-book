@@ -9,8 +9,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
 import com.tingyun.smartmistakebook.core.data.capture.LocalQuestionTextRecognizer
 import com.tingyun.smartmistakebook.core.data.capture.LocalTextRecognition
-import com.tingyun.smartmistakebook.core.data.capture.RoomCaptureWorkflowRepository
-import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureAssetBridge
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureSessionStateStore
+import com.tingyun.smartmistakebook.core.database.LegacyStudyDatabaseTestFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftImportRequest
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
@@ -18,6 +19,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
+import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationId
 import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPolicy
@@ -50,7 +52,8 @@ class RestrictedModelAssetSourceInstrumentedTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         databaseName = "restricted-model-asset-${System.nanoTime()}.db"
-        database = StudyDatabaseFactory.open(context, databaseName)
+        database =
+            LegacyStudyDatabaseTestFactory.openPreCutoverForTest(context, databaseName)
     }
 
     @After
@@ -64,9 +67,10 @@ class RestrictedModelAssetSourceInstrumentedTest {
     @Test
     fun approvedCanonicalAssetCanBeReadOnlyThroughTheExactExternalPermit() = runBlocking {
         val vault = AndroidCanonicalAssetVault(context)
-        val repository = RoomCaptureWorkflowRepository(
+        val legacyAssets = LegacyRoomCaptureAssetBridge(vault)
+        val repository = LegacyRoomCaptureSessionStateStore(
             database = database,
-            assetVault = vault,
+            assetVault = legacyAssets,
             localTextRecognizer = LocalQuestionTextRecognizer { _, _, _ ->
                 LocalTextRecognition(emptyList(), "no-local-text-v1")
             },
@@ -82,18 +86,20 @@ class RestrictedModelAssetSourceInstrumentedTest {
             ),
         )
         val record = checkNotNull(database.readCanonicalSourceAsset(draft.sourceAssetId))
-        createdCanonical = vault.resolve(record)
+        createdCanonical = legacyAssets.resolve(record)
+        val requestId = "capture-assess:import-1"
+        val assessmentInput = CaptureAssessmentInput(
+            draftId = draft.draftId,
+            sourceAssetId = draft.sourceAssetId,
+            origin = CaptureAssessmentOrigin.LIBRARY,
+            imageWidth = draft.width,
+            imageHeight = draft.height,
+        )
         val request = ModelTaskRequest(
-            requestId = "capture-assess:import-1",
-            input = CaptureAssessmentInput(
-                draftId = draft.draftId,
-                sourceAssetId = draft.sourceAssetId,
-                origin = CaptureAssessmentOrigin.LIBRARY,
-                imageWidth = draft.width,
-                imageHeight = draft.height,
-            ),
+            requestId = requestId,
+            input = assessmentInput,
             occurredAtEpochMillis = 100,
-            egressManifest = manifest(draft, record.byteSize),
+            egressManifest = manifest(draft, record.byteSize, requestId, assessmentInput),
         )
         val execution = ModelEgressPolicy.authorize(request, provider(), 101)
 
@@ -112,8 +118,10 @@ class RestrictedModelAssetSourceInstrumentedTest {
     private fun manifest(
         draft: com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary,
         byteSize: Long,
+        requestId: String,
+        input: CaptureAssessmentInput,
     ) = ModelEgressManifest(
-        authorizationId = "approval-1",
+        authorizationId = ModelEgressAuthorizationId.forInput(requestId, input),
         subjectId = draft.draftId,
         purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
         authorizedTaskKinds = setOf(

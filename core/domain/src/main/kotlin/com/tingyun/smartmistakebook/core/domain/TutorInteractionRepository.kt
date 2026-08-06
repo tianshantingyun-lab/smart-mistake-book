@@ -185,6 +185,9 @@ data class RecordTutorVisualTargetEvidenceCommand(
     val modelTaskRequestId: String,
     val hitProof: TutorVisualHitProof,
     val occurredAtEpochMillis: Long,
+    /** Exact Host-prepared evidence request; never derived from the visual model task id. */
+    val evidenceRequestId: String = modelTaskRequestId,
+    val selectionWasCorrect: Boolean = false,
 ) {
     val selectedTargetId: String
         get() = hitProof.selectedTargetId
@@ -193,6 +196,7 @@ data class RecordTutorVisualTargetEvidenceCommand(
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
         require(revisionNumber > 0)
         require(modelTaskRequestId.isNotBlank() && selectedTargetId.isNotBlank())
+        require(evidenceRequestId.isNotBlank())
         require(hitProof.presentation.ownerModelTaskRequestId == modelTaskRequestId) {
             "Tutor visual hit proof belongs to a different tutor task"
         }
@@ -245,11 +249,13 @@ data class RecordTutorSolutionExposureCommand(
     val modelTaskRequestId: String,
     val responseOrdinal: Int? = null,
     val occurredAtEpochMillis: Long,
+    /** Exact directive for GUIDED; DIRECT binds this to [modelTaskRequestId]. */
+    val authorizationRequestId: String = modelTaskRequestId,
 ) {
     init {
         require(sessionId.isNotBlank() && questionDocumentId.isNotBlank())
         require(revisionNumber > 0 && cycleOrdinal > 0 && turnOrdinal > 0)
-        require(modelTaskRequestId.isNotBlank())
+        require(modelTaskRequestId.isNotBlank() && authorizationRequestId.isNotBlank())
         require(
             surfaceKind == TutorAnswerExposureSurfaceKind.PLAN_SOLUTION &&
                 responseOrdinal == null ||

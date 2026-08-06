@@ -66,6 +66,75 @@ class LearningObservationTest {
     }
 
     @Test
+    fun `projection admission binds the exact raw event proof and policy`() {
+        val raw = attributedEvent(sourceFactId = "source-fact-1")
+        val proofFingerprint = "a".repeat(64)
+        val admission = LearningObservationProjectionAdmission.create(
+            observation = raw,
+            sourceFactProofFingerprint = proofFingerprint,
+            policyVersion = LEARNING_OBSERVATION_PROJECTION_ADMISSION_POLICY_VERSION,
+        )
+        val admitted = AdmittedLearningObservationEvent(raw, admission)
+
+        assertEquals(
+            LearningLedgerFingerprint.learningObservation(raw),
+            admission.rawEventCanonicalFingerprint,
+        )
+        assertEquals(
+            admission.admissionFingerprint,
+            LearningLedgerFingerprint.event(admitted),
+        )
+        assertEquals(
+            admission,
+            LearningObservationProjectionAdmission.restore(
+                observation = raw,
+                rawEventCanonicalFingerprint = admission.rawEventCanonicalFingerprint,
+                sourceFactProofFingerprint = admission.sourceFactProofFingerprint,
+                policyVersion = admission.policyVersion,
+                admissionFingerprint = admission.admissionFingerprint,
+            ),
+        )
+        assertIllegalArgument {
+            AdmittedLearningObservationEvent(
+                observation = raw.copy(evidenceWeight = 0.4),
+                admission = admission,
+            )
+        }
+        assertIllegalArgument {
+            LearningObservationProjectionAdmission.restore(
+                observation = raw,
+                rawEventCanonicalFingerprint = admission.rawEventCanonicalFingerprint,
+                sourceFactProofFingerprint = "b".repeat(64),
+                policyVersion = admission.policyVersion,
+                admissionFingerprint = admission.admissionFingerprint,
+            )
+        }
+        assertIllegalArgument {
+            LearningObservationProjectionAdmission.restore(
+                observation = raw,
+                rawEventCanonicalFingerprint = "f".repeat(64),
+                sourceFactProofFingerprint = proofFingerprint,
+                policyVersion = admission.policyVersion,
+                admissionFingerprint = admission.admissionFingerprint,
+            )
+        }
+        assertIllegalArgument {
+            LearningObservationProjectionAdmission.create(
+                observation = raw.copy(sourceFactId = null),
+                sourceFactProofFingerprint = proofFingerprint,
+                policyVersion = admission.policyVersion,
+            )
+        }
+        assertIllegalArgument {
+            LearningObservationProjectionAdmission.create(
+                observation = raw,
+                sourceFactProofFingerprint = proofFingerprint,
+                policyVersion = "unknown-admission-policy",
+            )
+        }
+    }
+
+    @Test
     fun `only non projectable workflow states are safe for new candidate submission`() {
         listOf(
             LearningObservationCandidateStatus.WAITING_FOR_ANCHOR,
@@ -215,6 +284,30 @@ class LearningObservationTest {
         createdAtEpochMillis = 1_100,
         updatedAtEpochMillis = 1_100,
     )
+
+    private fun attributedEvent(
+        sourceFactId: String?,
+    ): AttributedLearningObservationEvent {
+        val candidate = candidate()
+        return AttributedLearningObservationEvent(
+            eventId = "observation-1",
+            candidateId = candidate.candidateId,
+            learnerId = candidate.learnerId,
+            practiceUnitId = requireNotNull(candidate.practiceUnitId),
+            problemRevisionId = requireNotNull(candidate.problemRevisionId),
+            direction = candidate.direction,
+            evidenceLevel = LearningObservationEvidenceLevel.CONFIRMED,
+            evidenceWeight = candidate.evidenceWeight,
+            independence = candidate.independence,
+            attributions = candidate.proposedAttributions,
+            occurredAtEpochMillis = candidate.occurredAtEpochMillis,
+            confirmedAtEpochMillis = candidate.updatedAtEpochMillis,
+            modelVersion = candidate.modelVersion,
+            evidenceLocator = candidate.evidenceLocator,
+            eventSequence = 3,
+            sourceFactId = sourceFactId,
+        )
+    }
 
     private fun attribution(
         bindingId: String,

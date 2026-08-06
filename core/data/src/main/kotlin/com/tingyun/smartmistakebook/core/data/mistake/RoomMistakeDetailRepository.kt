@@ -2,11 +2,12 @@ package com.tingyun.smartmistakebook.core.data.mistake
 
 import android.content.Context
 import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
+import com.tingyun.smartmistakebook.core.data.session.capture.LegacyRoomCaptureAssetBridge
 import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
+import com.tingyun.smartmistakebook.core.database.LegacyPreCutoverMistakeDetailReadPort
 import com.tingyun.smartmistakebook.core.database.MistakeDetailRecord
 import com.tingyun.smartmistakebook.core.database.MistakeDetailSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRevisionSummaryRecord
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.MistakeDetail
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailIdentity
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
@@ -21,10 +22,14 @@ import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentCodec
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
+import com.tingyun.smartmistakebook.core.student.mistake.database.StudentMistakeStore
+import com.tingyun.smartmistakebook.core.student.mistake.database.LearnerBoundStudentMistakeLibraryPort
 import java.net.URI
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -208,29 +213,91 @@ internal class RoomMistakeDetailRepository(
 }
 
 object MistakeDetailRepositoryFactory {
-    fun create(
+    internal fun create(
+        studentMistakeStore: StudentMistakeStore,
+    ): MistakeDetailRepository =
+        StudentMistakeStoreMistakeDetailRepository(
+            StudentMistakeStoreDetailReadPort(studentMistakeStore),
+        )
+
+    internal fun createParityGatedReadTransition(
+        studentMistakeStore: StudentMistakeStore,
+        learnerBoundLibrary: LearnerBoundStudentMistakeLibraryPort,
+        learnerId: String,
+        catalogState: StateFlow<StudentMistakeLibraryCatalogState>,
+        transitionalHistoricalFallback: MistakeDetailRepository,
+    ): MistakeDetailRepository =
+        ParityGatedStudentMistakeDetailRepository(
+            learnerId = learnerId,
+            student =
+                StudentMistakeStoreMistakeDetailRepository(
+                    StudentMistakeStoreDetailReadPort(studentMistakeStore),
+                    exactDetailLibrary = learnerBoundLibrary,
+                    expectedLearnerId = learnerId,
+                ),
+            catalogState = catalogState,
+            transitionalHistoricalFallback = transitionalHistoricalFallback,
+        )
+
+    /**
+     * Keeps the legacy mistake authority readable until a verified cutover switches the route.
+     *
+     * This is intentionally named: callers must not mistake a successful mirror for an authority
+     * transfer while legacy writers are still active.
+     */
+    fun createLegacyDuringAuthorityMigration(
         context: Context,
-        database: StudyDatabasePort,
+        legacyMistakes: LegacyPreCutoverMistakeDetailReadPort,
     ): MistakeDetailRepository {
-        val assetVault = AndroidCanonicalAssetVault(context.applicationContext)
+        val assetVault =
+            LegacyRoomCaptureAssetBridge(
+                AndroidCanonicalAssetVault(context.applicationContext),
+            )
         return RoomMistakeDetailRepository(
-            recordReader = MistakeDetailRecordReader(database::readMistakeDetail),
+            recordReader = MistakeDetailRecordReader(legacyMistakes::readMistakeDetail),
             exactRecordReader = ExactMistakeDetailRecordReader { key ->
-                database.readExactMistakeDetail(
+                legacyMistakes.readExactMistakeDetail(
                     entryId = key.entryId,
                     problemId = key.problemId,
                     problemRevisionId = key.problemRevisionId,
                 )
             },
             batchRecordReader = CurrentMistakeDetailBatchRecordReader(
-                database::readCurrentMistakeDetails,
+                legacyMistakes::readCurrentMistakeDetails,
             ),
             revisionHistoryReader = MistakeRevisionHistoryReader(
-                database::readMistakeRevisionHistory,
+                legacyMistakes::readMistakeRevisionHistory,
             ),
             assetUriResolver = CanonicalAssetUriResolver { sourceAsset ->
                 assetVault.resolve(sourceAsset).toURI().toASCIIString()
             },
         )
     }
+
+    fun createDeferred(
+        repositoryProvider: suspend () -> MistakeDetailRepository,
+    ): MistakeDetailRepository =
+        DeferredMistakeDetailRepository(repositoryProvider)
+}
+
+private class DeferredMistakeDetailRepository(
+    private val repositoryProvider: suspend () -> MistakeDetailRepository,
+) : MistakeDetailRepository {
+    override fun observe(errorBookEntryId: String): Flow<MistakeDetailState> =
+        flow { emitAll(repositoryProvider().observe(errorBookEntryId)) }
+
+    override fun observeExact(key: MistakeRevisionKey): Flow<MistakeDetailState> =
+        flow { emitAll(repositoryProvider().observeExact(key)) }
+
+    override suspend fun readExact(key: MistakeRevisionKey): MistakeDetailState =
+        repositoryProvider().readExact(key)
+
+    override suspend fun readExact(
+        keys: List<MistakeRevisionKey>,
+    ): List<MistakeDetailState> = repositoryProvider().readExact(keys)
+
+    override fun observeRevisionHistory(
+        errorBookEntryId: String,
+    ): Flow<List<MistakeRevisionSummary>> =
+        flow { emitAll(repositoryProvider().observeRevisionHistory(errorBookEntryId)) }
 }

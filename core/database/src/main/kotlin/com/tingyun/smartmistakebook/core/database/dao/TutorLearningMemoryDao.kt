@@ -21,20 +21,26 @@ import com.tingyun.smartmistakebook.core.database.TutorTurnAllocationResult
 import com.tingyun.smartmistakebook.core.database.TutorTurnConflictException
 import com.tingyun.smartmistakebook.core.database.entity.LearningObservationSourceFactEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningProblemAnchorEntity
+import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
+import com.tingyun.smartmistakebook.core.database.entity.ProblemDraftRevisionEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorEvidenceCancellationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorEvidenceRequestEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorSessionEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorTurnReceiptEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorTurnResponseEntity
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentCodec
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
+import com.tingyun.smartmistakebook.core.model.CapturedTutorProblemIdentity
+import com.tingyun.smartmistakebook.core.model.LearningObservationFactKind
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
-import com.tingyun.smartmistakebook.core.model.LearningObservationSourceFact
-import com.tingyun.smartmistakebook.core.model.LearningProblemAnchor
-import com.tingyun.smartmistakebook.core.model.SubjectKind
-import com.tingyun.smartmistakebook.core.model.TutorConversation
+import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.TutorConversationStatus
-import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequest
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestStatus
-import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
-import com.tingyun.smartmistakebook.core.model.TutorTurnReceipt
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 
 private const val INSERT_CONFLICT = -1L
 
@@ -59,14 +65,28 @@ internal abstract class TutorLearningMemoryDao {
         entity: LearningObservationSourceFactEntity,
     ): Long
 
-    @Query("SELECT * FROM tutor_conversation WHERE conversation_id = :conversationId LIMIT 1")
+    @Query(
+        """
+        SELECT conversation_id, learner_id, generation, status, next_turn_ordinal,
+               state_version, create_idempotency_key, create_payload_fingerprint,
+               archive_idempotency_key, archive_payload_fingerprint,
+               created_at_epoch_millis, updated_at_epoch_millis, archived_at_epoch_millis
+        FROM tutor_conversation
+        WHERE conversation_id = :conversationId
+        LIMIT 1
+        """,
+    )
     protected abstract suspend fun findConversation(
         conversationId: String,
     ): TutorConversationEntity?
 
     @Query(
         """
-        SELECT * FROM tutor_conversation
+        SELECT conversation_id, learner_id, generation, status, next_turn_ordinal,
+               state_version, create_idempotency_key, create_payload_fingerprint,
+               archive_idempotency_key, archive_payload_fingerprint,
+               created_at_epoch_millis, updated_at_epoch_millis, archived_at_epoch_millis
+        FROM tutor_conversation
         WHERE learner_id = :learnerId AND create_idempotency_key = :idempotencyKey
         LIMIT 1
         """,
@@ -78,7 +98,11 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM tutor_conversation
+        SELECT conversation_id, learner_id, generation, status, next_turn_ordinal,
+               state_version, create_idempotency_key, create_payload_fingerprint,
+               archive_idempotency_key, archive_payload_fingerprint,
+               created_at_epoch_millis, updated_at_epoch_millis, archived_at_epoch_millis
+        FROM tutor_conversation
         WHERE learner_id = :learnerId
           AND conversation_id = :conversationId
           AND generation = :conversationGeneration
@@ -93,7 +117,11 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM tutor_conversation
+        SELECT conversation_id, learner_id, generation, status, next_turn_ordinal,
+               state_version, create_idempotency_key, create_payload_fingerprint,
+               archive_idempotency_key, archive_payload_fingerprint,
+               created_at_epoch_millis, updated_at_epoch_millis, archived_at_epoch_millis
+        FROM tutor_conversation
         WHERE learner_id = :learnerId
           AND status = 'ACTIVE'
         ORDER BY created_at_epoch_millis DESC, conversation_id DESC
@@ -106,7 +134,11 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM tutor_conversation
+        SELECT conversation_id, learner_id, generation, status, next_turn_ordinal,
+               state_version, create_idempotency_key, create_payload_fingerprint,
+               archive_idempotency_key, archive_payload_fingerprint,
+               created_at_epoch_millis, updated_at_epoch_millis, archived_at_epoch_millis
+        FROM tutor_conversation
         WHERE learner_id = :learnerId
           AND status = 'ACTIVE'
           AND substr(conversation_id, 1, length(:conversationIdPrefix)) = :conversationIdPrefix
@@ -174,7 +206,13 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM tutor_turn_receipt
+        SELECT turn_receipt_id, conversation_id, learner_id, conversation_generation,
+               conversation_state_version, turn_ordinal, client_turn_id,
+               payload_fingerprint, subject, problem_anchor_id, request_version,
+               explanation_mode, mode_version, directive_fingerprint,
+               student_message_fingerprint, student_message_summary,
+               occurred_at_epoch_millis, allocated_at_epoch_millis
+        FROM tutor_turn_receipt
         WHERE conversation_id = :conversationId
           AND conversation_generation = :generation
           AND client_turn_id = :clientTurnId
@@ -187,12 +225,30 @@ internal abstract class TutorLearningMemoryDao {
         clientTurnId: String,
     ): TutorTurnReceiptEntity?
 
-    @Query("SELECT * FROM tutor_turn_receipt WHERE turn_receipt_id = :turnReceiptId LIMIT 1")
+    @Query(
+        """
+        SELECT turn_receipt_id, conversation_id, learner_id, conversation_generation,
+               conversation_state_version, turn_ordinal, client_turn_id,
+               payload_fingerprint, subject, problem_anchor_id, request_version,
+               explanation_mode, mode_version, directive_fingerprint,
+               student_message_fingerprint, student_message_summary,
+               occurred_at_epoch_millis, allocated_at_epoch_millis
+        FROM tutor_turn_receipt
+        WHERE turn_receipt_id = :turnReceiptId
+        LIMIT 1
+        """,
+    )
     protected abstract suspend fun findTurn(turnReceiptId: String): TutorTurnReceiptEntity?
 
     @Query(
         """
-        SELECT * FROM tutor_turn_receipt
+        SELECT turn_receipt_id, conversation_id, learner_id, conversation_generation,
+               conversation_state_version, turn_ordinal, client_turn_id,
+               payload_fingerprint, subject, problem_anchor_id, request_version,
+               explanation_mode, mode_version, directive_fingerprint,
+               student_message_fingerprint, student_message_summary,
+               occurred_at_epoch_millis, allocated_at_epoch_millis
+        FROM tutor_turn_receipt
         WHERE learner_id = :learnerId
           AND turn_receipt_id = :turnReceiptId
         LIMIT 1
@@ -219,6 +275,12 @@ internal abstract class TutorLearningMemoryDao {
           AND conversation_id = :conversationId
           AND conversation_generation = :generation
           AND status = :pendingStatus
+          AND NOT EXISTS (
+              SELECT 1
+              FROM tutor_learning_evidence_finalization_receipt AS intent
+              WHERE intent.evidence_request_id =
+                    tutor_evidence_request.evidence_request_id
+          )
         """,
     )
     protected abstract suspend fun cancelPendingEvidenceForArchive(
@@ -234,7 +296,14 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM tutor_evidence_request
+        SELECT evidence_request_id, learner_id, conversation_id, conversation_generation,
+               conversation_state_version, turn_receipt_id, turn_ordinal, subject,
+               problem_anchor_id, kind, request_version, explanation_mode, mode_version,
+               directive_fingerprint, status, state_version, prepare_idempotency_key,
+               prepare_payload_fingerprint, terminal_idempotency_key,
+               terminal_payload_fingerprint, terminal_source_fact_id,
+               created_at_epoch_millis, resolved_at_epoch_millis
+        FROM tutor_evidence_request
         WHERE conversation_id = :conversationId
           AND conversation_generation = :generation
           AND prepare_idempotency_key = :idempotencyKey
@@ -248,7 +317,18 @@ internal abstract class TutorLearningMemoryDao {
     ): TutorEvidenceRequestEntity?
 
     @Query(
-        "SELECT * FROM tutor_evidence_request WHERE evidence_request_id = :evidenceRequestId LIMIT 1",
+        """
+        SELECT evidence_request_id, learner_id, conversation_id, conversation_generation,
+               conversation_state_version, turn_receipt_id, turn_ordinal, subject,
+               problem_anchor_id, kind, request_version, explanation_mode, mode_version,
+               directive_fingerprint, status, state_version, prepare_idempotency_key,
+               prepare_payload_fingerprint, terminal_idempotency_key,
+               terminal_payload_fingerprint, terminal_source_fact_id,
+               created_at_epoch_millis, resolved_at_epoch_millis
+        FROM tutor_evidence_request
+        WHERE evidence_request_id = :evidenceRequestId
+        LIMIT 1
+        """,
     )
     protected abstract suspend fun findEvidenceRequest(
         evidenceRequestId: String,
@@ -256,7 +336,14 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM tutor_evidence_request
+        SELECT evidence_request_id, learner_id, conversation_id, conversation_generation,
+               conversation_state_version, turn_receipt_id, turn_ordinal, subject,
+               problem_anchor_id, kind, request_version, explanation_mode, mode_version,
+               directive_fingerprint, status, state_version, prepare_idempotency_key,
+               prepare_payload_fingerprint, terminal_idempotency_key,
+               terminal_payload_fingerprint, terminal_source_fact_id,
+               created_at_epoch_millis, resolved_at_epoch_millis
+        FROM tutor_evidence_request
         WHERE learner_id = :learnerId
           AND evidence_request_id = :evidenceRequestId
         LIMIT 1
@@ -267,12 +354,22 @@ internal abstract class TutorLearningMemoryDao {
         evidenceRequestId: String,
     ): TutorEvidenceRequestEntity?
 
-    @Query("SELECT * FROM learning_problem_anchor WHERE anchor_id = :anchorId LIMIT 1")
+    @Query(
+        """
+        SELECT anchor_id, learner_id, subject, question_fingerprint,
+               revision_fingerprint, fingerprint_version, created_at_epoch_millis
+        FROM learning_problem_anchor
+        WHERE anchor_id = :anchorId
+        LIMIT 1
+        """,
+    )
     protected abstract suspend fun findAnchor(anchorId: String): LearningProblemAnchorEntity?
 
     @Query(
         """
-        SELECT * FROM learning_problem_anchor
+        SELECT anchor_id, learner_id, subject, question_fingerprint,
+               revision_fingerprint, fingerprint_version, created_at_epoch_millis
+        FROM learning_problem_anchor
         WHERE learner_id = :learnerId
           AND subject = :subject
           AND question_fingerprint = :questionFingerprint
@@ -290,7 +387,15 @@ internal abstract class TutorLearningMemoryDao {
     ): LearningProblemAnchorEntity?
 
     @Query(
-        "SELECT * FROM learning_observation_source_fact WHERE source_fact_id = :sourceFactId LIMIT 1",
+        """
+        SELECT source_fact_id, learner_id, source, fact_kind, anchor_id, subject,
+               conversation_id, conversation_generation, turn_receipt_id,
+               evidence_request_id, response_fingerprint, response_summary,
+               payload_fingerprint, occurred_at_epoch_millis, source_version
+        FROM learning_observation_source_fact
+        WHERE source_fact_id = :sourceFactId
+        LIMIT 1
+        """,
     )
     protected abstract suspend fun findSourceFact(
         sourceFactId: String,
@@ -298,7 +403,11 @@ internal abstract class TutorLearningMemoryDao {
 
     @Query(
         """
-        SELECT * FROM learning_observation_source_fact
+        SELECT source_fact_id, learner_id, source, fact_kind, anchor_id, subject,
+               conversation_id, conversation_generation, turn_receipt_id,
+               evidence_request_id, response_fingerprint, response_summary,
+               payload_fingerprint, occurred_at_epoch_millis, source_version
+        FROM learning_observation_source_fact
         WHERE evidence_request_id = :evidenceRequestId
         LIMIT 1
         """,
@@ -306,6 +415,80 @@ internal abstract class TutorLearningMemoryDao {
     protected abstract suspend fun findSourceFactForEvidence(
         evidenceRequestId: String,
     ): LearningObservationSourceFactEntity?
+
+    @Query(
+        """
+        SELECT learner_id, session_id, question_document_id, revision_number,
+               evidence_request_id, cancelled_at_epoch_millis
+        FROM tutor_evidence_cancellation
+        WHERE learner_id = :learnerId
+          AND evidence_request_id = :evidenceRequestId
+        ORDER BY session_id, question_document_id, revision_number
+        LIMIT 2
+        """,
+    )
+    protected abstract suspend fun findPersistentEvidenceCancellations(
+        learnerId: String,
+        evidenceRequestId: String,
+    ): List<TutorEvidenceCancellationEntity>
+
+    @Query(
+        """
+        SELECT session_id, question_document_id, revision_number, cycle_ordinal,
+               turn_ordinal, diagnostic_stem_markdown, selected_choice_id,
+               selected_choice_markdown, selection_was_correct, feedback_markdown,
+               evidence_request_id, requested_move, solution_revealed,
+               choice_submitted_at_epoch_millis, submitted_at_epoch_millis,
+               updated_at_epoch_millis
+        FROM tutor_turn_response
+        WHERE evidence_request_id = :evidenceRequestId
+        ORDER BY session_id, cycle_ordinal, turn_ordinal
+        LIMIT 2
+        """,
+    )
+    protected abstract suspend fun findChoiceResponsesForEvidence(
+        evidenceRequestId: String,
+    ): List<TutorTurnResponseEntity>
+
+    @Query(
+        """
+        SELECT task_id, request_id, request_fingerprint, operation_fingerprint,
+               request_snapshot, task_kind, subject_id, tutor_response_ordinal,
+               status, state_version, stage, user_message, attempt_count,
+               provider_snapshot, output_snapshot, failure_code, failure_message,
+               failure_retryable, created_at_epoch_millis, updated_at_epoch_millis
+        FROM model_task
+        WHERE request_id = :requestId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findChoiceModelTask(requestId: String): ModelTaskEntity?
+
+    @Query(
+        """
+        SELECT session_id, draft_id, draft_revision_number, created_at_epoch_millis
+        FROM tutor_session
+        WHERE session_id = :sessionId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findChoiceTutorSession(sessionId: String): TutorSessionEntity?
+
+    @Query(
+        """
+        SELECT draft_id, revision_number, basis_revision_number, subject, title,
+               question_document_snapshot, document_fingerprint, author,
+               created_at_epoch_millis
+        FROM problem_draft_revision
+        WHERE draft_id = :draftId
+          AND revision_number = :revisionNumber
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findChoiceProblemRevision(
+        draftId: String,
+        revisionNumber: Int,
+    ): ProblemDraftRevisionEntity?
 
     @Query("SELECT COUNT(*) FROM tutor_evidence_request WHERE status = :status")
     internal abstract suspend fun countEvidenceRequests(status: String): Int
@@ -334,6 +517,11 @@ internal abstract class TutorLearningMemoryDao {
         WHERE evidence_request_id = :evidenceRequestId
           AND status = :pendingStatus
           AND state_version = :expectedStateVersion
+          AND NOT EXISTS (
+              SELECT 1
+              FROM tutor_learning_evidence_finalization_receipt AS intent
+              WHERE intent.evidence_request_id = :evidenceRequestId
+          )
         """,
     )
     protected abstract suspend fun finalizeEvidenceCas(
@@ -555,8 +743,17 @@ internal abstract class TutorLearningMemoryDao {
         if (!request.matches(command)) {
             throw TutorMemoryScopeConflictException("Tutor evidence scope does not match")
         }
+        val persistentCancellation = uniquePersistentCancellation(command)
+        if (persistentCancellation != null) {
+            return enforcePersistentCancellation(
+                request = request,
+                command = command,
+                cancellation = persistentCancellation,
+                nowEpochMillis = nowEpochMillis,
+            )
+        }
         if (request.status != TutorEvidenceRequestStatus.PENDING.name) {
-            return replayFinalization(request, command)
+            return replayFinalization(request, command, nowEpochMillis)
         }
         if (request.stateVersion != command.expectedEvidenceStateVersion) {
             throw TutorEvidenceConflictException(command.evidenceRequestId)
@@ -599,7 +796,16 @@ internal abstract class TutorLearningMemoryDao {
             )
         }
 
-        val submission = checkNotNull(command.submission)
+        val submittedClaim = checkNotNull(command.submission)
+        val submission = when (command.kind) {
+            TutorEvidenceRequestKind.CHOICE -> deriveChoiceSubmission(
+                command = command,
+                claim = submittedClaim,
+            )
+            else -> submittedClaim.also { claim ->
+                requireSourceMatchesKind(claim.source, command.kind)
+            }
+        }
         if (
             submission.occurredAtEpochMillis < request.createdAtEpochMillis ||
             submission.occurredAtEpochMillis < turn.allocatedAtEpochMillis ||
@@ -607,7 +813,6 @@ internal abstract class TutorLearningMemoryDao {
         ) {
             throw TutorEvidenceConflictException(command.evidenceRequestId)
         }
-        requireSourceMatchesKind(submission.source, command.kind)
         val anchor = ensureAnchor(command.toAnchorEntity(submission, nowEpochMillis))
         val sourceFact = command.toSourceFactEntity(submission)
         ensureNoConflictingFact(sourceFact)
@@ -668,9 +873,229 @@ internal abstract class TutorLearningMemoryDao {
         }
     }
 
+    private suspend fun uniquePersistentCancellation(
+        command: FinalizeTutorEvidenceRequestCommand,
+    ): TutorEvidenceCancellationEntity? {
+        val cancellations = findPersistentEvidenceCancellations(
+            learnerId = command.learnerId,
+            evidenceRequestId = command.evidenceRequestId,
+        )
+        if (cancellations.size > 1) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        return cancellations.singleOrNull()
+    }
+
+    private suspend fun enforcePersistentCancellation(
+        request: TutorEvidenceRequestEntity,
+        command: FinalizeTutorEvidenceRequestCommand,
+        cancellation: TutorEvidenceCancellationEntity,
+        nowEpochMillis: Long,
+    ): TutorEvidenceFinalizationResult {
+        if (request.status == TutorEvidenceRequestStatus.SUBMITTED.name) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        val existingFact = findSourceFactForEvidence(command.evidenceRequestId)
+        if (request.terminalSourceFactId != null || existingFact != null) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        if (request.status == TutorEvidenceRequestStatus.CANCELLED.name) {
+            return TutorEvidenceFinalizationResult(
+                replayed = true,
+                request = request.toModel(),
+                anchor = null,
+                sourceFact = null,
+            )
+        }
+        if (request.status != TutorEvidenceRequestStatus.PENDING.name) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        val cancellationFingerprint = cancellation.canonicalFingerprint()
+        if (
+            finalizeEvidenceCas(
+                evidenceRequestId = command.evidenceRequestId,
+                expectedStateVersion = request.stateVersion,
+                terminalStatus = TutorEvidenceRequestStatus.CANCELLED.name,
+                idempotencyKey = "$PERSISTENT_CANCELLATION_ID_PREFIX:$cancellationFingerprint",
+                payloadFingerprint = cancellationFingerprint,
+                sourceFactId = null,
+                nowEpochMillis = maxOf(
+                    request.createdAtEpochMillis,
+                    minOf(cancellation.cancelledAtEpochMillis, nowEpochMillis),
+                ),
+                pendingStatus = TutorEvidenceRequestStatus.PENDING.name,
+            ) != 1
+        ) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        return TutorEvidenceFinalizationResult(
+            replayed = false,
+            request = checkNotNull(findEvidenceRequest(command.evidenceRequestId)).toModel(),
+            anchor = null,
+            sourceFact = null,
+        )
+    }
+
+    private suspend fun deriveChoiceSubmission(
+        command: FinalizeTutorEvidenceRequestCommand,
+        claim: com.tingyun.smartmistakebook.core.database.TutorEvidenceSubmission,
+    ): com.tingyun.smartmistakebook.core.database.TutorEvidenceSubmission {
+        val responses = findChoiceResponsesForEvidence(command.evidenceRequestId)
+        if (responses.size != 1) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        val response = responses.single()
+        val responseSummary = response.canonicalChoiceSummary()
+        val trustedScope = resolveTrustedChoiceScope(command, response)
+        val responseFingerprint = response.canonicalChoiceFingerprint()
+        val occurredAtEpochMillis = response.choiceSubmittedAtEpochMillis
+            ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        return claim.copy(
+            sourceFactId = canonicalChoiceSourceFactId(
+                learnerId = command.learnerId,
+                evidenceRequestId = command.evidenceRequestId,
+                responseFingerprint = responseFingerprint,
+            ),
+            source = LearningObservationSource.TUTOR_CHOICE,
+            factKind = if (response.selectionWasCorrect == true) {
+                LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE
+            } else {
+                LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE
+            },
+            questionFingerprint = trustedScope.questionFingerprint,
+            revisionFingerprint = trustedScope.revisionFingerprint,
+            fingerprintVersion = trustedScope.fingerprintVersion,
+            responseFingerprint = responseFingerprint,
+            responseSummary = responseSummary,
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            sourceVersion = CAPTURED_CHOICE_SOURCE_VERSION,
+        )
+    }
+
+    private suspend fun resolveTrustedChoiceScope(
+        command: FinalizeTutorEvidenceRequestCommand,
+        response: TutorTurnResponseEntity,
+    ): TrustedChoiceScope {
+        val task = findChoiceModelTask(command.evidenceRequestId)
+            ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        val request = runCatching { ModelTaskCodec.decodeRequest(task.requestSnapshot) }
+            .getOrElse { throw TutorEvidenceConflictException(command.evidenceRequestId) }
+        val output = task.outputSnapshot
+            ?.let { snapshot ->
+                runCatching { ModelTaskCodec.decodeOutput(snapshot) }
+                    .getOrElse { throw TutorEvidenceConflictException(command.evidenceRequestId) }
+            }
+        val input = request.input as? TutorPlanInput
+            ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        val planOutput = output as? TutorPlanOutput
+            ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        val item = planOutput.plan.diagnosticItem
+            ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        val selectedChoice = item.choices.singleOrNull { choice ->
+            choice.id == response.selectedChoiceId
+        } ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        if (
+            task.status != ModelTaskStatus.SUCCEEDED.name ||
+            request.requestId != command.evidenceRequestId ||
+            input.sessionId != response.sessionId ||
+            input.questionDocument.id != response.questionDocumentId ||
+            input.draftRevisionNumber != response.revisionNumber ||
+            input.cycleOrdinal != response.cycleOrdinal ||
+            input.turnOrdinal != response.turnOrdinal ||
+            input.subject != command.subject.name ||
+            planOutput.sessionId != response.sessionId ||
+            planOutput.questionDocumentId != response.questionDocumentId ||
+            planOutput.draftRevisionNumber != response.revisionNumber ||
+            planOutput.cycleOrdinal != response.cycleOrdinal ||
+            planOutput.turnOrdinal != response.turnOrdinal ||
+            planOutput.plan.interactionDirective != null ||
+            response.diagnosticStemMarkdown != item.stemMarkdown ||
+            response.selectedChoiceMarkdown != selectedChoice.markdown ||
+            response.selectionWasCorrect != (selectedChoice.id == item.correctChoiceId) ||
+            response.feedbackMarkdown != selectedChoice.feedbackMarkdown ||
+            checkNotNull(response.choiceSubmittedAtEpochMillis) < task.updatedAtEpochMillis
+        ) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        val session = findChoiceTutorSession(response.sessionId)
+            ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        if (session.draftRevisionNumber != response.revisionNumber) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        val revision = findChoiceProblemRevision(
+            draftId = session.draftId,
+            revisionNumber = session.draftRevisionNumber,
+        ) ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
+        val capturedDocument = runCatching {
+            CapturedQuestionDocumentCodec.decode(revision.questionDocumentSnapshot)
+        }.getOrElse { throw TutorEvidenceConflictException(command.evidenceRequestId) }
+        if (
+            revision.subject != command.subject.name ||
+            capturedDocument.document != input.questionDocument ||
+            capturedDocument.document.id != response.questionDocumentId ||
+            CapturedQuestionDocumentFingerprint.of(capturedDocument) != revision.documentFingerprint
+        ) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        val questionFingerprint =
+            CapturedTutorProblemIdentity.questionFingerprint(session.draftId)
+        val fingerprintVersion = CapturedTutorProblemIdentity.fingerprintVersion
+        val expectedDirectiveFingerprint = canonicalChoiceDirectiveFingerprint(
+            evidenceRequestId = command.evidenceRequestId,
+            session = session,
+            questionDocumentId = response.questionDocumentId,
+            revisionFingerprint = revision.documentFingerprint,
+            input = input,
+            output = planOutput,
+            item = item,
+        )
+        val expectedConversationId = opaqueId(
+            CAPTURED_CHOICE_CONVERSATION_ID_DOMAIN,
+            command.learnerId,
+            response.sessionId,
+            session.draftId,
+            response.revisionNumber.toString(),
+            response.questionDocumentId,
+        )
+        val expectedTurnReceiptId = opaqueId(
+            CAPTURED_CHOICE_TURN_RECEIPT_ID_DOMAIN,
+            command.learnerId,
+            response.sessionId,
+            session.draftId,
+            response.revisionNumber.toString(),
+            response.questionDocumentId,
+            command.evidenceRequestId,
+            response.cycleOrdinal.toString(),
+            response.turnOrdinal.toString(),
+            expectedDirectiveFingerprint,
+        )
+        val expectedAnchorId = opaqueId(
+            CAPTURED_CHOICE_PROBLEM_ANCHOR_ID_DOMAIN,
+            command.learnerId,
+            command.subject.name,
+            questionFingerprint,
+            revision.documentFingerprint,
+            fingerprintVersion,
+        )
+        if (
+            command.directiveFingerprint != expectedDirectiveFingerprint ||
+            command.conversationId != expectedConversationId ||
+            command.turnReceiptId != expectedTurnReceiptId ||
+            command.problemAnchorId != expectedAnchorId
+        ) {
+            throw TutorEvidenceConflictException(command.evidenceRequestId)
+        }
+        return TrustedChoiceScope(
+            questionFingerprint = questionFingerprint,
+            revisionFingerprint = revision.documentFingerprint,
+            fingerprintVersion = fingerprintVersion,
+        )
+    }
+
     private suspend fun replayFinalization(
         request: TutorEvidenceRequestEntity,
         command: FinalizeTutorEvidenceRequestCommand,
+        nowEpochMillis: Long,
     ): TutorEvidenceFinalizationResult {
         if (
             request.status != command.terminalStatus.name ||
@@ -684,7 +1109,19 @@ internal abstract class TutorLearningMemoryDao {
                 ?: throw TutorEvidenceConflictException(command.evidenceRequestId)
         }
         if (command.terminalStatus == TutorEvidenceRequestStatus.SUBMITTED) {
-            val submission = checkNotNull(command.submission)
+            val submittedClaim = checkNotNull(command.submission)
+            val submission = when (command.kind) {
+                TutorEvidenceRequestKind.CHOICE -> deriveChoiceSubmission(
+                    command = command,
+                    claim = submittedClaim,
+                )
+                else -> submittedClaim.also { claim ->
+                    requireSourceMatchesKind(claim.source, command.kind)
+                }
+            }
+            if (submission.occurredAtEpochMillis > nowEpochMillis) {
+                throw TutorEvidenceConflictException(command.evidenceRequestId)
+            }
             val expectedFact = command.toSourceFactEntity(submission)
             if (fact != expectedFact) throw TutorEvidenceConflictException(command.evidenceRequestId)
             val anchor = findAnchor(command.problemAnchorId)
@@ -714,289 +1151,3 @@ internal abstract class TutorLearningMemoryDao {
         )
     }
 }
-
-private fun TutorConversationEntity.matchesCreate(command: CreateTutorConversationCommand): Boolean =
-    conversationId == command.conversationId &&
-        learnerId == command.learnerId &&
-        generation == command.generation &&
-        createIdempotencyKey == command.idempotencyKey &&
-        createPayloadFingerprint == command.payloadFingerprint
-
-private fun LearningProblemAnchorEntity.matchesIdentity(
-    candidate: LearningProblemAnchorEntity,
-): Boolean =
-    anchorId == candidate.anchorId &&
-        learnerId == candidate.learnerId &&
-        subject == candidate.subject &&
-        questionFingerprint == candidate.questionFingerprint &&
-        revisionFingerprint == candidate.revisionFingerprint &&
-        fingerprintVersion == candidate.fingerprintVersion
-
-private fun TutorConversationEntity.requireScope(learnerId: String, generation: Long) {
-    if (this.learnerId != learnerId || this.generation != generation) {
-        throw TutorMemoryScopeConflictException("Tutor conversation scope does not match")
-    }
-}
-
-private fun TutorTurnReceiptEntity.matches(command: AllocateTutorTurnCommand): Boolean =
-    turnReceiptId == command.turnReceiptId &&
-        conversationId == command.conversationId &&
-        learnerId == command.learnerId &&
-        conversationGeneration == command.conversationGeneration &&
-        conversationStateVersion == command.expectedConversationStateVersion + 1 &&
-        turnOrdinal == command.expectedTurnOrdinal &&
-        clientTurnId == command.clientTurnId &&
-        payloadFingerprint == command.payloadFingerprint &&
-        subject == command.subject.name &&
-        problemAnchorId == command.problemAnchorId &&
-        requestVersion == command.requestVersion &&
-        explanationMode == command.explanationMode.name &&
-        modeVersion == command.modeVersion &&
-        directiveFingerprint == command.directiveFingerprint &&
-        studentMessageFingerprint == command.studentMessageFingerprint &&
-        studentMessageSummary == command.studentMessageSummary &&
-        occurredAtEpochMillis == command.occurredAtEpochMillis
-
-private fun TutorTurnReceiptEntity.matches(
-    command: PrepareTutorEvidenceRequestCommand,
-): Boolean =
-    conversationId == command.conversationId &&
-        learnerId == command.learnerId &&
-        conversationGeneration == command.conversationGeneration &&
-        conversationStateVersion == command.conversationStateVersion &&
-        turnReceiptId == command.turnReceiptId &&
-        turnOrdinal == command.turnOrdinal &&
-        subject == command.subject.name &&
-        problemAnchorId == command.problemAnchorId &&
-        requestVersion == command.requestVersion &&
-        explanationMode == command.explanationMode.name &&
-        modeVersion == command.modeVersion &&
-        directiveFingerprint == command.directiveFingerprint
-
-private fun TutorTurnReceiptEntity.matches(request: TutorEvidenceRequestEntity): Boolean =
-    conversationId == request.conversationId &&
-        learnerId == request.learnerId &&
-        conversationGeneration == request.conversationGeneration &&
-        conversationStateVersion == request.conversationStateVersion &&
-        turnReceiptId == request.turnReceiptId &&
-        turnOrdinal == request.turnOrdinal &&
-        subject == request.subject &&
-        problemAnchorId == request.problemAnchorId &&
-        requestVersion == request.requestVersion &&
-        explanationMode == request.explanationMode &&
-        modeVersion == request.modeVersion &&
-        directiveFingerprint == request.directiveFingerprint
-
-private fun TutorEvidenceRequestEntity.matches(
-    command: PrepareTutorEvidenceRequestCommand,
-): Boolean =
-    evidenceRequestId == command.evidenceRequestId &&
-        learnerId == command.learnerId &&
-        conversationId == command.conversationId &&
-        conversationGeneration == command.conversationGeneration &&
-        conversationStateVersion == command.conversationStateVersion &&
-        turnReceiptId == command.turnReceiptId &&
-        turnOrdinal == command.turnOrdinal &&
-        subject == command.subject.name &&
-        problemAnchorId == command.problemAnchorId &&
-        kind == command.kind.name &&
-        requestVersion == command.requestVersion &&
-        explanationMode == command.explanationMode.name &&
-        modeVersion == command.modeVersion &&
-        directiveFingerprint == command.directiveFingerprint &&
-        prepareIdempotencyKey == command.idempotencyKey &&
-        preparePayloadFingerprint == command.payloadFingerprint
-
-private fun TutorEvidenceRequestEntity.matches(
-    command: FinalizeTutorEvidenceRequestCommand,
-): Boolean =
-    evidenceRequestId == command.evidenceRequestId &&
-        learnerId == command.learnerId &&
-        conversationId == command.conversationId &&
-        conversationGeneration == command.conversationGeneration &&
-        conversationStateVersion == command.conversationStateVersion &&
-        turnReceiptId == command.turnReceiptId &&
-        turnOrdinal == command.turnOrdinal &&
-        subject == command.subject.name &&
-        problemAnchorId == command.problemAnchorId &&
-        kind == command.kind.name &&
-        requestVersion == command.requestVersion &&
-        explanationMode == command.explanationMode.name &&
-        modeVersion == command.modeVersion &&
-        directiveFingerprint == command.directiveFingerprint
-
-private fun AllocateTutorTurnCommand.toEntity(
-    conversationStateVersion: Long,
-    turnOrdinal: Int,
-    allocatedAtEpochMillis: Long,
-) = TutorTurnReceiptEntity(
-    turnReceiptId = turnReceiptId,
-    conversationId = conversationId,
-    learnerId = learnerId,
-    conversationGeneration = conversationGeneration,
-    conversationStateVersion = conversationStateVersion,
-    turnOrdinal = turnOrdinal,
-    clientTurnId = clientTurnId,
-    payloadFingerprint = payloadFingerprint,
-    subject = subject.name,
-    problemAnchorId = problemAnchorId,
-    requestVersion = requestVersion,
-    explanationMode = explanationMode.name,
-    modeVersion = modeVersion,
-    directiveFingerprint = directiveFingerprint,
-    studentMessageFingerprint = studentMessageFingerprint,
-    studentMessageSummary = studentMessageSummary,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    allocatedAtEpochMillis = allocatedAtEpochMillis,
-)
-
-private fun PrepareTutorEvidenceRequestCommand.toEntity(
-    createdAtEpochMillis: Long,
-) = TutorEvidenceRequestEntity(
-    evidenceRequestId = evidenceRequestId,
-    learnerId = learnerId,
-    conversationId = conversationId,
-    conversationGeneration = conversationGeneration,
-    conversationStateVersion = conversationStateVersion,
-    turnReceiptId = turnReceiptId,
-    turnOrdinal = turnOrdinal,
-    subject = subject.name,
-    problemAnchorId = problemAnchorId,
-    kind = kind.name,
-    requestVersion = requestVersion,
-    explanationMode = explanationMode.name,
-    modeVersion = modeVersion,
-    directiveFingerprint = directiveFingerprint,
-    status = TutorEvidenceRequestStatus.PENDING.name,
-    stateVersion = 0,
-    prepareIdempotencyKey = idempotencyKey,
-    preparePayloadFingerprint = payloadFingerprint,
-    terminalIdempotencyKey = null,
-    terminalPayloadFingerprint = null,
-    terminalSourceFactId = null,
-    createdAtEpochMillis = createdAtEpochMillis,
-    resolvedAtEpochMillis = null,
-)
-
-private fun FinalizeTutorEvidenceRequestCommand.toAnchorEntity(
-    submission: com.tingyun.smartmistakebook.core.database.TutorEvidenceSubmission,
-    createdAtEpochMillis: Long,
-) = LearningProblemAnchorEntity(
-    anchorId = problemAnchorId,
-    learnerId = learnerId,
-    subject = subject.name,
-    questionFingerprint = submission.questionFingerprint,
-    revisionFingerprint = submission.revisionFingerprint,
-    fingerprintVersion = submission.fingerprintVersion,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-private fun FinalizeTutorEvidenceRequestCommand.toSourceFactEntity(
-    submission: com.tingyun.smartmistakebook.core.database.TutorEvidenceSubmission,
-) = LearningObservationSourceFactEntity(
-    sourceFactId = submission.sourceFactId,
-    learnerId = learnerId,
-    source = submission.source.name,
-    factKind = submission.factKind.name,
-    anchorId = problemAnchorId,
-    subject = subject.name,
-    conversationId = conversationId,
-    conversationGeneration = conversationGeneration,
-    turnReceiptId = turnReceiptId,
-    evidenceRequestId = evidenceRequestId,
-    responseFingerprint = submission.responseFingerprint,
-    responseSummary = submission.responseSummary,
-    payloadFingerprint = payloadFingerprint,
-    occurredAtEpochMillis = submission.occurredAtEpochMillis,
-    sourceVersion = submission.sourceVersion,
-)
-
-private fun requireSourceMatchesKind(
-    source: LearningObservationSource,
-    kind: TutorEvidenceRequestKind,
-) {
-    val expected = when (kind) {
-        TutorEvidenceRequestKind.CHOICE -> LearningObservationSource.TUTOR_CHOICE
-        TutorEvidenceRequestKind.FREE_RESPONSE -> LearningObservationSource.TUTOR_FREE_RESPONSE
-        TutorEvidenceRequestKind.VISUAL_TARGET -> LearningObservationSource.TUTOR_VISUAL_TARGET
-        TutorEvidenceRequestKind.SPECIFIC_STUCK -> LearningObservationSource.TUTOR_SPECIFIC_STUCK
-    }
-    if (source != expected) {
-        throw TutorMemoryScopeConflictException("Tutor source kind does not match the request")
-    }
-}
-
-private fun TutorConversationEntity.toModel() = TutorConversation(
-    conversationId = conversationId,
-    learnerScopeId = learnerId,
-    generation = generation,
-    status = TutorConversationStatus.valueOf(status),
-    createdAtEpochMillis = createdAtEpochMillis,
-    archivedAtEpochMillis = archivedAtEpochMillis,
-    stateVersion = stateVersion,
-)
-
-private fun TutorTurnReceiptEntity.toModel() = TutorTurnReceipt(
-    turnReceiptId = turnReceiptId,
-    conversationId = conversationId,
-    conversationGeneration = conversationGeneration,
-    conversationStateVersion = conversationStateVersion,
-    turnOrdinal = turnOrdinal,
-    subject = SubjectKind.valueOf(subject),
-    problemAnchorId = problemAnchorId,
-    requestVersion = requestVersion,
-    modeVersion = modeVersion,
-    explanationMode = TutorExplanationMode.valueOf(explanationMode),
-    directiveFingerprint = directiveFingerprint,
-    studentMessageFingerprint = studentMessageFingerprint,
-    studentMessageSummary = studentMessageSummary,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-)
-
-internal fun TutorEvidenceRequestEntity.toModel() = TutorEvidenceRequest(
-    evidenceRequestId = evidenceRequestId,
-    conversationId = conversationId,
-    conversationGeneration = conversationGeneration,
-    conversationStateVersion = conversationStateVersion,
-    turnReceiptId = turnReceiptId,
-    turnOrdinal = turnOrdinal,
-    subject = SubjectKind.valueOf(subject),
-    problemAnchorId = problemAnchorId,
-    kind = TutorEvidenceRequestKind.valueOf(kind),
-    requestVersion = requestVersion,
-    modeVersion = modeVersion,
-    explanationMode = TutorExplanationMode.valueOf(explanationMode),
-    directiveFingerprint = directiveFingerprint,
-    status = TutorEvidenceRequestStatus.valueOf(status),
-    stateVersion = stateVersion,
-    createdAtEpochMillis = createdAtEpochMillis,
-    resolvedAtEpochMillis = resolvedAtEpochMillis,
-    terminalSourceFactId = terminalSourceFactId,
-)
-
-private fun LearningProblemAnchorEntity.toModel() = LearningProblemAnchor(
-    anchorId = anchorId,
-    learnerScopeId = learnerId,
-    subject = SubjectKind.valueOf(subject),
-    questionFingerprint = questionFingerprint,
-    revisionFingerprint = revisionFingerprint,
-    fingerprintVersion = fingerprintVersion,
-    createdAtEpochMillis = createdAtEpochMillis,
-)
-
-internal fun LearningObservationSourceFactEntity.toModel() = LearningObservationSourceFact(
-    sourceFactId = sourceFactId,
-    learnerScopeId = learnerId,
-    source = LearningObservationSource.valueOf(source),
-    factKind = com.tingyun.smartmistakebook.core.model.LearningObservationFactKind.valueOf(factKind),
-    anchorId = anchorId,
-    subject = SubjectKind.valueOf(subject),
-    conversationGeneration = conversationGeneration,
-    conversationId = conversationId,
-    turnReceiptId = turnReceiptId,
-    evidenceRequestId = evidenceRequestId,
-    responseFingerprint = responseFingerprint,
-    responseSummary = responseSummary,
-    occurredAtEpochMillis = occurredAtEpochMillis,
-    sourceVersion = sourceVersion,
-)

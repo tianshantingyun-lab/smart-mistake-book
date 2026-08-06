@@ -11,8 +11,14 @@ import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent
+import com.tingyun.smartmistakebook.core.model.AdmittedLearningObservationEvent
+import com.tingyun.smartmistakebook.core.model.CanonicalSha256
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
+import com.tingyun.smartmistakebook.core.model.CapturedTutorProblemIdentity
 import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
@@ -31,12 +37,29 @@ import com.tingyun.smartmistakebook.core.model.LearningObservationEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.LearningObservationIndependence
 import com.tingyun.smartmistakebook.core.model.LearningObservationKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.LearningObservationSource
+import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
+import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskStage
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
+import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
+import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
+import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
+import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
+import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestKind
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRequestStatus
 import com.tingyun.smartmistakebook.core.model.TutorExplanationMode
+import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
+import com.tingyun.smartmistakebook.core.model.WritingLayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -241,7 +264,7 @@ class LearningObservationDatabaseInstrumentedTest {
         submitCandidate(original)
 
         assertImmutableConflict {
-            submitCandidate(original.copy(evidenceWeight = 0.2))
+            submitCandidate(original.copy(evidenceWeight = 0.1))
         }
         assertImmutableConflict {
             submitCandidate(
@@ -301,8 +324,9 @@ class LearningObservationDatabaseInstrumentedTest {
             problemRevisionId = CHEMISTRY_REVISION,
             bindingId = "binding-chemistry",
             knowledgeNodeId = "knowledge-chemistry",
+            sourceSubject = SubjectKind.MATH,
         )
-        persistTutorModelFact(chemistryCandidate)
+        persistTutorModelFact(chemistryCandidate, sourceSubject = SubjectKind.MATH)
 
         listOf(
             authority(chemistryCandidate).copy(learnerId = "other-learner"),
@@ -365,18 +389,103 @@ class LearningObservationDatabaseInstrumentedTest {
         val secondTurn = candidate(candidateId = "candidate-authority-second-turn")
         persistTutorModelFact(firstTurn)
         persistTutorModelFact(secondTurn)
+        val secondFixture = tutorModelFactFixture(
+            candidate = secondTurn,
+            sourceSubject = subjectForProblemRevision(
+                requireNotNull(secondTurn.problemRevisionId),
+            ),
+        )
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                UPDATE learning_observation_source_fact
+                SET conversation_id = '${secondFixture.conversationId}',
+                    turn_receipt_id = '${secondFixture.turnReceiptId}'
+                WHERE source_fact_id = '${firstTurn.sourceFactId}'
+                """.trimIndent(),
+            )
+        }
 
         assertIllegalArgument {
-            store.registerLearningObservationSourceAuthority(
-                authority(secondTurn).copy(sourceFactId = firstTurn.sourceFactId),
-            )
+            store.registerLearningObservationSourceAuthority(authority(firstTurn))
         }
         assertNull(
             store.readLearningObservationSourceAuthority(
-                learnerId = secondTurn.learnerId,
-                source = secondTurn.source,
-                sourceReferenceId = secondTurn.sourceReferenceId,
+                learnerId = firstTurn.learnerId,
+                source = firstTurn.source,
+                sourceReferenceId = firstTurn.sourceReferenceId,
             ),
+        )
+    }
+
+    @Test
+    fun sameSubjectWrongCapturedSessionCannotCreateFirstAuthority() = runBlocking {
+        val candidate = candidate(candidateId = "candidate-wrong-captured-session")
+        persistTutorModelFact(candidate)
+        replaceCapturedResponseWithWrongSameSubjectSession(candidate)
+
+        assertIllegalArgument {
+            store.registerLearningObservationSourceAuthority(authority(candidate))
+        }
+        assertNull(
+            store.database.learningObservationDao()
+                .findSourceFactProof(requireNotNull(candidate.sourceFactId)),
+        )
+    }
+
+    @Test
+    fun sourceAndEvidenceRequestKindMustMatchExactly() = runBlocking {
+        val candidate = candidate(candidateId = "candidate-cross-kind")
+        persistTutorModelFact(candidate)
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                UPDATE tutor_evidence_request
+                SET kind = 'FREE_RESPONSE'
+                WHERE evidence_request_id = '${candidate.sourceReferenceId}'
+                """.trimIndent(),
+            )
+        }
+
+        assertIllegalArgument {
+            store.registerLearningObservationSourceAuthority(authority(candidate))
+        }
+        assertNull(
+            store.database.learningObservationDao()
+                .findSourceFactProof(requireNotNull(candidate.sourceFactId)),
+        )
+    }
+
+    @Test
+    fun commitBeforeResponseCreatesExactCapturedProofForCommittedTarget() = runBlocking {
+        val candidate = candidate(candidateId = "candidate-different-fingerprint-domains")
+        persistTutorModelFact(candidate)
+
+        val result = store.registerLearningObservationSourceAuthority(authority(candidate))
+        val proof = requireNotNull(
+            store.database.learningObservationDao()
+                .findSourceFactProof(requireNotNull(candidate.sourceFactId)),
+        )
+
+        assertTrue(result.created)
+        assertEquals(candidate.sourceFactId, result.authority.sourceFactId)
+        assertEquals("COMMITTED_PRACTICE_UNIT", proof.targetKind)
+        assertEquals("MISTAKE_COLLECTION", proof.targetDatabase)
+        assertEquals(candidate.practiceUnitId, proof.targetId)
+        assertEquals(candidate.problemRevisionId, proof.targetVersion)
+        assertTrue(proof.targetCreatedAtEpochMillis < candidate.occurredAtEpochMillis)
+        assertTrue(proof.attestedAtEpochMillis >= candidate.occurredAtEpochMillis)
+        assertTrue(LearningObservationSourceFactProofFingerprint.isValid(proof))
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                DELETE FROM tutor_turn_response
+                WHERE evidence_request_id = '${candidate.sourceReferenceId}'
+                """.trimIndent(),
+            )
+        }
+        assertFalse(
+            store.registerLearningObservationSourceAuthority(authority(candidate)).created,
         )
     }
 
@@ -506,7 +615,7 @@ class LearningObservationDatabaseInstrumentedTest {
         assertEquals(3L, secondAttempt.attempt.eventSequence)
         assertEquals(listOf(1L, 2L, 3L), batch.events.map { it.event.eventSequence })
         assertTrue(batch.events[0].event is Attempt)
-        assertTrue(batch.events[1].event is AttributedLearningObservationEvent)
+        assertTrue(batch.events[1].event is AdmittedLearningObservationEvent)
         assertTrue(batch.events[2].event is Attempt)
         assertEquals(3L, batch.ledgerHeadSequence)
     }
@@ -579,7 +688,7 @@ class LearningObservationDatabaseInstrumentedTest {
         assertEquals(1L, requireNotNull(observation.event).eventSequence)
         assertEquals(1L, batch.ledgerHeadSequence)
         assertEquals(listOf(sharedEventId), batch.events.map { it.event.ledgerEventId })
-        assertTrue(batch.events.single().event is AttributedLearningObservationEvent)
+        assertTrue(batch.events.single().event is AdmittedLearningObservationEvent)
     }
 
     @Test
@@ -654,12 +763,34 @@ class LearningObservationDatabaseInstrumentedTest {
         val first = store.materializeLearningObservation(command)
         val replay = store.materializeLearningObservation(command)
         val batch = store.loadProjectionBatch("learning-observation-test", LEARNER, 10)
+        val event = requireNotNull(first.event)
+        val admission = requireNotNull(
+            store.database.learningObservationDao().findEventAdmission(event.eventId),
+        )
+        val proof = requireNotNull(
+            store.database.learningObservationDao()
+                .findSourceFactProof(requireNotNull(event.sourceFactId)),
+        )
 
         assertTrue(first.created)
         assertFalse(replay.created)
         assertEquals(first.event, replay.event)
-        assertEquals(1L, requireNotNull(first.event).eventSequence)
+        assertEquals(1L, event.eventSequence)
         assertEquals(1, batch.events.size)
+        assertTrue(batch.events.single().event is AdmittedLearningObservationEvent)
+        assertEquals(
+            LearningLedgerFingerprint.learningObservation(event),
+            admission.rawEventCanonicalFingerprint,
+        )
+        assertEquals(proof.proofFingerprint, admission.sourceFactProofFingerprint)
+        assertEquals(
+            LearningLedgerFingerprint.learningObservationAdmission(
+                admission.rawEventCanonicalFingerprint,
+                admission.sourceFactProofFingerprint,
+                admission.policyVersion,
+            ),
+            admission.admissionFingerprint,
+        )
         assertEquals(EVENT_KIND_LEARNING_OBSERVATION, batch.events.single().outbox.eventKind)
         assertEquals(1L, batch.ledgerHeadSequence)
     }
@@ -774,7 +905,10 @@ class LearningObservationDatabaseInstrumentedTest {
         )
         assertEquals(reviewedMedium.sourceFactId, mediumEvent.sourceFactId)
         assertEquals(1L, mediumEvent.eventSequence)
-        assertEquals(listOf(mediumEvent), afterReview.events.map { it.event })
+        assertEquals(
+            listOf(mediumEvent),
+            afterReview.events.map { (it.event as AdmittedLearningObservationEvent).observation },
+        )
     }
 
     @Test
@@ -919,6 +1053,12 @@ class LearningObservationDatabaseInstrumentedTest {
         store.database.withWriteTransaction {
             executeSQL(
                 """
+                DELETE FROM learning_observation_event_admission
+                WHERE event_id = '${legacy.eventId}'
+                """.trimIndent(),
+            )
+            executeSQL(
+                """
                 UPDATE attributed_learning_observation_event
                 SET source_fact_id = NULL,
                     canonical_fingerprint = '$legacyFingerprint'
@@ -938,10 +1078,6 @@ class LearningObservationDatabaseInstrumentedTest {
         val batch = store.loadProjectionBatch(PROJECTION, LEARNER, 10)
         assertEquals(ProjectionBatchStopReason.END_OF_LEDGER, batch.stopReason)
         assertEquals(listOf(1L, 2L), batch.events.map { it.event.eventSequence })
-        assertTrue(
-            (batch.events.first().event as AttributedLearningObservationEvent)
-                .isProjectionQuarantined,
-        )
         val projected = LearningProjector().project(
             previous = LearnerSnapshot.empty(LEARNER, LearningProjector.VERSION),
             events = batch.events.map(PersistedIncrementalLearningEvent::event),
@@ -954,7 +1090,7 @@ class LearningObservationDatabaseInstrumentedTest {
             projected.snapshot.appliedLearningObservationRecords.keys,
         )
         val mastery = projected.snapshot.knowledgeMasteryStates.getValue("knowledge-math")
-        assertEquals(0.25, mastery.evidenceMass, 0.0)
+        assertEquals(0.2, mastery.evidenceMass, 0.0)
         assertEquals(later.eventSequence, mastery.checkpointSequence)
 
         store.commitProjection(
@@ -1037,6 +1173,8 @@ class LearningObservationDatabaseInstrumentedTest {
                     candidate(
                         candidateId = "candidate-delayed-negative",
                         direction = LearningObservationDirection.NEGATIVE,
+                        evidenceWeight = 0.25,
+                        independence = LearningObservationIndependence.UNKNOWN,
                         occurredAtEpochMillis = negativeOccurredAt,
                     ),
                 ).candidateId,
@@ -1192,107 +1330,639 @@ class LearningObservationDatabaseInstrumentedTest {
         return store.submitLearningObservationCandidate(candidate)
     }
 
-    private suspend fun persistTutorModelFact(candidate: LearningObservationCandidate) {
-        val sourceFactId = requireNotNull(candidate.sourceFactId)
+    private suspend fun persistTutorModelFact(
+        candidate: LearningObservationCandidate,
+        sourceSubject: SubjectKind = subjectForProblemRevision(
+            requireNotNull(candidate.problemRevisionId),
+        ),
+    ) {
         require(candidate.source == LearningObservationSource.TUTOR_CHOICE)
+        val fixture = tutorModelFactFixture(candidate, sourceSubject)
+        persistCapturedProblemMapping(
+            fixture = fixture,
+            practiceUnitId = requireNotNull(candidate.practiceUnitId),
+            problemRevisionId = requireNotNull(candidate.problemRevisionId),
+            committedAtEpochMillis = candidate.occurredAtEpochMillis - 1,
+        )
+        store.persistSucceededModelTask(
+            request = fixture.planRequest,
+            output = fixture.planOutput,
+        )
         databaseClockEpochMillis = candidate.occurredAtEpochMillis
-        val conversationId = "conversation-$sourceFactId"
-        val turnReceiptId = "turn-$sourceFactId"
-        val evidenceRequestId = candidate.sourceReferenceId
-        val anchorId = "anchor:${candidate.learnerId}"
         store.createTutorConversation(
             CreateTutorConversationCommand(
-                conversationId = conversationId,
+                conversationId = fixture.conversationId,
                 learnerId = candidate.learnerId,
-                idempotencyKey = "create-$sourceFactId",
-                payloadFingerprint = FINGERPRINT_A,
+                idempotencyKey = "create-${candidate.candidateId}",
+                payloadFingerprint = sha256("create-${candidate.candidateId}"),
             ),
         )
         val turn = store.allocateTutorTurn(
             AllocateTutorTurnCommand(
-                turnReceiptId = turnReceiptId,
+                turnReceiptId = fixture.turnReceiptId,
                 learnerId = candidate.learnerId,
-                conversationId = conversationId,
+                conversationId = fixture.conversationId,
                 conversationGeneration = 1,
                 expectedConversationStateVersion = 0,
                 expectedTurnOrdinal = 1,
-                clientTurnId = "client-$sourceFactId",
-                payloadFingerprint = FINGERPRINT_B,
-                subject = SubjectKind.MATH,
-                problemAnchorId = anchorId,
+                clientTurnId = "client-${candidate.candidateId}",
+                payloadFingerprint = sha256("turn-${candidate.candidateId}"),
+                subject = sourceSubject,
+                problemAnchorId = fixture.anchorId,
                 requestVersion = 1,
                 explanationMode = TutorExplanationMode.GUIDED,
                 modeVersion = 1,
-                directiveFingerprint = FINGERPRINT_C,
-                studentMessageFingerprint = FINGERPRINT_A,
-                studentMessageSummary = "Evaluate this response.",
+                directiveFingerprint = fixture.directiveFingerprint,
+                studentMessageFingerprint = sha256("student-${candidate.candidateId}"),
+                studentMessageSummary = "我选择了一个答案。",
                 occurredAtEpochMillis = candidate.occurredAtEpochMillis,
             ),
         ).receipt
-        val prepared = PrepareTutorEvidenceRequestCommand(
-            evidenceRequestId = evidenceRequestId,
-            learnerId = candidate.learnerId,
-            conversationId = conversationId,
-            conversationGeneration = 1,
-            conversationStateVersion = turn.conversationStateVersion,
-            turnReceiptId = turnReceiptId,
-            turnOrdinal = 1,
-            subject = SubjectKind.MATH,
-            problemAnchorId = anchorId,
-            kind = TutorEvidenceRequestKind.CHOICE,
-            requestVersion = 1,
-            explanationMode = TutorExplanationMode.GUIDED,
-            modeVersion = 1,
-            directiveFingerprint = FINGERPRINT_C,
-            idempotencyKey = "prepare-$sourceFactId",
-            payloadFingerprint = FINGERPRINT_B,
+        store.prepareTutorEvidenceRequest(
+            PrepareTutorEvidenceRequestCommand(
+                evidenceRequestId = fixture.evidenceRequestId,
+                learnerId = candidate.learnerId,
+                conversationId = fixture.conversationId,
+                conversationGeneration = 1,
+                conversationStateVersion = turn.conversationStateVersion,
+                turnReceiptId = fixture.turnReceiptId,
+                turnOrdinal = turn.turnOrdinal,
+                subject = sourceSubject,
+                problemAnchorId = fixture.anchorId,
+                kind = TutorEvidenceRequestKind.CHOICE,
+                requestVersion = 1,
+                explanationMode = TutorExplanationMode.GUIDED,
+                modeVersion = 1,
+                directiveFingerprint = fixture.directiveFingerprint,
+                idempotencyKey = "prepare-${candidate.candidateId}",
+                payloadFingerprint = sha256("prepare-${candidate.candidateId}"),
+            ),
         )
-        store.prepareTutorEvidenceRequest(prepared)
-        val factKind = when {
-            candidate.direction == LearningObservationDirection.NEGATIVE ->
-                LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE
-
-            candidate.independence == LearningObservationIndependence.ASSISTED ->
-                LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE
-
-            else -> LearningObservationFactKind.MODEL_EVALUATED_CORRECT_RESPONSE
+        store.recordTutorChoice(fixture.choice)
+        val factKind = if (candidate.direction == LearningObservationDirection.NEGATIVE) {
+            LearningObservationFactKind.MODEL_EVALUATED_INCORRECT_RESPONSE
+        } else {
+            LearningObservationFactKind.MODEL_EVALUATED_ASSISTED_CORRECT_RESPONSE
         }
         val finalized = store.finalizeTutorEvidenceRequest(
             FinalizeTutorEvidenceRequestCommand(
                 learnerId = candidate.learnerId,
-                conversationId = conversationId,
+                conversationId = fixture.conversationId,
                 conversationGeneration = 1,
                 conversationStateVersion = turn.conversationStateVersion,
-                turnReceiptId = turnReceiptId,
-                turnOrdinal = 1,
-                subject = SubjectKind.MATH,
-                problemAnchorId = anchorId,
-                evidenceRequestId = evidenceRequestId,
+                turnReceiptId = fixture.turnReceiptId,
+                turnOrdinal = turn.turnOrdinal,
+                subject = sourceSubject,
+                problemAnchorId = fixture.anchorId,
+                evidenceRequestId = fixture.evidenceRequestId,
                 expectedEvidenceStateVersion = 0,
                 kind = TutorEvidenceRequestKind.CHOICE,
                 requestVersion = 1,
                 explanationMode = TutorExplanationMode.GUIDED,
                 modeVersion = 1,
-                directiveFingerprint = FINGERPRINT_C,
+                directiveFingerprint = fixture.directiveFingerprint,
                 terminalStatus = TutorEvidenceRequestStatus.SUBMITTED,
-                idempotencyKey = "finalize-$sourceFactId",
-                payloadFingerprint = FINGERPRINT_C,
+                idempotencyKey = "finalize-${candidate.candidateId}",
+                payloadFingerprint = sha256("finalize-${candidate.candidateId}"),
                 submission = TutorEvidenceSubmission(
-                    sourceFactId = sourceFactId,
+                    sourceFactId = fixture.sourceFactId,
                     source = LearningObservationSource.TUTOR_CHOICE,
                     factKind = factKind,
-                    questionFingerprint = FINGERPRINT_A,
-                    revisionFingerprint = FINGERPRINT_B,
-                    fingerprintVersion = "test-v1",
-                    responseFingerprint = FINGERPRINT_C,
-                    responseSummary = "Model-evaluated tutor response.",
+                    questionFingerprint = fixture.questionFingerprint,
+                    revisionFingerprint = fixture.revisionFingerprint,
+                    fingerprintVersion = CapturedTutorProblemIdentity.fingerprintVersion,
+                    responseFingerprint = fixture.responseFingerprint,
+                    responseSummary = fixture.choice.selectedChoiceMarkdown,
                     occurredAtEpochMillis = candidate.occurredAtEpochMillis,
-                    sourceVersion = "model-evaluation-v1",
+                    sourceVersion = "captured-choice-source-v1",
                 ),
             ),
         )
-        assertEquals(sourceFactId, finalized.sourceFact?.sourceFactId)
+        assertEquals(fixture.sourceFactId, finalized.sourceFact?.sourceFactId)
     }
+
+    private suspend fun persistCapturedProblemMapping(
+        fixture: TutorModelFactFixture,
+        practiceUnitId: String,
+        problemRevisionId: String,
+        committedAtEpochMillis: Long,
+    ) {
+        val problemId = problemIdForRevision(problemRevisionId)
+        val errorBookEntryId = errorBookEntryIdForProblem(problemId)
+        if (store.readTutorSession(fixture.sessionId) == null) {
+            val assetHash = sha256("asset-content-${fixture.suffix}")
+            store.createProblemDraft(
+                CreateProblemDraftCommand(
+                    sourceAsset = CanonicalSourceAssetRecord(
+                        sourceAssetId = fixture.sourceAssetId,
+                        contentSha256 = assetHash,
+                        relativePath = "source-assets/$assetHash.jpg",
+                        mimeType = "image/jpeg",
+                        byteSize = 1_024,
+                        width = 800,
+                        height = 600,
+                        sourceType = StudyDbValue.SourceAssetType.PHOTO_PICKER,
+                        createdAtEpochMillis = fixture.captureCreatedAtEpochMillis,
+                    ),
+                    draftId = fixture.draftId,
+                    origin = StudyDbValue.CaptureOrigin.TUTOR,
+                    initialRevision = ProblemDraftRevisionRecord(
+                        draftId = fixture.draftId,
+                        revisionNumber = 1,
+                        basisRevisionNumber = null,
+                        subject = null,
+                        title = "待确认",
+                        questionDocument = fixture.initialDocument,
+                        documentFingerprint =
+                            CapturedQuestionDocumentFingerprint.of(fixture.initialDocument),
+                        author = StudyDbValue.ProblemDraftAuthor.CAPTURE_IMPORT,
+                        createdAtEpochMillis = fixture.captureCreatedAtEpochMillis,
+                    ),
+                ),
+            )
+            store.confirmTutorSession(
+                ConfirmTutorSessionCommand(
+                    sessionId = fixture.sessionId,
+                    draftId = fixture.draftId,
+                    expectedRevisionNumber = 1,
+                    confirmedRevision = ProblemDraftRevisionRecord(
+                        draftId = fixture.draftId,
+                        revisionNumber = 2,
+                        basisRevisionNumber = 1,
+                        subject = fixture.subject.name,
+                        title = "已确认题目",
+                        questionDocument = fixture.confirmedDocument,
+                        documentFingerprint = fixture.revisionFingerprint,
+                        author = StudyDbValue.ProblemDraftAuthor.USER,
+                        createdAtEpochMillis = fixture.confirmedAtEpochMillis,
+                    ),
+                    createdAtEpochMillis = fixture.confirmedAtEpochMillis,
+                ),
+            )
+        }
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                UPDATE problem_draft
+                SET status = 'COMMITTED',
+                    updated_at_epoch_millis = $committedAtEpochMillis
+                WHERE draft_id = '${fixture.draftId}'
+                  AND current_revision_number = 2
+                """.trimIndent(),
+            )
+            executeSQL(
+                """
+                INSERT OR IGNORE INTO problem_draft_commit_receipt(
+                    command_id, payload_fingerprint, draft_id, draft_revision_number,
+                    problem_id, problem_revision_id, practice_unit_id,
+                    error_book_entry_id, committed_at_epoch_millis
+                ) VALUES(
+                    'commit-${fixture.suffix}', '${sha256("commit-${fixture.suffix}")}',
+                    '${fixture.draftId}', 2, '$problemId', '$problemRevisionId',
+                    '$practiceUnitId', '$errorBookEntryId', $committedAtEpochMillis
+                )
+                """.trimIndent(),
+            )
+        }
+    }
+
+    private suspend fun replaceCapturedResponseWithWrongSameSubjectSession(
+        candidate: LearningObservationCandidate,
+    ) {
+        val wrongFixture = tutorModelFactFixture(
+            candidateId = "wrong-${candidate.candidateId}",
+            learnerId = candidate.learnerId,
+            evidenceRequestId = candidate.sourceReferenceId,
+            sourceSubject = SubjectKind.MATH,
+            selectionWasCorrect = candidate.direction != LearningObservationDirection.NEGATIVE,
+            occurredAtEpochMillis = candidate.occurredAtEpochMillis,
+        )
+        persistCapturedProblemMapping(
+            fixture = wrongFixture,
+            practiceUnitId = OTHER_MATH_UNIT,
+            problemRevisionId = OTHER_MATH_REVISION,
+            committedAtEpochMillis = candidate.occurredAtEpochMillis - 1,
+        )
+        store.database.withWriteTransaction {
+            executeSQL(
+                """
+                DELETE FROM tutor_turn_response
+                WHERE evidence_request_id = '${candidate.sourceReferenceId}'
+                """.trimIndent(),
+            )
+        }
+        store.recordTutorChoice(wrongFixture.choice)
+    }
+
+    private suspend fun StudyDatabasePort.persistSucceededModelTask(
+        request: ModelTaskRequest,
+        output: ModelTaskOutput,
+    ) {
+        var snapshot = createModelTask(
+            CreateModelTaskCommand(
+                taskId = "task:${request.requestId}",
+                request = request,
+                requestFingerprint = ModelTaskFingerprint.of(request),
+                occurredAtEpochMillis = request.occurredAtEpochMillis,
+            ),
+        ).snapshot
+        while (snapshot.status != ModelTaskStatus.SUCCEEDED) {
+            val transition = when (snapshot.status) {
+                ModelTaskStatus.WAITING_FOR_MODEL -> transition(
+                    snapshot = snapshot,
+                    nextStatus = ModelTaskStatus.QUEUED,
+                    stage = ModelTaskStage.PREPARING,
+                    occurredAtEpochMillis = request.occurredAtEpochMillis + 1,
+                )
+                ModelTaskStatus.QUEUED -> transition(
+                    snapshot = snapshot,
+                    nextStatus = ModelTaskStatus.RUNNING,
+                    stage = ModelTaskStage.VALIDATING_OUTPUT,
+                    occurredAtEpochMillis = request.occurredAtEpochMillis + 2,
+                )
+                ModelTaskStatus.RUNNING, ModelTaskStatus.STREAMING -> transition(
+                    snapshot = snapshot,
+                    nextStatus = ModelTaskStatus.SUCCEEDED,
+                    stage = ModelTaskStage.COMPLETE,
+                    occurredAtEpochMillis = request.occurredAtEpochMillis + 3,
+                    output = output,
+                )
+                else -> error("Unexpected model task status ${snapshot.status}")
+            }
+            snapshot = transitionModelTask(transition).snapshot
+        }
+    }
+
+    private fun transition(
+        snapshot: ModelTaskSnapshot,
+        nextStatus: ModelTaskStatus,
+        stage: ModelTaskStage,
+        occurredAtEpochMillis: Long,
+        output: ModelTaskOutput? = null,
+    ) = TransitionModelTaskCommand(
+        taskId = snapshot.taskId,
+        expectedStateVersion = snapshot.stateVersion,
+        expectedStatus = snapshot.status,
+        nextStatus = nextStatus,
+        stage = stage,
+        userMessage = nextStatus.name,
+        attemptCount = snapshot.attemptCount,
+        output = output,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+    )
+
+    private fun tutorModelFactFixture(
+        candidate: LearningObservationCandidate,
+        sourceSubject: SubjectKind,
+    ) = tutorModelFactFixture(
+        candidateId = candidate.candidateId,
+        learnerId = candidate.learnerId,
+        evidenceRequestId = candidate.sourceReferenceId,
+        sourceSubject = sourceSubject,
+        selectionWasCorrect = candidate.direction != LearningObservationDirection.NEGATIVE,
+        occurredAtEpochMillis = candidate.occurredAtEpochMillis,
+    )
+
+    private fun tutorModelFactFixture(
+        candidateId: String,
+        learnerId: String,
+        evidenceRequestId: String,
+        sourceSubject: SubjectKind,
+        selectionWasCorrect: Boolean,
+        occurredAtEpochMillis: Long,
+    ): TutorModelFactFixture {
+        require(occurredAtEpochMillis >= 10)
+        val suffix = candidateId
+        val sourceAssetId = "asset-$suffix"
+        val draftId = "draft-$suffix"
+        val sessionId = "session-$suffix"
+        val questionDocumentId = "document-$draftId"
+        val initialDocument = capturedDocument(
+            questionDocumentId = questionDocumentId,
+            assetId = sourceAssetId,
+            markdown = "等待确认。",
+            provenance = QuestionBlockProvenance.IMPORTED_STRUCTURE,
+            reviewStatus = QuestionBlockReviewStatus.NEEDS_REVIEW,
+            writingLayer = WritingLayer.UNKNOWN,
+        )
+        val confirmedDocument = capturedDocument(
+            questionDocumentId = questionDocumentId,
+            assetId = sourceAssetId,
+            markdown = when (sourceSubject) {
+                SubjectKind.CHEMISTRY -> "根据题目条件判断化学推理是否成立。"
+                else -> "根据题目条件判断数学推理是否成立。"
+            },
+            provenance = QuestionBlockProvenance.USER_CORRECTION,
+            reviewStatus = QuestionBlockReviewStatus.USER_CONFIRMED,
+            writingLayer = WritingLayer.PRINTED,
+        )
+        val revisionFingerprint = CapturedQuestionDocumentFingerprint.of(confirmedDocument)
+        val item = diagnosticItem(suffix, sourceSubject)
+        val planInput = TutorPlanInput(
+            sessionId = sessionId,
+            draftRevisionNumber = 2,
+            subject = sourceSubject.name,
+            questionDocument = confirmedDocument.document,
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        )
+        val planOutput = TutorPlanOutput(
+            sessionId = sessionId,
+            draftRevisionNumber = 2,
+            questionDocumentId = questionDocumentId,
+            plan = TutorTurnPlan(
+                openingMarkdown = "先核对当前推理。",
+                diagnosticItem = item,
+                interactionDirective = null,
+                solutionMarkdown = "按题目条件逐步判断。",
+                alternateMethodMarkdown = "也可以从等价关系判断。",
+                difficultyReasonMarkdown = "关键是条件与结论是否对应。",
+                targetedEvidenceLabels = emptyList(),
+                inferredKnowledgeLabels = listOf(
+                    when (sourceSubject) {
+                        SubjectKind.CHEMISTRY -> "化学条件判断"
+                        else -> "数学条件判断"
+                    },
+                ),
+            ),
+            modelVersion = "instrumented-test-model",
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+        )
+        val planRequest = ModelTaskRequest(
+            requestId = evidenceRequestId,
+            input = planInput,
+            occurredAtEpochMillis = occurredAtEpochMillis - 4,
+        )
+        val directiveFingerprint = directiveFingerprint(
+            requestId = evidenceRequestId,
+            sessionId = sessionId,
+            draftId = draftId,
+            revisionFingerprint = revisionFingerprint,
+            input = planInput,
+            output = planOutput,
+            item = item,
+        )
+        val questionFingerprint = CapturedTutorProblemIdentity.questionFingerprint(draftId)
+        val conversationId = opaqueId(
+            "captured-choice-conversation-v2",
+            learnerId,
+            sessionId,
+            draftId,
+            "2",
+            questionDocumentId,
+        )
+        val anchorId = opaqueId(
+            "captured-choice-anchor-v1",
+            learnerId,
+            sourceSubject.name,
+            questionFingerprint,
+            revisionFingerprint,
+            CapturedTutorProblemIdentity.fingerprintVersion,
+        )
+        val turnReceiptId = opaqueId(
+            "captured-choice-turn-v1",
+            learnerId,
+            sessionId,
+            draftId,
+            "2",
+            questionDocumentId,
+            evidenceRequestId,
+            "1",
+            "1",
+            directiveFingerprint,
+        )
+        val selectedChoice = item.choices.single { choice ->
+            (choice.id == item.correctChoiceId) == selectionWasCorrect
+        }
+        val choice = PersistTutorChoiceCommand(
+            sessionId = sessionId,
+            questionDocumentId = questionDocumentId,
+            revisionNumber = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            diagnosticStemMarkdown = item.stemMarkdown,
+            selectedChoiceId = selectedChoice.id,
+            selectedChoiceMarkdown = selectedChoice.markdown,
+            selectionWasCorrect = selectionWasCorrect,
+            feedbackMarkdown = checkNotNull(selectedChoice.feedbackMarkdown),
+            choiceSubmittedAtEpochMillis = occurredAtEpochMillis,
+            evidenceRequestId = evidenceRequestId,
+        )
+        val responseFingerprint = canonicalChoiceResponseFingerprint(choice)
+        val sourceFactId = opaqueId(
+            "captured-choice-fact-v1",
+            learnerId,
+            evidenceRequestId,
+            responseFingerprint,
+        )
+        return TutorModelFactFixture(
+            suffix = suffix,
+            subject = sourceSubject,
+            sourceAssetId = sourceAssetId,
+            draftId = draftId,
+            sessionId = sessionId,
+            evidenceRequestId = evidenceRequestId,
+            initialDocument = initialDocument,
+            confirmedDocument = confirmedDocument,
+            captureCreatedAtEpochMillis = occurredAtEpochMillis - 10,
+            confirmedAtEpochMillis = occurredAtEpochMillis - 8,
+            revisionFingerprint = revisionFingerprint,
+            planRequest = planRequest,
+            planOutput = planOutput,
+            directiveFingerprint = directiveFingerprint,
+            conversationId = conversationId,
+            anchorId = anchorId,
+            turnReceiptId = turnReceiptId,
+            questionFingerprint = questionFingerprint,
+            choice = choice,
+            responseFingerprint = responseFingerprint,
+            sourceFactId = sourceFactId,
+        )
+    }
+
+    private fun capturedDocument(
+        questionDocumentId: String,
+        assetId: String,
+        markdown: String,
+        provenance: QuestionBlockProvenance,
+        reviewStatus: QuestionBlockReviewStatus,
+        writingLayer: WritingLayer,
+    ) = CapturedQuestionDocument(
+        document = QuestionDocument(
+            id = questionDocumentId,
+            title = "题目",
+            blocks = listOf(ContentBlock.Paragraph("stem", markdown)),
+        ),
+        blockEvidence = listOf(
+            QuestionBlockEvidence(
+                blockId = "stem",
+                sourceAssetId = assetId,
+                sourceRegion = NormalizedSourceRegion(0.0, 0.0, 1.0, 1.0),
+                writingLayer = writingLayer,
+                provenance = provenance,
+                confidence = null,
+                reviewStatus = reviewStatus,
+                producerVersion = "instrumented-test-v1",
+            ),
+        ),
+    )
+
+    private fun diagnosticItem(
+        suffix: String,
+        subject: SubjectKind,
+    ) = TutorAssessmentItem(
+        id = "diagnostic-$suffix",
+        stemMarkdown = when (subject) {
+            SubjectKind.CHEMISTRY -> "当前化学推理是否成立？"
+            else -> "当前数学推理是否成立？"
+        },
+        choices = listOf(
+            TutorChoice(
+                id = "valid-$suffix",
+                markdown = "成立",
+                feedbackMarkdown = "条件与结论相符。",
+            ),
+            TutorChoice(
+                id = "invalid-$suffix",
+                markdown = "不成立",
+                feedbackMarkdown = "需要重新核对条件。",
+            ),
+        ),
+        correctChoiceId = "valid-$suffix",
+    )
+
+    private fun directiveFingerprint(
+        requestId: String,
+        sessionId: String,
+        draftId: String,
+        revisionFingerprint: String,
+        input: TutorPlanInput,
+        output: TutorPlanOutput,
+        item: TutorAssessmentItem,
+    ): String {
+        val digest = CanonicalSha256("captured-choice-directive-v1")
+            .field("planRequestId", requestId)
+            .field("sessionId", sessionId)
+            .field("draftId", draftId)
+            .field("draftRevisionNumber", input.draftRevisionNumber)
+            .field("questionDocumentId", input.questionDocument.id)
+            .field("revisionFingerprint", revisionFingerprint)
+            .field("cycleOrdinal", input.cycleOrdinal)
+            .field("turnOrdinal", input.turnOrdinal)
+            .field("diagnosticItemId", item.id)
+            .field("stemMarkdown", item.stemMarkdown)
+            .nullableField("promptMarkdown", item.promptMarkdown)
+            .field("choiceCount", item.choices.size)
+        item.choices.forEachIndexed { index, choice ->
+            digest.field("choice[$index].id", choice.id)
+                .field("choice[$index].markdown", choice.markdown)
+                .nullableField("choice[$index].feedbackMarkdown", choice.feedbackMarkdown)
+                .field("choice[$index].followUpCount", choice.followUpIds.size)
+            choice.followUpIds.forEachIndexed { followUpIndex, followUpId ->
+                digest.field("choice[$index].followUp[$followUpIndex]", followUpId)
+            }
+        }
+        digest.field("correctChoiceId", item.correctChoiceId)
+            .field("initialFollowUpCount", item.initialFollowUpIds.size)
+        item.initialFollowUpIds.forEachIndexed { index, followUpId ->
+            digest.field("initialFollowUp[$index]", followUpId)
+        }
+        val knowledgeNodes = item.knowledgeNodeIds.sorted()
+        digest.field("knowledgeNodeCount", knowledgeNodes.size)
+        knowledgeNodes.forEachIndexed { index, node ->
+            digest.field("knowledgeNode[$index]", node)
+        }
+        return digest.field("outputCycleOrdinal", output.cycleOrdinal)
+            .field("outputTurnOrdinal", output.turnOrdinal)
+            .finish()
+    }
+
+    private fun canonicalChoiceResponseFingerprint(
+        choice: PersistTutorChoiceCommand,
+    ): String = CanonicalSha256("captured-choice-response-v1")
+        .field("sessionId", choice.sessionId)
+        .field("questionDocumentId", choice.questionDocumentId)
+        .field("revisionNumber", choice.revisionNumber)
+        .field("cycleOrdinal", choice.cycleOrdinal)
+        .field("turnOrdinal", choice.turnOrdinal)
+        .nullableField("diagnosticStemMarkdown", choice.diagnosticStemMarkdown)
+        .nullableField("selectedChoiceId", choice.selectedChoiceId)
+        .nullableField("selectedChoiceMarkdown", choice.selectedChoiceMarkdown)
+        .nullableField("selectionWasCorrect", choice.selectionWasCorrect.toString())
+        .nullableField("feedbackMarkdown", choice.feedbackMarkdown)
+        .nullableField("requestedMove", null)
+        .field("solutionRevealed", false)
+        .field("submittedAtEpochMillis", choice.choiceSubmittedAtEpochMillis)
+        .field("updatedAtEpochMillis", choice.choiceSubmittedAtEpochMillis)
+        .nullableField(
+            "choiceSubmittedAtEpochMillis",
+            choice.choiceSubmittedAtEpochMillis.toString(),
+        )
+        .nullableField("evidenceRequestId", choice.evidenceRequestId)
+        .finish()
+
+    private fun opaqueId(domain: String, vararg values: String): String {
+        val digest = CanonicalSha256(domain).field("valueCount", values.size)
+        values.forEachIndexed { index, value ->
+            digest.field("value[$index]", value)
+        }
+        return "$domain:${digest.finish()}"
+    }
+
+    private fun sha256(value: String): String =
+        CanonicalSha256("learning-observation-instrumented-test-v1")
+            .field("value", value)
+            .finish()
+
+    private fun subjectForProblemRevision(problemRevisionId: String): SubjectKind =
+        when (problemRevisionId) {
+            REVISION, OTHER_MATH_REVISION -> SubjectKind.MATH
+            CHEMISTRY_REVISION -> SubjectKind.CHEMISTRY
+            else -> error("Unknown test problem revision $problemRevisionId")
+        }
+
+    private fun problemIdForRevision(problemRevisionId: String): String =
+        when (problemRevisionId) {
+            REVISION -> PROBLEM
+            OTHER_MATH_REVISION -> OTHER_MATH_PROBLEM
+            CHEMISTRY_REVISION -> CHEMISTRY_PROBLEM
+            else -> error("Unknown test problem revision $problemRevisionId")
+        }
+
+    private fun errorBookEntryIdForProblem(problemId: String): String =
+        when (problemId) {
+            PROBLEM -> ERROR_BOOK_ENTRY
+            OTHER_MATH_PROBLEM -> OTHER_MATH_ERROR_BOOK_ENTRY
+            CHEMISTRY_PROBLEM -> CHEMISTRY_ERROR_BOOK_ENTRY
+            else -> error("Unknown test problem $problemId")
+        }
+
+    private data class TutorModelFactFixture(
+        val suffix: String,
+        val subject: SubjectKind,
+        val sourceAssetId: String,
+        val draftId: String,
+        val sessionId: String,
+        val evidenceRequestId: String,
+        val initialDocument: CapturedQuestionDocument,
+        val confirmedDocument: CapturedQuestionDocument,
+        val captureCreatedAtEpochMillis: Long,
+        val confirmedAtEpochMillis: Long,
+        val revisionFingerprint: String,
+        val planRequest: ModelTaskRequest,
+        val planOutput: TutorPlanOutput,
+        val directiveFingerprint: String,
+        val conversationId: String,
+        val anchorId: String,
+        val turnReceiptId: String,
+        val questionFingerprint: String,
+        val choice: PersistTutorChoiceCommand,
+        val responseFingerprint: String,
+        val sourceFactId: String,
+    )
 
     private suspend fun markReady(
         candidate: LearningObservationCandidate,
@@ -1312,7 +1982,7 @@ class LearningObservationDatabaseInstrumentedTest {
         candidateId: String = "candidate-1",
         learnerId: String = LEARNER,
         sourceReferenceId: String = "choice-$candidateId",
-        sourceFactId: String? = "source-fact-$candidateId",
+        sourceFactId: String? = AUTO_SOURCE_FACT_ID,
         practiceUnitId: String = UNIT,
         problemRevisionId: String = REVISION,
         bindingId: String = "binding-math",
@@ -1320,41 +1990,57 @@ class LearningObservationDatabaseInstrumentedTest {
         direction: LearningObservationDirection = LearningObservationDirection.POSITIVE,
         evidenceLevel: LearningObservationEvidenceLevel =
             LearningObservationEvidenceLevel.MEDIUM_CONFIDENCE,
-        evidenceWeight: Double = 0.25,
+        evidenceWeight: Double = 0.2,
         independence: LearningObservationIndependence =
-            LearningObservationIndependence.UNKNOWN,
+            LearningObservationIndependence.ASSISTED,
         occurredAtEpochMillis: Long = NOW - 10,
-    ) = LearningObservationCandidate(
-        candidateId = candidateId,
-        learnerId = learnerId,
-        source = LearningObservationSource.TUTOR_CHOICE,
-        sourceReferenceId = sourceReferenceId,
-        sourceFactId = sourceFactId,
-        practiceUnitId = practiceUnitId,
-        problemRevisionId = problemRevisionId,
-        direction = direction,
-        evidenceLevel = evidenceLevel,
-        evidenceWeight = evidenceWeight,
-        independence = independence,
-        proposedAttributions = listOf(
-            LearningObservationKnowledgeAttribution(
-                bindingId = bindingId,
-                knowledgeNodeId = knowledgeNodeId,
-                weight = 1.0,
-                basisRevisionId = problemRevisionId,
-                taxonomyVersion = "taxonomy-v1",
-                role = EvidenceAttributionRole.PRIMARY,
-                certainty = EvidenceAttributionCertainty.DIRECT,
+        sourceSubject: SubjectKind? = null,
+    ): LearningObservationCandidate {
+        val resolvedSubject = sourceSubject ?: subjectForProblemRevision(problemRevisionId)
+        val resolvedSourceFactId = if (sourceFactId == AUTO_SOURCE_FACT_ID) {
+            tutorModelFactFixture(
+                candidateId = candidateId,
+                learnerId = learnerId,
+                evidenceRequestId = sourceReferenceId,
+                sourceSubject = resolvedSubject,
+                selectionWasCorrect = direction != LearningObservationDirection.NEGATIVE,
+                occurredAtEpochMillis = occurredAtEpochMillis,
+            ).sourceFactId
+        } else {
+            sourceFactId
+        }
+        return LearningObservationCandidate(
+            candidateId = candidateId,
+            learnerId = learnerId,
+            source = LearningObservationSource.TUTOR_CHOICE,
+            sourceReferenceId = sourceReferenceId,
+            sourceFactId = resolvedSourceFactId,
+            practiceUnitId = practiceUnitId,
+            problemRevisionId = problemRevisionId,
+            direction = direction,
+            evidenceLevel = evidenceLevel,
+            evidenceWeight = evidenceWeight,
+            independence = independence,
+            proposedAttributions = listOf(
+                LearningObservationKnowledgeAttribution(
+                    bindingId = bindingId,
+                    knowledgeNodeId = knowledgeNodeId,
+                    weight = 1.0,
+                    basisRevisionId = problemRevisionId,
+                    taxonomyVersion = "taxonomy-v1",
+                    role = EvidenceAttributionRole.PRIMARY,
+                    certainty = EvidenceAttributionCertainty.DIRECT,
+                ),
             ),
-        ),
-        occurredAtEpochMillis = occurredAtEpochMillis,
-        modelVersion = "model-v1",
-        evidenceLocator = "response:$candidateId",
-        status = LearningObservationCandidateStatus.PENDING_CONFIRMATION,
-        retryCount = 0,
-        createdAtEpochMillis = NOW,
-        updatedAtEpochMillis = NOW,
-    )
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            modelVersion = "model-v1",
+            evidenceLocator = "response:$candidateId",
+            status = LearningObservationCandidateStatus.PENDING_CONFIRMATION,
+            retryCount = 0,
+            createdAtEpochMillis = NOW,
+            updatedAtEpochMillis = NOW,
+        )
+    }
 
     private fun authority(
         candidate: LearningObservationCandidate,
@@ -1508,8 +2194,8 @@ class LearningObservationDatabaseInstrumentedTest {
 
     private fun seed() = StudySeedBundle(
         problems = listOf(
-            ProblemSeedRecord(PROBLEM, FINGERPRINT_A, "MATH", NOW - 100),
-            ProblemSeedRecord(OTHER_MATH_PROBLEM, FINGERPRINT_D, "MATH", NOW - 100),
+            ProblemSeedRecord(PROBLEM, FINGERPRINT_D, "MATH", NOW - 100),
+            ProblemSeedRecord(OTHER_MATH_PROBLEM, FINGERPRINT_F, "MATH", NOW - 100),
             ProblemSeedRecord(
                 CHEMISTRY_PROBLEM,
                 "chemistry-problem-fingerprint",
@@ -1529,7 +2215,7 @@ class LearningObservationDatabaseInstrumentedTest {
                 answerVerificationStatus = StudyDbValue.VerificationStatus.VERIFIED,
                 sourceType = "IMPORT",
                 sourceReference = null,
-                contentFingerprint = FINGERPRINT_B,
+                contentFingerprint = FINGERPRINT_E,
                 createdAtEpochMillis = NOW - 90,
             ),
             ProblemRevisionSeedRecord(
@@ -1543,7 +2229,7 @@ class LearningObservationDatabaseInstrumentedTest {
                 answerVerificationStatus = StudyDbValue.VerificationStatus.VERIFIED,
                 sourceType = "IMPORT",
                 sourceReference = null,
-                contentFingerprint = FINGERPRINT_E,
+                contentFingerprint = FINGERPRINT_G,
                 createdAtEpochMillis = NOW - 89,
             ),
             ProblemRevisionSeedRecord(
@@ -1607,7 +2293,35 @@ class LearningObservationDatabaseInstrumentedTest {
                 createdAtEpochMillis = NOW - 78,
             ),
         ),
-        errorBookEntries = emptyList(),
+        errorBookEntries = listOf(
+            ErrorBookEntrySeedRecord(
+                ERROR_BOOK_ENTRY,
+                UNIT,
+                PROBLEM,
+                REVISION,
+                null,
+                acceptedAtEpochMillis = NOW - 75,
+                updatedAtEpochMillis = NOW - 75,
+            ),
+            ErrorBookEntrySeedRecord(
+                OTHER_MATH_ERROR_BOOK_ENTRY,
+                OTHER_MATH_UNIT,
+                OTHER_MATH_PROBLEM,
+                OTHER_MATH_REVISION,
+                null,
+                acceptedAtEpochMillis = NOW - 75,
+                updatedAtEpochMillis = NOW - 75,
+            ),
+            ErrorBookEntrySeedRecord(
+                CHEMISTRY_ERROR_BOOK_ENTRY,
+                CHEMISTRY_UNIT,
+                CHEMISTRY_PROBLEM,
+                CHEMISTRY_REVISION,
+                null,
+                acceptedAtEpochMillis = NOW - 75,
+                updatedAtEpochMillis = NOW - 75,
+            ),
+        ),
         knowledgeNodes = listOf(
             KnowledgeNodeSeedRecord(
                 knowledgeNodeId = "knowledge-math",
@@ -1675,6 +2389,7 @@ class LearningObservationDatabaseInstrumentedTest {
     )
 
     private companion object {
+        const val AUTO_SOURCE_FACT_ID = "__auto_tutor_source_fact_id__"
         const val LEARNER = "learner-observation"
         const val PROJECTION = "learning-observation-projection"
         const val PROBLEM = "problem-observation"
@@ -1687,6 +2402,9 @@ class LearningObservationDatabaseInstrumentedTest {
         const val CHEMISTRY_PROBLEM = "problem-observation-chemistry"
         const val CHEMISTRY_REVISION = "revision-observation-chemistry"
         const val CHEMISTRY_UNIT = "unit-observation-chemistry"
+        const val ERROR_BOOK_ENTRY = "entry-observation"
+        const val OTHER_MATH_ERROR_BOOK_ENTRY = "entry-observation-other-math"
+        const val CHEMISTRY_ERROR_BOOK_ENTRY = "entry-observation-chemistry"
         const val ASSESSMENT_SNAPSHOT = "snapshot-observation"
         const val NOW = 1_728_000_000_000L
         val FINGERPRINT_A = "a".repeat(64)
@@ -1694,5 +2412,7 @@ class LearningObservationDatabaseInstrumentedTest {
         val FINGERPRINT_C = "c".repeat(64)
         val FINGERPRINT_D = "d".repeat(64)
         val FINGERPRINT_E = "e".repeat(64)
+        val FINGERPRINT_F = "f".repeat(64)
+        val FINGERPRINT_G = "0".repeat(64)
     }
 }

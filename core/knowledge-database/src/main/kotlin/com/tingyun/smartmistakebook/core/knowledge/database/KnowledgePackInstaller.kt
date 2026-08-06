@@ -10,23 +10,60 @@ import com.tingyun.smartmistakebook.core.model.KnowledgeSourceLicenseStatus
 import com.tingyun.smartmistakebook.core.model.KnowledgeSourceType
 import com.tingyun.smartmistakebook.core.model.KnowledgeTeachingMaterialType
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import java.util.Collections
 import java.util.PriorityQueue
 
 /**
  * Offline-built pack input. This type and every write entry point remain module-internal so the
  * runtime catalog cannot mutate knowledge content.
  */
-internal data class KnowledgePackInstallBundle(
+internal class KnowledgePackInstallBundle(
     val manifest: KnowledgePackManifestEntity,
-    val nodes: List<KnowledgeNodeEntity>,
-    val sources: List<KnowledgeSourceEntity>,
-    val nodeSourceBindings: List<KnowledgeNodeSourceBindingEntity>,
-    val relations: List<KnowledgeNodeRelationEntity>,
-    val searchFeatures: List<KnowledgeSearchFeatureEntity>,
-    val materials: List<KnowledgeTeachingMaterialEntity>,
-    val materialBindings: List<KnowledgeTeachingMaterialNodeBindingEntity>,
+    nodes: List<KnowledgeNodeEntity>,
+    sources: List<KnowledgeSourceEntity>,
+    nodeSourceBindings: List<KnowledgeNodeSourceBindingEntity>,
+    relations: List<KnowledgeNodeRelationEntity>,
+    searchFeatures: List<KnowledgeSearchFeatureEntity>,
+    materials: List<KnowledgeTeachingMaterialEntity>,
+    materialBindings: List<KnowledgeTeachingMaterialNodeBindingEntity>,
 ) {
-    fun validateAndOrderNodes(): List<KnowledgeNodeEntity> {
+    val nodes: List<KnowledgeNodeEntity> =
+        nodes.snapshotWithinBudget(KnowledgePackBudgets.MAX_NODES, "node")
+    val sources: List<KnowledgeSourceEntity> =
+        sources.snapshotWithinBudget(KnowledgePackBudgets.MAX_SOURCES, "source")
+    val nodeSourceBindings: List<KnowledgeNodeSourceBindingEntity> =
+        nodeSourceBindings.snapshotWithinBudget(
+            KnowledgePackBudgets.MAX_NODE_SOURCE_BINDINGS,
+            "node-source binding",
+        )
+    val relations: List<KnowledgeNodeRelationEntity> =
+        relations.snapshotWithinBudget(KnowledgePackBudgets.MAX_RELATIONS, "relation")
+    val searchFeatures: List<KnowledgeSearchFeatureEntity> =
+        searchFeatures.snapshotWithinBudget(
+            KnowledgePackBudgets.MAX_SEARCH_FEATURES,
+            "search feature",
+        ).canonicalized(SEARCH_FEATURE_CANONICAL_COMPARATOR)
+    val materials: List<KnowledgeTeachingMaterialEntity> =
+        materials.snapshotWithinBudget(KnowledgePackBudgets.MAX_MATERIALS, "teaching material")
+    val materialBindings: List<KnowledgeTeachingMaterialNodeBindingEntity> =
+        materialBindings.snapshotWithinBudget(
+            KnowledgePackBudgets.MAX_MATERIAL_BINDINGS,
+            "teaching-material binding",
+        )
+
+    fun withRecomputedContentFingerprint(): KnowledgePackInstallBundle =
+        recreate(
+            manifest =
+                manifest.copy(
+                    contentFingerprint = KnowledgePackContentFingerprint.compute(this),
+                ),
+        )
+
+    fun validateAndOrderNodes(): List<KnowledgeNodeEntity> = validatedSnapshot().nodes
+
+    fun validatedSnapshot(): ValidatedKnowledgePack {
+        validateCollectionBudgets()
+        validateNodeTextBudgets()
         validateManifest()
 
         val nodesById = nodes.associateByUnique(KnowledgeNodeEntity::knowledgeNodeId, "node id")
@@ -39,14 +76,45 @@ internal data class KnowledgePackInstallBundle(
             )
 
         nodes.validateNodes(nodesById, manifest)
+        val parentFirstNodes = nodes.parentFirst(nodesById)
         sources.validateSources()
         nodeSourceBindings.validateNodeSourceBindings(nodesById, sourcesById)
         relations.validateRelations(nodesById, sourcesById)
-        searchFeatures.validateSearchFeatures(nodesById)
+        relations.validatePrerequisiteGraph(nodesById)
         materials.validateMaterials(sourcesById)
         materialBindings.validateMaterialBindings(nodesById, materialsById)
+        validateNineSubjectCoverage()
+        validateCompleteSourceGrounding(nodesById, materialsById)
+        val rebuiltSearchFeatures = validateAndRebuildSearchFeatures(nodesById)
+        require(
+            KnowledgePackContentFingerprint.compute(this) == manifest.contentFingerprint,
+        ) {
+            "Knowledge-pack content fingerprint does not match its complete canonical content"
+        }
 
-        return nodes.parentFirst(nodesById)
+        return ValidatedKnowledgePack(
+            manifest = manifest,
+            nodes = parentFirstNodes,
+            sources = sources.sortedBy(KnowledgeSourceEntity::sourceId),
+            nodeSourceBindings =
+                nodeSourceBindings.sortedWith(
+                    compareBy(
+                        KnowledgeNodeSourceBindingEntity::knowledgeNodeId,
+                        KnowledgeNodeSourceBindingEntity::sourceId,
+                        KnowledgeNodeSourceBindingEntity::sourceLocator,
+                    ),
+                ),
+            relations = relations.sortedBy(KnowledgeNodeRelationEntity::relationId),
+            searchFeatures = rebuiltSearchFeatures,
+            materials = materials.sortedBy(KnowledgeTeachingMaterialEntity::materialId),
+            materialBindings =
+                materialBindings.sortedWith(
+                    compareBy(
+                        KnowledgeTeachingMaterialNodeBindingEntity::materialId,
+                        KnowledgeTeachingMaterialNodeBindingEntity::knowledgeNodeId,
+                    ),
+                ),
+        )
     }
 
     private fun validateManifest() {
@@ -71,15 +139,160 @@ internal data class KnowledgePackInstallBundle(
             "Knowledge-pack search-feature count is inconsistent"
         }
     }
+
+    private fun validateCollectionBudgets() {
+        require(nodes.size <= KnowledgePackBudgets.MAX_NODES) {
+            "Knowledge pack exceeds the node budget"
+        }
+        require(sources.size <= KnowledgePackBudgets.MAX_SOURCES) {
+            "Knowledge pack exceeds the source budget"
+        }
+        require(nodeSourceBindings.size <= KnowledgePackBudgets.MAX_NODE_SOURCE_BINDINGS) {
+            "Knowledge pack exceeds the node-source binding budget"
+        }
+        require(relations.size <= KnowledgePackBudgets.MAX_RELATIONS) {
+            "Knowledge pack exceeds the relation budget"
+        }
+        require(searchFeatures.size <= KnowledgePackBudgets.MAX_SEARCH_FEATURES) {
+            "Knowledge pack exceeds the search-feature budget"
+        }
+        require(materials.size <= KnowledgePackBudgets.MAX_MATERIALS) {
+            "Knowledge pack exceeds the teaching-material budget"
+        }
+        require(materialBindings.size <= KnowledgePackBudgets.MAX_MATERIAL_BINDINGS) {
+            "Knowledge pack exceeds the teaching-material binding budget"
+        }
+    }
+
+    private fun validateNodeTextBudgets() {
+        nodes.forEach { node ->
+            node.aliasesText.requireAliasEncodingWithinBudget()
+            require(
+                node.boundaryMarkdown == null ||
+                    node.boundaryMarkdown.length <= KnowledgePackBudgets.MAX_NODE_BOUNDARY_CHARS,
+            ) {
+                "Knowledge-node boundary exceeds its character budget"
+            }
+        }
+    }
+
+    private fun validateNineSubjectCoverage() {
+        val nodeSubjects = nodes.mapTo(mutableSetOf()) { SubjectKind.valueOf(it.subject) }
+        require(nodeSubjects == REQUIRED_HIGH_SCHOOL_SUBJECTS) {
+            "A formal high-school knowledge pack must cover all nine subjects"
+        }
+    }
+
+    private fun validateCompleteSourceGrounding(
+        nodesById: Map<String, KnowledgeNodeEntity>,
+        materialsById: Map<String, KnowledgeTeachingMaterialEntity>,
+    ) {
+        require(nodeSourceBindings.mapTo(mutableSetOf()) { it.knowledgeNodeId } == nodesById.keys) {
+            "Every knowledge node must have a reviewed source binding"
+        }
+        require(materialBindings.mapTo(mutableSetOf()) { it.materialId } == materialsById.keys) {
+            "Every teaching material must be bound to at least one knowledge node"
+        }
+    }
+
+    private fun validateAndRebuildSearchFeatures(
+        nodesById: Map<String, KnowledgeNodeEntity>,
+    ): List<KnowledgeSearchFeatureEntity> {
+        searchFeatures.validateSearchFeatures(nodesById)
+        var rebuiltFeatureCount = 0
+        nodes.forEach { node ->
+            KnowledgeSearchIndexBuilder.buildForNode(node).forEach { expected ->
+                rebuiltFeatureCount += 1
+                val index =
+                    searchFeatures.binarySearch(
+                        element = expected,
+                        comparator = SEARCH_FEATURE_CANONICAL_COMPARATOR,
+                    )
+                require(index >= 0 && searchFeatures[index] == expected) {
+                    "Knowledge-search features do not match the locally rebuilt index"
+                }
+            }
+        }
+        require(rebuiltFeatureCount == searchFeatures.size) {
+            "Knowledge-search features contain entries outside the locally rebuilt index"
+        }
+        return searchFeatures
+    }
+
+    private fun recreate(manifest: KnowledgePackManifestEntity): KnowledgePackInstallBundle =
+        KnowledgePackInstallBundle(
+            manifest = manifest,
+            nodes = nodes,
+            sources = sources,
+            nodeSourceBindings = nodeSourceBindings,
+            relations = relations,
+            searchFeatures = searchFeatures,
+            materials = materials,
+            materialBindings = materialBindings,
+        )
 }
 
 internal class KnowledgePackInstaller(
     private val installDao: KnowledgeCatalogInstallDao,
 ) {
     suspend fun replacePack(bundle: KnowledgePackInstallBundle) {
-        installDao.replacePack(bundle)
+        installDao.replacePack(bundle.validatedSnapshot())
     }
 }
+
+internal data class ValidatedKnowledgePack(
+    val manifest: KnowledgePackManifestEntity,
+    val nodes: List<KnowledgeNodeEntity>,
+    val sources: List<KnowledgeSourceEntity>,
+    val nodeSourceBindings: List<KnowledgeNodeSourceBindingEntity>,
+    val relations: List<KnowledgeNodeRelationEntity>,
+    val searchFeatures: List<KnowledgeSearchFeatureEntity>,
+    val materials: List<KnowledgeTeachingMaterialEntity>,
+    val materialBindings: List<KnowledgeTeachingMaterialNodeBindingEntity>,
+)
+
+internal object KnowledgePackBudgets {
+    const val MAX_NODES = 50_000
+    const val MAX_SOURCES = 10_000
+    const val MAX_NODE_SOURCE_BINDINGS = 250_000
+    const val MAX_RELATIONS = 250_000
+    const val MAX_SEARCH_FEATURES = 1_000_000
+    const val MAX_MATERIALS = 100_000
+    const val MAX_MATERIAL_BINDINGS = 500_000
+    const val MAX_NODE_ALIASES = 12
+    const val MAX_NODE_ALIAS_CHARS = 4_096
+    const val MAX_NODE_ALIASES_TEXT_CHARS =
+        MAX_NODE_ALIASES * MAX_NODE_ALIAS_CHARS + (MAX_NODE_ALIASES - 1)
+    const val MAX_NODE_BOUNDARY_CHARS = 16_384
+}
+
+private val SEARCH_FEATURE_CANONICAL_COMPARATOR =
+    compareBy(
+        KnowledgeSearchFeatureEntity::subject,
+        KnowledgeSearchFeatureEntity::searchFeature,
+        KnowledgeSearchFeatureEntity::knowledgeNodeId,
+    )
+
+private fun <T> List<T>.snapshotWithinBudget(
+    maximumSize: Int,
+    label: String,
+): List<T> {
+    require(size <= maximumSize) { "Knowledge pack exceeds the $label budget" }
+    return Collections.unmodifiableList(ArrayList(this))
+}
+
+private fun <T> List<T>.canonicalized(comparator: Comparator<in T>): List<T> {
+    for (index in 1 until size) {
+        if (comparator.compare(this[index - 1], this[index]) > 0) {
+            return Collections.unmodifiableList(ArrayList(this).apply { sortWith(comparator) })
+        }
+    }
+    return this
+}
+
+// Schema v1 defines one complete catalog, not independently activatable subject shards.
+private val REQUIRED_HIGH_SCHOOL_SUBJECTS =
+    enumValues<SubjectKind>().filterTo(mutableSetOf()) { it != SubjectKind.GENERAL }
 
 private fun List<KnowledgeNodeEntity>.validateNodes(
     nodesById: Map<String, KnowledgeNodeEntity>,
@@ -95,6 +308,11 @@ private fun List<KnowledgeNodeEntity>.validateNodes(
             node.verificationStatus,
             "node verification status",
         )
+        require(
+            node.verificationStatus != KnowledgeNodeVerificationStatus.MODEL_CANDIDATE.name,
+        ) {
+            "Model-candidate knowledge nodes cannot enter a formal knowledge pack"
+        }
         require(node.taxonomyVersion == manifest.taxonomyVersion) {
             "Knowledge-node taxonomy version must match the active manifest"
         }
@@ -105,8 +323,20 @@ private fun List<KnowledgeNodeEntity>.validateNodes(
         require(node.canonicalName.isCatalogText()) { "Knowledge-node canonical name is invalid" }
         require(node.reviewedAtEpochMillis >= 0) { "Node review time must not be negative" }
         val aliases = decodeAliases(node.aliasesText)
+        require(
+            aliases.size <= KnowledgePackBudgets.MAX_NODE_ALIASES &&
+                aliases.all {
+                    it.length <= KnowledgePackBudgets.MAX_NODE_ALIAS_CHARS &&
+                        it.isCatalogText()
+                },
+        ) {
+            "Knowledge-node aliases are invalid"
+        }
         require(aliases == aliases.sorted()) {
             "Knowledge-node aliases must use deterministic lexical order"
+        }
+        require(node.boundaryMarkdown == null || node.boundaryMarkdown.isCatalogText()) {
+            "Knowledge-node boundary is invalid"
         }
         node.toCatalogNode(manifest)
 
@@ -133,11 +363,16 @@ private fun List<KnowledgeSourceEntity>.validateSources() {
             "Knowledge sources require a specific subject"
         }
         enumValue<KnowledgeSourceType>(source.sourceType, "source type")
-        enumValue<KnowledgeSourceLicenseStatus>(source.licenseStatus, "source license status")
-        enumValue<KnowledgeSourceContentUsePolicy>(
-            source.contentUsePolicy,
-            "source content-use policy",
-        )
+        val licenseStatus =
+            enumValue<KnowledgeSourceLicenseStatus>(
+                source.licenseStatus,
+                "source license status",
+            )
+        val contentUsePolicy =
+            enumValue<KnowledgeSourceContentUsePolicy>(
+                source.contentUsePolicy,
+                "source content-use policy",
+            )
         require(source.title.isCatalogText()) { "Knowledge-source title is invalid" }
         require(source.publisher.isNullOrCatalogText()) { "Knowledge-source publisher is invalid" }
         require(source.edition.isNullOrCatalogText()) { "Knowledge-source edition is invalid" }
@@ -153,6 +388,23 @@ private fun List<KnowledgeSourceEntity>.validateSources() {
         }
         require(source.attributionText.isNullOrCatalogText()) {
             "Knowledge-source attribution is invalid"
+        }
+        require(
+            licenseStatus != KnowledgeSourceLicenseStatus.REFERENCE_ONLY ||
+                contentUsePolicy == KnowledgeSourceContentUsePolicy.REVIEWED_SYNTHESIS_ONLY,
+        ) {
+            "Reference-only sources may only support reviewed synthesis"
+        }
+        if (
+            licenseStatus == KnowledgeSourceLicenseStatus.LICENSED &&
+            contentUsePolicy != KnowledgeSourceContentUsePolicy.REVIEWED_SYNTHESIS_ONLY
+        ) {
+            require(!source.licenseExpression.isNullOrBlank()) {
+                "Licensed excerpts and adaptations require a license expression"
+            }
+            require(!source.attributionText.isNullOrBlank()) {
+                "Licensed excerpts and adaptations require attribution"
+            }
         }
         require(source.reviewedAtEpochMillis >= 0) {
             "Knowledge-source review time must not be negative"
@@ -194,12 +446,17 @@ private fun List<KnowledgeNodeRelationEntity>.validateRelations(
     nodesById: Map<String, KnowledgeNodeEntity>,
     sourcesById: Map<String, KnowledgeSourceEntity>,
 ) {
-    requireDistinct(KnowledgeNodeRelationEntity::relationId, "relation id")
-    requireDistinct(
-        {
-            "${it.fromKnowledgeNodeId}\u0000${it.toKnowledgeNodeId}" +
-                "\u0000${it.relationType}\u0000${it.taxonomyVersion}"
-        },
+    requireDistinctByComparator(
+        compareBy(KnowledgeNodeRelationEntity::relationId),
+        "relation id",
+    )
+    requireDistinctByComparator(
+        compareBy(
+            KnowledgeNodeRelationEntity::fromKnowledgeNodeId,
+            KnowledgeNodeRelationEntity::toKnowledgeNodeId,
+            KnowledgeNodeRelationEntity::relationType,
+            KnowledgeNodeRelationEntity::taxonomyVersion,
+        ),
         "knowledge relation",
     )
     forEach { relation ->
@@ -239,15 +496,50 @@ private fun List<KnowledgeNodeRelationEntity>.validateRelations(
     }
 }
 
+private fun List<KnowledgeNodeRelationEntity>.validatePrerequisiteGraph(
+    nodesById: Map<String, KnowledgeNodeEntity>,
+) {
+    val prerequisiteRelations = filter { it.relationType == PREREQUISITE_RELATION_TYPE }
+    if (prerequisiteRelations.isEmpty()) return
+
+    val incomingCount = nodesById.keys.associateWith { 0 }.toMutableMap()
+    val dependentsByPrerequisite =
+        prerequisiteRelations.groupBy(KnowledgeNodeRelationEntity::fromKnowledgeNodeId)
+    prerequisiteRelations.forEach { relation ->
+        incomingCount.compute(
+            relation.toKnowledgeNodeId,
+        ) { _, count -> requireNotNull(count) + 1 }
+    }
+    val ready = PriorityQueue<String>()
+    incomingCount.filterValues { it == 0 }.keys.forEach(ready::add)
+    var visited = 0
+    while (ready.isNotEmpty()) {
+        val prerequisite = ready.remove()
+        visited += 1
+        dependentsByPrerequisite[prerequisite].orEmpty().forEach { relation ->
+            val dependent = relation.toKnowledgeNodeId
+            val remaining = requireNotNull(incomingCount[dependent]) - 1
+            incomingCount[dependent] = remaining
+            if (remaining == 0) ready += dependent
+        }
+    }
+    require(visited == nodesById.size) {
+        "Knowledge prerequisite graph contains a cycle"
+    }
+}
+
 private fun List<KnowledgeSearchFeatureEntity>.validateSearchFeatures(
     nodesById: Map<String, KnowledgeNodeEntity>,
 ) {
-    requireDistinct(
-        { "${it.subject}\u0000${it.searchFeature}\u0000${it.knowledgeNodeId}" },
-        "knowledge-search feature",
-    )
-    val indexedNodeIds = HashSet<String>()
+    var previous: KnowledgeSearchFeatureEntity? = null
     forEach { feature ->
+        val prior = previous
+        require(
+            prior == null || SEARCH_FEATURE_CANONICAL_COMPARATOR.compare(prior, feature) < 0,
+        ) {
+            "Duplicate or non-canonical knowledge-search feature"
+        }
+        previous = feature
         val subject = enumValue<SubjectKind>(feature.subject, "search-feature subject")
         require(subject != SubjectKind.GENERAL) {
             "Knowledge-search features require a specific subject"
@@ -271,11 +563,9 @@ private fun List<KnowledgeSearchFeatureEntity>.validateSearchFeatures(
             "Knowledge-search feature is too long"
         }
         require(feature.featureKind.isCatalogId()) { "Search-feature kind is invalid" }
-        require(feature.rankWeight > 0) { "Search-feature rank weight must be positive" }
-        indexedNodeIds += node.knowledgeNodeId
-    }
-    require(indexedNodeIds.size == nodesById.size) {
-        "Every knowledge node must have at least one search feature"
+        require(feature.rankWeight in 1..MAX_SEARCH_RANK_WEIGHT) {
+            "Search-feature rank weight is outside the local ranking contract"
+        }
     }
 }
 
@@ -296,10 +586,11 @@ private fun List<KnowledgeTeachingMaterialEntity>.validateMaterials(
             "Teaching materials require a specific subject"
         }
         enumValue<KnowledgeTeachingMaterialType>(material.materialType, "teaching-material type")
-        enumValue<KnowledgeMaterialDerivationKind>(
-            material.derivationKind,
-            "teaching-material derivation kind",
-        )
+        val derivationKind =
+            enumValue<KnowledgeMaterialDerivationKind>(
+                material.derivationKind,
+                "teaching-material derivation kind",
+            )
         require(material.title.isCatalogText()) { "Teaching-material title is invalid" }
         require(material.summaryMarkdown.isCatalogText()) {
             "Teaching-material summary is invalid"
@@ -312,6 +603,15 @@ private fun List<KnowledgeTeachingMaterialEntity>.validateMaterials(
         }
         require(material.boundaryMarkdown.isCatalogText()) {
             "Teaching-material boundary is invalid"
+        }
+        require(
+            material.summaryMarkdown.length +
+                material.applicabilityMarkdown.length +
+                material.contentMarkdown.length +
+                material.boundaryMarkdown.length <=
+                HighSchoolKnowledgeCatalog.MAX_SINGLE_TEACHING_MATERIAL_MARKDOWN_CHARS,
+        ) {
+            "Teaching material exceeds the per-material Markdown budget"
         }
         require(material.sourceLocator.isCatalogText()) {
             "Teaching-material source locator is invalid"
@@ -328,6 +628,36 @@ private fun List<KnowledgeTeachingMaterialEntity>.validateMaterials(
         require(source.subject == material.subject) {
             "Teaching material source must share its subject"
         }
+        require(derivationKind.isAuthorizedBy(source)) {
+            "Teaching-material derivation is not authorized by its reviewed source"
+        }
+    }
+}
+
+private fun KnowledgeMaterialDerivationKind.isAuthorizedBy(
+    source: KnowledgeSourceEntity,
+): Boolean {
+    val licenseStatus =
+        enumValue<KnowledgeSourceLicenseStatus>(
+            source.licenseStatus,
+            "source license status",
+        )
+    val contentUsePolicy =
+        enumValue<KnowledgeSourceContentUsePolicy>(
+            source.contentUsePolicy,
+            "source content-use policy",
+        )
+    return when (this) {
+        KnowledgeMaterialDerivationKind.REVIEWED_SYNTHESIS -> true
+        KnowledgeMaterialDerivationKind.PUBLIC_OFFICIAL_EXCERPT ->
+            licenseStatus == KnowledgeSourceLicenseStatus.PUBLIC_OFFICIAL &&
+                contentUsePolicy != KnowledgeSourceContentUsePolicy.REVIEWED_SYNTHESIS_ONLY
+        KnowledgeMaterialDerivationKind.LICENSED_EXCERPT ->
+            licenseStatus == KnowledgeSourceLicenseStatus.LICENSED &&
+                contentUsePolicy != KnowledgeSourceContentUsePolicy.REVIEWED_SYNTHESIS_ONLY
+        KnowledgeMaterialDerivationKind.LICENSED_ADAPTATION ->
+            licenseStatus == KnowledgeSourceLicenseStatus.LICENSED &&
+                contentUsePolicy == KnowledgeSourceContentUsePolicy.ADAPTATION_ALLOWED
     }
 }
 
@@ -401,7 +731,48 @@ private fun <T, K> List<T>.requireDistinct(
     keySelector: (T) -> K,
     label: String,
 ) {
-    require(map(keySelector).distinct().size == size) { "Duplicate $label" }
+    val keys = HashSet<K>(size)
+    forEach { value ->
+        require(keys.add(keySelector(value))) { "Duplicate $label" }
+    }
+}
+
+private fun <T> List<T>.requireDistinctByComparator(
+    comparator: Comparator<in T>,
+    label: String,
+) {
+    val ordered = sortedWith(comparator)
+    for (index in 1 until ordered.size) {
+        require(comparator.compare(ordered[index - 1], ordered[index]) != 0) {
+            "Duplicate $label"
+        }
+    }
+}
+
+private fun String.requireAliasEncodingWithinBudget() {
+    require(length <= KnowledgePackBudgets.MAX_NODE_ALIASES_TEXT_CHARS) {
+        "Knowledge-node aliases exceed their character budget"
+    }
+    if (isEmpty()) return
+
+    var aliasCount = 1
+    var aliasLength = 0
+    forEach { character ->
+        if (character == ALIAS_SEPARATOR.single()) {
+            require(aliasLength > 0) { "Knowledge-node aliases are invalid" }
+            aliasCount += 1
+            require(aliasCount <= KnowledgePackBudgets.MAX_NODE_ALIASES) {
+                "Knowledge-node aliases exceed their count budget"
+            }
+            aliasLength = 0
+        } else {
+            aliasLength += 1
+            require(aliasLength <= KnowledgePackBudgets.MAX_NODE_ALIAS_CHARS) {
+                "Knowledge-node alias exceeds its character budget"
+            }
+        }
+    }
+    require(aliasLength > 0) { "Knowledge-node aliases are invalid" }
 }
 
 private inline fun <reified T : Enum<T>> enumValue(
@@ -422,3 +793,6 @@ private fun String.isCatalogText(): Boolean =
 private fun String?.isNullOrCatalogText(): Boolean = this == null || isCatalogText()
 
 private fun String.isSha256(): Boolean = matches(Regex("[0-9a-f]{64}"))
+
+private const val PREREQUISITE_RELATION_TYPE = "PREREQUISITE_OF"
+private const val MAX_SEARCH_RANK_WEIGHT = 100

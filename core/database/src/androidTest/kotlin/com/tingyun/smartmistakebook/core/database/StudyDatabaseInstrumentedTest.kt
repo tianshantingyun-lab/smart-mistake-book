@@ -1217,7 +1217,7 @@ class StudyDatabaseInstrumentedTest {
         val databaseName = "room3-lossless-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
         try {
-            var persistent = StudyDatabaseFactory.open(context, databaseName)
+            var persistent = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             persistent.seedFixture(baseSeed())
             persistent.saveAssessmentEvidenceSnapshot(evidenceSnapshot())
             val attempt = persistent.recordAttempt(
@@ -1267,7 +1267,7 @@ class StudyDatabaseInstrumentedTest {
             assertEquals(reviewCompleted, beforeReopen?.latestSession)
             persistent.close()
 
-            persistent = StudyDatabaseFactory.open(context, databaseName)
+            persistent = StudyDatabaseFactory.openPreCutoverForTest(context, databaseName)
             assertEquals(attempt.attempt, persistent.readAttemptP0(attempt.attempt.attemptId)?.attempt)
             assertEquals(reveal.outcome, persistent.readAnswerRevealP0(reveal.outcome.outcomeId)?.outcome)
             assertEquals(committed, persistent.readCurrentLearnerSnapshot(PROJECTION, LEARNER))
@@ -1399,7 +1399,6 @@ class StudyDatabaseInstrumentedTest {
                 id = "knowledge-exact-a",
                 stableCode = "math.review.exact-a",
                 displayName = "精确知识点 A",
-                nodeTaxonomy = "math-v1",
                 bindingTaxonomy = "organization-v2",
                 classificationTaxonomy = "organization-v2",
             ),
@@ -1407,7 +1406,6 @@ class StudyDatabaseInstrumentedTest {
                 id = "knowledge-exact-b",
                 stableCode = "math.review.exact-b",
                 displayName = "精确知识点 B",
-                nodeTaxonomy = "math-v1",
                 bindingTaxonomy = "organization-v2",
                 classificationTaxonomy = "organization-v2",
             ),
@@ -1472,6 +1470,44 @@ class StudyDatabaseInstrumentedTest {
                 updatedAtEpochMillis = OCCURRED_AT,
             ),
         ),
+        knowledgeNodes = listOf(
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge-exact-a",
+                stableCode = "math.review.exact-a",
+                subject = "MATH",
+                displayName = "精确知识点 A",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "organization-v2",
+                createdAtEpochMillis = OCCURRED_AT,
+            ),
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge-exact-b",
+                stableCode = "math.review.exact-b",
+                subject = "MATH",
+                displayName = "精确知识点 B",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "organization-v2",
+                createdAtEpochMillis = OCCURRED_AT,
+            ),
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge-taxonomy-mismatch",
+                stableCode = "math.review.taxonomy-mismatch",
+                subject = "MATH",
+                displayName = "旧分类不应泄漏",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "binding-only-v1",
+                createdAtEpochMillis = OCCURRED_AT,
+            ),
+            KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge-revision-boundary-old",
+                stableCode = "math.review.revision-old",
+                subject = "MATH",
+                displayName = "旧版知识点",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "organization-v2",
+                createdAtEpochMillis = OCCURRED_AT,
+            ),
+        ),
     )
 
     private fun revisionBoundaryRevision(
@@ -1528,17 +1564,7 @@ class StudyDatabaseInstrumentedTest {
         problemId = problemId,
         problemRevisionId = revisionId,
         practiceUnitId = practiceUnitId,
-        knowledgeNodes = knowledge.map { fixture ->
-            KnowledgeNodeSeedRecord(
-                knowledgeNodeId = fixture.id,
-                stableCode = fixture.stableCode,
-                subject = "MATH",
-                displayName = fixture.displayName,
-                parentKnowledgeNodeId = null,
-                taxonomyVersion = fixture.nodeTaxonomy,
-                createdAtEpochMillis = acceptedAtEpochMillis,
-            )
-        },
+        knowledgeNodes = emptyList(),
         knowledgeBindings = knowledge.map { fixture ->
             KnowledgeBindingSeedRecord(
                 bindingId = "binding-${fixture.id}",
@@ -1549,6 +1575,8 @@ class StudyDatabaseInstrumentedTest {
                 sourceType = "USER_CORRECTED",
                 taxonomyVersion = fixture.bindingTaxonomy,
                 acceptedAtEpochMillis = acceptedAtEpochMillis,
+                verifiedKnowledgeReference =
+                    verifiedOrganizationKnowledgeReference(fixture.id),
             )
         },
         classifications = listOf(
@@ -1584,7 +1612,6 @@ class StudyDatabaseInstrumentedTest {
         val id: String,
         val stableCode: String,
         val displayName: String,
-        val nodeTaxonomy: String = "organization-v2",
         val bindingTaxonomy: String,
         val classificationTaxonomy: String,
     )
@@ -1695,6 +1722,7 @@ class StudyDatabaseInstrumentedTest {
                     )
                 }
                 is com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome -> Unit
+                is com.tingyun.smartmistakebook.core.model.AdmittedLearningObservationEvent -> Unit
                 is com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent -> Unit
                 is com.tingyun.smartmistakebook.core.model.AttemptCorrection -> Unit
             }
@@ -1712,6 +1740,8 @@ class StudyDatabaseInstrumentedTest {
             is com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome -> "ANSWER_REVEAL_OUTCOME"
             is com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome ->
                 "TUTOR_ANSWER_EXPOSURE_OUTCOME"
+            is com.tingyun.smartmistakebook.core.model.AdmittedLearningObservationEvent ->
+                "ATTRIBUTED_LEARNING_OBSERVATION"
             is com.tingyun.smartmistakebook.core.model.AttributedLearningObservationEvent ->
                 "ATTRIBUTED_LEARNING_OBSERVATION"
             is com.tingyun.smartmistakebook.core.model.AttemptCorrection -> "ATTEMPT_CORRECTION"

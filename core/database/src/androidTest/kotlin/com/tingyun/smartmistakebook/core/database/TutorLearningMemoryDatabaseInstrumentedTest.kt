@@ -314,7 +314,7 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
                 assertEquals(TutorEvidenceRequestStatus.CANCELLED, request.status)
                 assertEquals(1, request.stateVersion)
                 assertEquals(now, request.resolvedAtEpochMillis)
-                assertNull(request.terminalSourceFactId)
+                assertNull(request.terminalReceiptId)
             }
             val dao = store.database.tutorLearningMemoryDao()
             assertEquals(0, dao.countEvidenceRequests(TutorEvidenceRequestStatus.PENDING.name))
@@ -365,51 +365,37 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
         var now = TRUSTED_NOW
         val store = StudyDatabaseFactory.openInMemory(context()) { now }
         try {
-            store.createTutorConversation(createConversation())
-            val turn = store.allocateTutorTurn(
-                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
-            ).receipt
-            val submittedPrepare = prepareEvidence(
-                conversationStateVersion = turn.conversationStateVersion,
-                requestId = "already-submitted",
-                idempotencyKey = "prepare-already-submitted",
-                payloadSeed = "prepare-already-submitted",
-            )
-            val cancelledPrepare = prepareEvidence(
-                conversationStateVersion = turn.conversationStateVersion,
-                requestId = "already-cancelled",
-                idempotencyKey = "prepare-already-cancelled",
-                payloadSeed = "prepare-already-cancelled",
-            )
-            store.prepareTutorEvidenceRequest(submittedPrepare)
-            store.prepareTutorEvidenceRequest(cancelledPrepare)
+            val submittedFixture = exactTutorChoiceEvidenceFixture(store, "archive-submitted")
+            val cancelledFixture = exactTutorChoiceEvidenceFixture(store, "archive-cancelled")
             val submitted = store.finalizeTutorEvidenceRequest(
-                submitEvidence(submittedPrepare, terminalSeed = "before-archive"),
+                submittedFixture.submitCommand,
             ).request
             val cancelled = store.finalizeTutorEvidenceRequest(
-                cancelEvidence(cancelledPrepare, terminalSeed = "before-archive"),
+                cancelEvidence(cancelledFixture.prepare, terminalSeed = "before-archive"),
             ).request
 
             now += 1_000
-            val archive = ArchiveTutorConversationCommand(
-                learnerId = LEARNER_ID,
-                conversationId = CONVERSATION_ID,
-                conversationGeneration = 1,
-                expectedStateVersion = turn.conversationStateVersion,
-                idempotencyKey = "archive-terminal-evidence",
-                payloadFingerprint = sha256("archive-terminal-evidence"),
-            )
-            store.archiveTutorConversation(archive)
+            val archives = listOf(submittedFixture, cancelledFixture).mapIndexed { index, fixture ->
+                ArchiveTutorConversationCommand(
+                    learnerId = LEARNER_ID,
+                    conversationId = fixture.prepare.conversationId,
+                    conversationGeneration = 1,
+                    expectedStateVersion = fixture.prepare.conversationStateVersion,
+                    idempotencyKey = "archive-terminal-evidence-$index",
+                    payloadFingerprint = sha256("archive-terminal-evidence-$index"),
+                )
+            }
+            archives.forEach { archive -> store.archiveTutorConversation(archive) }
             now += 1_000
-            store.archiveTutorConversation(archive)
+            archives.forEach { archive -> store.archiveTutorConversation(archive) }
 
             assertEquals(
                 submitted,
-                store.prepareTutorEvidenceRequest(submittedPrepare).request,
+                store.prepareTutorEvidenceRequest(submittedFixture.prepare).request,
             )
             assertEquals(
                 cancelled,
-                store.prepareTutorEvidenceRequest(cancelledPrepare).request,
+                store.prepareTutorEvidenceRequest(cancelledFixture.prepare).request,
             )
             val dao = store.database.tutorLearningMemoryDao()
             assertEquals(1, dao.countEvidenceRequests(TutorEvidenceRequestStatus.SUBMITTED.name))
@@ -567,7 +553,7 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
                 assertEquals(TutorEvidenceRequestStatus.PENDING, request.status)
                 assertEquals(0, request.stateVersion)
                 assertNull(request.resolvedAtEpochMillis)
-                assertNull(request.terminalSourceFactId)
+                assertNull(request.terminalReceiptId)
             }
             assertEquals(
                 TutorConversationStatus.ACTIVE,
@@ -590,11 +576,12 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     fun evidenceScopeIdempotencyAndPrivacyFailClosed() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
-            store.createTutorConversation(createConversation())
-            val turn = store.allocateTutorTurn(
-                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
-            ).receipt
-            val prepare = prepareEvidence(turn.conversationStateVersion)
+            val fixture = exactTutorChoiceEvidenceFixture(
+                store = store,
+                suffix = "scope-idempotency",
+                persistEvidenceRequest = false,
+            )
+            val prepare = fixture.prepare
             val prepared = store.prepareTutorEvidenceRequest(prepare)
             val replay = store.prepareTutorEvidenceRequest(prepare)
             assertTrue(prepared.created)
@@ -658,10 +645,10 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
             }
 
             val submitted = store.finalizeTutorEvidenceRequest(
-                submitEvidence(prepare, terminalSeed = "first-submit"),
+                fixture.submitCommand,
             )
             val submittedReplay = store.finalizeTutorEvidenceRequest(
-                submitEvidence(prepare, terminalSeed = "first-submit"),
+                fixture.submitCommand,
             )
             assertFalse(submitted.replayed)
             assertTrue(submittedReplay.replayed)
@@ -676,7 +663,7 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
             }
             assertConflict<TutorMemoryScopeConflictException> {
                 store.finalizeTutorEvidenceRequest(
-                    submitEvidence(prepare, terminalSeed = "cross-mode").copy(
+                    fixture.submitCommand.copy(
                         directiveFingerprint = sha256("another-directive"),
                     ),
                 )
@@ -687,122 +674,55 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     }
 
     @Test
-    fun identicalAnswerPayloadCanProduceFactsForDifferentRequestsAndLearners() = runBlocking {
+    fun identicalCallerPayloadAndChoiceTextCannotCollapseDistinctTrustedRequests() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
-            store.createTutorConversation(createConversation())
-            val firstTurn = store.allocateTutorTurn(
-                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
-            ).receipt
-            val firstRequest = prepareEvidence(firstTurn.conversationStateVersion)
-            store.prepareTutorEvidenceRequest(firstRequest)
-            store.finalizeTutorEvidenceRequest(
-                submitEvidence(firstRequest, "shared-answer-first").withSharedAnswerPayload(),
-            )
-
-            val secondTurn = store.allocateTutorTurn(
-                allocateTurn(
-                    expectedStateVersion = 1,
-                    expectedOrdinal = 2,
-                    turnReceiptId = "shared-answer-turn-2",
-                    clientTurnId = "shared-answer-client-2",
-                ),
-            ).receipt
-            val secondRequest = prepareEvidence(
-                conversationStateVersion = secondTurn.conversationStateVersion,
-                requestId = "shared-answer-request-2",
-                idempotencyKey = "shared-answer-prepare-2",
-                payloadSeed = "shared-answer-prepare-2",
-                turnReceiptId = secondTurn.turnReceiptId,
-                turnOrdinal = secondTurn.turnOrdinal,
-            )
-            store.prepareTutorEvidenceRequest(secondRequest)
-            store.finalizeTutorEvidenceRequest(
-                submitEvidence(secondRequest, "shared-answer-second").withSharedAnswerPayload(),
-            )
-
-            store.createTutorConversation(
-                createConversation().copy(
-                    conversationId = OTHER_CONVERSATION_ID,
+            val fixtures = listOf(
+                exactTutorChoiceEvidenceFixture(store, "shared-answer-first"),
+                exactTutorChoiceEvidenceFixture(store, "shared-answer-second"),
+                exactTutorChoiceEvidenceFixture(
+                    store = store,
+                    suffix = "shared-answer-other",
                     learnerId = OTHER_LEARNER_ID,
-                    idempotencyKey = "other-create-key",
-                    payloadFingerprint = sha256("other-create-payload"),
                 ),
             )
-            val otherTurn = store.allocateTutorTurn(
-                allocateTurn(
-                    expectedStateVersion = 0,
-                    expectedOrdinal = 1,
-                    turnReceiptId = "other-turn-receipt",
-                    clientTurnId = "other-client-turn",
-                ).copy(
-                    learnerId = OTHER_LEARNER_ID,
-                    conversationId = OTHER_CONVERSATION_ID,
-                    problemAnchorId = OTHER_ANCHOR_ID,
-                ),
-            ).receipt
-            val otherRequest = prepareEvidence(
-                conversationStateVersion = otherTurn.conversationStateVersion,
-                requestId = "other-evidence-request",
-                idempotencyKey = "other-prepare-key",
-                payloadSeed = "other-prepare-payload",
-                turnReceiptId = otherTurn.turnReceiptId,
-                turnOrdinal = otherTurn.turnOrdinal,
-            ).copy(
-                learnerId = OTHER_LEARNER_ID,
-                conversationId = OTHER_CONVERSATION_ID,
-                problemAnchorId = OTHER_ANCHOR_ID,
-            )
-            store.prepareTutorEvidenceRequest(otherRequest)
-            store.finalizeTutorEvidenceRequest(
-                submitEvidence(otherRequest, "shared-answer-other").withSharedAnswerPayload(),
-            )
+            fixtures.forEach { fixture ->
+                store.finalizeTutorEvidenceRequest(
+                    fixture.submitCommand.copy(
+                        payloadFingerprint = SHARED_ANSWER_PAYLOAD,
+                    ),
+                )
+            }
 
             val dao = store.database.tutorLearningMemoryDao()
             assertEquals(3, dao.countSourceFacts())
-            assertEquals(2, dao.countAnchors())
+            assertEquals(3, dao.countAnchors())
         } finally {
             store.close()
         }
     }
 
     @Test
-    fun collectionLifecycleCannotChangeOrDuplicateLearningAnchor() = runBlocking {
+    fun callerFingerprintsCannotCollapseDifferentCapturedProblemsIntoOneAnchor() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
-            store.createTutorConversation(createConversation())
-            val firstTurn = store.allocateTutorTurn(
-                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
-            ).receipt
-            val beforeCollection = prepareEvidence(firstTurn.conversationStateVersion)
-            store.prepareTutorEvidenceRequest(beforeCollection)
-            store.finalizeTutorEvidenceRequest(
-                submitEvidence(beforeCollection, terminalSeed = "before-collection"),
-            )
-
-            val secondTurn = store.allocateTutorTurn(
-                allocateTurn(
-                    expectedStateVersion = 1,
-                    expectedOrdinal = 2,
-                    turnReceiptId = "turn-receipt-after-collection",
-                    clientTurnId = "client-turn-after-collection",
-                ),
-            ).receipt
-            val afterCollection = prepareEvidence(
-                conversationStateVersion = secondTurn.conversationStateVersion,
-                requestId = "request-after-collection",
-                idempotencyKey = "prepare-after-collection",
-                payloadSeed = "prepare-after-collection",
-                turnReceiptId = secondTurn.turnReceiptId,
-                turnOrdinal = secondTurn.turnOrdinal,
-            )
-            store.prepareTutorEvidenceRequest(afterCollection)
-            store.finalizeTutorEvidenceRequest(
-                submitEvidence(afterCollection, terminalSeed = "after-collection"),
-            )
+            val first = exactTutorChoiceEvidenceFixture(store, "anchor-first")
+            val second = exactTutorChoiceEvidenceFixture(store, "anchor-second")
+            val callerQuestionFingerprint = sha256("caller-collapsed-question")
+            val callerRevisionFingerprint = sha256("caller-collapsed-revision")
+            listOf(first, second).forEach { fixture ->
+                store.finalizeTutorEvidenceRequest(
+                    fixture.submitCommand.copy(
+                        submission = checkNotNull(fixture.submitCommand.submission).copy(
+                            questionFingerprint = callerQuestionFingerprint,
+                            revisionFingerprint = callerRevisionFingerprint,
+                        ),
+                    ),
+                )
+            }
 
             val dao = store.database.tutorLearningMemoryDao()
-            assertEquals(1, dao.countAnchors())
+            assertEquals(2, dao.countAnchors())
             assertEquals(2, dao.countSourceFacts())
             assertEquals(0, dao.countErrorBookEntries())
             assertEquals(0, dao.countReviewQueueItems())
@@ -859,37 +779,30 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     fun evidenceOccurrenceMustBeBoundedByRequestAndTrustedClock() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
-            store.createTutorConversation(createConversation())
-            val turn = store.allocateTutorTurn(
-                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
-            ).receipt
-            val prepared = prepareEvidence(turn.conversationStateVersion)
-            store.prepareTutorEvidenceRequest(prepared)
+            val beforeRequest = exactTutorChoiceEvidenceFixture(
+                store = store,
+                suffix = "before-request",
+                choiceSubmittedAtEpochMillis = TRUSTED_NOW - 1,
+            )
+            val afterTrustedClock = exactTutorChoiceEvidenceFixture(
+                store = store,
+                suffix = "after-trusted-clock",
+                choiceSubmittedAtEpochMillis = TRUSTED_NOW + 1,
+            )
+            val bounded = exactTutorChoiceEvidenceFixture(
+                store = store,
+                suffix = "bounded-time",
+                choiceSubmittedAtEpochMillis = TRUSTED_NOW,
+            )
 
             assertConflict<TutorEvidenceConflictException> {
-                store.finalizeTutorEvidenceRequest(
-                    submitEvidence(
-                        prepared,
-                        terminalSeed = "before-request",
-                        occurredAtEpochMillis = TRUSTED_NOW - 1,
-                    ),
-                )
+                store.finalizeTutorEvidenceRequest(beforeRequest.submitCommand)
             }
             assertConflict<TutorEvidenceConflictException> {
-                store.finalizeTutorEvidenceRequest(
-                    submitEvidence(
-                        prepared,
-                        terminalSeed = "after-trusted-clock",
-                        occurredAtEpochMillis = TRUSTED_NOW + 1,
-                    ),
-                )
+                store.finalizeTutorEvidenceRequest(afterTrustedClock.submitCommand)
             }
             val submitted = store.finalizeTutorEvidenceRequest(
-                submitEvidence(
-                    prepared,
-                    terminalSeed = "bounded-time",
-                    occurredAtEpochMillis = TRUSTED_NOW,
-                ),
+                bounded.submitCommand,
             )
 
             assertEquals(TRUSTED_NOW, submitted.sourceFact?.occurredAtEpochMillis)
@@ -903,74 +816,58 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     fun thousandSubmitCancelAttemptsCommitExactlyOneTerminalState() = runBlocking {
         val store = StudyDatabaseFactory.openInMemory(context()) { TRUSTED_NOW }
         try {
-            store.createTutorConversation(createConversation())
-            val turn = store.allocateTutorTurn(
-                allocateTurn(expectedStateVersion = 0, expectedOrdinal = 1),
-            ).receipt
-            val prepares = (0 until SEQUENTIAL_RACE_CASES).map { index ->
-                prepareEvidence(
-                    conversationStateVersion = turn.conversationStateVersion,
-                    requestId = "race-request-$index",
-                    idempotencyKey = "race-prepare-$index",
-                    payloadSeed = "race-prepare-$index",
-                ).also { store.prepareTutorEvidenceRequest(it) }
+            val sequential = exactTutorChoiceEvidenceFixture(store, "sequential-race")
+            val sequentialCommands = (0 until SEQUENTIAL_RACE_CASES).map { index ->
+                if (index % 2 == 0) {
+                    sequential.submitCommand.copy(
+                        idempotencyKey = "race-submit-$index",
+                        payloadFingerprint = sha256("race-submit-$index"),
+                    )
+                } else {
+                    cancelEvidence(sequential.prepare, "race-cancel-$index")
+                }
             }
-            prepares.forEachIndexed { index, prepare ->
-                val winner = if (index % 2 == 0) {
-                    submitEvidence(prepare, "race-submit-$index")
-                } else {
-                    cancelEvidence(prepare, "race-cancel-$index")
-                }
-                val loser = if (index % 2 == 0) {
-                    cancelEvidence(prepare, "race-cancel-$index")
-                } else {
-                    submitEvidence(prepare, "race-submit-$index")
-                }
-                store.finalizeTutorEvidenceRequest(winner)
+            store.finalizeTutorEvidenceRequest(sequentialCommands.first())
+            sequentialCommands.drop(1).forEach { conflictingCommand ->
                 assertConflict<TutorEvidenceConflictException> {
-                    store.finalizeTutorEvidenceRequest(loser)
+                    store.finalizeTutorEvidenceRequest(conflictingCommand)
                 }
             }
 
-            val concurrentPrepares = (0 until CONCURRENT_RACE_CASES).map { index ->
-                prepareEvidence(
-                    conversationStateVersion = turn.conversationStateVersion,
-                    requestId = "concurrent-request-$index",
-                    idempotencyKey = "concurrent-prepare-$index",
-                    payloadSeed = "concurrent-prepare-$index",
-                ).also { store.prepareTutorEvidenceRequest(it) }
-            }
-            concurrentPrepares.forEachIndexed { index, prepare ->
-                val outcomes = coroutineScope {
-                    listOf(
-                        async(Dispatchers.IO) {
-                            runCatching {
-                                store.finalizeTutorEvidenceRequest(
-                                    submitEvidence(prepare, "concurrent-submit-$index"),
-                                )
-                            }
-                        },
-                        async(Dispatchers.IO) {
-                            runCatching {
-                                store.finalizeTutorEvidenceRequest(
-                                    cancelEvidence(prepare, "concurrent-cancel-$index"),
-                                )
-                            }
-                        },
-                    ).awaitAll()
+            val concurrent = exactTutorChoiceEvidenceFixture(store, "concurrent-race")
+            val concurrentCommands = (0 until CONCURRENT_RACE_CASES).map { index ->
+                if (index % 2 == 0) {
+                    concurrent.submitCommand.copy(
+                        idempotencyKey = "concurrent-submit-$index",
+                        payloadFingerprint = sha256("concurrent-submit-$index"),
+                    )
+                } else {
+                    cancelEvidence(concurrent.prepare, "concurrent-cancel-$index")
                 }
-                assertEquals(1, outcomes.count(Result<*>::isSuccess))
-                assertEquals(1, outcomes.count(Result<*>::isFailure))
             }
+            val outcomes = coroutineScope {
+                concurrentCommands.map { command ->
+                    async(Dispatchers.IO) {
+                        runCatching {
+                            store.finalizeTutorEvidenceRequest(command)
+                        }
+                    }
+                }.awaitAll()
+            }
+            assertEquals(1, outcomes.count(Result<*>::isSuccess))
+            assertEquals(
+                CONCURRENT_RACE_CASES - 1,
+                outcomes.count(Result<*>::isFailure),
+            )
 
             val dao = store.database.tutorLearningMemoryDao()
             val submitted = dao.countEvidenceRequests(TutorEvidenceRequestStatus.SUBMITTED.name)
             val cancelled = dao.countEvidenceRequests(TutorEvidenceRequestStatus.CANCELLED.name)
             val pending = dao.countEvidenceRequests(TutorEvidenceRequestStatus.PENDING.name)
-            assertEquals(SEQUENTIAL_RACE_CASES + CONCURRENT_RACE_CASES, submitted + cancelled)
+            assertEquals(2, submitted + cancelled)
             assertEquals(0, pending)
             assertEquals(submitted, dao.countSourceFacts())
-            assertEquals(1, dao.countAnchors())
+            assertEquals(submitted, dao.countAnchors())
         } finally {
             store.close()
         }
@@ -1043,7 +940,6 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
     private fun submitEvidence(
         prepared: PrepareTutorEvidenceRequestCommand,
         terminalSeed: String,
-        occurredAtEpochMillis: Long = TRUSTED_NOW,
     ) = FinalizeTutorEvidenceRequestCommand(
         learnerId = prepared.learnerId,
         conversationId = prepared.conversationId,
@@ -1072,7 +968,7 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
             fingerprintVersion = "question-fingerprint-v1",
             responseFingerprint = sha256("response:$terminalSeed"),
             responseSummary = "选择了不正确的方向。",
-            occurredAtEpochMillis = occurredAtEpochMillis,
+            occurredAtEpochMillis = TRUSTED_NOW,
             sourceVersion = "tutor-source-v1",
         ),
     )
@@ -1111,23 +1007,14 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
 
     private fun context(): Context = ApplicationProvider.getApplicationContext()
 
-    private fun FinalizeTutorEvidenceRequestCommand.withSharedAnswerPayload() = copy(
-        payloadFingerprint = SHARED_ANSWER_PAYLOAD,
-        submission = checkNotNull(submission).copy(
-            responseFingerprint = SHARED_ANSWER_RESPONSE,
-        ),
-    )
-
     private companion object {
         const val LEARNER_ID = "learner-local"
         const val CONVERSATION_ID = "conversation-v34"
         const val OTHER_LEARNER_ID = "learner-other"
-        const val OTHER_CONVERSATION_ID = "conversation-other"
         const val TURN_RECEIPT_ID = "turn-receipt-1"
         const val CLIENT_TURN_ID = "client-turn-1"
         const val EVIDENCE_REQUEST_ID = "evidence-request-1"
         const val ANCHOR_ID = "learning-anchor-1"
-        const val OTHER_ANCHOR_ID = "learning-anchor-other"
         const val TRUSTED_NOW = 10_000L
         const val SEQUENTIAL_RACE_CASES = 1_000
         const val CONCURRENT_RACE_CASES = 16
@@ -1135,7 +1022,6 @@ class TutorLearningMemoryDatabaseInstrumentedTest {
         val QUESTION_FINGERPRINT = sha256("question")
         val REVISION_FINGERPRINT = sha256("question-revision")
         val SHARED_ANSWER_PAYLOAD = sha256("shared-answer-terminal-payload")
-        val SHARED_ANSWER_RESPONSE = sha256("shared-answer-response")
 
         fun sha256(value: String): String =
             MessageDigest.getInstance("SHA-256")

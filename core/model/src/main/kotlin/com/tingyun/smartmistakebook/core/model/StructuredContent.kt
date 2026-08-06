@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.model
 
+import java.text.Normalizer
 import kotlin.math.min
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -206,7 +207,7 @@ data class SanitizedQuestionDocument(
  */
 object StructuredContentValidator {
     fun validate(document: QuestionDocument): List<StructuredContentIssue> = buildList {
-        if (document.id.take(128).isBlank()) {
+        if (stripControlCharacters(document.id).take(128).isBlank()) {
             add(StructuredContentIssue(StructuredContentIssueCode.BLANK_DOCUMENT_ID))
         }
         if (document.blocks.size > StructuredContentLimits.MAX_BLOCKS) {
@@ -215,7 +216,7 @@ object StructuredContentValidator {
 
         val blockIds = mutableSetOf<String>()
         document.blocks.take(StructuredContentLimits.MAX_BLOCKS).forEach { block ->
-            val boundedBlockId = stripControlCharacters(block.id.take(128))
+            val boundedBlockId = stripControlCharacters(block.id).take(128)
             if (boundedBlockId.isBlank() || !blockIds.add(boundedBlockId)) {
                 add(
                     StructuredContentIssue(
@@ -291,7 +292,7 @@ object StructuredContentValidator {
         }
         val choiceIds = mutableSetOf<String>()
         block.choices.take(StructuredContentLimits.MAX_CHOICES).forEach { choice ->
-            val boundedChoiceId = stripControlCharacters(choice.id.take(128))
+            val boundedChoiceId = stripControlCharacters(choice.id).take(128)
             if (boundedChoiceId.isBlank() || !choiceIds.add(boundedChoiceId)) {
                 add(
                     StructuredContentIssue(
@@ -301,7 +302,11 @@ object StructuredContentValidator {
                 )
             }
             validateInline(choice.markdown, blockId)
-            if (choice.markdown.take(StructuredContentLimits.MAX_TEXT_CHARS).isBlank()) {
+            if (
+                stripControlCharacters(choice.markdown)
+                    .take(StructuredContentLimits.MAX_TEXT_CHARS)
+                    .isBlank()
+            ) {
                 add(
                     StructuredContentIssue(
                         StructuredContentIssueCode.EMPTY_CHOICE_CONTENT_REPLACED,
@@ -322,7 +327,11 @@ object StructuredContentValidator {
         block: ContentBlock.Figure,
         blockId: String,
     ) {
-        if (block.alternativeText.take(StructuredContentLimits.MAX_ACCESSIBILITY_CHARS).isBlank()) {
+        if (
+            stripControlCharacters(block.alternativeText)
+                .take(StructuredContentLimits.MAX_ACCESSIBILITY_CHARS)
+                .isBlank()
+        ) {
             add(
                 StructuredContentIssue(
                     StructuredContentIssueCode.EMPTY_FIGURE_DESCRIPTION_REPLACED,
@@ -533,10 +542,11 @@ object StructuredContentSanitizer {
         budget: DocumentSanitizationBudget,
     ): ContentBlock {
         val schemaFallback = (block.schema as? FigureSchema.Unknown)?.fallbackText.orEmpty()
-        val rawAlternativeText = block.alternativeText
+        val rawAlternativeText = stripControlCharacters(block.alternativeText)
             .take(StructuredContentLimits.MAX_ACCESSIBILITY_CHARS)
             .takeIf(String::isNotBlank)
-            ?: schemaFallback.take(StructuredContentLimits.MAX_ACCESSIBILITY_CHARS)
+            ?: stripControlCharacters(schemaFallback)
+                .take(StructuredContentLimits.MAX_ACCESSIBILITY_CHARS)
         var alternativeText = budget.takeText(
             rawAlternativeText,
             StructuredContentLimits.MAX_ACCESSIBILITY_CHARS,
@@ -717,14 +727,15 @@ object StructuredContentSanitizer {
     }
 
     private fun unknownFallback(type: String, fallbackText: String, prefix: String): String {
-        val boundedFallback = fallbackText.take(StructuredContentLimits.MAX_TEXT_CHARS)
+        val boundedFallback = stripControlCharacters(fallbackText)
+            .take(StructuredContentLimits.MAX_TEXT_CHARS)
         if (boundedFallback.isNotBlank()) return boundedFallback
         val safeType = sanitizeIdentifier(type, "未知类型")
         return "$prefix：$safeType"
     }
 
     private fun sanitizeIdentifier(value: String, fallback: String): String =
-        stripControlCharacters(value.take(128)).trim().ifBlank { fallback }
+        stripControlCharacters(value).take(128).trim().ifBlank { fallback }
 }
 
 private class DocumentSanitizationBudget(
@@ -737,11 +748,12 @@ private class DocumentSanitizationBudget(
         StructuredContentLimits.MAX_DOCUMENT_FIGURE_PRIMITIVES
 
     fun takeText(value: String, perValueLimit: Int, blockId: String? = null): String {
-        val requested = min(value.length, perValueLimit)
+        val cleaned = stripControlCharacters(value)
+        val requested = min(cleaned.length, perValueLimit)
         val allowed = min(requested, remainingTextChars)
         if (allowed < requested) note(StructuredContentIssueCode.DOCUMENT_TEXT_BUDGET_EXCEEDED, blockId)
         remainingTextChars -= allowed
-        return stripControlCharacters(value.take(allowed))
+        return cleaned.take(allowed)
     }
 
     fun takeChoices(requested: Int, blockId: String): Int {
@@ -819,14 +831,14 @@ object SafeInlineMarkdown {
     private val remoteImage = Regex("!\\[[^]\\r\\n]{0,256}]\\(\\s*https?://", RegexOption.IGNORE_CASE)
 
     fun requiresPlainTextFallback(value: String): Boolean {
-        val bounded = value.take(StructuredContentLimits.MAX_TEXT_CHARS)
+        val bounded = stripControlCharacters(value).take(StructuredContentLimits.MAX_TEXT_CHARS)
         return html.containsMatchIn(bounded) ||
             activeScheme.containsMatchIn(bounded) ||
             remoteImage.containsMatchIn(bounded)
     }
 
     fun parse(value: String): List<InlineToken> {
-        val bounded = stripControlCharacters(value.take(StructuredContentLimits.MAX_TEXT_CHARS))
+        val bounded = stripControlCharacters(value).take(StructuredContentLimits.MAX_TEXT_CHARS)
         if (requiresPlainTextFallback(bounded)) return plainTextTokens(bounded)
 
         val tokens = mutableListOf<InlineToken>()
@@ -903,9 +915,8 @@ object SafeInlineMarkdown {
     }
 
     fun literal(value: String): String {
-        val bounded = stripControlCharacters(
-            value.take(StructuredContentLimits.MAX_TEXT_CHARS),
-        )
+        val bounded = stripControlCharacters(value)
+            .take(StructuredContentLimits.MAX_TEXT_CHARS)
             .replace('*', '＊')
             .replace('`', '｀')
             .replace('$', '＄')
@@ -987,12 +998,13 @@ object RestrictedFormulaText {
         "sigma", "sin", "sqrt", "sum", "tan", "text", "theta", "times", "vec",
     )
 
-    fun hasUnsupportedCommand(value: String): Boolean = command
-        .findAll(value.take(StructuredContentLimits.MAX_FORMULA_CHARS))
-        .any { it.groupValues[1] !in allowedCommands }
+    fun hasUnsupportedCommand(value: String): Boolean {
+        val bounded = stripControlCharacters(value).take(StructuredContentLimits.MAX_FORMULA_CHARS)
+        return command.findAll(bounded).any { it.groupValues[1] !in allowedCommands }
+    }
 
     fun sanitize(value: String): String {
-        val bounded = stripControlCharacters(value.take(StructuredContentLimits.MAX_FORMULA_CHARS))
+        val bounded = stripControlCharacters(value).take(StructuredContentLimits.MAX_FORMULA_CHARS)
         return command.replace(bounded) { match ->
             val name = match.groupValues[1]
             if (name in allowedCommands) match.value else "⧵$name"
@@ -1039,12 +1051,14 @@ private fun FigureCoordinate.clampedTo(
     y = y.coerceIn(yAxis.minimum, yAxis.maximum),
 )
 
-private fun stripControlCharacters(value: String): String = value
-    .replace("\r\n", "\n")
-    .replace('\r', '\n')
-    .filter { character ->
+private fun stripControlCharacters(value: String): String =
+    Normalizer.normalize(
+        value.replace("\r\n", "\n").replace('\r', '\n'),
+        Normalizer.Form.NFC,
+    ).filter { character ->
         (character == '\n' || character == '\t' || !character.isISOControl()) &&
-            !character.isBidirectionalControl()
+            !character.isBidirectionalControl() &&
+            character !in ZERO_WIDTH_FORMAT_CHARACTERS
     }
 
 private fun Char.isBidirectionalControl(): Boolean =
@@ -1053,3 +1067,14 @@ private fun Char.isBidirectionalControl(): Boolean =
         this == '\u200F' ||
         this in '\u202A'..'\u202E' ||
         this in '\u2066'..'\u206F'
+
+private val ZERO_WIDTH_FORMAT_CHARACTERS =
+    setOf(
+        '\u00AD',
+        '\u180E',
+        '\u200B',
+        '\u200C',
+        '\u200D',
+        '\u2060',
+        '\uFEFF',
+    )

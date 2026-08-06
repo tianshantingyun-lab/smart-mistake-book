@@ -1,0 +1,2484 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "6607cfcdd8b63c77bbce897db7e20265",
+    "entities": [
+      {
+        "tableName": "student_store_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`metadata_key` TEXT NOT NULL, `metadata_value` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`metadata_key`))",
+        "fields": [
+          {
+            "fieldPath": "metadataKey",
+            "columnName": "metadata_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadataValue",
+            "columnName": "metadata_value",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "metadata_key"
+          ]
+        }
+      },
+      {
+        "tableName": "student_problem_document",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`problem_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `subject` TEXT NOT NULL, `primary_practice_unit_id` TEXT NOT NULL, `current_revision_id` TEXT NOT NULL, `error_book_entry_id` TEXT, `lifecycle_state` TEXT NOT NULL, `archived_at_epoch_millis` INTEGER, `tombstoned_at_epoch_millis` INTEGER, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`problem_id`))",
+        "fields": [
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subject",
+            "columnName": "subject",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "primaryPracticeUnitId",
+            "columnName": "primary_practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentRevisionId",
+            "columnName": "current_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorBookEntryId",
+            "columnName": "error_book_entry_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lifecycleState",
+            "columnName": "lifecycle_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "archivedAtEpochMillis",
+            "columnName": "archived_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tombstonedAtEpochMillis",
+            "columnName": "tombstoned_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "problem_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_document_learner_id_subject_lifecycle_state_updated_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "subject",
+              "lifecycle_state",
+              "updated_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_document_learner_id_subject_lifecycle_state_updated_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `subject`, `lifecycle_state`, `updated_at_epoch_millis`)"
+          },
+          {
+            "name": "index_student_problem_document_learner_id_primary_practice_unit_id",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "primary_practice_unit_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_document_learner_id_primary_practice_unit_id` ON `${TABLE_NAME}` (`learner_id`, `primary_practice_unit_id`)"
+          },
+          {
+            "name": "index_student_problem_document_current_revision_id",
+            "unique": true,
+            "columnNames": [
+              "current_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_document_current_revision_id` ON `${TABLE_NAME}` (`current_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_document_error_book_entry_id",
+            "unique": true,
+            "columnNames": [
+              "error_book_entry_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_document_error_book_entry_id` ON `${TABLE_NAME}` (`error_book_entry_id`)"
+          },
+          {
+            "name": "index_student_problem_document_learner_id_error_book_entry_id",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "error_book_entry_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_document_learner_id_error_book_entry_id` ON `${TABLE_NAME}` (`learner_id`, `error_book_entry_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_revision",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`revision_id` TEXT NOT NULL, `problem_id` TEXT NOT NULL, `revision_number` INTEGER NOT NULL, `title` TEXT, `stem_markdown` TEXT NOT NULL, `captured_question_document_wire` TEXT, `document_canonical_fingerprint` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`revision_id`), FOREIGN KEY(`problem_id`) REFERENCES `student_problem_document`(`problem_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "revisionId",
+            "columnName": "revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revisionNumber",
+            "columnName": "revision_number",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stemMarkdown",
+            "columnName": "stem_markdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturedQuestionDocumentWire",
+            "columnName": "captured_question_document_wire",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "documentCanonicalFingerprint",
+            "columnName": "document_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "revision_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_revision_problem_id_revision_number",
+            "unique": true,
+            "columnNames": [
+              "problem_id",
+              "revision_number"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_revision_problem_id_revision_number` ON `${TABLE_NAME}` (`problem_id`, `revision_number`)"
+          },
+          {
+            "name": "index_student_problem_revision_problem_id_created_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "problem_id",
+              "created_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_revision_problem_id_created_at_epoch_millis` ON `${TABLE_NAME}` (`problem_id`, `created_at_epoch_millis`)"
+          },
+          {
+            "name": "index_student_problem_revision_document_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "document_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_revision_document_canonical_fingerprint` ON `${TABLE_NAME}` (`document_canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_document",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "problem_id"
+            ],
+            "referencedColumns": [
+              "problem_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_practice_unit",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`practice_unit_id` TEXT NOT NULL, `problem_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `unit_kind` TEXT NOT NULL, `title` TEXT NOT NULL, `item_family_id` TEXT NOT NULL, `estimated_duration_seconds` INTEGER NOT NULL, `source_bundle_id` TEXT, `part_ids_wire` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`practice_unit_id`), FOREIGN KEY(`problem_id`) REFERENCES `student_problem_document`(`problem_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unitKind",
+            "columnName": "unit_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemFamilyId",
+            "columnName": "item_family_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedDurationSeconds",
+            "columnName": "estimated_duration_seconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceBundleId",
+            "columnName": "source_bundle_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "partIdsWire",
+            "columnName": "part_ids_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "practice_unit_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_practice_unit_problem_id",
+            "unique": false,
+            "columnNames": [
+              "problem_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_practice_unit_problem_id` ON `${TABLE_NAME}` (`problem_id`)"
+          },
+          {
+            "name": "index_student_practice_unit_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_practice_unit_basis_revision_id` ON `${TABLE_NAME}` (`basis_revision_id`)"
+          },
+          {
+            "name": "index_student_practice_unit_item_family_id",
+            "unique": false,
+            "columnNames": [
+              "item_family_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_practice_unit_item_family_id` ON `${TABLE_NAME}` (`item_family_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_document",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "problem_id"
+            ],
+            "referencedColumns": [
+              "problem_id"
+            ]
+          },
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_image_reference",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`image_reference_id` TEXT NOT NULL, `revision_id` TEXT NOT NULL, `local_content_uri` TEXT NOT NULL, `content_canonical_fingerprint` TEXT NOT NULL, `media_type` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `width_pixels` INTEGER, `height_pixels` INTEGER, `byte_size` INTEGER, `selected_regions_wire` TEXT NOT NULL DEFAULT '0:', `created_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`image_reference_id`), FOREIGN KEY(`revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "imageReferenceId",
+            "columnName": "image_reference_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revisionId",
+            "columnName": "revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localContentUri",
+            "columnName": "local_content_uri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contentCanonicalFingerprint",
+            "columnName": "content_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaType",
+            "columnName": "media_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "widthPixels",
+            "columnName": "width_pixels",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "heightPixels",
+            "columnName": "height_pixels",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "byteSize",
+            "columnName": "byte_size",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "selectedRegionsWire",
+            "columnName": "selected_regions_wire",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'0:'"
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "image_reference_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_image_reference_revision_id_ordinal",
+            "unique": true,
+            "columnNames": [
+              "revision_id",
+              "ordinal"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_image_reference_revision_id_ordinal` ON `${TABLE_NAME}` (`revision_id`, `ordinal`)"
+          },
+          {
+            "name": "index_student_problem_image_reference_content_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "content_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_image_reference_content_canonical_fingerprint` ON `${TABLE_NAME}` (`content_canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_collection",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`practice_unit_id` TEXT NOT NULL, `problem_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `mistake_state` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `added_at_epoch_millis` INTEGER, `archived_at_epoch_millis` INTEGER, `trashed_at_epoch_millis` INTEGER, `changed_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`practice_unit_id`), FOREIGN KEY(`problem_id`) REFERENCES `student_problem_document`(`problem_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`practice_unit_id`) REFERENCES `student_practice_unit`(`practice_unit_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mistakeState",
+            "columnName": "mistake_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favorite",
+            "columnName": "favorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "addedAtEpochMillis",
+            "columnName": "added_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "archivedAtEpochMillis",
+            "columnName": "archived_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "trashedAtEpochMillis",
+            "columnName": "trashed_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "changedAtEpochMillis",
+            "columnName": "changed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "practice_unit_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_collection_problem_id",
+            "unique": false,
+            "columnNames": [
+              "problem_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_collection_problem_id` ON `${TABLE_NAME}` (`problem_id`)"
+          },
+          {
+            "name": "index_student_problem_collection_learner_id_mistake_state_changed_at_epoch_millis_problem_id",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "mistake_state",
+              "changed_at_epoch_millis",
+              "problem_id"
+            ],
+            "orders": [
+              "ASC",
+              "ASC",
+              "DESC",
+              "ASC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_collection_learner_id_mistake_state_changed_at_epoch_millis_problem_id` ON `${TABLE_NAME}` (`learner_id` ASC, `mistake_state` ASC, `changed_at_epoch_millis` DESC, `problem_id` ASC)"
+          },
+          {
+            "name": "index_student_problem_collection_learner_id_mistake_state_favorite_changed_at_epoch_millis_problem_id",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "mistake_state",
+              "favorite",
+              "changed_at_epoch_millis",
+              "problem_id"
+            ],
+            "orders": [
+              "ASC",
+              "ASC",
+              "ASC",
+              "DESC",
+              "ASC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_collection_learner_id_mistake_state_favorite_changed_at_epoch_millis_problem_id` ON `${TABLE_NAME}` (`learner_id` ASC, `mistake_state` ASC, `favorite` ASC, `changed_at_epoch_millis` DESC, `problem_id` ASC)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_document",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "problem_id"
+            ],
+            "referencedColumns": [
+              "problem_id"
+            ]
+          },
+          {
+            "table": "student_practice_unit",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_unit_id"
+            ],
+            "referencedColumns": [
+              "practice_unit_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_classification_result",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`classification_id` TEXT NOT NULL, `problem_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `dimension` TEXT NOT NULL, `label_id` TEXT NOT NULL, `display_name` TEXT, `knowledge_subject` TEXT, `knowledge_node_id` TEXT, `knowledge_taxonomy_version` TEXT, `knowledge_pack_version` TEXT, `knowledge_manifest_fingerprint` TEXT, `knowledge_activation_generation` INTEGER, `model_provider_id` TEXT NOT NULL, `model_id` TEXT NOT NULL, `classifier_version` TEXT NOT NULL, `result_canonical_fingerprint` TEXT NOT NULL, `status` TEXT NOT NULL, `supersedes_classification_id` TEXT, `recorded_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`classification_id`), FOREIGN KEY(`problem_id`) REFERENCES `student_problem_document`(`problem_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "classificationId",
+            "columnName": "classification_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dimension",
+            "columnName": "dimension",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "labelId",
+            "columnName": "label_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeSubject",
+            "columnName": "knowledge_subject",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeNodeId",
+            "columnName": "knowledge_node_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeTaxonomyVersion",
+            "columnName": "knowledge_taxonomy_version",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgePackVersion",
+            "columnName": "knowledge_pack_version",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeManifestFingerprint",
+            "columnName": "knowledge_manifest_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "knowledgeActivationGeneration",
+            "columnName": "knowledge_activation_generation",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "modelProviderId",
+            "columnName": "model_provider_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelId",
+            "columnName": "model_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "classifierVersion",
+            "columnName": "classifier_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultCanonicalFingerprint",
+            "columnName": "result_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "supersedesClassificationId",
+            "columnName": "supersedes_classification_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recordedAtEpochMillis",
+            "columnName": "recorded_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "classification_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_classification_result_problem_id_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "problem_id",
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_classification_result_problem_id_basis_revision_id` ON `${TABLE_NAME}` (`problem_id`, `basis_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_classification_result_basis_revision_id_dimension_status_label_id",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id",
+              "dimension",
+              "status",
+              "label_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_classification_result_basis_revision_id_dimension_status_label_id` ON `${TABLE_NAME}` (`basis_revision_id`, `dimension`, `status`, `label_id`)"
+          },
+          {
+            "name": "index_student_problem_classification_result_basis_revision_id_dimension_status_knowledge_subject_knowledge_node_id_knowledge_taxonomy_version_knowledge_pack_version",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id",
+              "dimension",
+              "status",
+              "knowledge_subject",
+              "knowledge_node_id",
+              "knowledge_taxonomy_version",
+              "knowledge_pack_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_classification_result_basis_revision_id_dimension_status_knowledge_subject_knowledge_node_id_knowledge_taxonomy_version_knowledge_pack_version` ON `${TABLE_NAME}` (`basis_revision_id`, `dimension`, `status`, `knowledge_subject`, `knowledge_node_id`, `knowledge_taxonomy_version`, `knowledge_pack_version`)"
+          },
+          {
+            "name": "index_student_problem_classification_result_result_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "result_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_classification_result_result_canonical_fingerprint` ON `${TABLE_NAME}` (`result_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_student_problem_classification_result_supersedes_classification_id",
+            "unique": false,
+            "columnNames": [
+              "supersedes_classification_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_classification_result_supersedes_classification_id` ON `${TABLE_NAME}` (`supersedes_classification_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_document",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "problem_id"
+            ],
+            "referencedColumns": [
+              "problem_id"
+            ]
+          },
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_solution_analysis",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`solution_analysis_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `summary_markdown` TEXT NOT NULL, `final_answer_markdown` TEXT, `model_provider_id` TEXT NOT NULL, `model_id` TEXT NOT NULL, `analyzer_version` TEXT NOT NULL, `result_canonical_fingerprint` TEXT NOT NULL, `recorded_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`solution_analysis_id`), FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "solutionAnalysisId",
+            "columnName": "solution_analysis_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summaryMarkdown",
+            "columnName": "summary_markdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finalAnswerMarkdown",
+            "columnName": "final_answer_markdown",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "modelProviderId",
+            "columnName": "model_provider_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelId",
+            "columnName": "model_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "analyzerVersion",
+            "columnName": "analyzer_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultCanonicalFingerprint",
+            "columnName": "result_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAtEpochMillis",
+            "columnName": "recorded_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "solution_analysis_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_solution_analysis_basis_revision_id",
+            "unique": true,
+            "columnNames": [
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_solution_analysis_basis_revision_id` ON `${TABLE_NAME}` (`basis_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_solution_analysis_solution_analysis_id_basis_revision_id",
+            "unique": true,
+            "columnNames": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_solution_analysis_solution_analysis_id_basis_revision_id` ON `${TABLE_NAME}` (`solution_analysis_id`, `basis_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_solution_analysis_result_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "result_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_solution_analysis_result_canonical_fingerprint` ON `${TABLE_NAME}` (`result_canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_solution_step",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`solution_analysis_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `step_id` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `summary_markdown` TEXT NOT NULL, `reasoning_markdown` TEXT NOT NULL, `result_markdown` TEXT, `step_canonical_fingerprint` TEXT NOT NULL, PRIMARY KEY(`solution_analysis_id`, `ordinal`), FOREIGN KEY(`solution_analysis_id`, `basis_revision_id`) REFERENCES `student_problem_solution_analysis`(`solution_analysis_id`, `basis_revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "solutionAnalysisId",
+            "columnName": "solution_analysis_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stepId",
+            "columnName": "step_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summaryMarkdown",
+            "columnName": "summary_markdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reasoningMarkdown",
+            "columnName": "reasoning_markdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultMarkdown",
+            "columnName": "result_markdown",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stepCanonicalFingerprint",
+            "columnName": "step_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "solution_analysis_id",
+            "ordinal"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_solution_step_solution_analysis_id_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_solution_step_solution_analysis_id_basis_revision_id` ON `${TABLE_NAME}` (`solution_analysis_id`, `basis_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_solution_step_solution_analysis_id_step_id",
+            "unique": true,
+            "columnNames": [
+              "solution_analysis_id",
+              "step_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_solution_step_solution_analysis_id_step_id` ON `${TABLE_NAME}` (`solution_analysis_id`, `step_id`)"
+          },
+          {
+            "name": "index_student_problem_solution_step_step_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "step_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_solution_step_step_canonical_fingerprint` ON `${TABLE_NAME}` (`step_canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_solution_analysis",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_error_attribution",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`attribution_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `solution_analysis_id` TEXT, `resolution_status` TEXT NOT NULL, `rationale_markdown` TEXT NOT NULL, `confidence` REAL NOT NULL, `step_ordinal` INTEGER, `atomic_reference_id` TEXT, `model_provider_id` TEXT NOT NULL, `model_id` TEXT NOT NULL, `analyzer_version` TEXT NOT NULL, `result_canonical_fingerprint` TEXT NOT NULL, `recorded_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`attribution_id`), FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`solution_analysis_id`, `basis_revision_id`) REFERENCES `student_problem_solution_analysis`(`solution_analysis_id`, `basis_revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "attributionId",
+            "columnName": "attribution_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "solutionAnalysisId",
+            "columnName": "solution_analysis_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "resolutionStatus",
+            "columnName": "resolution_status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rationaleMarkdown",
+            "columnName": "rationale_markdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidence",
+            "columnName": "confidence",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stepOrdinal",
+            "columnName": "step_ordinal",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "atomicReferenceId",
+            "columnName": "atomic_reference_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "modelProviderId",
+            "columnName": "model_provider_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelId",
+            "columnName": "model_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "analyzerVersion",
+            "columnName": "analyzer_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultCanonicalFingerprint",
+            "columnName": "result_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAtEpochMillis",
+            "columnName": "recorded_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "attribution_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_error_attribution_basis_revision_id_recorded_at_epoch_millis_attribution_id",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id",
+              "recorded_at_epoch_millis",
+              "attribution_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_error_attribution_basis_revision_id_recorded_at_epoch_millis_attribution_id` ON `${TABLE_NAME}` (`basis_revision_id`, `recorded_at_epoch_millis`, `attribution_id`)"
+          },
+          {
+            "name": "index_student_problem_error_attribution_solution_analysis_id_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_error_attribution_solution_analysis_id_basis_revision_id` ON `${TABLE_NAME}` (`solution_analysis_id`, `basis_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_error_attribution_result_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "result_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_error_attribution_result_canonical_fingerprint` ON `${TABLE_NAME}` (`result_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_student_problem_error_attribution_attribution_id_basis_revision_id",
+            "unique": true,
+            "columnNames": [
+              "attribution_id",
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_problem_error_attribution_attribution_id_basis_revision_id` ON `${TABLE_NAME}` (`attribution_id`, `basis_revision_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          },
+          {
+            "table": "student_problem_solution_analysis",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "solution_analysis_id",
+              "basis_revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_problem_error_evidence",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`attribution_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `block_id` TEXT NOT NULL, `source_asset_id` TEXT NOT NULL, `evidence_kind` TEXT NOT NULL, PRIMARY KEY(`attribution_id`, `ordinal`), FOREIGN KEY(`attribution_id`, `basis_revision_id`) REFERENCES `student_problem_error_attribution`(`attribution_id`, `basis_revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "attributionId",
+            "columnName": "attribution_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blockId",
+            "columnName": "block_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceAssetId",
+            "columnName": "source_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "evidenceKind",
+            "columnName": "evidence_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "attribution_id",
+            "ordinal"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_problem_error_evidence_attribution_id_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "attribution_id",
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_error_evidence_attribution_id_basis_revision_id` ON `${TABLE_NAME}` (`attribution_id`, `basis_revision_id`)"
+          },
+          {
+            "name": "index_student_problem_error_evidence_basis_revision_id_block_id_source_asset_id",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id",
+              "block_id",
+              "source_asset_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_problem_error_evidence_basis_revision_id_block_id_source_asset_id` ON `${TABLE_NAME}` (`basis_revision_id`, `block_id`, `source_asset_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_error_attribution",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "attribution_id",
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "attribution_id",
+              "basis_revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_review_candidate",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`candidate_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `practice_unit_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `reason_codes_wire` TEXT NOT NULL, `item_family_id` TEXT NOT NULL, `estimated_duration_seconds` INTEGER NOT NULL, `available_at_epoch_millis` INTEGER NOT NULL, `due_at_epoch_millis` INTEGER, `source_evidence_event_kind` TEXT, `source_evidence_event_id` TEXT, `source_evidence_sequence` INTEGER, `source_evidence_canonical_fingerprint` TEXT, `candidate_version` INTEGER NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`candidate_id`), FOREIGN KEY(`practice_unit_id`) REFERENCES `student_practice_unit`(`practice_unit_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reasonCodesWire",
+            "columnName": "reason_codes_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemFamilyId",
+            "columnName": "item_family_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedDurationSeconds",
+            "columnName": "estimated_duration_seconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "availableAtEpochMillis",
+            "columnName": "available_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dueAtEpochMillis",
+            "columnName": "due_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sourceEvidenceEventKind",
+            "columnName": "source_evidence_event_kind",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceEvidenceEventId",
+            "columnName": "source_evidence_event_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceEvidenceSequence",
+            "columnName": "source_evidence_sequence",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sourceEvidenceCanonicalFingerprint",
+            "columnName": "source_evidence_canonical_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "candidateVersion",
+            "columnName": "candidate_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "candidate_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_review_candidate_practice_unit_id",
+            "unique": false,
+            "columnNames": [
+              "practice_unit_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_candidate_practice_unit_id` ON `${TABLE_NAME}` (`practice_unit_id`)"
+          },
+          {
+            "name": "index_student_review_candidate_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_candidate_basis_revision_id` ON `${TABLE_NAME}` (`basis_revision_id`)"
+          },
+          {
+            "name": "index_student_review_candidate_learner_id_available_at_epoch_millis_candidate_id",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "available_at_epoch_millis",
+              "candidate_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_candidate_learner_id_available_at_epoch_millis_candidate_id` ON `${TABLE_NAME}` (`learner_id`, `available_at_epoch_millis`, `candidate_id`)"
+          },
+          {
+            "name": "index_student_review_candidate_learner_id_item_family_id",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "item_family_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_candidate_learner_id_item_family_id` ON `${TABLE_NAME}` (`learner_id`, `item_family_id`)"
+          },
+          {
+            "name": "index_student_review_candidate_source_evidence_event_id_source_evidence_sequence",
+            "unique": false,
+            "columnNames": [
+              "source_evidence_event_id",
+              "source_evidence_sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_candidate_source_evidence_event_id_source_evidence_sequence` ON `${TABLE_NAME}` (`source_evidence_event_id`, `source_evidence_sequence`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_practice_unit",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_unit_id"
+            ],
+            "referencedColumns": [
+              "practice_unit_id"
+            ]
+          },
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_review_plan",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`plan_id` TEXT NOT NULL, `plan_canonical_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `local_day_epoch_day` INTEGER NOT NULL, `time_zone_id` TEXT NOT NULL, `time_budget_seconds` INTEGER NOT NULL, `generated_at_epoch_millis` INTEGER NOT NULL, `planner_version` TEXT NOT NULL, PRIMARY KEY(`plan_id`))",
+        "fields": [
+          {
+            "fieldPath": "planId",
+            "columnName": "plan_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "planCanonicalFingerprint",
+            "columnName": "plan_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localDayEpochDay",
+            "columnName": "local_day_epoch_day",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeZoneId",
+            "columnName": "time_zone_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeBudgetSeconds",
+            "columnName": "time_budget_seconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedAtEpochMillis",
+            "columnName": "generated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannerVersion",
+            "columnName": "planner_version",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "plan_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_review_plan_learner_id_local_day_epoch_day",
+            "unique": true,
+            "columnNames": [
+              "learner_id",
+              "local_day_epoch_day"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_review_plan_learner_id_local_day_epoch_day` ON `${TABLE_NAME}` (`learner_id`, `local_day_epoch_day`)"
+          },
+          {
+            "name": "index_student_review_plan_plan_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "plan_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_review_plan_plan_canonical_fingerprint` ON `${TABLE_NAME}` (`plan_canonical_fingerprint`)"
+          }
+        ]
+      },
+      {
+        "tableName": "student_review_queue_item",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`queue_item_id` TEXT NOT NULL, `plan_id` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `practice_unit_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `scheduled_order` INTEGER NOT NULL, `estimated_duration_seconds` INTEGER NOT NULL, `reason_codes_wire` TEXT NOT NULL, `source_evidence_event_kind` TEXT, `source_evidence_event_id` TEXT, `source_evidence_sequence` INTEGER, `source_evidence_canonical_fingerprint` TEXT, `state` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `state_changed_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`queue_item_id`), FOREIGN KEY(`plan_id`) REFERENCES `student_review_plan`(`plan_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`practice_unit_id`) REFERENCES `student_practice_unit`(`practice_unit_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "queueItemId",
+            "columnName": "queue_item_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "planId",
+            "columnName": "plan_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceUnitId",
+            "columnName": "practice_unit_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduledOrder",
+            "columnName": "scheduled_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedDurationSeconds",
+            "columnName": "estimated_duration_seconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reasonCodesWire",
+            "columnName": "reason_codes_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceEvidenceEventKind",
+            "columnName": "source_evidence_event_kind",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceEvidenceEventId",
+            "columnName": "source_evidence_event_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceEvidenceSequence",
+            "columnName": "source_evidence_sequence",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sourceEvidenceCanonicalFingerprint",
+            "columnName": "source_evidence_canonical_fingerprint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stateChangedAtEpochMillis",
+            "columnName": "state_changed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "queue_item_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_review_queue_item_plan_id_scheduled_order",
+            "unique": true,
+            "columnNames": [
+              "plan_id",
+              "scheduled_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_review_queue_item_plan_id_scheduled_order` ON `${TABLE_NAME}` (`plan_id`, `scheduled_order`)"
+          },
+          {
+            "name": "index_student_review_queue_item_practice_unit_id",
+            "unique": false,
+            "columnNames": [
+              "practice_unit_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_queue_item_practice_unit_id` ON `${TABLE_NAME}` (`practice_unit_id`)"
+          },
+          {
+            "name": "index_student_review_queue_item_basis_revision_id",
+            "unique": false,
+            "columnNames": [
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_queue_item_basis_revision_id` ON `${TABLE_NAME}` (`basis_revision_id`)"
+          },
+          {
+            "name": "index_student_review_queue_item_plan_id_state",
+            "unique": false,
+            "columnNames": [
+              "plan_id",
+              "state"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_queue_item_plan_id_state` ON `${TABLE_NAME}` (`plan_id`, `state`)"
+          },
+          {
+            "name": "index_student_review_queue_item_source_evidence_event_id_source_evidence_sequence",
+            "unique": false,
+            "columnNames": [
+              "source_evidence_event_id",
+              "source_evidence_sequence"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_queue_item_source_evidence_event_id_source_evidence_sequence` ON `${TABLE_NAME}` (`source_evidence_event_id`, `source_evidence_sequence`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_review_plan",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "plan_id"
+            ],
+            "referencedColumns": [
+              "plan_id"
+            ]
+          },
+          {
+            "table": "student_practice_unit",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_unit_id"
+            ],
+            "referencedColumns": [
+              "practice_unit_id"
+            ]
+          },
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_review_self_report_receipt",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`self_report_id` TEXT NOT NULL, `report_canonical_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `queue_item_id` TEXT NOT NULL, `report_kind` TEXT NOT NULL, `reported_at_epoch_millis` INTEGER NOT NULL, `next_available_at_epoch_millis` INTEGER NOT NULL, `next_due_at_epoch_millis` INTEGER, `scheduling_policy_version` TEXT NOT NULL, PRIMARY KEY(`self_report_id`), FOREIGN KEY(`queue_item_id`) REFERENCES `student_review_queue_item`(`queue_item_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "selfReportId",
+            "columnName": "self_report_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reportCanonicalFingerprint",
+            "columnName": "report_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "queueItemId",
+            "columnName": "queue_item_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reportKind",
+            "columnName": "report_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reportedAtEpochMillis",
+            "columnName": "reported_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextAvailableAtEpochMillis",
+            "columnName": "next_available_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextDueAtEpochMillis",
+            "columnName": "next_due_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "schedulingPolicyVersion",
+            "columnName": "scheduling_policy_version",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "self_report_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_review_self_report_receipt_queue_item_id",
+            "unique": true,
+            "columnNames": [
+              "queue_item_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_review_self_report_receipt_queue_item_id` ON `${TABLE_NAME}` (`queue_item_id`)"
+          },
+          {
+            "name": "index_student_review_self_report_receipt_report_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "report_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_review_self_report_receipt_report_canonical_fingerprint` ON `${TABLE_NAME}` (`report_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_student_review_self_report_receipt_learner_id_reported_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "reported_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_review_self_report_receipt_learner_id_reported_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `reported_at_epoch_millis`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_review_queue_item",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "queue_item_id"
+            ],
+            "referencedColumns": [
+              "queue_item_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_learner_change",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`learner_id` TEXT NOT NULL, `change_version` INTEGER NOT NULL, PRIMARY KEY(`learner_id`))",
+        "fields": [
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "changeVersion",
+            "columnName": "change_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "learner_id"
+          ]
+        }
+      },
+      {
+        "tableName": "student_mistake_save_receipt",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`intent_confirmation_id` TEXT NOT NULL, `intent_canonical_fingerprint` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `problem_id` TEXT NOT NULL, `basis_revision_id` TEXT NOT NULL, `error_book_entry_id` TEXT NOT NULL, `confirmed_at_epoch_millis` INTEGER NOT NULL, `saved_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`intent_confirmation_id`), FOREIGN KEY(`basis_revision_id`) REFERENCES `student_problem_revision`(`revision_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "intentConfirmationId",
+            "columnName": "intent_confirmation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intentCanonicalFingerprint",
+            "columnName": "intent_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "problemId",
+            "columnName": "problem_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "basisRevisionId",
+            "columnName": "basis_revision_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorBookEntryId",
+            "columnName": "error_book_entry_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confirmedAtEpochMillis",
+            "columnName": "confirmed_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "savedAtEpochMillis",
+            "columnName": "saved_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "intent_confirmation_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_mistake_save_receipt_basis_revision_id",
+            "unique": true,
+            "columnNames": [
+              "basis_revision_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_mistake_save_receipt_basis_revision_id` ON `${TABLE_NAME}` (`basis_revision_id`)"
+          },
+          {
+            "name": "index_student_mistake_save_receipt_error_book_entry_id",
+            "unique": true,
+            "columnNames": [
+              "error_book_entry_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_mistake_save_receipt_error_book_entry_id` ON `${TABLE_NAME}` (`error_book_entry_id`)"
+          },
+          {
+            "name": "index_student_mistake_save_receipt_intent_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "intent_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_mistake_save_receipt_intent_canonical_fingerprint` ON `${TABLE_NAME}` (`intent_canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_problem_revision",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "basis_revision_id"
+            ],
+            "referencedColumns": [
+              "revision_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_mistake_migration_checkpoint",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`migration_id` TEXT NOT NULL, `source_database_canonical_fingerprint` TEXT NOT NULL, `last_committed_at_epoch_millis` INTEGER, `last_problem_id` TEXT, `last_revision_number` INTEGER, `last_revision_id` TEXT, `imported_record_count` INTEGER NOT NULL, `completed` INTEGER NOT NULL, `checkpoint_canonical_fingerprint` TEXT NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`migration_id`))",
+        "fields": [
+          {
+            "fieldPath": "migrationId",
+            "columnName": "migration_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceDatabaseCanonicalFingerprint",
+            "columnName": "source_database_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastCommittedAtEpochMillis",
+            "columnName": "last_committed_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastProblemId",
+            "columnName": "last_problem_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastRevisionNumber",
+            "columnName": "last_revision_number",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastRevisionId",
+            "columnName": "last_revision_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "importedRecordCount",
+            "columnName": "imported_record_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completed",
+            "columnName": "completed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "checkpointCanonicalFingerprint",
+            "columnName": "checkpoint_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "migration_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_mistake_migration_checkpoint_source_database_canonical_fingerprint",
+            "unique": false,
+            "columnNames": [
+              "source_database_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_mistake_migration_checkpoint_source_database_canonical_fingerprint` ON `${TABLE_NAME}` (`source_database_canonical_fingerprint`)"
+          },
+          {
+            "name": "index_student_mistake_migration_checkpoint_completed",
+            "unique": false,
+            "columnNames": [
+              "completed"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_mistake_migration_checkpoint_completed` ON `${TABLE_NAME}` (`completed`)"
+          }
+        ]
+      },
+      {
+        "tableName": "student_mistake_migration_receipt",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`migration_id` TEXT NOT NULL, `source_page_canonical_fingerprint` TEXT NOT NULL, `imported_record_count` INTEGER NOT NULL, `result_last_committed_at_epoch_millis` INTEGER, `result_last_problem_id` TEXT, `result_last_revision_number` INTEGER, `result_last_revision_id` TEXT, `result_total_record_count` INTEGER NOT NULL, `result_completed` INTEGER NOT NULL, `checkpoint_canonical_fingerprint` TEXT NOT NULL, `receipt_canonical_fingerprint` TEXT NOT NULL, `applied_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`migration_id`, `source_page_canonical_fingerprint`), FOREIGN KEY(`migration_id`) REFERENCES `student_mistake_migration_checkpoint`(`migration_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "migrationId",
+            "columnName": "migration_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourcePageCanonicalFingerprint",
+            "columnName": "source_page_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "importedRecordCount",
+            "columnName": "imported_record_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultLastCommittedAtEpochMillis",
+            "columnName": "result_last_committed_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "resultLastProblemId",
+            "columnName": "result_last_problem_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "resultLastRevisionNumber",
+            "columnName": "result_last_revision_number",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "resultLastRevisionId",
+            "columnName": "result_last_revision_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "resultTotalRecordCount",
+            "columnName": "result_total_record_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resultCompleted",
+            "columnName": "result_completed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "checkpointCanonicalFingerprint",
+            "columnName": "checkpoint_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiptCanonicalFingerprint",
+            "columnName": "receipt_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appliedAtEpochMillis",
+            "columnName": "applied_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "migration_id",
+            "source_page_canonical_fingerprint"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_mistake_migration_receipt_migration_id",
+            "unique": false,
+            "columnNames": [
+              "migration_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_mistake_migration_receipt_migration_id` ON `${TABLE_NAME}` (`migration_id`)"
+          },
+          {
+            "name": "index_student_mistake_migration_receipt_receipt_canonical_fingerprint",
+            "unique": true,
+            "columnNames": [
+              "receipt_canonical_fingerprint"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_mistake_migration_receipt_receipt_canonical_fingerprint` ON `${TABLE_NAME}` (`receipt_canonical_fingerprint`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "student_mistake_migration_checkpoint",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "migration_id"
+            ],
+            "referencedColumns": [
+              "migration_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "student_store_outbox",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `source_store` TEXT NOT NULL, `destination_store` TEXT NOT NULL, `learner_id` TEXT, `aggregate_id` TEXT NOT NULL, `aggregate_version` INTEGER NOT NULL, `payload_type` TEXT NOT NULL, `payload_version` INTEGER NOT NULL, `payload_canonical_fingerprint` TEXT NOT NULL, `payload_wire` TEXT NOT NULL, `envelope_canonical_fingerprint` TEXT NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `idempotency_key` TEXT NOT NULL, `source_store_generation` TEXT NOT NULL, `delivery_state` TEXT NOT NULL, `delivery_attempt_count` INTEGER NOT NULL, `available_at_epoch_millis` INTEGER NOT NULL, `delivered_at_epoch_millis` INTEGER, PRIMARY KEY(`event_id`))",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStore",
+            "columnName": "source_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationStore",
+            "columnName": "destination_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "learnerId",
+            "columnName": "learner_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "aggregateId",
+            "columnName": "aggregate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateVersion",
+            "columnName": "aggregate_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadType",
+            "columnName": "payload_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadVersion",
+            "columnName": "payload_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadCanonicalFingerprint",
+            "columnName": "payload_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadWire",
+            "columnName": "payload_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopeCanonicalFingerprint",
+            "columnName": "envelope_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurred_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotency_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStoreGeneration",
+            "columnName": "source_store_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryState",
+            "columnName": "delivery_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryAttemptCount",
+            "columnName": "delivery_attempt_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "availableAtEpochMillis",
+            "columnName": "available_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveredAtEpochMillis",
+            "columnName": "delivered_at_epoch_millis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_store_outbox_destination_store_source_store_generation_idempotency_key",
+            "unique": true,
+            "columnNames": [
+              "destination_store",
+              "source_store_generation",
+              "idempotency_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_store_outbox_destination_store_source_store_generation_idempotency_key` ON `${TABLE_NAME}` (`destination_store`, `source_store_generation`, `idempotency_key`)"
+          },
+          {
+            "name": "index_student_store_outbox_learner_id_delivery_state_available_at_epoch_millis_occurred_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "delivery_state",
+              "available_at_epoch_millis",
+              "occurred_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_store_outbox_learner_id_delivery_state_available_at_epoch_millis_occurred_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `delivery_state`, `available_at_epoch_millis`, `occurred_at_epoch_millis`)"
+          },
+          {
+            "name": "index_student_store_outbox_aggregate_id_aggregate_version",
+            "unique": false,
+            "columnNames": [
+              "aggregate_id",
+              "aggregate_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_store_outbox_aggregate_id_aggregate_version` ON `${TABLE_NAME}` (`aggregate_id`, `aggregate_version`)"
+          }
+        ]
+      },
+      {
+        "tableName": "student_store_inbox",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`event_id` TEXT NOT NULL, `source_store` TEXT NOT NULL, `destination_store` TEXT NOT NULL, `aggregate_id` TEXT NOT NULL, `aggregate_version` INTEGER NOT NULL, `payload_type` TEXT NOT NULL, `payload_version` INTEGER NOT NULL, `payload_canonical_fingerprint` TEXT NOT NULL, `payload_wire` TEXT NOT NULL, `envelope_canonical_fingerprint` TEXT NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `idempotency_key` TEXT NOT NULL, `source_store_generation` TEXT NOT NULL, `apply_state` TEXT NOT NULL, `received_at_epoch_millis` INTEGER NOT NULL, `applied_at_epoch_millis` INTEGER, PRIMARY KEY(`event_id`))",
+        "fields": [
+          {
+            "fieldPath": "eventId",
+            "columnName": "event_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStore",
+            "columnName": "source_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationStore",
+            "columnName": "destination_store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateId",
+            "columnName": "aggregate_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aggregateVersion",
+            "columnName": "aggregate_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadType",
+            "columnName": "payload_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadVersion",
+            "columnName": "payload_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadCanonicalFingerprint",
+            "columnName": "payload_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadWire",
+            "columnName": "payload_wire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "envelopeCanonicalFingerprint",
+            "columnName": "envelope_canonical_fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurred_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idempotencyKey",
+            "columnName": "idempotency_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceStoreGeneration",
+            "columnName": "source_store_generation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "applyState",
+            "columnName": "apply_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receivedAtEpochMillis",
+            "columnName": "received_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appliedAtEpochMillis",
+            "columnName": "applied_at_epoch_millis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "event_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_student_store_inbox_source_store_source_store_generation_idempotency_key",
+            "unique": true,
+            "columnNames": [
+              "source_store",
+              "source_store_generation",
+              "idempotency_key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_student_store_inbox_source_store_source_store_generation_idempotency_key` ON `${TABLE_NAME}` (`source_store`, `source_store_generation`, `idempotency_key`)"
+          },
+          {
+            "name": "index_student_store_inbox_aggregate_id_aggregate_version",
+            "unique": false,
+            "columnNames": [
+              "aggregate_id",
+              "aggregate_version"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_store_inbox_aggregate_id_aggregate_version` ON `${TABLE_NAME}` (`aggregate_id`, `aggregate_version`)"
+          },
+          {
+            "name": "index_student_store_inbox_apply_state_received_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "apply_state",
+              "received_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_student_store_inbox_apply_state_received_at_epoch_millis` ON `${TABLE_NAME}` (`apply_state`, `received_at_epoch_millis`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6607cfcdd8b63c77bbce897db7e20265')"
+    ]
+  }
+}

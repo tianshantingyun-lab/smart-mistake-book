@@ -1,0 +1,5 @@
+package com.tingyun.smartmistakebook.core.model.storage
+
+typealias VerifiedKnowledgeReferenceProof = KnowledgeReferenceProofAuthority.Proof
+typealias KnowledgeReferenceProofIssuer = KnowledgeReferenceProofAuthority.Issuer
+typealias KnowledgeReferenceProofVerifier = KnowledgeReferenceProofAuthority.Verifier

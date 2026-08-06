@@ -92,17 +92,27 @@ internal fun TutorVisual2DPanel(
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(layout, hitPresentation, onTargetHit) {
+                .pointerInput(layout, compiled.provenance, hitPresentation, onTargetHit) {
                     detectTapGestures { offset ->
-                        val eligibleTargetIds = layout.hitTestEligibleElementIds(currentFrame)
+                        val browsableTargetIds = layout.hitTestEligibleElementIds(currentFrame)
+                        val evidenceEligibleTargetIds = visualEvidenceEligibleTargetIds(
+                            browsableTargetIds = browsableTargetIds,
+                            provenanceEligibleTargetIds = compiled.provenance
+                                ?.evidenceEligibleElementIds,
+                        )
                         val hitTargetId = layout.hitTest(
                             TutorVisualPoint(offset.x.toDouble(), offset.y.toDouble()),
-                            eligibleElementIds = eligibleTargetIds,
+                            eligibleElementIds = browsableTargetIds,
                             connectorProgressById =
                                 layout.visibleConnectorProgressById(currentFrame),
                         )
                         selectedElementId = hitTargetId
-                        if (hitTargetId != null && hitPresentation != null && onTargetHit != null) {
+                        if (
+                            hitTargetId != null &&
+                            hitTargetId in evidenceEligibleTargetIds &&
+                            hitPresentation != null &&
+                            onTargetHit != null
+                        ) {
                             onTargetHit(
                                 TutorVisualHitProofRegistry.issue(
                                     presentation = hitPresentation,
@@ -112,11 +122,11 @@ internal fun TutorVisual2DPanel(
                                         stepId = currentFrame.step.stepId,
                                         stepIndex = currentFrame.stepIndex,
                                         timeSeconds = currentFrame.timeSeconds,
-                                        eligibleTargetIds = eligibleTargetIds,
+                                        eligibleTargetIds = evidenceEligibleTargetIds,
                                     ),
                                     stepIndex = currentFrame.stepIndex,
                                     selectedTargetId = hitTargetId,
-                                    eligibleTargetIds = eligibleTargetIds,
+                                    eligibleTargetIds = evidenceEligibleTargetIds,
                                 ),
                             )
                         }
@@ -347,6 +357,13 @@ private fun com.tingyun.smartmistakebook.core.visual.runtime.TutorVisual2DLayout
             state.properties[TutorVisualBindingProperty.OPACITY]
                 ?.let { opacity -> opacity > MIN_INTERACTIVE_OPACITY } != false
     }
+
+internal fun visualEvidenceEligibleTargetIds(
+    browsableTargetIds: Set<String>,
+    provenanceEligibleTargetIds: Set<String>?,
+): Set<String> = provenanceEligibleTargetIds
+    ?.let(browsableTargetIds::intersect)
+    .orEmpty()
 
 private fun com.tingyun.smartmistakebook.core.visual.runtime.TutorVisual2DLayout
     .visibleConnectorProgressById(frame: TutorVisualFrame): Map<String, Double> =
