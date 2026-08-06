@@ -234,6 +234,68 @@ internal fun visibleTutorInteractionDirective(
     }
 }
 
+internal fun tutorEvidenceCancellation(
+    question: TutorQuestionContext,
+    requestId: String,
+    clock: () -> Long = System::currentTimeMillis,
+) = CancelTutorEvidenceCommand(
+    sessionId = question.sessionId,
+    questionDocumentId = question.questionDocument.document.id,
+    revisionNumber = question.revisionNumber,
+    evidenceRequestId = requestId,
+    occurredAtEpochMillis = clock(),
+)
+
+internal fun tutorPendingTutorResponseMessage(
+    timeline: List<TutorConversationTimelineItem>,
+    pending: PendingTutorEgressAction.NewResponse,
+): TutorResponseMessage? {
+    val selectedChoiceId = pending.selectedChoiceId
+        ?: return TutorResponseMessage.freeResponse(pending.message)
+    val sourceRequestId = pending.choiceSourceRequestId ?: return null
+    val directive = visibleTutorChoiceDirective(timeline, sourceRequestId)
+        ?: return null
+    return runCatching {
+        TutorResponseMessage.directiveChoice(
+            directive = directive,
+            selectedChoiceId = selectedChoiceId,
+            messageMarkdown = pending.message,
+            sourceRequestId = sourceRequestId,
+        )
+    }.getOrNull()
+}
+
+internal fun tutorCancellationIsConfirmed(
+    requestId: String,
+    locallyCancelledEvidenceRequestIds: Set<String>,
+    replayedCancellationRequestId: String?,
+    replayedPendingIsCancelled: Boolean?,
+): Boolean =
+    requestId in locallyCancelledEvidenceRequestIds ||
+        (
+            requestId == replayedCancellationRequestId &&
+                replayedPendingIsCancelled == true
+            )
+
+internal fun tutorPendingInteractionIsCurrentlyBlocked(
+    guidanceResolution: TutorGuidanceModeResolution,
+    cancellationPendingEvidenceRequestIds: Set<String>,
+    replayedCancellationRequestId: String?,
+    cancellationIsConfirmed: (String) -> Boolean,
+): Boolean =
+    (
+        guidanceResolution.blockPendingInteraction &&
+            (
+            guidanceResolution.cancelEvidenceRequestId
+                ?.let { !cancellationIsConfirmed(it) }
+                ?: true
+            )
+        ) ||
+        (
+            replayedCancellationRequestId in cancellationPendingEvidenceRequestIds &&
+                replayedCancellationRequestId?.let(cancellationIsConfirmed) != true
+            )
+
 internal fun tutorConversationAutoScrollVersion(
     timeline: List<TutorConversationTimelineItem>,
 ): List<List<*>> =

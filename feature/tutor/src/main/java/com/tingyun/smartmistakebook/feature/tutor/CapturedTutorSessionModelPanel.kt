@@ -943,12 +943,10 @@ internal fun TutorModelPanel(
             revisionNumber = question.revisionNumber,
         )
     }
-    fun evidenceCancellation(requestId: String) = CancelTutorEvidenceCommand(
-        sessionId = question.sessionId,
-        questionDocumentId = question.questionDocument.document.id,
-        revisionNumber = question.revisionNumber,
-        evidenceRequestId = requestId,
-        occurredAtEpochMillis = clock(),
+    fun evidenceCancellation(requestId: String) = tutorEvidenceCancellation(
+        question = question,
+        requestId = requestId,
+        clock = clock,
     )
     val guidanceEvents = remember(
         currentCycleTasks,
@@ -1081,25 +1079,20 @@ internal fun TutorModelPanel(
                 )
 
     fun cancellationIsConfirmed(requestId: String): Boolean =
-        requestId in locallyCancelledEvidenceRequestIds ||
-            (
-                requestId == replayedCancellationRequestId &&
-                    replayedPendingIsCancelled == true
-                )
+        tutorCancellationIsConfirmed(
+            requestId = requestId,
+            locallyCancelledEvidenceRequestIds = locallyCancelledEvidenceRequestIds,
+            replayedCancellationRequestId = replayedCancellationRequestId,
+            replayedPendingIsCancelled = replayedPendingIsCancelled,
+        )
 
     fun pendingInteractionIsCurrentlyBlocked(): Boolean =
-        (
-            guidanceResolution.blockPendingInteraction &&
-                (
-                guidanceResolution.cancelEvidenceRequestId
-                    ?.let { !cancellationIsConfirmed(it) }
-                    ?: true
-                )
-            ) ||
-            (
-                replayedCancellationRequestId in cancellationPendingEvidenceRequestIds &&
-                    replayedCancellationRequestId?.let(::cancellationIsConfirmed) != true
-                )
+        tutorPendingInteractionIsCurrentlyBlocked(
+            guidanceResolution = guidanceResolution,
+            cancellationPendingEvidenceRequestIds = cancellationPendingEvidenceRequestIds,
+            replayedCancellationRequestId = replayedCancellationRequestId,
+            cancellationIsConfirmed = ::cancellationIsConfirmed,
+        )
 
     fun beginEvidenceCancellation(requestId: String) {
         choiceSubmissionGate.invalidate(requestId)
@@ -2517,21 +2510,7 @@ internal fun TutorModelPanel(
 
     fun pendingTutorResponseMessage(
         pending: PendingTutorEgressAction.NewResponse,
-    ): TutorResponseMessage? {
-        val selectedChoiceId = pending.selectedChoiceId
-            ?: return TutorResponseMessage.freeResponse(pending.message)
-        val sourceRequestId = pending.choiceSourceRequestId ?: return null
-        val directive = visibleTutorChoiceDirective(timeline, sourceRequestId)
-            ?: return null
-        return runCatching {
-            TutorResponseMessage.directiveChoice(
-                directive = directive,
-                selectedChoiceId = selectedChoiceId,
-                messageMarkdown = pending.message,
-                sourceRequestId = sourceRequestId,
-            )
-        }.getOrNull()
-    }
+    ): TutorResponseMessage? = tutorPendingTutorResponseMessage(timeline, pending)
 
     fun retryTutorResponse(task: ModelTaskSnapshot) {
         if (!task.isRebuildableTutorRequest()) return
