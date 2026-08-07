@@ -106,6 +106,538 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第1节 种群的数量特征",
+      "aliases": [
+        "种群密度",
+        "出生率",
+        "年龄结构"
+      ],
+      "conceptSummary": "种群的数量特征包括密度、出生率死亡率、年龄结构等。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "种群密度调查",
+        "出生率死亡率",
+        "年龄结构"
+      ],
+      "methodModels": [
+        {
+          "name": "种群特征",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "种群数量特征"
+        }
+      ],
+      "commonConfusions": [
+        "种群密度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "种群数量特征",
+          "method": "见方法模型",
+          "example": "种群数量特征"
+        }
+      ]
+    },
+    {
+      "section": "第2节 种群数量的变化",
+      "aliases": [
+        "J型",
+        "S型",
+        "K值"
+      ],
+      "conceptSummary": "种群数量增长有J型与S型曲线，S型受环境容纳量限制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "J型增长",
+        "S型增长",
+        "K值"
+      ],
+      "methodModels": [
+        {
+          "name": "种群增长",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "种群数量变化"
+        }
+      ],
+      "commonConfusions": [
+        "J型S型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "种群数量变化",
+          "method": "见方法模型",
+          "example": "种群数量变化"
+        }
+      ]
+    },
+    {
+      "section": "第3节 影响种群数量变化的因素",
+      "aliases": [
+        "制约因素",
+        "密度制约",
+        "非密度"
+      ],
+      "conceptSummary": "影响种群数量因素分密度制约与非密度制约。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "密度制约因素",
+        "非密度制约",
+        "种群调节"
+      ],
+      "methodModels": [
+        {
+          "name": "影响因素",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "种群数量因素"
+        }
+      ],
+      "commonConfusions": [
+        "密度制约"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "种群数量因素",
+          "method": "见方法模型",
+          "example": "种群数量因素"
+        }
+      ]
+    },
+    {
+      "section": "第1节 群落的结构",
+      "aliases": [
+        "群落",
+        "种间关系",
+        "垂直结构"
+      ],
+      "conceptSummary": "群落有垂直与水平结构，种间关系包括竞争捕食互利共生。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "垂直水平结构",
+        "种间关系",
+        "群落演替"
+      ],
+      "methodModels": [
+        {
+          "name": "群落结构",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "群落结构"
+        }
+      ],
+      "commonConfusions": [
+        "种间关系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "群落结构",
+          "method": "见方法模型",
+          "example": "群落结构"
+        }
+      ]
+    },
+    {
+      "section": "第2节 群落的主要类型",
+      "aliases": [
+        "群落类型",
+        "森林",
+        "草原"
+      ],
+      "conceptSummary": "群落主要类型：森林、草原、荒漠、湿地等。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "森林群落",
+        "草原群落",
+        "荒漠湿地"
+      ],
+      "methodModels": [
+        {
+          "name": "群落类型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "群落类型"
+        }
+      ],
+      "commonConfusions": [
+        "群落分类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "群落类型",
+          "method": "见方法模型",
+          "example": "群落类型"
+        }
+      ]
+    },
+    {
+      "section": "第3节 群落的演替",
+      "aliases": [
+        "演替",
+        "初生",
+        "次生"
+      ],
+      "conceptSummary": "群落演替分初生演替与次生演替，是群落替代过程。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "初生演替",
+        "次生演替",
+        "演替方向"
+      ],
+      "methodModels": [
+        {
+          "name": "群落演替",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "群落演替"
+        }
+      ],
+      "commonConfusions": [
+        "初生次生"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "群落演替",
+          "method": "见方法模型",
+          "example": "群落演替"
+        }
+      ]
+    },
+    {
+      "section": "第1节 生态系统的结构",
+      "aliases": [
+        "生态系统",
+        "生产者",
+        "食物链"
+      ],
+      "conceptSummary": "生态系统由生产者消费者分解者非生物组成，有营养结构。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生态成分",
+        "食物链食物网",
+        "营养结构"
+      ],
+      "methodModels": [
+        {
+          "name": "生态系统",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "生态系统结构"
+        }
+      ],
+      "commonConfusions": [
+        "生态成分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生态系统结构",
+          "method": "见方法模型",
+          "example": "生态系统结构"
+        }
+      ]
+    },
+    {
+      "section": "第2节 生态系统的能量流动",
+      "aliases": [
+        "能量流动",
+        "单向",
+        "10-20%"
+      ],
+      "conceptSummary": "能量流动单向递减，相邻营养级传递效率10%-20%。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单向流动",
+        "逐级递减",
+        "能量金字塔"
+      ],
+      "methodModels": [
+        {
+          "name": "能量流动",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "能量流动"
+        }
+      ],
+      "commonConfusions": [
+        "10-20%"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "能量流动",
+          "method": "见方法模型",
+          "example": "能量流动"
+        }
+      ]
+    },
+    {
+      "section": "第3节 生态系统的物质循环",
+      "aliases": [
+        "物质循环",
+        "碳循环",
+        "全球性"
+      ],
+      "conceptSummary": "物质循环具有全球性，碳在生物群落与无机环境间循环。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "碳循环",
+        "物质循环特点",
+        "温室效应"
+      ],
+      "methodModels": [
+        {
+          "name": "物质循环",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "物质循环"
+        }
+      ],
+      "commonConfusions": [
+        "碳循环"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质循环",
+          "method": "见方法模型",
+          "example": "物质循环"
+        }
+      ]
+    },
+    {
+      "section": "第4节 生态系统的信息传递",
+      "aliases": [
+        "信息传递",
+        "物理信息",
+        "化学信息"
+      ],
+      "conceptSummary": "生态系统信息传递分物理、化学、行为信息，调节生命活动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "信息类型",
+        "信息传递作用",
+        "信息在生态中"
+      ],
+      "methodModels": [
+        {
+          "name": "信息传递",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "信息传递"
+        }
+      ],
+      "commonConfusions": [
+        "信息类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "信息传递",
+          "method": "见方法模型",
+          "example": "信息传递"
+        }
+      ]
+    },
+    {
+      "section": "第5节 生态系统的稳定性",
+      "aliases": [
+        "稳定性",
+        "自我调节",
+        "抵抗力"
+      ],
+      "conceptSummary": "生态系统有抵抗力稳定性与恢复力稳定性，靠自我调节。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自我调节能力",
+        "抵抗力稳定性",
+        "恢复力稳定性"
+      ],
+      "methodModels": [
+        {
+          "name": "生态系统稳定",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "生态系统稳定性"
+        }
+      ],
+      "commonConfusions": [
+        "抵抗力恢复力"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生态系统稳定性",
+          "method": "见方法模型",
+          "example": "生态系统稳定性"
+        }
+      ]
+    },
+    {
+      "section": "第1节 人类活动对生态环境的影响",
+      "aliases": [
+        "人口增长",
+        "环境问题",
+        "生态破坏"
+      ],
+      "conceptSummary": "人类活动影响生态环境，人口增长与环境问题。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人口与环境",
+        "资源消耗",
+        "生态破坏"
+      ],
+      "methodModels": [
+        {
+          "name": "人类与环境",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "人类活动环境影响"
+        }
+      ],
+      "commonConfusions": [
+        "环境问题"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人类活动环境影响",
+          "method": "见方法模型",
+          "example": "人类活动环境影响"
+        }
+      ]
+    },
+    {
+      "section": "第2节 生物多样性及其保护",
+      "aliases": [
+        "生物多样性",
+        "就地保护",
+        "迁地保护"
+      ],
+      "conceptSummary": "生物多样性包括基因物种生态系统多样性，就地保护最有效。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生物多样性层次",
+        "保护措施",
+        "就地保护"
+      ],
+      "methodModels": [
+        {
+          "name": "生物多样性",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "生物多样性保护"
+        }
+      ],
+      "commonConfusions": [
+        "保护措施"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生物多样性保护",
+          "method": "见方法模型",
+          "example": "生物多样性保护"
+        }
+      ]
+    },
+    {
+      "section": "第3节 生态工程",
+      "aliases": [
+        "生态工程",
+        "循环",
+        "协调"
+      ],
+      "conceptSummary": "生态工程遵循循环、协调、整体原理，实现可持续发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生态工程原理",
+        "循环经济",
+        "生态农业"
+      ],
+      "methodModels": [
+        {
+          "name": "生态工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "生态工程"
+        }
+      ],
+      "commonConfusions": [
+        "生态原理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生态工程",
+          "method": "见方法模型",
+          "example": "生态工程"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

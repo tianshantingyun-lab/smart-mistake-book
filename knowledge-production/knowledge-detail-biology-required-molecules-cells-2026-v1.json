@@ -379,6 +379,727 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第1节 细胞是生命活动的基本单位",
+      "aliases": [
+        "细胞学说",
+        "细胞"
+      ],
+      "conceptSummary": "细胞是生物体结构和功能的基本单位，细胞学说论证了生物统一性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "细胞学说内容",
+        "细胞是基本单位",
+        "细胞结构功能"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞学说",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞是基本单位"
+        }
+      ],
+      "commonConfusions": [
+        "细胞学说"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞是基本单位",
+          "method": "见方法模型",
+          "example": "细胞是基本单位"
+        }
+      ]
+    },
+    {
+      "section": "第2节 细胞的多样性和统一性",
+      "aliases": [
+        "原核",
+        "真核",
+        "多样性"
+      ],
+      "conceptSummary": "细胞既有多样性（原核真核）又有统一性（都有膜/核糖体）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "原核生物无核膜",
+        "真核有核膜细胞器",
+        "细胞统一性"
+      ],
+      "methodModels": [
+        {
+          "name": "原核真核",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "原核真核比较"
+        }
+      ],
+      "commonConfusions": [
+        "原核真核区分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原核真核比较",
+          "method": "见方法模型",
+          "example": "原核真核比较"
+        }
+      ]
+    },
+    {
+      "section": "第1节 细胞中的元素和化合物",
+      "aliases": [
+        "元素",
+        "化合物",
+        "大量元素"
+      ],
+      "conceptSummary": "细胞中元素按含量分大量元素与微量元素；化合物有有机物无机物。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "大量元素CHONPSCaMg",
+        "微量元素FeMnZnCu",
+        "水无机盐蛋白质"
+      ],
+      "methodModels": [
+        {
+          "name": "元素分类",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞元素"
+        }
+      ],
+      "commonConfusions": [
+        "大量微量元素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞元素",
+          "method": "见方法模型",
+          "example": "细胞元素"
+        }
+      ]
+    },
+    {
+      "section": "第2节 细胞中的无机物",
+      "aliases": [
+        "水",
+        "无机盐",
+        "自由水"
+      ],
+      "conceptSummary": "水是细胞含量最多化合物，分自由水与结合水；无机盐维持渗透压。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自由水与结合水",
+        "水是良好溶剂",
+        "无机盐作用"
+      ],
+      "methodModels": [
+        {
+          "name": "水与无机盐",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞无机物"
+        }
+      ],
+      "commonConfusions": [
+        "自由结合水"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞无机物",
+          "method": "见方法模型",
+          "example": "细胞无机物"
+        }
+      ]
+    },
+    {
+      "section": "第3节 细胞中的糖类和脂质",
+      "aliases": [
+        "糖类",
+        "脂质",
+        "多糖"
+      ],
+      "conceptSummary": "糖类是主要能源物质，脂质包括脂肪磷脂固醇。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单糖二糖多糖",
+        "脂肪储能",
+        "磷脂构成膜"
+      ],
+      "methodModels": [
+        {
+          "name": "糖类脂质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "糖类脂质"
+        }
+      ],
+      "commonConfusions": [
+        "糖类分类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "糖类脂质",
+          "method": "见方法模型",
+          "example": "糖类脂质"
+        }
+      ]
+    },
+    {
+      "section": "第4节 蛋白质是生命活动的主要承担者",
+      "aliases": [
+        "蛋白质",
+        "氨基酸",
+        "肽键"
+      ],
+      "conceptSummary": "蛋白质由氨基酸经脱水缩合形成，承担催化运输免疫等功能。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "20种氨基酸",
+        "肽键形成",
+        "蛋白质功能多样"
+      ],
+      "methodModels": [
+        {
+          "name": "蛋白质计算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "蛋白质结构功能"
+        }
+      ],
+      "commonConfusions": [
+        "肽键数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "蛋白质结构功能",
+          "method": "见方法模型",
+          "example": "蛋白质结构功能"
+        }
+      ]
+    },
+    {
+      "section": "第5节 核酸是遗传信息的携带者",
+      "aliases": [
+        "核酸",
+        "DNA",
+        "RNA"
+      ],
+      "conceptSummary": "核酸储存遗传信息，DNA双链、RNA单链，由核苷酸构成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "DNA双螺旋",
+        "RNA单链",
+        "核苷酸五碳糖"
+      ],
+      "methodModels": [
+        {
+          "name": "核酸结构",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "核酸"
+        }
+      ],
+      "commonConfusions": [
+        "DNA RNA"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "核酸",
+          "method": "见方法模型",
+          "example": "核酸"
+        }
+      ]
+    },
+    {
+      "section": "第1节 细胞膜的结构和功能",
+      "aliases": [
+        "细胞膜",
+        "流动镶嵌",
+        "膜蛋白"
+      ],
+      "conceptSummary": "细胞膜流动镶嵌模型，控制物质进出、信息交流。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "磷脂双分子层",
+        "流动镶嵌模型",
+        "膜功能"
+      ],
+      "methodModels": [
+        {
+          "name": "膜结构",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞膜"
+        }
+      ],
+      "commonConfusions": [
+        "流动镶嵌"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞膜",
+          "method": "见方法模型",
+          "example": "细胞膜"
+        }
+      ]
+    },
+    {
+      "section": "第2节 细胞器之间的分工合作",
+      "aliases": [
+        "细胞器",
+        "分工",
+        "协作"
+      ],
+      "conceptSummary": "细胞器分工协作，分泌蛋白经核糖体内质网高尔基体加工。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "细胞器功能",
+        "分泌蛋白途径",
+        "生物膜系统"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞器协作",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞器分工"
+        }
+      ],
+      "commonConfusions": [
+        "分泌蛋白"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞器分工",
+          "method": "见方法模型",
+          "example": "细胞器分工"
+        }
+      ]
+    },
+    {
+      "section": "第3节 细胞核的结构和功能",
+      "aliases": [
+        "细胞核",
+        "核膜",
+        "染色质"
+      ],
+      "conceptSummary": "细胞核是遗传信息库与代谢控制中心，含DNA。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "核膜核孔",
+        "染色质染色体",
+        "核仁核糖体合成"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞核功能",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞核"
+        }
+      ],
+      "commonConfusions": [
+        "染色质染色体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞核",
+          "method": "见方法模型",
+          "example": "细胞核"
+        }
+      ]
+    },
+    {
+      "section": "第1节 被动运输",
+      "aliases": [
+        "被动运输",
+        "自由扩散",
+        "协助扩散"
+      ],
+      "conceptSummary": "被动运输顺浓度梯度不耗能：自由扩散与协助扩散。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自由扩散不需载体",
+        "协助扩散需载体",
+        "渗透作用"
+      ],
+      "methodModels": [
+        {
+          "name": "被动运输",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "被动运输"
+        }
+      ],
+      "commonConfusions": [
+        "协助扩散"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "被动运输",
+          "method": "见方法模型",
+          "example": "被动运输"
+        }
+      ]
+    },
+    {
+      "section": "第2节 主动运输与胞吞、胞吐",
+      "aliases": [
+        "主动运输",
+        "胞吞",
+        "胞吐"
+      ],
+      "conceptSummary": "主动运输逆浓度需载体ATP；大分子胞吞胞吐。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "主动运输耗能",
+        "胞吞胞吐",
+        "载体专一性"
+      ],
+      "methodModels": [
+        {
+          "name": "主动运输",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "主动运输"
+        }
+      ],
+      "commonConfusions": [
+        "胞吞胞吐"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "主动运输",
+          "method": "见方法模型",
+          "example": "主动运输"
+        }
+      ]
+    },
+    {
+      "section": "第1节 降低化学反应活化能的酶",
+      "aliases": [
+        "酶",
+        "催化剂",
+        "活化能"
+      ],
+      "conceptSummary": "酶是生物催化剂，降低活化能，高效专一。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "酶本质蛋白质/RNA",
+        "高效性专一性",
+        "作用条件温和"
+      ],
+      "methodModels": [
+        {
+          "name": "酶的特性",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "酶"
+        }
+      ],
+      "commonConfusions": [
+        "酶本质"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "酶",
+          "method": "见方法模型",
+          "example": "酶"
+        }
+      ]
+    },
+    {
+      "section": "第2节 细胞的能量货币ATP",
+      "aliases": [
+        "ATP",
+        "能量货币",
+        "ADP"
+      ],
+      "conceptSummary": "ATP是直接能源物质，ATP↔ADP+Pi相互转化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "ATP结构",
+        "ATP与ADP转化",
+        "ATP是直接能源"
+      ],
+      "methodModels": [
+        {
+          "name": "ATP",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "ATP"
+        }
+      ],
+      "commonConfusions": [
+        "ATP与ADP"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "ATP",
+          "method": "见方法模型",
+          "example": "ATP"
+        }
+      ]
+    },
+    {
+      "section": "第3节 细胞呼吸的原理和应用",
+      "aliases": [
+        "细胞呼吸",
+        "有氧呼吸",
+        "无氧呼吸"
+      ],
+      "conceptSummary": "细胞呼吸分解有机物释放能量，有氧与无氧两种。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "有氧呼吸三阶段",
+        "无氧呼吸",
+        "场所线粒体"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞呼吸",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞呼吸"
+        }
+      ],
+      "commonConfusions": [
+        "有氧无氧"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞呼吸",
+          "method": "见方法模型",
+          "example": "细胞呼吸"
+        }
+      ]
+    },
+    {
+      "section": "第4节 光合作用与能量转化",
+      "aliases": [
+        "光合作用",
+        "叶绿体",
+        "暗反应"
+      ],
+      "conceptSummary": "光合作用在叶绿体进行，光反应与暗反应（C3还原）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "光反应：水的光解",
+        "暗反应：CO2固定",
+        "影响因素"
+      ],
+      "methodModels": [
+        {
+          "name": "光合作用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "光合作用"
+        }
+      ],
+      "commonConfusions": [
+        "光暗反应"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "光合作用",
+          "method": "见方法模型",
+          "example": "光合作用"
+        }
+      ]
+    },
+    {
+      "section": "第1节 细胞的增殖",
+      "aliases": [
+        "细胞增殖",
+        "有丝分裂",
+        "细胞周期"
+      ],
+      "conceptSummary": "细胞增殖通过有丝分裂，DNA复制后平均分配。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "细胞周期",
+        "有丝分裂各期",
+        "染色体行为"
+      ],
+      "methodModels": [
+        {
+          "name": "有丝分裂",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞增殖"
+        }
+      ],
+      "commonConfusions": [
+        "分裂各期"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞增殖",
+          "method": "见方法模型",
+          "example": "细胞增殖"
+        }
+      ]
+    },
+    {
+      "section": "第2节 细胞的分化",
+      "aliases": [
+        "分化",
+        "全能性",
+        "基因表达"
+      ],
+      "conceptSummary": "细胞分化是基因选择性表达，细胞具有全能性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分化本质基因表达",
+        "全能性",
+        "分化程度"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞分化",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞分化"
+        }
+      ],
+      "commonConfusions": [
+        "分化与全能性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞分化",
+          "method": "见方法模型",
+          "example": "细胞分化"
+        }
+      ]
+    },
+    {
+      "section": "第3节 细胞的衰老和死亡",
+      "aliases": [
+        "衰老",
+        "凋亡",
+        "程序性死亡"
+      ],
+      "conceptSummary": "细胞衰老特征酶活性降低；凋亡是程序性死亡。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "细胞衰老特征",
+        "细胞凋亡",
+        "细胞坏死"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞衰老",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "细胞衰老凋亡"
+        }
+      ],
+      "commonConfusions": [
+        "凋亡坏死"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞衰老凋亡",
+          "method": "见方法模型",
+          "example": "细胞衰老凋亡"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 5,
-  "sectionsApproved": 5,
+  "sectionsTotal": 23,
+  "sectionsApproved": 23,
   "sections": [
     {
       "section": "内环境与稳态",
@@ -40,6 +40,132 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.083,
       "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "第1节 细胞生活的环境",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第2节 内环境的稳态",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第1节 神经调节的结构基础",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.182,
+      "issues": []
+    },
+    {
+      "section": "第2节 神经调节的基本方式",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第3节 神经冲动的产生和传导",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第4节 神经系统的分级调节",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第5节 人脑的高级功能",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第1节 激素与内分泌系统",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第2节 激素调节的过程",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第3节 体液调节与神经调节的关系",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.364,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第1节 免疫系统的组成和功能",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.375,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第2节 特异性免疫",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.125,
+      "issues": []
+    },
+    {
+      "section": "第3节 免疫失调",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "第4节 免疫学的应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第1节 植物生长素",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.111,
+      "issues": []
+    },
+    {
+      "section": "第2节 其他植物激素",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第3节 植物生长调节剂的应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第4节 环境因素参与调节植物的生命活动",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.364,
       "issues": []
     }
   ]

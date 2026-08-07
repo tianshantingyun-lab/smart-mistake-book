@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 16,
+  "sectionsApproved": 16,
   "sections": [
     {
       "section": "种群与群落",
@@ -19,6 +19,104 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.1,
       "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "第1节 种群的数量特征",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第2节 种群数量的变化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第3节 影响种群数量变化的因素",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第1节 群落的结构",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "第2节 群落的主要类型",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第3节 群落的演替",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.111,
+      "issues": []
+    },
+    {
+      "section": "第1节 生态系统的结构",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第2节 生态系统的能量流动",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第3节 生态系统的物质循环",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第4节 生态系统的信息传递",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第5节 生态系统的稳定性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第1节 人类活动对生态环境的影响",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第2节 生物多样性及其保护",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.02,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第3节 生态工程",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.143,
       "issues": []
     }
   ]

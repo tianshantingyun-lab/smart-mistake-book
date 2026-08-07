@@ -98,6 +98,386 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第1节 传统发酵技术的应用",
+      "aliases": [
+        "发酵",
+        "果酒",
+        "果醋"
+      ],
+      "conceptSummary": "传统发酵利用微生物：酵母菌酿酒、醋酸菌制醋。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "果酒发酵",
+        "果醋发酵",
+        "微生物"
+      ],
+      "methodModels": [
+        {
+          "name": "传统发酵",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "传统发酵"
+        }
+      ],
+      "commonConfusions": [
+        "果酒果醋"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "传统发酵",
+          "method": "见方法模型",
+          "example": "传统发酵"
+        }
+      ]
+    },
+    {
+      "section": "第2节 微生物的培养技术及应用",
+      "aliases": [
+        "培养基",
+        "灭菌",
+        "纯培养"
+      ],
+      "conceptSummary": "微生物培养需要培养基、灭菌与纯化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "培养基配制",
+        "灭菌方法",
+        "纯培养"
+      ],
+      "methodModels": [
+        {
+          "name": "微生物培养",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "微生物培养"
+        }
+      ],
+      "commonConfusions": [
+        "灭菌"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "微生物培养",
+          "method": "见方法模型",
+          "example": "微生物培养"
+        }
+      ]
+    },
+    {
+      "section": "第3节 发酵工程及其应用",
+      "aliases": [
+        "发酵工程",
+        "菌种",
+        "发酵罐"
+      ],
+      "conceptSummary": "发酵工程利用微生物大规模生产产品。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "发酵工程流程",
+        "菌种选育",
+        "产物分离"
+      ],
+      "methodModels": [
+        {
+          "name": "发酵工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "发酵工程"
+        }
+      ],
+      "commonConfusions": [
+        "发酵流程"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "发酵工程",
+          "method": "见方法模型",
+          "example": "发酵工程"
+        }
+      ]
+    },
+    {
+      "section": "第1节 植物细胞工程",
+      "aliases": [
+        "植物组织培养",
+        "全能性",
+        "愈伤组织"
+      ],
+      "conceptSummary": "植物组织培养利用细胞全能性，外植体→愈伤组织→植株。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "植物组织培养",
+        "愈伤组织",
+        "植物体细胞杂交"
+      ],
+      "methodModels": [
+        {
+          "name": "植物细胞工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "植物细胞工程"
+        }
+      ],
+      "commonConfusions": [
+        "组织培养"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "植物细胞工程",
+          "method": "见方法模型",
+          "example": "植物细胞工程"
+        }
+      ]
+    },
+    {
+      "section": "第2节 动物细胞工程",
+      "aliases": [
+        "动物细胞培养",
+        "杂交瘤",
+        "单克隆"
+      ],
+      "conceptSummary": "动物细胞培养与单克隆抗体技术（杂交瘤）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "动物细胞培养",
+        "单克隆抗体",
+        "动物克隆"
+      ],
+      "methodModels": [
+        {
+          "name": "动物细胞工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "动物细胞工程"
+        }
+      ],
+      "commonConfusions": [
+        "单克隆抗体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动物细胞工程",
+          "method": "见方法模型",
+          "example": "动物细胞工程"
+        }
+      ]
+    },
+    {
+      "section": "第3节 胚胎工程",
+      "aliases": [
+        "胚胎移植",
+        "胚胎分割",
+        "胚胎工程"
+      ],
+      "conceptSummary": "胚胎工程包括胚胎移植与胚胎分割。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "胚胎移植",
+        "胚胎分割",
+        "试管动物"
+      ],
+      "methodModels": [
+        {
+          "name": "胚胎工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "胚胎工程"
+        }
+      ],
+      "commonConfusions": [
+        "胚胎移植"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "胚胎工程",
+          "method": "见方法模型",
+          "example": "胚胎工程"
+        }
+      ]
+    },
+    {
+      "section": "第1节 重组DNA技术的基本工具",
+      "aliases": [
+        "限制酶",
+        "连接酶",
+        "载体"
+      ],
+      "conceptSummary": "基因工程工具：限制酶、DNA连接酶、载体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "限制酶切割",
+        "DNA连接酶",
+        "质粒载体"
+      ],
+      "methodModels": [
+        {
+          "name": "基因工具",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因工程工具"
+        }
+      ],
+      "commonConfusions": [
+        "限制酶"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因工程工具",
+          "method": "见方法模型",
+          "example": "基因工程工具"
+        }
+      ]
+    },
+    {
+      "section": "第2节 基因工程的基本操作程序",
+      "aliases": [
+        "目的基因",
+        "表达载体",
+        "转化"
+      ],
+      "conceptSummary": "基因工程四步：目的基因获取→构建载体→导入→检测。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "四步程序",
+        "表达载体构建",
+        "基因检测"
+      ],
+      "methodModels": [
+        {
+          "name": "基因工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因工程操作"
+        }
+      ],
+      "commonConfusions": [
+        "四步程序"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因工程操作",
+          "method": "见方法模型",
+          "example": "基因工程操作"
+        }
+      ]
+    },
+    {
+      "section": "第3节 基因工程的应用",
+      "aliases": [
+        "基因应用",
+        "转基因",
+        "基因治疗"
+      ],
+      "conceptSummary": "基因工程应用于医药农业，如胰岛素生产、转基因作物。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "医药应用",
+        "农业应用",
+        "基因治疗"
+      ],
+      "methodModels": [
+        {
+          "name": "基因应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因工程应用"
+        }
+      ],
+      "commonConfusions": [
+        "转基因"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因工程应用",
+          "method": "见方法模型",
+          "example": "基因工程应用"
+        }
+      ]
+    },
+    {
+      "section": "第4节 蛋白质工程的原理和应用",
+      "aliases": [
+        "蛋白质工程",
+        "改造",
+        "定向"
+      ],
+      "conceptSummary": "蛋白质工程改造蛋白质结构实现定向设计。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "蛋白质工程原理",
+        "定向改造",
+        "应用"
+      ],
+      "methodModels": [
+        {
+          "name": "蛋白质工程",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "蛋白质工程"
+        }
+      ],
+      "commonConfusions": [
+        "定向设计"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "蛋白质工程",
+          "method": "见方法模型",
+          "example": "蛋白质工程"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

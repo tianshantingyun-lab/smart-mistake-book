@@ -346,6 +346,689 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第1节 孟德尔的豌豆杂交实验（一）",
+      "aliases": [
+        "分离定律",
+        "相对性状",
+        "显隐性"
+      ],
+      "conceptSummary": "孟德尔豌豆杂交实验得出分离定律，Aa自交3:1。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "一对相对性状",
+        "分离定律",
+        "测交验证"
+      ],
+      "methodModels": [
+        {
+          "name": "分离定律",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "分离定律"
+        }
+      ],
+      "commonConfusions": [
+        "3:1"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分离定律",
+          "method": "见方法模型",
+          "example": "分离定律"
+        }
+      ]
+    },
+    {
+      "section": "第2节 孟德尔的豌豆杂交实验（二）",
+      "aliases": [
+        "自由组合",
+        "9:3:3:1",
+        "两对性状"
+      ],
+      "conceptSummary": "两对相对性状杂交实验得出自由组合定律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "两对性状遗传",
+        "自由组合定律",
+        "9:3:3:1"
+      ],
+      "methodModels": [
+        {
+          "name": "自由组合",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "自由组合定律"
+        }
+      ],
+      "commonConfusions": [
+        "9:3:3:1"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自由组合定律",
+          "method": "见方法模型",
+          "example": "自由组合定律"
+        }
+      ]
+    },
+    {
+      "section": "第1节 减数分裂和受精作用",
+      "aliases": [
+        "减数分裂",
+        "同源染色体",
+        "受精"
+      ],
+      "conceptSummary": "减数分裂产生配子染色体减半，受精恢复，维持遗传稳定。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "减数分裂过程",
+        "同源染色体分离",
+        "受精作用"
+      ],
+      "methodModels": [
+        {
+          "name": "减数分裂",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "减数分裂"
+        }
+      ],
+      "commonConfusions": [
+        "减半"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "减数分裂",
+          "method": "见方法模型",
+          "example": "减数分裂"
+        }
+      ]
+    },
+    {
+      "section": "第2节 基因在染色体上",
+      "aliases": [
+        "基因定位",
+        "染色体",
+        "摩尔根"
+      ],
+      "conceptSummary": "基因位于染色体上，摩尔根果蝇实验证明伴性遗传。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基因在染色体线性排列",
+        "摩尔根实验",
+        "伴性遗传"
+      ],
+      "methodModels": [
+        {
+          "name": "基因定位",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因在染色体上"
+        }
+      ],
+      "commonConfusions": [
+        "伴性遗传"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因在染色体上",
+          "method": "见方法模型",
+          "example": "基因在染色体上"
+        }
+      ]
+    },
+    {
+      "section": "第3节 伴性遗传",
+      "aliases": [
+        "伴X",
+        "红绿色盲",
+        "伴性"
+      ],
+      "conceptSummary": "伴性遗传基因位于性染色体，红绿色盲是伴X隐性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "伴X隐性",
+        "伴X显性",
+        "系谱分析"
+      ],
+      "methodModels": [
+        {
+          "name": "伴性遗传",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "伴性遗传"
+        }
+      ],
+      "commonConfusions": [
+        "红绿色盲"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "伴性遗传",
+          "method": "见方法模型",
+          "example": "伴性遗传"
+        }
+      ]
+    },
+    {
+      "section": "第1节 DNA是主要的遗传物质",
+      "aliases": [
+        "遗传物质",
+        "肺炎双球菌",
+        "噬菌体"
+      ],
+      "conceptSummary": "肺炎双球菌转化实验与噬菌体侵染实验证明DNA是遗传物质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "格里菲斯实验",
+        "噬菌体侵染实验",
+        "RNA病毒RNA为遗传物质"
+      ],
+      "methodModels": [
+        {
+          "name": "遗传物质实验",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "DNA遗传物质"
+        }
+      ],
+      "commonConfusions": [
+        "DNA是遗传物质"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "DNA遗传物质",
+          "method": "见方法模型",
+          "example": "DNA遗传物质"
+        }
+      ]
+    },
+    {
+      "section": "第2节 DNA的结构",
+      "aliases": [
+        "DNA结构",
+        "双螺旋",
+        "碱基配对"
+      ],
+      "conceptSummary": "DNA双螺旋结构，A-T、G-C碱基互补配对。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "双螺旋结构",
+        "碱基互补配对",
+        "磷酸二酯键"
+      ],
+      "methodModels": [
+        {
+          "name": "DNA结构",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "DNA结构"
+        }
+      ],
+      "commonConfusions": [
+        "碱基配对"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "DNA结构",
+          "method": "见方法模型",
+          "example": "DNA结构"
+        }
+      ]
+    },
+    {
+      "section": "第3节 DNA的复制",
+      "aliases": [
+        "DNA复制",
+        "半保留",
+        "边解旋"
+      ],
+      "conceptSummary": "DNA半保留复制，边解旋边复制，需要模板原料酶。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "半保留复制",
+        "复制过程",
+        "复制特点"
+      ],
+      "methodModels": [
+        {
+          "name": "DNA复制",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "DNA复制"
+        }
+      ],
+      "commonConfusions": [
+        "半保留"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "DNA复制",
+          "method": "见方法模型",
+          "example": "DNA复制"
+        }
+      ]
+    },
+    {
+      "section": "第4节 基因通常是有遗传效应的DNA片段",
+      "aliases": [
+        "基因",
+        "DNA片段",
+        "遗传效应"
+      ],
+      "conceptSummary": "基因是有遗传效应的DNA片段，位于染色体上。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基因定义",
+        "基因与DNA关系",
+        "基因与性状"
+      ],
+      "methodModels": [
+        {
+          "name": "基因",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因"
+        }
+      ],
+      "commonConfusions": [
+        "基因定义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因",
+          "method": "见方法模型",
+          "example": "基因"
+        }
+      ]
+    },
+    {
+      "section": "第1节 基因指导蛋白质的合成",
+      "aliases": [
+        "转录",
+        "翻译",
+        "中心法则"
+      ],
+      "conceptSummary": "基因通过转录和翻译指导蛋白质合成，中心法则。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "转录DNA→mRNA",
+        "翻译mRNA→蛋白质",
+        "密码子"
+      ],
+      "methodModels": [
+        {
+          "name": "转录翻译",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因表达"
+        }
+      ],
+      "commonConfusions": [
+        "密码子"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因表达",
+          "method": "见方法模型",
+          "example": "基因表达"
+        }
+      ]
+    },
+    {
+      "section": "第2节 基因表达与性状的关系",
+      "aliases": [
+        "基因表达",
+        "性状",
+        "基因突变"
+      ],
+      "conceptSummary": "基因通过控制蛋白质合成控制性状，基因突变改变性状。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基因控制性状",
+        "直接/间接控制",
+        "表观遗传"
+      ],
+      "methodModels": [
+        {
+          "name": "基因与性状",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因性状关系"
+        }
+      ],
+      "commonConfusions": [
+        "表观遗传"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因性状关系",
+          "method": "见方法模型",
+          "example": "基因性状关系"
+        }
+      ]
+    },
+    {
+      "section": "第1节 基因突变和基因重组",
+      "aliases": [
+        "基因突变",
+        "基因重组",
+        "变异"
+      ],
+      "conceptSummary": "基因突变是碱基改变，基因重组是基因重新组合，都是变异来源。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基因突变类型",
+        "基因重组",
+        "变异来源"
+      ],
+      "methodModels": [
+        {
+          "name": "基因突变",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基因突变重组"
+        }
+      ],
+      "commonConfusions": [
+        "基因重组"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因突变重组",
+          "method": "见方法模型",
+          "example": "基因突变重组"
+        }
+      ]
+    },
+    {
+      "section": "第2节 染色体变异",
+      "aliases": [
+        "染色体变异",
+        "数目",
+        "结构"
+      ],
+      "conceptSummary": "染色体变异分数目变异与结构变异，如21三体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "染色体数目变异",
+        "结构变异",
+        "多倍体"
+      ],
+      "methodModels": [
+        {
+          "name": "染色体变异",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "染色体变异"
+        }
+      ],
+      "commonConfusions": [
+        "21三体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "染色体变异",
+          "method": "见方法模型",
+          "example": "染色体变异"
+        }
+      ]
+    },
+    {
+      "section": "第3节 人类遗传病",
+      "aliases": [
+        "遗传病",
+        "单基因",
+        "染色体病"
+      ],
+      "conceptSummary": "人类遗传病分单基因多基因染色体病，可预防。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "遗传病类型",
+        "遗传咨询",
+        "产前诊断"
+      ],
+      "methodModels": [
+        {
+          "name": "遗传病",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "人类遗传病"
+        }
+      ],
+      "commonConfusions": [
+        "遗传病类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人类遗传病",
+          "method": "见方法模型",
+          "example": "人类遗传病"
+        }
+      ]
+    },
+    {
+      "section": "第1节 生物有共同祖先的证据",
+      "aliases": [
+        "共同祖先",
+        "化石",
+        "比较解剖"
+      ],
+      "conceptSummary": "化石、比较解剖、分子生物学证据支持生物共同祖先。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "化石证据",
+        "比较解剖学",
+        "分子证据"
+      ],
+      "methodModels": [
+        {
+          "name": "共同祖先",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "生物进化证据"
+        }
+      ],
+      "commonConfusions": [
+        "化石证据"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生物进化证据",
+          "method": "见方法模型",
+          "example": "生物进化证据"
+        }
+      ]
+    },
+    {
+      "section": "第2节 自然选择与适应的形成",
+      "aliases": [
+        "自然选择",
+        "适应",
+        "适者生存"
+      ],
+      "conceptSummary": "自然选择决定进化方向，适应是自然选择的结果。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自然选择",
+        "适应的形成",
+        "过度繁殖"
+      ],
+      "methodModels": [
+        {
+          "name": "自然选择",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "自然选择"
+        }
+      ],
+      "commonConfusions": [
+        "适应"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自然选择",
+          "method": "见方法模型",
+          "example": "自然选择"
+        }
+      ]
+    },
+    {
+      "section": "第3节 种群基因组成的变化与物种的形成",
+      "aliases": [
+        "基因频率",
+        "物种形成",
+        "隔离"
+      ],
+      "conceptSummary": "进化是种群基因频率改变，隔离导致物种形成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基因频率",
+        "物种形成",
+        "生殖隔离"
+      ],
+      "methodModels": [
+        {
+          "name": "基因频率",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "进化与物种形成"
+        }
+      ],
+      "commonConfusions": [
+        "物种形成"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "进化与物种形成",
+          "method": "见方法模型",
+          "example": "进化与物种形成"
+        }
+      ]
+    },
+    {
+      "section": "第4节 协同进化与生物多样性的形成",
+      "aliases": [
+        "协同进化",
+        "生物多样性"
+      ],
+      "conceptSummary": "不同物种间及与环境协同进化，形成生物多样性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "协同进化",
+        "生物多样性层次",
+        "共同进化"
+      ],
+      "methodModels": [
+        {
+          "name": "协同进化",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "协同进化"
+        }
+      ],
+      "commonConfusions": [
+        "生物多样性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "协同进化",
+          "method": "见方法模型",
+          "example": "协同进化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

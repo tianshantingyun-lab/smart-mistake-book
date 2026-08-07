@@ -229,6 +229,689 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第1节 细胞生活的环境",
+      "aliases": [
+        "内环境",
+        "血浆",
+        "组织液"
+      ],
+      "conceptSummary": "细胞生活在内环境（细胞外液）中，与外界进行物质交换。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "内环境组成",
+        "细胞外液",
+        "稳态基础"
+      ],
+      "methodModels": [
+        {
+          "name": "内环境",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "内环境"
+        }
+      ],
+      "commonConfusions": [
+        "细胞外液"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "内环境",
+          "method": "见方法模型",
+          "example": "内环境"
+        }
+      ]
+    },
+    {
+      "section": "第2节 内环境的稳态",
+      "aliases": [
+        "稳态",
+        "调节网络",
+        "相对稳定"
+      ],
+      "conceptSummary": "内环境理化性质保持相对稳定，靠神经体液免疫调节。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "稳态机制",
+        "调节网络",
+        "渗透压温度pH"
+      ],
+      "methodModels": [
+        {
+          "name": "稳态",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "稳态"
+        }
+      ],
+      "commonConfusions": [
+        "调节网络"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "稳态",
+          "method": "见方法模型",
+          "example": "稳态"
+        }
+      ]
+    },
+    {
+      "section": "第1节 神经调节的结构基础",
+      "aliases": [
+        "神经元",
+        "反射弧",
+        "突触"
+      ],
+      "conceptSummary": "神经系统由神经元组成，反射弧是反射的结构基础。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "神经元结构",
+        "反射弧组成",
+        "突触"
+      ],
+      "methodModels": [
+        {
+          "name": "反射弧",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "神经结构"
+        }
+      ],
+      "commonConfusions": [
+        "神经元"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "神经结构",
+          "method": "见方法模型",
+          "example": "神经结构"
+        }
+      ]
+    },
+    {
+      "section": "第2节 神经调节的基本方式",
+      "aliases": [
+        "反射",
+        "条件反射",
+        "非条件"
+      ],
+      "conceptSummary": "反射是神经调节基本方式，分条件与非条件反射。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "反射概念",
+        "条件反射",
+        "反射弧"
+      ],
+      "methodModels": [
+        {
+          "name": "反射",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "反射"
+        }
+      ],
+      "commonConfusions": [
+        "条件反射"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "反射",
+          "method": "见方法模型",
+          "example": "反射"
+        }
+      ]
+    },
+    {
+      "section": "第3节 神经冲动的产生和传导",
+      "aliases": [
+        "神经冲动",
+        "静息电位",
+        "动作电位"
+      ],
+      "conceptSummary": "神经冲动以电信号传导，静息电位外正内负、动作电位外负内正。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "静息电位K+外流",
+        "动作电位Na+内流",
+        "突触传递"
+      ],
+      "methodModels": [
+        {
+          "name": "神经传导",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "神经冲动"
+        }
+      ],
+      "commonConfusions": [
+        "电位变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "神经冲动",
+          "method": "见方法模型",
+          "example": "神经冲动"
+        }
+      ]
+    },
+    {
+      "section": "第4节 神经系统的分级调节",
+      "aliases": [
+        "分级调节",
+        "大脑皮层",
+        "低级中枢"
+      ],
+      "conceptSummary": "神经系统分级调节，低级中枢受大脑皮层控制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分级调节",
+        "脑与脊髓",
+        "高级中枢"
+      ],
+      "methodModels": [
+        {
+          "name": "分级调节",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "神经分级调节"
+        }
+      ],
+      "commonConfusions": [
+        "大脑皮层"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "神经分级调节",
+          "method": "见方法模型",
+          "example": "神经分级调节"
+        }
+      ]
+    },
+    {
+      "section": "第5节 人脑的高级功能",
+      "aliases": [
+        "大脑皮层",
+        "语言",
+        "记忆"
+      ],
+      "conceptSummary": "大脑皮层有语言、学习记忆等高级功能。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "语言中枢",
+        "学习记忆",
+        "大脑皮层功能"
+      ],
+      "methodModels": [
+        {
+          "name": "高级功能",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "人脑功能"
+        }
+      ],
+      "commonConfusions": [
+        "语言中枢"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人脑功能",
+          "method": "见方法模型",
+          "example": "人脑功能"
+        }
+      ]
+    },
+    {
+      "section": "第1节 激素与内分泌系统",
+      "aliases": [
+        "激素",
+        "内分泌",
+        "内分泌腺"
+      ],
+      "conceptSummary": "激素由内分泌腺分泌，经体液运输作用于靶细胞。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "内分泌腺",
+        "激素种类",
+        "激素作用"
+      ],
+      "methodModels": [
+        {
+          "name": "激素",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "激素系统"
+        }
+      ],
+      "commonConfusions": [
+        "内分泌腺"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "激素系统",
+          "method": "见方法模型",
+          "example": "激素系统"
+        }
+      ]
+    },
+    {
+      "section": "第2节 激素调节的过程",
+      "aliases": [
+        "激素调节",
+        "反馈",
+        "分级"
+      ],
+      "conceptSummary": "激素调节有反馈与分级调节，维持稳态。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "反馈调节",
+        "分级调节",
+        "激素作用机制"
+      ],
+      "methodModels": [
+        {
+          "name": "激素调节",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "激素调节过程"
+        }
+      ],
+      "commonConfusions": [
+        "反馈"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "激素调节过程",
+          "method": "见方法模型",
+          "example": "激素调节过程"
+        }
+      ]
+    },
+    {
+      "section": "第3节 体液调节与神经调节的关系",
+      "aliases": [
+        "体液调节",
+        "神经体液",
+        "协调"
+      ],
+      "conceptSummary": "神经调节与体液调节相互协调，共同维持稳态。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "体液调节特点",
+        "神经调节与体液",
+        "协调作用"
+      ],
+      "methodModels": [
+        {
+          "name": "神经体液",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "神经体液调节"
+        }
+      ],
+      "commonConfusions": [
+        "协调"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "神经体液调节",
+          "method": "见方法模型",
+          "example": "神经体液调节"
+        }
+      ]
+    },
+    {
+      "section": "第1节 免疫系统的组成和功能",
+      "aliases": [
+        "免疫系统",
+        "免疫器官",
+        "免疫细胞"
+      ],
+      "conceptSummary": "免疫系统由免疫器官、免疫细胞和免疫活性物质组成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "免疫器官",
+        "免疫细胞",
+        "免疫监视"
+      ],
+      "methodModels": [
+        {
+          "name": "免疫系统",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "免疫系统组成"
+        }
+      ],
+      "commonConfusions": [
+        "免疫器官"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "免疫系统组成",
+          "method": "见方法模型",
+          "example": "免疫系统组成"
+        }
+      ]
+    },
+    {
+      "section": "第2节 特异性免疫",
+      "aliases": [
+        "体液免疫",
+        "细胞免疫",
+        "抗体"
+      ],
+      "conceptSummary": "特异性免疫分体液免疫（抗体）与细胞免疫（T细胞）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "体液免疫过程",
+        "细胞免疫过程",
+        "免疫记忆"
+      ],
+      "methodModels": [
+        {
+          "name": "特异性免疫",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "特异性免疫"
+        }
+      ],
+      "commonConfusions": [
+        "体液细胞免疫"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "特异性免疫",
+          "method": "见方法模型",
+          "example": "特异性免疫"
+        }
+      ]
+    },
+    {
+      "section": "第3节 免疫失调",
+      "aliases": [
+        "免疫失调",
+        "过敏",
+        "自身免疫"
+      ],
+      "conceptSummary": "免疫失调包括过敏、自身免疫病与免疫缺陷。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "过敏反应",
+        "自身免疫病",
+        "免疫缺陷"
+      ],
+      "methodModels": [
+        {
+          "name": "免疫失调",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "免疫失调"
+        }
+      ],
+      "commonConfusions": [
+        "过敏"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "免疫失调",
+          "method": "见方法模型",
+          "example": "免疫失调"
+        }
+      ]
+    },
+    {
+      "section": "第4节 免疫学的应用",
+      "aliases": [
+        "疫苗",
+        "免疫治疗",
+        "免疫预防"
+      ],
+      "conceptSummary": "免疫学应用包括疫苗预防、免疫治疗与检测。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "疫苗原理",
+        "免疫预防",
+        "免疫治疗"
+      ],
+      "methodModels": [
+        {
+          "name": "免疫应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "免疫学应用"
+        }
+      ],
+      "commonConfusions": [
+        "疫苗"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "免疫学应用",
+          "method": "见方法模型",
+          "example": "免疫学应用"
+        }
+      ]
+    },
+    {
+      "section": "第1节 植物生长素",
+      "aliases": [
+        "生长素",
+        "向光性",
+        "顶端优势"
+      ],
+      "conceptSummary": "生长素促进生长，有向光性与顶端优势现象。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生长素发现",
+        "两重性",
+        "顶端优势"
+      ],
+      "methodModels": [
+        {
+          "name": "生长素",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "植物生长素"
+        }
+      ],
+      "commonConfusions": [
+        "两重性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "植物生长素",
+          "method": "见方法模型",
+          "example": "植物生长素"
+        }
+      ]
+    },
+    {
+      "section": "第2节 其他植物激素",
+      "aliases": [
+        "细胞分裂素",
+        "乙烯",
+        "脱落酸"
+      ],
+      "conceptSummary": "其他植物激素：细胞分裂素、乙烯、脱落酸等协调作用。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "细胞分裂素促分裂",
+        "乙烯促成熟",
+        "脱落酸促休眠"
+      ],
+      "methodModels": [
+        {
+          "name": "植物激素",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "其他植物激素"
+        }
+      ],
+      "commonConfusions": [
+        "乙烯"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "其他植物激素",
+          "method": "见方法模型",
+          "example": "其他植物激素"
+        }
+      ]
+    },
+    {
+      "section": "第3节 植物生长调节剂的应用",
+      "aliases": [
+        "生长调节剂",
+        "应用"
+      ],
+      "conceptSummary": "植物生长调节剂用于农业生产，提高产量。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生长调节剂",
+        "农业生产应用",
+        "合理使用"
+      ],
+      "methodModels": [
+        {
+          "name": "生长调节剂",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "生长调节剂"
+        }
+      ],
+      "commonConfusions": [
+        "应用"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生长调节剂",
+          "method": "见方法模型",
+          "example": "生长调节剂"
+        }
+      ]
+    },
+    {
+      "section": "第4节 环境因素参与调节植物的生命活动",
+      "aliases": [
+        "光周期",
+        "温度",
+        "环境调节"
+      ],
+      "conceptSummary": "光、温度等环境因素参与调节植物生命活动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "光周期现象",
+        "温度影响",
+        "环境信息"
+      ],
+      "methodModels": [
+        {
+          "name": "环境调节",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "环境与植物"
+        }
+      ],
+      "commonConfusions": [
+        "光周期"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "环境与植物",
+          "method": "见方法模型",
+          "example": "环境与植物"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

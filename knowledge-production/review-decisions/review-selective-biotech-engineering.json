@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 12,
+  "sectionsApproved": 12,
   "sections": [
     {
       "section": "基因工程",
@@ -19,6 +19,76 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.125,
       "textbookTocOverlap": 0.071,
+      "issues": []
+    },
+    {
+      "section": "第1节 传统发酵技术的应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第2节 微生物的培养技术及应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第3节 发酵工程及其应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第1节 植物细胞工程",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第2节 动物细胞工程",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.024,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第3节 胚胎工程",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "第1节 重组DNA技术的基本工具",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第2节 基因工程的基本操作程序",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.273,
+      "issues": []
+    },
+    {
+      "section": "第3节 基因工程的应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第4节 蛋白质工程的原理和应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]

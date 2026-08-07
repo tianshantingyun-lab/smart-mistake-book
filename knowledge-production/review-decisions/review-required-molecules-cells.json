@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 8,
-  "sectionsApproved": 8,
+  "sectionsTotal": 27,
+  "sectionsApproved": 27,
   "sections": [
     {
       "section": "第1章 走近细胞",
@@ -61,6 +61,139 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.059,
       "textbookTocOverlap": 0.059,
+      "issues": []
+    },
+    {
+      "section": "第1节 细胞是生命活动的基本单位",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第2节 细胞的多样性和统一性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.273,
+      "issues": []
+    },
+    {
+      "section": "第1节 细胞中的元素和化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.231,
+      "issues": []
+    },
+    {
+      "section": "第2节 细胞中的无机物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.182,
+      "issues": []
+    },
+    {
+      "section": "第3节 细胞中的糖类和脂质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第4节 蛋白质是生命活动的主要承担者",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第5节 核酸是遗传信息的携带者",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第1节 细胞膜的结构和功能",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第2节 细胞器之间的分工合作",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第3节 细胞核的结构和功能",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第1节 被动运输",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "第2节 主动运输与胞吞、胞吐",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第1节 降低化学反应活化能的酶",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第2节 细胞的能量货币ATP",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "第3节 细胞呼吸的原理和应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第4节 光合作用与能量转化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第1节 细胞的增殖",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.125,
+      "issues": []
+    },
+    {
+      "section": "第2节 细胞的分化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.125,
+      "issues": []
+    },
+    {
+      "section": "第3节 细胞的衰老和死亡",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
       "issues": []
     }
   ]
