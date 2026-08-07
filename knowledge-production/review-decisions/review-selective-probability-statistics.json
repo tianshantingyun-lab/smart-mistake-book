@@ -1,0 +1,32 @@
+{
+  "module": "selective-probability-statistics",
+  "subject": "MATH",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "6.1 分类加法与分步乘法计数原理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "6.2 排列与组合",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.111,
+      "issues": []
+    },
+    {
+      "section": "二项式定理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.143,
+      "issues": []
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "module": "selective-organic-foundations",
+  "subject": "CHEMISTRY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "有机化合物概述",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "烃类化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.05,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "含氧有机物（醇醛酸酯）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    }
+  ]
+}

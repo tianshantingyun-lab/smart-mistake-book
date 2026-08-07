@@ -1,0 +1,32 @@
+{
+  "module": "required-structure-reaction-laws",
+  "subject": "CHEMISTRY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "元素周期表",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.024,
+      "textbookTocOverlap": 0.091,
+      "issues": []
+    },
+    {
+      "section": "元素周期律",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.095,
+      "textbookTocOverlap": 0.059,
+      "issues": []
+    },
+    {
+      "section": "化学键与化学反应规律",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.095,
+      "textbookTocOverlap": 0.071,
+      "issues": []
+    }
+  ]
+}

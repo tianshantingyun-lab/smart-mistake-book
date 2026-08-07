@@ -4,7 +4,7 @@
   "subject": "BIOLOGY",
   "moduleSlug": "selective-biotech-engineering",
   "moduleName": "生物选择性必修3：生物技术与工程",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -116,5 +116,8 @@
       "solutionMethod": "全能性/培养",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

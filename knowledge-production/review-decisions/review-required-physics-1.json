@@ -1,0 +1,39 @@
+{
+  "module": "required-physics-1",
+  "subject": "PHYSICS",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "第一章 运动的描述",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.118,
+      "issues": []
+    },
+    {
+      "section": "第二章 匀变速直线运动",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "第三章 相互作用——力",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.091,
+      "issues": []
+    },
+    {
+      "section": "第四章 牛顿运动定律",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.143,
+      "issues": []
+    }
+  ]
+}

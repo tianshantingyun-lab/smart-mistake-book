@@ -4,7 +4,7 @@
   "subject": "BIOLOGY",
   "moduleSlug": "selective-homeostasis-regulation",
   "moduleName": "生物选择性必修1：稳态与调节",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -163,5 +163,8 @@
       "solutionMethod": "体液/细胞免疫",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

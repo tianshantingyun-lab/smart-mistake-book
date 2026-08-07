@@ -1,0 +1,32 @@
+{
+  "module": "selective-economy-social-life",
+  "subject": "HISTORY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "农业与食物生产",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.091,
+      "issues": []
+    },
+    {
+      "section": "工业与交通",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.042,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "贸易与经济生活",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.043,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    }
+  ]
+}

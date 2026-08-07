@@ -4,7 +4,7 @@
   "subject": "HISTORY",
   "moduleSlug": "required-chinese-world-history-outline",
   "moduleName": "历史必修：中外历史纲要",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [
@@ -210,5 +210,8 @@
       "solutionMethod": "制度创新+经济重心",
       "difficulty": "中档"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

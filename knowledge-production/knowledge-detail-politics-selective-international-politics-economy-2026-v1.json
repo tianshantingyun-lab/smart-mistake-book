@@ -4,7 +4,7 @@
   "subject": "POLITICS",
   "moduleSlug": "selective-international-politics-economy",
   "moduleName": "思想政治选择性必修1：当代国际政治与经济",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -109,5 +109,8 @@
       "solutionMethod": "机遇挑战",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

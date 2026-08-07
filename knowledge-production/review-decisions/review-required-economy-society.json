@@ -1,0 +1,32 @@
+{
+  "module": "required-economy-society",
+  "subject": "POLITICS",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "社会主义市场经济",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.062,
+      "issues": []
+    },
+    {
+      "section": "我国的分配制度",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.107,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "经济高质量发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.059,
+      "issues": []
+    }
+  ]
+}

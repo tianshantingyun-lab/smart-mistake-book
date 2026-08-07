@@ -1,0 +1,39 @@
+{
+  "module": "required-chinese-world-history-outline",
+  "subject": "HISTORY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "中华文明起源与早期国家",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.043,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "秦统一多民族封建国家",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    },
+    {
+      "section": "统一多民族国家的巩固与发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.031,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "辽宋夏金元多民族政权并立",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.067,
+      "issues": []
+    }
+  ]
+}

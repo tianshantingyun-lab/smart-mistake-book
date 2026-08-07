@@ -4,7 +4,7 @@
   "subject": "MATH",
   "moduleSlug": "required-functions",
   "moduleName": "必修：函数（概念/基本性质/幂指对/三角）",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [
@@ -382,5 +382,8 @@
       "solutionMethod": "诱导公式/同角关系/周期",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

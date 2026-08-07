@@ -1,0 +1,53 @@
+{
+  "module": "required-functions",
+  "subject": "MATH",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 6,
+  "sectionsApproved": 6,
+  "sections": [
+    {
+      "section": "3.1 函数的概念及其表示",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "3.2 函数的基本性质（单调性与最值）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.133,
+      "issues": []
+    },
+    {
+      "section": "3.2.2 函数的奇偶性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    },
+    {
+      "section": "4.2 指数函数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "4.3-4.4 对数与对数函数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "5.2-5.4 三角函数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.091,
+      "issues": []
+    }
+  ]
+}

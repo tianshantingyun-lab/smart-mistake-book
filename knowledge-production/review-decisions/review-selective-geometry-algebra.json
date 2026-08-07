@@ -1,0 +1,46 @@
+{
+  "module": "selective-geometry-algebra",
+  "subject": "MATH",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 5,
+  "sectionsApproved": 5,
+  "sections": [
+    {
+      "section": "2.1-2.3 直线与圆",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.133,
+      "issues": []
+    },
+    {
+      "section": "3.1 椭圆",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "3.2 双曲线",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "3.3 抛物线",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "1.1-1.4 空间向量",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    }
+  ]
+}

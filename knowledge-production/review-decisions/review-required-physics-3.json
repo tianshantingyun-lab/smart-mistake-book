@@ -1,0 +1,32 @@
+{
+  "module": "required-physics-3",
+  "subject": "PHYSICS",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "静电场",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.143,
+      "issues": []
+    },
+    {
+      "section": "恒定电流与电路",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "磁场与电磁感应",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.091,
+      "issues": []
+    }
+  ]
+}

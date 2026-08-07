@@ -4,7 +4,7 @@
   "subject": "HISTORY",
   "moduleSlug": "selective-cultural-exchange",
   "moduleName": "历史选择性必修3：文化交流与传播",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -108,5 +108,8 @@
       "solutionMethod": "汉字儒家四大发明",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

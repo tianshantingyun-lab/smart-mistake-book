@@ -4,7 +4,7 @@
   "subject": "POLITICS",
   "moduleSlug": "selective-logic-thinking",
   "moduleName": "思想政治选择性必修3：逻辑与思维",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -121,5 +121,8 @@
       "solutionMethod": "充分必要条件",
       "difficulty": "中档"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

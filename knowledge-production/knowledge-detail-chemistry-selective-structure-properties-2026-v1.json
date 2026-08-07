@@ -4,7 +4,7 @@
   "subject": "CHEMISTRY",
   "moduleSlug": "selective-structure-properties",
   "moduleName": "化学选择性必修2：物质结构与性质",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -121,5 +121,8 @@
       "solutionMethod": "微粒作用力",
       "difficulty": "中档"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

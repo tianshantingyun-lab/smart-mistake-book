@@ -22,10 +22,15 @@ def audit(path: Path) -> dict:
     valid_source_ids = {s["sourceId"] for s in data.get("sources", [])}
     errors: list[str] = []
 
-    if data.get("reviewState") != "DRAFT_UNREVIEWED":
-        errors.append("reviewState must be DRAFT_UNREVIEWED")
+    if data.get("reviewState") not in ("DRAFT_UNREVIEWED", "REVIEWED_AI_FIRST_PASS"):
+        errors.append("reviewState must be DRAFT_UNREVIEWED or REVIEWED_AI_FIRST_PASS")
     if data.get("synthesisPolicy") != "REVIEWED_SYNTHESIS_ONLY":
         errors.append("synthesisPolicy must be REVIEWED_SYNTHESIS_ONLY")
+    if data.get("reviewState") == "REVIEWED_AI_FIRST_PASS":
+        if not data.get("reviewedBy") or not data.get("reviewedAtEpochMillis"):
+            errors.append("REVIEWED_AI_FIRST_PASS requires reviewedBy + reviewedAtEpochMillis")
+        if data.get("reviewKind") != "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS":
+            errors.append("reviewKind must be AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS")
 
     for kp in data.get("knowledgePoints", []):
         sec = kp.get("section", "<no-section>")

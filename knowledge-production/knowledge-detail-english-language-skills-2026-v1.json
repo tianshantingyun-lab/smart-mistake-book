@@ -4,7 +4,7 @@
   "subject": "ENGLISH",
   "moduleSlug": "language-skills",
   "moduleName": "英语：语言技能（听说读写）",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -132,5 +132,8 @@
       "solutionMethod": "格式+要点",
       "difficulty": "高频"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

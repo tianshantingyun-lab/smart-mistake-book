@@ -4,7 +4,7 @@
   "subject": "CHEMISTRY",
   "moduleSlug": "required-inorganic-substances",
   "moduleName": "化学必修：常见无机物及其应用",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -169,5 +169,8 @@
       "solutionMethod": "强氧化性+钝化",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

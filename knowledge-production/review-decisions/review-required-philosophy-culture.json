@@ -1,0 +1,39 @@
+{
+  "module": "required-philosophy-culture",
+  "subject": "POLITICS",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "第一课 时代精神的精华（哲学概述）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.176,
+      "issues": []
+    },
+    {
+      "section": "唯物论（探索世界）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "辩证法（把握世界）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.048,
+      "textbookTocOverlap": 0.067,
+      "issues": []
+    },
+    {
+      "section": "认识论（实践与认识）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.176,
+      "textbookTocOverlap": 0.067,
+      "issues": []
+    }
+  ]
+}

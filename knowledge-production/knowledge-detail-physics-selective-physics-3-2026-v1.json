@@ -4,7 +4,7 @@
   "subject": "PHYSICS",
   "moduleSlug": "selective-physics-3",
   "moduleName": "物理选择性必修3（热学/原子物理）",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -178,5 +178,8 @@
       "solutionMethod": "(1/2)ⁿ",
       "difficulty": "常考"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

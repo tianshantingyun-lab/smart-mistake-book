@@ -1,0 +1,39 @@
+{
+  "module": "selective-reaction-principles",
+  "subject": "CHEMISTRY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "反应热与盖斯定律",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "化学反应速率与平衡",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.13,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    },
+    {
+      "section": "电离与水解",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.1,
+      "issues": []
+    },
+    {
+      "section": "电化学（原电池与电解）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.062,
+      "issues": []
+    }
+  ]
+}

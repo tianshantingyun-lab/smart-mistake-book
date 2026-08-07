@@ -1,0 +1,25 @@
+{
+  "module": "required-science-experiment",
+  "subject": "CHEMISTRY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 2,
+  "sectionsApproved": 2,
+  "sections": [
+    {
+      "section": "实验基础操作",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.026,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "物质的检验",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.021,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    }
+  ]
+}

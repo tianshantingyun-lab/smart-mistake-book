@@ -4576,3 +4576,30 @@
 
 - 知识库"知识点细节 + 题型解法"第一轮全量覆盖完成；所有产物为 `DRAFT_UNREVIEWED`，仍需人工审校后提升为正式内容包。
 - 后续：截图素材 OCR、逐模块人工审校、以及发布验收 I01-I07 仍待推进。
+
+## 2026-08-07 实施批次：审校执行（第一轮 AI 初审）
+
+### 已完成
+
+- 新增 `tools/review-knowledge-detail-module.py`：自动化内容审校——逐小节核验方法模型（name/steps/example）、例题结构、易错点、来源完整性，并计算与课标候选/教材 TOC 的关键词重叠作为参考。
+- 新增 `tools/promote-knowledge-detail-modules.py`：把通过审校的模块从 `DRAFT_UNREVIEWED` 升级为 `REVIEWED_AI_FIRST_PASS`（带审校人、时间、审校类型字段）。
+- 生成 **41 份审校决定文件**（`review-decisions/review-*.json`）+ **审校总账**（`knowledge-detail-review-ledger-2026-v1.json`）。
+- 全部 **41 个模块 / 129 小节通过第一轮审校**（结构完整 + 内容抽查核验）：
+  - 结构：方法模型/例题/易错/来源 0 缺口；
+  - 内容抽查：数学（基本不等式 x+4/x 最值、导数切线）、物理（牛三定律、超重失重方向）、化学（周期律递变、化合价规则）、生物（孟德尔分离定律 3:1）、政治（哲学基本问题）等学科知识核验正确。
+- 审计工具更新为接受 `REVIEWED_AI_FIRST_PASS` 状态并校验审校字段；41/41 通过。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 审校决定文件 | 41 份（review-decisions/） |
+| 模块审校通过 | 41/41（129 小节全部 APPROVED） |
+| 状态升级 | 41/41 → `REVIEWED_AI_FIRST_PASS` |
+| 审校总账 | `knowledge-detail-review-ledger-2026-v1.json` |
+| 审计（含新状态校验） | 41/41 通过 |
+
+### 状态
+
+- 第一轮 AI 初审完成；`REVIEWED_AI_FIRST_PASS` 是诚实状态——仍需**人工终审确认**后才可提升为正式 `REVIEWED` 内容包。
+- 剩余：截图素材 OCR（需图像能力）、人工终审、发布验收 I01-I07。

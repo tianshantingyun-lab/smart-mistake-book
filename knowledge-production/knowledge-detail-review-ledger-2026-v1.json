@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-review-ledger-2026-v1",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS",
+  "reviewedAtEpochMillis": 1784908800000,
+  "note": "Automated first-pass structural + sampled content verification. Human reviewer must confirm before promoting any module to REVIEWED.",
+  "modules": [
+    {
+      "module": "required-genetics-evolution",
+      "subject": "BIOLOGY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "required-molecules-cells",
+      "subject": "BIOLOGY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "selective-biology-environment",
+      "subject": "BIOLOGY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-biotech-engineering",
+      "subject": "BIOLOGY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-homeostasis-regulation",
+      "subject": "BIOLOGY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "required-inorganic-substances",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "required-organic-compounds",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "required-science-experiment",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "required-structure-reaction-laws",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 1
+    },
+    {
+      "module": "selective-organic-foundations",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 1
+    },
+    {
+      "module": "selective-reaction-principles",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 0
+    },
+    {
+      "module": "selective-structure-properties",
+      "subject": "CHEMISTRY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "language-knowledge",
+      "subject": "ENGLISH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "language-skills",
+      "subject": "ENGLISH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "required-geography-1",
+      "subject": "GEOGRAPHY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "required-geography-2",
+      "subject": "GEOGRAPHY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 0
+    },
+    {
+      "module": "selective-regional-development",
+      "subject": "GEOGRAPHY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-resources-environment-security",
+      "subject": "GEOGRAPHY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "required-chinese-world-history-outline",
+      "subject": "HISTORY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "selective-cultural-exchange",
+      "subject": "HISTORY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-economy-social-life",
+      "subject": "HISTORY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "selective-state-system-governance",
+      "subject": "HISTORY",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "required-functions",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 6,
+      "sources": 5
+    },
+    {
+      "module": "required-geometry-algebra",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "required-preparatory-knowledge",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 8,
+      "sources": 7
+    },
+    {
+      "module": "required-probability-statistics",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 3
+    },
+    {
+      "module": "selective-functions",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "selective-geometry-algebra",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 5,
+      "sources": 1
+    },
+    {
+      "module": "selective-probability-statistics",
+      "subject": "MATH",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 1
+    },
+    {
+      "module": "required-physics-1",
+      "subject": "PHYSICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 2
+    },
+    {
+      "module": "required-physics-3",
+      "subject": "PHYSICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "selective-physics-1",
+      "subject": "PHYSICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 1
+    },
+    {
+      "module": "selective-physics-2",
+      "subject": "PHYSICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 1
+    },
+    {
+      "module": "selective-physics-3",
+      "subject": "PHYSICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "required-economy-society",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "required-philosophy-culture",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 4,
+      "sources": 1
+    },
+    {
+      "module": "required-politics-rule-of-law",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 3,
+      "sources": 0
+    },
+    {
+      "module": "required-socialism-with-chinese-characteristics",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-international-politics-economy",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-law-life",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    },
+    {
+      "module": "selective-logic-thinking",
+      "subject": "POLITICS",
+      "reviewState": "REVIEWED_AI_FIRST_PASS",
+      "sections": 2,
+      "sources": 0
+    }
+  ],
+  "totals": {
+    "modules": 41,
+    "sections": 129
+  }
+}

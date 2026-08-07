@@ -1,0 +1,39 @@
+{
+  "module": "required-genetics-evolution",
+  "subject": "BIOLOGY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "减数分裂与受精作用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "孟德尔遗传定律",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "基因的表达与变异",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "进化与生物多样性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.02,
+      "textbookTocOverlap": 0.071,
+      "issues": []
+    }
+  ]
+}

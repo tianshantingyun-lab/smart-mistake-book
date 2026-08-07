@@ -1,0 +1,32 @@
+{
+  "module": "required-inorganic-substances",
+  "subject": "CHEMISTRY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "钠及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "氯及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    },
+    {
+      "section": "铁、硫、氮及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.042,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "module": "selective-physics-3",
+  "subject": "PHYSICS",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "分子动理论",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "气体实验定律与热力学",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.182,
+      "issues": []
+    },
+    {
+      "section": "原子结构与核物理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    }
+  ]
+}

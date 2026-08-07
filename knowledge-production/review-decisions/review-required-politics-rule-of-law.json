@@ -1,0 +1,32 @@
+{
+  "module": "required-politics-rule-of-law",
+  "subject": "POLITICS",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "中国共产党的领导",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "人民当家作主",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.143,
+      "issues": []
+    },
+    {
+      "section": "依法治国",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.214,
+      "textbookTocOverlap": 0.071,
+      "issues": []
+    }
+  ]
+}

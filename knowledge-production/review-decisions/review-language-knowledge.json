@@ -1,0 +1,39 @@
+{
+  "module": "language-knowledge",
+  "subject": "ENGLISH",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "动词时态",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.045,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "定语从句",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "非谓语动词",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "虚拟语气",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    }
+  ]
+}

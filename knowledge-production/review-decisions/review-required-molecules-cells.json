@@ -1,0 +1,39 @@
+{
+  "module": "required-molecules-cells",
+  "subject": "BIOLOGY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 4,
+  "sectionsApproved": 4,
+  "sections": [
+    {
+      "section": "第1章 走近细胞",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    },
+    {
+      "section": "第2章 组成细胞的分子",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.133,
+      "issues": []
+    },
+    {
+      "section": "第3章 细胞的基本结构",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "细胞代谢（呼吸与光合）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    }
+  ]
+}

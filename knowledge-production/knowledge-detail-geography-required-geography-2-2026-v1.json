@@ -4,7 +4,7 @@
   "subject": "GEOGRAPHY",
   "moduleSlug": "required-geography-2",
   "moduleName": "地理必修2：人文地理",
-  "reviewState": "DRAFT_UNREVIEWED",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
   "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
   "updatedAtEpochMillis": 1784908800000,
   "sources": [],
@@ -206,5 +206,8 @@
       "solutionMethod": "方式选择+布局",
       "difficulty": "中档"
     }
-  ]
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
 }

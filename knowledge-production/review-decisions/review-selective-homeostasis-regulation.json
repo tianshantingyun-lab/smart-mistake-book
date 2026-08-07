@@ -1,0 +1,32 @@
+{
+  "module": "selective-homeostasis-regulation",
+  "subject": "BIOLOGY",
+  "reviewer": "opencode-ai-first-pass",
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
+  "status": "REVIEW_IN_PROGRESS",
+  "sectionsTotal": 3,
+  "sectionsApproved": 3,
+  "sections": [
+    {
+      "section": "内环境与稳态",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.062,
+      "issues": []
+    },
+    {
+      "section": "神经调节",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.154,
+      "issues": []
+    },
+    {
+      "section": "体液调节与免疫",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.077,
+      "issues": []
+    }
+  ]
+}
