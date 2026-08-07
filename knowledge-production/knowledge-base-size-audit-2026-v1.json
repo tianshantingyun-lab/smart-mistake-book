@@ -1,0 +1,64 @@
+﻿{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-base-size-audit-2026-v1",
+  "coreSectionsTotal": 1012,
+  "coveredSectionsTotal": 129,
+  "overallCoverageRatio": 0.127,
+  "perSubject": [
+    {
+      "subject": "BIOLOGY",
+      "coreSections": 173,
+      "coveredSections": 15,
+      "coverageRatio": 0.087
+    },
+    {
+      "subject": "CHEMISTRY",
+      "coreSections": 92,
+      "coveredSections": 19,
+      "coverageRatio": 0.207
+    },
+    {
+      "subject": "CHINESE",
+      "coreSections": 96,
+      "coveredSections": 0,
+      "coverageRatio": 0.0
+    },
+    {
+      "subject": "ENGLISH",
+      "coreSections": 21,
+      "coveredSections": 6,
+      "coverageRatio": 0.286
+    },
+    {
+      "subject": "GEOGRAPHY",
+      "coreSections": 93,
+      "coveredSections": 12,
+      "coverageRatio": 0.129
+    },
+    {
+      "subject": "HISTORY",
+      "coreSections": 105,
+      "coveredSections": 11,
+      "coverageRatio": 0.105
+    },
+    {
+      "subject": "MATH",
+      "coreSections": 155,
+      "coveredSections": 34,
+      "coverageRatio": 0.219
+    },
+    {
+      "subject": "PHYSICS",
+      "coreSections": 125,
+      "coveredSections": 14,
+      "coverageRatio": 0.112
+    },
+    {
+      "subject": "POLITICS",
+      "coreSections": 152,
+      "coveredSections": 18,
+      "coverageRatio": 0.118
+    }
+  ],
+  "note": "Sections are PEP textbook TOC knowledge-point sections excluding reading/IT/lab markers. Coverage < 100% means the knowledge base is not yet complete."
+}
