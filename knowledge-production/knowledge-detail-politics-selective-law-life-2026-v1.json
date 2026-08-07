@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-politics-selective-law-life-2026-v1",
+  "subject": "POLITICS",
+  "moduleSlug": "selective-law-life",
+  "moduleName": "思想政治选择性必修2：法律与生活",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "民事权利与义务",
+      "aliases": [
+        "民法",
+        "民事权利",
+        "人格权",
+        "财产权"
+      ],
+      "conceptSummary": "民法调整平等主体间人身与财产关系；民事权利包括人格权、物权、债权、知识产权等。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民事主体：自然人/法人/非法人组织",
+        "人身权：生命/健康/名誉/肖像/隐私",
+        "物权：所有权/用益物权/担保物权",
+        "知识产权：著作权/专利权/商标权",
+        "侵权责任：过错责任原则"
+      ],
+      "methodModels": [
+        {
+          "name": "侵权判断",
+          "steps": [
+            "行为违法",
+            "有损害",
+            "因果关系",
+            "过错"
+          ],
+          "example": "侵犯名誉权承担侵权责任"
+        }
+      ],
+      "commonConfusions": [
+        "人格权与身份权",
+        "侵权责任方式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "民事权利",
+          "method": "权利类型",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "合同与家庭",
+      "aliases": [
+        "合同",
+        "婚姻",
+        "继承",
+        "消费者权益"
+      ],
+      "conceptSummary": "合同是民事主体设立权利义务的协议；婚姻家庭、继承有法律规定；消费者权益受保护。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "合同订立：要约与承诺",
+        "合同有效/无效条件",
+        "婚姻：法定结婚条件，夫妻共同财产",
+        "继承：法定继承/遗嘱继承",
+        "消费者权益：知情/选择/公平交易"
+      ],
+      "methodModels": [
+        {
+          "name": "合同效力判断",
+          "steps": [
+            "主体适格",
+            "意思表示真实",
+            "不违法"
+          ],
+          "example": "欺诈合同可撤销"
+        }
+      ],
+      "commonConfusions": [
+        "要约与承诺区分",
+        "法定继承顺序"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "合同与继承",
+          "method": "法律要件",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "民事权利",
+      "solutionMethod": "权利类型",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "合同效力",
+      "solutionMethod": "三大要件",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "继承与婚姻",
+      "solutionMethod": "法律规定",
+      "difficulty": "常考"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-geography-selective-resources-environment-security-2026-v1",
+  "subject": "GEOGRAPHY",
+  "moduleSlug": "selective-resources-environment-security",
+  "moduleName": "地理选择性必修3：资源、环境与国家安全",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "资源安全",
+      "aliases": [
+        "资源安全",
+        "粮食安全",
+        "能源安全",
+        "资源利用"
+      ],
+      "conceptSummary": "资源安全指资源可持续供给；粮食安全、能源安全是国家安全重要组成部分。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "资源安全：供给保障+风险可控",
+        "粮食安全：耕地红线/种业/储备",
+        "能源安全：能源结构/进口多元化",
+        "海洋资源：渔业/油气/空间资源"
+      ],
+      "methodModels": [
+        {
+          "name": "资源安全分析",
+          "steps": [
+            "供需状况",
+            "风险因素",
+            "保障措施"
+          ],
+          "example": "保障粮食安全靠耕地+科技+储备"
+        }
+      ],
+      "commonConfusions": [
+        "资源安全与生态安全关系",
+        "战略性资源"
+      ],
+      "prerequisiteRelations": [
+        "需掌握区域发展"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "资源安全",
+          "method": "供需+措施",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "环境安全与保护",
+      "aliases": [
+        "环境污染",
+        "生态破坏",
+        "碳达峰",
+        "可持续发展"
+      ],
+      "conceptSummary": "环境安全指生态良好、污染可控；应对气候变化（碳达峰碳中和）、保护环境实现可持续发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "环境问题：污染+生态破坏+资源短缺",
+        "全球性：气候变暖/臭氧层/生物多样性",
+        "碳达峰碳中和：双碳目标",
+        "可持续发展：经济+社会+生态协调",
+        "循环经济：减量/再利用/再循环"
+      ],
+      "methodModels": [
+        {
+          "name": "环境治理分析",
+          "steps": [
+            "识别环境问题",
+            "原因分析",
+            "措施"
+          ],
+          "example": "碳减排靠能源结构转型"
+        }
+      ],
+      "commonConfusions": [
+        "温室效应与臭氧层破坏区别",
+        "可持续发展的三个维度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "环境问题",
+          "method": "识别+治理",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "资源安全",
+      "solutionMethod": "供需+保障",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "环境问题",
+      "solutionMethod": "识别治理",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "碳达峰碳中和",
+      "solutionMethod": "双碳措施",
+      "difficulty": "常考"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-politics-selective-logic-thinking-2026-v1",
+  "subject": "POLITICS",
+  "moduleSlug": "selective-logic-thinking",
+  "moduleName": "思想政治选择性必修3：逻辑与思维",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "逻辑思维的基本要求",
+      "aliases": [
+        "概念",
+        "判断",
+        "推理",
+        "矛盾律"
+      ],
+      "conceptSummary": "形式逻辑基本要求：同一律（概念确定）、矛盾律（不矛盾）、排中律（二者必居其一）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "同一律：A是A，概念保持同一",
+        "矛盾律：A与非A不能同真",
+        "排中律：A与非A必有一真",
+        "概念：内涵（本质属性）+外延（范围）",
+        "判断：性质判断/关系判断"
+      ],
+      "methodModels": [
+        {
+          "name": "逻辑规律检验",
+          "steps": [
+            "检查概念是否同一",
+            "检查是否自相矛盾"
+          ],
+          "example": "'所有的金属都能导电'与'有的金属不能导电'矛盾"
+        }
+      ],
+      "commonConfusions": [
+        "矛盾律与排中律区别",
+        "逻辑矛盾与辩证矛盾"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "逻辑规律",
+          "method": "同一/矛盾/排中",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "演绎推理",
+      "aliases": [
+        "三段论",
+        "归纳推理",
+        "类比推理",
+        "假言推理"
+      ],
+      "conceptSummary": "演绎推理从一般到个别（三段论）；归纳从个别到一般；类比从特殊到特殊；假言推理基于充分/必要条件。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三段论：大前提/小前提/结论",
+        "充分条件假言：肯定前件→肯定后件",
+        "必要条件假言：否定后件→否定前件",
+        "归纳推理：完全/不完全归纳",
+        "类比推理：提高类比可靠性"
+      ],
+      "methodModels": [
+        {
+          "name": "三段论结构",
+          "steps": [
+            "找大前提",
+            "找小前提",
+            "得结论"
+          ],
+          "example": "所有哺乳动物恒温（大），鲸是哺乳动物（小），鲸恒温（结）"
+        },
+        {
+          "name": "假言推理",
+          "steps": [
+            "充分条件：有前件必有后件",
+            "必要条件：无后件必无前件"
+          ],
+          "example": "只有努力才能成功，不努力则不会成功"
+        }
+      ],
+      "commonConfusions": [
+        "充分与必要条件推理方向",
+        "三段论中项周延"
+      ],
+      "prerequisiteRelations": [
+        "需掌握逻辑规律"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "推理有效性",
+          "method": "结构检验",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "逻辑规律",
+      "solutionMethod": "同一/矛盾/排中",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "三段论",
+      "solutionMethod": "前提结构",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "假言推理",
+      "solutionMethod": "充分必要条件",
+      "difficulty": "中档"
+    }
+  ]
+}

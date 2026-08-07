@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-geography-selective-regional-development-2026-v1",
+  "subject": "GEOGRAPHY",
+  "moduleSlug": "selective-regional-development",
+  "moduleName": "地理选择性必修2：区域发展",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "区域及其发展",
+      "aliases": [
+        "区域",
+        "区域差异",
+        "区域协调发展"
+      ],
+      "conceptSummary": "区域是按一定标准划分的空间单位；区域差异决定发展方向；区域协调发展缩小差距。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "区域类型：自然/行政/经济区域",
+        "区域特征：整体性/差异性/开放性",
+        "区域差异：自然+人文因素",
+        "区域协调发展：优势互补"
+      ],
+      "methodModels": [
+        {
+          "name": "区域分析",
+          "steps": [
+            "定位区域",
+            "分析自然人文条件",
+            "判断发展方向"
+          ],
+          "example": "东部沿海发展外向型经济"
+        }
+      ],
+      "commonConfusions": [
+        "区域界线与过渡带",
+        "区域划分标准"
+      ],
+      "prerequisiteRelations": [
+        "需掌握必修地理"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "区域发展分析",
+          "method": "条件+方向",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "生态脆弱区与流域治理",
+      "aliases": [
+        "生态脆弱区",
+        "水土流失",
+        "流域",
+        "综合治理"
+      ],
+      "conceptSummary": "生态脆弱区环境承载力低；水土流失/荒漠化治理靠工程+生物+农业措施；流域综合开发。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生态脆弱区：环境敏感/退化快",
+        "黄土高原：水土流失治理",
+        "荒漠化：风沙危害治理",
+        "流域：上游水土保持，中游防洪，下游开发",
+        "田纳西河/长江流域综合治理"
+      ],
+      "methodModels": [
+        {
+          "name": "水土流失治理",
+          "steps": [
+            "工程措施（梯田）",
+            "生物措施（植树）",
+            "农业措施（轮作）"
+          ],
+          "example": "黄土高原植树种草保持水土"
+        }
+      ],
+      "commonConfusions": [
+        "流域开发与保护并重",
+        "生态脆弱与经济发展矛盾"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生态治理",
+          "method": "三措施",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "区域分析",
+      "solutionMethod": "条件+方向",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "生态治理",
+      "solutionMethod": "工程生物农业",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "流域开发",
+      "solutionMethod": "上中下游",
+      "difficulty": "中档"
+    }
+  ]
+}

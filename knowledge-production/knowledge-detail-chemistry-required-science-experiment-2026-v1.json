@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-required-science-experiment-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "required-science-experiment",
+  "moduleName": "化学必修：化学科学与实验探究",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "实验基础操作",
+      "aliases": [
+        "仪器",
+        "过滤",
+        "蒸发",
+        "蒸馏",
+        "萃取"
+      ],
+      "conceptSummary": "化学实验需掌握基本操作：过滤、蒸发、蒸馏、萃取分液；安全规范。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "过滤：分离不溶固体与液体",
+        "蒸发结晶：分离可溶性固体",
+        "蒸馏：分离沸点不同的液体混合物",
+        "萃取分液：利用溶解性差异",
+        "常见仪器：烧杯/量筒/容量瓶/分液漏斗"
+      ],
+      "methodModels": [
+        {
+          "name": "分离提纯选择",
+          "steps": [
+            "看混合物状态",
+            "选操作"
+          ],
+          "example": "碘水提碘用萃取分液"
+        },
+        {
+          "name": "溶液配制",
+          "steps": [
+            "计算称量",
+            "溶解转移定容摇匀"
+          ],
+          "example": "配制一定物质的量浓度溶液"
+        }
+      ],
+      "commonConfusions": [
+        "蒸馏与蒸发区别",
+        "萃取剂选择（不互溶）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分离提纯方法",
+          "method": "性质差异",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "物质的检验",
+      "aliases": [
+        "离子检验",
+        "气体检验",
+        "焰色反应"
+      ],
+      "conceptSummary": "利用特征反应检验离子与气体：Cl-（AgNO3）、SO4²-（BaCl2）、CO2（石灰水）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Cl-：AgNO3 生成白色沉淀 AgCl",
+        "SO4²-：BaCl2 生成白色 BaSO4（不溶酸）",
+        "NH4+：加碱加热产生使湿润红石蕊变蓝气体",
+        "CO2：使澄清石灰水变浑浊",
+        "焰色反应：Na黄 K紫（透过蓝钴玻璃）"
+      ],
+      "methodModels": [
+        {
+          "name": "离子检验",
+          "steps": [
+            "加试剂",
+            "观察现象",
+            "判断"
+          ],
+          "example": "加 AgNO3 白色沉淀含 Cl-"
+        }
+      ],
+      "commonConfusions": [
+        "SO4²- 检验需排除 SO3²-（先酸化）",
+        "焰色反应是物理变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "离子检验",
+          "method": "特征反应",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "分离提纯",
+      "solutionMethod": "性质差异选操作",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "离子检验",
+      "solutionMethod": "特征反应",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "溶液配制",
+      "solutionMethod": "容量瓶操作",
+      "difficulty": "常考"
+    }
+  ]
+}

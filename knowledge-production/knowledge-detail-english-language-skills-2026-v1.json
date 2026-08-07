@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-english-language-skills-2026-v1",
+  "subject": "ENGLISH",
+  "moduleSlug": "language-skills",
+  "moduleName": "英语：语言技能（听说读写）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "阅读理解技能",
+      "aliases": [
+        "阅读理解",
+        "主旨",
+        "细节",
+        "推断"
+      ],
+      "conceptSummary": "阅读理解需掌握主旨大意、细节理解、推理判断、词义猜测等技能。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "主旨题：首尾段/主题句",
+        "细节题：定位关键词",
+        "推断题：文中暗示+逻辑",
+        "词义猜测：上下文/构词法"
+      ],
+      "methodModels": [
+        {
+          "name": "主旨把握",
+          "steps": [
+            "读首尾段",
+            "找主题句",
+            "概括"
+          ],
+          "example": "文章首段提出中心论点"
+        },
+        {
+          "name": "细节定位",
+          "steps": [
+            "题干关键词",
+            "回原文定位",
+            "比对选项"
+          ],
+          "example": "数字/人名/时间定位"
+        }
+      ],
+      "commonConfusions": [
+        "推断与过度推断",
+        "主旨与细节混淆"
+      ],
+      "prerequisiteRelations": [
+        "需掌握词汇语法"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "阅读理解",
+          "method": "定位+判断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "写作技能",
+      "aliases": [
+        "书面表达",
+        "应用文",
+        "续写",
+        "衔接"
+      ],
+      "conceptSummary": "写作需内容完整、逻辑连贯、语言准确；应用文（书信/通知）与读后续写是考查重点。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "应用文：书信/邮件/通知格式",
+        "读后续写：情节连贯+语言丰富",
+        "连接词：first/then/however",
+        "高级表达：从句/非谓语"
+      ],
+      "methodModels": [
+        {
+          "name": "应用文写作",
+          "steps": [
+            "格式正确",
+            "要点齐全",
+            "语言得体"
+          ],
+          "example": "建议信：称呼-正文-结尾"
+        },
+        {
+          "name": "读后续写",
+          "steps": [
+            "理解原文",
+            "构思情节",
+            "衔接续写"
+          ],
+          "example": "续写保持人物性格一致"
+        }
+      ],
+      "commonConfusions": [
+        "书面与口语表达",
+        "正式与非正式文体"
+      ],
+      "prerequisiteRelations": [
+        "需掌握语法"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "书面表达",
+          "method": "格式+要点+语言",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "阅读理解",
+      "solutionMethod": "定位判断",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "完形填空",
+      "solutionMethod": "语境+搭配",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "书面表达",
+      "solutionMethod": "格式+要点",
+      "difficulty": "高频"
+    }
+  ]
+}

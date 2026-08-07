@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-history-selective-cultural-exchange-2026-v1",
+  "subject": "HISTORY",
+  "moduleSlug": "selective-cultural-exchange",
+  "moduleName": "历史选择性必修3：文化交流与传播",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "文化交流的途径",
+      "aliases": [
+        "丝路",
+        "印刷术",
+        "宗教传播",
+        "文化融合"
+      ],
+      "conceptSummary": "文化交流通过商贸、战争、宗教传播、移民等途径；丝绸之路、四大发明传播促进文明互鉴。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "丝绸之路：商贸+文化交流",
+        "四大发明西传影响欧洲",
+        "佛教/基督教/伊斯兰教传播",
+        "印刷术促进知识传播",
+        "人口迁徙带来文化融合"
+      ],
+      "methodModels": [
+        {
+          "name": "文化传播分析",
+          "steps": [
+            "传播途径",
+            "传播内容",
+            "影响"
+          ],
+          "example": "造纸术西传促进欧洲文化发展"
+        }
+      ],
+      "commonConfusions": [
+        "文化交流与文化冲突",
+        "文化传播与本地化"
+      ],
+      "prerequisiteRelations": [
+        "需掌握世界史"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文化交流",
+          "method": "途径+影响",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "中华文化的世界影响",
+      "aliases": [
+        "中华文化",
+        "儒释道",
+        "汉字",
+        "中国影响"
+      ],
+      "conceptSummary": "中华文化对东亚、世界有深远影响：汉字圈、儒家思想、四大发明；近代吸收世界文明成果。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "汉字传播：东亚文化圈",
+        "儒家思想：日本/韩国/东南亚影响",
+        "四大发明：世界文明贡献",
+        "中国与世界：互学互鉴"
+      ],
+      "methodModels": [
+        {
+          "name": "中华文化影响",
+          "steps": [
+            "影响区域",
+            "影响内容",
+            "双向交流"
+          ],
+          "example": "汉字与儒家影响东亚"
+        }
+      ],
+      "commonConfusions": [
+        "文化自信与文化自负",
+        "中华文化与其他文明交流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中华文化传播",
+          "method": "影响分析",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "文化传播途径",
+      "solutionMethod": "商贸/宗教/移民",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "中华文化影响",
+      "solutionMethod": "汉字儒家四大发明",
+      "difficulty": "常考"
+    }
+  ]
+}

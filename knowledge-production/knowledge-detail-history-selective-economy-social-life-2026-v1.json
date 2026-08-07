@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-history-selective-economy-social-life-2026-v1",
+  "subject": "HISTORY",
+  "moduleSlug": "selective-economy-social-life",
+  "moduleName": "历史选择性必修2：经济与社会生活",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "农业与食物生产",
+      "aliases": [
+        "农业革命",
+        "粮食生产",
+        "食物安全"
+      ],
+      "conceptSummary": "农业革命（定居农耕）是人类历史转折；粮食生产技术进步保障食物安全。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "原始农业：采集渔猎→定居农耕",
+        "农业起源中心：西亚/东亚/中南美",
+        "工具改进：石器→铁器→机械化",
+        "粮食安全：育种/灌溉/仓储技术"
+      ],
+      "methodModels": [
+        {
+          "name": "农业革命影响",
+          "steps": [
+            "定居生活",
+            "剩余产品",
+            "阶级与国家产生"
+          ],
+          "example": "农耕促进文明起源"
+        }
+      ],
+      "commonConfusions": [
+        "农业起源多中心（不是单一起源）",
+        "粮食生产与人口增长关系"
+      ],
+      "prerequisiteRelations": [
+        "需掌握必修纲要"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "农业革命",
+          "method": "影响分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "工业与交通",
+      "aliases": [
+        "工业革命",
+        "动力革命",
+        "交通变革"
+      ],
+      "conceptSummary": "工业革命从手工到机器大生产，经历三次技术革命；交通变革加速全球联系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "第一次工业革命：蒸汽机，英国",
+        "第二次：电力/内燃机，美德",
+        "第三次：信息技术，电子化",
+        "交通运输：铁路/汽车/飞机/互联网"
+      ],
+      "methodModels": [
+        {
+          "name": "工业革命影响",
+          "steps": [
+            "生产力飞跃",
+            "社会结构变化",
+            "城市化"
+          ],
+          "example": "蒸汽机推动工业化"
+        }
+      ],
+      "commonConfusions": [
+        "三次工业革命标志",
+        "工业革命对世界的双重影响"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "工业革命",
+          "method": "标志+影响",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "贸易与经济生活",
+      "aliases": [
+        "商业",
+        "货币",
+        "贸易",
+        "经济全球化"
+      ],
+      "conceptSummary": "商业与货币发展促进经济交流；从陆上/海上丝绸之路到全球贸易网络，经济全球化深入。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "早期商业：以物易物→货币",
+        "丝绸之路：陆上/海上",
+        "新航路开辟：世界市场雏形",
+        "工业革命：世界市场形成",
+        "二战后：经济全球化深入"
+      ],
+      "methodModels": [
+        {
+          "name": "世界市场形成",
+          "steps": [
+            "新航路→雏形",
+            "工业革命→形成",
+            "二战后→全球化"
+          ],
+          "example": "全球化趋势不可逆转"
+        }
+      ],
+      "commonConfusions": [
+        "世界市场各阶段标志",
+        "贸易保护与全球化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "贸易发展",
+          "method": "阶段脉络",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "农业革命",
+      "solutionMethod": "影响分析",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "工业革命",
+      "solutionMethod": "三次标志",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "世界市场",
+      "solutionMethod": "阶段形成",
+      "difficulty": "常考"
+    }
+  ]
+}

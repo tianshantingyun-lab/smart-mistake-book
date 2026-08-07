@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-politics-selective-international-politics-economy-2026-v1",
+  "subject": "POLITICS",
+  "moduleSlug": "selective-international-politics-economy",
+  "moduleName": "思想政治选择性必修1：当代国际政治与经济",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "国际关系与外交",
+      "aliases": [
+        "主权",
+        "国际关系",
+        "和平发展",
+        "外交"
+      ],
+      "conceptSummary": "主权国家是国际社会基本成员；国际关系本质是国家利益；中国坚持独立自主和平外交政策。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "主权国家：独立权/平等权/自卫权/管辖权",
+        "国际关系基本形式：竞争/合作/冲突",
+        "国家利益是国际关系决定因素",
+        "和平与发展是时代主题",
+        "中国外交：独立自主的和平外交政策",
+        "人类命运共同体"
+      ],
+      "methodModels": [
+        {
+          "name": "国际关系分析",
+          "steps": [
+            "国家利益决定",
+            "结合时代主题"
+          ],
+          "example": "合作共赢符合共同利益"
+        }
+      ],
+      "commonConfusions": [
+        "国家主权与国际组织关系",
+        "人类命运共同体内涵"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国际关系",
+          "method": "国家利益",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "经济全球化",
+      "aliases": [
+        "经济全球化",
+        "对外开放",
+        "全球治理"
+      ],
+      "conceptSummary": "经济全球化是生产力发展的必然结果；中国积极参与经济全球化，坚持对外开放。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "经济全球化：生产/贸易/金融全球化",
+        "双刃剑：机遇与挑战并存",
+        "中国：一带一路、命运共同体",
+        "全球经济治理体系改革"
+      ],
+      "methodModels": [
+        {
+          "name": "全球化分析",
+          "steps": [
+            "机遇与挑战",
+            "中国应对"
+          ],
+          "example": "参与全球产业链分工"
+        }
+      ],
+      "commonConfusions": [
+        "经济全球化与逆全球化",
+        "多边主义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "经济全球化",
+          "method": "机遇挑战",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "国际关系",
+      "solutionMethod": "国家利益",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "中国外交",
+      "solutionMethod": "和平外交政策",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "经济全球化",
+      "solutionMethod": "机遇挑战",
+      "difficulty": "常考"
+    }
+  ]
+}
