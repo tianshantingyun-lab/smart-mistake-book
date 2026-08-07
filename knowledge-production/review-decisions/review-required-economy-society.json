@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 13,
-  "sectionsApproved": 13,
+  "sectionsTotal": 14,
+  "sectionsApproved": 14,
   "sections": [
     {
       "section": "社会主义市场经济",
@@ -96,6 +96,13 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第二课 我国的社会主义市场经济体制",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.154,
+      "textbookTocOverlap": 0.4,
       "issues": []
     }
   ]

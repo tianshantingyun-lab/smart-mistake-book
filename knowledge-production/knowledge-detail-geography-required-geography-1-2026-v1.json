@@ -893,6 +893,193 @@
           "example": "地域差异性"
         }
       ]
+    },
+    {
+      "section": "第一节 大气的组成和垂直分层",
+      "aliases": [
+        "大气组成",
+        "垂直分层"
+      ],
+      "conceptSummary": "大气组成与垂直分层（对流层平流层）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "大气成分",
+        "对流层",
+        "平流层"
+      ],
+      "methodModels": [
+        {
+          "name": "大气分层",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "大气组成分层"
+        }
+      ],
+      "commonConfusions": [
+        "对流层"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "大气组成分层",
+          "method": "见方法模型",
+          "example": "大气组成分层"
+        }
+      ]
+    },
+    {
+      "section": "第一节 陆地水体及其相互关系",
+      "aliases": [
+        "陆地水",
+        "河流湖泊",
+        "地下水"
+      ],
+      "conceptSummary": "陆地水体类型及其相互关系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "河流湖泊",
+        "地下水",
+        "补给关系"
+      ],
+      "methodModels": [
+        {
+          "name": "陆地水",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "陆地水体"
+        }
+      ],
+      "commonConfusions": [
+        "河流补给"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "陆地水体",
+          "method": "见方法模型",
+          "example": "陆地水体"
+        }
+      ]
+    },
+    {
+      "section": "第二节 土壤",
+      "aliases": [
+        "土壤",
+        "土壤形成"
+      ],
+      "conceptSummary": "土壤组成与形成因素。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "土壤组成",
+        "成土因素",
+        "土壤肥力"
+      ],
+      "methodModels": [
+        {
+          "name": "土壤",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "土壤"
+        }
+      ],
+      "commonConfusions": [
+        "成土因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "土壤",
+          "method": "见方法模型",
+          "example": "土壤"
+        }
+      ]
+    },
+    {
+      "section": "第三节 河流地貌的发育",
+      "aliases": [
+        "河流地貌",
+        "侵蚀堆积"
+      ],
+      "conceptSummary": "河流地貌发育：侵蚀与堆积。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "河流侵蚀",
+        "河流堆积",
+        "三角洲"
+      ],
+      "methodModels": [
+        {
+          "name": "河流地貌",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "河流地貌发育"
+        }
+      ],
+      "commonConfusions": [
+        "侵蚀堆积"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "河流地貌发育",
+          "method": "见方法模型",
+          "example": "河流地貌发育"
+        }
+      ]
+    },
+    {
+      "section": "第一节 地球的自转和公转",
+      "aliases": [
+        "自转",
+        "公转",
+        "地转偏向"
+      ],
+      "conceptSummary": "地球自转与公转及地理意义。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自转周期",
+        "公转周期",
+        "地转偏向力"
+      ],
+      "methodModels": [
+        {
+          "name": "地球运动",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地球自转公转"
+        }
+      ],
+      "commonConfusions": [
+        "自转公转"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地球自转公转",
+          "method": "见方法模型",
+          "example": "地球自转公转"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

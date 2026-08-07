@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
   "coreSectionsTotal": 816,
-  "coveredSectionsTotal": 748,
-  "overallCoverageRatio": 0.917,
+  "coveredSectionsTotal": 802,
+  "overallCoverageRatio": 0.983,
   "perSubject": [
     {
       "subject": "BIOLOGY",
@@ -15,8 +15,8 @@
     {
       "subject": "CHEMISTRY",
       "coreSections": 90,
-      "coveredSections": 74,
-      "coverageRatio": 0.822,
+      "coveredSections": 84,
+      "coverageRatio": 0.933,
       "coreBasis": "sections"
     },
     {
@@ -36,15 +36,15 @@
     {
       "subject": "GEOGRAPHY",
       "coreSections": 69,
-      "coveredSections": 54,
-      "coverageRatio": 0.783,
+      "coveredSections": 69,
+      "coverageRatio": 1.0,
       "coreBasis": "sections"
     },
     {
       "subject": "HISTORY",
       "coreSections": 103,
-      "coveredSections": 68,
-      "coverageRatio": 0.66,
+      "coveredSections": 83,
+      "coverageRatio": 0.806,
       "coreBasis": "sections"
     },
     {
@@ -64,8 +64,8 @@
     {
       "subject": "POLITICS",
       "coreSections": 133,
-      "coveredSections": 100,
-      "coverageRatio": 0.752,
+      "coveredSections": 114,
+      "coverageRatio": 0.857,
       "coreBasis": "sections"
     }
   ],

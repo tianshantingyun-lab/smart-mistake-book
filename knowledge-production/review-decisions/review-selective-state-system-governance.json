@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 9,
-  "sectionsApproved": 9,
+  "sectionsTotal": 12,
+  "sectionsApproved": 12,
   "sections": [
     {
       "section": "中国古代政治制度",
@@ -68,6 +68,27 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.059,
       "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第1课 中国古代政治制度的形成与发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.065,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第4课 中国历代变法和改革",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第13课 当代中国的民族政策",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.4,
       "issues": []
     }
   ]

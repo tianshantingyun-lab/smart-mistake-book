@@ -356,6 +356,43 @@
           "example": "生态保护与安全"
         }
       ]
+    },
+    {
+      "section": "第一节 资源安全对国家安全的影响",
+      "aliases": [
+        "资源安全",
+        "国家安全"
+      ],
+      "conceptSummary": "资源安全对国家安全的影响。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "资源安全",
+        "资源短缺",
+        "国家影响"
+      ],
+      "methodModels": [
+        {
+          "name": "资源安全",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "资源安全与国家安全"
+        }
+      ],
+      "commonConfusions": [
+        "国家安全"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "资源安全与国家安全",
+          "method": "见方法模型",
+          "example": "资源安全与国家安全"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

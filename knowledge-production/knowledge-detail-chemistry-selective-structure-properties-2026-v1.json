@@ -331,6 +331,117 @@
           "example": "配合物"
         }
       ]
+    },
+    {
+      "section": "第一节 原子结构",
+      "aliases": [
+        "原子结构",
+        "能级"
+      ],
+      "conceptSummary": "原子核外电子排布与能级。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "电子排布",
+        "能级",
+        "构造原理"
+      ],
+      "methodModels": [
+        {
+          "name": "原子结构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "原子结构"
+        }
+      ],
+      "commonConfusions": [
+        "电子排布"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原子结构",
+          "method": "见方法模型",
+          "example": "原子结构"
+        }
+      ]
+    },
+    {
+      "section": "第二节 原子结构与元素的性质",
+      "aliases": [
+        "电离能",
+        "电负性"
+      ],
+      "conceptSummary": "电离能与电负性及元素性质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "第一电离能",
+        "电负性",
+        "性质递变"
+      ],
+      "methodModels": [
+        {
+          "name": "电离能",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "原子结构元素性质"
+        }
+      ],
+      "commonConfusions": [
+        "电负性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原子结构元素性质",
+          "method": "见方法模型",
+          "example": "原子结构元素性质"
+        }
+      ]
+    },
+    {
+      "section": "第三节 分子结构与物质的性质",
+      "aliases": [
+        "分子结构",
+        "分子性质"
+      ],
+      "conceptSummary": "分子结构影响物质性质（极性氢键）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分子极性",
+        "氢键",
+        "分子间力"
+      ],
+      "methodModels": [
+        {
+          "name": "分子结构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "分子结构性质"
+        }
+      ],
+      "commonConfusions": [
+        "氢键"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分子结构性质",
+          "method": "见方法模型",
+          "example": "分子结构性质"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -369,6 +369,118 @@
           "example": "赋税制度演变"
         }
       ]
+    },
+    {
+      "section": "第1课 中国古代政治制度的形成与发展",
+      "aliases": [
+        "古代政治制度",
+        "形成发展"
+      ],
+      "conceptSummary": "中国古代政治制度形成与发展（中央地方选官）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中央官制",
+        "地方行政",
+        "选官制度"
+      ],
+      "methodModels": [
+        {
+          "name": "古代政治",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代政治制度"
+        }
+      ],
+      "commonConfusions": [
+        "中央集权"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代政治制度",
+          "method": "见方法模型",
+          "example": "古代政治制度"
+        }
+      ]
+    },
+    {
+      "section": "第4课 中国历代变法和改革",
+      "aliases": [
+        "变法",
+        "改革",
+        "历代"
+      ],
+      "conceptSummary": "中国历代变法改革（商鞅王安石戊戌）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "商鞅变法",
+        "王安石变法",
+        "戊戌变法"
+      ],
+      "methodModels": [
+        {
+          "name": "变法改革",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国历代变法改革"
+        }
+      ],
+      "commonConfusions": [
+        "历代变法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国历代变法改革",
+          "method": "见方法模型",
+          "example": "中国历代变法改革"
+        }
+      ]
+    },
+    {
+      "section": "第13课 当代中国的民族政策",
+      "aliases": [
+        "民族政策",
+        "民族团结"
+      ],
+      "conceptSummary": "当代中国民族政策与民族团结。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民族区域自治",
+        "民族团结",
+        "民族政策"
+      ],
+      "methodModels": [
+        {
+          "name": "民族政策",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "当代民族政策"
+        }
+      ],
+      "commonConfusions": [
+        "民族团结"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "当代民族政策",
+          "method": "见方法模型",
+          "example": "当代民族政策"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

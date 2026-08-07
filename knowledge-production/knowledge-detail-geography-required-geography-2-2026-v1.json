@@ -522,6 +522,80 @@
           "example": "服务业区位"
         }
       ]
+    },
+    {
+      "section": "第一节 人口分布",
+      "aliases": [
+        "人口分布",
+        "人口密度"
+      ],
+      "conceptSummary": "人口分布规律与影响因素。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人口分布",
+        "影响因素",
+        "分布规律"
+      ],
+      "methodModels": [
+        {
+          "name": "人口分布",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人口分布"
+        }
+      ],
+      "commonConfusions": [
+        "影响因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人口分布",
+          "method": "见方法模型",
+          "example": "人口分布"
+        }
+      ]
+    },
+    {
+      "section": "第二节 走向人地协调——可持续发展",
+      "aliases": [
+        "可持续发展",
+        "人地协调"
+      ],
+      "conceptSummary": "可持续发展理念与人地协调。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "可持续发展",
+        "人地协调",
+        "三大原则"
+      ],
+      "methodModels": [
+        {
+          "name": "可持续发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "可持续发展"
+        }
+      ],
+      "commonConfusions": [
+        "人地协调"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "可持续发展",
+          "method": "见方法模型",
+          "example": "可持续发展"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

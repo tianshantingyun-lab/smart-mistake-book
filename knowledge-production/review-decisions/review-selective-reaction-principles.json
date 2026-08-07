@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 13,
-  "sectionsApproved": 13,
+  "sectionsTotal": 19,
+  "sectionsApproved": 19,
   "sections": [
     {
       "section": "反应热与盖斯定律",
@@ -96,6 +96,48 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.033,
       "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第一节 反应热",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第二节 化学平衡",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "影响化学反应速率的因素",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第三节 盐类的水解",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第二节 化学品的合理使用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.034,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第三节 环境保护与绿色化学",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.034,
+      "textbookTocOverlap": 0.5,
       "issues": []
     }
   ]

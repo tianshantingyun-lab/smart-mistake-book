@@ -513,6 +513,43 @@
           "example": "我国社会保障"
         }
       ]
+    },
+    {
+      "section": "第二课 我国的社会主义市场经济体制",
+      "aliases": [
+        "市场经济",
+        "市场体制"
+      ],
+      "conceptSummary": "社会主义市场经济体制：市场决定+政府作用。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "市场决定",
+        "政府作用",
+        "市场经济"
+      ],
+      "methodModels": [
+        {
+          "name": "市场经济",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "社会主义市场经济"
+        }
+      ],
+      "commonConfusions": [
+        "市场决定"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "社会主义市场经济",
+          "method": "见方法模型",
+          "example": "社会主义市场经济"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

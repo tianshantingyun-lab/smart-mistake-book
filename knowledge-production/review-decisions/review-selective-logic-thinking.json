@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 16,
-  "sectionsApproved": 16,
+  "sectionsTotal": 18,
+  "sectionsApproved": 18,
   "sections": [
     {
       "section": "逻辑思维的基本要求",
@@ -117,6 +117,20 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "正确运用复合判断",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "复合判断的演绎推理方法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.375,
       "issues": []
     }
   ]

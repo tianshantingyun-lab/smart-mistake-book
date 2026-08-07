@@ -504,6 +504,44 @@
           "example": "联合国"
         }
       ]
+    },
+    {
+      "section": "第九课 中国与国际组织",
+      "aliases": [
+        "中国",
+        "国际组织",
+        "参与"
+      ],
+      "conceptSummary": "中国积极参与国际组织，推动全球治理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中国参与",
+        "全球治理",
+        "国际组织"
+      ],
+      "methodModels": [
+        {
+          "name": "中国国际组织",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国与国际组织"
+        }
+      ],
+      "commonConfusions": [
+        "全球治理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国与国际组织",
+          "method": "见方法模型",
+          "example": "中国与国际组织"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

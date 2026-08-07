@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 10,
-  "sectionsApproved": 10,
+  "sectionsTotal": 17,
+  "sectionsApproved": 17,
   "sections": [
     {
       "section": "区域及其发展",
@@ -74,6 +74,55 @@
       "section": "第二节 地区产业结构变化",
       "decision": "APPROVED",
       "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第一节 区域发展的自然环境基础",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.667,
+      "issues": []
+    },
+    {
+      "section": "第二节 区域整体性和关联性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第一节 流域内协调发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第二节 生态脆弱区的综合治理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第三节 产业转移",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第一节 城市的辐射功能",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第三节 中国国家发展战略举例",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
       "textbookTocOverlap": 0.5,
       "issues": []
     }

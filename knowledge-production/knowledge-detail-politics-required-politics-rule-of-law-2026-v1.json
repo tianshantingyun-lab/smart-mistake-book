@@ -952,6 +952,230 @@
           "example": "心中有数上职场"
         }
       ]
+    },
+    {
+      "section": "第一课 历史和人民的选择",
+      "aliases": [
+        "历史选择",
+        "人民选择",
+        "党的领导"
+      ],
+      "conceptSummary": "中国共产党领导是历史和人民的选择。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "历史选择",
+        "人民选择",
+        "党的领导"
+      ],
+      "methodModels": [
+        {
+          "name": "历史选择",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "历史和人民的选择"
+        }
+      ],
+      "commonConfusions": [
+        "人民选择"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "历史和人民的选择",
+          "method": "见方法模型",
+          "example": "历史和人民的选择"
+        }
+      ]
+    },
+    {
+      "section": "法治政府",
+      "aliases": [
+        "法治政府",
+        "依法行政"
+      ],
+      "conceptSummary": "法治政府建设：依法行政、权责法定。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "法治政府",
+        "依法行政",
+        "权责法定"
+      ],
+      "methodModels": [
+        {
+          "name": "法治政府",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "法治政府"
+        }
+      ],
+      "commonConfusions": [
+        "依法行政"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "法治政府",
+          "method": "见方法模型",
+          "example": "法治政府"
+        }
+      ]
+    },
+    {
+      "section": "积极维护人身权利",
+      "aliases": [
+        "人身权利",
+        "人格权"
+      ],
+      "conceptSummary": "人身权利保护：生命健康、人格尊严。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人身权",
+        "人格权",
+        "侵权责任"
+      ],
+      "methodModels": [
+        {
+          "name": "人身权利",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "维护人身权利"
+        }
+      ],
+      "commonConfusions": [
+        "人格权"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "维护人身权利",
+          "method": "见方法模型",
+          "example": "维护人身权利"
+        }
+      ]
+    },
+    {
+      "section": "第四课 侵权责任与权利界限",
+      "aliases": [
+        "侵权责任",
+        "权利界限"
+      ],
+      "conceptSummary": "侵权责任认定与行使权利界限。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "侵权责任",
+        "过错责任",
+        "权利界限"
+      ],
+      "methodModels": [
+        {
+          "name": "侵权责任",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "侵权责任与权利界限"
+        }
+      ],
+      "commonConfusions": [
+        "权利界限"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "侵权责任与权利界限",
+          "method": "见方法模型",
+          "example": "侵权责任与权利界限"
+        }
+      ]
+    },
+    {
+      "section": "夫妻地位平等",
+      "aliases": [
+        "婚姻",
+        "夫妻平等",
+        "家庭"
+      ],
+      "conceptSummary": "夫妻地位平等与家庭关系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "夫妻平等",
+        "共同财产",
+        "家庭义务"
+      ],
+      "methodModels": [
+        {
+          "name": "夫妻平等",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "夫妻地位平等"
+        }
+      ],
+      "commonConfusions": [
+        "家庭关系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "夫妻地位平等",
+          "method": "见方法模型",
+          "example": "夫妻地位平等"
+        }
+      ]
+    },
+    {
+      "section": "权利行使 注意界限",
+      "aliases": [
+        "权利界限",
+        "行使权利"
+      ],
+      "conceptSummary": "行使权利注意界限，不损害他人。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "权利界限",
+        "相邻关系",
+        "行使限制"
+      ],
+      "methodModels": [
+        {
+          "name": "权利界限",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "权利行使界限"
+        }
+      ],
+      "commonConfusions": [
+        "行使权利"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "权利行使界限",
+          "method": "见方法模型",
+          "example": "权利行使界限"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

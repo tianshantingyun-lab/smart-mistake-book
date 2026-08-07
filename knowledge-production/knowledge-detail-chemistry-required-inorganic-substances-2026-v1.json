@@ -699,6 +699,44 @@
           "example": "含硫物质转化"
         }
       ]
+    },
+    {
+      "section": "第二节 氯及其化合物",
+      "aliases": [
+        "氯气",
+        "氯水",
+        "次氯酸"
+      ],
+      "conceptSummary": "氯气性质与氯水漂白性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "氯气性质",
+        "氯水成分",
+        "HClO漂白"
+      ],
+      "methodModels": [
+        {
+          "name": "氯气",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "氯及其化合物"
+        }
+      ],
+      "commonConfusions": [
+        "氯水"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "氯及其化合物",
+          "method": "见方法模型",
+          "example": "氯及其化合物"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 14,
-  "sectionsApproved": 14,
+  "sectionsTotal": 18,
+  "sectionsApproved": 18,
   "sections": [
     {
       "section": "农业与食物生产",
@@ -103,6 +103,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.03,
       "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第3课 现代食物的生产、储备与食品安全",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.03,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第7课 古代的商业贸易",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.043,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第7课 近代殖民活动和人口的跨地域转移",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第13课 现代战争与不同文化的碰撞和交流",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.667,
       "issues": []
     }
   ]

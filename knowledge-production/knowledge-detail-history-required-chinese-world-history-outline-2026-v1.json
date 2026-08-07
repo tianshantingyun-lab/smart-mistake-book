@@ -1412,6 +1412,304 @@
           "example": "文明产生与早期发展"
         }
       ]
+    },
+    {
+      "section": "第16课 国家出路的探索与列强侵略的加剧",
+      "aliases": [
+        "国家出路",
+        "列强侵略"
+      ],
+      "conceptSummary": "近代中国国家出路探索与列强侵略加剧。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "太平天国",
+        "洋务运动",
+        "列强侵略"
+      ],
+      "methodModels": [
+        {
+          "name": "国家出路",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国家出路探索"
+        }
+      ],
+      "commonConfusions": [
+        "列强侵略"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国家出路探索",
+          "method": "见方法模型",
+          "example": "国家出路探索"
+        }
+      ]
+    },
+    {
+      "section": "第17课 挽救民族危亡的斗争",
+      "aliases": [
+        "救亡图存",
+        "戊戌变法",
+        "义和团"
+      ],
+      "conceptSummary": "戊戌变法与义和团运动挽救民族危亡。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "戊戌变法",
+        "义和团",
+        "救亡运动"
+      ],
+      "methodModels": [
+        {
+          "name": "救亡图存",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "挽救民族危亡"
+        }
+      ],
+      "commonConfusions": [
+        "戊戌变法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "挽救民族危亡",
+          "method": "见方法模型",
+          "example": "挽救民族危亡"
+        }
+      ]
+    },
+    {
+      "section": "第19课 北洋军阀统治时期的政治、经济与文化",
+      "aliases": [
+        "北洋军阀",
+        "新文化运动"
+      ],
+      "conceptSummary": "北洋军阀统治时期政治经济文化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "北洋军阀",
+        "新文化运动",
+        "经济发展"
+      ],
+      "methodModels": [
+        {
+          "name": "北洋军阀",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "北洋军阀时期"
+        }
+      ],
+      "commonConfusions": [
+        "新文化运动"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "北洋军阀时期",
+          "method": "见方法模型",
+          "example": "北洋军阀时期"
+        }
+      ]
+    },
+    {
+      "section": "第25课 中华人民共和国成立和向社会主义的过渡",
+      "aliases": [
+        "新中国成立",
+        "社会主义过渡"
+      ],
+      "conceptSummary": "新中国成立与社会主义改造过渡。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新中国成立",
+        "三大改造",
+        "过渡"
+      ],
+      "methodModels": [
+        {
+          "name": "新中国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "新中国成立过渡"
+        }
+      ],
+      "commonConfusions": [
+        "三大改造"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新中国成立过渡",
+          "method": "见方法模型",
+          "example": "新中国成立过渡"
+        }
+      ]
+    },
+    {
+      "section": "第 27 课 中国特色社会主义的开创与发展",
+      "aliases": [
+        "中国特色社会主义",
+        "开创"
+      ],
+      "conceptSummary": "中国特色社会主义开创与不断发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "改革开放",
+        "中国特色社会主义",
+        "发展"
+      ],
+      "methodModels": [
+        {
+          "name": "中国特色社会主义",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国特色社会主义"
+        }
+      ],
+      "commonConfusions": [
+        "改革开放"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国特色社会主义",
+          "method": "见方法模型",
+          "example": "中国特色社会主义"
+        }
+      ]
+    },
+    {
+      "section": "第2课 西方国家古代和近代政治制度的演变",
+      "aliases": [
+        "西方政治制度",
+        "演变"
+      ],
+      "conceptSummary": "西方古代近代政治制度演变（雅典罗马、代议制）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "古希腊民主",
+        "古罗马",
+        "代议制"
+      ],
+      "methodModels": [
+        {
+          "name": "西方政治",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "西方政治制度演变"
+        }
+      ],
+      "commonConfusions": [
+        "代议制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "西方政治制度演变",
+          "method": "见方法模型",
+          "example": "西方政治制度演变"
+        }
+      ]
+    },
+    {
+      "section": "第5课 古代非洲与美洲",
+      "aliases": [
+        "古代非洲",
+        "古代美洲",
+        "文明"
+      ],
+      "conceptSummary": "古代非洲与美洲文明成就。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "非洲文明",
+        "美洲文明",
+        "玛雅印加"
+      ],
+      "methodModels": [
+        {
+          "name": "非洲美洲",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代非洲美洲"
+        }
+      ],
+      "commonConfusions": [
+        "文明"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代非洲美洲",
+          "method": "见方法模型",
+          "example": "古代非洲美洲"
+        }
+      ]
+    },
+    {
+      "section": "第12课 资本主义世界殖民体系的形成",
+      "aliases": [
+        "殖民体系",
+        "资本主义"
+      ],
+      "conceptSummary": "资本主义世界殖民体系形成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "殖民扩张",
+        "世界殖民体系",
+        "民族危机"
+      ],
+      "methodModels": [
+        {
+          "name": "殖民体系",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "世界殖民体系"
+        }
+      ],
+      "commonConfusions": [
+        "殖民扩张"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "世界殖民体系",
+          "method": "见方法模型",
+          "example": "世界殖民体系"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

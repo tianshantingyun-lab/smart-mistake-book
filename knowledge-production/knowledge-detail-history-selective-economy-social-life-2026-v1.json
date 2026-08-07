@@ -547,6 +547,156 @@
           "example": "食物采集到生产"
         }
       ]
+    },
+    {
+      "section": "第3课 现代食物的生产、储备与食品安全",
+      "aliases": [
+        "食物生产",
+        "食品储备",
+        "食品安全"
+      ],
+      "conceptSummary": "现代食物生产储备与食品安全。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "现代农业",
+        "食品储备",
+        "食品安全"
+      ],
+      "methodModels": [
+        {
+          "name": "食物生产",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "现代食物生产"
+        }
+      ],
+      "commonConfusions": [
+        "食品安全"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "现代食物生产",
+          "method": "见方法模型",
+          "example": "现代食物生产"
+        }
+      ]
+    },
+    {
+      "section": "第7课 古代的商业贸易",
+      "aliases": [
+        "商业",
+        "贸易",
+        "古代商业"
+      ],
+      "conceptSummary": "古代商业贸易发展（丝绸之路、市）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "古代商业",
+        "丝绸之路",
+        "市镇"
+      ],
+      "methodModels": [
+        {
+          "name": "商业贸易",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代商业贸易"
+        }
+      ],
+      "commonConfusions": [
+        "丝绸之路"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代商业贸易",
+          "method": "见方法模型",
+          "example": "古代商业贸易"
+        }
+      ]
+    },
+    {
+      "section": "第7课 近代殖民活动和人口的跨地域转移",
+      "aliases": [
+        "殖民活动",
+        "人口转移"
+      ],
+      "conceptSummary": "近代殖民活动与人口跨地域转移。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "殖民扩张",
+        "人口迁移",
+        "跨地域"
+      ],
+      "methodModels": [
+        {
+          "name": "殖民人口",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "近代殖民与人口"
+        }
+      ],
+      "commonConfusions": [
+        "人口迁移"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "近代殖民与人口",
+          "method": "见方法模型",
+          "example": "近代殖民与人口"
+        }
+      ]
+    },
+    {
+      "section": "第13课 现代战争与不同文化的碰撞和交流",
+      "aliases": [
+        "现代战争",
+        "文化碰撞"
+      ],
+      "conceptSummary": "现代战争与不同文化交流碰撞。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "世界大战",
+        "文化碰撞",
+        "文化交流"
+      ],
+      "methodModels": [
+        {
+          "name": "战争文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "战争与文化"
+        }
+      ],
+      "commonConfusions": [
+        "文化碰撞"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "战争与文化",
+          "method": "见方法模型",
+          "example": "战争与文化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

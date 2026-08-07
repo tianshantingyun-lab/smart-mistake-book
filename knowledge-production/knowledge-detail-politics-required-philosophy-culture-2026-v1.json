@@ -880,6 +880,156 @@
           "example": "质量互变"
         }
       ]
+    },
+    {
+      "section": "哲学的基本问题",
+      "aliases": [
+        "哲学基本问题",
+        "思维存在"
+      ],
+      "conceptSummary": "哲学基本问题：思维与存在的关系（本原+同一性）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "思维与存在",
+        "本原问题",
+        "可知论"
+      ],
+      "methodModels": [
+        {
+          "name": "哲学基本问题",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "哲学基本问题"
+        }
+      ],
+      "commonConfusions": [
+        "思维存在"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "哲学基本问题",
+          "method": "见方法模型",
+          "example": "哲学基本问题"
+        }
+      ]
+    },
+    {
+      "section": "第二课 探究世界的本质",
+      "aliases": [
+        "世界本原",
+        "物质",
+        "意识"
+      ],
+      "conceptSummary": "探究世界本原：物质决定意识。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "物质",
+        "意识",
+        "物质决定意识"
+      ],
+      "methodModels": [
+        {
+          "name": "世界本原",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "探究世界本质"
+        }
+      ],
+      "commonConfusions": [
+        "物质意识"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "探究世界本质",
+          "method": "见方法模型",
+          "example": "探究世界本质"
+        }
+      ]
+    },
+    {
+      "section": "世界是永恒发展的",
+      "aliases": [
+        "发展",
+        "新事物",
+        "质变"
+      ],
+      "conceptSummary": "世界是永恒发展的，发展是新事物代替旧事物。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "发展普遍性",
+        "发展的实质",
+        "量变质变"
+      ],
+      "methodModels": [
+        {
+          "name": "发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "世界是永恒发展的"
+        }
+      ],
+      "commonConfusions": [
+        "发展的实质"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "世界是永恒发展的",
+          "method": "见方法模型",
+          "example": "世界是永恒发展的"
+        }
+      ]
+    },
+    {
+      "section": "弘扬中华优秀传统文化与民族精神",
+      "aliases": [
+        "传统文化",
+        "民族精神"
+      ],
+      "conceptSummary": "弘扬中华优秀传统文化，培育民族精神。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "传统文化",
+        "民族精神",
+        "文化自信"
+      ],
+      "methodModels": [
+        {
+          "name": "传统文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "弘扬传统文化民族精神"
+        }
+      ],
+      "commonConfusions": [
+        "民族精神"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "弘扬传统文化民族精神",
+          "method": "见方法模型",
+          "example": "弘扬传统文化民族精神"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

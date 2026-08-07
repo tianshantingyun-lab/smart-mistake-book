@@ -542,6 +542,228 @@
           "example": "金属防护"
         }
       ]
+    },
+    {
+      "section": "第一节 反应热",
+      "aliases": [
+        "反应热",
+        "焓变"
+      ],
+      "conceptSummary": "反应热与焓变：放热吸热。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "焓变ΔH",
+        "放热吸热",
+        "热化学方程"
+      ],
+      "methodModels": [
+        {
+          "name": "反应热",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "反应热"
+        }
+      ],
+      "commonConfusions": [
+        "焓变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "反应热",
+          "method": "见方法模型",
+          "example": "反应热"
+        }
+      ]
+    },
+    {
+      "section": "第二节 化学平衡",
+      "aliases": [
+        "化学平衡",
+        "平衡常数"
+      ],
+      "conceptSummary": "化学平衡建立、平衡常数与移动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "化学平衡",
+        "平衡常数K",
+        "平衡移动"
+      ],
+      "methodModels": [
+        {
+          "name": "化学平衡",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "化学平衡"
+        }
+      ],
+      "commonConfusions": [
+        "平衡常数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "化学平衡",
+          "method": "见方法模型",
+          "example": "化学平衡"
+        }
+      ]
+    },
+    {
+      "section": "影响化学反应速率的因素",
+      "aliases": [
+        "反应速率",
+        "影响因素"
+      ],
+      "conceptSummary": "影响反应速率因素：浓度温度催化剂。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "浓度",
+        "温度",
+        "催化剂"
+      ],
+      "methodModels": [
+        {
+          "name": "反应速率",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "影响反应速率因素"
+        }
+      ],
+      "commonConfusions": [
+        "影响因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "影响反应速率因素",
+          "method": "见方法模型",
+          "example": "影响反应速率因素"
+        }
+      ]
+    },
+    {
+      "section": "第三节 盐类的水解",
+      "aliases": [
+        "盐类水解",
+        "水解"
+      ],
+      "conceptSummary": "盐类水解影响溶液酸碱性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "盐类水解",
+        "弱离子水解",
+        "酸碱性"
+      ],
+      "methodModels": [
+        {
+          "name": "盐类水解",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "盐类水解"
+        }
+      ],
+      "commonConfusions": [
+        "水解"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "盐类水解",
+          "method": "见方法模型",
+          "example": "盐类水解"
+        }
+      ]
+    },
+    {
+      "section": "第二节 化学品的合理使用",
+      "aliases": [
+        "化学品",
+        "合理使用"
+      ],
+      "conceptSummary": "化学品合理使用与安全。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "化学品",
+        "合理使用",
+        "安全"
+      ],
+      "methodModels": [
+        {
+          "name": "化学品",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "化学品合理使用"
+        }
+      ],
+      "commonConfusions": [
+        "合理使用"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "化学品合理使用",
+          "method": "见方法模型",
+          "example": "化学品合理使用"
+        }
+      ]
+    },
+    {
+      "section": "第三节 环境保护与绿色化学",
+      "aliases": [
+        "绿色化学",
+        "环境保护"
+      ],
+      "conceptSummary": "绿色化学理念与环境保护。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "绿色化学",
+        "原子经济",
+        "环境保护"
+      ],
+      "methodModels": [
+        {
+          "name": "绿色化学",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "绿色化学"
+        }
+      ],
+      "commonConfusions": [
+        "环境保护"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "绿色化学",
+          "method": "见方法模型",
+          "example": "绿色化学"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

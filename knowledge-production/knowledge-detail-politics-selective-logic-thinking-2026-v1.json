@@ -629,6 +629,80 @@
           "example": "学习科学思维"
         }
       ]
+    },
+    {
+      "section": "正确运用复合判断",
+      "aliases": [
+        "复合判断",
+        "联言选言假言"
+      ],
+      "conceptSummary": "复合判断：联言、选言、假言判断。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "联言判断",
+        "选言判断",
+        "假言判断"
+      ],
+      "methodModels": [
+        {
+          "name": "复合判断",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "正确运用复合判断"
+        }
+      ],
+      "commonConfusions": [
+        "假言判断"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正确运用复合判断",
+          "method": "见方法模型",
+          "example": "正确运用复合判断"
+        }
+      ]
+    },
+    {
+      "section": "复合判断的演绎推理方法",
+      "aliases": [
+        "复合推理",
+        "假言推理"
+      ],
+      "conceptSummary": "复合判断演绎推理：假言选言推理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "假言推理",
+        "选言推理",
+        "有效式"
+      ],
+      "methodModels": [
+        {
+          "name": "复合推理",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "复合判断演绎"
+        }
+      ],
+      "commonConfusions": [
+        "假言推理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "复合判断演绎",
+          "method": "见方法模型",
+          "example": "复合判断演绎"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

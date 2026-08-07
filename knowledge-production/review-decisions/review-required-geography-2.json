@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 13,
-  "sectionsApproved": 13,
+  "sectionsTotal": 15,
+  "sectionsApproved": 15,
   "sections": [
     {
       "section": "人口",
@@ -96,6 +96,20 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.111,
       "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第一节 人口分布",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第二节 走向人地协调——可持续发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.667,
       "issues": []
     }
   ]

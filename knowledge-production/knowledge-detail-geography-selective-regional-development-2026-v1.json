@@ -395,6 +395,265 @@
           "example": "产业结构变化"
         }
       ]
+    },
+    {
+      "section": "第一节 区域发展的自然环境基础",
+      "aliases": [
+        "区域自然",
+        "环境基础"
+      ],
+      "conceptSummary": "区域发展的自然环境基础。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自然资源",
+        "环境条件",
+        "区域发展"
+      ],
+      "methodModels": [
+        {
+          "name": "自然环境",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "区域自然环境基础"
+        }
+      ],
+      "commonConfusions": [
+        "区域发展"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "区域自然环境基础",
+          "method": "见方法模型",
+          "example": "区域自然环境基础"
+        }
+      ]
+    },
+    {
+      "section": "第二节 区域整体性和关联性",
+      "aliases": [
+        "区域整体性",
+        "区域关联"
+      ],
+      "conceptSummary": "区域整体性与区域关联。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "区域整体性",
+        "区域差异",
+        "区域关联"
+      ],
+      "methodModels": [
+        {
+          "name": "区域整体性",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "区域整体性关联性"
+        }
+      ],
+      "commonConfusions": [
+        "区域关联"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "区域整体性关联性",
+          "method": "见方法模型",
+          "example": "区域整体性关联性"
+        }
+      ]
+    },
+    {
+      "section": "第一节 流域内协调发展",
+      "aliases": [
+        "流域开发",
+        "流域协调"
+      ],
+      "conceptSummary": "流域内协调开发治理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "流域开发",
+        "上下游",
+        "综合治理"
+      ],
+      "methodModels": [
+        {
+          "name": "流域开发",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "流域内协调发展"
+        }
+      ],
+      "commonConfusions": [
+        "流域协调"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "流域内协调发展",
+          "method": "见方法模型",
+          "example": "流域内协调发展"
+        }
+      ]
+    },
+    {
+      "section": "第二节 生态脆弱区的综合治理",
+      "aliases": [
+        "生态脆弱区",
+        "综合治理"
+      ],
+      "conceptSummary": "生态脆弱区综合治理（水土流失荒漠化）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生态脆弱区",
+        "水土流失",
+        "综合治理"
+      ],
+      "methodModels": [
+        {
+          "name": "生态脆弱区",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "生态脆弱区治理"
+        }
+      ],
+      "commonConfusions": [
+        "水土流失"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "生态脆弱区治理",
+          "method": "见方法模型",
+          "example": "生态脆弱区治理"
+        }
+      ]
+    },
+    {
+      "section": "第三节 产业转移",
+      "aliases": [
+        "产业转移",
+        "产业升级"
+      ],
+      "conceptSummary": "产业转移影响因素与影响。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "产业转移",
+        "转移因素",
+        "转移影响"
+      ],
+      "methodModels": [
+        {
+          "name": "产业转移",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "产业转移"
+        }
+      ],
+      "commonConfusions": [
+        "转移因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "产业转移",
+          "method": "见方法模型",
+          "example": "产业转移"
+        }
+      ]
+    },
+    {
+      "section": "第一节 城市的辐射功能",
+      "aliases": [
+        "城市辐射",
+        "城市群"
+      ],
+      "conceptSummary": "城市辐射功能与城市群发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "城市辐射",
+        "核心城市",
+        "城市群"
+      ],
+      "methodModels": [
+        {
+          "name": "城市辐射",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "城市辐射功能"
+        }
+      ],
+      "commonConfusions": [
+        "城市群"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "城市辐射功能",
+          "method": "见方法模型",
+          "example": "城市辐射功能"
+        }
+      ]
+    },
+    {
+      "section": "第三节 中国国家发展战略举例",
+      "aliases": [
+        "国家战略",
+        "区域战略"
+      ],
+      "conceptSummary": "中国国家发展战略（区域协调、海洋）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "区域协调",
+        "海洋战略",
+        "国家战略"
+      ],
+      "methodModels": [
+        {
+          "name": "国家战略",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国国家发展战略"
+        }
+      ],
+      "commonConfusions": [
+        "区域战略"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国国家发展战略",
+          "method": "见方法模型",
+          "example": "中国国家发展战略"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
