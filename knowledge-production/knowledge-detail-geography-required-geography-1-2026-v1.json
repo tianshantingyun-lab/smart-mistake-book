@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-geography-required-geography-1-2026-v1",
+  "subject": "GEOGRAPHY",
+  "moduleSlug": "required-geography-1",
+  "moduleName": "地理必修1：自然地理",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:geo-ziran-notes",
+      "title": "高中地理基础知识大全（自然地理）",
+      "url": "https://zhuanlan.zhihu.com/p/401394851",
+      "acquisition": "SUCCESS",
+      "note": "图片型素材，正文以截图保留"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "地球的宇宙环境",
+      "aliases": [
+        "天体系统",
+        "太阳系",
+        "地球",
+        "自转公转"
+      ],
+      "conceptSummary": "地球是太阳系中的行星，天体系统由大到小：银河系-太阳系-地月系；地球自转产生昼夜交替。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "天体系统层次：总星系-银河系-太阳系-地月系",
+        "八大行星：类地行星（水金地火）+巨行星等",
+        "地球生命条件：日地距离适中、体积质量适中",
+        "自转周期约24小时，产生昼夜交替与时差",
+        "公转产生四季与五带"
+      ],
+      "methodModels": [
+        {
+          "name": "地球运动分析",
+          "steps": [
+            "自转→昼夜/时差",
+            "公转→四季/五带",
+            "结合太阳直射点移动"
+          ],
+          "example": "春分秋分太阳直射赤道"
+        }
+      ],
+      "commonConfusions": [
+        "昼夜交替是自转，四季是公转",
+        "恒星日与太阳日区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地球运动规律",
+          "method": "自转+公转分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "大气与天气气候",
+      "aliases": [
+        "大气受热",
+        "气压带风带",
+        "天气系统",
+        "气候"
+      ],
+      "conceptSummary": "大气受热过程（太阳辐射-地面辐射-大气逆辐射）；三圈环流形成气压带风带；锋面/气旋等天气系统。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "大气受热：太阳暖大地→大地暖大气→大气还大地",
+        "三圈环流：低纬/中纬/高纬环流",
+        "七个气压带六个风带（南北对称）",
+        "锋面系统：冷锋/暖锋/准静止锋",
+        "气旋（低压）与反气旋（高压）"
+      ],
+      "methodModels": [
+        {
+          "name": "气候类型判断",
+          "steps": [
+            "看气温曲线定温度带",
+            "看降水柱状定干湿"
+          ],
+          "example": "全年高温多雨→热带雨林气候"
+        },
+        {
+          "name": "天气系统分析",
+          "steps": [
+            "冷锋过境：阴雨降温大风",
+            "暖锋过境：连续性降水升温"
+          ],
+          "example": "寒潮是冷锋天气"
+        }
+      ],
+      "commonConfusions": [
+        "大气逆辐射保温作用（温室效应）",
+        "热力环流是大气运动最简单形式"
+      ],
+      "prerequisiteRelations": [
+        "需掌握地球运动"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气候成因分析",
+          "method": "气压带风带+海陆位置",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "水循环与洋流",
+      "aliases": [
+        "水循环",
+        "洋流",
+        "径流"
+      ],
+      "conceptSummary": "水循环（蒸发-降水-径流）维持水量平衡；洋流影响气候与海洋生物分布。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "水循环类型：海陆间/陆地内/海上内循环",
+        "洋流：暖流增温增湿、寒流降温减湿",
+        "世界大洋环流：低纬反气旋型、高纬气旋型",
+        "渔场：寒暖流交汇（北海/北海道/纽芬兰）"
+      ],
+      "methodModels": [
+        {
+          "name": "洋流对气候影响",
+          "steps": [
+            "暖流→增温增湿",
+            "寒流→降温减湿"
+          ],
+          "example": "西欧温带海洋性气候受北大西洋暖流影响"
+        }
+      ],
+      "commonConfusions": [
+        "秘鲁渔场是上升流（非寒暖流交汇）",
+        "水循环各环节"
+      ],
+      "prerequisiteRelations": [
+        "需掌握大气"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "洋流分布与影响",
+          "method": "环流模式+影响",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "地表形态与地貌",
+      "aliases": [
+        "内力作用",
+        "外力作用",
+        "地貌"
+      ],
+      "conceptSummary": "内力作用（地壳运动/岩浆活动/变质作用）塑造基本轮廓，外力作用（风化侵蚀搬运堆积）改造地表。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "板块构造：板块碰撞/张裂形成山脉/裂谷",
+        "褶皱（背斜向斜）与断层",
+        "外力地貌：流水侵蚀（峡谷）、风力（沙丘）",
+        "流水堆积（冲积扇/三角洲）、风力堆积（黄土）"
+      ],
+      "methodModels": [
+        {
+          "name": "地貌成因分析",
+          "steps": [
+            "判断内/外力主导",
+            "具体作用类型"
+          ],
+          "example": "长江三峡是流水侵蚀（外力）"
+        }
+      ],
+      "commonConfusions": [
+        "背斜成谷向斜成山是外力侵蚀结果",
+        "雅丹地貌风力侵蚀、丹霞流水"
+      ],
+      "prerequisiteRelations": [
+        "需掌握地质作用"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地貌类型判断",
+          "method": "内外力作用分析",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "地球运动",
+      "solutionMethod": "自转公转规律",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "气候类型判断",
+      "solutionMethod": "气温降水组合",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "洋流与渔场",
+      "solutionMethod": "环流模式+影响",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "地貌成因",
+      "solutionMethod": "内外力作用",
+      "difficulty": "中档"
+    }
+  ]
+}

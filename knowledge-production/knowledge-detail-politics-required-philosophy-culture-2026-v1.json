@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-politics-required-philosophy-culture-2026-v1",
+  "subject": "POLITICS",
+  "moduleSlug": "required-philosophy-culture",
+  "moduleName": "思想政治必修4：哲学与文化",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:pol-zhexue-notes",
+      "title": "部编教材高中政治必修4《哲学与文化》知识点全覆盖",
+      "url": "https://zhuanlan.zhihu.com/p/396030561",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "第一课 时代精神的精华（哲学概述）",
+      "aliases": [
+        "哲学",
+        "世界观",
+        "哲学基本问题"
+      ],
+      "conceptSummary": "哲学是系统化理论化的世界观，源于对人类实践的追问；哲学基本问题是思维与存在的关系问题。",
+      "evidenceSources": [
+        "zhihu:pol-zhexue-notes"
+      ],
+      "properties": [
+        "哲学智慧产生于人类实践活动",
+        "哲学是现世的智慧、文化的活的灵魂",
+        "哲学基本问题：思维与存在谁是本原（划分唯物主义/唯心主义）",
+        "真正的哲学是时代精神的精华"
+      ],
+      "methodModels": [
+        {
+          "name": "区分唯物主义与唯心主义",
+          "steps": [
+            "判断谁是世界本原",
+            "物质→唯物主义，意识→唯心主义"
+          ],
+          "example": "'物质决定意识'唯物主义，'意识决定物质'唯心主义"
+        }
+      ],
+      "commonConfusions": [
+        "哲学不等于真正的哲学",
+        "哲学与世界观的关系：哲学是系统化理论化的世界观"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "哲学派别判断",
+          "method": "本原判断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "唯物论（探索世界）",
+      "aliases": [
+        "物质",
+        "意识",
+        "规律",
+        "主观能动性"
+      ],
+      "conceptSummary": "物质决定意识，意识是对物质的反映且具有能动作用；规律具有客观性，人可认识和利用规律。",
+      "evidenceSources": [
+        "zhihu:pol-zhexue-notes"
+      ],
+      "properties": [
+        "物质决定意识，意识反作用于物质",
+        "意识具有目的性、自觉选择性和能动创造性",
+        "规律客观性：不以人意志为转移",
+        "尊重规律与发挥主观能动性相结合"
+      ],
+      "methodModels": [
+        {
+          "name": "唯物论分析题",
+          "steps": [
+            "点物质决定意识",
+            "点意识能动作用",
+            "结合材料分析"
+          ],
+          "example": "从实际出发，实事求是"
+        }
+      ],
+      "commonConfusions": [
+        "规律不能创造/改变/消灭，只能利用",
+        "意识不能直接改造客观世界（需通过实践）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握哲学基本问题"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质与意识关系",
+          "method": "物质决定+意识反作用",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "辩证法（把握世界）",
+      "aliases": [
+        "联系",
+        "发展",
+        "矛盾",
+        "量变质变"
+      ],
+      "conceptSummary": "世界是普遍联系的、永恒发展的；矛盾是事物发展的根本动力，矛盾具有普遍性和特殊性。",
+      "evidenceSources": [
+        "zhihu:pol-zhexue-notes"
+      ],
+      "properties": [
+        "联系普遍性/客观性/多样性",
+        "发展是前进的、上升的运动，量变到质变",
+        "矛盾普遍性（事事有矛盾时时有矛盾）与特殊性（具体问题具体分析）",
+        "主要矛盾与次要矛盾、矛盾主次方面",
+        "否定之否定：辩证否定是扬弃"
+      ],
+      "methodModels": [
+        {
+          "name": "矛盾分析法",
+          "steps": [
+            "一分为二看问题",
+            "抓主要矛盾/矛盾主要方面",
+            "具体问题具体分析"
+          ],
+          "example": "分析利弊抓主流"
+        },
+        {
+          "name": "量变质变分析",
+          "steps": [
+            "注意量的积累",
+            "抓住时机促成飞跃"
+          ],
+          "example": "积少成多，把握时机"
+        }
+      ],
+      "commonConfusions": [
+        "联系具有客观性（人为联系也基于客观）",
+        "矛盾双方相互转化是有条件的"
+      ],
+      "prerequisiteRelations": [
+        "需掌握唯物论"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "辩证法原理运用",
+          "method": "联系/发展/矛盾原理+材料",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "认识论（实践与认识）",
+      "aliases": [
+        "实践",
+        "认识",
+        "真理"
+      ],
+      "conceptSummary": "实践是认识的来源、动力、检验标准和目的；真理是客观的，实践是检验真理的唯一标准。",
+      "evidenceSources": [
+        "zhihu:pol-zhexue-notes"
+      ],
+      "properties": [
+        "实践决定认识（来源/动力/标准/目的）",
+        "认识对实践有反作用",
+        "真理是具体的、有条件的",
+        "实践是检验真理的唯一标准"
+      ],
+      "methodModels": [
+        {
+          "name": "认识论分析",
+          "steps": [
+            "点实践决定认识",
+            "点认识反作用",
+            "结合材料"
+          ],
+          "example": "从实践到认识再回到实践"
+        }
+      ],
+      "commonConfusions": [
+        "实践是认识的基础（不是来源就是全部）",
+        "真理只有一个，谬误是真理的对立面"
+      ],
+      "prerequisiteRelations": [
+        "需掌握唯物论"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "实践与认识关系",
+          "method": "实践决定+认识反作用",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "哲学派别判断",
+      "solutionMethod": "本原判断",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "唯物论材料分析",
+      "solutionMethod": "物质决定+意识作用",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "辩证法原理运用",
+      "solutionMethod": "联系/发展/矛盾",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "认识论分析",
+      "solutionMethod": "实践决定认识",
+      "difficulty": "常考"
+    }
+  ]
+}

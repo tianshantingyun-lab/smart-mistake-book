@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-history-required-chinese-world-history-outline-2026-v1",
+  "subject": "HISTORY",
+  "moduleSlug": "required-chinese-world-history-outline",
+  "moduleName": "历史必修：中外历史纲要",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:his-gangyao-notes",
+      "title": "新人教《中外历史纲要上》知识梳理",
+      "url": "https://zhuanlan.zhihu.com/p/714850499",
+      "acquisition": "SUCCESS",
+      "note": "图片型素材，正文以截图保留"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "中华文明起源与早期国家",
+      "aliases": [
+        "先秦",
+        "夏商周",
+        "分封制",
+        "宗法制"
+      ],
+      "conceptSummary": "中华文明多元一体；夏朝第一个奴隶制国家；商周实行分封制与宗法制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "夏朝：世袭制取代禅让制",
+        "商朝：内外服制度，甲骨文",
+        "西周：分封制（授民授疆土）+宗法制（嫡长子继承）",
+        "井田制：土地国有"
+      ],
+      "methodModels": [
+        {
+          "name": "分封宗法分析",
+          "steps": [
+            "分封制：天子-诸侯-卿大夫-士",
+            "宗法制：嫡长子继承为核心"
+          ],
+          "example": "分封制巩固统治但后期导致割据"
+        }
+      ],
+      "commonConfusions": [
+        "分封制与宗法制关系：互为表里",
+        "郡县制与分封制区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "先秦政治制度",
+          "method": "分封+宗法+井田",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "秦统一多民族封建国家",
+      "aliases": [
+        "秦朝",
+        "郡县制",
+        "中央集权",
+        "大一统"
+      ],
+      "conceptSummary": "秦灭六国建立第一个统一多民族封建国家，确立专制主义中央集权制度。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "郡县制：地方行政，长官皇帝任免",
+        "皇帝制度、三公九卿制",
+        "统一文字/货币/度量衡/车轨",
+        "修驰道、筑长城"
+      ],
+      "methodModels": [
+        {
+          "name": "中央集权制度分析",
+          "steps": [
+            "中央：皇帝+三公九卿",
+            "地方：郡县制"
+          ],
+          "example": "郡县制加强中央对地方控制"
+        }
+      ],
+      "commonConfusions": [
+        "郡县制取代分封制是官僚政治取代贵族政治",
+        "秦亡主因暴政非制度"
+      ],
+      "prerequisiteRelations": [
+        "需掌握先秦制度"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "秦朝制度创新",
+          "method": "中央集权体系",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "统一多民族国家的巩固与发展",
+      "aliases": [
+        "汉朝",
+        "唐朝",
+        "民族融合",
+        "丝绸之路"
+      ],
+      "conceptSummary": "汉唐时期统一多民族国家巩固发展，丝绸之路促进中外交流，民族融合加强。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "西汉：文景之治、汉武帝大一统、张骞通西域",
+        "丝绸之路：长安-西域-中亚-欧洲",
+        "唐朝：贞观之治、开元盛世、民族政策开明",
+        "安史之乱后藩镇割据"
+      ],
+      "methodModels": [
+        {
+          "name": "汉唐盛世分析",
+          "steps": [
+            "政治：中央集权巩固",
+            "经济：农业商业发展",
+            "对外：丝路交流"
+          ],
+          "example": "唐朝开放包容促成盛世"
+        }
+      ],
+      "commonConfusions": [
+        "丝绸之路既有商贸也有文化交流",
+        "唐朝民族政策（和亲/册封/设置机构）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握秦朝制度"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "汉唐巩固统一",
+          "method": "政治+经济+民族+对外",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "辽宋夏金元多民族政权并立",
+      "aliases": [
+        "两宋",
+        "辽金夏",
+        "经济重心南移",
+        "元朝"
+      ],
+      "conceptSummary": "宋辽夏金并立到元朝统一；经济重心南移完成；元朝行省制度影响深远。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "北宋：重文轻武、经济重心南移完成",
+        "行省制（元朝）：地方行政制度影响至今",
+        "元朝：民族融合、回族的形成",
+        "棉纺织业、海上丝绸之路繁荣"
+      ],
+      "methodModels": [
+        {
+          "name": "经济重心南移",
+          "steps": [
+            "过程：魏晋南北朝-隋唐-两宋完成",
+            "原因：北民南迁带来劳动力技术"
+          ],
+          "example": "南宋'苏湖熟天下足'"
+        }
+      ],
+      "commonConfusions": [
+        "经济重心南移与政治重心分离",
+        "行省制与郡县制比较"
+      ],
+      "prerequisiteRelations": [
+        "需掌握汉唐制度"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "宋元时期特点",
+          "method": "政治+经济+民族",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "先秦政治制度",
+      "solutionMethod": "分封宗法比较",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "秦朝中央集权",
+      "solutionMethod": "郡县制分析",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "汉唐盛世与丝路",
+      "solutionMethod": "政治经济对外综合分析",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "宋元行省与经济南移",
+      "solutionMethod": "制度创新+经济重心",
+      "difficulty": "中档"
+    }
+  ]
+}
