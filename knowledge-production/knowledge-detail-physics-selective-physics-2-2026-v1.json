@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-physics-selective-physics-2-2026-v1",
+  "subject": "PHYSICS",
+  "moduleSlug": "selective-physics-2",
+  "moduleName": "物理选择性必修2（电磁感应/交变电流）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:phy-dianci-notes",
+      "title": "高中物理知识点梳理——电磁感应",
+      "url": "https://zhuanlan.zhihu.com/p/653555881",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "电磁感应",
+      "aliases": [
+        "法拉第定律",
+        "楞次定律",
+        "感应电动势"
+      ],
+      "conceptSummary": "穿过闭合回路的磁通量变化产生感应电流；楞次定律判断感应电流方向（阻碍磁通量变化）；法拉第定律 E=nΔΦ/Δt。",
+      "evidenceSources": [
+        "zhihu:phy-dianci-notes"
+      ],
+      "properties": [
+        "感应电流条件：闭合回路+磁通量变化",
+        "楞次定律：增反减同、来拒去留",
+        "法拉第电磁感应定律：E=nΔΦ/Δt",
+        "动生电动势：E=BLv（切割磁感线）",
+        "自感现象：电流变化引起自感电动势"
+      ],
+      "methodModels": [
+        {
+          "name": "感应电流方向判断",
+          "steps": [
+            "楞次定律：判断原磁通方向与变化",
+            "增反减同定感应磁场",
+            "右手螺旋定感应电流"
+          ],
+          "example": "磁铁插入线圈，感应电流阻碍插入"
+        },
+        {
+          "name": "感应电动势计算",
+          "steps": [
+            "磁通变化型 E=nΔΦ/Δt",
+            "切割型 E=BLv"
+          ],
+          "example": "B=0.5T,L=0.2m,v=4m/s，E=0.4V"
+        }
+      ],
+      "commonConfusions": [
+        "楞次定律与右手定则适用场景",
+        "Φ、ΔΦ、ΔΦ/Δt 三个量区分",
+        "自感电动势方向"
+      ],
+      "prerequisiteRelations": [
+        "需掌握磁场"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "感应电动势与电流",
+          "method": "法拉第+楞次",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "交变电流",
+      "aliases": [
+        "交流电",
+        "有效值",
+        "变压器",
+        "正弦交流"
+      ],
+      "conceptSummary": "正弦交变电流按正弦规律变化；有效值等于峰值的 1/√2；变压器利用互感改变电压。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "正弦交流：e=Emsin(ωt)",
+        "有效值：I=Im/√2，U=Um/√2",
+        "周期频率：f=ω/2π",
+        "变压器：U1/U2=n1/n2，P1=P2",
+        "远距离输电：升压降压减少损耗"
+      ],
+      "methodModels": [
+        {
+          "name": "变压器分析",
+          "steps": [
+            "电压比=匝数比",
+            "功率守恒求电流"
+          ],
+          "example": "n1:n2=10:1，U1=220V 则 U2=22V"
+        },
+        {
+          "name": "有效值计算",
+          "steps": [
+            "正弦交流：峰值/√2",
+            "非正弦：按焦耳热等效"
+          ],
+          "example": "峰值311V 有效值220V"
+        }
+      ],
+      "commonConfusions": [
+        "有效值定义（热等效）",
+        "变压器不改变频率",
+        "副线圈多个时电流关系"
+      ],
+      "prerequisiteRelations": [
+        "需掌握电磁感应"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "变压器计算",
+          "method": "匝数比+功率守恒",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "感应电流方向",
+      "solutionMethod": "楞次定律",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "感应电动势计算",
+      "solutionMethod": "法拉第/切割",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "变压器与输电",
+      "solutionMethod": "匝数比+功率",
+      "difficulty": "常考"
+    }
+  ]
+}

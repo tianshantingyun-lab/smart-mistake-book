@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-biology-required-genetics-evolution-2026-v1",
+  "subject": "BIOLOGY",
+  "moduleSlug": "required-genetics-evolution",
+  "moduleName": "生物必修2：遗传与进化",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:bio-mengdeer-notes",
+      "title": "高中生物孟德尔遗传定律知识点笔记",
+      "url": "https://zhuanlan.zhihu.com/p/1941973239829070001",
+      "acquisition": "SUCCESS",
+      "note": "图片型素材，正文以截图保留"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "减数分裂与受精作用",
+      "aliases": [
+        "减数分裂",
+        "同源染色体",
+        "受精"
+      ],
+      "conceptSummary": "减数分裂产生染色体减半的配子，受精作用恢复染色体数，维持遗传稳定性并增加变异。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "减数分裂：一次DNA复制两次分裂，染色体数减半",
+        "同源染色体：配对（联会）发生交叉互换",
+        "减Ⅰ：同源分离，减Ⅱ：姐妹染色单体分离",
+        "受精：精卵结合恢复 2n",
+        "意义：遗传稳定+基因重组变异"
+      ],
+      "methodModels": [
+        {
+          "name": "分裂时期判断",
+          "steps": [
+            "看有无同源染色体",
+            "看同源是否分离"
+          ],
+          "example": "同源分离→减Ⅰ后期"
+        }
+      ],
+      "commonConfusions": [
+        "减数与有丝分裂图像区分",
+        "交叉互换发生在减Ⅰ前期"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞分裂"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分裂图像识别",
+          "method": "同源染色体判断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "孟德尔遗传定律",
+      "aliases": [
+        "分离定律",
+        "自由组合定律",
+        "基因型",
+        "表现型"
+      ],
+      "conceptSummary": "分离定律：等位基因在配子形成时分离；自由组合定律：非同源染色体上的非等位基因自由组合。",
+      "evidenceSources": [
+        "zhihu:bio-mengdeer-notes"
+      ],
+      "properties": [
+        "分离定律：Aa→A、a 各 1/2，后代 3:1",
+        "自由组合定律：AaBb→4种配子，后代 9:3:3:1",
+        "基因型决定表现型，环境也影响",
+        "测交：Aa×aa→1:1 验证基因型",
+        "孟德尔实验方法：假说-演绎法"
+      ],
+      "methodModels": [
+        {
+          "name": "分离定律计算",
+          "steps": [
+            "写基因型",
+            "列配子",
+            "棋盘法/公式"
+          ],
+          "example": "Aa×Aa→AA:Aa:aa=1:2:1"
+        },
+        {
+          "name": "自由组合计算",
+          "steps": [
+            "分开两对基因",
+            "各自比例",
+            "相乘"
+          ],
+          "example": "AaBb×AaBb→9:3:3:1"
+        }
+      ],
+      "commonConfusions": [
+        "9:3:3:1 的变形（9:7, 15:1 等）",
+        "测交与自交区别",
+        "假说演绎法步骤"
+      ],
+      "prerequisiteRelations": [
+        "需掌握减数分裂"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "遗传概率计算",
+          "method": "配子法/棋盘法",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "基因的表达与变异",
+      "aliases": [
+        "DNA复制",
+        "转录翻译",
+        "基因突变",
+        "染色体变异"
+      ],
+      "conceptSummary": "DNA 半保留复制；基因表达：转录（DNA→RNA）+翻译（RNA→蛋白质）；基因突变、染色体变异是变异来源。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "DNA复制：半保留、边解旋边复制",
+        "中心法则：DNA→RNA→蛋白质",
+        "转录：DNA→mRNA（核内）",
+        "翻译：mRNA→蛋白质（核糖体）",
+        "基因突变：碱基替换/增添/缺失",
+        "染色体变异：数目/结构变异"
+      ],
+      "methodModels": [
+        {
+          "name": "转录翻译过程",
+          "steps": [
+            "DNA模板转录",
+            "mRNA到核糖体",
+            "tRNA搬运氨基酸"
+          ],
+          "example": "密码子决定氨基酸"
+        },
+        {
+          "name": "变异类型判断",
+          "steps": [
+            "碱基变化→基因突变",
+            "染色体片段变化→结构变异",
+            "染色体条数→数目变异"
+          ],
+          "example": "缺失一条21号→21三体综合征"
+        }
+      ],
+      "commonConfusions": [
+        "基因突变不定向但可遗传",
+        "转录翻译场所（核内/细胞质）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握遗传定律"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中心法则与变异",
+          "method": "过程+类型",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "进化与生物多样性",
+      "aliases": [
+        "自然选择",
+        "基因频率",
+        "物种形成",
+        "隔离"
+      ],
+      "conceptSummary": "进化的实质是种群基因频率的改变；自然选择决定进化方向；隔离是物种形成的必要条件。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "种群是进化的基本单位",
+        "基因频率：等位基因在种群中的比例",
+        "突变和基因重组产生进化的原材料",
+        "自然选择决定进化方向",
+        "隔离（生殖隔离）是物种形成标志"
+      ],
+      "methodModels": [
+        {
+          "name": "基因频率计算",
+          "steps": [
+            "统计等位基因数",
+            "除以总数"
+          ],
+          "example": "AA:Aa:aa=50:30:20，A频率=65%"
+        }
+      ],
+      "commonConfusions": [
+        "进化方向由自然选择决定（变异不定向）",
+        "物种形成需隔离"
+      ],
+      "prerequisiteRelations": [
+        "需掌握遗传变异"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因频率与进化",
+          "method": "频率计算",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "减数分裂图像",
+      "solutionMethod": "同源染色体判断",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "遗传概率计算",
+      "solutionMethod": "配子法/棋盘",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "中心法则",
+      "solutionMethod": "转录翻译过程",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "进化与基因频率",
+      "solutionMethod": "频率计算",
+      "difficulty": "中档"
+    }
+  ]
+}

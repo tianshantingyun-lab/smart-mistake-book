@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-selective-organic-foundations-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "selective-organic-foundations",
+  "moduleName": "化学选择性必修3：有机化学基础",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:chem-youji-notes",
+      "title": "高中化学有机化学知识点总结",
+      "url": "https://zhuanlan.zhihu.com/p/1953458269956846708",
+      "acquisition": "SUCCESS",
+      "note": "图片型素材，正文以截图保留"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "有机化合物概述",
+      "aliases": [
+        "有机物",
+        "官能团",
+        "同分异构",
+        "命名"
+      ],
+      "conceptSummary": "有机化合物以碳为主，含 C、H、O、N 等；官能团决定化学性质；同分异构体分子式相同结构不同。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "有机物特点：种类多、熔沸点低、易燃、反应慢",
+        "官能团：羟基-OH、醛基-CHO、羧基-COOH、酯基",
+        "同分异构：碳链异构/位置异构/官能团异构",
+        "系统命名：最长碳链+编号"
+      ],
+      "methodModels": [
+        {
+          "name": "官能团识别",
+          "steps": [
+            "找特征原子团",
+            "判断类别"
+          ],
+          "example": "含-COOH 是羧酸"
+        },
+        {
+          "name": "同分异构数",
+          "steps": [
+            "先碳链异构",
+            "再位置异构"
+          ],
+          "example": "C4H10 有 2 种结构（正丁烷/异丁烷）"
+        }
+      ],
+      "commonConfusions": [
+        "官能团决定性质（不是碳骨架）",
+        "同分异构与同系物区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "官能团/异构判断",
+          "method": "结构分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "烃类化合物",
+      "aliases": [
+        "烷烃",
+        "烯烃",
+        "炔烃",
+        "苯"
+      ],
+      "conceptSummary": "烃只含 C、H：烷烃饱和、烯烃含双键、炔烃含三键、苯是芳香烃。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "烷烃：CnH2n+2，取代反应",
+        "烯烃：CnH2n，加成反应（溴水褪色）",
+        "炔烃：CnH2n-2，加成",
+        "苯：CnH2n-6，易取代难加成（凯库勒式）",
+        "甲烷取代、乙烯加成、苯的硝化"
+      ],
+      "methodModels": [
+        {
+          "name": "烷烃命名",
+          "steps": [
+            "找最长链",
+            "编号（近端最小）",
+            "写取代基"
+          ],
+          "example": "2-甲基丙烷"
+        },
+        {
+          "name": "性质判断",
+          "steps": [
+            "看官能团（双键/三键加成）",
+            "烷烃取代"
+          ],
+          "example": "乙烯使溴水褪色是加成"
+        }
+      ],
+      "commonConfusions": [
+        "苯的加成与取代条件",
+        "烯烃加成产物顺反异构"
+      ],
+      "prerequisiteRelations": [
+        "需掌握有机物概述"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "烃的性质",
+          "method": "官能团决定",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "含氧有机物（醇醛酸酯）",
+      "aliases": [
+        "乙醇",
+        "乙酸",
+        "醛",
+        "酯",
+        "官能团转化"
+      ],
+      "conceptSummary": "醇（-OH）、醛（-CHO）、羧酸（-COOH）、酯（-COO-）之间的转化是核心：醇氧化→醛→羧酸，酸醇酯化→酯。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "乙醇：与Na反应、催化氧化成乙醛",
+        "乙醛：银镜反应、被氧化成乙酸",
+        "乙酸：酸性、酯化反应（浓硫酸催化）",
+        "酯化：酸+醇→酯+水，可逆",
+        "官能团转化链：醇→醛→羧酸→酯"
+      ],
+      "methodModels": [
+        {
+          "name": "有机合成路线",
+          "steps": [
+            "确定目标官能团",
+            "找转化反应",
+            "设计路线"
+          ],
+          "example": "乙烯→乙醇→乙醛→乙酸→乙酸乙酯"
+        },
+        {
+          "name": "官能团性质",
+          "steps": [
+            "看官能团定反应类型"
+          ],
+          "example": "醛基有还原性（银镜）"
+        }
+      ],
+      "commonConfusions": [
+        "酯化反应条件与可逆性",
+        "醛氧化成酸需强氧化剂"
+      ],
+      "prerequisiteRelations": [
+        "需掌握烃类"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "官能团转化",
+          "method": "氧化/酯化路线",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "官能团识别与性质",
+      "solutionMethod": "官能团决定",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "同分异构数",
+      "solutionMethod": "碳链+位置异构",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "有机合成路线",
+      "solutionMethod": "官能团转化",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "烃类性质判断",
+      "solutionMethod": "烷烯炔苯特性",
+      "difficulty": "常考"
+    }
+  ]
+}

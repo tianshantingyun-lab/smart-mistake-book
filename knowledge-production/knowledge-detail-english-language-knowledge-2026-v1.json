@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-english-language-knowledge-2026-v1",
+  "subject": "ENGLISH",
+  "moduleSlug": "language-knowledge",
+  "moduleName": "英语：语言知识（时态/从句/非谓语/虚拟语气）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:en-cihui-3500",
+      "title": "高考3500核心词汇（按词性高频分类）",
+      "url": "https://zhuanlan.zhihu.com/p/2065018567762916621",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "动词时态",
+      "aliases": [
+        "时态",
+        "现在时",
+        "过去时",
+        "完成时"
+      ],
+      "conceptSummary": "英语有16种时态，核心是'时'（现在/过去/将来/过去将来）与'态'（一般/进行/完成/完成进行）组合；高中重点掌握一般现在/过去、现在完成、过去完成、将来时等。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "一般现在时：习惯/真理/频度",
+        "现在完成时：have/has done，与过去有关联",
+        "过去完成时：had done，过去的过去",
+        "现在完成进行时：have been doing，持续到现在的动作",
+        "时态呼应：主从复合句时态一致"
+      ],
+      "methodModels": [
+        {
+          "name": "时态判断",
+          "steps": [
+            "找时间状语（for/since/yet/just）",
+            "判断动作与现在的关系",
+            "选时态"
+          ],
+          "example": "since 2000 用现在完成时"
+        },
+        {
+          "name": "一般过去 vs 现在完成",
+          "steps": [
+            "过去时：过去动作与现在无关",
+            "完成时：与现在有关联"
+          ],
+          "example": "I lost my key.（丢了）vs I have lost my key.（现在找不到）"
+        }
+      ],
+      "commonConfusions": [
+        "since/for 用完成时",
+        "already/yet/just 常配完成时",
+        "瞬间动词与段时间搭配（die→be dead）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "时态选择",
+          "method": "时间状语+语境",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "定语从句",
+      "aliases": [
+        "定语从句",
+        "关系代词",
+        "关系副词",
+        "先行词"
+      ],
+      "conceptSummary": "定语从句修饰先行词，用关系代词（who/which/that/whose）或关系副词（when/where/why）引导。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "先行词是人在从句作主语用 who/that",
+        "先行词是物用 which/that",
+        "whose 表所属",
+        "where 表地点、when 表时间、why 表原因",
+        "非限制性定语从句用 which（不用 that）"
+      ],
+      "methodModels": [
+        {
+          "name": "关系词选择",
+          "steps": [
+            "看先行词是人还是物",
+            "看从句缺什么成分",
+            "选关系词"
+          ],
+          "example": "The book which I bought is new."
+        },
+        {
+          "name": "介词+关系代词",
+          "steps": [
+            "看动词固定搭配介词",
+            "介词+which/whom"
+          ],
+          "example": "The house in which I live"
+        }
+      ],
+      "commonConfusions": [
+        "that 与 which 不能互换的非限制性从句",
+        "as 引导定语从句",
+        "关系词在从句中作宾语可省略"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "关系词选择",
+          "method": "先行词+成分",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "非谓语动词",
+      "aliases": [
+        "不定式",
+        "动名词",
+        "现在分词",
+        "过去分词"
+      ],
+      "conceptSummary": "非谓语动词包括不定式（to do）、动名词（doing）、分词（doing/done），在句中作非谓语成分。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "不定式：表目的/将来，固定搭配 want/hope/decide to do",
+        "动名词：作主语/宾语，enjoy/finish/practice doing",
+        "现在分词：表主动进行，作伴随/定语",
+        "过去分词：表被动完成",
+        "独立主格：with+宾语+宾补"
+      ],
+      "methodModels": [
+        {
+          "name": "非谓语选择",
+          "steps": [
+            "判断是否作谓语",
+            "判断主动被动",
+            "判断进行/完成"
+          ],
+          "example": "The boy running is my brother.（主动进行）"
+        },
+        {
+          "name": "固定搭配记忆",
+          "steps": [
+            "to do：want/decide/hope",
+            "doing：enjoy/finish/avoid"
+          ],
+          "example": "I enjoy reading."
+        }
+      ],
+      "commonConfusions": [
+        "不定式与动名词作宾语区别（remember to do/doing）",
+        "分词逻辑主语要与主句一致"
+      ],
+      "prerequisiteRelations": [
+        "需掌握谓语动词"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "非谓语填空",
+          "method": "主被动+时态",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "虚拟语气",
+      "aliases": [
+        "虚拟语气",
+        "if条件句",
+        "wish"
+      ],
+      "conceptSummary": "虚拟语气表示与事实相反的假设，if 条件句有与现在/过去/将来事实相反的三种基本结构。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "与现在相反：if+did, would+do",
+        "与过去相反：if+had done, would+have done",
+        "与将来相反：if+were to/should+do",
+        "wish+过去时/过去完成时",
+        "it is time that+过去时"
+      ],
+      "methodModels": [
+        {
+          "name": "if条件句虚拟",
+          "steps": [
+            "判断时间（现在/过去/将来）",
+            "套对应结构"
+          ],
+          "example": "If I were you, I would go."
+        },
+        {
+          "name": "倒装虚拟",
+          "steps": [
+            "if 省略倒装",
+            "were/had/should 提前"
+          ],
+          "example": "Had I known, I would have come."
+        }
+      ],
+      "commonConfusions": [
+        "与现在事实相反用 were（不用 was）",
+        "错综时间条件句主从句时态不同"
+      ],
+      "prerequisiteRelations": [
+        "需掌握时态"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "虚拟语气填空",
+          "method": "时间判断+结构",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "时态选择",
+      "solutionMethod": "时间状语+语境",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "定语从句关系词",
+      "solutionMethod": "先行词+从句成分",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "非谓语动词",
+      "solutionMethod": "主被动+固定搭配",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "虚拟语气",
+      "solutionMethod": "时间+基本结构",
+      "difficulty": "常考"
+    }
+  ]
+}
