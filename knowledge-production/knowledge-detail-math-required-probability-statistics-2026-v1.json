@@ -220,6 +220,94 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "统计（样本估计与数字特征）",
+      "aliases": [
+        "均值",
+        "方差",
+        "频率分布",
+        "茎叶图"
+      ],
+      "conceptSummary": "用样本估计总体：频率分布直方图、平均数、方差；样本均值估计总体均值。",
+      "evidenceSources": [
+        "zhihu:suiji-bianliang-notes"
+      ],
+      "properties": [
+        "平均数 x̄=(x1+...+xn)/n",
+        "方差 s²=(1/n)Σ(xi-x̄)²",
+        "标准差=√s²",
+        "频率分布直方图面积=频率",
+        "茎叶图/散点图表示"
+      ],
+      "methodModels": [
+        {
+          "name": "数字特征计算",
+          "steps": [
+            "算均值",
+            "算方差",
+            "比较离散程度"
+          ],
+          "example": "两组数据方差小者更稳定"
+        }
+      ],
+      "commonConfusions": [
+        "样本与总体统计量符号",
+        "方差是平方量纲"
+      ],
+      "prerequisiteRelations": [
+        "需掌握抽样"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "样本数字特征",
+          "method": "均值方差公式",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "随机事件的关系与概率性质",
+      "aliases": [
+        "互斥",
+        "对立",
+        "概率性质",
+        "加法公式"
+      ],
+      "conceptSummary": "互斥事件不能同时发生，对立事件必有一个发生；P(A∪B)=P(A)+P(B)-P(AB)。",
+      "evidenceSources": [
+        "zhihu:suiji-fenbu"
+      ],
+      "properties": [
+        "互斥：P(A∪B)=P(A)+P(B)",
+        "对立：P(A)+P(Ā)=1",
+        "概率性质：0≤P(A)≤1，P(Ω)=1",
+        "事件关系：包含/并/交/互斥/对立"
+      ],
+      "methodModels": [
+        {
+          "name": "概率计算",
+          "steps": [
+            "判断事件关系",
+            "用加法/减法公式"
+          ],
+          "example": "抽牌抽到红桃或方块的概率"
+        }
+      ],
+      "commonConfusions": [
+        "互斥与对立区别（对立必互斥）",
+        "P(A∪B) 公式的公共部分"
+      ],
+      "prerequisiteRelations": [
+        "需掌握古典概型"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "互斥对立概率",
+          "method": "加法公式",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

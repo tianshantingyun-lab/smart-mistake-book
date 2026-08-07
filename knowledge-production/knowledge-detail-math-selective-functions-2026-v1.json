@@ -210,6 +210,110 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "5.2 导数的运算",
+      "aliases": [
+        "求导法则",
+        "复合函数",
+        "基本公式"
+      ],
+      "conceptSummary": "基本求导公式与四则运算、复合函数链式法则；能求多项式、指数、对数、三角函数的导数。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基本公式：(xⁿ)'=nx^(n-1)、(eˣ)'=eˣ、(lnx)'=1/x、(sinx)'=cosx",
+        "四则：(uv)'=u'v+uv'",
+        "复合：f(g(x))'=f'(g(x))·g'(x)"
+      ],
+      "methodModels": [
+        {
+          "name": "复合求导",
+          "steps": [
+            "拆内层外层",
+            "逐层求导",
+            "相乘"
+          ],
+          "example": "(sin2x)'=2cos2x"
+        },
+        {
+          "name": "导数研究单调",
+          "steps": [
+            "f'(x)>0 递增",
+            "f'(x)<0 递减",
+            "极值点 f'=0"
+          ],
+          "example": "f(x)=x³-3x 在(-1,1)递减"
+        }
+      ],
+      "commonConfusions": [
+        "复合函数链式法则",
+        "求导后仍含 x"
+      ],
+      "prerequisiteRelations": [
+        "需掌握导数概念"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求导运算",
+          "method": "公式+链式",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "5.3 导数在研究函数中的应用",
+      "aliases": [
+        "单调性",
+        "极值",
+        "最值",
+        "导数应用"
+      ],
+      "conceptSummary": "用导数判断函数单调性、求极值与最值：f'(x)=0 求驻点，结合单调区间定极值，闭区间端点比最值。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "f'(x)>0 ⇒ 递增，f'(x)<0 ⇒ 递减",
+        "极值点处 f'(x)=0（必要条件）",
+        "极大/极小判断：左右导数符号变化",
+        "最值：极值+端点比较"
+      ],
+      "methodModels": [
+        {
+          "name": "求单调区间",
+          "steps": [
+            "求导",
+            "解 f' 符号",
+            "定区间"
+          ],
+          "example": "f(x)=x²-2x 在(1,+∞)递增"
+        },
+        {
+          "name": "求最值",
+          "steps": [
+            "求极值",
+            "加端点",
+            "取最"
+          ],
+          "example": "f(x)=x³-3x 在[0,2] 最小值-2"
+        }
+      ],
+      "commonConfusions": [
+        "f'(x)=0 未必是极值（需左右变号）",
+        "开区间无最值"
+      ],
+      "prerequisiteRelations": [
+        "需掌握导数运算"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "导数求最值",
+          "method": "极值+端点",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -213,6 +213,139 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "基因与染色体的关系",
+      "aliases": [
+        "基因",
+        "染色体",
+        "摩尔根",
+        "伴性遗传"
+      ],
+      "conceptSummary": "基因在染色体上呈线性排列；摩尔根果蝇实验证明基因位于染色体；伴性遗传（X/Y染色体）有特殊规律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基因在染色体上",
+        "摩尔根：白眼果蝇伴X遗传",
+        "伴X显性：患者女性多于男性",
+        "伴X隐性：患者男性多于女性",
+        "红绿色盲是伴X隐性"
+      ],
+      "methodModels": [
+        {
+          "name": "伴性遗传判断",
+          "steps": [
+            "系谱图分析",
+            "判断显隐性",
+            "判断染色体"
+          ],
+          "example": "红绿色盲男性多于女性，伴X隐性"
+        }
+      ],
+      "commonConfusions": [
+        "伴X与常染色体遗传区分",
+        "女患者父亲必患病（X隐性）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握分离定律"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "伴性遗传",
+          "method": "系谱分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "基因的表达调控",
+      "aliases": [
+        "转录",
+        "翻译",
+        "密码子",
+        "基因表达"
+      ],
+      "conceptSummary": "基因表达是 DNA→RNA→蛋白质 的过程；转录在核内，翻译在核糖体；密码子决定氨基酸。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "转录：DNA→mRNA（核内）",
+        "翻译：mRNA→蛋白质（核糖体）",
+        "密码子：mRNA上3碱基",
+        "tRNA：反密码子搬运氨基酸",
+        "中心法则：DNA→RNA→蛋白质"
+      ],
+      "methodModels": [
+        {
+          "name": "转录翻译流程",
+          "steps": [
+            "DNA解旋",
+            "转录mRNA",
+            "翻译多肽"
+          ],
+          "example": "mRNA序列决定氨基酸顺序"
+        }
+      ],
+      "commonConfusions": [
+        "密码子在mRNA不在DNA",
+        "64密码子61个编码"
+      ],
+      "prerequisiteRelations": [
+        "需掌握DNA复制"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因表达",
+          "method": "中心法则",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "人类遗传病",
+      "aliases": [
+        "单基因病",
+        "染色体病",
+        "多基因病",
+        "遗传咨询"
+      ],
+      "conceptSummary": "人类遗传病分单基因/多基因/染色体异常三类；产前诊断与遗传咨询可预防。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单基因病：白化病/红绿色盲/血友病",
+        "多基因病：高血压/糖尿病",
+        "染色体病：21三体/性染色体",
+        "遗传咨询与产前诊断预防"
+      ],
+      "methodModels": [
+        {
+          "name": "遗传病类型判断",
+          "steps": [
+            "看致病基因数",
+            "染色体异常"
+          ],
+          "example": "21三体是染色体数目异常"
+        }
+      ],
+      "commonConfusions": [
+        "先天性与遗传性区别",
+        "禁止近亲结婚"
+      ],
+      "prerequisiteRelations": [
+        "需掌握伴性遗传"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "遗传病判断",
+          "method": "类型分类",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -131,6 +131,89 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "市场与宏观调控",
+      "aliases": [
+        "市场调节",
+        "政府作用",
+        "看得见的手",
+        "看不见的手"
+      ],
+      "conceptSummary": "市场（看不见的手）在资源配置中起决定作用，政府（看得见的手）弥补市场失灵，二者结合。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "市场机制：价格/供求/竞争",
+        "市场失灵：自发性/盲目性/滞后性",
+        "宏观调控：经济/法律/行政手段",
+        "有效市场+有为政府"
+      ],
+      "methodModels": [
+        {
+          "name": "市场失灵分析",
+          "steps": [
+            "识别失灵类型",
+            "政府干预"
+          ],
+          "example": "环境污染（外部性）需政府监管"
+        }
+      ],
+      "commonConfusions": [
+        "市场决定不等于政府退出",
+        "外部性/公共物品失灵"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "市场与政府",
+          "method": "各自作用",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "对外开放与经济全球化",
+      "aliases": [
+        "对外开放",
+        "经济全球化",
+        "一带一路",
+        "双循环"
+      ],
+      "conceptSummary": "我国坚持对外开放基本国策，积极参与经济全球化，构建新发展格局（双循环）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "对外开放基本国策",
+        "经济全球化：生产贸易金融全球化",
+        "新发展格局：国内大循环为主体",
+        "一带一路：国际合作",
+        "建设更高水平开放型经济"
+      ],
+      "methodModels": [
+        {
+          "name": "开放型经济分析",
+          "steps": [
+            "机遇与挑战",
+            "开放措施"
+          ],
+          "example": "利用外资与走出去结合"
+        }
+      ],
+      "commonConfusions": [
+        "双循环以国内为主",
+        "全球化与保护主义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对外开放",
+          "method": "机遇挑战",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -216,6 +216,94 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "力的合成与分解",
+      "aliases": [
+        "合力",
+        "分力",
+        "平行四边形",
+        "正交分解"
+      ],
+      "conceptSummary": "力的合成用平行四边形法则；正交分解把力分解到坐标轴；共点力平衡 ΣF=0。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "平行四边形法则求合力",
+        "正交分解：Fx=ΣFcosθ",
+        "平衡条件：ΣFx=0，ΣFy=0",
+        "三个共点力平衡可构成封闭三角形"
+      ],
+      "methodModels": [
+        {
+          "name": "正交分解",
+          "steps": [
+            "建坐标",
+            "分解力",
+            "列平衡方程"
+          ],
+          "example": "斜面上物体重力分解为平行/垂直斜面分量"
+        }
+      ],
+      "commonConfusions": [
+        "分解要按实际效果",
+        "合力不一定大于分力"
+      ],
+      "prerequisiteRelations": [
+        "需掌握力的概念"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "共点力平衡",
+          "method": "正交分解",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "牛顿运动定律应用（连接体/超失重）",
+      "aliases": [
+        "连接体",
+        "整体法",
+        "隔离法",
+        "超重失重"
+      ],
+      "conceptSummary": "连接体用整体法求加速度、隔离法求内力；超重失重看加速度方向（向上超重向下失重）。",
+      "evidenceSources": [
+        "zhihu:phy-niudun-notes"
+      ],
+      "properties": [
+        "整体法：系统 F=ma",
+        "隔离法：求内力",
+        "超重：a向上 N>mg",
+        "失重：a向下 N<mg",
+        "完全失重：a=g"
+      ],
+      "methodModels": [
+        {
+          "name": "连接体求解",
+          "steps": [
+            "整体求a",
+            "隔离求内力"
+          ],
+          "example": "两物体叠放，水平力拉下层求加速度"
+        }
+      ],
+      "commonConfusions": [
+        "超失重看加速度不看速度",
+        "整体法内力不考虑"
+      ],
+      "prerequisiteRelations": [
+        "需掌握牛二"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "连接体/超失重",
+          "method": "整体隔离",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -354,6 +354,282 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "3.3 幂函数",
+      "aliases": [
+        "幂函数",
+        "y=x^n"
+      ],
+      "conceptSummary": "形如 y=x^α（α为常数）的函数叫幂函数；α>0 在(0,+∞)递增，α<0 递减，均过定点(1,1)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "y=x^α 定义域随 α 变化",
+        "过定点 (1,1)",
+        "α>0 时在(0,+∞)单调递增",
+        "α<0 时在(0,+∞)单调递减",
+        "幂函数与指数函数区别：底数变 vs 指数变"
+      ],
+      "methodModels": [
+        {
+          "name": "幂函数性质判断",
+          "steps": [
+            "看指数 α 符号",
+            "定单调性",
+            "过定点"
+          ],
+          "example": "y=x^-2 在(0,+∞)递减"
+        }
+      ],
+      "commonConfusions": [
+        "幂函数 y=x^α 与指数函数 y=a^x 易混",
+        "α 为分数时定义域限制"
+      ],
+      "prerequisiteRelations": [
+        "需掌握指数运算"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "幂函数单调性",
+          "method": "α 符号判断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "4.1 指数与幂运算",
+      "aliases": [
+        "指数幂",
+        "分数指数幂",
+        "根式"
+      ],
+      "conceptSummary": "指数幂运算：a^m·a^n=a^(m+n)、(a^m)^n=a^(mn)；分数指数幂 a^(m/n)=ⁿ√(a^m)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "a^m·a^n=a^(m+n)",
+        "a^m/a^n=a^(m-n)",
+        "(a^m)^n=a^(mn)",
+        "(ab)^n=a^n·b^n",
+        "分数指数幂：a^(1/n)=ⁿ√a，a^(m/n)=ⁿ√(a^m)"
+      ],
+      "methodModels": [
+        {
+          "name": "指数运算化简",
+          "steps": [
+            "化同底",
+            "用运算法则",
+            "化简"
+          ],
+          "example": "2^3·2^5=2^8=256"
+        }
+      ],
+      "commonConfusions": [
+        "底数需 a>0（偶次根式）",
+        "分数指数幂与根式互化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "指数运算",
+          "method": "运算法则",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "4.3 对数与对数运算",
+      "aliases": [
+        "对数",
+        "对数运算",
+        "换底公式"
+      ],
+      "conceptSummary": "对数 log_a N 是以 a 为底 N 的对数；运算性质：log_a(MN)=log_a M+log_a N，换底公式 log_a b=log_c b/log_c a。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "对数定义：a^x=N ⇔ x=log_a N",
+        "log_a(MN)=log_a M+log_a N",
+        "log_a(M/N)=log_a M-log_a N",
+        "log_a(M^n)=n·log_a M",
+        "换底公式：log_a b=log_c b/log_c a",
+        "恒等式 a^(log_a N)=N"
+      ],
+      "methodModels": [
+        {
+          "name": "对数化简求值",
+          "steps": [
+            "展开运算性质",
+            "换底",
+            "求值"
+          ],
+          "example": "log_2 8+log_2 4=3+2=5"
+        },
+        {
+          "name": "换底公式应用",
+          "steps": [
+            "选公共底",
+            "换底",
+            "化简"
+          ],
+          "example": "log_2 3·log_3 2=1"
+        }
+      ],
+      "commonConfusions": [
+        "真数>0 且底数>0≠1",
+        "log_a 1=0、log_a a=1"
+      ],
+      "prerequisiteRelations": [
+        "需掌握指数"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对数运算",
+          "method": "运算性质+换底",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "4.5 函数的应用",
+      "aliases": [
+        "函数应用",
+        "函数模型",
+        "建模"
+      ],
+      "conceptSummary": "用函数模型（一次/二次/指数/对数）解决实际问题：增长率、衰减、分段收费、最优化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "常见模型：y=ax+b、y=ax²+bx+c、y=a·b^x、y=a·log_b x",
+        "指数增长：y=a(1+r)^t",
+        "建模步骤：审题→设变量→建函数→求解→检验"
+      ],
+      "methodModels": [
+        {
+          "name": "建模求解",
+          "steps": [
+            "确定变量关系",
+            "建立函数",
+            "解最值"
+          ],
+          "example": "利润最大化：二次函数求顶点"
+        }
+      ],
+      "commonConfusions": [
+        "增长率与增长量",
+        "指数模型与幂模型区分"
+      ],
+      "prerequisiteRelations": [
+        "需掌握基本初等函数"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数建模",
+          "method": "建模四步",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "5.2.2 同角三角函数的基本关系",
+      "aliases": [
+        "同角关系",
+        "sin²+cos²",
+        "商数关系"
+      ],
+      "conceptSummary": "同角三角恒等式：sin²α+cos²α=1，tanα=sinα/cosα；用于已知一函数值求其他。",
+      "evidenceSources": [
+        "zhihu:fn-sanjiao-beiwang2"
+      ],
+      "properties": [
+        "sin²α+cos²α=1",
+        "tanα=sinα/cosα（cosα≠0）",
+        "1+tan²α=sec²α",
+        "由 sin 求 cos 注意符号（象限）"
+      ],
+      "methodModels": [
+        {
+          "name": "同角关系求值",
+          "steps": [
+            "由 sin²+cos²=1 求另一值",
+            "结合象限定符号",
+            "tan=sin/cos"
+          ],
+          "example": "sinα=3/5 且α为第二象限角，cosα=-4/5"
+        }
+      ],
+      "commonConfusions": [
+        "开方取正负需按象限",
+        "tan 定义域 cosα≠0"
+      ],
+      "prerequisiteRelations": [
+        "需掌握三角函数概念"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "同角求值",
+          "method": "关系式+象限符号",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "5.4 三角函数的图象和性质",
+      "aliases": [
+        "正弦图象",
+        "余弦图象",
+        "周期",
+        "对称"
+      ],
+      "conceptSummary": "正弦余弦图象为波浪形，周期 2π；y=Asin(ωx+φ) 的振幅 A、周期 2π/ω、相位 φ。",
+      "evidenceSources": [
+        "zhihu:fn-sanjiao-beiwang1"
+      ],
+      "properties": [
+        "y=sinx：周期 2π，值域[-1,1]，奇函数",
+        "y=cosx：周期 2π，值域[-1,1]，偶函数",
+        "y=tanx：周期 π，值域 R",
+        "y=Asin(ωx+φ)：振幅 A，周期 2π/ω",
+        "图象变换：平移/伸缩"
+      ],
+      "methodModels": [
+        {
+          "name": "正弦型函数分析",
+          "steps": [
+            "振幅 A",
+            "周期 T=2π/ω",
+            "由相位求对称轴/单调区间"
+          ],
+          "example": "y=2sin(2x+π/3)，A=2，T=π"
+        },
+        {
+          "name": "图象变换",
+          "steps": [
+            "先平移后伸缩（注意顺序）"
+          ],
+          "example": "y=sinx→y=sin(2x+π/3) 先平移再压缩"
+        }
+      ],
+      "commonConfusions": [
+        "周期公式 2π/ω 中 ω 为 x 系数",
+        "平移伸缩顺序影响结果"
+      ],
+      "prerequisiteRelations": [
+        "需掌握同角关系"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正弦型函数",
+          "method": "A/ω/φ 分析",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

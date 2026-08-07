@@ -195,6 +195,93 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "唯物辩证法（联系发展矛盾）",
+      "aliases": [
+        "联系观",
+        "发展观",
+        "矛盾观",
+        "量变质变"
+      ],
+      "conceptSummary": "世界是普遍联系和永恒发展的；矛盾是事物发展动力，主次矛盾与矛盾主次方面；量变引起质变。",
+      "evidenceSources": [
+        "zhihu:pol-zhexue-notes"
+      ],
+      "properties": [
+        "联系普遍性/客观性/多样性",
+        "发展实质：新事物代替旧事物",
+        "矛盾普遍性与特殊性",
+        "主次矛盾、矛盾主次方面",
+        "量变到质变，否定之否定"
+      ],
+      "methodModels": [
+        {
+          "name": "矛盾分析法",
+          "steps": [
+            "一分为二",
+            "抓主要矛盾",
+            "具体问题具体分析"
+          ],
+          "example": "分析事物两面性与重点"
+        }
+      ],
+      "commonConfusions": [
+        "矛盾普遍性与特殊性关系",
+        "主要矛盾与矛盾主要方面"
+      ],
+      "prerequisiteRelations": [
+        "需掌握唯物论"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "辩证法运用",
+          "method": "原理+材料",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "历史唯物主义",
+      "aliases": [
+        "社会存在",
+        "社会意识",
+        "人民群众",
+        "生产力"
+      ],
+      "conceptSummary": "社会存在决定社会意识；生产力决定生产关系；人民群众是历史的创造者。",
+      "evidenceSources": [
+        "zhihu:pol-zhexue-notes"
+      ],
+      "properties": [
+        "社会存在决定社会意识",
+        "生产力与生产关系矛盾",
+        "经济基础决定上层建筑",
+        "人民群众是历史创造者",
+        "改革是社会主义自我完善"
+      ],
+      "methodModels": [
+        {
+          "name": "唯物史观分析",
+          "steps": [
+            "社会存在→意识",
+            "人民群众作用"
+          ],
+          "example": "改革促进生产力发展"
+        }
+      ],
+      "commonConfusions": [
+        "社会意识相对独立性",
+        "人民群众与个人英雄"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "历史唯物主义",
+          "method": "原理运用",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

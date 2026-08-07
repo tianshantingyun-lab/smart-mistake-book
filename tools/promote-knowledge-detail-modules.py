@@ -55,7 +55,14 @@ def main() -> int:
         targets = [args.module]
     elif args.all:
         targets = sorted(KP.glob("knowledge-detail-*.json"))
-        targets = [t for t in targets if "enrichment" not in t.name and "alignment" not in t.name and "directory" not in t.name]
+        targets = [
+            t for t in targets
+            if "enrichment" not in t.name
+            and "alignment" not in t.name
+            and "directory" not in t.name
+            and "ledger" not in t.name
+            and "size-audit" not in t.name
+        ]
 
     results = []
     for t in targets:

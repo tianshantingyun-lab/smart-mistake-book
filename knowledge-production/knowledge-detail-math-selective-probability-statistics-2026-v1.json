@@ -175,6 +175,57 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "排列组合应用题",
+      "aliases": [
+        "有限制",
+        "相邻",
+        "不相邻",
+        "分组分配"
+      ],
+      "conceptSummary": "排列组合应用题常用方法：捆绑法（相邻）、插空法（不相邻）、分组分配、特殊元素优先。",
+      "evidenceSources": [
+        "zhihu:paile-zuhe-intro"
+      ],
+      "properties": [
+        "捆绑法：相邻元素先捆绑",
+        "插空法：不相邻先排其余再插空",
+        "特殊元素优先处理",
+        "正难则反：总数-反面"
+      ],
+      "methodModels": [
+        {
+          "name": "相邻问题",
+          "steps": [
+            "捆绑为整体",
+            "排列"
+          ],
+          "example": "3人相邻全排列，先绑成1组再与其余排"
+        },
+        {
+          "name": "不相邻问题",
+          "steps": [
+            "先排其他",
+            "插空"
+          ],
+          "example": "甲乙不相邻，先排丙丁再插空"
+        }
+      ],
+      "commonConfusions": [
+        "捆绑后内部也要排列",
+        "插空位置数"
+      ],
+      "prerequisiteRelations": [
+        "需掌握排列组合"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "排列应用",
+          "method": "捆绑/插空",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

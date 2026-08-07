@@ -1,15 +1,15 @@
-﻿{
+{
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
   "coreSectionsTotal": 1012,
-  "coveredSectionsTotal": 129,
-  "overallCoverageRatio": 0.127,
+  "coveredSectionsTotal": 157,
+  "overallCoverageRatio": 0.155,
   "perSubject": [
     {
       "subject": "BIOLOGY",
       "coreSections": 173,
-      "coveredSections": 15,
-      "coverageRatio": 0.087
+      "coveredSections": 24,
+      "coverageRatio": 0.139
     },
     {
       "subject": "CHEMISTRY",
@@ -44,20 +44,20 @@
     {
       "subject": "MATH",
       "coreSections": 155,
-      "coveredSections": 34,
-      "coverageRatio": 0.219
+      "coveredSections": 47,
+      "coverageRatio": 0.303
     },
     {
       "subject": "PHYSICS",
       "coreSections": 125,
-      "coveredSections": 14,
-      "coverageRatio": 0.112
+      "coveredSections": 16,
+      "coverageRatio": 0.128
     },
     {
       "subject": "POLITICS",
       "coreSections": 152,
-      "coveredSections": 18,
-      "coverageRatio": 0.118
+      "coveredSections": 22,
+      "coverageRatio": 0.145
     }
   ],
   "note": "Sections are PEP textbook TOC knowledge-point sections excluding reading/IT/lab markers. Coverage < 100% means the knowledge base is not yet complete."

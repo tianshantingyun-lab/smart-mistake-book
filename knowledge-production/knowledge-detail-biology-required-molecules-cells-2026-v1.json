@@ -203,6 +203,182 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "细胞器结构与功能",
+      "aliases": [
+        "线粒体",
+        "叶绿体",
+        "内质网",
+        "高尔基体"
+      ],
+      "conceptSummary": "细胞器分工：线粒体有氧呼吸、叶绿体光合、核糖体蛋白合成、内质网高尔基体加工运输。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "线粒体：有氧呼吸主要场所",
+        "叶绿体：光合作用场所",
+        "核糖体：蛋白质合成",
+        "内质网：加工运输脂质蛋白质",
+        "高尔基体：进一步加工分泌",
+        "液泡/溶酶体：储存/消化"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞器功能对应",
+          "steps": [
+            "记忆各细胞器功能",
+            "结合代谢过程"
+          ],
+          "example": "分泌蛋白途径：核糖体→内质网→高尔基体"
+        }
+      ],
+      "commonConfusions": [
+        "植物特有：叶绿体/细胞壁/大液泡",
+        "中心体动物与低等植物有"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞结构"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞器功能",
+          "method": "功能归类",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "细胞膜与物质运输",
+      "aliases": [
+        "细胞膜",
+        "自由扩散",
+        "主动运输",
+        "胞吞胞吐"
+      ],
+      "conceptSummary": "细胞膜控制物质进出；被动运输（自由/协助扩散）不耗能，主动运输逆浓度需载体与能量。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自由扩散：顺浓度不耗能",
+        "协助扩散：需载体蛋白不耗能",
+        "主动运输：逆浓度需载体+ATP",
+        "胞吞胞吐：大分子",
+        "细胞膜功能：保护/控制/信息交流"
+      ],
+      "methodModels": [
+        {
+          "name": "运输方式判断",
+          "steps": [
+            "看方向顺逆",
+            "看是否耗能",
+            "看是否需载体"
+          ],
+          "example": "K+进入细胞是主动运输"
+        }
+      ],
+      "commonConfusions": [
+        "协助扩散与主动运输区别（耗能）",
+        "跨膜与胞吞"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质运输",
+          "method": "顺逆浓度+耗能",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "细胞周期与有丝分裂",
+      "aliases": [
+        "细胞周期",
+        "有丝分裂",
+        "染色体"
+      ],
+      "conceptSummary": "细胞周期含分裂间期（DNA复制）与分裂期（前中后末）；有丝分裂保证遗传物质平均分配。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "间期：DNA复制、蛋白质合成",
+        "前期：染色体出现",
+        "中期：着丝点排列赤道板",
+        "后期：着丝点分裂",
+        "末期：形成两个子细胞",
+        "结果：染色体数不变"
+      ],
+      "methodModels": [
+        {
+          "name": "分裂时期判断",
+          "steps": [
+            "看染色体行为",
+            "各期特征"
+          ],
+          "example": "着丝点分裂在后期"
+        }
+      ],
+      "commonConfusions": [
+        "间期DNA加倍但染色体数不变",
+        "动物植物末期区别"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞结构"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "有丝分裂",
+          "method": "各期特征",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "细胞的分化与衰老",
+      "aliases": [
+        "分化",
+        "全能性",
+        "衰老",
+        "凋亡"
+      ],
+      "conceptSummary": "细胞分化是基因选择性表达的结果；全能性指发育成完整个体的潜能；衰老与凋亡是正常生命过程。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分化：不同细胞基因选择性表达",
+        "全能性：分化程度越低越强",
+        "细胞衰老：酶活性降低",
+        "细胞凋亡：程序性死亡",
+        "癌细胞：无限增殖、不分化"
+      ],
+      "methodModels": [
+        {
+          "name": "分化本质",
+          "steps": [
+            "细胞形态功能差异",
+            "基因选择性表达"
+          ],
+          "example": "同一受精卵分化出不同细胞"
+        }
+      ],
+      "commonConfusions": [
+        "分化不改变遗传物质",
+        "全能性与分化程度反比"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞分裂"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分化与全能性",
+          "method": "基因表达",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -140,6 +140,95 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "动物激素调节",
+      "aliases": [
+        "激素",
+        "反馈",
+        "甲状腺",
+        "胰岛素"
+      ],
+      "conceptSummary": "激素由内分泌腺分泌，微量高效；甲状腺激素、胰岛素、胰高血糖素等通过反馈调节维持稳态。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "激素特点：微量/高效/体液运输",
+        "甲状腺激素：促进代谢发育",
+        "胰岛素：降血糖（胰岛B）",
+        "胰高血糖素：升血糖（胰岛A）",
+        "反馈调节：正/负反馈",
+        "分级调节：下丘脑-垂体-腺体"
+      ],
+      "methodModels": [
+        {
+          "name": "血糖调节",
+          "steps": [
+            "血糖高→胰岛素↑",
+            "血糖低→胰高血糖素↑"
+          ],
+          "example": "饭后胰岛素分泌增多"
+        }
+      ],
+      "commonConfusions": [
+        "激素不直接参与代谢而是调节",
+        "分级调节与反馈"
+      ],
+      "prerequisiteRelations": [
+        "需掌握体液调节"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "激素调节",
+          "method": "反馈分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "免疫调节",
+      "aliases": [
+        "免疫系统",
+        "体液免疫",
+        "细胞免疫",
+        "疫苗"
+      ],
+      "conceptSummary": "免疫系统识别清除病原体；体液免疫靠抗体，细胞免疫靠效应T细胞；疫苗诱导免疫记忆。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "免疫器官：胸腺/骨髓/脾",
+        "免疫细胞：淋巴细胞",
+        "体液免疫：B→浆细胞→抗体",
+        "细胞免疫：T→效应T杀伤",
+        "疫苗：抗原诱导记忆细胞",
+        "HIV攻击T细胞破坏免疫"
+      ],
+      "methodModels": [
+        {
+          "name": "免疫过程分析",
+          "steps": [
+            "抗原识别",
+            "B/T细胞活化",
+            "效应"
+          ],
+          "example": "接种疫苗产生记忆细胞"
+        }
+      ],
+      "commonConfusions": [
+        "体液与细胞免疫配合",
+        "过敏是免疫过强"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "免疫调节",
+          "method": "免疫过程",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

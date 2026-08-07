@@ -266,6 +266,91 @@
           "example": "(a+bi)(1+i)=2i 求 a,b"
         }
       ]
+    },
+    {
+      "section": "6.4 平面向量的应用",
+      "aliases": [
+        "向量应用",
+        "三角形",
+        "几何问题"
+      ],
+      "conceptSummary": "用向量法解决几何问题：证明平行垂直、求夹角距离、解三角形（正余弦定理）。",
+      "evidenceSources": [
+        "zhihu:fn-vector-beiwang"
+      ],
+      "properties": [
+        "向量垂直：a·b=0",
+        "向量平行：a=λb",
+        "正弦定理：a/sinA=b/sinB=c/sinC",
+        "余弦定理：c²=a²+b²-2ab·cosC"
+      ],
+      "methodModels": [
+        {
+          "name": "向量法证垂直",
+          "steps": [
+            "建系或选基底",
+            "算数量积",
+            "a·b=0 则垂直"
+          ],
+          "example": "证矩形对角线等长"
+        }
+      ],
+      "commonConfusions": [
+        "向量法坐标化",
+        "正余弦定理适用条件"
+      ],
+      "prerequisiteRelations": [
+        "需掌握向量坐标"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "解三角形",
+          "method": "正余弦定理",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "7.3 复数的三角表示",
+      "aliases": [
+        "复数的三角形式",
+        "模",
+        "辐角"
+      ],
+      "conceptSummary": "复数可用三角形式 z=r(cosθ+i·sinθ) 表示，r 为模，θ 为辐角；乘除对应模乘除、辐角加减。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三角形式：z=r(cosθ+i sinθ)",
+        "模 r=√(a²+b²)",
+        "复数相乘：模相乘辐角相加",
+        "复数相除：模相除辐角相减"
+      ],
+      "methodModels": [
+        {
+          "name": "复数三角运算",
+          "steps": [
+            "化三角形式",
+            "乘除法则"
+          ],
+          "example": "两复数相乘模乘角加"
+        }
+      ],
+      "commonConfusions": [
+        "三角形式条件 r≥0",
+        "辐角主值范围"
+      ],
+      "prerequisiteRelations": [
+        "需掌握复数运算"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "复数三角运算",
+          "method": "模辐角法则",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
