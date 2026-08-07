@@ -304,6 +304,4908 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "1.质点 参考系",
+      "aliases": [
+        "质点",
+        "参考系"
+      ],
+      "conceptSummary": "质点是有质量而无大小形状的理想化模型；参考系是描述运动时选作标准的物体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "质点：物体大小形状对问题影响可忽略时抽象为质点",
+        "参考系选择不同，运动描述不同",
+        "同一运动选不同参考系结论不同"
+      ],
+      "methodModels": [
+        {
+          "name": "质点判断",
+          "steps": [
+            "看大小形状是否影响研究问题",
+            "不影响则可视为质点"
+          ],
+          "example": "研究地球公转时地球可视为质点"
+        }
+      ],
+      "commonConfusions": [
+        "质点是理想模型不是真实物体",
+        "参考系选取是任意的但通常选地面"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断哪些情形可视为质点",
+          "method": "见方法模型",
+          "example": "判断哪些情形可视为质点"
+        }
+      ]
+    },
+    {
+      "section": "2.时间 位移",
+      "aliases": [
+        "时刻",
+        "时间间隔",
+        "位移",
+        "路程"
+      ],
+      "conceptSummary": "时刻是时间轴上的点，时间间隔是两时刻间距离；位移是从初位置到末位置的有向线段。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "位移是矢量（大小+方向），路程是标量",
+        "位移只与初末位置有关",
+        "单方向直线运动中位移大小=路程"
+      ],
+      "methodModels": [
+        {
+          "name": "位移与路程区分",
+          "steps": [
+            "看初末位置",
+            "位移有向线段，路程轨迹长"
+          ],
+          "example": "绕一圈回到原点位移为0路程为周长"
+        }
+      ],
+      "commonConfusions": [
+        "位移与路程混淆",
+        "时刻与时间间隔"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "已知初末位置求位移",
+          "method": "见方法模型",
+          "example": "已知初末位置求位移"
+        }
+      ]
+    },
+    {
+      "section": "3.位置变化快慢的描述——速度",
+      "aliases": [
+        "速度",
+        "平均速度",
+        "瞬时速度"
+      ],
+      "conceptSummary": "速度是位移与时间之比（矢量），平均速度=总位移/总时间，瞬时速度是极限。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "平均速度 v=Δx/Δt（矢量）",
+        "瞬时速度是 t→0 时平均速度极限",
+        "速率是速度大小（标量）"
+      ],
+      "methodModels": [
+        {
+          "name": "平均速度计算",
+          "steps": [
+            "求总位移",
+            "除以总时间"
+          ],
+          "example": "100m跑10s，平均速度10m/s"
+        },
+        {
+          "name": "瞬时速度理解",
+          "steps": [
+            "极限思想",
+            "时刻对应"
+          ],
+          "example": "汽车仪表显示瞬时速率"
+        }
+      ],
+      "commonConfusions": [
+        "平均速度与平均速率",
+        "速度与速率"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求平均速度",
+          "method": "见方法模型",
+          "example": "求平均速度"
+        }
+      ]
+    },
+    {
+      "section": "4.速度变化快慢的描述——加速度",
+      "aliases": [
+        "加速度",
+        "速度变化率"
+      ],
+      "conceptSummary": "加速度是速度变化量与所用时间之比，描述速度变化快慢，a=Δv/Δt。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "加速度 a=Δv/Δt（矢量）",
+        "加速度方向与速度变化方向相同",
+        "a>0 表示速度增大（同向）"
+      ],
+      "methodModels": [
+        {
+          "name": "加速度计算",
+          "steps": [
+            "求速度变化 Δv",
+            "除以时间"
+          ],
+          "example": "2s内速度从0到4m/s，a=2m/s²"
+        },
+        {
+          "name": "加速度与速度关系",
+          "steps": [
+            "看方向同反",
+            "同向加速反向减速"
+          ],
+          "example": "加速度与速度反向则减速"
+        }
+      ],
+      "commonConfusions": [
+        "速度大不一定加速度大",
+        "加速度为负不一定是减速（看正方向）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求加速度",
+          "method": "见方法模型",
+          "example": "求加速度"
+        }
+      ]
+    },
+    {
+      "section": "2.匀变速直线运动的速度与时间的关系",
+      "aliases": [
+        "匀变速",
+        "v-t图像"
+      ],
+      "conceptSummary": "匀变速直线运动加速度恒定，速度随时间均匀变化：v=v0+at。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "v=v0+at",
+        "v-t图像是倾斜直线",
+        "斜率=加速度"
+      ],
+      "methodModels": [
+        {
+          "name": "速度公式应用",
+          "steps": [
+            "确定v0、a、t",
+            "代入v=v0+at"
+          ],
+          "example": "v0=2m/s,a=3m/s²,4s末v=14m/s"
+        }
+      ],
+      "commonConfusions": [
+        "匀变速定义理解",
+        "v-t图像斜率含义"
+      ],
+      "prerequisiteRelations": [
+        "需掌握加速度"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求末速度",
+          "method": "见方法模型",
+          "example": "求末速度"
+        }
+      ]
+    },
+    {
+      "section": "3.匀变速直线运动的位移与时间的关系",
+      "aliases": [
+        "位移公式",
+        "x-t图像"
+      ],
+      "conceptSummary": "匀变速直线运动位移 x=v0t+½at²；v²-v0²=2ax；平均速度=(v0+v)/2。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "x=v0t+½at²",
+        "v²-v0²=2ax",
+        "中间时刻速度=平均速度"
+      ],
+      "methodModels": [
+        {
+          "name": "位移计算",
+          "steps": [
+            "选公式",
+            "代入"
+          ],
+          "example": "v0=2,a=4,t=3：x=2×3+½×4×9=24m"
+        },
+        {
+          "name": "刹车问题",
+          "steps": [
+            "先算停车时间",
+            "超时按停车算"
+          ],
+          "example": "v0=20,a=-5，停车4s，求5s位移"
+        }
+      ],
+      "commonConfusions": [
+        "刹车减速到零后不动",
+        "公式中 a 符号"
+      ],
+      "prerequisiteRelations": [
+        "需掌握速度公式"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求位移",
+          "method": "见方法模型",
+          "example": "求位移"
+        }
+      ]
+    },
+    {
+      "section": "4.自由落体运动",
+      "aliases": [
+        "自由落体",
+        "g"
+      ],
+      "conceptSummary": "自由落体是初速度为零、只受重力的匀加速直线运动，加速度 g≈9.8m/s²。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "v=gt",
+        "h=½gt²",
+        "v²=2gh",
+        "下落时间与质量无关"
+      ],
+      "methodModels": [
+        {
+          "name": "自由落体计算",
+          "steps": [
+            "用v=gt/h=½gt²",
+            "注意初速度为零"
+          ],
+          "example": "3s末v=29.4m/s，h=44.1m"
+        }
+      ],
+      "commonConfusions": [
+        "自由落体只受重力（忽略空气阻力）",
+        "与竖直上抛区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求下落距离",
+          "method": "见方法模型",
+          "example": "求下落距离"
+        }
+      ]
+    },
+    {
+      "section": "1.重力与弹力",
+      "aliases": [
+        "重力",
+        "弹力",
+        "胡克定律"
+      ],
+      "conceptSummary": "重力 G=mg 竖直向下；弹力是形变产生的力，弹簧弹力 F=kx（胡克定律）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "重力方向竖直向下，重心不一定在物体上",
+        "弹力方向与形变方向相反",
+        "胡克定律 F=kx（弹性限度内）"
+      ],
+      "methodModels": [
+        {
+          "name": "弹力判断",
+          "steps": [
+            "看接触是否形变",
+            "方向垂直接触面"
+          ],
+          "example": "桌面支持力竖直向上"
+        },
+        {
+          "name": "胡克定律应用",
+          "steps": [
+            "F=kx",
+            "注意伸长量"
+          ],
+          "example": "k=100N/m，伸长0.1m，F=10N"
+        }
+      ],
+      "commonConfusions": [
+        "弹力方向（垂直接触面/沿绳）",
+        "胡克定律x是形变量"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求弹力",
+          "method": "见方法模型",
+          "example": "求弹力"
+        }
+      ]
+    },
+    {
+      "section": "2.摩擦力",
+      "aliases": [
+        "静摩擦力",
+        "滑动摩擦力",
+        "动摩擦因数"
+      ],
+      "conceptSummary": "摩擦力阻碍相对运动（趋势）：滑动摩擦力 f=μN，静摩擦力在 0~fmax 之间。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "滑动摩擦力 f=μN，与正压力成正比",
+        "静摩擦力随外力变化，有最大值",
+        "摩擦力方向与相对运动(趋势)方向相反"
+      ],
+      "methodModels": [
+        {
+          "name": "摩擦力计算",
+          "steps": [
+            "判断静/滑动",
+            "滑动用f=μN，静摩擦平衡分析"
+          ],
+          "example": "N=100N,μ=0.3，f滑=30N"
+        }
+      ],
+      "commonConfusions": [
+        "摩擦力不一定是阻力（可作动力）",
+        "静摩擦与滑动摩擦切换"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求摩擦力",
+          "method": "见方法模型",
+          "example": "求摩擦力"
+        }
+      ]
+    },
+    {
+      "section": "3.牛顿第三定律",
+      "aliases": [
+        "作用力与反作用力"
+      ],
+      "conceptSummary": "两物体间作用力与反作用力大小相等、方向相反、作用在不同物体上。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "大小相等方向相反",
+        "作用在不同物体（不可抵消）",
+        "同时产生同时消失"
+      ],
+      "methodModels": [
+        {
+          "name": "作用反作用分析",
+          "steps": [
+            "分清楚作用对象",
+            "大小相等"
+          ],
+          "example": "书对桌压力=桌对书支持力"
+        }
+      ],
+      "commonConfusions": [
+        "作用力与反作用力≠平衡力（作用对象不同）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "作用反作用判断",
+          "method": "见方法模型",
+          "example": "作用反作用判断"
+        }
+      ]
+    },
+    {
+      "section": "4.力的合成和分解",
+      "aliases": [
+        "合力",
+        "分力",
+        "平行四边形法则"
+      ],
+      "conceptSummary": "力的合成与分解遵循平行四边形法则；正交分解把力沿坐标轴分解。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "平行四边形/三角形法则",
+        "合力范围 |F1-F2|≤F合≤F1+F2",
+        "正交分解：Fx=Fcosθ"
+      ],
+      "methodModels": [
+        {
+          "name": "合力范围",
+          "steps": [
+            "两力合成",
+            "|F1-F2|到F1+F2"
+          ],
+          "example": "3N和4N合力5~7N之间"
+        },
+        {
+          "name": "正交分解",
+          "steps": [
+            "建坐标",
+            "分解各力"
+          ],
+          "example": "重力沿斜面分解"
+        }
+      ],
+      "commonConfusions": [
+        "合力不一定大于分力",
+        "分解要按效果"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求合力",
+          "method": "见方法模型",
+          "example": "求合力"
+        }
+      ]
+    },
+    {
+      "section": "5.共点力的平衡",
+      "aliases": [
+        "共点力",
+        "平衡条件"
+      ],
+      "conceptSummary": "物体受共点力作用保持静止或匀速直线运动，合力为零：ΣF=0。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三力平衡可构成封闭三角形",
+        "正交分解后 ΣFx=0，ΣFy=0",
+        "两力平衡则等大反向"
+      ],
+      "methodModels": [
+        {
+          "name": "正交分解解平衡",
+          "steps": [
+            "建系",
+            "分解",
+            "列ΣF=0"
+          ],
+          "example": "三力平衡求未知力"
+        }
+      ],
+      "commonConfusions": [
+        "平衡是合力为零（不是速度为零）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握力的分解"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "共点力平衡求力",
+          "method": "见方法模型",
+          "example": "共点力平衡求力"
+        }
+      ]
+    },
+    {
+      "section": "1.牛顿第一定律",
+      "aliases": [
+        "惯性",
+        "牛顿第一定律"
+      ],
+      "conceptSummary": "一切物体总保持匀速直线运动或静止状态，除非外力迫使改变——揭示惯性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "力是改变运动状态的原因（非维持）",
+        "惯性大小只与质量有关",
+        "牛一定律是理想化实验结论"
+      ],
+      "methodModels": [
+        {
+          "name": "惯性应用",
+          "steps": [
+            "分析原状态",
+            "受力变化"
+          ],
+          "example": "刹车时人前倾（惯性）"
+        }
+      ],
+      "commonConfusions": [
+        "惯性不是力",
+        "牛一定律是理想推理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "惯性理解",
+          "method": "见方法模型",
+          "example": "惯性理解"
+        }
+      ]
+    },
+    {
+      "section": "3.牛顿第二定律",
+      "aliases": [
+        "牛顿第二定律",
+        "F=ma"
+      ],
+      "conceptSummary": "物体加速度与合外力成正比，与质量成反比，方向与合外力相同：F=ma。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "F=ma（矢量式）",
+        "力是产生加速度的原因",
+        "瞬时性：a与F同时变化"
+      ],
+      "methodModels": [
+        {
+          "name": "牛二应用",
+          "steps": [
+            "受力分析",
+            "求合力",
+            "a=F/m"
+          ],
+          "example": "F=10N,m=2kg，a=5m/s²"
+        }
+      ],
+      "commonConfusions": [
+        "F是合外力",
+        "质量与惯性"
+      ],
+      "prerequisiteRelations": [
+        "需掌握受力分析"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求加速度",
+          "method": "见方法模型",
+          "example": "求加速度"
+        }
+      ]
+    },
+    {
+      "section": "5.牛顿运动定律的应用",
+      "aliases": [
+        "动力学",
+        "两类问题"
+      ],
+      "conceptSummary": "动力学的两类基本问题：已知受力求运动，已知运动求受力；核心是 F=ma 与运动学公式结合。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "受力→加速度→运动（牛二+运动学）",
+        "运动→加速度→受力",
+        "连接体：整体法+隔离法"
+      ],
+      "methodModels": [
+        {
+          "name": "已知力求运动",
+          "steps": [
+            "受力分析",
+            "a=F/m",
+            "运动学公式"
+          ],
+          "example": "水平拉力下物体运动位移"
+        },
+        {
+          "name": "已知运动求力",
+          "steps": [
+            "运动学求a",
+            "F=ma"
+          ],
+          "example": "已知位移时间求拉力"
+        }
+      ],
+      "commonConfusions": [
+        "先受力分析再列方程",
+        "注意方向"
+      ],
+      "prerequisiteRelations": [
+        "需掌握牛二与运动学"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动力学综合",
+          "method": "见方法模型",
+          "example": "动力学综合"
+        }
+      ]
+    },
+    {
+      "section": "6.超重和失重",
+      "aliases": [
+        "超重",
+        "失重",
+        "完全失重"
+      ],
+      "conceptSummary": "超重：加速度向上，N>mg；失重：加速度向下，N<mg；完全失重 a=g。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "超失重看加速度方向（不看速度）",
+        "完全失重：N=0",
+        "实重不变，视重变化"
+      ],
+      "methodModels": [
+        {
+          "name": "超失重判断",
+          "steps": [
+            "看a方向",
+            "向上超重向下失重"
+          ],
+          "example": "电梯加速上升超重"
+        }
+      ],
+      "commonConfusions": [
+        "超失重不是重力变化",
+        "减速上升是失重（a向下）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "超失重判断",
+          "method": "见方法模型",
+          "example": "超失重判断"
+        }
+      ]
+    },
+    {
+      "section": "1.曲线运动",
+      "aliases": [
+        "曲线运动",
+        "速度方向"
+      ],
+      "conceptSummary": "曲线运动中速度方向沿切线，速度方向变化必有加速度，合力方向指向轨迹凹侧。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "速度方向沿轨迹切线",
+        "曲线运动是变速运动（方向变）",
+        "合力指向凹侧，与速度不共线"
+      ],
+      "methodModels": [
+        {
+          "name": "曲线运动判断",
+          "steps": [
+            "看速度方向",
+            "看合力方向"
+          ],
+          "example": "平抛/圆周是曲线运动"
+        }
+      ],
+      "commonConfusions": [
+        "曲线运动一定是变速，但变速不一定是曲线"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "曲线运动特点",
+          "method": "见方法模型",
+          "example": "曲线运动特点"
+        }
+      ]
+    },
+    {
+      "section": "2.运动的合成与分解",
+      "aliases": [
+        "运动的合成",
+        "分运动",
+        "合运动"
+      ],
+      "conceptSummary": "合运动与分运动满足矢量合成，具有等时性、独立性；平抛可分解为水平匀速+竖直自由落体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "等时性：分合运动时间相同",
+        "独立性：各分运动互不影响",
+        "平抛：水平v0匀速，竖直自由落体"
+      ],
+      "methodModels": [
+        {
+          "name": "平抛分解",
+          "steps": [
+            "水平x=v0t",
+            "竖直y=½gt²",
+            "合位移合成"
+          ],
+          "example": "平抛求落地时间"
+        }
+      ],
+      "commonConfusions": [
+        "分运动与合运动等效"
+      ],
+      "prerequisiteRelations": [
+        "需掌握速度合成"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "平抛分析",
+          "method": "见方法模型",
+          "example": "平抛分析"
+        }
+      ]
+    },
+    {
+      "section": "3.抛体运动的规律",
+      "aliases": [
+        "平抛",
+        "抛体运动"
+      ],
+      "conceptSummary": "平抛运动水平匀速竖直自由落体：x=v0t，y=½gt²，vy=gt。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "轨迹是抛物线",
+        "落地时间只与高度有关 t=√(2h/g)",
+        "水平射程 x=v0√(2h/g)"
+      ],
+      "methodModels": [
+        {
+          "name": "平抛计算",
+          "steps": [
+            "水平x=v0t",
+            "竖直y=½gt²"
+          ],
+          "example": "h=20m，落地t=2s"
+        }
+      ],
+      "commonConfusions": [
+        "平抛飞行时间与v0无关"
+      ],
+      "prerequisiteRelations": [
+        "需掌握合成分解"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "平抛运动",
+          "method": "见方法模型",
+          "example": "平抛运动"
+        }
+      ]
+    },
+    {
+      "section": "1.圆周运动",
+      "aliases": [
+        "圆周运动",
+        "线速度",
+        "角速度"
+      ],
+      "conceptSummary": "圆周运动线速度 v=ωr，周期 T=2πr/v，频率 f=1/T。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "线速度 v=Δs/Δt（沿切线）",
+        "角速度 ω=Δθ/Δt",
+        "v=ωr，T=2π/ω"
+      ],
+      "methodModels": [
+        {
+          "name": "线速度角速度",
+          "steps": [
+            "v=ωr",
+            "T=2π/ω"
+          ],
+          "example": "r=0.5m,ω=4rad/s，v=2m/s"
+        }
+      ],
+      "commonConfusions": [
+        "线速度方向时刻变化",
+        "角速度方向垂直于平面"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "圆周运动量计算",
+          "method": "见方法模型",
+          "example": "圆周运动量计算"
+        }
+      ]
+    },
+    {
+      "section": "2.向心力",
+      "aliases": [
+        "向心力",
+        "向心加速度"
+      ],
+      "conceptSummary": "向心力 F=mω²r=mv²/r 指向圆心，是效果力；向心加速度 a=v²/r=ω²r。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "向心力指向圆心，只改变速度方向",
+        "a=v²/r=ω²r",
+        "F=mv²/r=mω²r"
+      ],
+      "methodModels": [
+        {
+          "name": "向心力计算",
+          "steps": [
+            "F=mv²/r",
+            "或F=mω²r"
+          ],
+          "example": "m=1kg,v=2m/s,r=1m，F=4N"
+        }
+      ],
+      "commonConfusions": [
+        "向心力不是新性质力",
+        "向心力不做功"
+      ],
+      "prerequisiteRelations": [
+        "需掌握圆周运动"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求向心力",
+          "method": "见方法模型",
+          "example": "求向心力"
+        }
+      ]
+    },
+    {
+      "section": "3.向心加速度",
+      "aliases": [
+        "向心加速度",
+        "a=v²/r"
+      ],
+      "conceptSummary": "向心加速度描述速度方向变化快慢，大小 a=v²/r=ω²r，方向指向圆心。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "a=v²/r=ω²r",
+        "匀速圆周a大小恒定方向变",
+        "a=vω"
+      ],
+      "methodModels": [
+        {
+          "name": "向心加速度计算",
+          "steps": [
+            "a=v²/r",
+            "或a=ω²r"
+          ],
+          "example": "v=4m/s,r=2m，a=8m/s²"
+        }
+      ],
+      "commonConfusions": [
+        "向心加速度是变速（方向变）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求向心加速度",
+          "method": "见方法模型",
+          "example": "求向心加速度"
+        }
+      ]
+    },
+    {
+      "section": "4.生活中的圆周运动",
+      "aliases": [
+        "汽车转弯",
+        "过桥",
+        "离心"
+      ],
+      "conceptSummary": "圆周运动应用：汽车转弯（摩擦力提供向心力）、凸桥凹桥（支持力变化）、离心现象。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "汽车转弯：μmg=mv²/r",
+        "凸桥最高点 mg-N=mv²/r",
+        "离心：合力不足提供向心力"
+      ],
+      "methodModels": [
+        {
+          "name": "转弯速度限制",
+          "steps": [
+            "摩擦力=向心力",
+            "v=√(μgr)"
+          ],
+          "example": "μ=0.2,r=50m，vmax=10m/s"
+        }
+      ],
+      "commonConfusions": [
+        "离心不是离心力"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "圆周运动应用",
+          "method": "见方法模型",
+          "example": "圆周运动应用"
+        }
+      ]
+    },
+    {
+      "section": "1.功与功率",
+      "aliases": [
+        "功",
+        "功率",
+        "W=Fs"
+      ],
+      "conceptSummary": "功 W=Fscosθ；功率 P=W/t=Fv，瞬时功率 P=Fv。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "W=Fscosθ（θ为F与s夹角）",
+        "P=W/t平均，P=Fv瞬时",
+        "机车启动：P=Fv"
+      ],
+      "methodModels": [
+        {
+          "name": "功计算",
+          "steps": [
+            "W=Fscosθ",
+            "力与位移同向cosθ=1"
+          ],
+          "example": "F=10N,s=5m同向，W=50J"
+        },
+        {
+          "name": "功率计算",
+          "steps": [
+            "P=Fv",
+            "瞬时功率"
+          ],
+          "example": "F=2000N,v=10m/s，P=20kW"
+        }
+      ],
+      "commonConfusions": [
+        "功的正负（夹角）",
+        "P=Fv中v与F同向"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "功与功率",
+          "method": "见方法模型",
+          "example": "功与功率"
+        }
+      ]
+    },
+    {
+      "section": "2.重力势能",
+      "aliases": [
+        "重力势能",
+        "Ep=mgh"
+      ],
+      "conceptSummary": "重力势能 Ep=mgh，与参考面选择有关；重力做功等于势能减少量。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Ep=mgh（相对参考面）",
+        "重力做正功势能减小",
+        "重力做功与路径无关"
+      ],
+      "methodModels": [
+        {
+          "name": "重力势能计算",
+          "steps": [
+            "选参考面",
+            "Ep=mgh"
+          ],
+          "example": "m=2kg,h=5m，Ep=98J"
+        }
+      ],
+      "commonConfusions": [
+        "势能相对性（参考面）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "重力势能",
+          "method": "见方法模型",
+          "example": "重力势能"
+        }
+      ]
+    },
+    {
+      "section": "3.动能和动能定理",
+      "aliases": [
+        "动能",
+        "动能定理",
+        "Ek=½mv²"
+      ],
+      "conceptSummary": "动能 Ek=½mv²；动能定理：合外力做功等于动能变化 W合=ΔEk。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Ek=½mv²（标量）",
+        "W合=½mv²-½mv0²",
+        "动能定理适用任意运动"
+      ],
+      "methodModels": [
+        {
+          "name": "动能定理应用",
+          "steps": [
+            "求合外力功",
+            "W=ΔEk"
+          ],
+          "example": "物体从静止被力推10m，v=4m/s，m=2kg，W=16J"
+        }
+      ],
+      "commonConfusions": [
+        "动能是标量",
+        "合外力功=动能变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动能定理",
+          "method": "见方法模型",
+          "example": "动能定理"
+        }
+      ]
+    },
+    {
+      "section": "4.机械能守恒定律",
+      "aliases": [
+        "机械能守恒",
+        "动能势能转化"
+      ],
+      "conceptSummary": "只有重力（弹簧弹力）做功时，动能与势能相互转化但总和不变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "条件：只有重力/弹力做功",
+        "E1=E2（初末机械能相等）",
+        "ΔEk=-ΔEp"
+      ],
+      "methodModels": [
+        {
+          "name": "机械能守恒应用",
+          "steps": [
+            "判断条件",
+            "列E1=E2"
+          ],
+          "example": "自由落体各位置机械能守恒"
+        }
+      ],
+      "commonConfusions": [
+        "机械能守恒条件（其他力不做功）",
+        "系统机械能"
+      ],
+      "prerequisiteRelations": [
+        "需掌握动能势能"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "机械能守恒",
+          "method": "见方法模型",
+          "example": "机械能守恒"
+        }
+      ]
+    },
+    {
+      "section": "1.电荷",
+      "aliases": [
+        "电荷",
+        "电荷守恒",
+        "起电"
+      ],
+      "conceptSummary": "电荷间有相互作用；起电方式（摩擦/接触/感应）不改变电荷总量；电荷守恒定律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "同种电荷排斥异种吸引",
+        "元电荷 e=1.6×10⁻¹⁹C",
+        "电荷守恒：总量不变"
+      ],
+      "methodModels": [
+        {
+          "name": "电荷量计算",
+          "steps": [
+            "q=ne",
+            "电荷守恒"
+          ],
+          "example": "n个电子，q=ne"
+        }
+      ],
+      "commonConfusions": [
+        "元电荷是最小电荷量"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电荷理解",
+          "method": "见方法模型",
+          "example": "电荷理解"
+        }
+      ]
+    },
+    {
+      "section": "2.库仑定律",
+      "aliases": [
+        "库仑定律",
+        "F=kq1q2/r²"
+      ],
+      "conceptSummary": "真空中两点电荷间作用力与电荷量乘积成正比、距离平方成反比：F=kq1q2/r²。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "F=kq1q2/r²，k=9×10⁹",
+        "方向在连线上",
+        "适用真空点电荷"
+      ],
+      "methodModels": [
+        {
+          "name": "库仑力计算",
+          "steps": [
+            "F=kq1q2/r²",
+            "注意点电荷条件"
+          ],
+          "example": "q1=q2=1μC,r=1m，F=9×10⁻³N"
+        }
+      ],
+      "commonConfusions": [
+        "库仑定律适用真空点电荷",
+        "与万有引力公式相似"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "库仑力计算",
+          "method": "见方法模型",
+          "example": "库仑力计算"
+        }
+      ]
+    },
+    {
+      "section": "3.电场 电场强度",
+      "aliases": [
+        "电场",
+        "电场强度",
+        "E=F/q"
+      ],
+      "conceptSummary": "电场是电荷周围存在的特殊物质；电场强度 E=F/q，描述电场力的性质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "E=F/q（与试探电荷无关）",
+        "点电荷 E=kQ/r²",
+        "电场线疏密表示强弱"
+      ],
+      "methodModels": [
+        {
+          "name": "场强计算",
+          "steps": [
+            "E=F/q",
+            "点电荷E=kQ/r²"
+          ],
+          "example": "F=2N,q=0.5C，E=4N/C"
+        }
+      ],
+      "commonConfusions": [
+        "场强由场源电荷决定",
+        "电场线不闭合"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电场强度",
+          "method": "见方法模型",
+          "example": "电场强度"
+        }
+      ]
+    },
+    {
+      "section": "2.电势能和电势",
+      "aliases": [
+        "电势能",
+        "电势",
+        "电场力做功"
+      ],
+      "conceptSummary": "电场力做功等于电势能减少；电势是电势能与电荷量之比 φ=Ep/q。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "电场力做正功电势能减小",
+        "φ=Ep/q",
+        "电势沿电场线降低"
+      ],
+      "methodModels": [
+        {
+          "name": "电势判断",
+          "steps": [
+            "沿电场线电势降低",
+            "正电荷在电势高处势能大"
+          ],
+          "example": "电场线方向判断电势高低"
+        }
+      ],
+      "commonConfusions": [
+        "电势与场强无直接关系",
+        "电势能相对零势能面"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电势分析",
+          "method": "见方法模型",
+          "example": "电势分析"
+        }
+      ]
+    },
+    {
+      "section": "2.电势差",
+      "aliases": [
+        "电势差",
+        "U=W/q"
+      ],
+      "conceptSummary": "电势差 Uab=φa-φb=Wab/q，电场力做功 W=qU。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Uab=Wab/q",
+        "W=qU",
+        "U与零势能面无关"
+      ],
+      "methodModels": [
+        {
+          "name": "电势差计算",
+          "steps": [
+            "U=W/q",
+            "W=qU"
+          ],
+          "example": "q=2C,W=10J，U=5V"
+        }
+      ],
+      "commonConfusions": [
+        "电势差与电势（差无关零势面）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电势差",
+          "method": "见方法模型",
+          "example": "电势差"
+        }
+      ]
+    },
+    {
+      "section": "3.电势差与电场强度的关系",
+      "aliases": [
+        "U=Ed",
+        "匀强电场"
+      ],
+      "conceptSummary": "匀强电场中电势差与场强关系 U=Ed（d沿场强方向距离）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "E=U/d（匀强）",
+        "场强方向是电势降落最快方向",
+        "U=Ed只适用匀强"
+      ],
+      "methodModels": [
+        {
+          "name": "U=Ed应用",
+          "steps": [
+            "E=U/d",
+            "注意d方向"
+          ],
+          "example": "U=100V,d=0.5m，E=200V/m"
+        }
+      ],
+      "commonConfusions": [
+        "d是沿场强方向距离"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "E与U关系",
+          "method": "见方法模型",
+          "example": "E与U关系"
+        }
+      ]
+    },
+    {
+      "section": "4.电容器的电容",
+      "aliases": [
+        "电容器",
+        "电容",
+        "C=Q/U"
+      ],
+      "conceptSummary": "电容器储存电荷，电容 C=Q/U；平行板电容 C=εS/4πkd。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "C=Q/U（电容是固有属性）",
+        "平行板 C=εS/4πkd",
+        "充电后断开Q不变，接电源U不变"
+      ],
+      "methodModels": [
+        {
+          "name": "电容计算",
+          "steps": [
+            "C=Q/U",
+            "平行板公式"
+          ],
+          "example": "Q=2μC,U=100V，C=20nF"
+        }
+      ],
+      "commonConfusions": [
+        "电容与Q、U无关",
+        "动态分析（Q不变/U不变）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电容",
+          "method": "见方法模型",
+          "example": "电容"
+        }
+      ]
+    },
+    {
+      "section": "5.带电粒子在电场中的运动",
+      "aliases": [
+        "带电粒子",
+        "加速",
+        "偏转"
+      ],
+      "conceptSummary": "带电粒子在电场中受电场力 F=qE：加速用动能定理 qU=½mv²，偏转类似平抛。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "加速：qU=½mv²",
+        "偏转：水平匀速竖直匀加速",
+        "偏转位移与电压成正比"
+      ],
+      "methodModels": [
+        {
+          "name": "加速分析",
+          "steps": [
+            "qU=½mv²",
+            "求末速度"
+          ],
+          "example": "电子经U加速"
+        },
+        {
+          "name": "偏转分析",
+          "steps": [
+            "类平抛",
+            "a=qE/m"
+          ],
+          "example": "偏转距离计算"
+        }
+      ],
+      "commonConfusions": [
+        "重力一般忽略（带电粒子）",
+        "偏转方向"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电场中粒子运动",
+          "method": "见方法模型",
+          "example": "电场中粒子运动"
+        }
+      ]
+    },
+    {
+      "section": "1.电源和电流",
+      "aliases": [
+        "电源",
+        "电流",
+        "I=Q/t"
+      ],
+      "conceptSummary": "电源提供电动势，电流是电荷定向移动：I=q/t，方向为正电荷定向移动方向。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "I=q/t（标量但有方向规定）",
+        "恒定电流：大小方向不变",
+        "电源电动势是提供电压的能力"
+      ],
+      "methodModels": [
+        {
+          "name": "电流计算",
+          "steps": [
+            "I=q/t"
+          ],
+          "example": "10C电荷10s，I=1A"
+        }
+      ],
+      "commonConfusions": [
+        "电流方向与电子移动相反"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电流",
+          "method": "见方法模型",
+          "example": "电流"
+        }
+      ]
+    },
+    {
+      "section": "2.导体的电阻",
+      "aliases": [
+        "电阻",
+        "欧姆定律",
+        "R=U/I"
+      ],
+      "conceptSummary": "电阻 R=U/I，电阻定律 R=ρL/S（ρ电阻率）；欧姆定律 I=U/R（纯电阻）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "R=ρL/S（决定式）",
+        "R=U/I（量度式）",
+        "金属电阻率随温度升高增大"
+      ],
+      "methodModels": [
+        {
+          "name": "电阻计算",
+          "steps": [
+            "R=ρL/S",
+            "R=U/I"
+          ],
+          "example": "ρ,L,S求R"
+        }
+      ],
+      "commonConfusions": [
+        "R=U/I与R=ρL/S区别",
+        "欧姆定律适用纯电阻"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电阻",
+          "method": "见方法模型",
+          "example": "电阻"
+        }
+      ]
+    },
+    {
+      "section": "4.串联电路和并联电路",
+      "aliases": [
+        "串联",
+        "并联",
+        "等效电阻"
+      ],
+      "conceptSummary": "串联电流相等电压分配，并联电压相等电流分配；等效电阻计算。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "串联：R=R1+R2，U分配",
+        "并联：1/R=1/R1+1/R2",
+        "串联分压并联分流"
+      ],
+      "methodModels": [
+        {
+          "name": "等效电阻",
+          "steps": [
+            "串联相加",
+            "并联倒数相加"
+          ],
+          "example": "R1=2,R2=3串联R=5，并联R=1.2"
+        }
+      ],
+      "commonConfusions": [
+        "并联电阻小于任一",
+        "混联化简"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "串并联",
+          "method": "见方法模型",
+          "example": "串并联"
+        }
+      ]
+    },
+    {
+      "section": "2.闭合电路的欧姆定律",
+      "aliases": [
+        "闭合电路",
+        "内阻",
+        "I=E/(R+r)"
+      ],
+      "conceptSummary": "闭合电路电流 I=E/(R+r)，路端电压 U=E-Ir，电源内阻分压。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "I=E/(R+r)",
+        "U=E-Ir（路端电压）",
+        "短路电流 I=E/r"
+      ],
+      "methodModels": [
+        {
+          "name": "闭合电路计算",
+          "steps": [
+            "I=E/(R+r)",
+            "U=E-Ir"
+          ],
+          "example": "E=6V,r=1Ω,R=5Ω，I=1A,U=5V"
+        }
+      ],
+      "commonConfusions": [
+        "路端电压随外电阻变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "闭合电路欧姆定律",
+          "method": "见方法模型",
+          "example": "闭合电路欧姆定律"
+        }
+      ]
+    },
+    {
+      "section": "3.磁场 磁感线",
+      "aliases": [
+        "磁场",
+        "磁感线",
+        "磁感应强度方向"
+      ],
+      "conceptSummary": "磁场是磁体/电流周围存在的特殊物质；磁感线从N到S外部，疏密表强弱。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "磁感线闭合，不相交",
+        "磁感应强度 B=F/IL",
+        "磁感线方向即磁场方向"
+      ],
+      "methodModels": [
+        {
+          "name": "磁感线判断",
+          "steps": [
+            "看N到S",
+            "右手螺旋定则"
+          ],
+          "example": "通电螺线管磁场"
+        }
+      ],
+      "commonConfusions": [
+        "磁感线是假想曲线",
+        "与电场线区别（闭合）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "磁场",
+          "method": "见方法模型",
+          "example": "磁场"
+        }
+      ]
+    },
+    {
+      "section": "2.磁感应强度 磁通量",
+      "aliases": [
+        "磁感应强度",
+        "磁通量",
+        "Φ=BS"
+      ],
+      "conceptSummary": "磁感应强度 B=F/IL 描述磁场强弱；磁通量 Φ=BS（B⊥S时）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "B=F/IL（安培力定义）",
+        "Φ=BScosθ",
+        "磁通量是标量有正负"
+      ],
+      "methodModels": [
+        {
+          "name": "磁通量计算",
+          "steps": [
+            "Φ=BS",
+            "B⊥S时"
+          ],
+          "example": "B=0.5T,S=2m²，Φ=1Wb"
+        }
+      ],
+      "commonConfusions": [
+        "磁通量正负只表方向",
+        "磁通量变化是电磁感应关键"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "磁通量",
+          "method": "见方法模型",
+          "example": "磁通量"
+        }
+      ]
+    },
+    {
+      "section": "3.电磁感应现象及应用",
+      "aliases": [
+        "电磁感应",
+        "感应电流条件"
+      ],
+      "conceptSummary": "闭合回路磁通量变化产生感应电流——电磁感应现象。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "条件：闭合回路+磁通量变化",
+        "切割磁感线产生感应电动势",
+        "应用：发电机"
+      ],
+      "methodModels": [
+        {
+          "name": "感应电流判断",
+          "steps": [
+            "看磁通量是否变化"
+          ],
+          "example": "磁铁插入线圈产生感应电流"
+        }
+      ],
+      "commonConfusions": [
+        "磁通量不变无感应电流",
+        "切割必产生电动势"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电磁感应条件",
+          "method": "见方法模型",
+          "example": "电磁感应条件"
+        }
+      ]
+    },
+    {
+      "section": "1.动量",
+      "aliases": [
+        "动量",
+        "p=mv"
+      ],
+      "conceptSummary": "动量 p=mv（矢量），描述运动状态；动量变化 Δp=末动量-初动量。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "p=mv（矢量）",
+        "动量的方向即速度方向",
+        "Δp=pt-p0"
+      ],
+      "methodModels": [
+        {
+          "name": "动量计算",
+          "steps": [
+            "p=mv"
+          ],
+          "example": "m=2kg,v=3m/s，p=6kg·m/s"
+        }
+      ],
+      "commonConfusions": [
+        "动量与动能区别（矢量/标量）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动量",
+          "method": "见方法模型",
+          "example": "动量"
+        }
+      ]
+    },
+    {
+      "section": "2.动量定理",
+      "aliases": [
+        "动量定理",
+        "Ft=Δp"
+      ],
+      "conceptSummary": "合外力冲量等于动量变化：Ft=mv'-mv（矢量式）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "冲量 I=Ft",
+        "Ft=Δp",
+        "缓冲延长作用时间减小冲击"
+      ],
+      "methodModels": [
+        {
+          "name": "动量定理应用",
+          "steps": [
+            "选正方向",
+            "Ft=Δp"
+          ],
+          "example": "缓冲装置减小冲击力"
+        }
+      ],
+      "commonConfusions": [
+        "动量定理矢量性",
+        "冲量是过程量"
+      ],
+      "prerequisiteRelations": [
+        "需掌握动量"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动量定理",
+          "method": "见方法模型",
+          "example": "动量定理"
+        }
+      ]
+    },
+    {
+      "section": "3.动量守恒定律",
+      "aliases": [
+        "动量守恒",
+        "系统"
+      ],
+      "conceptSummary": "系统不受外力或合外力为零时，系统总动量守恒：m1v1+m2v2=m1v1'+m2v2'。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "条件：合外力为零",
+        "碰撞/爆炸/反冲适用",
+        "动量守恒是矢量守恒"
+      ],
+      "methodModels": [
+        {
+          "name": "动量守恒应用",
+          "steps": [
+            "判断系统合外力",
+            "列守恒方程"
+          ],
+          "example": "完全非弹性碰撞"
+        }
+      ],
+      "commonConfusions": [
+        "系统内力不影响总动量",
+        "碰撞类型"
+      ],
+      "prerequisiteRelations": [
+        "需掌握动量"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动量守恒",
+          "method": "见方法模型",
+          "example": "动量守恒"
+        }
+      ]
+    },
+    {
+      "section": "5.弹性碰撞和非弹性碰撞",
+      "aliases": [
+        "弹性碰撞",
+        "非弹性碰撞",
+        "完全非弹性"
+      ],
+      "conceptSummary": "弹性碰撞动能守恒；非弹性碰撞有动能损失；完全非弹性碰撞粘在一起动能损失最大。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "弹性：动量+动能都守恒",
+        "完全非弹性：粘在一起",
+        "碰撞过程动量守恒"
+      ],
+      "methodModels": [
+        {
+          "name": "碰撞分析",
+          "steps": [
+            "动量守恒",
+            "弹性加动能守恒"
+          ],
+          "example": "m1v1=(m1+m2)v（完全非弹性）"
+        }
+      ],
+      "commonConfusions": [
+        "弹性碰撞不损失动能"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "碰撞分类",
+          "method": "见方法模型",
+          "example": "碰撞分类"
+        }
+      ]
+    },
+    {
+      "section": "6.反冲现象 火箭",
+      "aliases": [
+        "反冲",
+        "火箭原理"
+      ],
+      "conceptSummary": "反冲是系统一部分向某方向运动，另一部分向反方向运动，靠动量守恒。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "动量守恒",
+        "火箭靠喷射燃气反冲",
+        "反冲速度与喷射质量速度有关"
+      ],
+      "methodModels": [
+        {
+          "name": "反冲速度",
+          "steps": [
+            "动量守恒",
+            "m1v1=m2v2"
+          ],
+          "example": "火箭喷气加速"
+        }
+      ],
+      "commonConfusions": [
+        "反冲是内力作用"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "反冲",
+          "method": "见方法模型",
+          "example": "反冲"
+        }
+      ]
+    },
+    {
+      "section": "1.简谐运动",
+      "aliases": [
+        "简谐运动",
+        "回复力",
+        "F=-kx"
+      ],
+      "conceptSummary": "简谐运动回复力 F=-kx，运动具有周期性；x=Asin(ωt+φ)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "F=-kx（与位移反向）",
+        "x=Asin(ωt+φ)",
+        "平衡位置速度最大"
+      ],
+      "methodModels": [
+        {
+          "name": "简谐判断",
+          "steps": [
+            "回复力F=-kx",
+            "看是否正比反向"
+          ],
+          "example": "弹簧振子"
+        }
+      ],
+      "commonConfusions": [
+        "回复力不一定是合外力"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "简谐运动",
+          "method": "见方法模型",
+          "example": "简谐运动"
+        }
+      ]
+    },
+    {
+      "section": "2.简谐运动的描述",
+      "aliases": [
+        "振幅",
+        "周期",
+        "频率"
+      ],
+      "conceptSummary": "描述简谐运动的量：振幅A、周期T、频率f=1/T、相位。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "振幅反映能量",
+        "T=2π√(m/k)（弹簧振子）",
+        "相位描述振动状态"
+      ],
+      "methodModels": [
+        {
+          "name": "周期频率",
+          "steps": [
+            "f=1/T",
+            "T=2π√(m/k)"
+          ],
+          "example": "k=100,m=1kg，T≈0.63s"
+        }
+      ],
+      "commonConfusions": [
+        "振幅与位移区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "简谐运动描述",
+          "method": "见方法模型",
+          "example": "简谐运动描述"
+        }
+      ]
+    },
+    {
+      "section": "3.简谐运动的回复力和能量",
+      "aliases": [
+        "回复力",
+        "简谐能量"
+      ],
+      "conceptSummary": "简谐运动能量守恒，动能与势能相互转化；回复力 F=-kx。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "F=-kx",
+        "机械能守恒",
+        "平衡位置动能最大势能最小"
+      ],
+      "methodModels": [
+        {
+          "name": "能量分析",
+          "steps": [
+            "看位置",
+            "动能势能转化"
+          ],
+          "example": "端点势能最大动能0"
+        }
+      ],
+      "commonConfusions": [
+        "简谐运动总能量与A²成正比"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "简谐能量",
+          "method": "见方法模型",
+          "example": "简谐能量"
+        }
+      ]
+    },
+    {
+      "section": "4.单摆",
+      "aliases": [
+        "单摆",
+        "T=2π√(L/g)"
+      ],
+      "conceptSummary": "单摆在小角度下做简谐运动，周期 T=2π√(L/g)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "T=2π√(L/g)",
+        "与质量振幅无关",
+        "摆角小于5°"
+      ],
+      "methodModels": [
+        {
+          "name": "单摆周期",
+          "steps": [
+            "T=2π√(L/g)",
+            "测g"
+          ],
+          "example": "L=1m，T≈2s"
+        }
+      ],
+      "commonConfusions": [
+        "单摆周期与摆角质量无关"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "单摆",
+          "method": "见方法模型",
+          "example": "单摆"
+        }
+      ]
+    },
+    {
+      "section": "6.受迫振动 共振",
+      "aliases": [
+        "受迫振动",
+        "共振"
+      ],
+      "conceptSummary": "受迫振动频率等于驱动力频率；驱动力频率等于固有频率时共振。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "受迫振动频率=驱动力频率",
+        "共振：振幅最大",
+        "共振应用与防止"
+      ],
+      "methodModels": [
+        {
+          "name": "共振分析",
+          "steps": [
+            "比较驱动力与固有频率"
+          ],
+          "example": "共振振幅最大"
+        }
+      ],
+      "commonConfusions": [
+        "受迫与固有振动区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "共振",
+          "method": "见方法模型",
+          "example": "共振"
+        }
+      ]
+    },
+    {
+      "section": "1.波的形成",
+      "aliases": [
+        "机械波",
+        "波传播"
+      ],
+      "conceptSummary": "机械波传播振动形式与能量，不传播介质本身；横波纵波。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "波传播需要介质",
+        "波传递能量和振动形式",
+        "质点不随波迁移"
+      ],
+      "methodModels": [
+        {
+          "name": "波传播理解",
+          "steps": [
+            "振动形式传播",
+            "质点振动"
+          ],
+          "example": "绳波横波"
+        }
+      ],
+      "commonConfusions": [
+        "波传播方向与质点振动方向关系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "波的形成",
+          "method": "见方法模型",
+          "example": "波的形成"
+        }
+      ]
+    },
+    {
+      "section": "2.波的描述",
+      "aliases": [
+        "波长",
+        "波速",
+        "v=λf"
+      ],
+      "conceptSummary": "波长λ是相邻同相点距离；波速 v=λf=λ/T。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "v=λf",
+        "波长周期频率关系",
+        "波速由介质决定"
+      ],
+      "methodModels": [
+        {
+          "name": "波速计算",
+          "steps": [
+            "v=λf",
+            "λ=vT"
+          ],
+          "example": "λ=2m,f=5Hz，v=10m/s"
+        }
+      ],
+      "commonConfusions": [
+        "波速与质点速度区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "波的描述",
+          "method": "见方法模型",
+          "example": "波的描述"
+        }
+      ]
+    },
+    {
+      "section": "3.波的反射、折射和衍射",
+      "aliases": [
+        "反射",
+        "折射",
+        "衍射"
+      ],
+      "conceptSummary": "波的反射折射遵循反射折射定律；衍射是波绕过障碍物传播，障碍物尺寸与波长可比时明显。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "衍射明显条件：障碍物≈波长",
+        "一切波都能衍射",
+        "反射折射"
+      ],
+      "methodModels": [
+        {
+          "name": "衍射判断",
+          "steps": [
+            "看障碍物与波长"
+          ],
+          "example": "声波衍射明显"
+        }
+      ],
+      "commonConfusions": [
+        "衍射是所有波的特征"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "波的衍射",
+          "method": "见方法模型",
+          "example": "波的衍射"
+        }
+      ]
+    },
+    {
+      "section": "4.波的干涉",
+      "aliases": [
+        "干涉",
+        "加强减弱"
+      ],
+      "conceptSummary": "频率相同的两列波叠加产生干涉，振动加强点与减弱点稳定分布。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "干涉条件：频率相同",
+        "加强：波程差为半波长偶数倍",
+        "减弱：奇数倍"
+      ],
+      "methodModels": [
+        {
+          "name": "干涉判断",
+          "steps": [
+            "算波程差",
+            "定加强减弱"
+          ],
+          "example": "双缝干涉"
+        }
+      ],
+      "commonConfusions": [
+        "干涉是波的叠加"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "波的干涉",
+          "method": "见方法模型",
+          "example": "波的干涉"
+        }
+      ]
+    },
+    {
+      "section": "5.多普勒效应",
+      "aliases": [
+        "多普勒效应",
+        "频率变化"
+      ],
+      "conceptSummary": "波源与观察者相对运动时，观察者接收频率发生变化——多普勒效应。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "靠近：频率增大",
+        "远离：频率减小",
+        "应用：测速/彩超"
+      ],
+      "methodModels": [
+        {
+          "name": "多普勒判断",
+          "steps": [
+            "看相对运动方向"
+          ],
+          "example": "火车靠近鸣笛音调变高"
+        }
+      ],
+      "commonConfusions": [
+        "声源实际频率不变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "多普勒效应",
+          "method": "见方法模型",
+          "example": "多普勒效应"
+        }
+      ]
+    },
+    {
+      "section": "1.光的折射",
+      "aliases": [
+        "折射",
+        "折射率",
+        "n=sinθ1/sinθ2"
+      ],
+      "conceptSummary": "光从一种介质进入另一种介质发生折射；折射率 n=sinθ1/sinθ2=c/v。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "折射定律：sinθ1/sinθ2=n",
+        "n=c/v",
+        "光密介质折射率大"
+      ],
+      "methodModels": [
+        {
+          "name": "折射率计算",
+          "steps": [
+            "n=sinθ1/sinθ2",
+            "n=c/v"
+          ],
+          "example": "入射60°折射30°，n=√3"
+        }
+      ],
+      "commonConfusions": [
+        "折射率与光的频率有关"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "光的折射",
+          "method": "见方法模型",
+          "example": "光的折射"
+        }
+      ]
+    },
+    {
+      "section": "2.全反射",
+      "aliases": [
+        "全反射",
+        "临界角"
+      ],
+      "conceptSummary": "光从光密介质射向光疏介质，入射角大于临界角时发生全反射。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "条件：光密→光疏+入射角>临界角",
+        "sinC=1/n",
+        "应用：光导纤维"
+      ],
+      "methodModels": [
+        {
+          "name": "临界角计算",
+          "steps": [
+            "sinC=1/n"
+          ],
+          "example": "n=√2，C=45°"
+        }
+      ],
+      "commonConfusions": [
+        "全反射条件",
+        "光导纤维原理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "全反射",
+          "method": "见方法模型",
+          "example": "全反射"
+        }
+      ]
+    },
+    {
+      "section": "3.光的干涉",
+      "aliases": [
+        "干涉",
+        "双缝",
+        "薄膜干涉"
+      ],
+      "conceptSummary": "两列相干光叠加产生干涉条纹；双缝干涉条纹间距与波长成正比。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "相干条件：频率相同",
+        "双缝条纹：Δx=λL/d",
+        "薄膜干涉应用"
+      ],
+      "methodModels": [
+        {
+          "name": "双缝干涉",
+          "steps": [
+            "Δx=λL/d",
+            "看条纹"
+          ],
+          "example": "亮暗条纹相间"
+        }
+      ],
+      "commonConfusions": [
+        "干涉是光的波动性证据"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "光的干涉",
+          "method": "见方法模型",
+          "example": "光的干涉"
+        }
+      ]
+    },
+    {
+      "section": "5.光的衍射",
+      "aliases": [
+        "衍射",
+        "单缝"
+      ],
+      "conceptSummary": "光通过狭缝发生衍射，产生明暗条纹；衍射证明光的波动性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单缝衍射：中央亮纹最宽最亮",
+        "缝宽越小衍射越明显",
+        "衍射与干涉区别"
+      ],
+      "methodModels": [
+        {
+          "name": "衍射现象",
+          "steps": [
+            "看缝宽与波长"
+          ],
+          "example": "狭缝衍射图样"
+        }
+      ],
+      "commonConfusions": [
+        "衍射与干涉图样区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "光的衍射",
+          "method": "见方法模型",
+          "example": "光的衍射"
+        }
+      ]
+    },
+    {
+      "section": "6.光的偏振 激光",
+      "aliases": [
+        "偏振",
+        "激光"
+      ],
+      "conceptSummary": "偏振证明光是横波；激光具有相干性好、单色性好、亮度高特性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "偏振：横波特有",
+        "激光：相干/单色/平行",
+        "偏振光应用（太阳镜）"
+      ],
+      "methodModels": [
+        {
+          "name": "偏振判断",
+          "steps": [
+            "看能否偏振",
+            "横波可偏振"
+          ],
+          "example": "偏振片验证横波"
+        }
+      ],
+      "commonConfusions": [
+        "纵波不能偏振"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "偏振",
+          "method": "见方法模型",
+          "example": "偏振"
+        }
+      ]
+    },
+    {
+      "section": "1.磁场对通电导线的作用力",
+      "aliases": [
+        "安培力",
+        "F=BIL"
+      ],
+      "conceptSummary": "通电导线在磁场中受安培力 F=BILsinθ，方向由左手定则判断。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "F=BIL（B⊥I时）",
+        "左手定则",
+        "平行时安培力为零"
+      ],
+      "methodModels": [
+        {
+          "name": "安培力计算",
+          "steps": [
+            "F=BIL",
+            "左手定则方向"
+          ],
+          "example": "B=0.5T,I=2A,L=1m，F=1N"
+        }
+      ],
+      "commonConfusions": [
+        "安培力方向（左手定则）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "安培力",
+          "method": "见方法模型",
+          "example": "安培力"
+        }
+      ]
+    },
+    {
+      "section": "2.磁场对运动电荷的作用力",
+      "aliases": [
+        "洛伦兹力",
+        "f=qvB"
+      ],
+      "conceptSummary": "运动电荷在磁场中受洛伦兹力 f=qvB，方向垂直于速度与磁场，不做功。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "f=qvB（v⊥B时）",
+        "洛伦兹力不做功",
+        "左手定则（正电荷）"
+      ],
+      "methodModels": [
+        {
+          "name": "洛伦兹力",
+          "steps": [
+            "f=qvB",
+            "方向垂直v与B"
+          ],
+          "example": "v=10⁶,B=1T,q=e，f=1.6×10⁻¹³N"
+        }
+      ],
+      "commonConfusions": [
+        "洛伦兹力不做功",
+        "负电荷用右手"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "洛伦兹力",
+          "method": "见方法模型",
+          "example": "洛伦兹力"
+        }
+      ]
+    },
+    {
+      "section": "3.带电粒子在匀强磁场中的运动",
+      "aliases": [
+        "圆周运动",
+        "r=mv/qB"
+      ],
+      "conceptSummary": "带电粒子垂直进入匀强磁场做匀速圆周运动：r=mv/qB，T=2πm/qB。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "洛伦兹力提供向心力",
+        "r=mv/qB",
+        "T=2πm/qB（与速度无关）"
+      ],
+      "methodModels": [
+        {
+          "name": "半径计算",
+          "steps": [
+            "r=mv/qB"
+          ],
+          "example": "mv一定，B增大r减小"
+        },
+        {
+          "name": "周期计算",
+          "steps": [
+            "T=2πm/qB"
+          ],
+          "example": "周期与速度无关"
+        }
+      ],
+      "commonConfusions": [
+        "圆周运动条件（v⊥B）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "磁场中圆周运动",
+          "method": "见方法模型",
+          "example": "磁场中圆周运动"
+        }
+      ]
+    },
+    {
+      "section": "4.质谱仪与回旋加速器",
+      "aliases": [
+        "质谱仪",
+        "回旋加速器"
+      ],
+      "conceptSummary": "质谱仪分离不同质量离子；回旋加速器用交变电场多次加速带电粒子。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "质谱仪：偏转半径定质量",
+        "回旋加速器：D形盒+交变电场",
+        "最大速度与回旋半径有关"
+      ],
+      "methodModels": [
+        {
+          "name": "加速器分析",
+          "steps": [
+            "电场加速",
+            "磁场回旋"
+          ],
+          "example": "回旋加速器加速粒子"
+        }
+      ],
+      "commonConfusions": [
+        "回旋加速器交变电场频率=回旋频率"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "质谱仪回旋加速器",
+          "method": "见方法模型",
+          "example": "质谱仪回旋加速器"
+        }
+      ]
+    },
+    {
+      "section": "1.楞次定律",
+      "aliases": [
+        "楞次定律",
+        "感应电流方向"
+      ],
+      "conceptSummary": "感应电流的方向总是阻碍引起感应电流的磁通量变化——楞次定律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "增反减同",
+        "来拒去留",
+        "安培力阻碍相对运动"
+      ],
+      "methodModels": [
+        {
+          "name": "方向判断",
+          "steps": [
+            "判断磁通变化",
+            "增反减同"
+          ],
+          "example": "磁铁插入线圈感应电流方向"
+        }
+      ],
+      "commonConfusions": [
+        "楞次定律与右手定则"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "楞次定律",
+          "method": "见方法模型",
+          "example": "楞次定律"
+        }
+      ]
+    },
+    {
+      "section": "2.法拉第电磁感应定律",
+      "aliases": [
+        "法拉第定律",
+        "E=nΔΦ/Δt"
+      ],
+      "conceptSummary": "感应电动势大小与磁通量变化率成正比：E=nΔΦ/Δt；切割型 E=BLv。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "E=nΔΦ/Δt",
+        "E=BLv（切割）",
+        "E与ΔΦ/Δt成正比"
+      ],
+      "methodModels": [
+        {
+          "name": "感应电动势",
+          "steps": [
+            "E=nΔΦ/Δt",
+            "E=BLv"
+          ],
+          "example": "n=100,ΔΦ=0.1Wb,Δt=1s，E=10V"
+        }
+      ],
+      "commonConfusions": [
+        "Φ大不一定E大，变化率大E大"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "法拉第定律",
+          "method": "见方法模型",
+          "example": "法拉第定律"
+        }
+      ]
+    },
+    {
+      "section": "3.涡流、电磁阻尼和电磁驱动",
+      "aliases": [
+        "涡流",
+        "电磁阻尼",
+        "电磁驱动"
+      ],
+      "conceptSummary": "涡流是导体中感应电流；电磁阻尼是涡流阻碍运动；电磁驱动是涡流带动转动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "涡流产生条件：磁通量变化",
+        "电磁阻尼：阻碍相对运动",
+        "应用：电磁炉/制动"
+      ],
+      "methodModels": [
+        {
+          "name": "涡流应用",
+          "steps": [
+            "电磁炉加热",
+            "金属探测"
+          ],
+          "example": "电磁炉利用涡流发热"
+        }
+      ],
+      "commonConfusions": [
+        "涡流也是感应电流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "涡流",
+          "method": "见方法模型",
+          "example": "涡流"
+        }
+      ]
+    },
+    {
+      "section": "4.互感和自感",
+      "aliases": [
+        "自感",
+        "互感",
+        "自感电动势"
+      ],
+      "conceptSummary": "自感是自身电流变化产生感应电动势，互感是两个线圈间；自感系数L。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自感电动势 E=LΔI/Δt",
+        "自感阻碍电流变化",
+        "应用：日光灯"
+      ],
+      "methodModels": [
+        {
+          "name": "自感分析",
+          "steps": [
+            "电流变化",
+            "自感电动势"
+          ],
+          "example": "断电瞬间灯泡闪亮"
+        }
+      ],
+      "commonConfusions": [
+        "自感电动势阻碍电流变化非阻止"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自感",
+          "method": "见方法模型",
+          "example": "自感"
+        }
+      ]
+    },
+    {
+      "section": "1.交变电流",
+      "aliases": [
+        "交变电流",
+        "正弦交流"
+      ],
+      "conceptSummary": "大小方向随时间周期性变化的电流是交变电流；正弦交流 e=Emsin(ωt)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "正弦交流：e=Emsin(ωt)",
+        "峰值与瞬时值",
+        "中性面时磁通最大"
+      ],
+      "methodModels": [
+        {
+          "name": "交变电流理解",
+          "steps": [
+            "看瞬时值",
+            "周期频率"
+          ],
+          "example": "家庭用电是正弦交流"
+        }
+      ],
+      "commonConfusions": [
+        "交变电流方向周期变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "交变电流",
+          "method": "见方法模型",
+          "example": "交变电流"
+        }
+      ]
+    },
+    {
+      "section": "2.交变电流的描述",
+      "aliases": [
+        "有效值",
+        "峰值",
+        "周期"
+      ],
+      "conceptSummary": "有效值按热等效定义，正弦交流有效值=峰值/√2；周期频率描述变化快慢。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "I=Im/√2，U=Um/√2",
+        "有效值用于功率计算",
+        "f=1/T，ω=2πf"
+      ],
+      "methodModels": [
+        {
+          "name": "有效值计算",
+          "steps": [
+            "Im/√2",
+            "非正弦按热等效"
+          ],
+          "example": "峰值311V，有效值220V"
+        }
+      ],
+      "commonConfusions": [
+        "有效值热等效定义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "交变电流描述",
+          "method": "见方法模型",
+          "example": "交变电流描述"
+        }
+      ]
+    },
+    {
+      "section": "3.变压器",
+      "aliases": [
+        "变压器",
+        "U1/U2=n1/n2"
+      ],
+      "conceptSummary": "变压器利用互感改变电压：U1/U2=n1/n2，理想变压器功率守恒。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "U1/U2=n1/n2",
+        "P1=P2（理想）",
+        "I1/I2=n2/n1"
+      ],
+      "methodModels": [
+        {
+          "name": "变压器计算",
+          "steps": [
+            "匝数比定电压",
+            "功率守恒"
+          ],
+          "example": "n1:n2=10:1，U1=220V→U2=22V"
+        }
+      ],
+      "commonConfusions": [
+        "变压器不改变频率",
+        "理想变压器无损耗"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "变压器",
+          "method": "见方法模型",
+          "example": "变压器"
+        }
+      ]
+    },
+    {
+      "section": "4.电能的输送",
+      "aliases": [
+        "输电",
+        "升压降压",
+        "损耗"
+      ],
+      "conceptSummary": "远距离输电升压降损耗，P损=I²R；高压输电减小电流。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "P损=I²R",
+        "P=UI，升高电压减小电流",
+        "升压降压变压器配合"
+      ],
+      "methodModels": [
+        {
+          "name": "输电损耗",
+          "steps": [
+            "P损=I²R",
+            "升压降流"
+          ],
+          "example": "高压输电减小损耗"
+        }
+      ],
+      "commonConfusions": [
+        "损耗用I²R不用U²/R"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电能输送",
+          "method": "见方法模型",
+          "example": "电能输送"
+        }
+      ]
+    },
+    {
+      "section": "1.电磁振荡",
+      "aliases": [
+        "电磁振荡",
+        "LC回路"
+      ],
+      "conceptSummary": "LC回路产生电磁振荡，电场能与磁场能相互转化，周期 T=2π√(LC)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "T=2π√(LC)",
+        "电场能→磁场能→电场能",
+        "阻尼振荡"
+      ],
+      "methodModels": [
+        {
+          "name": "振荡周期",
+          "steps": [
+            "T=2π√(LC)"
+          ],
+          "example": "L=1mH,C=100pF，T≈2×10⁻⁵s"
+        }
+      ],
+      "commonConfusions": [
+        "振荡能量守恒（理想）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电磁振荡",
+          "method": "见方法模型",
+          "example": "电磁振荡"
+        }
+      ]
+    },
+    {
+      "section": "2.电磁场与电磁波",
+      "aliases": [
+        "电磁场",
+        "电磁波"
+      ],
+      "conceptSummary": "变化的电场产生磁场、变化的磁场产生电场（麦克斯韦）；电磁波传播不需要介质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "电磁波速度 c=3×10⁸m/s",
+        "电磁波是横波",
+        "传播不需要介质"
+      ],
+      "methodModels": [
+        {
+          "name": "电磁波理解",
+          "steps": [
+            "变化的场相互激发"
+          ],
+          "example": "光也是电磁波"
+        }
+      ],
+      "commonConfusions": [
+        "电磁波传播不需介质（区别于机械波）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电磁波",
+          "method": "见方法模型",
+          "example": "电磁波"
+        }
+      ]
+    },
+    {
+      "section": "3.无线电波的发射和接收",
+      "aliases": [
+        "无线电波",
+        "调制",
+        "解调"
+      ],
+      "conceptSummary": "无线电波发射经调制（调幅/调频），接收经调谐+解调。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "调制：信号加载到载波",
+        "调幅AM/调频FM",
+        "解调还原信号"
+      ],
+      "methodModels": [
+        {
+          "name": "发射接收",
+          "steps": [
+            "调制发射",
+            "调谐解调接收"
+          ],
+          "example": "收音机工作原理"
+        }
+      ],
+      "commonConfusions": [
+        "调制与解调相反过程"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "无线电波",
+          "method": "见方法模型",
+          "example": "无线电波"
+        }
+      ]
+    },
+    {
+      "section": "4.电磁波谱",
+      "aliases": [
+        "电磁波谱",
+        "无线电波到γ射线"
+      ],
+      "conceptSummary": "电磁波按频率排序：无线电波/微波/红外/可见光/紫外/X射线/γ射线。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "频率越高能量越大",
+        "红外热效应、紫外线杀菌",
+        "X射线γ射线穿透强"
+      ],
+      "methodModels": [
+        {
+          "name": "波谱判断",
+          "steps": [
+            "按频率能量排序"
+          ],
+          "example": "γ射线频率最高"
+        }
+      ],
+      "commonConfusions": [
+        "电磁波谱顺序记忆"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电磁波谱",
+          "method": "见方法模型",
+          "example": "电磁波谱"
+        }
+      ]
+    },
+    {
+      "section": "1.认识传感器",
+      "aliases": [
+        "传感器",
+        "敏感元件"
+      ],
+      "conceptSummary": "传感器把非电学量转换为电学量，由敏感元件+转换电路组成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "传感器原理：非电→电",
+        "常见敏感元件：热敏/光敏/力敏",
+        "应用：自动控制"
+      ],
+      "methodModels": [
+        {
+          "name": "传感器理解",
+          "steps": [
+            "非电学量→电学量"
+          ],
+          "example": "温度传感器测温度"
+        }
+      ],
+      "commonConfusions": [
+        "传感器输出电信号"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "传感器",
+          "method": "见方法模型",
+          "example": "传感器"
+        }
+      ]
+    },
+    {
+      "section": "2.常见传感器的工作原理及应用",
+      "aliases": [
+        "热敏电阻",
+        "光敏电阻",
+        "压力传感器"
+      ],
+      "conceptSummary": "热敏电阻阻值随温度变化、光敏电阻随光照变化、压力传感器测压力。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "热敏：温度升高阻值变化",
+        "光敏：光照增强阻值减小",
+        "应用：温度/光照/压力控制"
+      ],
+      "methodModels": [
+        {
+          "name": "传感器应用",
+          "steps": [
+            "敏感元件特性",
+            "接控制电路"
+          ],
+          "example": "光控路灯"
+        }
+      ],
+      "commonConfusions": [
+        "正负温度系数热敏"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "传感器应用",
+          "method": "见方法模型",
+          "example": "传感器应用"
+        }
+      ]
+    },
+    {
+      "section": "3.利用传感器制作简单的自动控制装置",
+      "aliases": [
+        "自动控制",
+        "控制电路"
+      ],
+      "conceptSummary": "用传感器+放大电路+执行器制作自动控制装置（光控、温控等）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "传感器→放大→执行",
+        "光控电路",
+        "温控电路"
+      ],
+      "methodModels": [
+        {
+          "name": "自动控制",
+          "steps": [
+            "传感器检测",
+            "电路控制"
+          ],
+          "example": "光控路灯电路"
+        }
+      ],
+      "commonConfusions": [
+        "传感器与执行器"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自动控制装置",
+          "method": "见方法模型",
+          "example": "自动控制装置"
+        }
+      ]
+    },
+    {
+      "section": "1.分子动理论的基本内容",
+      "aliases": [
+        "分子动理论",
+        "扩散",
+        "布朗运动"
+      ],
+      "conceptSummary": "物质由大量分子组成，分子永不停息无规则运动（热运动），分子间有相互作用力。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "扩散现象证明分子运动",
+        "布朗运动反映分子热运动",
+        "分子力：引力斥力"
+      ],
+      "methodModels": [
+        {
+          "name": "布朗运动理解",
+          "steps": [
+            "颗粒运动",
+            "反映分子运动"
+          ],
+          "example": "花粉颗粒运动是布朗运动"
+        }
+      ],
+      "commonConfusions": [
+        "布朗运动不是分子本身运动"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分子动理论",
+          "method": "见方法模型",
+          "example": "分子动理论"
+        }
+      ]
+    },
+    {
+      "section": "3.分子运动速率分布规律",
+      "aliases": [
+        "速率分布",
+        "统计规律"
+      ],
+      "conceptSummary": "气体分子速率分布呈中间多两头少的规律，温度升高峰值向高速移动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "速率分布：中间多两头少",
+        "温度越高平均速率越大",
+        "统计规律"
+      ],
+      "methodModels": [
+        {
+          "name": "分布分析",
+          "steps": [
+            "看温度",
+            "看峰值"
+          ],
+          "example": "高温气体分子平均动能大"
+        }
+      ],
+      "commonConfusions": [
+        "个别分子速率随机，整体有统计规律"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分子速率分布",
+          "method": "见方法模型",
+          "example": "分子速率分布"
+        }
+      ]
+    },
+    {
+      "section": "4.分子动能和分子势能",
+      "aliases": [
+        "分子动能",
+        "分子势能",
+        "内能"
+      ],
+      "conceptSummary": "分子平均动能与温度有关；分子势能与分子间距有关；内能=分子动能+分子势能。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "温度是分子平均动能的标志",
+        "分子势能随距离变化",
+        "内能与温度体积有关"
+      ],
+      "methodModels": [
+        {
+          "name": "内能分析",
+          "steps": [
+            "看温度定动能",
+            "看体积定势能"
+          ],
+          "example": "温度升高内能增大"
+        }
+      ],
+      "commonConfusions": [
+        "分子势能不是重力势能"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分子动能势能",
+          "method": "见方法模型",
+          "example": "分子动能势能"
+        }
+      ]
+    },
+    {
+      "section": "1.温度和温标",
+      "aliases": [
+        "温度",
+        "热力学温标",
+        "热平衡"
+      ],
+      "conceptSummary": "温度是热平衡的宏观标志；热力学温度 T=t+273.15K。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "热平衡定律",
+        "T=t+273.15",
+        "温度微观上是平均动能标志"
+      ],
+      "methodModels": [
+        {
+          "name": "温标换算",
+          "steps": [
+            "T=t+273.15"
+          ],
+          "example": "t=0℃即T=273.15K"
+        }
+      ],
+      "commonConfusions": [
+        "热力学温标与摄氏温标"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "温度",
+          "method": "见方法模型",
+          "example": "温度"
+        }
+      ]
+    },
+    {
+      "section": "2.气体的等温变化",
+      "aliases": [
+        "等温",
+        "玻意耳定律",
+        "pV=常数"
+      ],
+      "conceptSummary": "一定质量气体温度不变时 pV=常数（玻意耳定律），p-V图是双曲线。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "p1V1=p2V2",
+        "等温压缩压强增大",
+        "p-V图像双曲线"
+      ],
+      "methodModels": [
+        {
+          "name": "玻意耳定律",
+          "steps": [
+            "p1V1=p2V2"
+          ],
+          "example": "V减半压强加倍"
+        }
+      ],
+      "commonConfusions": [
+        "温度不变是前提"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "等温变化",
+          "method": "见方法模型",
+          "example": "等温变化"
+        }
+      ]
+    },
+    {
+      "section": "3.气体的等压变化和等容变化",
+      "aliases": [
+        "查理定律",
+        "盖-吕萨克定律"
+      ],
+      "conceptSummary": "等容：p/T=常数（查理定律）；等压：V/T=常数（盖-吕萨克定律）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "查理定律：p/T=常数",
+        "盖-吕萨克：V/T=常数",
+        "热力学温度下比例"
+      ],
+      "methodModels": [
+        {
+          "name": "查理定律",
+          "steps": [
+            "p/T=常数",
+            "注意用热力学温标"
+          ],
+          "example": "温度升高压强增大"
+        }
+      ],
+      "commonConfusions": [
+        "必须用热力学温标"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气体定律",
+          "method": "见方法模型",
+          "example": "气体定律"
+        }
+      ]
+    },
+    {
+      "section": "4.固体",
+      "aliases": [
+        "晶体",
+        "非晶体",
+        "多晶体"
+      ],
+      "conceptSummary": "晶体有确定熔点、各向异性；非晶体无确定熔点；多晶体各向同性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单晶体各向异性",
+        "多晶体各向同性（由小晶粒构成）",
+        "非晶体无固定熔点"
+      ],
+      "methodModels": [
+        {
+          "name": "晶体判断",
+          "steps": [
+            "看是否有固定熔点",
+            "各向异同性"
+          ],
+          "example": "食盐是晶体"
+        }
+      ],
+      "commonConfusions": [
+        "多晶体与单晶体区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "固体",
+          "method": "见方法模型",
+          "example": "固体"
+        }
+      ]
+    },
+    {
+      "section": "5.液体",
+      "aliases": [
+        "液体",
+        "表面张力",
+        "浸润"
+      ],
+      "conceptSummary": "液体表面张力使表面收缩；浸润与不浸润；毛细现象。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "表面张力：液面收缩趋势",
+        "浸润：附着层分子力",
+        "毛细现象：细管液面升降"
+      ],
+      "methodModels": [
+        {
+          "name": "表面张力理解",
+          "steps": [
+            "表面收缩",
+            "应用"
+          ],
+          "example": "水银滴成球形"
+        }
+      ],
+      "commonConfusions": [
+        "表面张力方向沿表面"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "液体",
+          "method": "见方法模型",
+          "example": "液体"
+        }
+      ]
+    },
+    {
+      "section": "1.功、热和内能的改变",
+      "aliases": [
+        "做功",
+        "传热",
+        "内能改变"
+      ],
+      "conceptSummary": "改变内能两种方式：做功与传热，二者等效。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "做功改变内能",
+        "传热改变内能",
+        "两种方式等效"
+      ],
+      "methodModels": [
+        {
+          "name": "内能改变",
+          "steps": [
+            "做功W",
+            "传热Q"
+          ],
+          "example": "压缩气体做功内能增大"
+        }
+      ],
+      "commonConfusions": [
+        "做功与传热等效但本质不同"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "内能改变",
+          "method": "见方法模型",
+          "example": "内能改变"
+        }
+      ]
+    },
+    {
+      "section": "2.热力学第一定律",
+      "aliases": [
+        "热力学第一定律",
+        "ΔU=W+Q"
+      ],
+      "conceptSummary": "热力学第一定律：ΔU=W+Q（内能变化=外界做功+吸热）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "ΔU=W+Q",
+        "符号规定（外界做功W>0，吸热Q>0）",
+        "能量守恒"
+      ],
+      "methodModels": [
+        {
+          "name": "第一定律应用",
+          "steps": [
+            "ΔU=W+Q",
+            "定符号"
+          ],
+          "example": "绝热压缩Q=0，W>0升温"
+        }
+      ],
+      "commonConfusions": [
+        "W与Q符号约定"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "热力学第一定律",
+          "method": "见方法模型",
+          "example": "热力学第一定律"
+        }
+      ]
+    },
+    {
+      "section": "3.能量守恒定律",
+      "aliases": [
+        "能量守恒",
+        "转化"
+      ],
+      "conceptSummary": "能量既不能凭空产生也不能消失，只能转化转移，总量不变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "能量守恒定律",
+        "不同形式能转化",
+        "永动机不可能"
+      ],
+      "methodModels": [
+        {
+          "name": "能量守恒应用",
+          "steps": [
+            "总能量不变"
+          ],
+          "example": "机械能转化内能"
+        }
+      ],
+      "commonConfusions": [
+        "第一类永动机不可能"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "能量守恒",
+          "method": "见方法模型",
+          "example": "能量守恒"
+        }
+      ]
+    },
+    {
+      "section": "4.热力学第二定律",
+      "aliases": [
+        "热力学第二定律",
+        "熵"
+      ],
+      "conceptSummary": "热力学第二定律：热量不能自发从低温传向高温；涉及方向的不可逆性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "克劳修斯表述（传热方向）",
+        "开尔文表述（热机效率）",
+        "第二类永动机不可能"
+      ],
+      "methodModels": [
+        {
+          "name": "第二定律理解",
+          "steps": [
+            "方向性",
+            "不可逆"
+          ],
+          "example": "热不能自发低温到高温"
+        }
+      ],
+      "commonConfusions": [
+        "第二定律与第一定律不同"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "热力学第二定律",
+          "method": "见方法模型",
+          "example": "热力学第二定律"
+        }
+      ]
+    },
+    {
+      "section": "1.普朗克黑体辐射理论",
+      "aliases": [
+        "黑体辐射",
+        "普朗克量子"
+      ],
+      "conceptSummary": "普朗克提出能量量子化假说解释黑体辐射，E=hv，量子物理开端。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "能量量子化 E=hv",
+        "黑体辐射规律",
+        "普朗克假说"
+      ],
+      "methodModels": [
+        {
+          "name": "能量量子化",
+          "steps": [
+            "E=hv"
+          ],
+          "example": "光子能量与频率成正比"
+        }
+      ],
+      "commonConfusions": [
+        "能量不是连续的是量子化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "黑体辐射",
+          "method": "见方法模型",
+          "example": "黑体辐射"
+        }
+      ]
+    },
+    {
+      "section": "2.光电效应",
+      "aliases": [
+        "光电效应",
+        "光子",
+        "爱因斯坦"
+      ],
+      "conceptSummary": "光照射金属表面逸出电子；爱因斯坦光电方程 Ek=hv-W0。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "光电效应条件：hv>W0",
+        "爱因斯坦光电方程",
+        "光电子最大初动能与频率"
+      ],
+      "methodModels": [
+        {
+          "name": "光电方程",
+          "steps": [
+            "Ek=hv-W0",
+            "看频率"
+          ],
+          "example": "频率大于极限频率产生光电效应"
+        }
+      ],
+      "commonConfusions": [
+        "光电效应瞬时性",
+        "光强与光电子数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "光电效应",
+          "method": "见方法模型",
+          "example": "光电效应"
+        }
+      ]
+    },
+    {
+      "section": "3.原子的核式结构模型",
+      "aliases": [
+        "原子结构",
+        "α散射",
+        "卢瑟福"
+      ],
+      "conceptSummary": "卢瑟福α粒子散射实验提出核式结构：原子核很小带正电，电子绕核运动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "α散射实验",
+        "核式结构模型",
+        "原子核半径约10⁻¹⁵m"
+      ],
+      "methodModels": [
+        {
+          "name": "核式结构",
+          "steps": [
+            "α散射大角度偏转→核"
+          ],
+          "example": "大多数α粒子穿过说明原子空旷"
+        }
+      ],
+      "commonConfusions": [
+        "核式结构解释α散射"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原子结构",
+          "method": "见方法模型",
+          "example": "原子结构"
+        }
+      ]
+    },
+    {
+      "section": "4.氢原子光谱和玻尔的原子模型",
+      "aliases": [
+        "玻尔模型",
+        "能级",
+        "氢光谱"
+      ],
+      "conceptSummary": "玻尔模型：电子在特定能级轨道运动，跃迁吸收/辐射光子 E=En-Em。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "能级不连续",
+        "跃迁：hv=En-Em",
+        "氢光谱线系"
+      ],
+      "methodModels": [
+        {
+          "name": "能级跃迁",
+          "steps": [
+            "hv=En-Em"
+          ],
+          "example": "电子从高能级跃迁低能级辐射光子"
+        }
+      ],
+      "commonConfusions": [
+        "玻尔模型局限性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "玻尔模型",
+          "method": "见方法模型",
+          "example": "玻尔模型"
+        }
+      ]
+    },
+    {
+      "section": "5.粒子的波动性和量子力学的建立",
+      "aliases": [
+        "物质波",
+        "德布罗意"
+      ],
+      "conceptSummary": "德布罗意提出物质波：一切粒子都有波动性，λ=h/p；量子力学建立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "λ=h/p（德布罗意波）",
+        "粒子波动性",
+        "量子力学描述微观"
+      ],
+      "methodModels": [
+        {
+          "name": "物质波",
+          "steps": [
+            "λ=h/p"
+          ],
+          "example": "电子衍射证明波动性"
+        }
+      ],
+      "commonConfusions": [
+        "宏观物体波长极短不明显"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质波",
+          "method": "见方法模型",
+          "example": "物质波"
+        }
+      ]
+    },
+    {
+      "section": "1.原子核的组成",
+      "aliases": [
+        "原子核",
+        "质子",
+        "中子"
+      ],
+      "conceptSummary": "原子核由质子和中子（核子）组成，核电荷数=质子数。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "核子数=质子数+中子数",
+        "同位素：质子数同中子数异",
+        "原子序数=质子数"
+      ],
+      "methodModels": [
+        {
+          "name": "核组成",
+          "steps": [
+            "A=Z+N"
+          ],
+          "example": "质量数=质子数+中子数"
+        }
+      ],
+      "commonConfusions": [
+        "同位素与同素异形体区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原子核",
+          "method": "见方法模型",
+          "example": "原子核"
+        }
+      ]
+    },
+    {
+      "section": "2.放射性元素的衰变",
+      "aliases": [
+        "衰变",
+        "α衰变",
+        "β衰变",
+        "半衰期"
+      ],
+      "conceptSummary": "放射性元素自发衰变放出α、β、γ射线；半衰期是原子核数减半时间。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "α衰变：质量数-4电荷数-2",
+        "β衰变：中子转质子",
+        "γ射线伴随衰变",
+        "半衰期：N=N0(1/2)^t"
+      ],
+      "methodModels": [
+        {
+          "name": "衰变方程",
+          "steps": [
+            "质量数守恒",
+            "电荷数守恒"
+          ],
+          "example": "铀238α衰变→钍234"
+        },
+        {
+          "name": "半衰期计算",
+          "steps": [
+            "N=N0(1/2)^t"
+          ],
+          "example": "两个半衰期剩1/4"
+        }
+      ],
+      "commonConfusions": [
+        "半衰期不受物理化学影响"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "衰变",
+          "method": "见方法模型",
+          "example": "衰变"
+        }
+      ]
+    },
+    {
+      "section": "3.核力与结合能",
+      "aliases": [
+        "核力",
+        "结合能",
+        "质能方程"
+      ],
+      "conceptSummary": "核力是核子间强力；结合能是核子结合成核释放的能量；E=mc²。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "核力短程力",
+        "比结合能大核稳定",
+        "质能方程 E=mc²",
+        "质量亏损"
+      ],
+      "methodModels": [
+        {
+          "name": "结合能",
+          "steps": [
+            "ΔE=Δmc²"
+          ],
+          "example": "轻核聚变释放能量"
+        }
+      ],
+      "commonConfusions": [
+        "质量亏损是质量减少（不是消失）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "结合能",
+          "method": "见方法模型",
+          "example": "结合能"
+        }
+      ]
+    },
+    {
+      "section": "4.核裂变与核聚变",
+      "aliases": [
+        "核裂变",
+        "核聚变"
+      ],
+      "conceptSummary": "重核分裂（裂变）与轻核结合（聚变）都释放大量能量。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "裂变：U-235+n→Ba+Kr+3n",
+        "聚变：H+H→He",
+        "链式反应与可控"
+      ],
+      "methodModels": [
+        {
+          "name": "核反应",
+          "steps": [
+            "质量数电荷数守恒"
+          ],
+          "example": "原子弹裂变，氢弹聚变"
+        }
+      ],
+      "commonConfusions": [
+        "聚变条件高温",
+        "核电站用裂变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "核裂变聚变",
+          "method": "见方法模型",
+          "example": "核裂变聚变"
+        }
+      ]
+    },
+    {
+      "section": "5.\"基本\"粒子",
+      "aliases": [
+        "基本粒子",
+        "夸克"
+      ],
+      "conceptSummary": "粒子物理中质子中子由夸克组成；强子/轻子/传播子分类。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "夸克组成强子",
+        "轻子（电子等）",
+        "四种基本相互作用"
+      ],
+      "methodModels": [
+        {
+          "name": "粒子分类",
+          "steps": [
+            "强子轻子"
+          ],
+          "example": "质子由夸克组成"
+        }
+      ],
+      "commonConfusions": [
+        "'基本'粒子不再基本"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基本粒子",
+          "method": "见方法模型",
+          "example": "基本粒子"
+        }
+      ]
+    },
+    {
+      "section": "1.实验：探究小车速度随时间变化的规律",
+      "aliases": [
+        "打点计时器",
+        "纸带",
+        "v-t图像"
+      ],
+      "conceptSummary": "用打点计时器在纸带上记录运动，作v-t图像研究匀变速规律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "打点计时器：交变电50Hz",
+        "纸带分析：Δx恒定则匀变速",
+        "v-t图像斜率=加速度"
+      ],
+      "methodModels": [
+        {
+          "name": "匀变速判定",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "打点计时器纸带分析"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "打点计时器纸带分析",
+          "method": "见方法模型",
+          "example": "打点计时器纸带分析"
+        }
+      ]
+    },
+    {
+      "section": "2.实验：探究加速度与力、质量的关系",
+      "aliases": [
+        "控制变量",
+        "a-F",
+        "a-m"
+      ],
+      "conceptSummary": "用控制变量法探究 a 与 F、m 的关系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "控制变量法",
+        "a与F成正比",
+        "a与1/m成正比"
+      ],
+      "methodModels": [
+        {
+          "name": "控制变量",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "探究a与F、m关系"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "探究a与F、m关系",
+          "method": "见方法模型",
+          "example": "探究a与F、m关系"
+        }
+      ]
+    },
+    {
+      "section": "4.力学单位制",
+      "aliases": [
+        "基本单位",
+        "导出单位",
+        "SI"
+      ],
+      "conceptSummary": "国际单位制基本单位：米/千克/秒/安培/开尔文/摩尔/坎德拉。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基本物理量及其单位",
+        "导出单位由基本单位组合",
+        "计算时统一单位"
+      ],
+      "methodModels": [
+        {
+          "name": "单位换算",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "力学单位制"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "力学单位制",
+          "method": "见方法模型",
+          "example": "力学单位制"
+        }
+      ]
+    },
+    {
+      "section": "3.实验：探究平抛运动的特点",
+      "aliases": [
+        "平抛实验",
+        "轨迹"
+      ],
+      "conceptSummary": "描出平抛轨迹，水平位移与时间成正比、竖直为自由落体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "描点法",
+        "水平x=v0t",
+        "竖直y=½gt²"
+      ],
+      "methodModels": [
+        {
+          "name": "平抛轨迹分析",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "平抛实验"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "平抛实验",
+          "method": "见方法模型",
+          "example": "平抛实验"
+        }
+      ]
+    },
+    {
+      "section": "4.抛体运动的规律",
+      "aliases": [
+        "抛体",
+        "平抛",
+        "斜抛"
+      ],
+      "conceptSummary": "平抛水平匀速竖直自由落体；斜抛分解为水平和竖直。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "平抛x=v0t,y=½gt²",
+        "斜抛竖直方向竖直上抛",
+        "轨迹抛物线"
+      ],
+      "methodModels": [
+        {
+          "name": "平抛斜抛",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "抛体运动"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "抛体运动",
+          "method": "见方法模型",
+          "example": "抛体运动"
+        }
+      ]
+    },
+    {
+      "section": "1.行星的运动",
+      "aliases": [
+        "开普勒定律",
+        "行星运动"
+      ],
+      "conceptSummary": "开普勒三定律：椭圆轨道、面积定律、周期定律 T²/R³=常数。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "开普勒第一定律：椭圆",
+        "第二定律：面积相等",
+        "第三定律：T²∝R³"
+      ],
+      "methodModels": [
+        {
+          "name": "开普勒三定律",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "行星运动"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "行星运动",
+          "method": "见方法模型",
+          "example": "行星运动"
+        }
+      ]
+    },
+    {
+      "section": "2.万有引力定律",
+      "aliases": [
+        "万有引力",
+        "F=Gm1m2/r²"
+      ],
+      "conceptSummary": "任何两物体间有万有引力 F=Gm1m2/r²。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "F=Gm1m2/r²",
+        "G是引力常量",
+        "万有引力提供向心力"
+      ],
+      "methodModels": [
+        {
+          "name": "万有引力与重力",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "万有引力定律"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "万有引力定律",
+          "method": "见方法模型",
+          "example": "万有引力定律"
+        }
+      ]
+    },
+    {
+      "section": "3.万有引力理论的成就",
+      "aliases": [
+        "天体质量",
+        "重力加速度"
+      ],
+      "conceptSummary": "由万有引力提供向心力求天体质量；g=GM/R²。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "M=4π²r³/GT²",
+        "g=GM/R²",
+        "测天体质量密度"
+      ],
+      "methodModels": [
+        {
+          "name": "天体质量计算",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "万有引力应用"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "万有引力应用",
+          "method": "见方法模型",
+          "example": "万有引力应用"
+        }
+      ]
+    },
+    {
+      "section": "4.宇宙航行",
+      "aliases": [
+        "卫星",
+        "宇宙速度"
+      ],
+      "conceptSummary": "第一宇宙速度7.9km/s，第二11.2，第三16.7。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "v1=√(gR)=7.9km/s",
+        "高轨卫星速度小周期大",
+        "同步卫星周期24h"
+      ],
+      "methodModels": [
+        {
+          "name": "宇宙速度",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "宇宙航行"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "宇宙航行",
+          "method": "见方法模型",
+          "example": "宇宙航行"
+        }
+      ]
+    },
+    {
+      "section": "5.相对论时空观与牛顿力学的局限性",
+      "aliases": [
+        "相对论",
+        "光速不变"
+      ],
+      "conceptSummary": "狭义相对论：光速不变原理；高速时牛顿力学需修正。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "光速不变",
+        "时间膨胀长度收缩",
+        "质量随速度增大"
+      ],
+      "methodModels": [
+        {
+          "name": "相对论效应",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "相对论"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "相对论",
+          "method": "见方法模型",
+          "example": "相对论"
+        }
+      ]
+    },
+    {
+      "section": "5.实验：验证机械能守恒定律",
+      "aliases": [
+        "机械能实验"
+      ],
+      "conceptSummary": "用打点计时器验证动能势能转化守恒。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "测速度v=(s2-s1)/2T",
+        "比较动能势能变化",
+        "误差分析"
+      ],
+      "methodModels": [
+        {
+          "name": "验证机械能守恒",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "机械能实验"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "机械能实验",
+          "method": "见方法模型",
+          "example": "机械能实验"
+        }
+      ]
+    },
+    {
+      "section": "4.静电的防止与利用",
+      "aliases": [
+        "静电屏蔽",
+        "静电除尘"
+      ],
+      "conceptSummary": "静电现象应用与防止：屏蔽、除尘、复印、避雷针。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "静电屏蔽",
+        "静电除尘吸附",
+        "避雷针尖端放电"
+      ],
+      "methodModels": [
+        {
+          "name": "静电应用",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "静电防止利用"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "静电防止利用",
+          "method": "见方法模型",
+          "example": "静电防止利用"
+        }
+      ]
+    },
+    {
+      "section": "1.电势能和电势",
+      "aliases": [
+        "电势能",
+        "电势"
+      ],
+      "conceptSummary": "电场力做功等于电势能减少；电势 φ=Ep/q。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "W电场力=-ΔEp",
+        "φ=Ep/q",
+        "沿电场线电势降低"
+      ],
+      "methodModels": [
+        {
+          "name": "电势能电势",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "电势能"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电势能",
+          "method": "见方法模型",
+          "example": "电势能"
+        }
+      ]
+    },
+    {
+      "section": "3.实验：导体电阻率的测量",
+      "aliases": [
+        "电阻率实验",
+        "伏安法"
+      ],
+      "conceptSummary": "用伏安法测电阻再算电阻率 ρ=RS/L。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "伏安法测R",
+        "R=ρL/S",
+        "螺旋测微器测直径"
+      ],
+      "methodModels": [
+        {
+          "name": "电阻率测量",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "电阻率实验"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电阻率实验",
+          "method": "见方法模型",
+          "example": "电阻率实验"
+        }
+      ]
+    },
+    {
+      "section": "5.实验：练习使用多用电表",
+      "aliases": [
+        "多用电表",
+        "欧姆表"
+      ],
+      "conceptSummary": "多用电表可测电压电流电阻，欧姆档测电阻前调零。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "档位选择",
+        "欧姆调零",
+        "读数乘倍率"
+      ],
+      "methodModels": [
+        {
+          "name": "多用电表使用",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "多用电表"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "多用电表",
+          "method": "见方法模型",
+          "example": "多用电表"
+        }
+      ]
+    },
+    {
+      "section": "1.电路中的能量转化",
+      "aliases": [
+        "电功",
+        "焦耳定律"
+      ],
+      "conceptSummary": "电功 W=UIt，焦耳定律 Q=I²Rt。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "W=UIt=Pt",
+        "Q=I²Rt",
+        "纯电阻W=Q，非纯电阻W>Q"
+      ],
+      "methodModels": [
+        {
+          "name": "电功与电热",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "电路能量转化"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电路能量转化",
+          "method": "见方法模型",
+          "example": "电路能量转化"
+        }
+      ]
+    },
+    {
+      "section": "3.实验：电池电动势和内阻的测量",
+      "aliases": [
+        "伏安法"
+      ],
+      "conceptSummary": "用伏安法测电池电动势和内阻，U-I图像截距=E、斜率=r。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "伏安法",
+        "U=E-Ir",
+        "图像法"
+      ],
+      "methodModels": [
+        {
+          "name": "测E和r",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "电池测量"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电池测量",
+          "method": "见方法模型",
+          "example": "电池测量"
+        }
+      ]
+    },
+    {
+      "section": "4.能源与可持续发展",
+      "aliases": [
+        "能源",
+        "能量耗散"
+      ],
+      "conceptSummary": "能源利用中的能量耗散；节约能源与新能源。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "能量耗散不可逆",
+        "常规能源有限",
+        "新能源太阳能风能"
+      ],
+      "methodModels": [
+        {
+          "name": "能源问题",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "能源可持续"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "能源可持续",
+          "method": "见方法模型",
+          "example": "能源可持续"
+        }
+      ]
+    },
+    {
+      "section": "1.磁场 磁感线",
+      "aliases": [
+        "磁场",
+        "磁感线"
+      ],
+      "conceptSummary": "磁场由磁体或电流产生，磁感线描述磁场方向与强弱。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "磁感线N到S（外部）",
+        "疏密表强弱",
+        "右手螺旋定则"
+      ],
+      "methodModels": [
+        {
+          "name": "磁感线",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "磁场磁感线"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "磁场磁感线",
+          "method": "见方法模型",
+          "example": "磁场磁感线"
+        }
+      ]
+    },
+    {
+      "section": "4.电磁波的发现及应用",
+      "aliases": [
+        "电磁波",
+        "赫兹"
+      ],
+      "conceptSummary": "麦克斯韦预言电磁波，赫兹实验证实。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "麦克斯韦预言",
+        "赫兹证实",
+        "传播不需介质"
+      ],
+      "methodModels": [
+        {
+          "name": "电磁波发现",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "电磁波应用"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电磁波应用",
+          "method": "见方法模型",
+          "example": "电磁波应用"
+        }
+      ]
+    },
+    {
+      "section": "5.能量量子化",
+      "aliases": [
+        "量子化",
+        "能量子"
+      ],
+      "conceptSummary": "普朗克提出能量子假说 E=hv 解释黑体辐射。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "E=hv",
+        "能量量子化",
+        "量子力学开端"
+      ],
+      "methodModels": [
+        {
+          "name": "能量量子化",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "能量量子化"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "能量量子化",
+          "method": "见方法模型",
+          "example": "能量量子化"
+        }
+      ]
+    },
+    {
+      "section": "4.实验：验证动量守恒定律",
+      "aliases": [
+        "动量守恒实验"
+      ],
+      "conceptSummary": "用斜槽碰撞实验验证动量守恒。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "平抛测速度",
+        "比较碰撞前后动量",
+        "多次实验减小误差"
+      ],
+      "methodModels": [
+        {
+          "name": "验证动量守恒",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "动量守恒实验"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "动量守恒实验",
+          "method": "见方法模型",
+          "example": "动量守恒实验"
+        }
+      ]
+    },
+    {
+      "section": "5.实验：用单摆测量重力加速度",
+      "aliases": [
+        "单摆测g"
+      ],
+      "conceptSummary": "由单摆周期 T=2π√(L/g) 测 g=4π²L/T²。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "T=2π√(L/g)",
+        "g=4π²L/T²",
+        "图像法L-T²"
+      ],
+      "methodModels": [
+        {
+          "name": "单摆测g",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "单摆实验"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "单摆实验",
+          "method": "见方法模型",
+          "example": "单摆实验"
+        }
+      ]
+    },
+    {
+      "section": "4.实验：用双缝干涉测量光的波长",
+      "aliases": [
+        "双缝实验"
+      ],
+      "conceptSummary": "用条纹间距 Δx=λL/d 测光波长。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Δx=λL/d",
+        "测条纹间距",
+        "计算波长"
+      ],
+      "methodModels": [
+        {
+          "name": "双缝测波长",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "双缝干涉实验"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "双缝干涉实验",
+          "method": "见方法模型",
+          "example": "双缝干涉实验"
+        }
+      ]
+    },
+    {
+      "section": "2.实验：用油膜法估测油酸分子的大小",
+      "aliases": [
+        "油膜法"
+      ],
+      "conceptSummary": "油酸在水面形成单分子油膜，分子直径 d=V/S。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "油膜单分子层",
+        "d=V/S",
+        "估算直径"
+      ],
+      "methodModels": [
+        {
+          "name": "油膜法",
+          "steps": [
+            "按步骤执行",
+            "代入数据"
+          ],
+          "example": "油膜法测分子"
+        }
+      ],
+      "commonConfusions": [
+        "注意实验/计算细节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "油膜法测分子",
+          "method": "见方法模型",
+          "example": "油膜法测分子"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
