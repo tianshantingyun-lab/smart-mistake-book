@@ -15,6 +15,7 @@ from pathlib import Path
 
 DAEMON = "http://127.0.0.1:10086/command"
 MIN_TEXT = 800  # below this we consider the article image-based / login-walled
+SHOT_DIR = Path.home() / "AppData" / "Local" / "Temp" / "kimi-webbridge-screenshots"
 
 
 def cmd(action: str, args: dict, session: str) -> dict:
@@ -23,8 +24,23 @@ def cmd(action: str, args: dict, session: str) -> dict:
         data=json.dumps({"action": action, "args": args, "session": session}).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    with urllib.request.urlopen(req, timeout=90) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
+
+def screenshot(out_dir: Path, name: str, session: str) -> Path | None:
+    """Full-page screenshot of the current tab; returns the copied PNG path."""
+    r = cmd("screenshot", {"format": "png", "fullPage": True}, session)
+    data = r.get("data", {})
+    src = data.get("path")
+    if not src:
+        return None
+    src = Path(src)
+    if not src.exists():
+        return None
+    dst = out_dir / f"{name}.png"
+    dst.write_bytes(src.read_bytes())
+    return dst
 
 
 def grab(url: str, session: str) -> tuple[int, int]:
@@ -69,11 +85,35 @@ def main() -> int:
     results = []
     for item in manifest:
         name, url = item["name"], item["url"]
-        txt_len, img_count = grab(url, session)
+        try:
+            txt_len, img_count = grab(url, session)
+        except Exception as exc:  # noqa: BLE001
+            results.append(
+                {"name": name, "url": url, "error": str(exc), "usable": False, "saved": None}
+            )
+            print(f"{name}: ERROR {exc}")
+            time.sleep(2)
+            continue
         usable = txt_len >= MIN_TEXT
         if usable:
-            text = fetch_text(url, session)
-            (out_dir / f"{name}.md").write_text(text, encoding="utf-8")
+            try:
+                text = fetch_text(url, session)
+                (out_dir / f"{name}.md").write_text(text, encoding="utf-8")
+            except Exception as exc:  # noqa: BLE001
+                usable = False
+                results[-1] = {
+                    "name": name, "url": url, "error": str(exc), "usable": False, "saved": None,
+                }
+                print(f"{name}: text fetch ERROR {exc}")
+                continue
+        saved = f"{name}.md" if usable else None
+        if not usable and img_count > 0:
+            # image-based article: keep a full-page screenshot as the artifact
+            try:
+                shot = screenshot(out_dir, name, session)
+                saved = f"{name}.png" if shot else None
+            except Exception as exc:  # noqa: BLE001
+                print(f"{name}: screenshot ERROR {exc}")
         results.append(
             {
                 "name": name,
@@ -81,10 +121,10 @@ def main() -> int:
                 "textChars": txt_len,
                 "imageCount": img_count,
                 "usable": usable,
-                "saved": f"{name}.md" if usable else None,
+                "saved": saved,
             }
         )
-        print(f"{name}: chars={txt_len} imgs={img_count} usable={usable}")
+        print(f"{name}: chars={txt_len} imgs={img_count} usable={usable} saved={saved}")
 
     report = out_dir / "grab-report.json"
     report.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
