@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-selective-structure-properties-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "selective-structure-properties",
+  "moduleName": "化学选择性必修2：物质结构与性质",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "原子结构与元素性质",
+      "aliases": [
+        "能级",
+        "电子排布",
+        "电离能",
+        "电负性"
+      ],
+      "conceptSummary": "核外电子按能级排布；第一电离能、电负性周期性变化，解释元素性质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "电子排布：能量最低原理/泡利/洪特",
+        "构造原理：1s2s2p3s3p4s3d",
+        "第一电离能：同周期增大（ⅡAⅢA反常）",
+        "电负性：同周期增大同族减小"
+      ],
+      "methodModels": [
+        {
+          "name": "电子排布书写",
+          "steps": [
+            "按构造原理",
+            "遵守三个原理"
+          ],
+          "example": "Fe 1s2 2s2 2p6 3s2 3p6 3d6 4s2"
+        }
+      ],
+      "commonConfusions": [
+        "3d 与 4s 能量关系",
+        "半满全满稳定性（Cr Cu）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握周期律"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电子排布",
+          "method": "构造原理",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "分子结构与晶体",
+      "aliases": [
+        "共价键",
+        "杂化",
+        "分子间力",
+        "晶体"
+      ],
+      "conceptSummary": "共价键的形成与极性；VSEPR/杂化轨道解释空间构型；分子间作用力影响性质；晶体类型决定熔点。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "σ键π键",
+        "VSEPR 预测构型",
+        "sp/sp2/sp3 杂化",
+        "氢键：强分子间力",
+        "晶体：离子/分子/原子/金属晶体"
+      ],
+      "methodModels": [
+        {
+          "name": "杂化判断",
+          "steps": [
+            "中心原子价层电子对数",
+            "sp/sp2/sp3"
+          ],
+          "example": "CH4 sp3，C2H4 sp2"
+        },
+        {
+          "name": "晶体类型判断",
+          "steps": [
+            "熔点/导电性",
+            "构成微粒与作用力"
+          ],
+          "example": "NaCl离子晶体熔点高"
+        }
+      ],
+      "commonConfusions": [
+        "氢键是分子间力不是化学键",
+        "不同晶体熔点比较"
+      ],
+      "prerequisiteRelations": [
+        "需掌握化学键"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "空间构型/晶体",
+          "method": "VSEPR+杂化",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "电子排布",
+      "solutionMethod": "构造原理",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "杂化与构型",
+      "solutionMethod": "VSEPR",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "晶体类型",
+      "solutionMethod": "微粒作用力",
+      "difficulty": "中档"
+    }
+  ]
+}

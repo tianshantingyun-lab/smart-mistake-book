@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-physics-selective-physics-3-2026-v1",
+  "subject": "PHYSICS",
+  "moduleSlug": "selective-physics-3",
+  "moduleName": "物理选择性必修3（热学/原子物理）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "分子动理论",
+      "aliases": [
+        "分子",
+        "布朗运动",
+        "热力学",
+        "内能"
+      ],
+      "conceptSummary": "物质由大量分子组成；分子热运动（布朗运动）；分子间有相互作用力；内能是分子动能与势能之和。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "阿伏伽德罗常数 NA≈6.02×10²³",
+        "布朗运动：悬浮颗粒运动，反映分子热运动",
+        "分子力：引力和斥力随距离变化",
+        "内能：所有分子动能+势能",
+        "温度是分子平均动能的标志"
+      ],
+      "methodModels": [
+        {
+          "name": "分子数计算",
+          "steps": [
+            "n=m/M",
+            "N=n·NA"
+          ],
+          "example": "18g水分子数 NA"
+        }
+      ],
+      "commonConfusions": [
+        "布朗运动是颗粒不是分子",
+        "内能与机械能区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分子数计算",
+          "method": "n·NA",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "气体实验定律与热力学",
+      "aliases": [
+        "理想气体",
+        "玻意耳",
+        "热力学第一定律",
+        "气体定律"
+      ],
+      "conceptSummary": "理想气体遵循三大实验定律；热力学第一定律 ΔU=W+Q；能量守恒。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "玻意耳定律：T一定，pV=常数",
+        "查理定律：V一定，p/T=常数",
+        "盖-吕萨克：p一定，V/T=常数",
+        "理想气体状态方程 pV/T=常数",
+        "热力学第一定律 ΔU=W+Q"
+      ],
+      "methodModels": [
+        {
+          "name": "气体状态变化",
+          "steps": [
+            "判断等温/等压/等容",
+            "用对应定律"
+          ],
+          "example": "等温压缩：pV 乘积不变"
+        },
+        {
+          "name": "热力学第一定律",
+          "steps": [
+            "ΔU=W+Q",
+            "判断吸放热"
+          ],
+          "example": "绝热压缩 W>0 升温"
+        }
+      ],
+      "commonConfusions": [
+        "W 的符号（外界做功）",
+        "理想气体不考虑分子势能"
+      ],
+      "prerequisiteRelations": [
+        "需掌握分子动理论"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气体定律计算",
+          "method": "状态方程",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "原子结构与核物理",
+      "aliases": [
+        "原子结构",
+        "能级",
+        "放射性",
+        "核反应"
+      ],
+      "conceptSummary": "原子由原子核与电子组成；玻尔能级理论解释光谱；原子核衰变释放能量，核反应（裂变聚变）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "原子核式结构：卢瑟福 α 散射",
+        "玻尔能级：电子跃迁吸收/辐射光子",
+        "放射性：α β γ 衰变",
+        "半衰期：放射性原子核数减半时间",
+        "核反应：裂变（重核分裂）/聚变（轻核结合）",
+        "质能方程 E=mc²"
+      ],
+      "methodModels": [
+        {
+          "name": "核反应方程",
+          "steps": [
+            "质量数守恒",
+            "电荷数守恒"
+          ],
+          "example": "铀235裂变：质量数电荷数守恒"
+        },
+        {
+          "name": "半衰期计算",
+          "steps": [
+            "每半衰期剩一半",
+            "n个半衰期剩 (1/2)ⁿ"
+          ],
+          "example": "24天剩1/4需2个半衰期"
+        }
+      ],
+      "commonConfusions": [
+        "α β γ 穿透与电离能力",
+        "核聚变条件（高温）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握能量守恒"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "核反应/半衰期",
+          "method": "守恒+半衰期",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "分子动理论",
+      "solutionMethod": "NA/布朗运动",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "气体定律",
+      "solutionMethod": "pV/T",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "核反应",
+      "solutionMethod": "守恒",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "半衰期",
+      "solutionMethod": "(1/2)ⁿ",
+      "difficulty": "常考"
+    }
+  ]
+}

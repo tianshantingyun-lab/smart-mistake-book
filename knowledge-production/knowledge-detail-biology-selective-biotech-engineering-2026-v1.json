@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-biology-selective-biotech-engineering-2026-v1",
+  "subject": "BIOLOGY",
+  "moduleSlug": "selective-biotech-engineering",
+  "moduleName": "生物选择性必修3：生物技术与工程",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "基因工程",
+      "aliases": [
+        "基因工程",
+        "限制酶",
+        "DNA连接酶",
+        "载体"
+      ],
+      "conceptSummary": "基因工程按设计要求对基因操作：用限制酶切割、DNA连接酶连接、载体导入受体细胞表达。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "工具酶：限制酶（切）+DNA连接酶（连）",
+        "载体：质粒/噬菌体，需标记基因",
+        "步骤：目的基因获取→构建表达载体→导入→检测",
+        "PCR技术扩增目的基因",
+        "基因表达产物检测"
+      ],
+      "methodModels": [
+        {
+          "name": "基因工程步骤",
+          "steps": [
+            "切（限制酶）",
+            "连（连接酶+载体）",
+            "导（转化）",
+            "检（标记基因/分子杂交）"
+          ],
+          "example": "胰岛素基因导入大肠杆菌产胰岛素"
+        }
+      ],
+      "commonConfusions": [
+        "限制酶识别序列与切口",
+        "标记基因作用（筛选）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握遗传分子基础"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基因工程流程",
+          "method": "切连导检",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "细胞工程与发酵工程",
+      "aliases": [
+        "植物组织培养",
+        "动物细胞培养",
+        "发酵",
+        "微生物"
+      ],
+      "conceptSummary": "植物组织培养利用全能性；动物细胞培养用于疫苗抗体；发酵工程利用微生物生产产品。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "植物组织培养：外植体→愈伤组织→植株（全能性）",
+        "动物细胞培养：贴壁生长，需培养基",
+        "单克隆抗体：杂交瘤技术",
+        "发酵工程：菌种选择→培养基→发酵→分离",
+        "果酒果醋发酵：酵母菌/醋酸菌"
+      ],
+      "methodModels": [
+        {
+          "name": "发酵工程分析",
+          "steps": [
+            "菌种（酵母菌/醋酸菌）",
+            "条件（无氧/有氧）"
+          ],
+          "example": "果酒需无氧，果醋需有氧高温"
+        }
+      ],
+      "commonConfusions": [
+        "植物组织培养与动物克隆",
+        "发酵微生物代谢类型"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞与微生物"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "发酵条件",
+          "method": "菌种+条件",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "基因工程工具与步骤",
+      "solutionMethod": "切连导检",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "发酵工程",
+      "solutionMethod": "菌种条件",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "细胞工程",
+      "solutionMethod": "全能性/培养",
+      "difficulty": "常考"
+    }
+  ]
+}

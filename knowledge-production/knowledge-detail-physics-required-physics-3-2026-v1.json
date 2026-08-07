@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-physics-required-physics-3-2026-v1",
+  "subject": "PHYSICS",
+  "moduleSlug": "required-physics-3",
+  "moduleName": "物理必修3（静电场/电路/电磁）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "静电场",
+      "aliases": [
+        "电场",
+        "电场强度",
+        "电势",
+        "电容"
+      ],
+      "conceptSummary": "电荷间通过电场相互作用；电场强度 E=F/q 描述力的性质；电势差描述能的性质；电容器储存电荷。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "库仑定律：F=kq1q2/r²",
+        "电场强度 E=F/q，点电荷 E=kQ/r²",
+        "电势差 U=W/q，电势能",
+        "电场线：从正到负，疏密表示强弱",
+        "电容 C=Q/U，平行板 C=εS/4πkd"
+      ],
+      "methodModels": [
+        {
+          "name": "场强计算",
+          "steps": [
+            "定义式 E=F/q",
+            "点电荷 E=kQ/r²",
+            "叠加原理"
+          ],
+          "example": "等量同种/异种电荷中垂线场强"
+        },
+        {
+          "name": "带电粒子运动",
+          "steps": [
+            "电场力 F=qE",
+            "牛顿第二定律/动能定理"
+          ],
+          "example": "电子在匀强电场中偏转"
+        }
+      ],
+      "commonConfusions": [
+        "场强与电势无必然联系",
+        "电场线与等势面垂直"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "场强电势计算",
+          "method": "定义+叠加",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "恒定电流与电路",
+      "aliases": [
+        "欧姆定律",
+        "电阻",
+        "电功率",
+        "串并联"
+      ],
+      "conceptSummary": "欧姆定律 I=U/R；电阻串联分压并联分流；电功率 P=UI，焦耳定律 Q=I²Rt。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "欧姆定律 I=U/R",
+        "串联：R总=R1+R2，电压分配",
+        "并联：1/R=1/R1+1/R2，电流分配",
+        "电功 W=UIt，电功率 P=UI",
+        "焦耳定律 Q=I²Rt"
+      ],
+      "methodModels": [
+        {
+          "name": "电路分析",
+          "steps": [
+            "识别串并联",
+            "等效电阻",
+            "欧姆定律"
+          ],
+          "example": "混联电路等效化简"
+        },
+        {
+          "name": "电功率计算",
+          "steps": [
+            "纯电阻 P=UI=I²R=U²/R",
+            "非纯电阻只能用 UI"
+          ],
+          "example": "电动机非纯电阻不能用 I²R 算总功率"
+        }
+      ],
+      "commonConfusions": [
+        "纯电阻与非纯电阻电功率公式",
+        "闭合电路欧姆定律"
+      ],
+      "prerequisiteRelations": [
+        "需掌握电场"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电路计算",
+          "method": "等效电阻+欧姆定律",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "磁场与电磁感应",
+      "aliases": [
+        "磁场",
+        "安培力",
+        "洛伦兹力",
+        "磁通量"
+      ],
+      "conceptSummary": "磁场对电流（安培力 F=BIL）和运动电荷（洛伦兹力）作用；磁通量 Φ=BS 是电磁感应基础。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "安培力 F=BIL（B⊥I）",
+        "洛伦兹力 f=qvB（不做功）",
+        "左手定则判安培力/洛伦兹力方向",
+        "磁通量 Φ=BS（B⊥S）",
+        "带电粒子在磁场中圆周运动 r=mv/qB"
+      ],
+      "methodModels": [
+        {
+          "name": "洛伦兹力运动",
+          "steps": [
+            "f=qvB 提供向心力",
+            "r=mv/qB，T=2πm/qB"
+          ],
+          "example": "质子电子在磁场中运动"
+        },
+        {
+          "name": "安培力判断",
+          "steps": [
+            "左手定则：磁感线穿掌心",
+            "四指电流，拇指受力"
+          ],
+          "example": "电流方向与磁场垂直"
+        }
+      ],
+      "commonConfusions": [
+        "洛伦兹力不做功",
+        "左手定则（力）与右手定则（感应电流）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握电路"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "磁场中圆周运动",
+          "method": "r=mv/qB",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "场强叠加",
+      "solutionMethod": "点电荷公式+叠加",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "电路计算",
+      "solutionMethod": "等效电阻",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "洛伦兹力圆周",
+      "solutionMethod": "r=mv/qB",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "安培力",
+      "solutionMethod": "左手定则",
+      "difficulty": "常考"
+    }
+  ]
+}

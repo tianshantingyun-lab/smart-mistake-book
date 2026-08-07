@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-required-organic-compounds-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "required-organic-compounds",
+  "moduleName": "化学必修：简单的有机化合物及其应用",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "甲烷与烷烃",
+      "aliases": [
+        "甲烷",
+        "烷烃",
+        "取代反应",
+        "有机物"
+      ],
+      "conceptSummary": "甲烷是最简单的有机物，正四面体结构；烷烃饱和烃，特征反应是取代。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "甲烷 CH4：正四面体",
+        "烷烃通式 CnH2n+2",
+        "取代反应：光照条件下 CH4+Cl2",
+        "有机物特点：种类多、易燃、反应慢"
+      ],
+      "methodModels": [
+        {
+          "name": "取代反应判断",
+          "steps": [
+            "有机物分子中原子被替代",
+            "烷烃特征反应"
+          ],
+          "example": "甲烷与氯气光照取代"
+        }
+      ],
+      "commonConfusions": [
+        "取代与加成区别",
+        "甲烷空间结构"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "甲烷性质",
+          "method": "结构+取代",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "乙烯、乙醇与乙酸",
+      "aliases": [
+        "乙烯",
+        "乙醇",
+        "乙酸",
+        "加成",
+        "酯化"
+      ],
+      "conceptSummary": "乙烯含碳碳双键可加成；乙醇含羟基；乙酸含羧基呈酸性；酸醇酯化生成酯。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "乙烯 C2H4：双键，加成反应（溴水褪色）",
+        "乙醇 C2H5OH：羟基，与Na反应、氧化成乙醛",
+        "乙酸 CH3COOH：羧基，酸性、酯化",
+        "酯化：乙醇+乙酸→乙酸乙酯（浓硫酸催化）"
+      ],
+      "methodModels": [
+        {
+          "name": "官能团性质",
+          "steps": [
+            "双键加成",
+            "羟基氧化",
+            "羧基酯化"
+          ],
+          "example": "乙烯使溴水褪色是加成"
+        }
+      ],
+      "commonConfusions": [
+        "加成与取代",
+        "酯化反应可逆"
+      ],
+      "prerequisiteRelations": [
+        "需掌握甲烷"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "有机反应类型",
+          "method": "官能团决定",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "烷烃性质",
+      "solutionMethod": "取代反应",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "烯烃加成",
+      "solutionMethod": "双键加成",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "乙醇乙酸",
+      "solutionMethod": "官能团",
+      "difficulty": "常考"
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-selective-reaction-principles-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "selective-reaction-principles",
+  "moduleName": "化学选择性必修1：化学反应原理",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "反应热与盖斯定律",
+      "aliases": [
+        "反应热",
+        "焓变",
+        "盖斯定律",
+        "热化学方程"
+      ],
+      "conceptSummary": "化学反应伴随能量变化，ΔH 表示焓变；盖斯定律：总反应热与路径无关，可加减运算。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "吸热 ΔH>0，放热 ΔH<0",
+        "热化学方程必须注明状态",
+        "盖斯定律：ΔH 可加减",
+        "键能：ΔH=反应物键能-生成物键能",
+        "燃烧热/中和热定义"
+      ],
+      "methodModels": [
+        {
+          "name": "盖斯定律应用",
+          "steps": [
+            "写目标反应",
+            "组合已知反应",
+            "加减 ΔH"
+          ],
+          "example": "由已知反应组合求目标反应热"
+        }
+      ],
+      "commonConfusions": [
+        "状态必须标注（s/l/g）",
+        "ΔH 与系数成正比"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "盖斯定律计算",
+          "method": "反应组合",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "化学反应速率与平衡",
+      "aliases": [
+        "速率",
+        "化学平衡",
+        "勒夏特列",
+        "平衡常数"
+      ],
+      "conceptSummary": "反应速率描述快慢；化学平衡是正逆速率相等的动态平衡；勒夏特列原理判断移动方向。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "速率 v=Δc/Δt",
+        "平衡特征：正逆速率相等、浓度不变",
+        "勒夏特列：改变条件平衡向减弱方向移动",
+        "平衡常数 K 只与温度有关",
+        "催化剂不影响平衡只改变速率"
+      ],
+      "methodModels": [
+        {
+          "name": "平衡移动判断",
+          "steps": [
+            "看改变条件",
+            "勒夏特列判断方向"
+          ],
+          "example": "增大压强平衡向气体分子数减少方向"
+        },
+        {
+          "name": "平衡常数计算",
+          "steps": [
+            "写 K 表达式",
+            "代入平衡浓度"
+          ],
+          "example": "aA+bB⇌cC+dD，K=[C]^c[D]^d/[A]^a[B]^b"
+        }
+      ],
+      "commonConfusions": [
+        "催化剂不改变平衡",
+        "K 只随温度变"
+      ],
+      "prerequisiteRelations": [
+        "需掌握反应热"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "平衡移动",
+          "method": "勒夏特列",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "电离与水解",
+      "aliases": [
+        "弱电解",
+        "电离平衡",
+        "盐类水解",
+        "pH"
+      ],
+      "conceptSummary": "弱电解质部分电离存在电离平衡；盐类水解影响溶液酸碱性；pH=-lg[H+]。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "强电解质完全电离，弱电解质部分",
+        "电离平衡常数 Ka",
+        "盐类水解：强碱弱酸盐水解显碱",
+        "水的离子积 Kw=[H+][OH-]=10⁻¹⁴",
+        "pH=-lg[H+]，pH<7 酸性"
+      ],
+      "methodModels": [
+        {
+          "name": "盐溶液酸碱性",
+          "steps": [
+            "看盐的离子",
+            "弱离子水解"
+          ],
+          "example": "Na2CO3 水解显碱性"
+        },
+        {
+          "name": "pH计算",
+          "steps": [
+            "pH=-lg[H+]",
+            "强酸/强碱稀释"
+          ],
+          "example": "[H+]=10⁻³ 则 pH=3"
+        }
+      ],
+      "commonConfusions": [
+        "Kw 只随温度变",
+        "pH=7 不一定中性（常温才是）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握平衡"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "盐类水解",
+          "method": "弱离子水解",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "电化学（原电池与电解）",
+      "aliases": [
+        "原电池",
+        "电解",
+        "阳极",
+        "阴极"
+      ],
+      "conceptSummary": "原电池把化学能转电能（自发氧化还原）；电解池外加电源强制反应；负极氧化正极还原。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "原电池：负极氧化、正极还原",
+        "电解池：阳极氧化、阴极还原",
+        "电极反应式书写",
+        "电解饱和食盐水制氯气",
+        "金属腐蚀与防护（牺牲阳极）"
+      ],
+      "methodModels": [
+        {
+          "name": "电极判断",
+          "steps": [
+            "原电池：活泼为负",
+            "电解池：连电源正极是阳极",
+            "写电极反应"
+          ],
+          "example": "锌铜原电池：Zn 负极 Zn-2e→Zn2+"
+        }
+      ],
+      "commonConfusions": [
+        "原电池与电解池阴阳极命名",
+        "电子流向与电流方向"
+      ],
+      "prerequisiteRelations": [
+        "需掌握氧化还原"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电极反应书写",
+          "method": "氧化还原半反应",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "盖斯定律",
+      "solutionMethod": "反应组合",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "平衡移动",
+      "solutionMethod": "勒夏特列",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "盐类水解",
+      "solutionMethod": "弱离子水解",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "电化学",
+      "solutionMethod": "电极反应",
+      "difficulty": "高频"
+    }
+  ]
+}
