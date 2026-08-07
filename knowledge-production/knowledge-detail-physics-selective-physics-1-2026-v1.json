@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-physics-selective-physics-1-2026-v1",
+  "subject": "PHYSICS",
+  "moduleSlug": "selective-physics-1",
+  "moduleName": "物理选择性必修1（动量/机械振动波/光）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:phy-dongliang-notes",
+      "title": "动量定理与动量守恒定律",
+      "url": "https://zhuanlan.zhihu.com/p/596071291",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "动量定理与动量守恒",
+      "aliases": [
+        "动量",
+        "冲量",
+        "动量定理",
+        "动量守恒"
+      ],
+      "conceptSummary": "动量 p=mv；冲量 I=Ft；动量定理 Ft=Δp（合外力的冲量等于动量变化）；系统不受外力时动量守恒。",
+      "evidenceSources": [
+        "zhihu:phy-dongliang-notes"
+      ],
+      "properties": [
+        "动量 p=mv（矢量）",
+        "冲量 I=Ft（矢量）",
+        "动量定理：Ft=mv-mv0（矢量式注意方向）",
+        "动量守恒：系统合外力为零时 p 守恒",
+        "碰撞：弹性碰撞动能守恒，完全非弹性粘在一起"
+      ],
+      "methodModels": [
+        {
+          "name": "动量定理应用",
+          "steps": [
+            "选正方向",
+            "写初末动量",
+            "Ft=Δp 求解"
+          ],
+          "example": "缓冲装置延长作用时间减小冲击力"
+        },
+        {
+          "name": "动量守恒计算",
+          "steps": [
+            "判断系统是否合外力为零",
+            "列动量守恒方程"
+          ],
+          "example": "完全非弹性碰撞 m1v1=(m1+m2)v"
+        }
+      ],
+      "commonConfusions": [
+        "动量定理与动能定理区别（矢量/标量）",
+        "碰撞的分类（弹性/非弹性）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握牛顿定律"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "碰撞问题",
+          "method": "动量守恒+能量",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "机械振动与机械波",
+      "aliases": [
+        "简谐运动",
+        "单摆",
+        "机械波",
+        "波长频率"
+      ],
+      "conceptSummary": "简谐运动回复力 F=-kx；机械波传播振动形式与能量；波速 v=λf。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "简谐运动：F=-kx，周期 T=2π√(m/k)",
+        "单摆：T=2π√(L/g)",
+        "机械波：横波/纵波",
+        "波速 v=λ/T=λf",
+        "波的干涉与衍射条件"
+      ],
+      "methodModels": [
+        {
+          "name": "单摆周期计算",
+          "steps": [
+            "T=2π√(L/g)",
+            "注意摆长与等效重力加速度"
+          ],
+          "example": "L=1m 时 T≈2s"
+        },
+        {
+          "name": "波动图像分析",
+          "steps": [
+            "波形图与振动图区分",
+            "v=λf"
+          ],
+          "example": "波长4m周期2s，波速2m/s"
+        }
+      ],
+      "commonConfusions": [
+        "振动图像（质点位移-时间）与波形图（各质点位移-位置）",
+        "干涉加强减弱条件"
+      ],
+      "prerequisiteRelations": [
+        "需掌握运动学"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "波速波长计算",
+          "method": "v=λf",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "动量定理",
+      "solutionMethod": "Ft=Δp",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "动量守恒碰撞",
+      "solutionMethod": "守恒方程",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "简谐运动与单摆",
+      "solutionMethod": "周期公式",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "波动图像",
+      "solutionMethod": "v=λf",
+      "difficulty": "中档"
+    }
+  ]
+}

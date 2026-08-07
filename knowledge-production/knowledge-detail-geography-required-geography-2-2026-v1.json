@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-geography-required-geography-2-2026-v1",
+  "subject": "GEOGRAPHY",
+  "moduleSlug": "required-geography-2",
+  "moduleName": "地理必修2：人文地理",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "人口",
+      "aliases": [
+        "人口分布",
+        "人口迁移",
+        "人口增长",
+        "人口容量"
+      ],
+      "conceptSummary": "人口分布受自然与人文因素影响；人口迁移改变人口空间分布；人口合理容量是环境承载力。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人口分布：中低纬沿海平原多",
+        "影响分布：自然（地形气候水源）+经济（就业）",
+        "人口迁移：经济/政治/战争/自然原因",
+        "人口增长模式：原始/传统/现代",
+        "环境人口容量：资源环境承载力"
+      ],
+      "methodModels": [
+        {
+          "name": "人口迁移分析",
+          "steps": [
+            "推拉理论：迁出推力+迁入拉力",
+            "结合经济/政策"
+          ],
+          "example": "农村→城市：就业拉力"
+        }
+      ],
+      "commonConfusions": [
+        "人口迁移与人口流动区别",
+        "增长模式转变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人口迁移原因",
+          "method": "推拉理论",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "聚落与城镇化",
+      "aliases": [
+        "聚落",
+        "城镇化",
+        "城市化",
+        "城市问题"
+      ],
+      "conceptSummary": "聚落是人类聚居地；城镇化是人口向城市集聚、城市用地扩展的过程，发达国家已成熟、发展中国家快速推进。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "聚落类型：乡村/城市",
+        "城镇化标志：城镇人口增加/用地扩大/比重上升",
+        "发达国家城市化：水平高、速度慢",
+        "发展中国家：水平低、速度快",
+        "城市化问题：交通拥堵/住房紧张/环境"
+      ],
+      "methodModels": [
+        {
+          "name": "城镇化分析",
+          "steps": [
+            "看城市化水平与速度",
+            "结合阶段（初期/加速/成熟）"
+          ],
+          "example": "我国城市化进入加速阶段"
+        }
+      ],
+      "commonConfusions": [
+        "城镇化与逆城市化阶段",
+        "城市问题与解决措施"
+      ],
+      "prerequisiteRelations": [
+        "需掌握人口"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "城市化阶段判断",
+          "method": "水平+速度",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "产业区位（农业工业服务业）",
+      "aliases": [
+        "农业区位",
+        "工业区位",
+        "服务业区位"
+      ],
+      "conceptSummary": "农业区位受自然（气候地形土壤水源）与人文（市场交通政策）影响；工业区位选择考虑原料市场劳动力等；服务业受市场交通影响。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "农业区位：自然+社会经济因素",
+        "工业区位：原料/动力/市场/劳动力/技术/政策",
+        "工业类型：原料导向/市场导向/动力导向/劳动力/技术",
+        "服务业：市场+交通+劳动力+集聚"
+      ],
+      "methodModels": [
+        {
+          "name": "工业区位选择",
+          "steps": [
+            "识别工业类型",
+            "选主导区位"
+          ],
+          "example": "制糖业原料导向，靠近原料地"
+        },
+        {
+          "name": "农业区位分析",
+          "steps": [
+            "自然条件",
+            "社会经济条件"
+          ],
+          "example": "城郊农业市场导向"
+        }
+      ],
+      "commonConfusions": [
+        "主导区位与一般区位",
+        "原料导向与市场导向区分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "区位选择分析",
+          "method": "主导因素",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "交通运输与区域发展",
+      "aliases": [
+        "交通运输",
+        "区位影响",
+        "布局"
+      ],
+      "conceptSummary": "交通运输布局受经济、社会、技术、自然影响；交通干线影响聚落与产业布局。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "运输方式：公路/铁路/水运/航空/管道",
+        "选择依据：运量/速度/成本/灵活性",
+        "交通布局因素：经济主导+自然制约",
+        "交通对聚落影响：沿交通线分布"
+      ],
+      "methodModels": [
+        {
+          "name": "运输方式选择",
+          "steps": [
+            "看货物性质",
+            "看运量距离",
+            "选方式"
+          ],
+          "example": "大宗笨重远程→铁路水运"
+        }
+      ],
+      "commonConfusions": [
+        "各种运输方式优劣比较",
+        "交通枢纽对城市影响"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "运输方式选择",
+          "method": "运量+距离+成本",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "人口迁移",
+      "solutionMethod": "推拉理论",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "城镇化",
+      "solutionMethod": "阶段+问题",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "农业工业区位",
+      "solutionMethod": "主导因素",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "交通运输",
+      "solutionMethod": "方式选择+布局",
+      "difficulty": "中档"
+    }
+  ]
+}

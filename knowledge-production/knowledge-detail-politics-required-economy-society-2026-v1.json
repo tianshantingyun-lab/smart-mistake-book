@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-politics-required-economy-society-2026-v1",
+  "subject": "POLITICS",
+  "moduleSlug": "required-economy-society",
+  "moduleName": "思想政治必修2：经济与社会",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "社会主义市场经济",
+      "aliases": [
+        "市场",
+        "计划",
+        "资源配置",
+        "宏观调控"
+      ],
+      "conceptSummary": "市场在资源配置中起决定性作用，同时更好发挥政府作用；市场调节有自发性、盲目性、滞后性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "市场决定资源配置（价格/供求/竞争机制）",
+        "市场调节局限：自发性/盲目性/滞后性",
+        "政府宏观调控：经济/法律/行政手段",
+        "社会主义市场经济：市场决定+政府更好作用"
+      ],
+      "methodModels": [
+        {
+          "name": "市场与政府关系",
+          "steps": [
+            "市场起决定作用",
+            "政府弥补市场失灵"
+          ],
+          "example": "价格调节供求，政府监管质量"
+        }
+      ],
+      "commonConfusions": [
+        "市场决定资源配置不等于不要政府",
+        "宏观调控三大手段区分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "市场失灵分析",
+          "method": "自发性/盲目性/滞后性",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "我国的分配制度",
+      "aliases": [
+        "按劳分配",
+        "按要素分配",
+        "共同富裕"
+      ],
+      "conceptSummary": "以按劳分配为主体、多种分配方式并存；健全社会保障体系促进公平。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "按劳分配：公有制为主体",
+        "按要素分配：资本/技术/管理/数据等",
+        "初次分配+再分配+第三次分配",
+        "社会保障：社会保险/救助/福利/优抚",
+        "共同富裕：效率和公平统一"
+      ],
+      "methodModels": [
+        {
+          "name": "分配方式判断",
+          "steps": [
+            "看来源（劳动/资本/要素）",
+            "按劳分配在公有制单位"
+          ],
+          "example": "国企工资是按劳分配，炒股收益按资本要素"
+        }
+      ],
+      "commonConfusions": [
+        "按劳分配与按劳动要素分配区别",
+        "初次分配与再分配"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分配方式判断",
+          "method": "来源分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "经济高质量发展",
+      "aliases": [
+        "新发展理念",
+        "供给侧",
+        "双循环",
+        "现代化经济体系"
+      ],
+      "conceptSummary": "贯彻创新、协调、绿色、开放、共享新发展理念；建设现代化经济体系实现高质量发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "五大发展理念：创新/协调/绿色/开放/共享",
+        "供给侧结构性改革：三去一降一补",
+        "双循环：内循环为主内外互促",
+        "现代化产业体系：实体为根基"
+      ],
+      "methodModels": [
+        {
+          "name": "新发展理念分析",
+          "steps": [
+            "识别材料对应理念",
+            "结合措施分析"
+          ],
+          "example": "科技创新→创新驱动"
+        }
+      ],
+      "commonConfusions": [
+        "五大理念易混淆（创新/绿色）",
+        "供给侧与需求侧"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "高质量发展措施",
+          "method": "理念+改革",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "市场机制",
+      "solutionMethod": "价格供求竞争",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "分配制度",
+      "solutionMethod": "按劳/按要素",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "宏观调控",
+      "solutionMethod": "经济法律行政",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "高质量发展",
+      "solutionMethod": "五大理念",
+      "difficulty": "常考"
+    }
+  ]
+}

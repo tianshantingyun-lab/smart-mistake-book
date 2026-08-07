@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-biology-selective-homeostasis-regulation-2026-v1",
+  "subject": "BIOLOGY",
+  "moduleSlug": "selective-homeostasis-regulation",
+  "moduleName": "生物选择性必修1：稳态与调节",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "内环境与稳态",
+      "aliases": [
+        "内环境",
+        "血浆",
+        "组织液",
+        "稳态"
+      ],
+      "conceptSummary": "内环境是细胞外液（血浆、组织液、淋巴）；稳态是内环境理化性质保持相对稳定，靠神经-体液-免疫调节网络维持。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "细胞外液：血浆/组织液/淋巴，构成内环境",
+        "内环境理化性质：渗透压/酸碱度/温度",
+        "稳态机制：神经-体液-免疫调节网络",
+        "稳态意义：细胞正常代谢的前提"
+      ],
+      "methodModels": [
+        {
+          "name": "成分判断",
+          "steps": [
+            "细胞外液组成",
+            "判断某物质是否在内环境"
+          ],
+          "example": "血浆蛋白在内环境，血红蛋白不在"
+        }
+      ],
+      "commonConfusions": [
+        "细胞内液与内环境区分",
+        "内环境是细胞外液不是体内所有液体"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞结构"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "内环境成分判断",
+          "method": "细胞外液范围",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "神经调节",
+      "aliases": [
+        "神经元",
+        "突触",
+        "反射",
+        "神经冲动"
+      ],
+      "conceptSummary": "神经调节的基本方式是反射；神经元间通过突触传递信息（化学递质）；静息电位与动作电位。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "反射弧：感受器→传入→神经中枢→传出→效应器",
+        "静息电位：外正内负（K+外流）",
+        "动作电位：外负内正（Na+内流）",
+        "突触传递：电信号→化学信号→电信号，单向",
+        "兴奋在突触传递是单向的"
+      ],
+      "methodModels": [
+        {
+          "name": "电位变化分析",
+          "steps": [
+            "静息→K+外流",
+            "刺激→Na+内流产生动作电位",
+            "恢复→Na+泵出K+泵入"
+          ],
+          "example": "受刺激处外负内正"
+        }
+      ],
+      "commonConfusions": [
+        "兴奋在神经纤维双向、突触单向",
+        "突触小体与突触区别"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞膜"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "神经传导分析",
+          "method": "电位+突触",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "体液调节与免疫",
+      "aliases": [
+        "激素",
+        "体液免疫",
+        "细胞免疫",
+        "抗体"
+      ],
+      "conceptSummary": "体液调节主要通过激素；免疫系统分体液免疫（抗体）与细胞免疫（T细胞杀伤），共同维持内环境稳态。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "激素：甲状腺激素/胰岛素/胰高血糖素/肾上腺素",
+        "胰岛素降血糖，胰高血糖素升血糖",
+        "体液免疫：B细胞→浆细胞→抗体",
+        "细胞免疫：T细胞→效应T细胞杀伤靶细胞",
+        "反馈调节：正反馈/负反馈"
+      ],
+      "methodModels": [
+        {
+          "name": "血糖调节分析",
+          "steps": [
+            "血糖高→胰岛素分泌增加",
+            "血糖低→胰高血糖素增加"
+          ],
+          "example": "饭后血糖升高胰岛B细胞分泌胰岛素"
+        }
+      ],
+      "commonConfusions": [
+        "体液免疫与细胞免疫配合（HIV攻击T细胞）",
+        "激素调节特点：微量高效/体液运输"
+      ],
+      "prerequisiteRelations": [
+        "需掌握神经调节"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "激素调节分析",
+          "method": "反馈+靶器官",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "内环境稳态",
+      "solutionMethod": "细胞外液成分",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "神经传导",
+      "solutionMethod": "电位+突触",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "血糖调节",
+      "solutionMethod": "激素反馈",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "免疫调节",
+      "solutionMethod": "体液/细胞免疫",
+      "difficulty": "常考"
+    }
+  ]
+}
