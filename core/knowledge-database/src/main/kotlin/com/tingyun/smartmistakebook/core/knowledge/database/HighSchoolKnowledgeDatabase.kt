@@ -25,6 +25,14 @@ import kotlinx.coroutines.flow.asStateFlow
 
 internal const val HIGH_SCHOOL_KNOWLEDGE_DATABASE_VERSION = 1
 
+/**
+ * Leading high-confidence recall slice for two-stage knowledge recall.
+ * `queryFeatures` orders features EXACT/TOKEN first and N-gram last, so the
+ * first slice is the most specific subset; scanning it first avoids touching
+ * the full N-gram feature set on every query.
+ */
+internal const val PRIMARY_RECALL_FEATURE_SLICE = 12
+
 @Database(
     entities = [
         KnowledgePackManifestEntity::class,
@@ -651,7 +659,35 @@ private class RoomHighSchoolKnowledgeCatalog(
         }
         limit.requireCatalogLimit()
         val manifest = readActiveManifest()
-        return catalogDao.recall(
+        // Two-stage recall: queryFeatures orders features from high confidence
+        // (EXACT/TOKEN) to low confidence (NGRAM), so the leading slice is the
+        // most specific match. If it already fills the limit we avoid scanning
+        // the full N-gram feature set.
+        val leadingSlice = features.take(PRIMARY_RECALL_FEATURE_SLICE)
+        val primary = recallRows(
+            subject = subject,
+            manifest = manifest,
+            features = leadingSlice,
+            limit = limit,
+        )
+        if (primary.size >= limit || leadingSlice.size == features.size) {
+            return primary
+        }
+        return recallRows(
+            subject = subject,
+            manifest = manifest,
+            features = features,
+            limit = limit,
+        )
+    }
+
+    private suspend fun recallRows(
+        subject: SubjectKind,
+        manifest: KnowledgePackManifestEntity,
+        features: List<String>,
+        limit: Int,
+    ): List<KnowledgeCatalogSearchHit> =
+        catalogDao.recall(
             subject = subject.name,
             taxonomyVersion = manifest.taxonomyVersion,
             features = features,
@@ -663,7 +699,6 @@ private class RoomHighSchoolKnowledgeCatalog(
                 bestRankWeight = row.bestRankWeight,
             )
         }
-    }
 
     override suspend fun readNeighborhood(
         subject: SubjectKind,
