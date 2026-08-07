@@ -4458,3 +4458,39 @@
 - 强爬虫已就绪：Playwright MCP 已注册到 opencode 配置，**新 opencode 会话启动后自动加载**为 `playwright_*` 工具；当前会话可用等价的 Node + playwright-core 脚本抓取。
 - 抓取能力矩阵更新：CSDN ✅、百度百科 ✅（新增，Playwright）、cnblogs/shuxueji ✅、知乎 ❌（登录墙）、学科网/菁优网 ❌（付费）。
 - 下一步 A：用 Playwright 批量抓取剩余 40 个 HIGH 模块的第三方知识点 + 题型解法。
+
+## 2026-08-07 实施批次：A 批量抓取启动（WebBridge 知乎 + 工具链）
+
+### 已完成
+
+- 安装并启用 **Kimi WebBridge**（本机已装 v1.10.1 → 升级到 v1.11.5）：
+  - daemon 运行于 `127.0.0.1:10086`，浏览器扩展（Edge Add-ons ID `bnlffdbcfnanfbknnlaflhlhkocccckg`）已由用户安装并连接（`extension_connected: true`）；
+  - `install-skill` 已将 WebBridge skill 装入 Claude Code/Codex/Kimi 运行时；
+  - 用户已登录知乎，WebBridge 可用真实登录态抓知乎。
+- 抓取能力验证：
+  - ✅ 知乎（登录态）：集合概念、集合基本运算、函数概念、不等式性质等文字型文章成功抓取；
+  - ✅ CSDN、cnblogs、shuxueji：继续可用；
+  - ⚠️ 知乎教育类文章常见"正文为图片"形式（如 17 种题型归纳），无法提取文字，工具自动检测 `imageCount` 并跳过；
+  - ❌ 知乎未登录会话仍显示登录墙（已由用户登录解决）。
+- 新增工具：
+  - `tools/knowledge-crawler.py`：单 URL 抓取（多选择器回退）；
+  - `tools/zhihu-batch-grab.py`：批量抓取（manifest JSON → 逐篇检测文字/图片 → 保存可用文本 + grab-report）。
+- 已抓取 11 篇有效素材（约 5.2 万字符）到 `.artifacts/research/knowledge-crawl/`：
+  - 集合：`zhihu-batch1`（集合基础总结）、`zhihu-batch2`（集合基本运算）；
+  - 函数：`fn-conc-basic`、`fn-conc-essence`、`fn-conc-note`、`fn-conc-whatis`；
+  - 不等式：`ineq-properties`（18.6K 字符，含性质+证明方法+带解析高考真题）、`ineq-basic-intro`、`quad-func-ineq-note`、`quad-ineq-basic`、`quad-ineq-full`。
+- 素材登记与审计：`grab-report.json` 记录每篇 URL/字数/图片数/可用性。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| WebBridge | v1.11.5，扩展已连接，知乎已登录 |
+| 知乎抓取 | ✅ 文字型文章成功；图片型自动跳过 |
+| 批量工具 | `zhihu-batch-grab.py` 6 篇 5 可用，report 生成 |
+| 有效素材 | 11 篇，约 5.2 万字符（集合/函数/不等式模块） |
+
+### 状态
+
+- A 全量流程跑通：知乎搜索 → 批量抓取 → 文字/图片筛选 → 保存素材。
+- 下一步：把已抓素材归纳进知识库细节（`knowledge-detail-*` 模块文件），并对数学剩余模块（函数、向量、概率统计、数列导数、圆锥曲线、计数原理）继续抓取。
