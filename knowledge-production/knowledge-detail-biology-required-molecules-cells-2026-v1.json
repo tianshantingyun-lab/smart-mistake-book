@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-biology-required-molecules-cells-2026-v1",
+  "subject": "BIOLOGY",
+  "moduleSlug": "required-molecules-cells",
+  "moduleName": "生物必修1：分子与细胞",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:bio-xibao-notes",
+      "title": "新人教版生物学必修1细胞结构知识梳理",
+      "url": "https://zhuanlan.zhihu.com/p/1934566838915801493",
+      "acquisition": "SUCCESS",
+      "note": "图片型素材，正文以截图保留"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "第1章 走近细胞",
+      "aliases": [
+        "细胞",
+        "原核生物",
+        "真核生物",
+        "细胞学说"
+      ],
+      "conceptSummary": "细胞是生物体结构和功能的基本单位；原核生物无核膜，真核生物有核膜；细胞学说论证了细胞统一性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "原核生物：无核膜（细菌、蓝藻），只有核糖体",
+        "真核生物：有核膜和多种细胞器",
+        "病毒无细胞结构，不属于原核或真核",
+        "细胞学说：细胞是基本单位，所有生物由细胞构成"
+      ],
+      "methodModels": [
+        {
+          "name": "原核真核区分",
+          "steps": [
+            "有无核膜",
+            "有无多种细胞器"
+          ],
+          "example": "大肠杆菌原核，酵母菌真核"
+        }
+      ],
+      "commonConfusions": [
+        "蓝藻（蓝细菌）是原核有叶绿素但无叶绿体",
+        "病毒非细胞生物"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原核真核判断",
+          "method": "核膜+细胞器",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "第2章 组成细胞的分子",
+      "aliases": [
+        "蛋白质",
+        "核酸",
+        "糖类",
+        "脂肪",
+        "氨基酸"
+      ],
+      "conceptSummary": "细胞由蛋白质、核酸、糖类、脂质等有机分子组成；蛋白质由氨基酸组成，核酸储存遗传信息。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "蛋白质：氨基酸→多肽→蛋白质，20种氨基酸",
+        "蛋白质功能：催化/运输/免疫/调节",
+        "核酸：DNA双链、RNA单链，基本单位核苷酸",
+        "糖类：单糖/二糖/多糖，主要能源",
+        "脂肪：储能，1g脂肪放能比糖多"
+      ],
+      "methodModels": [
+        {
+          "name": "蛋白质计算",
+          "steps": [
+            "肽键数=氨基酸数-肽链数",
+            "相对分子质量=氨基酸总和-脱去水"
+          ],
+          "example": "n个氨基酸形成1条肽链：n-1个肽键"
+        },
+        {
+          "name": "糖类脂质功能",
+          "steps": [
+            "按分类记功能"
+          ],
+          "example": "淀粉植物储能，糖原动物储能"
+        }
+      ],
+      "commonConfusions": [
+        "氨基酸20种但蛋白质种类多样（排列组合）",
+        "DNA与RNA五碳糖不同"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "蛋白质结构计算",
+          "method": "肽键数公式",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "第3章 细胞的基本结构",
+      "aliases": [
+        "细胞膜",
+        "细胞器",
+        "细胞核",
+        "线粒体"
+      ],
+      "conceptSummary": "细胞膜控制物质进出；细胞器分工协作；细胞核是遗传信息库和代谢控制中心。",
+      "evidenceSources": [
+        "zhihu:bio-xibao-notes"
+      ],
+      "properties": [
+        "细胞膜：磷脂双分子层+蛋白质，流动镶嵌模型",
+        "线粒体：有氧呼吸主要场所",
+        "叶绿体：光合作用场所",
+        "核糖体：蛋白质合成场所",
+        "内质网/高尔基体：加工运输",
+        "细胞核：含DNA，遗传信息库"
+      ],
+      "methodModels": [
+        {
+          "name": "细胞器功能归类",
+          "steps": [
+            "能量：线粒体/叶绿体",
+            "合成：核糖体/内质网",
+            "加工：高尔基体"
+          ],
+          "example": "分泌蛋白合成：核糖体→内质网→高尔基体"
+        }
+      ],
+      "commonConfusions": [
+        "植物细胞特有：叶绿体、细胞壁、大液泡",
+        "动物细胞无细胞壁"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞分子组成"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "细胞器功能判断",
+          "method": "功能归类",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "细胞代谢（呼吸与光合）",
+      "aliases": [
+        "细胞呼吸",
+        "光合作用",
+        "ATP"
+      ],
+      "conceptSummary": "细胞呼吸分解有机物释放能量（有氧/无氧）；光合作用把CO₂和水合成有机物储存能量；ATP是直接能源物质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "有氧呼吸：C6H12O6+6O2→6CO2+6H2O+能量",
+        "无氧呼吸：产生乳酸或酒精CO₂",
+        "光合作用：6CO2+6H2O→C6H12O6+6O2（光能）",
+        "ATP：腺苷三磷酸，'能量通货'",
+        "影响光合因素：光照/CO₂/温度"
+      ],
+      "methodModels": [
+        {
+          "name": "呼吸光合比较",
+          "steps": [
+            "场所/条件/产物对比"
+          ],
+          "example": "有氧呼吸线粒体，光合叶绿体"
+        },
+        {
+          "name": "实验分析",
+          "steps": [
+            "控制变量",
+            "检测产物"
+          ],
+          "example": "验证光合放氧用带火星木条"
+        }
+      ],
+      "commonConfusions": [
+        "ATP与ADP相互转化",
+        "呼吸作用在线粒体基质和内膜"
+      ],
+      "prerequisiteRelations": [
+        "需掌握细胞结构"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "代谢过程分析",
+          "method": "场所+反应式",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "原核真核比较",
+      "solutionMethod": "核膜/细胞器",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "蛋白质与核酸",
+      "solutionMethod": "结构+功能",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "细胞结构与功能",
+      "solutionMethod": "细胞器归类",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "呼吸与光合",
+      "solutionMethod": "反应式+场所",
+      "difficulty": "常考"
+    }
+  ]
+}

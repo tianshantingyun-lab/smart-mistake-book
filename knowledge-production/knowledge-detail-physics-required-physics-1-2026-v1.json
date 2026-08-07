@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-physics-required-physics-1-2026-v1",
+  "subject": "PHYSICS",
+  "moduleSlug": "required-physics-1",
+  "moduleName": "物理必修1（运动与力）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:phy-niudun-notes",
+      "title": "牛顿运动定律知识点梳理",
+      "url": "https://zhuanlan.zhihu.com/p/649650633",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:phy-dongliang-notes",
+      "title": "动量定理与动量守恒定律",
+      "url": "https://zhuanlan.zhihu.com/p/596071291",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "第一章 运动的描述",
+      "aliases": [
+        "质点",
+        "参考系",
+        "位移",
+        "速度",
+        "加速度"
+      ],
+      "conceptSummary": "质点是有质量无大小的理想模型；位移是位置变化，速度是位移变化率，加速度是速度变化率。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "质点：当物体大小形状对问题影响可忽略时",
+        "位移是矢量，路程是标量",
+        "平均速度=位移/时间，瞬时速度极限定义",
+        "加速度 a=Δv/Δt，方向与速度变化方向相同"
+      ],
+      "methodModels": [
+        {
+          "name": "速度与加速度辨析",
+          "steps": [
+            "区分速度大小与变化快慢",
+            "加速度与速度方向关系"
+          ],
+          "example": "速度大但加速度可能为0（匀速）"
+        }
+      ],
+      "commonConfusions": [
+        "位移与路程混淆",
+        "速度大不等于加速度大"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "描述运动的基本量",
+          "method": "定义判断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "第二章 匀变速直线运动",
+      "aliases": [
+        "匀变速",
+        "自由落体",
+        "运动学公式"
+      ],
+      "conceptSummary": "匀变速直线运动加速度恒定，可用 v=v0+at、x=v0t+½at² 等公式描述。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "速度公式 v=v0+at",
+        "位移公式 x=v0t+½at²",
+        "速度位移公式 v²-v0²=2ax",
+        "自由落体：v0=0，a=g",
+        "平均速度=(v0+v)/2"
+      ],
+      "methodModels": [
+        {
+          "name": "运动学计算",
+          "steps": [
+            "选正方向",
+            "定已知量",
+            "选公式求解"
+          ],
+          "example": "v0=10m/s,a=2m/s²，5s后速度20m/s"
+        },
+        {
+          "name": "刹车问题",
+          "steps": [
+            "先算停车时间",
+            "分情况讨论"
+          ],
+          "example": "v0=20,a=-4，求6s位移（3s已停）"
+        }
+      ],
+      "commonConfusions": [
+        "刹车问题速度减到0后不会反向",
+        "矢量方向正负号"
+      ],
+      "prerequisiteRelations": [
+        "需掌握运动描述"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "匀变速运动计算",
+          "method": "公式法",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "第三章 相互作用——力",
+      "aliases": [
+        "重力",
+        "弹力",
+        "摩擦力",
+        "受力分析"
+      ],
+      "conceptSummary": "重力 G=mg；弹力与形变有关；摩擦力分静摩擦与滑动摩擦，f=μN。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "重力：G=mg，方向竖直向下",
+        "弹力：胡克定律 F=kx",
+        "滑动摩擦力 f=μN，方向与相对运动方向相反",
+        "静摩擦力范围 0<f≤fmax"
+      ],
+      "methodModels": [
+        {
+          "name": "受力分析",
+          "steps": [
+            "先重力",
+            "再接触力（弹力、摩擦力）",
+            "按效果分析"
+          ],
+          "example": "斜面上物体受力：重力、支持力、摩擦力"
+        }
+      ],
+      "commonConfusions": [
+        "静摩擦与滑动摩擦方向判断",
+        "摩擦力不一定是阻力"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "受力分析",
+          "method": "重力→弹力→摩擦",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "第四章 牛顿运动定律",
+      "aliases": [
+        "牛顿第一定律",
+        "牛顿第二定律",
+        "惯性",
+        "超重失重"
+      ],
+      "conceptSummary": "牛一揭示惯性；牛二 F=ma 定量描述力与加速度关系；牛三作用力反作用力。",
+      "evidenceSources": [
+        "zhihu:phy-niudun-notes"
+      ],
+      "properties": [
+        "牛一：物体保持静止或匀速直线运动，除非受力改变",
+        "惯性只与质量有关，质量大惯性大",
+        "牛二：F=ma，力是产生加速度的原因",
+        "牛三：作用力与反作用力大小相等方向相反",
+        "超重：a向上，N>mg；失重：a向下，N<mg"
+      ],
+      "methodModels": [
+        {
+          "name": "牛二应用",
+          "steps": [
+            "受力分析",
+            "正交分解",
+            "F=ma 列方程"
+          ],
+          "example": "水平力拉物体求加速度"
+        },
+        {
+          "name": "连接体问题",
+          "steps": [
+            "整体法求加速度",
+            "隔离法求内力"
+          ],
+          "example": "两物体叠放受力"
+        }
+      ],
+      "commonConfusions": [
+        "力不是维持运动的原因（牛一）",
+        "惯性不是力",
+        "超重失重看加速度方向不看速度"
+      ],
+      "prerequisiteRelations": [
+        "需掌握受力分析"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "牛二动力学计算",
+          "method": "受力分析+F=ma",
+          "example": "见上"
+        },
+        {
+          "questionShape": "超重失重判断",
+          "method": "看加速度方向",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "匀变速运动公式",
+      "solutionMethod": "v=v0+at等公式",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "受力分析与平衡",
+      "solutionMethod": "正交分解，ΣF=0",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "牛二动力学",
+      "solutionMethod": "受力分析+F=ma",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "连接体/传送带",
+      "solutionMethod": "整体隔离法",
+      "difficulty": "中档"
+    }
+  ]
+}

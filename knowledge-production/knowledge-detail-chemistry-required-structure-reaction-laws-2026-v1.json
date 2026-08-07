@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-required-structure-reaction-laws-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "required-structure-reaction-laws",
+  "moduleName": "化学必修：物质结构基础与化学反应规律",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:chem-zhouqi-gb",
+      "title": "高中化学归纳 必修二 元素周期表及元素周期律",
+      "url": "https://zhuanlan.zhihu.com/p/109167581",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "元素周期表",
+      "aliases": [
+        "周期",
+        "族",
+        "主族",
+        "周期表结构"
+      ],
+      "conceptSummary": "元素周期表把电子层数相同的元素排成横行（周期），最外层电子数相同的排成纵行（族），共7周期16族。",
+      "evidenceSources": [
+        "zhihu:chem-zhouqi-gb"
+      ],
+      "properties": [
+        "7个周期（短周期2/3、长周期4/5/6、不完全周期7）",
+        "16个族（7主族+7副族+VIII族+0族）",
+        "主族序数=最外层电子数",
+        "周期序数=电子层数"
+      ],
+      "methodModels": [
+        {
+          "name": "元素定位",
+          "steps": [
+            "由原子序数排电子层",
+            "确定周期与族"
+          ],
+          "example": "原子序数11（Na）：第三周期第IA族"
+        },
+        {
+          "name": "周期表推断",
+          "steps": [
+            "结合位置推性质",
+            "相邻元素比较"
+          ],
+          "example": "同周期从左到右金属性减弱"
+        }
+      ],
+      "commonConfusions": [
+        "主族序数与最外层电子数关系",
+        "0族元素最外层8电子（He为2）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握原子结构"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "元素位置与性质",
+          "method": "周期+族定位",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "元素周期律",
+      "aliases": [
+        "周期律",
+        "金属性",
+        "非金属性",
+        "递变规律"
+      ],
+      "conceptSummary": "元素性质随原子序数递增呈周期性变化，其根本原因是核外电子排布的周期性；同周期从左到右金属性减弱非金属性增强。",
+      "evidenceSources": [
+        "zhihu:chem-zhouqi-gb"
+      ],
+      "properties": [
+        "同周期：左→右金属性减弱、非金属性增强",
+        "同主族：上→下金属性增强、非金属性减弱",
+        "原子半径：同周期减小，同主族增大",
+        "最高正价=主族序数，最低负价=8-主族序数"
+      ],
+      "methodModels": [
+        {
+          "name": "比较金属性强弱",
+          "steps": [
+            "单质与水/酸反应剧烈程度",
+            "最高价氧化物对应水化物碱性强弱"
+          ],
+          "example": "Na>Mg>Al 金属性递减"
+        },
+        {
+          "name": "比较非金属性强弱",
+          "steps": [
+            "与氢气化合难易",
+            "最高价氧化物水化物酸性强弱",
+            "气态氢化物稳定性"
+          ],
+          "example": "F>Cl>Br 非金属性递减"
+        }
+      ],
+      "commonConfusions": [
+        "金属性与失电子能力（不是得电子）",
+        "用最高价氧化物的水化物比较（不能用低价）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握周期表"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "元素性质比较",
+          "method": "周期律递变规律",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "化学键与化学反应规律",
+      "aliases": [
+        "化学键",
+        "离子键",
+        "共价键",
+        "物质的量"
+      ],
+      "conceptSummary": "化学键是原子间强烈作用力，分离子键与共价键；物质的量 n=m/M=N/NA 是化学计量基础。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "离子键：金属与非金属间电子转移",
+        "共价键：非金属间共用电子对",
+        "物质的量：n=m/M，NA≈6.02×10²³",
+        "气体摩尔体积：标况下22.4L/mol"
+      ],
+      "methodModels": [
+        {
+          "name": "物质的量计算",
+          "steps": [
+            "n=m/M",
+            "n=N/NA",
+            "标况气体 n=V/22.4"
+          ],
+          "example": "18g水 n=1mol，分子数 NA"
+        },
+        {
+          "name": "化学键判断",
+          "steps": [
+            "金属+非金属一般离子键",
+            "非金属+非金属共价键"
+          ],
+          "example": "NaCl离子键，H2O共价键"
+        }
+      ],
+      "commonConfusions": [
+        "物质的量与摩尔质量",
+        "标况（0℃,1atm）条件"
+      ],
+      "prerequisiteRelations": [
+        "需掌握原子结构"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质的量换算",
+          "method": "n=m/M等公式",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "元素周期表定位",
+      "solutionMethod": "原子序数→周期族",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "元素性质比较",
+      "solutionMethod": "周期律递变",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "物质的量计算",
+      "solutionMethod": "n=m/M等",
+      "difficulty": "基础"
+    }
+  ]
+}
