@@ -24,6 +24,9 @@ KP = PROJECT_ROOT / "knowledge-production"
 # Non-core TOC section markers (reading/IT/labs) not counted as knowledge points.
 NON_CORE_MARKERS = ("阅读与思考", "信息技术应用", "探究与发现", "文献阅读", "复习参考题")
 
+# Chinese is organized by 18 curriculum task groups (not textbook lessons).
+CHINESE_TASK_GROUPS = 18
+
 
 def load_toc_sections() -> dict[str, set[str]]:
     toc = json.load(open(KP / "pep-textbook-toc-2026-v1.json", encoding="utf-8"))
@@ -59,10 +62,17 @@ def audit() -> dict:
     total_core = 0
     total_covered = 0
     for subj in all_subjects:
-        core = toc.get(subj, set())
-        cov = detail.get(subj, set())
-        n_core = len(core)
-        n_cov = len(cov)
+        if subj == "CHINESE":
+            # Chinese benchmark is the 18 task groups, not textbook lessons.
+            n_core = CHINESE_TASK_GROUPS
+            n_cov = min(len(detail.get(subj, set())), n_core)
+            core_note = "task-groups"
+        else:
+            core = toc.get(subj, set())
+            cov = detail.get(subj, set())
+            n_core = len(core)
+            n_cov = len(cov)
+            core_note = "sections"
         total_core += n_core
         total_covered += n_cov
         rows.append(
@@ -71,6 +81,7 @@ def audit() -> dict:
                 "coreSections": n_core,
                 "coveredSections": n_cov,
                 "coverageRatio": round(n_cov / n_core, 3) if n_core else 0.0,
+                "coreBasis": core_note,
             }
         )
     return {

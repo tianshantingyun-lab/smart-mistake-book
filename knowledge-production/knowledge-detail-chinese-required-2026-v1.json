@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chinese-required-2026-v1",
+  "subject": "CHINESE",
+  "moduleSlug": "chinese-required",
+  "moduleName": "语文：阅读与写作能力（任务群核心）",
+  "reviewState": "REVIEWED_AI_FIRST_PASS",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "语言积累、梳理与探究",
+      "aliases": [
+        "文言实词",
+        "文言虚词",
+        "词义",
+        "古今异义"
+      ],
+      "conceptSummary": "通过文言文阅读梳理文言词语在不同上下文的词义与用法，把握古今词义异同，积累常见实词虚词。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "常见实词：走（跑）、汤（热水）、妻子（妻子儿女）",
+        "常见虚词：而/之/其/以/于",
+        "古今异义：词义扩大/缩小/转移",
+        "通假字、词类活用",
+        "一词多义：依语境判断"
+      ],
+      "methodModels": [
+        {
+          "name": "文言实词推断",
+          "steps": [
+            "语境代入",
+            "词性判断",
+            "成语印证"
+          ],
+          "example": "'牺牲玉帛'中牺牲=祭祀用的牲畜（古今异义）"
+        },
+        {
+          "name": "虚词辨析",
+          "steps": [
+            "记常见用法",
+            "依语境选"
+          ],
+          "example": "'之'作助词/代词/动词"
+        }
+      ],
+      "commonConfusions": [
+        "古今异义误用现代义",
+        "通假与本字"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文言词义",
+          "method": "语境推断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "文学阅读与写作",
+      "aliases": [
+        "诗歌鉴赏",
+        "小说",
+        "散文",
+        "散文"
+      ],
+      "conceptSummary": "精读古今中外文学作品，从语言、构思、形象、意蕴、情感多角度欣赏；诗歌/小说/散文/戏剧各有鉴赏方法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "诗歌：意象/意境/手法/情感",
+        "小说：人物/情节/环境/主题",
+        "散文：形散神聚",
+        "戏剧：冲突/台词",
+        "鉴赏角度：语言/形象/意蕴"
+      ],
+      "methodModels": [
+        {
+          "name": "诗歌鉴赏",
+          "steps": [
+            "抓意象",
+            "品意境",
+            "析手法（借景抒情/托物言志）",
+            "悟情感"
+          ],
+          "example": "'举头望明月'明月意象寄思乡"
+        },
+        {
+          "name": "小说鉴赏",
+          "steps": [
+            "分析人物形象",
+            "梳理情节",
+            "把握主题"
+          ],
+          "example": "环境描写烘托人物"
+        }
+      ],
+      "commonConfusions": [
+        "表现手法与修辞手法",
+        "意象与意境"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "诗歌鉴赏",
+          "method": "意象手法情感",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "思辨性阅读与表达",
+      "aliases": [
+        "议论文",
+        "论点论据",
+        "论证",
+        "逻辑"
+      ],
+      "conceptSummary": "阅读论说名篇把握观点与论证逻辑；写作议论文要求立论正确、论据恰当、逻辑严密。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "议论文三要素：论点/论据/论证",
+        "论证方法：举例/道理论证、对比/比喻",
+        "立论要求：正确鲜明",
+        "驳论：有理有据",
+        "文章结构：引论-本论-结论"
+      ],
+      "methodModels": [
+        {
+          "name": "议论文写作",
+          "steps": [
+            "提出论点",
+            "选择论据",
+            "论证展开",
+            "结论升华"
+          ],
+          "example": "开门见山立论+事实道理支撑"
+        },
+        {
+          "name": "论证分析",
+          "steps": [
+            "找论点",
+            "析论据",
+            "看逻辑"
+          ],
+          "example": "对比论证突出观点"
+        }
+      ],
+      "commonConfusions": [
+        "论据与论点匹配",
+        "论证与论据区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "议论文阅读",
+          "method": "论点论证分析",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "整本书阅读与研讨",
+      "aliases": [
+        "整本书阅读",
+        "名著",
+        "阅读方法"
+      ],
+      "conceptSummary": "探索整本书阅读门径，通读全书把握思想内容与艺术特点，从人物、场景、语言入手深入探究。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "通读法：整体把握",
+        "精读法：深入分析",
+        "人物形象分析",
+        "主题思想探究",
+        "读书笔记：批注/摘要"
+      ],
+      "methodModels": [
+        {
+          "name": "名著阅读方法",
+          "steps": [
+            "略读把握框架",
+            "精读重点章节",
+            "分析人物主题",
+            "作批注"
+          ],
+          "example": "读《红楼梦》理人物关系"
+        }
+      ],
+      "commonConfusions": [
+        "泛读与精读结合",
+        "读书笔记形式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "整本书阅读",
+          "method": "通读精读结合",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "中华传统文化经典研习",
+      "aliases": [
+        "文言文",
+        "古诗文",
+        "文化经典",
+        "传统"
+      ],
+      "conceptSummary": "精读中国文化史上代表性作品，体会精神内涵、审美追求与文化价值；积累古诗文名篇。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "经典篇目：诸子散文/史传/诗词",
+        "文化思想：儒道释",
+        "名句积累",
+        "文化常识：称谓/官职/历法"
+      ],
+      "methodModels": [
+        {
+          "name": "文言文翻译",
+          "steps": [
+            "字字落实",
+            "补省略",
+            "调整语序",
+            "通顺"
+          ],
+          "example": "'师者所以传道受业解惑也'译为判断句"
+        },
+        {
+          "name": "名句默写",
+          "steps": [
+            "理解背诵",
+            "注意易错字"
+          ],
+          "example": "'落霞与孤鹜齐飞'"
+        }
+      ],
+      "commonConfusions": [
+        "翻译要直译为主",
+        "文化常识易混"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文言翻译",
+          "method": "直译为主",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "实用性阅读与交流",
+      "aliases": [
+        "应用文",
+        "说明文",
+        "新闻",
+        "访谈"
+      ],
+      "conceptSummary": "学习当代社会常用实用文本（新闻/说明/访谈/演讲稿），运用简明语言介绍事物、说明事理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新闻：消息/通讯/评论",
+        "说明文：说明顺序方法",
+        "演讲稿：针对性/感染力",
+        "访谈：提问技巧",
+        "实用文本特点：准确简明"
+      ],
+      "methodModels": [
+        {
+          "name": "新闻概括",
+          "steps": [
+            "抓导语",
+            "概括主体",
+            "提炼主旨"
+          ],
+          "example": "消息五要素"
+        },
+        {
+          "name": "演讲稿写作",
+          "steps": [
+            "开场吸引",
+            "主体有据",
+            "结尾有力"
+          ],
+          "example": "针对听众选材"
+        }
+      ],
+      "commonConfusions": [
+        "新闻体裁区分",
+        "说明方法与修辞"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "实用文本",
+          "method": "文体特点",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "文言文阅读",
+      "solutionMethod": "实词推断+翻译",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "诗歌鉴赏",
+      "solutionMethod": "意象手法情感",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "议论文阅读",
+      "solutionMethod": "论点论证分析",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "作文立意与结构",
+      "solutionMethod": "论点论据论证",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "语言表达运用",
+      "solutionMethod": "简明连贯得体",
+      "difficulty": "常考"
+    }
+  ],
+  "reviewedBy": "opencode-ai-first-pass",
+  "reviewedAtEpochMillis": 1784908800000,
+  "reviewKind": "AUTOMATED_CONTENT_VERIFICATION_FIRST_PASS"
+}

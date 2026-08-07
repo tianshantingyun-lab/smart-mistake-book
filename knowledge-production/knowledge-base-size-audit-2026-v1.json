@@ -1,63 +1,72 @@
 {
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
-  "coreSectionsTotal": 1012,
-  "coveredSectionsTotal": 166,
-  "overallCoverageRatio": 0.164,
+  "coreSectionsTotal": 934,
+  "coveredSectionsTotal": 172,
+  "overallCoverageRatio": 0.184,
   "perSubject": [
     {
       "subject": "BIOLOGY",
       "coreSections": 173,
       "coveredSections": 24,
-      "coverageRatio": 0.139
+      "coverageRatio": 0.139,
+      "coreBasis": "sections"
     },
     {
       "subject": "CHEMISTRY",
       "coreSections": 92,
       "coveredSections": 22,
-      "coverageRatio": 0.239
+      "coverageRatio": 0.239,
+      "coreBasis": "sections"
     },
     {
       "subject": "CHINESE",
-      "coreSections": 96,
-      "coveredSections": 0,
-      "coverageRatio": 0.0
+      "coreSections": 18,
+      "coveredSections": 6,
+      "coverageRatio": 0.333,
+      "coreBasis": "task-groups"
     },
     {
       "subject": "ENGLISH",
       "coreSections": 21,
       "coveredSections": 6,
-      "coverageRatio": 0.286
+      "coverageRatio": 0.286,
+      "coreBasis": "sections"
     },
     {
       "subject": "GEOGRAPHY",
       "coreSections": 93,
       "coveredSections": 15,
-      "coverageRatio": 0.161
+      "coverageRatio": 0.161,
+      "coreBasis": "sections"
     },
     {
       "subject": "HISTORY",
       "coreSections": 105,
       "coveredSections": 14,
-      "coverageRatio": 0.133
+      "coverageRatio": 0.133,
+      "coreBasis": "sections"
     },
     {
       "subject": "MATH",
       "coreSections": 155,
       "coveredSections": 47,
-      "coverageRatio": 0.303
+      "coverageRatio": 0.303,
+      "coreBasis": "sections"
     },
     {
       "subject": "PHYSICS",
       "coreSections": 125,
       "coveredSections": 16,
-      "coverageRatio": 0.128
+      "coverageRatio": 0.128,
+      "coreBasis": "sections"
     },
     {
       "subject": "POLITICS",
       "coreSections": 152,
       "coveredSections": 22,
-      "coverageRatio": 0.145
+      "coverageRatio": 0.145,
+      "coreBasis": "sections"
     }
   ],
   "note": "Sections are PEP textbook TOC knowledge-point sections excluding reading/IT/lab markers. Coverage < 100% means the knowledge base is not yet complete."
