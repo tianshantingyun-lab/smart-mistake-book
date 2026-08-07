@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-chemistry-required-inorganic-substances-2026-v1",
+  "subject": "CHEMISTRY",
+  "moduleSlug": "required-inorganic-substances",
+  "moduleName": "化学必修：常见无机物及其应用",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "钠及其化合物",
+      "aliases": [
+        "钠",
+        "氧化钠",
+        "过氧化钠",
+        "碳酸钠"
+      ],
+      "conceptSummary": "钠是活泼金属，易与水反应；Na2O2 有强氧化性；Na2CO3 与 NaHCO3 性质差异。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "钠与水：2Na+2H2O→2NaOH+H2↑（浮熔游响红）",
+        "过氧化钠：2Na2O2+2H2O→4NaOH+O2↑",
+        "碳酸钠 Na2CO3：纯碱，热稳定",
+        "碳酸氢钠 NaHCO3：小苏打，受热分解",
+        "焰色反应：钠黄钾紫"
+      ],
+      "methodModels": [
+        {
+          "name": "钠的保存与性质",
+          "steps": [
+            "钠保存在煤油中",
+            "与水反应现象记忆"
+          ],
+          "example": "钠不能露置（与O2/水反应）"
+        }
+      ],
+      "commonConfusions": [
+        "Na2O 与 Na2O2 价态（+1 与 -1氧）",
+        "Na2CO3/NaHCO3 与盐酸反应快慢"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "钠及其化合物性质",
+          "method": "反应式+现象",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "氯及其化合物",
+      "aliases": [
+        "氯气",
+        "次氯酸",
+        "氯水",
+        "漂白"
+      ],
+      "conceptSummary": "氯气黄绿色有毒，溶于水生成次氯酸 HClO 有漂白性；Cl2 与碱反应制漂白粉。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Cl2 与水：Cl2+H2O⇌HCl+HClO",
+        "次氯酸 HClO：弱酸、漂白、杀菌、见光分解",
+        "与碱：Cl2+2NaOH→NaCl+NaClO+H2O",
+        "漂白粉：Ca(ClO)2，有效成分次氯酸钙",
+        "氯气检验：湿润淀粉碘化钾试纸变蓝"
+      ],
+      "methodModels": [
+        {
+          "name": "氯水成分分析",
+          "steps": [
+            "氯水含 Cl2/HClO/H+/Cl-",
+            "久置氯水 HClO 分解失效"
+          ],
+          "example": "氯水使石蕊先变红后褪色"
+        }
+      ],
+      "commonConfusions": [
+        "干燥氯气无漂白性（需水生成HClO）",
+        "HClO 漂白是氧化性漂白"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "氯水性质",
+          "method": "成分+性质",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "铁、硫、氮及其化合物",
+      "aliases": [
+        "铁三角",
+        "浓硫酸",
+        "硝酸",
+        "氨气"
+      ],
+      "conceptSummary": "铁有 Fe2+ 与 Fe3+ 转化（铁三角）；浓硫酸浓硝酸有强氧化性；氨气碱性气体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "铁三角：Fe⇌Fe2+⇌Fe3+ 转化条件",
+        "Fe3+ 检验：KSCN 变红",
+        "浓硫酸：吸水/脱水/强氧化（钝化铁铝）",
+        "浓硝酸/稀硝酸：强氧化，浓→NO2 稀→NO",
+        "氨气：碱性气体，喷泉实验",
+        "工业制硝酸：NH3→NO→NO2→HNO3"
+      ],
+      "methodModels": [
+        {
+          "name": "铁三角转化",
+          "steps": [
+            "Fe→Fe2+（与弱氧化剂）",
+            "Fe→Fe3+（与强氧化剂）",
+            "Fe3+→Fe2+（加还原剂）"
+          ],
+          "example": "Fe+Cu2+→Fe2+；2Fe3++Fe→3Fe2+"
+        },
+        {
+          "name": "硝酸性质",
+          "steps": [
+            "浓硝酸钝化",
+            "与金属反应产物看浓度"
+          ],
+          "example": "Cu+4HNO3(浓)→Cu(NO3)2+2NO2↑"
+        }
+      ],
+      "commonConfusions": [
+        "浓硫酸钝化（常温）与加热反应",
+        "Fe3+ 检验用 KSCN 不能用铁"
+      ],
+      "prerequisiteRelations": [
+        "需掌握元素周期律"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "铁三角/硝酸",
+          "method": "转化条件+反应式",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "钠及其化合物",
+      "solutionMethod": "反应式+现象",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "氯水漂白",
+      "solutionMethod": "HClO 性质",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "铁三角",
+      "solutionMethod": "转化条件",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "浓硫酸浓硝酸",
+      "solutionMethod": "强氧化性+钝化",
+      "difficulty": "常考"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-biology-selective-biology-environment-2026-v1",
+  "subject": "BIOLOGY",
+  "moduleSlug": "selective-biology-environment",
+  "moduleName": "生物选择性必修2：生物与环境",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "种群与群落",
+      "aliases": [
+        "种群",
+        "种群密度",
+        "群落",
+        "演替"
+      ],
+      "conceptSummary": "种群是同一区域同种生物全部个体；群落是不同种群的总和；群落演替是群落替代过程。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "种群特征：密度/出生率/死亡率/年龄结构",
+        "调查种群密度：样方法/标志重捕法",
+        "种群数量变化：J型（理想）/S型（受限制）",
+        "群落结构：垂直/水平结构",
+        "群落演替：初生演替/次生演替"
+      ],
+      "methodModels": [
+        {
+          "name": "种群密度调查",
+          "steps": [
+            "样方法（植物/活动能力弱）",
+            "标志重捕法（活动能力强）",
+            "N=M·n/m"
+          ],
+          "example": "标志重捕：M标记，重捕n中含m标记→总数N"
+        },
+        {
+          "name": "S型曲线分析",
+          "steps": [
+            "K值环境容纳量",
+            "K/2时增长最快"
+          ],
+          "example": "种群保护利用常在K/2后捕捞"
+        }
+      ],
+      "commonConfusions": [
+        "J型与S型曲线条件",
+        "初生与次生演替起点（无/有土壤）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握进化"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "种群数量变化",
+          "method": "J型/S型",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "生态系统与生态平衡",
+      "aliases": [
+        "生态系统",
+        "食物链",
+        "能量流动",
+        "物质循环"
+      ],
+      "conceptSummary": "生态系统由生物群落与非生物环境构成；能量流动单向递减，物质循环全球性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "成分：生产者/消费者/分解者/非生物",
+        "营养结构：食物链/食物网",
+        "能量流动：单向流动逐级递减（10%-20%）",
+        "物质循环：C/N 循环全球性",
+        "生态平衡：自我调节能力有限",
+        "生态金字塔：能量/数量/生物量"
+      ],
+      "methodModels": [
+        {
+          "name": "能量传递计算",
+          "steps": [
+            "相邻营养级10%-20%",
+            "从高营养级求低消耗"
+          ],
+          "example": "鹰增重1kg约需消耗植物100kg（两级）"
+        }
+      ],
+      "commonConfusions": [
+        "分解者不在食物链中",
+        "能量不能循环（物质可循环）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握种群群落"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "能量流动计算",
+          "method": "10%-20%",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "种群密度调查",
+      "solutionMethod": "样方法/标志重捕",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "种群数量曲线",
+      "solutionMethod": "J型/S型",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "能量流动",
+      "solutionMethod": "10%-20%",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "物质循环",
+      "solutionMethod": "碳循环",
+      "difficulty": "常考"
+    }
+  ]
+}

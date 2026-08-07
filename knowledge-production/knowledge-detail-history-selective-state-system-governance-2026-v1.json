@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-history-selective-state-system-governance-2026-v1",
+  "subject": "HISTORY",
+  "moduleSlug": "selective-state-system-governance",
+  "moduleName": "历史选择性必修1：国家制度与社会治理",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "中国古代政治制度",
+      "aliases": [
+        "中央官制",
+        "地方行政",
+        "科举制",
+        "监察"
+      ],
+      "conceptSummary": "中国古代中央官制从三公九卿到三省六部再到内阁军机处；地方从分封到郡县到行省；科举制与监察制度完善治理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "秦：三公九卿制",
+        "隋唐：三省六部制（分工制衡）",
+        "宋：二府三司，削弱相权",
+        "明清：内阁、军机处（君主专制顶峰）",
+        "地方：分封→郡县→行省",
+        "选官：察举→九品中正→科举",
+        "监察：御史台/都察院"
+      ],
+      "methodModels": [
+        {
+          "name": "君主专制强化",
+          "steps": [
+            "相权削弱过程",
+            "皇权加强表现"
+          ],
+          "example": "军机处是皇权集中标志"
+        },
+        {
+          "name": "中央集权强化",
+          "steps": [
+            "地方权力削弱",
+            "中央控制加强"
+          ],
+          "example": "行省制加强中央对地方"
+        }
+      ],
+      "commonConfusions": [
+        "君主专制（中央）与中央集权（地方）区分",
+        "科举制进步性与局限"
+      ],
+      "prerequisiteRelations": [
+        "需掌握必修纲要"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "制度演变分析",
+          "method": "中央+地方+选官",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "西方与近代中国政治制度",
+      "aliases": [
+        "君主立宪",
+        "民主共和",
+        "责任内阁",
+        "代议制"
+      ],
+      "conceptSummary": "西方代议制：英国君主立宪、美国民主共和；近代中国学习西方制度进行变革。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "英国：《权利法案》确立君主立宪，责任内阁制",
+        "美国：三权分立、联邦制",
+        "法国：共和制确立",
+        "中国近代：戊戌变法/辛亥革命/新文化运动"
+      ],
+      "methodModels": [
+        {
+          "name": "西方政体比较",
+          "steps": [
+            "英国君主立宪 vs 美国共和",
+            "议会/内阁/总统权力"
+          ],
+          "example": "美国总统对国会负责与否"
+        }
+      ],
+      "commonConfusions": [
+        "责任内阁制下首相与国王",
+        "三权分立与议会至上"
+      ],
+      "prerequisiteRelations": [
+        "需掌握世界近现代史"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "政体比较",
+          "method": "权力结构",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "中国古代制度",
+      "solutionMethod": "演变脉络",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "西方代议制",
+      "solutionMethod": "政体比较",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "选官制度",
+      "solutionMethod": "察举科举",
+      "difficulty": "常考"
+    }
+  ]
+}

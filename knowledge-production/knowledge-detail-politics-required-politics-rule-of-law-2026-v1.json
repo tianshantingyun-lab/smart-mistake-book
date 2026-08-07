@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-politics-required-politics-rule-of-law-2026-v1",
+  "subject": "POLITICS",
+  "moduleSlug": "required-politics-rule-of-law",
+  "moduleName": "思想政治必修3：政治与法治",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [],
+  "knowledgePoints": [
+    {
+      "section": "中国共产党的领导",
+      "aliases": [
+        "党的领导",
+        "执政方式",
+        "民主集中制"
+      ],
+      "conceptSummary": "中国共产党是领导核心，坚持科学执政、民主执政、依法执政；民主集中制是根本组织原则。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "党的领导：政治/思想/组织领导",
+        "三大执政：科学/民主/依法执政",
+        "民主集中制：民主基础上集中、集中指导下民主",
+        "全面从严治党"
+      ],
+      "methodModels": [
+        {
+          "name": "党的领导分析",
+          "steps": [
+            "材料体现哪种领导/执政",
+            "结合作用分析"
+          ],
+          "example": "依法治国→依法执政"
+        }
+      ],
+      "commonConfusions": [
+        "科学/民主/依法执政区别",
+        "党与人大关系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "党的领导方式",
+          "method": "政治/思想/组织",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "人民当家作主",
+      "aliases": [
+        "人民代表大会制度",
+        "人大代表",
+        "协商民主"
+      ],
+      "conceptSummary": "人民代表大会制度是根本政治制度；人大代表行使审议、表决、提案、质询权；协商民主是中国民主形式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人大制度：根本政治制度",
+        "全国人大最高权力机关",
+        "人大代表权利：审议权/表决权/提案权/质询权",
+        "政协：协商民主重要渠道",
+        "协商民主：有事好商量"
+      ],
+      "methodModels": [
+        {
+          "name": "人大制度分析",
+          "steps": [
+            "人大代表权利判断",
+            "人大与其他国家机关关系"
+          ],
+          "example": "代表审议政府报告是审议权"
+        }
+      ],
+      "commonConfusions": [
+        "人大与政协区别（权力/协商）",
+        "人大代表义务与权利"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人大代表权利",
+          "method": "四种权利判断",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "依法治国",
+      "aliases": [
+        "法治",
+        "法律体系",
+        "法治政府",
+        "公平正义"
+      ],
+      "conceptSummary": "全面依法治国：科学立法、严格执法、公正司法、全民守法；建设法治国家、法治政府、法治社会。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "十六字方针：科学立法/严格执法/公正司法/全民守法",
+        "法治国家：法律至上",
+        "法治政府：依法行政",
+        "法治社会：全民守法",
+        "法律面前人人平等"
+      ],
+      "methodModels": [
+        {
+          "name": "依法治国分析",
+          "steps": [
+            "判断属于哪个环节",
+            "结合材料"
+          ],
+          "example": "完善法律→科学立法"
+        }
+      ],
+      "commonConfusions": [
+        "法治与法制区别",
+        "四个环节对应主体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "依法治国环节",
+          "method": "立执司守",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "党的领导",
+      "solutionMethod": "三大执政",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "人大制度",
+      "solutionMethod": "人大代表权利",
+      "difficulty": "高频"
+    },
+    {
+      "shape": "依法治国",
+      "solutionMethod": "十六字方针",
+      "difficulty": "常考"
+    }
+  ]
+}
