@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 31,
-  "sectionsApproved": 31,
+  "sectionsTotal": 43,
+  "sectionsApproved": 43,
   "sections": [
     {
       "section": "中国共产党的领导",
@@ -219,6 +219,90 @@
     },
     {
       "section": "权利行使 注意界限",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第一课 在生活中学民法用民法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.667,
+      "issues": []
+    },
+    {
+      "section": "第二课 依法有效保护财产权",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "尊重知识产权",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第七课 做个明白的劳动者",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第五课 在和睦家庭中成长",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "薪火相传有继承",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "全面推进依法治国的总目标与原则",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.133,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "严格执法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "法治社会",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.286,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第九课 全面依法治国的基本要求",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.333,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第十课 诉讼实现公平正义",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "有约必守 违约有责",
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.4,

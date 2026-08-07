@@ -737,6 +737,155 @@
           "example": "氯及其化合物"
         }
       ]
+    },
+    {
+      "section": "第一节 钠及其化合物",
+      "aliases": [
+        "钠",
+        "碳酸钠",
+        "碳酸氢钠"
+      ],
+      "conceptSummary": "钠及其化合物（Na2CO3/NaHCO3）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "钠的性质",
+        "碳酸钠",
+        "碳酸氢钠"
+      ],
+      "methodModels": [
+        {
+          "name": "钠",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "钠及其化合物"
+        }
+      ],
+      "commonConfusions": [
+        "碳酸钠"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "钠及其化合物",
+          "method": "见方法模型",
+          "example": "钠及其化合物"
+        }
+      ]
+    },
+    {
+      "section": "硝酸",
+      "aliases": [
+        "硝酸",
+        "强氧化性"
+      ],
+      "conceptSummary": "硝酸强氧化性，与金属反应。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "硝酸性质",
+        "强氧化",
+        "浓稀硝酸"
+      ],
+      "methodModels": [
+        {
+          "name": "硝酸",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "硝酸"
+        }
+      ],
+      "commonConfusions": [
+        "强氧化性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "硝酸",
+          "method": "见方法模型",
+          "example": "硝酸"
+        }
+      ]
+    },
+    {
+      "section": "硫酸和硫酸根离子的检验",
+      "aliases": [
+        "硫酸",
+        "硫酸根检验"
+      ],
+      "conceptSummary": "硫酸性质与硫酸根离子检验。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "硫酸性质",
+        "硫酸根检验",
+        "浓硫酸"
+      ],
+      "methodModels": [
+        {
+          "name": "硫酸",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "硫酸与硫酸根检验"
+        }
+      ],
+      "commonConfusions": [
+        "硫酸根检验"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "硫酸与硫酸根检验",
+          "method": "见方法模型",
+          "example": "硫酸与硫酸根检验"
+        }
+      ]
+    },
+    {
+      "section": "酸雨及防治",
+      "aliases": [
+        "酸雨",
+        "防治"
+      ],
+      "conceptSummary": "酸雨成因与防治。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "酸雨成因",
+        "酸雨危害",
+        "防治措施"
+      ],
+      "methodModels": [
+        {
+          "name": "酸雨",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "酸雨及防治"
+        }
+      ],
+      "commonConfusions": [
+        "防治"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "酸雨及防治",
+          "method": "见方法模型",
+          "example": "酸雨及防治"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 8,
-  "sectionsApproved": 8,
+  "sectionsTotal": 11,
+  "sectionsApproved": 11,
   "sections": [
     {
       "section": "甲烷与烷烃",
@@ -61,6 +61,27 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.031,
       "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "油脂",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "蛋白质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.022,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "烃、同分异构体的书写",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.4,
       "issues": []
     }
   ]

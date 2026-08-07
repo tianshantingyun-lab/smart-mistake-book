@@ -1710,6 +1710,602 @@
           "example": "世界殖民体系"
         }
       ]
+    },
+    {
+      "section": "第20课 五四运动与中国共产党的诞生",
+      "aliases": [
+        "五四运动",
+        "中共成立"
+      ],
+      "conceptSummary": "五四运动与中国共产党成立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "五四运动",
+        "中共成立",
+        "新民主主义"
+      ],
+      "methodModels": [
+        {
+          "name": "五四运动",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "五四运动与中共"
+        }
+      ],
+      "commonConfusions": [
+        "中共成立"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "五四运动与中共",
+          "method": "见方法模型",
+          "example": "五四运动与中共"
+        }
+      ]
+    },
+    {
+      "section": "第21课 南京国民政府的统治和中国共产党开辟革命新道路",
+      "aliases": [
+        "南京政府",
+        "革命道路",
+        "井冈山"
+      ],
+      "conceptSummary": "南京国民政府统治与中共开辟革命新道路。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "南京政府",
+        "土地革命",
+        "井冈山道路"
+      ],
+      "methodModels": [
+        {
+          "name": "革命新道路",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "南京政府与革命道路"
+        }
+      ],
+      "commonConfusions": [
+        "井冈山"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "南京政府与革命道路",
+          "method": "见方法模型",
+          "example": "南京政府与革命道路"
+        }
+      ]
+    },
+    {
+      "section": "第22课 从局部抗战到全国抗战",
+      "aliases": [
+        "抗战",
+        "局部抗战",
+        "全国抗战"
+      ],
+      "conceptSummary": "从局部抗战到全民族抗战。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "局部抗战",
+        "九一八",
+        "全国抗战"
+      ],
+      "methodModels": [
+        {
+          "name": "抗战",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "从局部到全国抗战"
+        }
+      ],
+      "commonConfusions": [
+        "局部抗战"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "从局部到全国抗战",
+          "method": "见方法模型",
+          "example": "从局部到全国抗战"
+        }
+      ]
+    },
+    {
+      "section": "第2课 诸侯纷争与变法运动",
+      "aliases": [
+        "春秋战国",
+        "变法",
+        "诸侯"
+      ],
+      "conceptSummary": "春秋战国诸侯纷争与变法运动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "诸侯争霸",
+        "商鞅变法",
+        "百家争鸣"
+      ],
+      "methodModels": [
+        {
+          "name": "春秋战国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "诸侯纷争变法"
+        }
+      ],
+      "commonConfusions": [
+        "变法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "诸侯纷争变法",
+          "method": "见方法模型",
+          "example": "诸侯纷争变法"
+        }
+      ]
+    },
+    {
+      "section": "第6课 全球航路的开辟",
+      "aliases": [
+        "新航路",
+        "地理大发现"
+      ],
+      "conceptSummary": "全球航路开辟与地理大发现。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新航路开辟",
+        "航海探险",
+        "世界联系"
+      ],
+      "methodModels": [
+        {
+          "name": "新航路",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "全球航路开辟"
+        }
+      ],
+      "commonConfusions": [
+        "地理大发现"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "全球航路开辟",
+          "method": "见方法模型",
+          "example": "全球航路开辟"
+        }
+      ]
+    },
+    {
+      "section": "第7课 全球联系的初步建立与世界格局的演变",
+      "aliases": [
+        "全球联系",
+        "世界格局"
+      ],
+      "conceptSummary": "全球联系建立与世界格局演变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "全球联系",
+        "世界市场",
+        "格局演变"
+      ],
+      "methodModels": [
+        {
+          "name": "全球联系",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "全球联系与世界格局"
+        }
+      ],
+      "commonConfusions": [
+        "世界格局"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "全球联系与世界格局",
+          "method": "见方法模型",
+          "example": "全球联系与世界格局"
+        }
+      ]
+    },
+    {
+      "section": "第13课 清朝前中期的鼎盛与危机",
+      "aliases": [
+        "清朝",
+        "鼎盛危机"
+      ],
+      "conceptSummary": "清朝前中期鼎盛与危机。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "康乾盛世",
+        "闭关锁国",
+        "清朝危机"
+      ],
+      "methodModels": [
+        {
+          "name": "清朝",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "清朝鼎盛危机"
+        }
+      ],
+      "commonConfusions": [
+        "康乾盛世"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "清朝鼎盛危机",
+          "method": "见方法模型",
+          "example": "清朝鼎盛危机"
+        }
+      ]
+    },
+    {
+      "section": "第15课 十月革命的胜利与苏联的社会主义实践",
+      "aliases": [
+        "十月革命",
+        "苏联"
+      ],
+      "conceptSummary": "十月革命胜利与苏联社会主义实践。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "十月革命",
+        "苏联建立",
+        "社会主义实践"
+      ],
+      "methodModels": [
+        {
+          "name": "十月革命",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "十月革命与苏联"
+        }
+      ],
+      "commonConfusions": [
+        "苏联"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "十月革命与苏联",
+          "method": "见方法模型",
+          "example": "十月革命与苏联"
+        }
+      ]
+    },
+    {
+      "section": "第16课 亚非拉民族民主运动的高涨",
+      "aliases": [
+        "民族民主运动",
+        "亚非拉"
+      ],
+      "conceptSummary": "亚非拉民族民主运动高涨。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民族运动",
+        "民主运动",
+        "亚非拉"
+      ],
+      "methodModels": [
+        {
+          "name": "民族民主运动",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "亚非拉民族民主运动"
+        }
+      ],
+      "commonConfusions": [
+        "亚非拉"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "亚非拉民族民主运动",
+          "method": "见方法模型",
+          "example": "亚非拉民族民主运动"
+        }
+      ]
+    },
+    {
+      "section": "第18课 冷战与国际格局的演变",
+      "aliases": [
+        "冷战",
+        "国际格局"
+      ],
+      "conceptSummary": "冷战与国际格局演变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "冷战",
+        "两极格局",
+        "格局演变"
+      ],
+      "methodModels": [
+        {
+          "name": "冷战",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "冷战与国际格局"
+        }
+      ],
+      "commonConfusions": [
+        "国际格局"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "冷战与国际格局",
+          "method": "见方法模型",
+          "example": "冷战与国际格局"
+        }
+      ]
+    },
+    {
+      "section": "第19课 资本主义国家的新变化",
+      "aliases": [
+        "资本主义",
+        "新变化"
+      ],
+      "conceptSummary": "二战后资本主义国家新变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国家干预",
+        "福利国家",
+        "资本主义新变化"
+      ],
+      "methodModels": [
+        {
+          "name": "资本主义",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "资本主义国家新变化"
+        }
+      ],
+      "commonConfusions": [
+        "新变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "资本主义国家新变化",
+          "method": "见方法模型",
+          "example": "资本主义国家新变化"
+        }
+      ]
+    },
+    {
+      "section": "第 28 课 改革开放和社会主义现代化建设的巨大成就",
+      "aliases": [
+        "改革开放",
+        "成就"
+      ],
+      "conceptSummary": "改革开放和社会主义现代化建设巨大成就。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "改革开放",
+        "经济发展",
+        "社会进步"
+      ],
+      "methodModels": [
+        {
+          "name": "改革开放",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "改革开放成就"
+        }
+      ],
+      "commonConfusions": [
+        "巨大成就"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "改革开放成就",
+          "method": "见方法模型",
+          "example": "改革开放成就"
+        }
+      ]
+    },
+    {
+      "section": "第30课 新时代中国特色社会主义的伟大成就",
+      "aliases": [
+        "新时代",
+        "伟大成就"
+      ],
+      "conceptSummary": "新时代中国特色社会主义伟大成就。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新时代",
+        "伟大成就",
+        "民族复兴"
+      ],
+      "methodModels": [
+        {
+          "name": "新时代",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "新时代伟大成就"
+        }
+      ],
+      "commonConfusions": [
+        "伟大成就"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新时代伟大成就",
+          "method": "见方法模型",
+          "example": "新时代伟大成就"
+        }
+      ]
+    },
+    {
+      "section": "第2课 古代世界的帝国与文明的交流",
+      "aliases": [
+        "古代帝国",
+        "文明交流"
+      ],
+      "conceptSummary": "古代世界的帝国与文明交流。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "古代帝国",
+        "波斯罗马",
+        "文明交流"
+      ],
+      "methodModels": [
+        {
+          "name": "古代帝国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代帝国与文明交流"
+        }
+      ],
+      "commonConfusions": [
+        "文明交流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代帝国与文明交流",
+          "method": "见方法模型",
+          "example": "古代帝国与文明交流"
+        }
+      ]
+    },
+    {
+      "section": "第4课 中古时期的亚洲",
+      "aliases": [
+        "中古亚洲",
+        "亚洲文明"
+      ],
+      "conceptSummary": "中古时期亚洲文明（阿拉伯日本等）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "阿拉伯帝国",
+        "日本",
+        "中古亚洲"
+      ],
+      "methodModels": [
+        {
+          "name": "中古亚洲",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中古时期的亚洲"
+        }
+      ],
+      "commonConfusions": [
+        "阿拉伯"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中古时期的亚洲",
+          "method": "见方法模型",
+          "example": "中古时期的亚洲"
+        }
+      ]
+    },
+    {
+      "section": "第5课 南亚、东亚与美洲的文化",
+      "aliases": [
+        "南亚文化",
+        "东亚文化",
+        "美洲文化"
+      ],
+      "conceptSummary": "南亚、东亚与美洲文化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "南亚文化",
+        "东亚文化",
+        "美洲文化"
+      ],
+      "methodModels": [
+        {
+          "name": "区域文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "南亚东亚美洲文化"
+        }
+      ],
+      "commonConfusions": [
+        "南亚东亚"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "南亚东亚美洲文化",
+          "method": "见方法模型",
+          "example": "南亚东亚美洲文化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -393,6 +393,154 @@
           "example": "资源安全与国家安全"
         }
       ]
+    },
+    {
+      "section": "第三节 中国的耕地资源与粮食安全",
+      "aliases": [
+        "耕地资源",
+        "粮食安全"
+      ],
+      "conceptSummary": "中国耕地资源与粮食安全。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "耕地资源",
+        "粮食安全",
+        "耕地红线"
+      ],
+      "methodModels": [
+        {
+          "name": "粮食安全",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "耕地与粮食安全"
+        }
+      ],
+      "commonConfusions": [
+        "耕地资源"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "耕地与粮食安全",
+          "method": "见方法模型",
+          "example": "耕地与粮食安全"
+        }
+      ]
+    },
+    {
+      "section": "第一节 自然环境的服务功能",
+      "aliases": [
+        "服务功能",
+        "供给调节"
+      ],
+      "conceptSummary": "自然环境服务功能（供给调节支撑文化）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "供给服务",
+        "调节服务",
+        "文化服务"
+      ],
+      "methodModels": [
+        {
+          "name": "服务功能",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "自然环境服务功能"
+        }
+      ],
+      "commonConfusions": [
+        "供给调节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自然环境服务功能",
+          "method": "见方法模型",
+          "example": "自然环境服务功能"
+        }
+      ]
+    },
+    {
+      "section": "第一节 走向生态文明",
+      "aliases": [
+        "生态文明",
+        "人地和谐"
+      ],
+      "conceptSummary": "走向生态文明，人地和谐共生。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "生态文明",
+        "人地协调",
+        "绿色发展"
+      ],
+      "methodModels": [
+        {
+          "name": "生态文明",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "走向生态文明"
+        }
+      ],
+      "commonConfusions": [
+        "人地协调"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "走向生态文明",
+          "method": "见方法模型",
+          "example": "走向生态文明"
+        }
+      ]
+    },
+    {
+      "section": "第四节 国际合作",
+      "aliases": [
+        "国际合作",
+        "全球环境"
+      ],
+      "conceptSummary": "全球环境问题需要国际合作。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国际合作",
+        "全球治理",
+        "共同责任"
+      ],
+      "methodModels": [
+        {
+          "name": "国际合作",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国际合作"
+        }
+      ],
+      "commonConfusions": [
+        "全球治理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国际合作",
+          "method": "见方法模型",
+          "example": "国际合作"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

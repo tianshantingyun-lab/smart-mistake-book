@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 7,
-  "sectionsApproved": 7,
+  "sectionsTotal": 8,
+  "sectionsApproved": 8,
   "sections": [
     {
       "section": "元素周期表",
@@ -54,6 +54,13 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.143,
       "textbookTocOverlap": 0.571,
+      "issues": []
+    },
+    {
+      "section": "化学反应与电能",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.25,
       "issues": []
     }
   ]

@@ -320,6 +320,118 @@
           "example": "有机高分子"
         }
       ]
+    },
+    {
+      "section": "油脂",
+      "aliases": [
+        "油脂",
+        "脂肪",
+        "水解"
+      ],
+      "conceptSummary": "油脂是高级脂肪酸甘油酯，水解。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "油脂结构",
+        "油脂水解",
+        "性质"
+      ],
+      "methodModels": [
+        {
+          "name": "油脂",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "油脂"
+        }
+      ],
+      "commonConfusions": [
+        "水解"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "油脂",
+          "method": "见方法模型",
+          "example": "油脂"
+        }
+      ]
+    },
+    {
+      "section": "蛋白质",
+      "aliases": [
+        "蛋白质",
+        "氨基酸"
+      ],
+      "conceptSummary": "蛋白质水解成氨基酸。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "蛋白质结构",
+        "水解",
+        "氨基酸"
+      ],
+      "methodModels": [
+        {
+          "name": "蛋白质",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "蛋白质"
+        }
+      ],
+      "commonConfusions": [
+        "氨基酸"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "蛋白质",
+          "method": "见方法模型",
+          "example": "蛋白质"
+        }
+      ]
+    },
+    {
+      "section": "烃、同分异构体的书写",
+      "aliases": [
+        "同分异构",
+        "书写"
+      ],
+      "conceptSummary": "烃的同分异构体书写。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "碳链异构",
+        "位置异构",
+        "官能团异构"
+      ],
+      "methodModels": [
+        {
+          "name": "同分异构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "同分异构体书写"
+        }
+      ],
+      "commonConfusions": [
+        "书写"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "同分异构体书写",
+          "method": "见方法模型",
+          "example": "同分异构体书写"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

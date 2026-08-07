@@ -596,6 +596,80 @@
           "example": "可持续发展"
         }
       ]
+    },
+    {
+      "section": "第一节 农业区位因素及其变化",
+      "aliases": [
+        "农业区位",
+        "区位因素"
+      ],
+      "conceptSummary": "农业区位因素及变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自然区位",
+        "社会经济区位",
+        "区位变化"
+      ],
+      "methodModels": [
+        {
+          "name": "农业区位",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "农业区位"
+        }
+      ],
+      "commonConfusions": [
+        "区位因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "农业区位",
+          "method": "见方法模型",
+          "example": "农业区位"
+        }
+      ]
+    },
+    {
+      "section": "第三节 地域文化与城乡景观",
+      "aliases": [
+        "地域文化",
+        "城乡景观"
+      ],
+      "conceptSummary": "地域文化与城乡景观特征。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "地域文化",
+        "城乡景观",
+        "文化特征"
+      ],
+      "methodModels": [
+        {
+          "name": "地域文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地域文化景观"
+        }
+      ],
+      "commonConfusions": [
+        "城乡景观"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地域文化景观",
+          "method": "见方法模型",
+          "example": "地域文化景观"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

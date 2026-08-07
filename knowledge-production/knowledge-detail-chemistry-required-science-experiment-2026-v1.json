@@ -138,6 +138,43 @@
           "example": "配制溶液"
         }
       ]
+    },
+    {
+      "section": "实验活动2 强酸与强碱的中和滴定",
+      "aliases": [
+        "中和滴定",
+        "滴定实验"
+      ],
+      "conceptSummary": "强酸强碱中和滴定测浓度。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "滴定操作",
+        "指示剂",
+        "终点判断"
+      ],
+      "methodModels": [
+        {
+          "name": "中和滴定",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中和滴定"
+        }
+      ],
+      "commonConfusions": [
+        "滴定"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中和滴定",
+          "method": "见方法模型",
+          "example": "中和滴定"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

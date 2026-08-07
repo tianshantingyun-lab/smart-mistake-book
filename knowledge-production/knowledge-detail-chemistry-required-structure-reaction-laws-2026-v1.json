@@ -319,6 +319,44 @@
           "example": "速率与限度"
         }
       ]
+    },
+    {
+      "section": "化学反应与电能",
+      "aliases": [
+        "化学能",
+        "电能",
+        "电池"
+      ],
+      "conceptSummary": "化学能转化电能（原电池）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "原电池",
+        "化学能电能",
+        "电池"
+      ],
+      "methodModels": [
+        {
+          "name": "化学能电能",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "化学反应与电能"
+        }
+      ],
+      "commonConfusions": [
+        "原电池"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "化学反应与电能",
+          "method": "见方法模型",
+          "example": "化学反应与电能"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

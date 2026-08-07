@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 18,
-  "sectionsApproved": 18,
+  "sectionsTotal": 25,
+  "sectionsApproved": 25,
   "sections": [
     {
       "section": "农业与食物生产",
@@ -131,6 +131,55 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.667,
+      "issues": []
+    },
+    {
+      "section": "第4课 古代的生产工具与劳作",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.034,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第6课 现代科技进步与人类社会发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.03,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第10课 近代以来的世界贸易与文化交流的扩展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第13课 现代交通运输的新变化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.05,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第14课 历史上的疫病与医学成就",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第15课 货币的使用与世界货币体系的形成",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "技术进步与社会生活的变化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.03,
+      "textbookTocOverlap": 0.6,
       "issues": []
     }
   ]

@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 14,
-  "sectionsApproved": 14,
+  "sectionsTotal": 17,
+  "sectionsApproved": 17,
   "sections": [
     {
       "section": "社会主义市场经济",
@@ -103,6 +103,27 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.154,
       "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第八课 自主创业与诚信经营",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第六课 走进经济全球化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "日益开放的世界经济",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]

@@ -1030,6 +1030,303 @@
           "example": "弘扬传统文化民族精神"
         }
       ]
+    },
+    {
+      "section": "在实践中追求和发展真理",
+      "aliases": [
+        "真理",
+        "实践",
+        "发展"
+      ],
+      "conceptSummary": "真理是客观的具体的有条件的，在实践中发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "真理客观性",
+        "真理具体性",
+        "真理发展"
+      ],
+      "methodModels": [
+        {
+          "name": "真理",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "追求发展真理"
+        }
+      ],
+      "commonConfusions": [
+        "真理发展"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "追求发展真理",
+          "method": "见方法模型",
+          "example": "追求发展真理"
+        }
+      ]
+    },
+    {
+      "section": "体会认识发展的历程",
+      "aliases": [
+        "认识发展",
+        "认识过程"
+      ],
+      "conceptSummary": "认识发展的历程：从感性到理性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "感性认识",
+        "理性认识",
+        "认识飞跃"
+      ],
+      "methodModels": [
+        {
+          "name": "认识发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "认识发展历程"
+        }
+      ],
+      "commonConfusions": [
+        "感性理性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "认识发展历程",
+          "method": "见方法模型",
+          "example": "认识发展历程"
+        }
+      ]
+    },
+    {
+      "section": "社会历史的发展",
+      "aliases": [
+        "社会历史",
+        "社会规律"
+      ],
+      "conceptSummary": "社会历史发展规律（生产力决定生产关系）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "社会规律",
+        "生产力",
+        "社会形态"
+      ],
+      "methodModels": [
+        {
+          "name": "社会历史",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "社会历史发展"
+        }
+      ],
+      "commonConfusions": [
+        "社会规律"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "社会历史发展",
+          "method": "见方法模型",
+          "example": "社会历史发展"
+        }
+      ]
+    },
+    {
+      "section": "第六课 实现人生的价值",
+      "aliases": [
+        "人生价值",
+        "价值观"
+      ],
+      "conceptSummary": "实现人生价值，树立正确价值观。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人生价值",
+        "价值实现",
+        "价值观"
+      ],
+      "methodModels": [
+        {
+          "name": "人生价值",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "实现人生价值"
+        }
+      ],
+      "commonConfusions": [
+        "价值观"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "实现人生价值",
+          "method": "见方法模型",
+          "example": "实现人生价值"
+        }
+      ]
+    },
+    {
+      "section": "价值的创造和实现",
+      "aliases": [
+        "价值创造",
+        "价值实现"
+      ],
+      "conceptSummary": "在劳动与奉献中创造和实现价值。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "劳动奉献",
+        "个人价值",
+        "社会价值"
+      ],
+      "methodModels": [
+        {
+          "name": "价值实现",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "价值的创造实现"
+        }
+      ],
+      "commonConfusions": [
+        "劳动奉献"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "价值的创造实现",
+          "method": "见方法模型",
+          "example": "价值的创造实现"
+        }
+      ]
+    },
+    {
+      "section": "文化交流与文化交融",
+      "aliases": [
+        "文化交流",
+        "文化交融"
+      ],
+      "conceptSummary": "文化交流交融促进文明进步。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化交流",
+        "文化交融",
+        "文明互鉴"
+      ],
+      "methodModels": [
+        {
+          "name": "文化交流",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "文化交流交融"
+        }
+      ],
+      "commonConfusions": [
+        "文化交融"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文化交流交融",
+          "method": "见方法模型",
+          "example": "文化交流交融"
+        }
+      ]
+    },
+    {
+      "section": "正确认识中华传统文化",
+      "aliases": [
+        "中华文化",
+        "传统文化"
+      ],
+      "conceptSummary": "正确认识中华优秀传统文化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中华文化",
+        "传统文化",
+        "继承发展"
+      ],
+      "methodModels": [
+        {
+          "name": "中华文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "正确认识中华文化"
+        }
+      ],
+      "commonConfusions": [
+        "传统文化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正确认识中华文化",
+          "method": "见方法模型",
+          "example": "正确认识中华文化"
+        }
+      ]
+    },
+    {
+      "section": "第九课 发展中国特色社会主义文化",
+      "aliases": [
+        "中国特色社会主义文化",
+        "文化发展"
+      ],
+      "conceptSummary": "发展中国特色社会主义文化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中国特色社会主义文化",
+        "文化发展",
+        "文化自信"
+      ],
+      "methodModels": [
+        {
+          "name": "中国特色社会主义文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "发展中国特色社会主义文化"
+        }
+      ],
+      "commonConfusions": [
+        "文化发展"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "发展中国特色社会主义文化",
+          "method": "见方法模型",
+          "example": "发展中国特色社会主义文化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

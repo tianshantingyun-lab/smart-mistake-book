@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 12,
-  "sectionsApproved": 12,
+  "sectionsTotal": 17,
+  "sectionsApproved": 17,
   "sections": [
     {
       "section": "中国古代政治制度",
@@ -89,6 +89,41 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第3课 中国近代至当代政治制度的演变",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.571,
+      "issues": []
+    },
+    {
+      "section": "第7课 近代以来中国的官员选拔与管理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第9课 近代西方的法律与教化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.033,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第17课 中国古代的户籍制度与社会治理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.571,
+      "issues": []
+    },
+    {
+      "section": "第18课 世界主要国家的基层治理与社会保障",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.5,
       "issues": []
     }
   ]

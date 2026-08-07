@@ -481,6 +481,191 @@
           "example": "当代民族政策"
         }
       ]
+    },
+    {
+      "section": "第3课 中国近代至当代政治制度的演变",
+      "aliases": [
+        "近代政治制度",
+        "演变"
+      ],
+      "conceptSummary": "中国近代至当代政治制度演变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "近代政治",
+        "当代政治",
+        "制度演变"
+      ],
+      "methodModels": [
+        {
+          "name": "政治制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "近代当代政治制度"
+        }
+      ],
+      "commonConfusions": [
+        "演变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "近代当代政治制度",
+          "method": "见方法模型",
+          "example": "近代当代政治制度"
+        }
+      ]
+    },
+    {
+      "section": "第7课 近代以来中国的官员选拔与管理",
+      "aliases": [
+        "官员选拔",
+        "近代官员"
+      ],
+      "conceptSummary": "近代以来中国官员选拔与管理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "近代选拔",
+        "官员管理",
+        "考试制度"
+      ],
+      "methodModels": [
+        {
+          "name": "官员选拔",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "近代官员选拔"
+        }
+      ],
+      "commonConfusions": [
+        "近代官员"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "近代官员选拔",
+          "method": "见方法模型",
+          "example": "近代官员选拔"
+        }
+      ]
+    },
+    {
+      "section": "第9课 近代西方的法律与教化",
+      "aliases": [
+        "西方法律",
+        "教化"
+      ],
+      "conceptSummary": "近代西方法律制度与教化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "西方法律",
+        "法治传统",
+        "教化"
+      ],
+      "methodModels": [
+        {
+          "name": "西方法律",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "近代西方法律教化"
+        }
+      ],
+      "commonConfusions": [
+        "法治"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "近代西方法律教化",
+          "method": "见方法模型",
+          "example": "近代西方法律教化"
+        }
+      ]
+    },
+    {
+      "section": "第17课 中国古代的户籍制度与社会治理",
+      "aliases": [
+        "户籍制度",
+        "社会治理"
+      ],
+      "conceptSummary": "中国古代户籍制度与社会治理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "户籍制度",
+        "基层治理",
+        "社会保障"
+      ],
+      "methodModels": [
+        {
+          "name": "户籍制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代户籍社会治理"
+        }
+      ],
+      "commonConfusions": [
+        "社会治理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代户籍社会治理",
+          "method": "见方法模型",
+          "example": "古代户籍社会治理"
+        }
+      ]
+    },
+    {
+      "section": "第18课 世界主要国家的基层治理与社会保障",
+      "aliases": [
+        "基层治理",
+        "社会保障"
+      ],
+      "conceptSummary": "世界主要国家基层治理与社会保障。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基层治理",
+        "社会保障",
+        "福利制度"
+      ],
+      "methodModels": [
+        {
+          "name": "基层治理",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "世界基层治理"
+        }
+      ],
+      "commonConfusions": [
+        "社会保障"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "世界基层治理",
+          "method": "见方法模型",
+          "example": "世界基层治理"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

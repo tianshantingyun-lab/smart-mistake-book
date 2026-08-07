@@ -442,6 +442,43 @@
           "example": "分子结构性质"
         }
       ]
+    },
+    {
+      "section": "第一节 原子结构与元素周期表",
+      "aliases": [
+        "原子结构",
+        "周期表"
+      ],
+      "conceptSummary": "原子结构与元素周期表。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "电子排布",
+        "周期表",
+        "元素位置"
+      ],
+      "methodModels": [
+        {
+          "name": "原子结构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "原子结构与周期表"
+        }
+      ],
+      "commonConfusions": [
+        "周期表"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原子结构与周期表",
+          "method": "见方法模型",
+          "example": "原子结构与周期表"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

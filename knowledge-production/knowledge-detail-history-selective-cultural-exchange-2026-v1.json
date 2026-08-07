@@ -393,6 +393,192 @@
           "example": "欧洲文化形成"
         }
       ]
+    },
+    {
+      "section": "第9课 古代的商路、贸易与文化交流",
+      "aliases": [
+        "商路",
+        "贸易",
+        "文化交流"
+      ],
+      "conceptSummary": "古代商路贸易与文化交流（丝路）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "丝绸之路",
+        "商路贸易",
+        "文化交流"
+      ],
+      "methodModels": [
+        {
+          "name": "商路",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代商路贸易"
+        }
+      ],
+      "commonConfusions": [
+        "丝绸之路"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代商路贸易",
+          "method": "见方法模型",
+          "example": "古代商路贸易"
+        }
+      ]
+    },
+    {
+      "section": "第11课 古代战争与地域文化的演变",
+      "aliases": [
+        "古代战争",
+        "地域文化"
+      ],
+      "conceptSummary": "古代战争与地域文化演变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "战争",
+        "地域文化",
+        "文化演变"
+      ],
+      "methodModels": [
+        {
+          "name": "古代战争",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "战争与地域文化"
+        }
+      ],
+      "commonConfusions": [
+        "地域文化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "战争与地域文化",
+          "method": "见方法模型",
+          "example": "战争与地域文化"
+        }
+      ]
+    },
+    {
+      "section": "第12课 近代战争与西方文化的扩张",
+      "aliases": [
+        "近代战争",
+        "文化扩张"
+      ],
+      "conceptSummary": "近代战争与西方文化扩张。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "近代战争",
+        "文化扩张",
+        "文化影响"
+      ],
+      "methodModels": [
+        {
+          "name": "近代战争",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "战争与文化扩张"
+        }
+      ],
+      "commonConfusions": [
+        "文化扩张"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "战争与文化扩张",
+          "method": "见方法模型",
+          "example": "战争与文化扩张"
+        }
+      ]
+    },
+    {
+      "section": "第1课 中华优秀传统文化的内涵与特点",
+      "aliases": [
+        "中华文化",
+        "传统文化"
+      ],
+      "conceptSummary": "中华优秀传统文化内涵与特点。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中华文化",
+        "传统文化",
+        "文化内涵"
+      ],
+      "methodModels": [
+        {
+          "name": "中华文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中华优秀传统文化"
+        }
+      ],
+      "commonConfusions": [
+        "传统文化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中华优秀传统文化",
+          "method": "见方法模型",
+          "example": "中华优秀传统文化"
+        }
+      ]
+    },
+    {
+      "section": "第2课 中华文化的世界意义",
+      "aliases": [
+        "中华文化",
+        "世界意义"
+      ],
+      "conceptSummary": "中华文化的世界意义与影响。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中华文化",
+        "世界影响",
+        "文化交流"
+      ],
+      "methodModels": [
+        {
+          "name": "中华文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中华文化世界意义"
+        }
+      ],
+      "commonConfusions": [
+        "世界影响"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中华文化世界意义",
+          "method": "见方法模型",
+          "example": "中华文化世界意义"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

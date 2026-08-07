@@ -1080,6 +1080,307 @@
           "example": "地球自转公转"
         }
       ]
+    },
+    {
+      "section": "第一节 地球的宇宙环境",
+      "aliases": [
+        "天体",
+        "太阳系",
+        "地球"
+      ],
+      "conceptSummary": "地球是太阳系行星，天体系统层级。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "天体系统",
+        "太阳系",
+        "地球环境"
+      ],
+      "methodModels": [
+        {
+          "name": "天体系统",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地球宇宙环境"
+        }
+      ],
+      "commonConfusions": [
+        "太阳系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地球宇宙环境",
+          "method": "见方法模型",
+          "example": "地球宇宙环境"
+        }
+      ]
+    },
+    {
+      "section": "第三节 地球的历史",
+      "aliases": [
+        "地质历史",
+        "地质年代"
+      ],
+      "conceptSummary": "地球演化历史与地质年代。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "地质年代",
+        "生物演化",
+        "地质历史"
+      ],
+      "methodModels": [
+        {
+          "name": "地质历史",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地球的历史"
+        }
+      ],
+      "commonConfusions": [
+        "地质年代"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地球的历史",
+          "method": "见方法模型",
+          "example": "地球的历史"
+        }
+      ]
+    },
+    {
+      "section": "第四节 地球的圈层结构",
+      "aliases": [
+        "地球圈层",
+        "内部圈层"
+      ],
+      "conceptSummary": "地球圈层结构（地壳地幔地核、大气水生物圈）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "内部圈层",
+        "外部圈层",
+        "圈层结构"
+      ],
+      "methodModels": [
+        {
+          "name": "地球圈层",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地球圈层结构"
+        }
+      ],
+      "commonConfusions": [
+        "内部圈层"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地球圈层结构",
+          "method": "见方法模型",
+          "example": "地球圈层结构"
+        }
+      ]
+    },
+    {
+      "section": "第一节 水循环",
+      "aliases": [
+        "水循环",
+        "蒸发降水"
+      ],
+      "conceptSummary": "水循环环节与类型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "水循环环节",
+        "水循环类型",
+        "水资源"
+      ],
+      "methodModels": [
+        {
+          "name": "水循环",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "水循环"
+        }
+      ],
+      "commonConfusions": [
+        "水循环环节"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "水循环",
+          "method": "见方法模型",
+          "example": "水循环"
+        }
+      ]
+    },
+    {
+      "section": "第二节 海水的性质",
+      "aliases": [
+        "海水温度",
+        "海水盐度",
+        "海水密度"
+      ],
+      "conceptSummary": "海水温度盐度密度性质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "海水温度",
+        "盐度",
+        "密度"
+      ],
+      "methodModels": [
+        {
+          "name": "海水性质",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "海水性质"
+        }
+      ],
+      "commonConfusions": [
+        "盐度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "海水性质",
+          "method": "见方法模型",
+          "example": "海水性质"
+        }
+      ]
+    },
+    {
+      "section": "第三节 海水的运动",
+      "aliases": [
+        "洋流",
+        "潮汐",
+        "海浪"
+      ],
+      "conceptSummary": "海水运动：洋流潮汐海浪。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "洋流",
+        "潮汐",
+        "海浪"
+      ],
+      "methodModels": [
+        {
+          "name": "海水运动",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "海水运动"
+        }
+      ],
+      "commonConfusions": [
+        "洋流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "海水运动",
+          "method": "见方法模型",
+          "example": "海水运动"
+        }
+      ]
+    },
+    {
+      "section": "第一节 气象灾害",
+      "aliases": [
+        "气象灾害",
+        "台风",
+        "洪涝"
+      ],
+      "conceptSummary": "气象灾害：台风、洪涝、干旱、寒潮。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "台风",
+        "洪涝干旱",
+        "寒潮"
+      ],
+      "methodModels": [
+        {
+          "name": "气象灾害",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "气象灾害"
+        }
+      ],
+      "commonConfusions": [
+        "台风"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气象灾害",
+          "method": "见方法模型",
+          "example": "气象灾害"
+        }
+      ]
+    },
+    {
+      "section": "第二节 地质灾害",
+      "aliases": [
+        "地质灾害",
+        "地震",
+        "滑坡"
+      ],
+      "conceptSummary": "地质灾害：地震、滑坡、泥石流。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "地震",
+        "滑坡",
+        "泥石流"
+      ],
+      "methodModels": [
+        {
+          "name": "地质灾害",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地质灾害"
+        }
+      ],
+      "commonConfusions": [
+        "地震"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地质灾害",
+          "method": "见方法模型",
+          "example": "地质灾害"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

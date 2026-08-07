@@ -703,6 +703,265 @@
           "example": "复合判断演绎"
         }
       ]
+    },
+    {
+      "section": "第四课 准确把握概念",
+      "aliases": [
+        "概念",
+        "内涵外延"
+      ],
+      "conceptSummary": "准确把握概念的内涵与外延。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "概念内涵",
+        "概念外延",
+        "定义划分"
+      ],
+      "methodModels": [
+        {
+          "name": "概念",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "准确把握概念"
+        }
+      ],
+      "commonConfusions": [
+        "内涵外延"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "准确把握概念",
+          "method": "见方法模型",
+          "example": "准确把握概念"
+        }
+      ]
+    },
+    {
+      "section": "第二课 把握逻辑要义",
+      "aliases": [
+        "逻辑",
+        "逻辑要义"
+      ],
+      "conceptSummary": "把握逻辑要义：逻辑思维基本要求。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "逻辑规律",
+        "同一律",
+        "矛盾律"
+      ],
+      "methodModels": [
+        {
+          "name": "逻辑",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "把握逻辑要义"
+        }
+      ],
+      "commonConfusions": [
+        "逻辑要义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "把握逻辑要义",
+          "method": "见方法模型",
+          "example": "把握逻辑要义"
+        }
+      ]
+    },
+    {
+      "section": "第七课 学会归纳与类比推理",
+      "aliases": [
+        "归纳推理",
+        "类比推理"
+      ],
+      "conceptSummary": "归纳推理与类比推理方法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "归纳推理",
+        "类比推理",
+        "完全归纳"
+      ],
+      "methodModels": [
+        {
+          "name": "归纳类比",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "学会归纳类比推理"
+        }
+      ],
+      "commonConfusions": [
+        "归纳推理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "学会归纳类比推理",
+          "method": "见方法模型",
+          "example": "学会归纳类比推理"
+        }
+      ]
+    },
+    {
+      "section": "第十课 推动认识发展",
+      "aliases": [
+        "认识发展",
+        "辩证思维"
+      ],
+      "conceptSummary": "推动认识发展，辩证思维。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "认识发展",
+        "辩证思维",
+        "认识飞跃"
+      ],
+      "methodModels": [
+        {
+          "name": "认识发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "推动认识发展"
+        }
+      ],
+      "commonConfusions": [
+        "辩证思维"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "推动认识发展",
+          "method": "见方法模型",
+          "example": "推动认识发展"
+        }
+      ]
+    },
+    {
+      "section": "第十三课 创新思维要力求超前",
+      "aliases": [
+        "超前思维",
+        "预见"
+      ],
+      "conceptSummary": "创新思维力求超前，科学预见。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "超前思维",
+        "科学预见",
+        "创新"
+      ],
+      "methodModels": [
+        {
+          "name": "超前思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "创新思维超前"
+        }
+      ],
+      "commonConfusions": [
+        "预见"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "创新思维超前",
+          "method": "见方法模型",
+          "example": "创新思维超前"
+        }
+      ]
+    },
+    {
+      "section": "思维形态及其特征",
+      "aliases": [
+        "思维形态",
+        "思维特征"
+      ],
+      "conceptSummary": "思维形态及其特征。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "思维形态",
+        "思维特征",
+        "抽象形象"
+      ],
+      "methodModels": [
+        {
+          "name": "思维形态",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "思维形态特征"
+        }
+      ],
+      "commonConfusions": [
+        "思维特征"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "思维形态特征",
+          "method": "见方法模型",
+          "example": "思维形态特征"
+        }
+      ]
+    },
+    {
+      "section": "第三课 领会科学思维",
+      "aliases": [
+        "科学思维",
+        "领会"
+      ],
+      "conceptSummary": "领会科学思维的意义与方法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "科学思维",
+        "逻辑思维",
+        "创新思维"
+      ],
+      "methodModels": [
+        {
+          "name": "科学思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "领会科学思维"
+        }
+      ],
+      "commonConfusions": [
+        "领会"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "领会科学思维",
+          "method": "见方法模型",
+          "example": "领会科学思维"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -764,6 +764,80 @@
           "example": "绿色化学"
         }
       ]
+    },
+    {
+      "section": "第一节 化学反应速率",
+      "aliases": [
+        "反应速率",
+        "快慢"
+      ],
+      "conceptSummary": "化学反应速率表示与计算。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "速率定义",
+        "速率计算",
+        "影响因素"
+      ],
+      "methodModels": [
+        {
+          "name": "反应速率",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "化学反应速率"
+        }
+      ],
+      "commonConfusions": [
+        "速率计算"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "化学反应速率",
+          "method": "见方法模型",
+          "example": "化学反应速率"
+        }
+      ]
+    },
+    {
+      "section": "化学反应的限度、化学反应条件的控制",
+      "aliases": [
+        "反应限度",
+        "条件控制"
+      ],
+      "conceptSummary": "化学反应限度与条件控制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "化学平衡",
+        "条件控制",
+        "限度"
+      ],
+      "methodModels": [
+        {
+          "name": "反应限度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "反应限度与条件"
+        }
+      ],
+      "commonConfusions": [
+        "条件控制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "反应限度与条件",
+          "method": "见方法模型",
+          "example": "反应限度与条件"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

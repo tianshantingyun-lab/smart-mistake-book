@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 10,
-  "sectionsApproved": 10,
+  "sectionsTotal": 15,
+  "sectionsApproved": 15,
   "sections": [
     {
       "section": "文化交流的途径",
@@ -75,6 +75,41 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第9课 古代的商路、贸易与文化交流",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.188,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第11课 古代战争与地域文化的演变",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第12课 近代战争与西方文化的扩张",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第1课 中华优秀传统文化的内涵与特点",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.048,
+      "textbookTocOverlap": 0.667,
+      "issues": []
+    },
+    {
+      "section": "第2课 中华文化的世界意义",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.5,
       "issues": []
     }
   ]

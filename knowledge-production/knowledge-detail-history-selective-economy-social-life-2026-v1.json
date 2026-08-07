@@ -697,6 +697,265 @@
           "example": "战争与文化"
         }
       ]
+    },
+    {
+      "section": "第4课 古代的生产工具与劳作",
+      "aliases": [
+        "生产工具",
+        "劳作方式"
+      ],
+      "conceptSummary": "古代生产工具与劳作方式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "农具",
+        "生产工具",
+        "劳作方式"
+      ],
+      "methodModels": [
+        {
+          "name": "生产工具",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代生产工具劳作"
+        }
+      ],
+      "commonConfusions": [
+        "劳作方式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代生产工具劳作",
+          "method": "见方法模型",
+          "example": "古代生产工具劳作"
+        }
+      ]
+    },
+    {
+      "section": "第6课 现代科技进步与人类社会发展",
+      "aliases": [
+        "科技进步",
+        "社会发展"
+      ],
+      "conceptSummary": "现代科技进步推动社会发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "科技进步",
+        "人工智能",
+        "社会发展"
+      ],
+      "methodModels": [
+        {
+          "name": "科技进步",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "现代科技进步"
+        }
+      ],
+      "commonConfusions": [
+        "人工智能"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "现代科技进步",
+          "method": "见方法模型",
+          "example": "现代科技进步"
+        }
+      ]
+    },
+    {
+      "section": "第10课 近代以来的世界贸易与文化交流的扩展",
+      "aliases": [
+        "世界贸易",
+        "文化交流"
+      ],
+      "conceptSummary": "近代以来世界贸易与文化交流扩展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "世界贸易",
+        "文化交流",
+        "贸易扩展"
+      ],
+      "methodModels": [
+        {
+          "name": "世界贸易",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "世界贸易文化交流"
+        }
+      ],
+      "commonConfusions": [
+        "文化交流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "世界贸易文化交流",
+          "method": "见方法模型",
+          "example": "世界贸易文化交流"
+        }
+      ]
+    },
+    {
+      "section": "第13课 现代交通运输的新变化",
+      "aliases": [
+        "现代交通",
+        "交通变化"
+      ],
+      "conceptSummary": "现代交通运输新变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "现代交通",
+        "高铁",
+        "交通变革"
+      ],
+      "methodModels": [
+        {
+          "name": "现代交通",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "现代交通运输"
+        }
+      ],
+      "commonConfusions": [
+        "交通变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "现代交通运输",
+          "method": "见方法模型",
+          "example": "现代交通运输"
+        }
+      ]
+    },
+    {
+      "section": "第14课 历史上的疫病与医学成就",
+      "aliases": [
+        "疫病",
+        "医学成就"
+      ],
+      "conceptSummary": "历史上的疫病与医学成就。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "疫病",
+        "医学发展",
+        "公共卫生"
+      ],
+      "methodModels": [
+        {
+          "name": "疫病",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "疫病与医学"
+        }
+      ],
+      "commonConfusions": [
+        "医学成就"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "疫病与医学",
+          "method": "见方法模型",
+          "example": "疫病与医学"
+        }
+      ]
+    },
+    {
+      "section": "第15课 货币的使用与世界货币体系的形成",
+      "aliases": [
+        "货币",
+        "世界货币"
+      ],
+      "conceptSummary": "货币使用与世界货币体系形成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "货币演变",
+        "布雷顿森林",
+        "货币体系"
+      ],
+      "methodModels": [
+        {
+          "name": "货币",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "货币与世界货币体系"
+        }
+      ],
+      "commonConfusions": [
+        "世界货币体系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "货币与世界货币体系",
+          "method": "见方法模型",
+          "example": "货币与世界货币体系"
+        }
+      ]
+    },
+    {
+      "section": "技术进步与社会生活的变化",
+      "aliases": [
+        "技术进步",
+        "生活变化"
+      ],
+      "conceptSummary": "技术进步与社会生活变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "技术进步",
+        "生活变化",
+        "社会变迁"
+      ],
+      "methodModels": [
+        {
+          "name": "技术进步",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "技术进步与生活"
+        }
+      ],
+      "commonConfusions": [
+        "生活变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "技术进步与生活",
+          "method": "见方法模型",
+          "example": "技术进步与生活"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -348,6 +348,80 @@
           "example": "社会形态演进"
         }
       ]
+    },
+    {
+      "section": "伟大的改革开放",
+      "aliases": [
+        "改革开放",
+        "十一届三中全会"
+      ],
+      "conceptSummary": "改革开放是决定当代中国命运的关键。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "改革开放",
+        "经济特区",
+        "改革开放成就"
+      ],
+      "methodModels": [
+        {
+          "name": "改革开放",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "伟大的改革开放"
+        }
+      ],
+      "commonConfusions": [
+        "十一届三中全会"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "伟大的改革开放",
+          "method": "见方法模型",
+          "example": "伟大的改革开放"
+        }
+      ]
+    },
+    {
+      "section": "社会主义制度在中国的确立",
+      "aliases": [
+        "社会主义制度",
+        "三大改造"
+      ],
+      "conceptSummary": "社会主义制度在中国确立（三大改造）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三大改造",
+        "社会主义制度",
+        "过渡时期"
+      ],
+      "methodModels": [
+        {
+          "name": "社会主义制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "社会主义制度确立"
+        }
+      ],
+      "commonConfusions": [
+        "三大改造"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "社会主义制度确立",
+          "method": "见方法模型",
+          "example": "社会主义制度确立"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

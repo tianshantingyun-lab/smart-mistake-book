@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 18,
-  "sectionsApproved": 18,
+  "sectionsTotal": 22,
+  "sectionsApproved": 22,
   "sections": [
     {
       "section": "钠及其化合物",
@@ -131,6 +131,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第一节 钠及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "硝酸",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "硫酸和硫酸根离子的检验",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.032,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "酸雨及防治",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
       "issues": []
     }
   ]

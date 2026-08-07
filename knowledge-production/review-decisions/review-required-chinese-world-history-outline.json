@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 44,
-  "sectionsApproved": 44,
+  "sectionsTotal": 60,
+  "sectionsApproved": 60,
   "sections": [
     {
       "section": "中华文明起源与早期国家",
@@ -313,6 +313,118 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.136,
       "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第20课 五四运动与中国共产党的诞生",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第21课 南京国民政府的统治和中国共产党开辟革命新道路",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.05,
+      "textbookTocOverlap": 0.545,
+      "issues": []
+    },
+    {
+      "section": "第22课 从局部抗战到全国抗战",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第2课 诸侯纷争与变法运动",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.053,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第6课 全球航路的开辟",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第7课 全球联系的初步建立与世界格局的演变",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.045,
+      "textbookTocOverlap": 0.571,
+      "issues": []
+    },
+    {
+      "section": "第13课 清朝前中期的鼎盛与危机",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第15课 十月革命的胜利与苏联的社会主义实践",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.04,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第16课 亚非拉民族民主运动的高涨",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第18课 冷战与国际格局的演变",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第19课 资本主义国家的新变化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.115,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第 28 课 改革开放和社会主义现代化建设的巨大成就",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.031,
+      "textbookTocOverlap": 0.714,
+      "issues": []
+    },
+    {
+      "section": "第30课 新时代中国特色社会主义的伟大成就",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.024,
+      "textbookTocOverlap": 0.571,
+      "issues": []
+    },
+    {
+      "section": "第2课 古代世界的帝国与文明的交流",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "第4课 中古时期的亚洲",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第5课 南亚、东亚与美洲的文化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.429,
       "issues": []
     }
   ]

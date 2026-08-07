@@ -1176,6 +1176,456 @@
           "example": "权利行使界限"
         }
       ]
+    },
+    {
+      "section": "第一课 在生活中学民法用民法",
+      "aliases": [
+        "民法",
+        "民事权利"
+      ],
+      "conceptSummary": "在生活中学民法用民法，民事权利保护。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民法调整",
+        "民事权利",
+        "民事义务"
+      ],
+      "methodModels": [
+        {
+          "name": "民法",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "在生活中学民法"
+        }
+      ],
+      "commonConfusions": [
+        "民事权利"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "在生活中学民法",
+          "method": "见方法模型",
+          "example": "在生活中学民法"
+        }
+      ]
+    },
+    {
+      "section": "第二课 依法有效保护财产权",
+      "aliases": [
+        "财产权",
+        "物权",
+        "知识产权"
+      ],
+      "conceptSummary": "依法保护财产权：物权、债权、知识产权。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "财产权",
+        "物权",
+        "知识产权"
+      ],
+      "methodModels": [
+        {
+          "name": "财产权",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "保护财产权"
+        }
+      ],
+      "commonConfusions": [
+        "物权"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "保护财产权",
+          "method": "见方法模型",
+          "example": "保护财产权"
+        }
+      ]
+    },
+    {
+      "section": "尊重知识产权",
+      "aliases": [
+        "知识产权",
+        "著作权",
+        "专利"
+      ],
+      "conceptSummary": "尊重知识产权：著作权、专利权、商标权。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "著作权",
+        "专利权",
+        "商标权"
+      ],
+      "methodModels": [
+        {
+          "name": "知识产权",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "尊重知识产权"
+        }
+      ],
+      "commonConfusions": [
+        "著作权"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "尊重知识产权",
+          "method": "见方法模型",
+          "example": "尊重知识产权"
+        }
+      ]
+    },
+    {
+      "section": "第七课 做个明白的劳动者",
+      "aliases": [
+        "劳动者",
+        "劳动法",
+        "劳动合同"
+      ],
+      "conceptSummary": "劳动者权益保护与劳动合同。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "劳动者权利",
+        "劳动合同",
+        "劳动争议"
+      ],
+      "methodModels": [
+        {
+          "name": "劳动者",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "做个明白的劳动者"
+        }
+      ],
+      "commonConfusions": [
+        "劳动法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "做个明白的劳动者",
+          "method": "见方法模型",
+          "example": "做个明白的劳动者"
+        }
+      ]
+    },
+    {
+      "section": "第五课 在和睦家庭中成长",
+      "aliases": [
+        "家庭",
+        "婚姻",
+        "抚养"
+      ],
+      "conceptSummary": "家庭关系与抚养赡养义务。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "家庭关系",
+        "抚养赡养",
+        "继承"
+      ],
+      "methodModels": [
+        {
+          "name": "家庭",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "在和睦家庭中成长"
+        }
+      ],
+      "commonConfusions": [
+        "抚养赡养"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "在和睦家庭中成长",
+          "method": "见方法模型",
+          "example": "在和睦家庭中成长"
+        }
+      ]
+    },
+    {
+      "section": "薪火相传有继承",
+      "aliases": [
+        "继承",
+        "法定继承",
+        "遗嘱"
+      ],
+      "conceptSummary": "继承权：法定继承与遗嘱继承。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "法定继承",
+        "遗嘱继承",
+        "继承权"
+      ],
+      "methodModels": [
+        {
+          "name": "继承",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "薪火相传有继承"
+        }
+      ],
+      "commonConfusions": [
+        "法定继承"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "薪火相传有继承",
+          "method": "见方法模型",
+          "example": "薪火相传有继承"
+        }
+      ]
+    },
+    {
+      "section": "全面推进依法治国的总目标与原则",
+      "aliases": [
+        "依法治国",
+        "总目标"
+      ],
+      "conceptSummary": "全面依法治国总目标与原则。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "依法治国总目标",
+        "法治原则",
+        "法治体系"
+      ],
+      "methodModels": [
+        {
+          "name": "依法治国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "依法治国总目标"
+        }
+      ],
+      "commonConfusions": [
+        "总目标"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "依法治国总目标",
+          "method": "见方法模型",
+          "example": "依法治国总目标"
+        }
+      ]
+    },
+    {
+      "section": "严格执法",
+      "aliases": [
+        "严格执法",
+        "执法"
+      ],
+      "conceptSummary": "严格执法，公正执法文明执法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "严格执法",
+        "依法行政",
+        "执法为民"
+      ],
+      "methodModels": [
+        {
+          "name": "严格执法",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "严格执法"
+        }
+      ],
+      "commonConfusions": [
+        "执法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "严格执法",
+          "method": "见方法模型",
+          "example": "严格执法"
+        }
+      ]
+    },
+    {
+      "section": "法治社会",
+      "aliases": [
+        "法治社会",
+        "社会法治"
+      ],
+      "conceptSummary": "建设法治社会，全民守法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "法治社会",
+        "全民守法",
+        "社会治理"
+      ],
+      "methodModels": [
+        {
+          "name": "法治社会",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "法治社会"
+        }
+      ],
+      "commonConfusions": [
+        "全民守法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "法治社会",
+          "method": "见方法模型",
+          "example": "法治社会"
+        }
+      ]
+    },
+    {
+      "section": "第九课 全面依法治国的基本要求",
+      "aliases": [
+        "依法治国",
+        "基本要求"
+      ],
+      "conceptSummary": "全面依法治国基本要求：科学立法严格执法公正司法全民守法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "科学立法",
+        "严格执法",
+        "公正司法",
+        "全民守法"
+      ],
+      "methodModels": [
+        {
+          "name": "依法治国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "依法治国基本要求"
+        }
+      ],
+      "commonConfusions": [
+        "基本要求"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "依法治国基本要求",
+          "method": "见方法模型",
+          "example": "依法治国基本要求"
+        }
+      ]
+    },
+    {
+      "section": "第十课 诉讼实现公平正义",
+      "aliases": [
+        "诉讼",
+        "公平正义"
+      ],
+      "conceptSummary": "通过诉讼实现公平正义。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "诉讼",
+        "公正审判",
+        "公平正义"
+      ],
+      "methodModels": [
+        {
+          "name": "诉讼",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "诉讼实现公平正义"
+        }
+      ],
+      "commonConfusions": [
+        "公平正义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "诉讼实现公平正义",
+          "method": "见方法模型",
+          "example": "诉讼实现公平正义"
+        }
+      ]
+    },
+    {
+      "section": "有约必守 违约有责",
+      "aliases": [
+        "合同",
+        "违约责任"
+      ],
+      "conceptSummary": "有约必守，违约承担违约责任。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "合同效力",
+        "违约责任",
+        "合同履行"
+      ],
+      "methodModels": [
+        {
+          "name": "合同",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "有约必守违约有责"
+        }
+      ],
+      "commonConfusions": [
+        "违约责任"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "有约必守违约有责",
+          "method": "见方法模型",
+          "example": "有约必守违约有责"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

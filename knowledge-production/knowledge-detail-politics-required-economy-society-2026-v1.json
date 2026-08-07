@@ -550,6 +550,117 @@
           "example": "社会主义市场经济"
         }
       ]
+    },
+    {
+      "section": "第八课 自主创业与诚信经营",
+      "aliases": [
+        "创业",
+        "诚信经营"
+      ],
+      "conceptSummary": "自主创业与诚信经营。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自主创业",
+        "诚信经营",
+        "企业家精神"
+      ],
+      "methodModels": [
+        {
+          "name": "创业",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "自主创业诚信经营"
+        }
+      ],
+      "commonConfusions": [
+        "诚信经营"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自主创业诚信经营",
+          "method": "见方法模型",
+          "example": "自主创业诚信经营"
+        }
+      ]
+    },
+    {
+      "section": "第六课 走进经济全球化",
+      "aliases": [
+        "经济全球化",
+        "开放"
+      ],
+      "conceptSummary": "走进经济全球化，把握机遇应对挑战。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "经济全球化",
+        "开放型经济",
+        "机遇挑战"
+      ],
+      "methodModels": [
+        {
+          "name": "经济全球化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "走进经济全球化"
+        }
+      ],
+      "commonConfusions": [
+        "开放型经济"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "走进经济全球化",
+          "method": "见方法模型",
+          "example": "走进经济全球化"
+        }
+      ]
+    },
+    {
+      "section": "日益开放的世界经济",
+      "aliases": [
+        "开放经济",
+        "世界经济"
+      ],
+      "conceptSummary": "日益开放的世界经济与开放合作。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "开放经济",
+        "国际合作",
+        "互利共赢"
+      ],
+      "methodModels": [
+        {
+          "name": "开放经济",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "日益开放世界经济"
+        }
+      ],
+      "commonConfusions": [
+        "互利共赢"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "日益开放世界经济",
+          "method": "见方法模型",
+          "example": "日益开放世界经济"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
