@@ -195,6 +195,140 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "地球的运动与时间",
+      "aliases": [
+        "自转",
+        "公转",
+        "时区",
+        "昼夜"
+      ],
+      "conceptSummary": "地球自转产生昼夜交替与时差（1小时/15°经度），公转产生四季；地方时与区时计算。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自转周期约24小时（太阳日）",
+        "地方时：每差15°经度差1小时",
+        "时区：全球24个，东加西减",
+        "国际日期变更线：180°经线",
+        "公转：近日点1月、远日点7月"
+      ],
+      "methodModels": [
+        {
+          "name": "区时计算",
+          "steps": [
+            "求经度差/时区差",
+            "东加西减"
+          ],
+          "example": "北京时间(120°E)12时，伦敦(0°)4时"
+        }
+      ],
+      "commonConfusions": [
+        "地方时与区时",
+        "日期变更线两侧日期差一天"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "区时计算",
+          "method": "东加西减",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "天气系统",
+      "aliases": [
+        "冷锋",
+        "暖锋",
+        "气旋",
+        "反气旋",
+        "准静止锋"
+      ],
+      "conceptSummary": "锋面系统（冷锋/暖锋/准静止锋）与气压系统（气旋/反气旋）影响天气变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "冷锋：冷气团主动，过境阴雨降温大风",
+        "暖锋：暖气团主动，连续性降水",
+        "准静止锋：梅雨/昆明准静止锋",
+        "气旋（低压）：阴雨",
+        "反气旋（高压）：晴朗",
+        "冷锋过境后气温下降天气转晴"
+      ],
+      "methodModels": [
+        {
+          "name": "天气系统判断",
+          "steps": [
+            "看气压中心",
+            "看锋面类型",
+            "判天气"
+          ],
+          "example": "台风是热带气旋"
+        }
+      ],
+      "commonConfusions": [
+        "冷锋暖锋降水位置",
+        "气旋反气旋旋转方向"
+      ],
+      "prerequisiteRelations": [
+        "需掌握大气"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "天气系统",
+          "method": "类型+天气",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "河流地貌",
+      "aliases": [
+        "侵蚀",
+        "堆积",
+        "冲积扇",
+        "三角洲",
+        "河谷"
+      ],
+      "conceptSummary": "河流上游侵蚀形成V形谷，中下游堆积形成冲积平原、冲积扇、三角洲。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "上游：下蚀为主，V形谷",
+        "中游：侧蚀，河曲",
+        "下游：堆积，冲积平原",
+        "出山口：冲积扇",
+        "入海口：三角洲"
+      ],
+      "methodModels": [
+        {
+          "name": "河流地貌判断",
+          "steps": [
+            "定位上下游",
+            "侵蚀堆积"
+          ],
+          "example": "出山口形成冲积扇"
+        }
+      ],
+      "commonConfusions": [
+        "冲积扇（山麓）与三角洲（河口）",
+        "侵蚀与堆积地貌类型"
+      ],
+      "prerequisiteRelations": [
+        "需掌握地貌"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "河流地貌",
+          "method": "位置+作用",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

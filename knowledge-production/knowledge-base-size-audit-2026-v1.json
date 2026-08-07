@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
   "coreSectionsTotal": 1012,
-  "coveredSectionsTotal": 157,
-  "overallCoverageRatio": 0.155,
+  "coveredSectionsTotal": 166,
+  "overallCoverageRatio": 0.164,
   "perSubject": [
     {
       "subject": "BIOLOGY",
@@ -14,8 +14,8 @@
     {
       "subject": "CHEMISTRY",
       "coreSections": 92,
-      "coveredSections": 19,
-      "coverageRatio": 0.207
+      "coveredSections": 22,
+      "coverageRatio": 0.239
     },
     {
       "subject": "CHINESE",
@@ -32,14 +32,14 @@
     {
       "subject": "GEOGRAPHY",
       "coreSections": 93,
-      "coveredSections": 12,
-      "coverageRatio": 0.129
+      "coveredSections": 15,
+      "coverageRatio": 0.161
     },
     {
       "subject": "HISTORY",
       "coreSections": 105,
-      "coveredSections": 11,
-      "coverageRatio": 0.105
+      "coveredSections": 14,
+      "coverageRatio": 0.133
     },
     {
       "subject": "MATH",

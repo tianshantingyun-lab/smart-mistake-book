@@ -146,6 +146,144 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "物质的量与应用",
+      "aliases": [
+        "物质的量",
+        "摩尔",
+        "阿伏伽德罗",
+        "摩尔质量"
+      ],
+      "conceptSummary": "物质的量是七个基本物理量之一，单位摩尔；n=m/M=N/NA；标况下气体 n=V/22.4。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "n=m/M（mol）",
+        "NA≈6.02×10²³/mol",
+        "气体标况（0℃，1atm）22.4L/mol",
+        "浓度 c=n/V（mol/L）",
+        "配制一定浓度溶液步骤"
+      ],
+      "methodModels": [
+        {
+          "name": "物质的量计算",
+          "steps": [
+            "n=m/M",
+            "标况气体 n=V/22.4",
+            "c=n/V"
+          ],
+          "example": "5.6g Fe（56g/mol）n=0.1mol"
+        }
+      ],
+      "commonConfusions": [
+        "标况条件",
+        "微粒数=物质的量×NA"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质的量换算",
+          "method": "n=m/M等",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "氧化还原反应",
+      "aliases": [
+        "氧化",
+        "还原",
+        "化合价",
+        "氧化剂",
+        "还原剂"
+      ],
+      "conceptSummary": "氧化还原反应有电子转移（化合价变化）：氧化剂得电子被还原，还原剂失电子被氧化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "氧化还原特征：化合价变化",
+        "氧化剂：得电子，被还原",
+        "还原剂：失电子，被氧化",
+        "氧化性：氧化剂>氧化产物",
+        "配平：电子守恒/化合价升降"
+      ],
+      "methodModels": [
+        {
+          "name": "判断氧化剂还原剂",
+          "steps": [
+            "标化合价",
+            "看升降",
+            "定角色"
+          ],
+          "example": "2Na+Cl2→2NaCl，Na失电子是还原剂"
+        },
+        {
+          "name": "氧化还原配平",
+          "steps": [
+            "化合价升降",
+            "最小公倍数",
+            "系数"
+          ],
+          "example": "Fe+Cl2→FeCl3 配平"
+        }
+      ],
+      "commonConfusions": [
+        "氧化剂被还原不是氧化",
+        "化合价升高失电子被氧化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "氧化还原分析",
+          "method": "化合价升降",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "离子反应与离子方程式",
+      "aliases": [
+        "离子反应",
+        "离子方程式",
+        "离子共存"
+      ],
+      "conceptSummary": "离子反应在溶液中进行，离子方程式删去不参与离子；离子共存判断看是否生成沉淀/气体/水。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "离子反应条件：生成沉淀/气体/弱电解质",
+        "离子方程式：写拆删查",
+        "不能共存：Ba²⁺+SO4²⁻、Ag⁺+Cl⁻",
+        "酸性碱性条件判断"
+      ],
+      "methodModels": [
+        {
+          "name": "离子方程式书写",
+          "steps": [
+            "写化学方程式",
+            "拆强电解质",
+            "删相同离子",
+            "查守恒"
+          ],
+          "example": "BaCl2+Na2SO4→BaSO4↓+2NaCl，离子式 Ba²⁺+SO4²⁻→BaSO4↓"
+        }
+      ],
+      "commonConfusions": [
+        "弱电解质不拆",
+        "微溶物处理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "离子方程式",
+          "method": "写拆删查",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

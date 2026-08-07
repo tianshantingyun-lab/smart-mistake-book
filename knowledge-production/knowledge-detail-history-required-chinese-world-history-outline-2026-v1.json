@@ -187,6 +187,139 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "明清中国与近代化",
+      "aliases": [
+        "明清",
+        "康乾盛世",
+        "闭关锁国",
+        "鸦片战争"
+      ],
+      "conceptSummary": "明清君主专制强化、商品经济繁荣但闭关锁国；鸦片战争后中国逐步沦为半殖民地半封建社会。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "明清：内阁军机处、八股取士",
+        "康乾盛世：农业商业繁荣",
+        "闭关锁国：限制海外贸易",
+        "鸦片战争：1840，中国近代史开端",
+        "《南京条约》：割地赔款开埠"
+      ],
+      "methodModels": [
+        {
+          "name": "近代史开端分析",
+          "steps": [
+            "背景（闭关）",
+            "战争（鸦片）",
+            "影响（半殖民地）"
+          ],
+          "example": "鸦片战争是中国近代史开端"
+        }
+      ],
+      "commonConfusions": [
+        "闭关锁国不等于完全禁贸",
+        "半殖民地半封建社会含义"
+      ],
+      "prerequisiteRelations": [
+        "需掌握明清制度"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "明清与近代转折",
+          "method": "背景影响",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "近代中国各阶级探索",
+      "aliases": [
+        "洋务运动",
+        "戊戌变法",
+        "辛亥革命",
+        "新文化运动"
+      ],
+      "conceptSummary": "近代中国探索：洋务运动（器物）、戊戌变法（制度君主立宪）、辛亥革命（民主共和）、新文化运动（思想）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "洋务运动：自强求富，器物层面",
+        "戊戌变法：君主立宪，失败",
+        "辛亥革命：推翻帝制，建立民国",
+        "新文化运动：民主科学，思想启蒙",
+        "探索层次：器物→制度→思想"
+      ],
+      "methodModels": [
+        {
+          "name": "近代探索脉络",
+          "steps": [
+            "层次递进",
+            "各运动主张",
+            "失败原因"
+          ],
+          "example": "辛亥革命推翻清王朝"
+        }
+      ],
+      "commonConfusions": [
+        "各运动性质与主张",
+        "辛亥革命局限性（未改变社会性质）"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "近代探索",
+          "method": "层次脉络",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "新民主主义革命",
+      "aliases": [
+        "五四运动",
+        "中共成立",
+        "长征",
+        "抗战",
+        "解放战争"
+      ],
+      "conceptSummary": "五四运动新民主主义革命开端；中共成立；十年对峙、全民族抗战、解放战争推翻国民党统治。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "五四运动：1919，新民主主义开端",
+        "中共成立：1921",
+        "国民革命：第一次国共合作",
+        "土地革命：井冈山",
+        "抗战：1937-1945 全民族",
+        "解放战争：1949 新中国成立"
+      ],
+      "methodModels": [
+        {
+          "name": "革命历程梳理",
+          "steps": [
+            "各阶段",
+            "标志事件",
+            "意义"
+          ],
+          "example": "五四运动标志新民主主义革命开始"
+        }
+      ],
+      "commonConfusions": [
+        "新旧民主主义区别（领导阶级）",
+        "抗战胜利原因"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新民主主义革命",
+          "method": "阶段梳理",
+          "example": "见上"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
