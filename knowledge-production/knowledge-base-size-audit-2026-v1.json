@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
   "coreSectionsTotal": 934,
-  "coveredSectionsTotal": 541,
-  "overallCoverageRatio": 0.579,
+  "coveredSectionsTotal": 596,
+  "overallCoverageRatio": 0.638,
   "perSubject": [
     {
       "subject": "BIOLOGY",
@@ -22,15 +22,15 @@
     {
       "subject": "CHINESE",
       "coreSections": 18,
-      "coveredSections": 6,
-      "coverageRatio": 0.333,
+      "coveredSections": 12,
+      "coverageRatio": 0.667,
       "coreBasis": "task-groups"
     },
     {
       "subject": "ENGLISH",
       "coreSections": 21,
-      "coveredSections": 6,
-      "coverageRatio": 0.286,
+      "coveredSections": 22,
+      "coverageRatio": 1.048,
       "coreBasis": "sections"
     },
     {
@@ -64,8 +64,8 @@
     {
       "subject": "POLITICS",
       "coreSections": 152,
-      "coveredSections": 42,
-      "coverageRatio": 0.276,
+      "coveredSections": 75,
+      "coverageRatio": 0.493,
       "coreBasis": "sections"
     }
   ],

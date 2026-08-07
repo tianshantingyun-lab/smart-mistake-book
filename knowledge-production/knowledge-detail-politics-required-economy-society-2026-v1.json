@@ -289,6 +289,155 @@
           "example": "收入分配社会保障"
         }
       ]
+    },
+    {
+      "section": "第一课 我国的生产资料所有制",
+      "aliases": [
+        "公有制",
+        "所有制",
+        "非公有制"
+      ],
+      "conceptSummary": "我国实行公有制为主体、多种所有制经济共同发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "公有制主体",
+        "非公有制",
+        "基本经济制度"
+      ],
+      "methodModels": [
+        {
+          "name": "所有制",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "我国生产资料所有制"
+        }
+      ],
+      "commonConfusions": [
+        "公有制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "我国生产资料所有制",
+          "method": "见方法模型",
+          "example": "我国生产资料所有制"
+        }
+      ]
+    },
+    {
+      "section": "坚持两个毫不动摇",
+      "aliases": [
+        "两个毫不动摇",
+        "国企改革"
+      ],
+      "conceptSummary": "坚持公有制主体地位不动摇，鼓励支持引导非公有制发展不动摇。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "两个毫不动摇",
+        "国企改革",
+        "非公有制"
+      ],
+      "methodModels": [
+        {
+          "name": "两个毫不动摇",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "两个毫不动摇"
+        }
+      ],
+      "commonConfusions": [
+        "国企改革"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "两个毫不动摇",
+          "method": "见方法模型",
+          "example": "两个毫不动摇"
+        }
+      ]
+    },
+    {
+      "section": "更好发挥政府作用",
+      "aliases": [
+        "政府作用",
+        "宏观调控"
+      ],
+      "conceptSummary": "更好发挥政府作用，宏观调控与市场监管。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "政府职能",
+        "宏观调控",
+        "市场监管"
+      ],
+      "methodModels": [
+        {
+          "name": "政府作用",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "更好发挥政府作用"
+        }
+      ],
+      "commonConfusions": [
+        "宏观调控"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "更好发挥政府作用",
+          "method": "见方法模型",
+          "example": "更好发挥政府作用"
+        }
+      ]
+    },
+    {
+      "section": "推动高质量发展",
+      "aliases": [
+        "高质量发展",
+        "经济转型"
+      ],
+      "conceptSummary": "推动高质量发展，转变发展方式，优化经济结构。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "高质量发展",
+        "新发展格局",
+        "经济转型"
+      ],
+      "methodModels": [
+        {
+          "name": "高质量发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "推动高质量发展"
+        }
+      ],
+      "commonConfusions": [
+        "经济转型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "推动高质量发展",
+          "method": "见方法模型",
+          "example": "推动高质量发展"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

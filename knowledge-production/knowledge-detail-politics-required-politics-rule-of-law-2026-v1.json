@@ -317,6 +317,267 @@
           "example": "公正司法"
         }
       ]
+    },
+    {
+      "section": "人民代表大会制度：我国的根本政治制度",
+      "aliases": [
+        "人大制度",
+        "根本政治制度"
+      ],
+      "conceptSummary": "人民代表大会制度是我国的根本政治制度。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人大制度",
+        "人大代表",
+        "民主集中制"
+      ],
+      "methodModels": [
+        {
+          "name": "人大制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人民代表大会制度"
+        }
+      ],
+      "commonConfusions": [
+        "根本政治制度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人民代表大会制度",
+          "method": "见方法模型",
+          "example": "人民代表大会制度"
+        }
+      ]
+    },
+    {
+      "section": "巩固党的长期执政地位",
+      "aliases": [
+        "党的领导",
+        "长期执政"
+      ],
+      "conceptSummary": "坚持党的全面领导，巩固长期执政地位，全面从严治党。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "党的领导",
+        "从严治党",
+        "执政能力"
+      ],
+      "methodModels": [
+        {
+          "name": "党的领导",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "巩固党的执政地位"
+        }
+      ],
+      "commonConfusions": [
+        "长期执政"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "巩固党的执政地位",
+          "method": "见方法模型",
+          "example": "巩固党的执政地位"
+        }
+      ]
+    },
+    {
+      "section": "全民守法",
+      "aliases": [
+        "全民守法",
+        "法治社会"
+      ],
+      "conceptSummary": "全民守法要求人人尊法学法守法用法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "全民守法",
+        "法治观念",
+        "守法用法"
+      ],
+      "methodModels": [
+        {
+          "name": "全民守法",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "全民守法"
+        }
+      ],
+      "commonConfusions": [
+        "法治社会"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "全民守法",
+          "method": "见方法模型",
+          "example": "全民守法"
+        }
+      ]
+    },
+    {
+      "section": "第二课 中国共产党的先进性",
+      "aliases": [
+        "党的先进性",
+        "宗旨"
+      ],
+      "conceptSummary": "中国共产党具有先进性，坚持全心全意为人民服务。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "党的性质",
+        "宗旨",
+        "先进性"
+      ],
+      "methodModels": [
+        {
+          "name": "党的先进性",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "党的先进性"
+        }
+      ],
+      "commonConfusions": [
+        "宗旨"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "党的先进性",
+          "method": "见方法模型",
+          "example": "党的先进性"
+        }
+      ]
+    },
+    {
+      "section": "依法收集运用证据",
+      "aliases": [
+        "证据",
+        "诉讼",
+        "依法"
+      ],
+      "conceptSummary": "民事诉讼中依法收集运用证据，证据是关键。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "证据种类",
+        "举证责任",
+        "证据运用"
+      ],
+      "methodModels": [
+        {
+          "name": "证据",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "依法收集证据"
+        }
+      ],
+      "commonConfusions": [
+        "举证责任"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "依法收集证据",
+          "method": "见方法模型",
+          "example": "依法收集证据"
+        }
+      ]
+    },
+    {
+      "section": "解析三大诉讼",
+      "aliases": [
+        "诉讼",
+        "民事诉讼",
+        "行政诉讼"
+      ],
+      "conceptSummary": "三大诉讼：民事、行政、刑事诉讼，各有受案范围。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民事诉讼",
+        "行政诉讼",
+        "刑事诉讼"
+      ],
+      "methodModels": [
+        {
+          "name": "三大诉讼",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "三大诉讼"
+        }
+      ],
+      "commonConfusions": [
+        "诉讼类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "三大诉讼",
+          "method": "见方法模型",
+          "example": "三大诉讼"
+        }
+      ]
+    },
+    {
+      "section": "第六课 珍惜婚姻关系",
+      "aliases": [
+        "婚姻",
+        "婚姻家庭"
+      ],
+      "conceptSummary": "婚姻家庭受法律保护，夫妻权利义务。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "婚姻条件",
+        "夫妻权利义务",
+        "家庭关系"
+      ],
+      "methodModels": [
+        {
+          "name": "婚姻关系",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "珍惜婚姻关系"
+        }
+      ],
+      "commonConfusions": [
+        "婚姻家庭"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "珍惜婚姻关系",
+          "method": "见方法模型",
+          "example": "珍惜婚姻关系"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

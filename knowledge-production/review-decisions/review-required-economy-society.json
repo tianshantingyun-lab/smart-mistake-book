@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 7,
-  "sectionsApproved": 7,
+  "sectionsTotal": 11,
+  "sectionsApproved": 11,
   "sections": [
     {
       "section": "社会主义市场经济",
@@ -54,6 +54,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.385,
+      "issues": []
+    },
+    {
+      "section": "第一课 我国的生产资料所有制",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.095,
+      "textbookTocOverlap": 0.308,
+      "issues": []
+    },
+    {
+      "section": "坚持两个毫不动摇",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.095,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "更好发挥政府作用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "推动高质量发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.25,
       "issues": []
     }
   ]

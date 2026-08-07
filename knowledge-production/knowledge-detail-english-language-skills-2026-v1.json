@@ -114,6 +114,272 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "听力技能",
+      "aliases": [
+        "听力",
+        "抓关键词",
+        "预测"
+      ],
+      "conceptSummary": "听力技能：预测内容、抓关键词、注意转折。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "预测",
+        "关键词",
+        "数字时间"
+      ],
+      "methodModels": [
+        {
+          "name": "听力技巧",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "听力"
+        }
+      ],
+      "commonConfusions": [
+        "抓关键词"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "听力",
+          "method": "见方法模型",
+          "example": "听力"
+        }
+      ]
+    },
+    {
+      "section": "口语表达",
+      "aliases": [
+        "口语",
+        "交际",
+        "表达"
+      ],
+      "conceptSummary": "口语表达：日常交际、观点表达、功能句式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "交际功能",
+        "表达观点",
+        "话题讨论"
+      ],
+      "methodModels": [
+        {
+          "name": "口语",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "口语表达"
+        }
+      ],
+      "commonConfusions": [
+        "交际用语"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "口语表达",
+          "method": "见方法模型",
+          "example": "口语表达"
+        }
+      ]
+    },
+    {
+      "section": "完形填空",
+      "aliases": [
+        "完形",
+        "语境",
+        "搭配"
+      ],
+      "conceptSummary": "完形填空：语境理解、词义辨析、固定搭配。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "语境推断",
+        "词义辨析",
+        "固定搭配"
+      ],
+      "methodModels": [
+        {
+          "name": "完形填空",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "完形填空"
+        }
+      ],
+      "commonConfusions": [
+        "语境"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "完形填空",
+          "method": "见方法模型",
+          "example": "完形填空"
+        }
+      ]
+    },
+    {
+      "section": "七选五",
+      "aliases": [
+        "七选五",
+        "衔接",
+        "逻辑"
+      ],
+      "conceptSummary": "七选五：把握篇章逻辑、衔接词、上下文呼应。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "衔接词",
+        "逻辑关系",
+        "上下文呼应"
+      ],
+      "methodModels": [
+        {
+          "name": "七选五",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "七选五"
+        }
+      ],
+      "commonConfusions": [
+        "衔接"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "七选五",
+          "method": "见方法模型",
+          "example": "七选五"
+        }
+      ]
+    },
+    {
+      "section": "语法填空",
+      "aliases": [
+        "语法填空",
+        "词形变化",
+        "时态"
+      ],
+      "conceptSummary": "语法填空：词形变化、时态语态、非谓语、连词。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "词形变化",
+        "时态语态",
+        "非谓语"
+      ],
+      "methodModels": [
+        {
+          "name": "语法填空",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "语法填空"
+        }
+      ],
+      "commonConfusions": [
+        "词形变化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "语法填空",
+          "method": "见方法模型",
+          "example": "语法填空"
+        }
+      ]
+    },
+    {
+      "section": "短文改错",
+      "aliases": [
+        "改错",
+        "错误类型",
+        "改正"
+      ],
+      "conceptSummary": "短文改错：词法、句法、逻辑错误各类型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "词法错误",
+        "句法错误",
+        "逻辑错误"
+      ],
+      "methodModels": [
+        {
+          "name": "改错",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "短文改错"
+        }
+      ],
+      "commonConfusions": [
+        "错误类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "短文改错",
+          "method": "见方法模型",
+          "example": "短文改错"
+        }
+      ]
+    },
+    {
+      "section": "概要写作",
+      "aliases": [
+        "概要写作",
+        "概括",
+        "转述"
+      ],
+      "conceptSummary": "概要写作：概括要点、同义转述、结构完整。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "概括要点",
+        "同义转述",
+        "结构连贯"
+      ],
+      "methodModels": [
+        {
+          "name": "概要写作",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "概要写作"
+        }
+      ],
+      "commonConfusions": [
+        "概括要点"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "概要写作",
+          "method": "见方法模型",
+          "example": "概要写作"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

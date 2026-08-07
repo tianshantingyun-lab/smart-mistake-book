@@ -217,6 +217,343 @@
           "example": "创新思维"
         }
       ]
+    },
+    {
+      "section": "明确概念的方法",
+      "aliases": [
+        "概念",
+        "内涵",
+        "外延"
+      ],
+      "conceptSummary": "明确概念要把握内涵与外延，定义与划分。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "内涵外延",
+        "定义",
+        "划分"
+      ],
+      "methodModels": [
+        {
+          "name": "明确概念",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "明确概念方法"
+        }
+      ],
+      "commonConfusions": [
+        "内涵外延"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "明确概念方法",
+          "method": "见方法模型",
+          "example": "明确概念方法"
+        }
+      ]
+    },
+    {
+      "section": "第五课 正确运用判断",
+      "aliases": [
+        "判断",
+        "运用",
+        "真假"
+      ],
+      "conceptSummary": "正确运用判断，注意判断形式与真假。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "判断形式",
+        "判断真假",
+        "关系判断"
+      ],
+      "methodModels": [
+        {
+          "name": "正确判断",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "正确运用判断"
+        }
+      ],
+      "commonConfusions": [
+        "判断真假"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正确运用判断",
+          "method": "见方法模型",
+          "example": "正确运用判断"
+        }
+      ]
+    },
+    {
+      "section": "类比推理及其方法",
+      "aliases": [
+        "类比推理",
+        "比较",
+        "类比"
+      ],
+      "conceptSummary": "类比推理根据事物相似性进行推理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "类比推理",
+        "提高可靠性",
+        "类比方法"
+      ],
+      "methodModels": [
+        {
+          "name": "类比推理",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "类比推理"
+        }
+      ],
+      "commonConfusions": [
+        "类比"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "类比推理",
+          "method": "见方法模型",
+          "example": "类比推理"
+        }
+      ]
+    },
+    {
+      "section": "联想思维的含义与方法",
+      "aliases": [
+        "联想思维",
+        "发散"
+      ],
+      "conceptSummary": "联想思维是创新思维基础，发散聚合结合。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "联想思维",
+        "发散思维",
+        "创新方法"
+      ],
+      "methodModels": [
+        {
+          "name": "联想思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "联想思维"
+        }
+      ],
+      "commonConfusions": [
+        "发散"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "联想思维",
+          "method": "见方法模型",
+          "example": "联想思维"
+        }
+      ]
+    },
+    {
+      "section": "分析与综合及其辩证关系",
+      "aliases": [
+        "分析",
+        "综合",
+        "辩证"
+      ],
+      "conceptSummary": "分析与综合辩证统一，从局部到整体把握。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分析方法",
+        "综合方法",
+        "辩证关系"
+      ],
+      "methodModels": [
+        {
+          "name": "分析综合",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "分析与综合"
+        }
+      ],
+      "commonConfusions": [
+        "辩证关系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分析与综合",
+          "method": "见方法模型",
+          "example": "分析与综合"
+        }
+      ]
+    },
+    {
+      "section": "逆向思维的含义与作用",
+      "aliases": [
+        "逆向思维",
+        "创新"
+      ],
+      "conceptSummary": "逆向思维从相反方向思考，促进创新。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "逆向思维",
+        "创新作用",
+        "思维方法"
+      ],
+      "methodModels": [
+        {
+          "name": "逆向思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "逆向思维"
+        }
+      ],
+      "commonConfusions": [
+        "创新"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "逆向思维",
+          "method": "见方法模型",
+          "example": "逆向思维"
+        }
+      ]
+    },
+    {
+      "section": "超前思维的方法与意义",
+      "aliases": [
+        "超前思维",
+        "预见"
+      ],
+      "conceptSummary": "超前思维预见未来，科学预测。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "超前思维",
+        "科学预见",
+        "思维方法"
+      ],
+      "methodModels": [
+        {
+          "name": "超前思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "超前思维"
+        }
+      ],
+      "commonConfusions": [
+        "预见"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "超前思维",
+          "method": "见方法模型",
+          "example": "超前思维"
+        }
+      ]
+    },
+    {
+      "section": "第八课 把握辩证分合",
+      "aliases": [
+        "辩证分合",
+        "整体部分"
+      ],
+      "conceptSummary": "辩证分合把握整体与部分关系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "辩证分析",
+        "综合运用",
+        "整体部分"
+      ],
+      "methodModels": [
+        {
+          "name": "辩证分合",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "把握辩证分合"
+        }
+      ],
+      "commonConfusions": [
+        "整体部分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "把握辩证分合",
+          "method": "见方法模型",
+          "example": "把握辩证分合"
+        }
+      ]
+    },
+    {
+      "section": "第十二课 创新思维要多路探索",
+      "aliases": [
+        "创新思维",
+        "多路探索"
+      ],
+      "conceptSummary": "创新思维多路探索，发散与聚合结合。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "多路探索",
+        "发散思维",
+        "创新方法"
+      ],
+      "methodModels": [
+        {
+          "name": "创新思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "创新思维多路探索"
+        }
+      ],
+      "commonConfusions": [
+        "多路探索"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "创新思维多路探索",
+          "method": "见方法模型",
+          "example": "创新思维多路探索"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

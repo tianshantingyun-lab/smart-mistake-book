@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 5,
-  "sectionsApproved": 5,
+  "sectionsTotal": 9,
+  "sectionsApproved": 9,
   "sections": [
     {
       "section": "科学社会主义",
@@ -40,6 +40,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.091,
       "textbookTocOverlap": 0.455,
+      "issues": []
+    },
+    {
+      "section": "习近平新时代中国特色社会主义思想",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "科学社会主义的理论与实践",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "中国特色社会主义的创立、发展和完善",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.25,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "原始社会的解体和阶级社会的演进",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.364,
       "issues": []
     }
   ]

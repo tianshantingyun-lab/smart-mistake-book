@@ -432,6 +432,230 @@
           "example": "人民群众"
         }
       ]
+    },
+    {
+      "section": "第一课 时代精神的精华",
+      "aliases": [
+        "哲学",
+        "时代精神"
+      ],
+      "conceptSummary": "哲学是时代精神的精华，哲学源于实践，系统化理论化的世界观。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "哲学起源",
+        "哲学与世界观",
+        "时代精神"
+      ],
+      "methodModels": [
+        {
+          "name": "哲学理解",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "时代精神的精华"
+        }
+      ],
+      "commonConfusions": [
+        "哲学与世界观"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "时代精神的精华",
+          "method": "见方法模型",
+          "example": "时代精神的精华"
+        }
+      ]
+    },
+    {
+      "section": "科学的世界观和方法论",
+      "aliases": [
+        "马克思主义哲学",
+        "世界观"
+      ],
+      "conceptSummary": "马克思主义哲学是科学的世界观和方法论，实践观是核心。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "实践观点",
+        "辩证唯物主义",
+        "历史唯物主义"
+      ],
+      "methodModels": [
+        {
+          "name": "马哲",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "科学世界观方法论"
+        }
+      ],
+      "commonConfusions": [
+        "实践观点"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "科学世界观方法论",
+          "method": "见方法模型",
+          "example": "科学世界观方法论"
+        }
+      ]
+    },
+    {
+      "section": "第四课 探索认识的奥秘",
+      "aliases": [
+        "认识",
+        "实践",
+        "真理"
+      ],
+      "conceptSummary": "实践是认识的基础，真理是客观的具体的有条件的。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "实践决定认识",
+        "认识反作用",
+        "真理特性"
+      ],
+      "methodModels": [
+        {
+          "name": "认识论",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "认识的奥秘"
+        }
+      ],
+      "commonConfusions": [
+        "真理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "认识的奥秘",
+          "method": "见方法模型",
+          "example": "认识的奥秘"
+        }
+      ]
+    },
+    {
+      "section": "第五课 寻觅社会的真谛",
+      "aliases": [
+        "社会历史",
+        "社会存在",
+        "社会意识"
+      ],
+      "conceptSummary": "社会存在决定社会意识，人民群众是历史创造者。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "社会存在与社会意识",
+        "生产力生产关系",
+        "人民群众"
+      ],
+      "methodModels": [
+        {
+          "name": "唯物史观",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "寻觅社会真谛"
+        }
+      ],
+      "commonConfusions": [
+        "社会存在"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "寻觅社会真谛",
+          "method": "见方法模型",
+          "example": "寻觅社会真谛"
+        }
+      ]
+    },
+    {
+      "section": "文化强国与文化自信",
+      "aliases": [
+        "文化自信",
+        "文化强国"
+      ],
+      "conceptSummary": "坚定文化自信，建设文化强国，弘扬中华优秀传统文化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化自信",
+        "文化强国",
+        "传统文化"
+      ],
+      "methodModels": [
+        {
+          "name": "文化自信",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "文化强国与文化自信"
+        }
+      ],
+      "commonConfusions": [
+        "文化强国"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文化强国与文化自信",
+          "method": "见方法模型",
+          "example": "文化强国与文化自信"
+        }
+      ]
+    },
+    {
+      "section": "正确对待外来文化",
+      "aliases": [
+        "外来文化",
+        "文化交流"
+      ],
+      "conceptSummary": "正确对待外来文化，取其精华去其糟粕，交流互鉴。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化交流",
+        "文化多样性",
+        "借鉴吸收"
+      ],
+      "methodModels": [
+        {
+          "name": "外来文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "正确对待外来文化"
+        }
+      ],
+      "commonConfusions": [
+        "文化交流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正确对待外来文化",
+          "method": "见方法模型",
+          "example": "正确对待外来文化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

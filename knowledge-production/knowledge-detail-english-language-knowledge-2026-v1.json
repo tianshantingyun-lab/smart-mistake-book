@@ -223,6 +223,346 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "名词与冠词",
+      "aliases": [
+        "名词",
+        "冠词",
+        "单复数"
+      ],
+      "conceptSummary": "名词单复数与所有格，冠词a/an/the 用法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "可数不可数名词",
+        "冠词用法",
+        "名词所有格"
+      ],
+      "methodModels": [
+        {
+          "name": "名词冠词",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "名词与冠词"
+        }
+      ],
+      "commonConfusions": [
+        "冠词用法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "名词与冠词",
+          "method": "见方法模型",
+          "example": "名词与冠词"
+        }
+      ]
+    },
+    {
+      "section": "代词",
+      "aliases": [
+        "人称代词",
+        "物主代词",
+        "反身代词"
+      ],
+      "conceptSummary": "代词种类：人称、物主、反身、指示、不定代词。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人称代词主宾格",
+        "物主代词",
+        "不定代词"
+      ],
+      "methodModels": [
+        {
+          "name": "代词",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "代词"
+        }
+      ],
+      "commonConfusions": [
+        "代词辨析"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "代词",
+          "method": "见方法模型",
+          "example": "代词"
+        }
+      ]
+    },
+    {
+      "section": "形容词与副词",
+      "aliases": [
+        "形容词",
+        "副词",
+        "比较级"
+      ],
+      "conceptSummary": "形容词修饰名词，副词修饰动词形容词；比较级最高级。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "形容词副词位置",
+        "比较级最高级",
+        "倍数比较"
+      ],
+      "methodModels": [
+        {
+          "name": "形容词副词",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "形容词副词"
+        }
+      ],
+      "commonConfusions": [
+        "比较级"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "形容词副词",
+          "method": "见方法模型",
+          "example": "形容词副词"
+        }
+      ]
+    },
+    {
+      "section": "介词与连词",
+      "aliases": [
+        "介词",
+        "连词",
+        "搭配"
+      ],
+      "conceptSummary": "介词表时间地点方式，连词连接句子成分。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "介词搭配",
+        "时间介词",
+        "并列连词"
+      ],
+      "methodModels": [
+        {
+          "name": "介词连词",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "介词与连词"
+        }
+      ],
+      "commonConfusions": [
+        "介词搭配"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "介词与连词",
+          "method": "见方法模型",
+          "example": "介词与连词"
+        }
+      ]
+    },
+    {
+      "section": "主谓一致",
+      "aliases": [
+        "主谓一致",
+        "主语谓语"
+      ],
+      "conceptSummary": "主谓一致三原则：语法一致、意义一致、就近原则。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "语法一致",
+        "意义一致",
+        "就近原则"
+      ],
+      "methodModels": [
+        {
+          "name": "主谓一致",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "主谓一致"
+        }
+      ],
+      "commonConfusions": [
+        "就近原则"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "主谓一致",
+          "method": "见方法模型",
+          "example": "主谓一致"
+        }
+      ]
+    },
+    {
+      "section": "倒装句",
+      "aliases": [
+        "倒装",
+        "部分倒装",
+        "全部倒装"
+      ],
+      "conceptSummary": "倒装句：完全倒装与部分倒装，否定词开头、so/neither等。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "完全倒装",
+        "部分倒装",
+        "否定词前置"
+      ],
+      "methodModels": [
+        {
+          "name": "倒装",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "倒装句"
+        }
+      ],
+      "commonConfusions": [
+        "部分倒装"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "倒装句",
+          "method": "见方法模型",
+          "example": "倒装句"
+        }
+      ]
+    },
+    {
+      "section": "强调句",
+      "aliases": [
+        "强调句",
+        "It is...that"
+      ],
+      "conceptSummary": "强调句型 It is/was...that/who 强调句成分。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "强调句型",
+        "强调主语宾语",
+        "强调状语"
+      ],
+      "methodModels": [
+        {
+          "name": "强调句",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "强调句"
+        }
+      ],
+      "commonConfusions": [
+        "强调句型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "强调句",
+          "method": "见方法模型",
+          "example": "强调句"
+        }
+      ]
+    },
+    {
+      "section": "状语从句",
+      "aliases": [
+        "状语从句",
+        "时间原因",
+        "条件让步"
+      ],
+      "conceptSummary": "状语从句：时间、原因、条件、让步、结果、目的。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "时间状语从句",
+        "条件状语从句",
+        "让步状语从句"
+      ],
+      "methodModels": [
+        {
+          "name": "状语从句",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "状语从句"
+        }
+      ],
+      "commonConfusions": [
+        "引导词"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "状语从句",
+          "method": "见方法模型",
+          "example": "状语从句"
+        }
+      ]
+    },
+    {
+      "section": "名词性从句",
+      "aliases": [
+        "名词性从句",
+        "主语从句",
+        "宾语从句"
+      ],
+      "conceptSummary": "名词性从句：主语、宾语、表语、同位语从句。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "主语从句",
+        "宾语从句",
+        "同位语从句"
+      ],
+      "methodModels": [
+        {
+          "name": "名词性从句",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "名词性从句"
+        }
+      ],
+      "commonConfusions": [
+        "从句引导词"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "名词性从句",
+          "method": "见方法模型",
+          "example": "名词性从句"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -311,6 +311,233 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "当代文化参与",
+      "aliases": [
+        "当代文化",
+        "文化参与",
+        "调查"
+      ],
+      "conceptSummary": "关注当代文化，开展文化调查，梳理文化现象。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化现象",
+        "调查方法",
+        "文化参与"
+      ],
+      "methodModels": [
+        {
+          "name": "当代文化",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "当代文化参与"
+        }
+      ],
+      "commonConfusions": [
+        "文化调查"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "当代文化参与",
+          "method": "见方法模型",
+          "example": "当代文化参与"
+        }
+      ]
+    },
+    {
+      "section": "跨媒介阅读与交流",
+      "aliases": [
+        "跨媒介",
+        "媒介素养",
+        "信息"
+      ],
+      "conceptSummary": "跨媒介阅读，辨识媒介立场，获取处理信息。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "跨媒介阅读",
+        "媒介辨识",
+        "信息素养"
+      ],
+      "methodModels": [
+        {
+          "name": "跨媒介",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "跨媒介阅读"
+        }
+      ],
+      "commonConfusions": [
+        "媒介素养"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "跨媒介阅读",
+          "method": "见方法模型",
+          "example": "跨媒介阅读"
+        }
+      ]
+    },
+    {
+      "section": "中国革命传统作品研习",
+      "aliases": [
+        "革命传统",
+        "红色作品",
+        "革命精神"
+      ],
+      "conceptSummary": "研习革命传统作品，体会革命情怀与精神。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "革命作品",
+        "革命精神",
+        "红色经典"
+      ],
+      "methodModels": [
+        {
+          "name": "革命作品",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "革命传统研习"
+        }
+      ],
+      "commonConfusions": [
+        "革命精神"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "革命传统研习",
+          "method": "见方法模型",
+          "example": "革命传统研习"
+        }
+      ]
+    },
+    {
+      "section": "外国作家作品研习",
+      "aliases": [
+        "外国文学",
+        "外国作品",
+        "读书笔记"
+      ],
+      "conceptSummary": "阅读外国文学经典，撰写读书笔记与评论。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "外国文学",
+        "读书笔记",
+        "文学评论"
+      ],
+      "methodModels": [
+        {
+          "name": "外国文学",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "外国作家作品"
+        }
+      ],
+      "commonConfusions": [
+        "读书笔记"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "外国作家作品",
+          "method": "见方法模型",
+          "example": "外国作家作品"
+        }
+      ]
+    },
+    {
+      "section": "科学与文化论著研习",
+      "aliases": [
+        "科学论著",
+        "文化论著",
+        "科学思维"
+      ],
+      "conceptSummary": "研习科学与文化论著，培养科学态度与创新精神。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "科学论著",
+        "概括归纳",
+        "科学思维"
+      ],
+      "methodModels": [
+        {
+          "name": "科学论著",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "科学与文化论著"
+        }
+      ],
+      "commonConfusions": [
+        "科学思维"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "科学与文化论著",
+          "method": "见方法模型",
+          "example": "科学与文化论著"
+        }
+      ]
+    },
+    {
+      "section": "中国现当代作家作品研习",
+      "aliases": [
+        "现当代文学",
+        "作家作品"
+      ],
+      "conceptSummary": "精读现当代作家作品，把握精神内涵与艺术价值。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "现当代文学",
+        "作家作品",
+        "艺术价值"
+      ],
+      "methodModels": [
+        {
+          "name": "现当代文学",
+          "steps": [
+            "按步骤",
+            "结合语境"
+          ],
+          "example": "现当代作家作品"
+        }
+      ],
+      "commonConfusions": [
+        "作家作品"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "现当代作家作品",
+          "method": "见方法模型",
+          "example": "现当代作家作品"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

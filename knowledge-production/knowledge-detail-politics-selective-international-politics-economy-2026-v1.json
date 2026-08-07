@@ -205,6 +205,118 @@
           "example": "区域国际组织"
         }
       ]
+    },
+    {
+      "section": "第三课 多极化趋势",
+      "aliases": [
+        "多极化",
+        "国际格局"
+      ],
+      "conceptSummary": "世界多极化趋势，多强并起。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "多极化",
+        "国际格局",
+        "大国关系"
+      ],
+      "methodModels": [
+        {
+          "name": "多极化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "多极化趋势"
+        }
+      ],
+      "commonConfusions": [
+        "国际格局"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "多极化趋势",
+          "method": "见方法模型",
+          "example": "多极化趋势"
+        }
+      ]
+    },
+    {
+      "section": "构建人类命运共同体",
+      "aliases": [
+        "人类命运共同体",
+        "全球治理"
+      ],
+      "conceptSummary": "推动构建人类命运共同体，完善全球治理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人类命运共同体",
+        "全球治理",
+        "一带一路"
+      ],
+      "methodModels": [
+        {
+          "name": "人类命运共同体",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人类命运共同体"
+        }
+      ],
+      "commonConfusions": [
+        "全球治理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人类命运共同体",
+          "method": "见方法模型",
+          "example": "人类命运共同体"
+        }
+      ]
+    },
+    {
+      "section": "单一制和复合制",
+      "aliases": [
+        "单一制",
+        "联邦制",
+        "国家结构"
+      ],
+      "conceptSummary": "国家结构形式：单一制与复合制（联邦）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单一制",
+        "联邦制",
+        "国家结构"
+      ],
+      "methodModels": [
+        {
+          "name": "国家结构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "单一制与复合制"
+        }
+      ],
+      "commonConfusions": [
+        "单一制联邦制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "单一制与复合制",
+          "method": "见方法模型",
+          "example": "单一制与复合制"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

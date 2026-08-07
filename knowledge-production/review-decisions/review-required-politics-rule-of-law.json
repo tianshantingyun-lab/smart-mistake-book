@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 8,
-  "sectionsApproved": 8,
+  "sectionsTotal": 15,
+  "sectionsApproved": 15,
   "sections": [
     {
       "section": "中国共产党的领导",
@@ -61,6 +61,55 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "人民代表大会制度：我国的根本政治制度",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.214,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "巩固党的长期执政地位",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "全民守法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第二课 中国共产党的先进性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "依法收集运用证据",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "解析三大诉讼",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.3,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第六课 珍惜婚姻关系",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.375,
       "issues": []
     }
   ]
