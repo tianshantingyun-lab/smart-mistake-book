@@ -244,6 +244,44 @@
           "example": "国家战略与政策"
         }
       ]
+    },
+    {
+      "section": "第四节 全球气候变化与国家安全",
+      "aliases": [
+        "气候变化",
+        "全球变暖",
+        "国家安全"
+      ],
+      "conceptSummary": "全球气候变化影响国家安全，应对气候变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "气候变暖",
+        "温室效应",
+        "应对措施"
+      ],
+      "methodModels": [
+        {
+          "name": "气候变化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "气候变化与安全"
+        }
+      ],
+      "commonConfusions": [
+        "全球变暖"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气候变化与安全",
+          "method": "见方法模型",
+          "example": "气候变化与安全"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

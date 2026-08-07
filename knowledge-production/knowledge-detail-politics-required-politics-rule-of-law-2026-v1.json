@@ -578,6 +578,193 @@
           "example": "珍惜婚姻关系"
         }
       ]
+    },
+    {
+      "section": "新民主主义革命的胜利",
+      "aliases": [
+        "新民主主义",
+        "革命胜利"
+      ],
+      "conceptSummary": "新民主主义革命由无产阶级领导，胜利建立新中国。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新民主主义革命",
+        "革命道路",
+        "胜利意义"
+      ],
+      "methodModels": [
+        {
+          "name": "新民主主义",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "新民主主义革命"
+        }
+      ],
+      "commonConfusions": [
+        "革命胜利"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新民主主义革命",
+          "method": "见方法模型",
+          "example": "新民主主义革命"
+        }
+      ]
+    },
+    {
+      "section": "第三课 坚持和加强党的全面领导",
+      "aliases": [
+        "党的领导",
+        "全面领导"
+      ],
+      "conceptSummary": "坚持党的全面领导，是党和国家事业的根本保证。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "党的全面领导",
+        "党的领导方式",
+        "党的建设"
+      ],
+      "methodModels": [
+        {
+          "name": "党的领导",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "党的全面领导"
+        }
+      ],
+      "commonConfusions": [
+        "全面领导"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "党的全面领导",
+          "method": "见方法模型",
+          "example": "党的全面领导"
+        }
+      ]
+    },
+    {
+      "section": "第九课 纠纷的多元解决方式",
+      "aliases": [
+        "纠纷解决",
+        "调解仲裁",
+        "诉讼"
+      ],
+      "conceptSummary": "纠纷解决方式：和解、调解、仲裁、诉讼。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "调解仲裁",
+        "诉讼",
+        "纠纷解决"
+      ],
+      "methodModels": [
+        {
+          "name": "纠纷解决",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "纠纷多元解决"
+        }
+      ],
+      "commonConfusions": [
+        "调解仲裁"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "纠纷多元解决",
+          "method": "见方法模型",
+          "example": "纠纷多元解决"
+        }
+      ]
+    },
+    {
+      "section": "诚信经营 依法纳税",
+      "aliases": [
+        "诚信经营",
+        "依法纳税"
+      ],
+      "conceptSummary": "经营者诚信经营，依法纳税是义务。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "诚信经营",
+        "依法纳税",
+        "纳税人"
+      ],
+      "methodModels": [
+        {
+          "name": "诚信纳税",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "诚信经营依法纳税"
+        }
+      ],
+      "commonConfusions": [
+        "依法纳税"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "诚信经营依法纳税",
+          "method": "见方法模型",
+          "example": "诚信经营依法纳税"
+        }
+      ]
+    },
+    {
+      "section": "严格遵守诉讼程序",
+      "aliases": [
+        "诉讼程序",
+        "起诉",
+        "审判"
+      ],
+      "conceptSummary": "诉讼程序：起诉、受理、开庭审理、判决。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "起诉",
+        "开庭审理",
+        "判决执行"
+      ],
+      "methodModels": [
+        {
+          "name": "诉讼程序",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "严格遵守诉讼程序"
+        }
+      ],
+      "commonConfusions": [
+        "起诉"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "严格遵守诉讼程序",
+          "method": "见方法模型",
+          "example": "严格遵守诉讼程序"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

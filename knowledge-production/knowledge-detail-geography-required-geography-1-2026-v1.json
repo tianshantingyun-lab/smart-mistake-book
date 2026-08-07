@@ -593,6 +593,119 @@
           "example": "自然环境整体性"
         }
       ]
+    },
+    {
+      "section": "第一节 塑造地表形态的力量",
+      "aliases": [
+        "内力作用",
+        "外力作用",
+        "地壳运动"
+      ],
+      "conceptSummary": "塑造地表形态的力量：内力作用（地壳运动岩浆）与外力作用（侵蚀堆积）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "内力作用",
+        "外力作用",
+        "地壳运动"
+      ],
+      "methodModels": [
+        {
+          "name": "地表形态",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "塑造地表形态"
+        }
+      ],
+      "commonConfusions": [
+        "内力外力"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "塑造地表形态",
+          "method": "见方法模型",
+          "example": "塑造地表形态"
+        }
+      ]
+    },
+    {
+      "section": "第二节 地貌的观察",
+      "aliases": [
+        "地貌观察",
+        "地形"
+      ],
+      "conceptSummary": "地貌观察从宏观到微观，识别地貌类型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "地貌类型",
+        "观察方法",
+        "地形特征"
+      ],
+      "methodModels": [
+        {
+          "name": "地貌观察",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地貌的观察"
+        }
+      ],
+      "commonConfusions": [
+        "地貌类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地貌的观察",
+          "method": "见方法模型",
+          "example": "地貌的观察"
+        }
+      ]
+    },
+    {
+      "section": "第三节 气压带和风带对气候的影响",
+      "aliases": [
+        "气压带",
+        "风带",
+        "气候"
+      ],
+      "conceptSummary": "气压带风带随季节移动影响气候类型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "气压带风带",
+        "气候形成",
+        "移动影响"
+      ],
+      "methodModels": [
+        {
+          "name": "气压风带",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "气压带风带影响"
+        }
+      ],
+      "commonConfusions": [
+        "气候影响"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气压带风带影响",
+          "method": "见方法模型",
+          "example": "气压带风带影响"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

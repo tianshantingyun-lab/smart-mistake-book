@@ -245,6 +245,80 @@
           "example": "中古欧洲"
         }
       ]
+    },
+    {
+      "section": "第15课 文化遗产：全人类共同的财富",
+      "aliases": [
+        "文化遗产",
+        "遗产保护"
+      ],
+      "conceptSummary": "文化遗产是全人类财富，加强保护传承。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化遗产",
+        "保护传承",
+        "世界遗产"
+      ],
+      "methodModels": [
+        {
+          "name": "文化遗产",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "文化遗产"
+        }
+      ],
+      "commonConfusions": [
+        "遗产保护"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文化遗产",
+          "method": "见方法模型",
+          "example": "文化遗产"
+        }
+      ]
+    },
+    {
+      "section": "中国历史上的大一统国家治理",
+      "aliases": [
+        "大一统",
+        "国家治理"
+      ],
+      "conceptSummary": "中国历史上大一统国家的治理智慧。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "大一统",
+        "治理体系",
+        "中央集权"
+      ],
+      "methodModels": [
+        {
+          "name": "大一统",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "大一统治理"
+        }
+      ],
+      "commonConfusions": [
+        "国家治理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "大一统治理",
+          "method": "见方法模型",
+          "example": "大一统治理"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

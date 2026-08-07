@@ -554,6 +554,81 @@
           "example": "创新思维多路探索"
         }
       ]
+    },
+    {
+      "section": "简单判断的演绎推理方法",
+      "aliases": [
+        "演绎推理",
+        "三段论",
+        "有效"
+      ],
+      "conceptSummary": "简单判断演绎推理：三段论、换质换位。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三段论",
+        "换质换位",
+        "推理有效"
+      ],
+      "methodModels": [
+        {
+          "name": "演绎推理",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "简单判断演绎"
+        }
+      ],
+      "commonConfusions": [
+        "三段论"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "简单判断演绎",
+          "method": "见方法模型",
+          "example": "简单判断演绎"
+        }
+      ]
+    },
+    {
+      "section": "学习科学思维的意义",
+      "aliases": [
+        "科学思维",
+        "逻辑思维"
+      ],
+      "conceptSummary": "学习科学思维提升逻辑推理与创新能力。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "科学思维",
+        "逻辑思维",
+        "创新思维"
+      ],
+      "methodModels": [
+        {
+          "name": "科学思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "学习科学思维"
+        }
+      ],
+      "commonConfusions": [
+        "思维意义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "学习科学思维",
+          "method": "见方法模型",
+          "example": "学习科学思维"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

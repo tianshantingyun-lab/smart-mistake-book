@@ -371,6 +371,82 @@
           "example": "交通运输影响"
         }
       ]
+    },
+    {
+      "section": "第一节 乡村和城镇空间结构",
+      "aliases": [
+        "乡村",
+        "城镇",
+        "空间结构"
+      ],
+      "conceptSummary": "乡村与城镇空间结构，功能区布局。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "乡村空间结构",
+        "城镇功能区",
+        "土地利用"
+      ],
+      "methodModels": [
+        {
+          "name": "空间结构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "乡村城镇空间"
+        }
+      ],
+      "commonConfusions": [
+        "城镇功能区"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "乡村城镇空间",
+          "method": "见方法模型",
+          "example": "乡村城镇空间"
+        }
+      ]
+    },
+    {
+      "section": "第二节 人口迁移",
+      "aliases": [
+        "人口迁移",
+        "推拉理论",
+        "迁移"
+      ],
+      "conceptSummary": "人口迁移原因：经济、政治、自然；推拉理论。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人口迁移原因",
+        "推拉理论",
+        "迁移影响"
+      ],
+      "methodModels": [
+        {
+          "name": "人口迁移",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人口迁移"
+        }
+      ],
+      "commonConfusions": [
+        "推拉理论"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人口迁移",
+          "method": "见方法模型",
+          "example": "人口迁移"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

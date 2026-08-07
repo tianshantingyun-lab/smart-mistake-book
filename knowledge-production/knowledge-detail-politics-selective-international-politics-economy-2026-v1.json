@@ -317,6 +317,119 @@
           "example": "单一制与复合制"
         }
       ]
+    },
+    {
+      "section": "第四课 和平与发展",
+      "aliases": [
+        "和平与发展",
+        "时代主题"
+      ],
+      "conceptSummary": "和平与发展是时代主题，维护世界和平促进共同发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "时代主题",
+        "和平发展",
+        "共同发展"
+      ],
+      "methodModels": [
+        {
+          "name": "和平发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "和平与发展"
+        }
+      ],
+      "commonConfusions": [
+        "时代主题"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "和平与发展",
+          "method": "见方法模型",
+          "example": "和平与发展"
+        }
+      ]
+    },
+    {
+      "section": "第五课 中国的外交",
+      "aliases": [
+        "中国外交",
+        "独立自主",
+        "外交政策"
+      ],
+      "conceptSummary": "中国坚持独立自主和平外交政策，走和平发展道路。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "外交政策",
+        "和平共处五项原则",
+        "大国外交"
+      ],
+      "methodModels": [
+        {
+          "name": "中国外交",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国外交"
+        }
+      ],
+      "commonConfusions": [
+        "外交政策"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国外交",
+          "method": "见方法模型",
+          "example": "中国外交"
+        }
+      ]
+    },
+    {
+      "section": "政党和利益集团",
+      "aliases": [
+        "政党",
+        "利益集团",
+        "政治参与"
+      ],
+      "conceptSummary": "政党与利益集团是政治参与主体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "政党功能",
+        "利益集团",
+        "政治参与"
+      ],
+      "methodModels": [
+        {
+          "name": "政党",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "政党和利益集团"
+        }
+      ],
+      "commonConfusions": [
+        "利益集团"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "政党和利益集团",
+          "method": "见方法模型",
+          "example": "政党和利益集团"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

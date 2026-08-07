@@ -656,6 +656,117 @@
           "example": "正确对待外来文化"
         }
       ]
+    },
+    {
+      "section": "第一课 走进思维世界",
+      "aliases": [
+        "思维",
+        "思维特征"
+      ],
+      "conceptSummary": "思维是认识的反映形式，思维具有间接性概括性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "思维特征",
+        "抽象思维",
+        "形象思维"
+      ],
+      "methodModels": [
+        {
+          "name": "思维特征",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "走进思维世界"
+        }
+      ],
+      "commonConfusions": [
+        "思维类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "走进思维世界",
+          "method": "见方法模型",
+          "example": "走进思维世界"
+        }
+      ]
+    },
+    {
+      "section": "文化发展的基本路径",
+      "aliases": [
+        "文化发展",
+        "文化创新"
+      ],
+      "conceptSummary": "文化发展要立足实践，继承传统推陈出新。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化创新",
+        "传统文化",
+        "文化交融"
+      ],
+      "methodModels": [
+        {
+          "name": "文化发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "文化发展路径"
+        }
+      ],
+      "commonConfusions": [
+        "文化创新"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文化发展路径",
+          "method": "见方法模型",
+          "example": "文化发展路径"
+        }
+      ]
+    },
+    {
+      "section": "运动的规律性",
+      "aliases": [
+        "运动规律",
+        "规律客观"
+      ],
+      "conceptSummary": "运动是有规律的，规律客观，人要尊重规律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "规律客观性",
+        "运动规律",
+        "按规律办事"
+      ],
+      "methodModels": [
+        {
+          "name": "运动规律",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "运动的规律性"
+        }
+      ],
+      "commonConfusions": [
+        "规律客观"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "运动的规律性",
+          "method": "见方法模型",
+          "example": "运动的规律性"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

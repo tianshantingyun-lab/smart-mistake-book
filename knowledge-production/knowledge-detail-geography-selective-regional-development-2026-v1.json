@@ -245,6 +245,81 @@
           "example": "中国能源安全"
         }
       ]
+    },
+    {
+      "section": "第一节 多种多样的区域",
+      "aliases": [
+        "区域类型",
+        "区域划分"
+      ],
+      "conceptSummary": "区域类型多样，按自然人文划分。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "区域类型",
+        "划分标准",
+        "区域特征"
+      ],
+      "methodModels": [
+        {
+          "name": "区域类型",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "多种多样区域"
+        }
+      ],
+      "commonConfusions": [
+        "区域划分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "多种多样区域",
+          "method": "见方法模型",
+          "example": "多种多样区域"
+        }
+      ]
+    },
+    {
+      "section": "第三节 国际合作",
+      "aliases": [
+        "国际合作",
+        "区域合作",
+        "协同发展"
+      ],
+      "conceptSummary": "国际合作促进区域协调发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国际合作",
+        "区域协同",
+        "共同发展"
+      ],
+      "methodModels": [
+        {
+          "name": "国际合作",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国际合作"
+        }
+      ],
+      "commonConfusions": [
+        "区域合作"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国际合作",
+          "method": "见方法模型",
+          "example": "国际合作"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

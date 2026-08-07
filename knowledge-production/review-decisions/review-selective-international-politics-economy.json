@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 8,
-  "sectionsApproved": 8,
+  "sectionsTotal": 11,
+  "sectionsApproved": 11,
   "sections": [
     {
       "section": "国际关系与外交",
@@ -60,6 +60,27 @@
       "section": "单一制和复合制",
       "decision": "APPROVED",
       "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第四课 和平与发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第五课 中国的外交",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.034,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "政党和利益集团",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.25,
       "issues": []
     }

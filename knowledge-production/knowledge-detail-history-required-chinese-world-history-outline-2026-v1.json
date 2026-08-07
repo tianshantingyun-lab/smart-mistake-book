@@ -809,6 +809,345 @@
           "example": "新时代"
         }
       ]
+    },
+    {
+      "section": "第1课 中华文明的起源与早期国家",
+      "aliases": [
+        "中华文明",
+        "起源",
+        "早期国家"
+      ],
+      "conceptSummary": "中华文明起源多元一体，夏商周早期国家形成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文明起源",
+        "早期国家",
+        "夏商周"
+      ],
+      "methodModels": [
+        {
+          "name": "中华文明",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中华文明起源"
+        }
+      ],
+      "commonConfusions": [
+        "文明起源"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中华文明起源",
+          "method": "见方法模型",
+          "example": "中华文明起源"
+        }
+      ]
+    },
+    {
+      "section": "第9课 两宋的政治和军事",
+      "aliases": [
+        "两宋",
+        "政治军事",
+        "重文轻武"
+      ],
+      "conceptSummary": "两宋重文轻武，政治军事特点。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "重文轻武",
+        "北宋政治",
+        "南宋偏安"
+      ],
+      "methodModels": [
+        {
+          "name": "两宋政治",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "两宋政治军事"
+        }
+      ],
+      "commonConfusions": [
+        "重文轻武"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "两宋政治军事",
+          "method": "见方法模型",
+          "example": "两宋政治军事"
+        }
+      ]
+    },
+    {
+      "section": "第26课 社会主义建设在探索中曲折发展",
+      "aliases": [
+        "社会主义建设",
+        "探索",
+        "曲折"
+      ],
+      "conceptSummary": "社会主义建设探索取得成就也经历曲折。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "社会主义建设",
+        "八大",
+        "探索曲折"
+      ],
+      "methodModels": [
+        {
+          "name": "社会主义建设",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "社会主义建设"
+        }
+      ],
+      "commonConfusions": [
+        "探索曲折"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "社会主义建设",
+          "method": "见方法模型",
+          "example": "社会主义建设"
+        }
+      ]
+    },
+    {
+      "section": "第22课 世界多极化与经济全球化",
+      "aliases": [
+        "多极化",
+        "经济全球化"
+      ],
+      "conceptSummary": "世界多极化趋势与经济全球化深入。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "多极化",
+        "经济全球化",
+        "全球治理"
+      ],
+      "methodModels": [
+        {
+          "name": "多极化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "多极化全球化"
+        }
+      ],
+      "commonConfusions": [
+        "经济全球化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "多极化全球化",
+          "method": "见方法模型",
+          "example": "多极化全球化"
+        }
+      ]
+    },
+    {
+      "section": "第14课 当代中国的外交",
+      "aliases": [
+        "中国外交",
+        "和平发展"
+      ],
+      "conceptSummary": "当代中国坚持独立自主和平外交政策。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "外交政策",
+        "大国外交",
+        "和平发展"
+      ],
+      "methodModels": [
+        {
+          "name": "中国外交",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "当代中国外交"
+        }
+      ],
+      "commonConfusions": [
+        "外交政策"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "当代中国外交",
+          "method": "见方法模型",
+          "example": "当代中国外交"
+        }
+      ]
+    },
+    {
+      "section": "第10课 影响世界的工业革命",
+      "aliases": [
+        "工业革命",
+        "世界影响"
+      ],
+      "conceptSummary": "工业革命影响世界：生产力、世界市场、社会变革。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "第一次工业革命",
+        "第二次工业革命",
+        "世界影响"
+      ],
+      "methodModels": [
+        {
+          "name": "工业革命",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "工业革命"
+        }
+      ],
+      "commonConfusions": [
+        "世界影响"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "工业革命",
+          "method": "见方法模型",
+          "example": "工业革命"
+        }
+      ]
+    },
+    {
+      "section": "第13课 亚非拉民族独立运动",
+      "aliases": [
+        "民族独立",
+        "亚非拉",
+        "反殖民"
+      ],
+      "conceptSummary": "亚非拉民族独立运动，反殖民求独立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民族独立",
+        "反殖民",
+        "亚非拉"
+      ],
+      "methodModels": [
+        {
+          "name": "民族独立",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "亚非拉民族独立"
+        }
+      ],
+      "commonConfusions": [
+        "反殖民"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "亚非拉民族独立",
+          "method": "见方法模型",
+          "example": "亚非拉民族独立"
+        }
+      ]
+    },
+    {
+      "section": "第8课 欧洲的思想解放运动",
+      "aliases": [
+        "文艺复兴",
+        "启蒙运动",
+        "思想解放"
+      ],
+      "conceptSummary": "文艺复兴宗教改革启蒙运动推动欧洲思想解放。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文艺复兴",
+        "启蒙运动",
+        "思想解放"
+      ],
+      "methodModels": [
+        {
+          "name": "思想解放",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "欧洲思想解放"
+        }
+      ],
+      "commonConfusions": [
+        "启蒙运动"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "欧洲思想解放",
+          "method": "见方法模型",
+          "example": "欧洲思想解放"
+        }
+      ]
+    },
+    {
+      "section": "第11课 马克思主义的诞生与传播",
+      "aliases": [
+        "马克思主义",
+        "诞生",
+        "传播"
+      ],
+      "conceptSummary": "马克思主义诞生与传播，指导工人运动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "马克思主义诞生",
+        "《共产党宣言》",
+        "传播"
+      ],
+      "methodModels": [
+        {
+          "name": "马克思主义",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "马克思主义诞生"
+        }
+      ],
+      "commonConfusions": [
+        "诞生"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "马克思主义诞生",
+          "method": "见方法模型",
+          "example": "马克思主义诞生"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

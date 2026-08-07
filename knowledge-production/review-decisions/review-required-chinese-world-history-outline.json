@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 20,
-  "sectionsApproved": 20,
+  "sectionsTotal": 29,
+  "sectionsApproved": 29,
   "sections": [
     {
       "section": "中华文明起源与早期国家",
@@ -145,6 +145,69 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.064,
       "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第1课 中华文明的起源与早期国家",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.043,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第9课 两宋的政治和军事",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第26课 社会主义建设在探索中曲折发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.048,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第22课 世界多极化与经济全球化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.028,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第14课 当代中国的外交",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第10课 影响世界的工业革命",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.042,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第13课 亚非拉民族独立运动",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第8课 欧洲的思想解放运动",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第11课 马克思主义的诞生与传播",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.375,
       "issues": []
     }
   ]

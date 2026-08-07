@@ -181,6 +181,119 @@
           "example": "民族国家与国际法"
         }
       ]
+    },
+    {
+      "section": "第5课 中国古代官员的选拔与管理",
+      "aliases": [
+        "官员选拔",
+        "科举",
+        "监察"
+      ],
+      "conceptSummary": "中国古代官员选拔：察举、九品中正、科举；监察制度。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "选拔制度",
+        "科举制",
+        "监察考核"
+      ],
+      "methodModels": [
+        {
+          "name": "官员选拔",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代官员选拔"
+        }
+      ],
+      "commonConfusions": [
+        "科举制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代官员选拔",
+          "method": "见方法模型",
+          "example": "古代官员选拔"
+        }
+      ]
+    },
+    {
+      "section": "第6课 西方的文官制度",
+      "aliases": [
+        "文官制度",
+        "西方文官"
+      ],
+      "conceptSummary": "西方文官制度：考试录用、政治中立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文官制度",
+        "考试录用",
+        "文官特点"
+      ],
+      "methodModels": [
+        {
+          "name": "文官制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "西方文官制度"
+        }
+      ],
+      "commonConfusions": [
+        "西方文官"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "西方文官制度",
+          "method": "见方法模型",
+          "example": "西方文官制度"
+        }
+      ]
+    },
+    {
+      "section": "第10课 当代中国的法治与精神文明建设",
+      "aliases": [
+        "法治",
+        "精神文明",
+        "依法治国"
+      ],
+      "conceptSummary": "当代中国法治建设与精神文明建设成就。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "依法治国",
+        "法治体系",
+        "精神文明"
+      ],
+      "methodModels": [
+        {
+          "name": "法治建设",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "当代中国法治"
+        }
+      ],
+      "commonConfusions": [
+        "依法治国"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "当代中国法治",
+          "method": "见方法模型",
+          "example": "当代中国法治"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

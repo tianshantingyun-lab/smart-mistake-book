@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 6,
-  "sectionsApproved": 6,
+  "sectionsTotal": 8,
+  "sectionsApproved": 8,
   "sections": [
     {
       "section": "文化交流的途径",
@@ -47,6 +47,20 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.059,
       "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第15课 文化遗产：全人类共同的财富",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.042,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "中国历史上的大一统国家治理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
       "issues": []
     }
   ]

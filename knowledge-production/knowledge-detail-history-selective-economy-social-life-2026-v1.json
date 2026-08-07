@@ -397,6 +397,119 @@
           "example": "明清经济"
         }
       ]
+    },
+    {
+      "section": "第7课 隋唐制度的变化与创新",
+      "aliases": [
+        "隋唐制度",
+        "三省六部",
+        "科举"
+      ],
+      "conceptSummary": "隋唐制度创新：三省六部制、科举制、租庸调制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三省六部",
+        "科举制",
+        "赋税制度"
+      ],
+      "methodModels": [
+        {
+          "name": "隋唐制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "隋唐制度"
+        }
+      ],
+      "commonConfusions": [
+        "三省六部"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "隋唐制度",
+          "method": "见方法模型",
+          "example": "隋唐制度"
+        }
+      ]
+    },
+    {
+      "section": "第9课 20世纪以来人类的经济与生活",
+      "aliases": [
+        "20世纪经济",
+        "经济生活"
+      ],
+      "conceptSummary": "20世纪人类经济生活变迁：全球化、科技。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "经济变迁",
+        "全球化",
+        "科技生活"
+      ],
+      "methodModels": [
+        {
+          "name": "20世纪经济",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "20世纪经济生活"
+        }
+      ],
+      "commonConfusions": [
+        "经济生活"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "20世纪经济生活",
+          "method": "见方法模型",
+          "example": "20世纪经济生活"
+        }
+      ]
+    },
+    {
+      "section": "第15课 现代医疗卫生体系与社会生活",
+      "aliases": [
+        "医疗卫生",
+        "健康",
+        "医疗体系"
+      ],
+      "conceptSummary": "现代医疗卫生体系保障人民健康。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "医疗体系",
+        "公共卫生",
+        "医疗进步"
+      ],
+      "methodModels": [
+        {
+          "name": "医疗卫生",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "现代医疗卫生"
+        }
+      ],
+      "commonConfusions": [
+        "医疗体系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "现代医疗卫生",
+          "method": "见方法模型",
+          "example": "现代医疗卫生"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

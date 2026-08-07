@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 6,
-  "sectionsApproved": 6,
+  "sectionsTotal": 7,
+  "sectionsApproved": 7,
   "sections": [
     {
       "section": "资源安全",
@@ -47,6 +47,13 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.083,
       "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第四节 全球气候变化与国家安全",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.4,
       "issues": []
     }
   ]
