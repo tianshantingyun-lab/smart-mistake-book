@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 6,
+  "sectionsApproved": 6,
   "sections": [
     {
       "section": "甲烷与烷烃",
@@ -19,6 +19,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.125,
       "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "第一节 认识有机化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.105,
+      "textbookTocOverlap": 0.273,
+      "issues": []
+    },
+    {
+      "section": "第二节 乙烯与有机高分子材料",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.042,
+      "textbookTocOverlap": 0.364,
+      "issues": []
+    },
+    {
+      "section": "第三节 乙醇与乙酸",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第四节 基本营养物质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.118,
+      "textbookTocOverlap": 0.375,
       "issues": []
     }
   ]

@@ -284,6 +284,348 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一节 物质的分类及转化",
+      "aliases": [
+        "混合物",
+        "纯净物",
+        "酸碱性氧化物"
+      ],
+      "conceptSummary": "物质按组成分为混合物与纯净物；纯净物分单质与化合物，化合物分酸碱盐氧化物。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单质：金属/非金属",
+        "化合物：酸碱盐氧化物",
+        "交叉分类与树状分类"
+      ],
+      "methodModels": [
+        {
+          "name": "物质分类",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "对物质分类"
+        }
+      ],
+      "commonConfusions": [
+        "交叉分类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对物质分类",
+          "method": "见方法模型",
+          "example": "对物质分类"
+        }
+      ]
+    },
+    {
+      "section": "第二节 离子反应",
+      "aliases": [
+        "离子反应",
+        "离子共存",
+        "离子方程式"
+      ],
+      "conceptSummary": "电解质在溶液中发生离子反应，用离子方程式表示。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "强电解质完全电离",
+        "弱电解质部分电离",
+        "离子共存判断"
+      ],
+      "methodModels": [
+        {
+          "name": "离子方程式书写",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "写离子方程式"
+        }
+      ],
+      "commonConfusions": [
+        "强电解质弱电解质"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "写离子方程式",
+          "method": "见方法模型",
+          "example": "写离子方程式"
+        }
+      ]
+    },
+    {
+      "section": "第三节 氧化还原反应",
+      "aliases": [
+        "氧化还原",
+        "化合价",
+        "电子转移"
+      ],
+      "conceptSummary": "氧化还原反应有电子转移（化合价升降），氧化剂被还原、还原剂被氧化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "化合价升高被氧化",
+        "氧化剂得电子",
+        "双线桥表示"
+      ],
+      "methodModels": [
+        {
+          "name": "氧化还原判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "判断氧化剂还原剂"
+        }
+      ],
+      "commonConfusions": [
+        "氧化剂还原剂"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断氧化剂还原剂",
+          "method": "见方法模型",
+          "example": "判断氧化剂还原剂"
+        }
+      ]
+    },
+    {
+      "section": "第三节 物质的量",
+      "aliases": [
+        "物质的量",
+        "摩尔",
+        "摩尔质量"
+      ],
+      "conceptSummary": "物质的量单位摩尔，n=m/M，是化学计量基础。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "n=m/M",
+        "n=N/NA",
+        "气体n=V/22.4"
+      ],
+      "methodModels": [
+        {
+          "name": "物质的量计算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "求n"
+        }
+      ],
+      "commonConfusions": [
+        "摩尔质量"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求n",
+          "method": "见方法模型",
+          "example": "求n"
+        }
+      ]
+    },
+    {
+      "section": "第一节 铁及其化合物",
+      "aliases": [
+        "铁",
+        "Fe2+",
+        "Fe3+"
+      ],
+      "conceptSummary": "铁有Fe、Fe2+、Fe3+三种价态，铁三角转化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Fe→Fe2+（弱氧化剂）",
+        "Fe→Fe3+（强氧化剂）",
+        "Fe3+检验KSCN变红"
+      ],
+      "methodModels": [
+        {
+          "name": "铁三角转化",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "铁三角转化"
+        }
+      ],
+      "commonConfusions": [
+        "Fe3+检验"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "铁三角转化",
+          "method": "见方法模型",
+          "example": "铁三角转化"
+        }
+      ]
+    },
+    {
+      "section": "第二节 金属材料",
+      "aliases": [
+        "合金",
+        "铝合金",
+        "金属材料"
+      ],
+      "conceptSummary": "合金比纯金属硬度大、熔点低；常见合金钢、铝合金。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "合金定义与性质",
+        "钢与生铁区别",
+        "铝合金应用"
+      ],
+      "methodModels": [
+        {
+          "name": "合金性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "合金性质"
+        }
+      ],
+      "commonConfusions": [
+        "合金与纯金属"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "合金性质",
+          "method": "见方法模型",
+          "example": "合金性质"
+        }
+      ]
+    },
+    {
+      "section": "第一节 硫及其化合物",
+      "aliases": [
+        "硫",
+        "二氧化硫",
+        "硫酸"
+      ],
+      "conceptSummary": "硫的化合价-2、0、+4、+6；SO2还原性，浓硫酸强氧化性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "SO2漂白性（可逆）",
+        "浓硫酸吸水脱水强氧化",
+        "不同价态硫转化"
+      ],
+      "methodModels": [
+        {
+          "name": "硫价态转化",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "硫及其化合物"
+        }
+      ],
+      "commonConfusions": [
+        "SO2漂白"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "硫及其化合物",
+          "method": "见方法模型",
+          "example": "硫及其化合物"
+        }
+      ]
+    },
+    {
+      "section": "第二节 氮及其化合物",
+      "aliases": [
+        "氮",
+        "氨",
+        "硝酸"
+      ],
+      "conceptSummary": "氮的固定；NH3碱性气体，HNO3强氧化性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "氮的固定（N2→NO）",
+        "氨气喷泉实验",
+        "硝酸强氧化性"
+      ],
+      "methodModels": [
+        {
+          "name": "氮及其化合物",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "氨与硝酸"
+        }
+      ],
+      "commonConfusions": [
+        "氨碱性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "氨与硝酸",
+          "method": "见方法模型",
+          "example": "氨与硝酸"
+        }
+      ]
+    },
+    {
+      "section": "第三节 无机非金属材料",
+      "aliases": [
+        "硅",
+        "二氧化硅",
+        "无机材料"
+      ],
+      "conceptSummary": "硅是半导体材料，SiO2用于光导纤维。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "硅单质半导体",
+        "SiO2光导纤维",
+        "传统无机材料"
+      ],
+      "methodModels": [
+        {
+          "name": "硅与SiO2",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "硅材料"
+        }
+      ],
+      "commonConfusions": [
+        "SiO2用途"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "硅材料",
+          "method": "见方法模型",
+          "example": "硅材料"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

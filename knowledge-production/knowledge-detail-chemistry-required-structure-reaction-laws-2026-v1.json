@@ -170,6 +170,44 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第三节 化学键",
+      "aliases": [
+        "离子键",
+        "共价键",
+        "化学键"
+      ],
+      "conceptSummary": "化学键是原子间强烈作用力：离子键（阴阳离子静电）与共价键（共用电子对）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "离子键：活泼金属+活泼非金属",
+        "共价键：非金属原子间",
+        "极性键/非极性键/配位键"
+      ],
+      "methodModels": [
+        {
+          "name": "化学键类型判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "判断NaCl、H2O化学键类型"
+        }
+      ],
+      "commonConfusions": [
+        "离子键共价键区分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断NaCl、H2O化学键类型",
+          "method": "见方法模型",
+          "example": "判断NaCl、H2O化学键类型"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

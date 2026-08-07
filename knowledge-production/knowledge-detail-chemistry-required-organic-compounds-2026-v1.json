@@ -94,6 +94,158 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一节 认识有机化合物",
+      "aliases": [
+        "有机物",
+        "官能团",
+        "碳链"
+      ],
+      "conceptSummary": "有机化合物含碳，结构多样；官能团决定性质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "有机物特点",
+        "官能团决定性质",
+        "碳链与同分异构"
+      ],
+      "methodModels": [
+        {
+          "name": "有机物识别",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "认识有机物"
+        }
+      ],
+      "commonConfusions": [
+        "官能团"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "认识有机物",
+          "method": "见方法模型",
+          "example": "认识有机物"
+        }
+      ]
+    },
+    {
+      "section": "第二节 乙烯与有机高分子材料",
+      "aliases": [
+        "乙烯",
+        "加成",
+        "高分子"
+      ],
+      "conceptSummary": "乙烯含碳碳双键可加成；加聚反应生成高分子。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "乙烯加成（溴水褪色）",
+        "加聚反应",
+        "聚乙烯"
+      ],
+      "methodModels": [
+        {
+          "name": "乙烯性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "乙烯加成"
+        }
+      ],
+      "commonConfusions": [
+        "加成与取代"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "乙烯加成",
+          "method": "见方法模型",
+          "example": "乙烯加成"
+        }
+      ]
+    },
+    {
+      "section": "第三节 乙醇与乙酸",
+      "aliases": [
+        "乙醇",
+        "乙酸",
+        "酯化"
+      ],
+      "conceptSummary": "乙醇含羟基、乙酸含羧基，酯化反应生成乙酸乙酯。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "乙醇氧化成乙醛",
+        "乙酸酸性",
+        "酯化反应"
+      ],
+      "methodModels": [
+        {
+          "name": "乙醇乙酸性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "酯化反应"
+        }
+      ],
+      "commonConfusions": [
+        "官能团"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "酯化反应",
+          "method": "见方法模型",
+          "example": "酯化反应"
+        }
+      ]
+    },
+    {
+      "section": "第四节 基本营养物质",
+      "aliases": [
+        "糖类",
+        "蛋白质",
+        "油脂"
+      ],
+      "conceptSummary": "糖类、蛋白质、油脂是基本营养物质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "糖类：单糖二糖多糖",
+        "蛋白质：氨基酸构成",
+        "油脂水解"
+      ],
+      "methodModels": [
+        {
+          "name": "营养物质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "基本营养物质"
+        }
+      ],
+      "commonConfusions": [
+        "蛋白质检验"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基本营养物质",
+          "method": "见方法模型",
+          "example": "基本营养物质"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

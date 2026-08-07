@@ -171,6 +171,576 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一节 有机化合物的结构特点",
+      "aliases": [
+        "碳链",
+        "官能团",
+        "同分异构"
+      ],
+      "conceptSummary": "有机化合物结构：碳链、官能团、同分异构体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "碳的四价",
+        "官能团决定性质",
+        "同分异构体"
+      ],
+      "methodModels": [
+        {
+          "name": "有机结构",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "有机结构特点"
+        }
+      ],
+      "commonConfusions": [
+        "同分异构"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "有机结构特点",
+          "method": "见方法模型",
+          "example": "有机结构特点"
+        }
+      ]
+    },
+    {
+      "section": "第二节 研究有机化合物的一般方法",
+      "aliases": [
+        "有机分析",
+        "分离提纯",
+        "结构测定"
+      ],
+      "conceptSummary": "研究有机化合物：分离提纯、元素分析、波谱测定。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "蒸馏/萃取分离",
+        "燃烧法元素分析",
+        "红外/核磁共振"
+      ],
+      "methodModels": [
+        {
+          "name": "有机研究方法",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "研究有机物"
+        }
+      ],
+      "commonConfusions": [
+        "波谱分析"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "研究有机物",
+          "method": "见方法模型",
+          "example": "研究有机物"
+        }
+      ]
+    },
+    {
+      "section": "第一节 烷烃",
+      "aliases": [
+        "烷烃",
+        "取代",
+        "CnH2n+2"
+      ],
+      "conceptSummary": "烷烃是饱和烃，通式CnH2n+2，特征反应取代。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "烷烃通式",
+        "取代反应",
+        "同系物"
+      ],
+      "methodModels": [
+        {
+          "name": "烷烃性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "烷烃"
+        }
+      ],
+      "commonConfusions": [
+        "取代反应"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "烷烃",
+          "method": "见方法模型",
+          "example": "烷烃"
+        }
+      ]
+    },
+    {
+      "section": "第二节 烯烃 炔烃",
+      "aliases": [
+        "烯烃",
+        "炔烃",
+        "加成"
+      ],
+      "conceptSummary": "烯烃含双键、炔烃含三键，都能加成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "烯烃CnH2n",
+        "炔烃CnH2n-2",
+        "加成反应"
+      ],
+      "methodModels": [
+        {
+          "name": "烯炔性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "烯烃加成"
+        }
+      ],
+      "commonConfusions": [
+        "加成"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "烯烃加成",
+          "method": "见方法模型",
+          "example": "烯烃加成"
+        }
+      ]
+    },
+    {
+      "section": "第三节 芳香烃",
+      "aliases": [
+        "苯",
+        "芳香烃",
+        "苯的同系物"
+      ],
+      "conceptSummary": "苯含特殊共轭结构，易取代难加成；芳香烃含苯环。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "苯的结构",
+        "苯的取代（硝化）",
+        "苯的同系物"
+      ],
+      "methodModels": [
+        {
+          "name": "苯的性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "芳香烃"
+        }
+      ],
+      "commonConfusions": [
+        "苯的结构"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "芳香烃",
+          "method": "见方法模型",
+          "example": "芳香烃"
+        }
+      ]
+    },
+    {
+      "section": "第一节 卤代烃",
+      "aliases": [
+        "卤代烃",
+        "消去",
+        "取代"
+      ],
+      "conceptSummary": "卤代烃含卤原子，可取代（水解）与消去。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "卤代烃水解",
+        "消去反应",
+        "溴乙烷"
+      ],
+      "methodModels": [
+        {
+          "name": "卤代烃",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "卤代烃反应"
+        }
+      ],
+      "commonConfusions": [
+        "消去反应"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "卤代烃反应",
+          "method": "见方法模型",
+          "example": "卤代烃反应"
+        }
+      ]
+    },
+    {
+      "section": "第二节 醇 酚",
+      "aliases": [
+        "醇",
+        "酚",
+        "羟基"
+      ],
+      "conceptSummary": "醇羟基连饱和碳，酚羟基连苯环；性质有差异。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "醇：氧化/酯化",
+        "酚：弱酸性",
+        "苯酚检验FeCl3"
+      ],
+      "methodModels": [
+        {
+          "name": "醇酚",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "醇与酚"
+        }
+      ],
+      "commonConfusions": [
+        "醇酚区别"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "醇与酚",
+          "method": "见方法模型",
+          "example": "醇与酚"
+        }
+      ]
+    },
+    {
+      "section": "第三节 醛 酮",
+      "aliases": [
+        "醛",
+        "酮",
+        "银镜反应"
+      ],
+      "conceptSummary": "醛含醛基有还原性（银镜反应），酮不含醛基。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "醛基还原性",
+        "银镜反应",
+        "醛氧化成酸"
+      ],
+      "methodModels": [
+        {
+          "name": "醛的性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "醛与酮"
+        }
+      ],
+      "commonConfusions": [
+        "银镜反应"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "醛与酮",
+          "method": "见方法模型",
+          "example": "醛与酮"
+        }
+      ]
+    },
+    {
+      "section": "第四节 羧酸 羧酸衍生物",
+      "aliases": [
+        "羧酸",
+        "酯",
+        "酰胺"
+      ],
+      "conceptSummary": "羧酸含羧基，酯是羧酸衍生物；酯化与水解。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "羧酸酸性",
+        "酯化反应",
+        "酯的水解"
+      ],
+      "methodModels": [
+        {
+          "name": "羧酸酯",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "羧酸与酯"
+        }
+      ],
+      "commonConfusions": [
+        "酯化水解"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "羧酸与酯",
+          "method": "见方法模型",
+          "example": "羧酸与酯"
+        }
+      ]
+    },
+    {
+      "section": "第五节 有机合成",
+      "aliases": [
+        "有机合成",
+        "官能团转化",
+        "合成路线"
+      ],
+      "conceptSummary": "有机合成通过官能团转化设计路线，逆合成分析。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "官能团转化",
+        "逆合成分析",
+        "合成路线设计"
+      ],
+      "methodModels": [
+        {
+          "name": "有机合成",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "设计合成路线"
+        }
+      ],
+      "commonConfusions": [
+        "逆合成"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "设计合成路线",
+          "method": "见方法模型",
+          "example": "设计合成路线"
+        }
+      ]
+    },
+    {
+      "section": "第一节 糖类",
+      "aliases": [
+        "糖类",
+        "葡萄糖",
+        "淀粉"
+      ],
+      "conceptSummary": "糖类：单糖（葡萄糖）二糖（蔗糖）多糖（淀粉纤维素）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "葡萄糖还原性",
+        "淀粉水解成葡萄糖",
+        "纤维素"
+      ],
+      "methodModels": [
+        {
+          "name": "糖类性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "糖类"
+        }
+      ],
+      "commonConfusions": [
+        "还原糖"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "糖类",
+          "method": "见方法模型",
+          "example": "糖类"
+        }
+      ]
+    },
+    {
+      "section": "第二节 蛋白质",
+      "aliases": [
+        "蛋白质",
+        "氨基酸",
+        "肽键"
+      ],
+      "conceptSummary": "蛋白质由氨基酸构成，含肽键，水解成氨基酸。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "氨基酸两性",
+        "肽键",
+        "蛋白质盐析变性"
+      ],
+      "methodModels": [
+        {
+          "name": "蛋白质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "蛋白质"
+        }
+      ],
+      "commonConfusions": [
+        "蛋白质变性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "蛋白质",
+          "method": "见方法模型",
+          "example": "蛋白质"
+        }
+      ]
+    },
+    {
+      "section": "第三节 核酸",
+      "aliases": [
+        "核酸",
+        "DNA",
+        "RNA"
+      ],
+      "conceptSummary": "核酸是遗传信息载体，DNA双螺旋、RNA单链。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "核苷酸构成",
+        "DNA/RNA区别",
+        "核酸功能"
+      ],
+      "methodModels": [
+        {
+          "name": "核酸",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "核酸"
+        }
+      ],
+      "commonConfusions": [
+        "DNA RNA"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "核酸",
+          "method": "见方法模型",
+          "example": "核酸"
+        }
+      ]
+    },
+    {
+      "section": "第一节 合成高分子的基本方法",
+      "aliases": [
+        "高分子",
+        "加聚",
+        "缩聚"
+      ],
+      "conceptSummary": "合成高分子：加聚反应与缩聚反应。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "加聚（乙烯→聚乙烯）",
+        "缩聚（酯化缩聚）",
+        "单体与链节"
+      ],
+      "methodModels": [
+        {
+          "name": "高分子合成",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "高分子材料"
+        }
+      ],
+      "commonConfusions": [
+        "加聚缩聚"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "高分子材料",
+          "method": "见方法模型",
+          "example": "高分子材料"
+        }
+      ]
+    },
+    {
+      "section": "第二节 高分子材料",
+      "aliases": [
+        "塑料",
+        "纤维",
+        "橡胶"
+      ],
+      "conceptSummary": "高分子材料：塑料、合成纤维、合成橡胶。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "塑料热塑热固",
+        "合成纤维",
+        "合成橡胶"
+      ],
+      "methodModels": [
+        {
+          "name": "高分子材料",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "高分子材料"
+        }
+      ],
+      "commonConfusions": [
+        "材料分类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "高分子材料",
+          "method": "见方法模型",
+          "example": "高分子材料"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -101,6 +101,43 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "实验活动1 配制一定物质的量浓度的溶液",
+      "aliases": [
+        "容量瓶",
+        "配制溶液"
+      ],
+      "conceptSummary": "用容量瓶配制一定物质的量浓度溶液，计算-称量-溶解-转移-定容。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "容量瓶使用",
+        "定容操作",
+        "误差分析"
+      ],
+      "methodModels": [
+        {
+          "name": "溶液配制",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "配制溶液"
+        }
+      ],
+      "commonConfusions": [
+        "定容误差"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "配制溶液",
+          "method": "见方法模型",
+          "example": "配制溶液"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

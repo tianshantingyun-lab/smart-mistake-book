@@ -200,6 +200,348 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第二节 反应热的计算",
+      "aliases": [
+        "反应热计算",
+        "盖斯定律",
+        "键能"
+      ],
+      "conceptSummary": "反应热计算：盖斯定律、键能、燃烧热。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "盖斯定律ΔH可加减",
+        "ΔH=键能差",
+        "标准摩尔生成焓"
+      ],
+      "methodModels": [
+        {
+          "name": "反应热计算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "计算反应热"
+        }
+      ],
+      "commonConfusions": [
+        "盖斯定律"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "计算反应热",
+          "method": "见方法模型",
+          "example": "计算反应热"
+        }
+      ]
+    },
+    {
+      "section": "第三节 化学反应的方向",
+      "aliases": [
+        "反应方向",
+        "熵变",
+        "自由能"
+      ],
+      "conceptSummary": "反应方向判断：ΔH-TΔS<0 自发。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "熵增原理",
+        "自由能判据",
+        "焓熵综合"
+      ],
+      "methodModels": [
+        {
+          "name": "方向判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "判断反应方向"
+        }
+      ],
+      "commonConfusions": [
+        "自发反应"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断反应方向",
+          "method": "见方法模型",
+          "example": "判断反应方向"
+        }
+      ]
+    },
+    {
+      "section": "第四节 化学反应的调控",
+      "aliases": [
+        "反应调控",
+        "速率平衡",
+        "工业条件"
+      ],
+      "conceptSummary": "工业反应通过温度、压强、催化剂调控速率与平衡。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "速率与平衡权衡",
+        "催化剂选择",
+        "温度压强优化"
+      ],
+      "methodModels": [
+        {
+          "name": "反应调控",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "调控条件"
+        }
+      ],
+      "commonConfusions": [
+        "工业合成氨"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "调控条件",
+          "method": "见方法模型",
+          "example": "调控条件"
+        }
+      ]
+    },
+    {
+      "section": "第一节 电离平衡",
+      "aliases": [
+        "电离",
+        "弱电解质",
+        "电离常数"
+      ],
+      "conceptSummary": "弱电解质部分电离存在电离平衡，电离常数Ka。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "强电解质完全电离",
+        "弱电解质部分电离",
+        "Ka受温度影响"
+      ],
+      "methodModels": [
+        {
+          "name": "电离平衡",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "电离平衡"
+        }
+      ],
+      "commonConfusions": [
+        "弱电解质"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电离平衡",
+          "method": "见方法模型",
+          "example": "电离平衡"
+        }
+      ]
+    },
+    {
+      "section": "第二节 水的电离和溶液的pH",
+      "aliases": [
+        "水的电离",
+        "pH",
+        "Kw"
+      ],
+      "conceptSummary": "水是极弱电解质，Kw=[H+][OH-]=10⁻¹⁴（常温）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Kw只随温度变",
+        "pH=-lg[H+]",
+        "酸碱指示剂"
+      ],
+      "methodModels": [
+        {
+          "name": "pH计算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "pH计算"
+        }
+      ],
+      "commonConfusions": [
+        "Kw"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "pH计算",
+          "method": "见方法模型",
+          "example": "pH计算"
+        }
+      ]
+    },
+    {
+      "section": "第四节 沉淀溶解平衡",
+      "aliases": [
+        "沉淀溶解",
+        "Ksp",
+        "溶解平衡"
+      ],
+      "conceptSummary": "难溶电解质存在沉淀溶解平衡，Ksp 判断沉淀生成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "Ksp定义",
+        "Q>Ksp生成沉淀",
+        "同离子效应"
+      ],
+      "methodModels": [
+        {
+          "name": "溶解平衡",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "沉淀生成"
+        }
+      ],
+      "commonConfusions": [
+        "Ksp判断"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "沉淀生成",
+          "method": "见方法模型",
+          "example": "沉淀生成"
+        }
+      ]
+    },
+    {
+      "section": "第一节 原电池",
+      "aliases": [
+        "原电池",
+        "负极",
+        "正极"
+      ],
+      "conceptSummary": "原电池把化学能转电能：负极氧化、正极还原，自发反应。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "负极：活泼金属失电子",
+        "正极：得电子",
+        "电极反应书写"
+      ],
+      "methodModels": [
+        {
+          "name": "原电池分析",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "原电池电极反应"
+        }
+      ],
+      "commonConfusions": [
+        "电极判断"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "原电池电极反应",
+          "method": "见方法模型",
+          "example": "原电池电极反应"
+        }
+      ]
+    },
+    {
+      "section": "第二节 电解池",
+      "aliases": [
+        "电解",
+        "阳极",
+        "阴极"
+      ],
+      "conceptSummary": "电解池外加电源强制反应：阳极氧化、阴极还原。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "阳极连电源正极",
+        "阴极连负极",
+        "电解饱和食盐水"
+      ],
+      "methodModels": [
+        {
+          "name": "电解分析",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "电解反应"
+        }
+      ],
+      "commonConfusions": [
+        "阳极阴极"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "电解反应",
+          "method": "见方法模型",
+          "example": "电解反应"
+        }
+      ]
+    },
+    {
+      "section": "第三节 金属的腐蚀与防护",
+      "aliases": [
+        "金属腐蚀",
+        "电化学腐蚀",
+        "防护"
+      ],
+      "conceptSummary": "金属腐蚀分化学与电化学腐蚀；牺牲阳极阴极保护。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "析氢腐蚀/吸氧腐蚀",
+        "牺牲阳极保护",
+        "外加电流保护"
+      ],
+      "methodModels": [
+        {
+          "name": "腐蚀防护",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "金属防护"
+        }
+      ],
+      "commonConfusions": [
+        "吸氧腐蚀"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "金属防护",
+          "method": "见方法模型",
+          "example": "金属防护"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -103,6 +103,234 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一节 共价键",
+      "aliases": [
+        "共价键",
+        "σ键",
+        "π键"
+      ],
+      "conceptSummary": "共价键有σ键与π键；键能键长决定稳定性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "σ键（头碰头）",
+        "π键（肩并肩）",
+        "键能键长"
+      ],
+      "methodModels": [
+        {
+          "name": "共价键类型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "共价键"
+        }
+      ],
+      "commonConfusions": [
+        "σπ键"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "共价键",
+          "method": "见方法模型",
+          "example": "共价键"
+        }
+      ]
+    },
+    {
+      "section": "第二节 分子的空间结构",
+      "aliases": [
+        "VSEPR",
+        "杂化",
+        "分子构型"
+      ],
+      "conceptSummary": "VSEPR与杂化轨道预测分子空间构型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "VSEPR价层电子对",
+        "sp/sp2/sp3杂化",
+        "分子构型"
+      ],
+      "methodModels": [
+        {
+          "name": "空间构型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "预测分子构型"
+        }
+      ],
+      "commonConfusions": [
+        "杂化类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "预测分子构型",
+          "method": "见方法模型",
+          "example": "预测分子构型"
+        }
+      ]
+    },
+    {
+      "section": "第一节 物质的聚集状态与晶体的常识",
+      "aliases": [
+        "晶体",
+        "聚集状态",
+        "晶胞"
+      ],
+      "conceptSummary": "物质聚集状态：晶体与非晶体；晶胞是晶体最小重复单元。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "晶体与非晶体",
+        "晶胞与配位数",
+        "晶体的熔点"
+      ],
+      "methodModels": [
+        {
+          "name": "晶体识别",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "晶体常识"
+        }
+      ],
+      "commonConfusions": [
+        "晶胞"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "晶体常识",
+          "method": "见方法模型",
+          "example": "晶体常识"
+        }
+      ]
+    },
+    {
+      "section": "第二节 分子晶体与共价晶体",
+      "aliases": [
+        "分子晶体",
+        "共价晶体",
+        "金刚石"
+      ],
+      "conceptSummary": "分子晶体靠分子间力（低熔点），共价晶体靠共价键（高熔点）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分子晶体：冰/干冰",
+        "共价晶体：金刚石/SiO2",
+        "熔点比较"
+      ],
+      "methodModels": [
+        {
+          "name": "晶体类型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "晶体类型判断"
+        }
+      ],
+      "commonConfusions": [
+        "分子与共价晶体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "晶体类型判断",
+          "method": "见方法模型",
+          "example": "晶体类型判断"
+        }
+      ]
+    },
+    {
+      "section": "第三节 金属晶体与离子晶体",
+      "aliases": [
+        "金属晶体",
+        "离子晶体",
+        "离子键"
+      ],
+      "conceptSummary": "金属晶体靠金属键，离子晶体靠离子键，熔点高。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "金属晶体：自由电子",
+        "离子晶体：离子键强",
+        "晶格能"
+      ],
+      "methodModels": [
+        {
+          "name": "晶体类型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "金属离子晶体"
+        }
+      ],
+      "commonConfusions": [
+        "离子晶体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "金属离子晶体",
+          "method": "见方法模型",
+          "example": "金属离子晶体"
+        }
+      ]
+    },
+    {
+      "section": "第四节 配合物与超分子",
+      "aliases": [
+        "配合物",
+        "配位键",
+        "超分子"
+      ],
+      "conceptSummary": "配合物由中心离子与配体配位键结合；超分子是分子间组装。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "配位键",
+        "配合物结构",
+        "超分子概念"
+      ],
+      "methodModels": [
+        {
+          "name": "配合物",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "配合物"
+        }
+      ],
+      "commonConfusions": [
+        "配位键"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "配合物",
+          "method": "见方法模型",
+          "example": "配合物"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 6,
-  "sectionsApproved": 6,
+  "sectionsTotal": 15,
+  "sectionsApproved": 15,
   "sections": [
     {
       "section": "钠及其化合物",
@@ -47,6 +47,69 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.083,
       "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "第一节 物质的分类及转化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.053,
+      "textbookTocOverlap": 0.188,
+      "issues": []
+    },
+    {
+      "section": "第二节 离子反应",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第三节 氧化还原反应",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.154,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第三节 物质的量",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第一节 铁及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第二节 金属材料",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第一节 硫及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.032,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第二节 氮及其化合物",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "第三节 无机非金属材料",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]
