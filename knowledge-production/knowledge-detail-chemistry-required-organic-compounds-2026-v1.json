@@ -246,6 +246,80 @@
           "example": "基本营养物质"
         }
       ]
+    },
+    {
+      "section": "第一节 自然资源的开发利用",
+      "aliases": [
+        "自然资源",
+        "开发利用"
+      ],
+      "conceptSummary": "自然资源的开发利用（煤石油天然气）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "化石燃料",
+        "煤石油",
+        "天然气"
+      ],
+      "methodModels": [
+        {
+          "name": "资源开发",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "自然资源开发"
+        }
+      ],
+      "commonConfusions": [
+        "化石燃料"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自然资源开发",
+          "method": "见方法模型",
+          "example": "自然资源开发"
+        }
+      ]
+    },
+    {
+      "section": "有机高分子材料",
+      "aliases": [
+        "高分子材料",
+        "塑料橡胶"
+      ],
+      "conceptSummary": "有机高分子材料：塑料、橡胶、纤维。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "塑料",
+        "合成橡胶",
+        "合成纤维"
+      ],
+      "methodModels": [
+        {
+          "name": "高分子",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "有机高分子"
+        }
+      ],
+      "commonConfusions": [
+        "材料分类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "有机高分子",
+          "method": "见方法模型",
+          "example": "有机高分子"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

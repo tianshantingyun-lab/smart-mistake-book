@@ -1148,6 +1148,270 @@
           "example": "马克思主义诞生"
         }
       ]
+    },
+    {
+      "section": "第4课 西汉与东汉——统一多民族封建国家的巩固",
+      "aliases": [
+        "西汉",
+        "东汉",
+        "大一统"
+      ],
+      "conceptSummary": "汉朝巩固统一多民族封建国家，文景之治汉武帝大一统。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "西汉统一",
+        "汉武帝",
+        "东汉兴衰"
+      ],
+      "methodModels": [
+        {
+          "name": "汉朝",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "汉朝巩固统一"
+        }
+      ],
+      "commonConfusions": [
+        "大一统"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "汉朝巩固统一",
+          "method": "见方法模型",
+          "example": "汉朝巩固统一"
+        }
+      ]
+    },
+    {
+      "section": "第6课 从隋唐盛世到五代十国",
+      "aliases": [
+        "隋唐",
+        "盛世",
+        "五代十国"
+      ],
+      "conceptSummary": "隋唐盛世到五代十国的政权更迭。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "隋朝统一",
+        "贞观之治",
+        "安史之乱"
+      ],
+      "methodModels": [
+        {
+          "name": "隋唐",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "隋唐盛世"
+        }
+      ],
+      "commonConfusions": [
+        "贞观之治"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "隋唐盛世",
+          "method": "见方法模型",
+          "example": "隋唐盛世"
+        }
+      ]
+    },
+    {
+      "section": "第12课 从明朝建立到清军入关",
+      "aliases": [
+        "明朝",
+        "清朝",
+        "明清更替"
+      ],
+      "conceptSummary": "明朝建立到清军入关的政权更替。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "明朝建立",
+        "君主专制",
+        "清军入关"
+      ],
+      "methodModels": [
+        {
+          "name": "明清",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "明朝到清朝"
+        }
+      ],
+      "commonConfusions": [
+        "明清更替"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "明朝到清朝",
+          "method": "见方法模型",
+          "example": "明朝到清朝"
+        }
+      ]
+    },
+    {
+      "section": "第15课 两次鸦片战争",
+      "aliases": [
+        "鸦片战争",
+        "南京条约",
+        "屈辱"
+      ],
+      "conceptSummary": "两次鸦片战争与中国半殖民地化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "鸦片战争",
+        "《南京条约》",
+        "半殖民地"
+      ],
+      "methodModels": [
+        {
+          "name": "鸦片战争",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "两次鸦片战争"
+        }
+      ],
+      "commonConfusions": [
+        "南京条约"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "两次鸦片战争",
+          "method": "见方法模型",
+          "example": "两次鸦片战争"
+        }
+      ]
+    },
+    {
+      "section": "第18课 辛亥革命",
+      "aliases": [
+        "辛亥革命",
+        "孙中山",
+        "民国"
+      ],
+      "conceptSummary": "辛亥革命推翻清王朝，建立中华民国。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "辛亥革命",
+        "三民主义",
+        "民国建立"
+      ],
+      "methodModels": [
+        {
+          "name": "辛亥革命",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "辛亥革命"
+        }
+      ],
+      "commonConfusions": [
+        "民国"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "辛亥革命",
+          "method": "见方法模型",
+          "example": "辛亥革命"
+        }
+      ]
+    },
+    {
+      "section": "第24课 人民解放战争",
+      "aliases": [
+        "解放战争",
+        "内战"
+      ],
+      "conceptSummary": "人民解放战争推翻国民党统治。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "内战",
+        "战略反攻",
+        "新中国成立"
+      ],
+      "methodModels": [
+        {
+          "name": "解放战争",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人民解放战争"
+        }
+      ],
+      "commonConfusions": [
+        "内战"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人民解放战争",
+          "method": "见方法模型",
+          "example": "人民解放战争"
+        }
+      ]
+    },
+    {
+      "section": "第1课 文明的产生与早期发展",
+      "aliases": [
+        "文明产生",
+        "早期文明"
+      ],
+      "conceptSummary": "人类文明产生与早期发展（两河流域埃及等）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文明产生",
+        "两河流域",
+        "古埃及"
+      ],
+      "methodModels": [
+        {
+          "name": "文明产生",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "文明产生与早期发展"
+        }
+      ],
+      "commonConfusions": [
+        "早期文明"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文明产生与早期发展",
+          "method": "见方法模型",
+          "example": "文明产生与早期发展"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

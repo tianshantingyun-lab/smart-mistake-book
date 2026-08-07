@@ -319,6 +319,80 @@
           "example": "大一统治理"
         }
       ]
+    },
+    {
+      "section": "第3课 古代西亚、非洲文化",
+      "aliases": [
+        "西亚文化",
+        "非洲文化"
+      ],
+      "conceptSummary": "古代西亚非洲文化成就。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "两河流域文化",
+        "埃及文化",
+        "文化成就"
+      ],
+      "methodModels": [
+        {
+          "name": "西亚非洲",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "西亚非洲文化"
+        }
+      ],
+      "commonConfusions": [
+        "文化成就"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "西亚非洲文化",
+          "method": "见方法模型",
+          "example": "西亚非洲文化"
+        }
+      ]
+    },
+    {
+      "section": "第4课 欧洲文化的形成",
+      "aliases": [
+        "欧洲文化",
+        "古希腊罗马"
+      ],
+      "conceptSummary": "欧洲文化形成：古希腊罗马与中世纪。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "古希腊文化",
+        "古罗马",
+        "中世纪文化"
+      ],
+      "methodModels": [
+        {
+          "name": "欧洲文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "欧洲文化形成"
+        }
+      ],
+      "commonConfusions": [
+        "古希腊罗马"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "欧洲文化形成",
+          "method": "见方法模型",
+          "example": "欧洲文化形成"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

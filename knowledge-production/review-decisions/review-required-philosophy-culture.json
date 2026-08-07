@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 19,
-  "sectionsApproved": 19,
+  "sectionsTotal": 22,
+  "sectionsApproved": 22,
   "sections": [
     {
       "section": "第一课 时代精神的精华（哲学概述）",
@@ -138,6 +138,27 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "唯物辩证法的实质与核心",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第七课 继承发展中华优秀传统文化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.08,
+      "textbookTocOverlap": 0.571,
+      "issues": []
+    },
+    {
+      "section": "第九课 理解质量互变",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.375,
       "issues": []
     }
   ]

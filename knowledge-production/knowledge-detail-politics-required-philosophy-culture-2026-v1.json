@@ -767,6 +767,119 @@
           "example": "运动的规律性"
         }
       ]
+    },
+    {
+      "section": "唯物辩证法的实质与核心",
+      "aliases": [
+        "矛盾",
+        "对立统一"
+      ],
+      "conceptSummary": "矛盾是唯物辩证法实质与核心，对立统一规律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "矛盾普遍性",
+        "矛盾特殊性",
+        "对立统一"
+      ],
+      "methodModels": [
+        {
+          "name": "矛盾",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "唯物辩证法核心"
+        }
+      ],
+      "commonConfusions": [
+        "对立统一"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "唯物辩证法核心",
+          "method": "见方法模型",
+          "example": "唯物辩证法核心"
+        }
+      ]
+    },
+    {
+      "section": "第七课 继承发展中华优秀传统文化",
+      "aliases": [
+        "传统文化",
+        "继承",
+        "发展"
+      ],
+      "conceptSummary": "继承发展中华优秀传统文化，取其精华。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "传统文化",
+        "继承创新",
+        "文化自信"
+      ],
+      "methodModels": [
+        {
+          "name": "传统文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中华优秀传统文化"
+        }
+      ],
+      "commonConfusions": [
+        "继承发展"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中华优秀传统文化",
+          "method": "见方法模型",
+          "example": "中华优秀传统文化"
+        }
+      ]
+    },
+    {
+      "section": "第九课 理解质量互变",
+      "aliases": [
+        "量变",
+        "质变",
+        "质量互变"
+      ],
+      "conceptSummary": "量变引起质变，质量互变规律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "量变",
+        "质变",
+        "飞跃"
+      ],
+      "methodModels": [
+        {
+          "name": "质量互变",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "质量互变"
+        }
+      ],
+      "commonConfusions": [
+        "量变质变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "质量互变",
+          "method": "见方法模型",
+          "example": "质量互变"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

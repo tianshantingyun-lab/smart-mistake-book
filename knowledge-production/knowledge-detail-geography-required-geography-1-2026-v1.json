@@ -706,6 +706,193 @@
           "example": "气压带风带影响"
         }
       ]
+    },
+    {
+      "section": "第一节 常见地貌类型",
+      "aliases": [
+        "地貌类型",
+        "喀斯特",
+        "雅丹"
+      ],
+      "conceptSummary": "常见地貌类型：喀斯特、雅丹、冰川、海岸。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "喀斯特地貌",
+        "风成地貌",
+        "海岸地貌"
+      ],
+      "methodModels": [
+        {
+          "name": "地貌类型",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "常见地貌"
+        }
+      ],
+      "commonConfusions": [
+        "喀斯特"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "常见地貌",
+          "method": "见方法模型",
+          "example": "常见地貌"
+        }
+      ]
+    },
+    {
+      "section": "第二节 洋流",
+      "aliases": [
+        "洋流",
+        "暖流寒流"
+      ],
+      "conceptSummary": "洋流分布与影响（暖流增温增湿）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "洋流成因",
+        "暖流寒流",
+        "渔场"
+      ],
+      "methodModels": [
+        {
+          "name": "洋流",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "洋流"
+        }
+      ],
+      "commonConfusions": [
+        "暖流寒流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "洋流",
+          "method": "见方法模型",
+          "example": "洋流"
+        }
+      ]
+    },
+    {
+      "section": "第二节 大气受热过程和大气运动",
+      "aliases": [
+        "大气受热",
+        "热力环流",
+        "大气运动"
+      ],
+      "conceptSummary": "大气受热过程与热力环流、大气运动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "大气受热",
+        "热力环流",
+        "风"
+      ],
+      "methodModels": [
+        {
+          "name": "大气运动",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "大气受热与运动"
+        }
+      ],
+      "commonConfusions": [
+        "热力环流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "大气受热与运动",
+          "method": "见方法模型",
+          "example": "大气受热与运动"
+        }
+      ]
+    },
+    {
+      "section": "第二节 气压带和风带",
+      "aliases": [
+        "气压带",
+        "风带"
+      ],
+      "conceptSummary": "气压带风带分布与季节移动。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "气压带分布",
+        "风带",
+        "季节移动"
+      ],
+      "methodModels": [
+        {
+          "name": "气压风带",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "气压带风带"
+        }
+      ],
+      "commonConfusions": [
+        "气压带"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "气压带风带",
+          "method": "见方法模型",
+          "example": "气压带风带"
+        }
+      ]
+    },
+    {
+      "section": "第二节 自然环境的地域差异性",
+      "aliases": [
+        "地域差异",
+        "地带性"
+      ],
+      "conceptSummary": "自然环境地域差异性：地带性与非地带性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "纬度地带性",
+        "经度地带性",
+        "垂直地带性"
+      ],
+      "methodModels": [
+        {
+          "name": "地域差异",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地域差异性"
+        }
+      ],
+      "commonConfusions": [
+        "地带性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地域差异性",
+          "method": "见方法模型",
+          "example": "地域差异性"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

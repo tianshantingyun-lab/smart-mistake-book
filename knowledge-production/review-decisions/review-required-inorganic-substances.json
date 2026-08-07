@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 15,
-  "sectionsApproved": 15,
+  "sectionsTotal": 17,
+  "sectionsApproved": 17,
   "sections": [
     {
       "section": "钠及其化合物",
@@ -110,6 +110,20 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.062,
       "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "氨",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.0,
+      "issues": []
+    },
+    {
+      "section": "不同价态含硫物质的转化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.273,
+      "textbookTocOverlap": 0.6,
       "issues": []
     }
   ]

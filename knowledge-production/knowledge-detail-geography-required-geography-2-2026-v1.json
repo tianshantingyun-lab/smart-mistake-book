@@ -447,6 +447,81 @@
           "example": "人口迁移"
         }
       ]
+    },
+    {
+      "section": "第一节 人类面临的主要环境问题",
+      "aliases": [
+        "环境问题",
+        "污染",
+        "生态"
+      ],
+      "conceptSummary": "人类面临的主要环境问题。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "环境污染",
+        "生态破坏",
+        "资源短缺"
+      ],
+      "methodModels": [
+        {
+          "name": "环境问题",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "主要环境问题"
+        }
+      ],
+      "commonConfusions": [
+        "环境污染"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "主要环境问题",
+          "method": "见方法模型",
+          "example": "主要环境问题"
+        }
+      ]
+    },
+    {
+      "section": "第三节 服务业区位因素及其变化",
+      "aliases": [
+        "服务业区位",
+        "区位因素"
+      ],
+      "conceptSummary": "服务业区位因素（市场交通劳动力）及其变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "服务业区位",
+        "市场交通",
+        "区位变化"
+      ],
+      "methodModels": [
+        {
+          "name": "服务业",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "服务业区位"
+        }
+      ],
+      "commonConfusions": [
+        "区位因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "服务业区位",
+          "method": "见方法模型",
+          "example": "服务业区位"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

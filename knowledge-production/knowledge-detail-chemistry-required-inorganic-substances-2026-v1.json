@@ -626,6 +626,79 @@
           "example": "硅材料"
         }
       ]
+    },
+    {
+      "section": "氨",
+      "aliases": [
+        "氨气",
+        "NH3"
+      ],
+      "conceptSummary": "氨气碱性气体，易液化，喷泉实验。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "氨的性质",
+        "氨的制取",
+        "铵盐"
+      ],
+      "methodModels": [
+        {
+          "name": "氨",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "氨"
+        }
+      ],
+      "commonConfusions": [
+        "喷泉实验"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "氨",
+          "method": "见方法模型",
+          "example": "氨"
+        }
+      ]
+    },
+    {
+      "section": "不同价态含硫物质的转化",
+      "aliases": [
+        "硫的价态",
+        "转化"
+      ],
+      "conceptSummary": "不同价态硫（-2/0/+4/+6）转化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "硫价态",
+        "氧化还原转化"
+      ],
+      "methodModels": [
+        {
+          "name": "硫转化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "含硫物质转化"
+        }
+      ],
+      "commonConfusions": [
+        "硫价态"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "含硫物质转化",
+          "method": "见方法模型",
+          "example": "含硫物质转化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

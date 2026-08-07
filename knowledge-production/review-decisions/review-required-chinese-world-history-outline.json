@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 29,
-  "sectionsApproved": 29,
+  "sectionsTotal": 36,
+  "sectionsApproved": 36,
   "sections": [
     {
       "section": "中华文明起源与早期国家",
@@ -208,6 +208,55 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.125,
       "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第4课 西汉与东汉——统一多民族封建国家的巩固",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.364,
+      "issues": []
+    },
+    {
+      "section": "第6课 从隋唐盛世到五代十国",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第12课 从明朝建立到清军入关",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第15课 两次鸦片战争",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.059,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第18课 辛亥革命",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.043,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第24课 人民解放战争",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.118,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第1课 文明的产生与早期发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.095,
+      "textbookTocOverlap": 0.3,
       "issues": []
     }
   ]

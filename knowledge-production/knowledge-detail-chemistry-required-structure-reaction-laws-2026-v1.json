@@ -208,6 +208,117 @@
           "example": "判断NaCl、H2O化学键类型"
         }
       ]
+    },
+    {
+      "section": "第二节 元素周期律",
+      "aliases": [
+        "周期律",
+        "金属性递变"
+      ],
+      "conceptSummary": "元素周期律：性质随原子序数周期性变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "同周期递变",
+        "同主族递变",
+        "半径变化"
+      ],
+      "methodModels": [
+        {
+          "name": "周期律",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "元素周期律"
+        }
+      ],
+      "commonConfusions": [
+        "递变规律"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "元素周期律",
+          "method": "见方法模型",
+          "example": "元素周期律"
+        }
+      ]
+    },
+    {
+      "section": "第一节 化学反应与能量变化",
+      "aliases": [
+        "化学反应能量",
+        "放热吸热"
+      ],
+      "conceptSummary": "化学反应伴随能量变化，放热吸热反应。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "放热反应",
+        "吸热反应",
+        "ΔH"
+      ],
+      "methodModels": [
+        {
+          "name": "反应能量",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "化学反应能量"
+        }
+      ],
+      "commonConfusions": [
+        "放热吸热"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "化学反应能量",
+          "method": "见方法模型",
+          "example": "化学反应能量"
+        }
+      ]
+    },
+    {
+      "section": "第二节 化学反应的速率与限度",
+      "aliases": [
+        "反应速率",
+        "化学平衡"
+      ],
+      "conceptSummary": "化学反应速率与限度（化学平衡）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "反应速率",
+        "化学平衡",
+        "限度"
+      ],
+      "methodModels": [
+        {
+          "name": "速率限度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "速率与限度"
+        }
+      ],
+      "commonConfusions": [
+        "化学平衡"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "速率与限度",
+          "method": "见方法模型",
+          "example": "速率与限度"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

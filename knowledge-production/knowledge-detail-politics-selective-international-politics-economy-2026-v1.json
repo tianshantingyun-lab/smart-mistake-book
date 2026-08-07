@@ -430,6 +430,80 @@
           "example": "政党和利益集团"
         }
       ]
+    },
+    {
+      "section": "国际关系",
+      "aliases": [
+        "国际关系",
+        "国家利益"
+      ],
+      "conceptSummary": "国际关系形式与决定因素（国家利益）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国际关系形式",
+        "国家利益",
+        "国际竞争"
+      ],
+      "methodModels": [
+        {
+          "name": "国际关系",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国际关系"
+        }
+      ],
+      "commonConfusions": [
+        "国家利益"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国际关系",
+          "method": "见方法模型",
+          "example": "国际关系"
+        }
+      ]
+    },
+    {
+      "section": "联合国",
+      "aliases": [
+        "联合国",
+        "国际组织"
+      ],
+      "conceptSummary": "联合国是最大的国际组织，维护和平安全。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "联合国机构",
+        "安理会",
+        "联合国作用"
+      ],
+      "methodModels": [
+        {
+          "name": "联合国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "联合国"
+        }
+      ],
+      "commonConfusions": [
+        "安理会"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "联合国",
+          "method": "见方法模型",
+          "example": "联合国"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

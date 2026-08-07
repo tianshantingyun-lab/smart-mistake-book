@@ -475,6 +475,44 @@
           "example": "经济全球化与中国"
         }
       ]
+    },
+    {
+      "section": "我国的社会保障",
+      "aliases": [
+        "社会保障",
+        "社会保险",
+        "福利"
+      ],
+      "conceptSummary": "我国社会保障体系：社会保险救助福利。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "社会保险",
+        "社会救助",
+        "社会福利"
+      ],
+      "methodModels": [
+        {
+          "name": "社会保障",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "我国社会保障"
+        }
+      ],
+      "commonConfusions": [
+        "社会保险"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "我国社会保障",
+          "method": "见方法模型",
+          "example": "我国社会保障"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

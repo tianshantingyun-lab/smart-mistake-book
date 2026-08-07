@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 20,
-  "sectionsApproved": 20,
+  "sectionsTotal": 25,
+  "sectionsApproved": 25,
   "sections": [
     {
       "section": "中国共产党的领导",
@@ -145,6 +145,41 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第四课 人民民主专政的社会主义国家",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.222,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第八课 法治中国建设",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.036,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "始终走在时代前列",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "第三课 订约履约 诚信为本",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "心中有数上职场",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.25,
       "issues": []
     }
   ]

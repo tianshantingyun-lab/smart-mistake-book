@@ -320,6 +320,81 @@
           "example": "国际合作"
         }
       ]
+    },
+    {
+      "section": "第二节 资源跨区域调配",
+      "aliases": [
+        "资源调配",
+        "南水北调",
+        "西气东输"
+      ],
+      "conceptSummary": "资源跨区域调配：南水北调、西气东输。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "南水北调",
+        "西气东输",
+        "资源调配"
+      ],
+      "methodModels": [
+        {
+          "name": "资源调配",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "资源跨区域调配"
+        }
+      ],
+      "commonConfusions": [
+        "南水北调"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "资源跨区域调配",
+          "method": "见方法模型",
+          "example": "资源跨区域调配"
+        }
+      ]
+    },
+    {
+      "section": "第二节 地区产业结构变化",
+      "aliases": [
+        "产业结构",
+        "产业升级"
+      ],
+      "conceptSummary": "地区产业结构变化与升级。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "产业结构",
+        "产业升级",
+        "转型"
+      ],
+      "methodModels": [
+        {
+          "name": "产业结构",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "产业结构变化"
+        }
+      ],
+      "commonConfusions": [
+        "产业升级"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "产业结构变化",
+          "method": "见方法模型",
+          "example": "产业结构变化"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
