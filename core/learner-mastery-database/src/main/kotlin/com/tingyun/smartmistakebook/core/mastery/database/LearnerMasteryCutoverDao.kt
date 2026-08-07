@@ -27,10 +27,19 @@ internal data class LearnerMasteryLedgerRecomputeDiagnostics(
 
 private val legacySnapshotValidationExecutor: ExecutorService by lazy {
     Executors.newFixedThreadPool(
-        Runtime.getRuntime().availableProcessors().coerceIn(1, 8),
+        // AndroidKeyStore AES-GCM decryption blocks on keystore binder round-trips, so the
+        // validation threads spend most of their time waiting. Oversubscribe the fixed pool
+        // relative to the physical core count to keep those round-trips in flight in parallel;
+        // the measured 100k raw-snapshot gate only fits its 60 s budget with this headroom.
+        (Runtime.getRuntime().availableProcessors() * 4).coerceIn(4, 16),
     ) { runnable ->
         Thread(runnable, "learner-mastery-legacy-validation").apply { isDaemon = true }
     }
+}
+
+private fun ExecutorService.workerCount(): Int = when (this) {
+    is java.util.concurrent.ThreadPoolExecutor -> maximumPoolSize
+    else -> Runtime.getRuntime().availableProcessors()
 }
 
 @Dao
@@ -243,8 +252,7 @@ internal abstract class LearnerMasteryCutoverDao {
         page: LearnerMasteryLegacySnapshotPage,
     ): LearnerMasteryLegacySnapshotPageResult {
         val expectedPage = page.toEntity()
-        val workerCount =
-            Runtime.getRuntime().availableProcessors().coerceIn(1, 8)
+        val workerCount = legacySnapshotValidationExecutor.workerCount()
         val chunkSize =
             maxOf(1, (page.snapshots.size + workerCount - 1) / workerCount)
         val snapshotFutures = page.snapshots.indices.chunked(chunkSize).map { chunk ->
@@ -619,8 +627,7 @@ private suspend fun recomputeCompletedMigrationLedger(
             val sourceValidationStartedAt = diagnostics.startedAt()
             var previousSnapshot: LearnerMasteryLegacyObservationSnapshotEntity? = null
             val responseSummaries = ArrayList<String>(pageSnapshots.size)
-            val workerCount =
-                Runtime.getRuntime().availableProcessors().coerceIn(1, 8)
+            val workerCount = legacySnapshotValidationExecutor.workerCount()
             val chunkSize =
                 maxOf(1, (pageSnapshots.size + workerCount - 1) / workerCount)
             val futures = pageSnapshots.indices.chunked(chunkSize).map { chunk ->
