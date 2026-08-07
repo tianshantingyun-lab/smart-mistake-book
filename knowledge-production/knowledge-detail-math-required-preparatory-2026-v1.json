@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-required-preparatory-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "required-preparatory-knowledge",
+  "moduleName": "必修：预备知识（集合与常用逻辑用语）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "csdn:shulianghan:set-concepts",
+      "title": "集合概念与表示（CSDN shulianghan）",
+      "url": "https://blog.csdn.net/shulianghan/article/details/126954528",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "csdn:rysxt:sufficient-necessary",
+      "title": "充分条件、必要条件、充要条件概念辨析与题型（CSDN Rysxt_）",
+      "url": "https://blog.csdn.net/Rysxt_/article/details/157504109",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "shuxueji:set",
+      "title": "集合（数学百科 shuxueji）",
+      "url": "http://www.shuxueji.com/w/82735",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "cnblogs:jiangxingchen:set",
+      "title": "高中数学必修一集合（博客园 JiangXingchen）",
+      "url": "https://www.cnblogs.com/Jiangxingchen/p/12756546.html",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "1.1 集合的概念",
+      "aliases": ["集合", "元素", "空集"],
+      "conceptSummary": "把一些能够确定的、不同的对象看成一个整体，这个整体就是集合；构成集合的每个对象叫元素。",
+      "evidenceSources": ["csdn:shulianghan:set-concepts", "shuxueji:set", "cnblogs:jiangxingchen:set"],
+      "properties": [
+        "确定性：任意对象要么属于要么不属于该集合，不能模棱两可",
+        "互异性：集合中同一元素只能出现一次，重复元素只算一个",
+        "无序性：{a,b} 与 {b,a} 是同一集合"
+      ],
+      "methodModels": [
+        {
+          "name": "元素与集合关系判定",
+          "steps": ["判断对象是否满足集合的定义条件", "满足则属于（∈），不满足则不属于（∉）"],
+          "example": "判断 0 与 {x|x∈N}：0∈N，所以 0 属于该集合"
+        }
+      ],
+      "commonConfusions": [
+        "空集 ∅ 是没有任何元素的集合，不要写成 {0}（含元素 0）或 {∅}（含一个元素空集）",
+        "0、{0}、∅ 三者不同：0 是数，{0} 是含数 0 的集合，∅ 是空集"
+      ],
+      "prerequisiteRelations": ["需掌握数集符号 N、N+、Z、Q、R"],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断元素与集合的属于关系",
+          "method": "验证元素是否满足集合描述的条件",
+          "example": "已知 A={x|x²-3x+2=0}，判断 1∈A 是否成立：1²-3+2=0 成立，故 1∈A"
+        }
+      ]
+    },
+    {
+      "section": "1.2 集合间的基本关系",
+      "aliases": ["子集", "真子集", "集合相等"],
+      "conceptSummary": "若 A 的每个元素都属于 B，则 A 是 B 的子集（A⊆B）；若 A⊆B 且 A≠B，则 A 是 B 的真子集；若 A⊆B 且 B⊆A，则 A=B。",
+      "evidenceSources": ["shuxueji:set", "cnblogs:jiangxingchen:set"],
+      "properties": [
+        "空集是任何集合的子集，是任何非空集合的真子集",
+        "任何集合都是它本身的子集",
+        "子集关系具有传递性：A⊆B，B⊆C ⇒ A⊆C",
+        "证明两集合相等：A⊆B 且 B⊆A"
+      ],
+      "methodModels": [
+        {
+          "name": "子集个数公式",
+          "steps": ["含 n 个元素的集合，子集个数为 2ⁿ", "真子集个数为 2ⁿ-1", "非空真子集个数为 2ⁿ-2"],
+          "example": "A={1,2,3}，n=3，子集 8 个，真子集 7 个"
+        },
+        {
+          "name": "含参数子集问题",
+          "steps": ["先讨论空集情形（空集是任何集合的子集）", "再按集合元素逐项检验参数", "合并结果并检验是否满足题设"],
+          "example": "A={x|x²+ax+1=0,x∈R}⊆{x|x>0}，需讨论 A=∅（判别式<0）与 A≠∅ 两种情况"
+        }
+      ],
+      "commonConfusions": [
+        "⊆（子集）与 ⊂（真子集）符号混淆：⊆ 允许相等，⊂ 不允许",
+        "容易遗漏空集：讨论 A⊆B 时 A=∅ 也要讨论",
+        "集合相等不是元素相同排列，而是元素集合完全相同"
+      ],
+      "prerequisiteRelations": ["需掌握元素与集合的属于关系"],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求子集个数",
+          "method": "元素个数 n → 子集 2ⁿ",
+          "example": "A={a,b,c,d}，子集 16 个"
+        },
+        {
+          "questionShape": "已知子集关系求参数",
+          "method": "分类讨论空集与非空集，分别代入检验",
+          "example": "A={x|x²-4x+m=0}⊆{x|x≥1}，求 m 范围"
+        }
+      ]
+    },
+    {
+      "section": "1.3 集合的基本运算",
+      "aliases": ["交集", "并集", "补集", "全集", "差集"],
+      "conceptSummary": "交集 A∩B={x|x∈A 且 x∈B}；并集 A∪B={x|x∈A 或 x∈B}；全集 U 下 A 的补集 ∁uA={x|x∈U 且 x∉A}。",
+      "evidenceSources": ["shuxueji:set", "cnblogs:jiangxingchen:set"],
+      "properties": [
+        "交换律：A∩B=B∩A，A∪B=B∪A",
+        "结合律：(A∩B)∩C=A∩(B∩C)，(A∪B)∪C=A∪(B∪C)",
+        "幂等律：A∩A=A，A∪A=A",
+        "A∩∅=∅，A∪∅=A",
+        "A⊆B ⇒ A∩B=A 且 A∪B=B",
+        "德摩根律：∁u(A∩B)=∁uA∪∁uB，∁u(A∪B)=∁uA∩∁uB"
+      ],
+      "methodModels": [
+        {
+          "name": "文氏图法",
+          "steps": ["画出各集合的文氏图", "根据交并补定义在图中标出结果区域", "读出结果集合"],
+          "example": "三个集合的交并补混合运算可用文氏图直观求解"
+        },
+        {
+          "name": "数轴法（数集运算）",
+          "steps": ["把每个数集在数轴上表示", "交集取公共区间，并集取覆盖区间", "补集取全集剩余区间，注意端点开闭"],
+          "example": "A={x|x≥1}，B={x|x<3}，A∩B={x|1≤x<3}"
+        }
+      ],
+      "commonConfusions": [
+        "∩ 与 ∪ 符号混淆：∩ 是公共部分（且），∪ 是全部合并（或）",
+        "补集必须指明全集 U，没有全集谈不上补集",
+        "数轴法端点开闭易错：边界点要单独检验是否属于",
+        "德摩根律中的补集符号取反"
+      ],
+      "prerequisiteRelations": ["需掌握子集与集合相等"],
+      "workedExampleStructure": [
+        {
+          "questionShape": "已知两个数集求交并补",
+          "method": "数轴法/文氏图法",
+          "example": "A={x|-1≤x≤2}，B={x|x>0}，A∩B={x|0<x≤2}"
+        },
+        {
+          "questionShape": "利用运算律化简或证明",
+          "method": "用交换律/结合律/德摩根律逐步化简",
+          "example": "证明 A∩(B∪C)=(A∩B)∪(A∩C)（分配律）"
+        }
+      ]
+    },
+    {
+      "section": "1.4 充分条件与必要条件",
+      "aliases": ["充分条件", "必要条件", "充要条件"],
+      "conceptSummary": "A→B 成立，A 是 B 的充分条件；B→A 成立，A 是 B 的必要条件；两者都成立则 A 是 B 的充要条件。",
+      "evidenceSources": ["csdn:rysxt:sufficient-necessary", "cnblogs:jiangxingchen:set"],
+      "methodModels": [
+        {
+          "name": "定义法",
+          "steps": ["判断条件→结论是否成立（充分性）", "判断结论→条件是否成立（必要性）", "两者都成立则为充要条件"],
+          "example": "判断 x=1 是 x²=1 的什么条件：x=1→x²=1 成立（充分），x²=1→x=1 不成立（x=-1 也满足），故充分不必要"
+        },
+        {
+          "name": "集合包含法",
+          "steps": ["用集合 A 表示条件，集合 B 表示结论", "A⊆B 则 A 是 B 的充分条件（小范围推大范围）", "B⊆A 则 A 是 B 的必要条件", "A=B 则为充要条件"],
+          "example": "A={x|x>2}，B={x|x>1}，A⊆B，故 x>2 是 x>1 的充分不必要条件"
+        },
+        {
+          "name": "逆否命题法",
+          "steps": ["证明 A→B 可转化为证明 ¬B→¬A", "利用原命题与逆否命题等价"],
+          "example": "证明 'x>2 ⇒ x>1' 等价于 'x≤1 ⇒ x≤2'"
+        }
+      ],
+      "commonConfusions": [
+        "混淆充分与必要：'有 A 就有 B' 说明 A 是 B 的充分条件，不是必要条件",
+        "忽略'不一定'：充分条件成立时结论必成立，但结论成立时条件不一定成立",
+        "集合视角：充分对应小范围（A⊆B），必要对应大范围（B⊆A）",
+        "记忆口诀：充分='有它就行'，必要='没它不行'，充要='等价关系'"
+      ],
+      "prerequisiteRelations": ["需掌握集合间包含关系"],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断条件关系",
+          "method": "定义法：先充分性后必要性",
+          "example": "a+b>0 是 a>0 且 b>0 的什么条件？充分性不成立（a=3,b=-1），必要性成立，故必要不充分"
+        },
+        {
+          "questionShape": "求充要条件",
+          "method": "将结论等价变形",
+          "example": "x²=1 的充要条件是 x=1 或 x=-1"
+        },
+        {
+          "questionShape": "条件关系链推理",
+          "method": "沿充分/必要方向追踪箭头",
+          "example": "A 是 B 的充分条件（A→B），B 是 C 的必要条件（C→B），需具体分析 A 与 C 关系"
+        }
+      ]
+    },
+    {
+      "section": "1.5 全称量词与存在量词",
+      "aliases": ["全称量词", "存在量词", "全称命题", "特称命题", "命题的否定"],
+      "conceptSummary": "全称量词 ∀（任意），全称命题'∀x∈M，p(x)'；存在量词 ∃（存在），特称命题'∃x∈M，p(x)'。",
+      "evidenceSources": ["DOMAIN_COMMON_KNOWLEDGE"],
+      "methodModels": [
+        {
+          "name": "全称命题与特称命题的否定",
+          "steps": ["全称命题 ∀x，p(x) 的否定是 ∃x，¬p(x)", "特称命题 ∃x，p(x) 的否定是 ∀x，¬p(x)", "量词互换、结论取反"],
+          "example": "'∀x∈R，x²≥0' 的否定是 '∃x∈R，x²<0'"
+        },
+        {
+          "name": "全称/特称命题真假判断",
+          "steps": ["全称命题：举一个反例即可证伪", "特称命题：举一个正例即可证实"],
+          "example": "判断 '∀x∈R，x²+x+1>0'：配方 (x+1/2)²+3/4>0 恒成立，真命题"
+        }
+      ],
+      "commonConfusions": [
+        "否定命题时只否定结论不换量词（错误）——必须量词互换",
+        "'至少有一个' 与 '至多有一个' 的否定易混",
+        "验证全称命题错误时用反例，验证特称命题正确时用特例"
+      ],
+      "prerequisiteRelations": ["需掌握充分条件与必要条件"],
+      "workedExampleStructure": [
+        {
+          "questionShape": "写出命题的否定",
+          "method": "量词互换 + 结论取反",
+          "example": "'∃x∈R，x²=2' 的否定是 '∀x∈R，x²≠2'"
+        },
+        {
+          "questionShape": "判断命题真假",
+          "method": "全称证伪用反例，特称证实用特例",
+          "example": "'∃x∈N，x 是质数' 真（取 x=2）"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "集合表示与元素判定",
+      "solutionMethod": "验证元素是否满足描述条件；区分列举法与描述法",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "子集个数与含参数子集",
+      "solutionMethod": "子集 2ⁿ 公式；含参数先讨论空集再逐项检验",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "数集交并补运算",
+      "solutionMethod": "数轴法标区间，注意端点开闭；文氏图法处理抽象集合",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "充分必要关系判断",
+      "solutionMethod": "定义法三步（充分性+必要性）；集合包含法（小范围推大范围）",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "全称/特称命题否定与真假",
+      "solutionMethod": "量词互换结论取反；反例/特例验证",
+      "difficulty": "常考"
+    }
+  ]
+}

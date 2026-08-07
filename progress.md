@@ -4402,3 +4402,30 @@
 
 - B（教材基准完整性）完成：课标↔教材三级目录已就绪并带确定性门。
 - 下一步 A：按 `detailEnrichmentNeeded` 标记的 41 个模块，逐模块检索并归纳第三方教辅细节（方法/易混/例题结构），先做一个示范模块验证可行性。
+
+## 2026-08-07 实施批次：A 示范——集合与常用逻辑用语第三方细节
+
+### 已完成
+
+- 用户授权：私有知识库不公开、无需担心版权；除知识点外还需题型解法；抓取失败时寻找更强爬虫/MCP。
+- 抓取工具链验证：open-websearch MCP 的 **CSDN 专用抓取器成功**（两篇 CSDN 文章抓取成功：集合概念、充分必要条件含题型+易错+练习答案）；`fetchWebContent` 对 cnblogs、shuxueji 数学百科成功；百度百科/知乎被反爬（521/登录墙），CSDN 偶发 521（可重试）。
+- 归纳示范模块 `knowledge-detail-math-required-preparatory-2026-v1.json`（数学"集合与常用逻辑用语"，对应教材 1.1–1.5 五个小节）：
+  - 每小节含 `conceptSummary`、`aliases`、`properties`、`methodModels`（方法模型+步骤+例题）、`commonConfusions`（易错点）、`prerequisiteRelations`、`workedExampleStructure`（题型+解法+例题）；
+  - 额外 `typicalQuestionShapes` 层：5 类常考题型（集合表示与元素判定、子集个数与含参数子集、数集交并补、充分必要判断、量词命题否定与真假）及对应解法；
+  - 每小节标注 `evidenceSources`（引用 4 个抓取源或 `DOMAIN_COMMON_KNOWLEDGE` 领域常识补全），诚实区分来源支撑与常识归纳。
+- 新增 `tools/audit-knowledge-detail-module.py`：校验结构完整性 + 来源引用有效性，`AUDIT PASSED`。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| 抓取源 | 4 个成功（CSDN×2、cnblogs、shuxueji）；百度百科/知乎反爬 |
+| 示范模块 | 5 小节全覆盖（概念/方法/易错/题型/例题） |
+| 题型解法 | 5 类常考题型 + 解法归纳 |
+| 来源诚实性 | 每小节标注 evidenceSources，1.5 节标 DOMAIN_COMMON_KNOWLEDGE |
+| 结构审计 | `AUDIT PASSED` |
+
+### 状态
+
+- A 流程验证可行：CSDN 专用抓取器 + 归纳 + 来源标注 + 审计 全链路可用。
+- 后续：若需扩大来源覆盖（含参数题型等 CSDN 反爬内容），可安装更强爬虫/MCP（如用户提到的 webbridge）或使用 Playwright 类浏览器抓取。
