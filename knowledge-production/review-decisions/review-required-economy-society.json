@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 5,
-  "sectionsApproved": 5,
+  "sectionsTotal": 7,
+  "sectionsApproved": 7,
   "sections": [
     {
       "section": "社会主义市场经济",
@@ -40,6 +40,20 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.091,
       "textbookTocOverlap": 0.091,
+      "issues": []
+    },
+    {
+      "section": "第三课 我国的经济发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第四课 我国的个人收入分配与社会保障",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.385,
       "issues": []
     }
   ]

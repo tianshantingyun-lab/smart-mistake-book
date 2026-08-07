@@ -103,6 +103,120 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "正确运用简单判断",
+      "aliases": [
+        "判断",
+        "性质判断",
+        "关系判断"
+      ],
+      "conceptSummary": "判断是对事物情况有所断定的思维形式，分性质判断与关系判断。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "性质判断",
+        "关系判断",
+        "判断真假"
+      ],
+      "methodModels": [
+        {
+          "name": "简单判断",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "简单判断"
+        }
+      ],
+      "commonConfusions": [
+        "判断种类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "简单判断",
+          "method": "见方法模型",
+          "example": "简单判断"
+        }
+      ]
+    },
+    {
+      "section": "第六课 掌握演绎推理方法",
+      "aliases": [
+        "演绎推理",
+        "三段论",
+        "假言推理"
+      ],
+      "conceptSummary": "演绎推理从一般到个别，三段论与假言推理是重要形式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三段论",
+        "假言推理",
+        "有效推理"
+      ],
+      "methodModels": [
+        {
+          "name": "演绎推理",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "演绎推理"
+        }
+      ],
+      "commonConfusions": [
+        "三段论"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "演绎推理",
+          "method": "见方法模型",
+          "example": "演绎推理"
+        }
+      ]
+    },
+    {
+      "section": "第十一课 创新思维要善于联想",
+      "aliases": [
+        "创新思维",
+        "联想",
+        "发散"
+      ],
+      "conceptSummary": "创新思维要求联想、发散与聚合，突破思维定式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "联想思维",
+        "发散思维",
+        "创新方法"
+      ],
+      "methodModels": [
+        {
+          "name": "创新思维",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "创新思维"
+        }
+      ],
+      "commonConfusions": [
+        "发散思维"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "创新思维",
+          "method": "见方法模型",
+          "example": "创新思维"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

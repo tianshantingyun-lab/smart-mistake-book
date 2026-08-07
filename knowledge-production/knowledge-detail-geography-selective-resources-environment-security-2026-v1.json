@@ -95,6 +95,155 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一节 环境安全对国家安全的影响",
+      "aliases": [
+        "环境安全",
+        "国家安全"
+      ],
+      "conceptSummary": "环境安全是国家安全重要组成，环境污染影响国家。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "环境安全",
+        "环境问题",
+        "国家影响"
+      ],
+      "methodModels": [
+        {
+          "name": "环境安全",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "环境安全"
+        }
+      ],
+      "commonConfusions": [
+        "环境问题"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "环境安全",
+          "method": "见方法模型",
+          "example": "环境安全"
+        }
+      ]
+    },
+    {
+      "section": "第二节 环境污染与国家安全",
+      "aliases": [
+        "环境污染",
+        "污染治理"
+      ],
+      "conceptSummary": "环境污染跨国影响国家安全，加强治理与协作。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "污染类型",
+        "污染治理",
+        "国际合作"
+      ],
+      "methodModels": [
+        {
+          "name": "环境污染",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "环境污染与安全"
+        }
+      ],
+      "commonConfusions": [
+        "污染治理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "环境污染与安全",
+          "method": "见方法模型",
+          "example": "环境污染与安全"
+        }
+      ]
+    },
+    {
+      "section": "第三节 环境问题及其危害",
+      "aliases": [
+        "环境问题",
+        "生态破坏"
+      ],
+      "conceptSummary": "环境问题包括污染与生态破坏，危害人类健康与生态。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "环境问题类型",
+        "生态破坏",
+        "危害"
+      ],
+      "methodModels": [
+        {
+          "name": "环境问题",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "环境问题"
+        }
+      ],
+      "commonConfusions": [
+        "生态破坏"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "环境问题",
+          "method": "见方法模型",
+          "example": "环境问题"
+        }
+      ]
+    },
+    {
+      "section": "第二节 国家战略与政策",
+      "aliases": [
+        "国家战略",
+        "资源政策",
+        "环境政策"
+      ],
+      "conceptSummary": "国家通过资源环境战略与政策保障安全。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "资源战略",
+        "环境政策",
+        "国家行动"
+      ],
+      "methodModels": [
+        {
+          "name": "国家战略",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国家战略与政策"
+        }
+      ],
+      "commonConfusions": [
+        "环境政策"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国家战略与政策",
+          "method": "见方法模型",
+          "example": "国家战略与政策"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

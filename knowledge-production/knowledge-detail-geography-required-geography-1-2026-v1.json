@@ -329,6 +329,270 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一节 植被",
+      "aliases": [
+        "植被",
+        "森林",
+        "草原"
+      ],
+      "conceptSummary": "植被是覆盖地表植物群落，有森林草原荒漠等类型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "植被类型",
+        "植被与气候",
+        "植被作用"
+      ],
+      "methodModels": [
+        {
+          "name": "植被",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "植被"
+        }
+      ],
+      "commonConfusions": [
+        "植被类型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "植被",
+          "method": "见方法模型",
+          "example": "植被"
+        }
+      ]
+    },
+    {
+      "section": "第二节 太阳对地球的影响",
+      "aliases": [
+        "太阳辐射",
+        "太阳活动"
+      ],
+      "conceptSummary": "太阳辐射提供能量，太阳活动影响地球（磁暴/极光）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "太阳辐射",
+        "太阳活动",
+        "影响"
+      ],
+      "methodModels": [
+        {
+          "name": "太阳影响",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "太阳对地球影响"
+        }
+      ],
+      "commonConfusions": [
+        "太阳活动"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "太阳对地球影响",
+          "method": "见方法模型",
+          "example": "太阳对地球影响"
+        }
+      ]
+    },
+    {
+      "section": "第二节 地球运动的地理意义",
+      "aliases": [
+        "自转意义",
+        "公转意义",
+        "四季"
+      ],
+      "conceptSummary": "地球自转产生昼夜时差，公转产生四季五带。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "自转意义",
+        "公转意义",
+        "四季五带"
+      ],
+      "methodModels": [
+        {
+          "name": "地球运动意义",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地球运动意义"
+        }
+      ],
+      "commonConfusions": [
+        "四季"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地球运动意义",
+          "method": "见方法模型",
+          "example": "地球运动意义"
+        }
+      ]
+    },
+    {
+      "section": "第一节 常见天气系统",
+      "aliases": [
+        "天气系统",
+        "锋面",
+        "气旋"
+      ],
+      "conceptSummary": "常见天气系统：冷锋暖锋气旋反气旋影响天气。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "锋面系统",
+        "气压系统",
+        "天气变化"
+      ],
+      "methodModels": [
+        {
+          "name": "天气系统",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "天气系统"
+        }
+      ],
+      "commonConfusions": [
+        "冷锋"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "天气系统",
+          "method": "见方法模型",
+          "example": "天气系统"
+        }
+      ]
+    },
+    {
+      "section": "第二节 构造地貌的形成",
+      "aliases": [
+        "构造地貌",
+        "褶皱",
+        "断层"
+      ],
+      "conceptSummary": "内力作用形成构造地貌：褶皱、断层、火山。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "褶皱背斜向斜",
+        "断层",
+        "火山"
+      ],
+      "methodModels": [
+        {
+          "name": "构造地貌",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "构造地貌"
+        }
+      ],
+      "commonConfusions": [
+        "褶皱断层"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "构造地貌",
+          "method": "见方法模型",
+          "example": "构造地貌"
+        }
+      ]
+    },
+    {
+      "section": "第三节 海—气相互作用",
+      "aliases": [
+        "海气",
+        "洋流",
+        "热量"
+      ],
+      "conceptSummary": "海气相互作用影响热量水分交换，厄尔尼诺拉尼娜。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "海气交换",
+        "厄尔尼诺",
+        "热量平衡"
+      ],
+      "methodModels": [
+        {
+          "name": "海气作用",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "海气相互作用"
+        }
+      ],
+      "commonConfusions": [
+        "厄尔尼诺"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "海气相互作用",
+          "method": "见方法模型",
+          "example": "海气相互作用"
+        }
+      ]
+    },
+    {
+      "section": "第一节 自然环境的整体性",
+      "aliases": [
+        "整体性",
+        "要素联系"
+      ],
+      "conceptSummary": "自然环境各要素相互联系相互制约，具有整体性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "整体性表现",
+        "要素关联",
+        "人类影响"
+      ],
+      "methodModels": [
+        {
+          "name": "整体性",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "自然环境整体性"
+        }
+      ],
+      "commonConfusions": [
+        "要素联系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自然环境整体性",
+          "method": "见方法模型",
+          "example": "自然环境整体性"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

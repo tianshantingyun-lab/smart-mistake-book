@@ -2,21 +2,21 @@
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
   "coreSectionsTotal": 934,
-  "coveredSectionsTotal": 172,
-  "overallCoverageRatio": 0.184,
+  "coveredSectionsTotal": 541,
+  "overallCoverageRatio": 0.579,
   "perSubject": [
     {
       "subject": "BIOLOGY",
       "coreSections": 173,
-      "coveredSections": 24,
-      "coverageRatio": 0.139,
+      "coveredSections": 103,
+      "coverageRatio": 0.595,
       "coreBasis": "sections"
     },
     {
       "subject": "CHEMISTRY",
       "coreSections": 92,
-      "coveredSections": 22,
-      "coverageRatio": 0.239,
+      "coveredSections": 67,
+      "coverageRatio": 0.728,
       "coreBasis": "sections"
     },
     {
@@ -36,36 +36,36 @@
     {
       "subject": "GEOGRAPHY",
       "coreSections": 93,
-      "coveredSections": 15,
-      "coverageRatio": 0.161,
+      "coveredSections": 35,
+      "coverageRatio": 0.376,
       "coreBasis": "sections"
     },
     {
       "subject": "HISTORY",
       "coreSections": 105,
-      "coveredSections": 14,
-      "coverageRatio": 0.133,
+      "coveredSections": 39,
+      "coverageRatio": 0.371,
       "coreBasis": "sections"
     },
     {
       "subject": "MATH",
       "coreSections": 155,
-      "coveredSections": 47,
-      "coverageRatio": 0.303,
+      "coveredSections": 99,
+      "coverageRatio": 0.639,
       "coreBasis": "sections"
     },
     {
       "subject": "PHYSICS",
       "coreSections": 125,
-      "coveredSections": 16,
-      "coverageRatio": 0.128,
+      "coveredSections": 144,
+      "coverageRatio": 1.152,
       "coreBasis": "sections"
     },
     {
       "subject": "POLITICS",
       "coreSections": 152,
-      "coveredSections": 22,
-      "coverageRatio": 0.145,
+      "coveredSections": 42,
+      "coverageRatio": 0.276,
       "coreBasis": "sections"
     }
   ],

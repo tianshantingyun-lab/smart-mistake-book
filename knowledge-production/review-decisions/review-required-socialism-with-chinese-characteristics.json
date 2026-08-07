@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 5,
+  "sectionsApproved": 5,
   "sections": [
     {
       "section": "科学社会主义",
@@ -19,6 +19,27 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.125,
       "textbookTocOverlap": 0.188,
+      "issues": []
+    },
+    {
+      "section": "实现中华民族伟大复兴的中国梦",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.019,
+      "textbookTocOverlap": 0.308,
+      "issues": []
+    },
+    {
+      "section": "中国特色社会主义进入新时代",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "中国共产党领导人民站起来、富起来、强起来",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.455,
       "issues": []
     }
   ]

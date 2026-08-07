@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 4,
-  "sectionsApproved": 4,
+  "sectionsTotal": 9,
+  "sectionsApproved": 9,
   "sections": [
     {
       "section": "人口",
@@ -33,6 +33,41 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.091,
       "textbookTocOverlap": 0.091,
+      "issues": []
+    },
+    {
+      "section": "第三节 人口容量",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第二节 城镇化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第二节 工业区位因素及其变化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第一节 区域发展对交通运输布局的影响",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "第二节 交通运输布局对区域发展的影响",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.5,
       "issues": []
     }
   ]

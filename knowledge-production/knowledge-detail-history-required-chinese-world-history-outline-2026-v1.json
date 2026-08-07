@@ -320,6 +320,495 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第3课 秦统一多民族封建国家的建立",
+      "aliases": [
+        "秦朝",
+        "统一",
+        "郡县制"
+      ],
+      "conceptSummary": "秦灭六国统一，建立中央集权制度（皇帝、郡县制）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "秦统一",
+        "中央集权",
+        "郡县制"
+      ],
+      "methodModels": [
+        {
+          "name": "秦朝制度",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "秦统一"
+        }
+      ],
+      "commonConfusions": [
+        "郡县制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "秦统一",
+          "method": "见方法模型",
+          "example": "秦统一"
+        }
+      ]
+    },
+    {
+      "section": "第5课 三国两晋南北朝的政权更迭与民族交融",
+      "aliases": [
+        "三国两晋南北朝",
+        "民族交融"
+      ],
+      "conceptSummary": "三国两晋南北朝政权更迭频繁，民族交融加强。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "政权更迭",
+        "民族交融",
+        "经济重心南移开端"
+      ],
+      "methodModels": [
+        {
+          "name": "民族交融",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "魏晋南北朝"
+        }
+      ],
+      "commonConfusions": [
+        "政权更迭"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "魏晋南北朝",
+          "method": "见方法模型",
+          "example": "魏晋南北朝"
+        }
+      ]
+    },
+    {
+      "section": "第8课 三国至隋唐的文化",
+      "aliases": [
+        "文化",
+        "唐诗",
+        "佛教"
+      ],
+      "conceptSummary": "三国至隋唐文化繁荣：唐诗、佛教传播、书法绘画。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "唐诗",
+        "佛教道教",
+        "书法绘画"
+      ],
+      "methodModels": [
+        {
+          "name": "隋唐文化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "隋唐文化"
+        }
+      ],
+      "commonConfusions": [
+        "唐诗"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "隋唐文化",
+          "method": "见方法模型",
+          "example": "隋唐文化"
+        }
+      ]
+    },
+    {
+      "section": "第10课 辽夏金元的统治",
+      "aliases": [
+        "辽",
+        "夏",
+        "金",
+        "元"
+      ],
+      "conceptSummary": "辽夏金元多民族政权并立，元朝行省制度。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "辽夏金元",
+        "行省制",
+        "民族融合"
+      ],
+      "methodModels": [
+        {
+          "name": "多民族政权",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "辽夏金元"
+        }
+      ],
+      "commonConfusions": [
+        "行省制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "辽夏金元",
+          "method": "见方法模型",
+          "example": "辽夏金元"
+        }
+      ]
+    },
+    {
+      "section": "第14课 明至清中叶的经济与文化",
+      "aliases": [
+        "明清经济",
+        "商品经济发展",
+        "文化"
+      ],
+      "conceptSummary": "明清经济繁荣商品经济活跃，出现资本主义萌芽，文化专制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "明清经济",
+        "资本主义萌芽",
+        "八股取士"
+      ],
+      "methodModels": [
+        {
+          "name": "明清经济",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "明清经济文化"
+        }
+      ],
+      "commonConfusions": [
+        "资本主义萌芽"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "明清经济文化",
+          "method": "见方法模型",
+          "example": "明清经济文化"
+        }
+      ]
+    },
+    {
+      "section": "第9课 资产阶级革命与资本主义制度的确立",
+      "aliases": [
+        "资产阶级革命",
+        "资本主义制度"
+      ],
+      "conceptSummary": "英法美资产阶级革命确立资本主义制度（君主立宪/共和）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "英国革命",
+        "美国独立战争",
+        "法国大革命"
+      ],
+      "methodModels": [
+        {
+          "name": "资产阶级革命",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "资产阶级革命"
+        }
+      ],
+      "commonConfusions": [
+        "资本主义制度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "资产阶级革命",
+          "method": "见方法模型",
+          "example": "资产阶级革命"
+        }
+      ]
+    },
+    {
+      "section": "第14课 第一次世界大战与战后国际秩序",
+      "aliases": [
+        "一战",
+        "凡尔赛体系"
+      ],
+      "conceptSummary": "第一次世界大战爆发原因与影响，战后凡尔赛-华盛顿体系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "一战原因",
+        "凡尔赛体系",
+        "战后秩序"
+      ],
+      "methodModels": [
+        {
+          "name": "一战",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "第一次世界大战"
+        }
+      ],
+      "commonConfusions": [
+        "凡尔赛体系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "第一次世界大战",
+          "method": "见方法模型",
+          "example": "第一次世界大战"
+        }
+      ]
+    },
+    {
+      "section": "第17课 第二次世界大战与战后国际秩序的形成",
+      "aliases": [
+        "二战",
+        "雅尔塔体系",
+        "联合国"
+      ],
+      "conceptSummary": "第二次世界大战与战后雅尔塔体系、联合国建立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "二战进程",
+        "雅尔塔体系",
+        "联合国"
+      ],
+      "methodModels": [
+        {
+          "name": "二战",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "第二次世界大战"
+        }
+      ],
+      "commonConfusions": [
+        "雅尔塔体系"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "第二次世界大战",
+          "method": "见方法模型",
+          "example": "第二次世界大战"
+        }
+      ]
+    },
+    {
+      "section": "第20课 社会主义国家的发展与变化",
+      "aliases": [
+        "社会主义",
+        "苏联",
+        "东欧"
+      ],
+      "conceptSummary": "社会主义国家发展与变化，苏联解体东欧剧变。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "苏联发展",
+        "东欧剧变",
+        "社会主义改革"
+      ],
+      "methodModels": [
+        {
+          "name": "社会主义国家",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "社会主义国家"
+        }
+      ],
+      "commonConfusions": [
+        "东欧剧变"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "社会主义国家",
+          "method": "见方法模型",
+          "example": "社会主义国家"
+        }
+      ]
+    },
+    {
+      "section": "第21课 世界殖民体系的瓦解与新兴国家的发展",
+      "aliases": [
+        "非殖民化",
+        "新兴国家"
+      ],
+      "conceptSummary": "二战后世界殖民体系瓦解，亚非拉新兴国家发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "非殖民化",
+        "第三世界",
+        "民族解放"
+      ],
+      "methodModels": [
+        {
+          "name": "非殖民化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "新兴国家"
+        }
+      ],
+      "commonConfusions": [
+        "殖民体系瓦解"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新兴国家",
+          "method": "见方法模型",
+          "example": "新兴国家"
+        }
+      ]
+    },
+    {
+      "section": "第23课 全民族浴血奋战与抗日战争的胜利",
+      "aliases": [
+        "抗日战争",
+        "全民族抗战",
+        "胜利"
+      ],
+      "conceptSummary": "全民族抗战坚持持久战，1945年抗战胜利。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "全民族抗战",
+        "百团大战",
+        "抗战胜利"
+      ],
+      "methodModels": [
+        {
+          "name": "抗日战争",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "抗战胜利"
+        }
+      ],
+      "commonConfusions": [
+        "全民族抗战"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "抗战胜利",
+          "method": "见方法模型",
+          "example": "抗战胜利"
+        }
+      ]
+    },
+    {
+      "section": "第23课 和平发展合作共赢的历史潮流",
+      "aliases": [
+        "和平发展",
+        "合作共赢"
+      ],
+      "conceptSummary": "当今世界主题和平与发展，推动构建人类命运共同体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "和平发展",
+        "合作共赢",
+        "人类命运共同体"
+      ],
+      "methodModels": [
+        {
+          "name": "和平发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "和平发展潮流"
+        }
+      ],
+      "commonConfusions": [
+        "人类命运共同体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "和平发展潮流",
+          "method": "见方法模型",
+          "example": "和平发展潮流"
+        }
+      ]
+    },
+    {
+      "section": "第29课 中国特色社会主义进入新时代",
+      "aliases": [
+        "新时代",
+        "中国特色社会主义"
+      ],
+      "conceptSummary": "中国特色社会主义进入新时代，实现中华民族伟大复兴。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新时代",
+        "主要矛盾",
+        "中国梦"
+      ],
+      "methodModels": [
+        {
+          "name": "新时代",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "新时代"
+        }
+      ],
+      "commonConfusions": [
+        "主要矛盾"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新时代",
+          "method": "见方法模型",
+          "example": "新时代"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -95,6 +95,156 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第6课 古代人类的迁徙和区域文化的形成",
+      "aliases": [
+        "人口迁徙",
+        "区域文化"
+      ],
+      "conceptSummary": "古代人类迁徙促进区域文化形成与交流。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人口迁徙",
+        "文化融合",
+        "区域文化"
+      ],
+      "methodModels": [
+        {
+          "name": "人口迁徙",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人口迁徙与文化"
+        }
+      ],
+      "commonConfusions": [
+        "区域文化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人口迁徙与文化",
+          "method": "见方法模型",
+          "example": "人口迁徙与文化"
+        }
+      ]
+    },
+    {
+      "section": "第8课 现代社会的移民和多元文化",
+      "aliases": [
+        "移民",
+        "多元文化"
+      ],
+      "conceptSummary": "现代社会移民流动加快，多元文化交流融合。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "现代移民",
+        "多元文化",
+        "文化交流"
+      ],
+      "methodModels": [
+        {
+          "name": "移民",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "移民与多元文化"
+        }
+      ],
+      "commonConfusions": [
+        "多元文化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "移民与多元文化",
+          "method": "见方法模型",
+          "example": "移民与多元文化"
+        }
+      ]
+    },
+    {
+      "section": "第14课 文化传承的多种载体及其发展",
+      "aliases": [
+        "文化传承",
+        "载体",
+        "教育"
+      ],
+      "conceptSummary": "文化传承载体多样：文字、教育、书籍、遗产。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "文化载体",
+        "教育传承",
+        "文化遗产"
+      ],
+      "methodModels": [
+        {
+          "name": "文化传承",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "文化传承载体"
+        }
+      ],
+      "commonConfusions": [
+        "文化载体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "文化传承载体",
+          "method": "见方法模型",
+          "example": "文化传承载体"
+        }
+      ]
+    },
+    {
+      "section": "第3课 中古时期的欧洲",
+      "aliases": [
+        "中古欧洲",
+        "封建制度",
+        "庄园"
+      ],
+      "conceptSummary": "中古欧洲封建制度、庄园经济与基督教影响。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "封建制度",
+        "庄园",
+        "教会"
+      ],
+      "methodModels": [
+        {
+          "name": "中古欧洲",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中古欧洲"
+        }
+      ],
+      "commonConfusions": [
+        "封建制度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中古欧洲",
+          "method": "见方法模型",
+          "example": "中古欧洲"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

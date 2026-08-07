@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 6,
+  "sectionsApproved": 6,
   "sections": [
     {
       "section": "资源安全",
@@ -19,6 +19,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.067,
       "textbookTocOverlap": 0.067,
+      "issues": []
+    },
+    {
+      "section": "第一节 环境安全对国家安全的影响",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第二节 环境污染与国家安全",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第三节 环境问题及其危害",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "第二节 国家战略与政策",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.083,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]

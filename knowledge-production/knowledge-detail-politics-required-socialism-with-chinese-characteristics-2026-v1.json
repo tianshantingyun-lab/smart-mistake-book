@@ -87,6 +87,118 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "实现中华民族伟大复兴的中国梦",
+      "aliases": [
+        "中国梦",
+        "民族复兴"
+      ],
+      "conceptSummary": "中国梦是中华民族伟大复兴，本质是国家富强民族振兴人民幸福。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "中国梦内涵",
+        "四个伟大",
+        "两步走战略"
+      ],
+      "methodModels": [
+        {
+          "name": "中国梦",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国梦"
+        }
+      ],
+      "commonConfusions": [
+        "四个伟大"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国梦",
+          "method": "见方法模型",
+          "example": "中国梦"
+        }
+      ]
+    },
+    {
+      "section": "中国特色社会主义进入新时代",
+      "aliases": [
+        "新时代",
+        "主要矛盾"
+      ],
+      "conceptSummary": "中国特色社会主义进入新时代，主要矛盾是人民美好生活需要与不平衡不充分发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新时代特征",
+        "主要矛盾",
+        "历史方位"
+      ],
+      "methodModels": [
+        {
+          "name": "新时代",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "新时代"
+        }
+      ],
+      "commonConfusions": [
+        "主要矛盾"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "新时代",
+          "method": "见方法模型",
+          "example": "新时代"
+        }
+      ]
+    },
+    {
+      "section": "中国共产党领导人民站起来、富起来、强起来",
+      "aliases": [
+        "站起来",
+        "富起来",
+        "强起来"
+      ],
+      "conceptSummary": "中国共产党领导人民完成站起来、富起来到强起来的伟大飞跃。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "三个飞跃",
+        "党的领导",
+        "历史成就"
+      ],
+      "methodModels": [
+        {
+          "name": "三个飞跃",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "三个飞跃"
+        }
+      ],
+      "commonConfusions": [
+        "党的领导"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "三个飞跃",
+          "method": "见方法模型",
+          "example": "三个飞跃"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

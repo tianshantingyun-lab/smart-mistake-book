@@ -183,6 +183,194 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第三节 人口容量",
+      "aliases": [
+        "人口容量",
+        "环境承载力",
+        "合理容量"
+      ],
+      "conceptSummary": "人口容量是环境能承载的最大人口数量；合理容量是适度人口。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "环境人口容量",
+        "合理人口容量",
+        "制约因素"
+      ],
+      "methodModels": [
+        {
+          "name": "人口容量",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人口容量"
+        }
+      ],
+      "commonConfusions": [
+        "环境承载力"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人口容量",
+          "method": "见方法模型",
+          "example": "人口容量"
+        }
+      ]
+    },
+    {
+      "section": "第二节 城镇化",
+      "aliases": [
+        "城镇化",
+        "城市化",
+        "城市问题"
+      ],
+      "conceptSummary": "城镇化是人口向城市集聚过程，有城市问题。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "城镇化标志",
+        "城镇化阶段",
+        "城市问题"
+      ],
+      "methodModels": [
+        {
+          "name": "城镇化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "城镇化"
+        }
+      ],
+      "commonConfusions": [
+        "城市化"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "城镇化",
+          "method": "见方法模型",
+          "example": "城镇化"
+        }
+      ]
+    },
+    {
+      "section": "第二节 工业区位因素及其变化",
+      "aliases": [
+        "工业区位",
+        "区位因素",
+        "布局"
+      ],
+      "conceptSummary": "工业区位受原料市场劳动力交通等因素影响，区位因素变化。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "工业区位因素",
+        "工业布局",
+        "区位变化"
+      ],
+      "methodModels": [
+        {
+          "name": "工业区位",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "工业区位"
+        }
+      ],
+      "commonConfusions": [
+        "主导因素"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "工业区位",
+          "method": "见方法模型",
+          "example": "工业区位"
+        }
+      ]
+    },
+    {
+      "section": "第一节 区域发展对交通运输布局的影响",
+      "aliases": [
+        "交通运输布局",
+        "区域发展"
+      ],
+      "conceptSummary": "区域发展影响交通运输布局，交通影响区域发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "交通布局因素",
+        "交通与区域",
+        "交通线路"
+      ],
+      "methodModels": [
+        {
+          "name": "交通布局",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "交通运输布局"
+        }
+      ],
+      "commonConfusions": [
+        "交通区域"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "交通运输布局",
+          "method": "见方法模型",
+          "example": "交通运输布局"
+        }
+      ]
+    },
+    {
+      "section": "第二节 交通运输布局对区域发展的影响",
+      "aliases": [
+        "交通影响",
+        "区域发展"
+      ],
+      "conceptSummary": "交通运输布局促进区域发展，影响聚落产业。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "交通促进作用",
+        "产业布局",
+        "聚落分布"
+      ],
+      "methodModels": [
+        {
+          "name": "交通影响",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "交通运输影响"
+        }
+      ],
+      "commonConfusions": [
+        "交通作用"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "交通运输影响",
+          "method": "见方法模型",
+          "example": "交通运输影响"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

@@ -105,6 +105,82 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第11课 中国古代的民族关系与对外交往",
+      "aliases": [
+        "民族关系",
+        "对外交往",
+        "民族政策"
+      ],
+      "conceptSummary": "中国古代民族关系与对外交往政策促进统一多民族国家发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民族政策",
+        "和亲册封",
+        "对外交流"
+      ],
+      "methodModels": [
+        {
+          "name": "民族关系",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "古代民族关系"
+        }
+      ],
+      "commonConfusions": [
+        "民族政策"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古代民族关系",
+          "method": "见方法模型",
+          "example": "古代民族关系"
+        }
+      ]
+    },
+    {
+      "section": "第12课 近代西方民族国家与国际法的发展",
+      "aliases": [
+        "民族国家",
+        "国际法",
+        "威斯特伐利亚"
+      ],
+      "conceptSummary": "近代西方民族国家形成，威斯特伐利亚体系奠定国际法基础。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民族国家",
+        "国际法",
+        "主权国家"
+      ],
+      "methodModels": [
+        {
+          "name": "国际法",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "民族国家与国际法"
+        }
+      ],
+      "commonConfusions": [
+        "威斯特伐利亚"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "民族国家与国际法",
+          "method": "见方法模型",
+          "example": "民族国家与国际法"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

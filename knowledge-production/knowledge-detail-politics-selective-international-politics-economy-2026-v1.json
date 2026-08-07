@@ -91,6 +91,120 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第一课 国体与政体",
+      "aliases": [
+        "国体",
+        "政体",
+        "国家"
+      ],
+      "conceptSummary": "国体决定政体，政体反映国体；我国是人民民主专政的社会主义国家。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国体政体关系",
+        "国家类型",
+        "国家职能"
+      ],
+      "methodModels": [
+        {
+          "name": "国体政体",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国体与政体"
+        }
+      ],
+      "commonConfusions": [
+        "国体政体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国体与政体",
+          "method": "见方法模型",
+          "example": "国体与政体"
+        }
+      ]
+    },
+    {
+      "section": "第八课 主要的国际组织",
+      "aliases": [
+        "国际组织",
+        "联合国",
+        "世贸"
+      ],
+      "conceptSummary": "国际组织是国际社会重要成员，联合国是最大的国际组织。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国际组织分类",
+        "联合国作用",
+        "世贸组织"
+      ],
+      "methodModels": [
+        {
+          "name": "国际组织",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "国际组织"
+        }
+      ],
+      "commonConfusions": [
+        "联合国"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "国际组织",
+          "method": "见方法模型",
+          "example": "国际组织"
+        }
+      ]
+    },
+    {
+      "section": "区域性国际组织",
+      "aliases": [
+        "区域组织",
+        "欧盟",
+        "东盟"
+      ],
+      "conceptSummary": "区域性国际组织如欧盟、东盟、非盟促进区域合作。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "欧盟",
+        "东盟",
+        "区域合作"
+      ],
+      "methodModels": [
+        {
+          "name": "区域组织",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "区域国际组织"
+        }
+      ],
+      "commonConfusions": [
+        "欧盟"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "区域国际组织",
+          "method": "见方法模型",
+          "example": "区域国际组织"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

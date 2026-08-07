@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 5,
+  "sectionsApproved": 5,
   "sections": [
     {
       "section": "逻辑思维的基本要求",
@@ -19,6 +19,27 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.077,
       "textbookTocOverlap": 0.077,
+      "issues": []
+    },
+    {
+      "section": "正确运用简单判断",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.182,
+      "issues": []
+    },
+    {
+      "section": "第六课 掌握演绎推理方法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第十一课 创新思维要善于联想",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]

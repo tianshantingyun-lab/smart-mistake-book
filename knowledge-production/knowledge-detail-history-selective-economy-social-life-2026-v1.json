@@ -135,6 +135,268 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第2课 新航路开辟后的食物物种交流",
+      "aliases": [
+        "食物交流",
+        "新航路",
+        "物种"
+      ],
+      "conceptSummary": "新航路开辟后食物物种全球交流，影响人口与饮食。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "食物物种交流",
+        "人口增长",
+        "饮食变化"
+      ],
+      "methodModels": [
+        {
+          "name": "食物交流",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "食物物种交流"
+        }
+      ],
+      "commonConfusions": [
+        "物种交流"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "食物物种交流",
+          "method": "见方法模型",
+          "example": "食物物种交流"
+        }
+      ]
+    },
+    {
+      "section": "第5课 工业革命与工厂制度",
+      "aliases": [
+        "工业革命",
+        "工厂制度"
+      ],
+      "conceptSummary": "工业革命产生工厂制度，机器大生产取代手工工场。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "工厂制度",
+        "工业革命影响",
+        "城市化"
+      ],
+      "methodModels": [
+        {
+          "name": "工业革命",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "工业革命工厂制度"
+        }
+      ],
+      "commonConfusions": [
+        "工厂制度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "工业革命工厂制度",
+          "method": "见方法模型",
+          "example": "工业革命工厂制度"
+        }
+      ]
+    },
+    {
+      "section": "第8课 世界市场与商业贸易",
+      "aliases": [
+        "世界市场",
+        "商业贸易",
+        "贸易体系"
+      ],
+      "conceptSummary": "新航路开辟到工业革命，世界市场逐步形成。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "世界市场形成",
+        "商业贸易",
+        "贸易制度"
+      ],
+      "methodModels": [
+        {
+          "name": "世界市场",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "世界市场与贸易"
+        }
+      ],
+      "commonConfusions": [
+        "商业贸易"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "世界市场与贸易",
+          "method": "见方法模型",
+          "example": "世界市场与贸易"
+        }
+      ]
+    },
+    {
+      "section": "第11课 辽宋夏金元的经济、社会与文化",
+      "aliases": [
+        "宋代经济",
+        "经济重心南移"
+      ],
+      "conceptSummary": "辽宋夏金元经济繁荣，经济重心南移完成，文化发达。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "经济重心南移",
+        "宋代商业",
+        "文化成就"
+      ],
+      "methodModels": [
+        {
+          "name": "宋代经济",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "宋元经济文化"
+        }
+      ],
+      "commonConfusions": [
+        "经济重心南移"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "宋元经济文化",
+          "method": "见方法模型",
+          "example": "宋元经济文化"
+        }
+      ]
+    },
+    {
+      "section": "第11课 近代以来的城市化进程",
+      "aliases": [
+        "城市化",
+        "城市发展"
+      ],
+      "conceptSummary": "工业革命后城市化进程加快，城市功能与问题。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "城市化进程",
+        "城市功能",
+        "城市问题"
+      ],
+      "methodModels": [
+        {
+          "name": "城市化",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "城市化进程"
+        }
+      ],
+      "commonConfusions": [
+        "城市问题"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "城市化进程",
+          "method": "见方法模型",
+          "example": "城市化进程"
+        }
+      ]
+    },
+    {
+      "section": "第12课 水陆交通的变迁",
+      "aliases": [
+        "交通",
+        "运河",
+        "铁路"
+      ],
+      "conceptSummary": "水陆交通变迁影响经济发展与区域联系。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "交通发展",
+        "运河铁路",
+        "交通影响"
+      ],
+      "methodModels": [
+        {
+          "name": "交通变迁",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "水陆交通"
+        }
+      ],
+      "commonConfusions": [
+        "铁路"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "水陆交通",
+          "method": "见方法模型",
+          "example": "水陆交通"
+        }
+      ]
+    },
+    {
+      "section": "第14课 明至清中叶的经济与文化",
+      "aliases": [
+        "明清经济",
+        "商品经济"
+      ],
+      "conceptSummary": "明清经济活跃商品经济繁荣，文化专制。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "明清经济",
+        "资本主义萌芽",
+        "文化"
+      ],
+      "methodModels": [
+        {
+          "name": "明清经济",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "明清经济"
+        }
+      ],
+      "commonConfusions": [
+        "商品经济"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "明清经济",
+          "method": "见方法模型",
+          "example": "明清经济"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

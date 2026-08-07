@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 3,
-  "sectionsApproved": 3,
+  "sectionsTotal": 8,
+  "sectionsApproved": 8,
   "sections": [
     {
       "section": "中国共产党的领导",
@@ -26,6 +26,41 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.214,
       "textbookTocOverlap": 0.071,
+      "issues": []
+    },
+    {
+      "section": "基层群众自治制度",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "民族区域自治制度",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.071,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "坚持人民民主专政",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第七课 治国理政的基本方式",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.231,
+      "issues": []
+    },
+    {
+      "section": "公正司法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.167,
       "issues": []
     }
   ]

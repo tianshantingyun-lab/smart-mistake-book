@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 2,
-  "sectionsApproved": 2,
+  "sectionsTotal": 6,
+  "sectionsApproved": 6,
   "sections": [
     {
       "section": "区域及其发展",
@@ -19,6 +19,34 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.143,
+      "issues": []
+    },
+    {
+      "section": "第二节 自然资源及其利用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第四节 地理信息技术在防灾减灾中的应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.625,
+      "issues": []
+    },
+    {
+      "section": "第三节 防灾减灾",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "第二节 中国的能源安全",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.273,
       "issues": []
     }
   ]

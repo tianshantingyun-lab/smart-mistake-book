@@ -131,6 +131,192 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "基层群众自治制度",
+      "aliases": [
+        "基层自治",
+        "村委会",
+        "居委会"
+      ],
+      "conceptSummary": "基层群众自治制度是基本政治制度，村委会居委会实行民主管理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基层自治组织",
+        "民主选举决策管理",
+        "基层民主"
+      ],
+      "methodModels": [
+        {
+          "name": "基层自治",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "基层群众自治"
+        }
+      ],
+      "commonConfusions": [
+        "基层自治组织"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "基层群众自治",
+          "method": "见方法模型",
+          "example": "基层群众自治"
+        }
+      ]
+    },
+    {
+      "section": "民族区域自治制度",
+      "aliases": [
+        "民族区域自治",
+        "民族政策"
+      ],
+      "conceptSummary": "民族区域自治制度是基本政治制度，少数民族在自治地方行使自治权。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "民族区域自治",
+        "自治机关",
+        "民族关系"
+      ],
+      "methodModels": [
+        {
+          "name": "民族自治",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "民族区域自治"
+        }
+      ],
+      "commonConfusions": [
+        "自治权"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "民族区域自治",
+          "method": "见方法模型",
+          "example": "民族区域自治"
+        }
+      ]
+    },
+    {
+      "section": "坚持人民民主专政",
+      "aliases": [
+        "人民民主专政",
+        "国体"
+      ],
+      "conceptSummary": "我国国体是人民民主专政，人民当家作主。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "国体",
+        "人民当家作主",
+        "民主与专政"
+      ],
+      "methodModels": [
+        {
+          "name": "人民民主专政",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人民民主专政"
+        }
+      ],
+      "commonConfusions": [
+        "国体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人民民主专政",
+          "method": "见方法模型",
+          "example": "人民民主专政"
+        }
+      ]
+    },
+    {
+      "section": "第七课 治国理政的基本方式",
+      "aliases": [
+        "依法治国",
+        "法治国家"
+      ],
+      "conceptSummary": "全面依法治国是国家治理的基本方式，建设法治国家法治政府法治社会。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "依法治国",
+        "法治国家",
+        "法治政府"
+      ],
+      "methodModels": [
+        {
+          "name": "依法治国",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "治国理政"
+        }
+      ],
+      "commonConfusions": [
+        "法治国家"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "治国理政",
+          "method": "见方法模型",
+          "example": "治国理政"
+        }
+      ]
+    },
+    {
+      "section": "公正司法",
+      "aliases": [
+        "公正司法",
+        "司法公正"
+      ],
+      "conceptSummary": "公正司法要求司法独立、程序正义与实体正义。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "司法独立",
+        "程序正义",
+        "实体正义"
+      ],
+      "methodModels": [
+        {
+          "name": "公正司法",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "公正司法"
+        }
+      ],
+      "commonConfusions": [
+        "司法公正"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "公正司法",
+          "method": "见方法模型",
+          "example": "公正司法"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

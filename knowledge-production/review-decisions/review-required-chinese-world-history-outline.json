@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 7,
-  "sectionsApproved": 7,
+  "sectionsTotal": 20,
+  "sectionsApproved": 20,
   "sections": [
     {
       "section": "中华文明起源与早期国家",
@@ -54,6 +54,97 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.037,
       "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "第3课 秦统一多民族封建国家的建立",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "第5课 三国两晋南北朝的政权更迭与民族交融",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.174,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第8课 三国至隋唐的文化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第10课 辽夏金元的统治",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第14课 明至清中叶的经济与文化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.062,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "第9课 资产阶级革命与资本主义制度的确立",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.048,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第14课 第一次世界大战与战后国际秩序",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.043,
+      "textbookTocOverlap": 0.364,
+      "issues": []
+    },
+    {
+      "section": "第17课 第二次世界大战与战后国际秩序的形成",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.4,
+      "issues": []
+    },
+    {
+      "section": "第20课 社会主义国家的发展与变化",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.038,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第21课 世界殖民体系的瓦解与新兴国家的发展",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.045,
+      "textbookTocOverlap": 0.364,
+      "issues": []
+    },
+    {
+      "section": "第23课 全民族浴血奋战与抗日战争的胜利",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.037,
+      "textbookTocOverlap": 0.444,
+      "issues": []
+    },
+    {
+      "section": "第23课 和平发展合作共赢的历史潮流",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.037,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第29课 中国特色社会主义进入新时代",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.064,
+      "textbookTocOverlap": 0.429,
       "issues": []
     }
   ]

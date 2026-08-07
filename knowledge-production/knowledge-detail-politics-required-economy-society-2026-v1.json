@@ -214,6 +214,81 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第三课 我国的经济发展",
+      "aliases": [
+        "新发展理念",
+        "现代化经济体系"
+      ],
+      "conceptSummary": "贯彻新发展理念，建设现代化经济体系，推动高质量发展。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "新发展理念",
+        "现代化经济体系",
+        "高质量发展"
+      ],
+      "methodModels": [
+        {
+          "name": "经济发展",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "我国经济发展"
+        }
+      ],
+      "commonConfusions": [
+        "新发展理念"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "我国经济发展",
+          "method": "见方法模型",
+          "example": "我国经济发展"
+        }
+      ]
+    },
+    {
+      "section": "第四课 我国的个人收入分配与社会保障",
+      "aliases": [
+        "收入分配",
+        "社会保障",
+        "公平"
+      ],
+      "conceptSummary": "我国收入分配制度与社会保障体系促进公平。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分配制度",
+        "社会保障",
+        "共同富裕"
+      ],
+      "methodModels": [
+        {
+          "name": "分配保障",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "收入分配社会保障"
+        }
+      ],
+      "commonConfusions": [
+        "社会保障"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "收入分配社会保障",
+          "method": "见方法模型",
+          "example": "收入分配社会保障"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

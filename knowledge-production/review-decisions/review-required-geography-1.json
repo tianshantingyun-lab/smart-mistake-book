@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 7,
-  "sectionsApproved": 7,
+  "sectionsTotal": 14,
+  "sectionsApproved": 14,
   "sections": [
     {
       "section": "地球的宇宙环境",
@@ -54,6 +54,55 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.083,
+      "issues": []
+    },
+    {
+      "section": "第一节 植被",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "第二节 太阳对地球的影响",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第二节 地球运动的地理意义",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.273,
+      "issues": []
+    },
+    {
+      "section": "第一节 常见天气系统",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.154,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第二节 构造地貌的形成",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.067,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "第三节 海—气相互作用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.154,
+      "textbookTocOverlap": 0.182,
+      "issues": []
+    },
+    {
+      "section": "第一节 自然环境的整体性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]

@@ -94,6 +94,157 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第二节 自然资源及其利用",
+      "aliases": [
+        "自然资源",
+        "资源利用",
+        "可持续"
+      ],
+      "conceptSummary": "自然资源分可再生与非可再生，合理利用促进可持续。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "资源分类",
+        "资源利用",
+        "资源安全"
+      ],
+      "methodModels": [
+        {
+          "name": "自然资源",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "自然资源"
+        }
+      ],
+      "commonConfusions": [
+        "资源分类"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "自然资源",
+          "method": "见方法模型",
+          "example": "自然资源"
+        }
+      ]
+    },
+    {
+      "section": "第四节 地理信息技术在防灾减灾中的应用",
+      "aliases": [
+        "GIS",
+        "RS",
+        "GPS"
+      ],
+      "conceptSummary": "地理信息技术（RS/GIS/GPS）用于监测、预警与救灾。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "遥感RS",
+        "地理信息GIS",
+        "定位GPS"
+      ],
+      "methodModels": [
+        {
+          "name": "地理信息技术",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "地理信息技术"
+        }
+      ],
+      "commonConfusions": [
+        "GIS"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "地理信息技术",
+          "method": "见方法模型",
+          "example": "地理信息技术"
+        }
+      ]
+    },
+    {
+      "section": "第三节 防灾减灾",
+      "aliases": [
+        "防灾",
+        "减灾",
+        "灾害"
+      ],
+      "conceptSummary": "防灾减灾措施：监测预警、工程措施、应急预案。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "灾害类型",
+        "防灾措施",
+        "减灾工程"
+      ],
+      "methodModels": [
+        {
+          "name": "防灾减灾",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "防灾减灾"
+        }
+      ],
+      "commonConfusions": [
+        "灾害防治"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "防灾减灾",
+          "method": "见方法模型",
+          "example": "防灾减灾"
+        }
+      ]
+    },
+    {
+      "section": "第二节 中国的能源安全",
+      "aliases": [
+        "能源安全",
+        "能源结构"
+      ],
+      "conceptSummary": "中国能源安全面临挑战，优化能源结构发展新能源。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "能源结构",
+        "能源安全",
+        "新能源"
+      ],
+      "methodModels": [
+        {
+          "name": "能源安全",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "中国能源安全"
+        }
+      ],
+      "commonConfusions": [
+        "能源结构"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "中国能源安全",
+          "method": "见方法模型",
+          "example": "中国能源安全"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

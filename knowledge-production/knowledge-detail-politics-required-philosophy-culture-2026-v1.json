@@ -282,6 +282,156 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "第三课 把握世界的规律",
+      "aliases": [
+        "规律",
+        "主观能动性",
+        "尊重规律"
+      ],
+      "conceptSummary": "规律是事物运动过程中固有的本质的必然联系，人可认识和利用规律。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "规律客观性",
+        "尊重规律与发挥主观能动性",
+        "规律的发现与利用"
+      ],
+      "methodModels": [
+        {
+          "name": "规律分析",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "尊重规律利用规律"
+        }
+      ],
+      "commonConfusions": [
+        "规律客观性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "尊重规律利用规律",
+          "method": "见方法模型",
+          "example": "尊重规律利用规律"
+        }
+      ]
+    },
+    {
+      "section": "运动与物质",
+      "aliases": [
+        "运动",
+        "物质",
+        "相对静止"
+      ],
+      "conceptSummary": "物质是运动的，运动是物质的根本属性；运动与静止辩证统一。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "物质与运动",
+        "运动与静止",
+        "物质运动规律"
+      ],
+      "methodModels": [
+        {
+          "name": "物质运动",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "物质与运动"
+        }
+      ],
+      "commonConfusions": [
+        "运动静止"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "物质与运动",
+          "method": "见方法模型",
+          "example": "物质与运动"
+        }
+      ]
+    },
+    {
+      "section": "价值判断与价值选择",
+      "aliases": [
+        "价值",
+        "价值判断",
+        "价值选择"
+      ],
+      "conceptSummary": "价值判断与选择有社会历史性，要自觉站在最广大人民立场上。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "价值判断",
+        "价值选择",
+        "评价标准"
+      ],
+      "methodModels": [
+        {
+          "name": "价值判断",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "价值判断与选择"
+        }
+      ],
+      "commonConfusions": [
+        "价值标准"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "价值判断与选择",
+          "method": "见方法模型",
+          "example": "价值判断与选择"
+        }
+      ]
+    },
+    {
+      "section": "社会历史的主体",
+      "aliases": [
+        "人民群众",
+        "历史创造者"
+      ],
+      "conceptSummary": "人民群众是历史的创造者，是社会历史的主体。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "人民群众作用",
+        "群众观点群众路线"
+      ],
+      "methodModels": [
+        {
+          "name": "人民群众",
+          "steps": [
+            "按步骤",
+            "结合材料"
+          ],
+          "example": "人民群众"
+        }
+      ],
+      "commonConfusions": [
+        "历史主体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "人民群众",
+          "method": "见方法模型",
+          "example": "人民群众"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
