@@ -226,6 +226,376 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "6.3 二项式定理",
+      "aliases": [
+        "二项式",
+        "通项",
+        "系数"
+      ],
+      "conceptSummary": "(a+b)ⁿ展开通项T(k+1)=C(n,k)a^(n-k)b^k。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "通项公式",
+        "二项式系数",
+        "系数和2ⁿ"
+      ],
+      "methodModels": [
+        {
+          "name": "二项式展开",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "二项式定理"
+        }
+      ],
+      "commonConfusions": [
+        "通项"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "二项式定理",
+          "method": "见方法模型",
+          "example": "二项式定理"
+        }
+      ]
+    },
+    {
+      "section": "6.3.2二项式系数的性质",
+      "aliases": [
+        "二项式系数",
+        "对称"
+      ],
+      "conceptSummary": "二项式系数对称性、递增递减、和为2ⁿ。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "C(n,k)=C(n,n-k)",
+        "系数和2ⁿ"
+      ],
+      "methodModels": [
+        {
+          "name": "系数性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "二项式系数性质"
+        }
+      ],
+      "commonConfusions": [
+        "对称性"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "二项式系数性质",
+          "method": "见方法模型",
+          "example": "二项式系数性质"
+        }
+      ]
+    },
+    {
+      "section": "7.1.2全概率公式",
+      "aliases": [
+        "全概率",
+        "完备事件组"
+      ],
+      "conceptSummary": "全概率公式：P(B)=ΣP(Ai)P(B|Ai)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "完备事件组",
+        "加权求和"
+      ],
+      "methodModels": [
+        {
+          "name": "全概率",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "全概率公式"
+        }
+      ],
+      "commonConfusions": [
+        "完备事件组"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "全概率公式",
+          "method": "见方法模型",
+          "example": "全概率公式"
+        }
+      ]
+    },
+    {
+      "section": "7.4 二项分布与超几何分布",
+      "aliases": [
+        "二项分布",
+        "超几何",
+        "期望"
+      ],
+      "conceptSummary": "二项分布X~B(n,p)，E(X)=np；超几何分布不放回抽取。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "二项分布",
+        "超几何分布",
+        "期望方差"
+      ],
+      "methodModels": [
+        {
+          "name": "分布识别",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "二项与超几何"
+        }
+      ],
+      "commonConfusions": [
+        "二项分布"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "二项与超几何",
+          "method": "见方法模型",
+          "example": "二项与超几何"
+        }
+      ]
+    },
+    {
+      "section": "7.4.2超几何分布",
+      "aliases": [
+        "超几何分布",
+        "不放回"
+      ],
+      "conceptSummary": "超几何分布：从N个含M个特类的总体不放回抽取。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "超几何概率",
+        "不放回"
+      ],
+      "methodModels": [
+        {
+          "name": "超几何",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "超几何分布"
+        }
+      ],
+      "commonConfusions": [
+        "不放回"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "超几何分布",
+          "method": "见方法模型",
+          "example": "超几何分布"
+        }
+      ]
+    },
+    {
+      "section": "7.5 正态分布",
+      "aliases": [
+        "正态分布",
+        "钟形",
+        "μσ"
+      ],
+      "conceptSummary": "正态分布X~N(μ,σ²)，钟形曲线，68-95-99.7法则。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "正态曲线",
+        "标准化",
+        "3σ法则"
+      ],
+      "methodModels": [
+        {
+          "name": "正态分布",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "正态分布"
+        }
+      ],
+      "commonConfusions": [
+        "3σ法则"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正态分布",
+          "method": "见方法模型",
+          "example": "正态分布"
+        }
+      ]
+    },
+    {
+      "section": "8.1 成对数据的统计相关性",
+      "aliases": [
+        "相关性",
+        "散点图"
+      ],
+      "conceptSummary": "成对数据用散点图判断相关性与相关方向。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "散点图",
+        "正负相关"
+      ],
+      "methodModels": [
+        {
+          "name": "相关性",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "统计相关性"
+        }
+      ],
+      "commonConfusions": [
+        "散点图"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "统计相关性",
+          "method": "见方法模型",
+          "example": "统计相关性"
+        }
+      ]
+    },
+    {
+      "section": "8.1.2样本相关系数",
+      "aliases": [
+        "相关系数",
+        "r"
+      ],
+      "conceptSummary": "相关系数r刻画线性相关强度，|r|≤1。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "r计算",
+        "r>0正相关"
+      ],
+      "methodModels": [
+        {
+          "name": "相关系数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "相关系数"
+        }
+      ],
+      "commonConfusions": [
+        "|r|范围"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "相关系数",
+          "method": "见方法模型",
+          "example": "相关系数"
+        }
+      ]
+    },
+    {
+      "section": "8.2 一元线性回归模型及其应用",
+      "aliases": [
+        "回归",
+        "最小二乘",
+        "回归方程"
+      ],
+      "conceptSummary": "一元线性回归用最小二乘法求回归方程ŷ=bx+a。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "最小二乘",
+        "回归方程",
+        "预测"
+      ],
+      "methodModels": [
+        {
+          "name": "回归分析",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "线性回归"
+        }
+      ],
+      "commonConfusions": [
+        "最小二乘"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "线性回归",
+          "method": "见方法模型",
+          "example": "线性回归"
+        }
+      ]
+    },
+    {
+      "section": "8.3 列联表与独立性检验",
+      "aliases": [
+        "列联表",
+        "独立性检验",
+        "卡方"
+      ],
+      "conceptSummary": "列联表与卡方检验判断两变量是否独立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "列联表",
+        "χ²检验",
+        "独立性"
+      ],
+      "methodModels": [
+        {
+          "name": "独立性检验",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "独立性检验"
+        }
+      ],
+      "commonConfusions": [
+        "卡方"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "独立性检验",
+          "method": "见方法模型",
+          "example": "独立性检验"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

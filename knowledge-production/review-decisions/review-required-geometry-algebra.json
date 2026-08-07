@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 6,
-  "sectionsApproved": 6,
+  "sectionsTotal": 23,
+  "sectionsApproved": 23,
   "sections": [
     {
       "section": "6.1 平面向量的概念",
@@ -47,6 +47,125 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.143,
       "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "6.2.4向量的数量积",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.286,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "6.3.5平面向量数量积的坐标表示",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "6.4.2向量在物理中的应用举例",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "6.4.3余弦定理、正弦定理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.667,
+      "issues": []
+    },
+    {
+      "section": "8.1 基本立体图形",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "8.3 简单几何体的表面积与体积",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.3,
+      "issues": []
+    },
+    {
+      "section": "8.4 空间点、直线、平面之间的位置关系",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.077,
+      "textbookTocOverlap": 0.308,
+      "issues": []
+    },
+    {
+      "section": "8.5 空间直线、平面的平行",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "8.6 空间直线、平面的垂直",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "9.1.3获取数据的途径",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.045,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "9.2 用样本估计总体",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.118,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "9.2.2总体百分位数的估计",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.045,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "9.2.4总体离散程度的估计",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "10.1.2事件的关系与运算",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "10.1.3古典概型",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "10.2 事件的相互独立性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "10.3 频率与概率",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.091,
       "issues": []
     }
   ]

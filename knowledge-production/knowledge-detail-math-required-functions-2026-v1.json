@@ -630,6 +630,269 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "5.1 任意角和弧度制",
+      "aliases": [
+        "任意角",
+        "弧度制",
+        "角度弧度"
+      ],
+      "conceptSummary": "任意角包括正角负角零角；弧度制以半径长作单位，π弧度=180°。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "角的概念推广",
+        "弧度制定义",
+        "弧度=角度×π/180"
+      ],
+      "methodModels": [
+        {
+          "name": "弧度角度换算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "角度与弧度换算"
+        }
+      ],
+      "commonConfusions": [
+        "弧度制"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "角度与弧度换算",
+          "method": "见方法模型",
+          "example": "角度与弧度换算"
+        }
+      ]
+    },
+    {
+      "section": "5.3 诱导公式",
+      "aliases": [
+        "诱导公式",
+        "奇变偶不变"
+      ],
+      "conceptSummary": "诱导公式把任意角三角函数化为锐角：奇变偶不变符号看象限。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "2kπ+α公式",
+        "π±α公式",
+        "-α公式",
+        "奇变偶不变符号看象限"
+      ],
+      "methodModels": [
+        {
+          "name": "诱导公式应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "用诱导公式化简"
+        }
+      ],
+      "commonConfusions": [
+        "符号看象限"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "用诱导公式化简",
+          "method": "见方法模型",
+          "example": "用诱导公式化简"
+        }
+      ]
+    },
+    {
+      "section": "5.4.2正弦、余弦函数的性质",
+      "aliases": [
+        "正弦性质",
+        "余弦性质",
+        "周期"
+      ],
+      "conceptSummary": "正弦余弦函数性质：周期2π、值域[-1,1]、奇偶性、单调区间。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "周期T=2π",
+        "单调区间",
+        "对称轴对称中心"
+      ],
+      "methodModels": [
+        {
+          "name": "函数性质分析",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "正弦函数性质"
+        }
+      ],
+      "commonConfusions": [
+        "单调区间"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正弦函数性质",
+          "method": "见方法模型",
+          "example": "正弦函数性质"
+        }
+      ]
+    },
+    {
+      "section": "5.4.3正切函数的性质与图象",
+      "aliases": [
+        "正切",
+        "tan性质"
+      ],
+      "conceptSummary": "正切函数周期π、值域R、定义域 x≠π/2+kπ。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "T=π",
+        "值域R",
+        "渐近线"
+      ],
+      "methodModels": [
+        {
+          "name": "正切性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "正切函数"
+        }
+      ],
+      "commonConfusions": [
+        "正切定义域"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正切函数",
+          "method": "见方法模型",
+          "example": "正切函数"
+        }
+      ]
+    },
+    {
+      "section": "5.5 三角恒等变换",
+      "aliases": [
+        "和差公式",
+        "二倍角",
+        "恒等变换"
+      ],
+      "conceptSummary": "两角和差公式与二倍角公式：sin2α=2sinαcosα等。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "sin(α±β)",
+        "cos(α±β)",
+        "二倍角公式"
+      ],
+      "methodModels": [
+        {
+          "name": "公式应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "三角恒等变换"
+        }
+      ],
+      "commonConfusions": [
+        "二倍角"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "三角恒等变换",
+          "method": "见方法模型",
+          "example": "三角恒等变换"
+        }
+      ]
+    },
+    {
+      "section": "5.6 函数y=Asin(ωx+φ)",
+      "aliases": [
+        "正弦型",
+        "振幅",
+        "相位"
+      ],
+      "conceptSummary": "y=Asin(ωx+φ)中A振幅、ω决定周期、φ相位。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "振幅A",
+        "周期T=2π/ω",
+        "相位ωx+φ"
+      ],
+      "methodModels": [
+        {
+          "name": "正弦型分析",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "正弦型函数"
+        }
+      ],
+      "commonConfusions": [
+        "周期公式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正弦型函数",
+          "method": "见方法模型",
+          "example": "正弦型函数"
+        }
+      ]
+    },
+    {
+      "section": "5.7 三角函数的应用",
+      "aliases": [
+        "三角函数应用",
+        "建模"
+      ],
+      "conceptSummary": "用三角函数模型描述周期现象（潮汐、交流电）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "建模步骤",
+        "周期拟合"
+      ],
+      "methodModels": [
+        {
+          "name": "三角建模",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "三角函数应用"
+        }
+      ],
+      "commonConfusions": [
+        "周期现象"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "三角函数应用",
+          "method": "见方法模型",
+          "example": "三角函数应用"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

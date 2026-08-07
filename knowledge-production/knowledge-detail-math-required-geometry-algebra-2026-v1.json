@@ -351,6 +351,643 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "6.2.4向量的数量积",
+      "aliases": [
+        "数量积",
+        "点积",
+        "投影"
+      ],
+      "conceptSummary": "向量数量积 a·b=|a||b|cosθ，坐标 x1x2+y1y2。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "a·b=|a||b|cosθ",
+        "坐标形式",
+        "投影"
+      ],
+      "methodModels": [
+        {
+          "name": "数量积计算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "数量积"
+        }
+      ],
+      "commonConfusions": [
+        "数量积坐标"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "数量积",
+          "method": "见方法模型",
+          "example": "数量积"
+        }
+      ]
+    },
+    {
+      "section": "6.3.5平面向量数量积的坐标表示",
+      "aliases": [
+        "数量积坐标",
+        "垂直平行"
+      ],
+      "conceptSummary": "坐标下 a·b=x1x2+y1y2，垂直 a·b=0，平行 x1y2=x2y1。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "a·b=x1x2+y1y2",
+        "垂直条件",
+        "平行条件"
+      ],
+      "methodModels": [
+        {
+          "name": "坐标运算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "数量积坐标"
+        }
+      ],
+      "commonConfusions": [
+        "垂直平行"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "数量积坐标",
+          "method": "见方法模型",
+          "example": "数量积坐标"
+        }
+      ]
+    },
+    {
+      "section": "6.4.2向量在物理中的应用举例",
+      "aliases": [
+        "向量应用",
+        "物理"
+      ],
+      "conceptSummary": "用向量解决物理问题：力的合成、速度分解、功 W=F·s。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "力的分解",
+        "速度合成",
+        "功=数量积"
+      ],
+      "methodModels": [
+        {
+          "name": "向量物理应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "向量物理"
+        }
+      ],
+      "commonConfusions": [
+        "功与向量"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "向量物理",
+          "method": "见方法模型",
+          "example": "向量物理"
+        }
+      ]
+    },
+    {
+      "section": "6.4.3余弦定理、正弦定理",
+      "aliases": [
+        "正弦定理",
+        "余弦定理",
+        "解三角形"
+      ],
+      "conceptSummary": "解三角形：正弦定理 a/sinA=b/sinB=c/sinC，余弦定理 c²=a²+b²-2abcosC。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "正弦定理",
+        "余弦定理",
+        "面积公式"
+      ],
+      "methodModels": [
+        {
+          "name": "解三角形",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "解三角形"
+        }
+      ],
+      "commonConfusions": [
+        "正余弦定理"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "解三角形",
+          "method": "见方法模型",
+          "example": "解三角形"
+        }
+      ]
+    },
+    {
+      "section": "8.1 基本立体图形",
+      "aliases": [
+        "棱柱",
+        "棱锥",
+        "圆柱",
+        "球"
+      ],
+      "conceptSummary": "基本立体图形：棱柱棱锥棱台、圆柱圆锥圆台球。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "多面体分类",
+        "旋转体",
+        "结构特征"
+      ],
+      "methodModels": [
+        {
+          "name": "立体图形识别",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "立体图形"
+        }
+      ],
+      "commonConfusions": [
+        "多面体"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "立体图形",
+          "method": "见方法模型",
+          "example": "立体图形"
+        }
+      ]
+    },
+    {
+      "section": "8.3 简单几何体的表面积与体积",
+      "aliases": [
+        "表面积",
+        "体积",
+        "柱锥台球"
+      ],
+      "conceptSummary": "简单几何体表面积与体积公式：柱体Sh、锥体⅓Sh、球4/3πR³。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "柱体体积Sh",
+        "锥体⅓Sh",
+        "球表面积4πR²体积4/3πR³"
+      ],
+      "methodModels": [
+        {
+          "name": "体积计算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "几何体体积"
+        }
+      ],
+      "commonConfusions": [
+        "球体积"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "几何体体积",
+          "method": "见方法模型",
+          "example": "几何体体积"
+        }
+      ]
+    },
+    {
+      "section": "8.4 空间点、直线、平面之间的位置关系",
+      "aliases": [
+        "空间位置",
+        "异面",
+        "平行垂直"
+      ],
+      "conceptSummary": "空间点线面位置关系：共面/异面、平行、相交、垂直。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "点与线面",
+        "线与线位置",
+        "线与面位置"
+      ],
+      "methodModels": [
+        {
+          "name": "位置关系判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "空间位置关系"
+        }
+      ],
+      "commonConfusions": [
+        "异面直线"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "空间位置关系",
+          "method": "见方法模型",
+          "example": "空间位置关系"
+        }
+      ]
+    },
+    {
+      "section": "8.5 空间直线、平面的平行",
+      "aliases": [
+        "线面平行",
+        "面面平行",
+        "判定"
+      ],
+      "conceptSummary": "线面平行判定与性质，面面平行判定与性质。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "线面平行判定",
+        "面面平行判定",
+        "性质定理"
+      ],
+      "methodModels": [
+        {
+          "name": "平行证明",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "空间平行"
+        }
+      ],
+      "commonConfusions": [
+        "线面平行"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "空间平行",
+          "method": "见方法模型",
+          "example": "空间平行"
+        }
+      ]
+    },
+    {
+      "section": "8.6 空间直线、平面的垂直",
+      "aliases": [
+        "线面垂直",
+        "面面垂直",
+        "判定"
+      ],
+      "conceptSummary": "线面垂直判定与性质，面面垂直判定（面内线垂直交线）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "线面垂直判定",
+        "面面垂直",
+        "三垂线定理"
+      ],
+      "methodModels": [
+        {
+          "name": "垂直证明",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "空间垂直"
+        }
+      ],
+      "commonConfusions": [
+        "线面垂直"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "空间垂直",
+          "method": "见方法模型",
+          "example": "空间垂直"
+        }
+      ]
+    },
+    {
+      "section": "9.1.3获取数据的途径",
+      "aliases": [
+        "数据获取",
+        "调查",
+        "统计"
+      ],
+      "conceptSummary": "获取数据途径：直接调查、实验、间接（资料）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "直接与间接",
+        "全面调查抽样"
+      ],
+      "methodModels": [
+        {
+          "name": "数据获取",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "获取数据"
+        }
+      ],
+      "commonConfusions": [
+        "抽样"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "获取数据",
+          "method": "见方法模型",
+          "example": "获取数据"
+        }
+      ]
+    },
+    {
+      "section": "9.2 用样本估计总体",
+      "aliases": [
+        "样本估计",
+        "频率分布",
+        "直方图"
+      ],
+      "conceptSummary": "用样本频率分布直方图估计总体分布。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "频率分布表",
+        "直方图",
+        "茎叶图"
+      ],
+      "methodModels": [
+        {
+          "name": "频率分布",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "样本估计总体"
+        }
+      ],
+      "commonConfusions": [
+        "直方图"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "样本估计总体",
+          "method": "见方法模型",
+          "example": "样本估计总体"
+        }
+      ]
+    },
+    {
+      "section": "9.2.2总体百分位数的估计",
+      "aliases": [
+        "百分位数",
+        "分位数"
+      ],
+      "conceptSummary": "百分位数是有序数据中位于p%位置的值。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "百分位数定义",
+        "计算"
+      ],
+      "methodModels": [
+        {
+          "name": "百分位数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "百分位数"
+        }
+      ],
+      "commonConfusions": [
+        "分位数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "百分位数",
+          "method": "见方法模型",
+          "example": "百分位数"
+        }
+      ]
+    },
+    {
+      "section": "9.2.4总体离散程度的估计",
+      "aliases": [
+        "方差",
+        "标准差",
+        "离散"
+      ],
+      "conceptSummary": "方差标准差刻画数据离散程度，方差大波动大。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "方差s²=Σ(xi-x̄)²/n",
+        "标准差"
+      ],
+      "methodModels": [
+        {
+          "name": "离散程度",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "离散程度"
+        }
+      ],
+      "commonConfusions": [
+        "方差"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "离散程度",
+          "method": "见方法模型",
+          "example": "离散程度"
+        }
+      ]
+    },
+    {
+      "section": "10.1.2事件的关系与运算",
+      "aliases": [
+        "事件关系",
+        "并交",
+        "互斥"
+      ],
+      "conceptSummary": "事件关系：包含、并、交、互斥、对立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "并事件A∪B",
+        "交事件A∩B",
+        "互斥对立"
+      ],
+      "methodModels": [
+        {
+          "name": "事件关系",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "事件运算"
+        }
+      ],
+      "commonConfusions": [
+        "互斥对立"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "事件运算",
+          "method": "见方法模型",
+          "example": "事件运算"
+        }
+      ]
+    },
+    {
+      "section": "10.1.3古典概型",
+      "aliases": [
+        "古典概型",
+        "等可能",
+        "P=m/n"
+      ],
+      "conceptSummary": "古典概型：有限等可能基本事件，P(A)=m/n。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "基本事件等可能",
+        "P(A)=m/n"
+      ],
+      "methodModels": [
+        {
+          "name": "古典概型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "古典概型"
+        }
+      ],
+      "commonConfusions": [
+        "等可能"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古典概型",
+          "method": "见方法模型",
+          "example": "古典概型"
+        }
+      ]
+    },
+    {
+      "section": "10.2 事件的相互独立性",
+      "aliases": [
+        "独立事件",
+        "P(AB)"
+      ],
+      "conceptSummary": "事件独立：P(AB)=P(A)P(B)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "独立定义",
+        "P(AB)=P(A)P(B)"
+      ],
+      "methodModels": [
+        {
+          "name": "独立性",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "事件独立"
+        }
+      ],
+      "commonConfusions": [
+        "独立事件"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "事件独立",
+          "method": "见方法模型",
+          "example": "事件独立"
+        }
+      ]
+    },
+    {
+      "section": "10.3 频率与概率",
+      "aliases": [
+        "频率",
+        "概率",
+        "大数定律"
+      ],
+      "conceptSummary": "频率是试验结果，概率是理论值；大量重复试验频率趋于概率。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "频率与概率关系",
+        "大量试验"
+      ],
+      "methodModels": [
+        {
+          "name": "频率概率",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "频率与概率"
+        }
+      ],
+      "commonConfusions": [
+        "频率概率"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "频率与概率",
+          "method": "见方法模型",
+          "example": "频率与概率"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

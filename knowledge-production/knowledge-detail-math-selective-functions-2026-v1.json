@@ -314,6 +314,116 @@
           "example": "见上"
         }
       ]
+    },
+    {
+      "section": "4.4*数学归纳法",
+      "aliases": [
+        "数学归纳法",
+        "归纳"
+      ],
+      "conceptSummary": "数学归纳法证明与正整数有关的命题：奠基+归纳递推。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "n=1奠基",
+        "假设n=k成立推n=k+1"
+      ],
+      "methodModels": [
+        {
+          "name": "数学归纳法",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "数学归纳法"
+        }
+      ],
+      "commonConfusions": [
+        "归纳递推"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "数学归纳法",
+          "method": "见方法模型",
+          "example": "数学归纳法"
+        }
+      ]
+    },
+    {
+      "section": "5.2.3简单复合函数的导数",
+      "aliases": [
+        "复合函数",
+        "链式法则"
+      ],
+      "conceptSummary": "复合函数求导：f(g(x))'=f'(g(x))·g'(x)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "链式法则",
+        "逐层求导"
+      ],
+      "methodModels": [
+        {
+          "name": "复合求导",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "复合函数导数"
+        }
+      ],
+      "commonConfusions": [
+        "链式法则"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "复合函数导数",
+          "method": "见方法模型",
+          "example": "复合函数导数"
+        }
+      ]
+    },
+    {
+      "section": "5.3.2函数的极值与最大（小）值",
+      "aliases": [
+        "极值",
+        "最值",
+        "驻点"
+      ],
+      "conceptSummary": "极值点f'=0且左右变号；最值=极值与端点比较。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "f'=0求驻点",
+        "判断极值",
+        "端点比最值"
+      ],
+      "methodModels": [
+        {
+          "name": "极值最值",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "极值最值"
+        }
+      ],
+      "commonConfusions": [
+        "极值点"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "极值最值",
+          "method": "见方法模型",
+          "example": "极值最值"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [
