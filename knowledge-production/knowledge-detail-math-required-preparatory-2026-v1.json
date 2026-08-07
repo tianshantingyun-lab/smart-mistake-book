@@ -563,6 +563,79 @@
           "example": "x²+ax+4≥0 恒成立 ⇒ -4≤a≤4"
         }
       ]
+    },
+    {
+      "section": "1.4.2 充要条件",
+      "aliases": [
+        "充要条件"
+      ],
+      "conceptSummary": "充要条件：A⇔B，A是B的充分必要条件，两者等价。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "充要条件定义",
+        "A⇔B",
+        "等价条件"
+      ],
+      "methodModels": [
+        {
+          "name": "充要判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "判断充要条件"
+        }
+      ],
+      "commonConfusions": [
+        "充要"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断充要条件",
+          "method": "见方法模型",
+          "example": "判断充要条件"
+        }
+      ]
+    },
+    {
+      "section": "1.5.2全称量词命题和存在量词命题的否定",
+      "aliases": [
+        "命题否定",
+        "量词否定"
+      ],
+      "conceptSummary": "全称命题否定成特称，特称否定成全称：量词互换结论取反。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "全称命题否定",
+        "特称命题否定",
+        "量词互换"
+      ],
+      "methodModels": [
+        {
+          "name": "命题否定",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "命题的否定"
+        }
+      ],
+      "commonConfusions": [
+        "量词否定"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "命题的否定",
+          "method": "见方法模型",
+          "example": "命题的否定"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

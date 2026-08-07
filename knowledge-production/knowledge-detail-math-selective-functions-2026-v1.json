@@ -424,6 +424,261 @@
           "example": "极值最值"
         }
       ]
+    },
+    {
+      "section": "4.1 数列的概念",
+      "aliases": [
+        "数列",
+        "通项"
+      ],
+      "conceptSummary": "数列定义与通项公式，递推。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "数列定义",
+        "通项公式",
+        "递推"
+      ],
+      "methodModels": [
+        {
+          "name": "数列",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "数列概念"
+        }
+      ],
+      "commonConfusions": [
+        "通项"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "数列概念",
+          "method": "见方法模型",
+          "example": "数列概念"
+        }
+      ]
+    },
+    {
+      "section": "4.2 等差数列",
+      "aliases": [
+        "等差数列",
+        "通项"
+      ],
+      "conceptSummary": "等差数列通项a_n=a1+(n-1)d。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "等差数列通项",
+        "公差",
+        "等差中项"
+      ],
+      "methodModels": [
+        {
+          "name": "等差数列",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "等差数列"
+        }
+      ],
+      "commonConfusions": [
+        "公差"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "等差数列",
+          "method": "见方法模型",
+          "example": "等差数列"
+        }
+      ]
+    },
+    {
+      "section": "4.2.2等差数列的前n项和公式",
+      "aliases": [
+        "等差数列求和"
+      ],
+      "conceptSummary": "等差数列前n项和 S_n=n(a1+an)/2。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "等差数列求和",
+        "S_n公式"
+      ],
+      "methodModels": [
+        {
+          "name": "等差求和",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "等差数列求和"
+        }
+      ],
+      "commonConfusions": [
+        "S_n"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "等差数列求和",
+          "method": "见方法模型",
+          "example": "等差数列求和"
+        }
+      ]
+    },
+    {
+      "section": "4.3.2等比数列的前n项和公式",
+      "aliases": [
+        "等比求和"
+      ],
+      "conceptSummary": "等比数列前n项和 S_n=a1(1-qⁿ)/(1-q)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "等比求和",
+        "q≠1"
+      ],
+      "methodModels": [
+        {
+          "name": "等比求和",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "等比数列求和"
+        }
+      ],
+      "commonConfusions": [
+        "q=1"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "等比数列求和",
+          "method": "见方法模型",
+          "example": "等比数列求和"
+        }
+      ]
+    },
+    {
+      "section": "5.1 导数的概念及其意义",
+      "aliases": [
+        "导数概念",
+        "导数值"
+      ],
+      "conceptSummary": "导数刻画瞬时变化率，f'(x0)是切线斜率。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "导数定义",
+        "切线斜率",
+        "瞬时变化率"
+      ],
+      "methodModels": [
+        {
+          "name": "导数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "导数概念"
+        }
+      ],
+      "commonConfusions": [
+        "瞬时变化率"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "导数概念",
+          "method": "见方法模型",
+          "example": "导数概念"
+        }
+      ]
+    },
+    {
+      "section": "5.1.2导数的概念及其几何意义",
+      "aliases": [
+        "导数几何",
+        "切线"
+      ],
+      "conceptSummary": "导数几何意义：切线斜率，切线方程。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "导数几何",
+        "切线斜率",
+        "切线方程"
+      ],
+      "methodModels": [
+        {
+          "name": "导数几何",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "导数几何意义"
+        }
+      ],
+      "commonConfusions": [
+        "切线"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "导数几何意义",
+          "method": "见方法模型",
+          "example": "导数几何意义"
+        }
+      ]
+    },
+    {
+      "section": "5.2.2导数的四则运算法则",
+      "aliases": [
+        "求导法则",
+        "四则"
+      ],
+      "conceptSummary": "导数四则运算法则：(uv)'=u'v+uv'。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "和差求导",
+        "乘积求导",
+        "商求导"
+      ],
+      "methodModels": [
+        {
+          "name": "求导法则",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "导数四则运算"
+        }
+      ],
+      "commonConfusions": [
+        "四则求导"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "导数四则运算",
+          "method": "见方法模型",
+          "example": "导数四则运算"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

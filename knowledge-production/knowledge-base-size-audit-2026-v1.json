@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "artifactId": "knowledge-base-size-audit-2026-v1",
-  "coreSectionsTotal": 934,
-  "coveredSectionsTotal": 635,
-  "overallCoverageRatio": 0.68,
+  "coreSectionsTotal": 816,
+  "coveredSectionsTotal": 707,
+  "overallCoverageRatio": 0.866,
   "perSubject": [
     {
       "subject": "BIOLOGY",
-      "coreSections": 173,
+      "coreSections": 102,
       "coveredSections": 103,
-      "coverageRatio": 0.595,
+      "coverageRatio": 1.01,
       "coreBasis": "sections"
     },
     {
       "subject": "CHEMISTRY",
-      "coreSections": 92,
+      "coreSections": 90,
       "coveredSections": 67,
-      "coverageRatio": 0.728,
+      "coverageRatio": 0.744,
       "coreBasis": "sections"
     },
     {
@@ -35,23 +35,23 @@
     },
     {
       "subject": "GEOGRAPHY",
-      "coreSections": 93,
+      "coreSections": 69,
       "coveredSections": 43,
-      "coverageRatio": 0.462,
+      "coverageRatio": 0.623,
       "coreBasis": "sections"
     },
     {
       "subject": "HISTORY",
-      "coreSections": 105,
+      "coreSections": 103,
       "coveredSections": 56,
-      "coverageRatio": 0.533,
+      "coverageRatio": 0.544,
       "coreBasis": "sections"
     },
     {
       "subject": "MATH",
       "coreSections": 155,
-      "coveredSections": 99,
-      "coverageRatio": 0.639,
+      "coveredSections": 171,
+      "coverageRatio": 1.103,
       "coreBasis": "sections"
     },
     {
@@ -63,9 +63,9 @@
     },
     {
       "subject": "POLITICS",
-      "coreSections": 152,
+      "coreSections": 133,
       "coveredSections": 89,
-      "coverageRatio": 0.586,
+      "coverageRatio": 0.669,
       "coreBasis": "sections"
     }
   ],

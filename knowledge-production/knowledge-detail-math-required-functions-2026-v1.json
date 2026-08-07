@@ -893,6 +893,787 @@
           "example": "三角函数应用"
         }
       ]
+    },
+    {
+      "section": "3.1.2函数的表示法",
+      "aliases": [
+        "函数表示",
+        "解析法",
+        "图象法"
+      ],
+      "conceptSummary": "函数表示方法：解析法、图象法、列表法。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "解析法",
+        "图象法",
+        "列表法"
+      ],
+      "methodModels": [
+        {
+          "name": "函数表示",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数的表示法"
+        }
+      ],
+      "commonConfusions": [
+        "解析法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数的表示法",
+          "method": "见方法模型",
+          "example": "函数的表示法"
+        }
+      ]
+    },
+    {
+      "section": "3.2 函数的基本性质",
+      "aliases": [
+        "函数性质",
+        "单调性",
+        "奇偶性"
+      ],
+      "conceptSummary": "函数基本性质：单调性、奇偶性、最值、周期性。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "单调性",
+        "奇偶性",
+        "最值"
+      ],
+      "methodModels": [
+        {
+          "name": "函数性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数基本性质"
+        }
+      ],
+      "commonConfusions": [
+        "单调奇偶"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数基本性质",
+          "method": "见方法模型",
+          "example": "函数基本性质"
+        }
+      ]
+    },
+    {
+      "section": "函数的单调性",
+      "aliases": [
+        "单调性",
+        "增函数",
+        "减函数"
+      ],
+      "conceptSummary": "函数单调性：增函数f(x1)<f(x2)当x1<x2；定义法证明。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "增函数",
+        "减函数",
+        "复合函数单调"
+      ],
+      "methodModels": [
+        {
+          "name": "单调性判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数的单调性"
+        }
+      ],
+      "commonConfusions": [
+        "增函数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数的单调性",
+          "method": "见方法模型",
+          "example": "函数的单调性"
+        }
+      ]
+    },
+    {
+      "section": "函数的最大（小）值",
+      "aliases": [
+        "最值",
+        "最大值",
+        "最小值"
+      ],
+      "conceptSummary": "函数最值是定义域内的最大最小值，与极值区别。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "最大值",
+        "最小值",
+        "最值与极值"
+      ],
+      "methodModels": [
+        {
+          "name": "求最值",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数最值"
+        }
+      ],
+      "commonConfusions": [
+        "最值极值"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数最值",
+          "method": "见方法模型",
+          "example": "函数最值"
+        }
+      ]
+    },
+    {
+      "section": "3.2.2函数的奇偶性",
+      "aliases": [
+        "奇函数",
+        "偶函数"
+      ],
+      "conceptSummary": "奇函数f(-x)=-f(x)图象原点对称，偶函数f(-x)=f(x)关于y轴对称。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "奇函数",
+        "偶函数",
+        "定义域对称"
+      ],
+      "methodModels": [
+        {
+          "name": "奇偶判断",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数的奇偶性"
+        }
+      ],
+      "commonConfusions": [
+        "奇偶函数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数的奇偶性",
+          "method": "见方法模型",
+          "example": "函数的奇偶性"
+        }
+      ]
+    },
+    {
+      "section": "3.4 函数的应用（一）",
+      "aliases": [
+        "函数应用",
+        "函数建模"
+      ],
+      "conceptSummary": "函数应用：建立函数模型解决实际问题。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "函数建模",
+        "一次二次模型",
+        "分段函数"
+      ],
+      "methodModels": [
+        {
+          "name": "函数应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数的应用"
+        }
+      ],
+      "commonConfusions": [
+        "建模"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数的应用",
+          "method": "见方法模型",
+          "example": "函数的应用"
+        }
+      ]
+    },
+    {
+      "section": "4.1 指数",
+      "aliases": [
+        "指数",
+        "幂运算",
+        "根式"
+      ],
+      "conceptSummary": "指数运算：a^m·a^n=a^(m+n)，分数指数幂与根式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "指数运算",
+        "根式",
+        "分数指数幂"
+      ],
+      "methodModels": [
+        {
+          "name": "指数运算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "指数"
+        }
+      ],
+      "commonConfusions": [
+        "根式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "指数",
+          "method": "见方法模型",
+          "example": "指数"
+        }
+      ]
+    },
+    {
+      "section": "4.1.2 无理指数幂及其运算性质",
+      "aliases": [
+        "无理指数幂",
+        "运算性质"
+      ],
+      "conceptSummary": "无理指数幂运算性质与有理指数幂相同。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "无理指数幂",
+        "运算性质"
+      ],
+      "methodModels": [
+        {
+          "name": "无理指数幂",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "无理指数幂"
+        }
+      ],
+      "commonConfusions": [
+        "无理指数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "无理指数幂",
+          "method": "见方法模型",
+          "example": "无理指数幂"
+        }
+      ]
+    },
+    {
+      "section": "4.2.2 指数函数的图象和性质",
+      "aliases": [
+        "指数函数图象",
+        "指数性质"
+      ],
+      "conceptSummary": "指数函数y=aˣ图象：a>1递增，0<a<1递减，过(0,1)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "指数图象",
+        "单调性",
+        "定点"
+      ],
+      "methodModels": [
+        {
+          "name": "指数函数性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "指数函数图象性质"
+        }
+      ],
+      "commonConfusions": [
+        "指数图象"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "指数函数图象性质",
+          "method": "见方法模型",
+          "example": "指数函数图象性质"
+        }
+      ]
+    },
+    {
+      "section": "4.3 对数",
+      "aliases": [
+        "对数",
+        "log"
+      ],
+      "conceptSummary": "对数定义：a^x=N⇔x=log_a N，对数恒等式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "对数定义",
+        "对数恒等式",
+        "底数真数"
+      ],
+      "methodModels": [
+        {
+          "name": "对数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "对数"
+        }
+      ],
+      "commonConfusions": [
+        "对数定义"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对数",
+          "method": "见方法模型",
+          "example": "对数"
+        }
+      ]
+    },
+    {
+      "section": "4.3.2 对数的运算",
+      "aliases": [
+        "对数运算",
+        "换底"
+      ],
+      "conceptSummary": "对数运算性质与换底公式。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "log_a(MN)",
+        "换底公式"
+      ],
+      "methodModels": [
+        {
+          "name": "对数运算",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "对数的运算"
+        }
+      ],
+      "commonConfusions": [
+        "换底公式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对数的运算",
+          "method": "见方法模型",
+          "example": "对数的运算"
+        }
+      ]
+    },
+    {
+      "section": "4.4 对数函数",
+      "aliases": [
+        "对数函数",
+        "y=log_a x"
+      ],
+      "conceptSummary": "对数函数y=log_a x是指数函数反函数。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "对数函数定义",
+        "反函数",
+        "单调性"
+      ],
+      "methodModels": [
+        {
+          "name": "对数函数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "对数函数"
+        }
+      ],
+      "commonConfusions": [
+        "反函数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对数函数",
+          "method": "见方法模型",
+          "example": "对数函数"
+        }
+      ]
+    },
+    {
+      "section": "4.4.2 对数函数的图象和性质",
+      "aliases": [
+        "对数图象",
+        "对数性质"
+      ],
+      "conceptSummary": "对数函数图象：a>1递增，0<a<1递减，过(1,0)。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "对数图象",
+        "单调性",
+        "定点"
+      ],
+      "methodModels": [
+        {
+          "name": "对数函数性质",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "对数函数图象性质"
+        }
+      ],
+      "commonConfusions": [
+        "对数图象"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对数函数图象性质",
+          "method": "见方法模型",
+          "example": "对数函数图象性质"
+        }
+      ]
+    },
+    {
+      "section": "4.4.3 不同函数增长的差异",
+      "aliases": [
+        "函数增长",
+        "指数对数幂"
+      ],
+      "conceptSummary": "指数、对数、幂函数增长差异，指数增长最快。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "增长差异",
+        "指数增长",
+        "对数增长"
+      ],
+      "methodModels": [
+        {
+          "name": "增长差异",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数增长差异"
+        }
+      ],
+      "commonConfusions": [
+        "指数增长"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数增长差异",
+          "method": "见方法模型",
+          "example": "函数增长差异"
+        }
+      ]
+    },
+    {
+      "section": "4.5 函数的应用（二）",
+      "aliases": [
+        "函数应用",
+        "二分法"
+      ],
+      "conceptSummary": "函数应用：二分法求方程近似解。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "二分法",
+        "函数零点",
+        "近似解"
+      ],
+      "methodModels": [
+        {
+          "name": "函数应用",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数应用"
+        }
+      ],
+      "commonConfusions": [
+        "二分法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数应用",
+          "method": "见方法模型",
+          "example": "函数应用"
+        }
+      ]
+    },
+    {
+      "section": "4.5.2用二分法求方程的近似解",
+      "aliases": [
+        "二分法",
+        "零点",
+        "近似解"
+      ],
+      "conceptSummary": "二分法逐步缩小区间求方程近似解。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "二分法步骤",
+        "零点存在",
+        "近似解"
+      ],
+      "methodModels": [
+        {
+          "name": "二分法",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "二分法求近似解"
+        }
+      ],
+      "commonConfusions": [
+        "零点"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "二分法求近似解",
+          "method": "见方法模型",
+          "example": "二分法求近似解"
+        }
+      ]
+    },
+    {
+      "section": "4.5.3函数模型的应用",
+      "aliases": [
+        "函数模型",
+        "建模应用"
+      ],
+      "conceptSummary": "函数模型应用：增长率、衰减、分段模型。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "指数模型",
+        "对数模型",
+        "分段模型"
+      ],
+      "methodModels": [
+        {
+          "name": "函数模型",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "函数模型应用"
+        }
+      ],
+      "commonConfusions": [
+        "建模"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "函数模型应用",
+          "method": "见方法模型",
+          "example": "函数模型应用"
+        }
+      ]
+    },
+    {
+      "section": "5.1.2 弧度制",
+      "aliases": [
+        "弧度制",
+        "弧度"
+      ],
+      "conceptSummary": "弧度制：弧长/半径，π=180°，弧度与角度换算。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "弧度定义",
+        "弧度角度换算",
+        "弧度制"
+      ],
+      "methodModels": [
+        {
+          "name": "弧度制",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "弧度制"
+        }
+      ],
+      "commonConfusions": [
+        "弧度换算"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "弧度制",
+          "method": "见方法模型",
+          "example": "弧度制"
+        }
+      ]
+    },
+    {
+      "section": "5.2 三角函数的概念",
+      "aliases": [
+        "三角函数",
+        "sin cos tan"
+      ],
+      "conceptSummary": "三角函数定义：单位圆上sin/cos/tan。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "sin定义",
+        "cos定义",
+        "tan定义"
+      ],
+      "methodModels": [
+        {
+          "name": "三角定义",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "三角函数概念"
+        }
+      ],
+      "commonConfusions": [
+        "三角函数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "三角函数概念",
+          "method": "见方法模型",
+          "example": "三角函数概念"
+        }
+      ]
+    },
+    {
+      "section": "5.5.2简单的三角恒等变换",
+      "aliases": [
+        "恒等变换",
+        "化简"
+      ],
+      "conceptSummary": "三角恒等变换：化简求值，用公式变形。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "恒等变换",
+        "化简",
+        "求值"
+      ],
+      "methodModels": [
+        {
+          "name": "恒等变换",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "简单三角恒等变换"
+        }
+      ],
+      "commonConfusions": [
+        "化简"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "简单三角恒等变换",
+          "method": "见方法模型",
+          "example": "简单三角恒等变换"
+        }
+      ]
+    },
+    {
+      "section": "5.6.2 函数y=Asin(ωx+φ)的图象",
+      "aliases": [
+        "图象变换",
+        "平移伸缩"
+      ],
+      "conceptSummary": "y=Asin(ωx+φ)图象由y=sinx平移伸缩得到。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "振幅伸缩",
+        "周期伸缩",
+        "相位平移"
+      ],
+      "methodModels": [
+        {
+          "name": "图象变换",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "正弦型图象"
+        }
+      ],
+      "commonConfusions": [
+        "伸缩平移"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "正弦型图象",
+          "method": "见方法模型",
+          "example": "正弦型图象"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

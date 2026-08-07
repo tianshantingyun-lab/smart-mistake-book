@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 9,
-  "sectionsApproved": 9,
+  "sectionsTotal": 16,
+  "sectionsApproved": 16,
   "sections": [
     {
       "section": "4.1-4.2 数列与等差数列",
@@ -68,6 +68,55 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.111,
       "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "4.1 数列的概念",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "4.2 等差数列",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "4.2.2等差数列的前n项和公式",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "4.3.2等比数列的前n项和公式",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.6,
+      "issues": []
+    },
+    {
+      "section": "5.1 导数的概念及其意义",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "5.1.2导数的概念及其几何意义",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "5.2.2导数的四则运算法则",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]

@@ -21,8 +21,14 @@ from pathlib import Path
 PROJECT_ROOT = Path(r"D:\智能错题本\.worktrees\ui-rebuild")
 KP = PROJECT_ROOT / "knowledge-production"
 
-# Non-core TOC section markers (reading/IT/labs) not counted as knowledge points.
-NON_CORE_MARKERS = ("阅读与思考", "信息技术应用", "探究与发现", "文献阅读", "复习参考题")
+# Non-core TOC section markers (reading/IT/labs/sidebars) not counted as
+# knowledge points: these are enrichment/sidebar columns, not curriculum points.
+NON_CORE_MARKERS = (
+    "阅读与思考", "信息技术应用", "探究与发现", "文献阅读", "复习参考题",
+    "科学·技术·社会", "探究·实践", "与生物学有关的职业", "生物科技进展",
+    "科学家的故事", "生物科学史话", "问题研究", "拓展视野",
+    "综合探究", "活动课", "练习与应用", "整理与提升", "复习与提高",
+)
 
 # Chinese is organized by 18 curriculum task groups (not textbook lessons).
 CHINESE_TASK_GROUPS = 18

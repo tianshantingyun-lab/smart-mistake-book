@@ -596,6 +596,338 @@
           "example": "独立性检验"
         }
       ]
+    },
+    {
+      "section": "7.2 离散型随机变量及其分布列",
+      "aliases": [
+        "分布列",
+        "离散型"
+      ],
+      "conceptSummary": "离散型随机变量取值与概率列表（分布列）。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "分布列",
+        "离散型随机变量",
+        "概率性质"
+      ],
+      "methodModels": [
+        {
+          "name": "分布列",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "分布列"
+        }
+      ],
+      "commonConfusions": [
+        "离散型"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分布列",
+          "method": "见方法模型",
+          "example": "分布列"
+        }
+      ]
+    },
+    {
+      "section": "7.3 离散型随机变量的数字特征",
+      "aliases": [
+        "期望",
+        "方差"
+      ],
+      "conceptSummary": "离散型随机变量期望与方差。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "期望E(X)",
+        "方差D(X)",
+        "数字特征"
+      ],
+      "methodModels": [
+        {
+          "name": "数字特征",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "数字特征"
+        }
+      ],
+      "commonConfusions": [
+        "期望方差"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "数字特征",
+          "method": "见方法模型",
+          "example": "数字特征"
+        }
+      ]
+    },
+    {
+      "section": "7.3.2离散型随机变量的方差",
+      "aliases": [
+        "方差",
+        "离散程度"
+      ],
+      "conceptSummary": "离散型随机变量方差刻画离散程度。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "方差D(X)",
+        "标准差",
+        "计算"
+      ],
+      "methodModels": [
+        {
+          "name": "方差",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "离散型方差"
+        }
+      ],
+      "commonConfusions": [
+        "离散程度"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "离散型方差",
+          "method": "见方法模型",
+          "example": "离散型方差"
+        }
+      ]
+    },
+    {
+      "section": "8.2.2一元线性回归模型参数的最小二乘估计",
+      "aliases": [
+        "最小二乘",
+        "回归系数"
+      ],
+      "conceptSummary": "最小二乘法求回归方程系数。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "最小二乘",
+        "回归系数",
+        "回归方程"
+      ],
+      "methodModels": [
+        {
+          "name": "最小二乘",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "最小二乘估计"
+        }
+      ],
+      "commonConfusions": [
+        "回归系数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "最小二乘估计",
+          "method": "见方法模型",
+          "example": "最小二乘估计"
+        }
+      ]
+    },
+    {
+      "section": "8.3.2独立性检验",
+      "aliases": [
+        "独立性检验",
+        "卡方"
+      ],
+      "conceptSummary": "独立性检验用卡方判断变量是否独立。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "列联表",
+        "卡方检验",
+        "独立性"
+      ],
+      "methodModels": [
+        {
+          "name": "独立性检验",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "独立性检验"
+        }
+      ],
+      "commonConfusions": [
+        "卡方"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "独立性检验",
+          "method": "见方法模型",
+          "example": "独立性检验"
+        }
+      ]
+    },
+    {
+      "section": "6.2.2排列数",
+      "aliases": [
+        "排列数",
+        "A(n,m)"
+      ],
+      "conceptSummary": "排列数 A(n,m)=n(n-1)...(n-m+1)=n!/(n-m)!。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "排列数公式",
+        "全排列"
+      ],
+      "methodModels": [
+        {
+          "name": "排列数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "排列数"
+        }
+      ],
+      "commonConfusions": [
+        "排列数公式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "排列数",
+          "method": "见方法模型",
+          "example": "排列数"
+        }
+      ]
+    },
+    {
+      "section": "6.2.3组合",
+      "aliases": [
+        "组合",
+        "C(n,m)"
+      ],
+      "conceptSummary": "组合不考虑顺序，C(n,m)=A(n,m)/m!。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "组合定义",
+        "组合数",
+        "组合与排列"
+      ],
+      "methodModels": [
+        {
+          "name": "组合",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "组合"
+        }
+      ],
+      "commonConfusions": [
+        "组合数"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "组合",
+          "method": "见方法模型",
+          "example": "组合"
+        }
+      ]
+    },
+    {
+      "section": "6.2.4组合数",
+      "aliases": [
+        "组合数",
+        "C(n,m)"
+      ],
+      "conceptSummary": "组合数 C(n,m)=n!/(m!(n-m)!)，性质对称。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "组合数公式",
+        "C(n,m)=C(n,n-m)",
+        "加法公式"
+      ],
+      "methodModels": [
+        {
+          "name": "组合数",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "组合数"
+        }
+      ],
+      "commonConfusions": [
+        "组合数公式"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "组合数",
+          "method": "见方法模型",
+          "example": "组合数"
+        }
+      ]
+    },
+    {
+      "section": "6.1 分类加法计数原理与分步乘法计数原理",
+      "aliases": [
+        "加法原理",
+        "乘法原理"
+      ],
+      "conceptSummary": "分类加法与分步乘法计数原理。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "加法原理",
+        "乘法原理",
+        "分类分步"
+      ],
+      "methodModels": [
+        {
+          "name": "计数原理",
+          "steps": [
+            "按步骤",
+            "代入"
+          ],
+          "example": "计数原理"
+        }
+      ],
+      "commonConfusions": [
+        "加法乘法"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "计数原理",
+          "method": "见方法模型",
+          "example": "计数原理"
+        }
+      ]
     }
   ],
   "typicalQuestionShapes": [

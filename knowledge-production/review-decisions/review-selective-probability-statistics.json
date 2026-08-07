@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 14,
-  "sectionsApproved": 14,
+  "sectionsTotal": 23,
+  "sectionsApproved": 23,
   "sections": [
     {
       "section": "6.1 分类加法与分步乘法计数原理",
@@ -103,6 +103,69 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.0,
       "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "7.2 离散型随机变量及其分布列",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "7.3 离散型随机变量的数字特征",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "7.3.2离散型随机变量的方差",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.182,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "8.2.2一元线性回归模型参数的最小二乘估计",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.056,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "8.3.2独立性检验",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "6.2.2排列数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 1.0,
+      "issues": []
+    },
+    {
+      "section": "6.2.3组合",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "6.2.4组合数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "6.1 分类加法计数原理与分步乘法计数原理",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.667,
       "issues": []
     }
   ]

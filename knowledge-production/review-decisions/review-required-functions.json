@@ -4,8 +4,8 @@
   "reviewer": "opencode-ai-first-pass",
   "reviewKind": "AUTOMATED_CONTENT_VERIFICATION",
   "status": "REVIEW_IN_PROGRESS",
-  "sectionsTotal": 19,
-  "sectionsApproved": 19,
+  "sectionsTotal": 40,
+  "sectionsApproved": 40,
   "sections": [
     {
       "section": "3.1 函数的概念及其表示",
@@ -138,6 +138,153 @@
       "decision": "APPROVED",
       "curriculumOverlap": 0.154,
       "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "3.1.2函数的表示法",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "3.2 函数的基本性质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.222,
+      "issues": []
+    },
+    {
+      "section": "函数的单调性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.2,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "函数的最大（小）值",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.125,
+      "issues": []
+    },
+    {
+      "section": "3.2.2函数的奇偶性",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "3.4 函数的应用（一）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.167,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "4.1 指数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "4.1.2 无理指数幂及其运算性质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "4.2.2 指数函数的图象和性质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.429,
+      "issues": []
+    },
+    {
+      "section": "4.3 对数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "4.3.2 对数的运算",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "4.4 对数函数",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.333,
+      "issues": []
+    },
+    {
+      "section": "4.4.2 对数函数的图象和性质",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.125,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "4.4.3 不同函数增长的差异",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.1,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "4.5 函数的应用（二）",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.2,
+      "issues": []
+    },
+    {
+      "section": "4.5.2用二分法求方程的近似解",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.111,
+      "textbookTocOverlap": 0.375,
+      "issues": []
+    },
+    {
+      "section": "4.5.3函数模型的应用",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.286,
+      "issues": []
+    },
+    {
+      "section": "5.1.2 弧度制",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.0,
+      "textbookTocOverlap": 0.167,
+      "issues": []
+    },
+    {
+      "section": "5.2 三角函数的概念",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.143,
+      "textbookTocOverlap": 0.5,
+      "issues": []
+    },
+    {
+      "section": "5.5.2简单的三角恒等变换",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.091,
+      "textbookTocOverlap": 0.25,
+      "issues": []
+    },
+    {
+      "section": "5.6.2 函数y=Asin(ωx+φ)的图象",
+      "decision": "APPROVED",
+      "curriculumOverlap": 0.222,
+      "textbookTocOverlap": 0.333,
       "issues": []
     }
   ]
