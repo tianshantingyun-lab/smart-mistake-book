@@ -4429,3 +4429,32 @@
 
 - A 流程验证可行：CSDN 专用抓取器 + 归纳 + 来源标注 + 审计 全链路可用。
 - 后续：若需扩大来源覆盖（含参数题型等 CSDN 反爬内容），可安装更强爬虫/MCP（如用户提到的 webbridge）或使用 Playwright 类浏览器抓取。
+
+## 2026-08-07 实施批次：Playwright 强爬虫安装
+
+### 已完成
+
+- 调研 webbridge：GitHub 上的 `efrg123/kimi-webbridge` 仅是实现计划文档（非可运行工具），不采用。
+- 安装 **Microsoft Playwright MCP**（`@playwright/mcp@latest`）：
+  - 配置进 `C:\Users\听云\.config\opencode\opencode.jsonc`（type=local，`npx -y @playwright/mcp --headless --isolated`，复用系统 Chrome，`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` 指向 `C:\Program Files\Google\Chrome\Application\chrome.exe`）。
+  - stdio 握手验证通过（serverInfo: Playwright 1.63，21 个工具：browser_navigate/snapshot/evaluate/click/run_code_unsafe 等）。
+- 用 Node + `playwright-core` 直连系统 Chrome 做了 3 组真实抓取测试：
+  - ✅ 百度百科（充分条件词条 2650 字符）——open-websearch 之前完全抓不到，Playwright 突破成功；
+  - ✅ CSDN 集合概念（2139 字符）——之前 521 的 URL 实为内容已删，有效 CSDN 文章可正常抓；
+  - ❌ 知乎专栏仍被风控（40362 需登录/摇一摇）——非渲染问题，是登录墙。
+
+### 当前验证结果
+
+| 检查 | 结果 |
+|---|---|
+| Playwright MCP 安装 | opencode.jsonc 已配置，stdio 握手成功 |
+| 复用系统 Chrome | 无需下载浏览器，headless 启动正常 |
+| 百度百科突破 | ✅ 可抓取（此前 open-websearch 不可达） |
+| CSDN 有效文章 | ✅ 可抓取 |
+| 知乎专栏 | ❌ 登录墙（40362），需登录态 |
+
+### 状态
+
+- 强爬虫已就绪：Playwright MCP 已注册到 opencode 配置，**新 opencode 会话启动后自动加载**为 `playwright_*` 工具；当前会话可用等价的 Node + playwright-core 脚本抓取。
+- 抓取能力矩阵更新：CSDN ✅、百度百科 ✅（新增，Playwright）、cnblogs/shuxueji ✅、知乎 ❌（登录墙）、学科网/菁优网 ❌（付费）。
+- 下一步 A：用 Playwright 批量抓取剩余 40 个 HIGH 模块的第三方知识点 + 题型解法。
