@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-selective-geometry-algebra-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "selective-geometry-algebra",
+  "moduleName": "选择性必修：几何与代数（空间向量与圆锥曲线）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:conic-notes",
+      "title": "圆锥曲线重点知识点和常用结论（知乎）",
+      "url": "https://zhuanlan.zhihu.com/p/655122732",
+      "acquisition": "SUCCESS",
+      "note": "图片型素材，正文以截图保留"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "2.1-2.3 直线与圆",
+      "aliases": [
+        "直线方程",
+        "斜率",
+        "圆",
+        "位置关系"
+      ],
+      "conceptSummary": "直线用斜率与方程描述；圆有标准方程与一般方程；直线与圆的位置关系由圆心到直线距离与半径比较决定。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "斜率 k=tanθ，两点式 k=(y2-y1)/(x2-x1)",
+        "直线方程：点斜式/斜截式/两点式/一般式",
+        "圆标准方程 (x-a)²+(y-b)²=r²",
+        "直线与圆：相离(d>r)/相切(d=r)/相交(d<r)",
+        "垂径定理：弦中垂线过圆心"
+      ],
+      "methodModels": [
+        {
+          "name": "求直线方程",
+          "steps": [
+            "确定斜率",
+            "选点斜式/截距式",
+            "化为一般式"
+          ],
+          "example": "过(1,2)斜率3：y-2=3(x-1)"
+        },
+        {
+          "name": "判断直线圆位置",
+          "steps": [
+            "算圆心到直线距离 d",
+            "与半径 r 比较"
+          ],
+          "example": "x²+y²=4 与 x+y=3：d=3/√2>2 相离"
+        }
+      ],
+      "commonConfusions": [
+        "斜率不存在（垂直x轴）时不能用斜截式",
+        "圆一般方程需配方",
+        "d=r 是相切（不是相离）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握坐标系"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "直线与圆相交求弦长",
+          "method": "垂径定理+勾股",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "3.1 椭圆",
+      "aliases": [
+        "椭圆",
+        "焦点",
+        "长轴",
+        "离心率"
+      ],
+      "conceptSummary": "椭圆是到两定点（焦点）距离之和为常数的点的轨迹；标准方程 x²/a²+y²/b²=1（a>b>0）。",
+      "evidenceSources": [
+        "zhihu:conic-notes"
+      ],
+      "properties": [
+        "定义：|PF1|+|PF2|=2a",
+        "a²=b²+c²（c 焦距一半）",
+        "离心率 e=c/a（0<e<1）",
+        "长轴2a、短轴2b、焦点(±c,0)"
+      ],
+      "methodModels": [
+        {
+          "name": "求椭圆标准方程",
+          "steps": [
+            "确定焦点在x轴还是y轴",
+            "由条件求 a,b",
+            "写标准方程"
+          ],
+          "example": "焦点(±2,0)且过(3,0)：a=3,c=2,b=√5"
+        },
+        {
+          "name": "离心率计算",
+          "steps": [
+            "e=c/a",
+            "利用 a²=b²+c²"
+          ],
+          "example": "a=5,b=3，c=4，e=4/5"
+        }
+      ],
+      "commonConfusions": [
+        "a,b,c 关系：a最大",
+        "焦点位置决定方程形式",
+        "椭圆定义是距离和"
+      ],
+      "prerequisiteRelations": [
+        "需掌握圆"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求椭圆方程与性质",
+          "method": "定义+标准方程",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "3.2 双曲线",
+      "aliases": [
+        "双曲线",
+        "焦点",
+        "渐近线",
+        "离心率"
+      ],
+      "conceptSummary": "双曲线是到两焦点距离之差的绝对值为常数的轨迹；标准方程 x²/a²-y²/b²=1，有渐近线。",
+      "evidenceSources": [
+        "zhihu:conic-notes"
+      ],
+      "properties": [
+        "定义：||PF1|-|PF2||=2a",
+        "c²=a²+b²（c最大）",
+        "离心率 e=c/a（e>1）",
+        "渐近线 y=±(b/a)x",
+        "焦点(±c,0)"
+      ],
+      "methodModels": [
+        {
+          "name": "求渐近线",
+          "steps": [
+            "由标准方程定 a,b",
+            "y=±(b/a)x"
+          ],
+          "example": "x²/4-y²/9=1：渐近线 y=±(3/2)x"
+        },
+        {
+          "name": "离心率与渐近线关系",
+          "steps": [
+            "e=c/a=√(1+(b/a)²)",
+            "由渐近线斜率求 e"
+          ],
+          "example": "渐近线 y=±x 时 e=√2"
+        }
+      ],
+      "commonConfusions": [
+        "双曲线 c 最大（与椭圆相反）",
+        "渐近线与实轴虚轴"
+      ],
+      "prerequisiteRelations": [
+        "需掌握椭圆"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "双曲线性质",
+          "method": "标准方程+渐近线",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "3.3 抛物线",
+      "aliases": [
+        "抛物线",
+        "焦点",
+        "准线"
+      ],
+      "conceptSummary": "抛物线是到定点（焦点）与定直线（准线）距离相等的点的轨迹；y²=2px 为标准形式之一。",
+      "evidenceSources": [
+        "zhihu:conic-notes"
+      ],
+      "properties": [
+        "定义：|PF|=d（到准线距离）",
+        "y²=2px：焦点(p/2,0)，准线 x=-p/2",
+        "离心率 e=1",
+        "开口方向由标准方程定"
+      ],
+      "methodModels": [
+        {
+          "name": "求焦点准线",
+          "steps": [
+            "识别标准方程",
+            "p 值",
+            "焦点/准线"
+          ],
+          "example": "y²=8x：p=4，焦点(2,0)，准线x=-2"
+        },
+        {
+          "name": "焦点弦问题",
+          "steps": [
+            "利用定义转化到准线距离",
+            "联立方程"
+          ],
+          "example": "过焦点的弦长可转化"
+        }
+      ],
+      "commonConfusions": [
+        "四种开口方向的标准方程",
+        "p 的几何意义"
+      ],
+      "prerequisiteRelations": [
+        "需掌握椭圆双曲线"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "抛物线性质",
+          "method": "标准方程",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "1.1-1.4 空间向量",
+      "aliases": [
+        "空间向量",
+        "数量积",
+        "距离",
+        "夹角"
+      ],
+      "conceptSummary": "空间向量在三维坐标系中表示，可用于求解空间距离、夹角、证明平行垂直。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "空间向量坐标运算与平面类似",
+        "数量积 a·b=|a||b|cosθ",
+        "点到平面距离：向量法",
+        "线面角/二面角用向量夹角"
+      ],
+      "methodModels": [
+        {
+          "name": "求异面直线夹角",
+          "steps": [
+            "建系",
+            "求方向向量",
+            "cosθ=|a·b|/(|a||b|)"
+          ],
+          "example": "正方体中求异面直线夹角"
+        },
+        {
+          "name": "点到平面距离",
+          "steps": [
+            "建系",
+            "求法向量 n",
+            "d=|AP·n|/|n|"
+          ],
+          "example": "求点到底面距离"
+        }
+      ],
+      "commonConfusions": [
+        "方向向量与法向量",
+        "线面角是正弦值",
+        "二面角需判断锐钝"
+      ],
+      "prerequisiteRelations": [
+        "需掌握平面向量"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "空间角与距离",
+          "method": "向量法建系",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "直线与圆位置关系",
+      "solutionMethod": "d 与 r 比较",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "圆锥曲线定义与标准方程",
+      "solutionMethod": "定义法+待定系数",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "离心率/渐近线",
+      "solutionMethod": "e=c/a，a²b²c²关系",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "空间向量求角与距离",
+      "solutionMethod": "建系+法向量",
+      "difficulty": "中档"
+    }
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-required-probability-statistics-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "required-probability-statistics",
+  "moduleName": "必修：概率与统计",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:tiaojian-quan",
+      "title": "条件概率、全概率公式、贝叶斯公式",
+      "url": "https://zhuanlan.zhihu.com/p/134036707",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:suiji-bianliang-notes",
+      "title": "随机变量及其分布（备忘笔记08）",
+      "url": "https://zhuanlan.zhihu.com/p/1925151782276948198",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:suiji-fenbu",
+      "title": "分布列",
+      "url": "https://zhuanlan.zhihu.com/p/592711473",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "9.1 随机抽样",
+      "aliases": [
+        "简单随机抽样",
+        "分层抽样",
+        "随机抽样"
+      ],
+      "conceptSummary": "从总体中抽取样本的方法称抽样；简单随机抽样每个个体被抽中概率相等；分层抽样按比例在各层抽取。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "简单随机抽样：逐个不放回抽取，等可能",
+        "分层抽样：按层比例抽取，保证各层代表性"
+      ],
+      "methodModels": [
+        {
+          "name": "分层抽样分配",
+          "steps": [
+            "按各层个体数比例分配样本量",
+            "每层内随机抽取"
+          ],
+          "example": "总体1000人，男女600/400，抽50样本则男30女20"
+        }
+      ],
+      "commonConfusions": [
+        "简单随机抽样与分层抽样适用场景区分"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分层抽样求各层样本数",
+          "method": "按比例分配",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "10.1-10.3 随机事件与概率",
+      "aliases": [
+        "随机事件",
+        "概率",
+        "古典概型",
+        "频率"
+      ],
+      "conceptSummary": "随机事件是可能发生也可能不发生的结果；概率刻画事件发生可能性；古典概型要求等可能基本事件。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "概率范围 0≤P(A)≤1",
+        "对立事件 P(A)+P(Ā)=1",
+        "古典概型 P(A)=有利结果数/基本结果总数"
+      ],
+      "methodModels": [
+        {
+          "name": "古典概型计算",
+          "steps": [
+            "确定基本结果总数 n",
+            "确定有利结果数 m",
+            "P(A)=m/n"
+          ],
+          "example": "掷骰子，P(点数>4)=2/6=1/3"
+        }
+      ],
+      "commonConfusions": [
+        "频率与概率区别：频率是试验值，概率是理论值"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "古典概型",
+          "method": "m/n",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "7.1 条件概率与全概率公式",
+      "aliases": [
+        "条件概率",
+        "乘法公式",
+        "全概率公式",
+        "贝叶斯公式"
+      ],
+      "conceptSummary": "条件概率 P(B|A)=P(AB)/P(A)；乘法公式 P(AB)=P(A)P(B|A)；全概率公式把复杂事件分解为完备事件组上的加权和。",
+      "evidenceSources": [
+        "zhihu:tiaojian-quan"
+      ],
+      "properties": [
+        "条件概率 P(B|A)=P(AB)/P(A)，P(A)>0",
+        "乘法公式：P(AB)=P(A)P(B|A)",
+        "完备事件组：两两互斥且并集为全集",
+        "全概率公式：P(B)=ΣP(Ai)P(B|Ai)",
+        "贝叶斯公式：P(Ai|B)=P(Ai)P(B|Ai)/P(B)"
+      ],
+      "methodModels": [
+        {
+          "name": "条件概率计算",
+          "steps": [
+            "明确条件事件 A",
+            "算 P(AB) 和 P(A)",
+            "P(B|A)=P(AB)/P(A)"
+          ],
+          "example": "抽2张牌，已知第一张红桃求第二张红桃概率"
+        },
+        {
+          "name": "全概率公式",
+          "steps": [
+            "找完备事件组",
+            "逐项算 P(Ai) 和 P(B|Ai)",
+            "加权求和"
+          ],
+          "example": "多工厂产品合格率问题"
+        }
+      ],
+      "commonConfusions": [
+        "条件概率 P(B|A) 与 P(AB) 混淆",
+        "完备事件组要求两两互斥且并集为全集",
+        "贝叶斯公式是已知结果反推原因"
+      ],
+      "prerequisiteRelations": [
+        "需掌握古典概型"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "条件概率",
+          "method": "P(AB)/P(A)",
+          "example": "见上"
+        },
+        {
+          "questionShape": "全概率/贝叶斯",
+          "method": "分解完备事件组",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "7.2-7.3 离散型随机变量",
+      "aliases": [
+        "分布列",
+        "期望",
+        "方差",
+        "离散型随机变量"
+      ],
+      "conceptSummary": "离散型随机变量取值可列；分布列列出各取值及概率；期望刻画平均水平，方差刻画波动。",
+      "evidenceSources": [
+        "zhihu:suiji-bianliang-notes",
+        "zhihu:suiji-fenbu"
+      ],
+      "properties": [
+        "分布列性质：pi≥0 且 Σpi=1",
+        "期望 E(X)=Σxi·pi",
+        "方差 D(X)=E((X-E(X))²)=Σ(xi-E(X))²pi",
+        "E(aX+b)=aE(X)+b",
+        "D(aX+b)=a²D(X)"
+      ],
+      "methodModels": [
+        {
+          "name": "求分布列",
+          "steps": [
+            "确定 X 的所有取值",
+            "逐一算概率",
+            "列分布列表"
+          ],
+          "example": "掷两枚骰子，X=点数和，列分布列"
+        },
+        {
+          "name": "求期望方差",
+          "steps": [
+            "由分布列代入公式",
+            "E(X)=Σxi·pi",
+            "D(X)=Σ(xi-EX)²pi"
+          ],
+          "example": "X~B(n,p)，E(X)=np，D(X)=np(1-p)"
+        }
+      ],
+      "commonConfusions": [
+        "分布列概率和必须为1（校验）",
+        "方差是平方的量纲",
+        "期望线性、方差线性仅对常数系数"
+      ],
+      "prerequisiteRelations": [
+        "需掌握概率计算"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "建立分布列并求期望",
+          "method": "列取值-算概率-代公式",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "抽样方法选择",
+      "solutionMethod": "按总体结构选简单/分层抽样",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "古典概型",
+      "solutionMethod": "m/n 列举基本事件",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "条件概率与全概率",
+      "solutionMethod": "P(AB)/P(A)；完备事件组分解",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "分布列与期望方差",
+      "solutionMethod": "列分布列→代公式",
+      "difficulty": "常考"
+    }
+  ]
+}

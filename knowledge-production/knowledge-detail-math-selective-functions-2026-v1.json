@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-selective-functions-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "selective-functions",
+  "moduleName": "选择性必修：函数（数列与导数）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:seq-gouzao",
+      "title": "高中数列十大构造类型",
+      "url": "https://zhuanlan.zhihu.com/p/642394324",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "4.1-4.2 数列与等差数列",
+      "aliases": [
+        "数列",
+        "通项",
+        "等差数列",
+        "前n项和"
+      ],
+      "conceptSummary": "数列按顺序排列的一列数；等差数列相邻两项差为常数 d，通项 a_n=a_1+(n-1)d。",
+      "evidenceSources": [
+        "zhihu:seq-gouzao"
+      ],
+      "properties": [
+        "等差数列通项：a_n=a_1+(n-1)d",
+        "前n项和：S_n=n(a_1+a_n)/2=na_1+n(n-1)d/2",
+        "等差中项：a,b,c 等差 ⇔ 2b=a+c",
+        "若 m+n=p+q，则 a_m+a_n=a_p+a_q"
+      ],
+      "methodModels": [
+        {
+          "name": "求通项",
+          "steps": [
+            "确认首项公差",
+            "代通项公式"
+          ],
+          "example": "a1=2,d=3，a_n=3n-1"
+        },
+        {
+          "name": "由前n项和求通项",
+          "steps": [
+            "a_n=S_n-S_(n-1) (n≥2)",
+            "验证 n=1"
+          ],
+          "example": "S_n=n²，a_n=2n-1"
+        }
+      ],
+      "commonConfusions": [
+        "a_n=S_n-S_(n-1) 需单独验证 n=1",
+        "等差中项与等比中项混淆"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求通项/前n项和",
+          "method": "套公式",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "4.3 等比数列",
+      "aliases": [
+        "等比数列",
+        "公比",
+        "前n项和"
+      ],
+      "conceptSummary": "等比数列相邻两项比值为常数 q，通项 a_n=a_1·q^(n-1)。",
+      "evidenceSources": [
+        "zhihu:seq-gouzao"
+      ],
+      "properties": [
+        "通项：a_n=a_1·q^(n-1)",
+        "前n项和：q≠1 时 S_n=a_1(1-qⁿ)/(1-q)",
+        "等比中项：a,b,c 等比 ⇔ b²=ac（b≠0）",
+        "若 m+n=p+q，则 a_m·a_n=a_p·a_q"
+      ],
+      "methodModels": [
+        {
+          "name": "等比数列求和",
+          "steps": [
+            "确认首项公比",
+            "q=1 时 S_n=na_1，q≠1 用公式"
+          ],
+          "example": "a1=1,q=2，S_5=31"
+        }
+      ],
+      "commonConfusions": [
+        "q=1 时求和公式不能用（分母为0）",
+        "等比中项需 b≠0"
+      ],
+      "prerequisiteRelations": [
+        "需掌握等差数列"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "等比求和",
+          "method": "分类 q=1/q≠1",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "数列构造与递推",
+      "aliases": [
+        "递推数列",
+        "构造",
+        "待定系数",
+        "特征方程"
+      ],
+      "conceptSummary": "形如 a_(n+1)=ca_n+d 的递推可构造新数列转化为等差/等比；分式递推用特征方程。",
+      "evidenceSources": [
+        "zhihu:seq-gouzao"
+      ],
+      "properties": [
+        "a_(n+1)=ca_n+d：设 a_(n+1)-x=c(a_n-x) 求 x",
+        "a_(n+1)=ma_n+mⁿ：两边除 m^(n+1) 构造等差",
+        "分式递推 a_(n+1)=(aa_n+b)/(ca_n+d)：特征方程求不动点"
+      ],
+      "methodModels": [
+        {
+          "name": "一阶线性递推",
+          "steps": [
+            "设 a_(n+1)-x=c(a_n-x)",
+            "解出 x=d/(1-c)",
+            "构造等比数列"
+          ],
+          "example": "a_(n+1)=2a_n+1，a1=1：a_n=2ⁿ-1"
+        },
+        {
+          "name": "分式递推",
+          "steps": [
+            "解特征方程 x=(ax+b)/(cx+d)",
+            "两不同根构造等比，重根构造等差"
+          ],
+          "example": "a_(n+1)=a_n/(2a_n+1) 构造 1/a_n 等差"
+        }
+      ],
+      "commonConfusions": [
+        "待定系数 x 的符号",
+        "分式递推需先求不动点",
+        "n≥2 与 n≥1 的范围"
+      ],
+      "prerequisiteRelations": [
+        "需掌握等差等比"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "构造新数列求通项",
+          "method": "待定系数/特征方程",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "5.1-5.2 导数概念与运算",
+      "aliases": [
+        "导数",
+        "切线",
+        "求导法则"
+      ],
+      "conceptSummary": "导数刻画函数在某点的瞬时变化率；f(x) 在 x0 处导数即切线斜率；基本求导公式与四则运算法则。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "导数定义：f'(x0)=lim[f(x0+h)-f(x0)]/h",
+        "切线方程：y-f(x0)=f'(x0)(x-x0)",
+        "基本公式：(xⁿ)'=nx^(n-1)，(sinx)'=cosx，(cosx)'=-sinx，(eˣ)'=eˣ，(lnx)'=1/x",
+        "四则运算：(u±v)'=u'±v'，(uv)'=u'v+uv'，(u/v)'=(u'v-uv')/v²"
+      ],
+      "methodModels": [
+        {
+          "name": "求切线方程",
+          "steps": [
+            "求 f'(x)",
+            "代 x0 得斜率",
+            "点斜式写方程"
+          ],
+          "example": "f(x)=x²，在 x=1 处切线 y=2x-1"
+        },
+        {
+          "name": "复合函数求导",
+          "steps": [
+            "由外向内逐层求导",
+            "相乘"
+          ],
+          "example": "(sin2x)'=2cos2x"
+        }
+      ],
+      "commonConfusions": [
+        "切线过曲线外点与切点区分",
+        "复合函数链式法则",
+        "除法求导分子符号"
+      ],
+      "prerequisiteRelations": [
+        "需掌握函数与极限思想"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求切线",
+          "method": "导数+点斜式",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "等差等比通项求和",
+      "solutionMethod": "套公式；S_n-S_(n-1)",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "数列构造求通项",
+      "solutionMethod": "待定系数/特征方程构造新数列",
+      "difficulty": "中档"
+    },
+    {
+      "shape": "导数求切线",
+      "solutionMethod": "求导+点斜式",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "导数研究单调性最值",
+      "solutionMethod": "f' 符号定单调；极值点",
+      "difficulty": "常考"
+    }
+  ]
+}

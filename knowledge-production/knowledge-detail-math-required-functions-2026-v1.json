@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-required-functions-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "required-functions",
+  "moduleName": "必修：函数（概念/基本性质/幂指对/三角）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:fn-conc-whatis",
+      "title": "高中数学函数概念解析（书稿科普）",
+      "url": "https://zhuanlan.zhihu.com/p/688477244",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:fn-qixin-basic",
+      "title": "函数奇偶性（知乎基础知识）",
+      "url": "https://zhuanlan.zhihu.com/p/467588850",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:fn-sanjiao-beiwang1",
+      "title": "三角函数备忘笔记（人教A版必修①）",
+      "url": "https://zhuanlan.zhihu.com/p/1988204133593937042",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:fn-expo-log-gaokao",
+      "title": "指数函数和对数函数：从课本出发通向高阶思维（高考数学第7篇）",
+      "url": "https://zhuanlan.zhihu.com/p/1970288911990366700",
+      "acquisition": "SUCCESS"
+    },
+    {
+      "sourceId": "zhihu:fn-sanjiao-beiwang2",
+      "title": "三角函数备忘笔记2（人教A版必修①）",
+      "url": "https://zhuanlan.zhihu.com/p/1923063306807146061",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "3.1 函数的概念及其表示",
+      "aliases": [
+        "函数",
+        "定义域",
+        "值域",
+        "对应关系"
+      ],
+      "conceptSummary": "函数 f 是从数集 X 到数集 Y 的映射/对应关系，X 为定义域，f(x) 的取值集合为值域。",
+      "evidenceSources": [
+        "zhihu:fn-conc-whatis"
+      ],
+      "properties": [
+        "函数三要素：定义域、值域、对应关系",
+        "定义域是自变量的取值范围",
+        "函数可用解析法/图象法/列表法表示"
+      ],
+      "methodModels": [
+        {
+          "name": "求定义域",
+          "steps": [
+            "分母不为0",
+            "偶次根号下≥0",
+            "对数真数>0"
+          ],
+          "example": "f(x)=1/(x-1)，定义域 x≠1"
+        },
+        {
+          "name": "求值域",
+          "steps": [
+            "配方法",
+            "换元法",
+            "图象法"
+          ],
+          "example": "f(x)=x²-2x+3，值域 [2,+∞)"
+        }
+      ],
+      "commonConfusions": [
+        "定义域优先原则",
+        "值域与集合表示"
+      ],
+      "prerequisiteRelations": [
+        "需掌握集合概念"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求定义域",
+          "method": "列不等式组",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "3.2 函数的基本性质（单调性与最值）",
+      "aliases": [
+        "单调性",
+        "增函数",
+        "减函数",
+        "最值"
+      ],
+      "conceptSummary": "函数单调性刻画随自变量增大函数值的变化趋势；最值是函数值的最大最小值。",
+      "evidenceSources": [
+        "zhihu:fn-conc-whatis"
+      ],
+      "properties": [
+        "增函数：x1<x2 ⇒ f(x1)<f(x2)",
+        "减函数：x1<x2 ⇒ f(x1)>f(x2)",
+        "定义法证明单调性：作差定号",
+        "复合函数单调性：同增异减"
+      ],
+      "methodModels": [
+        {
+          "name": "定义法证明单调",
+          "steps": [
+            "任取 x1<x2",
+            "作差 f(x1)-f(x2)",
+            "变形定号"
+          ],
+          "example": "证明 f(x)=x² 在 (0,+∞) 递增"
+        },
+        {
+          "name": "判断复合函数单调",
+          "steps": [
+            "分解内层外层",
+            "同增异减"
+          ],
+          "example": "f(x)=2^(x²-1) 的单调区间"
+        }
+      ],
+      "commonConfusions": [
+        "单调区间不能用并集连接",
+        "证明单调必须用定义"
+      ],
+      "prerequisiteRelations": [
+        "需掌握函数概念"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断/证明单调性",
+          "method": "定义法或图象",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "3.2.2 函数的奇偶性",
+      "aliases": [
+        "奇函数",
+        "偶函数",
+        "对称"
+      ],
+      "conceptSummary": "定义域关于原点对称时：f(-x)=-f(x) 为奇函数（图象关于原点对称），f(-x)=f(x) 为偶函数（图象关于 y 轴对称）。",
+      "evidenceSources": [
+        "zhihu:fn-qixin-basic"
+      ],
+      "properties": [
+        "奇函数在 x=0 有定义时 f(0)=0",
+        "奇函数图象关于原点对称，偶函数关于 y 轴对称",
+        "任意函数 = 偶函数部分 + 奇函数部分",
+        "奇偶函数乘积：奇×偶=奇"
+      ],
+      "methodModels": [
+        {
+          "name": "判断奇偶性",
+          "steps": [
+            "先看定义域是否关于原点对称",
+            "验证 f(-x) 与 f(x) 关系"
+          ],
+          "example": "f(x)=x³ 奇函数，f(x)=x² 偶函数"
+        },
+        {
+          "name": "利用奇偶性求解析式",
+          "steps": [
+            "利用 f(-x) 关系",
+            "分段表达"
+          ],
+          "example": "已知 x>0 时 f(x)=x²+x，求 f(x) 全定义域解析式"
+        }
+      ],
+      "commonConfusions": [
+        "定义域必须关于原点对称才谈奇偶",
+        "f(0)=0 只对奇函数且在0有定义",
+        "既奇又偶函数只有 f(x)=0"
+      ],
+      "prerequisiteRelations": [
+        "需掌握单调性"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断奇偶性",
+          "method": "定义域对称+f(-x)验证",
+          "example": "见上"
+        },
+        {
+          "questionShape": "奇偶性求解析式",
+          "method": "分段利用对称",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "4.2 指数函数",
+      "aliases": [
+        "指数",
+        "指数函数",
+        "幂"
+      ],
+      "conceptSummary": "y=aˣ（a>0 且 a≠1）为指数函数；a>1 单调递增，0<a<1 单调递减。",
+      "evidenceSources": [
+        "zhihu:fn-expo-log-gaokao"
+      ],
+      "properties": [
+        "定义域 R，值域 (0,+∞)",
+        "过定点 (0,1)",
+        "a>1 递增，0<a<1 递减",
+        "指数运算法则：a^m·a^n=a^(m+n)"
+      ],
+      "methodModels": [
+        {
+          "name": "比较大小",
+          "steps": [
+            "化同底",
+            "利用单调性比较"
+          ],
+          "example": "比较 2^1.5 与 2^1.3：2^1.5>2^1.3"
+        }
+      ],
+      "commonConfusions": [
+        "底数 a>0 且 a≠1",
+        "0<a<1 时单调性反向"
+      ],
+      "prerequisiteRelations": [
+        "需掌握幂运算"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "指数函数图象性质",
+          "method": "结合单调性定点",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "4.3-4.4 对数与对数函数",
+      "aliases": [
+        "对数",
+        "对数函数",
+        "真数"
+      ],
+      "conceptSummary": "log_a N 表示以 a 为底 N 的对数（a>0,a≠1,N>0）；对数函数 y=log_a x 是指数函数的反函数。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "对数恒等式：a^(log_a N)=N",
+        "log_a(MN)=log_a M+log_a N",
+        "log_a(M/N)=log_a M-log_a N",
+        "log_a(Mⁿ)=n·log_a M",
+        "换底公式：log_a b=log_c b/log_c a"
+      ],
+      "methodModels": [
+        {
+          "name": "对数运算",
+          "steps": [
+            "利用运算性质展开",
+            "化简"
+          ],
+          "example": "log_2 8+log_2 4=3+2=5"
+        },
+        {
+          "name": "对数函数单调性",
+          "steps": [
+            "a>1 递增，0<a<1 递减",
+            "比较大小"
+          ],
+          "example": "log_0.5 3 < log_0.5 2（底<1 反向）"
+        }
+      ],
+      "commonConfusions": [
+        "真数必须>0",
+        "底数范围 a>0,a≠1",
+        "对数无定义情形"
+      ],
+      "prerequisiteRelations": [
+        "需掌握指数函数"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "对数运算化简",
+          "method": "运算性质",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "5.2-5.4 三角函数",
+      "aliases": [
+        "三角函数",
+        "正弦",
+        "余弦",
+        "正切",
+        "诱导公式",
+        "同角关系"
+      ],
+      "conceptSummary": "sin/cos/tan 定义在单位圆上；同角关系 sin²α+cos²α=1；诱导公式化简任意角；图象具有周期性。",
+      "evidenceSources": [
+        "zhihu:fn-sanjiao-beiwang1",
+        "zhihu:fn-sanjiao-beiwang2"
+      ],
+      "properties": [
+        "同角关系：sin²α+cos²α=1，tanα=sinα/cosα",
+        "诱导公式：奇变偶不变，符号看象限",
+        "周期：sin/cos 周期 2π，tan 周期 π",
+        "正弦型 y=Asin(ωx+φ) 的振幅/周期/相位"
+      ],
+      "methodModels": [
+        {
+          "name": "化简求值",
+          "steps": [
+            "用诱导公式化到锐角",
+            "用同角关系",
+            "代入求值"
+          ],
+          "example": "sin150°=sin30°=1/2"
+        },
+        {
+          "name": "图象性质分析",
+          "steps": [
+            "求周期 T=2π/ω",
+            "求对称轴/单调区间"
+          ],
+          "example": "y=2sin(2x+π/3) 周期 π"
+        }
+      ],
+      "commonConfusions": [
+        "诱导公式符号判断（象限）",
+        "角度弧度转换",
+        "定义域对 tan 的限制"
+      ],
+      "prerequisiteRelations": [
+        "需掌握函数性质"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "三角函数求值",
+          "method": "诱导+同角",
+          "example": "见上"
+        },
+        {
+          "questionShape": "正弦型函数性质",
+          "method": "由 Asin(ωx+φ) 分析",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "求函数定义域值域",
+      "solutionMethod": "列不等式组；配方法",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "单调性证明与判断",
+      "solutionMethod": "定义法作差定号",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "奇偶性判断与求解析式",
+      "solutionMethod": "f(-x) 关系",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "指数对数比较大小",
+      "solutionMethod": "化同底用单调性",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "三角化简求值与图象",
+      "solutionMethod": "诱导公式/同角关系/周期",
+      "difficulty": "常考"
+    }
+  ]
+}

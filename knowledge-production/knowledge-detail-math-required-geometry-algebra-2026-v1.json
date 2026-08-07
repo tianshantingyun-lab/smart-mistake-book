@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-required-geometry-algebra-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "required-geometry-algebra",
+  "moduleName": "必修：几何与代数（平面向量与复数）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:fn-vector-beiwang",
+      "title": "高中数学备忘笔记11——平面向量及其应用（人教A版必修②）",
+      "url": "https://zhuanlan.zhihu.com/p/1936386588071419966",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "6.1 平面向量的概念",
+      "aliases": [
+        "向量",
+        "有向线段",
+        "零向量",
+        "单位向量",
+        "相等向量",
+        "平行向量"
+      ],
+      "conceptSummary": "既有大小又有方向的量叫向量（如力、位移、速度）；只有大小没有方向的量叫数量。有向线段包含起点、方向、长度三要素，可表示向量。",
+      "evidenceSources": [
+        "zhihu:fn-vector-beiwang"
+      ],
+      "properties": [
+        "向量可以用有向线段 AB 表示，大小（模）记作 |AB|",
+        "零向量：长度为零，记作 0",
+        "单位向量：长度等于 1 个单位长度",
+        "平行向量（共线向量）：方向相同或相反的向量；零向量与任意向量平行",
+        "相等向量：长度相等且方向相同，与起点无关"
+      ],
+      "methodModels": [
+        {
+          "name": "向量概念辨析",
+          "steps": [
+            "判断是否既有大小又有方向",
+            "区分向量与数量"
+          ],
+          "example": "位移、速度是向量；年龄、身高、长度是数量"
+        },
+        {
+          "name": "相等向量判定",
+          "steps": [
+            "比较模是否相等",
+            "比较方向是否相同"
+          ],
+          "example": "a 与 b 长度相等且方向相同则 a=b"
+        }
+      ],
+      "commonConfusions": [
+        "平行向量与共线向量是同一概念，不是'平行线'",
+        "零向量方向任意，与任何向量平行",
+        "有向线段与向量的区别：向量可平移，有向线段位置固定"
+      ],
+      "prerequisiteRelations": [
+        "需掌握平面直角坐标系与有向线段"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "判断向量关系",
+          "method": "比较模和方向",
+          "example": "判断四边形各边向量是否相等"
+        }
+      ]
+    },
+    {
+      "section": "6.2 平面向量的运算",
+      "aliases": [
+        "加法",
+        "减法",
+        "数乘",
+        "三角形法则",
+        "平行四边形法则",
+        "线性运算"
+      ],
+      "conceptSummary": "向量加法可用三角形法则或平行四边形法则；减法转化为加相反向量；数乘是实数与向量的积，仍是向量。加、减、数乘统称线性运算。",
+      "evidenceSources": [
+        "zhihu:fn-vector-beiwang"
+      ],
+      "properties": [
+        "加法交换律 a+b=b+a，结合律 (a+b)+c=a+(b+c)",
+        "三角不等式 |a+b|≤|a|+|b|，a,b 同向非零时取等",
+        "减法几何意义：a-b 从 b 的终点指向 a 的终点",
+        "数乘：|λa|=|λ||a|，λ>0 同向、λ<0 反向",
+        "数乘运算律：λ(μa)=(λμ)a，(λ+μ)a=λa+μa，λ(a+b)=λa+λb",
+        "共线定理：a(a≠0) 与 b 共线 ⇔ 存在唯一实数 λ 使 b=λa"
+      ],
+      "methodModels": [
+        {
+          "name": "加法作图",
+          "steps": [
+            "三角形法则：首尾相接",
+            "或平行四边形法则：同起点作对角线"
+          ],
+          "example": "位移合成可用三角形法则"
+        },
+        {
+          "name": "减法转化",
+          "steps": [
+            "a-b 看作 a+(-b)",
+            "或从 b 终点指向 a 终点"
+          ],
+          "example": "已知 OA、OB，则 AB=OB-OA 方向 B 指向 A"
+        },
+        {
+          "name": "向量共线判定",
+          "steps": [
+            "找非零向量 a",
+            "判断是否存在 λ 使 b=λa"
+          ],
+          "example": "a=(1,2),b=(2,4)，b=2a，共线"
+        }
+      ],
+      "commonConfusions": [
+        "减法方向易错：a-b 从 b 的终点指向 a 的终点（箭头指向被减向量）",
+        "数乘结果仍是向量，不是数量",
+        "λ=0 或 a=0 时共线定理需特殊处理"
+      ],
+      "prerequisiteRelations": [
+        "需掌握向量的概念"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "向量加减作图",
+          "method": "三角形/平行四边形法则",
+          "example": "作 a+b、a-b"
+        },
+        {
+          "questionShape": "共线向量求参数",
+          "method": "设 b=λa 解方程",
+          "example": "a=(1,2),b=(2,k) 共线求 k：k=4"
+        }
+      ]
+    },
+    {
+      "section": "6.3 平面向量基本定理及坐标表示",
+      "aliases": [
+        "基本定理",
+        "坐标表示",
+        "正交分解",
+        "数量积"
+      ],
+      "conceptSummary": "平面内任一向量可由两个不共线向量线性表示；向量可正交分解并用坐标表示；数量积 a·b=|a||b|cosθ。",
+      "evidenceSources": [
+        "zhihu:fn-vector-beiwang"
+      ],
+      "properties": [
+        "基本定理：e1,e2 不共线，任一向量 a 可唯一表示为 a=λ1e1+λ2e2",
+        "坐标表示：a=(x1,y1),b=(x2,y2)，加减数乘对应坐标运算",
+        "数量积坐标：a·b=x1x2+y1y2",
+        "模长：|a|=√(x²+y²)",
+        "夹角：cosθ=(a·b)/(|a||b|)"
+      ],
+      "methodModels": [
+        {
+          "name": "坐标运算",
+          "steps": [
+            "向量坐标化",
+            "按坐标法则计算"
+          ],
+          "example": "a=(1,2),b=(3,4)，a+b=(4,6)，2a=(2,4)"
+        },
+        {
+          "name": "数量积求夹角",
+          "steps": [
+            "算 a·b",
+            "算 |a|、|b|",
+            "cosθ=(a·b)/(|a||b|)"
+          ],
+          "example": "a=(1,0),b=(0,1)，a·b=0，θ=90°"
+        },
+        {
+          "name": "用基本定理表示向量",
+          "steps": [
+            "选基底",
+            "设系数",
+            "解方程"
+          ],
+          "example": "在三角形中用 AB、AC 表示中线向量"
+        }
+      ],
+      "commonConfusions": [
+        "基底必须不共线",
+        "数量积结果是数量（标量）",
+        "a·b=0 推不出 a=0 或 b=0（可能垂直）"
+      ],
+      "prerequisiteRelations": [
+        "需掌握向量运算"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "坐标加减数乘",
+          "method": "逐坐标运算",
+          "example": "a=(1,2),b=(-1,3)，a-2b=(3,-4)"
+        },
+        {
+          "questionShape": "向量平行垂直判断",
+          "method": "平行 x1y2=x2y1；垂直 x1x2+y1y2=0",
+          "example": "a=(2,3),b=(4,6) 平行；a=(1,0),b=(0,2) 垂直"
+        }
+      ]
+    },
+    {
+      "section": "7.1-7.2 复数的概念与运算",
+      "aliases": [
+        "复数",
+        "虚数",
+        "共轭复数",
+        "复平面"
+      ],
+      "conceptSummary": "复数 z=a+bi（a,b∈R，i²=-1）；a 实部、b 虚部；复数可用复平面点表示；四则运算与多项式类似，用 i²=-1 化简。",
+      "evidenceSources": [
+        "DOMAIN_COMMON_KNOWLEDGE"
+      ],
+      "properties": [
+        "复数相等：a+bi=c+di ⇔ a=c 且 b=d",
+        "共轭复数：a+bi 与 a-bi",
+        "模：|a+bi|=√(a²+b²)",
+        "加法/减法对应实部虚部分别运算",
+        "乘法：(a+bi)(c+di)=(ac-bd)+(ad+bc)i",
+        "除法：分母乘共轭复数化去虚部"
+      ],
+      "methodModels": [
+        {
+          "name": "复数四则运算",
+          "steps": [
+            "按多项式展开",
+            "用 i²=-1 化简"
+          ],
+          "example": "(1+i)(1-i)=1-i²=2"
+        },
+        {
+          "name": "复数除法",
+          "steps": [
+            "分子分母同乘分母共轭",
+            "化简实部虚部"
+          ],
+          "example": "(1+i)/(1-i)=(1+i)²/2=i"
+        }
+      ],
+      "commonConfusions": [
+        "i²=-1 易与 i³=-i、i⁴=1 混淆",
+        "复数不能直接比较大小（只有模可以）",
+        "z=0 的模为 0；纯虚数要求 b≠0"
+      ],
+      "prerequisiteRelations": [
+        "需掌握实数运算与平面向量"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "复数化简",
+          "method": "i 的幂化简+i²=-1",
+          "example": "i³+i⁴=-i+1"
+        },
+        {
+          "questionShape": "复数相等求参数",
+          "method": "实部实部、虚部虚部相等",
+          "example": "(a+bi)(1+i)=2i 求 a,b"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "向量概念与关系判断",
+      "solutionMethod": "比较模与方向；平行/相等定义",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "向量加减数乘运算",
+      "solutionMethod": "三角形/平行四边形法则；线性运算律",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "共线向量求参数",
+      "solutionMethod": "设 b=λa 解方程",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "向量坐标与数量积",
+      "solutionMethod": "坐标运算；a·b=x1x2+y1y2；夹角公式",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "复数四则运算与化简",
+      "solutionMethod": "i²=-1 化简；除法乘共轭",
+      "difficulty": "常考"
+    }
+  ]
+}

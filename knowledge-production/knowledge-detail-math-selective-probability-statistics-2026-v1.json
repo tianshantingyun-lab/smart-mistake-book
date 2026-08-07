@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "knowledge-detail-math-selective-probability-statistics-2026-v1",
+  "subject": "MATH",
+  "moduleSlug": "selective-probability-statistics",
+  "moduleName": "选择性必修：计数原理（排列组合与二项式定理）",
+  "reviewState": "DRAFT_UNREVIEWED",
+  "synthesisPolicy": "REVIEWED_SYNTHESIS_ONLY",
+  "updatedAtEpochMillis": 1784908800000,
+  "sources": [
+    {
+      "sourceId": "zhihu:paile-zuhe-intro",
+      "title": "初学讲义之高中数学二十一：排列组合和二项式定理",
+      "url": "https://zhuanlan.zhihu.com/p/89717188",
+      "acquisition": "SUCCESS"
+    }
+  ],
+  "knowledgePoints": [
+    {
+      "section": "6.1 分类加法与分步乘法计数原理",
+      "aliases": [
+        "加法原理",
+        "乘法原理",
+        "计数原理"
+      ],
+      "conceptSummary": "完成一件事需 n 个步骤用乘法原理（各步方法数相乘）；有 n 类办法用加法原理（各类方法数相加）。",
+      "evidenceSources": [
+        "zhihu:paile-zuhe-intro"
+      ],
+      "properties": [
+        "乘法原理：N=m1·m2·...·mn（分步，各步独立）",
+        "加法原理：N=m1+m2+...+mn（分类，互斥）"
+      ],
+      "methodModels": [
+        {
+          "name": "分步计数",
+          "steps": [
+            "识别需要几个步骤",
+            "每步方法数相乘"
+          ],
+          "example": "10衬衣×8裤×5鞋=400搭配"
+        },
+        {
+          "name": "分类计数",
+          "steps": [
+            "识别几类办法",
+            "各类相加"
+          ],
+          "example": "北京到上海：10飞机+20高铁+30大巴+1自驾=61"
+        }
+      ],
+      "commonConfusions": [
+        "分步（乘）与分类（加）混淆",
+        "步骤间必须独立"
+      ],
+      "prerequisiteRelations": [],
+      "workedExampleStructure": [
+        {
+          "questionShape": "分步/分类计数",
+          "method": "识别后用乘/加法原理",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "6.2 排列与组合",
+      "aliases": [
+        "排列",
+        "组合",
+        "排列数",
+        "组合数"
+      ],
+      "conceptSummary": "排列考虑顺序，组合不考虑顺序；排列数 A(n,m)=n!/(n-m)!，组合数 C(n,m)=n!/(m!(n-m)!)。",
+      "evidenceSources": [
+        "zhihu:paile-zuhe-intro"
+      ],
+      "properties": [
+        "排列数：A(n,m)=n(n-1)...(n-m+1)",
+        "组合数：C(n,m)=A(n,m)/m!",
+        "组合数性质：C(n,m)=C(n,n-m)",
+        "加法公式：C(n,m)+C(n,m-1)=C(n+1,m)"
+      ],
+      "methodModels": [
+        {
+          "name": "排列计算",
+          "steps": [
+            "判断是否考虑顺序",
+            "选排列公式"
+          ],
+          "example": "5人选3人排成一排：A(5,3)=60"
+        },
+        {
+          "name": "组合计算",
+          "steps": [
+            "判断不考虑顺序",
+            "组合公式"
+          ],
+          "example": "5人选3人组队：C(5,3)=10"
+        },
+        {
+          "name": "有限制排列",
+          "steps": [
+            "特殊元素优先处理",
+            "或间接法（总数-反面）"
+          ],
+          "example": "A相邻问题捆绑法"
+        }
+      ],
+      "commonConfusions": [
+        "排列与组合本质区别：是否考虑顺序",
+        "含限制条件时正难则反"
+      ],
+      "prerequisiteRelations": [
+        "需掌握计数原理"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "排列组合数计算",
+          "method": "套公式",
+          "example": "见上"
+        },
+        {
+          "questionShape": "有限制条件问题",
+          "method": "特殊元素优先/间接法",
+          "example": "见上"
+        }
+      ]
+    },
+    {
+      "section": "二项式定理",
+      "aliases": [
+        "二项式",
+        "展开式",
+        "通项"
+      ],
+      "conceptSummary": "(a+b)ⁿ 展开有 n+1 项，通项 T(k+1)=C(n,k)a^(n-k)b^k；系数为二项式系数。",
+      "evidenceSources": [
+        "zhihu:paile-zuhe-intro"
+      ],
+      "properties": [
+        "二项式系数 C(n,k)，对称性 C(n,k)=C(n,n-k)",
+        "所有系数和=2ⁿ",
+        "奇偶项系数和相等=2^(n-1)"
+      ],
+      "methodModels": [
+        {
+          "name": "求通项",
+          "steps": [
+            "写出通项公式",
+            "确定 k",
+            "代入"
+          ],
+          "example": "(x+2)⁵ 中 x³ 项系数：C(5,2)·2²=40"
+        },
+        {
+          "name": "求指定项",
+          "steps": [
+            "令 x 指数满足条件",
+            "解出 k"
+          ],
+          "example": "常数项令 x 指数为0"
+        }
+      ],
+      "commonConfusions": [
+        "二项式系数与系数区别（系数含变量系数）",
+        "第 k+1 项对应 C(n,k) 的 k 从0开始"
+      ],
+      "prerequisiteRelations": [
+        "需掌握组合数"
+      ],
+      "workedExampleStructure": [
+        {
+          "questionShape": "求指定项系数",
+          "method": "通项公式",
+          "example": "见上"
+        }
+      ]
+    }
+  ],
+  "typicalQuestionShapes": [
+    {
+      "shape": "分步分类计数",
+      "solutionMethod": "乘法/加法原理",
+      "difficulty": "基础"
+    },
+    {
+      "shape": "排列组合",
+      "solutionMethod": "考虑顺序与否；特殊优先/间接法",
+      "difficulty": "常考"
+    },
+    {
+      "shape": "二项式展开",
+      "solutionMethod": "通项公式",
+      "difficulty": "常考"
+    }
+  ]
+}
