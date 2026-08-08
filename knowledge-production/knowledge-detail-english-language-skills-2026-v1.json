@@ -17,48 +17,96 @@
         "细节",
         "推断"
       ],
-      "conceptSummary": "阅读理解需掌握主旨大意、细节理解、推理判断、词义猜测等技能。",
+      "conceptSummary": "阅读理解要求考生先整体把握文章主旨，再定位细节信息，并通过逻辑推理做出合理判断。常见题型分为主旨大意题、细节理解题、推理判断题与词义猜测题四类，解题需综合运用略读、寻读与精读策略，做到先看题后读文、以题干关键词回原文定位。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "主旨题：首尾段/主题句",
-        "细节题：定位关键词",
-        "推断题：文中暗示+逻辑",
-        "词义猜测：上下文/构词法"
+        "主旨大意题：重点关注首尾段与各段主题句，用一句话概括全文中心。",
+        "细节理解题：以题干关键词回原文定位，注意同义替换与数字、人名、时间的比对。",
+        "推理判断题：依据文中暗示与上下文逻辑合理推断，避免主观臆断与过度推断。",
+        "词义猜测题：借助上下文语境、构词法（前缀后缀）与指代关系猜测生词含义。",
+        "解题流程：先略读把握大意，再寻读定位，最后精读比对排除干扰项。",
+        "指代关系题：找出代词 this/it/they 所指的前文名词，须回到代词所在句向前寻找最近且合理的先行词。",
+        "标题选择规则：最佳标题须涵盖全文中心并体现文体特点，过于具体、只提细节或范围过大者皆为干扰项。",
+        "推断题判断规则：与原文表述完全一致或常识正确但文中未提及的选项不能选，须选由原文信息合理推出的选项。",
+        "作者态度题：通过文中表达褒贬的形容词副词与转折句判断作者立场，如 supportive、critical、neutral。",
+        "数字细节比对：原文与选项中的数字须逐位核对，注意单位换算与修饰词（约、超过、不到）造成的差异。"
       ],
       "methodModels": [
         {
           "name": "主旨把握",
           "steps": [
-            "读首尾段",
-            "找主题句",
-            "概括"
+            "通读首段与尾段，寻找文章的主题句，判断文章的中心论点或写作目的。",
+            "浏览各段首句，理清段落层次，判断文章是总分、并列还是递进结构。",
+            "用一句简洁的话概括全文大意，作为选择主旨答案的对照标准。",
+            "比对四个选项，排除只涉及某一段或某个细节的干扰项，选出涵盖全篇的选项。"
           ],
-          "example": "文章首段提出中心论点"
+          "example": "文章首段开门见山提出中心论点，中间各段分述支撑理由，末段再次总结呼应，主旨题应选能概括首尾段中心思想的选项。"
         },
         {
           "name": "细节定位",
           "steps": [
-            "题干关键词",
-            "回原文定位",
-            "比对选项"
+            "先读题干，圈出关键词（人名、地名、数字、时间、专有名词）。",
+            "带着关键词回原文进行寻读，锁定对应句所在的段落与行数。",
+            "将该句与四个选项逐项比对，特别注意同义替换与词性转换。",
+            "排除偷换概念、张冠李戴与扩大范围的选项，选出与原文一致项。"
           ],
-          "example": "数字/人名/时间定位"
+          "example": "题干问 The author mentions the year 1998 because...，关键词为 1998，回原文定位含 1998 的句子，再比对选项选出能解释其作用的答案。"
+        },
+        {
+          "name": "推理判断三步法",
+          "steps": [
+            "通读题干与选项，先明确题目要求推断的是原因、结果、作者态度还是人物感受。",
+            "回到原文定位与题干相关的证据句，并同时阅读该句前后的两三句话构成完整语境。",
+            "依据文中明确暗示进行合乎逻辑的推理，绝不添加原文没有提到的额外信息。",
+            "将推理结论与四个选项逐一比对，排除无依据、脱离语境或过度延伸的干扰项。"
+          ],
+          "example": "原文只写 The door was locked and his keys were gone，题干问主角的感受，应依据无钥匙这一事实推断他焦急，而非想当然认为他在微笑。"
+        },
+        {
+          "name": "主旨细节结合法",
+          "steps": [
+            "先通读全篇并概括中心，明确文章到底围绕哪个主题展开。",
+            "再看题干确定题目属于主旨还是细节类型，选用对应策略。",
+            "解答细节题时回原文定位，并把所得信息放回主旨框架中检验。",
+            "若细节与主旨冲突，则重新核对定位是否正确，警惕被局部信息误导。"
+          ],
+          "example": "文章通篇介绍锻炼的多种好处，题干却问作者对跑步的具体建议，须定位到与跑步相关的段落，同时保证答案不违背全文提倡锻炼的积极主旨。"
         }
       ],
       "commonConfusions": [
-        "推断与过度推断",
-        "主旨与细节混淆"
+        "推理题易过度推断：推断必须建立在原文信息之上，选项常识正确但文中未提及的不能选。",
+        "主旨题与细节题混淆：主旨题看全篇，细节题看单句，先判断题型再选择解题路径。",
+        "词义猜测脱离语境：猜词必须结合所在句子与相邻句，不能只凭构词法或常识臆测。",
+        "把作者举例当普遍结论：文中用具体例子说明的现象不一定适用所有情况，须结合段首主题句判断其适用范围。",
+        "细节题与推断题混淆：细节题答案可直接在原文找到，推断题须经推理得出，先判断题干关键词能否直接定位再选择方法。",
+        "选项文字表面相似而含义不同：只以词语重复判断答案易出错，须整体比对句意而非只看个别词是否相同。",
+        "指代题向前找错对象：代词常指向前文最近的名词，但遇并列或从句时须先分清先行词范围，避免指到干扰名词。"
       ],
       "prerequisiteRelations": [
         "需掌握词汇语法"
       ],
       "workedExampleStructure": [
         {
-          "questionShape": "阅读理解",
-          "method": "定位+判断",
-          "example": "见上"
+          "questionShape": "阅读理解主旨大意题",
+          "method": "先读首尾段主题句，再概括中心并比对选项",
+          "example": "题干问 What is the main idea of the passage？先读首段首句与末段末句确定中心论点，再看各段首句确认分论点，最后用一句话概括全篇；比对选项时排除只谈某一段的选项，选出涵盖全文大意的答案。"
+        },
+        {
+          "questionShape": "阅读理解细节推断题",
+          "method": "以题干关键词定位原文，比对同义替换后合理推断",
+          "example": "题干问 Why did the author give up the job？题干关键词 give up the job 回原文定位到 He left the company because he wanted to spend more time with his family，比对选项 A．He was poorly paid B．He wanted a family life C．He was fired D．He disliked his boss，识别同义替换后选 B。"
+        },
+        {
+          "questionShape": "阅读理解词义猜测题",
+          "method": "借助上下文语境与构词法推断生词含义",
+          "example": "题干问 The underlined word meticulous in the passage probably means ______。原文句为 He kept every receipt in a separate folder and checked each number twice，由 he checked each number twice 可知 meticulous 意为极其仔细的，对应选项 very careful。"
+        },
+        {
+          "questionShape": "阅读理解标题选择",
+          "method": "概括全文中心，排除过窄或过宽的选项",
+          "example": "题干问 Which can be the best title for the passage？文章首段讲坚持运动对心脏的好处，中段讲对大脑与情绪的好处，末段作总结，选项中 A．The History of Sports 范围过宽、B．Sports in Ancient China 偏离主题、C．The Benefits of Regular Exercise 概括全篇，故标题选 C。"
         }
       ]
     },
@@ -70,48 +118,97 @@
         "续写",
         "衔接"
       ],
-      "conceptSummary": "写作需内容完整、逻辑连贯、语言准确；应用文（书信/通知）与读后续写是考查重点。",
+      "conceptSummary": "写作以内容完整、逻辑连贯、语言准确为基本要求，考查应用文（书信、邮件、通知）与读后续写两大题型。应用文强调格式规范与要点齐全，读后续写强调情节合理衔接与语言丰富，均需合理使用连接词与高级表达提升档次。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "应用文：书信/邮件/通知格式",
-        "读后续写：情节连贯+语言丰富",
-        "连接词：first/then/however",
-        "高级表达：从句/非谓语"
+        "应用文格式：书信（称呼、正文、结尾、署名）、邮件、通知各有固定格式要求。",
+        "内容要点：题目所给要点必须全部覆盖，做到一段一意、层次分明。",
+        "逻辑连贯：用连接词 first/second/then/however/in addition 衔接段落与句子。",
+        "语言得体：根据对象选择正式或非正式语气，避免口语化过度或过分书面。",
+        "高级表达：适当使用从句、非谓语动词与固定句型提升语言档次。",
+        "通知格式：标题 Notice 居中，正文写明时间地点与参加对象，落款写单位与日期。",
+        "邮件格式：主题行简明概括，正文开头问候、结尾致谢，语气依收件人身份调整。",
+        "读后续写衔接：两段首句即段首提示，续写内容须与该句的人称、时态和情节方向一致。",
+        "段落主题句：每段首句尽量点明该段中心，使阅卷者能快速把握结构层次与行文逻辑。",
+        "书写与卷面：字迹清晰、分段明确、标点规范直接影响印象分，须避免涂改过多与段落混乱。",
+        "字数要求：应用文通常八十词左右、续写一百五十词左右，超长或过短都会因详略失当而扣分。"
       ],
       "methodModels": [
         {
           "name": "应用文写作",
           "steps": [
-            "格式正确",
-            "要点齐全",
-            "语言得体"
+            "审题确定文体与写作对象，明确是建议信、邀请信、通知还是投诉信。",
+            "按格式搭框架：称呼、开头、正文要点、结尾礼貌语、署名分步写。",
+            "正文分段表达要点，每段一个中心，用连接词串联逻辑关系。",
+            "检查格式是否完整、要点是否齐全、人称时态是否一致。"
           ],
-          "example": "建议信：称呼-正文-结尾"
+          "example": "写建议信时先称呼 Dear Sir/Madam，正文先表明写信目的，再分条提出建议并说明理由，结尾 I hope my suggestions will be helpful，最后签名 Yours sincerely。"
         },
         {
           "name": "读后续写",
           "steps": [
-            "理解原文",
-            "构思情节",
-            "衔接续写"
+            "通读原文，把握故事主线、人物性格与未完成的情节走向。",
+            "根据两段开头句确定每段要写的情节，保证与前文逻辑衔接。",
+            "续写保持人物性格一致，使用动作描写、心理描写与环境烘托。",
+            "语言与原文风格匹配，适当运用高级词汇与句型并检查时态一致。"
           ],
-          "example": "续写保持人物性格一致"
+          "example": "原文写主角胆小不敢上台演讲，续写段首 He took a deep breath and walked onto the stage，则续写应描写他克服恐惧的过程与结果，保持其成长的人物弧线。"
+        },
+        {
+          "name": "衔接润色四步法",
+          "steps": [
+            "先通读草稿检查要点是否齐全，确认每段各承担一个明确中心任务。",
+            "在段落与句子之间补入恰当的连接词，如 however、besides、as a result 等理顺逻辑。",
+            "将平淡的简单句合并改写为定语从句或非谓语结构，提升语言层次与句式多样性。",
+            "全文复核人称、时态与单复数的一致性，并检查标点与大小写等细节规范。"
+          ],
+          "example": "将 He was tired. He still kept working 改写为 Though tired, he kept working，用让步结构连接两个分句，使句子更紧凑且体现逻辑关系。"
+        },
+        {
+          "name": "读后续写四段构思法",
+          "steps": [
+            "先通读原文并圈出人物、地点、时间与主要矛盾冲突。",
+            "依据两段所给首句倒推每段的剧情终点，避免情节跑偏。",
+            "每段内部按起因、发展、高潮的次序铺开，让矛盾得到解决。",
+            "结尾回扣原文主题词或情感，使续写与开头首尾呼应。"
+          ],
+          "example": "原文写主角捡到受伤的小鸟，续写首句为 The little bird opened its eyes weakly，则第一段描写照顾过程，第二段按 The next morning 写出放飞结尾，并与前文善待生命的态度呼应。"
         }
       ],
       "commonConfusions": [
-        "书面与口语表达",
-        "正式与非正式文体"
+        "口语与书面语混用：写作应用正式书面语，避免 gonna/wanna 等口语缩写。",
+        "文体语气错位：给朋友写信用亲切语气，给长辈或机构用正式客套语气。",
+        "忽视衔接词导致逻辑松散：段落之间、句子之间缺乏连接词会显得跳跃。",
+        "人称与叙事视角混用：全篇应统一用 I/we 或 he/she 视角，中途切换会让阅卷者混淆叙述者。",
+        "续写情节偏离首句提示：续写首段须紧接所给句子展开，若另起炉灶或倒叙补前情会破坏衔接被判跑题。",
+        "为用高级句而牺牲准确性：把简单句硬拼成长难句易出错，应先保证语法正确再谈句式多样，不可本末倒置。",
+        "书信落款与署名规范混淆：Yours sincerely 与 Yours faithfully 的使用须与称呼对应，Dear Sir/Madam 后用 faithfully，认识对方用 sincerely。"
       ],
       "prerequisiteRelations": [
         "需掌握语法"
       ],
       "workedExampleStructure": [
         {
-          "questionShape": "书面表达",
-          "method": "格式+要点+语言",
-          "example": "见上"
+          "questionShape": "应用文写作（建议信）",
+          "method": "审题定文体，按称呼-正文-结尾格式分条表达要点",
+          "example": "假设你是李华，给外教写建议信：先称呼与问候，正文第一段说明写信目的，第二段分两条提出建议（如组织英语角、推荐英文原著），每条附理由，末段表达希望与感谢，署名 Yours sincerely, Li Hua，确保要点齐全、语气得体。"
+        },
+        {
+          "questionShape": "读后续写情节构思",
+          "method": "把握人物与主线，按两段首句展开并衔接原文",
+          "example": "原文写主角在森林中迷路，续写首段以 Frightened but determined, he looked around 开头：先描写他冷静观察地形与寻找水源，第二段写他用记号与风向判断方向最终走出森林，并呼应前文表现的勇敢品质。"
+        },
+        {
+          "questionShape": "应用文写作（书面通知）",
+          "method": "按标题-正文-落款格式传达时间地点信息",
+          "example": "学校要举办英语演讲比赛，写一则通知：标题 NOTICE 居中，正文写明比赛定于本周五下午三时在报告厅举行、报名截止周三晚，末段注明主办方为英语教研组并落款日期，确保时间地点与参加对象齐全。"
+        },
+        {
+          "questionShape": "读后续写结尾升华",
+          "method": "用动作与环境描写收束情节，回扣主题升华",
+          "example": "续写结尾需要收束主线时，可写 The sky cleared and the sun broke through the clouds as Jack finally reached the top, his smile wider than ever，用天气由阴转晴衬托内心释然，并回扣前文坚持攀登的决心，使故事完整而有意蕴。"
         }
       ]
     },
@@ -120,36 +217,101 @@
       "aliases": [
         "听力",
         "抓关键词",
-        "预测"
+        "预测",
+        "听力理解"
       ],
-      "conceptSummary": "听力技能：预测内容、抓关键词、注意转折。",
+      "conceptSummary": "听力技能强调听前利用题干与选项预测内容与场景，听中抓关键信息（数字、时间、人物、地点），注意转折词（but/however/in fact）后往往是答案所在，并识别同义替换。短对话侧重场景判断，长对话与独白侧重信息筛选与整合，听后再校验可提高准确率。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "预测",
-        "关键词",
-        "数字时间"
+        "听前预测：浏览题干与选项，预判话题、场景与提问方向，圈出疑问词。",
+        "抓关键词：重点听取数字、时间、地点、人物身份与职业等信息。",
+        "转折信号词：but/however/in fact 后的内容常是答案所在。",
+        "同义替换：听到与选项用词不同但意思相同的表达时确认答案。",
+        "主旨与细节兼顾：独白先抓主题句，再核对具体数字与人名。",
+        "地点场景判断：听到 ordering a meal 与 waitress 提示餐厅，听到 check-in 与 boarding 提示机场。",
+        "语气语速提示：惊讶、委婉拒绝常以犹豫或升调表现，须结合语音语调推断说话人态度。",
+        "重复修正信息：说话人纠正自己时以后说的为准，如 Wait, I mean it's on Tuesday 应取 Tuesday。",
+        "首句定场景：独白与长对话常以开头一两句交代场景与说话人身份，帮助预判后续内容方向。",
+        "同音近音干扰：one/won、right/write 等易混，须结合上下文词义辨别，不能仅凭发音判断。",
+        "数字单位与换算：涉及价格、时间、距离时注意 half、double、quarter 等换算词，如 half past 与 thirty past。"
       ],
       "methodModels": [
         {
-          "name": "听力技巧",
+          "name": "听前预测",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "快速浏览题干与选项，划出重复出现的高频词判断话题。",
+            "根据选项类型预测提问方向，如 where 题关注地点场所词。",
+            "圈出问句类型（what/when/where/why/how）作为听时重点。",
+            "带着预测的问题进入听力，缩小注意范围提高效率。"
           ],
-          "example": "听力"
+          "example": "题干问 Where does the conversation take place？选项中含 restaurant/hospital/airport，则听时重点捕捉地点场所类词汇。"
+        },
+        {
+          "name": "听中定位",
+          "steps": [
+            "边听边抓关键词与信号词，紧跟对话的问答结构。",
+            "特别注意转折词 but/however/in fact 之后的信息。",
+            "随手记录数字、时间、人物与地点等易混信息。",
+            "对拿不准的题先记初步信息，听后通过同义替换校验。"
+          ],
+          "example": "听到 I'd like to go, but I have to work，答案应取 but 后的 have to work，说明对方无法前往。"
+        },
+        {
+          "name": "听后校验",
+          "steps": [
+            "比对选项与所听信息，确认是否张冠李戴。",
+            "利用同义替换确认答案，如 delayed 与 put off 意思相同。",
+            "检查数字与时间的换算，如 quarter 与 15 minutes。",
+            "对未听清的题结合上下文语境合理推断。"
+          ],
+          "example": "原文说 The flight was delayed by two hours，选项改写为 The flight was put off，识别同义替换后确认答案。"
+        },
+        {
+          "name": "信息速记与整合",
+          "steps": [
+            "提前设计简单记法，用数字、箭头与缩写记录关键信息。",
+            "集中记录与题目相关的数字、时间、地点及人物身份。",
+            "把分散在各句的信息整合起来，判断哪个选项能覆盖全部要点。",
+            "结合语气与停顿判断说话人态度，完成无法直接听到的推断题。"
+          ],
+          "example": "长对话先提到周一开会、后改到周三下午三点，题目问最终时间，速记时应记录修改后的 Wednesday 3 pm，整合后选择对应选项。"
         }
       ],
       "commonConfusions": [
-        "抓关键词"
+        "纠结个别生词而漏掉整体大意：遇到生词先跳过，抓住前后句理解意思。",
+        "只抓原文原词忽视同义替换：答案常以替换词形式出现，需识别同意表达。",
+        "数字与时间的张冠李戴：记录时注意区分价格、时间、人数的对应关系。",
+        "过早锁定选项导致漏听：听到疑似答案立即选定会错过后续修正信息，须等完整句播完再定。",
+        "把背景声音当有效信息：录音中的环境音不构成内容，须以说话人明确说出的词句为准。",
+        "直接信息与推断信息混为一谈：选项若是对原文的直接转述则为细节题，若须推测说话人态度则属推断题，判断方式不同。",
+        "选项含绝对词时把握不准：出现 always、never 等绝对化表述的选项常因过度肯定而错误，须谨慎核对原文程度词。",
+        "语速快时只顾个别词而失去主线：跟不上时应抓住名词与动词主干理解大意，切忌停在某个生词上耽误后续信息。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握词汇语音"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "听力",
-          "method": "见方法模型",
-          "example": "听力"
+          "questionShape": "听力短对话场景判断",
+          "method": "听前预测地点类提问，听中抓场景词汇",
+          "example": "题干问 Where did the conversation take place？听前预测选项含 restaurant/hospital/airport，听时听到 I'll see you at the airport at three，即可判断答案为机场。"
+        },
+        {
+          "questionShape": "听力长对话细节理解",
+          "method": "抓数字与转折词后信息，听后用同义替换校验",
+          "example": "长对话中女士问 Could you come at 8:30？男士答 I'm busy then, but I'm free at 9，答案应为 9 点；若选项把 8:30 改写为 half past eight，也属正确的同义替换。"
+        },
+        {
+          "questionShape": "听力独白主旨把握",
+          "method": "抓住独白首句主题句，再筛选支撑细节",
+          "example": "独白开头 Today I'd like to talk about the history of the Olympic Games 表明主题是奥运会历史，随后出现的举办年份与城市名都是支撑细节，主旨题应选概括整个发展历程的选项。"
+        },
+        {
+          "questionShape": "听力数字时间判断",
+          "method": "速记原始数字，听清换算关系后计算答案",
+          "example": "题目问火车何时出发，录音说 The train leaves at half past seven, but you should arrive twenty minutes earlier，速记出发时间 half past seven 即 7:30，题干若问需何时到站则减 20 分钟，答案为 7:10。"
         }
       ]
     },
@@ -158,36 +320,100 @@
       "aliases": [
         "口语",
         "交际",
-        "表达"
+        "表达",
+        "情景交际"
       ],
-      "conceptSummary": "口语表达：日常交际、观点表达、功能句式。",
+      "conceptSummary": "口语表达考查日常交际功能（问候、感谢、道歉、建议、邀请）与观点表达（同意、反对、理由），要求反应得体、语气恰当。情景交际题需先判断交际场景再套用功能句式，话题讨论则需观点加理由加例证的完整表达。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "交际功能",
-        "表达观点",
-        "话题讨论"
+        "交际功能句式：Thank you→You're welcome；Sorry→It doesn't matter 等成套应答。",
+        "建议表达：How about.../Why not.../You'd better.../What about...。",
+        "观点表达：I think/In my opinion/As far as I'm concerned/Personally。",
+        "同意与反对：I agree with you/I'm afraid I can't agree with that。",
+        "话题讨论结构：亮观点+给理由+举例子，做到有理有据。",
+        "邀请与应答：Would you like to...？接受用 Yes, I'd love to，拒绝先说 I'm sorry 再给理由。",
+        "请求与允许：Can/Could/May I...？允许用 Sure/Of course，拒绝用 I'm afraid not 并说明原因。",
+        "问路与指路：Excuse me, how can I get to...？应答常含 turn left/right、go straight 等方位词。",
+        "致谢应答辨析：You're welcome、My pleasure 与 That's OK 均可回应感谢，Not at all 更正式，须依语境选择。",
+        "征求意见与征询允许：What do you think of...? 征求看法，Do you mind if...? 征询允许，Yes 与 No 的含义相反须留心。",
+        "电话交际用语：This is Li Hua speaking 用于自报身份，May I speak to...? 请求通话，接线转达须用 Hold on, please。"
       ],
       "methodModels": [
         {
-          "name": "口语",
+          "name": "情景交际应答",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "判断交际场景，明确是建议、道歉、感谢、邀请还是请求。",
+            "套用对应场景的功能句式，避免答非所问。",
+            "注意礼貌用语与语气，区分正式与随意场合。",
+            "核对 Yes/No 与否定形式是否匹配，避免中式直译。"
           ],
-          "example": "口语表达"
+          "example": "对方说 Thank you very much for your help，应答 You're welcome 或 My pleasure；对方道歉说 I'm sorry，应答 That's all right。"
+        },
+        {
+          "name": "观点表达",
+          "steps": [
+            "先亮明观点，用 I think/In my opinion 表明立场。",
+            "给出理由，用 because.../The reason is that... 支撑观点。",
+            "补充例子或让步，用 for example/although... 增强说服力。",
+            "结尾可简单总结或呼应，使表达完整。"
+          ],
+          "example": "I think reading is important because it broadens our mind; for example, it helps us understand different cultures, though it takes time."
+        },
+        {
+          "name": "邀请应答四步法",
+          "steps": [
+            "先判断对方发出的是邀请、建议还是请求，明确该用哪种功能句式回应。",
+            "接受邀请直接用 I'd love to 或 Sure, that sounds great 表达积极态度。",
+            "拒绝邀请必须先致歉再说明理由，如 I'm sorry, but I have another plan tonight。",
+            "核对应答与问句的时态与语气，避免 Yes/No 错位或答非所问。"
+          ],
+          "example": "对方问 Would you like to join us for dinner？接受可答 Yes, I'd love to, thank you；拒绝可答 I'd love to, but I have to finish my homework first。"
+        },
+        {
+          "name": "话题讨论三段论",
+          "steps": [
+            "先简明亮出个人观点，表明赞成、反对或中立立场。",
+            "随后给出两到三条具体理由，每条理由后附例证支撑。",
+            "用让步或对比句式补充另一面，显示思考全面。",
+            "结尾总结立场并用 In conclusion 等词收束发言。"
+          ],
+          "example": "讨论是否应减少作业时先说明 I support less homework，再用 because 说明减轻压力、增加课外阅读时间两条理由，并举例说明某校减少作业后成绩反升，最后总结赞成适度减负。"
         }
       ],
       "commonConfusions": [
-        "交际用语"
+        "中式英语直译：How to say it 应为 How do you say it，动词需带主语与助动词。",
+        "Yes/No 与否定形式不匹配：回答 Is it true...? 应说 Yes, it is 或 No, it isn't。",
+        "交际套话脱离情境：Thank you 的应答与 Sorry 的应答不可混用。",
+        "把 I'd love to 与 I'd like to 混用：前者多用于应答邀请，后者多用于表达个人意愿，句式含义不同。",
+        "英语省略应答与汉语习惯不同：对 Is it raining? 答 Yes, it is 而非汉语式 Yes；对反问句须按事实真伪回答。",
+        "同意与反对强度把握不准：I couldn't agree more 表示完全同意，I'm afraid not 表示委婉反对，语气梯度不可颠倒。",
+        "对方提问与应答方向错位：What about...? 是征求建议而非询问事实，回答应给出方案而非描述客观情况。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握功能句型"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "口语表达",
-          "method": "见方法模型",
-          "example": "口语表达"
+          "questionShape": "情景交际选择",
+          "method": "判断交际场景，套用对应功能句式",
+          "example": "题干说 —Would you like to come to my party? —______。A．Yes, please B．I'd love to C．No, I don't D．That's all right，接受邀请应选 B．I'd love to，其他选项不符合邀请应答习惯。"
+        },
+        {
+          "questionShape": "口语话题观点表达",
+          "method": "亮观点+给理由+举例子完整作答",
+          "example": "问 What do you think of studying abroad？答 In my opinion, studying abroad is a good chance to broaden our horizons because we can experience a different culture; for example, we can make friends from all over the world."
+        },
+        {
+          "questionShape": "情景交际（问路应答）",
+          "method": "识别地点方位词，按指路顺序组织应答",
+          "example": "对方问 Excuse me, is there a post office near here？可答 Yes, go straight along this street, then turn left at the traffic lights and you'll see it on your right，先确认方位再给出明确的先后步骤。"
+        },
+        {
+          "questionShape": "情景交际（建议应答）",
+          "method": "识别建议句式，接受或委婉拒绝并给理由",
+          "example": "对方提出 Why not go to the movies tonight？接受可答 That sounds like a great idea，拒绝可说 I'd rather stay home because I have to prepare for tomorrow's exam，先回应建议本身再给出理由，避免答非所问。"
         }
       ]
     },
@@ -196,36 +422,101 @@
       "aliases": [
         "完形",
         "语境",
-        "搭配"
+        "搭配",
+        "词义辨析"
       ],
-      "conceptSummary": "完形填空：语境理解、词义辨析、固定搭配。",
+      "conceptSummary": "完形填空以语篇为整体，依据语境理解与逻辑推断填空，重点考查词义辨析、固定搭配与上下文衔接。解题须先通读把握大意，再按逻辑线索填词，最后代入验证流畅性，避免只凭单句填空而忽略上下文呼应。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "语境推断",
-        "词义辨析",
-        "固定搭配"
+        "语境推断：依据上下文语义与情感基调确定选项，注意首句往往交代背景。",
+        "词义辨析：区分近义词与形近词，如 say/tell/speak/talk 的用法差别。",
+        "固定搭配：动词+介词、动词短语、句型搭配，如 spend...doing。",
+        "逻辑线索：利用转折、因果、并列、递进关系判断答案。",
+        "复现呼应：答案常与前后文的原词、同义词或反义词呼应。",
+        "情感色彩一致：填词须与文章整体褒贬基调相符，作者对人物的褒奖或批评决定用词倾向。",
+        "时间顺序线索：动作按时间先后展开，用 before/after/then 判断空格发生的先后顺序。",
+        "首句定调作用：记叙文首句常交代时间地点人物与事件起因，是推断后文的基础。",
+        "反义与对照线索：but、while 等转折词前后常出现意思相反的词，可利用对照关系推断空格含义。",
+        "动词时态一致性：空格所选动词须与所在句及上下文的时间状语和时态保持一致。",
+        "文章转折结构：however 所在处常是语义转折点，空格应体现前后态度的变化而非延续。"
       ],
       "methodModels": [
         {
-          "name": "完形填空",
+          "name": "通读把握大意",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "通读全文，抓住首句与段落主题，了解文体与基调。",
+            "理清人物、情节与情感走向，建立语篇整体概念。",
+            "暂不急于填词，先标记前后呼应词与逻辑关系词。",
+            "对空缺处形成大致预期，再进入逐空选择阶段。"
           ],
-          "example": "完形填空"
+          "example": "首段交代主角紧张的情绪，后文情节多为紧张的表现与化解，据此可推断描写情感的空格多填 nervous 相关词。"
+        },
+        {
+          "name": "逻辑推理填空",
+          "steps": [
+            "找出逻辑连接词（but/so/although/therefore）判断句间关系。",
+            "分析空格的逻辑功能，是转折、因果、并列还是递进。",
+            "结合前后文语义选出符合逻辑的选项。",
+            "把选项代入原文验证逻辑是否通顺。"
+          ],
+          "example": "although 表让步，后句应与前句形成对比；so 表因果，后句是前句的结果。"
+        },
+        {
+          "name": "词汇搭配验证",
+          "steps": [
+            "辨析四个选项的词义、词性与用法差异。",
+            "结合固定搭配与语境选择，注意主语与动词的搭配关系。",
+            "代入原文读一遍，验证句子是否流畅自然。",
+            "结合上下文呼应，避免孤立看待单个句子。"
+          ],
+          "example": "spend/take/cost/pay 搭配不同：spend 以人作主语（He spent two hours reading），cost 以物作主语（The book cost me 20 yuan）。"
+        },
+        {
+          "name": "情感线索串联法",
+          "steps": [
+            "通读全文并圈出表达情感的形容词与副词，判断整体基调。",
+            "按情节发展阶段梳理人物的情绪变化曲线，找出转折节点。",
+            "让每个描写情感的空格都落在该节点的合理情绪上。",
+            "代入全篇复查，保证各情绪点前后连贯、不跳变突兀。"
+          ],
+          "example": "记叙文先写主角担心考试失利而焦虑，后写复习充分后恢复信心，中途空格应填 worried 再到 confident，按此曲线选择情绪类动词与形容词。"
         }
       ],
       "commonConfusions": [
-        "语境"
+        "只凭单句填空忽略上下文呼应：答案常由前后文共同决定。",
+        "近义词辨析不清：say 强调说内容，tell 强调告诉某人，speak 强调语言能力。",
+        "忽视首尾段与主旨对答案的提示：主旨往往决定情感基调与用词方向。",
+        "受干扰项字面相似误导：形近词如 affect/effect、beside/besides 易混淆，须辨明词义与词性再选。",
+        "盲目代入后不整体回读：初选完成后应通读全文，检查填入后逻辑与语气是否顺畅通达。",
+        "只看空格所在单句而忽略前后文：正确答案常由前文原因或后文结果共同决定，须扩大阅读范围再判断。",
+        "把复现词当唯一依据：某词在前文出现过不能直接等同于答案，还须结合语义、搭配与逻辑综合判定。",
+        "情感色彩判断反了：记叙文的褒贬基调决定用词倾向，误把消极语境填入积极词会破坏全篇连贯。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握词汇语法"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "完形填空",
-          "method": "见方法模型",
-          "example": "完形填空"
+          "questionShape": "完形填空（夹叙夹议）",
+          "method": "先通读把握大意，再按逻辑线索逐空选择并代入验证",
+          "example": "原文写 After the heavy rain, the road was ______ and dangerous，四个选项 clean/dry/muddy/broad，依据大雨后道路泥泞、与 dangerous 呼应，应选 muddy。"
+        },
+        {
+          "questionShape": "完形填空（说明文）",
+          "method": "依据固定搭配与上下文复现确定答案",
+          "example": "空格前是 It is ______ to master a foreign language，依据句型 It is important to do sth 与主旨学外语的重要性，应选 important，同时验证后文 make efforts 的呼应。"
+        },
+        {
+          "questionShape": "完形填空（记叙文情感线索）",
+          "method": "抓住首句定调与情感线索推断答案",
+          "example": "原文首句 When I lost the match, I felt completely ______，后文写 I couldn't sleep and kept thinking about my mistakes，依据失落沮丧的情感基调选 down，而非兴奋的 happy 或平静的 calm。"
+        },
+        {
+          "questionShape": "完形填空（转折对照处）",
+          "method": "依据转折词判断前后相反关系选择答案",
+          "example": "原文 The old man looked poor, ______ his house was full of books，空格前 poor 与后文 rich 精神形成对比，转折词提示选 but；比对选项 though、so、or、but 后，只有 but 能连接这种反差，故选 but。"
         }
       ]
     },
@@ -234,36 +525,100 @@
       "aliases": [
         "七选五",
         "衔接",
-        "逻辑"
+        "逻辑",
+        "七选五补全"
       ],
-      "conceptSummary": "七选五：把握篇章逻辑、衔接词、上下文呼应。",
+      "conceptSummary": "七选五从七个选项中选出五个填入文中空缺处，考查篇章结构（总分、并列、递进、转折）与衔接手段（代词指代、词汇复现、衔接词提示）。解题需先分析空缺位置的功能，再通过衔接线索匹配选项，最后整体验证语篇连贯。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "衔接词",
-        "逻辑关系",
-        "上下文呼应"
+        "篇章结构：识别总分、并列、递进、转折等段落组织方式。",
+        "衔接词提示：however/therefore/for example/in addition 提示句间关系。",
+        "代词指代：this/they/it 等代词指向前文的对应名词。",
+        "词汇复现：选项与上下文出现同词、近义词或上下义词呼应。",
+        "位置功能：段首多为主题句，段中承上启下，段末总结过渡。",
+        "疑问句设空：空缺后文若直接给出回答，则空缺处常是提出问题的疑问句。",
+        "例证关系：选项含 for example/for instance 时，其前文通常有概括性观点句。",
+        "总括标志：段末空缺多含 in short/in a word/so 等总结词提示收束。",
+        "话题一致性：选项与空缺所在段落必须谈论同一话题，话题突变者直接排除。",
+        "逻辑连接词线索：besides、what's more 表示递进，as a result 表示结果，其语义决定选项归属。",
+        "段内小标题式选项：说明文各段常以祈使句或名词短语作主题句，选项需与前后小标题风格一致。"
       ],
       "methodModels": [
         {
-          "name": "七选五",
+          "name": "位置功能判断",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "分析空缺所在位置，判断是段首、段中还是段末。",
+            "明确该处功能：总起、分述、承上启下还是总结。",
+            "根据功能匹配对应类型的选项，排除无关项。",
+            "用主题句或总结语的特征验证选项是否符合位置。"
           ],
-          "example": "七选五"
+          "example": "段首空缺常填入主题句或总起句，选项多以概括性陈述或问句开头。"
+        },
+        {
+          "name": "衔接线索匹配",
+          "steps": [
+            "找代词指代，确认选项中的代词指向上下文的哪一对象。",
+            "找词汇复现与同义替换，建立选项与原文的联系。",
+            "看衔接词，判断选项与前后句是转折、因果还是并列。",
+            "将候选选项代入空缺，整体读一遍验证连贯性。"
+          ],
+          "example": "上文提到 the first step，选项中若以 the second step 或 Next 开头，则与该处并列递进关系呼应。"
+        },
+        {
+          "name": "整体验证取舍",
+          "steps": [
+            "把初选结果按空缺顺序通读全文，检查逻辑是否通顺。",
+            "对相似选项反复比较，优先保留衔接线索更充分的选项。",
+            "确认代词、复现词、衔接词前后都能对上。",
+            "检查是否有选项被误用两次或遗漏，最终确定五个答案。"
+          ],
+          "example": "两个相似选项均含递进词时，选择与前文复现词重合度更高的那个。"
+        },
+        {
+          "name": "话题关键词比对法",
+          "steps": [
+            "先概括空缺前后的核心话题，提炼出名词与动词关键词。",
+            "逐项筛选选项，剔除话题与段落中心明显不同的项。",
+            "对剩余选项比较关键词复现与衔接词吻合的程度。",
+            "把最优候选代入空缺，通读整段验证语义自然连贯。"
+          ],
+          "example": "段落围绕如何保护眼睛展开，空缺前讲保持距离，选项中出现 harmful blue light 关键词则话题一致可入选，而讲饮食运动的选项因话题偏离应剔除。"
         }
       ],
       "commonConfusions": [
-        "衔接"
+        "只看单句不看段落整体结构：选项须符合段落在全文中的功能。",
+        "两个相似选项难以取舍：应回到上下文找更具体的复现与指代线索。",
+        "忽视代词指代与词汇复现：these 必须指向前文刚出现过的复数名词。",
+        "先入为主只看首词定选项：首词与上文衔接只是线索之一，须通读全句确认语义与逻辑完全相符。",
+        "选项含逻辑词但语义不对应：however 表转折须与前句意见相左，若选项语义仍与前文一致则不能因首词 while 而误选。",
+        "段首设空误当成段落主旨：段首可能是承上启下的过渡句，不一定是主题句，须结合上段末尾判断功能。",
+        "多选一后不回头检查遗漏：初选后须逐项核对未选项，防止两个空缺误用同一选项或遗漏可行项。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握衔接词与语篇逻辑"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "七选五",
-          "method": "见方法模型",
-          "example": "七选五"
+          "questionShape": "七选五（说明文）",
+          "method": "先判位置功能，再用衔接线索匹配并整体验证",
+          "example": "空缺在说明文段首，选项 G 为总起句 There are several ways to save water，下文列举了具体方法，验证 G 与后文构成总分结构，故选 G。"
+        },
+        {
+          "questionShape": "七选五（议论文转折处）",
+          "method": "利用转折衔接词与代词指代匹配选项",
+          "example": "前句说 Many people think TV is a waste of time，空缺句以 However, studies show that... 开头，however 与前句构成转折，that 指代看电视的现象，故选该转折句。"
+        },
+        {
+          "questionShape": "七选五（段末总结处）",
+          "method": "识别总括标志词，选能收束全段的总结句",
+          "example": "空缺位于段落末句，前文分述健康饮食的多种做法，选项 E 为 In short, a balanced diet benefits us in many ways，其中 In short 表示总结，能收束前文，故选 E。"
+        },
+        {
+          "questionShape": "七选五（段中递进处）",
+          "method": "依据递进衔接词与前文并列关系匹配选项",
+          "example": "空缺前句说 First, a good night's sleep helps memory，空缺后文写 Moreover, regular exercise also boosts brain power，若选项以 Besides 开头且内容为休息与运动之外的又一因素，则该选项与前后构成递进并列，应选它。"
         }
       ]
     },
@@ -272,36 +627,102 @@
       "aliases": [
         "语法填空",
         "词形变化",
-        "时态"
+        "时态",
+        "语篇填空"
       ],
-      "conceptSummary": "语法填空：词形变化、时态语态、非谓语、连词。",
+      "conceptSummary": "语法填空在语篇中填入适当词或所给词的正确形式，考查词形变化（名词、形容词、副词、动词变形）、时态语态、非谓语、连词、介词与冠词。解题须先判断空格充当的句子成分，再确定词性转换方向与语法变形，虚词题则依靠句法结构与固定搭配。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "词形变化",
-        "时态语态",
-        "非谓语"
+        "给词填空（实词）：先判断成分，再确定词性转换与单复数、时态、语态变形。",
+        "不给词填空（虚词）：判断句法功能，填入连词、介词、冠词或代词。",
+        "时态语态：结合时间状语与语境判断，注意主谓一致。",
+        "非谓语：确认句中已有谓语后，判断 to do/doing/done 的选用。",
+        "固定搭配：介词、冠词常由固定短语决定，如 be interested in。",
+        "比较等级：比较级与最高级依句意和标志词 than、of all 判断，如 more interesting。",
+        "代词填空：缺主语或宾语时填人称代词，泛指时填不定代词，指代上文时填指示代词。",
+        "词性派生：加 -ful/-less 变形容词、加 -ly 变副词、加 -tion/-ment 变名词等派生规则。",
+        "冠词选择：首次提到用 a/an，特指或上文提过用 the，抽象与专有名词前通常不加冠词。",
+        "从句引导词：定语从句看先行词指人或指物，名词性从句看缺主语宾语还是状语，状语从句看句意逻辑。",
+        "谓语与非谓语并存：一句中除主谓外另有动词时，其余动词多需非谓语，须判断主动被动与动作先后。",
+        "it 作形式主语或宾语：真正主语是不定式或 that 从句时，句首用 it 代替，如 It is important to read every day；真正宾语后置时用 it 作形式宾语，如 I find it easy to learn English。"
       ],
       "methodModels": [
         {
-          "name": "语法填空",
+          "name": "给词填空（实词）",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "判断空格在句中作何成分：主语、宾语、定语、状语还是谓语。",
+            "确定词性转换方向，如动词转名词、形容词转副词。",
+            "考虑单复数、时态、语态与主谓一致等变形。",
+            "把变形后的词代入原句验证语法与语义。"
           ],
-          "example": "语法填空"
+          "example": "空前是 the、空后是动词，说明空格需填名词，如动词 discuss 转名词 discussion。"
+        },
+        {
+          "name": "不给词填空（虚词）",
+          "steps": [
+            "判断空格在句中的语法功能，是连词、介词、冠词还是代词。",
+            "结合固定搭配与句型结构确定虚词。",
+            "注意从句引导词与先行词的关系。",
+            "代入验证句子成分是否完整。"
+          ],
+          "example": "空前是名词、空后是定语从句缺关系词，若先行词指物则填 which 或 that。"
+        },
+        {
+          "name": "非谓语判断",
+          "steps": [
+            "确认句中是否已有谓语动词，避免出现双谓语。",
+            "判断非谓语与逻辑主语的主被动关系。",
+            "判断进行、完成还是表目的，选 doing/done/to do。",
+            "结合固定搭配（如 stop to do/stop doing）验证。"
+          ],
+          "example": "空前已有谓语动词、空后动词表目的，填 to do，如 came here to learn。"
+        },
+        {
+          "name": "时态语境判断",
+          "steps": [
+            "先找句中时间状语，如 now、then、next year 等确定时间参照。",
+            "结合上下文的动作先后关系，判断空格该用何种时态。",
+            "考虑主谓一致，使动词形式与主语单复数相匹配。",
+            "代入全文验证时态链条是否连贯，避免前后矛盾。"
+          ],
+          "example": "句子 He ______ (leave) for Shanghai next week，时间状语 next week 表示将来，主语 he 是第三人称单数，故填 will leave 或 is leaving 表示计划中的将来。"
         }
       ],
       "commonConfusions": [
-        "词形变化"
+        "词性转换方向错误：动词↔名词↔形容词的转换需依据成分判断。",
+        "被动与完成时态混淆：be+done 表示被动，have+done 表示完成，注意区分。",
+        "固定搭配中的介词/冠词漏填：be interested in 等搭配不可省略介词。",
+        "主谓一致判断失误：主语为单数、集合名词或不定式短语时谓语用单数，须先找准真正的主语。",
+        "比较级最高级与音节规律混淆：单音节词多用 -er/-est，多音节词多用 more/most，双音节词依习惯而定。",
+        "定语从句与名词性从句引导词混淆：定语从句用关系代词或关系副词引导，主语从句用 what、that 等引导，须先判断从句性质。",
+        "分词逻辑主语判断失误：非谓语作状语时其逻辑主语须与句子主语一致，不一致时须补出逻辑主语构成独立主格。",
+        "句子开头缺主语误填 it：首句无主语时若缺真正主语则不能盲目填 it，须先判断是否为主语从句或 there be 结构。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握词法与句法"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "语法填空",
-          "method": "见方法模型",
-          "example": "语法填空"
+          "questionShape": "语法填空（给词填空）",
+          "method": "判断成分后确定词性转换与变形",
+          "example": "句子 She is ______ (interest) in music，空格在 be 动词后作表语，interest 转形容词 interested，固定搭配 be interested in，答案为 interested。"
+        },
+        {
+          "questionShape": "语法填空（不给词填空）",
+          "method": "判断句法功能，填入虚词",
+          "example": "句子 This is the book ______ I bought yesterday，空格后是定语从句且缺宾语、先行词指物，填 which 或 that；若先行词指人则填 who/whom。"
+        },
+        {
+          "questionShape": "语法填空（词性派生）",
+          "method": "依据空格成分判断派生方向并正确变形",
+          "example": "句子 The ______ (beautiful) of the sunset surprised everyone，空格前有 the、句末无宾语，故需名词，beautiful 加 -ty 派生为 beauty，答案是 beauty。"
+        },
+        {
+          "questionShape": "语法填空（非谓语做状语）",
+          "method": "确认逻辑主语并判断主被动与先后关系",
+          "example": "句子 ______ (see) from the top of the hill, the town looks like a garden，see 的逻辑主语是 the town，城镇被看用过去分词 seen，答案填 Seen；若误判为主动则会写成 Seeing，须先明确主语与动词的主被动关系。"
         }
       ]
     },
@@ -310,36 +731,101 @@
       "aliases": [
         "改错",
         "错误类型",
-        "改正"
+        "改正",
+        "短文纠错"
       ],
-      "conceptSummary": "短文改错：词法、句法、逻辑错误各类型。",
+      "conceptSummary": "短文改错要求找出并改正文中的十处错误，包括词法错误（名词单复数、冠词、代词、介词）、句法错误（时态语态、主谓一致、非谓语、从句引导词）与逻辑错误（连词、指代、肯定否定）。解题流程为通读定基调、逐句查词法句法、最后查逻辑与搭配。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "词法错误",
-        "句法错误",
-        "逻辑错误"
+        "词法错误：名词单复数、冠词 a/an/the、代词指代、介词搭配。",
+        "句法错误：时态语态、主谓一致、非谓语用法、从句引导词。",
+        "逻辑错误：转折/因果连词误用、指代不清、肯定否定颠倒。",
+        "错误形式：多词（删除）、缺词（添加）、错词（改正）三种。",
+        "常见规则：每处只改一个词，单复数与时态须前后一致。",
+        "形容词副词混用：修饰名词用形容词，修饰动词与形容词用副词，如 careful/carefully。",
+        "比较级最高级误用：缺少 than 时用原级，出现 of all 等标志时用最高级。",
+        "不定式与动名词误用：enjoy、finish 后接动名词，want、decide 后接不定式，须依动词习惯判断。",
+        "缺词错误：漏掉冠词、介词、be 动词或不定式 to 等虚词，须按固定搭配与句型补充。",
+        "多词错误：多出 the、a、to 或并列连词等多余词，须删去使结构正确。",
+        "谓语动词三单形式：主语为第三人称单数时一般现在时谓语须加 -s/-es，勿遗漏。"
       ],
       "methodModels": [
         {
-          "name": "改错",
+          "name": "通读定基调",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "通读全文，确定时态与文体基调，判断叙述时间。",
+            "确认每句是否都有谓语，缺谓语或双谓语为错误。",
+            "把握文章主旨与情感走向，便于判断逻辑连词。",
+            "建立全文语境，为逐句检查提供参照。"
           ],
-          "example": "短文改错"
+          "example": "全文以过去时叙述，则各处谓语时态应与过去时保持一致。"
+        },
+        {
+          "name": "逐句查词法句法",
+          "steps": [
+            "检查名词单复数、冠词、代词与介词的使用。",
+            "检查主谓一致与谓语动词形态（三单、时态、语态）。",
+            "检查非谓语与从句引导词是否恰当。",
+            "逐句通读，标出可疑处再结合规则判断。"
+          ],
+          "example": "He go to school every day 中 go 与第三人称单数主语不一致，应改为 goes。"
+        },
+        {
+          "name": "查逻辑与搭配",
+          "steps": [
+            "检查连词是否符合语义逻辑，转折处是否用了 but。",
+            "检查代词指代是否明确，肯定否定是否颠倒。",
+            "检查固定搭配与介词使用。",
+            "复核错误数量是否为十处，格式是否规范。"
+          ],
+          "example": "He is poor, so he has much money 前后逻辑矛盾，so 应改为 but 构成转折。"
+        },
+        {
+          "name": "逐行逐词排查法",
+          "steps": [
+            "通读全文确定时态主线与文体基调，为逐行检查打底。",
+            "对每行逐词排查，先检查名词、冠词、代词、介词等词法。",
+            "再检查动词时态、主谓一致、非谓语与从句引导词等句法。",
+            "最后数清错误并复核每处只改一个词，避免改出格式错误。"
+          ],
+          "example": "逐行排查时在 He has went to the park 中发现 has 与 went 冲突，按现在完成时 has gone 改写，同时检查同行名词单复数是否一致。"
         }
       ],
       "commonConfusions": [
-        "错误类型"
+        "多词、缺词与错词三种情况混淆：先判断错误类型再决定删、加或改。",
+        "现在时与过去时混用遗漏：全文时态须统一，注意时间状语提示。",
+        "but/so/and 逻辑连词误用：转折用 but，因果用 so，并列用 and。",
+        "主谓一致错误难以察觉：就近原则下的 there be 句型、each 与 everyone 作主语时谓语须用单数。",
+        "代词指代不明：a 与 he、this 与 that 的指代对象须明确，指代混乱属常见失分点。",
+        "把固定搭配的介词当多词误删：belong to、look forward to 中的 to 是搭配的一部分，删除会造成结构残缺。",
+        "改对一词却改错相邻词：每处错误只改一个词，若把整句重写或连改多词则超出题目要求。",
+        "忽视大小写与标点：句首单词大小写、专有名词首字母及句末标点缺失也属可改错误，检查时勿遗漏。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握语法体系"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "短文改错",
-          "method": "见方法模型",
-          "example": "短文改错"
+          "questionShape": "短文改错（词法+句法）",
+          "method": "通读定基调，逐句查名词、冠词、主谓一致等",
+          "example": "原文 I bought a few bread on the way home，bread 为不可数名词，a few 应改为 a little；同时检查同句中动词时态，确保全文过去时一致。"
+        },
+        {
+          "questionShape": "短文改错（逻辑连词）",
+          "method": "结合语义判断连词并检查指代",
+          "example": "原文 He is poor, so he has much money，前后语义矛盾，so 应改为 but；若同处存在代词指代不清，需改为明确的指代对象。"
+        },
+        {
+          "questionShape": "短文改错（非谓语动词）",
+          "method": "依据动词习惯搭配判断不定式与动名词",
+          "example": "原文 He enjoys to listen to music in the evening，enjoy 后应接动名词，故 to listen 改为 listening；同时检查句中其他非谓语是否与主语构成主被动关系。"
+        },
+        {
+          "questionShape": "短文改错（冠词缺漏）",
+          "method": "按泛指特指规则检查冠词的增删",
+          "example": "原文 He wants to be honest man，honest man 前缺冠词，泛指一个诚实的人应加 a，改为 an honest man；同时核查同句主语、动词时态是否还有其他错误一并改正。"
         }
       ]
     },
@@ -348,36 +834,100 @@
       "aliases": [
         "概要写作",
         "概括",
-        "转述"
+        "转述",
+        "summary"
       ],
-      "conceptSummary": "概要写作：概括要点、同义转述、结构完整。",
+      "conceptSummary": "概要写作要求在不抄原文的前提下概括原文要点，用同义转述（替换词、改换句式、变换语态）表达，保证要点完整、逻辑连贯、结构完整并控制字数。解题分为提炼要点、同义转述、成文衔接三步，是语言理解与表达的综合考查。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "概括要点",
-        "同义转述",
-        "结构连贯"
+        "提炼要点：通读全文找主旨句，逐段划出关键信息并合并同类。",
+        "同义转述：用同义词替换关键词，改换句式避免照抄原文。",
+        "结构连贯：主题句加分要点加衔接词，成段成文。",
+        "语言准确：语法正确，注意时态、主谓一致与代词指代。",
+        "字数控制：按要求控制在规定词数内，要点全而不冗余。",
+        "主题句开头：概要首句须点明全文中心，使阅卷者迅速把握主旨。",
+        "时态语态一致：原文用过去时叙述则概要亦用过去时，转述被动句时可改为主动以换表达。",
+        "合并同类要点：把并列或相似的信息用并列结构合并，避免逐句罗列堆砌。",
+        "转述短语动词：look into 可改为 investigate、carry out 可改为 conduct，用单词替换短语动词使表达更凝练。",
+        "从句改短语：把定语从句压缩为分词短语或介词短语，如 the boy who runs fast 可改为 the fast-running boy。",
+        "不改变信息顺序：按原文论证逻辑保留要点先后，避免重排导致逻辑关系错乱。"
       ],
       "methodModels": [
         {
-          "name": "概要写作",
+          "name": "提炼要点",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "通读全文，找出主旨句与段落主题句。",
+            "逐段划出关键信息，区分主次与细节。",
+            "合并同类信息，删去次要例子与重复表述。",
+            "形成要点清单，确保每个段落都有关键要点。"
           ],
-          "example": "概要写作"
+          "example": "每段首尾句往往是段落要点所在，据此快速定位各段核心信息。"
+        },
+        {
+          "name": "同义转述",
+          "steps": [
+            "将关键词替换为同义词或近义表达。",
+            "改换句式，如主动变被动、从句变短语。",
+            "保持原意不变，避免改变作者观点与数据。",
+            "检查转述后是否仍含原要点。"
+          ],
+          "example": "the number increased quickly 可转述为 there was a rapid increase in the number。"
+        },
+        {
+          "name": "成文衔接",
+          "steps": [
+            "用连接词串联各要点，使段落逻辑连贯。",
+            "控制字数与句式多样性，避免单调重复。",
+            "检查要点是否有遗漏或冗余，调整详略。",
+            "通读定稿，确保语法正确、结构完整。"
+          ],
+          "example": "用 First/Moreover/In conclusion 等衔接词组织成段落。"
+        },
+        {
+          "name": "转述准确性校验法",
+          "steps": [
+            "转述完成后逐句对照原文，检查数据、观点与语气是否改变。",
+            "核对是否仍包含各段核心要点，防止改词时顺带删掉重点。",
+            "检查转述句是否与原文原句重合，避免整句照抄被判抄袭。",
+            "通读全文检查语法、时态与代词指代，确保表达通顺正确。"
+          ],
+          "example": "原文数据 40% 的考生倾向线上学习，转述后须保留四成这一数量关系，改写成 four in ten students prefer online learning，并核对无误再成文。"
         }
       ],
       "commonConfusions": [
-        "概括要点"
+        "照抄原文句子而被判定抄袭：必须同义转述，不能成句摘抄。",
+        "要点遗漏或主次不分：次要细节可删，核心论点不可丢。",
+        "转述时改变原文含义：改词改句不得改变数据、观点与语气。",
+        "忽略原文例证的功能：例子用于支撑论点时须概括其作用，而不是把例证本身当成要点抄入。",
+        "概要写个人看法而非转述：概要是客观复述原文，加入 I think 或建议性表达即偏离要求。",
+        "转述时插入原文没有的信息：换词改写不得补充原文未提及的细节，否则构成内容失实。",
+        "词数把控失度：过短漏要点、过长超字数都扣分，转述时先保要点再压缩，避免两头失误。"
       ],
-      "prerequisiteRelations": [],
+      "prerequisiteRelations": [
+        "需掌握同义改写"
+      ],
       "workedExampleStructure": [
         {
-          "questionShape": "概要写作",
-          "method": "见方法模型",
-          "example": "概要写作"
+          "questionShape": "概要写作（30词左右）",
+          "method": "提炼要点后同义转述，再用衔接词成文",
+          "example": "原文两段分别讲阅读的好处与建议，概要写作：Reading regularly broadens our horizons and improves thinking; moreover, we should choose books that suit our level.，两个要点用 moreover 衔接，控制在规定词数内。"
+        },
+        {
+          "questionShape": "概要写作（说明文转述）",
+          "method": "将原文要点替换词汇、变换句式避免照抄",
+          "example": "原文 It is important to protect the environment because pollution harms our health，概要转述为 Protecting the environment matters since pollution does harm to people's health，避免照抄原句。"
+        },
+        {
+          "questionShape": "概要写作（议论文要点合并）",
+          "method": "先找论点论据，再用并列结构合并转述",
+          "example": "原文分两段论述早起的好处，第一段讲早起的效率提升，第二段讲早起的规律作息，概要将两要点合并为 Getting up early not only raises efficiency but also builds a regular daily routine，同时控制词数。"
+        },
+        {
+          "questionShape": "概要写作（数据转述）",
+          "method": "保留关键数据并用替换词转述不照抄",
+          "example": "原文 The number of students taking part in the club doubled from 50 to 100，概要转述为 The club's membership doubled, rising from fifty to a hundred students，既保留数据又与原文措辞不同，控制在规定词数内。"
         }
       ]
     }

@@ -1,0 +1,4813 @@
+{
+  "schemaVersion": 1,
+  "generatedAtEpochMillis": 1786152033107,
+  "summary": {
+    "modules": 42,
+    "totalSections": 876,
+    "passedSections": 876,
+    "needsRevisionSections": 0,
+    "issues": {}
+  },
+  "modules": [
+    {
+      "moduleSlug": "required-genetics-evolution",
+      "subject": "BIOLOGY",
+      "moduleName": "生物必修2：遗传与进化",
+      "totalSections": 25,
+      "passedSections": 25,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "减数分裂与受精作用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "孟德尔遗传定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "基因的表达与变异",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "进化与生物多样性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "基因与染色体的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "基因的表达调控",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "人类遗传病",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 孟德尔的豌豆杂交实验（一）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 孟德尔的豌豆杂交实验（二）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 减数分裂和受精作用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 基因在染色体上",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 伴性遗传",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 DNA是主要的遗传物质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 DNA的结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 DNA的复制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 基因通常是有遗传效应的DNA片段",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 基因指导蛋白质的合成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 基因表达与性状的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 基因突变和基因重组",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 染色体变异",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 人类遗传病",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 生物有共同祖先的证据",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 自然选择与适应的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 种群基因组成的变化与物种的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 协同进化与生物多样性的形成",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-molecules-cells",
+      "subject": "BIOLOGY",
+      "moduleName": "生物必修1：分子与细胞",
+      "totalSections": 27,
+      "passedSections": 27,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第1章 走近细胞",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2章 组成细胞的分子",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3章 细胞的基本结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "细胞代谢（呼吸与光合）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "细胞器结构与功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "细胞膜与物质运输",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "细胞周期与有丝分裂",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "细胞的分化与衰老",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 细胞是生命活动的基本单位",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 细胞的多样性和统一性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 细胞中的元素和化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 细胞中的无机物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 细胞中的糖类和脂质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 蛋白质是生命活动的主要承担者",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5节 核酸是遗传信息的携带者",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 细胞膜的结构和功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 细胞器之间的分工合作",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 细胞核的结构和功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 被动运输",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 主动运输与胞吞、胞吐",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 降低化学反应活化能的酶",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 细胞的能量货币ATP",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 细胞呼吸的原理和应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 光合作用与能量转化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 细胞的增殖",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 细胞的分化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 细胞的衰老和死亡",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-biology-environment",
+      "subject": "BIOLOGY",
+      "moduleName": "生物选择性必修2：生物与环境",
+      "totalSections": 16,
+      "passedSections": 16,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "种群与群落",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "生态系统与生态平衡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 种群的数量特征",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 种群数量的变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 影响种群数量变化的因素",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 群落的结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 群落的主要类型",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 群落的演替",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 生态系统的结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 生态系统的能量流动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 生态系统的物质循环",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 生态系统的信息传递",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5节 生态系统的稳定性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 人类活动对生态环境的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 生物多样性及其保护",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 生态工程",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-biotech-engineering",
+      "subject": "BIOLOGY",
+      "moduleName": "生物选择性必修3：生物技术与工程",
+      "totalSections": 12,
+      "passedSections": 12,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "基因工程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "细胞工程与发酵工程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 传统发酵技术的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 微生物的培养技术及应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 发酵工程及其应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 植物细胞工程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 动物细胞工程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 胚胎工程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 重组DNA技术的基本工具",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 基因工程的基本操作程序",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 基因工程的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 蛋白质工程的原理和应用",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-homeostasis-regulation",
+      "subject": "BIOLOGY",
+      "moduleName": "生物选择性必修1：稳态与调节",
+      "totalSections": 23,
+      "passedSections": 23,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "内环境与稳态",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "神经调节",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "体液调节与免疫",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "动物激素调节",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "免疫调节",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 细胞生活的环境",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 内环境的稳态",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 神经调节的结构基础",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 神经调节的基本方式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 神经冲动的产生和传导",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 神经系统的分级调节",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5节 人脑的高级功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 激素与内分泌系统",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 激素调节的过程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 体液调节与神经调节的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 免疫系统的组成和功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 特异性免疫",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 免疫失调",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 免疫学的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1节 植物生长素",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2节 其他植物激素",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3节 植物生长调节剂的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4节 环境因素参与调节植物的生命活动",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-inorganic-substances",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学必修：常见无机物及其应用",
+      "totalSections": 22,
+      "passedSections": 22,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "钠及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "氯及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "铁、硫、氮及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "物质的量与应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "氧化还原反应",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "离子反应与离子方程式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 物质的分类及转化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 离子反应",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 氧化还原反应",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 物质的量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 铁及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 金属材料",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 硫及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 氮及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 无机非金属材料",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "氨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "不同价态含硫物质的转化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 氯及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 钠及其化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "硝酸",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "硫酸和硫酸根离子的检验",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "酸雨及防治",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-organic-compounds",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学必修：简单的有机化合物及其应用",
+      "totalSections": 11,
+      "passedSections": 11,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "甲烷与烷烃",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "乙烯、乙醇与乙酸",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 认识有机化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 乙烯与有机高分子材料",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 乙醇与乙酸",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 基本营养物质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 自然资源的开发利用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "有机高分子材料",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "油脂",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "蛋白质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "烃、同分异构体的书写",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-science-experiment",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学必修：化学科学与实验探究",
+      "totalSections": 4,
+      "passedSections": 4,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "实验基础操作",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "物质的检验",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "实验活动1 配制一定物质的量浓度的溶液",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "实验活动2 强酸与强碱的中和滴定",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-structure-reaction-laws",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学必修：物质结构基础与化学反应规律",
+      "totalSections": 8,
+      "passedSections": 8,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "元素周期表",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "元素周期律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "化学键与化学反应规律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 化学键",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 元素周期律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 化学反应与能量变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 化学反应的速率与限度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "化学反应与电能",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-organic-foundations",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学选择性必修3：有机化学基础",
+      "totalSections": 18,
+      "passedSections": 18,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "有机化合物概述",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "烃类化合物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "含氧有机物（醇醛酸酯）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 有机化合物的结构特点",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 研究有机化合物的一般方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 烷烃",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 烯烃 炔烃",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 芳香烃",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 卤代烃",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 醇 酚",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 醛 酮",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 羧酸 羧酸衍生物",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第五节 有机合成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 糖类",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 蛋白质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 核酸",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 合成高分子的基本方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 高分子材料",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-reaction-principles",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学选择性必修1：化学反应原理",
+      "totalSections": 21,
+      "passedSections": 21,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "反应热与盖斯定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "化学反应速率与平衡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "电离与水解",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "电化学（原电池与电解）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 反应热的计算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 化学反应的方向",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 化学反应的调控",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 电离平衡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 水的电离和溶液的pH",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 沉淀溶解平衡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 原电池",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 电解池",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 金属的腐蚀与防护",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 反应热",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 化学平衡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "影响化学反应速率的因素",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 盐类的水解",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 化学品的合理使用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 环境保护与绿色化学",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 化学反应速率",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "化学反应的限度、化学反应条件的控制",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-structure-properties",
+      "subject": "CHEMISTRY",
+      "moduleName": "化学选择性必修2：物质结构与性质",
+      "totalSections": 10,
+      "passedSections": 10,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第一节 共价键",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 分子的空间结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 物质的聚集状态与晶体的常识",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 分子晶体与共价晶体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 金属晶体与离子晶体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 配合物与超分子",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 原子结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 原子结构与元素的性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 分子结构与物质的性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 原子结构与元素周期表",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "chinese-required",
+      "subject": "CHINESE",
+      "moduleName": "语文：阅读与写作能力（任务群核心）",
+      "totalSections": 18,
+      "passedSections": 18,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "语言积累、梳理与探究",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "文学阅读与写作",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "思辨性阅读与表达",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "整本书阅读与研讨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中华传统文化经典研习",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "实用性阅读与交流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "当代文化参与",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "跨媒介阅读与交流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国革命传统作品研习",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "外国作家作品研习",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "科学与文化论著研习",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国现当代作家作品研习",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "汉字汉语专题研讨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中华传统文化专题研讨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国革命传统作品专题研讨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国现当代作家作品专题研讨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "跨文化专题研讨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "学术论著专题研讨",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "language-knowledge",
+      "subject": "ENGLISH",
+      "moduleName": "英语：语言知识（时态/从句/非谓语/虚拟语气）",
+      "totalSections": 13,
+      "passedSections": 13,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "动词时态",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "定语从句",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "非谓语动词",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "虚拟语气",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "名词与冠词",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "代词",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "形容词与副词",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "介词与连词",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "主谓一致",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "倒装句",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "强调句",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "状语从句",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "名词性从句",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "language-skills",
+      "subject": "ENGLISH",
+      "moduleName": "英语：语言技能（听说读写）",
+      "totalSections": 9,
+      "passedSections": 9,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "阅读理解技能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "写作技能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "听力技能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "口语表达",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "完形填空",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "七选五",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "语法填空",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "短文改错",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "概要写作",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-geography-1",
+      "subject": "GEOGRAPHY",
+      "moduleName": "地理必修1：自然地理",
+      "totalSections": 35,
+      "passedSections": 35,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "地球的宇宙环境",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "大气与天气气候",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "水循环与洋流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "地表形态与地貌",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "地球的运动与时间",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "天气系统",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "河流地貌",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 植被",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 太阳对地球的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 地球运动的地理意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 常见天气系统",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 构造地貌的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 海—气相互作用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 自然环境的整体性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 塑造地表形态的力量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 地貌的观察",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 气压带和风带对气候的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 常见地貌类型",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 洋流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 大气受热过程和大气运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 气压带和风带",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 自然环境的地域差异性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 大气的组成和垂直分层",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 陆地水体及其相互关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 土壤",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 河流地貌的发育",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 地球的自转和公转",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 地球的宇宙环境",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 地球的历史",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 地球的圈层结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 水循环",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 海水的性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 海水的运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 气象灾害",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 地质灾害",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-geography-2",
+      "subject": "GEOGRAPHY",
+      "moduleName": "地理必修2：人文地理",
+      "totalSections": 13,
+      "passedSections": 13,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第三节 人口容量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 城镇化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 工业区位因素及其变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 区域发展对交通运输布局的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 交通运输布局对区域发展的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 乡村和城镇空间结构",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 人口迁移",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 人类面临的主要环境问题",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 服务业区位因素及其变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 人口分布",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 走向人地协调——可持续发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 农业区位因素及其变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 地域文化与城乡景观",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-regional-development",
+      "subject": "GEOGRAPHY",
+      "moduleName": "地理选择性必修2：区域发展",
+      "totalSections": 11,
+      "passedSections": 11,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第一节 多种多样的区域",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 区域整体性和关联性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 区域发展的自然环境基础",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 生态脆弱区的综合治理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 资源枯竭型城市的转型发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 城市的辐射功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 地区产业结构变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 流域内协调发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 资源跨区域调配",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 产业转移",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 国际合作",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-resources-environment-security",
+      "subject": "GEOGRAPHY",
+      "moduleName": "地理选择性必修3：资源、环境与国家安全",
+      "totalSections": 12,
+      "passedSections": 12,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第一节 自然环境的服务功能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 环境问题及其危害",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 资源安全对国家安全的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 中国的耕地资源与粮食安全",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 海洋空间资源开发与国家安全",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 环境安全对国家安全的影响",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 环境污染与国家安全",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 生态保护与国家安全",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四节 全球气候变化与国家安全",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一节 走向生态文明",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二节 国家战略与政策",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三节 国际合作",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-chinese-world-history-outline",
+      "subject": "HISTORY",
+      "moduleName": "历史必修：中外历史纲要",
+      "totalSections": 60,
+      "passedSections": 60,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "中华文明起源与早期国家",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "秦统一多民族封建国家",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "统一多民族国家的巩固与发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "辽宋夏金元多民族政权并立",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "明清中国与近代化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "近代中国各阶级探索",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "新民主主义革命",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3课 秦统一多民族封建国家的建立",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5课 三国两晋南北朝的政权更迭与民族交融",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第8课 三国至隋唐的文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第10课 辽夏金元的统治",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第14课 明至清中叶的经济与文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第9课 资产阶级革命与资本主义制度的确立",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第14课 第一次世界大战与战后国际秩序",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第17课 第二次世界大战与战后国际秩序的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第20课 社会主义国家的发展与变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第21课 世界殖民体系的瓦解与新兴国家的发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第23课 全民族浴血奋战与抗日战争的胜利",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第23课 和平发展合作共赢的历史潮流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第29课 中国特色社会主义进入新时代",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1课 中华文明的起源与早期国家",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第9课 两宋的政治和军事",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第26课 社会主义建设在探索中曲折发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第22课 世界多极化与经济全球化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第14课 当代中国的外交",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第10课 影响世界的工业革命",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第13课 亚非拉民族独立运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第8课 欧洲的思想解放运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第11课 马克思主义的诞生与传播",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4课 西汉与东汉——统一多民族封建国家的巩固",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第6课 从隋唐盛世到五代十国",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第12课 从明朝建立到清军入关",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第15课 两次鸦片战争",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第18课 辛亥革命",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第24课 人民解放战争",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1课 文明的产生与早期发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第16课 国家出路的探索与列强侵略的加剧",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第17课 挽救民族危亡的斗争",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第19课 北洋军阀统治时期的政治、经济与文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第25课 中华人民共和国成立和向社会主义的过渡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第27课 中国特色社会主义的开创与发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2课 西方国家古代和近代政治制度的演变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5课 古代非洲与美洲",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第12课 资本主义世界殖民体系的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第20课 五四运动与中国共产党的诞生",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第21课 南京国民政府的统治和中国共产党开辟革命新道路",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第22课 从局部抗战到全国抗战",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2课 诸侯纷争与变法运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第6课 全球航路的开辟",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第7课 全球联系的初步建立与世界格局的演变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第13课 清朝前中期的鼎盛与危机",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第15课 十月革命的胜利与苏联的社会主义实践",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第16课 亚非拉民族民主运动的高涨",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第18课 冷战与国际格局的演变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第19课 资本主义国家的新变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第28课 改革开放和社会主义现代化建设的巨大成就",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第30课 新时代中国特色社会主义的伟大成就",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2课 古代世界的帝国与文明的交流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4课 中古时期的亚洲",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5课 南亚、东亚与美洲的文化",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-cultural-exchange",
+      "subject": "HISTORY",
+      "moduleName": "历史选择性必修3：文化交流与传播",
+      "totalSections": 12,
+      "passedSections": 12,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "文化交流的途径",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第6课 古代人类的迁徙和区域文化的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第8课 现代社会的移民和多元文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第14课 文化传承的多种载体及其发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第15课 文化遗产：全人类共同的财富",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3课 古代西亚、非洲文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4课 欧洲文化的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第9课 古代的商路、贸易与文化交流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第11课 古代战争与地域文化的演变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第12课 近代战争与西方文化的扩张",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1课 中华优秀传统文化的内涵与特点",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2课 中华文化的世界意义",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-economy-social-life",
+      "subject": "HISTORY",
+      "moduleName": "历史选择性必修2：经济与社会生活",
+      "totalSections": 19,
+      "passedSections": 19,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "农业与食物生产",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "工业与交通",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "贸易与经济生活",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "技术进步与社会生活的变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1课 从食物采集到食物生产",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第2课 新航路开辟后的食物物种交流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3课 现代食物的生产、储备与食品安全",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4课 古代的生产工具与劳作",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5课 工业革命与工厂制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第6课 现代科技进步与人类社会发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第7课 古代的商业贸易",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第8课 世界市场与商业贸易",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第9课 20世纪以来人类的经济与生活",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第10课 古代的村落、集镇与城市",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第11课 近代以来的城市化进程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第12课 水陆交通的变迁",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第13课 现代交通运输的新变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第14课 历史上的疫病与医学成就",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第15课 现代医疗卫生体系与社会生活",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-state-system-governance",
+      "subject": "HISTORY",
+      "moduleName": "历史选择性必修1：国家制度与社会治理",
+      "totalSections": 17,
+      "passedSections": 17,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "中国古代政治制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "西方与近代中国政治制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第11课 中国古代的民族关系与对外交往",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第12课 近代西方民族国家与国际法的发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第5课 中国古代官员的选拔与管理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第6课 西方的文官制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第10课 当代中国的法治与精神文明建设",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第8课 中国古代的法治与教化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第16课 中国赋税制度的演变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第1课 中国古代政治制度的形成与发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第4课 中国历代变法和改革",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第13课 当代中国的民族政策",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第3课 中国近代至当代政治制度的演变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第7课 近代以来中国的官员选拔与管理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第9课 近代西方的法律与教化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第17课 中国古代的户籍制度与社会治理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第18课 世界主要国家的基层治理与社会保障",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-functions",
+      "subject": "MATH",
+      "moduleName": "必修：函数（概念/基本性质/幂指对/三角）",
+      "totalSections": 40,
+      "passedSections": 40,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "3.1 函数的概念及其表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.2 函数的基本性质（单调性与最值）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.2.2 函数的奇偶性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.2 指数函数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.3-4.4 对数与对数函数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.2-5.4 三角函数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.3 幂函数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.1 指数与幂运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.3 对数与对数运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.5 函数的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.2.2 同角三角函数的基本关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.4 三角函数的图象和性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.1 任意角和弧度制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.3 诱导公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.4.2正弦、余弦函数的性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.4.3正切函数的性质与图象",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.5 三角恒等变换",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.6 函数y=Asin(ωx+φ)",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.7 三角函数的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.1.2函数的表示法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.2 函数的基本性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "函数的单调性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "函数的最大（小）值",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.2.2函数的奇偶性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.4 函数的应用（一）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.1 指数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.1.2 无理指数幂及其运算性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.2.2 指数函数的图象和性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.3 对数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.3.2 对数的运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.4 对数函数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.4.2 对数函数的图象和性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.4.3 不同函数增长的差异",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.5 函数的应用（二）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.5.2用二分法求方程的近似解",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.5.3函数模型的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.1.2 弧度制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.2 三角函数的概念",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.5.2简单的三角恒等变换",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.6.2 函数y=Asin(ωx+φ)的图象",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-geometry-algebra",
+      "subject": "MATH",
+      "moduleName": "必修：几何与代数（平面向量与复数）",
+      "totalSections": 56,
+      "passedSections": 56,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "6.1 平面向量的概念",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2 平面向量的运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3 平面向量基本定理及坐标表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.1-7.2 复数的概念与运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.4 平面向量的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.3 复数的三角表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2.4向量的数量积",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3.5平面向量数量积的坐标表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.4.2向量在物理中的应用举例",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.4.3余弦定理、正弦定理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.1 基本立体图形",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.3 简单几何体的表面积与体积",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.4 空间点、直线、平面之间的位置关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.5 空间直线、平面的平行",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.6 空间直线、平面的垂直",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.1.3获取数据的途径",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.2.1 总体取值规律的估计（用频率分布直方图、茎叶图、折线图估计总体分布）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.2.2总体百分位数的估计",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.2.4总体离散程度的估计",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.1.2事件的关系与运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.1.3古典概型",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.2 事件的相互独立性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.3 频率与概率",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2.2向量的减法运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2.3向量的数乘运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3.2平面向量的正交分解及坐标表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3.3平面向量加、减运算的坐标表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3.4平面向量数乘运算的坐标表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.1 复数的概念",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.1.2复数的几何意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.2 复数的四则运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.2.2复数乘、除运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.3* 复数的三角表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.3.2复数乘、除运算的三角表示及其几何意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.2 立体图形的直观图",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.3.2圆柱、圆锥、圆台、球的表面积和体积",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.4.2空间点、直线、平面之间的位置关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.5.2直线与平面平行",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.5.3平面与平面平行",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.6.2直线与平面垂直",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.6.3平面与平面垂直",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.1.1简单随机抽样",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.1.2分层随机抽样",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.2.3总体集中趋势的估计",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.3 统计案例",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.1 随机事件与概率",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.1.4概率的基本性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.3.2随机模拟",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.3.2两点间的距离公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.3.3点到直线的距离公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.3.4两条平行线间的距离",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.4.2圆的一般方程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.5.2圆与圆的位置关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.2.3直线的一般式方程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.4.2用空间向量研究距离、夹角问题",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.3.2空间向量运算的坐标表示",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-preparatory-knowledge",
+      "subject": "MATH",
+      "moduleName": "必修：预备知识（集合与常用逻辑用语）",
+      "totalSections": 8,
+      "passedSections": 8,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "1.1 集合的概念",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.2 集合间的基本关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.3 集合的基本运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.4 充分条件与必要条件",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.5 全称量词与存在量词",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.1 等式性质与不等式性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.2 基本不等式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.3 二次函数与一元二次方程、不等式",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-probability-statistics",
+      "subject": "MATH",
+      "moduleName": "必修：概率与统计",
+      "totalSections": 5,
+      "passedSections": 5,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "9.1 随机抽样",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "9.2 用样本估计总体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "10.1-10.3 随机事件与概率",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.1 条件概率与全概率公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.2-7.4 离散型随机变量及其分布列、数字特征与常见分布",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-functions",
+      "subject": "MATH",
+      "moduleName": "选择性必修：函数（数列与导数）",
+      "totalSections": 16,
+      "passedSections": 16,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "4.1-4.2 数列与等差数列",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.3 等比数列",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "数列构造与递推",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.1-5.2 导数概念与运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.2 导数的运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.3 导数在研究函数中的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.4*数学归纳法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.2.3简单复合函数的导数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.3.2函数的极值与最大（小）值",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.1 数列的概念",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.2 等差数列",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.2.2等差数列的前n项和公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.3.2等比数列的前n项和公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.1 导数的概念及其意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.1.2导数的概念及其几何意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.2.2导数的四则运算法则",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-geometry-algebra",
+      "subject": "MATH",
+      "moduleName": "选择性必修：几何与代数（空间向量与圆锥曲线）",
+      "totalSections": 20,
+      "passedSections": 20,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "2.1-2.3 直线与圆",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.1 椭圆",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.2 双曲线",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.3 抛物线",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.1-1.4 空间向量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.1 空间向量及其运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.1.2空间向量的数量积运算",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.2 空间向量基本定理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.3 空间向量及其运算的坐标表示",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.4 空间向量的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.1 直线的倾斜角与斜率",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.1.2两条直线平行和垂直的判定",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.2 直线的方程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.2.2直线的两点式方程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.3 直线的交点坐标与距离公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.4 圆的方程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.5 直线与圆、圆与圆的位置关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.1.2椭圆的简单几何性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.2.2双曲线的简单几何性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.3.2抛物线的简单几何性质",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-probability-statistics",
+      "subject": "MATH",
+      "moduleName": "选择性必修：概率与统计",
+      "totalSections": 23,
+      "passedSections": 23,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "6.1 分类加法与分步乘法计数原理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2 排列与组合",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "二项式定理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "排列组合应用题",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3 二项式定理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.3.2二项式系数的性质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.1.2全概率公式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.4 二项分布与超几何分布",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.4.2超几何分布",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.5 正态分布",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.1 成对数据的统计相关性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.1.2样本相关系数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.2 一元线性回归模型及其应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.3 列联表与独立性检验",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.2 离散型随机变量及其分布列",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.3 离散型随机变量的数字特征",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "7.3.2离散型随机变量的方差",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.2.2一元线性回归模型参数的最小二乘估计",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "8.3.2独立性检验",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2.2排列数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2.3组合",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.2.4组合数",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.1 分类加法计数原理与分步乘法计数原理",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-physics-1",
+      "subject": "PHYSICS",
+      "moduleName": "物理必修1（运动与力）",
+      "totalSections": 134,
+      "passedSections": 134,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第一章 运动的描述",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二章 匀变速直线运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三章 相互作用——力",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四章 牛顿运动定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "力的合成与分解",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "牛顿运动定律应用（连接体/超失重）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.质点 参考系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.时间 位移",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.位置变化快慢的描述——速度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.速度变化快慢的描述——加速度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.匀变速直线运动的速度与时间的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.匀变速直线运动的位移与时间的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.自由落体运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.重力与弹力",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.摩擦力",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.牛顿第三定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.力的合成和分解",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.共点力的平衡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.牛顿第一定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.牛顿第二定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.牛顿运动定律的应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.超重和失重",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.曲线运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.运动的合成与分解",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.抛体运动的规律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.圆周运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.向心力",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.向心加速度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.生活中的圆周运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.功与功率",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.重力势能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.动能和动能定理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.机械能守恒定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.电荷",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.库仑定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.电场 电场强度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.电势能和电势",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.电势差",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.电势差与电场强度的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.电容器的电容",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.带电粒子在电场中的运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.电源和电流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.导体的电阻",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.串联电路和并联电路",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.闭合电路的欧姆定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.磁场 磁感线",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.磁感应强度 磁通量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.电磁感应现象及应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.动量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.动量定理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.动量守恒定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.弹性碰撞和非弹性碰撞",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.反冲现象 火箭",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.简谐运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.简谐运动的描述",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.简谐运动的回复力和能量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.单摆",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.受迫振动 共振",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.波的形成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.波的描述",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.波的反射、折射和衍射",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.波的干涉",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.多普勒效应",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.光的折射",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.全反射",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.光的干涉",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.光的衍射",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "6.光的偏振 激光",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.磁场对通电导线的作用力",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.磁场对运动电荷的作用力",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.带电粒子在匀强磁场中的运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.质谱仪与回旋加速器",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.楞次定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.法拉第电磁感应定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.涡流、电磁阻尼和电磁驱动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.互感和自感",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.交变电流",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.交变电流的描述",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.变压器",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.电能的输送",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.电磁振荡",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.电磁场与电磁波",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.无线电波的发射和接收",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.电磁波谱",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.认识传感器",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.常见传感器的工作原理及应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.利用传感器制作简单的自动控制装置",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.分子动理论的基本内容",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.分子运动速率分布规律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.分子动能和分子势能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.温度和温标",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.气体的等温变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.气体的等压变化和等容变化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.固体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.液体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.功、热和内能的改变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.热力学第一定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.能量守恒定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.热力学第二定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.普朗克黑体辐射理论",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.光电效应",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.原子的核式结构模型",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.氢原子光谱和玻尔的原子模型",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.粒子的波动性和量子力学的建立",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.原子核的组成",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.放射性元素的衰变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.核力与结合能",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.核裂变与核聚变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.\"基本\"粒子",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.实验：探究小车速度随时间变化的规律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.实验：探究加速度与力、质量的关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.力学单位制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.实验：探究平抛运动的特点",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.抛体运动的规律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.行星的运动",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.万有引力定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.万有引力理论的成就",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.宇宙航行",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.相对论时空观与牛顿力学的局限性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.实验：验证机械能守恒定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.静电的防止与利用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.电势能和电势",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.实验：导体电阻率的测量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.实验：练习使用多用电表",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.电路中的能量转化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "3.实验：电池电动势和内阻的测量",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.能源与可持续发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "1.磁场 磁感线",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.电磁波的发现及应用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.能量量子化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.实验：验证动量守恒定律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "5.实验：用单摆测量重力加速度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "4.实验：用双缝干涉测量光的波长",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "2.实验：用油膜法估测油酸分子的大小",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-physics-3",
+      "subject": "PHYSICS",
+      "moduleName": "物理必修3（静电场/电路/电磁）",
+      "totalSections": 3,
+      "passedSections": 3,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "静电场",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "恒定电流与电路",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "磁场与电磁感应",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-physics-1",
+      "subject": "PHYSICS",
+      "moduleName": "物理选择性必修1（动量/机械振动波/光）",
+      "totalSections": 4,
+      "passedSections": 4,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "动量定理与动量守恒",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "机械振动与机械波",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "光的折射与全反射",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "光的干涉、衍射与偏振",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-physics-2",
+      "subject": "PHYSICS",
+      "moduleName": "物理选择性必修2（电磁感应/交变电流）",
+      "totalSections": 2,
+      "passedSections": 2,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "电磁感应",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "交变电流",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-physics-3",
+      "subject": "PHYSICS",
+      "moduleName": "物理选择性必修3（热学/原子物理）",
+      "totalSections": 3,
+      "passedSections": 3,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "分子动理论",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "气体实验定律与热力学",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "原子结构与核物理",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-economy-society",
+      "subject": "POLITICS",
+      "moduleName": "思想政治必修2：经济与社会",
+      "totalSections": 17,
+      "passedSections": 17,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "社会主义市场经济",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "我国的分配制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "经济高质量发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "市场与宏观调控",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "对外开放与经济全球化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三课 我国的经济发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四课 我国的个人收入分配与社会保障",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一课 我国的生产资料所有制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "坚持两个毫不动摇",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "更好发挥政府作用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "推动高质量发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第七课 经济全球化与中国",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "我国的社会保障",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二课 我国的社会主义市场经济体制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第八课 自主创业与诚信经营",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第六课 走进经济全球化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "日益开放的世界经济",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-philosophy-culture",
+      "subject": "POLITICS",
+      "moduleName": "思想政治必修4：哲学与文化",
+      "totalSections": 34,
+      "passedSections": 34,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "第一课 时代精神的精华（哲学概述）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "唯物论（探索世界）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "辩证法（把握世界）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "认识论（实践与认识）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "唯物辩证法（联系发展矛盾）",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "历史唯物主义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三课 把握世界的规律",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "运动与物质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "价值判断与价值选择",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "社会历史的主体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一课 时代精神的精华",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "科学的世界观和方法论",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四课 探索认识的奥秘",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第五课 寻觅社会的真谛",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "文化强国与文化自信",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "正确对待外来文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一课 走进思维世界",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "文化发展的基本路径",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "运动的规律性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "唯物辩证法的实质与核心",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第七课 继承发展中华优秀传统文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第九课 理解质量互变",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "哲学的基本问题",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二课 探究世界的本质",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "世界是永恒发展的",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "弘扬中华优秀传统文化与民族精神",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "在实践中追求和发展真理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "体会认识发展的历程",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "社会历史的发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第六课 实现人生的价值",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "价值的创造和实现",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "文化交流与文化交融",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "正确认识中华传统文化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第九课 发展中国特色社会主义文化",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-politics-rule-of-law",
+      "subject": "POLITICS",
+      "moduleName": "思想政治必修3：政治与法治",
+      "totalSections": 43,
+      "passedSections": 43,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "中国共产党的领导",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "人民当家作主",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "依法治国",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "基层群众自治制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "民族区域自治制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "坚持人民民主专政",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第七课 治国理政的基本方式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "公正司法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "人民代表大会制度：我国的根本政治制度",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "巩固党的长期执政地位",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "全民守法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二课 中国共产党的先进性",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "依法收集运用证据",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "解析三大诉讼",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第六课 珍惜婚姻关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "新民主主义革命的胜利",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三课 坚持和加强党的全面领导",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第九课 纠纷的多元解决方式",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "诚信经营 依法纳税",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "严格遵守诉讼程序",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四课 人民民主专政的社会主义国家",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第八课 法治中国建设",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "始终走在时代前列",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三课 订约履约 诚信为本",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "心中有数上职场",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一课 历史和人民的选择",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "法治政府",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "积极维护人身权利",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四课 侵权责任与权利界限",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "夫妻地位平等",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "权利行使 注意界限",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一课 在生活中学民法用民法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二课 依法有效保护财产权",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "尊重知识产权",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第七课 做个明白的劳动者",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第五课 在和睦家庭中成长",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "薪火相传有继承",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "全面推进依法治国的总目标与原则",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "严格执法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "法治社会",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第九课 全面依法治国的基本要求",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第十课 诉讼实现公平正义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "有约必守 违约有责",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "required-socialism-with-chinese-characteristics",
+      "subject": "POLITICS",
+      "moduleName": "思想政治必修1：中国特色社会主义",
+      "totalSections": 11,
+      "passedSections": 11,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "科学社会主义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "只有中国特色社会主义才能发展中国",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "实现中华民族伟大复兴的中国梦",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国特色社会主义进入新时代",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国共产党领导人民站起来、富起来、强起来",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "习近平新时代中国特色社会主义思想",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "科学社会主义的理论与实践",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "中国特色社会主义的创立、发展和完善",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "原始社会的解体和阶级社会的演进",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "伟大的改革开放",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "社会主义制度在中国的确立",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-international-politics-economy",
+      "subject": "POLITICS",
+      "moduleName": "思想政治选择性必修1：当代国际政治与经济",
+      "totalSections": 14,
+      "passedSections": 14,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "国际关系与外交",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "经济全球化",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第一课 国体与政体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第八课 主要的国际组织",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "区域性国际组织",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三课 多极化趋势",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "构建人类命运共同体",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "单一制和复合制",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四课 和平与发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第五课 中国的外交",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "政党和利益集团",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "国际关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "联合国",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第九课 中国与国际组织",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-law-life",
+      "subject": "POLITICS",
+      "moduleName": "思想政治选择性必修2：法律与生活",
+      "totalSections": 2,
+      "passedSections": 2,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "民事权利与义务",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "合同与家庭",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    },
+    {
+      "moduleSlug": "selective-logic-thinking",
+      "subject": "POLITICS",
+      "moduleName": "思想政治选择性必修3：逻辑与思维",
+      "totalSections": 25,
+      "passedSections": 25,
+      "needsRevisionSections": 0,
+      "sections": [
+        {
+          "section": "逻辑思维的基本要求",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "演绎推理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "正确运用简单判断",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第六课 掌握演绎推理方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第十一课 创新思维要善于联想",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "明确概念的方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第五课 正确运用判断",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "类比推理及其方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "联想思维的含义与方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "分析与综合及其辩证关系",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "逆向思维的含义与作用",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "超前思维的方法与意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第八课 把握辩证分合",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第十二课 创新思维要多路探索",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "简单判断的演绎推理方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "学习科学思维的意义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "正确运用复合判断",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "复合判断的演绎推理方法",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第四课 准确把握概念",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第二课 把握逻辑要义",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第七课 学会归纳与类比推理",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第十课 推动认识发展",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第十三课 创新思维要力求超前",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "思维形态及其特征",
+          "decision": "PASS",
+          "issues": []
+        },
+        {
+          "section": "第三课 领会科学思维",
+          "decision": "PASS",
+          "issues": []
+        }
+      ]
+    }
+  ]
+}

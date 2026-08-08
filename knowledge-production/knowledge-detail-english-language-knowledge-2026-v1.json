@@ -24,47 +24,96 @@
         "过去时",
         "完成时"
       ],
-      "conceptSummary": "英语有16种时态，核心是'时'（现在/过去/将来/过去将来）与'态'（一般/进行/完成/完成进行）组合；高中重点掌握一般现在/过去、现在完成、过去完成、将来时等。",
+      "conceptSummary": "英语动词时态由'时'（现在/过去/将来/过去将来）与'态'（一般/进行/完成/完成进行）组合而成，共16种。高中阶段核心掌握一般现在时、一般过去时、现在完成时、过去完成时、一般将来时以及现在进行时、现在完成进行时的基本结构；解题关键在于找准时间状语并判断动作与说话时刻或句中过去参照点的关系。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "一般现在时：习惯/真理/频度",
-        "现在完成时：have/has done，与过去有关联",
-        "过去完成时：had done，过去的过去",
-        "现在完成进行时：have been doing，持续到现在的动作",
-        "时态呼应：主从复合句时态一致"
+        "一般现在时：动词原形/第三人称单数，表习惯（often/always/sometimes）、客观真理（The earth moves around the sun.）和时刻表（The train leaves at 8.）",
+        "一般过去时：动词过去式，表过去某时的动作或状态，常与yesterday/last week/ago连用，动作与现在无关",
+        "现在完成时：have/has+done，表过去发生且对现在有影响或持续到现在，常与since/for/already/yet/just/ever/never连用",
+        "过去完成时：had+done，表'过去的过去'，句中必须有过去的参照时间或动作",
+        "现在完成进行时：have/has been doing，表从过去开始持续到现在的动作，强调可能仍在进行（I have been reading for two hours.）",
+        "时态呼应：主从复合句中主句为过去时，从句一般用相应的过去时态",
+        "将来时的多种表达：will/shall+do表一般将来，be going to do表打算或已定的计划，be about to do表即将发生且不与具体时间连用，现在进行时可表按安排即将发生的动作（The plane is taking off.）",
+        "过去进行时：was/were doing表过去某时刻正在进行的动作，常与at that time或when从句连用，用来描述故事中的背景动作（I was reading when he came in.）",
+        "现在进行时：am/is/are doing，表说话此刻正在进行的动作或当前阶段持续的状态（Look! The children are playing.）",
+        "将来进行时：will be doing，表将来某一时刻正在进行的动作（This time tomorrow I will be flying to Beijing.）"
       ],
       "methodModels": [
         {
-          "name": "时态判断",
+          "name": "时态判断（时间状语定位法）",
           "steps": [
-            "找时间状语（for/since/yet/just）",
-            "判断动作与现在的关系",
-            "选时态"
+            "划出句中的所有时间状语或时间性副词（since/for/yesterday/now/just/already/yet）",
+            "判断动作与'现在时刻'或'句中过去参照点'的时间关系",
+            "判断动作是已完成、正在进行、还是其结果与现在相关",
+            "按'时+态'组合选择对应结构，如since+过去时间点→现在完成时",
+            "代入原句检查语义是否通顺"
           ],
-          "example": "since 2000 用现在完成时"
+          "example": "She has lived here since 2010. 见到since+过去时间点，动作延续到现在，用现在完成时have lived。"
         },
         {
-          "name": "一般过去 vs 现在完成",
+          "name": "一般过去与现在完成辨析",
           "steps": [
-            "过去时：过去动作与现在无关",
-            "完成时：与现在有关联"
+            "看是否有具体过去时间点（yesterday/in 2008/ago）→ 有则用一般过去时",
+            "看动作结果是否影响现在（找不到钥匙/刚刚完成）→ 有影响用现在完成时",
+            "把时间标志词归类：already/yet/just/ever/never/since/for属完成时，ago/last/week属过去时",
+            "用'与现在有无关联'做最终校验：无关联选过去时，有关联选完成时"
           ],
-          "example": "I lost my key.（丢了）vs I have lost my key.（现在找不到）"
+          "example": "I lost my key yesterday.（有明确过去时间，只陈述过去事实，与现在无关）vs I have lost my key.（还没找到，现在进不了门，强调对现在的影响）"
+        },
+        {
+          "name": "过去时与过去完成时区分",
+          "steps": [
+            "在句中寻找过去参照点，通常是句中一般过去时的动作或明确的过去时间状语",
+            "比较目标动作与参照点的先后顺序，判断目标动作是否在参照点之前完成",
+            "目标动作发生在参照点之前则用过去完成时，发生在参照点之后或同时则用一般过去时",
+            "句中找不到明确参照点时不要用过去完成时，直接选用一般过去时",
+            "把所选时态代入句子检查时间先后逻辑是否成立"
+          ],
+          "example": "By the time he arrived, the film had already started. 参照点arrived用一般过去时，start发生在到达之前，故用过去完成时had started。"
+        },
+        {
+          "name": "时间标志词快速归类法",
+          "steps": [
+            "先扫描题干中的时间状语标志词，如since/for/ago/just/yesterday",
+            "把标志词按过去时、完成时、进行时三类分别归类",
+            "无标志词时结合上下文语境推断动作发生的时间",
+            "结合主语与动作的关系确定最终时态形式",
+            "把选定时态放回原句，朗读检验语义是否自然流畅"
+          ],
+          "example": "题干出现since 2008、already、yet等词直接归入完成时类，出现yesterday、ago、last week归入过去时类，再结合语境确定具体时态形式。"
         }
       ],
       "commonConfusions": [
-        "since/for 用完成时",
-        "already/yet/just 常配完成时",
-        "瞬间动词与段时间搭配（die→be dead）"
+        "since后用时间点（since 2000），for后用时间段（for two years）；瞬间动词（die/come/leave）不能与段时间连用，需改为状态词（die→be dead, leave→be away）",
+        "already用于肯定句表'已经'，yet用于否定与疑问表'还'：I haven't finished yet. Have you finished yet?",
+        "现在完成时与一般过去时混淆：I have been to Beijing（去过，已回来）vs I went to Beijing last year（去年去的，纯过去事实）",
+        "滥用过去完成时：句中无过去参照点时不用had done，如I did my homework yesterday不能说had done",
+        "一般现在时表客观真理不受时间限制：即使主句为过去时，客观真理从句仍用一般现在时（The teacher told us that light travels faster than sound.）",
+        "现在完成时与现在完成进行时区别：完成时强调动作已结束及其结果，完成进行时强调动作仍将持续（I have written a letter. 已完成 vs I have been writing a letter. 仍在写）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "时态选择",
-          "method": "时间状语+语境",
-          "example": "见上"
+          "questionShape": "时态选择（完成时标志词）",
+          "method": "时间状语定位+与现在关联判断",
+          "example": "Tom ___ (work) in this factory since he left school. 答案：has worked。since引导过去时间起点，动作延续到现在，用现在完成时。"
+        },
+        {
+          "questionShape": "时态选择（过去完成时）",
+          "method": "找过去参照点，判断动作在其前发生",
+          "example": "When I got to the station, the train ___ (leave). 答案：had left。got to为过去参照点，leave发生在到达之前，是'过去的过去'，用had left。"
+        },
+        {
+          "questionShape": "时态选择（过去进行时）",
+          "method": "背景动作判断",
+          "example": "I ___ (watch) TV when my mother came home. 答案：was watching。came home是过去时间参照点，watch在其前后持续进行，属于背景动作，用过去进行时was watching。"
+        },
+        {
+          "questionShape": "时态选择（现在进行时）",
+          "method": "进行时标志词定位",
+          "example": "Look! The children ___ (swim) in the river. 答案：are swimming。Look是现在进行时的标志词，表示说话此刻正在进行的动作，主语children为复数，用are swimming。"
         }
       ]
     },
@@ -76,47 +125,97 @@
         "关系副词",
         "先行词"
       ],
-      "conceptSummary": "定语从句修饰先行词，用关系代词（who/which/that/whose）或关系副词（when/where/why）引导。",
+      "conceptSummary": "定语从句是跟在先行词后起修饰作用的句子，由关系词引导，关系代词包括who/whom/which/that/whose，关系副词包括when/where/why。解题关键是判断先行词指人还是指物，并分析关系词在从句中充当的成分（主语/宾语/定语/状语），再决定选用哪个关系词。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "先行词是人在从句作主语用 who/that",
-        "先行词是物用 which/that",
-        "whose 表所属",
-        "where 表地点、when 表时间、why 表原因",
-        "非限制性定语从句用 which（不用 that）"
+        "先行词指人、在从句中作主语用who/that（The boy who is singing is my brother.）",
+        "先行词指物、在从句中作主语或宾语用which/that（The book which I bought is interesting.）",
+        "whose表所属关系，可指人或物（The girl whose hair is long is Mary.）",
+        "where表地点、when表时间、why表原因，分别在从句中作地点/时间/原因状语（This is the school where I studied.）",
+        "非限制性定语从句用which/whom/who，不能用that，且用逗号隔开（He failed the exam, which made him sad.）",
+        "关系词在从句中作宾语时可省略（The book I read is good.）",
+        "that只能引导限制性定语从句，不能用于非限制性从句；先行词被all/any/every/no/few/little/much、序数词、最高级或the only/the very修饰时只能用that",
+        "as与the same/such/so连用构成the same...as、such...as、so...as结构，as在从句中可作主语或宾语（I have the same book as he has.）",
+        "关系副词when/where/why可分别换成介词加which结构：when等于at/in/on which，where等于in/at which，why等于for which（This is the reason for which he came late.）",
+        "whose与of which或of whom可互换：先行词指物时whose加名词可换成the加名词加of which（the house whose roof等于the house the roof of which）"
       ],
       "methodModels": [
         {
-          "name": "关系词选择",
+          "name": "关系词选择四步法",
           "steps": [
-            "看先行词是人还是物",
-            "看从句缺什么成分",
-            "选关系词"
+            "找出先行词，判断指人还是指物",
+            "把先行词代入从句，分析从句缺什么成分（主语/宾语/定语/状语）",
+            "缺主语或宾语用关系代词（人who/that，物which/that），缺定语用whose，缺状语用关系副词（地点where/时间when/原因why）",
+            "结合限制性/非限制性做最后确认，非限制性不用that",
+            "把选出的关系词代入从句验证句子完整"
           ],
-          "example": "The book which I bought is new."
+          "example": "The house ___ windows face south was built last year. 先行词house指物，从句缺定语，答案whose。"
         },
         {
-          "name": "介词+关系代词",
+          "name": "介词与关系代词搭配",
           "steps": [
-            "看动词固定搭配介词",
-            "介词+which/whom"
+            "找从句谓语动词或形容词的固定搭配介词，如depend on/live in",
+            "若介词前置，把介词移到关系词前，形成'介词+which/whom'",
+            "指人用whom，指物用which",
+            "把整个短语放回从句，检查搭配是否成立",
+            "口语中也可把介词留在句尾，关系词用that或省略"
           ],
-          "example": "The house in which I live"
+          "example": "The house in which I live is very old. 固定搭配live in，介词in前置+which，即in which I live。"
+        },
+        {
+          "name": "where与介词加which判定",
+          "steps": [
+            "找出先行词并确认其是否表示地点含义，注意抽象地点名词",
+            "把先行词代入从句，判断从句是否缺少地点状语成分",
+            "从句缺地点状语且先行词表地点时用where或介词加which",
+            "从句缺主语或宾语时即使先行词表地点也用which或that",
+            "把关系词还原成介词短语代入句子验证语义完整"
+          ],
+          "example": "This is the factory where my father works. 从句works缺地点状语，相当于my father works in the factory，故用where，等价于in which。"
+        },
+        {
+          "name": "when与which特殊判定",
+          "steps": [
+            "先看先行词是否为时间名词，时间名词不等于必须用when",
+            "把先行词放回从句，判断从句是否缺少主语或宾语成分",
+            "缺少主语或宾语时用关系代词that或which，即使先行词表时间",
+            "从句成分完整且确实缺少时间状语时才用关系副词when",
+            "把还原后的完整句子与原句对照验证判断正确"
+          ],
+          "example": "I will never forget the day ___ I spent in the countryside. 答案：that/which。spent缺宾语the day，用关系代词，不能用when。"
         }
       ],
       "commonConfusions": [
-        "that 与 which 不能互换的非限制性从句",
-        "as 引导定语从句",
-        "关系词在从句中作宾语可省略"
+        "that与which：非限制性定语从句和介词之后只能用which不能用that；但先行词为all/不定代词或被序数词/最高级修饰时只能用that",
+        "when与which/that混淆：先行词是时间名词但从句缺宾语时用which/that，缺时间状语才用when（I remember the day that we spent together.）",
+        "as引导定语从句：as可引导非限制性定语从句表'正如'（as we all know），which则表'由此导致的结果'",
+        "关系词作宾语时可省略，作主语时不可省略",
+        "关系副词when与介词加which引导时间定语从句时常可互换，但介词必须与从句谓语动词的固定搭配一致（the day on which I was born正确，不能说at which I was born）",
+        "as与which引导非限制性定语从句的位置区别：as引导的从句可置于主句之前也可置于主句之后，which引导的从句只能置于主句之后（As we all know, the earth is round.）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "关系词选择",
-          "method": "先行词+成分",
-          "example": "见上"
+          "questionShape": "关系词选择（缺宾语）",
+          "method": "先行词+从句成分分析",
+          "example": "I will never forget the days ___ we spent together in Beijing. 答案：that/which。先行词the days虽表时间，但we spent缺宾语（spent the days），用关系代词that/which，不用when。"
+        },
+        {
+          "questionShape": "关系词选择（缺主语）",
+          "method": "先行词指人/物+成分",
+          "example": "Do you know the girl ___ is standing under the tree? 答案：who/that。先行词the girl指人，从句缺主语，用who或that。"
+        },
+        {
+          "questionShape": "关系词选择（where）",
+          "method": "地点状语判断",
+          "example": "I want to visit the museum ___ you can see many old paintings. 答案：where。先行词the museum表地点，从句缺地点状语即in the museum，用关系副词where。"
+        },
+        {
+          "questionShape": "关系词选择（whose所属）",
+          "method": "所属关系判断",
+          "example": "The teacher ___ daughter won the prize will give us a speech. 答案：whose。daughter与teacher是所属关系，从句缺定语成分，用whose引导定语从句。"
         }
       ]
     },
@@ -128,48 +227,99 @@
         "现在分词",
         "过去分词"
       ],
-      "conceptSummary": "非谓语动词包括不定式（to do）、动名词（doing）、分词（doing/done），在句中作非谓语成分。",
+      "conceptSummary": "非谓语动词指在句中不作谓语的动词形式，包括不定式（to do）、动名词（doing）、现在分词（doing）和过去分词（done），可作主语、宾语、定语、状语、补语等成分。判定非谓语的关键三步是：先确认该位置不作谓语，再判断与逻辑主语的主被动关系，最后判断进行/完成或目的/将来的时间含义。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "不定式：表目的/将来，固定搭配 want/hope/decide to do",
-        "动名词：作主语/宾语，enjoy/finish/practice doing",
-        "现在分词：表主动进行，作伴随/定语",
-        "过去分词：表被动完成",
-        "独立主格：with+宾语+宾补"
+        "不定式to do表目的或将来，固定搭配want/hope/decide/plan/refuse to do",
+        "动名词doing作主语或宾语，固定搭配enjoy/finish/practice/avoid/mind doing",
+        "现在分词doing表主动进行，可作伴随状语和定语（The boy running is my brother.）",
+        "过去分词done表被动完成（The window broken by Tom is being repaired.）",
+        "独立主格结构：with+宾语+宾补（with the lights on）",
+        "remember/forget/stop接to do表'去做/忘了去做/停下来去做'，接doing表'记得做过/忘了做过/停止做'",
+        "感官动词see/watch/notice/observe后接不定式作宾补时要省略to，变为被动语态时补回to（I saw him run away. / He was seen to run away.）",
+        "with复合结构作状语：with加宾语加分词/不定式/介词短语/形容词/副词，其中宾语与分词的逻辑主被动关系决定选用doing还是done（with the lights on）",
+        "不定式作宾语且后接宾语补足语时，用it作形式宾语把不定式后置（I find it hard to learn English well.）",
+        "to作介词后接动名词的固定搭配：look forward to、devote oneself to、be used to、get down to、pay attention to后均接动名词"
       ],
       "methodModels": [
         {
-          "name": "非谓语选择",
+          "name": "非谓语三步判定法",
           "steps": [
-            "判断是否作谓语",
-            "判断主动被动",
-            "判断进行/完成"
+            "判断该位置是否已有谓语动词，已有谓语则此处用非谓语",
+            "看非谓语与逻辑主语是主动还是被动关系：主动用doing/to do，被动用done/being done",
+            "判断时间含义：进行中用doing，已完成用done，表目的或将来用to do",
+            "结合固定搭配做最终确认",
+            "把选定形式放回原句，检查逻辑主语是否一致"
           ],
-          "example": "The boy running is my brother.（主动进行）"
+          "example": "The boy running on the playground is my brother. run与boy为主动关系且正在进行，用现在分词running作定语。"
         },
         {
-          "name": "固定搭配记忆",
+          "name": "不定式与动名词搭配记忆",
           "steps": [
-            "to do：want/decide/hope",
-            "doing：enjoy/finish/avoid"
+            "分类记忆只接to do的动词：want/decide/hope/plan/wish/refuse/offer",
+            "分类记忆只接doing的动词：enjoy/finish/avoid/mind/suggest/practice/keep",
+            "记忆两者皆可但含义不同的动词：remember/forget/stop/try",
+            "用造句检验搭配是否成立，如I enjoy reading. / I want to go.",
+            "作主语时区别：表具体一次用to do，表一般习惯用doing"
           ],
-          "example": "I enjoy reading."
+          "example": "I remember locking the door.（记得锁过门）vs Remember to lock the door.（记得去锁门）"
+        },
+        {
+          "name": "使役动词宾补判定",
+          "steps": [
+            "识别make/let/have/get等使役动词及其后接的宾语",
+            "主动语态下make/let/have后接省略to的不定式，表'使某人做某事'",
+            "have sth done表'让某事被别人做'，宾语与动词是被动关系",
+            "get sb to do表'说服某人去做'，get sth done表'设法把某事完成'",
+            "把所选宾补形式代入句子检查主被动逻辑是否一致"
+          ],
+          "example": "I'll have my hair cut tomorrow. cut与hair是被动关系，表'请别人给我理发'，用过去分词cut作宾补。"
+        },
+        {
+          "name": "动名词与不定式宾语判定",
+          "steps": [
+            "先识别谓语动词属于只接动名词、只接不定式还是两者皆可",
+            "遇到remember/forget/stop/try/regret等兼类动词，先判断动作发生时间",
+            "动作已完成或发生过用动名词，动作未发生将要做用不定式",
+            "介词之后的动词一律用动名词形式",
+            "把选定形式放回原句，结合语义检验含义是否符合语境"
+          ],
+          "example": "Stop talking, please. 老师让学生停止正在进行的说话动作，talking已在进行，用动名词；Stop to talk则表停下来手里的事去说话。"
         }
       ],
       "commonConfusions": [
-        "不定式与动名词作宾语区别（remember to do/doing）",
-        "分词逻辑主语要与主句一致"
+        "remember/forget/stop后接to do与doing含义不同：remember to do表'未做要去做'，remember doing表'记得做过'",
+        "分词逻辑主语必须与主句主语一致，否则改用独立主格或状语从句（Walking along the street, I saw a friend. 不能说Walking... the street saw...）",
+        "being done与done：表'正在被...'用being done，表'已完成的被动'用done（The building being built is a hospital.）",
+        "不定式与动名词作主语的区别：表具体的一次动作用to do，表一般习惯用doing（To say is easier than to do. / Swimming is good exercise.）",
+        "动名词与现在分词作定语的区别：动名词说明名词的用途（a swimming pool游泳池），现在分词说明名词正在进行的状态（a running boy正在跑的男孩）",
+        "不定式作定语与被修饰词构成动宾关系时，若不定式为不及物动词须补加介词（a pen to write with，不能说a pen to write）"
       ],
       "prerequisiteRelations": [
         "需掌握谓语动词"
       ],
       "workedExampleStructure": [
         {
-          "questionShape": "非谓语填空",
-          "method": "主被动+时态",
-          "example": "见上"
+          "questionShape": "非谓语填空（过去分词作状语）",
+          "method": "主被动+时间判断",
+          "example": "___ (see) from the hill, the city looks beautiful. 答案：Seen。see与the city是被动关系且已完成，用过去分词Seen作状语。"
+        },
+        {
+          "questionShape": "非谓语填空（不定式表目的）",
+          "method": "目的判断+不定式",
+          "example": "He got up early ___ (catch) the first bus. 答案：to catch。早起的目的，用不定式to catch作目的状语。"
+        },
+        {
+          "questionShape": "非谓语填空（分词作伴随状语）",
+          "method": "逻辑主语一致判断",
+          "example": "The boy sat there, ___ (read) a storybook. 答案：reading。read与主语the boy是主动关系，且与sat两个动作同时进行，用现在分词reading作伴随状语。"
+        },
+        {
+          "questionShape": "非谓语填空（动名词作主语）",
+          "method": "习惯动作与具体一次区分",
+          "example": "___ (read) in the morning is a good habit. 答案：Reading。泛指一种习惯性的行为，用动名词Reading作主语，谓语动词is用单数。"
         }
       ]
     },
@@ -180,47 +330,99 @@
         "if条件句",
         "wish"
       ],
-      "conceptSummary": "虚拟语气表示与事实相反的假设，if 条件句有与现在/过去/将来事实相反的三种基本结构。",
+      "conceptSummary": "虚拟语气用于表达与事实相反的假设或不太可能实现的愿望，if条件句根据时间分成与现在、过去、将来事实相反的三种基本结构。核心规律是主从句时态各'后退一步'：与现在相反从句用过去时（be动词用were）、与过去相反从句用过去完成时、与将来相反从句用were to/should+do，主句分别对应would+do、would+have done、would+do。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "与现在相反：if+did, would+do",
-        "与过去相反：if+had done, would+have done",
-        "与将来相反：if+were to/should+do",
-        "wish+过去时/过去完成时",
-        "it is time that+过去时"
+        "与现在事实相反：if+did（were），主句would+do（If I were you, I would go.）",
+        "与过去事实相反：if+had done，主句would+have done（If I had known, I would have come.）",
+        "与将来事实相反：if+were to/should+do，主句would+do",
+        "wish后：与现在相反用过去时，与过去相反用过去完成时（I wish I had studied harder.）",
+        "it is (high) time that+过去时或should+do（It is time that we went to bed.）",
+        "倒装虚拟：省略if，把were/had/should提前（Had I known...=If I had known...）",
+        "would rather后接从句表'宁愿'，与现在或将来情况相反用过去时，与过去情况相反用过去完成时（I would rather you stayed here.）",
+        "as if/as though引导的从句表与事实不符的假设时用虚拟语气，其结构同wish后从句（He talks as if he knew everything.）",
+        "suggest/advise/order/require/request/insist等动词后的宾语从句用should加动词原形，should可省略直接用动词原形（He suggested that we set off early.）",
+        "含蓄条件句：句中无if，但用without/but for/otherwise/or等暗含条件，仍用虚拟语气（But for your help, I would have failed.）"
       ],
       "methodModels": [
         {
-          "name": "if条件句虚拟",
+          "name": "if条件句虚拟三步法",
           "steps": [
-            "判断时间（现在/过去/将来）",
-            "套对应结构"
+            "判断假设发生的时间（现在/过去/将来）",
+            "确定从句结构：现在→过去时，过去→过去完成时，将来→were to/should+do",
+            "确定主句结构：现在→would+do，过去→would+have done，将来→would+do",
+            "检查主从句结构是否匹配，尤其注意错综时间条件句",
+            "把结果代入原句验证是否符合虚拟含义"
           ],
-          "example": "If I were you, I would go."
+          "example": "If it had not rained yesterday, we would have gone hiking. 与过去事实相反，从句had not rained，主句would have gone。"
         },
         {
-          "name": "倒装虚拟",
+          "name": "倒装虚拟句转换",
           "steps": [
-            "if 省略倒装",
-            "were/had/should 提前"
+            "识别虚拟条件句中的if，确认句中有were/had/should",
+            "省略if，把were/had/should提到句首",
+            "其余成分保持原语序不变",
+            "把还原后的if句与原句核对，确认结构一致",
+            "注意had提前时主语后接过去分词，were提前时主语后接to do/doing"
           ],
-          "example": "Had I known, I would have come."
+          "example": "Had I known the truth, I would have told you. = If I had known the truth, I would have told you."
+        },
+        {
+          "name": "虚拟条件句主从句结构对照",
+          "steps": [
+            "先判断虚拟假设发生的时间，属于现在、过去还是将来",
+            "记住三组固定结构：与现在相反用过去时对应would加动词原形",
+            "与过去相反用过去完成时对应would加have done",
+            "与将来相反用were to或should加动词原形对应would加动词原形",
+            "主从句时间不一致时按各自实际时间分别选择对应结构并检验匹配"
+          ],
+          "example": "If I were a bird, I would fly freely in the sky. 与现在事实相反，从句be动词用were，主句用would fly，两组结构完全对应。"
+        },
+        {
+          "name": "建议命令类虚拟判定",
+          "steps": [
+            "识别suggest/advise/order/require/request/insist等建议命令类动词",
+            "确认其后的that从句是否表示尚未实现的建议、命令或要求",
+            "从句谓语用should加动词原形，should可以省略",
+            "注意insist表'坚持说某事实'时用陈述语气，不属虚拟范畴",
+            "把结构放回原句检查语义是否符合建议命令语气"
+          ],
+          "example": "The doctor suggested that he ___ (take) more exercise. 答案：should take或take。suggest表建议，从句用should加动词原形，should可省略。"
         }
       ],
       "commonConfusions": [
-        "与现在事实相反用 were（不用 was）",
-        "错综时间条件句主从句时态不同"
+        "与现在事实相反be动词一律用were，不用was（If I were you...）",
+        "错综时间条件句：主从句时间不一致时，各自按实际时间选结构（If I had studied hard, I would be a doctor now.）",
+        "真实条件句与虚拟条件句混淆：if表示真实可能时用一般现在时+will（If it rains tomorrow, we will stay at home.）",
+        "would与had缩写成'd后易混淆，还原时应先判断从句还是主句",
+        "if only与only if：if only表'要是...该多好'用虚拟语气（If only I were a bird.），only if表'只有...才'用真实条件句",
+        "insist表'坚持主张'时宾语从句用should加动词原形，表'坚持说某事实'时用陈述语气（He insisted that he was right.）"
       ],
       "prerequisiteRelations": [
         "需掌握时态"
       ],
       "workedExampleStructure": [
         {
-          "questionShape": "虚拟语气填空",
-          "method": "时间判断+结构",
-          "example": "见上"
+          "questionShape": "虚拟语气填空（与过去相反）",
+          "method": "时间判断+结构对应",
+          "example": "If you ___ (take) my advice yesterday, you wouldn't have failed. 答案：had taken。yesterday表明与过去事实相反，从句用had+过去分词。"
+        },
+        {
+          "questionShape": "虚拟语气填空（wish）",
+          "method": "wish后时态后移",
+          "example": "I wish I ___ (be) taller. 答案：were。wish后与现在事实相反，be动词用were。"
+        },
+        {
+          "questionShape": "虚拟语气填空（与现在相反）",
+          "method": "现在事实相反结构",
+          "example": "If he ___ (be) here now, he would help us solve the problem. 答案：were。now表明与现在事实相反，从句be动词一律用were，主句用would help。"
+        },
+        {
+          "questionShape": "虚拟语气填空（含蓄条件）",
+          "method": "without暗含条件判断",
+          "example": "But for the rain, we ___ (finish) the work on time. 答案：would have finished。But for引导含蓄条件，与过去事实相反，主句用would have加过去分词。"
         }
       ]
     },
@@ -231,34 +433,97 @@
         "冠词",
         "单复数"
       ],
-      "conceptSummary": "名词单复数与所有格，冠词a/an/the 用法。",
+      "conceptSummary": "名词需掌握可数与不可数、单复数变化规律以及所有格构成；冠词a/an/the分别表示泛指、特指和类指等不同功能。单复数与冠词的选择直接决定句子是否准确，高考常在语法填空和改错中考查单复数变化（加s/es、y变i加es、不规则变化）和a/an/the的使用。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "可数不可数名词",
-        "冠词用法",
-        "名词所有格"
+        "可数名词复数：一般加-s/-es（book-books, box-boxes）；辅音字母+y结尾变y为i加es（city-cities）；f/fe结尾变ves（leaf-leaves）；不规则变化（child-children, man-men, tooth-teeth, sheep-sheep）",
+        "不可数名词：water/information/advice/news/furniture等无复数形式，表数量用a piece of等量词",
+        "冠词a/an表泛指'一个'，用于可数名词单数前；a用于辅音音素前，an用于元音音素前（an hour, a university）",
+        "the表特指，用于前文提到过的、被定语修饰的、独一无二的事物（the sun, the first man）",
+        "名词所有格：有生命名词用's（Tom's book），无生命名词用of（the name of the school）；表时间距离也可用's（today's news）",
+        "零冠词：复数名词和不可数名词表泛指时不用冠词（Books are our friends.）",
+        "零冠词的固定搭配：go to school/church/bed/hospital表'去上学/做礼拜/睡觉/就医'时不用冠词，三餐前不用冠词（have breakfast），季节月份星期前一般不用冠词",
+        "冠词的位置：名词前有many/such/what/how/rather等词时冠词位置灵活，如such an interesting book、what a nice day、rather a cold day",
+        "集体名词people/police/clothes/cattle等通常以复数形式出现，作主语时谓语用复数（The police are searching for the thief.）",
+        "名词所有格加s可表'某人的家或店铺'：at the doctor's（在诊所）、at my uncle's（在我叔叔家）"
       ],
       "methodModels": [
         {
-          "name": "名词冠词",
+          "name": "名词单复数判断法",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "判断该名词是可数还是不可数",
+            "看前面是否有a/an/one/数词或be动词的单复数提示",
+            "若可数且泛指多个则用复数，按变化规则变形",
+            "特殊名词单独记忆（news/politics不可数，police/trousers常用复数）",
+            "把变形后的名词放回句子检查主谓一致"
           ],
-          "example": "名词与冠词"
+          "example": "There are many ___ (leaf) on the ground in autumn. 答案：leaves。可数名词复数，f结尾变ves。"
+        },
+        {
+          "name": "冠词选择三步法",
+          "steps": [
+            "看名词是否特指（前文提到过/被定语修饰/独一无二）→用the",
+            "不是特指且为可数名词单数→用a/an，按音素选择",
+            "泛指复数或不可数名词→零冠词",
+            "检查固定搭配（in the morning, go to school, play basketball）",
+            "把冠词代入原句验证语义"
+          ],
+          "example": "He is ___ honest boy. 答案：an。honest读音以元音音素/ɒ/开头，用an。"
+        },
+        {
+          "name": "零冠词判断法",
+          "steps": [
+            "判断名词是否为可数名词复数或不可数名词，且是否表示泛指意义",
+            "名词表示泛指且不需要特指时使用零冠词",
+            "识别固定搭配中要求零冠词的短语，如go to bed、have lunch、play basketball",
+            "排除表独一无二事物或前文已提到过的特指名词，这类情况必须加the",
+            "把是否加冠词的选择代入句子检查语义是否符合具体语境"
+          ],
+          "example": "We have lunch at noon every day. 三餐名称前不加冠词，have lunch是固定搭配，直接使用零冠词。"
+        },
+        {
+          "name": "可数不可数名词判定",
+          "steps": [
+            "先看名词前是否有a/an/one/two等数词限定语判断是否可数",
+            "不可数名词不能直接用a/an或数词修饰，需用量词短语",
+            "物质名词与抽象名词通常情况下视为不可数名词",
+            "注意名词的兼类现象：paper表纸张不可数，papers表文件可数",
+            "把判断结果放回主谓一致检验句子正确性"
+          ],
+          "example": "Would you please give me some ___ (advice)? 答案：advice。不可数名词，用some修饰，不能加复数，也不能用a。"
         }
       ],
       "commonConfusions": [
-        "冠词用法"
+        "a与an看音素而非字母：an hour（h不发音），a university（u发/juː/辅音音素）",
+        "集合名词单复数：family/class作整体用单数，强调成员时用复数",
+        "the+姓氏复数表一家人（the Greens），单个姓氏泛指不用the",
+        "表独一无二的事物（sun/moon/earth）必须加the；表三餐和球类运动用零冠词（have lunch, play basketball）",
+        "抽象名词具体化：a surprise/a pleasure可用a，表'一件令人...的事'",
+        "双重所有格a friend of my father's与普通所有格my father's friend含义接近，但前者强调'我父亲朋友中的一位'，语气更委婉，两者不可随意混用"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "名词与冠词",
-          "method": "见方法模型",
-          "example": "名词与冠词"
+          "questionShape": "名词单复数（语法填空）",
+          "method": "可数性判断+量词提示",
+          "example": "The teacher gave us much useful ___ (advice). 答案：advice。不可数名词无复数形式，much修饰不可数名词。"
+        },
+        {
+          "questionShape": "冠词选择（特指vs泛指）",
+          "method": "首次提及与再次提及判断",
+          "example": "I bought ___ book yesterday. ___ book is very interesting. 答案：a; The。首次提到用a，第二次提到特指用the。"
+        },
+        {
+          "questionShape": "冠词选择（零冠词）",
+          "method": "固定搭配判断",
+          "example": "He goes to ___ school by ___ bus every day. 答案：零冠词；零冠词。go to school表'去上学'是固定搭配不加冠词，by bus表交通方式也用零冠词。"
+        },
+        {
+          "questionShape": "名词所有格选择",
+          "method": "有生命与无生命判断",
+          "example": "___ (the teachers, office) is on the third floor. 答案：The teachers' office。teachers为有生命名词且为复数，所有格直接在词尾加撇号构成the teachers'。"
         }
       ]
     },
@@ -269,34 +534,97 @@
         "物主代词",
         "反身代词"
       ],
-      "conceptSummary": "代词种类：人称、物主、反身、指示、不定代词。",
+      "conceptSummary": "代词分为人称代词（主格I/you/he，宾格me/you/him）、物主代词（形容词性my/your/his，名词性mine/yours/his）、反身代词（myself/yourself/himself）、指示代词（this/that/these/those）和不定代词（some/any/everyone/nothing等）。解题关键是分清指代对象和句子成分：作主语用主格、作宾语用宾格、表所属用物主代词，并注意it作形式主语等特殊用法。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "人称代词主宾格",
-        "物主代词",
-        "不定代词"
+        "人称代词主格作主语（She is a teacher.），宾格作动词或介词宾语（I like her.）",
+        "形容词性物主代词后接名词（my book），名词性物主代词独立使用（This book is mine.）",
+        "反身代词myself/yourself/himself...，用于强调或动作返回自身（I did it myself.）",
+        "指示代词this/that表近指/远指，these/those为复数（This is my pen. Those are yours.）",
+        "不定代词：some用于肯定，any用于否定和疑问（Would you like some tea? 表请求时用some）",
+        "it的特殊用法：指天气/时间/距离（It is raining. It is 8 o'clock.），作形式主语或宾语（It is important to study hard.）",
+        "each other与one another都表'互相'，each other常用于两者，one another用于三者或以上；one指代上文提到的可数名词单数，ones指代复数",
+        "no one与none：no one只指人不与of连用，none可指人或物且常与of连用（None of the students passed the exam.）",
+        "both表两者都，all表三者以上都，each表两者或以上的每一个；both作主语谓语用复数，each作主语谓语用单数（Both are right. / Each of them has a book.）",
+        "another表三者以上中的另一个，the other表两者中的另一个，others泛指其余的人或物，the others特指其余的全部（Some students went out, others stayed in.）"
       ],
       "methodModels": [
         {
-          "name": "代词",
+          "name": "人称代词格选择",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "确定代词在句中作的成分",
+            "作主语用主格，作动词或介词宾语用宾格",
+            "表所属且后接名词用形容词性物主代词，独立使用用名词性物主代词",
+            "两个代词并列时分别按各自成分选格",
+            "把选定的代词代入句子检查语法正确性"
           ],
-          "example": "代词"
+          "example": "___ and I are good friends. 答案：She。作主语用主格she，不用her。"
+        },
+        {
+          "name": "不定代词辨析",
+          "steps": [
+            "判断句子是肯定还是否定/疑问",
+            "肯定句用some类，否定疑问句用any类",
+            "判断含义：指全部（everyone）、任一（anyone）、某一（someone）",
+            "注意表请求建议的疑问句用some",
+            "结合固定搭配如not...any=no"
+          ],
+          "example": "Would you like ___ tea? 答案：some。表建议、请求的疑问句用some，不用any。"
+        },
+        {
+          "name": "one与it指代辨析",
+          "steps": [
+            "判断要指代的是同类事物中的任意一个还是上文提到的同一事物",
+            "表同类中的一个用one，表上文提到的同一事物用it",
+            "表复数同类中的一些用ones或some",
+            "表'另一个'用another，表'两者中的另一个'用the other",
+            "把所选指代词代入句子检查指代对象是否清晰明确"
+          ],
+          "example": "I have a red pen, but I want a blue one. one指代同类中的另一支笔；若说Please pass the pen to me, I like it，则it指代同一支笔。"
+        },
+        {
+          "name": "不定代词整体范围判断",
+          "steps": [
+            "先判断指代范围是两者还是三者以上",
+            "两者范围用both/either/neither/the other等代词",
+            "三者以上范围用all/any/none/another/others等代词",
+            "结合肯定否定语境确定选词方向",
+            "把所选代词放回原句验证指代逻辑清晰"
+          ],
+          "example": "There are many students on the playground. Some are running, others are playing basketball. some...others表'一些...另一些'，在三者以上范围中泛指其余的人。"
         }
       ],
       "commonConfusions": [
-        "代词辨析"
+        "it's与its：it's=it is/has，its是形容词性物主代词",
+        "形容词性物主代词与名词性物主代词混用：This is my. 错，应说This is mine. 或This is my book.",
+        "some/any在疑问句中：一般疑问句用any，表请求建议用some",
+        "everyone与every one：everyone指'人人'，every one后可接of（Every one of them is here.）",
+        "反身代词不可随意省略：enjoy oneself（玩得开心），不能说省略oneself",
+        "a few与few、a little与little：a few修饰可数名词表'几个'含肯定，few表'几乎没有'含否定；a little与little修饰不可数名词，肯定否定含义同理"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "代词",
-          "method": "见方法模型",
-          "example": "代词"
+          "questionShape": "代词格选择",
+          "method": "句子成分判断",
+          "example": "The teacher praised ___ (we) for our hard work. 答案：us。作praised的宾语，用宾格us。"
+        },
+        {
+          "questionShape": "物主代词选择",
+          "method": "后接名词与否",
+          "example": "This bike is not ___ (my). It's ___ (Tom). 答案：mine; Tom's。句末独立使用用名词性物主代词mine；表'某人的'用所有格Tom's。"
+        },
+        {
+          "questionShape": "不定代词选择（两者范围）",
+          "method": "范围判断",
+          "example": "There are two apples on the table. One is red, ___ is green. 答案：the other。明确提到两个物体时，用one...the other表示'一个...另一个'，两者中的另一个用the other。"
+        },
+        {
+          "questionShape": "不定代词选择（其余的人）",
+          "method": "三者以上泛指判断",
+          "example": "Some students like English, while ___ like math. 答案：others。some...others是固定搭配，表'一些...另一些'，others泛指除some之外的其他学生，不强调具体数量。"
         }
       ]
     },
@@ -307,34 +635,97 @@
         "副词",
         "比较级"
       ],
-      "conceptSummary": "形容词修饰名词，副词修饰动词形容词；比较级最高级。",
+      "conceptSummary": "形容词用来修饰名词或作表语，副词用来修饰动词、形容词、其他副词或整个句子。比较级和最高级是考查重点，包括规则变化（加-er/-est或more/most）、不规则变化（good-better-best）以及倍数比较、'越...越...'等常见句式。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "形容词副词位置",
-        "比较级最高级",
-        "倍数比较"
+        "形容词作定语修饰名词（a beautiful girl），作表语（The girl is beautiful.）",
+        "副词修饰动词（run fast）、形容词（very good）、其他副词（too late）",
+        "比较级：单音节形容词加-er（taller），多音节用more（more beautiful）",
+        "最高级：单音节加-est（tallest），多音节用most，前面通常加the（the tallest boy）",
+        "不规则变化：good/well-better-best，bad/badly-worse-worst，many/much-more-most，little-less-least，far-farther/further-farthest/furthest",
+        "倍数比较：A is twice as tall as B. / A is three times the size of B. / A is twice taller than B.",
+        "形容词作定语修饰复合不定代词要后置：something interesting、anything new、nothing special，形容词一律放在复合不定代词之后",
+        "频率副词的位置：always/often/usually等放在实义动词之前、be动词和助动词之后（He often goes to school by bike.）",
+        "多个形容词作定语时的排序规则：限定词、观点、形状、年龄、颜色、国籍、材料，如a beautiful big new red Chinese wooden table",
+        "rather与fairly的区别：rather可修饰比较级而fairly不可，rather表'相当'常含贬义，fairly表'还算'常含褒义（rather cold有点冷，fairly good还算不错）"
       ],
       "methodModels": [
         {
-          "name": "形容词副词",
+          "name": "形容词副词选择",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "判断修饰对象：修饰名词用形容词，修饰动词/形容词/副词用副词",
+            "判断句子成分：作定语或表语用形容词，作状语用副词",
+            "注意系动词（look/feel/taste/sound/be等）后用形容词作表语",
+            "结合固定搭配如very+形容词、动词+副词",
+            "把选定词代入句子验证成分完整"
           ],
-          "example": "形容词副词"
+          "example": "The food tastes ___ (good). 答案：good。taste为系动词，后接形容词作表语，不用well。"
+        },
+        {
+          "name": "比较级最高级判断",
+          "steps": [
+            "判断是比较两者还是三者以上",
+            "两者比较用比较级（常与than连用），三者以上用最高级（the+最高级+范围）",
+            "单音节规则变化加-er/-est，多音节用more/most",
+            "注意倍数和特殊句式（越...越...：The harder you work, the better you will be.）",
+            "检查最高级前是否有the，副词最高级前the可省略"
+          ],
+          "example": "This problem is ___ (difficult) than that one. 答案：more difficult。两者比较，difficult为多音节，用more。"
+        },
+        {
+          "name": "enough与too位置判断",
+          "steps": [
+            "判断enough或too所修饰的词是形容词还是名词",
+            "修饰形容词或副词时enough后置，修饰名词时enough前置",
+            "too修饰形容词或副词时一律前置，且构成too加形容词加to do结构",
+            "记忆固定结构enough加to do表'足够以至于能'，too加to do表'太而不能'",
+            "把调整后的词序代入句子检查语义是否通顺完整"
+          ],
+          "example": "The boy is old enough to go to school. 修饰形容词old时enough后置，整句表'年龄足够大可以去上学'。"
+        },
+        {
+          "name": "多个形容词排序判定",
+          "steps": [
+            "先确定定语位置是否同时出现多个形容词",
+            "按限定词、观点、形状、年龄、颜色、国籍、材料的顺序排列",
+            "记忆口诀'限观形年色国材'帮助快速排序",
+            "观点形容词如beautiful放在事实形容词如wooden之前",
+            "把排列后的短语放回句子检查语感是否自然"
+          ],
+          "example": "The girl has a beautiful small red box. 观点beautiful在前，形状small居中，颜色red在最后，符合'限观形年色国材'排序。"
         }
       ],
       "commonConfusions": [
-        "比较级"
+        "系动词后误用副词：The flower smells well. 错，应说The flower smells good.",
+        "比较级前加the的情况：表'越...越...'或'两者中较...的'（the taller of the two）",
+        "最高级前the不可省略，副词最高级前the可省略",
+        "hardly不是hard的副词形式，hardly意为'几乎不'（He hardly works.）",
+        "修饰可数用many，修饰不可数用much",
+        "late与lately、hard与hardly：late可作形容词或副词表'迟'，lately表'最近'；hard作副词表'努力地'，hardly表'几乎不'，形近义异容易混用"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "形容词副词",
-          "method": "见方法模型",
-          "example": "形容词副词"
+          "questionShape": "形容词副词填空",
+          "method": "修饰对象+句子成分",
+          "example": "He did his homework very ___ (careful). 答案：carefully。修饰动词did，用副词形式。"
+        },
+        {
+          "questionShape": "比较级最高级选择",
+          "method": "比较范围判断",
+          "example": "Of all the students, Tom is ___ (tall). 答案：the tallest。Of all表示三者以上范围，用最高级。"
+        },
+        {
+          "questionShape": "形容词比较级（倍数）",
+          "method": "倍数比较结构",
+          "example": "This room is three times as ___ (big) as that one. 答案：big。倍数比较用as加形容词原级加as结构，因此填原级big。"
+        },
+        {
+          "questionShape": "形容词排序填空",
+          "method": "多形容词排序规则",
+          "example": "This is a ___ table. (wooden, big, round) 答案：big round wooden。按形状big、round在前，材料wooden在最后，即big round wooden table。"
         }
       ]
     },
@@ -345,34 +736,97 @@
         "连词",
         "搭配"
       ],
-      "conceptSummary": "介词表时间地点方式，连词连接句子成分。",
+      "conceptSummary": "介词表示名词或代词与其他词之间的关系，包括时间介词（at/in/on）、地点介词（in/on/at/under/between）和方式介词（by/with/in）；连词分为并列连词（and/but/or/so）和从属连词（because/if/when/although）。介词与动词、形容词的固定搭配（depend on, be good at）以及并列连词表示的逻辑关系是考试重点。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "介词搭配",
-        "时间介词",
-        "并列连词"
+        "时间介词：at用于具体时刻（at 8 o'clock），on用于具体某天（on Monday），in用于月份/年份/季节（in May, in 2026）",
+        "地点介词：in表示在内部（in the room），on表示在表面（on the desk），at表示在具体小地点（at the bus stop）",
+        "方式介词：by+交通方式（by bus），with+工具（with a pen），in+语言（in English）",
+        "并列连词：and表并列，but表转折，or表选择或'否则'，so表结果（I was tired, so I went to bed.）",
+        "从属连词：because表原因，if表条件，when/while表时间，although/though表让步（although不与but连用）",
+        "动词固定搭配：depend on, look forward to, be good at, be interested in, listen to, arrive in/at",
+        "besides表'除...之外还有'，except表'除...之外不再有'，except for用于修正整体印象而引出细节（We all went except Tom. / The room is empty except for a desk.）",
+        "介词不能随意省略的固定搭配：the key to the door、the answer to the question，以及be made of/from/into/by的被动搭配表达",
+        "表示'用'的方式介词区别：by表抽象方式或手段（by phone/by email），with表具体工具（with a knife），in表语言、材料或货币（in English/in cash）",
+        "during与for的时间区别：during强调时间段内发生的动作（during the meeting），for强调动作持续的时间长度（for two hours）"
       ],
       "methodModels": [
         {
-          "name": "介词连词",
+          "name": "时间介词选择",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "判断后面是具体时刻、具体某天还是月份/年份/季节",
+            "具体时刻用at，具体某天用on，月份/年份/季节用in",
+            "有next/last/this/every等修饰时不用介词",
+            "记忆固定短语：in the morning, at noon, at night, on the evening of May 1st",
+            "把介词代入句子检查时间语义"
           ],
-          "example": "介词与连词"
+          "example": "___ Monday morning, we have an English class. 答案：On。具体某一天的上午用on。"
+        },
+        {
+          "name": "并列连词逻辑判断",
+          "steps": [
+            "判断前后分句的逻辑关系（并列/转折/选择/因果）",
+            "并列用and，转折用but，选择用or，因果用so",
+            "注意although/though不与but连用，because不与so连用",
+            "识别祈使句+and/or表条件结构（Work hard, and you will succeed.）",
+            "把连词代入句子验证逻辑通顺"
+          ],
+          "example": "Hurry up, ___ you will miss the bus. 答案：or。祈使句+or表'否则'，即'快一点，否则你会错过公交车'。"
+        },
+        {
+          "name": "besides与except辨析",
+          "steps": [
+            "判断被排除的对象是否包含在整体人群或事物之内",
+            "对象包含在内且也参与动作用besides，被排除在外用except",
+            "except后接同类词语，except for用于对不同类别的细节作修正说明",
+            "记忆apart from可兼表besides与except两种含义的特殊用法",
+            "把所选介词代入句子检查语义是否符合整体逻辑"
+          ],
+          "example": "Besides Tom, everyone went to the party. 表Tom也去了；Except Tom, everyone went. 表Tom没有去，两词含义相反。"
+        },
+        {
+          "name": "动词短语介词搭配判定",
+          "steps": [
+            "先识别动词或形容词的固定搭配介词，如depend on、be proud of",
+            "把固定搭配视为整体记忆，不可随意更换介词",
+            "遇到陌生搭配时借助动词意义推断介词的逻辑方向",
+            "区分形近搭配，如be made of与be made from表材料与制成",
+            "把整个短语放回句子检查搭配是否自然成立"
+          ],
+          "example": "The old man is very proud ___ his grandson. 答案：of。be proud of是固定搭配，表'为...感到骄傲'，介词of不能换成其他词。"
         }
       ],
       "commonConfusions": [
-        "介词搭配"
+        "in/on/at时间用混：in the evening（泛指）vs on the evening of May 1st（具体某天晚上）",
+        "arrive in接大地点，arrive at接小地点；in接国家城市，at接车站机场",
+        "between用于两者之间，among用于三者以上",
+        "although/though不能与but同句连用，但可与yet/still连用",
+        "because不能与so同句连用",
+        "in front of与in the front of：前者表'在（外部）前面'，后者表'在（内部）前部'（He stands in front of the car. 站在车外前方 vs He sits in the front of the car. 坐在车内前座）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "介词与连词",
-          "method": "见方法模型",
-          "example": "介词与连词"
+          "questionShape": "介词填空（时间）",
+          "method": "时间语义判断",
+          "example": "The meeting will start ___ 9:00 ___ the morning. 答案：at; in。具体时刻用at，上午用in the morning。"
+        },
+        {
+          "questionShape": "连词选择（让步）",
+          "method": "分句逻辑关系判断",
+          "example": "___ it was raining, we still went out. 答案：Although。让步关系，although引导，主句用still，不与but连用。"
+        },
+        {
+          "questionShape": "介词填空（除外的用法）",
+          "method": "同类排除判断",
+          "example": "The composition is well written ___ some spelling mistakes. 答案：except for。spelling mistakes与well written属于不同类别，用except for引出与整体不同的细节修正。"
+        },
+        {
+          "questionShape": "介词填空（动词固定搭配）",
+          "method": "动词固定搭配记忆",
+          "example": "We should listen ___ the teacher carefully in class. 答案：to。listen to是固定搭配，表'听'，介词to不能省略。"
         }
       ]
     },
@@ -382,34 +836,97 @@
         "主谓一致",
         "主语谓语"
       ],
-      "conceptSummary": "主谓一致三原则：语法一致、意义一致、就近原则。",
+      "conceptSummary": "主谓一致遵循三大原则：语法一致（谓语形式与主语形式一致）、意义一致（按实际意义而非表面形式）、就近原则（谓语与最近的主语一致）。解题时先找真正的主语，排除with/of等介词短语和定语从句的干扰成分，再按三原则确定谓语单复数。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "语法一致",
-        "意义一致",
-        "就近原则"
+        "语法一致：单数主语用单数谓语，复数主语用复数谓语（The boy is... / The boys are...）",
+        "意义一致：集合名词family/class/team作整体用单数，强调成员用复数（My family is big. / My family are having dinner.）",
+        "就近原则：there be句型、either...or、neither...nor、not only...but also连接主语时，谓语与最近的主语一致（There is a pen and two books on the desk.）",
+        "不可数名词作主语用单数谓语（Water is important.）",
+        "时间、距离、金钱等作整体看作单数（Two hours is not enough.）",
+        "主语+with/together with/as well as等插入语时，谓语仍与真正主语一致（The teacher with his students is in the classroom.）",
+        "each/every/no加单数名词作主语时用单数谓语，each of加复数名词后的谓语也用单数（Each of the students has a book.）",
+        "分数或百分数加of加名词作主语时，谓语单复数由of后的名词决定（Two thirds of the water is polluted. / 60 percent of the students are boys.）",
+        "people/police/cattle等集合名词形式为单数但意义为复数，作主语时谓语用复数（The police are looking into the case.）",
+        "and连接并列主语指不同的人或物时谓语用复数，指同一人或同一整体时谓语用单数（The writer and teacher is our friend. 指同一人）"
       ],
       "methodModels": [
         {
-          "name": "主谓一致",
+          "name": "主谓一致判定三步法",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "找出真正的主语，划掉with/of/between等介词短语和定语从句的干扰",
+            "判断主语是可数单数、复数还是不可数名词",
+            "判断是否适用意义一致或就近原则（集合名词/并列结构）",
+            "依据三原则确定谓语单复数",
+            "把谓语动词放回句子检查主谓形式一致"
           ],
-          "example": "主谓一致"
+          "example": "The number of students ___ (be) increasing. 答案：is。真正主语是the number（数量），视为单数，用is。"
+        },
+        {
+          "name": "就近原则判断",
+          "steps": [
+            "识别there be或either...or/neither...nor/not only...but also结构",
+            "找到最靠近谓语的那个主语",
+            "谓语与最近的主语保持数的一致",
+            "结合时态选择正确的谓语形式",
+            "对比反向例证（There are two books and a pen...用are）"
+          ],
+          "example": "Not only Tom but also his friends ___ (like) music. 答案：like。就近原则，与最近主语his friends一致，用复数like。"
+        },
+        {
+          "name": "分数百分数主谓判定",
+          "steps": [
+            "识别分数或百分数加of加名词构成的整体主语结构",
+            "确定of后面名词是可数名词还是不可数名词",
+            "of后为可数名词复数时谓语用复数形式，为不可数名词时谓语用单数形式",
+            "结合集合名词的具体语境再判断是否适用意义一致原则",
+            "把谓语动词代入句子检查主谓单复数形式是否一致"
+          ],
+          "example": "Two thirds of the students are going to attend the lecture. of后students为可数复数，谓语用复数are。"
+        },
+        {
+          "name": "集合名词主谓判定",
+          "steps": [
+            "先判断主语是否为集合名词，如family/class/team/audience",
+            "分析该集合名词是作为一个整体还是强调其中的成员",
+            "强调整体概念时谓语用单数形式",
+            "强调各个成员时谓语用复数形式",
+            "结合上下文语境确定最终的单复数选择"
+          ],
+          "example": "My family is a big one. 强调'家庭'这个整体用单数is；My family are all music lovers. 强调家庭成员个体用复数are。"
         }
       ],
       "commonConfusions": [
-        "就近原则"
+        "a number of（许多，谓语复数）与the number of（...的数量，谓语单数）",
+        "the rest/most/half of+名词：of后的名词决定谓语的数（Most of the water is polluted. / Most of the students are happy.）",
+        "and连接两个主语表同一人或同一整体时用单数（Bread and butter is my breakfast.）",
+        "就近原则只适用于there be及or/nor类并列结构，不能滥用",
+        "both...and连接主语谓语用复数，each...and each、every...and every后谓语用单数（Both Tom and Mary are students. / Each boy and each girl has a book.）",
+        "主语后接rather than/except/but/besides等短语时谓语仍与主语一致（Tom, rather than his friends, is to blame.）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "主谓一致",
-          "method": "见方法模型",
-          "example": "主谓一致"
+          "questionShape": "主谓一致填空（插入语干扰）",
+          "method": "排除干扰+找真主语",
+          "example": "The teacher, together with his students, ___ (go) to the park every Sunday. 答案：goes。真正主语是the teacher（单数），together with his students是插入语不影响谓语。"
+        },
+        {
+          "questionShape": "主谓一致填空（就近原则）",
+          "method": "就近原则判断",
+          "example": "There ___ (be) a pen, two books and a ruler on the desk. 答案：is。there be句型就近原则，与最近的a pen一致用is。"
+        },
+        {
+          "questionShape": "主谓一致填空（分数作主语）",
+          "method": "of后名词决定",
+          "example": "Three quarters of the work ___ (have) been finished. 答案：has。of后work是不可数名词，谓语用单数has been finished。"
+        },
+        {
+          "questionShape": "主谓一致填空（集合名词）",
+          "method": "整体与成员判断",
+          "example": "The class ___ (have) their lessons in the classroom now. 答案：have。class此处强调全班同学这一群体成员，用复数have，若表班级整体则用has。"
         }
       ]
     },
@@ -420,34 +937,97 @@
         "部分倒装",
         "全部倒装"
       ],
-      "conceptSummary": "倒装句：完全倒装与部分倒装，否定词开头、so/neither等。",
+      "conceptSummary": "倒装句分完全倒装（谓语全部提到主语前）和部分倒装（助动词/情态动词/be动词提到主语前）。常见触发倒装的情形有：否定词前置（never/hardly/not only）、so/neither/nor表示'也/也不'、only+状语前置，以及here/there/now开头的完全倒装。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "完全倒装",
-        "部分倒装",
-        "否定词前置"
+        "部分倒装：never/hardly/seldom/rarely/not only...but also/not until等否定词放句首（Never have I seen such a film.）",
+        "部分倒装：only+状语或状语从句放句首（Only in this way can we solve the problem.）",
+        "部分倒装：so/neither/nor表示'也/也不'（He can swim, so can I. / He can't swim, neither can I.）",
+        "完全倒装：here/there/now/out等副词放句首且主语为名词（Here comes the bus.）",
+        "not until+时间状语从句放句首，主句部分倒装（Not until midnight did he finish the work.）",
+        "虚拟语气条件句省略if时，were/had/should提前（Had I known...）",
+        "not only...but also置于句首时，not only所在分句倒装而but also分句不倒装（Not only did he come, but also he stayed.）",
+        "so加形容词或副词加that结构置于句首时，主句部分倒装（So fast did he run that I couldn't catch up with him.）",
+        "hardly...when、no sooner...than、scarcely...when固定结构：hardly/no sooner/scarcely所在分句用过去完成时且部分倒装，when/than分句用一般过去时（No sooner had he arrived than it began to rain.）",
+        "such置于句首时构成全部倒装：such加be加主语，such指代前文提到的事物（Such are the facts. / Such was the story.）"
       ],
       "methodModels": [
         {
-          "name": "倒装",
+          "name": "部分倒装判定",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "检查句首是否有否定词、only+状语、so/neither/nor等触发词",
+            "确认前置条件满足，才使用倒装",
+            "把助动词/情态动词/be动词提到主语前，其余部分语序不变",
+            "没有这些触发词时保持正常语序",
+            "把倒装句还原成正常语序验证主语与谓语对应"
           ],
-          "example": "倒装句"
+          "example": "Never ___ (I, see) such a beautiful sunset. 答案：have I seen。否定词never开头触发部分倒装，助动词have提前。"
+        },
+        {
+          "name": "完全倒装判定",
+          "steps": [
+            "识别here/there/now/out/in等方位或时间副词开头的句子",
+            "确认主语是名词而非代词",
+            "谓语动词直接置于主语之前（主语为名词时）",
+            "主语为代词时不倒装（Here he comes.）",
+            "完全倒装一般只用于一般现在时和一般过去时"
+          ],
+          "example": "There goes the bell. 主语bell为名词，完全倒装；若说There he goes则主语为代词不倒装。"
+        },
+        {
+          "name": "not only部分倒装判定",
+          "steps": [
+            "识别not only与but also连接的并列分句结构",
+            "确认not only是否位于整个句子的句首位置",
+            "not only位于句首时其所在分句进行部分倒装，即把助动词提前",
+            "but also所在分句保持正常语序不参与倒装",
+            "把not only分句还原成正常语序与原句核对逻辑关系"
+          ],
+          "example": "Not only does he speak English, but also he writes it well. not only分句助动词does提前实现倒装，but also分句用正常语序。"
+        },
+        {
+          "name": "hardly when倒装判定",
+          "steps": [
+            "识别hardly...when或no sooner...than固定结构",
+            "确认hardly或no sooner所在分句用过去完成时态",
+            "把助动词had提前到句首构成部分倒装",
+            "when或than分句保持正常语序且用一般过去时",
+            "把整个句子还原成正常语序核对时间先后逻辑"
+          ],
+          "example": "No sooner had he left than it started to rain. no sooner分句had提前倒装，than分句用一般过去时started。"
         }
       ],
       "commonConfusions": [
-        "部分倒装"
+        "so+助动词+主语（也是）与so+主语+助动词（确实如此）：He can swim, so can I.（我也能）/ He can swim, so he can.（他的确会）",
+        "only修饰主语时不用倒装（Only Tom knows the answer.），只有only+状语才倒装",
+        "here/there+代词主语不倒装（Here he comes.）",
+        "完全倒装只用于一般现在/过去时且主语为名词，时态和词性不符时不能倒装",
+        "so表'也是'与'确实如此'的语序区别：so加助动词加主语表'也如此'，so加主语加助动词表'的确如此'，两种语序含义完全不同",
+        "否定词前置倒装时若否定词修饰或充当主语成分则不倒装（Nobody knows the answer. 主语nobody无需倒装）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "倒装句",
-          "method": "见方法模型",
-          "example": "倒装句"
+          "questionShape": "倒装填空（否定词前置）",
+          "method": "否定词+部分倒装",
+          "example": "Hardly ___ (he, finish) his homework when it began to rain. 答案：had he finished。hardly...when固定结构，否定词开头主句部分倒装，用过去完成时had提前。"
+        },
+        {
+          "questionShape": "倒装填空（neither）",
+          "method": "也/也不判断",
+          "example": "Mary can't play the piano, and ___ can her sister. 答案：neither。否定句表'也不'，用neither+助动词+主语。"
+        },
+        {
+          "questionShape": "倒装填空（only+状语前置）",
+          "method": "only+状语部分倒装",
+          "example": "Only when he came back ___ we know the truth. 答案：did。only加状语从句前置触发主句部分倒装，助动词did提前到主语we之前。"
+        },
+        {
+          "questionShape": "倒装填空（no sooner than）",
+          "method": "固定结构倒装",
+          "example": "No sooner ___ (he, return) home than he began to prepare supper. 答案：had he returned。no sooner...than固定结构，分句用过去完成时且had提前倒装。"
         }
       ]
     },
@@ -457,34 +1037,97 @@
         "强调句",
         "It is...that"
       ],
-      "conceptSummary": "强调句型 It is/was...that/who 强调句成分。",
+      "conceptSummary": "强调句型It is/was+被强调成分+that/who+其余部分，用来强调主语、宾语、状语等除谓语以外的成分。判断强调句的方法是去掉It is/was...that后句子仍然完整；强调人时可用who，强调时间、地点、物等其他成分一律用that。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "强调句型",
-        "强调主语宾语",
-        "强调状语"
+        "强调句基本结构：It is/was+被强调成分+that/who+其余部分（It was yesterday that he left.）",
+        "强调人用that或who，强调物、时间、地点等用that（It was in Beijing that I met him.）",
+        "判断方法：去掉It is/was和that/who后句子完整则为强调句（It was Tom that broke the window.）",
+        "与定语从句区分：It is the book that I bought yesterday. 中that指代the book作宾语，是定语从句",
+        "强调时间/地点不能用when/where，必须用that（It was on Monday that we met.）",
+        "一般疑问句强调：Is it...that...；特殊疑问句强调：What/Who is it that...",
+        "强调句的时态选择：强调过去时间相关的动作用It was...that，强调现在或将来的动作用It is...that（It is tomorrow that we will hold the meeting.）",
+        "not...until的强调句疑问形式：Was it not until...that...？（Was it not until midnight that he left?）",
+        "强调句的否定形式：在be动词后加not构成It is/was not加被强调成分加that（It was not Tom that broke the window. 打破窗户的不是汤姆）",
+        "强调句与it作形式主语的区分：It is important that中that从句是真正主语，去掉It is...that后句子不完整，不是强调句"
       ],
       "methodModels": [
         {
-          "name": "强调句",
+          "name": "强调句判定方法",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "识别It is/was...that/who结构",
+            "去掉It is/was和that/who，检查剩余部分是否是一个完整句子",
+            "剩余部分是完整句子则为强调句，中间部分是被强调成分",
+            "强调时间、地点、物等一律用that，强调人用that或who",
+            "把被强调成分放回原位置验证句子通顺"
           ],
-          "example": "强调句"
+          "example": "It was in the library ___ I met her yesterday. 答案：that。强调地点状语in the library，用that不用where。"
+        },
+        {
+          "name": "强调句与定语从句区分",
+          "steps": [
+            "判断It is后是被强调成分还是真正的名词主语",
+            "若It是形式主语或指代某物，that从句通常为定语从句",
+            "去掉It is...that后句子不完整则是定语从句",
+            "去掉It is...that后句子完整则是强调句",
+            "用此标准逐一检验易混例句"
+          ],
+          "example": "It is the house that I live in.（定语从句，that作live in的宾语，去掉后句子不完整）vs It is in the house that I live.（强调句，去掉后It lives完整成立）"
+        },
+        {
+          "name": "强调句一般疑问句转换",
+          "steps": [
+            "识别强调句基本结构It is或was加被强调成分加that",
+            "把be动词is或was提前到整个句子的句首",
+            "其余成分保持原有语序不作任何调整",
+            "句末添加问号并把句首字母改为大写",
+            "还原成陈述句与原句核对结构是否完全一致"
+          ],
+          "example": "陈述句It was Tom that broke the window. 变一般疑问句为Was it Tom that broke the window?"
+        },
+        {
+          "name": "强调句疑问形式转换",
+          "steps": [
+            "先确定被强调的成分是人、物还是地点时间状语",
+            "一般疑问句把be动词提前到句首构成Was/Is it加that",
+            "特殊疑问句把疑问词放在句首构成疑问词加is/was加it加that",
+            "被强调成分为人时疑问词用who，其余用what/where/when",
+            "把转换后的疑问句还原为陈述句核对强调对象"
+          ],
+          "example": "对It was Tom that broke the window中的Tom提问：Who was it that broke the window? 疑问词who提前，be动词was放在it之前。"
         }
       ],
       "commonConfusions": [
-        "强调句型"
+        "强调时间地点时误用when/where：It was in 2020 that...（不能用when）",
+        "与It is+名词+定语从句混淆：It is the book that I like.（定语从句）",
+        "not...until的强调结构固定为It was not until...that...",
+        "强调句中that/who不可省略",
+        "强调句判定不可只看It is加that形式：去掉It is/was与that后句子不完整时是it作形式主语或其他句型（It is necessary that we study hard. 中that从句是真正主语）",
+        "强调原因状语时仍用It is/was加because从句加that结构，that不可替换为because（It was because he was ill that he didn't come.）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "强调句",
-          "method": "见方法模型",
-          "example": "强调句"
+          "questionShape": "强调句填空（not until）",
+          "method": "固定结构判断",
+          "example": "It was not until midnight ___ he finished the work. 答案：that。not...until的强调结构为It was not until...that...，用that。"
+        },
+        {
+          "questionShape": "强调句填空（强调主语）",
+          "method": "强调人用who",
+          "example": "It was my father ___ helped me with my English. 答案：that/who。强调主语my father，指人用that或who。"
+        },
+        {
+          "questionShape": "强调句填空（疑问形式）",
+          "method": "be动词提前",
+          "example": "___ it yesterday that you met your old friend? 答案：Was。把强调句中的was提前到句首，构成一般疑问句Was it...that...？"
+        },
+        {
+          "questionShape": "强调句填空（特殊疑问形式）",
+          "method": "疑问词提前结构",
+          "example": "___ is it that you want to see? 答案：Who。对强调的人提问用Who，结构为疑问词加is加it加that加其余部分。"
         }
       ]
     },
@@ -495,34 +1138,97 @@
         "时间原因",
         "条件让步"
       ],
-      "conceptSummary": "状语从句：时间、原因、条件、让步、结果、目的。",
+      "conceptSummary": "状语从句在句中作状语，按功能分为时间（when/while/as/before/after/until）、条件（if/unless/as long as）、原因（because/since/as）、让步（although/though/even if）、结果（so...that/such...that）、目的（so that/in order that）等类型。解题关键是识别从句与主句的逻辑关系、选用正确的引导词，并注意主将从现的时态规则和引导词之间的区别。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "时间状语从句",
-        "条件状语从句",
-        "让步状语从句"
+        "时间状语从句：when/while/as/before/after/until/since（When I arrived, he had left.）",
+        "条件状语从句：if/unless/as long as（If it rains, we will stay at home.）",
+        "原因状语从句：because/since/as（I didn't go because I was ill.）",
+        "让步状语从句：although/though/even if（Although he is old, he works hard.）",
+        "结果状语从句：so...that/such...that（He is so tired that he can't move.）",
+        "目的状语从句：so that/in order that+can/may（He got up early so that he could catch the bus.）",
+        "主将从现：主句用将来时，时间/条件状语从句用一般现在时代替将来时（If it rains tomorrow, I will stay at home.）",
+        "as soon as/once/the moment/the minute引导时间状语从句表'一...就...'，从句用一般现在时代替将来时（I'll call you as soon as I get home.）",
+        "让步状语从句的省略式：when/while/if/unless/though/once等引导的从句中，若主语与主句主语一致且含be动词，可省略主语和be（While walking in the park, he met an old friend.）",
+        "so that既可表目的也可表结果：表目的时从句常用can/could/may/might等情态动词，表结果时不用情态动词"
       ],
       "methodModels": [
         {
-          "name": "状语从句",
+          "name": "从句类型判断",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "分析从句与主句的逻辑关系（时间/条件/原因/让步/结果/目的）",
+            "按逻辑关系选择对应的引导词",
+            "检查时态：时间/条件从句用一般现在时代替将来时",
+            "检查语序：从句一律用陈述语序",
+            "把引导词代入原句验证语义通顺"
           ],
-          "example": "状语从句"
+          "example": "___ it snows, we can't go to school. 答案：If。条件关系，表假设。"
+        },
+        {
+          "name": "引导词辨析",
+          "steps": [
+            "when/while区分：when表时间点或时间段，while只表时间段且从句动词常用进行时",
+            "because/since/as区分：because表直接原因，since/as表已知原因",
+            "so...that与such...that区分：so+形容词/副词，such+名词（短语）",
+            "until与before区分：until强调动作持续到某时",
+            "用对比例句检验所选引导词"
+          ],
+          "example": "He was reading a book ___ his mother was cooking. 答案：while。两个动作同时持续进行，用while引导时间状语从句。"
+        },
+        {
+          "name": "as soon as用法判定",
+          "steps": [
+            "识别as soon as或the moment等引导的时间状语从句",
+            "确认从句表'一...就...'的即时动作衔接关系",
+            "主句用将来时，从句用一般现在时代替将来时",
+            "as soon as引导的从句中谓语动词用一般时态不用will",
+            "把整体时态代入句子检查是否符合主将从现规则"
+          ],
+          "example": "As soon as he arrives, we will start the meeting. 从句用arrives一般现在时代替将来时，主句用will start。"
+        },
+        {
+          "name": "让步状语从句省略判定",
+          "steps": [
+            "识别when/while/if/unless/though/once等引导的状语从句",
+            "检查从句主语是否与主句主语保持一致",
+            "确认从句中是否含有be动词构成谓语",
+            "主语和be动词同时省略，保留分词等其余部分",
+            "把省略后的从句放回句中检验语义是否完整清晰"
+          ],
+          "example": "When crossing the street, you must be careful. 从句省略了you are，相当于When you are crossing the street，主从句主语一致且含be动词。"
         }
       ],
       "commonConfusions": [
-        "引导词"
+        "although/though不能与but连用，但可与yet/still连用",
+        "because不能与so连用",
+        "until在否定句中表'直到...才'（He didn't leave until midnight.）",
+        "when/while：瞬间动词用when，延续动词用while（When he came in, I was reading.）",
+        "主将从现：时间/条件从句中不能出现will（If it will rain tomorrow...错）",
+        "since引导时间状语从句表'自从'时主句常用完成时态，引导原因状语从句表'既然'时主句用一般时态（Since he came, we have been happy. 时间 vs Since you are tired, let's rest. 原因）"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "状语从句",
-          "method": "见方法模型",
-          "example": "状语从句"
+          "questionShape": "状语从句引导词选择",
+          "method": "逻辑关系判断",
+          "example": "You will be late ___ you don't hurry up. 答案：unless。表'除非'，即'除非你快点，否则会迟到'，是条件关系。"
+        },
+        {
+          "questionShape": "状语从句时态（主将从现）",
+          "method": "主将从现规则",
+          "example": "If it ___ (rain) tomorrow, we will put off the picnic. 答案：rains。时间/条件状语从句用一般现在时代替将来时。"
+        },
+        {
+          "questionShape": "状语从句引导词（时间衔接）",
+          "method": "一...就...判断",
+          "example": "___ he saw the policeman, he ran away quickly. 答案：As soon as。表'一看见警察就逃跑'，动作瞬间紧密衔接，用as soon as引导时间状语从句。"
+        },
+        {
+          "questionShape": "状语从句省略式填空",
+          "method": "主语一致省略判断",
+          "example": "___ (compare) with his brother, he is much taller. 答案：Compared。从句主语与主句主语一致且含be动词，省略后保留过去分词Compared，相当于When he is compared with his brother。"
         }
       ]
     },
@@ -533,34 +1239,97 @@
         "主语从句",
         "宾语从句"
       ],
-      "conceptSummary": "名词性从句：主语、宾语、表语、同位语从句。",
+      "conceptSummary": "名词性从句在句中充当名词成分，包括主语从句、宾语从句、表语从句和同位语从句，由that、whether/if、疑问词（what/which/who/when/where/why/how）等引导。解题关键是判断从句在句中充当的成分并选用合适的引导词，同时注意从句一律用陈述语序，并遵循主句过去时从句相应后移的时态呼应规则。",
       "evidenceSources": [
         "DOMAIN_COMMON_KNOWLEDGE"
       ],
       "properties": [
-        "主语从句",
-        "宾语从句",
-        "同位语从句"
+        "主语从句：从句作主语（What he said is true.），it作形式主语（It is important that...）",
+        "宾语从句：从句作动词或介词宾语（I know that he is right. / I'm interested in what he said.）",
+        "表语从句：从句作表语（The reason is that he was ill.）",
+        "同位语从句：从句解释说明抽象名词（news/idea/fact）+that（The news that he won is exciting.）",
+        "引导词：that无实义在宾语从句可省略，whether表'是否'，wh-疑问词按含义选择",
+        "语序规则：从句一律用陈述语序（Do you know where he lives? 不能说where does he live）",
+        "时态呼应：主句为过去时，从句用相应的过去时态（He said he was busy.）",
+        "it作形式宾语：find/make/think/consider加it加宾语补足语加that从句（I find it necessary that we should practice English every day.）",
+        "that引导同位语从句时不可省略，且that只起连接作用不充当从句成分（The fact that he is honest is known to all.）",
+        "whether与if在名词性从句中的限制：主语从句置于句首、表语从句和同位语从句中只用whether，不用if"
       ],
       "methodModels": [
         {
-          "name": "名词性从句",
+          "name": "名词性从句引导词选择",
           "steps": [
-            "按步骤",
-            "结合语境"
+            "判断从句在句中作主语/宾语/表语/同位语",
+            "分析从句是否缺成分：缺主语/宾语用what/which/who等疑问代词",
+            "不缺成分且陈述内容用that，表'是否'用whether",
+            "检查从句语序为陈述语序",
+            "把引导词代入从句验证结构完整"
           ],
-          "example": "名词性从句"
+          "example": "___ he said is true. 答案：What。从句缺宾语，指所说内容，用what引导主语从句。"
+        },
+        {
+          "name": "that与whether区分",
+          "steps": [
+            "判断从句表达的是陈述事实还是'是否'疑问",
+            "陈述事实用that，表'是否'用whether/if",
+            "句首主语从句、介词之后、与or not连用时只能用whether",
+            "检查从句是否完整且符合陈述语序",
+            "宾语从句中that可省略，whether/if不可省略"
+          ],
+          "example": "I don't know ___ he will come or not. 答案：whether。与or not连用必须用whether，不能用if。"
+        },
+        {
+          "name": "it形式宾语判定",
+          "steps": [
+            "识别find/make/think/consider/feel等动词作句子谓语",
+            "检查这些动词之后是否接有形容词或名词作宾语补足语",
+            "真正的宾语从句较长时用it作形式宾语占据宾语位置",
+            "把that从句移到句末，it置于宾语补足语之前",
+            "还原为it放句末的正常结构验证句子完整成立"
+          ],
+          "example": "I think it important that we learn English well. it作形式宾语，important是宾语补足语，that从句是真正的宾语。"
+        },
+        {
+          "name": "同位语从句判定方法",
+          "steps": [
+            "先识别news/fact/idea/suggestion/truth等抽象名词",
+            "判断其后的that从句是解释说明名词内容还是修饰限制名词",
+            "解释说明名词的具体内容则引导同位语从句",
+            "that在同位语从句中不作任何句子成分且不可省略",
+            "与定语从句对比检验：that在定语从句中作成分可省略"
+          ],
+          "example": "The news that he won the game excited us all. that从句解释说明news的内容，从句完整不缺成分，是同位语从句，that不可省略。"
         }
       ],
       "commonConfusions": [
-        "从句引导词"
+        "that引导的同位语从句与定语从句区分：同位语从句解释内容（The news that he won excited us.），定语从句修饰限制（The news that he told me is true.）",
+        "whether与if：句首主语从句、介词后、与or not连用时只能用whether",
+        "从句语序：疑问词引导的宾语从句用陈述语序，不能倒装",
+        "what与that：what在从句中作成分，that不作成分",
+        "宾语从句that可省略，主语从句/表语从句/同位语从句that不可省略",
+        "同位语从句与定语从句的区分：that在定语从句中作主语或宾语可省略，在同位语从句中不作成分不可省略；定语从句修饰先行词，同位语从句解释名词内容"
       ],
       "prerequisiteRelations": [],
       "workedExampleStructure": [
         {
-          "questionShape": "名词性从句",
-          "method": "见方法模型",
-          "example": "名词性从句"
+          "questionShape": "名词性从句引导词（宾语从句）",
+          "method": "成分分析+陈述语序",
+          "example": "Can you tell me ___ the station is? 答案：where。宾语从句缺地点状语，用where，语序为陈述语序the station is。"
+        },
+        {
+          "questionShape": "主语从句（it形式主语）",
+          "method": "it形式主语判断",
+          "example": "___ is well-known that China has a long history. 答案：It。It作形式主语，that引导真正的主语从句。"
+        },
+        {
+          "questionShape": "名词性从句（形式宾语）",
+          "method": "it形式宾语判断",
+          "example": "We consider ___ necessary that every student should obey the school rules. 答案：it。consider后接宾语补足语necessary，用it作形式宾语，that从句后置为真正宾语。"
+        },
+        {
+          "questionShape": "名词性从句（同位语从句）",
+          "method": "抽象名词加that内容解释",
+          "example": "The idea ___ we should go there by train is worth considering. 答案：that。idea是抽象名词，that从句解释说明其内容，从句完整用that引导同位语从句。"
         }
       ]
     }
