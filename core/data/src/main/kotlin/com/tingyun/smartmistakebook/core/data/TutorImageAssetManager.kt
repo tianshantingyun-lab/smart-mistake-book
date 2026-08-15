@@ -27,6 +27,28 @@ class TutorImageAssetManager(private val context: Context) {
     companion object {
         /** 单张图片最大字节数（10 MB） */
         private const val MAX_IMAGE_BYTES = 10 * 1024 * 1024L
+
+        /** EXIF 敏感标签（GPS、设备信息、时间戳等） */
+        private val EXIF_SENSITIVE_TAGS = listOf(
+            ExifInterface.TAG_GPS_LATITUDE,
+            ExifInterface.TAG_GPS_LONGITUDE,
+            ExifInterface.TAG_GPS_ALTITUDE,
+            ExifInterface.TAG_GPS_TIMESTAMP,
+            ExifInterface.TAG_GPS_DATESTAMP,
+            ExifInterface.TAG_GPS_PROCESSING_METHOD,
+            ExifInterface.TAG_DATETIME,
+            ExifInterface.TAG_DATETIME_ORIGINAL,
+            ExifInterface.TAG_DATETIME_DIGITIZED,
+            ExifInterface.TAG_MAKE,
+            ExifInterface.TAG_MODEL,
+            ExifInterface.TAG_SOFTWARE,
+            ExifInterface.TAG_ARTIST,
+            ExifInterface.TAG_COPYRIGHT,
+            ExifInterface.TAG_USER_COMMENT,
+            "ImageUniqueID",
+            "CameraSerialNumber",
+            "LensSerialNumber",
+        )
     }
 
     /**
@@ -142,29 +164,5 @@ class TutorImageAssetManager(private val context: Context) {
             "image/webp" -> "webp"
             else -> "jpg" // 默认
         }
-    }
-
-    companion object {
-        /** EXIF 敏感标签（GPS、设备信息、时间戳等） */
-        private val EXIF_SENSITIVE_TAGS = listOf(
-            ExifInterface.TAG_GPS_LATITUDE,
-            ExifInterface.TAG_GPS_LONGITUDE,
-            ExifInterface.TAG_GPS_ALTITUDE,
-            ExifInterface.TAG_GPS_TIMESTAMP,
-            ExifInterface.TAG_GPS_DATESTAMP,
-            ExifInterface.TAG_GPS_PROCESSING_METHOD,
-            ExifInterface.TAG_DATETIME,
-            ExifInterface.TAG_DATETIME_ORIGINAL,
-            ExifInterface.TAG_DATETIME_DIGITIZED,
-            ExifInterface.TAG_MAKE,
-            ExifInterface.TAG_MODEL,
-            ExifInterface.TAG_SOFTWARE,
-            ExifInterface.TAG_ARTIST,
-            ExifInterface.TAG_COPYRIGHT,
-            ExifInterface.TAG_USER_COMMENT,
-            "ImageUniqueID",
-            "CameraSerialNumber",
-            "LensSerialNumber",
-        )
     }
 }
