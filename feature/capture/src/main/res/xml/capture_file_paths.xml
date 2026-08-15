@@ -3,4 +3,8 @@
     <cache-path
         name="captured_images"
         path="captured_images/" />
+    <!-- Tutor camera images: SimpleTutorRoute.launchCamera() via context.cacheDir -->
+    <cache-path
+        name="tutor_camera_images"
+        path="." />
 </paths>

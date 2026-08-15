@@ -573,7 +573,12 @@ private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedStri
     SafeInlineMarkdown.parse(this@toSafeAnnotatedString).forEach { token ->
         when (token) {
             is InlineToken.Text -> append(token.value)
-            is InlineToken.Strong -> withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+            is InlineToken.Strong -> withStyle(
+                SpanStyle(
+                    fontWeight = FontWeight.ExtraBold,  // 使用更粗的字重
+                    background = JadeSoft.copy(alpha = 0.25f),  // 明显的背景高亮
+                ),
+            ) {
                 append(token.value)
             }
 
@@ -591,7 +596,10 @@ private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedStri
             }
 
             is InlineToken.Formula -> withStyle(
-                SpanStyle(fontFamily = FontFamily.Serif),
+                SpanStyle(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Medium,  // 增加字重使公式更易读
+                ),
             ) {
                 append(ReadableMathText.formula(token.value))
             }

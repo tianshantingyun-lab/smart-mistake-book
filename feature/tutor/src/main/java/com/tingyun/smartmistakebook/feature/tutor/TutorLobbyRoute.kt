@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,9 +30,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tingyun.smartmistakebook.core.data.TutorImageAssetManager
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
@@ -57,6 +60,9 @@ import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
+import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -73,6 +79,7 @@ internal fun TutorLobbyRoute(
     profile: StudyProfileOverview,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val persistedTasks by remember(modelTasks) {
         modelTasks.observeRecentBySubject(
@@ -94,7 +101,6 @@ internal fun TutorLobbyRoute(
     var provider by remember { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var providerLoadFailed by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable { mutableStateOf("") }
-    var pendingDisclosureMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var sendError by rememberSaveable { mutableStateOf<String?>(null) }
     val hasActiveTask = conversationTasks.any { task ->
         task.status in setOf(
@@ -132,24 +138,29 @@ internal fun TutorLobbyRoute(
             .maxOrNull()
             ?.plus(1)
             ?: 1
-        val request = buildTutorLobbyRequest(
-            provider = currentProvider,
-            messageOrdinal = nextOrdinal,
-            studentMessage = message,
-            priorMessages = conversationTasks.toLobbyHistory(),
-            occurredAtEpochMillis = occurredAt,
-            approvedAtEpochMillis = approvedAtEpochMillis,
-        )
-        pendingDisclosureMessage = null
+
         draft = ""
         sendError = null
+
         scope.launch {
             try {
+                val request = buildTutorLobbyRequest(
+                    provider = currentProvider,
+                    messageOrdinal = nextOrdinal,
+                    studentMessage = message,
+                    priorMessages = conversationTasks.toLobbyHistory(),
+                    occurredAtEpochMillis = occurredAt,
+                    approvedAtEpochMillis = approvedAtEpochMillis,
+                    context = context,
+                )
+
                 modelTasks.execute(request).collect()
             } catch (cancelled: CancellationException) {
                 throw cancelled
-            } catch (_: Exception) {
-                sendError = "这条消息已经保留，但暂时没有发出去。"
+            } catch (e: Exception) {
+                // 记录详细错误日志，帮助诊断问题
+                android.util.Log.e("TutorLobby", "Failed to send message", e)
+                sendError = "这条消息已经保留，但暂时没有发出去。${e.message?.let { "错误：$it" } ?: ""}"
             }
         }
     }
@@ -157,17 +168,8 @@ internal fun TutorLobbyRoute(
     fun submitDraft() {
         val message = draft.trim()
         if (message.isBlank() || hasActiveTask) return
-        val currentProvider = provider
-        if (currentProvider == null || !currentProvider.supports(ModelTaskKind.TUTOR_LOBBY)) {
-            startMessage(message, System.currentTimeMillis())
-            return
-        }
-        if (currentProvider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
-            pendingDisclosureMessage = message
-            sendError = null
-        } else {
-            startMessage(message, System.currentTimeMillis())
-        }
+        // 直接发送，不再显示确认对话框
+        startMessage(message, System.currentTimeMillis())
     }
 
     Column(
@@ -231,15 +233,6 @@ internal fun TutorLobbyRoute(
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
-            pendingDisclosureMessage?.let { message ->
-                item(key = "lobby-disclosure") {
-                    TutorLobbyDisclosureCard(
-                        providerName = provider?.providerDisplayName.orEmpty(),
-                        onApprove = { startMessage(message, System.currentTimeMillis()) },
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
-            }
             sendError?.let { message ->
                 item(key = "lobby-send-error") {
                     Text(
@@ -271,7 +264,6 @@ internal fun TutorLobbyRoute(
                 value = draft,
                 onValueChange = { value ->
                     draft = value.take(TutorLobbyInput.MAX_STUDENT_MESSAGE_CHARS)
-                    if (pendingDisclosureMessage != null) pendingDisclosureMessage = null
                 },
                 onCapture = onCapture,
                 onSend = ::submitDraft,
@@ -303,6 +295,7 @@ private fun TutorLobbyTask(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // 用户消息气泡：图片+文字
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
             Surface(
                 color = JadeSoft.copy(alpha = 0.62f),
@@ -311,12 +304,45 @@ private fun TutorLobbyTask(
                     .fillMaxWidth(0.86f)
                     .testTag("tutor_lobby_student_message"),
             ) {
-                Text(
-                    text = input.studentMessage,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-                    color = Ink,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
+                    // 显示附带的图片
+                    if (input.imageAssetRefs.isNotEmpty()) {
+                        val imageAssetManager = TutorImageAssetManager(LocalContext.current)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(bottom = if (input.studentMessage.isNotBlank()) 8.dp else 0.dp),
+                        ) {
+                            input.imageAssetRefs.take(4).forEach { assetRef ->
+                                val imageUri = remember(assetRef) {
+                                    imageAssetManager.getImageUri(assetRef)
+                                }
+                                imageUri?.let { uri ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(64.dp)
+                                            .clip(RoundedCornerShape(6.dp))
+                                    ) {
+                                        BoundedLocalImage(
+                                            imageUri = uri.toString(),
+                                            contentDescription = "发送的图片",
+                                            expanded = false,
+                                            collapsedMaxHeight = 64.dp,
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // 显示文字消息
+                    if (input.studentMessage.isNotBlank()) {
+                        Text(
+                            text = input.studentMessage,
+                            color = Ink,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                }
             }
         }
         val output = task.output as? TutorLobbyOutput

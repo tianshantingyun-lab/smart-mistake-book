@@ -22,3 +22,7 @@ design/qa/
 *.apk
 *.aab
 *.parc
+website/node_modules/
+website/dist/
+website/coverage/
+.mimosa/

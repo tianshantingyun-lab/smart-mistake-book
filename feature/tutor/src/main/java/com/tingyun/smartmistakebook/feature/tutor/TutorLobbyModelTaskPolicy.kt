@@ -1,5 +1,7 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import android.content.Context
+import com.tingyun.smartmistakebook.core.data.TutorImageAssetConverter
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -19,10 +21,12 @@ internal fun buildTutorLobbyRequest(
     provider: ProviderCapabilitySnapshot,
     messageOrdinal: Int,
     studentMessage: String,
+    imageAssetRefs: List<String> = emptyList(),
     priorMessages: List<TutorChatHistoryEntry>,
     occurredAtEpochMillis: Long,
     approvedAtEpochMillis: Long = occurredAtEpochMillis,
     attempt: Int = 0,
+    context: Context? = null,
 ): ModelTaskRequest {
     require(provider.supports(ModelTaskKind.TUTOR_LOBBY)) {
         "The current provider does not support tutor lobby messages"
@@ -33,12 +37,16 @@ internal fun buildTutorLobbyRequest(
         messageOrdinal = messageOrdinal,
         studentMessage = studentMessage,
         priorMessages = priorMessages.takeLast(TutorLobbyInput.MAX_PRIOR_MESSAGES),
+        imageAssetRefs = imageAssetRefs,
     )
     val requestHash = sha256(
         buildString {
             append(input.conversationId).append('\n')
             append(messageOrdinal).append('\n')
             append(studentMessage).append('\n')
+            imageAssetRefs.forEach { ref ->
+                append(ref).append('\n')
+            }
             input.priorMessages.forEach { prior ->
                 append(prior.studentMessage.length).append(':').append(prior.studentMessage)
                 append(prior.assistantMarkdown.length).append(':').append(prior.assistantMarkdown)
@@ -48,6 +56,14 @@ internal fun buildTutorLobbyRequest(
     ).take(24)
     val requestId = "tutor-lobby:$messageOrdinal:$requestHash:$attempt"
     val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
+        // 转换图片资产引用为完整的资产授权
+        val assetGrants = if (imageAssetRefs.isNotEmpty() && context != null) {
+            val converter = TutorImageAssetConverter(context)
+            converter.createAssetGrants(imageAssetRefs)
+        } else {
+            emptyList()
+        }
+
         ModelEgressManifest(
             authorizationId = "authorization:$requestId",
             subjectId = input.conversationId,
@@ -58,7 +74,7 @@ internal fun buildTutorLobbyRequest(
             providerConfigurationVersion = provider.providerConfigurationVersion,
             promptPolicyVersion = TUTOR_LOBBY_PROMPT_POLICY_VERSION,
             approvedAtEpochMillis = approvedAtEpochMillis,
-            assets = emptyList(),
+            assets = assetGrants,
             disclosedData = ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE,
             prohibitedData = ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA,
         )

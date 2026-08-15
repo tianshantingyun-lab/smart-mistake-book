@@ -25,4 +25,8 @@ dependencies {
     api(libs.compose.material.icons.extended)
     api(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
+
+    // Markdown rendering
+    implementation(libs.richtext.commonmark)
+    implementation(libs.richtext.ui.material3)
 }

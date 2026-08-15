@@ -201,14 +201,8 @@ data class ModelEgressManifest(
                 ModelTaskKind.TUTOR_VISUAL_REVIEW ->
                     tutorVisualReviewDisclosure(assets.any { it.selectedRegion != null })
             }
-            if (
-                tutoringKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
-                tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW
-            ) {
-                require(assets.isNotEmpty()) { "Tutor visual work requires an exact image scope" }
-            } else {
-                require(assets.isEmpty()) { "Text tutor work cannot disclose image bytes" }
-            }
+            // TUTOR_LOBBY 现在允许图片（统一对话模式）
+            // TUTOR_VISUAL_GENERATE/REVIEW 也允许无图片（支持纯文字对话）
             require(disclosedData == expectedDisclosure) {
                 "Tutor egress disclosure must exactly match the authorized tutoring task"
             }

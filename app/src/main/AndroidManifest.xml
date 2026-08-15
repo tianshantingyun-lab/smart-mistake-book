@@ -4,6 +4,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Camera is optional; the UI falls back gracefully when unavailable -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:name=".SmartMistakeBookApplication"
         android:allowBackup="false"
@@ -35,6 +38,23 @@
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
         </receiver>
+
+        <!-- 格式测试页面 - 用于验证 Markdown 和数学公式显示 -->
+        <activity
+            android:name=".FormatTestActivity"
+            android:exported="true"
+            android:label="格式测试" />
+
+        <!-- FileProvider for camera capture in tutor module -->
+        <provider
+            android:name="com.tingyun.smartmistakebook.feature.tutor.TutorFileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/tutor_file_paths" />
+        </provider>
 
     </application>
 

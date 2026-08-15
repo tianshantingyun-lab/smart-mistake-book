@@ -253,7 +253,7 @@ fun CaptureScreen(
     var egressApprovedProviderConfigurationVersion by rememberSaveable {
         mutableStateOf<String?>(null)
     }
-    var activeEntryOriginName by rememberSaveable(resumeDraftId) {
+    var activeEntryOriginName by rememberSaveable(resumeDraftId, entryOrigin) {
         mutableStateOf(entryOrigin.name)
     }
     var resumeLoadStateName by rememberSaveable(resumeDraftId) {
@@ -1618,7 +1618,7 @@ fun CaptureScreen(
             modifier = Modifier.padding(top = 18.dp),
         )
 
-        if (committedEntryId != null) {
+        if (committedEntryId != null && activeEntryOrigin == CaptureEntryOrigin.LIBRARY) {
             CaptureCommittedCard(
                 onView = { onLibraryEntryReady(committedEntryId.orEmpty()) },
                 onCaptureAnother = {

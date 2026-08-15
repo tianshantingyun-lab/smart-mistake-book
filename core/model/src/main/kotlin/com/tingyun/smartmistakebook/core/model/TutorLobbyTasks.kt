@@ -4,6 +4,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * Suggested action that AI can propose in tutor lobby conversation.
+ */
+@Serializable
+sealed class TutorSuggestedAction {
+    @Serializable
+    @SerialName("save_to_library")
+    data class SaveToLibrary(
+        val reason: String? = null
+    ) : TutorSuggestedAction()
+}
+
+/**
  * A bounded free-text entry on the Tutor home screen.
  *
  * It deliberately carries no question document, learning ledger, or write authority. The model
@@ -17,6 +29,7 @@ data class TutorLobbyInput(
     val messageOrdinal: Int,
     val studentMessage: String,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
+    val imageAssetRefs: List<String> = emptyList(),  // 新增：图片资产引用
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_LOBBY
@@ -44,12 +57,20 @@ data class TutorLobbyInput(
                 message.studentMessage.length + message.assistantMarkdown.length
             } <= TutorRespondInput.MAX_PRIOR_MESSAGE_CHARS,
         ) { "Tutor lobby prior messages exceed their text budget" }
+        require(imageAssetRefs.size <= MAX_IMAGE_ASSETS) {
+            "Tutor lobby contains too many images (max $MAX_IMAGE_ASSETS)"
+        }
+        imageAssetRefs.forEach { ref ->
+            ref.requireSafeModelText("Image asset reference", MAX_ASSET_REF_CHARS, false)
+        }
     }
 
     companion object {
         const val MAX_STUDENT_MESSAGE_CHARS = TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS
         const val MAX_PRIOR_MESSAGES = TutorRespondInput.MAX_PRIOR_MESSAGES
         const val MAX_PRIOR_MESSAGE_CHARS = TutorRespondInput.MAX_PRIOR_MESSAGE_CHARS
+        const val MAX_IMAGE_ASSETS = 5
+        const val MAX_ASSET_REF_CHARS = 256
     }
 }
 
@@ -62,6 +83,7 @@ data class TutorLobbyOutput(
     val messageMarkdown: String,
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     val modelVersion: String,
+    val suggestedAction: TutorSuggestedAction? = null,  // 新增：AI建议的操作
 ) : ModelTaskOutput {
     init {
         conversationId.requireSafeModelText(

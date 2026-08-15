@@ -121,55 +121,8 @@ internal fun CapabilityScreen(
 
     RootPageColumn(modifier = Modifier.testTag("capability_screen")) {
         SecondaryHeader(title = "大模型设置", onBack = onBack)
-        SectionHeader("当前可用能力")
-        CapabilityRow(
-            icon = Icons.Outlined.Memory,
-            title = if (capabilities.networkMode == NetworkMode.STRICT_OFFLINE) {
-                "智能服务未启用"
-            } else {
-                "模型优先"
-            },
-            detail = if (capabilities.networkRequestsAllowed) {
-                "学习记录留在本机；只有你发起任务时，才发送当次已说明的内容"
-            } else {
-                "当前版本未启用联网智能服务，题库、复习和已保存内容仍可查看"
-            },
-        )
-        CapabilityRow(
-            icon = Icons.Outlined.Security,
-            title = "拍题后直接处理",
-            detail = "题面清楚时直接进入讲解或收录；只有无法判断时才请你补充",
-        )
 
         if (capabilities.networkRequestsAllowed && configurationStore != null) {
-            PaperDivider(Modifier.padding(vertical = 16.dp))
-            SectionHeader("大模型 API")
-            Text(
-                text = "本机直接连接你选择的服务商，不经过本应用云端；调用费用由你的服务商账户承担。",
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .testTag("capability_direct_connection_notice"),
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = "API Key 只保存在本机安全存储中，只用于连接服务商，不会作为内容发给模型。",
-                modifier = Modifier
-                    .padding(top = 4.dp, bottom = 10.dp)
-                    .testTag("capability_secret_notice"),
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = if (configuration.isConfigured) {
-                    capabilityVerificationSummary(configuration)
-                } else {
-                    "支持 OpenAI 兼容的多模态模型。保存配置不会联网；第一次发送题目前会显示发送范围。"
-                },
-                modifier = Modifier.padding(bottom = 12.dp),
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
             OutlinedTextField(
                 value = provider,
                 onValueChange = {

@@ -627,6 +627,7 @@ data class TutorPlanInput(
 data class TutorChatHistoryEntry(
     val studentMessage: String,
     val assistantMarkdown: String,
+    val studentImageAssetRefs: List<String> = emptyList(),  // 新增：学生消息中的图片
 ) {
     init {
         studentMessage.requireSafeModelText(
@@ -638,6 +639,13 @@ data class TutorChatHistoryEntry(
             "Tutor chat history assistant message",
             TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS,
         )
+        require(studentImageAssetRefs.size <= MAX_IMAGE_ASSETS_PER_MESSAGE) {
+            "Too many images in history entry (max $MAX_IMAGE_ASSETS_PER_MESSAGE)"
+        }
+    }
+
+    companion object {
+        const val MAX_IMAGE_ASSETS_PER_MESSAGE = 5
     }
 }
 
@@ -663,6 +671,7 @@ data class TutorRespondInput(
     val visibleTutorContextMarkdown: String? = null,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
     val requestedMove: TutorMoveType? = null,
+    val studentImageAssetRefs: List<String> = emptyList(),  // 新增：当前消息的图片
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
@@ -710,6 +719,9 @@ data class TutorRespondInput(
                 message.studentMessage.length + message.assistantMarkdown.length
             } <= MAX_PRIOR_MESSAGE_CHARS,
         ) { "Tutor response prior chat exceeds its total text budget" }
+        require(studentImageAssetRefs.size <= TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE) {
+            "Too many images in current message (max ${TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE})"
+        }
     }
 
     companion object {
