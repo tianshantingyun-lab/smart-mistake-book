@@ -270,7 +270,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 SmartBottomBar(
                     selectedRoute = selectedBottomRoute,
                     onSelect = { destination ->
-                        if (destination.route != selectedBottomRoute) {
+                        if (destination.route != currentRoute) {
                             navController.navigate(destination.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
@@ -334,9 +334,25 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 }
             }
             composable(Routes.Tutor) {
-                com.tingyun.smartmistakebook.feature.tutor.SimpleTutorRoute(
-                    onOpenSessionHistory = { /* TODO: 实现历史会话列表 */ },
+                TutorRoute(
+                    isSaved = experience.tutorExampleSaved,
+                    capabilities = capabilities,
+                    practiceUnitId = experience.tutorPracticeUnitId.orEmpty(),
+                    teachingArtifact = tutorArtifact,
+                    adaptiveDecision = experience.tutorDecision.takeIf {
+                        experience.status == StudyDataStatus.READY
+                    },
+                    profile = experience.profile,
+                    onSave = { repository.saveTutorExampleMistake() },
+                    onSubmitChoice = repository::submitChoice,
+                    onRevealAnswer = repository::revealAnswer,
+                    onCapture = { navController.navigate(Routes.CaptureTutor) },
+                    onChooseExisting = { navController.navigate(Routes.Library) },
+                    onOpenCapabilitySettings = { navController.navigate(Routes.Capability) },
+                    onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
+                    onOpenProfile = { navController.navigate(Routes.Profile) },
                     modelTasks = application.modelTaskRepository,
+                    catalogEntries = experience.catalog,
                     modifier = Modifier.testTag("root_tutor"),
                 )
             }

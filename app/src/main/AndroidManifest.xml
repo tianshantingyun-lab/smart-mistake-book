@@ -39,12 +39,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- 格式测试页面 - 用于验证 Markdown 和数学公式显示 -->
-        <activity
-            android:name=".FormatTestActivity"
-            android:exported="true"
-            android:label="格式测试" />
-
         <!-- FileProvider for camera capture in tutor module -->
         <provider
             android:name="com.tingyun.smartmistakebook.feature.tutor.TutorFileProvider"

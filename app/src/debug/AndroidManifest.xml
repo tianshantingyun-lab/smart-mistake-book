@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application>
+        <!-- Debug-only Markdown/math renderer harness. -->
+        <activity
+            android:name=".FormatTestActivity"
+            android:exported="true"
+            android:label="格式测试" />
         <activity
             android:name=".debug.DynamicGuiPerformanceActivity"
             android:exported="true" />

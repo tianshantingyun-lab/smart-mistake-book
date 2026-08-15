@@ -19,11 +19,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -62,7 +60,6 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleTutorRoute(
-    onOpenSessionHistory: () -> Unit,
     modelTasks: ModelTaskRepository,
     modifier: Modifier = Modifier,
 ) {
@@ -118,6 +115,7 @@ fun SimpleTutorRoute(
     LaunchedEffect(tasks) {
         tasks.forEach { task ->
             val output = task.output as? TutorLobbyOutput
+            val requestOrdinal = (task.request.input as? TutorLobbyInput)?.messageOrdinal
             if (output != null && task.status == ModelTaskStatus.SUCCEEDED) {
                 // 更新或添加 AI 回复
                 val existingIndex = messages.indexOfFirst {
@@ -143,6 +141,25 @@ fun SimpleTutorRoute(
                 if (!priorTasks.any { it.request.requestId == task.request.requestId }) {
                     priorTasks.add(task)
                 }
+            } else if (
+                requestOrdinal != null &&
+                (
+                    task.status == ModelTaskStatus.PERMANENT_FAILURE ||
+                        task.status == ModelTaskStatus.RETRYABLE_FAILURE ||
+                        task.status == ModelTaskStatus.CANCELLED
+                    )
+            ) {
+                // 任务失败或被取消：把占位的转圈替换为错误提示，避免一直转圈
+                val existingIndex = messages.indexOfFirst {
+                    it is MessageItem.Assistant && it.messageOrdinal == requestOrdinal && it.isLoading
+                }
+                if (existingIndex >= 0) {
+                    messages[existingIndex] = MessageItem.Assistant(
+                        messageOrdinal = requestOrdinal,
+                        content = "抱歉，AI 没有回复：${task.failure?.message ?: task.userMessage}",
+                        isLoading = false,
+                    )
+                }
             }
         }
     }
@@ -165,15 +182,6 @@ fun SimpleTutorRoute(
                         Text(
                             text = "讲题",
                             style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onOpenSessionHistory) {
-                        Icon(
-                            imageVector = Icons.Outlined.History,
-                            contentDescription = "历史会话",
-                            tint = JadeActive,
                         )
                     }
                 },

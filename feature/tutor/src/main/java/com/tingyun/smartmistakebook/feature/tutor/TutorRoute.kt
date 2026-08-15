@@ -838,11 +838,6 @@ internal fun TutorComposer(
                         contentDescription = "提交输入",
                         tint = if (value.isBlank() && attachedImages.isEmpty()) InkMuted else Jade,
                     )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "提交输入",
-                        tint = if (value.isBlank() && attachedImages.isEmpty()) InkMuted else Jade,
-                    )
                 }
             },
             shape = RoundedCornerShape(8.dp),
