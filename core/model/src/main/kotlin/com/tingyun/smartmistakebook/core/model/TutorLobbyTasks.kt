@@ -4,18 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Suggested action that AI can propose in tutor lobby conversation.
- */
-@Serializable
-sealed class TutorSuggestedAction {
-    @Serializable
-    @SerialName("save_to_library")
-    data class SaveToLibrary(
-        val reason: String? = null
-    ) : TutorSuggestedAction()
-}
-
-/**
  * A bounded free-text entry on the Tutor home screen.
  *
  * It deliberately carries no question document, learning ledger, or write authority. The model
@@ -83,7 +71,6 @@ data class TutorLobbyOutput(
     val messageMarkdown: String,
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     val modelVersion: String,
-    val suggestedAction: TutorSuggestedAction? = null,  // 新增：AI建议的操作
 ) : ModelTaskOutput {
     init {
         conversationId.requireSafeModelText(
