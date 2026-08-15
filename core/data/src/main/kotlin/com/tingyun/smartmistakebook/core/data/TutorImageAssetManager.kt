@@ -64,22 +64,31 @@ class TutorImageAssetManager(private val context: Context) {
         val tempFile = File(assetDir, "$assetId.tmp")
 
         try {
-            // 原子写入：先写临时文件，成功后再 rename
+            // 原子写入：边读边计数，单遍完成检查+复制
             context.contentResolver.openInputStream(sourceUri)?.use { input ->
-                // 检查字节大小
-                val totalBytes = input.available().toLong()
-                if (totalBytes > MAX_IMAGE_BYTES) {
-                    throw IllegalStateException("Image exceeds $MAX_IMAGE_BYTES bytes: $totalBytes")
-                }
-
-                // 复制到临时文件
                 tempFile.outputStream().use { output ->
-                    input.copyTo(output)
+                    var totalBytes = 0L
+                    val buffer = ByteArray(8192)
+                    var read: Int
+                    while (input.read(buffer).also { read = it } != -1) {
+                        totalBytes += read
+                        if (totalBytes > MAX_IMAGE_BYTES) {
+                            throw IllegalStateException(
+                                "Image exceeds $MAX_IMAGE_BYTES bytes: $totalBytes"
+                            )
+                        }
+                        output.write(buffer, 0, read)
+                    }
                 }
             } ?: throw IllegalStateException("Failed to open image: $sourceUri")
 
-            // 清理 EXIF 敏感元数据（GPS、设备信息等）
-            stripExifMetadata(tempFile)
+            // 清理 EXIF 敏感元数据（GPS、设备信息等），失败则阻断保存
+            val exifStripped = stripExifMetadata(tempFile)
+            if (!exifStripped) {
+                throw IllegalStateException(
+                    "Failed to strip sensitive EXIF metadata for privacy protection"
+                )
+            }
 
             // 验证图片可解码（防止损坏文件）
             val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -103,9 +112,10 @@ class TutorImageAssetManager(private val context: Context) {
 
     /**
      * 清理 EXIF 敏感元数据，保留方向信息
+     * @return true 成功清理，false 失败（调用方应阻断保存）
      */
-    private fun stripExifMetadata(file: File) {
-        try {
+    private fun stripExifMetadata(file: File): Boolean {
+        return try {
             val exif = ExifInterface(file.path)
 
             // 保存原始方向
@@ -124,9 +134,14 @@ class TutorImageAssetManager(private val context: Context) {
 
             // 写回文件
             exif.saveAttributes()
+            true
         } catch (e: Exception) {
-            // EXIF 处理失败不阻断保存，但记录日志
-            android.util.Log.w("TutorImageAssetManager", "Failed to strip EXIF: ${e.message}")
+            android.util.Log.e(
+                "TutorImageAssetManager",
+                "Failed to strip EXIF metadata: ${e.message}",
+                e
+            )
+            false
         }
     }
 

@@ -23,7 +23,6 @@ fun DebugSimpleTutorRoute(
     modifier: Modifier = Modifier,
 ) {
     SimpleTutorRoute(
-        onOpenSessionHistory = onOpenSessionHistory,
         modelTasks = modelTasks,
         modifier = modifier,
     )

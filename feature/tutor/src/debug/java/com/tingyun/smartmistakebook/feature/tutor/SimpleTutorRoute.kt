@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.tingyun.smartmistakebook.core.data.TutorImageAssetManager
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
@@ -117,10 +118,11 @@ fun SimpleTutorRoute(
             val output = task.output as? TutorLobbyOutput
             val requestOrdinal = (task.request.input as? TutorLobbyInput)?.messageOrdinal
             if (output != null && task.status == ModelTaskStatus.SUCCEEDED) {
-                // 更新或添加 AI 回复
-                val existingIndex = messages.indexOfFirst {
-                    it is MessageItem.Assistant && it.messageOrdinal == output.messageOrdinal
-                }
+                // 更新或添加 AI 回复（只替换 isLoading=true 的占位消息）
+                val existingIndex = messages.findAssistantByOrdinal(
+                    output.messageOrdinal,
+                    isLoading = true
+                )
                 if (existingIndex >= 0) {
                     messages[existingIndex] = MessageItem.Assistant(
                         messageOrdinal = output.messageOrdinal,
@@ -149,14 +151,15 @@ fun SimpleTutorRoute(
                         task.status == ModelTaskStatus.CANCELLED
                     )
             ) {
-                // 任务失败或被取消：把占位的转圈替换为错误提示，避免一直转圈
-                val existingIndex = messages.indexOfFirst {
-                    it is MessageItem.Assistant && it.messageOrdinal == requestOrdinal && it.isLoading
-                }
+                // 任务失败或被取消：把占位的转圈替换为用户友好的错误提示
+                val existingIndex = messages.findAssistantByOrdinal(requestOrdinal, isLoading = true)
                 if (existingIndex >= 0) {
+                    val userFriendlyMessage = task.failure?.code?.toUserFriendlyMessage()
+                        ?: task.userMessage
+                        ?: "AI 暂时无法回复"
                     messages[existingIndex] = MessageItem.Assistant(
                         messageOrdinal = requestOrdinal,
-                        content = "抱歉，AI 没有回复：${task.failure?.message ?: task.userMessage}",
+                        content = "抱歉，$userFriendlyMessage",
                         isLoading = false,
                     )
                 }
@@ -315,6 +318,35 @@ fun SimpleTutorRoute(
             )
         }
     }
+}
+
+/**
+ * 辅助函数：在消息列表中查找指定 ordinal 的 Assistant 消息
+ */
+private fun MutableList<MessageItem>.findAssistantByOrdinal(
+    ordinal: Int,
+    isLoading: Boolean? = null
+): Int = indexOfFirst {
+    it is MessageItem.Assistant &&
+        it.messageOrdinal == ordinal &&
+        (isLoading == null || it.isLoading == isLoading)
+}
+
+/**
+ * 将内部错误码转换为用户友好的提示
+ */
+private fun ModelFailureCode.toUserFriendlyMessage(): String = when (this) {
+    ModelFailureCode.MODEL_NOT_CONFIGURED -> "请先在\"我的\"中配置 AI 模型"
+    ModelFailureCode.AUTHENTICATION_FAILED -> "API 认证失败，请检查密钥"
+    ModelFailureCode.NETWORK_UNAVAILABLE -> "网络连接失败，请稍后重试"
+    ModelFailureCode.TIMEOUT -> "请求超时，请重试"
+    ModelFailureCode.RATE_LIMITED -> "请求过于频繁，请稍后重试"
+    ModelFailureCode.PROVIDER_REJECTED_INPUT -> "输入内容不符合要求"
+    ModelFailureCode.INVALID_RESPONSE -> "AI 返回了无效的数据"
+    ModelFailureCode.EGRESS_AUTHORIZATION_INVALID -> "权限验证失败"
+    ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED -> "需要授权才能继续"
+    ModelFailureCode.PROVIDER_CAPABILITY_MISSING -> "当前模型不支持此功能"
+    ModelFailureCode.UNKNOWN -> "AI 暂时无法回复"
 }
 
 private sealed class MessageItem {
