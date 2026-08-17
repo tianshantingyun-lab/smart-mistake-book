@@ -117,6 +117,7 @@ private fun LibraryContent(
     val emptyState = resolveLibraryEmptyState(
         totalMistakeCount = mistakeCount,
         visibleMistakeCount = if (loading) 1 else visibleMistakeCount,
+        hasActiveSearch = uiState.query.isNotBlank(),
     )
     RootPageLazyColumn(
         modifier = modifier.testTag("library_root"),

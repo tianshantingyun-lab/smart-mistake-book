@@ -66,22 +66,31 @@ class LibraryCatalogTest {
         val newLibrary = resolveLibraryEmptyState(
             totalMistakeCount = 0,
             visibleMistakeCount = 0,
+            hasActiveSearch = false,
         )
         val filteredResults = resolveLibraryEmptyState(
             totalMistakeCount = mistakes.size,
             visibleMistakeCount = 0,
+            hasActiveSearch = false,
+        )
+        val searchResults = resolveLibraryEmptyState(
+            totalMistakeCount = mistakes.size,
+            visibleMistakeCount = 0,
+            hasActiveSearch = true,
         )
 
         assertEquals(LibraryEmptyState.CATALOG_EMPTY, newLibrary)
         assertEquals("还没有错题", newLibrary?.title)
         assertEquals("拍照或上传第一道错题，之后会自动整理到这里。", newLibrary?.supportingText)
         assertEquals(LibraryEmptyState.FILTERED_EMPTY, filteredResults)
-        assertEquals("没有符合条件的错题", filteredResults?.title)
-        assertEquals("换一个关键词，或清除当前筛选。", filteredResults?.supportingText)
+        assertEquals("当前筛选下没有错题", filteredResults?.title)
+        assertEquals(LibraryEmptyState.SEARCH_EMPTY, searchResults)
+        assertEquals("没找到相关内容", searchResults?.title)
         assertNull(
             resolveLibraryEmptyState(
                 totalMistakeCount = mistakes.size,
                 visibleMistakeCount = mistakes.size,
+                hasActiveSearch = false,
             ),
         )
     }

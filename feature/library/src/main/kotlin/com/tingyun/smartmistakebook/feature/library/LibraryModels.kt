@@ -147,8 +147,12 @@ internal enum class LibraryEmptyState(
         title = "还没有错题",
         supportingText = "拍照或上传第一道错题，之后会自动整理到这里。",
     ),
+    SEARCH_EMPTY(
+        title = "没找到相关内容",
+        supportingText = "试试题干或知识点。",
+    ),
     FILTERED_EMPTY(
-        title = "没有符合条件的错题",
+        title = "当前筛选下没有错题",
         supportingText = "换一个关键词，或清除当前筛选。",
     ),
 }
@@ -156,8 +160,10 @@ internal enum class LibraryEmptyState(
 internal fun resolveLibraryEmptyState(
     totalMistakeCount: Int,
     visibleMistakeCount: Int,
+    hasActiveSearch: Boolean,
 ): LibraryEmptyState? = when {
     totalMistakeCount == 0 -> LibraryEmptyState.CATALOG_EMPTY
+    visibleMistakeCount == 0 && hasActiveSearch -> LibraryEmptyState.SEARCH_EMPTY
     visibleMistakeCount == 0 -> LibraryEmptyState.FILTERED_EMPTY
     else -> null
 }
