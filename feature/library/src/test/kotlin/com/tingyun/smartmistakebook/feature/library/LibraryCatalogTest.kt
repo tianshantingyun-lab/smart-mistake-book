@@ -111,7 +111,7 @@ class LibraryCatalogTest {
         viewModel.selectFacet(LibraryFacet.MASTERY)
 
         assertSame(initialResults, viewModel.uiState.visibleMistakes)
-        assertTrue(viewModel.uiState.activeOptions.size <= LibraryFacet.MASTERY.visibleOptionLimit)
+        assertTrue(viewModel.uiState.activeOptions.isNotEmpty())
     }
 
     @Test

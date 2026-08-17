@@ -194,7 +194,6 @@ internal class LibraryCatalog(
     ): List<LibraryFacetOption> = optionsByFacet.getValue(facet)
         .asSequence()
         .filter { option -> optionAvailableInHierarchy(facet, option.id, selections) }
-        .take(facet.visibleOptionLimit)
         .toList()
 
     fun normalizeSelection(
