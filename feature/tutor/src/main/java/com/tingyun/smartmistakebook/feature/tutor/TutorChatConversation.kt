@@ -560,30 +560,38 @@ internal fun TutorConversationFrame(
             }
         }
         if (!followsTail && initialTailPositioned) {
-            FloatingActionButton(
+            ScrollToBottomButton(
                 onClick = {
                     followsTail = true
                     forceFollowToken?.let { handledForceToken = it }
-                    val itemCount = listState.layoutInfo.totalItemsCount
-                    if (itemCount > 0) {
-                        coroutineScope.launch {
-                            listState.scrollToItem(itemCount - 1)
-                        }
+                    coroutineScope.launch {
+                        listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
                     }
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 80.dp)
                     .testTag("tutor_scroll_to_bottom"),
-                containerColor = JadeActive,
-                contentColor = Paper,
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowDown,
-                    contentDescription = "回到最新",
-                )
-            }
+            )
         }
+    }
+}
+
+@Composable
+private fun ScrollToBottomButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier,
+        containerColor = JadeActive,
+        contentColor = Paper,
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowDown,
+            contentDescription = "回到最新",
+        )
     }
 }
 
