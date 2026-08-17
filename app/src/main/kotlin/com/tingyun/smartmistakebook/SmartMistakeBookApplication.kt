@@ -166,7 +166,7 @@ class SmartMistakeBookApplication : Application() {
                 message = "数据库初始化失败，暂时不能安全读写学习记录。",
                 diagnosticId = "startup:database:${System.currentTimeMillis().hashCode().toUInt()}",
             )
-            throw failure
+            return
         }
         applicationScope.launch {
             try {
