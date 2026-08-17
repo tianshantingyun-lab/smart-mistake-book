@@ -799,7 +799,7 @@ class LearningProjector(
                         bindingId = attribution.bindingId,
                         evidenceWeight = weight,
                         calibration = attempt.assessmentSnapshot.calibration,
-                        isStudyDayTrusted = attempt.occurredAtEpochMillis >= effectiveAtEpochMillis,
+                        isStudyDayTrusted = effectiveAtEpochMillis >= attempt.occurredAtEpochMillis,
                     ),
                 )
             } else {
