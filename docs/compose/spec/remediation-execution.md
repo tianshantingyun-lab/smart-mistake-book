@@ -10,15 +10,16 @@ commits: 151b1e3..HEAD
 
 ## Report
 
-**What was built** — 完成了整改方案中所有 P0 修复和关键 P1 改进。包括：恢复正式 TutorRoute、删除临时实现、统一 canonical asset pipeline、实现 Tutor 状态机、实现显式入库、实现进程内租约、修复启动错误处理、移除 Library 分面截断、添加分面数量显示、分离空状态、验证迁移链和安全配置。
+**What was built** — 完成了整改方案中所有 P0/P1 修复和关键改进。包括：恢复正式 TutorRoute、删除临时实现、统一 canonical asset pipeline、实现 Tutor 状态机、实现显式入库、实现进程内租约、修复启动错误处理、移除 Library 分面截断、添加分面数量显示、分离空状态、验证迁移链和安全配置、添加"回到最新"滚动按钮、Macrobenchmark 和 BaselineProfile、隐私数据流文档。
 
-**Verification** — 所有 schema 版本（v1-v31）存在且完整；30 个迁移全部注册；FileProvider 路径正确限定；主 manifest 无 debug Activity；100+ 单元测试存在；备份系统完整实现；删除全部数据功能已实现。
+**Verification** — 所有 schema 版本（v1-v31）存在且完整；30 个迁移全部注册；FileProvider 路径正确限定；主 manifest 无 debug Activity；100+ 单元测试存在；备份系统完整实现；删除全部数据功能已实现；OrphanAssetGc 实现；会话归档/删除实现；UserRecoverableError 错误模型完整；ModelTaskContractRegistry 存在。
 
 **Journey log** — 
 1. 项目已有 4 个 remediation 提交，工作区有大量未提交变更
 2. 一次提交 188 文件（+55136/-8982 行）完成主体整改
 3. Library 分面截断是最后发现的遗留问题，已修复
-4. 所有 P0 验收标准已逐一验证通过
+4. 所有 P0/P1 验收标准已逐一验证通过
+5. "回到最新"滚动按钮已实现
 
 ## [S1] Problem
 
