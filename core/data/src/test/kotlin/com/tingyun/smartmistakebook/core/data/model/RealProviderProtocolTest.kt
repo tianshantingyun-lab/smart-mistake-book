@@ -23,6 +23,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.concurrent.TimeUnit
@@ -190,7 +191,7 @@ class RealProviderProtocolTest {
 
             val body = OkHttpClient().newCall(request).execute().use { it.body.string() }
 
-            val exception = org.junit.Assert.assertThrows(
+            val exception = assertThrows(
                 InvalidModelResponseException::class.java,
             ) {
                 OpenAiModelProtocol.parseResponse(
@@ -280,9 +281,9 @@ class RealProviderProtocolTest {
                 .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
                 .build()
 
-            val response = OkHttpClient().newCall(request).execute()
-            assertEquals(401, response.code)
-            response.close()
+            OkHttpClient().newCall(request).execute().use { response ->
+                assertEquals(401, response.code)
+            }
         }
     }
 
@@ -313,9 +314,9 @@ class RealProviderProtocolTest {
                 .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
                 .build()
 
-            val response = OkHttpClient().newCall(request).execute()
-            assertEquals(429, response.code)
-            response.close()
+            OkHttpClient().newCall(request).execute().use { response ->
+                assertEquals(429, response.code)
+            }
         }
     }
 
@@ -346,9 +347,9 @@ class RealProviderProtocolTest {
                 .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
                 .build()
 
-            val response = OkHttpClient().newCall(request).execute()
-            assertEquals(500, response.code)
-            response.close()
+            OkHttpClient().newCall(request).execute().use { response ->
+                assertEquals(500, response.code)
+            }
         }
     }
 
@@ -383,30 +384,6 @@ class RealProviderProtocolTest {
         assertEquals(ModelEgressPurpose.TUTORING, manifest.purpose)
         assertTrue(manifest.authorizedTaskKinds.contains(ModelTaskKind.TUTOR_LOBBY))
         assertTrue(manifest.assets.isEmpty())
-    }
-
-    @Test
-    fun dispatchBudgetEnforced_maxThreeAttempts() {
-        var attemptCount = 0
-        val maxAttempts = 3
-
-        repeat(5) { i ->
-            if (attemptCount < maxAttempts) {
-                attemptCount++
-            }
-        }
-
-        assertEquals("Should stop at 3 attempts", 3, attemptCount)
-    }
-
-    @Test
-    fun staleResultRejected_whenBasisRevisionMismatches() {
-        val currentBasisRevision = 5
-        val staleBasisRevision = 3
-
-        val isStale = staleBasisRevision != currentBasisRevision
-
-        assertTrue("Stale result should be rejected", isStale)
     }
 
     @Test
