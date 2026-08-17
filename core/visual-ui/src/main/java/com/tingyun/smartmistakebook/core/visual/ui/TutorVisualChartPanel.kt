@@ -1,12 +1,29 @@
 package com.tingyun.smartmistakebook.core.visual.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -165,20 +182,80 @@ internal fun TutorVisualChartPanel(
             )
     }
 
-    Box(
-        modifier = modifier.semantics {
-            contentDescription = buildString {
-                append(configuration.xAxisLabel)
-                append("；")
-                append(configuration.leftAxisLabel)
-                configuration.rightAxisLabel?.let { append("；").append(it) }
+    Column(modifier = modifier) {
+        // Chart area
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = buildString {
+                        append(configuration.xAxisLabel)
+                        append("；")
+                        append(configuration.leftAxisLabel)
+                        configuration.rightAxisLabel?.let { append("；").append(it) }
+                    }
+                },
+        ) {
+            CartesianChartHost(
+                chart = chart,
+                modelProducer = modelProducer,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+
+        // Legend
+        if (allSeries.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                allSeries.take(5).forEach { series ->
+                    val color = when (series.axis) {
+                        TutorVisualChartAxis.LEFT -> when (series.kind) {
+                            TutorVisualChartSeriesKind.BAR -> primary
+                            else -> secondary
+                        }
+                        TutorVisualChartAxis.RIGHT -> tertiary
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(color),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = series.label ?: series.elementId,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
             }
-        },
-    ) {
-        CartesianChartHost(
-            chart = chart,
-            modelProducer = modelProducer,
-            modifier = Modifier.fillMaxSize(),
-        )
+        }
+
+        // Axis labels
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = configuration.leftAxisLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            configuration.rightAxisLabel?.let { label ->
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }

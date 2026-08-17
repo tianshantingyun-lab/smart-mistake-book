@@ -1,16 +1,23 @@
 package com.tingyun.smartmistakebook.core.visual.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -47,6 +54,9 @@ internal fun TutorVisual3DPanel(
     var filamentReady by remember(compiled.scene.sceneId, panel.panelId) {
         mutableStateOf(false)
     }
+    var selectedElementId by remember(compiled.scene.sceneId, panel.panelId) {
+        mutableStateOf<String?>(null)
+    }
     val camera = baseCamera.copy(
         azimuthDegrees = baseCamera.azimuthDegrees + azimuthOffset,
         elevationDegrees = (baseCamera.elevationDegrees + elevationOffset).coerceIn(-85.0, 85.0),
@@ -65,36 +75,57 @@ internal fun TutorVisual3DPanel(
     }
     val useFilament = profile.threeDimensionalMode == TutorVisual3DMode.FILAMENT
 
-    Box(
-        modifier = modifier
-            .semantics { contentDescription = panel.title ?: compiled.scene.accessibilitySummary }
-            .pointerInput(camera.allowOrbit) {
-                if (!camera.allowOrbit) return@pointerInput
-                detectTransformGestures { _, _, gestureZoom, rotation ->
-                    azimuthOffset = (azimuthOffset - rotation).coerceIn(-720.0, 720.0)
-                    zoomFactor = (zoomFactor * gestureZoom).coerceIn(0.35, 4.0)
-                }
-            },
-    ) {
-        if (useFilament) {
-            FilamentVisualSurface(
-                geometries = geometries,
-                lattices = lattices,
-                frame = frame,
-                camera = camera,
-                modifier = Modifier.fillMaxSize(),
-                onReadyChanged = { filamentReady = it },
-            )
+    Column(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .semantics { contentDescription = panel.title ?: compiled.scene.accessibilitySummary }
+                .pointerInput(camera.allowOrbit) {
+                    if (!camera.allowOrbit) return@pointerInput
+                    detectTransformGestures { offset, _, gestureZoom, rotation ->
+                        azimuthOffset = (azimuthOffset - rotation).coerceIn(-720.0, 720.0)
+                        zoomFactor = (zoomFactor * gestureZoom).coerceIn(0.35, 4.0)
+                    }
+                },
+        ) {
+            if (useFilament) {
+                FilamentVisualSurface(
+                    geometries = geometries,
+                    lattices = lattices,
+                    frame = frame,
+                    camera = camera,
+                    modifier = Modifier.fillMaxSize(),
+                    onReadyChanged = { filamentReady = it },
+                )
+            }
+            if (!useFilament || !filamentReady) {
+                TutorVisualFallback3DCanvas(
+                    geometries = geometries,
+                    latticeInstances = latticeInstances,
+                    frame = frame,
+                    azimuthDegrees = camera.azimuthDegrees,
+                    elevationDegrees = camera.elevationDegrees,
+                    selectedElementId = selectedElementId,
+                    onElementSelected = { selectedElementId = it },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
-        if (!useFilament || !filamentReady) {
-            TutorVisualFallback3DCanvas(
-                geometries = geometries,
-                latticeInstances = latticeInstances,
-                frame = frame,
-                azimuthDegrees = camera.azimuthDegrees,
-                elevationDegrees = camera.elevationDegrees,
-                modifier = Modifier.fillMaxSize(),
-            )
+
+        // Selected element info
+        selectedElementId?.let { elementId ->
+            val element = geometries.firstOrNull { it.elementId == elementId }
+            if (element != null) {
+                Text(
+                    text = element.label ?: element.elementId,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(8.dp),
+                )
+            }
         }
     }
 }
@@ -106,13 +137,36 @@ private fun TutorVisualFallback3DCanvas(
     frame: TutorVisualFrame,
     azimuthDegrees: Double,
     elevationDegrees: Double,
+    selectedElementId: String?,
+    onElementSelected: (String?) -> Unit,
     modifier: Modifier,
 ) {
     val paper = MaterialTheme.colorScheme.surface
     val ink = MaterialTheme.colorScheme.onSurface
     val accent = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
-    Canvas(modifier) {
+    Canvas(modifier.pointerInput(Unit) {
+        detectTapGestures { offset ->
+            // Simple picking: find closest element to tap
+            val closest = geometries.minByOrNull { geometry ->
+                val state = frame.elements[geometry.elementId] ?: return@minByOrNull Double.MAX_VALUE
+                val projected = TutorVisualFallbackProjector.project(
+                    elements = listOf(geometry),
+                    latticeInstances = emptyList(),
+                    azimuthDegrees = azimuthDegrees,
+                    elevationDegrees = elevationDegrees,
+                    width = size.width.toDouble(),
+                    height = size.height.toDouble(),
+                )
+                if (projected.isEmpty()) return@minByOrNull Double.MAX_VALUE
+                val center = projected.first().center
+                val dx = center.x - offset.x.toDouble()
+                val dy = center.y - offset.y.toDouble()
+                dx * dx + dy * dy
+            }
+            onElementSelected(closest?.elementId)
+        }
+    }) {
         drawRect(paper)
         val projected = TutorVisualFallbackProjector.project(
             elements = geometries,
@@ -159,8 +213,10 @@ private fun TutorVisualFallback3DCanvas(
             val state = frame.elements[item.elementId] ?: frame.elements[parentId]
             val dimmed = state?.dimmed == true
             val focused = state?.focused == true
+            val isSelected = item.elementId == selectedElementId
             val radius = (5.5.dp.toPx() * item.scale.coerceIn(0.35, 2.2)).toFloat()
             val color = when {
+                isSelected -> accent
                 focused -> accent
                 index % 2 == 0 -> secondary
                 else -> ink
@@ -176,6 +232,26 @@ private fun TutorVisualFallback3DCanvas(
                 center = Offset(item.center.x.toFloat(), item.center.y.toFloat()),
                 style = Stroke(1.5.dp.toPx()),
             )
+            // Draw label for selected element
+            if (isSelected) {
+                val geometry = geometries.firstOrNull { it.elementId == item.elementId }
+                geometry?.label?.let { label ->
+                    drawContext.canvas.nativeCanvas.apply {
+                        val paint = android.graphics.Paint().apply {
+                            color = android.graphics.Color.DKGRAY
+                            textSize = 10.dp.toPx()
+                            textAlign = android.graphics.Paint.Align.CENTER
+                            isAntiAlias = true
+                        }
+                        drawText(
+                            label,
+                            item.center.x.toFloat(),
+                            item.center.y.toFloat() + radius + 14.dp.toPx(),
+                            paint,
+                        )
+                    }
+                }
+            }
         }
     }
 }
