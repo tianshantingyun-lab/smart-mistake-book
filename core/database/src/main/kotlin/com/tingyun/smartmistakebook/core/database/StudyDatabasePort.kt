@@ -1,6 +1,19 @@
 package com.tingyun.smartmistakebook.core.database
 
 import androidx.paging.PagingSource
+import com.tingyun.smartmistakebook.core.database.port.BackupPort
+import com.tingyun.smartmistakebook.core.database.port.BatchImportReadPort
+import com.tingyun.smartmistakebook.core.database.port.CaptureReadPort
+import com.tingyun.smartmistakebook.core.database.port.CaptureWritePort
+import com.tingyun.smartmistakebook.core.database.port.DraftReadPort
+import com.tingyun.smartmistakebook.core.database.port.KnowledgeReadPort
+import com.tingyun.smartmistakebook.core.database.port.KnowledgeWritePort
+import com.tingyun.smartmistakebook.core.database.port.LibraryReadPort
+import com.tingyun.smartmistakebook.core.database.port.MistakeReadPort
+import com.tingyun.smartmistakebook.core.database.port.OrganizationReadPort
+import com.tingyun.smartmistakebook.core.database.port.ReviewReadPort
+import com.tingyun.smartmistakebook.core.database.port.TutorReadPort
+import com.tingyun.smartmistakebook.core.database.port.TutorWritePort
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -1383,508 +1396,81 @@ data class ReviewPlanBundle(
     val latestSession: ReviewSessionRecord? = null,
 )
 
-interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
-    fun observeMistakes(): Flow<List<MistakeRecord>>
-
-    fun libraryPagingSource(
-        searchText: String,
-        subjectId: String?,
-        sectionId: String?,
-        knowledgePointId: String?,
-        masteryId: String?,
-        sort: String,
-    ): PagingSource<Int, LibraryCatalogRow> = throw UnsupportedOperationException(
-        "Library paging is not implemented",
-    )
-
-    suspend fun libraryCatalogPage(
-        searchText: String,
-        subjectId: String?,
-        sectionId: String?,
-        knowledgePointId: String?,
-        masteryId: String?,
-        sort: String,
-        offset: Int,
-        limit: Int,
-    ): List<LibraryCatalogRow> = throw UnsupportedOperationException(
-        "Library paging is not implemented",
-    )
-
-    suspend fun libraryCatalogCount(
-        searchText: String,
-        subjectId: String?,
-        sectionId: String?,
-        knowledgePointId: String?,
-        masteryId: String?,
-    ): Int = throw UnsupportedOperationException("Library paging is not implemented")
-
-    suspend fun libraryCatalogFacets(
-        searchText: String,
-        subjectId: String?,
-        sectionId: String?,
-        knowledgePointId: String?,
-        masteryId: String?,
-        facet: String,
-    ): List<LibraryFacetCountRecord> = throw UnsupportedOperationException(
-        "Library facets are not implemented",
-    )
+interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
+    LibraryReadPort, TutorReadPort, TutorWritePort,
+    CaptureReadPort, CaptureWritePort, KnowledgeReadPort, KnowledgeWritePort,
+    ReviewReadPort, MistakeReadPort, BackupPort, BatchImportReadPort,
+    DraftReadPort, OrganizationReadPort {
 
     fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)
-
-    fun observeConfirmedProblemOrganization(
-        problemId: String,
-        problemRevisionId: String,
-    ): Flow<ConfirmedProblemOrganizationRecord> = throw UnsupportedOperationException(
-        "Problem organization reads are not implemented",
-    )
-
-    fun observePendingProblemDraftCount(): Flow<Int>
-
-    fun observeTutorTurnResponses(sessionId: String): Flow<List<TutorTurnResponseRecord>> =
-        flowOf(emptyList())
-
-    fun observeRecentTutorConversations(limit: Int): Flow<List<TutorConversationRecord>> =
-        flowOf(emptyList())
-
-    fun observeTutorMessages(conversationId: String): Flow<List<TutorMessageRecord>> =
-        flowOf(emptyList())
-
-    fun observeTutorConversation(conversationId: String): Flow<TutorConversationRecord?> =
-        flowOf(null)
-
-    fun observePendingCaptureDrafts(): Flow<List<PendingCaptureDraftRecord>> =
-        throw UnsupportedOperationException("Pending capture reads are not implemented")
-
-    fun observeBatchImportJobs(): Flow<List<BatchImportJobRecord>> = flowOf(emptyList())
-
-    fun observeReviewPlan(reviewPlanId: String): Flow<ReviewPlanBundle?>
-
-    fun observeReviewPlanForSession(sessionId: String): Flow<ReviewPlanBundle?>
-
-    fun observeActiveReviewPlan(learnerId: String): Flow<ReviewPlanBundle?>
-
-    fun observeCurrentReviewPlan(
-        learnerId: String,
-        localDayEpochDay: Long,
-        timeZoneId: String,
-    ): Flow<ReviewPlanBundle?>
-
-    fun observeCompletedReviewLocalDays(
-        learnerId: String,
-        limit: Int,
-    ): Flow<List<Long>> = flowOf(emptyList())
-
-    suspend fun countMistakes(): Int
-
-    /**
-     * Flushes any SQLite WAL frames into the main database file so a file-level
-     * backup captures every committed row. No-op for non-WAL fixtures.
-     */
-    suspend fun checkpointForBackup(): Unit = Unit
-
-    /**
-     * Deletes all business rows while keeping the schema and connection open.
-     * Used by tests that need a true empty catalog without restarting the app.
-     */
-    suspend fun clearAllData(): Unit = Unit
-
-    suspend fun readSubjectKnowledgeNodes(
-        subject: String,
-        limit: Int,
-    ): List<KnowledgeNodeSeedRecord> = emptyList()
-
-    /**
-     * Reads a lightweight, bounded subject slice for local relevance ranking.
-     *
-     * This is deliberately separate from the small model-context read: callers rank the larger
-     * slice locally and only disclose the final bounded result to an external model.
-     */
-    suspend fun readSubjectKnowledgeRecallCandidates(
-        subject: String,
-        searchFeatures: Set<String>,
-        limit: Int,
-    ): List<KnowledgeNodeSeedRecord> = readSubjectKnowledgeNodes(subject, limit.coerceAtMost(256))
-
-    suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord> = emptyList()
-
-    suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceSeedRecord> = emptyList()
-
-    suspend fun readKnowledgeNodeSourceBindings(
-        knowledgeNodeIds: Set<String>,
-    ): List<KnowledgeNodeSourceBindingSeedRecord> = emptyList()
-
-    suspend fun readSubjectKnowledgeNodeRelations(
-        subject: String,
-        limit: Int,
-    ): List<KnowledgeNodeRelationRecord> = emptyList()
-
-    suspend fun readKnowledgeNodeRelationsForDependents(
-        subject: String,
-        dependentKnowledgeNodeIds: Set<String>,
-    ): List<KnowledgeNodeRelationRecord> = emptyList()
-
-    suspend fun readKnowledgeTeachingMaterialsForNodes(
-        subject: String,
-        knowledgeNodeIds: Set<String>,
-        limit: Int,
-    ): List<KnowledgeTeachingMaterialRecord> = emptyList()
-
-    suspend fun readKnowledgeTeachingMaterialsByIds(
-        materialIds: Set<String>,
-    ): List<KnowledgeTeachingMaterialRecord> = emptyList()
-
-    suspend fun readKnowledgeTeachingMaterialNodeBindings(
-        materialIds: Set<String>,
-    ): List<KnowledgeTeachingMaterialNodeBindingRecord> = emptyList()
-
-    suspend fun importKnowledgeNodeRelations(
-        relations: List<KnowledgeNodeRelationRecord>,
-    ): Unit = throw UnsupportedOperationException("Knowledge-node relation imports are not implemented")
-
-    suspend fun importKnowledgeTeachingMaterials(
-        materials: List<KnowledgeTeachingMaterialRecord>,
-        bindings: List<KnowledgeTeachingMaterialNodeBindingRecord>,
-        sources: List<KnowledgeSourceSeedRecord> = emptyList(),
-    ): Unit = throw UnsupportedOperationException(
-        "Knowledge teaching-material imports are not implemented",
-    )
-
-    suspend fun importKnowledgeBase(
-        sources: List<KnowledgeSourceSeedRecord>,
-        nodes: List<KnowledgeNodeSeedRecord>,
-        bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
-    ): Unit = throw UnsupportedOperationException("Knowledge-base imports are not implemented")
-
-    suspend fun applyReviewedKnowledgePack(
-        command: ApplyReviewedKnowledgePackCommand,
-    ): List<KnowledgeGroundingResolutionRecord> = throw UnsupportedOperationException(
-        "Reviewed knowledge-pack application is not implemented",
-    )
-
-    fun observePendingKnowledgeGroundingRequests(
-        limit: Int = 256,
-    ): Flow<List<KnowledgeGroundingRequestRecord>> = flowOf(emptyList())
-
-    fun observePendingKnowledgeGroundingSummaries(
-        limit: Int = 128,
-    ): Flow<List<KnowledgeGroundingSummaryRecord>> = flowOf(emptyList())
-
-    fun observeReviewedKnowledgeCoverage(): Flow<List<ReviewedKnowledgeCoverageRecord>> =
-        flowOf(emptyList())
-
-    suspend fun enqueueKnowledgeResearchReviewBundle(
-        bundle: KnowledgeResearchReviewBundleRecord,
-    ): Unit = throw UnsupportedOperationException(
-        "Knowledge research review persistence is not implemented",
-    )
-
-    suspend fun readPendingKnowledgeResearchReviewBundles(
-        limit: Int = 64,
-    ): List<KnowledgeResearchReviewBundleRecord> = emptyList()
-
-    suspend fun readKnowledgeResearchReviewBundle(
-        bundleId: String,
-    ): KnowledgeResearchReviewBundleRecord? = null
-
-    suspend fun decideKnowledgeResearchReviewBundle(
-        command: DecideKnowledgeResearchReviewBundleCommand,
-    ): KnowledgeResearchReviewBundleRecord = throw UnsupportedOperationException(
-        "Knowledge research review decisions are not implemented",
-    )
-
-    suspend fun applyApprovedKnowledgeResearchPack(
-        command: ApplyApprovedKnowledgeResearchPackCommand,
-    ): List<KnowledgeGroundingResolutionRecord> = throw UnsupportedOperationException(
-        "Approved knowledge research pack application is not implemented",
-    )
-
-    suspend fun recordKnowledgeGroundingRequests(
-        requests: List<KnowledgeGroundingRequestRecord>,
-    ): Unit = throw UnsupportedOperationException("Knowledge-grounding requests are not implemented")
-
-    suspend fun resolveKnowledgeGrounding(
-        command: ResolveKnowledgeGroundingCommand,
-    ): KnowledgeGroundingResolutionRecord =
-        throw UnsupportedOperationException("Knowledge-grounding resolution is not implemented")
-
-    suspend fun readKnowledgeGroundingResolution(
-        groundingKey: String,
-    ): KnowledgeGroundingResolutionRecord? = null
-
-    suspend fun findMistakeBySourceKey(sourceKey: String): MistakeRecord?
-
-    suspend fun readMistakeDetail(errorBookEntryId: String): MistakeDetailRecord? =
-        throw UnsupportedOperationException("Mistake-detail reads are not implemented")
-
-    suspend fun readExactMistakeDetail(
-        entryId: String,
-        problemId: String,
-        problemRevisionId: String,
-    ): MistakeDetailRecord? =
-        throw UnsupportedOperationException("Exact mistake-detail reads are not implemented")
-
-    suspend fun readCurrentMistakeDetails(
-        entryIds: List<String>,
-    ): List<MistakeDetailRecord> = entryIds.mapNotNull { entryId ->
-        readMistakeDetail(entryId)
-    }
-
-    suspend fun readMistakeRevisionHistory(
-        errorBookEntryId: String,
-    ): List<MistakeRevisionSummaryRecord> = emptyList()
 
     suspend fun createProblemDraft(command: CreateProblemDraftCommand): ProblemDraftWriteResult
 
     suspend fun appendProblemDraftSourceAsset(
         command: AppendProblemDraftSourceAssetCommand,
-    ): AppendProblemDraftSourceAssetResult = throw UnsupportedOperationException(
-        "Problem-draft source append is not implemented",
-    )
+    ): AppendProblemDraftSourceAssetResult
 
     suspend fun reviseProblemDraft(command: ReviseProblemDraftCommand): ProblemDraftWriteResult
 
     suspend fun replaceProblemDraft(
         command: ReplaceProblemDraftCommand,
-    ): ProblemDraftReplacementResult = throw UnsupportedOperationException(
-        "Atomic capture replacement is not implemented",
-    )
+    ): ProblemDraftReplacementResult
 
     suspend fun splitProblemDraft(
         command: SplitProblemDraftCommand,
-    ): ProblemDraftSplitResult = throw UnsupportedOperationException(
-        "Atomic capture splitting is not implemented",
-    )
+    ): ProblemDraftSplitResult
 
     suspend fun readProblemDraft(draftId: String): ProblemDraftRecord?
 
-    suspend fun readCanonicalSourceAsset(sourceAssetId: String): CanonicalSourceAssetRecord? = null
-
-    suspend fun readUnreferencedCanonicalAssets(): List<CanonicalSourceAssetRecord> = emptyList()
-
-    suspend fun deleteUnreferencedCanonicalAssets(): Int = 0
-
-    suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord): Unit = Unit
-
-    suspend fun readPendingCaptureDraft(draftId: String): PendingCaptureDraftRecord? =
-        throw UnsupportedOperationException("Pending capture reads are not implemented")
-
-    suspend fun createBatchImportJob(
-        command: CreateBatchImportJobCommand,
-    ): BatchImportJobRecord = throw UnsupportedOperationException(
-        "Batch import writes are not implemented",
-    )
-
-    suspend fun readBatchImportJob(jobId: String): BatchImportJobRecord? = null
-
-    suspend fun updateBatchImportJobStatus(
-        jobId: String,
-        expectedStatus: String,
-        nextStatus: String,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun requeueInterruptedBatchImportPages(
-        jobId: String,
-        occurredAtEpochMillis: Long,
-    ): Int = 0
-
-    suspend fun claimNextBatchImportPage(
-        jobId: String,
-        occurredAtEpochMillis: Long,
-    ): BatchImportPageRecord? = null
-
-    suspend fun completeBatchImportPage(
-        jobId: String,
-        pageIndex: Int,
-        draftId: String,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun claimBatchImportBoundary(
-        jobId: String,
-        pageIndex: Int,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun requeueInterruptedBatchImportBoundaries(
-        jobId: String,
-        occurredAtEpochMillis: Long,
-    ): Int = 0
-
-    suspend fun resolveBatchImportBoundary(
-        command: ResolveBatchImportBoundaryCommand,
-    ): BatchImportJobRecord = throw UnsupportedOperationException(
-        "Batch import page-boundary writes are not implemented",
-    )
-
-    suspend fun failBatchImportBoundary(
-        jobId: String,
-        pageIndex: Int,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun failBatchImportPage(
-        jobId: String,
-        pageIndex: Int,
-        failureCode: String,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun retryBatchImportPage(
-        jobId: String,
-        pageIndex: Int,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun skipBatchImportPage(
-        jobId: String,
-        pageIndex: Int,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun finishBatchImportIfSettled(
-        jobId: String,
-        occurredAtEpochMillis: Long,
-    ): Boolean = false
-
-    suspend fun hasRetainedBatchImportSourceUri(sourceUri: String): Boolean = true
-
     suspend fun readProblemDraftEditWorkspace(
         draftId: String,
-    ): ProblemDraftEditWorkspaceRecord? = throw UnsupportedOperationException(
-        "Problem-draft edit-workspace reads are not implemented",
-    )
+    ): ProblemDraftEditWorkspaceRecord?
 
     suspend fun saveProblemDraftEditWorkspace(
         command: SaveProblemDraftEditWorkspaceCommand,
-    ): ProblemDraftEditWorkspaceWriteResult = throw UnsupportedOperationException(
-        "Problem-draft edit-workspace writes are not implemented",
-    )
+    ): ProblemDraftEditWorkspaceWriteResult
 
     suspend fun consumeProblemDraftEditWorkspace(
         command: ConsumeProblemDraftEditWorkspaceCommand,
-    ): Boolean = throw UnsupportedOperationException(
-        "Problem-draft edit-workspace consumption is not implemented",
-    )
+    ): Boolean
 
     suspend fun commitProblemDraft(command: CommitProblemDraftCommand): CommitProblemDraftResult
 
     suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
-    ): CommitProblemDraftResult = throw UnsupportedOperationException(
-        "Atomic workspace-backed problem confirmation is not implemented",
-    )
+    ): CommitProblemDraftResult
 
     suspend fun confirmTutorSession(
         command: ConfirmTutorSessionCommand,
-    ): TutorSessionWriteResult = throw UnsupportedOperationException(
-        "Tutor-session confirmation is not implemented",
-    )
+    ): TutorSessionWriteResult
 
     suspend fun confirmTutorSessionFromWorkspace(
         command: ConfirmTutorSessionFromWorkspaceCommand,
-    ): TutorSessionWriteResult = throw UnsupportedOperationException(
-        "Atomic workspace-backed tutor confirmation is not implemented",
-    )
+    ): TutorSessionWriteResult
 
-    suspend fun readTutorSession(sessionId: String): TutorSessionRecord? =
-        throw UnsupportedOperationException("Tutor-session reads are not implemented")
-
-    suspend fun createTutorConversation(
-        command: CreateTutorConversationDatabaseCommand,
-    ): TutorConversationRecord = throw UnsupportedOperationException(
-        "Tutor conversation creation is not implemented",
-    )
-
-    suspend fun appendTutorStudentMessage(
-        command: AppendTutorStudentMessageDatabaseCommand,
-    ): TutorMessageRecord = throw UnsupportedOperationException(
-        "Tutor student message writes are not implemented",
-    )
-
-    suspend fun appendTutorAssistantMessage(
-        command: AppendTutorAssistantMessageDatabaseCommand,
-    ): TutorMessageRecord = throw UnsupportedOperationException(
-        "Tutor assistant message writes are not implemented",
-    )
-
-    suspend fun updateTutorMessageStatus(
-        command: UpdateTutorMessageStatusDatabaseCommand,
-    ): TutorMessageRecord = throw UnsupportedOperationException(
-        "Tutor message status updates are not implemented",
-    )
-
-    suspend fun pauseTutorConversation(
-        conversationId: String,
-        updatedAtEpochMillis: Long,
-    ): TutorConversationRecord = throw UnsupportedOperationException(
-        "Tutor conversation pausing is not implemented",
-    )
-
-    suspend fun archiveTutorConversation(
-        conversationId: String,
-        updatedAtEpochMillis: Long,
-    ): TutorConversationRecord = throw UnsupportedOperationException(
-        "Tutor conversation archiving is not implemented",
-    )
-
-    suspend fun deleteTutorConversation(conversationId: String): Unit =
-        throw UnsupportedOperationException(
-            "Tutor conversation deletion is not implemented",
-        )
-
-    suspend fun saveTutorConversationDraft(
-        conversationId: String,
-        draft: String,
-        updatedAtEpochMillis: Long,
-    ): Unit = throw UnsupportedOperationException(
-        "Tutor conversation draft writes are not implemented",
-    )
-
-    suspend fun clearTutorConversationDraft(
-        conversationId: String,
-        updatedAtEpochMillis: Long,
-    ): Unit = throw UnsupportedOperationException(
-        "Tutor conversation draft clearing is not implemented",
-    )
+    suspend fun readTutorSession(sessionId: String): TutorSessionRecord?
 
     suspend fun commitTutorSession(
         command: CommitTutorSessionCommand,
-    ): CommitProblemDraftResult = throw UnsupportedOperationException(
-        "Tutor-session commit is not implemented",
-    )
+    ): CommitProblemDraftResult
 
     suspend fun endTutorSession(
         command: EndTutorSessionCommand,
-    ): EndTutorSessionResult = throw UnsupportedOperationException(
-        "Tutor-session ending is not implemented",
-    )
+    ): EndTutorSessionResult
 
-    suspend fun recordTutorChoice(command: PersistTutorChoiceCommand): TutorTurnResponseRecord =
-        throw UnsupportedOperationException("Tutor response writes are not implemented")
+    suspend fun recordTutorChoice(command: PersistTutorChoiceCommand): TutorTurnResponseRecord
 
-    suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord =
-        throw UnsupportedOperationException("Tutor move writes are not implemented")
+    suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord
 
-    suspend fun revealTutorSolution(command: PersistTutorRevealCommand): TutorTurnResponseRecord =
-        throw UnsupportedOperationException("Tutor reveal writes are not implemented")
+    suspend fun revealTutorSolution(command: PersistTutorRevealCommand): TutorTurnResponseRecord
 
     suspend fun recordTutorSolutionExposure(
         command: PersistTutorAnswerExposureCommand,
-    ): TutorAnswerExposureRecord = throw UnsupportedOperationException(
-        "Tutor solution-exposure writes are not implemented",
-    )
+    ): TutorAnswerExposureRecord
 
     suspend fun bindTutorSessionProblemAnchor(
         command: PersistTutorSessionAnchorCommand,
-    ): TutorSessionProblemAnchorRecord = TutorSessionProblemAnchorRecord(
-        learnerId = command.learnerId,
-        sessionId = command.sessionId,
-        problemRevisionId = command.problemRevisionId,
-        practiceUnitId = command.practiceUnitId,
-        source = command.source,
-        anchoredAtEpochMillis = command.anchoredAtEpochMillis,
-    )
+    ): TutorSessionProblemAnchorRecord
 
     suspend fun reconcileTutorAnswerExposures(learnerId: String, limit: Int = 100): Int = 0
 
@@ -1910,9 +1496,7 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
 
     suspend fun recordReviewAttempt(
         command: ReviewAttemptWriteCommand,
-    ): ReviewAttemptWriteResult = throw UnsupportedOperationException(
-        "Atomic review-attempt writes are not implemented",
-    )
+    ): ReviewAttemptWriteResult
 
     suspend fun recordAnswerReveal(command: AnswerRevealWriteCommand): AnswerRevealWriteResult
 
@@ -1934,9 +1518,7 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
 
     suspend fun confirmProblemOrganization(
         command: ConfirmProblemOrganizationCommand,
-    ): ConfirmProblemOrganizationResult = throw UnsupportedOperationException(
-        "Atomic problem organization confirmation is not implemented",
-    )
+    ): ConfirmProblemOrganizationResult
 
     suspend fun loadProjectionBatch(
         projectionName: String,
@@ -1965,9 +1547,7 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     @Deprecated("New review transitions must use recordReviewAttempt")
     suspend fun advanceReviewSession(
         command: ReviewSessionAdvanceCommand,
-    ): ReviewSessionAdvanceResult = throw UnsupportedOperationException(
-        "Review-session replay is not implemented",
-    )
+    ): ReviewSessionAdvanceResult
 
     @Deprecated("P0 inspection only; keep data-layer wiring behind the repository boundary")
     suspend fun readAssessmentSnapshotP0(
