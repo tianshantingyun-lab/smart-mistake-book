@@ -83,15 +83,15 @@ sealed interface MathToken {
     data class Symbol(val value: String) : MathToken
     data class Number(val value: String) : MathToken
     data class Letter(val value: String) : MathToken
-    data class LeftBrace : MathToken
-    data class RightBrace : MathToken
     data class LeftBracket(val type: BracketType) : MathToken
     data class RightBracket(val type: BracketType) : MathToken
-    data class Space : MathToken
-    data class SuperscriptOp : MathToken
-    data class SubscriptOp : MathToken
-    data class Carat : MathToken
-    data class Underscore : MathToken
+    object LeftBrace : MathToken
+    object RightBrace : MathToken
+    object Space : MathToken
+    object SuperscriptOp : MathToken
+    object SubscriptOp : MathToken
+    object Carat : MathToken
+    object Underscore : MathToken
 }
 
 enum class BracketType {
