@@ -36,9 +36,10 @@ android {
     buildTypes {
         create("benchmark") {
             matchingFallbacks += listOf("release")
-            isDebuggable = true
+            isDebuggable = false
+            isProfileable = true
             signingConfig = signingConfigs.getByName("debug")
-            isMinifyEnabled = false
+            isMinifyEnabled = true
         }
         release {
             signingConfig = signingConfigs.getByName("debug")

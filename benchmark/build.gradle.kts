@@ -11,8 +11,6 @@ android {
         minSdk = 24
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
-            "EMULATOR,DEBUGGABLE"
         missingDimensionStrategy("networkMode", "localFirst")
     }
 
@@ -33,7 +31,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":app"))
     implementation(libs.androidx.benchmark.macro.junit4)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.test.ext.junit)
