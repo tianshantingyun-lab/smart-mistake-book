@@ -38,12 +38,36 @@ data class MasteryEvidenceDecision(
         get() = evidence.signedWeight
 }
 
+/**
+ * Configurable evidence weights for mastery calculation.
+ * Auxiliary evidence (ASSISTED) should not masquerade as independent probability.
+ */
+data class MasteryEvidenceWeights(
+    val independentCorrectWeight: Double = 1.0,
+    val independentIncorrectWeight: Double = 1.0,
+    val assistedCorrectWeight: Double = 0.6,
+    val assistedIncorrectWeight: Double = 0.9,
+    val revealedIncorrectWeight: Double = 0.6,
+) {
+    init {
+        require(independentCorrectWeight > 0) { "Independent correct weight must be positive" }
+        require(independentIncorrectWeight > 0) { "Independent incorrect weight must be positive" }
+        require(assistedCorrectWeight in 0.0..independentCorrectWeight) {
+            "Assisted correct weight must be between 0 and independent correct weight"
+        }
+        require(assistedIncorrectWeight in 0.0..independentIncorrectWeight) {
+            "Assisted incorrect weight must be between 0 and independent incorrect weight"
+        }
+    }
+}
+
 object MasteryEvidencePolicy {
     const val VERSION = LearningCoreVersions.EVIDENCE
 
     fun evaluate(
         assessmentItem: TutorAssessmentItem,
         context: AssessmentSubmissionContext,
+        weights: MasteryEvidenceWeights = MasteryEvidenceWeights(),
     ): MasteryEvidenceDecision {
         require(context.assessmentItemId == assessmentItem.id) {
             "Submission context must belong to the assessed item"
@@ -56,7 +80,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.INCORRECT_AFTER_REVEAL,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = 0.6,
+                    weight = weights.revealedIncorrectWeight,
                     reason = EvidenceReason.INCORRECT_AFTER_REVEAL,
                 ),
                 ProblemMemoryOutcome.RETRIEVAL_FAILURE,
@@ -78,7 +102,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.INCORRECT_RESPONSE,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = 0.9,
+                    weight = weights.assistedIncorrectWeight,
                     reason = EvidenceReason.INCORRECT_AFTER_HINT,
                 ),
                 ProblemMemoryOutcome.RETRIEVAL_FAILURE,
@@ -89,7 +113,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.INCORRECT_RESPONSE,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = 0.9,
+                    weight = weights.assistedIncorrectWeight,
                     reason = EvidenceReason.INCORRECT_ON_RETRY,
                 ),
                 ProblemMemoryOutcome.RETRIEVAL_FAILURE,
@@ -100,7 +124,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.INCORRECT_RESPONSE,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = 1.0,
+                    weight = weights.independentIncorrectWeight,
                     reason = EvidenceReason.INDEPENDENT_INCORRECT,
                 ),
                 ProblemMemoryOutcome.RETRIEVAL_FAILURE,
@@ -111,7 +135,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.CORRECT_AFTER_HINT,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.POSITIVE,
-                    weight = 0.6,
+                    weight = weights.assistedCorrectWeight,
                     reason = EvidenceReason.CORRECT_AFTER_HINT,
                 ),
                 ProblemMemoryOutcome.ASSISTED_RECALL,
@@ -122,7 +146,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.CORRECT_ON_RETRY,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.POSITIVE,
-                    weight = 0.6,
+                    weight = weights.assistedCorrectWeight,
                     reason = EvidenceReason.CORRECT_ON_RETRY,
                 ),
                 ProblemMemoryOutcome.ASSISTED_RECALL,
@@ -133,7 +157,7 @@ object MasteryEvidencePolicy {
                 MasteryEvidenceReason.INDEPENDENT_CORRECT_RESPONSE,
                 LearningEvidence(
                     direction = LearningEvidenceDirection.POSITIVE,
-                    weight = 1.0,
+                    weight = weights.independentCorrectWeight,
                     reason = EvidenceReason.INDEPENDENT_CORRECT,
                 ),
                 ProblemMemoryOutcome.INDEPENDENT_RECALL,
