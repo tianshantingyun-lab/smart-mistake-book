@@ -1,13 +1,39 @@
 package com.tingyun.smartmistakebook.core.model
 
 /**
- * Converts the deliberately small formula whitelist into readable Unicode text.
+ * Converts LaTeX-like formula input into readable Unicode text.
  *
- * This is a display fallback, not a TeX engine: it never executes markup, loads remote content,
- * or guesses mathematical meaning outside the supported commands.
+ * Uses a proper Math AST/parser pipeline for structured rendering.
+ * The legacy regex-based fallback is preserved for edge cases.
  */
 object ReadableMathText {
     fun formula(value: String): String {
+        return try {
+            val ast = MathParser.parse(value)
+            MathRenderer.render(ast)
+        } catch (_: Exception) {
+            // Fallback to legacy regex-based conversion for malformed input
+            legacyFormula(value)
+        }
+    }
+
+    fun inlineMarkdown(value: String, lineBreakReplacement: Char = '，'): String = buildString {
+        SafeInlineMarkdown.parse(value).forEach { token ->
+            when (token) {
+                is InlineToken.Text -> append(token.value)
+                is InlineToken.Strong -> append(token.value)
+                is InlineToken.Emphasis -> append(token.value)
+                is InlineToken.Code -> append(token.value)
+                is InlineToken.Formula -> append(formula(token.value))
+                InlineToken.LineBreak -> append(lineBreakReplacement)
+            }
+        }
+    }
+
+    /**
+     * Legacy regex-based fallback for malformed input.
+     */
+    private fun legacyFormula(value: String): String {
         var readable = RestrictedFormulaText.sanitize(value)
             .replace("\\rightleftharpoons", "⇌")
             .replace("\\left", "")
@@ -115,19 +141,6 @@ object ReadableMathText {
             readableScript(source, SUBSCRIPTS, "_")
         }
         return readable.replace("{", "").replace("}", "")
-    }
-
-    fun inlineMarkdown(value: String, lineBreakReplacement: Char = '，'): String = buildString {
-        SafeInlineMarkdown.parse(value).forEach { token ->
-            when (token) {
-                is InlineToken.Text -> append(token.value)
-                is InlineToken.Strong -> append(token.value)
-                is InlineToken.Emphasis -> append(token.value)
-                is InlineToken.Code -> append(token.value)
-                is InlineToken.Formula -> append(formula(token.value))
-                InlineToken.LineBreak -> append(lineBreakReplacement)
-            }
-        }
     }
 
     private const val MAX_NESTED_REPLACEMENT_PASSES = 4
