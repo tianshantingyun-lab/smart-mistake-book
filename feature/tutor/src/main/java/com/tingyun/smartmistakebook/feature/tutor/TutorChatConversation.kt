@@ -21,8 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowDown
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,7 +67,9 @@ import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 private data class TutorRespondExchangeKey(
     val sessionId: String,
@@ -551,6 +555,31 @@ internal fun TutorConversationFrame(
                         it()
                     }
                 }
+            }
+        }
+        if (!followsTail && initialTailPositioned) {
+            FloatingActionButton(
+                onClick = {
+                    followsTail = true
+                    forceFollowToken?.let { handledForceToken = it }
+                    val itemCount = listState.layoutInfo.totalItemsCount
+                    if (itemCount > 0) {
+                        kotlinx.coroutines.MainScope().launch {
+                            listState.scrollToItem(itemCount - 1)
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 80.dp)
+                    .testTag("tutor_scroll_to_bottom"),
+                containerColor = JadeActive,
+                contentColor = Paper,
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowDown,
+                    contentDescription = "回到最新",
+                )
             }
         }
     }
