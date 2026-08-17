@@ -298,7 +298,14 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 .fillMaxSize()
                 .statusBarsPadding(),
         ) {
-            StartupStateBanner(state = startupState)
+            StartupStateBanner(
+                state = startupState,
+                onRetry = if (startupState.isRetryable) {
+                    { application.refreshStudyExperience() }
+                } else {
+                    null
+                },
+            )
             StudyDataStatusLine(experience.status)
             NavHost(
                 navController = navController,

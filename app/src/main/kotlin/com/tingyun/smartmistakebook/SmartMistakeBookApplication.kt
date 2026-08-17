@@ -165,6 +165,7 @@ class SmartMistakeBookApplication : Application() {
                 title = "应用数据无法打开",
                 message = "数据库初始化失败，暂时不能安全读写学习记录。",
                 diagnosticId = "startup:database:${System.currentTimeMillis().hashCode().toUInt()}",
+                errorCategory = StartupErrorCategory.DATABASE,
             )
             return
         }
@@ -182,6 +183,7 @@ class SmartMistakeBookApplication : Application() {
                     title = "本地知识包尚未准备好",
                     message = "错题和复习可以继续使用，自动分类会暂缓。",
                     diagnosticId = "startup:knowledge:${failure.hashCode().toUInt()}",
+                    errorCategory = StartupErrorCategory.KNOWLEDGE_BASE,
                 )
             }
         }
