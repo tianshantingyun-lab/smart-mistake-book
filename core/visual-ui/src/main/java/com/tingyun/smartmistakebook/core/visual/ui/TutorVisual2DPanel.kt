@@ -242,9 +242,22 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawNode(
         TutorVisual2DNodeKind.ELECTRODE,
         TutorVisual2DNodeKind.PISTON,
         TutorVisual2DNodeKind.RESISTOR,
-        TutorVisual2DNodeKind.MEMBRANE,
-        -> Unit
-        else -> {
+        -> {
+            drawRoundRect(
+                color = fill,
+                topLeft = bounds.topLeft,
+                size = bounds.size,
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
+            )
+            drawRoundRect(
+                color = stroke,
+                topLeft = bounds.topLeft,
+                size = bounds.size,
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
+                style = Stroke(2.dp.toPx()),
+            )
+        }
+        TutorVisual2DNodeKind.MEMBRANE -> {
             drawRoundRect(
                 color = fill,
                 topLeft = bounds.topLeft,
@@ -258,6 +271,25 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawNode(
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx()),
                 style = Stroke(2.dp.toPx()),
             )
+        }
+    }
+    // Draw node label below the node
+    node.label?.let { label ->
+        if (label.isNotBlank()) {
+            drawContext.canvas.nativeCanvas.apply {
+                val paint = android.graphics.Paint().apply {
+                    color = android.graphics.Color.DKGRAY
+                    textSize = 10.dp.toPx()
+                    textAlign = android.graphics.Paint.Align.CENTER
+                    isAntiAlias = true
+                }
+                drawText(
+                    label,
+                    bounds.center.x,
+                    bounds.bottom + 14.dp.toPx(),
+                    paint,
+                )
+            }
         }
     }
 }
