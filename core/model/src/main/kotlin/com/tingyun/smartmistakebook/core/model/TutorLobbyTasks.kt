@@ -17,7 +17,6 @@ data class TutorLobbyInput(
     val messageOrdinal: Int,
     val studentMessage: String,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
-    val imageAssetRefs: List<String> = emptyList(),  // 新增：图片资产引用
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_LOBBY
@@ -45,20 +44,12 @@ data class TutorLobbyInput(
                 message.studentMessage.length + message.assistantMarkdown.length
             } <= TutorRespondInput.MAX_PRIOR_MESSAGE_CHARS,
         ) { "Tutor lobby prior messages exceed their text budget" }
-        require(imageAssetRefs.size <= MAX_IMAGE_ASSETS) {
-            "Tutor lobby contains too many images (max $MAX_IMAGE_ASSETS)"
-        }
-        imageAssetRefs.forEach { ref ->
-            ref.requireSafeModelText("Image asset reference", MAX_ASSET_REF_CHARS, false)
-        }
     }
 
     companion object {
         const val MAX_STUDENT_MESSAGE_CHARS = TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS
         const val MAX_PRIOR_MESSAGES = TutorRespondInput.MAX_PRIOR_MESSAGES
         const val MAX_PRIOR_MESSAGE_CHARS = TutorRespondInput.MAX_PRIOR_MESSAGE_CHARS
-        const val MAX_IMAGE_ASSETS = 5
-        const val MAX_ASSET_REF_CHARS = 256
     }
 }
 

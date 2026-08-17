@@ -32,4 +32,5 @@ include(
     ":feature:library",
     ":feature:profile",
     ":quality:visual-benchmark",
+    ":benchmark",
 )

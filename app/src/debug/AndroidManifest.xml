@@ -5,11 +5,11 @@
         <!-- Debug-only Markdown/math renderer harness. -->
         <activity
             android:name=".FormatTestActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="格式测试" />
         <activity
             android:name=".debug.DynamicGuiPerformanceActivity"
-            android:exported="true" />
+            android:exported="false" />
     </application>
 
 </manifest>

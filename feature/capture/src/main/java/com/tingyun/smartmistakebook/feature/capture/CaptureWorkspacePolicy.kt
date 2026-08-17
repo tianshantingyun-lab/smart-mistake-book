@@ -333,3 +333,43 @@ private fun CapturedQuestionDocument.withFinalEvidenceDefaults(
 
 private const val DEFAULT_CAPTURE_SUBJECT = "GENERAL"
 private val CAPTURE_PLACEHOLDER_TITLES = setOf("新拍题目", "待校对题目")
+
+
+internal const val CAPTURE_WORKSPACE_SAVE_ERROR = "这次修改还没保存好，请重试后再离开。"
+
+internal enum class CaptureWorkspaceLeaveDecision {
+    LEAVE_NOW,
+    FLUSH_THEN_LEAVE,
+}
+
+internal fun captureWorkspaceLeaveDecision(hasWorkspace: Boolean): CaptureWorkspaceLeaveDecision =
+    if (hasWorkspace) {
+        CaptureWorkspaceLeaveDecision.FLUSH_THEN_LEAVE
+    } else {
+        CaptureWorkspaceLeaveDecision.LEAVE_NOW
+    }
+
+internal fun captureWorkspaceFlushCanStart(
+    saving: Boolean,
+    workflowInProgress: Boolean,
+): Boolean = !saving && !workflowInProgress
+
+internal sealed interface CaptureAppendPageDecision {
+    data object MissingDraft : CaptureAppendPageDecision
+    data object TooManyPages : CaptureAppendPageDecision
+    data object Busy : CaptureAppendPageDecision
+    data object Append : CaptureAppendPageDecision
+}
+
+internal fun captureAppendPageDecision(
+    draftId: String?,
+    revisionNumber: Int?,
+    pageCount: Int,
+    maxPages: Int = MAX_CAPTURE_SOURCE_PAGES,
+    workflowInProgress: Boolean,
+): CaptureAppendPageDecision = when {
+    draftId == null || revisionNumber == null -> CaptureAppendPageDecision.MissingDraft
+    pageCount >= maxPages -> CaptureAppendPageDecision.TooManyPages
+    workflowInProgress -> CaptureAppendPageDecision.Busy
+    else -> CaptureAppendPageDecision.Append
+}

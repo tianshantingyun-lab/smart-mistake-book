@@ -32,6 +32,8 @@ internal data class MistakeRow(
     val status: String,
     @ColumnInfo(name = "created_at_epoch_millis")
     val createdAtEpochMillis: Long,
+    @ColumnInfo(name = "updated_at_epoch_millis")
+    val updatedAtEpochMillis: Long,
     @ColumnInfo(name = "estimated_seconds")
     val estimatedSeconds: Int,
     @ColumnInfo(name = "next_review_at_epoch_millis")
@@ -85,6 +87,7 @@ internal interface ProblemDao {
             revision.problem_markdown,
             entry.status,
             entry.accepted_at_epoch_millis AS created_at_epoch_millis,
+            entry.updated_at_epoch_millis AS updated_at_epoch_millis,
             unit.estimated_seconds,
             memory.next_review_at_epoch_millis,
             memory.retrievability,
@@ -198,6 +201,7 @@ internal interface ProblemDao {
             revision.problem_markdown,
             entry.status,
             entry.accepted_at_epoch_millis AS created_at_epoch_millis,
+            entry.updated_at_epoch_millis AS updated_at_epoch_millis,
             unit.estimated_seconds,
             memory.next_review_at_epoch_millis,
             memory.retrievability,

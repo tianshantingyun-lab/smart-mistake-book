@@ -93,6 +93,55 @@ fun SectionHeader(
 }
 
 @Composable
+fun ScreenStatePanel(
+    icon: ImageVector,
+    title: String,
+    supportingText: String? = null,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 96.dp)
+            .padding(vertical = 18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(42.dp),
+            tint = InkMuted,
+        )
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = Ink,
+            fontWeight = FontWeight.SemiBold,
+        )
+        if (supportingText != null) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = supportingText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = InkSecondary,
+            )
+        }
+        if (actionLabel != null && onAction != null) {
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = onAction,
+                modifier = Modifier.defaultMinSize(minHeight = 48.dp),
+            ) {
+                Text(actionLabel)
+            }
+        }
+    }
+}
+
+@Composable
 fun LocalModeLine(
     text: String,
     modifier: Modifier = Modifier,

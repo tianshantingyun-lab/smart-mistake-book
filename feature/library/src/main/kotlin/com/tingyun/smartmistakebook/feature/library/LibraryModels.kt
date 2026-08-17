@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.library
 
 import androidx.compose.runtime.Immutable
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
+import com.tingyun.smartmistakebook.core.domain.LibraryCatalogItem
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ReadableMathText
 import com.tingyun.smartmistakebook.core.model.SubjectKind
@@ -10,12 +11,11 @@ import com.tingyun.smartmistakebook.core.ui.studentLabel
 internal enum class LibraryFacet(
     val id: String,
     val label: String,
-    val visibleOptionLimit: Int,
 ) {
-    SUBJECT("subject", "科目", 8),
-    CHAPTER("chapter", "板块", 12),
-    KNOWLEDGE("knowledge", "知识点", 12),
-    MASTERY("mastery", "掌握程度", 6),
+    SUBJECT("subject", "科目"),
+    CHAPTER("chapter", "板块"),
+    KNOWLEDGE("knowledge", "知识点"),
+    MASTERY("mastery", "掌握程度"),
     ;
 
     companion object {
@@ -38,6 +38,9 @@ internal enum class MasteryState(
         fun normalizeStoredValue(value: String?): String? = entries
             .firstOrNull { it.id == value || it.label == value }
             ?.id
+
+        fun fromId(value: String?): MasteryState =
+            entries.firstOrNull { it.id == value } ?: UNKNOWN
     }
 }
 
@@ -127,6 +130,9 @@ internal data class LibraryUiState(
     val selections: LibrarySelections,
     val activeOptions: List<LibraryFacetOption>,
     val visibleMistakes: List<LibraryMistake>,
+    val totalCount: Int = visibleMistakes.size,
+    val hasMore: Boolean = false,
+    val loaded: Boolean = true,
 ) {
     val hasActiveFilters: Boolean
         get() = query.isNotBlank() || !selections.isEmpty
@@ -261,6 +267,20 @@ internal fun StudyCatalogEntry.toLibraryMistake(): LibraryMistake {
         chapterLabels = chapterLabels,
         knowledgeLabels = knowledgeLabels,
         mastery = masteryStatus.toLibraryMastery(),
+    )
+}
+
+internal fun LibraryCatalogItem.toLibraryMistake(): LibraryMistake {
+    val subjectKind = runCatching { SubjectKind.valueOf(subjectId) }
+        .getOrDefault(SubjectKind.GENERAL)
+    return LibraryMistake(
+        id = entryId,
+        title = title,
+        summary = summary,
+        subject = subjectKind,
+        chapterLabels = chapterLabels,
+        knowledgeLabels = knowledgeLabels,
+        mastery = MasteryState.fromId(masteryId),
     )
 }
 

@@ -39,17 +39,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- FileProvider for camera capture in tutor module -->
-        <provider
-            android:name="com.tingyun.smartmistakebook.feature.tutor.TutorFileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/tutor_file_paths" />
-        </provider>
-
     </application>
 
 </manifest>

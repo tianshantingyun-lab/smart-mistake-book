@@ -3,10 +3,70 @@ package com.tingyun.smartmistakebook.core.database.dao
 import androidx.room3.ColumnInfo
 import androidx.room3.Dao
 import androidx.room3.Query
+import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
+
+internal data class CanonicalSourceAssetRow(
+    @ColumnInfo(name = "source_asset_id")
+    val sourceAssetId: String,
+    @ColumnInfo(name = "content_sha256")
+    val contentSha256: String,
+    @ColumnInfo(name = "relative_path")
+    val relativePath: String,
+    @ColumnInfo(name = "mime_type")
+    val mimeType: String,
+    @ColumnInfo(name = "byte_size")
+    val byteSize: Long,
+    val width: Int,
+    val height: Int,
+    @ColumnInfo(name = "source_type")
+    val sourceType: String,
+    @ColumnInfo(name = "created_at_epoch_millis")
+    val createdAtEpochMillis: Long,
+)
 
 @Dao
 internal interface PendingCaptureDao {
+    @Query(
+        """
+        SELECT asset.source_asset_id,
+               asset.content_sha256,
+               asset.relative_path,
+               asset.mime_type,
+               asset.byte_size,
+               asset.width,
+               asset.height,
+               asset.source_type,
+               asset.created_at_epoch_millis
+        FROM canonical_source_asset AS asset
+        WHERE NOT EXISTS (
+            SELECT 1 FROM problem_revision_source_asset AS revision_link
+            WHERE revision_link.source_asset_id = asset.source_asset_id
+        )
+          AND NOT EXISTS (
+            SELECT 1 FROM problem_draft_source_asset AS draft_link
+            WHERE draft_link.source_asset_id = asset.source_asset_id
+        )
+        ORDER BY asset.created_at_epoch_millis ASC, asset.source_asset_id ASC
+        """,
+    )
+    suspend fun findUnreferencedCanonicalAssets(): List<CanonicalSourceAssetRow>
+
+    @Query(
+        """
+        DELETE FROM canonical_source_asset AS asset
+        WHERE NOT EXISTS (
+            SELECT 1 FROM problem_revision_source_asset AS revision_link
+            WHERE revision_link.source_asset_id = asset.source_asset_id
+        )
+          AND NOT EXISTS (
+            SELECT 1 FROM problem_draft_source_asset AS draft_link
+            WHERE draft_link.source_asset_id = asset.source_asset_id
+        )
+        """,
+    )
+    suspend fun deleteUnreferencedCanonicalAssets(): Int
+
     @Query(
         """
         SELECT request_id

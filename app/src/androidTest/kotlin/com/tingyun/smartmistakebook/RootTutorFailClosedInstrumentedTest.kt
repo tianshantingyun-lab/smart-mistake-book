@@ -65,6 +65,9 @@ class RootTutorFailClosedInstrumentedTest {
         val application = InstrumentationRegistry.getInstrumentation()
             .targetContext
             .applicationContext as SmartMistakeBookApplication
+        kotlinx.coroutines.runBlocking {
+            application.studyDatabase.clearAllData()
+        }
         assumeTrue(
             "The strict-offline diagnostic flavor intentionally has no semantic tutor.",
             application.capabilities.tutorTeachingEnabled,

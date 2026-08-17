@@ -89,9 +89,17 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.net.InetAddress
+import java.net.SocketTimeoutException
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
@@ -404,6 +412,127 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(sentBody.contains("data:image/jpeg;base64,"))
         assertFalse(sentBody.contains(DRAFT_ID))
         assertFalse(sentBody.contains(ASSET_ID))
+    }
+
+    @Test
+    fun mockWebServerReceivesAuthorizedImageThroughRealEnqueuePath() = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(
+                MockResponse()
+                    .setResponseCode(200)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody(envelope(assessmentPayload())),
+            )
+            server.start()
+            val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+            val gateway = OpenAiCompatibleModelGateway(
+                configurationStore = FakeConfigurationStore(CONFIGURATION),
+                assetSource = assetSource { _, _ -> asset() },
+                transport = modelTransport { _, _, body ->
+                    val request = Request.Builder()
+                        .url(server.url("/chat/completions"))
+                        .header("Authorization", "Bearer secret")
+                        .post(body.toRequestBody(jsonMediaType))
+                        .build()
+                    OkHttpClient().newCall(request).execute().use { response ->
+                        ModelHttpResponse(response.code, response.body.string())
+                    }
+                },
+                clock = { AUTHORIZATION_NOW },
+            )
+
+            val events = gateway.execute(authorizedAssessment(gateway)).toList()
+            val output = (events.last() as ModelGatewayEvent.Completed).output
+                as CaptureAssessmentOutput
+
+            assertEquals(CaptureAssessmentDecision.PASS, output.assessment.decision)
+            val recorded = server.takeRequest()
+            assertTrue(recorded.body.readUtf8().contains("data:image/jpeg;base64,"))
+            assertTrue(recorded.getHeader("Authorization").orEmpty().contains("Bearer secret"))
+        }
+    }
+
+    @Test
+    fun http429MapsToRateLimitedFailureThroughTheGatewayExecutionPath() = runBlocking {
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _, _, _ ->
+                ModelHttpResponse(429, """{"error":{"message":"too many requests"}}""")
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedAssessment(gateway)).toList()
+        val failed = events.last() as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.RATE_LIMITED, failed.failure.code)
+        assertTrue(failed.failure.retryable)
+    }
+
+    @Test
+    fun http5xxMapsToRetryableServiceFailureThroughTheGatewayExecutionPath() = runBlocking {
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _, _, _ ->
+                ModelHttpResponse(503, "service unavailable")
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedAssessment(gateway)).toList()
+        val failed = events.last() as ModelGatewayEvent.Failed
+
+        assertEquals(ModelFailureCode.NETWORK_UNAVAILABLE, failed.failure.code)
+        assertTrue(failed.failure.retryable)
+    }
+
+    @Test
+    fun http401And403MapToAuthenticationFailureWithoutRetrying() = runBlocking {
+        listOf(401, 403).forEach { statusCode ->
+            val gateway = OpenAiCompatibleModelGateway(
+                configurationStore = FakeConfigurationStore(CONFIGURATION),
+                assetSource = assetSource { _, _ -> asset() },
+                transport = modelTransport { _, _, _ ->
+                    ModelHttpResponse(statusCode, "unauthorized")
+                },
+                clock = { AUTHORIZATION_NOW },
+            )
+
+            val events = gateway.execute(authorizedAssessment(gateway)).toList()
+            val failed = events.last() as ModelGatewayEvent.Failed
+
+            assertEquals(ModelFailureCode.AUTHENTICATION_FAILED, failed.failure.code)
+            assertFalse(failed.failure.retryable)
+        }
+    }
+
+    @Test
+    fun connectionFailureMapsToNetworkUnavailableAndTimeoutMapsToTimeout() = runBlocking {
+        val networkGateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _, _, _ -> throw IOException("connection refused") },
+            clock = { AUTHORIZATION_NOW },
+        )
+        val networkEvents = networkGateway.execute(authorizedAssessment(networkGateway)).toList()
+        assertEquals(
+            ModelFailureCode.NETWORK_UNAVAILABLE,
+            (networkEvents.last() as ModelGatewayEvent.Failed).failure.code,
+        )
+
+        val timeoutGateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _, _, _ -> throw SocketTimeoutException("timed out") },
+            clock = { AUTHORIZATION_NOW },
+        )
+        val timeoutEvents = timeoutGateway.execute(authorizedAssessment(timeoutGateway)).toList()
+        assertEquals(
+            ModelFailureCode.TIMEOUT,
+            (timeoutEvents.last() as ModelGatewayEvent.Failed).failure.code,
+        )
     }
 
     @Test

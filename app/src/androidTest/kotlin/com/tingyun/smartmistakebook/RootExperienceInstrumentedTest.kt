@@ -60,7 +60,7 @@ class RootExperienceInstrumentedTest {
         composeRule.onAllNodesWithTag("tutor_choice_a").assertCountEquals(0)
         composeRule.onAllNodesWithTag("tutor_reveal_answer").assertCountEquals(0)
 
-        composeRule.onNodeWithTag("tutor_capture_button").performClick()
+        composeRule.onNodeWithTag("tutor_capture_shortcut").performClick()
         waitForTag("capture_screen")
         navigateBackAndWait("root_tutor")
 
@@ -85,7 +85,7 @@ class RootExperienceInstrumentedTest {
         navigateBackAndWait("root_profile")
 
         composeRule.onNodeWithTag("profile_storage_setting").performClick()
-        waitForText("存储与导出")
+        waitForText("存储、备份与导出")
         composeRule.onAllNodesWithText("加密备份", substring = true).assertCountEquals(0)
         composeRule.onAllNodesWithText("暂未开放", substring = true).assertCountEquals(0)
     }

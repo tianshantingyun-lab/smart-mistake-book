@@ -52,6 +52,10 @@ import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_CONTENT_DIMENSIONS
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_RELATION_KINDS
+import com.tingyun.smartmistakebook.core.model.AppErrorCode
+import com.tingyun.smartmistakebook.core.model.RecoveryAction
+import com.tingyun.smartmistakebook.core.model.UserRecoverableError
+import com.tingyun.smartmistakebook.core.model.userRecoverableError
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
@@ -90,6 +94,7 @@ internal fun MistakeOrganizationSection(
     }
     var isContinuingPausedOrganization by remember(key, modelTasks) { mutableStateOf(false) }
     var message by rememberSaveable(key) { mutableStateOf<String?>(null) }
+    var error by remember(key) { mutableStateOf<UserRecoverableError?>(null) }
     var isPreparing by rememberSaveable(key) { mutableStateOf(false) }
     var attempt by rememberSaveable(key) { mutableStateOf(0) }
     var preparationDismissed by rememberSaveable(key) { mutableStateOf(false) }
@@ -116,6 +121,7 @@ internal fun MistakeOrganizationSection(
         correctionVisible = false
         preparationDismissed = false
         message = null
+        error = null
     }
     val retryAutomaticApply: () -> Unit = {
         applyState = AutomaticOrganizationState.Idle
@@ -124,6 +130,7 @@ internal fun MistakeOrganizationSection(
     val startPreparedOrganization: () -> Unit = {
         scope.launch {
             message = null
+            error = null
             try {
                 val now = System.currentTimeMillis()
                 val prepared = checkNotNull(preparation)
@@ -144,7 +151,13 @@ internal fun MistakeOrganizationSection(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                message = "整理失败，请稍后重试"
+                error = userRecoverableError(
+                    code = AppErrorCode.NETWORK_UNAVAILABLE,
+                    title = "整理没有完成",
+                    message = "整理失败，请稍后重试",
+                    dataSafe = true,
+                    primaryAction = RecoveryAction.RETRY,
+                )
             }
         }
     }
@@ -155,7 +168,13 @@ internal fun MistakeOrganizationSection(
             !availableProvider.supports(ModelTaskKind.PROBLEM_CLASSIFY) ||
             availableProvider.executionLocation == ModelExecutionLocation.UNAVAILABLE
         ) {
-            message = "暂时无法继续整理"
+            error = userRecoverableError(
+                code = AppErrorCode.PROVIDER_CAPABILITY_MISMATCH,
+                title = "暂时无法继续整理",
+                message = "暂时无法继续整理",
+                dataSafe = true,
+                primaryAction = RecoveryAction.OPEN_SETTINGS,
+            )
             return@continueRecoveredOrganization
         }
         val resumedRequest = persistedRequest.renewOrganizationRequest(
@@ -166,6 +185,7 @@ internal fun MistakeOrganizationSection(
         trackedRequestId = resumedRequest.requestId
         isContinuingPausedOrganization = true
         message = null
+        error = null
         scope.launch {
             try {
                 modelTasks.execute(resumedRequest).collect { snapshot ->
@@ -180,7 +200,13 @@ internal fun MistakeOrganizationSection(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                message = "整理失败，请稍后重试"
+                error = userRecoverableError(
+                    code = AppErrorCode.NETWORK_UNAVAILABLE,
+                    title = "整理没有完成",
+                    message = "整理失败，请稍后重试",
+                    dataSafe = true,
+                    primaryAction = RecoveryAction.RETRY,
+                )
             } finally {
                 isContinuingPausedOrganization = false
             }
@@ -260,6 +286,7 @@ internal fun MistakeOrganizationSection(
         if (locallyResumedRequestId == persistedRequest.requestId) return@LaunchedEffect
         locallyResumedRequestId = persistedRequest.requestId
         message = null
+        error = null
         try {
             modelTasks.execute(persistedRequest).collect { snapshot ->
                 task = snapshot
@@ -273,7 +300,13 @@ internal fun MistakeOrganizationSection(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            message = "整理失败，请稍后重试"
+            error = userRecoverableError(
+                code = AppErrorCode.NETWORK_UNAVAILABLE,
+                title = "整理没有完成",
+                message = "整理失败，请稍后重试",
+                dataSafe = true,
+                primaryAction = RecoveryAction.RETRY,
+            )
         }
     }
 
@@ -291,6 +324,7 @@ internal fun MistakeOrganizationSection(
         }
         isPreparing = true
         message = null
+        error = null
         try {
             val now = System.currentTimeMillis()
             preparation = organizationRepository.prepare(
@@ -304,7 +338,13 @@ internal fun MistakeOrganizationSection(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            message = "暂时无法准备智能整理"
+            error = userRecoverableError(
+                code = AppErrorCode.PROVIDER_NOT_CONFIGURED,
+                title = "暂时无法准备智能整理",
+                message = "暂时无法准备智能整理",
+                dataSafe = true,
+                primaryAction = RecoveryAction.OPEN_SETTINGS,
+            )
             preparationDismissed = true
         } finally {
             isPreparing = false
@@ -498,6 +538,15 @@ internal fun MistakeOrganizationSection(
             color = InkSecondary,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.testTag("mistake_organization_message"),
+        )
+    }
+    error?.let { organizationError ->
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = organizationError.message,
+            color = InkSecondary,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.testTag("mistake_organization_error"),
         )
     }
     Spacer(Modifier.height(12.dp))

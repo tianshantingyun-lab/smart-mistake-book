@@ -105,6 +105,18 @@ internal fun deleteOwnedCapture(context: Context, uri: String) {
     }
 }
 
+internal fun isOwnedCaptureUri(uri: String?): Boolean =
+    uri != null && ownedCaptureFileName(uri) != null
+
+internal fun ownedCaptureExists(context: Context, uri: String?): Boolean {
+    val fileName = ownedCaptureFileName(uri ?: return false) ?: return false
+    val directory = File(context.cacheDir, "captured_images")
+    return runCatching {
+        val candidate = File(directory, fileName)
+        candidate.canonicalFile.parentFile == directory.canonicalFile && candidate.isFile
+    }.getOrDefault(false)
+}
+
 internal fun revokeCaptureGrant(context: Context, uri: String) {
     runCatching {
         context.revokeUriPermission(

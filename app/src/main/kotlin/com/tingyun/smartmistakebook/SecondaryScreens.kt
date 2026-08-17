@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook
 
 import android.view.WindowManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Box
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,9 +27,12 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.work.WorkManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +56,9 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationMutationResult
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
+import com.tingyun.smartmistakebook.core.domain.BackupRepository
+import com.tingyun.smartmistakebook.core.domain.BackupValidation
+import com.tingyun.smartmistakebook.core.domain.StorageInventory
 import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.NetworkMode
@@ -63,7 +72,9 @@ import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import java.util.Arrays
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private enum class CapabilityOperation {
     IDLE,
@@ -123,6 +134,24 @@ internal fun CapabilityScreen(
         SecondaryHeader(title = "大模型设置", onBack = onBack)
 
         if (capabilities.networkRequestsAllowed && configurationStore != null) {
+            PaperDivider(Modifier.padding(vertical = 16.dp))
+            SectionHeader("大模型 API")
+            Text(
+                text = "本机直接连接你选择的服务商，不经过本应用云端；调用费用由你的服务商账户承担。",
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .testTag("capability_direct_connection_notice"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "API Key 只保存在本机安全存储中，只用于连接服务商，不会作为内容发给模型。",
+                modifier = Modifier
+                    .padding(top = 4.dp, bottom = 10.dp)
+                    .testTag("capability_secret_notice"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
             OutlinedTextField(
                 value = provider,
                 onValueChange = {
@@ -412,23 +441,291 @@ internal fun DataPrivacyScreen(
 }
 
 @Composable
-internal fun StorageScreen(onBack: () -> Unit) {
+internal fun StorageScreen(
+    onBack: () -> Unit,
+    backupRepository: BackupRepository,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var inventory by remember { mutableStateOf<StorageInventory?>(null) }
+    var operationMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var operationBusy by rememberSaveable { mutableStateOf(false) }
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(backupRepository) {
+        inventory = runCatching { backupRepository.inspect() }.getOrNull()
+        OrphanAssetGc.enqueue(context)
+    }
+    val orphanGcInfos by remember(context) {
+        WorkManager.getInstance(context).getWorkInfosForUniqueWorkFlow(OrphanAssetGc.UNIQUE_NAME)
+    }.collectAsState(initial = emptyList())
+    val orphanGcStatus = orphanAssetGcStatusLine(
+        orphanAssetGcPhase(orphanGcInfos.map { info -> info.state.name }),
+    )
+
+    val createBackup = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/octet-stream"),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        operationBusy = true
+        operationMessage = "正在创建完整备份…"
+        scope.launch {
+            try {
+                val receipt = withContext(Dispatchers.IO) {
+                    context.contentResolver.openOutputStream(uri)?.use { output ->
+                        backupRepository.create(output)
+                    }
+                }
+                operationMessage = if (receipt != null) {
+                    "备份完成：${receipt.problemCount} 道题、${receipt.assetCount} 张题图。"
+                } else {
+                    "无法写入所选位置，备份未完成。"
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                operationMessage = "备份失败，原数据不受影响。${failure.message.orEmpty()}"
+            } finally {
+                operationBusy = false
+            }
+        }
+    }
+
+    val validateBackup = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        operationBusy = true
+        operationMessage = "正在校验备份…"
+        scope.launch {
+            try {
+                val validation = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        backupRepository.validate(input)
+                    }
+                }
+                operationMessage = when (validation) {
+                    is BackupValidation.Valid ->
+                        "备份有效：${validation.checkedFileCount} 个文件全部通过校验。"
+                    is BackupValidation.Invalid -> "备份无效：${validation.reason}"
+                    null -> "无法读取所选备份。"
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                operationMessage = "校验失败，文件可能已损坏。${failure.message.orEmpty()}"
+            } finally {
+                operationBusy = false
+            }
+        }
+    }
+
+    val restoreBackup = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        operationBusy = true
+        operationMessage = "正在校验并恢复备份…"
+        scope.launch {
+            try {
+                val receipt = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        backupRepository.restore(input)
+                    }
+                }
+                operationMessage = if (receipt != null) {
+                    "恢复完成：${receipt.problemCount} 道题、${receipt.assetCount} 张题图。请完全退出并重新打开应用。"
+                } else {
+                    "无法读取所选备份。"
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Exception) {
+                operationMessage = "恢复失败，已尝试保留原数据。${failure.message.orEmpty()}"
+            } finally {
+                operationBusy = false
+            }
+        }
+    }
+
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text("删除全部数据？") },
+            text = {
+                Text("会删除本机数据库、题图、设置和临时文件，且不会自动备份。请先确认已创建完整备份。")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmDelete = false
+                        operationBusy = true
+                        operationMessage = "正在删除全部数据…"
+                        scope.launch {
+                            try {
+                                val receipt = withContext(Dispatchers.IO) {
+                                    backupRepository.deleteAllData()
+                                }
+                                operationMessage =
+                                    "已删除数据库 ${formatBytes(receipt.deletedDatabaseBytes)}、" +
+                                        "题图 ${formatBytes(receipt.deletedAssetBytes)}、" +
+                                        "设置和临时文件。请重新打开应用。"
+                            } catch (cancelled: CancellationException) {
+                                throw cancelled
+                            } catch (failure: Exception) {
+                                operationMessage =
+                                    "删除未全部完成，请重启后重试。${failure.message.orEmpty()}"
+                            } finally {
+                                operationBusy = false
+                            }
+                        }
+                    },
+                ) {
+                    Text("确认删除")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }) {
+                    Text("取消")
+                }
+            },
+        )
+    }
+
     RootPageColumn {
-        SecondaryHeader(title = "存储与导出", onBack = onBack)
+        SecondaryHeader(title = "存储、备份与导出", onBack = onBack)
         SectionHeader("本机存储")
-        CapabilityRow(
-            Icons.Outlined.Storage,
-            "当前数据",
-            "当前题面、原图、学习记录与复习进度保存在本机应用空间",
+        val current = inventory
+        Text(
+            text = if (current == null) {
+                "正在读取本机占用…"
+            } else {
+                "学习记录 ${formatBytes(current.databaseBytes)} · 题图 ${formatBytes(current.assetBytes)} · 可清理临时文件 ${formatBytes(current.cleanableBytes)}"
+            },
+            modifier = Modifier.padding(top = 10.dp),
+            color = InkSecondary,
+            style = MaterialTheme.typography.bodyMedium,
         )
         PaperDivider(Modifier.padding(vertical = 18.dp))
-        SectionHeader("导出")
+        SectionHeader("完整备份")
+        Text(
+            "备份包含学习数据库和规范题图，不包含 API Key、授权租约或临时文件。恢复会先校验，再分阶段替换；失败时回滚原数据。",
+            modifier = Modifier.padding(top = 10.dp),
+            color = InkSecondary,
+        )
+        PrimaryActionButton(
+            text = if (operationBusy) "正在处理…" else "创建完整备份",
+            onClick = { createBackup.launch("smart-mistake-book-${System.currentTimeMillis()}.smbk") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+                .testTag("storage_create_backup"),
+            enabled = !operationBusy,
+        )
+        OutlinedButton(
+            onClick = { validateBackup.launch(arrayOf("application/octet-stream", "application/zip")) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .testTag("storage_validate_backup"),
+            enabled = !operationBusy,
+        ) {
+            Text("校验一个备份文件")
+        }
+        OutlinedButton(
+            onClick = {
+                restoreBackup.launch(
+                    arrayOf("application/octet-stream", "application/zip"),
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .testTag("storage_restore_backup"),
+            enabled = !operationBusy,
+        ) {
+            Text("从备份恢复（替换当前数据）")
+        }
+        OutlinedButton(
+            onClick = { confirmDelete = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .testTag("storage_delete_all"),
+            enabled = !operationBusy,
+        ) {
+            Text("删除全部数据")
+        }
+        OutlinedButton(
+            onClick = {
+                if (operationBusy) return@OutlinedButton
+                operationBusy = true
+                operationMessage = null
+                scope.launch {
+                    try {
+                        val removed = withContext(Dispatchers.IO) {
+                            backupRepository.cleanupOrphanAssets()
+                        }
+                        operationMessage = if (removed == 0) {
+                            "没有需要清理的孤立题图。"
+                        } else {
+                            "已清理 $removed 张不再被任何题面引用的题图。"
+                        }
+                        inventory = withContext(Dispatchers.IO) {
+                            backupRepository.inspect()
+                        }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (failure: Exception) {
+                        operationMessage =
+                            "清理未完成，原题图不受影响。${failure.message.orEmpty()}"
+                    } finally {
+                        operationBusy = false
+                    }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .testTag("storage_cleanup_orphans"),
+            enabled = !operationBusy,
+        ) {
+            Text("清理孤立题图")
+        }
+        orphanGcStatus?.let { message ->
+            Text(
+                text = message,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .testTag("storage_orphan_gc_status"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        operationMessage?.let { message ->
+            Text(
+                text = message,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .testTag("storage_operation_message"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        PaperDivider(Modifier.padding(vertical = 18.dp))
+        SectionHeader("单题导出")
         Text(
             "单道错题可在详情页保存或打印 PDF；错题本还能把当前筛选结果整理成一份 A4 练习。两种方式都只使用已经确认的正式题面。",
             modifier = Modifier.padding(top = 10.dp),
             color = InkSecondary,
         )
     }
+}
+
+private fun formatBytes(bytes: Long): String = when {
+    bytes >= 1_048_576L -> "%.1f MB".format(bytes / 1_048_576.0)
+    bytes >= 1_024L -> "%.1f KB".format(bytes / 1_024.0)
+    else -> "$bytes B"
 }
 
 private fun ModelConfigurationMutationResult.toUserMessage(successMessage: String): String = when (this) {

@@ -47,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,27 +62,19 @@ import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
-import com.tingyun.smartmistakebook.core.domain.CaptureDraftImportRequest
-import com.tingyun.smartmistakebook.core.domain.AppendCaptureDraftPageRequest
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
 import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
 import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
+import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
-import com.tingyun.smartmistakebook.core.domain.ConfirmCapturedProblemRequest
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
-import com.tingyun.smartmistakebook.core.domain.ReplaceCaptureDraftRequest
-import com.tingyun.smartmistakebook.core.domain.SplitCaptureDraftRequest
 import com.tingyun.smartmistakebook.core.model.CaptureDraftEditorMode
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
-import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
-import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
@@ -106,60 +97,10 @@ import kotlinx.coroutines.withContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-
-private enum class CaptureResumeLoadState {
-    NOT_REQUESTED,
-    LOADING,
-    READY,
-    MISSING,
-    SOURCE_UNAVAILABLE,
-    REDIRECTING,
-}
-
-internal enum class CaptureAcquisitionPurpose {
-    NEW_CAPTURE,
-    REPLACE_DRAFT,
-    APPEND_DRAFT,
-}
-
-internal enum class CaptureResultAction {
-    APPLY_AS_NEW,
-    REPLACE_EXISTING,
-    APPEND_EXISTING,
-    KEEP_CURRENT,
-}
-
-internal fun captureResultAction(
-    saved: Boolean,
-    isEligibleImage: Boolean,
-    purpose: CaptureAcquisitionPurpose,
-): CaptureResultAction = when {
-    !saved || !isEligibleImage -> CaptureResultAction.KEEP_CURRENT
-    purpose == CaptureAcquisitionPurpose.REPLACE_DRAFT -> CaptureResultAction.REPLACE_EXISTING
-    purpose == CaptureAcquisitionPurpose.APPEND_DRAFT -> CaptureResultAction.APPEND_EXISTING
-    else -> CaptureResultAction.APPLY_AS_NEW
-}
-
-internal fun retakeAcquisitionPurpose(hasDraft: Boolean): CaptureAcquisitionPurpose =
-    if (hasDraft) CaptureAcquisitionPurpose.REPLACE_DRAFT
-    else CaptureAcquisitionPurpose.NEW_CAPTURE
-
-internal fun prepareCaptureCommitAttempt(
-    workspace: CaptureWorkspaceUiState,
-    workspaceUpdatedAtEpochMillis: Long,
-    requestIdFactory: () -> String,
-    nowEpochMillis: () -> Long,
-): CaptureWorkspaceUiState {
-    val acceptedWorkspace = workspace.prepareForFinalCommit()
-    if (acceptedWorkspace.finalConfirmationRequest != null) return acceptedWorkspace
-    return acceptedWorkspace.ensureFinalConfirmation(
-        requestIdFactory = requestIdFactory,
-        occurredAtEpochMillis = {
-            maxOf(nowEpochMillis(), workspaceUpdatedAtEpochMillis)
-        },
-    )
-}
 
 @Composable
 fun CaptureScreen(
@@ -180,6 +121,15 @@ fun CaptureScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
+    val workflowViewModel: CaptureViewModel = viewModel(
+        key = "capture-workflow-${resumeDraftId ?: entryOrigin.name}",
+        factory = CaptureViewModelFactory(
+            repository = repository,
+            modelTasks = modelTasks,
+            resumeDraftId = resumeDraftId,
+        ),
+    )
+    val workflowUiState by workflowViewModel.uiState.collectAsStateWithLifecycle()
     val workspaceWriter = remember(repository) {
         CaptureWorkspaceWriter { request -> repository.saveDraftWorkspace(request) }
     }
@@ -246,6 +196,13 @@ fun CaptureScreen(
     val captureExecutionLaunchGuard = remember(modelTasks) {
         CaptureExternalExecutionLaunchGuard()
     }
+    val captureModelTaskCoordinator = remember(modelTasks, coroutineScope) {
+        CaptureModelTaskCoordinator(
+            modelTasks = modelTasks,
+            launchGuard = captureExecutionLaunchGuard,
+            scope = coroutineScope,
+        )
+    }
     var egressAuthorizationId by rememberSaveable { mutableStateOf<String?>(null) }
     var egressApprovedAtEpochMillis by rememberSaveable { mutableStateOf<Long?>(null) }
     var egressApprovedProviderId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -280,6 +237,7 @@ fun CaptureScreen(
     var workspaceChangeVersion by remember { mutableStateOf(0L) }
     var workspaceSaveError by remember { mutableStateOf<String?>(null) }
     var workspaceSaving by remember { mutableStateOf(false) }
+    var pendingAppendOwnedUri by remember { mutableStateOf<String?>(null) }
 
     val activeEntryOrigin = runCatching {
         CaptureEntryOrigin.valueOf(activeEntryOriginName)
@@ -399,150 +357,182 @@ fun CaptureScreen(
         ) && (!assessmentBlocksEntry || finalConfirmationPending)
     val entryGateOpen = candidateUsable
 
+    val draftState = remember {
+        CaptureDraftStateCommands(
+            sink = CaptureDraftStateSink(
+                draftId = { draftId },
+                sourcePages = { sourcePages },
+                assessmentSnapshot = { assessmentSnapshot },
+                parseSnapshot = { parseSnapshot },
+                parseOutput = { realParseOutput },
+                workspace = { workspaceState },
+                clearEgressApproval = {
+                    activeCaptureAuthorizationId = null
+                    initialTutorPlanCaptureAuthorizationId = null
+                    egressAuthorizationId = null
+                    egressApprovedAtEpochMillis = null
+                    egressApprovedProviderId = null
+                    egressApprovedModelId = null
+                    egressApprovedProviderConfigurationVersion = null
+                },
+                rememberEgressApproval = { manifest, provider ->
+                    egressAuthorizationId = manifest.authorizationId
+                    egressApprovedAtEpochMillis = manifest.approvedAtEpochMillis
+                    egressApprovedProviderId = provider.providerId
+                    egressApprovedModelId = provider.modelId
+                    egressApprovedProviderConfigurationVersion =
+                        provider.providerConfigurationVersion
+                    activeCaptureAuthorizationId = manifest.authorizationId
+                },
+                clearPendingAssessmentRecovery = { pendingAssessmentRecoveryRequest = null },
+                replaceAssessmentRequestId = { requestId ->
+                    assessmentRequestId = requestId
+                    assessmentOccurredAtEpochMillis = System.currentTimeMillis()
+                },
+                clearAssessmentSnapshotForActivePage = {
+                    assessmentSnapshot = null
+                    val activeAssetId = assessmentSourceAssetId
+                    sourcePageAssessmentSnapshots = sourcePageAssessmentSnapshots.mapIndexed {
+                            index,
+                            existing,
+                        ->
+                        if (sourcePages.getOrNull(index)?.sourceAssetId == activeAssetId) {
+                            null
+                        } else {
+                            existing
+                        }
+                    }
+                },
+                incrementAssessmentRetryNonce = { assessmentRetryNonce += 1 },
+                clearPendingParseRecovery = { pendingParseRecoveryRequest = null },
+                replaceParseRequestId = { parseRequestId = it },
+                clearParseSnapshot = { parseSnapshot = null },
+                incrementParseRetryNonce = { parseRetryNonce += 1 },
+                resetDraftFields = {
+                    importRequestId = UUID.randomUUID().toString()
+                    importOccurredAtEpochMillis = System.currentTimeMillis()
+                    commitOutcomeUnknown = false
+                    draftId = null
+                    draftRevisionNumber = null
+                    canonicalSha256 = null
+                    committedEntryId = null
+                    selectedSubject = ""
+                    correctedTitle = ""
+                    titleEditedByUser = false
+                    correctedTranscription = ""
+                    writingLayerName = CaptureWritingLayer.UNKNOWN.name
+                    recognitionStateName = CaptureRecognitionState.NOT_ATTEMPTED.name
+                    recognitionConfidence = null
+                    recognitionBlockCount = 0
+                    assessmentRequestId = null
+                    assessmentSourceAssetId = null
+                    assessmentOccurredAtEpochMillis = null
+                    assessmentRetryNonce = 0
+                    splitRetryNonce = 0
+                    splitError = null
+                    assessmentSnapshot = null
+                    pendingAssessmentRecoveryRequest = null
+                    sourcePages = emptyList()
+                    sourcePageAssessmentSnapshots = emptyList()
+                    selectedSourcePageIndex = 0
+                    parseRequestId = null
+                    parseRetryNonce = 0
+                    parseSnapshot = null
+                    pendingParseRecoveryRequest = null
+                    transcriptionEditedByUser = false
+                    freshCaptureEgressIntent = null
+                },
+                clearWorkspace = {
+                    workspaceState = null
+                    workspaceIdentity = null
+                    workspaceUpdatedAtEpochMillis = 0
+                    workspaceHydratedDraftId = null
+                    workspaceChangeVersion = 0
+                    workspaceSaveError = null
+                    workspaceSaving = false
+                },
+                applyWorkspaceSnapshot = { restored ->
+                    workspaceState = restored.state
+                    workspaceIdentity = restored.identity
+                    workspaceUpdatedAtEpochMillis = restored.updatedAtEpochMillis
+                    workspaceHydratedDraftId = restored.state.draftId
+                    selectedSubject = restored.state.subject
+                    correctedTitle = restored.state.title
+                    correctedTranscription = restored.state.transcription
+                    writingLayerName = restored.state.captureWritingLayer().name
+                    titleEditedByUser =
+                        com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.TITLE in
+                            restored.state.userEditedFields
+                    transcriptionEditedByUser = restored.state.userEditedFields.any {
+                        it == com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.TRANSCRIPTION ||
+                            it == com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.STRUCTURE
+                    }
+                    workspaceSaveError = null
+                },
+                replaceWorkspace = { updated ->
+                    workspaceState = updated
+                    workspaceChangeVersion += 1
+                    workspaceSaveError = null
+                    selectedSubject = updated.subject
+                    correctedTitle = updated.title
+                    correctedTranscription = updated.transcription
+                    writingLayerName = updated.captureWritingLayer().name
+                },
+                applyImportedSummary = { draft, imported, occurredAt ->
+                    draftId = draft.draftId
+                    draftRevisionNumber = draft.revisionNumber
+                    canonicalSha256 = draft.sourceAssetSha256
+                    sourcePages = draft.sourcePages
+                    sourcePageAssessmentSnapshots = imported.pageSnapshots
+                    selectedSourcePageIndex = 0
+                    recognitionStateName = draft.recognition.state.name
+                    recognitionConfidence = draft.recognition.confidence
+                    recognitionBlockCount = draft.recognition.candidateBlockCount
+                    correctedTranscription = draft.recognition.candidateText
+                    correctedTitle = suggestCaptureTitle(draft.recognition.candidateText)
+                    titleEditedByUser = false
+                    assessmentRequestId = imported.assessmentRequestId
+                    assessmentSourceAssetId = imported.assessmentSourceAssetId
+                    assessmentOccurredAtEpochMillis = occurredAt
+                    parseRequestId = imported.parseRequestId
+                },
+                bindImportedEgress = { draft, sourceEgressIntent ->
+                    freshCaptureEgressIntent = sourceEgressIntent?.bindDraft(
+                        draftId = draft.draftId,
+                        sourcePages = draft.sourcePages,
+                    )
+                    sourceEgressIntent?.let { informedEgressIntentSession.complete(it.intentId) }
+                },
+            ),
+        )
+    }
+
     fun clearCaptureEgressApproval() {
-        activeCaptureAuthorizationId = null
-        initialTutorPlanCaptureAuthorizationId = null
-        egressAuthorizationId = null
-        egressApprovedAtEpochMillis = null
-        egressApprovedProviderId = null
-        egressApprovedModelId = null
-        egressApprovedProviderConfigurationVersion = null
+        draftState.clearEgressApproval()
     }
 
     fun approveCaptureEgress(
         provider: ProviderCapabilitySnapshot,
-    ): ModelEgressManifest? {
-        val currentDraftId = draftId ?: return null
-        if (sourcePages.isEmpty()) return null
-        val authorizationId = UUID.randomUUID().toString()
-        val approvedAt = System.currentTimeMillis()
-        val manifest = buildCaptureEgressManifest(
-            authorizationId = authorizationId,
-            draftId = currentDraftId,
-            provider = provider,
-            sourcePages = sourcePages,
-            approvedAtEpochMillis = approvedAt,
-        )
-        egressAuthorizationId = authorizationId
-        egressApprovedAtEpochMillis = approvedAt
-        egressApprovedProviderId = provider.providerId
-        egressApprovedModelId = provider.modelId
-        egressApprovedProviderConfigurationVersion = provider.providerConfigurationVersion
-        activeCaptureAuthorizationId = authorizationId
-        return manifest
-    }
+    ): ModelEgressManifest? = draftState.approveEgress(provider)
 
     fun retryAssessmentProcessing() {
-        pendingAssessmentRecoveryRequest = null
-        if (assessmentSnapshot?.status in setOf(
-                ModelTaskStatus.CANCELLED,
-                ModelTaskStatus.PERMANENT_FAILURE,
-            )
-        ) {
-            assessmentRequestId = "capture-assess:${UUID.randomUUID()}"
-            assessmentOccurredAtEpochMillis = System.currentTimeMillis()
-            assessmentSnapshot = null
-            val activeAssetId = assessmentSourceAssetId
-            sourcePageAssessmentSnapshots = sourcePageAssessmentSnapshots.mapIndexed {
-                    index,
-                    existing,
-                ->
-                if (sourcePages.getOrNull(index)?.sourceAssetId == activeAssetId) null else existing
-            }
-        } else {
-            assessmentRetryNonce += 1
-        }
+        draftState.retryAssessment()
     }
 
     fun retryParseProcessing() {
-        pendingParseRecoveryRequest = null
-        if (parseSnapshot?.status in setOf(
-                ModelTaskStatus.CANCELLED,
-                ModelTaskStatus.PERMANENT_FAILURE,
-            )
-        ) {
-            parseRequestId = "capture-parse:${UUID.randomUUID()}"
-            parseSnapshot = null
-        } else {
-            parseRetryNonce += 1
-        }
+        draftState.retryParse()
     }
 
     fun resetDraftState() {
-        importRequestId = UUID.randomUUID().toString()
-        importOccurredAtEpochMillis = System.currentTimeMillis()
-        commitOutcomeUnknown = false
-        draftId = null
-        draftRevisionNumber = null
-        canonicalSha256 = null
-        committedEntryId = null
-        selectedSubject = ""
-        correctedTitle = ""
-        titleEditedByUser = false
-        correctedTranscription = ""
-        writingLayerName = CaptureWritingLayer.UNKNOWN.name
-        recognitionStateName = CaptureRecognitionState.NOT_ATTEMPTED.name
-        recognitionConfidence = null
-        recognitionBlockCount = 0
-        assessmentRequestId = null
-        assessmentSourceAssetId = null
-        assessmentOccurredAtEpochMillis = null
-        assessmentRetryNonce = 0
-        splitRetryNonce = 0
-        splitError = null
-        assessmentSnapshot = null
-        pendingAssessmentRecoveryRequest = null
-        sourcePages = emptyList()
-        sourcePageAssessmentSnapshots = emptyList()
-        selectedSourcePageIndex = 0
-        parseRequestId = null
-        parseRetryNonce = 0
-        parseSnapshot = null
-        pendingParseRecoveryRequest = null
-        transcriptionEditedByUser = false
-        freshCaptureEgressIntent = null
-        clearCaptureEgressApproval()
-        workspaceState = null
-        workspaceIdentity = null
-        workspaceUpdatedAtEpochMillis = 0
-        workspaceHydratedDraftId = null
-        workspaceChangeVersion = 0
-        workspaceSaveError = null
-        workspaceSaving = false
+        draftState.resetDraft()
     }
 
     fun applyWorkspace(restored: CaptureWorkspaceLocalSnapshot) {
-        val effectiveState = realParseOutput?.capturedDocument?.let {
-            restored.state.adoptModelCandidateIfPristine(it)
-        } ?: restored.state
-        workspaceState = effectiveState
-        workspaceIdentity = restored.identity
-        workspaceUpdatedAtEpochMillis = restored.updatedAtEpochMillis
-        workspaceHydratedDraftId = effectiveState.draftId
-        selectedSubject = effectiveState.subject
-        correctedTitle = effectiveState.title
-        correctedTranscription = effectiveState.transcription
-        writingLayerName = effectiveState.captureWritingLayer().name
-        titleEditedByUser = com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.TITLE in
-            effectiveState.userEditedFields
-        transcriptionEditedByUser = effectiveState.userEditedFields.any {
-            it == com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.TRANSCRIPTION ||
-                it == com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.STRUCTURE
-        }
-        workspaceSaveError = null
+        draftState.applyWorkspace(restored)
     }
 
     fun updateWorkspace(transform: (CaptureWorkspaceUiState) -> CaptureWorkspaceUiState) {
-        val current = workspaceState ?: return
-        val updated = transform(current)
-        if (updated == current) return
-        workspaceState = updated
-        workspaceChangeVersion += 1
-        workspaceSaveError = null
-        selectedSubject = updated.subject
-        correctedTitle = updated.title
-        correctedTranscription = updated.transcription
-        writingLayerName = updated.captureWritingLayer().name
+        draftState.updateWorkspace(transform)
     }
 
     fun applyDraftSummary(
@@ -551,544 +541,310 @@ fun CaptureScreen(
         occurredAtEpochMillis: Long,
         sourceEgressIntent: CaptureSourceEgressIntent? = null,
     ) {
-        draftId = draft.draftId
-        draftRevisionNumber = draft.revisionNumber
-        canonicalSha256 = draft.sourceAssetSha256
-        sourcePages = draft.sourcePages
-        sourcePageAssessmentSnapshots = List(draft.sourcePages.size) { null }
-        selectedSourcePageIndex = 0
-        recognitionStateName = draft.recognition.state.name
-        recognitionConfidence = draft.recognition.confidence
-        recognitionBlockCount = draft.recognition.candidateBlockCount
-        correctedTranscription = draft.recognition.candidateText
-        correctedTitle = suggestCaptureTitle(draft.recognition.candidateText)
-        titleEditedByUser = false
-        clearCaptureEgressApproval()
-        assessmentRequestId = "capture-assess:$requestId"
-        assessmentSourceAssetId = draft.sourceAssetId
-        assessmentOccurredAtEpochMillis = occurredAtEpochMillis
-        parseRequestId = "capture-parse:$requestId"
-        freshCaptureEgressIntent = sourceEgressIntent?.bindDraft(
-            draftId = draft.draftId,
-            sourcePages = draft.sourcePages,
-        )
-        sourceEgressIntent?.let { informedEgressIntentSession.complete(it.intentId) }
+        draftState.applyDraftSummary(draft, requestId, occurredAtEpochMillis, sourceEgressIntent)
     }
 
+    val workspaceCommands = remember(workspaceWriter) {
+        CaptureWorkspaceCommands(
+            writer = workspaceWriter,
+            scope = coroutineScope,
+            sink = CaptureWorkspaceSink(
+                currentWorkspace = { workspaceState },
+                currentIdentity = { workspaceIdentity },
+                saving = { workspaceSaving },
+                workflowInProgress = { workflowInProgress },
+                setSaving = { workspaceSaving = it },
+                applySave = { applied ->
+                    if (applied.identity != null) {
+                        workspaceIdentity = applied.identity
+                        workspaceUpdatedAtEpochMillis = applied.updatedAtEpochMillis ?: workspaceUpdatedAtEpochMillis
+                    }
+                    workspaceSaveError = applied.error
+                },
+            ),
+        )
+    }
     suspend fun saveWorkspaceNow(
         state: CaptureWorkspaceUiState,
         occurredAtEpochMillis: Long = System.currentTimeMillis(),
-    ): com.tingyun.smartmistakebook.core.domain.CaptureDraftWorkspaceIdentity? {
-        workspaceSaving = true
-        return try {
-            withContext(NonCancellable) {
-                when (
-                    val result = workspaceWriter.save(
-                        state = state,
-                        currentIdentity = { workspaceIdentity },
-                        occurredAtEpochMillis = occurredAtEpochMillis,
-                    )
-                ) {
-                    is CaptureWorkspaceWriteResult.Saved -> {
-                        workspaceIdentity = result.snapshot.identity
-                        workspaceUpdatedAtEpochMillis = result.snapshot.updatedAtEpochMillis
-                        workspaceSaveError = null
-                        result.snapshot.identity
-                    }
-                    is CaptureWorkspaceWriteResult.Failed -> {
-                        workspaceSaveError = "这次修改还没保存好，请重试后再离开。"
-                        null
-                    }
-                }
-            }
-        } finally {
-            workspaceSaving = false
-        }
-    }
+    ) = workspaceCommands.saveNow(state, occurredAtEpochMillis)
 
-    suspend fun flushWorkspaceNow(): Boolean {
-        val current = workspaceState ?: return true
-        return saveWorkspaceNow(current) != null
-    }
+    suspend fun flushWorkspaceNow(): Boolean = workspaceCommands.flushNow()
 
     fun afterWorkspaceFlush(action: () -> Unit) {
-        if (workspaceSaving || workflowInProgress) return
-        coroutineScope.launch {
-            if (flushWorkspaceNow()) action()
-        }
+        workspaceCommands.afterFlush(action)
     }
 
     fun requestBackWithFlush() {
-        if (workspaceState == null) onBack() else afterWorkspaceFlush(onBack)
+        workspaceCommands.requestBack(onBack)
+    }
+
+    val sourceImport = remember(workspaceCommands) {
+        CaptureSourceImportCommands(
+            scope = coroutineScope,
+            sink = CaptureSourceImportSink(
+                receivedImageUri = { receivedImageUri },
+                receivedInputSource = {
+                    receivedInputSource?.let(CaptureInputSource::valueOf)
+                },
+                importRequestId = { importRequestId },
+                importOccurredAtEpochMillis = { importOccurredAtEpochMillis },
+                rememberImportIdentity = { identity ->
+                    if (identity.persistRequestId) importRequestId = identity.requestId
+                    if (identity.persistOccurredAt) {
+                        importOccurredAtEpochMillis = identity.occurredAtEpochMillis
+                    }
+                },
+                draftId = { draftId },
+                revisionNumber = { draftRevisionNumber },
+                pageCount = { sourcePages.size },
+                workflowInProgress = { workflowInProgress },
+                setWorkflowInProgress = { workflowInProgress = it },
+                setCaptureError = { captureError = it },
+                deleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
+                setPendingAppendOwnedUri = { pendingAppendOwnedUri = it },
+                replacementCandidateUri = { replacementCandidateUri },
+                replacementInputSource = {
+                    replacementInputSourceName?.let(CaptureInputSource::valueOf)
+                },
+                replacementRequestId = { replacementRequestId },
+                replacementOccurredAtEpochMillis = { replacementOccurredAtEpochMillis },
+                clearReplacementError = { replacementError = null },
+                clearReplacementState = {
+                    replacementCandidateUri = null
+                    replacementInputSourceName = null
+                    replacementRequestId = null
+                    replacementOccurredAtEpochMillis = null
+                    acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+                    replacementError = null
+                },
+                entryGateOpen = { entryGateOpen },
+                workspace = { workspaceState },
+                workspaceUpdatedAtEpochMillis = { workspaceUpdatedAtEpochMillis },
+                workspaceIdentity = { workspaceIdentity },
+                setWorkspaceSaveError = { workspaceSaveError = it },
+                replaceWorkspace = { updated ->
+                    workspaceState = updated
+                    workspaceChangeVersion += 1
+                },
+                saveWorkspaceNow = { state, occurredAt ->
+                    saveWorkspaceNow(state, occurredAt)
+                },
+                confirmWorkspace = { identity ->
+                    workflowViewModel.confirm(identity, activeEntryOrigin)
+                },
+                acceptSource = { uri, source, purpose, requestId, occurredAt, expectedPageCount ->
+                    workflowViewModel.acceptSource(
+                        uri = uri,
+                        source = source,
+                        origin = activeEntryOrigin,
+                        purpose = purpose,
+                        requestId = requestId,
+                        occurredAtEpochMillis = occurredAt,
+                        expectedPageCount = expectedPageCount,
+                    )
+                },
+            ),
+        )
     }
 
     fun persistAdditionalPage(localUri: String, source: CaptureInputSource) {
-        val currentDraftId = draftId ?: return
-        val revisionNumber = draftRevisionNumber ?: return
-        if (sourcePages.size >= MAX_CAPTURE_SOURCE_PAGES) {
-            captureError = "单道题最多保存 $MAX_CAPTURE_SOURCE_PAGES 页；请先完成当前题目，再单独录入下一题。"
-            deleteOwnedCaptureAsync(context, localUri)
-            return
-        }
-        if (workflowInProgress) return
-        val requestId = UUID.randomUUID().toString()
-        val occurredAt = System.currentTimeMillis()
-        workflowInProgress = true
-        coroutineScope.launch {
-            try {
-                val summary = repository.appendDraftPage(
-                    AppendCaptureDraftPageRequest(
-                        requestId = requestId,
-                        draftId = currentDraftId,
-                        expectedRevisionNumber = revisionNumber,
-                        expectedPageCount = sourcePages.size,
-                        localUri = localUri,
-                        source = source,
-                        occurredAtEpochMillis = occurredAt,
-                    ),
-                )
-                val appendedPage = summary.sourcePages.last()
-                sourcePages = summary.sourcePages
-                sourcePageAssessmentSnapshots = List(summary.sourcePages.size) { index ->
-                    if (index < appendedPage.pageIndex) {
-                        sourcePageAssessmentSnapshots.getOrNull(index)
-                    } else {
-                        null
-                    }
-                }
-                selectedSourcePageIndex = appendedPage.pageIndex
-                assessmentSnapshot = null
-                assessmentRequestId = "capture-assess:$requestId:p${appendedPage.pageIndex}"
-                assessmentSourceAssetId = appendedPage.sourceAssetId
-                assessmentOccurredAtEpochMillis = occurredAt
-                assessmentRetryNonce = 0
-                parseSnapshot = null
-                parseRequestId = "capture-parse:$requestId:pages${summary.sourcePages.size}"
-                parseRetryNonce = 0
-                clearCaptureEgressApproval()
-                val sourceEgressIntent = informedEgressIntentSession.sourceFor(
-                    purpose = CaptureAcquisitionPurpose.APPEND_DRAFT,
-                    sourceUri = localUri,
-                )
-                freshCaptureEgressIntent = sourceEgressIntent?.bindDraft(
-                    draftId = summary.draftId,
-                    sourcePages = summary.sourcePages,
-                )
-                sourceEgressIntent?.let {
-                    informedEgressIntentSession.complete(it.intentId)
-                }
-                captureError = null
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                captureError = "补拍页没有保存成功，原来的页面仍然安全保留，请重试。"
-            } finally {
-                workflowInProgress = false
-                acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                deleteOwnedCaptureAsync(context, localUri)
-            }
-        }
+        sourceImport.persistAdditionalPage(localUri, source)
     }
 
     val latestPendingCameraUri by rememberUpdatedState(pendingCameraUri)
     val latestReceivedImageUri by rememberUpdatedState(receivedImageUri)
     val latestReplacementCandidateUri by rememberUpdatedState(replacementCandidateUri)
+    val latestPendingAppendOwnedUri by rememberUpdatedState(pendingAppendOwnedUri)
 
-    val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { saved ->
-        val completedCaptureUri = pendingCameraUri
-        val completedPurpose = acquisitionPurpose
-        pendingCameraUri = null
-        completedCaptureUri?.let { revokeCaptureGrant(context, it) }
-        val eligible = completedCaptureUri != null &&
-            ownedCaptureWithinLimit(context, completedCaptureUri)
-        when (captureResultAction(saved, eligible, acquisitionPurpose)) {
-            CaptureResultAction.APPLY_AS_NEW -> {
-                if (receivedImageUri != completedCaptureUri) {
-                    deleteOwnedCaptureAsync(context, receivedImageUri)
-                }
-                receivedImageUri = completedCaptureUri
-                receivedInputSource = CaptureInputSource.CAMERA.name
-                resetDraftState()
-                completedCaptureUri?.let { sourceUri ->
+    val returnedImages = remember {
+        CaptureReturnedImageCommands(
+            sink = CaptureReturnedImageSink(
+                deleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
+                clearPendingCamera = { pendingCameraUri = null },
+                setReceivedImage = { uri, source ->
+                    receivedImageUri = uri
+                    receivedInputSource = source.name
+                },
+                resetDraft = { resetDraftState() },
+                bindReturnedSource = { purpose, uri ->
                     informedEgressIntentSession.bindReturnedSource(
-                        purpose = completedPurpose,
-                        sourceUri = sourceUri,
+                        purpose = purpose,
+                        sourceUri = uri,
                     )
-                }
-                captureError = null
-            }
-            CaptureResultAction.REPLACE_EXISTING -> {
-                if (replacementCandidateUri != completedCaptureUri) {
-                    deleteOwnedCaptureAsync(context, replacementCandidateUri)
-                }
-                replacementCandidateUri = completedCaptureUri
-                replacementInputSourceName = CaptureInputSource.CAMERA.name
-                completedCaptureUri?.let { sourceUri ->
-                    informedEgressIntentSession.bindReturnedSource(
-                        purpose = completedPurpose,
-                        sourceUri = sourceUri,
-                    )
-                }
-                replacementError = null
-                captureError = null
-            }
-            CaptureResultAction.APPEND_EXISTING -> {
-                completedCaptureUri?.let {
-                    informedEgressIntentSession.bindReturnedSource(
-                        purpose = completedPurpose,
-                        sourceUri = it,
-                    )
-                    persistAdditionalPage(it, CaptureInputSource.CAMERA)
-                }
-            }
-            CaptureResultAction.KEEP_CURRENT -> {
-                informedEgressIntentSession.cancelAcquisition()
-                deleteOwnedCaptureAsync(context, completedCaptureUri)
-                acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                replacementRequestId = null
-                replacementOccurredAtEpochMillis = null
-                if (saved && completedCaptureUri != null) {
-                    captureError = "相机返回的图片为空或超过 20 MB 安全上限；原题仍保留，请重试。"
-                }
-            }
-        }
-    }
-    val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri == null) {
-            informedEgressIntentSession.cancelAcquisition()
-            photoImportInProgress = false
-            acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-        } else {
-            val completedPurpose = acquisitionPurpose
-            coroutineScope.launch {
-                var importedUri: Uri? = null
-                try {
-                    val result = withContext(Dispatchers.IO) {
-                        importPickedPhoto(context, uri)
-                    }
-                    result
-                        .onSuccess { localUri ->
-                            importedUri = localUri
-                            if (completedPurpose == CaptureAcquisitionPurpose.APPEND_DRAFT) {
-                                informedEgressIntentSession.bindReturnedSource(
-                                    purpose = completedPurpose,
-                                    sourceUri = localUri.toString(),
-                                )
-                                importedUri = null
-                                persistAdditionalPage(
-                                    localUri.toString(),
-                                    CaptureInputSource.PHOTO_PICKER,
-                                )
-                            } else {
-                                deleteOwnedCaptureAsync(context, receivedImageUri)
-                                deleteOwnedCaptureAsync(context, pendingCameraUri)
-                                pendingCameraUri = null
-                                receivedImageUri = localUri.toString()
-                                receivedInputSource = CaptureInputSource.PHOTO_PICKER.name
-                                resetDraftState()
-                                informedEgressIntentSession.bindReturnedSource(
-                                    purpose = completedPurpose,
-                                    sourceUri = localUri.toString(),
-                                )
-                                captureError = null
-                            }
-                        }
-                        .onFailure {
-                            informedEgressIntentSession.cancelAcquisition()
-                            captureError = "所选图片为空、格式不受支持或超过 20 MB 安全上限，请重试。"
-                        }
-                } finally {
-                    photoImportInProgress = false
-                    if (!isActive) {
-                        withContext(NonCancellable + Dispatchers.IO) {
-                            importedUri?.toString()?.let { deleteOwnedCapture(context, it) }
-                        }
-                    }
-                }
-            }
-        }
+                },
+                clearCaptureError = { captureError = null },
+                setReplacement = { uri, source ->
+                    replacementCandidateUri = uri
+                    replacementInputSourceName = source.name
+                },
+                clearReplacementError = { replacementError = null },
+                persistAdditionalPage = { uri, source -> persistAdditionalPage(uri, source) },
+                cancelAcquisition = { informedEgressIntentSession.cancelAcquisition() },
+                resetPurpose = {
+                    acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+                },
+                clearReplacementRequest = {
+                    replacementRequestId = null
+                    replacementOccurredAtEpochMillis = null
+                },
+                setCaptureError = { captureError = it },
+            ),
+        )
     }
 
+    fun applyReturnedImagePlan(
+        plan: CaptureReturnedImagePlan,
+        source: CaptureInputSource,
+        purpose: CaptureAcquisitionPurpose,
+    ) {
+        returnedImages.apply(plan, source, purpose)
+    }
+
+
+    val acquisitionLaunchers = rememberCaptureAcquisitionLaunchers(
+        context = context,
+        scope = coroutineScope,
+        pendingCameraUri = pendingCameraUri,
+        receivedImageUri = receivedImageUri,
+        replacementCandidateUri = replacementCandidateUri,
+        acquisitionPurpose = acquisitionPurpose,
+        onPendingCameraUriChange = { pendingCameraUri = it },
+        onPhotoImportInProgressChange = { photoImportInProgress = it },
+        applyReturnedImagePlan = { plan, source, purpose ->
+            applyReturnedImagePlan(plan, source, purpose)
+        },
+    )
+    val acquisition = remember(acquisitionLaunchers) {
+        CaptureAcquisitionCommands(
+            context = context,
+            scope = coroutineScope,
+            launchers = acquisitionLaunchers,
+            sink = CaptureAcquisitionSink(
+                hasWorkspace = { workspaceState != null },
+                cameraLaunchInProgress = { cameraLaunchInProgress },
+                photoImportInProgress = { photoImportInProgress },
+                workflowInProgress = { workflowInProgress },
+                setPurpose = { acquisitionPurposeName = it.name },
+                applyReplacementPrep = { prep ->
+                    if (prep.requestId != null) {
+                        replacementRequestId = prep.requestId
+                        replacementOccurredAtEpochMillis = prep.occurredAtEpochMillis
+                    }
+                    if (prep.clearReplacementError) {
+                        replacementError = null
+                    }
+                },
+                setCameraLaunchInProgress = { cameraLaunchInProgress = it },
+                setPhotoImportInProgress = { photoImportInProgress = it },
+                setPendingCameraUri = { pendingCameraUri = it },
+                clearCaptureError = { captureError = null },
+                applyReturnedImagePlan = { plan, source, purpose ->
+                    applyReturnedImagePlan(plan, source, purpose)
+                },
+                afterWorkspaceFlush = ::afterWorkspaceFlush,
+                waitForCachePrune = { initialCachePrune.await() },
+            ),
+        )
+    }
     fun launchCamera(
         purpose: CaptureAcquisitionPurpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
         workspaceAlreadyFlushed: Boolean = false,
     ) {
-        if (workspaceState != null && !workspaceAlreadyFlushed) {
-            afterWorkspaceFlush { launchCamera(purpose, workspaceAlreadyFlushed = true) }
-            return
-        }
-        if (cameraLaunchInProgress || photoImportInProgress || workflowInProgress) return
-        acquisitionPurposeName = purpose.name
-        if (purpose == CaptureAcquisitionPurpose.REPLACE_DRAFT) {
-            replacementRequestId = UUID.randomUUID().toString()
-            replacementOccurredAtEpochMillis = System.currentTimeMillis()
-            replacementError = null
-        }
-        cameraLaunchInProgress = true
-        coroutineScope.launch {
-            var createdUri: Uri? = null
-            try {
-                initialCachePrune.await()
-                val result = withContext(Dispatchers.IO) { createCaptureUri(context) }
-                cameraLaunchInProgress = false
-                result
-                    .onSuccess { uri ->
-                        createdUri = uri
-                        pendingCameraUri = uri.toString()
-                        captureError = null
-                        runCatching { takePicture.launch(uri) }
-                            .onFailure {
-                                informedEgressIntentSession.cancelAcquisition()
-                                pendingCameraUri = null
-                                acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                                revokeCaptureGrant(context, uri.toString())
-                                deleteOwnedCaptureAsync(context, uri.toString())
-                                captureError = "此设备没有可用的系统相机，请改用系统照片选择器。"
-                            }
-                    }
-                    .onFailure {
-                        informedEgressIntentSession.cancelAcquisition()
-                        acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                        captureError = "无法创建本地照片文件，请确认设备存储空间后重试。"
-                    }
-            } finally {
-                if (!isActive) {
-                    withContext(NonCancellable + Dispatchers.IO) {
-                        createdUri?.toString()?.let { deleteOwnedCapture(context, it) }
-                    }
-                }
-            }
-        }
+        acquisition.launchCamera(purpose, workspaceAlreadyFlushed)
     }
-
     fun launchPhotoPicker(
         purpose: CaptureAcquisitionPurpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
         workspaceAlreadyFlushed: Boolean = false,
     ) {
-        if (workspaceState != null && !workspaceAlreadyFlushed) {
-            afterWorkspaceFlush {
-                launchPhotoPicker(purpose, workspaceAlreadyFlushed = true)
-            }
-            return
-        }
-        if (cameraLaunchInProgress || photoImportInProgress || workflowInProgress) return
-        acquisitionPurposeName = purpose.name
-        photoImportInProgress = true
-        runCatching {
-            pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        }.onFailure {
-            informedEgressIntentSession.cancelAcquisition()
-            photoImportInProgress = false
-            acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-            captureError = "系统照片选择器暂不可用，请稍后重试。"
-        }
+        acquisition.launchPhotoPicker(purpose, workspaceAlreadyFlushed)
     }
-
     fun requestRetake() {
-        launchCamera(retakeAcquisitionPurpose(hasDraft = draftId != null))
+        acquisition.requestRetake(hasDraft = draftId != null)
     }
 
     fun persistSourceAndStartCorrection() {
-        val uri = receivedImageUri ?: return
-        val source = receivedInputSource?.let(CaptureInputSource::valueOf) ?: return
-        val sourceEgressIntent = informedEgressIntentSession.sourceFor(
-            purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
-            sourceUri = uri,
-        )
-        val requestId = importRequestId ?: UUID.randomUUID().toString().also {
-            importRequestId = it
-        }
-        val occurredAtEpochMillis = importOccurredAtEpochMillis ?: System.currentTimeMillis().also {
-            importOccurredAtEpochMillis = it
-        }
-        if (workflowInProgress) return
-        workflowInProgress = true
-        coroutineScope.launch {
-            try {
-                val draft = repository.importDraft(
-                    CaptureDraftImportRequest(
-                        requestId = requestId,
-                        localUri = uri,
-                        source = source,
-                        origin = activeEntryOrigin,
-                        occurredAtEpochMillis = occurredAtEpochMillis,
-                    ),
-                )
-                applyDraftSummary(
-                    draft = draft,
-                    requestId = requestId,
-                    occurredAtEpochMillis = occurredAtEpochMillis,
-                    sourceEgressIntent = sourceEgressIntent,
-                )
-                captureError = null
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                captureError = "这张图片暂时无法保存，请换一张图片或检查设备存储空间后重试。"
-            } finally {
-                workflowInProgress = false
-            }
-        }
+        sourceImport.persistNewSource()
     }
 
     fun replaceDraftWithCandidate() {
-        val replacedDraftId = draftId ?: return
-        val expectedRevision = draftRevisionNumber ?: return
-        val candidateUri = replacementCandidateUri ?: return
-        val source = replacementInputSourceName?.let(CaptureInputSource::valueOf) ?: return
-        val sourceEgressIntent = informedEgressIntentSession.sourceFor(
-            purpose = CaptureAcquisitionPurpose.REPLACE_DRAFT,
-            sourceUri = candidateUri,
-        )
-        val requestId = replacementRequestId ?: return
-        val occurredAt = replacementOccurredAtEpochMillis ?: return
-        if (workflowInProgress) return
-        workflowInProgress = true
-        replacementError = null
-        coroutineScope.launch {
-            try {
-                val replacement = repository.replaceDraft(
-                    ReplaceCaptureDraftRequest(
-                        requestId = requestId,
-                        replacedDraftId = replacedDraftId,
-                        expectedReplacedRevisionNumber = expectedRevision,
-                        localUri = candidateUri,
-                        source = source,
-                        occurredAtEpochMillis = occurredAt,
-                    ),
-                )
-                deleteOwnedCaptureAsync(context, receivedImageUri)
-                receivedImageUri = candidateUri
-                receivedInputSource = null
-                resetDraftState()
-                applyDraftSummary(
-                    draft = replacement,
-                    requestId = requestId,
-                    occurredAtEpochMillis = occurredAt,
-                    sourceEgressIntent = sourceEgressIntent,
-                )
-                replacementCandidateUri = null
-                replacementInputSourceName = null
-                replacementRequestId = null
-                replacementOccurredAtEpochMillis = null
-                acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                replacementError = null
-                captureError = null
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                replacementError = "新照片还没有替换成功，原题和当前题面都已保留。"
-            } finally {
-                workflowInProgress = false
-            }
-        }
+        sourceImport.replaceDraftWithCandidate()
     }
 
     fun keepCurrentDraftAfterReplacementFailure() {
-        deleteOwnedCaptureAsync(context, replacementCandidateUri)
-        replacementCandidateUri = null
-        replacementInputSourceName = null
-        replacementRequestId = null
-        replacementOccurredAtEpochMillis = null
-        acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-        replacementError = null
+        sourceImport.keepCurrentDraftAfterReplacementFailure()
     }
 
     fun commitCorrection() {
-        if (!entryGateOpen) return
-        val currentDraftId = draftId ?: return
-        val currentWorkspace = workspaceState ?: run {
-            workspaceSaveError = "题面还在恢复中，请稍后重试。"
-            return
-        }
-        val finalizedWorkspace = prepareCaptureCommitAttempt(
-            workspace = currentWorkspace,
-            workspaceUpdatedAtEpochMillis = workspaceUpdatedAtEpochMillis,
-            requestIdFactory = { UUID.randomUUID().toString() },
-            nowEpochMillis = System::currentTimeMillis,
+        sourceImport.commitCorrection()
+    }
+
+    val workflowEvents = remember {
+        CaptureWorkflowEventCommands(
+            sink = CaptureWorkflowEventSink(
+                applyDraftSummary = { draft, requestId, occurredAt, intent ->
+                    applyDraftSummary(draft, requestId, occurredAt, intent)
+                },
+                sourceEgressIntent = { purpose, uri ->
+                    informedEgressIntentSession.sourceFor(purpose = purpose, sourceUri = uri)
+                },
+                clearCaptureError = { captureError = null },
+                pageAssessmentSnapshots = { sourcePageAssessmentSnapshots },
+                applyAppendedPages = {
+                    pages, snapshots, selectedPageIndex, assessmentId, assetId, occurredAt, parseId ->
+                    sourcePages = pages
+                    sourcePageAssessmentSnapshots = snapshots
+                    selectedSourcePageIndex = selectedPageIndex
+                    assessmentSnapshot = null
+                    assessmentRequestId = assessmentId
+                    assessmentSourceAssetId = assetId
+                    assessmentOccurredAtEpochMillis = occurredAt
+                    assessmentRetryNonce = 0
+                    parseSnapshot = null
+                    parseRequestId = parseId
+                    parseRetryNonce = 0
+                },
+                clearCaptureEgressApproval = { clearCaptureEgressApproval() },
+                bindFreshEgressIntent = { freshCaptureEgressIntent = it },
+                completeEgressIntent = { informedEgressIntentSession.complete(it) },
+                resetAcquisitionPurpose = {
+                    acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+                },
+                deleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
+                clearPendingAppend = { pendingAppendOwnedUri = null },
+                receivedImageUri = { receivedImageUri },
+                setReceivedImage = { uri ->
+                    receivedImageUri = uri
+                    receivedInputSource = null
+                },
+                resetDraft = { resetDraftState() },
+                clearReplacementState = {
+                    replacementCandidateUri = null
+                    replacementInputSourceName = null
+                    replacementRequestId = null
+                    replacementOccurredAtEpochMillis = null
+                    acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+                    replacementError = null
+                },
+                setWorkflowInProgress = { workflowInProgress = it },
+                consumeDraftImported = { workflowViewModel.consumeDraftImported(it) },
+                commitLibraryEntry = { entryId, nextRevision ->
+                    committedEntryId = entryId
+                    draftRevisionNumber = nextRevision
+                },
+                clearReceivedImage = { receivedImageUri = null },
+                clearWorkspace = {
+                    workspaceState = null
+                    workspaceIdentity = null
+                    workspaceUpdatedAtEpochMillis = 0
+                    workspaceHydratedDraftId = null
+                },
+                markCommitKnown = { commitOutcomeUnknown = false },
+                markCommitUnknown = { commitOutcomeUnknown = true },
+                onTutorSessionReady = onTutorSessionReady,
+                consumeTutorSession = { workflowViewModel.onTutorSessionConsumed(it) },
+            ),
         )
-        val finalOccurredAtEpochMillis = checkNotNull(
-            finalizedWorkspace.finalConfirmationRequest,
-        ).occurredAtEpochMillis
-        if (finalizedWorkspace != currentWorkspace) {
-            workspaceState = finalizedWorkspace
-            workspaceChangeVersion += 1
-        }
-        if (workflowInProgress) return
-        workflowInProgress = true
-        coroutineScope.launch {
-            try {
-                val persistedFinalIdentity = workspaceIdentity
-                    ?.takeIf { it.matchesPersistedFinalState(finalizedWorkspace) }
-                val exactWorkspaceIdentity = persistedFinalIdentity
-                    ?: saveWorkspaceNow(
-                        state = finalizedWorkspace,
-                        occurredAtEpochMillis = finalOccurredAtEpochMillis,
-                    )
-                    ?: return@launch
-                val confirmation = ConfirmCapturedProblemRequest(
-                    draftId = currentDraftId,
-                    workspaceIdentity = exactWorkspaceIdentity,
-                )
-                when (activeEntryOrigin) {
-                    CaptureEntryOrigin.LIBRARY -> {
-                        val committed = repository.confirmAndCommit(confirmation)
-                        draftRevisionNumber = (draftRevisionNumber ?: 0) + 1
-                        committedEntryId = committed.errorBookEntryId
-                    }
-                    CaptureEntryOrigin.TUTOR -> {
-                        val session = repository.confirmForTutoring(confirmation)
-                        draftRevisionNumber = session.draftRevisionNumber
-                        val currentProvider = providerCapabilities?.takeIf { provider ->
-                            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-                                provider.supports(ModelTaskKind.TUTOR_PLAN)
-                        }
-                        val currentManifest = captureEgressManifest
-                        val autoStartAuthorization = if (
-                            currentProvider != null &&
-                            currentManifest != null &&
-                            currentManifest.authorizationId == activeCaptureAuthorizationId &&
-                            currentManifest.authorizationId ==
-                            initialTutorPlanCaptureAuthorizationId &&
-                            currentManifest.isModelEgressApprovalFresh(System.currentTimeMillis())
-                        ) {
-                            TutorAutoStartAuthorization.grant(
-                                authorizationId = currentManifest.authorizationId,
-                                sessionId = session.sessionId,
-                                questionDocumentId = session.questionDocument.document.id,
-                                revisionNumber = session.draftRevisionNumber,
-                                provider = currentProvider,
-                                promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_PLAN,
-                                approvedAtEpochMillis = currentManifest.approvedAtEpochMillis,
-                            )
-                        } else {
-                            null
-                        }
-                        onTutorSessionReady(session.sessionId, autoStartAuthorization)
-                    }
-                }
-                deleteOwnedCaptureAsync(context, receivedImageUri)
-                receivedImageUri = null
-                workspaceState = null
-                workspaceIdentity = null
-                workspaceUpdatedAtEpochMillis = 0
-                workspaceHydratedDraftId = null
-                commitOutcomeUnknown = false
-                captureError = null
-            } catch (cancelled: kotlinx.coroutines.CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                commitOutcomeUnknown = true
-                captureError = when (activeEntryOrigin) {
-                    CaptureEntryOrigin.TUTOR ->
-                        "题目已经留在本机，但讲题会话可能还没有打开。请直接重试；不会自动存入错题本。"
-                    CaptureEntryOrigin.LIBRARY ->
-                        "题目可能还没有保存完成。请直接重试，系统不会重复建题。"
-                }
-            } finally {
-                workflowInProgress = false
-            }
-        }
     }
 
     LaunchedEffect(receivedImageUri, draftId) {
@@ -1097,115 +853,131 @@ fun CaptureScreen(
         }
     }
 
+    LaunchedEffect(workflowUiState.importedDraft?.requestId) {
+        val event = workflowUiState.importedDraft ?: return@LaunchedEffect
+        workflowEvents.applyImported(event)
+    }
+
+    LaunchedEffect(
+        workflowUiState.workflow.phase,
+        workflowUiState.workflow.savedEntryId,
+    ) {
+        workflowEvents.applySaved(
+            phase = workflowUiState.workflow.phase,
+            origin = activeEntryOrigin,
+            currentRevisionNumber = draftRevisionNumber,
+            savedEntryId = workflowUiState.workflow.savedEntryId,
+        )
+    }
+
+    LaunchedEffect(workflowUiState.confirmedTutorSession?.sessionId) {
+        val session = workflowUiState.confirmedTutorSession ?: return@LaunchedEffect
+        workflowEvents.consumeTutorSession(
+            session = session,
+            provider = providerCapabilities,
+            manifest = captureEgressManifest,
+            activeAuthorizationId = activeCaptureAuthorizationId,
+            initialTutorPlanAuthorizationId = initialTutorPlanCaptureAuthorizationId,
+            nowEpochMillis = System.currentTimeMillis(),
+        )
+    }
+
+    LaunchedEffect(
+        workflowUiState.workflow.phase,
+        workflowUiState.workflow.latestRequestId,
+    ) {
+        workflowEvents.applyFailed(
+            phase = workflowUiState.workflow.phase,
+            failureCode = workflowUiState.workflow.failureCode,
+        )
+    }
+
     LaunchedEffect(replacementCandidateUri) {
         if (replacementCandidateUri != null && replacementError == null) {
             replaceDraftWithCandidate()
         }
     }
 
+    val resumeCommands = remember {
+        CaptureResumeCommands(
+            context = context,
+            repository = repository,
+            sink = CaptureResumeSink(
+                pendingCameraUri = { pendingCameraUri },
+                receivedImageUri = { receivedImageUri },
+                replacementCandidateUri = { replacementCandidateUri },
+                pendingAppendOwnedUri = { pendingAppendOwnedUri },
+                draftId = { draftId },
+                workspaceHydratedDraftId = { workspaceHydratedDraftId },
+                applyOwnedUriRecovery = { recovery ->
+                    if (recovery.clearPendingCamera) pendingCameraUri = null
+                    if (recovery.clearReceived) {
+                        receivedImageUri = null
+                        receivedInputSource = null
+                    }
+                    if (recovery.clearReplacement) {
+                        replacementCandidateUri = null
+                        replacementInputSourceName = null
+                        replacementRequestId = null
+                        replacementOccurredAtEpochMillis = null
+                    }
+                    if (recovery.clearPendingAppend) pendingAppendOwnedUri = null
+                    recovery.error?.let { captureError = it }
+                },
+                completeCachePrune = { initialCachePrune.complete(Unit) },
+                setResumeState = { resumeLoadStateName = it.name },
+                redirectTutor = { onTutorSessionReady(it, null) },
+                applyResumeDraft = { applied ->
+                    activeEntryOriginName = applied.originName
+                    receivedImageUri = applied.receivedImageUri
+                    receivedInputSource = null
+                    importRequestId = null
+                    importOccurredAtEpochMillis = applied.importOccurredAtEpochMillis
+                    commitOutcomeUnknown = false
+                    draftId = applied.draftId
+                    draftRevisionNumber = applied.draftRevisionNumber
+                    canonicalSha256 = applied.canonicalSha256
+                    sourcePages = applied.sourcePages
+                    sourcePageAssessmentSnapshots = applied.sourcePageAssessmentSnapshots
+                    selectedSourcePageIndex = 0
+                    committedEntryId = null
+                    selectedSubject = applied.selectedSubject
+                    correctedTitle = applied.correctedTitle
+                    titleEditedByUser = false
+                    correctedTranscription = applied.correctedTranscription
+                    writingLayerName = applied.writingLayerName
+                    recognitionStateName = applied.recognitionStateName
+                    recognitionConfidence = applied.recognitionConfidence
+                    recognitionBlockCount = applied.recognitionBlockCount
+                    assessmentSnapshot = applied.tasks.assessmentSnapshot
+                    assessmentRequestId = applied.tasks.assessmentRequestId
+                    assessmentSourceAssetId = applied.tasks.assessmentSourceAssetId
+                    assessmentOccurredAtEpochMillis = applied.tasks.assessmentOccurredAtEpochMillis
+                    assessmentRetryNonce = 0
+                    parseSnapshot = applied.tasks.parseSnapshot
+                    parseRequestId = applied.tasks.parseRequestId
+                    parseRetryNonce = 0
+                    transcriptionEditedByUser = false
+                    captureError = null
+                    applyWorkspace(applied.workspace)
+                },
+                applyWorkspace = { applyWorkspace(it) },
+            ),
+        )
+    }
+
     LaunchedEffect(Unit) {
-        try {
-            withContext(Dispatchers.IO) {
-                pruneOwnedCaptureCache(
-                    context = context,
-                    retainedUris = listOfNotNull(pendingCameraUri, receivedImageUri),
-                )
-            }
-        } finally {
-            initialCachePrune.complete(Unit)
-        }
+        resumeCommands.pruneAndRecoverOwnedUris()
     }
 
     LaunchedEffect(resumeDraftId) {
         val requestedDraftId = resumeDraftId ?: return@LaunchedEffect
-        if (draftId == requestedDraftId && receivedImageUri != null) {
-            resumeLoadStateName = CaptureResumeLoadState.READY.name
-            return@LaunchedEffect
-        }
-        resumeLoadStateName = CaptureResumeLoadState.LOADING.name
-        val resumable = try {
-            withContext(Dispatchers.IO) {
-                repository.readPendingCapture(requestedDraftId)
-            }
-        } catch (cancelled: kotlinx.coroutines.CancellationException) {
-            throw cancelled
-        } catch (_: Exception) {
-            resumeLoadStateName = CaptureResumeLoadState.SOURCE_UNAVAILABLE.name
-            return@LaunchedEffect
-        }
-        if (resumable == null) {
-            resumeLoadStateName = CaptureResumeLoadState.MISSING.name
-            return@LaunchedEffect
-        }
-        resumable.tutorSessionId?.let { sessionId ->
-            resumeLoadStateName = CaptureResumeLoadState.REDIRECTING.name
-            onTutorSessionReady(sessionId, null)
-            return@LaunchedEffect
-        }
-
-        activeEntryOriginName = resumable.origin.name
-        receivedImageUri = resumable.sourceImageUri
-        receivedInputSource = null
-        importRequestId = null
-        importOccurredAtEpochMillis = resumable.draftCreatedAtEpochMillis
-        commitOutcomeUnknown = false
-        draftId = resumable.draftId
-        draftRevisionNumber = resumable.currentRevisionNumber
-        canonicalSha256 = resumable.sourceAssetSha256
-        sourcePages = resumable.sourcePages
-        sourcePageAssessmentSnapshots = resumable.sourcePageAssessmentTasks
-        selectedSourcePageIndex = 0
-        committedEntryId = null
-        selectedSubject = resumable.subject.orEmpty()
-        correctedTitle = resumable.title
-        titleEditedByUser = false
-        correctedTranscription = resumable.transcription
-        writingLayerName = resumable.writingLayer.name
-        recognitionStateName = if (resumable.transcription.isBlank()) {
-            CaptureRecognitionState.NOT_ATTEMPTED.name
-        } else {
-            CaptureRecognitionState.CANDIDATE_AVAILABLE.name
-        }
-        recognitionConfidence = resumable.questionDocument.blockEvidence
-            .mapNotNull { evidence -> evidence.confidence }
-            .takeIf { values -> values.isNotEmpty() }
-            ?.average()
-        recognitionBlockCount = resumable.questionDocument.document.blocks.size
-        val pendingAssessmentPageIndex = resumable.sourcePageAssessmentTasks
-            .indexOfFirst { task -> task?.status != ModelTaskStatus.SUCCEEDED }
-            .takeIf { it >= 0 }
-            ?: resumable.sourcePages.lastIndex
-        val pendingAssessmentPage = resumable.sourcePages[pendingAssessmentPageIndex]
-        val pendingAssessmentTask = resumable.sourcePageAssessmentTasks[pendingAssessmentPageIndex]
-        assessmentSnapshot = pendingAssessmentTask
-        assessmentRequestId = pendingAssessmentTask?.request?.requestId
-            ?: resumeAssessmentRequestId(resumable.draftId, pendingAssessmentPageIndex)
-        assessmentSourceAssetId = pendingAssessmentPage.sourceAssetId
-        assessmentOccurredAtEpochMillis = pendingAssessmentTask
-            ?.request
-            ?.occurredAtEpochMillis
-            ?: pendingAssessmentPage.createdAtEpochMillis
-        assessmentRetryNonce = 0
-        parseSnapshot = resumable.latestParseTask
-        parseRequestId = resumable.latestParseTask?.request?.requestId
-            ?: resumeParseRequestId(
-                draftId = resumable.draftId,
-                revisionNumber = resumable.currentRevisionNumber,
-            )
-        parseRetryNonce = 0
-        transcriptionEditedByUser = false
-        captureError = null
-        applyWorkspace(restoreCaptureWorkspace(resumable))
-        resumeLoadStateName = CaptureResumeLoadState.READY.name
+        resumeCommands.loadResume(requestedDraftId)
     }
 
     LaunchedEffect(draftId, workspaceHydratedDraftId) {
         val currentDraftId = draftId ?: return@LaunchedEffect
-        if (workspaceHydratedDraftId == currentDraftId) return@LaunchedEffect
-        val resumable = runCatching {
-            withContext(Dispatchers.IO) { repository.readPendingCapture(currentDraftId) }
-        }.getOrNull() ?: return@LaunchedEffect
-        applyWorkspace(restoreCaptureWorkspace(resumable))
+        resumeCommands.hydrateWorkspace(currentDraftId)
     }
 
     LaunchedEffect(workspaceHydratedDraftId, workspaceChangeVersion) {
@@ -1250,31 +1022,84 @@ fun CaptureScreen(
         afterWorkspaceFlush(onBack)
     }
 
+    val modelTaskCommands = remember(captureModelTaskCoordinator) {
+        CaptureModelTaskCommands(
+            repository = repository,
+            modelTasks = modelTasks,
+            coordinator = captureModelTaskCoordinator,
+            sink = CaptureModelTaskSink(
+                sourcePages = { sourcePages },
+                pageAssessmentSnapshots = { sourcePageAssessmentSnapshots },
+                assessmentSnapshot = { assessmentSnapshot },
+                parseSnapshot = { parseSnapshot },
+                draftId = { draftId },
+                revisionNumber = { draftRevisionNumber },
+                workspace = { workspaceState },
+                pendingAssessmentRecoveryRequest = { pendingAssessmentRecoveryRequest },
+                pendingParseRecoveryRequest = { pendingParseRecoveryRequest },
+                transcriptionEditedByUser = { transcriptionEditedByUser },
+                titleEditedByUser = { titleEditedByUser },
+                structuredProjection = { structuredProjection },
+                setAssessmentSnapshot = { assessmentSnapshot = it },
+                setParseSnapshot = { parseSnapshot = it },
+                setPageAssessmentSnapshots = { sourcePageAssessmentSnapshots = it },
+                clearActiveAuthorization = { activeCaptureAuthorizationId = null },
+                setSplitError = { splitError = it },
+                setWorkflowInProgress = { workflowInProgress = it },
+                resetDraft = { resetDraftState() },
+                onSplitReady = onSplitReady,
+                clearFreshEgressIntent = { freshCaptureEgressIntent = null },
+                approveCaptureEgress = { approveCaptureEgress(it) },
+                setInitialTutorPlanAuthorizationId = {
+                    initialTutorPlanCaptureAuthorizationId = it
+                },
+                clearPendingAssessmentRecovery = { pendingAssessmentRecoveryRequest = null },
+                clearPendingParseRecovery = { pendingParseRecoveryRequest = null },
+                replaceWorkspace = { adopted ->
+                    workspaceState = adopted
+                    workspaceChangeVersion += 1
+                    correctedTranscription = adopted.transcription
+                    correctedTitle = adopted.title.ifBlank {
+                        suggestCaptureTitle(adopted.transcription)
+                    }
+                },
+                applyAdoptedText = { adoptedText ->
+                    correctedTranscription = adoptedText.transcription
+                    adoptedText.title?.let { correctedTitle = it }
+                },
+                buildAssessmentRequest = {
+                    requestId, currentDraftId, sourceAssetId, width, height, occurredAt, manifest ->
+                    captureAssessmentRequest(
+                        requestId = requestId,
+                        draftId = currentDraftId,
+                        sourceAssetId = sourceAssetId,
+                        origin = activeEntryOrigin.toAssessmentOrigin(),
+                        imageWidth = width,
+                        imageHeight = height,
+                        occurredAtEpochMillis = occurredAt,
+                        egressManifest = manifest,
+                    )
+                },
+                buildParseRequest = {
+                    requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, manifest ->
+                    captureParseRequest(
+                        requestId = requestId,
+                        draftId = currentDraftId,
+                        origin = activeEntryOrigin.toAssessmentOrigin(),
+                        basisRevisionNumber = basisRevision,
+                        sourcePages = pages,
+                        assessmentRequestIds = assessmentIds,
+                        occurredAtEpochMillis = occurredAt,
+                        egressManifest = manifest,
+                    )
+                },
+            ),
+        )
+    }
+
     LaunchedEffect(assessmentRequestId) {
         val requestId = assessmentRequestId ?: return@LaunchedEffect
-        modelTasks.observe(requestId).collect { snapshot ->
-            assessmentSnapshot = snapshot
-            if (snapshot?.status in setOf(
-                    ModelTaskStatus.RETRYABLE_FAILURE,
-                    ModelTaskStatus.PERMANENT_FAILURE,
-                    ModelTaskStatus.CANCELLED,
-                )
-            ) {
-                activeCaptureAuthorizationId = null
-            }
-            val assessedAssetId = (snapshot?.request?.input as? CaptureAssessmentInput)
-                ?.sourceAssetId
-                ?: return@collect
-            val pageIndex = sourcePages.indexOfFirst { it.sourceAssetId == assessedAssetId }
-            if (pageIndex >= 0) {
-                sourcePageAssessmentSnapshots = sourcePageAssessmentSnapshots.mapIndexed {
-                        index,
-                        existing,
-                    ->
-                    if (index == pageIndex) snapshot else existing
-                }
-            }
-        }
+        modelTaskCommands.observeAssessment(requestId)
     }
 
     LaunchedEffect(
@@ -1284,52 +1109,7 @@ fun CaptureScreen(
         draftRevisionNumber,
         sourcePages,
     ) {
-        val snapshot = assessmentSnapshot ?: return@LaunchedEffect
-        val assessment = (snapshot.output as? CaptureAssessmentOutput)
-            ?.assessment
-            ?: return@LaunchedEffect
-        if (
-            snapshot.status != ModelTaskStatus.SUCCEEDED ||
-            snapshot.provider?.isDemo != false ||
-            assessment.decision != CaptureAssessmentDecision.SPLIT
-        ) {
-            return@LaunchedEffect
-        }
-        val currentDraftId = draftId ?: return@LaunchedEffect
-        val revisionNumber = draftRevisionNumber ?: return@LaunchedEffect
-        val page = sourcePages.singleOrNull() ?: run {
-            splitError = "这页暂时不能自动整理，原图已经保留。"
-            return@LaunchedEffect
-        }
-        val assessmentInput = snapshot.request.input as? CaptureAssessmentInput
-            ?: return@LaunchedEffect
-        if (assessmentInput.sourceAssetId != page.sourceAssetId) return@LaunchedEffect
-
-        workflowInProgress = true
-        splitError = null
-        try {
-            withContext(Dispatchers.IO) {
-                repository.splitDraft(
-                    SplitCaptureDraftRequest(
-                        requestId = "capture-split:${snapshot.request.requestId}",
-                        draftId = currentDraftId,
-                        expectedRevisionNumber = revisionNumber,
-                        assessmentRequestId = snapshot.request.requestId,
-                        sourceAssetId = page.sourceAssetId,
-                        regions = assessment.questionRegions,
-                        occurredAtEpochMillis = snapshot.updatedAtEpochMillis,
-                    ),
-                )
-            }
-            resetDraftState()
-            onSplitReady()
-        } catch (cancelled: kotlinx.coroutines.CancellationException) {
-            throw cancelled
-        } catch (_: Exception) {
-            splitError = "这页还没整理好，原图已经保留。"
-        } finally {
-            workflowInProgress = false
-        }
+        modelTaskCommands.maybeSplit()
     }
 
     LaunchedEffect(modelTasks) {
@@ -1342,26 +1122,13 @@ fun CaptureScreen(
         draftId,
         sourcePages,
     ) {
-        val informedIntent = freshCaptureEgressIntent ?: return@LaunchedEffect
-        val provider = providerCapabilities ?: return@LaunchedEffect
-        val currentDraftId = draftId
-        if (
-            currentDraftId == null ||
-            !informedIntent.matches(
-                provider = provider,
-                draftId = currentDraftId,
-                sourcePages = sourcePages,
-                nowEpochMillis = System.currentTimeMillis(),
-            )
-        ) {
-            freshCaptureEgressIntent = null
-            return@LaunchedEffect
-        }
-        val approvedManifest = approveCaptureEgress(provider)
-        initialTutorPlanCaptureAuthorizationId = approvedManifest
-            ?.authorizationId
-            ?.takeIf { informedIntent.authorizesInitialTutorPlan }
-        freshCaptureEgressIntent = null
+        modelTaskCommands.bindFreshEgress(
+            informedIntent = freshCaptureEgressIntent,
+            provider = providerCapabilities,
+            draftId = draftId,
+            sourcePages = sourcePages,
+            nowEpochMillis = System.currentTimeMillis(),
+        )
     }
 
     LaunchedEffect(
@@ -1372,70 +1139,20 @@ fun CaptureScreen(
         providerCapabilities,
         captureEgressManifest?.authorizationId,
     ) {
-        val provider = providerCapabilities ?: return@LaunchedEffect
-        val requestId = assessmentRequestId ?: return@LaunchedEffect
-        val sourceAssetId = assessmentSourceAssetId ?: return@LaunchedEffect
-        val currentDraftId = draftId ?: return@LaunchedEffect
-        val assessedPage = sourcePages.singleOrNull { it.sourceAssetId == sourceAssetId }
-            ?: return@LaunchedEffect
-        val width = assessedPage.width
-        val height = assessedPage.height
-        val occurredAt = assessmentOccurredAtEpochMillis ?: return@LaunchedEffect
-        val request = pendingAssessmentRecoveryRequest?.takeIf { pending ->
-            pending.requestId == requestId
-        } ?: assessmentSnapshot?.request?.takeIf { persisted ->
-            persisted.requestId == requestId
-        } ?: ModelTaskRequest(
-            requestId = requestId,
-            input = CaptureAssessmentInput(
-                draftId = currentDraftId,
-                sourceAssetId = sourceAssetId,
-                origin = activeEntryOrigin.toAssessmentOrigin(),
-                imageWidth = width,
-                imageHeight = height,
-            ),
-            occurredAtEpochMillis = occurredAt,
-            egressManifest = captureEgressManifest,
+        modelTaskCommands.dispatchAssessment(
+            provider = providerCapabilities,
+            requestId = assessmentRequestId,
+            sourceAssetId = assessmentSourceAssetId,
+            draftId = draftId,
+            occurredAt = assessmentOccurredAtEpochMillis,
+            manifest = captureEgressManifest,
+            activeAuthorizationId = activeCaptureAuthorizationId,
         )
-        if (
-            !captureExecutionLaunchGuard.claim(
-                request = request,
-                snapshot = assessmentSnapshot,
-                provider = provider,
-                manifest = captureEgressManifest,
-                activeAuthorizationId = activeCaptureAuthorizationId,
-                nowEpochMillis = System.currentTimeMillis(),
-            )
-        ) {
-            return@LaunchedEffect
-        }
-        modelTasks.execute(request).collect {
-            pendingAssessmentRecoveryRequest = null
-            assessmentSnapshot = it
-            if (it.status in setOf(
-                    ModelTaskStatus.RETRYABLE_FAILURE,
-                    ModelTaskStatus.PERMANENT_FAILURE,
-                    ModelTaskStatus.CANCELLED,
-                )
-            ) {
-                activeCaptureAuthorizationId = null
-            }
-        }
     }
 
     LaunchedEffect(parseRequestId) {
         val requestId = parseRequestId ?: return@LaunchedEffect
-        modelTasks.observe(requestId).collect { snapshot ->
-            parseSnapshot = snapshot
-            if (snapshot?.status in setOf(
-                    ModelTaskStatus.RETRYABLE_FAILURE,
-                    ModelTaskStatus.PERMANENT_FAILURE,
-                    ModelTaskStatus.CANCELLED,
-                )
-            ) {
-                activeCaptureAuthorizationId = null
-            }
-        }
+        modelTaskCommands.observeParse(requestId)
     }
 
     LaunchedEffect(
@@ -1446,97 +1163,18 @@ fun CaptureScreen(
         providerCapabilities,
         captureEgressManifest?.authorizationId,
     ) {
-        val provider = providerCapabilities ?: return@LaunchedEffect
-        val requestId = parseRequestId ?: return@LaunchedEffect
-        val currentDraftId = draftId ?: return@LaunchedEffect
-        val basisRevision = draftRevisionNumber ?: return@LaunchedEffect
-        if (sourcePages.isEmpty() || sourcePageAssessmentSnapshots.size != sourcePages.size) {
-            return@LaunchedEffect
-        }
-        val assessments = sourcePageAssessmentSnapshots.map { it ?: return@LaunchedEffect }
-        if (assessments.withIndex().any { (pageIndex, snapshot) ->
-                val decision = (snapshot.output as? CaptureAssessmentOutput)?.assessment?.decision
-                snapshot.status != ModelTaskStatus.SUCCEEDED ||
-                    (decision != CaptureAssessmentDecision.PASS &&
-                        !(decision == CaptureAssessmentDecision.NEED_MORE_IMAGE &&
-                            pageIndex < sourcePages.lastIndex))
-            }
-        ) return@LaunchedEffect
-        val assessmentRequestIds = assessments.map { it.request.requestId }
-        val occurredAt = assessments.maxOf { it.request.occurredAtEpochMillis }
-        val request = pendingParseRecoveryRequest?.takeIf { pending ->
-            pending.requestId == requestId
-        } ?: parseSnapshot?.request?.takeIf { persisted ->
-            persisted.requestId == requestId
-        } ?: ModelTaskRequest(
-            requestId = requestId,
-            input = CaptureParseInput(
-                draftId = currentDraftId,
-                origin = activeEntryOrigin.toAssessmentOrigin(),
-                basisRevisionNumber = basisRevision,
-                sourceAssets = sourcePages.map { page ->
-                    CaptureSourceAssetRef(
-                        assetId = page.sourceAssetId,
-                        sha256 = page.sourceAssetSha256,
-                        width = page.width,
-                        height = page.height,
-                        pageIndex = page.pageIndex,
-                    )
-                },
-                assessmentRequestId = assessmentRequestIds.first(),
-                assessmentRequestIds = assessmentRequestIds,
-            ),
-            occurredAtEpochMillis = occurredAt,
-            egressManifest = captureEgressManifest,
+        modelTaskCommands.dispatchParse(
+            provider = providerCapabilities,
+            requestId = parseRequestId,
+            draftId = draftId,
+            basisRevision = draftRevisionNumber,
+            manifest = captureEgressManifest,
+            activeAuthorizationId = activeCaptureAuthorizationId,
         )
-        if (
-            !captureExecutionLaunchGuard.claim(
-                request = request,
-                snapshot = parseSnapshot,
-                provider = provider,
-                manifest = captureEgressManifest,
-                activeAuthorizationId = activeCaptureAuthorizationId,
-                nowEpochMillis = System.currentTimeMillis(),
-            )
-        ) {
-            return@LaunchedEffect
-        }
-        modelTasks.execute(request).collect {
-            pendingParseRecoveryRequest = null
-            parseSnapshot = it
-            if (it.status in setOf(
-                    ModelTaskStatus.RETRYABLE_FAILURE,
-                    ModelTaskStatus.PERMANENT_FAILURE,
-                    ModelTaskStatus.CANCELLED,
-                )
-            ) {
-                activeCaptureAuthorizationId = null
-            }
-        }
     }
 
     LaunchedEffect(parseSnapshot?.stateVersion) {
-        val output = realParseOutput ?: return@LaunchedEffect
-        workspaceState?.let { current ->
-            val adopted = current.adoptModelCandidateIfPristine(output.capturedDocument)
-            if (adopted != current) {
-                workspaceState = adopted
-                workspaceChangeVersion += 1
-                correctedTranscription = adopted.transcription
-                correctedTitle = adopted.title.ifBlank { suggestCaptureTitle(adopted.transcription) }
-            }
-            return@LaunchedEffect
-        }
-        if (!transcriptionEditedByUser && structuredProjection.isNotBlank()) {
-            correctedTranscription = structuredProjection
-            if (!titleEditedByUser) {
-                correctedTitle = output.capturedDocument.document.title
-                    ?.trim()
-                    ?.takeIf(String::isNotBlank)
-                    ?.take(MAX_CAPTURE_TITLE_CHARS)
-                    ?: suggestCaptureTitle(structuredProjection)
-            }
-        }
+        modelTaskCommands.adoptParseOutput(realParseOutput)
     }
 
     DisposableEffect(context) {
@@ -1546,6 +1184,7 @@ fun CaptureScreen(
                     latestPendingCameraUri?.let(::add)
                     latestReceivedImageUri?.let(::add)
                     latestReplacementCandidateUri?.let(::add)
+                    latestPendingAppendOwnedUri?.let(::add)
                 }
                 captureCleanupScope.launch {
                     ownedUris.forEach {
@@ -1681,40 +1320,29 @@ fun CaptureScreen(
                                         provider = provider,
                                         freshManifest = freshManifest,
                                     )
-                                    when (recoveryRequest.input.kind) {
-                                        ModelTaskKind.CAPTURE_ASSESS -> {
-                                            val sourceAssetId =
-                                                (recoveryRequest.input as CaptureAssessmentInput)
-                                                    .sourceAssetId
-                                            pendingAssessmentRecoveryRequest = recoveryRequest
-                                            assessmentRequestId = recoveryRequest.requestId
-                                            assessmentSourceAssetId = sourceAssetId
+                                    when (
+                                        val application = captureRecoveryApplication(
+                                            recoveryRequest = recoveryRequest,
+                                            sourcePages = sourcePages,
+                                            pageSnapshots = sourcePageAssessmentSnapshots,
+                                        )
+                                    ) {
+                                        is CaptureRecoveryApplication.Assessment -> {
+                                            pendingAssessmentRecoveryRequest = application.request
+                                            assessmentRequestId = application.request.requestId
+                                            assessmentSourceAssetId = application.sourceAssetId
                                             assessmentOccurredAtEpochMillis =
-                                                recoveryRequest.occurredAtEpochMillis
+                                                application.request.occurredAtEpochMillis
                                             assessmentRetryNonce = 0
                                             assessmentSnapshot = null
-                                            sourcePageAssessmentSnapshots =
-                                                sourcePageAssessmentSnapshots.mapIndexed {
-                                                        index,
-                                                        existing,
-                                                    ->
-                                                    if (
-                                                        sourcePages.getOrNull(index)?.sourceAssetId ==
-                                                        sourceAssetId
-                                                    ) {
-                                                        null
-                                                    } else {
-                                                        existing
-                                                    }
-                                                }
+                                            sourcePageAssessmentSnapshots = application.pageSnapshots
                                         }
-                                        ModelTaskKind.CAPTURE_PARSE -> {
-                                            pendingParseRecoveryRequest = recoveryRequest
-                                            parseRequestId = recoveryRequest.requestId
+                                        is CaptureRecoveryApplication.Parse -> {
+                                            pendingParseRecoveryRequest = application.request
+                                            parseRequestId = application.request.requestId
                                             parseRetryNonce = 0
                                             parseSnapshot = null
                                         }
-                                        else -> error("Unexpected capture recovery task")
                                     }
                                 }
                             },
@@ -1869,6 +1497,26 @@ fun CaptureScreen(
             )
         }
 
+        if (
+            workflowUiState.workflow.phase ==
+            com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase.FAILED &&
+            workflowUiState.workflow.canRetry &&
+            workflowUiState.userError != null &&
+            captureError == null
+        ) {
+            CaptureError(
+                message = workflowUiState.userError?.message.orEmpty(),
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            OutlineActionChip(
+                text = "重试上一步",
+                onClick = workflowViewModel::retryFailedWorkflow,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .fillMaxWidth()
+                    .testTag("capture_workflow_retry"),
+            )
+        }
         if (captureError != null) {
             CaptureError(
                 message = captureError.orEmpty(),
@@ -1887,499 +1535,4 @@ fun CaptureScreen(
     }
 
 
-}
-
-@Composable
-private fun WorkspaceSaveErrorCard(
-    message: String,
-    saving: Boolean,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, ErrorWarm, RoundedCornerShape(8.dp))
-            .padding(12.dp)
-            .testTag("capture_workspace_save_error"),
-    ) {
-        Text(message, color = ErrorWarm, style = MaterialTheme.typography.bodySmall)
-        OutlineActionChip(
-            text = if (saving) "正在重试…" else "重新保存",
-            onClick = onRetry,
-            enabled = !saving,
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .testTag("capture_workspace_save_retry"),
-        )
-    }
-}
-
-@Composable
-private fun ReplacementStatusCard(
-    isReplacing: Boolean,
-    error: String?,
-    onRetry: () -> Unit,
-    onKeepCurrent: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, if (error == null) Outline else ErrorWarm, RoundedCornerShape(8.dp))
-            .background(JadeSoft.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-            .padding(14.dp)
-            .testTag("capture_replacement_status"),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (isReplacing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = JadeActive,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Outlined.ErrorOutline,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = ErrorWarm,
-                )
-            }
-            Text(
-                text = if (isReplacing) "正在安全替换题图" else error.orEmpty(),
-                modifier = Modifier.padding(start = 8.dp),
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        if (!isReplacing && error != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlineActionChip(
-                    text = "重试替换",
-                    onClick = onRetry,
-                    modifier = Modifier.testTag("capture_replacement_retry"),
-                )
-                OutlineActionChip(
-                    text = "保留原题",
-                    onClick = onKeepCurrent,
-                    modifier = Modifier.testTag("capture_replacement_keep"),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CaptureTopBar(title: String, onBack: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier.testTag("capture_back_button"),
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "返回",
-                tint = Ink,
-            )
-        }
-        Text(
-            text = title,
-            modifier = Modifier.padding(start = 4.dp),
-            color = Ink,
-            style = MaterialTheme.typography.headlineLarge,
-        )
-    }
-}
-
-@Composable
-private fun CaptureSourcePageBar(
-    pages: List<CaptureSourcePage>,
-    selectedPageIndex: Int,
-    enabled: Boolean,
-    onSelectPage: (Int) -> Unit,
-    onAddByCamera: () -> Unit,
-    onAddFromPhotos: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "本题原图 · ${pages.size} 页",
-            color = Ink,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Row(
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            pages.forEach { page ->
-                FilterChip(
-                    selected = page.pageIndex == selectedPageIndex,
-                    onClick = { onSelectPage(page.pageIndex) },
-                    label = { Text("第 ${page.pageIndex + 1} 页") },
-                    modifier = Modifier.testTag("capture_source_page_${page.pageIndex}"),
-                )
-            }
-            IconButton(
-                onClick = onAddByCamera,
-                enabled = enabled,
-                modifier = Modifier.testTag("capture_add_page_camera"),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.PhotoCamera,
-                    contentDescription = "拍照补充本题下一页",
-                    tint = JadeActive,
-                )
-            }
-            IconButton(
-                onClick = onAddFromPhotos,
-                enabled = enabled,
-                modifier = Modifier.testTag("capture_add_page_photos"),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.PhotoLibrary,
-                    contentDescription = "从照片补充本题下一页",
-                    tint = JadeActive,
-                )
-            }
-        }
-        Text(
-            text = "跨页题按顺序补拍；每一页原图都会保留。",
-            modifier = Modifier.padding(top = 4.dp),
-            color = InkMuted,
-            style = MaterialTheme.typography.bodySmall,
-        )
-    }
-}
-
-@Composable
-internal fun CaptureActions(
-    provider: ProviderCapabilitySnapshot?,
-    entryOrigin: CaptureEntryOrigin = CaptureEntryOrigin.LIBRARY,
-    onTakePicture: () -> Unit,
-    onPickPhoto: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        PrimaryActionButton(
-            text = "拍照并整理",
-            onClick = onTakePicture,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("capture_take_picture_button"),
-            icon = Icons.Outlined.PhotoCamera,
-            contentDescription = "使用系统相机拍摄题目并整理",
-        )
-        OutlineActionChip(
-            text = "选图并整理",
-            onClick = onPickPhoto,
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth()
-                .testTag("capture_pick_photo_button"),
-            icon = Icons.Outlined.PhotoLibrary,
-            contentDescription = "使用系统照片选择器选择题目图片并整理",
-        )
-        Text(
-            text = captureInitialEgressDisclosure(provider, entryOrigin),
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth()
-                .testTag("capture_initial_egress_disclosure"),
-            color = InkMuted,
-            style = MaterialTheme.typography.bodySmall,
-        )
-    }
-}
-
-@Composable
-private fun CaptureGuidance(modifier: Modifier = Modifier) {
-    Text(
-        text = "尽量把题干、选项和配图拍完整。",
-        modifier = modifier.fillMaxWidth(),
-        color = InkSecondary,
-        style = MaterialTheme.typography.bodyMedium,
-    )
-}
-
-private fun CaptureEntryOrigin.toAssessmentOrigin(): CaptureAssessmentOrigin = when (this) {
-    CaptureEntryOrigin.TUTOR -> CaptureAssessmentOrigin.TUTOR
-    CaptureEntryOrigin.LIBRARY -> CaptureAssessmentOrigin.LIBRARY
-}
-
-internal fun resumeAssessmentRequestId(draftId: String, pageIndex: Int = 0): String =
-    if (pageIndex == 0) {
-        "capture-assess:resume:$draftId"
-    } else {
-        "capture-assess:resume:$draftId:p$pageIndex"
-    }
-
-internal fun resumeParseRequestId(draftId: String, revisionNumber: Int): String =
-    "capture-parse:resume:$draftId:r$revisionNumber"
-
-internal fun suggestCaptureTitle(candidateText: String): String {
-    val firstMeaningfulLine = candidateText
-        .lineSequence()
-        .map { line -> line.replace(Regex("\\s+"), " ").trim() }
-        .firstOrNull(String::isNotBlank)
-        .orEmpty()
-    if (firstMeaningfulLine.isBlank()) return "新拍题目"
-    return if (firstMeaningfulLine.length <= MAX_CAPTURE_TITLE_CHARS) {
-        firstMeaningfulLine
-    } else {
-        firstMeaningfulLine.take(MAX_CAPTURE_TITLE_CHARS - 1).trimEnd() + "…"
-    }
-}
-
-private const val MAX_CAPTURE_TITLE_CHARS = 24
-private const val MAX_CAPTURE_SOURCE_PAGES = 8
-
-internal fun shouldAutoPersistCapture(
-    receivedImageUri: String?,
-    draftId: String?,
-    workflowInProgress: Boolean,
-): Boolean = receivedImageUri != null && draftId == null && !workflowInProgress
-
-@Composable
-private fun AwaitingCorrectionCard(
-    onRetake: () -> Unit,
-    onPickAnother: () -> Unit,
-    onStartCorrection: () -> Unit,
-    isImporting: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, ErrorWarm, RoundedCornerShape(8.dp))
-            .background(JadeSoft.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-            .padding(16.dp)
-            .testTag("capture_pending_correction"),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Outlined.Schedule,
-                contentDescription = null,
-                modifier = Modifier.size(26.dp),
-                tint = ErrorWarm,
-            )
-            Text(
-                text = if (isImporting) "正在保存题图" else "题图待重试",
-                modifier = Modifier.padding(start = 10.dp),
-                color = Ink,
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
-
-        Spacer(Modifier.height(14.dp))
-        Text(
-            text = if (isImporting) {
-                "图片已收到，正在自动保存到本机；保存完成后会继续整理题面。"
-            } else {
-                "这张图还没有安全保存，已暂停后续处理。请重试，或重新拍摄。"
-            },
-            color = InkSecondary,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 14.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlineActionChip(
-                text = "重新拍摄",
-                onClick = onRetake,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("capture_retake_button"),
-                icon = Icons.Outlined.PhotoCamera,
-                enabled = !isImporting,
-            )
-            OutlineActionChip(
-                text = "另选照片",
-                onClick = onPickAnother,
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("capture_pick_another_button"),
-                icon = Icons.Outlined.PhotoLibrary,
-                enabled = !isImporting,
-            )
-        }
-        PrimaryActionButton(
-            text = if (isImporting) "正在安全保存…" else "重试保存并继续",
-            onClick = onStartCorrection,
-            enabled = !isImporting,
-            icon = Icons.Outlined.Save,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-                .testTag("capture_start_correction_button"),
-        )
-    }
-}
-
-@Composable
-private fun CaptureCommittedCard(
-    onView: () -> Unit,
-    onCaptureAnother: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(JadeSoft.copy(alpha = 0.55f), RoundedCornerShape(8.dp))
-            .padding(16.dp)
-            .testTag("capture_committed"),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Outlined.CheckCircle,
-                contentDescription = null,
-                tint = JadeActive,
-            )
-            Text(
-                text = "已经存入错题本",
-                modifier = Modifier.padding(start = 8.dp),
-                color = Ink,
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
-        Text(
-            text = "原图和整理后的题面都已保存。现在可以查看这道题，或继续录入下一道。",
-            modifier = Modifier.padding(top = 10.dp),
-            color = InkSecondary,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        PrimaryActionButton(
-            text = "查看这道题",
-            onClick = onView,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 14.dp)
-                .testTag("capture_view_saved_item"),
-        )
-        OutlineActionChip(
-            text = "再录一道",
-            onClick = onCaptureAnother,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-                .testTag("capture_another_item"),
-        )
-    }
-}
-
-@Composable
-private fun CaptureError(message: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, ErrorWarm, RoundedCornerShape(8.dp))
-            .padding(12.dp)
-            .testTag("capture_error"),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.ErrorOutline,
-            contentDescription = null,
-            modifier = Modifier.size(22.dp),
-            tint = ErrorWarm,
-        )
-        Text(
-            text = message,
-            modifier = Modifier.padding(start = 8.dp),
-            color = InkSecondary,
-            style = MaterialTheme.typography.bodySmall,
-        )
-    }
-}
-
-@Composable
-private fun CaptureResumeStateCard(
-    state: CaptureResumeLoadState,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val isBusy = state == CaptureResumeLoadState.LOADING ||
-        state == CaptureResumeLoadState.REDIRECTING
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = if (isBusy) Outline else ErrorWarm,
-                shape = RoundedCornerShape(8.dp),
-            )
-            .padding(16.dp)
-            .testTag("capture_resume_${state.name.lowercase()}"),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (isBusy) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = JadeActive,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Outlined.ErrorOutline,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = ErrorWarm,
-                )
-            }
-            Text(
-                text = when (state) {
-                    CaptureResumeLoadState.LOADING -> "正在恢复题目…"
-                    CaptureResumeLoadState.REDIRECTING -> "正在打开讲题会话…"
-                    CaptureResumeLoadState.MISSING -> "这道题已处理或不存在"
-                    CaptureResumeLoadState.SOURCE_UNAVAILABLE -> "原图暂时无法打开"
-                    CaptureResumeLoadState.NOT_REQUESTED,
-                    CaptureResumeLoadState.READY,
-                    -> "正在恢复题目…"
-                },
-                modifier = Modifier.padding(start = 10.dp),
-                color = Ink,
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
-        Text(
-            text = when (state) {
-                CaptureResumeLoadState.LOADING ->
-                    "正在读取本机保存的原图、题面和上次处理状态。"
-                CaptureResumeLoadState.REDIRECTING ->
-                    "这道题已经准备好讲解，将回到原来的临时会话。"
-                CaptureResumeLoadState.MISSING ->
-                    "它可能已经存入错题本，返回后列表会自动更新。"
-                CaptureResumeLoadState.SOURCE_UNAVAILABLE ->
-                    "原图暂时无法打开，请返回后重新拍摄。"
-                CaptureResumeLoadState.NOT_REQUESTED,
-                CaptureResumeLoadState.READY,
-                -> "正在读取本机保存的题目。"
-            },
-            color = InkSecondary,
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        if (!isBusy) {
-            OutlineActionChip(
-                text = "返回待处理题目",
-                onClick = onBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("capture_resume_back_to_inbox"),
-            )
-        }
-    }
 }

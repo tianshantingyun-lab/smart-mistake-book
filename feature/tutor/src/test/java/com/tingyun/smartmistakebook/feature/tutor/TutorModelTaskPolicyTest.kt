@@ -126,6 +126,36 @@ class TutorModelTaskPolicyTest {
     }
 
     @Test
+    fun planOnlyLeaseDoesNotAuthorizeResponseDisclosure() {
+        val question = session().toTutorQuestionContext()
+        val provider = provider()
+        val lease = TutorCompositionEgressLease.grant(
+            question = question,
+            provider = provider,
+            approvedAtEpochMillis = 100,
+            taskKinds = setOf(ModelTaskKind.TUTOR_PLAN),
+        )
+
+        assertEquals(
+            100L,
+            lease.approvedAtFor(question, provider, ModelTaskKind.TUTOR_PLAN, 1_000),
+        )
+        assertEquals(
+            null,
+            lease.approvedAtFor(question, provider, ModelTaskKind.TUTOR_RESPOND, 1_000),
+        )
+        assertEquals(
+            null,
+            lease.approvedAtFor(
+                question,
+                provider,
+                ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                1_000,
+            ),
+        )
+    }
+
+    @Test
     fun requestIdIncludesPromptPolicyVersionSoChangedPromptsCannotReuseAnOldTask() {
         val requestId = tutorPlanRequestId(
             session = session(),

@@ -1,0 +1,74 @@
+name: android-check
+
+on:
+  pull_request:
+    paths:
+      - "**.kt"
+      - "**.kts"
+      - "app/**"
+      - "core/**"
+      - "feature/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Grant Gradle wrapper permission
+        run: chmod +x gradlew
+      - name: Room schema drift check
+        run: git diff --exit-code -- core/database/schemas
+      - name: Unit tests
+        run: ./gradlew testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest --console=plain
+      - name: Assemble local first debug
+        run: ./gradlew :app:assembleLocalFirstDebug --console=plain
+      - name: Assemble strict offline debug
+        run: ./gradlew :app:assembleStrictOfflineDebug --console=plain
+      - name: Assemble release dry run
+        run: ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease --console=plain
+      - name: Compile macrobenchmark and baseline profile module
+        run: ./gradlew :benchmark:assembleDebug --console=plain
+      - name: Lint
+        run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
+      - name: Room schema drift recheck
+        run: git diff --exit-code -- core/database/schemas
+
+  instrumented:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Grant Gradle wrapper permission
+        run: chmod +x gradlew
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            ./gradlew :core:database:connectedDebugAndroidTest \
+              :feature:tutor:connectedDebugAndroidTest \
+              :feature:library:connectedDebugAndroidTest \
+              --console=plain

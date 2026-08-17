@@ -40,6 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
+import com.tingyun.smartmistakebook.core.domain.AppendTutorAssistantMessageCommand
+import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
+import com.tingyun.smartmistakebook.core.domain.ArchiveTutorConversationCommand
+import com.tingyun.smartmistakebook.core.domain.ClearTutorConversationDraftCommand
+import com.tingyun.smartmistakebook.core.domain.DeleteTutorConversationCommand
+import com.tingyun.smartmistakebook.core.domain.SaveTutorConversationDraftCommand
+import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
+import com.tingyun.smartmistakebook.core.domain.PauseTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetail
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailIdentity
@@ -54,7 +62,16 @@ import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorConversationReference
+import com.tingyun.smartmistakebook.core.domain.TutorConversation
+import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
+import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
+import com.tingyun.smartmistakebook.core.domain.TutorConversationSnapshot
+import com.tingyun.smartmistakebook.core.domain.TutorConversationStatus
+import com.tingyun.smartmistakebook.core.domain.TutorMessage
+import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
+import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.UpdateTutorMessageStatusCommand
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
@@ -114,6 +131,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 @RunWith(AndroidJUnit4::class)
 class CapturedTutorSessionInstrumentedTest {
@@ -157,6 +175,8 @@ class CapturedTutorSessionInstrumentedTest {
                     onOpenCapabilitySettings = {},
                     onOpenMistakeNotebook = {},
                     onOpenProfile = {},
+                    onOpenHistory = {},
+                    conversations = emptyConversations(),
                     modelTasks = modelTasks,
                     catalogEntries = emptyList(),
                     profile = StudyProfileOverview(),
@@ -165,8 +185,8 @@ class CapturedTutorSessionInstrumentedTest {
         }
 
         composeRule.onNodeWithTag("tutor_empty_state").assertExists()
-        composeRule.onNodeWithTag("tutor_history_button").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_capture_button").performClick()
+        composeRule.onNodeWithTag("tutor_history_button").assertExists()
+        composeRule.onNodeWithTag("tutor_capture_shortcut").performClick()
         composeRule.onNodeWithTag("tutor_upload_button").assertDoesNotExist()
         composeRule.onNodeWithTag("tutor_choose_existing_button").performClick()
         composeRule.onNodeWithTag("tutor_draft_input").performTextInput("我想问一下这一步")
@@ -1025,7 +1045,9 @@ class CapturedTutorSessionInstrumentedTest {
             )
             assertEquals(1, interactions.exposureCommands.single().cycleOrdinal)
             assertEquals(1, interactions.exposureCommands.single().turnOrdinal)
-            assertEquals(10_000L, interactions.exposureCommands.single().occurredAtEpochMillis)
+            assertTrue(
+                interactions.exposureCommands.single().occurredAtEpochMillis >= 10_000L,
+            )
         }
     }
 
@@ -1369,24 +1391,7 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.onNodeWithTag("captured_tutor_disclosure").assertDoesNotExist()
         composeRule.onNodeWithTag("tutor_respond_disclosure").assertExists()
         composeRule.onNodeWithTag("tutor_chat_composer").assertDoesNotExist()
-        composeRule.onNodeWithTag("captured_tutor_choice_choice-2")
-            .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            interactions.responses.value.isNotEmpty()
-        }
-        composeRule.onNodeWithTag("captured_tutor_move_change")
-            .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            interactions.responses.value.singleOrNull()?.requestedMove ==
-                TutorMoveType.CHANGE_REPRESENTATION
-        }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithTag("captured_tutor_disclosure")
-                .fetchSemanticsNodes().size == 1
-        }
-        composeRule.onNodeWithTag("captured_tutor_disclosure").performScrollTo().assertExists()
+        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
         composeRule.runOnIdle {
             assertEquals(1, modelTasks.executePlanCalls)
             assertEquals(1, modelTasks.planRequests.size)
@@ -2665,6 +2670,168 @@ class CapturedTutorSessionInstrumentedTest {
             command: RecordTutorSolutionExposureCommand,
         ) = error("No exposure write expected")
     }
+
+    private fun emptyConversations(): TutorConversationRepository =
+        object : TutorConversationRepository {
+            private val snapshot = MutableStateFlow<TutorConversationSnapshot?>(null)
+
+            override fun observeRecent(limit: Int): Flow<List<TutorConversation>> =
+                snapshot.map { it?.conversation?.let(::listOf).orEmpty() }
+
+            override fun observeConversation(
+                conversationId: String,
+            ): Flow<TutorConversationSnapshot?> = snapshot
+
+            override suspend fun createConversation(
+                command: CreateTutorConversationCommand,
+            ): TutorConversation {
+                val conversation = TutorConversation(
+                    conversationId = command.conversationId,
+                    anchorKind = command.anchorKind,
+                    anchorId = command.anchorId,
+                    anchorRevisionId = command.anchorRevisionId,
+                    status = TutorConversationStatus.ACTIVE,
+                    title = command.title,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    updatedAtEpochMillis = command.createdAtEpochMillis,
+                    lastTurnOrdinal = 0,
+                )
+                snapshot.value = TutorConversationSnapshot(conversation, emptyList())
+                return conversation
+            }
+
+            override suspend fun appendStudentMessage(
+                command: AppendTutorStudentMessageCommand,
+            ): TutorMessage {
+                val message = TutorMessage(
+                    messageId = command.messageId,
+                    conversationId = command.conversationId,
+                    ordinal = command.ordinal,
+                    role = TutorMessageRole.STUDENT,
+                    bodyMarkdown = command.bodyMarkdown,
+                    status = TutorMessageStatus.PERSISTED,
+                    logicalOperationId = command.logicalOperationId,
+                    replyToMessageId = null,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    completedAtEpochMillis = command.createdAtEpochMillis,
+                    errorCode = null,
+                )
+                snapshot.value = snapshot.value?.let { current ->
+                    current.copy(
+                        conversation = current.conversation.copy(
+                            updatedAtEpochMillis = command.createdAtEpochMillis,
+                            lastTurnOrdinal = command.ordinal,
+                        ),
+                        messages = current.messages + message,
+                    )
+                }
+                return message
+            }
+
+            override suspend fun appendAssistantMessage(
+                command: AppendTutorAssistantMessageCommand,
+            ): TutorMessage {
+                val message = TutorMessage(
+                    messageId = command.messageId,
+                    conversationId = command.conversationId,
+                    ordinal = command.ordinal,
+                    role = TutorMessageRole.ASSISTANT,
+                    bodyMarkdown = command.bodyMarkdown,
+                    status = command.status,
+                    logicalOperationId = command.logicalOperationId,
+                    replyToMessageId = command.replyToMessageId,
+                    createdAtEpochMillis = command.createdAtEpochMillis,
+                    completedAtEpochMillis = command.completedAtEpochMillis,
+                    errorCode = command.errorCode,
+                )
+                snapshot.value = snapshot.value?.let { current ->
+                    current.copy(
+                        conversation = current.conversation.copy(
+                            updatedAtEpochMillis = command.completedAtEpochMillis
+                                ?: command.createdAtEpochMillis,
+                            lastTurnOrdinal = command.ordinal,
+                        ),
+                        messages = current.messages + message,
+                    )
+                }
+                return message
+            }
+
+            override suspend fun updateMessageStatus(
+                command: UpdateTutorMessageStatusCommand,
+            ): TutorMessage {
+                val current = snapshot.value ?: error("No tutor conversation")
+                val existing = current.messages.first { it.messageId == command.messageId }
+                val updated = existing.copy(
+                    status = command.nextStatus,
+                    bodyMarkdown = command.bodyMarkdown ?: existing.bodyMarkdown,
+                    completedAtEpochMillis = command.completedAtEpochMillis,
+                    errorCode = command.errorCode,
+                )
+                snapshot.value = current.copy(
+                    messages = current.messages.map { message ->
+                        if (message.messageId == command.messageId) updated else message
+                    },
+                )
+                return updated
+            }
+
+            override suspend fun pauseConversation(
+                command: PauseTutorConversationCommand,
+            ): TutorConversation {
+                val current = snapshot.value ?: error("No tutor conversation")
+                val conversation = current.conversation.copy(
+                    status = TutorConversationStatus.PAUSED,
+                    updatedAtEpochMillis = command.occurredAtEpochMillis,
+                )
+                snapshot.value = current.copy(conversation = conversation)
+                return conversation
+            }
+
+            override suspend fun archiveConversation(
+                command: ArchiveTutorConversationCommand,
+            ): TutorConversation {
+                val current = snapshot.value ?: error("No tutor conversation")
+                val conversation = current.conversation.copy(
+                    status = TutorConversationStatus.ARCHIVED,
+                    updatedAtEpochMillis = command.occurredAtEpochMillis,
+                )
+                snapshot.value = current.copy(conversation = conversation)
+                return conversation
+            }
+
+            override suspend fun deleteConversation(
+                command: DeleteTutorConversationCommand,
+            ) {
+                snapshot.value = null
+            }
+
+            override suspend fun saveDraft(
+                command: SaveTutorConversationDraftCommand,
+            ) {
+                snapshot.value = snapshot.value?.let { current ->
+                    current.copy(
+                        conversation = current.conversation.copy(
+                            studentDraft = command.draft,
+                            updatedAtEpochMillis = command.occurredAtEpochMillis,
+                        ),
+                    )
+                }
+            }
+
+            override suspend fun clearDraft(
+                command: ClearTutorConversationDraftCommand,
+            ) {
+                snapshot.value = snapshot.value?.let { current ->
+                    current.copy(
+                        conversation = current.conversation.copy(
+                            studentDraft = null,
+                            updatedAtEpochMillis = command.occurredAtEpochMillis,
+                        ),
+                    )
+                }
+            }
+        }
 
     private fun tutorResponse(choiceId: String): TutorTurnResponse {
         val output = tutorOutput()

@@ -58,11 +58,13 @@ import com.tingyun.smartmistakebook.core.domain.TutorCapabilityDecision
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityGate
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.ReviewRetryReason
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.model.TutorChoiceEvaluation
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
+import com.tingyun.smartmistakebook.core.model.reviewRetryError
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
@@ -237,7 +239,7 @@ private fun ReviewSessionContent(
             )
         } else if (sessionViewModel.submissionStatus == ReviewSubmissionStatus.FAILED) {
             Text(
-                text = "作答尚未确认写入。为保证安全重试，当前选择已锁定；请点击“重新提交答案”。",
+                text = reviewRetryError(ReviewRetryReason.SUBMISSION_RECORDING).message,
                 color = SmartColors.ErrorWarm,
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -273,7 +275,7 @@ private fun ReviewSessionContent(
         }
         if (sessionViewModel.revealStatus == ReviewRevealStatus.FAILED) {
             Text(
-                text = "讲解尚未安全记录，因此暂未显示。",
+                text = reviewRetryError(ReviewRetryReason.REVEAL_RECORDING).message,
                 color = SmartColors.ErrorWarm,
                 style = MaterialTheme.typography.bodySmall,
             )

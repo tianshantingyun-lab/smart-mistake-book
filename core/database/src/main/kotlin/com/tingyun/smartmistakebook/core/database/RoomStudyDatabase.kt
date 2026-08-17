@@ -1,9 +1,12 @@
 package com.tingyun.smartmistakebook.core.database
 
+import androidx.paging.PagingSource
 import androidx.room3.withReadTransaction
 import androidx.room3.withWriteTransaction
 import com.tingyun.smartmistakebook.core.database.dao.MistakeRow
+import com.tingyun.smartmistakebook.core.database.dao.CanonicalSourceAssetRow
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeGroundingSummaryRow
+import com.tingyun.smartmistakebook.core.database.dao.LibraryFacetCountRow
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureHeadRow
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureIndexRow
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureSourceAssetRow
@@ -27,6 +30,7 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchFeatureE
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSourceEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialNodeBindingEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibraryCatalogView
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProblemEntity
@@ -57,6 +61,104 @@ internal class RoomStudyDatabase(
     override fun observeMistakes(): Flow<List<MistakeRecord>> =
         database.problemDao().observeActiveMistakes().map { rows -> rows.map(MistakeRow::toRecord) }
 
+    override fun libraryPagingSource(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+    ): PagingSource<Int, LibraryCatalogRow> =
+        MappingPagingSource(
+            delegate = database.libraryQueryDao().pagingSource(
+                searchText = searchText,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+                sort = sort,
+            ),
+            transform = LibraryCatalogView::toRow,
+        )
+
+    override suspend fun libraryCatalogPage(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        offset: Int,
+        limit: Int,
+    ): List<LibraryCatalogRow> =
+        database.libraryQueryDao()
+            .page(
+                searchText = searchText,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+                sort = sort,
+                offset = offset,
+                limit = limit,
+            )
+            .map(LibraryCatalogView::toRow)
+
+    override suspend fun libraryCatalogCount(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+    ): Int =
+        database.libraryQueryDao().count(
+            searchText = searchText,
+            subjectId = subjectId,
+            sectionId = sectionId,
+            knowledgePointId = knowledgePointId,
+            masteryId = masteryId,
+        )
+
+    override suspend fun libraryCatalogFacets(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        facet: String,
+    ): List<LibraryFacetCountRecord> =
+        when (facet) {
+            "SUBJECT" -> database.libraryQueryDao().subjectFacets(
+                searchText = searchText,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+            ).map(LibraryFacetCountRow::toRecord)
+
+            "SECTION" -> database.libraryQueryDao().sectionFacets(
+                searchText = searchText,
+                subjectId = subjectId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+            ).map(LibraryFacetCountRow::toRecord)
+
+            "KNOWLEDGE_POINT" -> database.libraryQueryDao().knowledgeFacets(
+                searchText = searchText,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                masteryId = masteryId,
+            ).map(LibraryFacetCountRow::toRecord)
+
+            "MASTERY" -> database.libraryQueryDao().masteryFacets(
+                searchText = searchText,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+            ).map(LibraryFacetCountRow::toRecord)
+
+            else -> error("Unsupported library facet kind: $facet")
+        }
+
     override fun observeLearningLedgerHead(learnerId: String): Flow<Long> {
         require(learnerId.isNotBlank())
         return database.learningDao().observeLedgerHead(learnerId)
@@ -68,6 +170,27 @@ internal class RoomStudyDatabase(
     override fun observeTutorTurnResponses(sessionId: String): Flow<List<TutorTurnResponseRecord>> {
         require(sessionId.isNotBlank())
         return database.tutorInteractionDao().observe(sessionId)
+    }
+
+    override fun observeRecentTutorConversations(
+        limit: Int,
+    ): Flow<List<TutorConversationRecord>> {
+        require(limit > 0) { "Tutor conversation limit must be positive" }
+        return database.tutorConversationDao().observeRecent(limit)
+    }
+
+    override fun observeTutorMessages(
+        conversationId: String,
+    ): Flow<List<TutorMessageRecord>> {
+        require(conversationId.isNotBlank()) { "Tutor conversation id must not be blank" }
+        return database.tutorConversationDao().observeMessages(conversationId)
+    }
+
+    override fun observeTutorConversation(
+        conversationId: String,
+    ): Flow<TutorConversationRecord?> {
+        require(conversationId.isNotBlank()) { "Tutor conversation id must not be blank" }
+        return database.tutorConversationDao().observeConversation(conversationId)
     }
 
     override fun observePendingCaptureDrafts(): Flow<List<PendingCaptureDraftRecord>> =
@@ -113,6 +236,46 @@ internal class RoomStudyDatabase(
     }
 
     override suspend fun countMistakes(): Int = database.problemDao().countActiveMistakes()
+
+    override suspend fun checkpointForBackup() {
+        database.useConnection(isReadOnly = false) { connection ->
+            connection.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { statement ->
+                while (statement.step()) {
+                    // Checkpoint result row is intentionally consumed and ignored.
+                }
+            }
+        }
+    }
+
+    override suspend fun clearAllData() {
+        database.useConnection(isReadOnly = false) { connection ->
+            connection.usePrepared("PRAGMA foreign_keys = OFF") { statement ->
+                while (statement.step()) {
+                    // PRAGMA result row is intentionally ignored.
+                }
+            }
+            val tableNames = buildList {
+                connection.usePrepared(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' " +
+                        "AND name NOT IN ('room_master_table', 'android_metadata')",
+                ) { statement ->
+                    while (statement.step()) {
+                        add(requireNotNull(statement.getText(0)))
+                    }
+                }
+            }
+            tableNames.forEach { table ->
+                connection.usePrepared("DELETE FROM `$table`") { statement ->
+                    statement.step()
+                }
+            }
+            connection.usePrepared("PRAGMA foreign_keys = ON") { statement ->
+                while (statement.step()) {
+                    // PRAGMA result row is intentionally ignored.
+                }
+            }
+        }
+    }
 
     override suspend fun readSubjectKnowledgeNodes(
         subject: String,
@@ -630,6 +793,36 @@ internal class RoomStudyDatabase(
         return database.problemDraftTransactionDao().readCanonicalSourceAsset(sourceAssetId)
     }
 
+    override suspend fun readUnreferencedCanonicalAssets(): List<CanonicalSourceAssetRecord> =
+        database.pendingCaptureDao()
+            .findUnreferencedCanonicalAssets()
+            .map(CanonicalSourceAssetRow::toRecord)
+
+    override suspend fun deleteUnreferencedCanonicalAssets(): Int =
+        database.pendingCaptureDao().deleteUnreferencedCanonicalAssets()
+
+    override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) {
+        database.useConnection(isReadOnly = false) { connection ->
+            connection.usePrepared(
+                "INSERT OR IGNORE INTO canonical_source_asset (" +
+                    "source_asset_id, content_sha256, relative_path, mime_type, byte_size, " +
+                    "width, height, source_type, created_at_epoch_millis" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            ) { statement ->
+                statement.bindText(1, asset.sourceAssetId)
+                statement.bindText(2, asset.contentSha256)
+                statement.bindText(3, asset.relativePath)
+                statement.bindText(4, asset.mimeType)
+                statement.bindLong(5, asset.byteSize)
+                statement.bindLong(6, asset.width.toLong())
+                statement.bindLong(7, asset.height.toLong())
+                statement.bindText(8, asset.sourceType)
+                statement.bindLong(9, asset.createdAtEpochMillis)
+                statement.step()
+            }
+        }
+    }
+
     override suspend fun readPendingCaptureDraft(draftId: String): PendingCaptureDraftRecord? {
         require(draftId.isNotBlank()) { "draftId must not be blank" }
         val index = database.pendingCaptureDao().readPending(draftId) ?: return null
@@ -896,6 +1089,68 @@ internal class RoomStudyDatabase(
     override suspend fun readTutorSession(sessionId: String): TutorSessionRecord? {
         require(sessionId.isNotBlank()) { "sessionId must not be blank" }
         return database.problemDraftTransactionDao().readTutorSession(sessionId)
+    }
+
+    override suspend fun createTutorConversation(
+        command: CreateTutorConversationDatabaseCommand,
+    ): TutorConversationRecord = database.tutorConversationDao().createConversation(command)
+
+    override suspend fun appendTutorStudentMessage(
+        command: AppendTutorStudentMessageDatabaseCommand,
+    ): TutorMessageRecord = database.tutorConversationDao().appendStudentMessage(command)
+
+    override suspend fun appendTutorAssistantMessage(
+        command: AppendTutorAssistantMessageDatabaseCommand,
+    ): TutorMessageRecord = database.tutorConversationDao().appendAssistantMessage(command)
+
+    override suspend fun updateTutorMessageStatus(
+        command: UpdateTutorMessageStatusDatabaseCommand,
+    ): TutorMessageRecord = database.tutorConversationDao().updateMessageStatus(command)
+
+    override suspend fun pauseTutorConversation(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): TutorConversationRecord = database.tutorConversationDao().pauseConversation(
+        conversationId = conversationId,
+        updatedAtEpochMillis = updatedAtEpochMillis,
+    )
+
+    override suspend fun archiveTutorConversation(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): TutorConversationRecord = database.tutorConversationDao().archiveConversation(
+        conversationId = conversationId,
+        updatedAtEpochMillis = updatedAtEpochMillis,
+    )
+
+    override suspend fun deleteTutorConversation(conversationId: String) {
+        database.tutorConversationDao().deleteConversation(conversationId)
+    }
+
+    override suspend fun saveTutorConversationDraft(
+        conversationId: String,
+        draft: String,
+        updatedAtEpochMillis: Long,
+    ) {
+        database.tutorConversationDao().saveStudentDraft(
+            SaveTutorConversationDraftDatabaseCommand(
+                conversationId = conversationId,
+                draft = draft,
+                updatedAtEpochMillis = updatedAtEpochMillis,
+            ),
+        )
+    }
+
+    override suspend fun clearTutorConversationDraft(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ) {
+        database.tutorConversationDao().clearStudentDraft(
+            ClearTutorConversationDraftDatabaseCommand(
+                conversationId = conversationId,
+                updatedAtEpochMillis = updatedAtEpochMillis,
+            ),
+        )
     }
 
     override suspend fun commitTutorSession(
@@ -2040,6 +2295,7 @@ private fun MistakeRow.toRecord() = MistakeRecord(
     problemMarkdown = problemMarkdown,
     status = status,
     createdAtEpochMillis = createdAtEpochMillis,
+    updatedAtEpochMillis = updatedAtEpochMillis,
     nextReviewAtEpochMillis = nextReviewAtEpochMillis,
     retrievability = retrievability,
     estimatedSeconds = estimatedSeconds,
@@ -2047,6 +2303,38 @@ private fun MistakeRow.toRecord() = MistakeRecord(
     chapterLabels = chapterLabels.toCatalogLabels(),
     knowledgeLabels = knowledgeLabels.toCatalogLabels(),
     captureOccurrenceCount = maxOf(1, captureOccurrenceCount),
+)
+
+private fun LibraryCatalogView.toRow() = LibraryCatalogRow(
+    entryId = entryId,
+    title = title,
+    problemMarkdown = problemMarkdown,
+    subject = subject,
+    chapterLabels = chapterLabels.toCatalogLabels(),
+    knowledgeLabels = knowledgeLabels.toCatalogLabels(),
+    masteryId = masteryId,
+    createdAtEpochMillis = createdAtEpochMillis,
+    updatedAtEpochMillis = updatedAtEpochMillis,
+    nextReviewAtEpochMillis = nextReviewAtEpochMillis,
+    retrievability = retrievability,
+)
+
+private fun CanonicalSourceAssetRow.toRecord() = CanonicalSourceAssetRecord(
+    sourceAssetId = sourceAssetId,
+    contentSha256 = contentSha256,
+    relativePath = relativePath,
+    mimeType = mimeType,
+    byteSize = byteSize,
+    width = width,
+    height = height,
+    sourceType = sourceType,
+    createdAtEpochMillis = createdAtEpochMillis,
+)
+
+private fun LibraryFacetCountRow.toRecord() = LibraryFacetCountRecord(
+    id = id,
+    label = label,
+    count = count,
 )
 
 private fun String?.toCatalogLabels(): List<String> = this

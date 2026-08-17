@@ -11,9 +11,11 @@ import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Arrays
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Dns
@@ -100,13 +102,19 @@ internal class OkHttpModelTransport : ModelHttpTransport {
             .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .callTimeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()
+        val stream = requestBody.contains("\"stream\":true")
         val request = Request.Builder()
             .url(endpoint.url)
             .header("Authorization", "Bearer ${String(apiKey)}")
-            .header("Accept", JSON_MEDIA_TYPE.toString())
+            .header("Accept", if (stream) SSE_ACCEPT else JSON_MEDIA_TYPE.toString())
             .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
             .build()
-        return client.newCall(request).awaitBoundedResponse(beforeEnqueue)
+        val call = client.newCall(request)
+        return if (stream) {
+            call.awaitBoundedSseResponse(beforeEnqueue)
+        } else {
+            call.awaitBoundedResponse(beforeEnqueue)
+        }
     }
 }
 
@@ -147,39 +155,103 @@ private class FixedDns(
     }
 }
 
-private suspend fun Call.awaitBoundedResponse(
+internal suspend fun Call.awaitBoundedResponse(
     beforeEnqueue: suspend () -> Unit,
 ): ModelHttpResponse {
-    val result = CompletableDeferred<ModelHttpResponse>()
     beforeEnqueue()
-    enqueue(
-        object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                result.completeExceptionally(e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                try {
-                    response.use {
-                        val declaredLength = it.body.contentLength()
-                        if (declaredLength > MAX_RESPONSE_BYTES) {
-                            throw InvalidModelResponseException()
-                        }
-                        val bytes = it.body.byteStream().readAtMost(MAX_RESPONSE_BYTES)
-                        val body = bytes.toString(StandardCharsets.UTF_8)
-                        Arrays.fill(bytes, 0.toByte())
-                        result.complete(ModelHttpResponse(it.code, body))
+    return suspendCancellableCoroutine { continuation ->
+        continuation.invokeOnCancellation { cancel() }
+        enqueue(
+            object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(e)
                     }
-                } catch (failure: Throwable) {
-                    result.completeExceptionally(failure)
                 }
-            }
-        },
-    )
-    return try {
-        result.await()
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        response.use {
+                            val declaredLength = it.body.contentLength()
+                            if (declaredLength > MAX_RESPONSE_BYTES) {
+                                throw InvalidModelResponseException()
+                            }
+                            val bytes = it.body.byteStream().readAtMost(MAX_RESPONSE_BYTES)
+                            val body = bytes.toString(StandardCharsets.UTF_8)
+                            Arrays.fill(bytes, 0.toByte())
+                            if (continuation.isActive) {
+                                continuation.resume(ModelHttpResponse(it.code, body))
+                            }
+                        }
+                    } catch (failure: Throwable) {
+                        if (continuation.isActive) {
+                            continuation.resumeWithException(failure)
+                        }
+                    }
+                }
+            },
+        )
+    }
+}
+
+internal suspend fun Call.awaitBoundedSseResponse(
+    beforeEnqueue: suspend () -> Unit,
+): ModelHttpResponse {
+    beforeEnqueue()
+    return suspendCancellableCoroutine { continuation ->
+        continuation.invokeOnCancellation { cancel() }
+        enqueue(
+            object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(e)
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        response.use {
+                            val declaredLength = it.body.contentLength()
+                            if (declaredLength > MAX_RESPONSE_BYTES) {
+                                throw InvalidModelResponseException()
+                            }
+                            val raw = it.body.byteStream().readSseAtMost(MAX_RESPONSE_BYTES)
+                            val body = if (it.code in 200..299) {
+                                OpenAiSse.reconstructedChatCompletion(raw)
+                            } else {
+                                raw
+                            }
+                            if (continuation.isActive) {
+                                continuation.resume(ModelHttpResponse(it.code, body))
+                            }
+                        }
+                    } catch (failure: Throwable) {
+                        if (continuation.isActive) {
+                            continuation.resumeWithException(failure)
+                        }
+                    }
+                }
+            },
+        )
+    }
+}
+
+private fun java.io.InputStream.readSseAtMost(maxBytes: Int): String {
+    val output = StringBuilder()
+    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+    var total = 0
+    try {
+        while (true) {
+            val read = read(buffer)
+            if (read < 0) break
+            total += read
+            if (total > maxBytes) throw InvalidModelResponseException()
+            output.append(String(buffer, 0, read, StandardCharsets.UTF_8))
+            if (output.contains("data: [DONE]")) break
+        }
+        return output.toString()
     } finally {
-        if (!result.isCompleted) cancel()
+        Arrays.fill(buffer, 0.toByte())
     }
 }
 
@@ -204,6 +276,7 @@ private fun java.io.InputStream.readAtMost(maxBytes: Int): ByteArray {
 private fun ByteArray.toIntOctets(): IntArray = IntArray(size) { this[it].toInt() and 0xff }
 
 private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
+private const val SSE_ACCEPT = "text/event-stream"
 private const val CONNECT_TIMEOUT_SECONDS = 15L
 private const val READ_TIMEOUT_SECONDS = 90L
 private const val WRITE_TIMEOUT_SECONDS = 45L

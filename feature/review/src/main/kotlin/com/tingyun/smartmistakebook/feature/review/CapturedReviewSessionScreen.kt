@@ -35,6 +35,8 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionR
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.ReviewRetryReason
+import com.tingyun.smartmistakebook.core.model.reviewRetryError
 import com.tingyun.smartmistakebook.core.ui.LocalModeLine
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
@@ -164,7 +166,7 @@ fun CapturedReviewSessionScreen(
         if (state.status == CapturedReviewSubmissionStatus.FAILED) {
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "这次记录还没保存，点原来的选项重试即可。",
+                text = reviewRetryError(ReviewRetryReason.SUBMISSION_RECORDING).message,
                 modifier = Modifier.testTag("review_self_report_retry_message"),
                 style = MaterialTheme.typography.bodySmall,
                 color = SmartColors.ErrorWarm,

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room3)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -23,10 +24,13 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":core:model"))
     implementation(libs.androidx.room3.runtime)
+    implementation(libs.androidx.room3.paging)
+    implementation(libs.androidx.paging.common)
     implementation(libs.androidx.sqlite.framework)
     ksp(libs.androidx.room3.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.serialization.json)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.kotlinx.coroutines.android)

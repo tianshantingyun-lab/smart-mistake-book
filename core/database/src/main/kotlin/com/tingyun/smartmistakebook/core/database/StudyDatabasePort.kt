@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.database
 
+import androidx.paging.PagingSource
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -656,6 +657,7 @@ data class MistakeRecord(
     val problemMarkdown: String,
     val status: String,
     val createdAtEpochMillis: Long,
+    val updatedAtEpochMillis: Long = createdAtEpochMillis,
     val nextReviewAtEpochMillis: Long?,
     val retrievability: Double?,
     val estimatedSeconds: Int = 180,
@@ -672,6 +674,42 @@ data class MistakeRecord(
         require(knowledgeNodeIds.none(String::isBlank)) {
             "Mistake knowledge-node ids must not be blank"
         }
+    }
+}
+
+data class LibraryCatalogRow(
+    val entryId: String,
+    val title: String,
+    val problemMarkdown: String,
+    val subject: String,
+    val chapterLabels: List<String> = emptyList(),
+    val knowledgeLabels: List<String> = emptyList(),
+    val masteryId: String = "unknown",
+    val createdAtEpochMillis: Long,
+    val updatedAtEpochMillis: Long,
+    val nextReviewAtEpochMillis: Long?,
+    val retrievability: Double?,
+) {
+    init {
+        require(entryId.isNotBlank()) { "Library row entry id must not be blank" }
+        require(title.isNotBlank()) { "Library row title must not be blank" }
+        require(subject.isNotBlank()) { "Library row subject must not be blank" }
+        require(updatedAtEpochMillis >= createdAtEpochMillis) {
+            "Library row update time cannot precede creation"
+        }
+    }
+}
+
+data class LibraryFacetCountRecord(
+    val id: String,
+    val label: String,
+    val count: Int,
+) {
+    init {
+        require(id.isNotBlank() && label.isNotBlank()) {
+            "Library facet row must have an id and label"
+        }
+        require(count >= 0) { "Library facet row count must not be negative" }
     }
 }
 
@@ -1348,6 +1386,49 @@ data class ReviewPlanBundle(
 interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     fun observeMistakes(): Flow<List<MistakeRecord>>
 
+    fun libraryPagingSource(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+    ): PagingSource<Int, LibraryCatalogRow> = throw UnsupportedOperationException(
+        "Library paging is not implemented",
+    )
+
+    suspend fun libraryCatalogPage(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        offset: Int,
+        limit: Int,
+    ): List<LibraryCatalogRow> = throw UnsupportedOperationException(
+        "Library paging is not implemented",
+    )
+
+    suspend fun libraryCatalogCount(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+    ): Int = throw UnsupportedOperationException("Library paging is not implemented")
+
+    suspend fun libraryCatalogFacets(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        facet: String,
+    ): List<LibraryFacetCountRecord> = throw UnsupportedOperationException(
+        "Library facets are not implemented",
+    )
+
     fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)
 
     fun observeConfirmedProblemOrganization(
@@ -1361,6 +1442,15 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
 
     fun observeTutorTurnResponses(sessionId: String): Flow<List<TutorTurnResponseRecord>> =
         flowOf(emptyList())
+
+    fun observeRecentTutorConversations(limit: Int): Flow<List<TutorConversationRecord>> =
+        flowOf(emptyList())
+
+    fun observeTutorMessages(conversationId: String): Flow<List<TutorMessageRecord>> =
+        flowOf(emptyList())
+
+    fun observeTutorConversation(conversationId: String): Flow<TutorConversationRecord?> =
+        flowOf(null)
 
     fun observePendingCaptureDrafts(): Flow<List<PendingCaptureDraftRecord>> =
         throw UnsupportedOperationException("Pending capture reads are not implemented")
@@ -1385,6 +1475,18 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
     ): Flow<List<Long>> = flowOf(emptyList())
 
     suspend fun countMistakes(): Int
+
+    /**
+     * Flushes any SQLite WAL frames into the main database file so a file-level
+     * backup captures every committed row. No-op for non-WAL fixtures.
+     */
+    suspend fun checkpointForBackup(): Unit = Unit
+
+    /**
+     * Deletes all business rows while keeping the schema and connection open.
+     * Used by tests that need a true empty catalog without restarting the app.
+     */
+    suspend fun clearAllData(): Unit = Unit
 
     suspend fun readSubjectKnowledgeNodes(
         subject: String,
@@ -1557,6 +1659,12 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
 
     suspend fun readCanonicalSourceAsset(sourceAssetId: String): CanonicalSourceAssetRecord? = null
 
+    suspend fun readUnreferencedCanonicalAssets(): List<CanonicalSourceAssetRecord> = emptyList()
+
+    suspend fun deleteUnreferencedCanonicalAssets(): Int = 0
+
+    suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord): Unit = Unit
+
     suspend fun readPendingCaptureDraft(draftId: String): PendingCaptureDraftRecord? =
         throw UnsupportedOperationException("Pending capture reads are not implemented")
 
@@ -1681,6 +1789,64 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort {
 
     suspend fun readTutorSession(sessionId: String): TutorSessionRecord? =
         throw UnsupportedOperationException("Tutor-session reads are not implemented")
+
+    suspend fun createTutorConversation(
+        command: CreateTutorConversationDatabaseCommand,
+    ): TutorConversationRecord = throw UnsupportedOperationException(
+        "Tutor conversation creation is not implemented",
+    )
+
+    suspend fun appendTutorStudentMessage(
+        command: AppendTutorStudentMessageDatabaseCommand,
+    ): TutorMessageRecord = throw UnsupportedOperationException(
+        "Tutor student message writes are not implemented",
+    )
+
+    suspend fun appendTutorAssistantMessage(
+        command: AppendTutorAssistantMessageDatabaseCommand,
+    ): TutorMessageRecord = throw UnsupportedOperationException(
+        "Tutor assistant message writes are not implemented",
+    )
+
+    suspend fun updateTutorMessageStatus(
+        command: UpdateTutorMessageStatusDatabaseCommand,
+    ): TutorMessageRecord = throw UnsupportedOperationException(
+        "Tutor message status updates are not implemented",
+    )
+
+    suspend fun pauseTutorConversation(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): TutorConversationRecord = throw UnsupportedOperationException(
+        "Tutor conversation pausing is not implemented",
+    )
+
+    suspend fun archiveTutorConversation(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): TutorConversationRecord = throw UnsupportedOperationException(
+        "Tutor conversation archiving is not implemented",
+    )
+
+    suspend fun deleteTutorConversation(conversationId: String): Unit =
+        throw UnsupportedOperationException(
+            "Tutor conversation deletion is not implemented",
+        )
+
+    suspend fun saveTutorConversationDraft(
+        conversationId: String,
+        draft: String,
+        updatedAtEpochMillis: Long,
+    ): Unit = throw UnsupportedOperationException(
+        "Tutor conversation draft writes are not implemented",
+    )
+
+    suspend fun clearTutorConversationDraft(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): Unit = throw UnsupportedOperationException(
+        "Tutor conversation draft clearing is not implemented",
+    )
 
     suspend fun commitTutorSession(
         command: CommitTutorSessionCommand,

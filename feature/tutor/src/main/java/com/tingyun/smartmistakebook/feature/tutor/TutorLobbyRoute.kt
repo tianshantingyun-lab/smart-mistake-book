@@ -1,6 +1,5 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,22 +29,34 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tingyun.smartmistakebook.core.data.TutorImageAssetManager
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.AppendTutorAssistantMessageCommand
+import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
+import com.tingyun.smartmistakebook.core.domain.ClearTutorConversationDraftCommand
+import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
+import com.tingyun.smartmistakebook.core.domain.SaveTutorConversationDraftCommand
+import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
+import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
+import com.tingyun.smartmistakebook.core.domain.TutorMessage
+import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
+import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.AppErrorCode
+import com.tingyun.smartmistakebook.core.model.RecoveryAction
+import com.tingyun.smartmistakebook.core.model.UserRecoverableError
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
+import com.tingyun.smartmistakebook.core.model.userRecoverableError
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -62,10 +73,13 @@ import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
-import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 internal fun TutorLobbyRoute(
@@ -74,19 +88,36 @@ internal fun TutorLobbyRoute(
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenHistory: () -> Unit,
+    conversations: TutorConversationRepository,
     modelTasks: ModelTaskRepository,
     catalogEntries: List<StudyCatalogEntry>,
     profile: StudyProfileOverview,
+    initialConversationId: String? = null,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var activeConversationId by rememberSaveable {
+        mutableStateOf(initialConversationId.orEmpty())
+    }
+    val conversationSnapshot by remember(activeConversationId) {
+        if (activeConversationId.isBlank()) {
+            flowOf(null)
+        } else {
+            conversations.observeConversation(activeConversationId)
+        }
+    }.collectAsState(initial = null)
+    val conversationMessages = conversationSnapshot?.messages.orEmpty()
     val persistedTasks by remember(modelTasks) {
-        modelTasks.observeRecentBySubject(
-            TUTOR_LOBBY_CONVERSATION_ID,
-            ModelTaskKind.TUTOR_LOBBY,
-            MAX_PERSISTED_TASKS,
-        )
+        if (activeConversationId.isBlank()) {
+            flowOf(emptyList())
+        } else {
+            modelTasks.observeRecentBySubject(
+                activeConversationId,
+                ModelTaskKind.TUTOR_LOBBY,
+                MAX_PERSISTED_TASKS,
+            )
+        }
     }.collectAsState(initial = emptyList())
     val conversationTasks = remember(persistedTasks) {
         persistedTasks
@@ -100,8 +131,10 @@ internal fun TutorLobbyRoute(
     val visibleTasks = remember(conversationTasks) { conversationTasks.takeLast(MAX_VISIBLE_MESSAGES) }
     var provider by remember { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var providerLoadFailed by rememberSaveable { mutableStateOf(false) }
-    var draft by rememberSaveable { mutableStateOf("") }
-    var sendError by rememberSaveable { mutableStateOf<String?>(null) }
+    var draft by rememberSaveable(activeConversationId) { mutableStateOf("") }
+    var sendError by remember { mutableStateOf<UserRecoverableError?>(null) }
+    var sendInFlight by rememberSaveable { mutableStateOf(false) }
+    var draftPersistJob by remember { mutableStateOf<Job?>(null) }
     val hasActiveTask = conversationTasks.any { task ->
         task.status in setOf(
             ModelTaskStatus.WAITING_FOR_MODEL,
@@ -109,6 +142,28 @@ internal fun TutorLobbyRoute(
             ModelTaskStatus.RUNNING,
             ModelTaskStatus.STREAMING,
         )
+    } || sendInFlight
+
+    LaunchedEffect(conversations) {
+        if (activeConversationId.isNotBlank()) return@LaunchedEffect
+        conversations.observeRecent(MAX_RECENT_CONVERSATIONS).first { recent ->
+            recent.firstOrNull { conversation ->
+                conversation.anchorKind == TutorConversationAnchorKind.TEXT_ONLY &&
+                    conversation.status.name !in setOf("COMPLETED", "ARCHIVED")
+            }?.let { conversation ->
+                activeConversationId = conversation.conversationId
+                return@first true
+            } ?: false
+        }
+    }
+
+    LaunchedEffect(activeConversationId) {
+        if (activeConversationId.isBlank()) return@LaunchedEffect
+        draft = conversations.observeConversation(activeConversationId)
+            .first()
+            ?.conversation
+            ?.studentDraft
+            .orEmpty()
     }
 
     LaunchedEffect(modelTasks) {
@@ -125,50 +180,166 @@ internal fun TutorLobbyRoute(
     fun startMessage(message: String, approvedAtEpochMillis: Long) {
         val currentProvider = provider
         if (currentProvider == null || !currentProvider.supports(ModelTaskKind.TUTOR_LOBBY)) {
-            sendError = if (providerLoadFailed) {
-                "暂时读不到模型配置，请检查后再试。"
-            } else {
-                "当前模型还不能处理对话，请先完成模型配置和能力测试。"
-            }
+            sendError = userRecoverableError(
+                code = if (providerLoadFailed) {
+                    AppErrorCode.PROVIDER_NOT_CONFIGURED
+                } else {
+                    AppErrorCode.PROVIDER_CAPABILITY_MISMATCH
+                },
+                title = if (providerLoadFailed) {
+                    "暂时读不到模型配置"
+                } else {
+                    "当前模型还不能处理对话"
+                },
+                message = if (providerLoadFailed) {
+                    "暂时读不到模型配置，请检查后再试。"
+                } else {
+                    "当前模型还不能处理对话，请先完成模型配置和能力测试。"
+                },
+                dataSafe = true,
+                primaryAction = RecoveryAction.OPEN_SETTINGS,
+            )
             return
         }
+        if (sendInFlight) return
+        sendInFlight = true
         val occurredAt = System.currentTimeMillis()
-        val nextOrdinal = conversationTasks
-            .mapNotNull { task -> (task.request.input as? TutorLobbyInput)?.messageOrdinal }
-            .maxOrNull()
-            ?.plus(1)
-            ?: 1
+        val currentConversationId = activeConversationId
+        if (currentConversationId.isNotBlank()) {
+            scope.launch {
+                conversations.clearDraft(
+                    ClearTutorConversationDraftCommand(
+                        conversationId = currentConversationId,
+                        occurredAtEpochMillis = occurredAt,
+                    ),
+                )
+            }
+        }
+        val studentOrdinal = (conversationSnapshot?.conversation?.lastTurnOrdinal ?: 0) + 1
+        val assistantOrdinal = studentOrdinal + 1
+        val logicalTurnOrdinal = ((conversationSnapshot?.conversation?.lastTurnOrdinal ?: 0) / 2) + 1
 
         draft = ""
         sendError = null
 
         scope.launch {
             try {
+                val conversationId = if (currentConversationId.isBlank()) {
+                    val created = conversations.createConversation(
+                        CreateTutorConversationCommand(
+                            conversationId = "tutor-conv:${UUID.randomUUID()}",
+                            anchorKind = TutorConversationAnchorKind.TEXT_ONLY,
+                            anchorId = null,
+                            anchorRevisionId = null,
+                            title = null,
+                            createdAtEpochMillis = occurredAt,
+                        ),
+                    )
+                    activeConversationId = created.conversationId
+                    created.conversationId
+                } else {
+                    currentConversationId
+                }
+                val messageId = "tutor-message:${UUID.randomUUID()}"
+                val logicalOperationId = "tutor-lobby-op:${UUID.randomUUID()}"
+                val studentMessage = conversations.appendStudentMessage(
+                    AppendTutorStudentMessageCommand(
+                        conversationId = conversationId,
+                        messageId = messageId,
+                        ordinal = studentOrdinal,
+                        bodyMarkdown = message,
+                        logicalOperationId = logicalOperationId,
+                        createdAtEpochMillis = occurredAt,
+                    ),
+                )
                 val request = buildTutorLobbyRequest(
                     provider = currentProvider,
-                    messageOrdinal = nextOrdinal,
+                    conversationId = conversationId,
+                    messageOrdinal = logicalTurnOrdinal,
                     studentMessage = message,
-                    priorMessages = conversationTasks.toLobbyHistory(),
+                    priorMessages = conversationMessages.toLobbyHistory(),
                     occurredAtEpochMillis = occurredAt,
                     approvedAtEpochMillis = approvedAtEpochMillis,
-                    context = context,
                 )
 
-                modelTasks.execute(request).collect()
+                var terminalHandled = false
+                modelTasks.execute(request).collect { task ->
+                    if (terminalHandled) return@collect
+                    val output = task.output as? TutorLobbyOutput
+                    if (task.status == ModelTaskStatus.SUCCEEDED && output != null) {
+                        terminalHandled = true
+                        conversations.appendAssistantMessage(
+                            AppendTutorAssistantMessageCommand(
+                                conversationId = conversationId,
+                                messageId = "tutor-message:${UUID.randomUUID()}",
+                                ordinal = assistantOrdinal,
+                                replyToMessageId = studentMessage.messageId,
+                                bodyMarkdown = output.messageMarkdown,
+                                logicalOperationId = logicalOperationId,
+                                status = TutorMessageStatus.SUCCEEDED,
+                                createdAtEpochMillis = occurredAt,
+                                completedAtEpochMillis = task.updatedAtEpochMillis,
+                                errorCode = null,
+                            ),
+                        )
+                    } else if (
+                        task.status == ModelTaskStatus.RETRYABLE_FAILURE ||
+                        task.status == ModelTaskStatus.PERMANENT_FAILURE ||
+                        task.status == ModelTaskStatus.CANCELLED
+                    ) {
+                        terminalHandled = true
+                        conversations.appendAssistantMessage(
+                            AppendTutorAssistantMessageCommand(
+                                conversationId = conversationId,
+                                messageId = "tutor-message:${UUID.randomUUID()}",
+                                ordinal = assistantOrdinal,
+                                replyToMessageId = studentMessage.messageId,
+                                bodyMarkdown = "这次回复没有准备好，你的消息已经保留。",
+                                logicalOperationId = logicalOperationId,
+                                status = TutorMessageStatus.FAILED,
+                                createdAtEpochMillis = occurredAt,
+                                completedAtEpochMillis = task.updatedAtEpochMillis,
+                                errorCode = task.failure?.code?.name,
+                            ),
+                        )
+                    }
+                }
+                if (!terminalHandled) {
+                    conversations.appendAssistantMessage(
+                        AppendTutorAssistantMessageCommand(
+                            conversationId = conversationId,
+                            messageId = "tutor-message:${UUID.randomUUID()}",
+                            ordinal = assistantOrdinal,
+                            replyToMessageId = studentMessage.messageId,
+                            bodyMarkdown = "这条消息已经保留，暂时没有收到讲解。",
+                            logicalOperationId = logicalOperationId,
+                            status = TutorMessageStatus.FAILED,
+                            createdAtEpochMillis = occurredAt,
+                            completedAtEpochMillis = System.currentTimeMillis(),
+                            errorCode = "UNKNOWN",
+                        ),
+                    )
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (e: Exception) {
-                // 记录详细错误日志，帮助诊断问题
                 android.util.Log.e("TutorLobby", "Failed to send message", e)
-                sendError = "这条消息已经保留，但暂时没有发出去。${e.message?.let { "错误：$it" } ?: ""}"
+                sendError = userRecoverableError(
+                    code = AppErrorCode.NETWORK_UNAVAILABLE,
+                    title = "这条消息已经保留",
+                    message = "这条消息已经保留，但暂时没有发出去。",
+                    dataSafe = true,
+                    primaryAction = RecoveryAction.RETRY,
+                )
+            } finally {
+                sendInFlight = false
             }
         }
     }
 
     fun submitDraft() {
         val message = draft.trim()
-        if (message.isBlank() || hasActiveTask) return
-        // 直接发送，不再显示确认对话框
+        if (message.isBlank() || hasActiveTask || sendInFlight) return
         startMessage(message, System.currentTimeMillis())
     }
 
@@ -185,10 +356,13 @@ internal fun TutorLobbyRoute(
                 .testTag("tutor_screen"),
         ) {
             item(key = "lobby-header") {
-                TutorTopBar(onOpenCapabilitySettings = onOpenCapabilitySettings)
+                TutorTopBar(
+                    onOpenCapabilitySettings = onOpenCapabilitySettings,
+                    onOpenHistory = onOpenHistory,
+                )
                 PaperDivider(Modifier.padding(top = 8.dp, bottom = 14.dp))
             }
-            if (visibleTasks.isEmpty()) {
+            if (conversationMessages.isEmpty() && visibleTasks.isEmpty()) {
                 item(key = "lobby-intro") {
                     TutorPrompt(
                         text = "把题目、推导或困惑发来。你也可以直接拍题，或从错题本选一道题。",
@@ -220,23 +394,26 @@ internal fun TutorLobbyRoute(
                 }
             }
             items(
-                items = visibleTasks,
-                key = { task -> task.request.requestId },
-            ) { task ->
-                TutorLobbyTask(
-                    task = task,
-                    catalogEntries = catalogEntries,
-                    profile = profile,
-                    onOpenMistakeNotebook = onOpenMistakeNotebook,
-                    onOpenProfile = onOpenProfile,
-                    onOpenCapabilitySettings = onOpenCapabilitySettings,
+                items = conversationMessages.takeLast(MAX_VISIBLE_MESSAGES),
+                key = { it.messageId },
+            ) { message ->
+                TutorLobbyMessageItem(
+                    message = message,
                     modifier = Modifier.padding(top = 12.dp),
                 )
+            }
+            if (sendInFlight) {
+                item(key = "lobby-sending") {
+                    TutorPrompt(
+                        text = "正在发送…",
+                        modifier = Modifier.padding(top = 10.dp),
+                    )
+                }
             }
             sendError?.let { message ->
                 item(key = "lobby-send-error") {
                     Text(
-                        text = message,
+                        text = message.message,
                         modifier = Modifier
                             .padding(top = 10.dp)
                             .testTag("tutor_lobby_send_error"),
@@ -263,12 +440,36 @@ internal fun TutorLobbyRoute(
             TutorComposer(
                 value = draft,
                 onValueChange = { value ->
-                    draft = value.take(TutorLobbyInput.MAX_STUDENT_MESSAGE_CHARS)
+                    val next = value.take(TutorLobbyInput.MAX_STUDENT_MESSAGE_CHARS)
+                    draft = next
+                    val conversationId = activeConversationId
+                    if (conversationId.isNotBlank()) {
+                        draftPersistJob?.cancel()
+                        draftPersistJob = scope.launch {
+                            val occurredAt = System.currentTimeMillis()
+                            if (next.isBlank()) {
+                                conversations.clearDraft(
+                                    ClearTutorConversationDraftCommand(
+                                        conversationId = conversationId,
+                                        occurredAtEpochMillis = occurredAt,
+                                    ),
+                                )
+                            } else {
+                                conversations.saveDraft(
+                                    SaveTutorConversationDraftCommand(
+                                        conversationId = conversationId,
+                                        draft = next,
+                                        occurredAtEpochMillis = occurredAt,
+                                    ),
+                                )
+                            }
+                        }
+                    }
                 },
                 onCapture = onCapture,
                 onSend = ::submitDraft,
                 placeholder = "输入题目、困惑，或说你现在想做什么",
-                enabled = !hasActiveTask,
+                enabled = !hasActiveTask && !sendInFlight,
                 modifier = Modifier
                     .widthIn(max = SmartDimens.MaximumContentWidth)
                     .padding(
@@ -305,43 +506,11 @@ private fun TutorLobbyTask(
                     .testTag("tutor_lobby_student_message"),
             ) {
                 Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
-                    // 显示附带的图片
-                    if (input.imageAssetRefs.isNotEmpty()) {
-                        val imageAssetManager = TutorImageAssetManager(LocalContext.current)
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.padding(bottom = if (input.studentMessage.isNotBlank()) 8.dp else 0.dp),
-                        ) {
-                            input.imageAssetRefs.take(4).forEach { assetRef ->
-                                val imageUri = remember(assetRef) {
-                                    imageAssetManager.getImageUri(assetRef)
-                                }
-                                imageUri?.let { uri ->
-                                    Box(
-                                        modifier = Modifier
-                                            .size(64.dp)
-                                            .clip(RoundedCornerShape(6.dp))
-                                    ) {
-                                        BoundedLocalImage(
-                                            imageUri = uri.toString(),
-                                            contentDescription = "发送的图片",
-                                            expanded = false,
-                                            collapsedMaxHeight = 64.dp,
-                                            modifier = Modifier.fillMaxSize(),
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // 显示文字消息
-                    if (input.studentMessage.isNotBlank()) {
-                        Text(
-                            text = input.studentMessage,
-                            color = Ink,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+                    Text(
+                        text = input.studentMessage,
+                        color = Ink,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
         }
@@ -396,6 +565,61 @@ private fun TutorLobbyTask(
 }
 
 @Composable
+private fun TutorLobbyMessageItem(
+    message: TutorMessage,
+    modifier: Modifier = Modifier,
+) {
+    if (message.role == TutorMessageRole.STUDENT) {
+        Box(
+            modifier = modifier.fillMaxWidth(),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            Surface(
+                color = JadeSoft.copy(alpha = 0.62f),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.86f)
+                    .testTag("tutor_lobby_student_message"),
+            ) {
+                Text(
+                    text = message.bodyMarkdown,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                    color = Ink,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+        return
+    }
+
+    when (message.status) {
+        TutorMessageStatus.SUCCEEDED -> TutorPrompt(
+            text = message.bodyMarkdown,
+            modifier = modifier.testTag("tutor_lobby_assistant_message"),
+        )
+        TutorMessageStatus.FAILED, TutorMessageStatus.CANCELLED -> Surface(
+            color = ErrorWarm.copy(alpha = 0.08f),
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, ErrorWarm.copy(alpha = 0.36f)),
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("tutor_lobby_task_failure"),
+        ) {
+            Text(
+                text = message.bodyMarkdown,
+                modifier = Modifier.padding(12.dp),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        else -> TutorPrompt(
+            text = message.bodyMarkdown,
+            modifier = modifier.testTag("tutor_lobby_task_progress"),
+        )
+    }
+}
+
+@Composable
 private fun TutorLobbyDisclosureCard(
     providerName: String,
     onApprove: () -> Unit,
@@ -436,16 +660,30 @@ private fun TutorLobbyDisclosureCard(
     }
 }
 
-private fun List<ModelTaskSnapshot>.toLobbyHistory(): List<TutorChatHistoryEntry> =
-    mapNotNull { task ->
-        val input = task.request.input as? TutorLobbyInput ?: return@mapNotNull null
-        val output = task.output as? TutorLobbyOutput ?: return@mapNotNull null
-        TutorChatHistoryEntry(
-            studentMessage = input.studentMessage,
-            assistantMarkdown = output.messageMarkdown,
-        ).takeIf { task.status == ModelTaskStatus.SUCCEEDED }
-    }.takeLast(MAX_CONTEXT_MESSAGES)
+private fun List<TutorMessage>.toLobbyHistory(): List<TutorChatHistoryEntry> {
+    val entries = mutableListOf<TutorChatHistoryEntry>()
+    var pendingStudent: TutorMessage? = null
+    sortedBy { it.ordinal }.forEach { message ->
+        when (message.role) {
+            TutorMessageRole.STUDENT -> pendingStudent = message
+            TutorMessageRole.ASSISTANT -> {
+                pendingStudent?.let { student ->
+                    if (message.status == TutorMessageStatus.SUCCEEDED) {
+                        entries += TutorChatHistoryEntry(
+                            studentMessage = student.bodyMarkdown,
+                            assistantMarkdown = message.bodyMarkdown,
+                        )
+                    }
+                }
+                pendingStudent = null
+            }
+            TutorMessageRole.LOCAL_EVENT -> Unit
+        }
+    }
+    return entries.takeLast(MAX_CONTEXT_MESSAGES)
+}
 
 private const val MAX_VISIBLE_MESSAGES = 20
 private const val MAX_CONTEXT_MESSAGES = 8
 private const val MAX_PERSISTED_TASKS = 64
+private const val MAX_RECENT_CONVERSATIONS = 20

@@ -1,13 +1,8 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,24 +16,20 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.LibraryAddCheck
 import androidx.compose.material.icons.outlined.PhotoCamera
-import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,7 +57,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
@@ -76,6 +66,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityDecision
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityBlockReason
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityGate
@@ -119,9 +110,12 @@ fun TutorRoute(
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenHistory: () -> Unit,
+    conversations: TutorConversationRepository,
     modelTasks: ModelTaskRepository,
     catalogEntries: List<StudyCatalogEntry>,
     capabilities: AppCapabilitySnapshot,
+    initialConversationId: String? = null,
     modifier: Modifier = Modifier,
 ) {
     if (practiceUnitId.isBlank() && teachingArtifact == null) {
@@ -131,9 +125,12 @@ fun TutorRoute(
             onOpenCapabilitySettings = onOpenCapabilitySettings,
             onOpenMistakeNotebook = onOpenMistakeNotebook,
             onOpenProfile = onOpenProfile,
+            onOpenHistory = onOpenHistory,
+            conversations = conversations,
             modelTasks = modelTasks,
             catalogEntries = catalogEntries,
             profile = profile,
+            initialConversationId = initialConversationId,
             modifier = modifier,
         )
         return
@@ -592,6 +589,7 @@ private fun TutorScreen(
 @Composable
 internal fun TutorTopBar(
     onOpenCapabilitySettings: () -> Unit,
+    onOpenHistory: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -603,6 +601,18 @@ internal fun TutorTopBar(
             color = Ink,
             style = MaterialTheme.typography.headlineLarge,
         )
+        if (onOpenHistory != null) {
+            IconButton(
+                onClick = onOpenHistory,
+                modifier = Modifier.testTag("tutor_history_button"),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.History,
+                    contentDescription = "讲题历史",
+                    tint = Ink,
+                )
+            }
+        }
         IconButton(
             onClick = onOpenCapabilitySettings,
             modifier = Modifier.testTag("tutor_capability_settings_button"),
@@ -793,56 +803,50 @@ internal fun TutorComposer(
     modifier: Modifier = Modifier,
     placeholder: String = "输入你的推导、困惑或新问题",
     enabled: Boolean = true,
-    attachedImages: List<Uri> = emptyList(),
-    onImagesAttached: (List<Uri>) -> Unit = {},
-    onImageRemoved: (Uri) -> Unit = {},
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        // 图片预览区
-        if (attachedImages.isNotEmpty()) {
-            ImageAttachmentPreview(
-                images = attachedImages,
-                onRemove = onImageRemoved,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
-        }
-
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 82.dp)
-                .testTag("tutor_draft_input"),
-            placeholder = { Text(placeholder) },
-            enabled = enabled,
-            minLines = 2,
-            maxLines = 3,
-            leadingIcon = {
-                ImageAttachmentButtons(
-                    enabled = enabled,
-                    onImagesSelected = onImagesAttached,
-                    onCapture = onCapture,
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 82.dp)
+            .testTag("tutor_draft_input"),
+        placeholder = { Text(placeholder) },
+        enabled = enabled,
+        minLines = 2,
+        maxLines = 3,
+        leadingIcon = {
+            IconButton(
+                onClick = onCapture,
+                enabled = enabled,
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("tutor_attach_button"),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.PhotoCamera,
+                    contentDescription = "拍题或从相册选择题目图片",
+                    tint = Jade,
                 )
-            },
-            trailingIcon = {
-                IconButton(
-                    onClick = onSend,
-                    enabled = enabled && (value.isNotBlank() || attachedImages.isNotEmpty()),
-                    modifier = Modifier
-                        .size(48.dp)
-                        .testTag("tutor_send_button"),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "提交输入",
-                        tint = if (value.isBlank() && attachedImages.isEmpty()) InkMuted else Jade,
-                    )
-                }
-            },
-            shape = RoundedCornerShape(8.dp),
-        )
-    }
+            }
+        },
+        trailingIcon = {
+            IconButton(
+                onClick = onSend,
+                enabled = enabled && value.isNotBlank(),
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("tutor_send_button"),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "提交输入",
+                    tint = if (value.isBlank()) InkMuted else Jade,
+                )
+            }
+        },
+        shape = RoundedCornerShape(8.dp),
+    )
 }
 
 @Composable
@@ -941,110 +945,4 @@ private fun adaptivePauseDetail(kind: AdaptiveDecisionKind): String = when (kind
     AdaptiveDecisionKind.ASK,
     AdaptiveDecisionKind.ASK_CALIBRATION,
     -> "请稍后重试，或拍照上传需要讲解的题。"
-}
-
-@Composable
-private fun ImageAttachmentButtons(
-    enabled: Boolean,
-    onImagesSelected: (List<Uri>) -> Unit,
-    onCapture: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var showMenu by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-
-    val pickImages = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
-    ) { uris ->
-        if (uris.isNotEmpty()) {
-            onImagesSelected(uris)
-        }
-    }
-
-    Box(modifier = modifier) {
-        IconButton(
-            onClick = { showMenu = true },
-            enabled = enabled,
-            modifier = Modifier
-                .size(48.dp)
-                .testTag("tutor_attach_button"),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.PhotoCamera,
-                contentDescription = "添加图片",
-                tint = Jade,
-            )
-        }
-
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("拍照") },
-                onClick = {
-                    showMenu = false
-                    onCapture()
-                },
-                leadingIcon = {
-                    Icon(Icons.Outlined.PhotoCamera, contentDescription = null)
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("从相册选择") },
-                onClick = {
-                    showMenu = false
-                    pickImages.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                },
-                leadingIcon = {
-                    Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ImageAttachmentPreview(
-    images: List<Uri>,
-    onRemove: (Uri) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        images.forEach { uri ->
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .border(1.dp, Outline, RoundedCornerShape(8.dp))
-            ) {
-                BoundedLocalImage(
-                    imageUri = uri.toString(),
-                    contentDescription = "附件图片",
-                    expanded = false,
-                    modifier = Modifier.fillMaxSize(),
-                    collapsedMaxHeight = 80.dp,
-                )
-                IconButton(
-                    onClick = { onRemove(uri) },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(24.dp)
-                        .background(Paper.copy(alpha = 0.8f), CircleShape),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = "移除",
-                        modifier = Modifier.size(16.dp),
-                        tint = Ink,
-                    )
-                }
-            }
-        }
-    }
 }

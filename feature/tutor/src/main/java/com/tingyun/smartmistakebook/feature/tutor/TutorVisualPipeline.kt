@@ -210,3 +210,112 @@ private const val MIN_GENERATION_CONFIDENCE = 0.90
 private const val MIN_REVIEW_CONFIDENCE = 0.75
 private const val LOCAL_INTEGRITY_REASON = "local_integrity_error"
 private const val LOW_CONFIDENCE_REASON = "low_generation_confidence"
+
+internal const val DEFAULT_MAX_AUTO_VISUAL_WORK_ITEMS = 8
+
+internal data class TutorVisualWorkPlan(
+    val selectedSeeds: List<TutorVisualWorkSeed>,
+    val overflowCount: Int,
+    val totalCount: Int,
+)
+
+internal enum class TutorVisualItemIssue {
+    REQUEST_UNAVAILABLE,
+    GENERATION_FAILED,
+    REVIEW_FAILED,
+}
+
+internal data class TutorVisualItemNotice(
+    val anchor: TutorVisualTurnAnchor,
+    val issue: TutorVisualItemIssue,
+)
+
+internal fun planTutorVisualWork(
+    seeds: List<TutorVisualWorkSeed>,
+    maxItems: Int = DEFAULT_MAX_AUTO_VISUAL_WORK_ITEMS,
+): TutorVisualWorkPlan {
+    require(maxItems >= 0) { "Visual work item cap must not be negative" }
+    val selected = if (maxItems == 0) emptyList() else seeds.takeLast(maxItems)
+    return TutorVisualWorkPlan(
+        selectedSeeds = selected,
+        overflowCount = (seeds.size - selected.size).coerceAtLeast(0),
+        totalCount = seeds.size,
+    )
+}
+
+internal fun tutorVisualOverflowMessage(
+    overflowCount: Int,
+    maxItems: Int = DEFAULT_MAX_AUTO_VISUAL_WORK_ITEMS,
+): String? = overflowCount.takeIf { it > 0 }?.let {
+    "这道题的配图比较多，目前只自动处理最近 ${maxItems} 个。"
+}
+
+internal fun TutorVisualItemNotice.studentMessage(): String = when (issue) {
+    TutorVisualItemIssue.REQUEST_UNAVAILABLE -> "这张配图暂时做不出来。"
+    TutorVisualItemIssue.GENERATION_FAILED -> "这张配图没能生成，可以稍后再试。"
+    TutorVisualItemIssue.REVIEW_FAILED -> "这张配图还不能展示，可以稍后再试。"
+}
+
+internal fun tutorVisualItemNotices(
+    selectedSeeds: List<TutorVisualWorkSeed>,
+    question: TutorQuestionContext,
+    requestBuildFailedAnchors: Set<TutorVisualTurnAnchor>,
+    generationTasks: List<ModelTaskSnapshot>,
+    reviewTasks: List<ModelTaskSnapshot>,
+): List<TutorVisualItemNotice> = selectedSeeds.mapNotNull { seed ->
+    val generation = latestMatchingVisualGenerateTask(
+        tasks = generationTasks,
+        question = question,
+        anchor = seed.anchor,
+    )
+    val review = latestMatchingVisualReviewTask(
+        tasks = reviewTasks,
+        question = question,
+        anchor = seed.anchor,
+    )
+    when {
+        seed.anchor in requestBuildFailedAnchors -> TutorVisualItemNotice(
+            anchor = seed.anchor,
+            issue = TutorVisualItemIssue.REQUEST_UNAVAILABLE,
+        )
+        generation?.status.isTutorVisualFailure() -> TutorVisualItemNotice(
+            anchor = seed.anchor,
+            issue = TutorVisualItemIssue.GENERATION_FAILED,
+        )
+        review?.status.isTutorVisualFailure() -> TutorVisualItemNotice(
+            anchor = seed.anchor,
+            issue = TutorVisualItemIssue.REVIEW_FAILED,
+        )
+        else -> null
+    }
+}
+
+private fun latestMatchingVisualGenerateTask(
+    tasks: List<ModelTaskSnapshot>,
+    question: TutorQuestionContext,
+    anchor: TutorVisualTurnAnchor,
+): ModelTaskSnapshot? = tasks.asReversed().firstOrNull { task ->
+    val input = task.request.input as? TutorVisualGenerateInput ?: return@firstOrNull false
+    input.anchor == anchor &&
+        input.sessionId == question.sessionId &&
+        input.draftRevisionNumber == question.revisionNumber &&
+        input.questionDocument.id == question.questionDocument.document.id
+}
+
+private fun latestMatchingVisualReviewTask(
+    tasks: List<ModelTaskSnapshot>,
+    question: TutorQuestionContext,
+    anchor: TutorVisualTurnAnchor,
+): ModelTaskSnapshot? = tasks.asReversed().firstOrNull { task ->
+    val input = task.request.input as? TutorVisualReviewInput ?: return@firstOrNull false
+    input.anchor == anchor &&
+        input.sessionId == question.sessionId &&
+        input.draftRevisionNumber == question.revisionNumber &&
+        input.questionDocument.id == question.questionDocument.document.id
+}
+
+private fun ModelTaskStatus?.isTutorVisualFailure(): Boolean =
+    this == ModelTaskStatus.RETRYABLE_FAILURE ||
+        this == ModelTaskStatus.PERMANENT_FAILURE ||
+        this == ModelTaskStatus.CANCELLED
+

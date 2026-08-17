@@ -134,7 +134,82 @@ class TutorVisualPipelineTest {
         assertEquals(TutorVisualResolution.Unavailable, resolved)
     }
 
-    private fun generationTask(
+    @Test
+    fun workPlanKeepsTheLatestItemsAndReportsOverflow() {
+        val seeds = (1..9).map { ordinal ->
+            TutorVisualWorkSeed(
+                anchor = TutorVisualTurnAnchor(
+                    surface = TutorVisualTurnSurface.PLAN,
+                    cycleOrdinal = ordinal,
+                    turnOrdinal = 1,
+                ),
+                request = com.tingyun.smartmistakebook.core.model.TutorVisualGenerationRequest(
+                    focusMarkdown = "聚焦第${ordinal}张配图",
+                ),
+                explanationMarkdown = "讲解第${ordinal}张配图",
+            )
+        }
+
+        val plan = planTutorVisualWork(seeds)
+
+        assertEquals(8, plan.selectedSeeds.size)
+        assertEquals(1, plan.overflowCount)
+        assertEquals(9, plan.totalCount)
+        assertEquals(
+            seeds.takeLast(8).map(TutorVisualWorkSeed::anchor),
+            plan.selectedSeeds.map(TutorVisualWorkSeed::anchor),
+        )
+        assertEquals(
+            "这道题的配图比较多，目前只自动处理最近 8 个。",
+            tutorVisualOverflowMessage(plan.overflowCount),
+        )
+    }
+
+    @Test
+    fun itemNoticesSurfaceBuildFailureAndFailedGeneration() {
+        val selected = listOf(
+            TutorVisualWorkSeed(
+                anchor = anchor,
+                request = com.tingyun.smartmistakebook.core.model.TutorVisualGenerationRequest(
+                    focusMarkdown = "聚焦装置中的方向关系",
+                ),
+                explanationMarkdown = "先核对装置连接，再判断方向。",
+            ),
+        )
+        val failedGeneration = generationTask(scene = lowRiskScene(), confidence = 0.97).copy(
+            status = ModelTaskStatus.RETRYABLE_FAILURE,
+            output = null,
+            failure = com.tingyun.smartmistakebook.core.model.ModelTaskFailure(
+                code = com.tingyun.smartmistakebook.core.model.ModelFailureCode.TIMEOUT,
+                message = "配图生成失败",
+                retryable = true,
+            ),
+        )
+
+        val notices = tutorVisualItemNotices(
+            selectedSeeds = selected,
+            question = question,
+            requestBuildFailedAnchors = setOf(anchor),
+            generationTasks = listOf(failedGeneration),
+            reviewTasks = emptyList(),
+        )
+
+        assertEquals(1, notices.size)
+        assertEquals(TutorVisualItemIssue.REQUEST_UNAVAILABLE, notices.single().issue)
+        assertEquals("这张配图暂时做不出来。", notices.single().studentMessage())
+
+        val generationNotices = tutorVisualItemNotices(
+            selectedSeeds = selected,
+            question = question,
+            requestBuildFailedAnchors = emptySet(),
+            generationTasks = listOf(failedGeneration),
+            reviewTasks = emptyList(),
+        )
+        assertEquals(TutorVisualItemIssue.GENERATION_FAILED, generationNotices.single().issue)
+        assertEquals("这张配图没能生成，可以稍后再试。", generationNotices.single().studentMessage())
+    }
+
+        private fun generationTask(
         scene: TutorVisualDocumentScene,
         confidence: Double,
     ): ModelTaskSnapshot {

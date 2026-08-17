@@ -39,12 +39,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
+import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
@@ -56,6 +62,7 @@ import com.tingyun.smartmistakebook.core.ui.SubjectIcon
 @Composable
 fun LibraryRoute(
     entries: List<StudyCatalogEntry>,
+    catalogRepository: LibraryCatalogRepository? = null,
     pendingCaptureCount: Int,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
@@ -65,11 +72,20 @@ fun LibraryRoute(
     modifier: Modifier = Modifier,
 ) {
     val libraryViewModel: LibraryViewModel = viewModel()
-    LaunchedEffect(entries) {
-        libraryViewModel.updateCatalog(entries.map(StudyCatalogEntry::toLibraryMistake))
+    LaunchedEffect(catalogRepository) {
+        if (catalogRepository != null) {
+            libraryViewModel.bindRepository(catalogRepository)
+        } else {
+            libraryViewModel.updateCatalog(entries.map(StudyCatalogEntry::toLibraryMistake))
+        }
     }
     LibraryContent(
-        mistakeCount = entries.size,
+        mistakeCount = if (catalogRepository != null) {
+            libraryViewModel.uiState.totalCount
+        } else {
+            entries.size
+        },
+        usePaging = catalogRepository != null,
         pendingCaptureCount = pendingCaptureCount,
         onCapture = onCapture,
         onBatchImport = onBatchImport,
@@ -84,6 +100,7 @@ fun LibraryRoute(
 @Composable
 private fun LibraryContent(
     mistakeCount: Int,
+    usePaging: Boolean,
     pendingCaptureCount: Int,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
@@ -94,9 +111,12 @@ private fun LibraryContent(
     modifier: Modifier,
 ) {
     val uiState = viewModel.uiState
+    val pagingItems = if (usePaging) viewModel.pagingData.collectAsLazyPagingItems() else null
+    val visibleMistakeCount = if (pagingItems != null) pagingItems.itemCount else uiState.visibleMistakes.size
+    val loading = usePaging && !uiState.loaded
     val emptyState = resolveLibraryEmptyState(
         totalMistakeCount = mistakeCount,
-        visibleMistakeCount = uiState.visibleMistakes.size,
+        visibleMistakeCount = if (loading) 1 else visibleMistakeCount,
     )
     RootPageLazyColumn(
         modifier = modifier.testTag("library_root"),
@@ -155,7 +175,7 @@ private fun LibraryContent(
                         title = "分类筛选",
                         action = {
                             Text(
-                                text = "${uiState.visibleMistakes.size} 道题",
+                                text = "${uiState.totalCount} 道题",
                                 modifier = Modifier.testTag("library_result_count"),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = SmartColors.InkSecondary,
@@ -174,12 +194,18 @@ private fun LibraryContent(
                         selectedOptionId = uiState.selections.selectedOptionId(uiState.activeFacet),
                         onSelect = { viewModel.toggleFilter(uiState.activeFacet, it) },
                     )
-                    if (uiState.visibleMistakes.isNotEmpty()) {
+                    if ((pagingItems?.itemCount ?: uiState.visibleMistakes.size) > 0) {
                         Spacer(Modifier.height(10.dp))
                         OutlineActionChip(
-                            text = "导出当前 ${uiState.visibleMistakes.size} 道",
+                            text = "导出当前 ${visibleMistakeCount} 道",
                             onClick = {
-                                onExportVisible(uiState.visibleMistakes.map(LibraryMistake::id))
+                                onExportVisible(
+                                    if (pagingItems != null) {
+                                        pagingItems.itemSnapshotList.mapNotNull { it?.entryId }
+                                    } else {
+                                        uiState.visibleMistakes.map(LibraryMistake::id)
+                                    }
+                                )
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -198,6 +224,19 @@ private fun LibraryContent(
                     onCapture = onCapture,
                     onClear = viewModel::clearAll,
                 )
+            }
+        } else if (emptyState == null && pagingItems != null) {
+            items(
+                count = pagingItems.itemCount,
+                contentType = pagingItems.itemContentType { _ -> "library_item" },
+            ) { index ->
+                val mistake = pagingItems[index]?.toLibraryMistake()
+                if (mistake != null) {
+                    LibraryItemRow(
+                        mistake = mistake,
+                        onClick = { onOpenItem(mistake.id) },
+                    )
+                }
             }
         } else if (emptyState == null) {
             items(
@@ -352,6 +391,7 @@ private fun FacetTabs(
                     .weight(1f)
                     .defaultMinSize(minHeight = 48.dp)
                     .clip(RoundedCornerShape(4.dp))
+                    .semantics { role = Role.Tab }
                     .clickable { onSelect(facet) }
                     .padding(vertical = 8.dp)
                     .testTag("library_facet_${facet.id}"),

@@ -61,7 +61,7 @@ class TutorLocalIntentPanelInstrumentedTest {
         composeRule.onNodeWithText("需要再看看 · 导数变号").assertExists()
 
         composeRule.runOnIdle {
-            studentMessage.value = "这次别记"
+            studentMessage.value = "这次不记"
             output.value = blockMemoryOutput()
         }
         composeRule.onNodeWithText("这次对话不会写入长期学习记录").assertExists()

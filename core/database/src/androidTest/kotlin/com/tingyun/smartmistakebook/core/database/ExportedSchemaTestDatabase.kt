@@ -32,6 +32,13 @@ internal fun createDatabaseFromExportedSchema(
                 }
             }
         }
+        val views = schema.optJSONArray("views")
+        repeat(views?.length() ?: 0) { index ->
+            val view = views.getJSONObject(index)
+            database.execSQL(
+                view.getString("createSql").replace("${'$'}{VIEW_NAME}", view.getString("viewName")),
+            )
+        }
         val setupQueries = schema.getJSONArray("setupQueries")
         repeat(setupQueries.length()) { index -> database.execSQL(setupQueries.getString(index)) }
         database.version = version

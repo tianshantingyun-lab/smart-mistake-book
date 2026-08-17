@@ -82,6 +82,7 @@ import com.tingyun.smartmistakebook.feature.review.ReviewRoute
 import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.tutor.CapturedTutorSessionRoute
 import com.tingyun.smartmistakebook.feature.tutor.SavedMistakeTutorRoute
+import com.tingyun.smartmistakebook.feature.tutor.TutorHistoryRoute
 import com.tingyun.smartmistakebook.feature.tutor.TutorRoute
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
@@ -103,6 +104,8 @@ internal object Routes {
     const val LibraryBatchExport = "library/export"
     const val CaptureResume = "capture/resume/{draftId}"
     const val CapturedTutorSession = "tutor/captured/{sessionId}"
+    const val TutorHistory = "tutor/history"
+    const val TutorTextConversation = "tutor/lobby/{conversationId}"
     const val MistakeDetail = "mistake/{itemId}"
     const val MistakeTutor = "mistake/tutor/{entryId}/{problemId}/{problemRevisionId}"
     const val MistakeExport =
@@ -148,6 +151,9 @@ internal object Routes {
 
     fun capturedTutorSession(sessionId: String): String = "tutor/captured/${Uri.encode(sessionId)}"
 
+    fun tutorTextConversation(conversationId: String): String =
+        "tutor/lobby/${Uri.encode(conversationId)}"
+
     fun captureResume(draftId: String): String = "capture/resume/${Uri.encode(draftId)}"
 }
 
@@ -179,6 +185,8 @@ internal fun bottomBarRouteFor(route: String?): String? = when (route) {
     -> route
     Routes.CapturedTutorSession,
     Routes.MistakeTutor,
+    Routes.TutorHistory,
+    Routes.TutorTextConversation,
     -> Routes.Tutor
     else -> null
 }
@@ -190,6 +198,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
     val application = context.applicationContext as SmartMistakeBookApplication
     val repository = application.studyRepository
     val baseCapabilities = application.capabilities
+    val startupState by application.startupState.collectAsStateWithLifecycle()
     val configurationStore = application.modelConfigurationStore
     val modelConfiguration = if (configurationStore != null) {
         configurationStore.configuration
@@ -270,7 +279,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 SmartBottomBar(
                     selectedRoute = selectedBottomRoute,
                     onSelect = { destination ->
-                        if (destination.route != currentRoute) {
+                        if (destination.route != bottomBarRouteFor(currentRoute)) {
                             navController.navigate(destination.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
@@ -289,6 +298,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 .fillMaxSize()
                 .statusBarsPadding(),
         ) {
+            StartupStateBanner(state = startupState)
             StudyDataStatusLine(experience.status)
             NavHost(
                 navController = navController,
@@ -351,14 +361,82 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenCapabilitySettings = { navController.navigate(Routes.Capability) },
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
                     onOpenProfile = { navController.navigate(Routes.Profile) },
+                    onOpenHistory = { navController.navigate(Routes.TutorHistory) },
+                    conversations = application.tutorConversationRepository,
                     modelTasks = application.modelTaskRepository,
                     catalogEntries = experience.catalog,
+                    modifier = Modifier.testTag("root_tutor"),
+                )
+            }
+            composable(Routes.TutorHistory) {
+                TutorHistoryRoute(
+                    conversations = application.tutorConversationRepository,
+                    onArchive = { conversationId ->
+                        applicationUiScope.launch {
+                            application.tutorConversationRepository.archiveConversation(
+                                com.tingyun.smartmistakebook.core.domain.ArchiveTutorConversationCommand(
+                                    conversationId = conversationId,
+                                    occurredAtEpochMillis = System.currentTimeMillis(),
+                                ),
+                            )
+                        }
+                    },
+                    onDelete = { conversationId ->
+                        applicationUiScope.launch {
+                            application.tutorConversationRepository.deleteConversation(
+                                com.tingyun.smartmistakebook.core.domain.DeleteTutorConversationCommand(
+                                    conversationId = conversationId,
+                                    occurredAtEpochMillis = System.currentTimeMillis(),
+                                ),
+                            )
+                        }
+                    },
+                    onOpenTextConversation = { conversationId ->
+                        navController.navigate(Routes.tutorTextConversation(conversationId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onOpenCapturedSession = { sessionId ->
+                        navController.navigate(Routes.capturedTutorSession(sessionId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.TutorTextConversation) { entry ->
+                val conversationId = entry.arguments?.getString("conversationId")
+                    .orEmpty()
+                if (conversationId.isBlank()) {
+                    return@composable
+                }
+                TutorRoute(
+                    isSaved = false,
+                    capabilities = capabilities,
+                    practiceUnitId = "",
+                    teachingArtifact = null,
+                    adaptiveDecision = null,
+                    profile = experience.profile,
+                    onSave = { repository.saveTutorExampleMistake() },
+                    onSubmitChoice = repository::submitChoice,
+                    onRevealAnswer = repository::revealAnswer,
+                    onCapture = { navController.navigate(Routes.CaptureTutor) },
+                    onChooseExisting = { navController.navigate(Routes.Library) },
+                    onOpenCapabilitySettings = { navController.navigate(Routes.Capability) },
+                    onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
+                    onOpenProfile = { navController.navigate(Routes.Profile) },
+                    onOpenHistory = { navController.navigate(Routes.TutorHistory) },
+                    conversations = application.tutorConversationRepository,
+                    modelTasks = application.modelTaskRepository,
+                    catalogEntries = experience.catalog,
+                    initialConversationId = conversationId,
                     modifier = Modifier.testTag("root_tutor"),
                 )
             }
             composable(Routes.Library) {
                 LibraryRoute(
                     entries = experience.catalog,
+                    catalogRepository = application.libraryCatalogRepository,
                     pendingCaptureCount = experience.pendingCorrectionCount,
                     onCapture = { navController.navigate(Routes.CaptureLibrary) },
                     onBatchImport = { navController.navigate(Routes.BatchImport) },
@@ -697,6 +775,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     interactions = application.tutorInteractionRepository,
+                    conversations = application.tutorConversationRepository,
                     profile = experience.profile,
                     catalogEntries = experience.catalog,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
@@ -807,7 +886,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 )
             }
             composable(Routes.Storage) {
-                StorageScreen(onBack = navController::popBackStack)
+                StorageScreen(
+                    onBack = navController::popBackStack,
+                    backupRepository = application.backupRepository,
+                )
             }
             }
         }

@@ -201,8 +201,7 @@ data class ModelEgressManifest(
                 ModelTaskKind.TUTOR_VISUAL_REVIEW ->
                     tutorVisualReviewDisclosure(assets.any { it.selectedRegion != null })
             }
-            // TUTOR_LOBBY 现在允许图片（统一对话模式）
-            // TUTOR_VISUAL_GENERATE/REVIEW 也允许无图片（支持纯文字对话）
+            // TUTOR_LOBBY 保持纯文字；视觉任务按输入是否含图片决定披露。
             require(disclosedData == expectedDisclosure) {
                 "Tutor egress disclosure must exactly match the authorized tutoring task"
             }

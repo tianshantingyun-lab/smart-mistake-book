@@ -103,7 +103,10 @@ internal data class TutorCompositionEgressLease(
     val respondPromptPolicyVersion: String,
     val visualGeneratePromptPolicyVersion: String,
     val visualReviewPromptPolicyVersion: String,
-    val approvedAtEpochMillis: Long,
+    val planApprovedAtEpochMillis: Long? = null,
+    val respondApprovedAtEpochMillis: Long? = null,
+    val visualGenerateApprovedAtEpochMillis: Long? = null,
+    val visualReviewApprovedAtEpochMillis: Long? = null,
 ) {
     fun approvedAtFor(
         question: TutorQuestionContext,
@@ -121,7 +124,14 @@ internal data class TutorCompositionEgressLease(
                 visualReviewPromptPolicyVersion == TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
             else -> false
         }
-        return approvedAtEpochMillis.takeIf {
+        val taskApprovedAt = when (taskKind) {
+            ModelTaskKind.TUTOR_PLAN -> planApprovedAtEpochMillis
+            ModelTaskKind.TUTOR_RESPOND -> respondApprovedAtEpochMillis
+            ModelTaskKind.TUTOR_VISUAL_GENERATE -> visualGenerateApprovedAtEpochMillis
+            ModelTaskKind.TUTOR_VISUAL_REVIEW -> visualReviewApprovedAtEpochMillis
+            else -> null
+        }
+        return taskApprovedAt?.takeIf {
             provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
                 provider.supports(taskKind) &&
                 sessionId == question.sessionId &&
@@ -131,7 +141,7 @@ internal data class TutorCompositionEgressLease(
                 modelId == provider.modelId &&
                 providerConfigurationVersion == provider.providerConfigurationVersion &&
                 policyMatches &&
-                isModelEgressApprovalFresh(approvedAtEpochMillis, nowEpochMillis)
+                isModelEgressApprovalFresh(it, nowEpochMillis)
         }
     }
 
@@ -140,6 +150,12 @@ internal data class TutorCompositionEgressLease(
             question: TutorQuestionContext,
             provider: ProviderCapabilitySnapshot,
             approvedAtEpochMillis: Long,
+            taskKinds: Set<ModelTaskKind> = setOf(
+                ModelTaskKind.TUTOR_PLAN,
+                ModelTaskKind.TUTOR_RESPOND,
+                ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            ),
         ): TutorCompositionEgressLease {
             require(provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER)
             return TutorCompositionEgressLease(
@@ -155,7 +171,18 @@ internal data class TutorCompositionEgressLease(
                     TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION,
                 visualReviewPromptPolicyVersion =
                     TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION,
-                approvedAtEpochMillis = approvedAtEpochMillis,
+                planApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
+                    ModelTaskKind.TUTOR_PLAN in taskKinds
+                },
+                respondApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
+                    ModelTaskKind.TUTOR_RESPOND in taskKinds
+                },
+                visualGenerateApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
+                    ModelTaskKind.TUTOR_VISUAL_GENERATE in taskKinds
+                },
+                visualReviewApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
+                    ModelTaskKind.TUTOR_VISUAL_REVIEW in taskKinds
+                },
             )
         }
     }

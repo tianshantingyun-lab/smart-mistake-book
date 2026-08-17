@@ -16,6 +16,7 @@ class TutorLobbyModelTaskPolicyTest {
     fun externalRequestBindsExactMessageAndLeastDisclosure() {
         val request = buildTutorLobbyRequest(
             provider = provider(ModelExecutionLocation.EXTERNAL_PROVIDER),
+            conversationId = "conversation-test",
             messageOrdinal = 4,
             studentMessage = "帮我看看最近的函数错题",
             priorMessages = List(10) { index ->
@@ -41,6 +42,7 @@ class TutorLobbyModelTaskPolicyTest {
     fun localProviderNeverCreatesAnEgressManifest() {
         val request = buildTutorLobbyRequest(
             provider = provider(ModelExecutionLocation.LOCAL_NO_EGRESS),
+            conversationId = "conversation-test",
             messageOrdinal = 1,
             studentMessage = "你好",
             priorMessages = emptyList(),

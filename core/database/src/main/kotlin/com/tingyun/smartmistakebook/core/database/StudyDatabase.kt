@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.database.dao.KnowledgeNodeRelationDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeResearchReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeTeachingMaterialDao
 import com.tingyun.smartmistakebook.core.database.dao.LearningDao
+import com.tingyun.smartmistakebook.core.database.dao.LibraryQueryDao
 import com.tingyun.smartmistakebook.core.database.dao.ModelTaskTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.MistakeDetailDao
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureDao
@@ -29,6 +30,7 @@ import com.tingyun.smartmistakebook.core.database.dao.ReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.ReviewPlanTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorInteractionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorExposureDao
+import com.tingyun.smartmistakebook.core.database.dao.TutorConversationDao
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEvidenceAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEvidenceSnapshotEntity
@@ -64,6 +66,7 @@ import com.tingyun.smartmistakebook.core.database.entity.LearnerKnowledgeMastery
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProblemMemoryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProjectionSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibraryCatalogView
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.ModelTaskOperationEntity
@@ -97,12 +100,15 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorSessionProblemAnch
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExposureRecordEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 28
+internal const val STUDY_DATABASE_VERSION = 31
 
 @Database(
+    views = [LibraryCatalogView::class],
     entities = [
         ProblemEntity::class,
         ProblemRevisionEntity::class,
@@ -170,6 +176,8 @@ internal const val STUDY_DATABASE_VERSION = 28
         TutorAnswerExposureEntity::class,
         TutorAnswerExposureOutcomeEntity::class,
         AppliedTutorAnswerExposureRecordEntity::class,
+        TutorConversationEntity::class,
+        TutorMessageEntity::class,
         BatchImportJobEntity::class,
         BatchImportPageEntity::class,
     ],
@@ -217,6 +225,10 @@ internal abstract class StudyDatabase : RoomDatabase() {
 
     abstract fun tutorExposureDao(): TutorExposureDao
 
+    abstract fun tutorConversationDao(): TutorConversationDao
+
+    abstract fun libraryQueryDao(): LibraryQueryDao
+
     abstract fun batchImportDao(): BatchImportDao
 }
 
@@ -260,6 +272,9 @@ object StudyDatabaseFactory {
             KNOWLEDGE_TEACHING_MATERIAL_MIGRATION_25_26,
             MODEL_TASK_RECENT_INDEX_MIGRATION_26_27,
             KNOWLEDGE_SOURCE_REUSE_RIGHTS_MIGRATION_27_28,
+            TUTOR_CONVERSATION_MIGRATION_28_29,
+            LIBRARY_CATALOG_VIEW_MIGRATION_29_30,
+            TUTOR_CONVERSATION_DRAFT_MIGRATION_30_31,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

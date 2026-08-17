@@ -34,7 +34,14 @@ android {
     }
 
     buildTypes {
+        create("benchmark") {
+            matchingFallbacks += listOf("release")
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+        }
         release {
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -43,6 +50,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -80,6 +88,8 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.androidx.profileinstaller)
+    implementation(libs.androidx.work.runtime.ktx)
 
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
