@@ -36,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -67,7 +68,6 @@ import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -505,6 +505,8 @@ internal fun TutorConversationFrame(
         if (blockAutoFollowToken != null) handledBlockToken = blockAutoFollowToken
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -564,7 +566,7 @@ internal fun TutorConversationFrame(
                     forceFollowToken?.let { handledForceToken = it }
                     val itemCount = listState.layoutInfo.totalItemsCount
                     if (itemCount > 0) {
-                        kotlinx.coroutines.MainScope().launch {
+                        coroutineScope.launch {
                             listState.scrollToItem(itemCount - 1)
                         }
                     }

@@ -1,15 +1,12 @@
 package com.tingyun.smartmistakebook.core.data.model
 
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
-import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
