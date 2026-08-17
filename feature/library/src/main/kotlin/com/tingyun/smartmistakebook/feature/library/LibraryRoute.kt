@@ -437,8 +437,13 @@ private fun FacetOptions(
             selected = selectedOptionId == null,
         )
         options.forEach { option ->
+            val displayText = if (option.count > 0) {
+                "${option.label} (${option.count})"
+            } else {
+                option.label
+            }
             OutlineActionChip(
-                text = option.label,
+                text = displayText,
                 onClick = { onSelect(option.id) },
                 modifier = Modifier.testTag(filterTag(facet, option)),
                 selected = selectedOptionId == option.id,

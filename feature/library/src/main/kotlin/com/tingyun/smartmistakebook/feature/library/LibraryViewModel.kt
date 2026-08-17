@@ -235,7 +235,7 @@ internal class LibraryViewModel(
                     domainQuery,
                     DomainLibraryFacetKind.MASTERY,
                 )
-            }.map { facet -> LibraryFacetOption(facet.id, facet.label) }
+            }.map { facet -> LibraryFacetOption(facet.id, facet.label, facet.count) }
             uiState = uiState.copy(
                 activeOptions = facetOptions,
                 totalCount = count,

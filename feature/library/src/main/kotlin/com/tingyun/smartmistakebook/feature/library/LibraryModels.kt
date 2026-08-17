@@ -48,6 +48,7 @@ internal enum class MasteryState(
 internal data class LibraryFacetOption(
     val id: String,
     val label: String,
+    val count: Int = 0,
 )
 
 @Immutable
