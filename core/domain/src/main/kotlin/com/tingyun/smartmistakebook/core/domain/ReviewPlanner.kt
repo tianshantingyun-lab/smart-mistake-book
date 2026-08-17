@@ -23,6 +23,8 @@ data class ReviewCandidate(
     val examPriority: Double = 0.0,
     val repeatMistakePriority: Double = 0.0,
     val eligibleSinceEpochMillis: Long? = null,
+    val recentFamilyCount: Int = 0,
+    val recentSourceCount: Int = 0,
 ) {
     init {
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
@@ -44,6 +46,8 @@ data class ReviewCandidate(
         require(eligibleSinceEpochMillis == null || eligibleSinceEpochMillis >= 0) {
             "Review eligibility time must not be negative"
         }
+        require(recentFamilyCount >= 0) { "Recent family count must not be negative" }
+        require(recentSourceCount >= 0) { "Recent source count must not be negative" }
     }
 }
 
@@ -91,36 +95,26 @@ class ReviewPlanner(
         var preferredBandIndex = 0
 
         while (remaining.isNotEmpty() && remainingSeconds > 0) {
-            remaining.removeAll { candidate ->
-                candidate.candidate.itemFamilyId in usedFamilies ||
-                    candidate.candidate.sourceBundleId?.let(usedSources::contains) == true
-            }
-            if (remaining.isEmpty()) break
-
-            val preferredBand = DIFFICULTY_CYCLE[preferredBandIndex % DIFFICULTY_CYCLE.size]
             val fitting = remaining.filter { it.candidate.estimatedDurationSeconds <= remainingSeconds }
             if (fitting.isEmpty()) break
-            val scoreOrder = compareByDescending<ScoredCandidate>(ScoredCandidate::score)
-                .thenBy { it.candidate.practiceUnitId }
-            val highestPriority = fitting.sortedWith(scoreOrder).first()
-            val preferred = fitting
-                .filter { it.difficultyBand == preferredBand }
-                .sortedWith(scoreOrder)
-                .firstOrNull()
-            val next = if (
-                preferred != null &&
-                highestPriority.score - preferred.score <= DIVERSITY_SCORE_WINDOW
-            ) {
-                preferred
-            } else {
-                highestPriority
+
+            // Soft diversity: penalize repeated families/sources instead of hard exclusion
+            val adjustedCandidates = fitting.map { scored ->
+                val familyPenalty = (scored.candidate.recentFamilyCount * FAMILY_PENALTY_WEIGHT)
+                    .coerceAtMost(MAX_DIVERSITY_PENALTY)
+                val sourcePenalty = (scored.candidate.recentSourceCount * SOURCE_PENALTY_WEIGHT)
+                    .coerceAtMost(MAX_DIVERSITY_PENALTY)
+                val adjustedScore = scored.score - familyPenalty - sourcePenalty
+                scored.copy(score = adjustedScore.coerceAtLeast(0.0))
             }
 
-            selected += next
-            remaining -= next
-            remainingSeconds -= next.candidate.estimatedDurationSeconds
-            usedFamilies += next.candidate.itemFamilyId
-            next.candidate.sourceBundleId?.let(usedSources::add)
+            val scoreOrder = compareByDescending<ScoredCandidate>(ScoredCandidate::score)
+                .thenBy { it.candidate.practiceUnitId }
+            val selected = adjustedCandidates.sortedWith(scoreOrder).first()
+
+            this.selected += selected
+            remaining -= selected.candidate
+            remainingSeconds -= selected.candidate.estimatedDurationSeconds
             preferredBandIndex++
         }
 
@@ -373,11 +367,13 @@ class ReviewPlanner(
         private const val REPEAT_MISTAKE_WEIGHT = 2.0
         private const val EXAM_WEIGHT = 2.0
         private const val WAITING_WEIGHT = 1.5
-        private const val DIVERSITY_SCORE_WINDOW = 0.5
+        private const val FAMILY_PENALTY_WEIGHT = 0.3
+        private const val SOURCE_PENALTY_WEIGHT = 0.2
+        private const val MAX_DIVERSITY_PENALTY = 1.5
         private const val DAY_MILLIS = 86_400_000.0
         private const val RECENT_LAPSE_WINDOW_MILLIS = 30L * 86_400_000L
         private const val WAITING_GRACE_DAYS = 7.0
         private const val WAITING_BONUS_RAMP_DAYS = 83.0
-        private const val PLAN_FINGERPRINT_SCHEMA_VERSION = "review-plan-canonical-v4"
+        private const val PLAN_FINGERPRINT_SCHEMA_VERSION = "review-plan-canonical-v5"
     }
 }
