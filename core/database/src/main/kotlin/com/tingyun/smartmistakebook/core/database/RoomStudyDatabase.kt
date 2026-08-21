@@ -238,6 +238,9 @@ internal class RoomStudyDatabase(
     override suspend fun countMistakes(): Int = database.problemDao().countActiveMistakes()
 
     override suspend fun checkpointForBackup() {
+        // WAL checkpoint so committed rows are captured before the archived
+        // database file is packaged. (A full SQLite Online Backup snapshot is
+        // targeted as a follow-up; the WAL checkpoint is correct and safe here.)
         database.useConnection(isReadOnly = false) { connection ->
             connection.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { statement ->
                 while (statement.step()) {

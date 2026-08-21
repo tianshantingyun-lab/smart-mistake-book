@@ -69,6 +69,17 @@ jobs:
           profile: pixel_6
           script: |
             ./gradlew :core:database:connectedDebugAndroidTest \
+              :core:data:connectedDebugAndroidTest \
+              :feature:capture:connectedDebugAndroidTest \
               :feature:tutor:connectedDebugAndroidTest \
               :feature:library:connectedDebugAndroidTest \
+              :feature:review:connectedDebugAndroidTest \
+              :app:connectedLocalFirstDebugAndroidTest \
+              :app:connectedStrictOfflineDebugAndroidTest \
               --console=plain
+      - name: Fail if any benchmark/beta gate is hardcoded (moved to targets)
+        run: |
+          if rg -q "assertTrue.*1500L|return 1500L|0.5 // Placeholder|dataRecoveryDrillGate" benchmark app; then
+            echo "Hardcoded performance/beta data must not exist; use PerformanceTargets/BetaGateTargets with NOT_MEASURED."
+            exit 1
+          fi

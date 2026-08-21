@@ -46,6 +46,7 @@ import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
+import com.tingyun.smartmistakebook.core.model.EventTimeTrust
 import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
@@ -441,6 +442,7 @@ internal fun LearnerSnapshot.toMasteryEntities(
                 itemFamilyId = observation.itemFamilyId,
                 studyDayEpochDay = observation.studyDayEpochDay,
                 isStudyDayTrusted = observation.isStudyDayTrusted,
+                timeTrust = observation.timeTrust.name,
                 occurredAtEpochMillis = observation.occurredAtEpochMillis,
                 eventSequence = observation.eventSequence,
                 bindingId = observation.bindingId,
@@ -557,6 +559,15 @@ internal fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
                             itemFamilyId = observation.itemFamilyId,
                             studyDayEpochDay = observation.studyDayEpochDay,
                             isStudyDayTrusted = observation.isStudyDayTrusted,
+                            timeTrust = try {
+                                EventTimeTrust.valueOf(observation.timeTrust)
+                            } catch (_: IllegalArgumentException) {
+                                if (observation.isStudyDayTrusted) {
+                                    EventTimeTrust.TRUSTED
+                                } else {
+                                    EventTimeTrust.CLOCK_ROLLBACK_CLAMPED
+                                }
+                            },
                             occurredAtEpochMillis = observation.occurredAtEpochMillis,
                             eventSequence = observation.eventSequence,
                             bindingId = observation.bindingId,

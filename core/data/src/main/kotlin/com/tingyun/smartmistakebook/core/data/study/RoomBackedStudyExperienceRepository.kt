@@ -61,6 +61,7 @@ import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
@@ -120,6 +121,7 @@ class RoomBackedStudyExperienceRepository(
     }
     private val forgettingCurve = ForgettingCurve()
     private val reviewPlanner = ReviewPlanner()
+    private val reviewPlannerV2 = ReviewPlannerV2()
     private val learningProjector = LearningProjector()
     private var initialized = false
     private var latestMistakes: List<MistakeRecord> = emptyList()
@@ -253,6 +255,85 @@ class RoomBackedStudyExperienceRepository(
             SaveStudyMistakeResult.AlreadySaved(entryCount)
         }
     }
+
+    override suspend fun saveTutorProblem(command: SaveTutorProblemCommand): SaveTutorProblemReceipt =
+        runOperation {
+            val committedAtEpochMillis = clock.millis()
+
+            // Derive the draft owning the current problem. conversationId is
+            // treated as the draft/session id as the tutor anchor.
+            val draftId = command.conversationId
+            val problemId = command.problemRevisionId ?: command.ephemeralProblemId
+
+            // Idempotency check: if this exact revision is already in the library,
+            // return AlreadySaved without mutating anything.
+            if (command.problemRevisionId != null) {
+                val existing = database.readExactMistakeDetail(
+                    errorBookEntryId = draftId,
+                    problemId = problemId ?: "",
+                    problemRevisionId = command.problemRevisionId,
+                )
+                if (existing != null) {
+                    return@runOperation SaveTutorProblemReceipt.AlreadySaved(
+                        problemId = command.problemRevisionId,
+                        entryCount = database.countMistakes(),
+                    )
+                }
+            }
+
+            // Read the draft that carries the current question revision.
+            val draft = database.readProblemDraft(draftId)
+                ?: return@runOperation SaveTutorProblemReceipt.ReferenceNotFound(
+                    reason = "No problem draft found for conversation $draftId",
+                )
+            val revision = draft.currentRevision
+            val question = revision.questionDocument
+
+            // Validate the question is safe to commit.
+            val issues = CapturedQuestionDocumentValidator.validateForCommit(question)
+            if (issues.isNotEmpty()) {
+                return@runOperation SaveTutorProblemReceipt.ReferenceNotFound(
+                    reason = "Question is not ready to save: ${issues.first().code}",
+                )
+            }
+
+            val commitCommandId = "commit-$draftId-${System.nanoTime()}"
+            val errorBookEntryId = "entry-$draftId-${System.nanoTime()}"
+            val practiceUnitId = draftId
+
+            val commitResult = database.commitTutorSession(
+                com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand(
+                    sessionId = draftId,
+                    commit = com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand(
+                        commandId = commitCommandId,
+                        draftId = draftId,
+                        expectedRevisionNumber = revision.revisionNumber,
+                        problemId = revision.draftId,
+                        problemRevisionId = "${draftId}-rev-${revision.revisionNumber}",
+                        practiceUnitId = practiceUnitId,
+                        errorBookEntryId = errorBookEntryId,
+                        estimatedSeconds = 60,
+                        committedAtEpochMillis = committedAtEpochMillis,
+                    ),
+                ),
+            )
+
+            latestMistakes = database.observeMistakes().first()
+            initialized = true
+            publishReadySnapshot(latestMistakes)
+
+            if (commitResult.created) {
+                SaveTutorProblemReceipt.Saved(
+                    problemId = revision.draftId,
+                    entryCount = database.countMistakes(),
+                )
+            } else {
+                SaveTutorProblemReceipt.AlreadySaved(
+                    problemId = revision.draftId,
+                    entryCount = database.countMistakes(),
+                )
+            }
+        }
 
     override suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact? =
         M1CuratedStudySeed.teachingArtifactForPracticeUnit(practiceUnitId)
@@ -584,7 +665,7 @@ class RoomBackedStudyExperienceRepository(
                     eligibleSinceEpochMillis = mistake.createdAtEpochMillis,
                 )
             }
-        val plan = reviewPlanner.plan(
+        val plan = reviewPlannerV2.plan(
             ReviewPlanningRequest(
                 learnerSnapshot = learnerSnapshot,
                 candidates = candidates,

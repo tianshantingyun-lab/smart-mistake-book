@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.EventTimeTrust
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
 import com.tingyun.smartmistakebook.core.model.IncrementalLearningEvent
@@ -47,6 +48,7 @@ data class LearningProjectionResult(
     val conflictedTutorAnswerExposureOutcomeIds: Set<String> = emptySet(),
     val deferredTutorAnswerExposureOutcomeIds: Set<String> = emptySet(),
     val presentationProjectionStates: Map<String, PresentationProjectionState> = emptyMap(),
+    val predictions: List<com.tingyun.smartmistakebook.core.model.StudentModelPrediction> = emptyList(),
 )
 
 /** Deterministic projection of a gap-free append-only attempt prefix into learner state. */
@@ -519,6 +521,10 @@ class LearningProjector(
             appliedAnswerRevealRecords = boundedAnswerRevealRecords(revealRecords),
             appliedTutorAnswerExposureRecords = boundedTutorAnswerExposureRecords(tutorExposureRecords),
         )
+
+        // Generate predictions for audit trail
+        val predictions = generatePredictions(snapshot, ordered, projectedAt)
+
         val outputPresentationStates = presentationProjectionStates.mapValues { (_, state) ->
             state.copy(asOfLedgerSequence = lastSequence)
         }
@@ -532,6 +538,7 @@ class LearningProjector(
             appliedAnswerRevealOutcomeIds = revealRecords.keys.toSet(),
             appliedTutorAnswerExposureOutcomeIds = tutorExposureRecords.keys.toSet(),
             presentationProjectionStates = outputPresentationStates,
+            predictions = predictions,
         )
     }
 
@@ -799,7 +806,14 @@ class LearningProjector(
                         bindingId = attribution.bindingId,
                         evidenceWeight = weight,
                         calibration = attempt.assessmentSnapshot.calibration,
-                        isStudyDayTrusted = effectiveAtEpochMillis >= attempt.occurredAtEpochMillis,
+                        timeTrust = when {
+                            effectiveAtEpochMillis == attempt.occurredAtEpochMillis ->
+                                EventTimeTrust.TRUSTED
+                            effectiveAtEpochMillis > attempt.occurredAtEpochMillis ->
+                                EventTimeTrust.CLOCK_ROLLBACK_CLAMPED
+                            else ->
+                                EventTimeTrust.FUTURE_TIMESTAMP_CLAMPED
+                        },
                     ),
                 )
             } else {
@@ -940,6 +954,63 @@ class LearningProjector(
 
     private fun safeAdd(value: Long, increment: Long): Long =
         if (Long.MAX_VALUE - value < increment) Long.MAX_VALUE else value + increment
+
+    /**
+     * Generate predictions for audit trail. These are shadow predictions that
+     * can be compared with actual outcomes later for calibration.
+     */
+    private fun generatePredictions(
+        snapshot: LearnerSnapshot,
+        events: List<LearningLedgerEvent>,
+        projectedAt: Long,
+    ): List<com.tingyun.smartmistakebook.core.model.StudentModelPrediction> {
+        val predictions = mutableListOf<com.tingyun.smartmistakebook.core.model.StudentModelPrediction>()
+        val modelVersion = com.tingyun.smartmistakebook.core.model.LearningModelVersion(
+            modelId = "projection-v1",
+            version = VERSION,
+            algorithmHash = "mastery-projection-v1",
+        )
+
+        // Generate predictions for each knowledge node that was updated
+        for (event in events.filterIsInstance<Attempt>()) {
+            for (attribution in event.assessmentSnapshot.attributions) {
+                val mastery = snapshot.knowledgeMasteryStates[attribution.knowledgeNodeId]
+                if (mastery != null) {
+                    val prediction = com.tingyun.smartmistakebook.core.model.StudentModelPrediction(
+                        predictionId = "pred-${event.attemptId}-${attribution.knowledgeNodeId}",
+                        modelVersion = modelVersion,
+                        practiceUnitId = event.assessmentSnapshot.practiceUnitId,
+                        knowledgeNodeId = attribution.knowledgeNodeId,
+                        featureFingerprint = computeFeatureFingerprint(mastery, event),
+                        predictedScore = mastery.probabilityIndependentCorrect,
+                        conservativeScore = mastery.lowerBoundIndependentCorrect,
+                        predictionWindowStartEpochMillis = projectedAt,
+                        predictionWindowEndEpochMillis = projectedAt + 7 * 86_400_000L, // 7-day window
+                        predictedAtEpochMillis = projectedAt,
+                    )
+                    predictions.add(prediction)
+                }
+            }
+        }
+
+        return predictions
+    }
+
+    /**
+     * Compute a fingerprint of the features used for prediction.
+     */
+    private fun computeFeatureFingerprint(
+        mastery: KnowledgeMasteryState,
+        attempt: Attempt,
+    ): String {
+        return buildString {
+            append("mass=${mastery.evidenceMass}")
+            append(";prob=${mastery.probabilityIndependentCorrect}")
+            append(";independent=${mastery.independentCorrectObservations.size}")
+            append(";attempt=${attempt.evidence.weight}")
+            append(";family=${attempt.itemFamilyId}")
+        }
+    }
 
     companion object {
         const val VERSION = LearningCoreVersions.PROJECTION_COMPOSITE

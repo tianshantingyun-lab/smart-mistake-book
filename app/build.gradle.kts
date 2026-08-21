@@ -8,6 +8,13 @@ android {
     compileSdk = 37
     buildToolsVersion = "37.0.0"
 
+    signingConfigs {
+        create("release") {
+            // Placeholder — populated by environment variables at build time.
+            // Do NOT check real keystore files into source control.
+        }
+    }
+
     defaultConfig {
         applicationId = "com.tingyun.smartmistakebook"
         minSdk = 23
@@ -41,8 +48,17 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
         }
-        release {
+        create("internal") {
+            matchingFallbacks += listOf("release")
+            isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+        }
+        release {
+            // Signing is resolved lazily by validateReleaseSigning before any
+            // release artifact is built. Reference the (initially empty)
+            // placeholder config so AGP can wire it at task execution time.
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -62,6 +78,50 @@ android {
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
+}
+
+// Resolve release signing lazily; fails only when a release task requests it.
+fun configureReleaseSigningIfAvailable() {
+    val releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS")
+    val releaseKeyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+    val releaseStoreFile = System.getenv("RELEASE_STORE_FILE")
+    val releaseStorePassword = System.getenv("RELEASE_STORE_PASSWORD")
+    if (releaseKeyAlias != null && releaseKeyPassword != null &&
+        releaseStoreFile != null && releaseStorePassword != null
+    ) {
+        android.signingConfigs.getByName("release").apply {
+            keyAlias = releaseKeyAlias
+            keyPassword = releaseKeyPassword
+            storeFile = file(releaseStoreFile)
+            storePassword = releaseStorePassword
+        }
+    }
+}
+
+tasks.register("validateReleaseSigning") {
+    doLast {
+        val missing = buildList {
+            if (System.getenv("RELEASE_KEY_ALIAS").isNullOrBlank()) add("RELEASE_KEY_ALIAS")
+            if (System.getenv("RELEASE_KEY_PASSWORD").isNullOrBlank()) add("RELEASE_KEY_PASSWORD")
+            if (System.getenv("RELEASE_STORE_FILE").isNullOrBlank()) add("RELEASE_STORE_FILE")
+            if (System.getenv("RELEASE_STORE_PASSWORD").isNullOrBlank()) add("RELEASE_STORE_PASSWORD")
+        }
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                "Release signing is missing required environment variables: ${missing.joinToString(", ")}",
+            )
+        }
+        configureReleaseSigningIfAvailable()
+    }
+}
+
+// Apply release signing before release bundle/assemble tasks run.
+tasks.configureEach {
+    if (name.contains("Release", ignoreCase = true) &&
+        (name.startsWith("bundle") || name.startsWith("assemble") || name.startsWith("package"))
+    ) {
+        dependsOn("validateReleaseSigning")
     }
 }
 

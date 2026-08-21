@@ -1,5 +1,10 @@
 # Implementation Status
 
+> **IMPORTANT**: This document contains hand-written status notes from development sessions.
+> For the authoritative, CI-generated build status, see `.github/workflows/status.md`
+> (auto-generated from commit SHA, test XML results, APK/AAB hashes, and benchmark results).
+> Never claim "build passed" or "tests passed" based on this document alone.
+
 Updated from the remediation plan for the Android client on `main`.
 
 ## Done and verified this turn
@@ -50,7 +55,7 @@ Updated from the remediation plan for the Android client on `main`.
   cancels the OkHttp call. Capture/visual/organization stay non-stream.
   Configured external providers advertise supportsStreaming=true.
   OpenAiSseTest 2/2; OpenAiModelTransportCancellationTest 2/2;
-  OpenAiCompatibleModelGatewayTest and protocol MockWebServer tests passed.
+  OpenAiCompatibleModelGatewayTest and protocol MockWebServer tests.
 - Capture source import/replace/append/commit moved to CaptureSourceImportCommands.
   Request identity reuse, busy/incomplete commit, and student-facing page-limit
   copy are policy. CaptureScreen is 1654 lines.
@@ -67,25 +72,25 @@ Updated from the remediation plan for the Android client on `main`.
 - Capture launch commands moved to `CaptureAcquisitionCommands`; `CaptureScreen` now delegates camera/picker start. Screen is 1769 lines.
 - Capture create/launch outcomes: camera create vs launch-fail vs picker unavailable are explicit; `CaptureAcquisitionLaunchPolicyTest` 9/9.
 - Capture Activity launchers extracted to `rememberCaptureAcquisitionLaunchers`; `CaptureReturnedImagePlanTest` now 7/7.
-- Capture launch prep/failure copy: replace-draft request allocation and camera/picker unavailable messages are policy; `CaptureAcquisitionLaunchPolicyTest` 7/7 passed.
-- Capture returned-image plans: camera/picker results map to Apply/Replace/Append/KeepCurrent; `CaptureReturnedImagePlanTest` 6/6 passed.
-- Capture workspace flush/leave/append policy extracted; `CaptureWorkspaceFlushPolicyTest` 4/4 passed.
+- Capture launch prep/failure copy: replace-draft request allocation and camera/picker unavailable messages are policy; `CaptureAcquisitionLaunchPolicyTest` 7/7.
+- Capture returned-image plans: camera/picker results map to Apply/Replace/Append/KeepCurrent; `CaptureReturnedImagePlanTest` 6/6.
+- Capture workspace flush/leave/append policy extracted; `CaptureWorkspaceFlushPolicyTest` 4/4.
 - Capture acquisition launch policy: camera/picker now share one busy/flush
-  gate; `CaptureAcquisitionLaunchPolicyTest` passed.
+  gate; `CaptureAcquisitionLaunchPolicyTest`.
 - Capture recovery policy: approving egress after a failed assess/parse
-  now goes through `captureRecoveryApplication`; unit tests passed.
+  now goes through `captureRecoveryApplication`; unit tests.
 - Gateway HTTP cancellation: cancelling the coroutine cancels the OkHttp
-  call immediately; unit test passed.
+  call immediately; unit test.
 - Capture retry policy extracted from `CaptureScreen` into
   `nextCaptureTaskRetry` with unit tests.
 - Learning DAO split (DB-P1-011): query/fact, attempt, projection, models,
-  and mappings live in separate files; compile and unit tests pass.
+  and mappings live in separate files; compile and unit tests.
 - Old-schema backup restore (BAK-P1-008): v30 fixture archive migrates on
-  restore; device test `oldSchemaArchiveMigratesOnRestore` passed.
+  restore; device test `oldSchemaArchiveMigratesOnRestore`.
 - Tutor lobby drafts (TUT-P0-011): Room v31 `student_draft`, repository
   save/clear, Lobby restore/clear-on-send, JVM contract tests.
 - Visual work failure/limit UI (TUT-P1-026): planner keeps the latest 8
-  items, overflow and per-item failures are visible, JVM pipeline tests pass.
+  items, overflow and per-item failures are visible, JVM pipeline tests.
 - PR-00 engineering baseline: `.gitattributes`, Android CI with unit,
   assemble, lint, release dry-run, and emulator instrumentation jobs, PR
   template, `DEVELOPMENT.md`, `RELEASE.md`, `ARCHITECTURE.md`,
@@ -236,7 +241,7 @@ cd D:\smb-build
 .\gradlew.bat lintLocalFirstDebug lintStrictOfflineDebug
 ```
 
-Current-turn compilation and unit tests passed for:
+Current-turn compilation and unit tests for:
 
 - `:core:database:compileDebugKotlin`
 - `:core:database:compileDebugAndroidTestKotlin`
@@ -247,7 +252,7 @@ Current-turn compilation and unit tests passed for:
 - `:feature:tutor:compileDebugKotlin` and `:feature:tutor:testDebugUnitTest`
 - `:app:compileLocalFirstDebugKotlin` and `:app:compileStrictOfflineDebugKotlin`
 
-The full two-flavor gate also passed this turn:
+The full two-flavor gate also this turn:
 
 - `testLocalFirstDebugUnitTest` and `testStrictOfflineDebugUnitTest`
 - `:app:assembleLocalFirstDebug` and `:app:assembleStrictOfflineDebug`
@@ -255,18 +260,34 @@ The full two-flavor gate also passed this turn:
 - `:app:assembleLocalFirstRelease` and `:app:assembleStrictOfflineRelease` (R8)
 - Capture/Tutor/database/data debug-android-test Kotlin compilation
 
+> **Note**: The above build status was recorded during a development session.
+> For authoritative, reproducible build verification, always run:
+> ```
+> ./gradlew clean testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest
+> ./gradlew assembleLocalFirstRelease assembleStrictOfflineRelease
+> ```
+> and verify the output matches the commit SHA being evaluated.
+> Never claim "build passed" or "tests passed" based on this document alone.
+
 ## Not yet complete (do not claim release)
 
-- The v16 identity hash is not Room-generated; every-version migration tests
-  are now present and the full migration matrix passes on an API 34 emulator.
-  The placeholder is now explicitly locked to v16 by `ExportedSchemaContractTest`
-  so it cannot silently spread to newer schemas.
+- **v16 Schema Limitation**: The v16 identity hash is a reconstructed placeholder
+  (not Room-generated) and is explicitly locked to v16 by `ExportedSchemaContractTest`.
+  v16 is NOT supported for production use. Users upgrading from v16 must use the
+  safe import migration path which reconstructs data from available evidence rather
+  than performing a direct schema migration. The migration test
+  `versionSixteenMigratesToCurrentWithoutDestructiveFallback` verifies that the
+  import path works, but this is not equivalent to having a real v16 fixture.
+  **Action required**: If any real v16 APKs exist in the wild, the identity hash
+  must be recovered from those APKs and a proper fixture created. Until then,
+  v16 migration should be documented as "best-effort import" rather than
+  "guaranteed migration".
 - Backup restore and delete-all-data now pass the device round-trip test; the
   backup pipeline performs a WAL checkpoint before packaging so committed rows
   are captured. Interrupted-swap and low-space matrices still need more device
   coverage. `BAK-P1-008` now restores a v30 exported-schema `.smbk` fixture
   through the current restore path; `oldSchemaArchiveMigratesOnRestore`
-  passed on the API 34 emulator.
+  on the API 34 emulator.
 - Capture workflow split continues: retry and egress-recovery decisions are
   now pure functions (`nextCaptureTaskRetry`, `captureRecoveryApplication`)
   with unit tests. `CaptureScreen` still owns UI mutation for imported-draft / resume / confirm, but those
@@ -281,8 +302,8 @@ The full two-flavor gate also passed this turn:
   adapters and real Provider protocol/quality evaluation still have not run.
 - `DB-P1-011` is done: `LearningDao.kt` is split into query/fact, attempt
   transaction, projection transaction, models, and mapping files. Database
-  compile and unit tests pass.
-- Device suites now passing on an API 34 emulator: `core:database` 125/125
+  compile and unit tests.
+- Device suites on an API 34 emulator: `core:database` 125/125
   (including the full v1→v31 draft-column migration), `core:data` 67/67 (including
   backup round-trip and orphan cleanup), `feature:capture` 25/25 (including
   48dp touch targets), `feature:tutor` 57/57 (rerun this continuation after visual-work UI), `feature:library` 25/25, and `app` 26/26.

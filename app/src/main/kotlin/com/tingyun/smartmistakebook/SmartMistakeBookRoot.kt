@@ -360,7 +360,19 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         experience.status == StudyDataStatus.READY
                     },
                     profile = experience.profile,
-                    onSave = { repository.saveTutorExampleMistake() },
+                    onSave = {
+                        val practiceUnitId = experience.tutorPracticeUnitId.orEmpty()
+                        applicationUiScope.launch {
+                            repository.saveTutorProblem(
+                                com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand(
+                                    conversationId = practiceUnitId.ifBlank { "lobby-tutor" },
+                                    ephemeralProblemId = practiceUnitId.ifBlank { "lobby-tutor" },
+                                    sourceAssetIds = emptyList(),
+                                    logicalOperationId = "lobby-save",
+                                ),
+                            )
+                        }
+                    },
                     onSubmitChoice = repository::submitChoice,
                     onRevealAnswer = repository::revealAnswer,
                     onCapture = { navController.navigate(Routes.CaptureTutor) },
@@ -424,7 +436,19 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     teachingArtifact = null,
                     adaptiveDecision = null,
                     profile = experience.profile,
-                    onSave = { repository.saveTutorExampleMistake() },
+                    onSave = {
+                        val id = conversationId.ifBlank { "captured-tutor" }
+                        applicationUiScope.launch {
+                            repository.saveTutorProblem(
+                                com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand(
+                                    conversationId = id,
+                                    ephemeralProblemId = id,
+                                    sourceAssetIds = emptyList(),
+                                    logicalOperationId = "captured-save",
+                                ),
+                            )
+                        }
+                    },
                     onSubmitChoice = repository::submitChoice,
                     onRevealAnswer = repository::revealAnswer,
                     onCapture = { navController.navigate(Routes.CaptureTutor) },

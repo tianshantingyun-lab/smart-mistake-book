@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 31,
-    "identityHash": "6875487ce4049842f219961f7965e25b",
+    "identityHash": "5e7352d87c4cc0905e9082527cad10fa",
     "entities": [
       {
         "tableName": "problem",
@@ -5094,7 +5094,7 @@
       },
       {
         "tableName": "independent_correct_observation",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`projection_name` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `item_family_id` TEXT NOT NULL, `study_day_epoch_day` INTEGER NOT NULL, `is_study_day_trusted` INTEGER NOT NULL, `occurred_at_epoch_millis` INTEGER NOT NULL, `event_sequence` INTEGER NOT NULL, `binding_id` TEXT NOT NULL, `evidence_weight` REAL NOT NULL, `calibration_support` TEXT NOT NULL, `calibration_source_id` TEXT NOT NULL, `calibration_version` TEXT NOT NULL, `calibration_valid_from_epoch_millis` INTEGER NOT NULL, `calibration_valid_until_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`projection_name`, `learner_id`, `knowledge_node_id`, `ordinal`), FOREIGN KEY(`projection_name`, `learner_id`, `knowledge_node_id`) REFERENCES `learner_knowledge_mastery_state`(`projection_name`, `learner_id`, `knowledge_node_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`projection_name` TEXT NOT NULL, `learner_id` TEXT NOT NULL, `knowledge_node_id` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `item_family_id` TEXT NOT NULL, `study_day_epoch_day` INTEGER NOT NULL, `is_study_day_trusted` INTEGER NOT NULL, `time_trust` TEXT NOT NULL DEFAULT 'TRUSTED', `occurred_at_epoch_millis` INTEGER NOT NULL, `event_sequence` INTEGER NOT NULL, `binding_id` TEXT NOT NULL, `evidence_weight` REAL NOT NULL, `calibration_support` TEXT NOT NULL, `calibration_source_id` TEXT NOT NULL, `calibration_version` TEXT NOT NULL, `calibration_valid_from_epoch_millis` INTEGER NOT NULL, `calibration_valid_until_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`projection_name`, `learner_id`, `knowledge_node_id`, `ordinal`), FOREIGN KEY(`projection_name`, `learner_id`, `knowledge_node_id`) REFERENCES `learner_knowledge_mastery_state`(`projection_name`, `learner_id`, `knowledge_node_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "projectionName",
@@ -5137,6 +5137,13 @@
             "columnName": "is_study_day_trusted",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "timeTrust",
+            "columnName": "time_trust",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'TRUSTED'"
           },
           {
             "fieldPath": "occurredAtEpochMillis",
@@ -8062,7 +8069,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6875487ce4049842f219961f7965e25b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5e7352d87c4cc0905e9082527cad10fa')"
     ]
   }
 }

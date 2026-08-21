@@ -1,0 +1,8 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+Reusing configuration cache.
+> Task :core:model:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:model:compileKotlin
+
+BUILD SUCCESSFUL in 18s
+1 actionable task: 1 executed
+Configuration cache entry reused.

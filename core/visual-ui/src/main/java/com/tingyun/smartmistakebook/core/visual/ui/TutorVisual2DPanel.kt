@@ -178,6 +178,8 @@ internal fun TutorVisual2DPanel(
     }
 }
 
+private val defaultRendererRegistry = TutorVisual2DRendererRegistry(defaultNodeRenderers)
+
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawNode(
     node: TutorVisual2DNodeElement,
     bounds: Rect,
@@ -185,94 +187,16 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawNode(
     stroke: Color,
     liquidLevel: Double?,
 ) {
-    when (node.kind) {
-        TutorVisual2DNodeKind.POINT -> drawCircle(stroke, radius = 5.dp.toPx(), center = bounds.center)
-        TutorVisual2DNodeKind.CIRCLE -> {
-            drawOval(fill, bounds.topLeft, bounds.size)
-            drawOval(stroke, bounds.topLeft, bounds.size, style = Stroke(2.dp.toPx()))
-        }
-        TutorVisual2DNodeKind.POLYGON,
-        TutorVisual2DNodeKind.BEZIER,
-        TutorVisual2DNodeKind.FILLED_REGION,
-        TutorVisual2DNodeKind.CROSS_SECTION,
-        TutorVisual2DNodeKind.GEOGRAPHIC_LAYER,
-        -> {
-            val path = Path()
-            val points = if (node.localPoints.isEmpty()) {
-                listOf(
-                    Offset(bounds.center.x, bounds.top),
-                    Offset(bounds.right, bounds.bottom),
-                    Offset(bounds.left, bounds.bottom),
-                )
-            } else {
-                node.localPoints.map {
-                    Offset(
-                        bounds.left + bounds.width * it.x.toFloat(),
-                        bounds.top + bounds.height * it.y.toFloat(),
-                    )
-                }
-            }
-            points.firstOrNull()?.let { point -> path.moveTo(point.x, point.y) }
-            points.drop(1).forEach { point -> path.lineTo(point.x, point.y) }
-            path.close()
-            drawPath(path, fill)
-            drawPath(path, stroke, style = Stroke(2.dp.toPx()))
-        }
-        TutorVisual2DNodeKind.LIQUID_LEVEL -> {
-            val level = liquidLevel?.coerceIn(0.0, 1.0) ?: 0.5
-            val top = bounds.bottom - bounds.height * level.toFloat()
-            drawRect(fill, topLeft = Offset(bounds.left, top), size = androidx.compose.ui.geometry.Size(bounds.width, bounds.bottom - top))
-            drawLine(stroke, Offset(bounds.left, top), Offset(bounds.right, top), 2.dp.toPx())
-        }
-        TutorVisual2DNodeKind.MEMBRANE -> {
-            drawRect(fill, bounds.topLeft, bounds.size)
-            val spacing = 7.dp.toPx()
-            var y = bounds.top
-            while (y < bounds.bottom) {
-                drawLine(stroke, Offset(bounds.left, y), Offset(bounds.right, y + spacing), 1.dp.toPx())
-                y += spacing
-            }
-            drawRect(stroke, bounds.topLeft, bounds.size, style = Stroke(2.dp.toPx()))
-        }
-        TutorVisual2DNodeKind.PUMP -> {
-            drawCircle(fill, radius = minOf(bounds.width, bounds.height) / 2f, center = bounds.center)
-            drawCircle(stroke, radius = minOf(bounds.width, bounds.height) / 2f, center = bounds.center, style = Stroke(2.dp.toPx()))
-            drawLine(stroke, Offset(bounds.left, bounds.bottom), Offset(bounds.right, bounds.bottom), 2.dp.toPx())
-        }
-        TutorVisual2DNodeKind.ELECTRODE,
-        TutorVisual2DNodeKind.PISTON,
-        TutorVisual2DNodeKind.RESISTOR,
-        -> {
-            drawRoundRect(
-                color = fill,
-                topLeft = bounds.topLeft,
-                size = bounds.size,
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
-            )
-            drawRoundRect(
-                color = stroke,
-                topLeft = bounds.topLeft,
-                size = bounds.size,
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx()),
-                style = Stroke(2.dp.toPx()),
-            )
-        }
-        TutorVisual2DNodeKind.MEMBRANE -> {
-            drawRoundRect(
-                color = fill,
-                topLeft = bounds.topLeft,
-                size = bounds.size,
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx()),
-            )
-            drawRoundRect(
-                color = stroke,
-                topLeft = bounds.topLeft,
-                size = bounds.size,
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx()),
-                style = Stroke(2.dp.toPx()),
-            )
-        }
-    }
+    val context = NodeRenderContext(
+        node = node,
+        bounds = bounds,
+        fill = fill,
+        stroke = stroke,
+        alpha = 1f,
+        liquidLevel = liquidLevel,
+        isSelected = false,
+    )
+    with(defaultRendererRegistry) { renderNode(context) }
     // Draw node label below the node
     node.label?.let { label ->
         if (label.isNotBlank()) {

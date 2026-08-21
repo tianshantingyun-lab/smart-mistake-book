@@ -490,6 +490,21 @@ enum class MasteryStatus {
     STALE,
 }
 
+/**
+ * Trust state of an event's timestamp. Determines whether the event can
+ * contribute to study-day breadth calculations and cross-day learning.
+ */
+enum class EventTimeTrust {
+    /** Device clock was consistent; effective time equals raw device time. */
+    TRUSTED,
+    /** Device clock rolled back; effective time was clamped forward to projection watermark. */
+    CLOCK_ROLLBACK_CLAMPED,
+    /** Device clock jumped far ahead; effective time was clamped back to projection watermark. */
+    FUTURE_TIMESTAMP_CLAMPED,
+    /** Event was imported from an external source without verified time. */
+    IMPORTED_UNVERIFIED,
+}
+
 data class IndependentCorrectObservation(
     val itemFamilyId: String,
     val studyDayEpochDay: Long,
@@ -498,9 +513,11 @@ data class IndependentCorrectObservation(
     val bindingId: String = "legacy-binding",
     val evidenceWeight: Double = 1.0,
     val calibration: CalibrationSnapshot = CalibrationSnapshot.unknown(),
-    /** False when raw device time rolled back, so the claimed day cannot create breadth. */
-    val isStudyDayTrusted: Boolean = true,
+    /** Trust level of the event timestamp. Only TRUSTED observations create study-day breadth. */
+    val timeTrust: EventTimeTrust = EventTimeTrust.TRUSTED,
 ) {
+    /** Backward-compatible property: true only when timestamp is fully trusted. */
+    val isStudyDayTrusted: Boolean get() = timeTrust == EventTimeTrust.TRUSTED
     init {
         require(itemFamilyId.isNotBlank()) { "Item family id must not be blank" }
         require(occurredAtEpochMillis >= 0) { "Observation time must not be negative" }

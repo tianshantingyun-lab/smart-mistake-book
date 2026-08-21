@@ -65,11 +65,13 @@ data class DeleteAllDataReceipt(
     val deletedAssetBytes: Long,
     val deletedPreferenceBytes: Long,
     val deletedTempBytes: Long,
+    val deletedSecretVaultBytes: Long = 0L,
 ) {
     init {
         require(
             deletedDatabaseBytes >= 0L && deletedAssetBytes >= 0L &&
-                deletedPreferenceBytes >= 0L && deletedTempBytes >= 0L,
+                deletedPreferenceBytes >= 0L && deletedTempBytes >= 0L &&
+                deletedSecretVaultBytes >= 0L,
         ) { "Deleted data byte counts must not be negative" }
     }
 }

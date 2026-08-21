@@ -51,6 +51,18 @@ internal object SmbkArchiveCodec {
     private const val ASSET_PREFIX = "assets/"
     private const val CHECKSUM_ENTRY = "checksums.sha256"
 
+    /** Maximum number of entries allowed in a backup archive. */
+    private const val MAX_ENTRY_COUNT = 10_000
+
+    /** Maximum size of a single decompressed entry (100 MB). */
+    private const val MAX_SINGLE_ENTRY_BYTES = 100L * 1024 * 1024
+
+    /** Maximum total decompressed size of all entries (500 MB). */
+    private const val MAX_TOTAL_DECOMPRESSED_BYTES = 500L * 1024 * 1024
+
+    /** Maximum manifest text length (1 MB). */
+    private const val MAX_MANIFEST_CHARS = 1_000_000
+
     private val json = Json { ignoreUnknownKeys = false }
 
     fun create(
@@ -119,18 +131,52 @@ internal object SmbkArchiveCodec {
         val entries = mutableMapOf<String, ByteArray>()
         val checksums = mutableMapOf<String, String>()
         var manifest: SmbkManifestV1? = null
+        var totalDecompressedBytes = 0L
+        var entryCount = 0
+        val seenEntries = mutableSetOf<String>()
+
         ZipInputStream(archive).use { zip ->
             while (true) {
                 val entry = zip.nextEntry ?: break
+
+                // Duplicate entry detection
+                if (entry.name in seenEntries) {
+                    return BackupValidation.Invalid("重复的归档条目: ${entry.name}")
+                }
+                seenEntries += entry.name
+
+                entryCount++
+                if (entryCount > MAX_ENTRY_COUNT) {
+                    return BackupValidation.Invalid("归档条目数量超过上限 ($MAX_ENTRY_COUNT)")
+                }
+
+                // Path traversal check
+                if (entry.name.contains("..") || entry.name.startsWith("/")) {
+                    return BackupValidation.Invalid("非法路径: ${entry.name}")
+                }
+
+                // Stream entry data with size limits
+                val bytes = readEntryBytes(zip, entry.name)
+                    ?: return BackupValidation.Invalid("无法读取条目: ${entry.name}")
+
+                totalDecompressedBytes += bytes.size
+                if (totalDecompressedBytes > MAX_TOTAL_DECOMPRESSED_BYTES) {
+                    return BackupValidation.Invalid("解压后总大小超过上限")
+                }
+
                 when (entry.name) {
                     MANIFEST_ENTRY -> {
+                        val text = bytes.decodeToString()
+                        if (text.length > MAX_MANIFEST_CHARS) {
+                            return BackupValidation.Invalid("manifest 内容过长")
+                        }
                         manifest = json.decodeFromString(
                             SmbkManifestV1.serializer(),
-                            zip.readBytes().decodeToString(),
+                            text,
                         )
                     }
                     CHECKSUM_ENTRY -> {
-                        zip.readBytes().decodeToString().lineSequence().forEach { line ->
+                        bytes.decodeToString().lineSequence().forEach { line ->
                             if (line.isBlank()) return@forEach
                             val separator = line.indexOf(" *")
                             if (separator > 0) {
@@ -139,7 +185,7 @@ internal object SmbkArchiveCodec {
                             }
                         }
                     }
-                    else -> entries[entry.name] = zip.readBytes()
+                    else -> entries[entry.name] = bytes
                 }
                 zip.closeEntry()
             }
@@ -182,6 +228,22 @@ internal object SmbkArchiveCodec {
             checkedFileCount = parsed.files.size,
             totalBytes = parsed.files.sumOf { it.byteSize },
         )
+    }
+
+    private fun readEntryBytes(zip: ZipInputStream, entryName: String): ByteArray? {
+        val buffer = ByteArrayOutputStream()
+        val tempBuffer = ByteArray(8192)
+        var totalRead = 0
+        while (true) {
+            val bytesRead = zip.read(tempBuffer)
+            if (bytesRead == -1) break
+            totalRead += bytesRead
+            if (totalRead > MAX_SINGLE_ENTRY_BYTES) {
+                return null
+            }
+            buffer.write(tempBuffer, 0, bytesRead)
+        }
+        return buffer.toByteArray()
     }
 
     fun unpack(

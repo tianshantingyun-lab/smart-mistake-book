@@ -162,15 +162,18 @@ private fun FormulaBlock(block: ContentBlock.Formula) {
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
             )
-            Text(
-                text = ReadableMathText.formula(block.latex),
+            MathFormulaBox(
+                formula = block.latex,
                 color = Ink,
-                style = if (block.display) {
-                    MaterialTheme.typography.titleMedium
-                } else {
-                    MaterialTheme.typography.bodyLarge
-                },
-                fontFamily = FontFamily.Monospace,
+                fallbackText = ReadableMathText.formula(block.latex),
+                modifier = Modifier
+                    .then(
+                        if (block.display) {
+                            Modifier
+                        } else {
+                            Modifier
+                        },
+                    ),
             )
         }
     }

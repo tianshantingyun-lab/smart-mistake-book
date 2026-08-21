@@ -303,6 +303,12 @@ interface StudyExperienceRepository : AutoCloseable {
 
     suspend fun refresh() = initialize()
 
+    /** Saves the currently tutored problem as an exact, immutable mistake entry. */
+    suspend fun saveTutorProblem(command: SaveTutorProblemCommand): SaveTutorProblemReceipt
+
+    @Deprecated(
+        "Demo-seed path for debug/test only. Production must use saveTutorProblem.",
+    )
     suspend fun saveTutorExampleMistake(): SaveStudyMistakeResult
 
     suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact?
@@ -329,4 +335,39 @@ interface StudyExperienceRepository : AutoCloseable {
         requestId: String,
         occurredAtEpochMillis: Long,
     ): StudyReviewSessionProgress?
+}
+
+/**
+ * Command to save the currently tutored problem into the mistake library.
+ * Exactly one of [problemRevisionId] (an existing immutable revision) or
+ * [ephemeralProblemId] (a new problem from this conversation) must be supplied.
+ */
+data class SaveTutorProblemCommand(
+    val conversationId: String,
+    val problemRevisionId: String? = null,
+    val ephemeralProblemId: String? = null,
+    val sourceAssetIds: List<String> = emptyList(),
+    val logicalOperationId: String,
+) {
+    init {
+        require(conversationId.isNotBlank()) { "Conversation id must not be blank" }
+        require(logicalOperationId.isNotBlank()) { "Logical operation id must not be blank" }
+        require(
+            (problemRevisionId == null) != (ephemeralProblemId == null),
+        ) { "Exactly one of problemRevisionId or ephemeralProblemId must be supplied" }
+    }
+}
+
+/**
+ * Result of saving a tutored problem.
+ */
+sealed interface SaveTutorProblemReceipt {
+    /** The problem was saved for the first time. */
+    data class Saved(val problemId: String, val entryCount: Int) : SaveTutorProblemReceipt
+
+    /** The exact revision was already in the library. */
+    data class AlreadySaved(val problemId: String, val entryCount: Int) : SaveTutorProblemReceipt
+
+    /** The referenced problem object no longer exists. */
+    data class ReferenceNotFound(val reason: String) : SaveTutorProblemReceipt
 }

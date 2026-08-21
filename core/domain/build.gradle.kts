@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -20,5 +21,6 @@ dependencies {
     implementation(project(":core:model"))
     implementation(libs.androidx.paging.common)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
 }

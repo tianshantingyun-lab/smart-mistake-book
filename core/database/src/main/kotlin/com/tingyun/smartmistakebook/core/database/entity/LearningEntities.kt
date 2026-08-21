@@ -796,6 +796,8 @@ internal data class IndependentCorrectObservationEntity(
     val studyDayEpochDay: Long,
     @ColumnInfo(name = "is_study_day_trusted")
     val isStudyDayTrusted: Boolean,
+    @ColumnInfo(name = "time_trust", defaultValue = "TRUSTED")
+    val timeTrust: String = "TRUSTED",
     @ColumnInfo(name = "occurred_at_epoch_millis")
     val occurredAtEpochMillis: Long,
     @ColumnInfo(name = "event_sequence")
