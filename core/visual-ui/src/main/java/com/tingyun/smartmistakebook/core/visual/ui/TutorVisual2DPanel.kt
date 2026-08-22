@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.visual.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -50,6 +51,8 @@ internal fun TutorVisual2DPanel(
     panel: TutorVisualPanel,
     frame: TutorVisualFrame,
     modifier: Modifier,
+    visualConstraints: com.tingyun.smartmistakebook.core.domain.visual.VisualProblemConstraints? = null,
+    onVisualAttempt: ((com.tingyun.smartmistakebook.core.model.VisualInteractionAttempt) -> Unit)? = null,
 ) {
     val paper = MaterialTheme.colorScheme.surface
     val ink = MaterialTheme.colorScheme.onSurface
@@ -58,6 +61,12 @@ internal fun TutorVisual2DPanel(
     val outline = MaterialTheme.colorScheme.outline
     var selectedElementId by remember(compiled.scene.sceneId, panel.panelId) {
         mutableStateOf<String?>(null)
+    }
+    var interactionFeedback by remember(compiled.scene.sceneId, panel.panelId) {
+        mutableStateOf<String?>(null)
+    }
+    val visualEvaluator = remember(compiled.scene.sceneId) {
+        com.tingyun.smartmistakebook.core.domain.visual.LocalVisualConstraintEvaluator()
     }
     val panelElements = compiled.scene.elements.filter { it.panelId == panel.panelId }
     val nodes = panelElements.filterIsInstance<TutorVisual2DNodeElement>()
@@ -89,6 +98,43 @@ internal fun TutorVisual2DPanel(
                         selectedElementId = layout.hitTest(
                             TutorVisualPoint(offset.x.toDouble(), offset.y.toDouble()),
                         )
+                    }
+                }
+                .pointerInput(layout, visualConstraints) {
+                    var draggedElementId: String? = null
+                    var lastX = 0.0
+                    var lastY = 0.0
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            draggedElementId = layout.hitTest(
+                                TutorVisualPoint(offset.x.toDouble(), offset.y.toDouble()),
+                            )
+                        },
+                        onDragEnd = {
+                            val elementId = draggedElementId
+                            val constraintsSpec = visualConstraints
+                            if (elementId != null && constraintsSpec != null) {
+                                val action = com.tingyun.smartmistakebook.core.model.VisualStudentAction.DragPoint(
+                                    elementId = elementId,
+                                    toX = lastX,
+                                    toY = lastY,
+                                )
+                                val result = visualEvaluator.evaluate(action, constraintsSpec)
+                                interactionFeedback = result.feedback
+                                val attempt = visualEvaluator.toAttempt(
+                                    attemptId = "visual-" + System.nanoTime(),
+                                    action = action,
+                                    constraints = constraintsSpec,
+                                    result = result,
+                                    atEpochMillis = System.currentTimeMillis(),
+                                )
+                                onVisualAttempt?.invoke(attempt)
+                            }
+                            draggedElementId = null
+                        },
+                    ) { change, _ ->
+                        lastX = change.position.x.toDouble()
+                        lastY = change.position.y.toDouble()
                     }
                 },
         ) {

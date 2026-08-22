@@ -28,6 +28,7 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(project(":core:domain"))
     implementation(project(":core:visual-runtime"))
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
