@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -11,6 +12,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.model.MathBox
 import com.tingyun.smartmistakebook.core.model.MathBudget
@@ -99,7 +101,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMathBox(
             origin.x,
             origin.y + box.baseline,
             android.graphics.Paint().apply {
-                this.color = color.toArgb()
+                this.color = color.toArgbInt()
                 textSize = box.height
                 isAntiAlias = true
             },
@@ -216,7 +218,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMatrixRows(
 }
 
 private fun boxHeight(rows: List<List<MathBox>>): Float =
-    rows.sumOf { row -> row.maxOfOrNull { it.height } ?: 0f }.toFloat()
+    rows.sumOf { row -> (row.maxOfOrNull { it.height } ?: 0f).toDouble() }.toFloat()
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTextDelimiter(
     delimiter: String,
@@ -229,14 +231,14 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTextDelimiter(
         origin.x,
         origin.y + height,
         android.graphics.Paint().apply {
-            this.color = color.toArgb()
+            this.color = color.toArgbInt()
             textSize = height
             isAntiAlias = true
         },
     )
 }
 
-private fun Color.toArgb(): Int = androidx.compose.ui.graphics.toArgb(this)
+private fun Color.toArgbInt(): Int = this.toArgb()
 
 /**
  * Parse-bounded entry point: returns the [MathBox] for a formula, or null.

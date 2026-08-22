@@ -83,7 +83,7 @@ fun DynamicChart(
     // Update series from frame bindings
     val updatedSeries = chartState.series.map { series ->
         val frameValue = frame.elements["chart-${series.name}"]
-            ?.properties?.get(TutorVisualBindingProperty.CHART_SERIES_VALUE)
+            ?.properties?.get(TutorVisualBindingProperty.Y)
         if (frameValue != null) {
             series.copy(
                 points = series.points.mapIndexed { index, point ->

@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
@@ -238,7 +239,7 @@ private fun TutorVisualFallback3DCanvas(
                 geometry?.label?.let { label ->
                     drawContext.canvas.nativeCanvas.apply {
                         val paint = android.graphics.Paint().apply {
-                            color = android.graphics.Color.DKGRAY
+                            this.color = android.graphics.Color.DKGRAY
                             textSize = 10.dp.toPx()
                             textAlign = android.graphics.Paint.Align.CENTER
                             isAntiAlias = true

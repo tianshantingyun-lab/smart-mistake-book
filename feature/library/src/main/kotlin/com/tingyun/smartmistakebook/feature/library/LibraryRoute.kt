@@ -541,7 +541,8 @@ private fun EmptyLibraryResult(
         Icon(
             imageVector = when (state) {
                 LibraryEmptyState.CATALOG_EMPTY -> Icons.Outlined.PhotoCamera
-                LibraryEmptyState.FILTERED_EMPTY -> Icons.Outlined.SearchOff
+                LibraryEmptyState.FILTERED_EMPTY -> Icons.Outlined.Search
+                LibraryEmptyState.SEARCH_EMPTY -> Icons.Outlined.SearchOff
             },
             contentDescription = null,
             modifier = Modifier.size(42.dp),

@@ -396,8 +396,8 @@ class LensNodeRenderer : TutorVisual2DNodeRenderer {
     override fun DrawScope.render(context: NodeRenderContext) {
         val path = androidx.compose.ui.graphics.Path()
         path.moveTo(context.bounds.left, context.bounds.center.y)
-        path.quadTo(context.bounds.center.x, context.bounds.top, context.bounds.right, context.bounds.center.y)
-        path.quadTo(context.bounds.center.x, context.bounds.bottom, context.bounds.left, context.bounds.center.y)
+        path.quadraticBezierTo(context.bounds.center.x, context.bounds.top, context.bounds.right, context.bounds.center.y)
+        path.quadraticBezierTo(context.bounds.center.x, context.bounds.bottom, context.bounds.left, context.bounds.center.y)
         path.close()
         drawPath(path, context.fill)
         drawPath(path, context.stroke, style = androidx.compose.ui.graphics.drawscope.Stroke(2f))
