@@ -64,6 +64,9 @@ internal object SmbkArchiveCodec {
     /** Maximum manifest text length (1 MB). */
     private const val MAX_MANIFEST_CHARS = 1_000_000
 
+    /** Maximum allowed compression ratio (uncompressed / compressed). */
+    private const val MAX_COMPRESSION_RATIO = 100.0
+
     private val json = Json { ignoreUnknownKeys = false }
 
     fun create(
@@ -257,10 +260,25 @@ internal object SmbkArchiveCodec {
         val stagedFiles = mutableListOf<File>()
         val checksums = mutableMapOf<String, String>()
         var manifest: SmbkManifestV1? = null
+        var entryCount = 0
+        var totalDecompressedBytes = 0L
+        val seenEntries = mutableSetOf<String>()
         try {
             ZipInputStream(archive).use { zip ->
                 while (true) {
                     val entry = zip.nextEntry ?: break
+
+                    // Resource budgets must be enforced during streaming so a
+                    // malicious archive cannot exhaust disk before validation.
+                    entryCount++
+                    if (entryCount > MAX_ENTRY_COUNT) {
+                        return BackupValidation.Invalid("归档条目数量超过上限 ($MAX_ENTRY_COUNT)")
+                    }
+                    if (entry.name in seenEntries) {
+                        return BackupValidation.Invalid("重复的归档条目: ${entry.name}")
+                    }
+                    seenEntries += entry.name
+
                     when (entry.name) {
                         MANIFEST_ENTRY -> {
                             manifest = json.decodeFromString(
@@ -281,8 +299,23 @@ internal object SmbkArchiveCodec {
                         else -> {
                             val target = destinationFile(destinationDir, entry.name)
                                 ?: return BackupValidation.Invalid("备份包含非法路径 ${entry.name}")
-                            target.outputStream().use { output ->
-                                zip.copyTo(output)
+                            val written = target.outputStream().use { output ->
+                                copyBounded(zip, output)
+                            } ?: return BackupValidation.Invalid(
+                                "${entry.name} 超过单条目解压大小上限",
+                            )
+                            totalDecompressedBytes += written
+                            if (totalDecompressedBytes > MAX_TOTAL_DECOMPRESSED_BYTES) {
+                                return BackupValidation.Invalid("解压后总大小超过上限")
+                            }
+                            val compressedSize = entry.compressedSize
+                            if (compressedSize > 0 && written > 0) {
+                                val ratio = written.toDouble() / compressedSize
+                                if (ratio > MAX_COMPRESSION_RATIO) {
+                                    return BackupValidation.Invalid(
+                                        "${entry.name} 压缩比异常（1:$ratio）",
+                                    )
+                                }
                             }
                             stagedFiles += target
                         }
@@ -333,6 +366,22 @@ internal object SmbkArchiveCodec {
             stagedFiles.forEach { file -> file.delete() }
             return BackupValidation.Invalid("备份解包失败：${failure.message.orEmpty()}")
         }
+    }
+
+    /** Copies at most [MAX_SINGLE_ENTRY_BYTES]; returns bytes written or null when exceeded. */
+    private fun copyBounded(input: ZipInputStream, output: OutputStream): Long? {
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var total = 0L
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            if (read > 0) {
+                total += read
+                if (total > MAX_SINGLE_ENTRY_BYTES) return null
+                output.write(buffer, 0, read)
+            }
+        }
+        return total
     }
 
     private fun copyEntry(zip: ZipOutputStream, path: String, file: File) {

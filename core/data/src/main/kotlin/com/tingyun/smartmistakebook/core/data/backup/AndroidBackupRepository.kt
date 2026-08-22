@@ -148,6 +148,17 @@ class AndroidBackupRepository(
                     }
                 }
 
+                // Phase 2b: Validate the STAGED database BEFORE any swap so a
+                // corrupt backup never replaces the live database.
+                val stagedDbValid = runCatching {
+                    validateStagedDatabase(stagingDb)
+                }
+                if (stagedDbValid.isFailure) {
+                    throw BackupRestoreException(
+                        "备份数据库预验证失败：${stagedDbValid.exceptionOrNull()?.message.orEmpty()}",
+                    )
+                }
+
                 // Phase 3: Write rollback journal
                 journal.writePhase(RestorePhase.BACKUP_CURRENT)
                 journal.recordCurrentState(databaseFile, assetRoot)
@@ -371,6 +382,38 @@ class AndroidBackupRepository(
         ).use { it.version }
     } catch (_: Exception) {
         -1
+    }
+
+    /**
+     * Validate the staged database BEFORE it replaces the live one:
+     * quick_check for page-level corruption and foreign_key_check for
+     * referential integrity. Any failure aborts restore before swap.
+     */
+    private fun validateStagedDatabase(stagedDatabaseFile: File) {
+        if (!stagedDatabaseFile.exists()) {
+            throw BackupRestoreException("备份中缺少数据库文件")
+        }
+        android.database.sqlite.SQLiteDatabase.openDatabase(
+            stagedDatabaseFile.absolutePath,
+            null,
+            android.database.sqlite.SQLiteDatabase.OPEN_READONLY,
+        ).use { db ->
+            listOf("PRAGMA quick_check", "PRAGMA foreign_key_check").forEach { pragma ->
+                db.rawQuery(pragma, null).use { cursor ->
+                    if (pragma == "PRAGMA quick_check") {
+                        if (cursor.moveToFirst() && cursor.getString(0) != "ok") {
+                            throw BackupRestoreException(
+                                "quick_check 失败: ${cursor.getString(0)}",
+                            )
+                        }
+                    } else {
+                        if (cursor.moveToFirst()) {
+                            throw BackupRestoreException("foreign_key_check 发现引用完整性问题")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
