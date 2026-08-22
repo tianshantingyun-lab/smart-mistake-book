@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.database.dao.KnowledgeResearchReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeTeachingMaterialDao
 import com.tingyun.smartmistakebook.core.database.dao.LearningDao
 import com.tingyun.smartmistakebook.core.database.dao.LibraryQueryDao
+import com.tingyun.smartmistakebook.core.database.dao.LibraryFtsSearchDao
 import com.tingyun.smartmistakebook.core.database.dao.ModelTaskTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.MistakeDetailDao
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureDao
@@ -44,6 +45,9 @@ import com.tingyun.smartmistakebook.core.database.entity.AssessmentAnswerRevealE
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentPresentationEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchContentEntity
+import com.tingyun.smartmistakebook.core.database.entity.FtsLibrarySearchContentEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.CanonicalSourceAssetEntity
 import com.tingyun.smartmistakebook.core.database.entity.AttemptCorrectionEntity
 import com.tingyun.smartmistakebook.core.database.entity.AttemptEventEntity
@@ -105,7 +109,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 31
+internal const val STUDY_DATABASE_VERSION = 32
 
 @Database(
     views = [LibraryCatalogView::class],
@@ -180,6 +184,9 @@ internal const val STUDY_DATABASE_VERSION = 31
         TutorMessageEntity::class,
         BatchImportJobEntity::class,
         BatchImportPageEntity::class,
+        LibrarySearchContentEntity::class,
+        FtsLibrarySearchContentEntity::class,
+        LibrarySearchOutboxEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -229,6 +236,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
 
     abstract fun libraryQueryDao(): LibraryQueryDao
 
+    abstract fun libraryFtsSearchDao(): LibraryFtsSearchDao
+
     abstract fun batchImportDao(): BatchImportDao
 }
 
@@ -275,6 +284,7 @@ object StudyDatabaseFactory {
             TUTOR_CONVERSATION_MIGRATION_28_29,
             LIBRARY_CATALOG_VIEW_MIGRATION_29_30,
             TUTOR_CONVERSATION_DRAFT_MIGRATION_30_31,
+            LIBRARY_SEARCH_FTS_MIGRATION_31_32,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

@@ -42,7 +42,17 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         ORDER BY
             CASE :sort WHEN 'RECENTLY_CREATED' THEN catalog.created_at_epoch_millis END DESC,
@@ -54,6 +64,7 @@ internal interface LibraryQueryDao {
     )
     fun pagingSource(
         searchText: String,
+        ftsTokens: String,
         subjectId: String?,
         sectionId: String?,
         knowledgePointId: String?,
@@ -93,7 +104,17 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         ORDER BY
             CASE :sort WHEN 'RECENTLY_CREATED' THEN catalog.created_at_epoch_millis END DESC,
@@ -106,6 +127,7 @@ internal interface LibraryQueryDao {
     )
     suspend fun page(
         searchText: String,
+        ftsTokens: String,
         subjectId: String?,
         sectionId: String?,
         knowledgePointId: String?,
@@ -147,12 +169,23 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         """,
     )
     suspend fun count(
         searchText: String,
+        ftsTokens: String,
         subjectId: String?,
         sectionId: String?,
         knowledgePointId: String?,
@@ -187,7 +220,17 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         GROUP BY catalog.subject
         ORDER BY COUNT(*) DESC, id ASC
@@ -195,6 +238,7 @@ internal interface LibraryQueryDao {
     )
     suspend fun subjectFacets(
         searchText: String,
+        ftsTokens: String,
         sectionId: String?,
         knowledgePointId: String?,
         masteryId: String?,
@@ -226,7 +270,17 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         GROUP BY classification.label_id, classification.display_name
         ORDER BY COUNT(*) DESC, id ASC
@@ -234,6 +288,7 @@ internal interface LibraryQueryDao {
     )
     suspend fun sectionFacets(
         searchText: String,
+        ftsTokens: String,
         subjectId: String?,
         knowledgePointId: String?,
         masteryId: String?,
@@ -265,7 +320,17 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         GROUP BY classification.label_id, classification.display_name
         ORDER BY COUNT(*) DESC, id ASC
@@ -273,6 +338,7 @@ internal interface LibraryQueryDao {
     )
     suspend fun knowledgeFacets(
         searchText: String,
+        ftsTokens: String,
         subjectId: String?,
         sectionId: String?,
         masteryId: String?,
@@ -306,7 +372,17 @@ internal interface LibraryQueryDao {
                       COALESCE(catalog.knowledge_labels, '')
                   ),
                   lower(:searchText)
-              ) > 0
+              ) > 0 OR (
+                  :ftsTokens != '' AND EXISTS (
+                      SELECT 1
+                      FROM library_search_fts
+                      INNER JOIN library_search_content AS search_content
+                          ON search_content.content_row_id = library_search_fts.docid
+                      WHERE library_search_fts MATCH :ftsTokens
+                        AND search_content.problem_revision_id =
+                            catalog.problem_revision_id
+                  )
+              )
           )
         GROUP BY catalog.mastery_id
         ORDER BY COUNT(*) DESC, id ASC
@@ -314,6 +390,7 @@ internal interface LibraryQueryDao {
     )
     suspend fun masteryFacets(
         searchText: String,
+        ftsTokens: String,
         subjectId: String?,
         sectionId: String?,
         knowledgePointId: String?,

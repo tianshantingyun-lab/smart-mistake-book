@@ -72,6 +72,7 @@ internal class RoomStudyDatabase(
         MappingPagingSource(
             delegate = database.libraryQueryDao().pagingSource(
                 searchText = searchText,
+                ftsTokens = CjkTextTokenizer.segment(searchText),
                 subjectId = subjectId,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
@@ -90,10 +91,13 @@ internal class RoomStudyDatabase(
         sort: String,
         offset: Int,
         limit: Int,
-    ): List<LibraryCatalogRow> =
-        database.libraryQueryDao()
+    ): List<LibraryCatalogRow> {
+        refreshLibrarySearchProjection()
+        val ftsTokens = CjkTextTokenizer.segment(searchText)
+        return database.libraryQueryDao()
             .page(
                 searchText = searchText,
+                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
@@ -103,6 +107,7 @@ internal class RoomStudyDatabase(
                 limit = limit,
             )
             .map(LibraryCatalogView::toRow)
+    }
 
     override suspend fun libraryCatalogCount(
         searchText: String,
@@ -110,14 +115,17 @@ internal class RoomStudyDatabase(
         sectionId: String?,
         knowledgePointId: String?,
         masteryId: String?,
-    ): Int =
-        database.libraryQueryDao().count(
+    ): Int {
+        refreshLibrarySearchProjection()
+        return database.libraryQueryDao().count(
             searchText = searchText,
+            ftsTokens = CjkTextTokenizer.segment(searchText),
             subjectId = subjectId,
             sectionId = sectionId,
             knowledgePointId = knowledgePointId,
             masteryId = masteryId,
         )
+    }
 
     override suspend fun libraryCatalogFacets(
         searchText: String,
@@ -126,10 +134,13 @@ internal class RoomStudyDatabase(
         knowledgePointId: String?,
         masteryId: String?,
         facet: String,
-    ): List<LibraryFacetCountRecord> =
-        when (facet) {
+    ): List<LibraryFacetCountRecord> {
+        refreshLibrarySearchProjection()
+        val ftsTokens = CjkTextTokenizer.segment(searchText)
+        return when (facet) {
             "SUBJECT" -> database.libraryQueryDao().subjectFacets(
                 searchText = searchText,
+                ftsTokens = ftsTokens,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
                 masteryId = masteryId,
@@ -137,6 +148,7 @@ internal class RoomStudyDatabase(
 
             "SECTION" -> database.libraryQueryDao().sectionFacets(
                 searchText = searchText,
+                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 knowledgePointId = knowledgePointId,
                 masteryId = masteryId,
@@ -144,6 +156,7 @@ internal class RoomStudyDatabase(
 
             "KNOWLEDGE_POINT" -> database.libraryQueryDao().knowledgeFacets(
                 searchText = searchText,
+                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 sectionId = sectionId,
                 masteryId = masteryId,
@@ -151,6 +164,7 @@ internal class RoomStudyDatabase(
 
             "MASTERY" -> database.libraryQueryDao().masteryFacets(
                 searchText = searchText,
+                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
@@ -158,6 +172,46 @@ internal class RoomStudyDatabase(
 
             else -> error("Unsupported library facet kind: $facet")
         }
+    }
+
+    /**
+     * Drains the search-projection outbox and guarantees the FTS index has
+     * been built at least once. Kept best-effort: a failed refresh degrades
+     * to the instr() fallback predicate instead of failing the query.
+     */
+    private suspend fun refreshLibrarySearchProjection() {
+        val ftsDao = database.libraryFtsSearchDao()
+        runCatching {
+            val pending = ftsDao.readOutboxBatch()
+            val indexEmpty = ftsDao.countIndexed() == 0
+            if (pending.isEmpty() && !indexEmpty) return
+            val targets = if (indexEmpty) {
+                ftsDao.readActiveLibraryRevisionIds()
+            } else {
+                pending
+            }
+            targets.forEach { revisionId ->
+                val row = ftsDao.readRevisionForProjection(revisionId)
+                if (row == null) {
+                    ftsDao.deleteContent(revisionId)
+                } else {
+                    val stemText = CjkTextTokenizer.segment(
+                        "${row.title}\n${row.problemMarkdown}",
+                    )
+                    val existing = ftsDao.countContentFor(revisionId)
+                    if (existing > 0) {
+                        ftsDao.updateContentStem(revisionId, stemText)
+                    } else {
+                        ftsDao.insertContent(revisionId, stemText)
+                    }
+                }
+                ftsDao.clearOutboxFor(revisionId)
+            }
+            if (targets.isNotEmpty()) {
+                ftsDao.rebuildIndex()
+            }
+        }
+    }
 
     override fun observeLearningLedgerHead(learnerId: String): Flow<Long> {
         require(learnerId.isNotBlank())
