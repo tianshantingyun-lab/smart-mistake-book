@@ -1,6 +1,5 @@
 package com.tingyun.smartmistakebook.core.data.study
 
-import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
 import com.tingyun.smartmistakebook.core.database.ConsumedLedgerEventReceipt
@@ -114,14 +113,17 @@ class RoomBackedStudyExperienceRepository(
     private val reviewTimeBudgetSeconds: Int = DEFAULT_REVIEW_TIME_BUDGET_SECONDS,
     private val closeDatabaseOnClose: Boolean = false,
     private val initialFixture: StudySeedBundle? = null,
+    private val fixtureSource: StudyFixtureSource = StudyFixtureRegistry.source,
 ) : StudyExperienceRepository {
     private val operationMutex = Mutex()
     private val _snapshot = MutableStateFlow(StudyExperienceSnapshot())
-    private val completeSeed = M1CuratedStudySeed.bundle(includeTutorMistake = true)
-    private val curatedProblemIds = completeSeed.problems.mapTo(hashSetOf()) { it.problemId }
-    private val knowledgeNames = completeSeed.knowledgeNodes.associate {
-        it.knowledgeNodeId to it.displayName
-    }
+    private val fixtureBundle = fixtureSource.bundle(includeTutorMistake = true)
+    private val curatedProblemIds = fixtureBundle?.problems
+        ?.mapTo(hashSetOf()) { it.problemId }
+        ?: hashSetOf()
+    private val knowledgeNames = fixtureBundle?.knowledgeNodes
+        ?.associate { it.knowledgeNodeId to it.displayName }
+        ?: emptyMap()
     private val forgettingCurve = ForgettingCurve()
     private val reviewPlanner = ReviewPlanner()
     private val reviewPlannerV2 = ReviewPlannerV2()
@@ -247,7 +249,13 @@ class RoomBackedStudyExperienceRepository(
     }
 
     override suspend fun saveTutorExampleMistake(): SaveStudyMistakeResult = runOperation {
-        val result = database.seedFixture(completeSeed)
+        // Demo-seed path (debug/test only): fails closed in production builds,
+        // where the fixture registry is empty (audit section 9.2).
+        val bundle = fixtureSource.bundle(includeTutorMistake = true)
+            ?: throw IllegalStateException(
+                "Curated fixture content is not available in this build",
+            )
+        val result = database.seedFixture(bundle)
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
@@ -340,7 +348,7 @@ class RoomBackedStudyExperienceRepository(
         }
 
     override suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact? =
-        M1CuratedStudySeed.teachingArtifactForPracticeUnit(practiceUnitId)
+        fixtureSource.teachingArtifactForPracticeUnit(practiceUnitId)
 
     override suspend fun submitChoice(
         submission: StudyChoiceSubmission,
@@ -471,7 +479,7 @@ class RoomBackedStudyExperienceRepository(
         val assessmentItem = artifact.assessmentItems.singleOrNull()
             ?: error("Curated practice unit ${request.practiceUnitId} must have one assessment")
         val evidenceSnapshot = requireNotNull(
-            M1CuratedStudySeed.evidenceSnapshotForAssessment(assessmentItem.id),
+            fixtureSource.evidenceSnapshotForAssessment(assessmentItem.id),
         ) { "No verified evidence snapshot for assessment ${assessmentItem.id}" }
 
         database.saveAssessmentEvidenceSnapshot(evidenceSnapshot)
@@ -612,7 +620,7 @@ class RoomBackedStudyExperienceRepository(
             ),
             knowledgeCoverage = latestKnowledgeCoverage,
             tutorExampleSaved = orderedMistakes.any {
-                it.practiceUnitId == M1CuratedStudySeed.TUTOR_PRACTICE_UNIT_ID
+                it.practiceUnitId == fixtureSource.tutorPracticeUnitId
             },
             // The tutor root has no current question until the student captures or selects one.
             tutorPracticeUnitId = null,
@@ -643,12 +651,12 @@ class RoomBackedStudyExperienceRepository(
             .sortedBy(MistakeRecord::practiceUnitId)
             .distinctBy(MistakeRecord::practiceUnitId)
             .map { mistake ->
-                val curatedEvidence = M1CuratedStudySeed
+                val curatedEvidence = fixtureSource
                     .teachingArtifactForPracticeUnit(mistake.practiceUnitId)
                     ?.assessmentItems
                     ?.singleOrNull()
                     ?.let { assessment ->
-                        M1CuratedStudySeed.evidenceSnapshotForAssessment(assessment.id)
+                        fixtureSource.evidenceSnapshotForAssessment(assessment.id)
                     }
                 ReviewCandidate(
                     practiceUnitId = mistake.practiceUnitId,
@@ -876,7 +884,7 @@ class RoomBackedStudyExperienceRepository(
         resolvedKnowledgeNames: Map<String, String>,
     ): StudyCatalogEntry {
         val memory = learnerSnapshot.problemMemoryStates[practiceUnitId]
-        val artifact = M1CuratedStudySeed.teachingArtifactForPracticeUnit(practiceUnitId)
+        val artifact = fixtureSource.teachingArtifactForPracticeUnit(practiceUnitId)
         val knowledgeNodeIds = this.knowledgeNodeIds.ifEmpty { artifact?.knowledgeNodeIds.orEmpty() }
         val knowledgeStates = knowledgeNodeIds.mapNotNull(
             learnerSnapshot.knowledgeMasteryStates::get,
@@ -1106,7 +1114,7 @@ class RoomBackedStudyExperienceRepository(
     }
 
     private fun requireTeachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact =
-        requireNotNull(M1CuratedStudySeed.teachingArtifactForPracticeUnit(practiceUnitId)) {
+        requireNotNull(fixtureSource.teachingArtifactForPracticeUnit(practiceUnitId)) {
             "Practice unit $practiceUnitId is outside the verified M1 catalog"
         }
 
@@ -1139,7 +1147,7 @@ class RoomBackedStudyExperienceRepository(
         val assessmentItem = artifact.assessmentItems.singleOrNull()
             ?: error("Curated practice unit ${submission.practiceUnitId} must have one assessment")
         val evidenceSnapshot = requireNotNull(
-            M1CuratedStudySeed.evidenceSnapshotForAssessment(assessmentItem.id),
+            fixtureSource.evidenceSnapshotForAssessment(assessmentItem.id),
         ) { "No verified evidence snapshot for assessment ${assessmentItem.id}" }
         val evaluation = assessmentItem.evaluateChoice(submission.selectedChoiceId)
         val submittedResponse = AttemptSubmittedResponse.Choice(

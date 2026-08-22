@@ -627,6 +627,7 @@ class RoomBackedStudyExperienceRepositoryTest {
         clock = clock,
         studyZoneId = ZoneId.of("Asia/Shanghai"),
         initialFixture = initialFixture,
+        fixtureSource = M1CuratedFixtureSource,
     )
 }
 
