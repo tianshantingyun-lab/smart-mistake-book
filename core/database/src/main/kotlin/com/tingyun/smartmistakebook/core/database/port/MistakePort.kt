@@ -14,13 +14,13 @@ interface MistakeReadPort {
     suspend fun findMistakeBySourceKey(sourceKey: String): MistakeRecord?
     suspend fun readMistakeDetail(errorBookEntryId: String): MistakeDetailRecord?
     suspend fun readExactMistakeDetail(
-        errorBookEntryId: String,
+        entryId: String,
         problemId: String,
         problemRevisionId: String,
     ): MistakeDetailRecord?
 
     suspend fun readCurrentMistakeDetails(
-        errorBookEntryIds: List<String>,
+        entryIds: List<String>,
     ): List<MistakeDetailRecord>
 
     suspend fun readMistakeRevisionHistory(

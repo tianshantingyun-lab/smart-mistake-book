@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.mlkit.text.recognition.chinese)
     implementation(libs.okhttp)
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.androidx.test.ext.junit)

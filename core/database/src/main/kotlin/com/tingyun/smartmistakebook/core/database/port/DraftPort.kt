@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.database.port
 
+import com.tingyun.smartmistakebook.core.database.ConfirmedProblemOrganizationRecord
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -16,5 +17,5 @@ interface OrganizationReadPort {
     fun observeConfirmedProblemOrganization(
         problemId: String,
         problemRevisionId: String,
-    ): Flow<Any>
+    ): Flow<ConfirmedProblemOrganizationRecord>
 }

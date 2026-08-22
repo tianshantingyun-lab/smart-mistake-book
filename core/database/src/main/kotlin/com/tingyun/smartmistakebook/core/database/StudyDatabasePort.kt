@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.database
 import androidx.paging.PagingSource
 import com.tingyun.smartmistakebook.core.database.port.BackupPort
 import com.tingyun.smartmistakebook.core.database.port.BatchImportReadPort
+import com.tingyun.smartmistakebook.core.database.port.BatchImportWritePort
 import com.tingyun.smartmistakebook.core.database.port.CaptureReadPort
 import com.tingyun.smartmistakebook.core.database.port.CaptureWritePort
 import com.tingyun.smartmistakebook.core.database.port.DraftReadPort
@@ -1399,7 +1400,7 @@ data class ReviewPlanBundle(
 interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
     LibraryReadPort, TutorReadPort, TutorWritePort,
     CaptureReadPort, CaptureWritePort, KnowledgeReadPort, KnowledgeWritePort,
-    ReviewReadPort, MistakeReadPort, BackupPort, BatchImportReadPort,
+    ReviewReadPort, MistakeReadPort, BackupPort, BatchImportReadPort, BatchImportWritePort,
     DraftReadPort, OrganizationReadPort {
 
     fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)

@@ -364,7 +364,7 @@ class OpenAiCompatibleProvider(
     override val configVersion: String = "1.0",
     private val apiKey: String,
     private val httpClient: OkHttpClient,
-    private val supportsVision: Boolean = false,
+    override val supportsVision: Boolean = false,
 ) : TutorProvider {
     override val rateLimitPerMinute: Int = 60
     override val tokenLimitPerMinute: Int = 100_000

@@ -1,6 +1,11 @@
 package com.tingyun.smartmistakebook.core.database.port
 
+import com.tingyun.smartmistakebook.core.database.ApplyApprovedKnowledgeResearchPackCommand
+import com.tingyun.smartmistakebook.core.database.ApplyReviewedKnowledgePackCommand
+import com.tingyun.smartmistakebook.core.database.DecideKnowledgeResearchReviewBundleCommand
+import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingRequestRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingResolutionRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingSummaryRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeRelationRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSourceBindingSeedRecord
@@ -8,6 +13,7 @@ import com.tingyun.smartmistakebook.core.database.KnowledgeResearchReviewBundleR
 import com.tingyun.smartmistakebook.core.database.KnowledgeSourceSeedRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialNodeBindingRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialRecord
+import com.tingyun.smartmistakebook.core.database.ResolveKnowledgeGroundingCommand
 import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecord
 import kotlinx.coroutines.flow.Flow
 
@@ -57,17 +63,26 @@ interface KnowledgeReadPort {
         materialIds: Set<String>,
     ): List<KnowledgeTeachingMaterialNodeBindingRecord>
 
-    fun observePendingKnowledgeGroundingRequests(): Flow<List<Any>>
-    fun observePendingKnowledgeGroundingSummaries(): Flow<List<Any>>
+    fun observePendingKnowledgeGroundingRequests(
+        limit: Int,
+    ): Flow<List<KnowledgeGroundingRequestRecord>>
+
+    fun observePendingKnowledgeGroundingSummaries(
+        limit: Int,
+    ): Flow<List<KnowledgeGroundingSummaryRecord>>
+
     fun observeReviewedKnowledgeCoverage(): Flow<List<ReviewedKnowledgeCoverageRecord>>
 
-    suspend fun readPendingKnowledgeResearchReviewBundles(): List<KnowledgeResearchReviewBundleRecord>
+    suspend fun readPendingKnowledgeResearchReviewBundles(
+        limit: Int,
+    ): List<KnowledgeResearchReviewBundleRecord>
+
     suspend fun readKnowledgeResearchReviewBundle(
         bundleId: String,
     ): KnowledgeResearchReviewBundleRecord?
 
     suspend fun readKnowledgeGroundingResolution(
-        requestId: String,
+        groundingKey: String,
     ): KnowledgeGroundingResolutionRecord?
 }
 
@@ -76,50 +91,42 @@ interface KnowledgeReadPort {
  */
 interface KnowledgeWritePort {
     suspend fun importKnowledgeNodeRelations(
-        subject: String,
         relations: List<KnowledgeNodeRelationRecord>,
     )
 
     suspend fun importKnowledgeTeachingMaterials(
-        subject: String,
         materials: List<KnowledgeTeachingMaterialRecord>,
-    )
-
-    suspend fun importKnowledgeBase(
-        subject: String,
-        nodes: List<KnowledgeNodeSeedRecord>,
+        bindings: List<KnowledgeTeachingMaterialNodeBindingRecord>,
         sources: List<KnowledgeSourceSeedRecord>,
     )
 
-    suspend fun applyReviewedKnowledgePack(
-        subject: String,
+    suspend fun importKnowledgeBase(
+        sources: List<KnowledgeSourceSeedRecord>,
         nodes: List<KnowledgeNodeSeedRecord>,
-        relations: List<KnowledgeNodeRelationRecord>,
+        bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
     )
+
+    suspend fun applyReviewedKnowledgePack(
+        command: ApplyReviewedKnowledgePackCommand,
+    ): List<KnowledgeGroundingResolutionRecord>
 
     suspend fun enqueueKnowledgeResearchReviewBundle(
         bundle: KnowledgeResearchReviewBundleRecord,
     )
 
     suspend fun decideKnowledgeResearchReviewBundle(
-        bundleId: String,
-        decision: String,
-        decisionNote: String?,
-        decidedAtEpochMillis: Long,
-    )
+        command: DecideKnowledgeResearchReviewBundleCommand,
+    ): KnowledgeResearchReviewBundleRecord
 
     suspend fun applyApprovedKnowledgeResearchPack(
-        subject: String,
-        nodes: List<KnowledgeNodeSeedRecord>,
-    )
+        command: ApplyApprovedKnowledgeResearchPackCommand,
+    ): List<KnowledgeGroundingResolutionRecord>
 
     suspend fun recordKnowledgeGroundingRequests(
-        requests: List<Any>,
+        requests: List<KnowledgeGroundingRequestRecord>,
     )
 
     suspend fun resolveKnowledgeGrounding(
-        requestId: String,
-        resolution: String,
-        resolvedAtEpochMillis: Long,
-    )
+        command: ResolveKnowledgeGroundingCommand,
+    ): KnowledgeGroundingResolutionRecord
 }

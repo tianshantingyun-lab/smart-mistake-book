@@ -422,7 +422,7 @@ class AndroidBackupRepository(
         if (!file.exists()) return
         try {
             java.io.RandomAccessFile(file, "rws").use { raf ->
-                raf.sync()
+                raf.channel.force(true)
             }
         } catch (_: Exception) {
             // Fsync may not be supported on all filesystems; continue

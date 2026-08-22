@@ -558,7 +558,6 @@ internal fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
                         IndependentCorrectObservation(
                             itemFamilyId = observation.itemFamilyId,
                             studyDayEpochDay = observation.studyDayEpochDay,
-                            isStudyDayTrusted = observation.isStudyDayTrusted,
                             timeTrust = try {
                                 EventTimeTrust.valueOf(observation.timeTrust)
                             } catch (_: IllegalArgumentException) {

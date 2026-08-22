@@ -1,8 +1,12 @@
 package com.tingyun.smartmistakebook.core.database.port
 
+import com.tingyun.smartmistakebook.core.database.AppendTutorAssistantMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.AppendTutorStudentMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.CreateTutorConversationDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.TutorConversationRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
+import com.tingyun.smartmistakebook.core.database.UpdateTutorMessageStatusDatabaseCommand
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -20,53 +24,36 @@ interface TutorReadPort {
  */
 interface TutorWritePort {
     suspend fun createTutorConversation(
-        conversationId: String,
-        anchorKind: String,
-        anchorId: String?,
-        anchorRevisionId: String?,
-        title: String?,
-        createdAtEpochMillis: Long,
-    )
+        command: CreateTutorConversationDatabaseCommand,
+    ): TutorConversationRecord
 
     suspend fun appendTutorStudentMessage(
-        conversationId: String,
-        messageId: String,
-        ordinal: Int,
-        bodyMarkdown: String,
-        createdAtEpochMillis: Long,
-    )
+        command: AppendTutorStudentMessageDatabaseCommand,
+    ): TutorMessageRecord
 
     suspend fun appendTutorAssistantMessage(
-        conversationId: String,
-        messageId: String,
-        ordinal: Int,
-        bodyMarkdown: String,
-        logicalOperationId: String?,
-        createdAtEpochMillis: Long,
-    )
+        command: AppendTutorAssistantMessageDatabaseCommand,
+    ): TutorMessageRecord
 
     suspend fun updateTutorMessageStatus(
-        messageId: String,
-        status: String,
-        completedAtEpochMillis: Long?,
-        errorCode: String?,
-    )
+        command: UpdateTutorMessageStatusDatabaseCommand,
+    ): TutorMessageRecord
 
     suspend fun pauseTutorConversation(
         conversationId: String,
         updatedAtEpochMillis: Long,
-    )
+    ): TutorConversationRecord
 
     suspend fun archiveTutorConversation(
         conversationId: String,
         updatedAtEpochMillis: Long,
-    )
+    ): TutorConversationRecord
 
     suspend fun deleteTutorConversation(conversationId: String)
 
     suspend fun saveTutorConversationDraft(
         conversationId: String,
-        draft: String?,
+        draft: String,
         updatedAtEpochMillis: Long,
     )
 

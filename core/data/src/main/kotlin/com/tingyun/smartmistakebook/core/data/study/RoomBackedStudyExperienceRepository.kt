@@ -31,6 +31,9 @@ import com.tingyun.smartmistakebook.core.domain.MasteryEvidencePolicy
 import com.tingyun.smartmistakebook.core.domain.ReviewCandidate
 import com.tingyun.smartmistakebook.core.domain.ReviewCompletionStreak
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
+import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
+import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
+import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanningRequest
 import com.tingyun.smartmistakebook.core.domain.SaveStudyMistakeResult
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
@@ -207,7 +210,7 @@ class RoomBackedStudyExperienceRepository(
 
     private fun observeKnowledgeCoverageOverview() = combine(
         database.observeReviewedKnowledgeCoverage(),
-        database.observePendingKnowledgeGroundingSummaries(),
+        database.observePendingKnowledgeGroundingSummaries(limit = 64),
     ) { reviewedCoverage, pendingGaps ->
         reviewedCoverage.toKnowledgeCoverageOverview(pendingGaps)
     }.distinctUntilChanged()
@@ -267,15 +270,16 @@ class RoomBackedStudyExperienceRepository(
 
             // Idempotency check: if this exact revision is already in the library,
             // return AlreadySaved without mutating anything.
-            if (command.problemRevisionId != null) {
+            val exactRevisionId = command.problemRevisionId
+            if (exactRevisionId != null) {
                 val existing = database.readExactMistakeDetail(
-                    errorBookEntryId = draftId,
+                    entryId = draftId,
                     problemId = problemId ?: "",
-                    problemRevisionId = command.problemRevisionId,
+                    problemRevisionId = exactRevisionId,
                 )
                 if (existing != null) {
                     return@runOperation SaveTutorProblemReceipt.AlreadySaved(
-                        problemId = command.problemRevisionId,
+                        problemId = exactRevisionId,
                         entryCount = database.countMistakes(),
                     )
                 }
