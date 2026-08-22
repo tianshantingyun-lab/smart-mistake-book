@@ -56,9 +56,9 @@ android {
             isMinifyEnabled = true
         }
         release {
-            // Signing is resolved lazily by validateReleaseSigning before any
-            // release artifact is built. Reference the (initially empty)
-            // placeholder config so AGP can wire it at task execution time.
+            // Signing is injected at evaluation time by configureReleaseSigningIfAvailable;
+            // the validateReleaseSigning task fails the build before release packaging
+            // if any signing environment variable is missing.
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -82,7 +82,7 @@ android {
     }
 }
 
-// Resolve release signing lazily; fails only when a release task requests it.
+// Populates the release signing config at evaluation time; silently skips when env vars are absent.
 fun configureReleaseSigningIfAvailable() {
     val releaseKeyAlias = System.getenv("RELEASE_KEY_ALIAS")
     val releaseKeyPassword = System.getenv("RELEASE_KEY_PASSWORD")
@@ -100,6 +100,9 @@ fun configureReleaseSigningIfAvailable() {
     }
 }
 
+// 求值期注入签名，缺环境变量时静默跳过。
+configureReleaseSigningIfAvailable()
+
 tasks.register("validateReleaseSigning") {
     doLast {
         val missing = buildList {
@@ -113,7 +116,6 @@ tasks.register("validateReleaseSigning") {
                 "Release signing is missing required environment variables: ${missing.joinToString(", ")}",
             )
         }
-        configureReleaseSigningIfAvailable()
     }
 }
 

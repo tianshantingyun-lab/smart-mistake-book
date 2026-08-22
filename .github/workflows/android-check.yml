@@ -94,10 +94,11 @@ jobs:
         run: chmod +x gradlew
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          emulator-boot-timeout: 900
           script: |
             ./gradlew :core:database:connectedDebugAndroidTest \
               :core:data:connectedDebugAndroidTest \
