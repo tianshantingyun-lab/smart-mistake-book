@@ -52,7 +52,7 @@ jobs:
           RELEASE_KEY_PASSWORD=ci-dry-run-pass \
           ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease --console=plain
       - name: Compile macrobenchmark and baseline profile module
-        run: ./gradlew :benchmark:assembleDebug --console=plain
+        run: ./gradlew :benchmark:assemble --console=plain
       - name: Lint
         run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
       - name: Room schema drift recheck
