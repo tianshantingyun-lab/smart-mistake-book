@@ -22,6 +22,8 @@ import com.tingyun.smartmistakebook.core.database.entity.AssessmentItemSnapshotE
 import com.tingyun.smartmistakebook.core.database.entity.ErrorBookEntryEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeMasteryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingRequestEntity
+import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
+import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingResolutionEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeRelationEntity
@@ -333,6 +335,71 @@ internal class RoomStudyDatabase(
             }
         }
     }
+
+    override suspend fun recordStudentModelPredictions(
+        predictions: List<StudentModelPredictionRecord>,
+    ) {
+        if (predictions.isEmpty()) return
+        database.predictionAuditDao().insertPredictions(
+            predictions.map { record ->
+                StudentModelPredictionEntity(
+                    predictionId = record.predictionId,
+                    modelId = record.modelId,
+                    modelVersion = record.modelVersion,
+                    algorithmHash = record.algorithmHash,
+                    practiceUnitId = record.practiceUnitId,
+                    knowledgeNodeId = record.knowledgeNodeId,
+                    featureFingerprint = record.featureFingerprint,
+                    predictedScore = record.predictedScore,
+                    conservativeScore = record.conservativeScore,
+                    predictionWindowStartEpochMillis = record.predictionWindowStartEpochMillis,
+                    predictionWindowEndEpochMillis = record.predictionWindowEndEpochMillis,
+                    predictedAtEpochMillis = record.predictedAtEpochMillis,
+                )
+            },
+        )
+    }
+
+    override suspend fun resolveStudentModelPredictions(
+        practiceUnitId: String,
+        wasIndependentCorrect: Boolean,
+        observedAtEpochMillis: Long,
+        responseLatencyMs: Long?,
+        hintCount: Int,
+    ): Int {
+        val auditDao = database.predictionAuditDao()
+        val pending = auditDao
+            .findPendingForPracticeUnit(practiceUnitId, observedAtEpochMillis)
+        pending.forEach { prediction ->
+            auditDao.upsertOutcome(
+                PredictionOutcomeEntity(
+                    predictionId = prediction.predictionId,
+                    observedAtEpochMillis = observedAtEpochMillis,
+                    wasIndependentCorrect = wasIndependentCorrect,
+                    responseLatencyMs = responseLatencyMs,
+                    hintCount = hintCount,
+                ),
+            )
+            auditDao.markResolved(prediction.predictionId)
+        }
+        return pending.size
+    }
+
+    override suspend fun readResolvedStudentModelPredictions(
+        modelId: String,
+        modelVersion: String,
+    ): List<ResolvedStudentModelPredictionRecord> =
+        database.predictionAuditDao()
+            .findResolvedForModel(modelId, modelVersion)
+            .map { row ->
+                ResolvedStudentModelPredictionRecord(
+                    predictionId = row.predictionId,
+                    predictedScore = row.predictedScore,
+                    conservativeScore = row.conservativeScore,
+                    wasIndependentCorrect = row.wasIndependentCorrect,
+                    observedAtEpochMillis = row.observedAtEpochMillis,
+                )
+            }
 
     override suspend fun readSubjectKnowledgeNodes(
         subject: String,

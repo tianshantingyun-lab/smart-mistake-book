@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.database.dao
 import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
+import androidx.room3.ColumnInfo
 import androidx.room3.Query
 import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
@@ -37,6 +38,21 @@ internal interface PredictionAuditDao {
 
     @Query(
         """
+        SELECT * FROM student_model_prediction
+        WHERE practice_unit_id = :practiceUnitId
+          AND resolved = 0
+          AND prediction_window_start_epoch_millis <= :observedAtEpochMillis
+          AND prediction_window_end_epoch_millis >= :observedAtEpochMillis
+        ORDER BY predicted_at_epoch_millis ASC
+        """,
+    )
+    suspend fun findPendingForPracticeUnit(
+        practiceUnitId: String,
+        observedAtEpochMillis: Long,
+    ): List<StudentModelPredictionEntity>
+
+    @Query(
+        """
         SELECT p.*, o.was_independent_correct, o.observed_at_epoch_millis
         FROM student_model_prediction p
         JOIN prediction_outcome o ON o.prediction_id = p.prediction_id
@@ -66,19 +82,32 @@ internal interface PredictionAuditDao {
  * metrics (Brier, log-loss, ECE) per model version and bucket.
  */
 internal data class ResolvedPredictionRow(
+    @ColumnInfo(name = "prediction_id")
     val predictionId: String,
+    @ColumnInfo(name = "model_id")
     val modelId: String,
+    @ColumnInfo(name = "model_version")
     val modelVersion: String,
+    @ColumnInfo(name = "algorithm_hash")
     val algorithmHash: String,
+    @ColumnInfo(name = "practice_unit_id")
     val practiceUnitId: String,
     val knowledgeNodeId: String?,
+    @ColumnInfo(name = "feature_fingerprint")
     val featureFingerprint: String,
+    @ColumnInfo(name = "predicted_score")
     val predictedScore: Double,
+    @ColumnInfo(name = "conservative_score")
     val conservativeScore: Double,
+    @ColumnInfo(name = "prediction_window_start_epoch_millis")
     val predictionWindowStartEpochMillis: Long,
+    @ColumnInfo(name = "prediction_window_end_epoch_millis")
     val predictionWindowEndEpochMillis: Long,
+    @ColumnInfo(name = "predicted_at_epoch_millis")
     val predictedAtEpochMillis: Long,
     val resolved: Boolean,
+    @ColumnInfo(name = "was_independent_correct")
     val wasIndependentCorrect: Boolean,
+    @ColumnInfo(name = "observed_at_epoch_millis")
     val observedAtEpochMillis: Long,
 )

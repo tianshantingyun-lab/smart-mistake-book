@@ -1405,6 +1405,28 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
 
     fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)
 
+    /** Persist shadow predictions produced during review planning (audit PR-07). */
+    suspend fun recordStudentModelPredictions(predictions: List<StudentModelPredictionRecord>)
+
+    /**
+     * Resolve every unresolved prediction for [practiceUnitId] whose window
+     * contains [observedAtEpochMillis] with the real attempt outcome.
+     * @return number of predictions resolved.
+     */
+    suspend fun resolveStudentModelPredictions(
+        practiceUnitId: String,
+        wasIndependentCorrect: Boolean,
+        observedAtEpochMillis: Long,
+        responseLatencyMs: Long? = null,
+        hintCount: Int = 0,
+    ): Int
+
+    /** Resolved prediction/outcome pairs for offline calibration. */
+    suspend fun readResolvedStudentModelPredictions(
+        modelId: String,
+        modelVersion: String,
+    ): List<ResolvedStudentModelPredictionRecord>
+
     suspend fun createProblemDraft(command: CreateProblemDraftCommand): ProblemDraftWriteResult
 
     suspend fun appendProblemDraftSourceAsset(
@@ -1564,3 +1586,28 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
     @Deprecated("P0 inspection only; keep data-layer wiring behind the repository boundary")
     suspend fun readAnswerRevealP0(outcomeId: String): PersistedAnswerRevealP0?
 }
+
+/** Port-level prediction record for the student-model audit loop (PR-07). */
+data class StudentModelPredictionRecord(
+    val predictionId: String,
+    val modelId: String,
+    val modelVersion: String,
+    val algorithmHash: String,
+    val practiceUnitId: String,
+    val knowledgeNodeId: String?,
+    val featureFingerprint: String,
+    val predictedScore: Double,
+    val conservativeScore: Double,
+    val predictionWindowStartEpochMillis: Long,
+    val predictionWindowEndEpochMillis: Long,
+    val predictedAtEpochMillis: Long,
+)
+
+/** Resolved prediction with its real outcome, ready for calibration. */
+data class ResolvedStudentModelPredictionRecord(
+    val predictionId: String,
+    val predictedScore: Double,
+    val conservativeScore: Double,
+    val wasIndependentCorrect: Boolean,
+    val observedAtEpochMillis: Long,
+)

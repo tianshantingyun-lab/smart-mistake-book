@@ -99,6 +99,8 @@ import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecor
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.SeedResult
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.StudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
@@ -1100,6 +1102,21 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readMistakeRevisionHistory(problemId: String):
         List<MistakeRevisionSummaryRecord> = emptyList()
+
+    override suspend fun recordStudentModelPredictions(predictions: List<StudentModelPredictionRecord>) = Unit
+
+    override suspend fun resolveStudentModelPredictions(
+        practiceUnitId: String,
+        wasIndependentCorrect: Boolean,
+        observedAtEpochMillis: Long,
+        responseLatencyMs: Long?,
+        hintCount: Int,
+    ): Int = 0
+
+    override suspend fun readResolvedStudentModelPredictions(
+        modelId: String,
+        modelVersion: String,
+    ): List<ResolvedStudentModelPredictionRecord> = emptyList()
 
     override suspend fun checkpointForBackup() = Unit
 
