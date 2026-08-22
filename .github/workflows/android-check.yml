@@ -48,6 +48,28 @@ jobs:
         run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
       - name: Room schema drift recheck
         run: git diff --exit-code -- core/database/schemas
+      - name: Generate machine-verifiable status report
+        if: always()
+        run: python3 tools/ci/generate_status.py
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          BRANCH: ${{ github.ref_name }}
+          TRIGGERED_BY: ${{ github.event_name }}
+          JOB_STATUS: ${{ job.status }}
+      - name: Upload status report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-report
+          path: .github/workflows/status.md
+      - name: Commit status report (main pushes only)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/status.md
+          git diff --cached --quiet || git commit -m "ci: update generated status report for ${GITHUB_SHA}"
+          git push
 
   instrumented:
     runs-on: ubuntu-latest

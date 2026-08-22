@@ -146,7 +146,7 @@ private fun FormulaBlock(block: ContentBlock.Formula) {
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
-                contentDescription = "公式（受限文本显示）：$spokenDescription"
+                contentDescription = "公式（结构化渲染）：$spokenDescription"
             },
         color = JadeSoft,
         contentColor = Ink,
@@ -157,7 +157,7 @@ private fun FormulaBlock(block: ContentBlock.Formula) {
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = "公式 · 文本显示",
+                text = "公式 · 结构化渲染",
                 color = JadeActive,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
