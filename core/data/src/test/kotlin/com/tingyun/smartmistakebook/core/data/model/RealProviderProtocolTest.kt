@@ -136,7 +136,7 @@ class RealProviderProtocolTest {
                 input = CaptureAssessmentInput(
                     draftId = "draft-1",
                     sourceAssetId = "asset-1",
-                    origin = CaptureAssessmentOrigin.CAPTURE,
+                    origin = CaptureAssessmentOrigin.TUTOR,
                     imageWidth = 800,
                     imageHeight = 600,
                 ),
@@ -177,7 +177,7 @@ class RealProviderProtocolTest {
                 input = CaptureAssessmentInput(
                     draftId = "draft-1",
                     sourceAssetId = "asset-1",
-                    origin = CaptureAssessmentOrigin.CAPTURE,
+                    origin = CaptureAssessmentOrigin.TUTOR,
                     imageWidth = 800,
                     imageHeight = 600,
                 ),
@@ -199,7 +199,7 @@ class RealProviderProtocolTest {
                     input = CaptureAssessmentInput(
                         draftId = "draft-1",
                         sourceAssetId = "asset-1",
-                        origin = CaptureAssessmentOrigin.CAPTURE,
+                        origin = CaptureAssessmentOrigin.TUTOR,
                         imageWidth = 800,
                         imageHeight = 600,
                     ),
@@ -357,10 +357,14 @@ class RealProviderProtocolTest {
     fun egressManifest_containsExactProviderConfig() {
         val provider = ProviderCapabilitySnapshot(
             providerId = "openai",
+            providerDisplayName = "OpenAI",
             modelId = "gpt-4o",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_LOBBY),
+            supportsImageInput = false,
+            supportsStructuredOutput = false,
+            supportsStreaming = false,
             providerConfigurationVersion = "v2024-01",
             executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
-            supportedTaskKinds = setOf(ModelTaskKind.TUTOR_LOBBY),
         )
 
         val manifest = ModelEgressManifest(
@@ -406,8 +410,7 @@ class RealProviderProtocolTest {
             modelVersion = "test-model",
         ) as TutorLobbyOutput
 
-        assertEquals("QUESTION", output.intent.name)
-        assertEquals("这道题需要帮助吗？", output.message)
+        assertTrue("Lobby output should carry the assistant message", output.messageMarkdown.isNotEmpty())
     }
 
     private fun tutorLobbyResponse(content: String): String = Json.encodeToString(

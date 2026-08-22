@@ -163,10 +163,14 @@ class TutorE2EProtocolTest {
     fun providerCapabilityMismatch_caughtBeforeNetwork() {
         val provider = ProviderCapabilitySnapshot(
             providerId = "openai",
+            providerDisplayName = "OpenAI",
             modelId = "gpt-4o",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_LOBBY),
+            supportsImageInput = false,
+            supportsStructuredOutput = false,
+            supportsStreaming = false,
             providerConfigurationVersion = "v2024-01",
             executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
-            supportedTaskKinds = setOf(ModelTaskKind.TUTOR_LOBBY),
         )
 
         assertFalse(
@@ -260,11 +264,11 @@ class TutorE2EProtocolTest {
         assertTrue("Output should be TutorLobbyOutput", output is com.tingyun.smartmistakebook.core.model.TutorLobbyOutput)
     }
 
-    private fun postToServer(server: MockWebServer, requestBody: okhttp3.RequestBody) {
+    private fun postToServer(server: MockWebServer, requestBody: String) {
         val request = Request.Builder()
             .url(server.url("/chat/completions"))
             .header("Authorization", "Bearer test-key")
-            .post(requestBody)
+            .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
             .build()
         OkHttpClient().newCall(request).execute().close()
     }
@@ -309,13 +313,16 @@ class TutorE2EProtocolTest {
 
     private fun tutorLobbyResponse(content: String): String = wrapInEnvelope(content)
 
-    private fun createTestQuestionDocument(): com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument {
-        return com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument(
+    private fun createTestQuestionDocument(): com.tingyun.smartmistakebook.core.model.QuestionDocument {
+        return com.tingyun.smartmistakebook.core.model.QuestionDocument(
             id = "doc-1",
             title = "测试题目",
-            stemMarkdown = "1 + 1 = ?",
-            answerMarkdown = "2",
-            explanationMarkdown = "简单加法",
+            blocks = listOf(
+                com.tingyun.smartmistakebook.core.model.ContentBlock.Paragraph(
+                    id = "p-1",
+                    markdown = "1 + 1 = ?",
+                ),
+            ),
         )
     }
 

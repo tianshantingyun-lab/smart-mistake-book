@@ -2,7 +2,6 @@ package com.tingyun.smartmistakebook.core.data.knowledge
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
-import com.tingyun.smartmistakebook.core.model.KnowledgeNodeKind
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -93,7 +92,7 @@ class KnowledgeRetrievalBenchmarkTest {
                 id = "unreviewed-node",
                 name = "未审核的知识点",
                 granularity = KnowledgeNodeGranularity.ATOMIC,
-                verificationStatus = KnowledgeNodeVerificationStatus.DRAFT,
+                verificationStatus = KnowledgeNodeVerificationStatus.MODEL_CANDIDATE,
             ),
         )
 
@@ -226,17 +225,17 @@ class KnowledgeRetrievalBenchmarkTest {
         parentId: String? = null,
         aliases: Set<String> = emptySet(),
         boundary: String? = null,
-        verificationStatus: KnowledgeNodeVerificationStatus = KnowledgeNodeVerificationStatus.APPROVED,
+        verificationStatus: KnowledgeNodeVerificationStatus = KnowledgeNodeVerificationStatus.CURATED,
     ): KnowledgeNodeSeedRecord = KnowledgeNodeSeedRecord(
         knowledgeNodeId = id,
+        stableCode = id,
         subject = "MATH",
-        granularity = granularity.name,
         displayName = name,
-        aliases = aliases,
-        boundary = boundary,
-        kind = KnowledgeNodeKind.CONCEPT.name,
-        sourceLocator = "test",
-        verificationStatus = verificationStatus.name,
         parentKnowledgeNodeId = parentId,
+        taxonomyVersion = "test-v1",
+        createdAtEpochMillis = 0L,
+        aliases = aliases,
+        boundaryMarkdown = boundary,
+        verificationStatus = verificationStatus.name,
     )
 }

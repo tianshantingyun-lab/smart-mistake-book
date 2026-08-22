@@ -7,6 +7,65 @@ import com.tingyun.smartmistakebook.core.database.AssessmentEventSeedRecord
 import com.tingyun.smartmistakebook.core.database.AssessmentItemSnapshotSeedRecord
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftResult
+import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetCommand
+import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetResult
+import com.tingyun.smartmistakebook.core.database.ReplaceProblemDraftCommand
+import com.tingyun.smartmistakebook.core.database.ProblemDraftReplacementResult
+import com.tingyun.smartmistakebook.core.database.SplitProblemDraftCommand
+import com.tingyun.smartmistakebook.core.database.ProblemDraftSplitResult
+import com.tingyun.smartmistakebook.core.database.ProblemDraftEditWorkspaceRecord
+import com.tingyun.smartmistakebook.core.database.SaveProblemDraftEditWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.ProblemDraftEditWorkspaceWriteResult
+import com.tingyun.smartmistakebook.core.database.ConsumeProblemDraftEditWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.ConfirmAndCommitProblemDraftFromWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.ConfirmTutorSessionCommand
+import com.tingyun.smartmistakebook.core.database.ConfirmTutorSessionFromWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.TutorSessionWriteResult
+import com.tingyun.smartmistakebook.core.database.TutorSessionRecord
+import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
+import com.tingyun.smartmistakebook.core.database.EndTutorSessionCommand
+import com.tingyun.smartmistakebook.core.database.EndTutorSessionResult
+import com.tingyun.smartmistakebook.core.database.PersistTutorChoiceCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorRevealCommand
+import com.tingyun.smartmistakebook.core.database.PersistTutorAnswerExposureCommand
+import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
+import com.tingyun.smartmistakebook.core.database.TutorAnswerExposureRecord
+import com.tingyun.smartmistakebook.core.database.PersistTutorSessionAnchorCommand
+import com.tingyun.smartmistakebook.core.database.TutorSessionProblemAnchorRecord
+import com.tingyun.smartmistakebook.core.database.ConfirmProblemOrganizationCommand
+import com.tingyun.smartmistakebook.core.database.ConfirmProblemOrganizationResult
+import com.tingyun.smartmistakebook.core.database.LibraryCatalogRow
+import com.tingyun.smartmistakebook.core.database.LibraryFacetCountRecord
+import com.tingyun.smartmistakebook.core.database.TutorConversationRecord
+import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
+import com.tingyun.smartmistakebook.core.database.CreateTutorConversationDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.AppendTutorStudentMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.AppendTutorAssistantMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.UpdateTutorMessageStatusDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.PendingCaptureDraftRecord
+import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeSourceSeedRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSourceBindingSeedRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeNodeRelationRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialNodeBindingRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingRequestRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeResearchReviewBundleRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingResolutionRecord
+import com.tingyun.smartmistakebook.core.database.ApplyReviewedKnowledgePackCommand
+import com.tingyun.smartmistakebook.core.database.DecideKnowledgeResearchReviewBundleCommand
+import com.tingyun.smartmistakebook.core.database.ApplyApprovedKnowledgeResearchPackCommand
+import com.tingyun.smartmistakebook.core.database.ResolveKnowledgeGroundingCommand
+import com.tingyun.smartmistakebook.core.database.MistakeDetailRecord
+import com.tingyun.smartmistakebook.core.database.MistakeRevisionSummaryRecord
+import com.tingyun.smartmistakebook.core.database.BatchImportJobRecord
+import com.tingyun.smartmistakebook.core.database.BatchImportPageRecord
+import com.tingyun.smartmistakebook.core.database.CreateBatchImportJobCommand
+import com.tingyun.smartmistakebook.core.database.ResolveBatchImportBoundaryCommand
+import com.tingyun.smartmistakebook.core.database.ConfirmedProblemOrganizationRecord
+import androidx.paging.PagingSource
 import com.tingyun.smartmistakebook.core.database.CreateProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.AttemptCorrectionRecord
@@ -746,6 +805,398 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun commitProblemDraft(
         command: CommitProblemDraftCommand,
     ): CommitProblemDraftResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun appendProblemDraftSourceAsset(
+        command: AppendProblemDraftSourceAssetCommand,
+    ): AppendProblemDraftSourceAssetResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun replaceProblemDraft(
+        command: ReplaceProblemDraftCommand,
+    ): ProblemDraftReplacementResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun splitProblemDraft(
+        command: SplitProblemDraftCommand,
+    ): ProblemDraftSplitResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun readProblemDraftEditWorkspace(
+        draftId: String,
+    ): ProblemDraftEditWorkspaceRecord? = null
+
+    override suspend fun saveProblemDraftEditWorkspace(
+        command: SaveProblemDraftEditWorkspaceCommand,
+    ): ProblemDraftEditWorkspaceWriteResult =
+        error("Capture is outside this study-repository fake")
+
+    override suspend fun consumeProblemDraftEditWorkspace(
+        command: ConsumeProblemDraftEditWorkspaceCommand,
+    ): Boolean = error("Capture is outside this study-repository fake")
+
+    override suspend fun confirmAndCommitProblemDraftFromWorkspace(
+        command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
+    ): CommitProblemDraftResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun confirmTutorSession(
+        command: ConfirmTutorSessionCommand,
+    ): TutorSessionWriteResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun confirmTutorSessionFromWorkspace(
+        command: ConfirmTutorSessionFromWorkspaceCommand,
+    ): TutorSessionWriteResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun readTutorSession(sessionId: String): TutorSessionRecord? = null
+
+    override suspend fun commitTutorSession(
+        command: CommitTutorSessionCommand,
+    ): CommitProblemDraftResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun endTutorSession(
+        command: EndTutorSessionCommand,
+    ): EndTutorSessionResult = error("Capture is outside this study-repository fake")
+
+    override suspend fun recordTutorChoice(
+        command: PersistTutorChoiceCommand,
+    ): TutorTurnResponseRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun recordTutorMove(
+        command: PersistTutorMoveCommand,
+    ): TutorTurnResponseRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun revealTutorSolution(
+        command: PersistTutorRevealCommand,
+    ): TutorTurnResponseRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun recordTutorSolutionExposure(
+        command: PersistTutorAnswerExposureCommand,
+    ): TutorAnswerExposureRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun bindTutorSessionProblemAnchor(
+        command: PersistTutorSessionAnchorCommand,
+    ): TutorSessionProblemAnchorRecord =
+        error("Capture is outside this study-repository fake")
+
+    override suspend fun confirmProblemOrganization(
+        command: ConfirmProblemOrganizationCommand,
+    ): ConfirmProblemOrganizationResult =
+        error("Organization is outside this study-repository fake")
+
+    override fun libraryPagingSource(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+    ): PagingSource<Int, LibraryCatalogRow> =
+        error("Library is outside this study-repository fake")
+
+    override suspend fun libraryCatalogPage(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        offset: Int,
+        limit: Int,
+    ): List<LibraryCatalogRow> =
+        error("Library is outside this study-repository fake")
+
+    override suspend fun libraryCatalogCount(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+    ): Int = error("Library is outside this study-repository fake")
+
+    override suspend fun libraryCatalogFacets(
+        searchText: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        facet: String,
+    ): List<LibraryFacetCountRecord> =
+        error("Library is outside this study-repository fake")
+
+    override fun observeTutorTurnResponses(
+        sessionId: String,
+    ): Flow<List<TutorTurnResponseRecord>> = MutableStateFlow(emptyList())
+
+    override fun observeRecentTutorConversations(
+        limit: Int,
+    ): Flow<List<TutorConversationRecord>> = MutableStateFlow(emptyList())
+
+    override fun observeTutorMessages(
+        conversationId: String,
+    ): Flow<List<TutorMessageRecord>> = MutableStateFlow(emptyList())
+
+    override fun observeTutorConversation(
+        conversationId: String,
+    ): Flow<TutorConversationRecord?> = MutableStateFlow(null)
+
+    override suspend fun createTutorConversation(
+        command: CreateTutorConversationDatabaseCommand,
+    ): TutorConversationRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun appendTutorStudentMessage(
+        command: AppendTutorStudentMessageDatabaseCommand,
+    ): TutorMessageRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun appendTutorAssistantMessage(
+        command: AppendTutorAssistantMessageDatabaseCommand,
+    ): TutorMessageRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun updateTutorMessageStatus(
+        command: UpdateTutorMessageStatusDatabaseCommand,
+    ): TutorMessageRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun pauseTutorConversation(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): TutorConversationRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun archiveTutorConversation(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ): TutorConversationRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun deleteTutorConversation(conversationId: String) = Unit
+
+    override suspend fun saveTutorConversationDraft(
+        conversationId: String,
+        draft: String,
+        updatedAtEpochMillis: Long,
+    ) = Unit
+
+    override suspend fun clearTutorConversationDraft(
+        conversationId: String,
+        updatedAtEpochMillis: Long,
+    ) = Unit
+
+    override fun observePendingCaptureDrafts(): Flow<List<PendingCaptureDraftRecord>> =
+        MutableStateFlow(emptyList())
+
+    override suspend fun readPendingCaptureDraft(draftId: String): PendingCaptureDraftRecord? =
+        null
+
+    override suspend fun readCanonicalSourceAsset(sourceAssetId: String):
+        CanonicalSourceAssetRecord? = null
+
+    override suspend fun readUnreferencedCanonicalAssets():
+        List<CanonicalSourceAssetRecord> = emptyList()
+
+    override suspend fun deleteUnreferencedCanonicalAssets(): Int = 0
+
+    override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) =
+        Unit
+
+    override suspend fun readSubjectKnowledgeNodes(subject: String, limit: Int):
+        List<KnowledgeNodeSeedRecord> = emptyList()
+
+    override suspend fun readSubjectKnowledgeRecallCandidates(
+        subject: String,
+        searchFeatures: Set<String>,
+        limit: Int,
+    ): List<KnowledgeNodeSeedRecord> = emptyList()
+
+    override suspend fun readKnowledgeNodesByIds(ids: Set<String>):
+        List<KnowledgeNodeSeedRecord> = emptyList()
+
+    override suspend fun readKnowledgeSourcesByIds(ids: Set<String>):
+        List<KnowledgeSourceSeedRecord> = emptyList()
+
+    override suspend fun readKnowledgeNodeSourceBindings(
+        knowledgeNodeIds: Set<String>,
+    ): List<KnowledgeNodeSourceBindingSeedRecord> = emptyList()
+
+    override suspend fun readSubjectKnowledgeNodeRelations(subject: String, limit: Int):
+        List<KnowledgeNodeRelationRecord> = emptyList()
+
+    override suspend fun readKnowledgeNodeRelationsForDependents(
+        subject: String,
+        dependentKnowledgeNodeIds: Set<String>,
+    ): List<KnowledgeNodeRelationRecord> = emptyList()
+
+    override suspend fun readKnowledgeTeachingMaterialsForNodes(
+        subject: String,
+        knowledgeNodeIds: Set<String>,
+        limit: Int,
+    ): List<KnowledgeTeachingMaterialRecord> = emptyList()
+
+    override suspend fun readKnowledgeTeachingMaterialsByIds(materialIds: Set<String>):
+        List<KnowledgeTeachingMaterialRecord> = emptyList()
+
+    override suspend fun readKnowledgeTeachingMaterialNodeBindings(materialIds: Set<String>):
+        List<KnowledgeTeachingMaterialNodeBindingRecord> = emptyList()
+
+    override fun observePendingKnowledgeGroundingRequests(
+        limit: Int,
+    ): Flow<List<KnowledgeGroundingRequestRecord>> = MutableStateFlow(emptyList())
+
+    override suspend fun readPendingKnowledgeResearchReviewBundles(limit: Int):
+        List<KnowledgeResearchReviewBundleRecord> = emptyList()
+
+    override suspend fun readKnowledgeResearchReviewBundle(bundleId: String):
+        KnowledgeResearchReviewBundleRecord? = null
+
+    override suspend fun readKnowledgeGroundingResolution(groundingKey: String):
+        KnowledgeGroundingResolutionRecord? = null
+
+    override suspend fun importKnowledgeNodeRelations(
+        relations: List<KnowledgeNodeRelationRecord>,
+    ) = Unit
+
+    override suspend fun importKnowledgeTeachingMaterials(
+        materials: List<KnowledgeTeachingMaterialRecord>,
+        bindings: List<KnowledgeTeachingMaterialNodeBindingRecord>,
+        sources: List<KnowledgeSourceSeedRecord>,
+    ) = Unit
+
+    override suspend fun importKnowledgeBase(
+        sources: List<KnowledgeSourceSeedRecord>,
+        nodes: List<KnowledgeNodeSeedRecord>,
+        bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
+    ) = Unit
+
+    override suspend fun applyReviewedKnowledgePack(
+        command: ApplyReviewedKnowledgePackCommand,
+    ): List<KnowledgeGroundingResolutionRecord> = emptyList()
+
+    override suspend fun enqueueKnowledgeResearchReviewBundle(
+        bundle: KnowledgeResearchReviewBundleRecord,
+    ) = Unit
+
+    override suspend fun decideKnowledgeResearchReviewBundle(
+        command: DecideKnowledgeResearchReviewBundleCommand,
+    ): KnowledgeResearchReviewBundleRecord =
+        error("Knowledge review is outside this study-repository fake")
+
+    override suspend fun applyApprovedKnowledgeResearchPack(
+        command: ApplyApprovedKnowledgeResearchPackCommand,
+    ): List<KnowledgeGroundingResolutionRecord> = emptyList()
+
+    override suspend fun recordKnowledgeGroundingRequests(
+        requests: List<KnowledgeGroundingRequestRecord>,
+    ) = Unit
+
+    override suspend fun resolveKnowledgeGrounding(
+        command: ResolveKnowledgeGroundingCommand,
+    ): KnowledgeGroundingResolutionRecord =
+        error("Knowledge grounding is outside this study-repository fake")
+
+    override suspend fun readMistakeDetail(errorBookEntryId: String): MistakeDetailRecord? =
+        null
+
+    override suspend fun readExactMistakeDetail(
+        entryId: String,
+        problemId: String,
+        problemRevisionId: String,
+    ): MistakeDetailRecord? = null
+
+    override suspend fun readCurrentMistakeDetails(entryIds: List<String>):
+        List<MistakeDetailRecord> = emptyList()
+
+    override suspend fun readMistakeRevisionHistory(problemId: String):
+        List<MistakeRevisionSummaryRecord> = emptyList()
+
+    override suspend fun checkpointForBackup() = Unit
+
+    override suspend fun clearAllData() {
+        entries.clear()
+        mistakes.value = emptyList()
+    }
+
+    override fun observeBatchImportJobs(): Flow<List<BatchImportJobRecord>> =
+        MutableStateFlow(emptyList())
+
+    override suspend fun createBatchImportJob(
+        command: CreateBatchImportJobCommand,
+    ): BatchImportJobRecord = error("Batch import is outside this study-repository fake")
+
+    override suspend fun readBatchImportJob(jobId: String): BatchImportJobRecord? = null
+
+    override suspend fun updateBatchImportJobStatus(
+        jobId: String,
+        expectedStatus: String,
+        nextStatus: String,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun requeueInterruptedBatchImportPages(
+        jobId: String,
+        occurredAtEpochMillis: Long,
+    ): Int = 0
+
+    override suspend fun claimNextBatchImportPage(
+        jobId: String,
+        occurredAtEpochMillis: Long,
+    ): BatchImportPageRecord? = null
+
+    override suspend fun completeBatchImportPage(
+        jobId: String,
+        pageIndex: Int,
+        draftId: String,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun claimBatchImportBoundary(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun requeueInterruptedBatchImportBoundaries(
+        jobId: String,
+        occurredAtEpochMillis: Long,
+    ): Int = 0
+
+    override suspend fun resolveBatchImportBoundary(
+        command: ResolveBatchImportBoundaryCommand,
+    ): BatchImportJobRecord = error("Batch import is outside this study-repository fake")
+
+    override suspend fun failBatchImportBoundary(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun failBatchImportPage(
+        jobId: String,
+        pageIndex: Int,
+        failureCode: String,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun retryBatchImportPage(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun skipBatchImportPage(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun finishBatchImportIfSettled(
+        jobId: String,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
+    override suspend fun hasRetainedBatchImportSourceUri(sourceUri: String): Boolean = false
+
+    override fun observeConfirmedProblemOrganization(
+        problemId: String,
+        problemRevisionId: String,
+    ): Flow<ConfirmedProblemOrganizationRecord> = MutableStateFlow(
+        ConfirmedProblemOrganizationRecord(
+            classifications = emptyList(),
+            relations = emptyList(),
+            knowledgeNodeIds = emptySet(),
+        ),
+    )
 
     override suspend fun seedFixture(bundle: StudySeedBundle): SeedResult {
         seedCallCount++
