@@ -41,7 +41,16 @@ jobs:
       - name: Assemble strict offline debug
         run: ./gradlew :app:assembleStrictOfflineDebug --console=plain
       - name: Assemble release dry run
-        run: ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease --console=plain
+        run: |
+          keytool -genkeypair -v -keystore ci-release-dry-run.keystore \
+            -alias ci-dry-run -keyalg RSA -keysize 2048 -validity 365 \
+            -storepass ci-dry-run-pass -keypass ci-dry-run-pass \
+            -dname "CN=CI Dry Run, OU=CI, O=Lab, L=NA, S=NA, C=US"
+          RELEASE_STORE_FILE="$PWD/ci-release-dry-run.keystore" \
+          RELEASE_STORE_PASSWORD=ci-dry-run-pass \
+          RELEASE_KEY_ALIAS=ci-dry-run \
+          RELEASE_KEY_PASSWORD=ci-dry-run-pass \
+          ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease --console=plain
       - name: Compile macrobenchmark and baseline profile module
         run: ./gradlew :benchmark:assembleDebug --console=plain
       - name: Lint

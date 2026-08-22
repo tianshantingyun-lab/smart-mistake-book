@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.androidx.room3) apply false
+    alias(libs.plugins.androidx.baselineprofile) apply false
 }
