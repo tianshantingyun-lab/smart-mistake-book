@@ -22,7 +22,8 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # 单测 + 多次 assemble + lint 串行执行，预防性放宽到 60 分钟。
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -82,7 +83,9 @@ jobs:
 
   instrumented:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 模拟器启动最长可占约 30 分钟（boot timeout 1800s），再加 9 个 connected 测试任务，
+    # 60 分钟余量不足，放宽到 90 分钟。
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -98,7 +101,9 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-boot-timeout: 900
+          # CI run 32659221749：模拟器实际 913 秒才启动完成，却被 900 秒阈值判死；
+          # 放宽到 1800 秒，避免把慢启动误判为失败。
+          emulator-boot-timeout: 1800
           # emulator-runner runs each non-empty `script` line in its own
           # `sh -c` (its parseScript splits on newlines), so backslash line
           # continuations do NOT work - the trailing backslash is passed to
