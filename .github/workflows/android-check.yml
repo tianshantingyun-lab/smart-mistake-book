@@ -95,6 +95,15 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
+      # CI run 32662033881：模拟器以 -accel off 软件模拟冷启动耗时 1023 秒，
+      # 测试调度阶段 9 次 ShellCommandUnresponsiveException、API Level 探测失败，
+      # 0 条测试执行。GitHub ubuntu-latest 支持 KVM，按官方推荐先授权 /dev/kvm，
+      # 让 emulator-runner（disable-linux-hw-accel 默认 auto）自动启用硬件加速。
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -102,8 +111,12 @@ jobs:
           arch: x86_64
           profile: pixel_6
           # CI run 32659221749：模拟器实际 913 秒才启动完成，却被 900 秒阈值判死；
-          # 放宽到 1800 秒，避免把慢启动误判为失败。
+          # 放宽到 1800 秒，避免把慢启动误判为失败。启用 KVM 后启动应显著加快，
+          # 保留宽阈值仅作为兜底。
           emulator-boot-timeout: 1800
+          # 不显式传 -accel off / -no-snapshot：默认 emulator-options
+          # (-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim)
+          # 已满足无头 CI 需求，硬件加速由 action 依据 KVM 可用性自动决定。
           # emulator-runner runs each non-empty `script` line in its own
           # `sh -c` (its parseScript splits on newlines), so backslash line
           # continuations do NOT work - the trailing backslash is passed to

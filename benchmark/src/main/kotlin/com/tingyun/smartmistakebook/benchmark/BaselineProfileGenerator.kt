@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.benchmark
 
+import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.benchmark.macro.junit4.BaselineProfileRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -78,7 +79,7 @@ class BaselineProfileGenerator {
         )
     }
 
-    private fun androidx.benchmark.macro.BaselineProfileScope.clickTag(tag: String) {
+    private fun MacrobenchmarkScope.clickTag(tag: String) {
         runCatching {
             device.wait(Until.hasObject(By.res(packageName, tag)), WAIT_MS)
             device.findObject(By.res(packageName, tag))?.click()
@@ -86,7 +87,7 @@ class BaselineProfileGenerator {
         }
     }
 
-    private fun androidx.benchmark.macro.BaselineProfileScope.scrollUp() {
+    private fun MacrobenchmarkScope.scrollUp() {
         runCatching {
             val height = device.displayHeight
             val width = device.displayWidth
