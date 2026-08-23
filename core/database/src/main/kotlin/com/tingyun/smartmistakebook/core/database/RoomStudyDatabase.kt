@@ -189,11 +189,10 @@ internal class RoomStudyDatabase(
                 "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
         ).forEach { sql ->
             connection.usePrepared(sql) { statement -> statement.step() }
-        } }
+        }
     }
 
     override suspend fun refreshLibrarySearchProjection() {
-
         database.withWriteTransaction {
             val dao = database.libraryFtsSearchDao()
             ensureSearchTriggers()
@@ -2744,7 +2743,9 @@ private class RefreshingPagingSource<T : Any>(
     private val beforeLoad: suspend () -> Unit,
     private val delegate: PagingSource<Int, T>,
 ) : PagingSource<Int, T>() {
-    override fun getRefreshKey(state: androidx.paging.PagingState<Int, T>): Int? =         delegate.getRefreshKey(state) 
+    override fun getRefreshKey(state: androidx.paging.PagingState<Int, T>): Int? {
+        return delegate.getRefreshKey(state)
+    }
     override suspend fun load(params: PagingSource.LoadParams<Int>): PagingSource.LoadResult<Int, T> {
         runCatching { beforeLoad() }
         return delegate.load(params)

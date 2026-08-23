@@ -99,6 +99,10 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-boot-timeout: 900
+          # emulator-runner runs each non-empty `script` line in its own
+          # `sh -c` (its parseScript splits on newlines), so backslash line
+          # continuations do NOT work - the trailing backslash is passed to
+          # Gradle as a literal task name. Keep gradle on a single line.
           script: |
             ./gradlew :core:database:connectedDebugAndroidTest :core:data:connectedDebugAndroidTest :core:visual-ui:connectedDebugAndroidTest :core:export:connectedDebugAndroidTest :feature:capture:connectedDebugAndroidTest :feature:tutor:connectedDebugAndroidTest :feature:library:connectedDebugAndroidTest :app:connectedLocalFirstDebugAndroidTest :app:connectedStrictOfflineDebugAndroidTest --console=plain
       - name: Fail if any benchmark/beta gate is hardcoded (moved to targets)
