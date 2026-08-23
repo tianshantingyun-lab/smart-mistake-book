@@ -58,6 +58,7 @@ import java.io.File
 import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
+import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 
 internal class RoomStudyDatabase(
     internal val database: StudyDatabase,
@@ -658,6 +659,22 @@ internal class RoomStudyDatabase(
                     feasible = row.feasible,
                     feedback = row.feedback,
                     attemptedAtEpochMillis = row.attemptedAtEpochMillis,
+                )
+            }
+
+    override suspend fun readPracticeUnitKnowledgeBindings(
+        practiceUnitId: String,
+    ): List<PracticeUnitKnowledgeBindingRecord> =
+        database.problemOrganizationDao()
+            .readKnowledgeBindingsForPracticeUnit(practiceUnitId)
+            .map { row ->
+                PracticeUnitKnowledgeBindingRecord(
+                    bindingId = row.bindingId,
+                    practiceUnitId = row.practiceUnitId,
+                    knowledgeNodeId = row.knowledgeNodeId,
+                    basisRevisionId = row.basisRevisionId,
+                    taxonomyVersion = row.taxonomyVersion,
+                    acceptedAtEpochMillis = row.acceptedAtEpochMillis,
                 )
             }
 

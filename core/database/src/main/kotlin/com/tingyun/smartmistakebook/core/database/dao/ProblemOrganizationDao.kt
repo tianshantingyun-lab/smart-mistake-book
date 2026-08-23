@@ -208,6 +208,17 @@ internal interface ProblemOrganizationDao {
 
     @Query(
         """
+        SELECT * FROM practice_unit_knowledge_binding
+        WHERE practice_unit_id = :practiceUnitId
+        ORDER BY accepted_at_epoch_millis, binding_id
+        """,
+    )
+    suspend fun readKnowledgeBindingsForPracticeUnit(
+        practiceUnitId: String,
+    ): List<PracticeUnitKnowledgeBindingEntity>
+
+    @Query(
+        """
         SELECT DISTINCT binding.knowledge_node_id
         FROM practice_unit_knowledge_binding AS binding
         INNER JOIN practice_unit AS unit

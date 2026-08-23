@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
 import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.ConsumedLedgerEventReceipt
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.LearningLedgerIntegrityException
@@ -73,8 +74,11 @@ import com.tingyun.smartmistakebook.core.model.AttemptCorrection
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
+import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
+import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
+import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.LearningEvidence
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
@@ -263,6 +267,14 @@ class RoomBackedStudyExperienceRepository(
             latestPendingCorrectionCount = database.observePendingProblemDraftCount().first()
             latestKnowledgeCoverage = observeKnowledgeCoverageOverview().first()
             initialized = true
+            try {
+                ingestPendingVisualInteractionAttempts(latestMistakes)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Throwable) {
+                // Visual-evidence ingestion degrades silently, mirroring the
+                // shadow audit loop: it must never block startup (audit §12).
+            }
             publishReadySnapshot(latestMistakes)
         }
     }
@@ -703,6 +715,148 @@ class RoomBackedStudyExperienceRepository(
             totalPredictions = resolved.size,
             generatedAtEpochMillis = clock.millis(),
         )
+    }
+
+    /** Calibration for the shadow student-model generation writing predictions today. */
+    override suspend fun calibrationReport(): CalibrationReport =
+        calibrationReport(predictionAuditService.modelVersion)
+
+    /**
+     * Visual-interaction attempts become ledger attempts exactly once per
+     * recorded attemptId (audit §12 / PR-11): the stable submission id makes
+     * [StudyDatabasePort.recordAttempt] replay-safe, so repeated sweeps can
+     * never double-count an interaction.
+     */
+    override suspend fun ingestVisualInteractionAttempts(): Int = runOperation {
+        val mistakes = database.observeMistakes().first()
+        latestMistakes = mistakes
+        initialized = true
+        val created = ingestPendingVisualInteractionAttempts(mistakes)
+        if (created > 0) {
+            publishReadySnapshot(latestMistakes)
+        }
+        created
+    }
+
+    private suspend fun ingestPendingVisualInteractionAttempts(
+        mistakes: List<MistakeRecord>,
+    ): Int {
+        var createdCount = 0
+        mistakes
+            .distinctBy(MistakeRecord::practiceUnitId)
+            .forEach { mistake ->
+                database.readVisualInteractionAttempts(mistake.problemRevisionId)
+                    .forEach { attempt ->
+                        if (ingestVisualInteractionAttempt(attempt, mistake)) {
+                            createdCount += 1
+                        }
+                    }
+            }
+        return createdCount
+    }
+
+    /**
+     * Converts one judged visual interaction into ledger evidence. Stays
+     * conservative on purpose (audit §12): only actions with a decisive
+     * local verdict, anchored to one active saved question that already has
+     * accepted knowledge bindings, may enter the mastery ledger.
+     */
+    private suspend fun ingestVisualInteractionAttempt(
+        attempt: VisualInteractionAttemptRecord,
+        mistake: MistakeRecord,
+    ): Boolean {
+        // Exploratory selects and UNDECIDABLE tool actions (draw/measure/reset)
+        // carry no answer semantics and stay audit-only.
+        if (attempt.actionKind !in DECISIVE_VISUAL_ACTION_KINDS) return false
+        if (attempt.problemRevisionId != mistake.problemRevisionId) return false
+        val bindings = database.readPracticeUnitKnowledgeBindings(mistake.practiceUnitId)
+            .filter { binding -> binding.basisRevisionId == mistake.problemRevisionId }
+            .sortedWith(compareBy({ it.acceptedAtEpochMillis }, { it.bindingId }))
+        if (bindings.isEmpty()) return false
+        val taxonomyVersion = bindings.first().taxonomyVersion
+        val attributed = bindings.filter { it.taxonomyVersion == taxonomyVersion }
+        val secondaryWeight = SECONDARY_VISUAL_ATTRIBUTION_WEIGHT_POOL /
+            (attributed.size - 1).coerceAtLeast(1)
+        val attributions = attributed.mapIndexed { index, binding ->
+            KnowledgeEvidenceAttribution(
+                bindingId = binding.bindingId,
+                knowledgeNodeId = binding.knowledgeNodeId,
+                weight = if (index == 0) {
+                    PRIMARY_VISUAL_ATTRIBUTION_WEIGHT
+                } else {
+                    secondaryWeight
+                },
+                basisRevisionId = mistake.problemRevisionId,
+                taxonomyVersion = taxonomyVersion,
+                role = if (index == 0) {
+                    EvidenceAttributionRole.PRIMARY
+                } else {
+                    EvidenceAttributionRole.SECONDARY
+                },
+                certainty = EvidenceAttributionCertainty.DIRECT,
+            )
+        }
+        val evidence = if (attempt.feasible) {
+            LearningEvidence(
+                direction = LearningEvidenceDirection.POSITIVE,
+                weight = VISUAL_SATISFIED_WEIGHT,
+                reason = LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED,
+            )
+        } else {
+            LearningEvidence(
+                direction = LearningEvidenceDirection.NEGATIVE,
+                weight = VISUAL_VIOLATED_WEIGHT,
+                reason = LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
+            )
+        }
+        val snapshot = AssessmentEvidenceSnapshot(
+            snapshotId = stableId("visual-snapshot", attempt.attemptId),
+            assessmentItemId = VISUAL_ASSESSMENT_ITEM_ID_PREFIX + stableId(
+                namespace = "item",
+                requestId = "${mistake.practiceUnitId}\n${attempt.attemptId}",
+            ),
+            practiceUnitId = mistake.practiceUnitId,
+            problemRevisionId = mistake.problemRevisionId,
+            answerSpecId = VISUAL_ANSWER_SPEC_ID,
+            itemFamilyId = VISUAL_ITEM_FAMILY_ID,
+            sourceBundleId = null,
+            taxonomyVersion = taxonomyVersion,
+            verification = AssessmentSnapshotVerification.VERIFIED,
+            calibration = CalibrationSnapshot.unknown(),
+            attributions = attributions,
+            capturedAtEpochMillis = attempt.attemptedAtEpochMillis,
+        )
+        database.saveAssessmentEvidenceSnapshot(snapshot)
+        val writeResult = database.recordAttempt(
+            AttemptWriteCommand(
+                learnerId = learnerId,
+                submissionId = stableId("submission", "visual-attempt:${attempt.attemptId}"),
+                attemptId = stableId("attempt", "visual-attempt:${attempt.attemptId}"),
+                presentationId = stableId("visual-presentation", attempt.attemptId),
+                assessmentSnapshotId = snapshot.snapshotId,
+                submittedResponse = AttemptSubmittedResponse.Choice(
+                    choiceId = if (attempt.feasible) "visual:SATISFIED" else "visual:VIOLATED",
+                    choiceMarkdown = attempt.feedback.ifBlank {
+                        if (attempt.feasible) {
+                            "操作满足题目条件"
+                        } else {
+                            "操作不满足题目条件"
+                        }
+                    },
+                    submittedAtEpochMillis = attempt.attemptedAtEpochMillis,
+                ),
+                evidence = evidence,
+                problemMemoryOutcome = if (attempt.feasible) {
+                    ProblemMemoryOutcome.ASSISTED_RECALL
+                } else {
+                    ProblemMemoryOutcome.RETRIEVAL_FAILURE
+                },
+                occurredAtEpochMillis = attempt.attemptedAtEpochMillis,
+                durationSeconds = 0,
+                studyDay = studyDayAt(attempt.attemptedAtEpochMillis),
+            ),
+        )
+        return writeResult.created
     }
 
     private suspend fun currentLearnerSnapshot(): LearnerSnapshot =
@@ -1383,6 +1537,20 @@ class RoomBackedStudyExperienceRepository(
         private const val MAX_KNOWLEDGE_TOPIC_DEPTH = 6
         private const val SELF_REPORTED_RECALL_WEIGHT = 0.35
         private const val SELF_REPORTED_STUCK_WEIGHT = 0.5
+        private const val VISUAL_SATISFIED_WEIGHT = 0.25
+        private const val VISUAL_VIOLATED_WEIGHT = 0.5
+        private const val PRIMARY_VISUAL_ATTRIBUTION_WEIGHT = 0.6
+        private const val SECONDARY_VISUAL_ATTRIBUTION_WEIGHT_POOL = 0.4
+        private const val VISUAL_ASSESSMENT_ITEM_ID_PREFIX = "local-visual-interaction:"
+        private const val VISUAL_ANSWER_SPEC_ID = "local-visual-interaction-v1"
+        private const val VISUAL_ITEM_FAMILY_ID = "local-visual-interaction"
+        private val DECISIVE_VISUAL_ACTION_KINDS = setOf(
+            "DragPoint",
+            "AdjustParameter",
+            "Connect",
+            "OrderItems",
+            "SubmitHypothesis",
+        )
         private const val PROJECTION_BATCH_SIZE = 100
         private const val MAX_CAS_RETRIES = 4
         private const val MAX_PROJECTION_DRAIN_STEPS = 64

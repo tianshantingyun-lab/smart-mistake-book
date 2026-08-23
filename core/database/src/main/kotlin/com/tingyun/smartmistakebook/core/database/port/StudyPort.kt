@@ -50,6 +50,15 @@ interface VisualInteractionPort {
     suspend fun readVisualInteractionAttempts(
         problemRevisionId: String,
     ): List<VisualInteractionAttemptRecord> = emptyList()
+
+    /**
+     * Accepted knowledge bindings for one practice unit. Judged visual
+     * evidence may only enter the mastery ledger through a confirmed
+     * binding; an empty list keeps the evidence audit-only.
+     */
+    suspend fun readPracticeUnitKnowledgeBindings(
+        practiceUnitId: String,
+    ): List<PracticeUnitKnowledgeBindingRecord> = emptyList()
 }
 
 /** Port-level prediction record for the student-model audit loop (PR-07). */
@@ -89,4 +98,14 @@ data class VisualInteractionAttemptRecord(
     val feasible: Boolean,
     val feedback: String,
     val attemptedAtEpochMillis: Long,
+)
+
+/** Port-level record of one accepted practice-unit/knowledge binding. */
+data class PracticeUnitKnowledgeBindingRecord(
+    val bindingId: String,
+    val practiceUnitId: String,
+    val knowledgeNodeId: String,
+    val basisRevisionId: String,
+    val taxonomyVersion: String,
+    val acceptedAtEpochMillis: Long,
 )

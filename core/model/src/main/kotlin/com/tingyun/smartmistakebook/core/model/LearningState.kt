@@ -17,6 +17,8 @@ enum class LearningEvidenceReason {
     INCORRECT_ON_RETRY,
     INCORRECT_AFTER_REVEAL,
     SELF_REPORTED_STUCK,
+    VISUAL_INTERACTION_SATISFIED,
+    VISUAL_INTERACTION_VIOLATED,
 }
 
 /** Signed evidence whose independence is derived from its reason, never supplied by a caller. */
@@ -38,6 +40,7 @@ data class LearningEvidence(
                 LearningEvidenceReason.CORRECT_AFTER_HINT,
                 LearningEvidenceReason.CORRECT_ON_RETRY,
                 LearningEvidenceReason.SELF_REPORTED_RECALL,
+                LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED,
                 -> direction == LearningEvidenceDirection.POSITIVE
 
                 LearningEvidenceReason.INDEPENDENT_INCORRECT,
@@ -45,6 +48,7 @@ data class LearningEvidence(
                 LearningEvidenceReason.INCORRECT_ON_RETRY,
                 LearningEvidenceReason.INCORRECT_AFTER_REVEAL,
                 LearningEvidenceReason.SELF_REPORTED_STUCK,
+                LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
                 -> direction == LearningEvidenceDirection.NEGATIVE
 
                 LearningEvidenceReason.ANSWER_REVEALED ->

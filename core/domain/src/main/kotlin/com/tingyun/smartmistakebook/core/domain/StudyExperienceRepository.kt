@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import com.tingyun.smartmistakebook.core.model.CalibrationReport
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.LearningModelVersion
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ReviewReason
 import com.tingyun.smartmistakebook.core.model.SubjectKind
@@ -322,6 +324,31 @@ interface StudyExperienceRepository : AutoCloseable {
         requestId: String,
         occurredAtEpochMillis: Long,
     ): StudyReviewSessionProgress?
+
+    /**
+     * Ingests locally judged visual-interaction attempts as ledger evidence
+     * (audit §12 / PR-11). Only decisive verdicts for active saved questions
+     * with confirmed knowledge bindings are converted; everything else is
+     * skipped so visual evidence can never be mis-attributed.
+     * @return number of newly created ledger attempts.
+     */
+    suspend fun ingestVisualInteractionAttempts(): Int = 0
+
+    /** Calibration of the shadow student model over resolved predictions (audit §6.3 / PR-07). */
+    suspend fun calibrationReport(): CalibrationReport = CalibrationReport(
+        modelVersion = LearningModelVersion(
+            modelId = HLRPredictionAuditService.MODEL_ID,
+            version = HLRPredictionAuditService.MODEL_VERSION_STRING,
+            algorithmHash = HLRPredictionAuditService.ALGORITHM_HASH,
+        ),
+        totalPredictions = 0,
+        resolvedPredictions = 0,
+        overallBrierScore = 0.0,
+        expectedCalibrationError = 0.0,
+        maximumCalibrationDeviation = 0.0,
+        buckets = emptyList(),
+        generatedAtEpochMillis = 0L,
+    )
 }
 
 /**

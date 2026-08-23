@@ -61,6 +61,7 @@ import com.tingyun.smartmistakebook.core.domain.BackupValidation
 import com.tingyun.smartmistakebook.core.domain.StorageInventory
 import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.CalibrationReport
 import com.tingyun.smartmistakebook.core.model.NetworkMode
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -105,6 +106,7 @@ internal fun CapabilityScreen(
     configurationStore: ModelConfigurationStore?,
     capabilityTester: ModelCapabilityTester?,
     onBack: () -> Unit,
+    calibrationReportProvider: (suspend () -> CalibrationReport)? = null,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
@@ -123,6 +125,20 @@ internal fun CapabilityScreen(
     var operation by remember { mutableStateOf(CapabilityOperation.IDLE) }
     var operationMessage by remember { mutableStateOf<String?>(null) }
     val formEnabled = operation == CapabilityOperation.IDLE
+    var calibrationReport by remember { mutableStateOf<CalibrationReport?>(null) }
+    var calibrationUnavailable by remember { mutableStateOf(false) }
+
+    LaunchedEffect(calibrationReportProvider) {
+        val provider = calibrationReportProvider ?: return@LaunchedEffect
+        calibrationReport = try {
+            provider()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            calibrationUnavailable = true
+            null
+        }
+    }
 
     LaunchedEffect(configuration.configurationVersion, configuration.updatedAtEpochMillis) {
         provider = configuration.provider
@@ -350,6 +366,90 @@ internal fun CapabilityScreen(
                 color = InkSecondary,
                 style = MaterialTheme.typography.bodyLarge,
             )
+        }
+        if (calibrationReportProvider != null) {
+            PaperDivider(Modifier.padding(vertical = 16.dp))
+            SectionHeader("学习模型校准")
+            val report = calibrationReport
+            when {
+                calibrationUnavailable -> Text(
+                    text = "校准数据暂不可用，请稍后再试。",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .testTag("capability_calibration_error"),
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                report == null -> Text(
+                    text = "正在读取校准数据…",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .testTag("capability_calibration_loading"),
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                report.resolvedPredictions == 0 -> Text(
+                    text = "还没有已验证的预测样本。完成复习后，影子预测会与真实结果对比，并在这里生成校准指标。",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .testTag("capability_calibration_empty"),
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                else -> Column(Modifier.padding(top = 8.dp)) {
+                    Text(
+                        text = "模型 ${report.modelVersion.modelId} · ${report.modelVersion.version}",
+                        modifier = Modifier.testTag("capability_calibration_model"),
+                        color = InkSecondary,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Text(
+                        text = "已验证预测 ${report.resolvedPredictions}/${report.totalPredictions}",
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .testTag("capability_calibration_resolved"),
+                        color = Ink,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = "Brier 分数 " + "%.4f".format(report.overallBrierScore),
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .testTag("capability_calibration_brier"),
+                        color = Ink,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    report.overallLogLoss?.let { logLoss ->
+                        Text(
+                            text = "对数损失 " + "%.4f".format(logLoss),
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .testTag("capability_calibration_log_loss"),
+                            color = Ink,
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                    Text(
+                        text = "期望校准误差 ECE " + "%.4f".format(report.expectedCalibrationError),
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .testTag("capability_calibration_ece"),
+                        color = Ink,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = "最大分桶偏差 " + "%.4f".format(report.maximumCalibrationDeviation),
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .testTag("capability_calibration_max_deviation"),
+                        color = Ink,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
         }
     }
 }

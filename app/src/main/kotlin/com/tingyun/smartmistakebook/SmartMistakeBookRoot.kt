@@ -894,6 +894,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     capabilities = capabilities,
                     configurationStore = application.modelConfigurationStore,
                     capabilityTester = application.modelCapabilityTester,
+                    calibrationReportProvider = { application.studyRepository.calibrationReport() },
                     onBack = navController::popBackStack,
                 )
             }
