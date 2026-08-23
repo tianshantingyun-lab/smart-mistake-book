@@ -72,26 +72,53 @@ class LibrarySearchMigrationInstrumentedTest {
     }
 
     @Test
-    fun migratedDatabaseMatchesExportedSchemaThirtyTwoSqliteMaster() {
+    fun migratedDatabaseMatchesExportedSchemaSqliteMaster() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val referenceName = "library-search-ref-${System.nanoTime()}.db"
         val migratedName = "library-search-mig-${System.nanoTime()}.db"
         context.deleteDatabase(referenceName)
         context.deleteDatabase(migratedName)
         try {
-            // Reference: built purely from the exported 32.json createSql.
-            createDatabaseFromExportedSchema(context, referenceName, version = 32)
+            // Reference: built purely from the current exported schema JSON.
+            createDatabaseFromExportedSchema(
+                context,
+                referenceName,
+                version = STUDY_DATABASE_VERSION,
+            )
             // Candidate: 31.json schema pushed through the real migration chain.
             createDatabaseFromExportedSchema(context, migratedName, version = 31)
             runBlocking {
                 val migrated = StudyDatabaseFactory.open(context, migratedName)
                 migrated.close()
             }
-            // Neither path creates sync triggers before the first search
-            // refresh, so sqlite_master must agree row for row.
+            // The migration chain intentionally does not create the FTS/outbox
+            // triggers (they are created lazily by the first search refresh),
+            // so the migrated schema must match the current exported schema
+            // row for row.
             assertEquals(
                 readSqliteMaster(context.getDatabasePath(referenceName)),
                 readSqliteMaster(context.getDatabasePath(migratedName)),
+            )
+            // Positive check for the lazy-trigger design: the first refresh
+            // creates exactly the six search triggers.
+            runBlocking {
+                val refreshed = StudyDatabaseFactory.open(context, migratedName)
+                refreshed.refreshLibrarySearchProjection()
+                refreshed.close()
+            }
+            val triggerNames = readSqliteMaster(context.getDatabasePath(migratedName))
+                .filter { it[0] == "trigger" }
+                .map { it[1] }
+            assertEquals(
+                setOf(
+                    "room_fts_content_sync_library_search_fts_AFTER_INSERT",
+                    "room_fts_content_sync_library_search_fts_AFTER_UPDATE",
+                    "room_fts_content_sync_library_search_fts_BEFORE_DELETE",
+                    "room_fts_content_sync_library_search_fts_BEFORE_UPDATE",
+                    "library_search_outbox_revision_insert",
+                    "library_search_outbox_revision_update",
+                ),
+                triggerNames.toSet(),
             )
         } finally {
             context.deleteDatabase(referenceName)
@@ -197,7 +224,8 @@ class LibrarySearchMigrationInstrumentedTest {
         )
         try {
             val cursor = database.rawQuery(
-                "SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY type, name",
+                "SELECT type, name, tbl_name, sql FROM sqlite_master " +
+                    "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name",
                 null,
             )
             val rows = mutableListOf<List<String?>>()

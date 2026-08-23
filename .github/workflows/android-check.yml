@@ -22,6 +22,11 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # The generated status report is pushed back to the branch on main
+    # pushes; the default GITHUB_TOKEN is read-only, so grant
+    # contents:write to this job only.
+    permissions:
+      contents: write
     # 单测 + 多次 assemble + lint 串行执行，预防性放宽到 60 分钟。
     timeout-minutes: 60
     steps:

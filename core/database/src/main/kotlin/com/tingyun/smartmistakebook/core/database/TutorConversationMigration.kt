@@ -76,5 +76,12 @@ internal val TUTOR_CONVERSATION_DRAFT_MIGRATION_30_31 = object : Migration(30, 3
         connection.execSQL(
             "ALTER TABLE `tutor_conversation` ADD COLUMN `student_draft` TEXT",
         )
+        // v31 replaces the boolean study-day trust flag with the richer
+        // time_trust classification; legacy rows were only admitted when
+        // trusted, so they default to TRUSTED.
+        connection.execSQL(
+            "ALTER TABLE `independent_correct_observation` " +
+                "ADD COLUMN `time_trust` TEXT NOT NULL DEFAULT 'TRUSTED'",
+        )
     }
 }

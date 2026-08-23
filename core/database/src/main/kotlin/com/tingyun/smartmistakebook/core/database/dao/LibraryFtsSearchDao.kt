@@ -254,7 +254,7 @@ interface LibraryFtsSearchDao {
     @Query(
         """
         SELECT catalog.*,
-               snippet('library_search_fts', '【', '】', '…', -1, 12) AS snippet
+               snippet(library_search_fts, '【', '】', '…', -1, 12) AS snippet
         FROM library_search_fts
         JOIN library_search_content AS content
             ON content.content_row_id = library_search_fts.docid
@@ -282,18 +282,66 @@ interface LibraryFtsSearchDao {
           )
           AND (:masteryId IS NULL OR catalog.mastery_id = :masteryId)
         ORDER BY (
-            4 * (CASE WHEN library_search_fts.stem_text MATCH :primaryStemPhrase THEN 1 ELSE 0 END)
-          + 3 * (CASE WHEN library_search_fts.solution_text MATCH :primarySolutionPhrase THEN 1 ELSE 0 END)
-          + 2 * (CASE WHEN library_search_fts.knowledge_points MATCH :primaryKnowledgePhrase THEN 1 ELSE 0 END)
-          + 2 * (CASE WHEN library_search_fts.subject MATCH :primarySubjectPhrase THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts.options_text MATCH :primaryOptionsPhrase THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts.chapter MATCH :primaryChapterPhrase THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts.tags MATCH :primaryTagsPhrase THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts.error_reason MATCH :primaryErrorReasonPhrase THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts.formula_tokens MATCH :primaryFormulaPhrase THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts MATCH :extraTokenPhrase1 THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts MATCH :extraTokenPhrase2 THEN 1 ELSE 0 END)
-          + (CASE WHEN library_search_fts MATCH :extraTokenPhrase3 THEN 1 ELSE 0 END)
+            4 * (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.stem_text MATCH :primaryStemPhrase
+            ) THEN 1 ELSE 0 END)
+          + 3 * (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.solution_text MATCH :primarySolutionPhrase
+            ) THEN 1 ELSE 0 END)
+          + 2 * (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.knowledge_points MATCH :primaryKnowledgePhrase
+            ) THEN 1 ELSE 0 END)
+          + 2 * (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.subject MATCH :primarySubjectPhrase
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.options_text MATCH :primaryOptionsPhrase
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.chapter MATCH :primaryChapterPhrase
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.tags MATCH :primaryTagsPhrase
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.error_reason MATCH :primaryErrorReasonPhrase
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts AS rank
+                WHERE rank.docid = content.content_row_id
+                  AND rank.formula_tokens MATCH :primaryFormulaPhrase
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts
+                WHERE library_search_fts.docid = content.content_row_id
+                  AND library_search_fts MATCH :extraTokenPhrase1
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts
+                WHERE library_search_fts.docid = content.content_row_id
+                  AND library_search_fts MATCH :extraTokenPhrase2
+            ) THEN 1 ELSE 0 END)
+          + (CASE WHEN EXISTS (
+                SELECT 1 FROM library_search_fts
+                WHERE library_search_fts.docid = content.content_row_id
+                  AND library_search_fts MATCH :extraTokenPhrase3
+            ) THEN 1 ELSE 0 END)
         ) DESC,
             CASE :sort WHEN 'RECENTLY_CREATED' THEN catalog.created_at_epoch_millis END DESC,
             CASE :sort WHEN 'NEXT_REVIEW' THEN catalog.next_review_at_epoch_millis END ASC,

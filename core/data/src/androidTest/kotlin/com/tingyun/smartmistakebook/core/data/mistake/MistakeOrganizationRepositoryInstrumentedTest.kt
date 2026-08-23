@@ -111,7 +111,7 @@ class MistakeOrganizationRepositoryInstrumentedTest {
 
         val first = repository.applySuccessfulOrganization("request-grounding")
         val replay = repository.applySuccessfulOrganization("request-grounding")
-        val pending = database.observePendingKnowledgeGroundingRequests().first()
+        val pending = database.observePendingKnowledgeGroundingRequests(limit = 512).first()
         val stored = database.observeConfirmedProblemOrganization(PROBLEM, REVISION).first()
 
         assertFalse(first.applied)
