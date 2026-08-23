@@ -2,7 +2,7 @@ package com.tingyun.smartmistakebook.core.data.model
 
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
-import com.tingyun.smartmistakebook.core.model.ModelGateway
+import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure

@@ -154,7 +154,7 @@ class AndroidBackupRepository(
         val nextAssets = File(filesDir, "$ASSET_DIRECTORY.next")
         var swapStarted = false
 
-        try {
+        return try {
             // Phase 1: Validate and unpack (counting compressed bytes for zip-bomb ratio)
             journal.writePhase(RestorePhase.VALIDATING)
             val countingSource = CountingInputStream(source)

@@ -275,7 +275,7 @@ internal object RestoreGenerationSupport {
     /** Delete every generation artifact and staging directory of [entry]. */
     fun cleanup(context: Context, entry: JournalEntry) {
         entry.previousDatabasePath?.let(::File)?.delete()
-        entry.nextDatabasePath?.let { next ->
+        entry.nextDatabasePath?.let(::File)?.let { next ->
             listOf(next, File("${next.absolutePath}-wal"), File("${next.absolutePath}-shm"))
                 .forEach(File::delete)
         }

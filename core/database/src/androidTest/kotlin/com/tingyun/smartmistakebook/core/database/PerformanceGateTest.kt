@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room3.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertTrue
@@ -213,7 +214,7 @@ class PerformanceGateTest {
 
         val latencies = mutableListOf<Long>()
         val jobs = (1..10).map { i ->
-            kotlinx.coroutines.async {
+            async {
                 val latency = measureTimeMillis {
                     database.ftsSearchCount("concurrent test $i")
                 }
