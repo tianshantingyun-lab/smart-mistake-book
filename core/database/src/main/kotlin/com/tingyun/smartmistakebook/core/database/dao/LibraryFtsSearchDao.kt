@@ -228,74 +228,14 @@ interface LibraryFtsSearchDao {
     suspend fun rebuildIndex()
 
     // ------------------------------------------------------------------
-    // Sync / outbox triggers (created lazily, byte-identical to 32.json)
+    // Sync / outbox triggers
     // ------------------------------------------------------------------
-
-    @Query(
-        "SELECT COUNT(*) FROM sqlite_master " +
-            "WHERE type = 'trigger' AND name LIKE 'room_fts_content_sync_library_search_fts%'",
-    )
-    suspend fun countFtsSyncTriggers(): Int
-
-    @Query(
-        "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_BEFORE_UPDATE " +
-            "BEFORE UPDATE ON `library_search_content` BEGIN " +
-            "DELETE FROM `library_search_fts` WHERE `docid`=OLD.`rowid`; END",
-    )
-    suspend fun createFtsSyncBeforeUpdateTrigger()
-
-    @Query(
-        "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_BEFORE_DELETE " +
-            "BEFORE DELETE ON `library_search_content` BEGIN " +
-            "DELETE FROM `library_search_fts` WHERE `docid`=OLD.`rowid`; END",
-    )
-    suspend fun createFtsSyncBeforeDeleteTrigger()
-
-    @Query(
-        "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_AFTER_UPDATE " +
-            "AFTER UPDATE ON `library_search_content` BEGIN " +
-            "INSERT INTO `library_search_fts`(`docid`, `stem_text`, `options_text`, " +
-            "`solution_text`, `subject`, `chapter`, `knowledge_points`, `tags`, " +
-            "`error_reason`, `formula_tokens`) VALUES (NEW.`rowid`, NEW.`stem_text`, " +
-            "NEW.`options_text`, NEW.`solution_text`, NEW.`subject`, NEW.`chapter`, " +
-            "NEW.`knowledge_points`, NEW.`tags`, NEW.`error_reason`, " +
-            "NEW.`formula_tokens`); END",
-    )
-    suspend fun createFtsSyncAfterUpdateTrigger()
-
-    @Query(
-        "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_AFTER_INSERT " +
-            "AFTER INSERT ON `library_search_content` BEGIN " +
-            "INSERT INTO `library_search_fts`(`docid`, `stem_text`, `options_text`, " +
-            "`solution_text`, `subject`, `chapter`, `knowledge_points`, `tags`, " +
-            "`error_reason`, `formula_tokens`) VALUES (NEW.`rowid`, NEW.`stem_text`, " +
-            "NEW.`options_text`, NEW.`solution_text`, NEW.`subject`, NEW.`chapter`, " +
-            "NEW.`knowledge_points`, NEW.`tags`, NEW.`error_reason`, " +
-            "NEW.`formula_tokens`); END",
-    )
-    suspend fun createFtsSyncAfterInsertTrigger()
-
-    @Query(
-        "SELECT COUNT(*) FROM sqlite_master " +
-            "WHERE type = 'trigger' AND name LIKE 'library_search_outbox_revision%'",
-    )
-    suspend fun countOutboxTriggers(): Int
-
-    @Query(
-        "CREATE TRIGGER IF NOT EXISTS library_search_outbox_revision_insert " +
-            "AFTER INSERT ON `problem_revision` BEGIN " +
-            "INSERT INTO `library_search_outbox` (`revision_id`, `queued_at_epoch_millis`) " +
-            "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
-    )
-    suspend fun createOutboxInsertTrigger()
-
-    @Query(
-        "CREATE TRIGGER IF NOT EXISTS library_search_outbox_revision_update " +
-            "AFTER UPDATE ON `problem_revision` BEGIN " +
-            "INSERT INTO `library_search_outbox` (`revision_id`, `queued_at_epoch_millis`) " +
-            "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
-    )
-    suspend fun createOutboxUpdateTrigger()
+    //
+    // Room classifies CREATE TRIGGER DDL as an UNKNOWN query type and
+    // rejects it in @Query, so the room_fts_content_sync_* and
+    // library_search_outbox_revision_* triggers are created lazily on the
+    // raw connection by RoomStudyDatabase.ensureSearchTriggers (DDL
+    // byte-identical to 32.json); they are deliberately not part of the DAO.
 
     // ------------------------------------------------------------------
     // Matching queries (FTS4; bm25() is FTS5-only and must never be used)

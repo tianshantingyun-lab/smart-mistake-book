@@ -100,16 +100,7 @@ jobs:
           profile: pixel_6
           emulator-boot-timeout: 900
           script: |
-            ./gradlew :core:database:connectedDebugAndroidTest \
-              :core:data:connectedDebugAndroidTest \
-              :core:visual-ui:connectedDebugAndroidTest \
-              :core:export:connectedDebugAndroidTest \
-              :feature:capture:connectedDebugAndroidTest \
-              :feature:tutor:connectedDebugAndroidTest \
-              :feature:library:connectedDebugAndroidTest \
-              :app:connectedLocalFirstDebugAndroidTest \
-              :app:connectedStrictOfflineDebugAndroidTest \
-              --console=plain
+            ./gradlew :core:database:connectedDebugAndroidTest :core:data:connectedDebugAndroidTest :core:visual-ui:connectedDebugAndroidTest :core:export:connectedDebugAndroidTest :feature:capture:connectedDebugAndroidTest :feature:tutor:connectedDebugAndroidTest :feature:library:connectedDebugAndroidTest :app:connectedLocalFirstDebugAndroidTest :app:connectedStrictOfflineDebugAndroidTest --console=plain
       - name: Fail if any benchmark/beta gate is hardcoded (moved to targets)
         run: |
           if rg -q "assertTrue.*1500L|return 1500L|0.5 // Placeholder|dataRecoveryDrillGate" benchmark app; then

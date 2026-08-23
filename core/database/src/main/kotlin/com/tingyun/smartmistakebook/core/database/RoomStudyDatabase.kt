@@ -149,19 +149,54 @@ internal class RoomStudyDatabase(
         )
     }
 
+    /**
+     * Idempotently create FTS content-sync and outbox triggers on the raw
+     * connection. Room rejects DDL in @Query, so this runs outside the DAO;
+     * IF NOT EXISTS keeps repeat calls cheap.
+     */
+    private suspend fun ensureSearchTriggers() {
+        database.useConnection(isReadOnly = false) { connection ->
+        listOf(
+            "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_BEFORE_UPDATE " +
+                "BEFORE UPDATE ON `library_search_content` BEGIN " +
+                "DELETE FROM `library_search_fts` WHERE `docid`=OLD.`rowid`; END",
+            "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_BEFORE_DELETE " +
+                "BEFORE DELETE ON `library_search_content` BEGIN " +
+                "DELETE FROM `library_search_fts` WHERE `docid`=OLD.`rowid`; END",
+            "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_AFTER_UPDATE " +
+                "AFTER UPDATE ON `library_search_content` BEGIN " +
+                "INSERT INTO `library_search_fts`(`docid`, `stem_text`, `options_text`, " +
+                "`solution_text`, `subject`, `chapter`, `knowledge_points`, `tags`, " +
+                "`error_reason`, `formula_tokens`) VALUES (NEW.`rowid`, NEW.`stem_text`, " +
+                "NEW.`options_text`, NEW.`solution_text`, NEW.`subject`, NEW.`chapter`, " +
+                "NEW.`knowledge_points`, NEW.`tags`, NEW.`error_reason`, " +
+                "NEW.`formula_tokens`); END",
+            "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_AFTER_INSERT " +
+                "AFTER INSERT ON `library_search_content` BEGIN " +
+                "INSERT INTO `library_search_fts`(`docid`, `stem_text`, `options_text`, " +
+                "`solution_text`, `subject`, `chapter`, `knowledge_points`, `tags`, " +
+                "`error_reason`, `formula_tokens`) VALUES (NEW.`rowid`, NEW.`stem_text`, " +
+                "NEW.`options_text`, NEW.`solution_text`, NEW.`subject`, NEW.`chapter`, " +
+                "NEW.`knowledge_points`, NEW.`tags`, NEW.`error_reason`, " +
+                "NEW.`formula_tokens`); END",
+            "CREATE TRIGGER IF NOT EXISTS library_search_outbox_revision_insert " +
+                "AFTER INSERT ON `problem_revision` BEGIN " +
+                "INSERT INTO `library_search_outbox` (`revision_id`, `queued_at_epoch_millis`) " +
+                "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
+            "CREATE TRIGGER IF NOT EXISTS library_search_outbox_revision_update " +
+                "AFTER UPDATE ON `problem_revision` BEGIN " +
+                "INSERT INTO `library_search_outbox` (`revision_id`, `queued_at_epoch_millis`) " +
+                "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
+        ).forEach { sql ->
+            connection.usePrepared(sql) { statement -> statement.step() }
+        } }
+    }
+
     override suspend fun refreshLibrarySearchProjection() {
+
         database.withWriteTransaction {
             val dao = database.libraryFtsSearchDao()
-            if (dao.countFtsSyncTriggers() < 4) {
-                dao.createFtsSyncBeforeUpdateTrigger()
-                dao.createFtsSyncBeforeDeleteTrigger()
-                dao.createFtsSyncAfterUpdateTrigger()
-                dao.createFtsSyncAfterInsertTrigger()
-            }
-            if (dao.countOutboxTriggers() < 2) {
-                dao.createOutboxInsertTrigger()
-                dao.createOutboxUpdateTrigger()
-            }
+            ensureSearchTriggers()
             if (dao.countIndexed() == 0) {
                 // First bootstrap (or repair): re-segment everything we know
                 // about - the active library plus every already-materialized
@@ -2709,14 +2744,7 @@ private class RefreshingPagingSource<T : Any>(
     private val beforeLoad: suspend () -> Unit,
     private val delegate: PagingSource<Int, T>,
 ) : PagingSource<Int, T>() {
-    override fun registerInvalidatedCallback(onInvalidatedCallback: () -> Unit) {
-        delegate.registerInvalidatedCallback(onInvalidatedCallback)
-    }
-
-    override fun unregisterInvalidatedCallback(onInvalidatedCallback: () -> Unit) {
-        delegate.unregisterInvalidatedCallback(onInvalidatedCallback)
-    }
-
+    override fun getRefreshKey(state: androidx.paging.PagingState<Int, T>): Int? =         delegate.getRefreshKey(state) 
     override suspend fun load(params: PagingSource.LoadParams<Int>): PagingSource.LoadResult<Int, T> {
         runCatching { beforeLoad() }
         return delegate.load(params)
