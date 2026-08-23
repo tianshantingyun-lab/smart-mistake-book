@@ -284,13 +284,20 @@ private fun WeaknessRow(
     icon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
+    // Qualitative bands only: precise probabilities require a
+    // calibrated model (audit section 6.4), aligned with ReviewRoute.
+    val masteryLabel = when {
+        mastery >= 0.7f -> "较稳"
+        mastery >= 0.4f -> "一般"
+        else -> "薄弱"
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 64.dp)
             .padding(vertical = 4.dp)
             .semantics(mergeDescendants = true) {
-                contentDescription = "$title，$detail，掌握 ${(mastery * 100).toInt()}%"
+                contentDescription = "$title，$detail，掌握$masteryLabel"
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -315,7 +322,7 @@ private fun WeaknessRow(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = "掌握 ${(mastery * 100).toInt()}%",
+                    text = "掌握$masteryLabel",
                     color = JadeActive,
                     style = MaterialTheme.typography.labelMedium,
                 )
