@@ -28,7 +28,7 @@ class KnowledgeGroundingQueueInstrumentedTest {
                 ),
             )
 
-            val summary = store.observePendingKnowledgeGroundingSummaries().first().single()
+            val summary = store.observePendingKnowledgeGroundingSummaries(limit = 256).first().single()
             assertEquals(request().groundingKey, summary.groundingKey)
             assertEquals(SubjectKind.MATH.name, summary.subject)
             assertEquals(2, summary.relatedQuestionCount)
@@ -47,7 +47,7 @@ class KnowledgeGroundingQueueInstrumentedTest {
             store.recordKnowledgeGroundingRequests(listOf(request))
             store.recordKnowledgeGroundingRequests(listOf(request))
 
-            assertEquals(listOf(request), store.observePendingKnowledgeGroundingRequests().first())
+            assertEquals(listOf(request), store.observePendingKnowledgeGroundingRequests(limit = 512).first())
 
             val conflict = request.copy(
                 reasonMarkdown = "同一模型请求不允许改写已经排队的理由。",
@@ -56,7 +56,7 @@ class KnowledgeGroundingQueueInstrumentedTest {
                 store.recordKnowledgeGroundingRequests(listOf(conflict))
             }.exceptionOrNull()
             assertTrue(thrown is ImmutablePayloadConflictException)
-            assertEquals(listOf(request), store.observePendingKnowledgeGroundingRequests().first())
+            assertEquals(listOf(request), store.observePendingKnowledgeGroundingRequests(limit = 512).first())
         } finally {
             store.close()
         }

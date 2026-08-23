@@ -36,7 +36,7 @@ class ReviewedKnowledgePackInstrumentedTest {
             assertEquals(first, replay)
             assertEquals(1, first.single().resolvedOccurrenceCount)
             assertEquals(1, first.single().linkedPracticeUnitCount)
-            assertTrue(store.observePendingKnowledgeGroundingRequests().first().isEmpty())
+            assertTrue(store.observePendingKnowledgeGroundingRequests(limit = 512).first().isEmpty())
             assertEquals(
                 setOf(TOPIC_ID, ATOMIC_ID, SECOND_ATOMIC_ID),
                 store.readKnowledgeNodesByIds(setOf(TOPIC_ID, ATOMIC_ID, SECOND_ATOMIC_ID))
@@ -86,7 +86,7 @@ class ReviewedKnowledgePackInstrumentedTest {
             )
             assertTrue(store.readKnowledgeSourcesByIds(setOf(SOURCE_ID)).isEmpty())
             assertNull(store.readKnowledgeGroundingResolution(request.groundingKey))
-            assertEquals(1, store.observePendingKnowledgeGroundingRequests().first().size)
+            assertEquals(1, store.observePendingKnowledgeGroundingRequests(limit = 512).first().size)
         } finally {
             store.close()
         }
@@ -170,7 +170,7 @@ class ReviewedKnowledgePackInstrumentedTest {
             assertTrue(failure is DatabaseContractViolationException)
             assertTrue(store.readKnowledgeNodesByIds(setOf(ATOMIC_ID, TOPIC_ID)).isEmpty())
             assertNull(store.readKnowledgeGroundingResolution(request.groundingKey))
-            assertEquals(1, store.observePendingKnowledgeGroundingRequests().first().size)
+            assertEquals(1, store.observePendingKnowledgeGroundingRequests(limit = 512).first().size)
         } finally {
             store.close()
         }

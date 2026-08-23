@@ -28,7 +28,7 @@ class KnowledgeResearchReviewInstrumentedTest {
         database.enqueueKnowledgeResearchReviewBundle(bundle)
         database.enqueueKnowledgeResearchReviewBundle(bundle)
 
-        assertEquals(listOf(bundle), database.readPendingKnowledgeResearchReviewBundles())
+        assertEquals(listOf(bundle), database.readPendingKnowledgeResearchReviewBundles(limit = 256))
         assertTrue(
             runCatching {
                 database.enqueueKnowledgeResearchReviewBundle(
@@ -59,7 +59,7 @@ class KnowledgeResearchReviewInstrumentedTest {
         assertEquals(approval.reviewerReference, decided.reviewerReference)
         assertEquals(approval.decisionNote, decided.decisionNote)
         assertEquals(approval.decidedAtEpochMillis, decided.reviewedAtEpochMillis)
-        assertTrue(database.readPendingKnowledgeResearchReviewBundles().isEmpty())
+        assertTrue(database.readPendingKnowledgeResearchReviewBundles(limit = 256).isEmpty())
         assertEquals(decided, database.decideKnowledgeResearchReviewBundle(approval))
         assertTrue(
             runCatching {
@@ -72,7 +72,7 @@ class KnowledgeResearchReviewInstrumentedTest {
                 )
             }.exceptionOrNull() is ImmutablePayloadConflictException,
         )
-        assertTrue(database.readPendingKnowledgeResearchReviewBundles().isEmpty())
+        assertTrue(database.readPendingKnowledgeResearchReviewBundles(limit = 256).isEmpty())
         assertTrue(
             runCatching {
                 database.decideKnowledgeResearchReviewBundle(
@@ -95,7 +95,7 @@ class KnowledgeResearchReviewInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 24)
 
             val migrated = StudyDatabaseFactory.open(context, databaseName)
-            assertTrue(migrated.readPendingKnowledgeResearchReviewBundles().isEmpty())
+            assertTrue(migrated.readPendingKnowledgeResearchReviewBundles(limit = 256).isEmpty())
             migrated.close()
 
             SQLiteDatabase.openDatabase(

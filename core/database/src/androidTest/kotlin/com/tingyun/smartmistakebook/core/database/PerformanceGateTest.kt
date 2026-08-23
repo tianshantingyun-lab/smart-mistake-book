@@ -55,14 +55,14 @@ class PerformanceGateTest {
 
         // Warm up
         repeat(10) {
-            database.libraryDao().searchByText("test")
+            database.ftsSearchCount("test")
         }
 
         // Measure search latency
         val latencies = mutableListOf<Long>()
         repeat(100) { iteration ->
             val latency = measureTimeMillis {
-                database.libraryDao().searchByText("test query $iteration")
+                database.ftsSearchCount("test query $iteration")
             }
             latencies.add(latency)
         }
@@ -86,10 +86,17 @@ class PerformanceGateTest {
         insertTestData(10_000)
 
         val firstScreenLatency = measureTimeMillis {
-            database.libraryDao().getFirstPage(
-                pageSize = 20,
+            // FTS 重构后旧的 getFirstPage 分页首页辅助方法已不存在；
+            // 用现有 LibraryQueryDao.page 的 offset=0 / limit=pageSize 语义等价重写。
+            database.libraryDao().page(
                 searchText = "",
                 subjectId = null,
+                sectionId = null,
+                knowledgePointId = null,
+                masteryId = null,
+                sort = "RECENTLY_CREATED",
+                offset = 0,
+                limit = 20,
             )
         }
 
@@ -108,13 +115,23 @@ class PerformanceGateTest {
 
         // Warm up
         repeat(5) {
-            database.libraryDao().getSubjectFacets()
+            database.libraryDao().subjectFacets(
+                searchText = "",
+                sectionId = null,
+                knowledgePointId = null,
+                masteryId = null,
+            )
         }
 
         val latencies = mutableListOf<Long>()
         repeat(50) {
             val latency = measureTimeMillis {
-                database.libraryDao().getSubjectFacets()
+                database.libraryDao().subjectFacets(
+                    searchText = "",
+                    sectionId = null,
+                    knowledgePointId = null,
+                    masteryId = null,
+                )
             }
             latencies.add(latency)
         }
@@ -136,11 +153,19 @@ class PerformanceGateTest {
     fun explainQueryPlanNoFullTableScan() = runBlocking {
         insertTestData(10_000)
 
-        val explainResult = database.query("EXPLAIN QUERY PLAN SELECT * FROM library_catalog WHERE title LIKE '%test%'")
-
-        val plan = buildString {
-            while (explainResult.moveToNext()) {
-                appendLine(explainResult.getString(3))
+        // FTS 重构后 RoomDatabase.query(String) 不再可用；改走 room3 的原始
+        // prepared-statement 连接执行同一条 EXPLAIN QUERY PLAN，仍然读取
+        // detail 列（索引 3），全表扫描断言语义保持不变。
+        var plan = ""
+        database.useConnection(isReadOnly = true) { connection ->
+            connection.usePrepared(
+                "EXPLAIN QUERY PLAN SELECT * FROM library_catalog WHERE title LIKE '%test%'",
+            ) { statement ->
+                plan = buildString {
+                    while (statement.step()) {
+                        appendLine(statement.getText(3))
+                    }
+                }
             }
         }
 
@@ -164,7 +189,7 @@ class PerformanceGateTest {
         val latencies = mutableListOf<Long>()
         repeat(50) {
             val latency = measureTimeMillis {
-                database.libraryDao().searchByText("函数方程")
+                database.ftsSearchCount("函数方程")
             }
             latencies.add(latency)
         }
@@ -190,7 +215,7 @@ class PerformanceGateTest {
         val jobs = (1..10).map { i ->
             kotlinx.coroutines.async {
                 val latency = measureTimeMillis {
-                    database.libraryDao().searchByText("concurrent test $i")
+                    database.ftsSearchCount("concurrent test $i")
                 }
                 latency
             }
@@ -211,6 +236,21 @@ class PerformanceGateTest {
     }
 
     private suspend fun StudyDatabase.libraryDao() = this.libraryQueryDao()
+
+    /**
+     * FTS 重构后的搜索等价点：旧 `libraryDao().searchByText(query)` 已移除。
+     * `LibraryFtsSearchDao.countSearch` 是 `searchPagingSource` 的计数孪生查询
+     * （同一条 MATCH + library_catalog 关联），无需 Paging 运行时即可度量
+     * 同一搜索热路径的延迟，性能断言语义保持不变。
+     */
+    private suspend fun StudyDatabase.ftsSearchCount(matchQuery: String): Int =
+        this.libraryFtsSearchDao().countSearch(
+            matchQuery = matchQuery,
+            subjectId = null,
+            sectionId = null,
+            knowledgePointId = null,
+            masteryId = null,
+        )
 
     companion object {
         /** Search P95 target: 500ms. */

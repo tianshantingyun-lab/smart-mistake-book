@@ -36,7 +36,7 @@ class KnowledgeGroundingResolutionInstrumentedTest {
                 store.resolveKnowledgeGrounding(command)
             }.exceptionOrNull()
             assertTrue(prematureFailure is DatabaseContractViolationException)
-            assertEquals(2, store.observePendingKnowledgeGroundingRequests().first().size)
+            assertEquals(2, store.observePendingKnowledgeGroundingRequests(limit = 512).first().size)
             assertNull(store.readKnowledgeGroundingResolution(request.groundingKey))
 
             store.importKnowledgeBase(
@@ -93,7 +93,7 @@ class KnowledgeGroundingResolutionInstrumentedTest {
                 store.resolveKnowledgeGrounding(command.copy(resolvedAtEpochMillis = 1_400))
             }.exceptionOrNull()
             assertTrue(timeTravelFailure is DatabaseContractViolationException)
-            assertEquals(2, store.observePendingKnowledgeGroundingRequests().first().size)
+            assertEquals(2, store.observePendingKnowledgeGroundingRequests(limit = 512).first().size)
 
             val resolved = store.resolveKnowledgeGrounding(command)
             assertEquals(
@@ -103,12 +103,12 @@ class KnowledgeGroundingResolutionInstrumentedTest {
             assertEquals(2, resolved.resolvedOccurrenceCount)
             assertEquals(1, resolved.linkedPracticeUnitCount)
             assertEquals(resolved, store.readKnowledgeGroundingResolution(request.groundingKey))
-            assertTrue(store.observePendingKnowledgeGroundingRequests().first().isEmpty())
-            assertTrue(store.observePendingKnowledgeGroundingSummaries().first().isEmpty())
+            assertTrue(store.observePendingKnowledgeGroundingRequests(limit = 512).first().isEmpty())
+            assertTrue(store.observePendingKnowledgeGroundingSummaries(limit = 256).first().isEmpty())
 
             assertEquals(resolved, store.resolveKnowledgeGrounding(command))
             store.recordKnowledgeGroundingRequests(listOf(request, repeatedRequest))
-            assertTrue(store.observePendingKnowledgeGroundingRequests().first().isEmpty())
+            assertTrue(store.observePendingKnowledgeGroundingRequests(limit = 512).first().isEmpty())
 
             val secondAtomic = atomic(RANGE_ID, "求函数值域")
             store.importKnowledgeBase(

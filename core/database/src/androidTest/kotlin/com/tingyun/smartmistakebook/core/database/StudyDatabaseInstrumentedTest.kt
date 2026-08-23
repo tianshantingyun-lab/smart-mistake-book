@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
 import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.EventTimeTrust
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
@@ -1835,7 +1836,7 @@ class StudyDatabaseInstrumentedTest {
                     validFromEpochMillis = 0,
                     validUntilEpochMillis = OCCURRED_AT + 100_000,
                 ),
-                isStudyDayTrusted = false,
+                timeTrust = EventTimeTrust.CLOCK_ROLLBACK_CLAMPED,
             ),
         ),
         status = MasteryStatus.LEARNING,

@@ -22,7 +22,7 @@ class KnowledgeGroundingMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 18)
 
             val migrated = StudyDatabaseFactory.open(context, databaseName)
-            assertTrue(migrated.observePendingKnowledgeGroundingRequests().first().isEmpty())
+            assertTrue(migrated.observePendingKnowledgeGroundingRequests(limit = 512).first().isEmpty())
             migrated.close()
 
             val database = SQLiteDatabase.openDatabase(
