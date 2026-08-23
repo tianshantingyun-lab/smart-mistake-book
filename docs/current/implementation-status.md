@@ -149,17 +149,22 @@ Updated from the remediation plan for the Android client on `main`.
   explicit, idempotent command with a deterministic request id; a second tap
   reports `alreadySaved` instead of creating a second error-book entry.
   `TutorSessionViewModel` now routes its save button through this use case.
-- Error contract: `AppErrorCode`, `RecoveryAction`, and `UserRecoverableError`
-  now exist in `core:model`; `ModelFailureCode` maps to stable user-facing
-  codes, and the error value rejects raw exception text. `CaptureViewModel`
-  now emits `UserRecoverableError` for import/commit failures instead of raw
-  strings, and `CaptureScreen` displays only the safe business message.
-  `TutorSessionViewModel` and `TutorLobbyRoute` use the same error type for
+- Error contract: the two previously separate error systems are merged into a
+  single `AppFailure` in `core:model`, carrying the `AppFailureCode` enum,
+  `dataPreserved`, `retryability`, and typed recovery `actions` that reuse
+  `ActionType`; the failure value still rejects raw exception text.
+  `ModelFailureCode` maps to stable `AppFailureCode`s, and `CaptureViewModel`
+  now emits `AppFailure` for import/commit failures instead of raw strings,
+  and `CaptureScreen` displays only the safe business message.
+  `TutorSessionViewModel` and `TutorLobbyRoute` use the same failure type for
   save/end/send failures; `TutorModelPanel` chat-start errors also use it.
-  `ModelTaskFailure` now maps to `UserRecoverableError` with retry-aware
-  recovery actions. Library automatic-organization failures use it too, and
-  Review submission/reveal retry messages have a contract-level mapping that
-  the Review screens now consume.
+  `ModelTaskFailure` now maps to `AppFailure` with retry-aware recovery
+  actions. Library automatic-organization failures use it too, and Review
+  submission/reveal retry messages have a contract-level mapping that the
+  Review screens now consume. `reserveModelTaskRemoteDispatch` and
+  `splitDraft` are abstract required methods instead of
+  `UnsupportedOperationException` defaults, and `StudyDatabasePort` is now an
+  aggregate of responsibility-domain sub-interfaces.
 - Protocol: `OpenAiModelProtocolMockWebServerTest` now proves the outbound chat
   body contains the authorized base64 image and rejects malformed provider
   responses before UI success, using a real local MockWebServer. The Gateway

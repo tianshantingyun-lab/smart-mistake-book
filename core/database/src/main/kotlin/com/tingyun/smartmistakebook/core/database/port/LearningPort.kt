@@ -78,8 +78,8 @@ data class ProjectionCheckpointSummary(
  */
 data class MasteryStateSummary(
     val knowledgeNodeId: String,
-    val probabilityIndependentCorrect: Double,
-    val lowerBoundIndependentCorrect: Double,
+    val masteryScore: Double,
+    val conservativeMasteryScore: Double,
     val evidenceMass: Double,
     val independentCorrectCount: Int,
     val lastEvidenceAtEpochMillis: Long?,

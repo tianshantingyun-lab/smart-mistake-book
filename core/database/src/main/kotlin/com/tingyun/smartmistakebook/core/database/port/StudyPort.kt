@@ -1,0 +1,92 @@
+package com.tingyun.smartmistakebook.core.database.port
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+
+/**
+ * Read-only port for the learning ledger head sequence.
+ */
+interface LearningLedgerPort {
+    fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)
+}
+
+/**
+ * Port for the student-model prediction audit loop (PR-07).
+ */
+interface PredictionAuditPort {
+    /** Persist shadow predictions produced during review planning (audit PR-07). */
+    suspend fun recordStudentModelPredictions(predictions: List<StudentModelPredictionRecord>) = Unit
+
+    /**
+     * Resolve every unresolved prediction for [practiceUnitId] whose window
+     * contains [observedAtEpochMillis] with the real attempt outcome.
+     * @return number of predictions resolved.
+     */
+    suspend fun resolveStudentModelPredictions(
+        practiceUnitId: String,
+        wasIndependentCorrect: Boolean,
+        observedAtEpochMillis: Long,
+        responseLatencyMs: Long? = null,
+        hintCount: Int = 0,
+    ): Int = 0
+
+    /** Resolved prediction/outcome pairs for offline calibration. */
+    suspend fun readResolvedStudentModelPredictions(
+        modelId: String,
+        modelVersion: String,
+    ): List<ResolvedStudentModelPredictionRecord> = emptyList()
+}
+
+/**
+ * Port for the visual-interaction audit trail (PR-11).
+ */
+interface VisualInteractionPort {
+    /** Persist one locally judged visual-interaction attempt (audit PR-11). */
+    suspend fun recordVisualInteractionAttempt(
+        attempt: VisualInteractionAttemptRecord,
+    ) = Unit
+
+    /** Visual-interaction attempts recorded for one problem revision. */
+    suspend fun readVisualInteractionAttempts(
+        problemRevisionId: String,
+    ): List<VisualInteractionAttemptRecord> = emptyList()
+}
+
+/** Port-level prediction record for the student-model audit loop (PR-07). */
+data class StudentModelPredictionRecord(
+    val predictionId: String,
+    val modelId: String,
+    val modelVersion: String,
+    val algorithmHash: String,
+    val practiceUnitId: String,
+    val knowledgeNodeId: String?,
+    val featureFingerprint: String,
+    val predictedScore: Double,
+    val conservativeScore: Double,
+    val predictionWindowStartEpochMillis: Long,
+    val predictionWindowEndEpochMillis: Long,
+    val predictedAtEpochMillis: Long,
+)
+
+/** Resolved prediction with its real outcome, ready for calibration. */
+data class ResolvedStudentModelPredictionRecord(
+    val predictionId: String,
+    val modelId: String,
+    val modelVersion: String,
+    val algorithmHash: String,
+    val predictedScore: Double,
+    val conservativeScore: Double,
+    val wasIndependentCorrect: Boolean,
+    val observedAtEpochMillis: Long,
+)
+
+/** Port-level record for the visual-interaction audit trail (PR-11). */
+data class VisualInteractionAttemptRecord(
+    val attemptId: String,
+    val problemRevisionId: String,
+    val actionKind: String,
+    val actionPayload: String,
+    val feasible: Boolean,
+    val feedback: String,
+    val attemptedAtEpochMillis: Long,
+)

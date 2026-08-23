@@ -155,32 +155,3 @@ class FakeModelGateway(
     }
 }
 
-class UnavailableModelGateway : ModelGateway {
-    override suspend fun capabilities() = CAPABILITIES
-
-    override fun execute(execution: ModelGatewayExecution): Flow<ModelGatewayEvent> = flow {
-        emit(
-            ModelGatewayEvent.Failed(
-                ModelTaskFailure(
-                    code = ModelFailureCode.MODEL_NOT_CONFIGURED,
-                    message = "配置可用的模型后会从这里继续",
-                    retryable = true,
-                ),
-            ),
-        )
-    }
-
-    private companion object {
-        val CAPABILITIES = ProviderCapabilitySnapshot(
-            providerId = "unconfigured",
-            providerDisplayName = "尚未配置模型",
-            modelId = "unconfigured",
-            supportedTasks = emptySet(),
-            supportsImageInput = false,
-            supportsStructuredOutput = false,
-            supportsStreaming = false,
-            executionLocation = com.tingyun.smartmistakebook.core.model.ModelExecutionLocation.UNAVAILABLE,
-            providerConfigurationVersion = "unconfigured-v1",
-        )
-    }
-}

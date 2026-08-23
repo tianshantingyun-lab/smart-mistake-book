@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.database.dao.MistakeRow
 import com.tingyun.smartmistakebook.core.database.dao.CanonicalSourceAssetRow
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeGroundingSummaryRow
 import com.tingyun.smartmistakebook.core.database.dao.LibraryFacetCountRow
+import com.tingyun.smartmistakebook.core.database.dao.LibraryFtsSearchDao
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureHeadRow
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureIndexRow
 import com.tingyun.smartmistakebook.core.database.dao.PendingCaptureSourceAssetRow
@@ -21,10 +22,11 @@ import com.tingyun.smartmistakebook.core.database.entity.AssessmentEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentItemSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.ErrorBookEntryEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeMasteryStateEntity
-import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingRequestEntity
 import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
-import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
+import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingRequestEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingResolutionEntity
+import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
+import com.tingyun.smartmistakebook.core.database.entity.VisualInteractionAttemptEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeRelationEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeSourceBindingEntity
@@ -52,6 +54,10 @@ import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import java.io.File
+import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 
 internal class RoomStudyDatabase(
     internal val database: StudyDatabase,
@@ -74,7 +80,6 @@ internal class RoomStudyDatabase(
         MappingPagingSource(
             delegate = database.libraryQueryDao().pagingSource(
                 searchText = searchText,
-                ftsTokens = CjkTextTokenizer.segment(searchText),
                 subjectId = subjectId,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
@@ -83,6 +88,152 @@ internal class RoomStudyDatabase(
             ),
             transform = LibraryCatalogView::toRow,
         )
+
+    override fun librarySearchPagingSource(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        tokens: List<String>,
+    ): PagingSource<Int, LibraryCatalogRow> {
+        require(matchQuery.isNotBlank()) { "FTS search needs a non-blank MATCH expression" }
+        require(tokens.isNotEmpty()) { "FTS search needs at least one query token" }
+        val primaryPhrase = CjkTextTokenizer.quotedPhrase(tokens.first())
+        val neverMatchPhrase = CjkTextTokenizer.quotedPhrase("\uFFFD")
+        val extras = tokens.drop(1).take(3).map(CjkTextTokenizer::quotedPhrase)
+        return RefreshingPagingSource(
+            beforeLoad = ::refreshLibrarySearchProjection,
+            delegate = MappingPagingSource(
+                delegate = database.libraryFtsSearchDao().searchPagingSource(
+                    matchQuery = matchQuery,
+                    subjectId = subjectId,
+                    sectionId = sectionId,
+                    knowledgePointId = knowledgePointId,
+                    masteryId = masteryId,
+                    sort = sort,
+                    primaryStemPhrase = primaryPhrase,
+                    primaryOptionsPhrase = primaryPhrase,
+                    primarySolutionPhrase = primaryPhrase,
+                    primarySubjectPhrase = primaryPhrase,
+                    primaryChapterPhrase = primaryPhrase,
+                    primaryKnowledgePhrase = primaryPhrase,
+                    primaryTagsPhrase = primaryPhrase,
+                    primaryErrorReasonPhrase = primaryPhrase,
+                    primaryFormulaPhrase = primaryPhrase,
+                    extraTokenPhrase1 = extras.getOrElse(0) { neverMatchPhrase },
+                    extraTokenPhrase2 = extras.getOrElse(1) { neverMatchPhrase },
+                    extraTokenPhrase3 = extras.getOrElse(2) { neverMatchPhrase },
+                ),
+                transform = LibraryFtsSearchDao.LibrarySearchHitRow::toCatalogRow,
+            ),
+        )
+    }
+
+    override suspend fun librarySearchCount(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+    ): Int {
+        require(matchQuery.isNotBlank()) { "FTS search needs a non-blank MATCH expression" }
+        refreshLibrarySearchProjection()
+        return database.libraryFtsSearchDao().countSearch(
+            matchQuery = matchQuery,
+            subjectId = subjectId,
+            sectionId = sectionId,
+            knowledgePointId = knowledgePointId,
+            masteryId = masteryId,
+        )
+    }
+
+    override suspend fun refreshLibrarySearchProjection() {
+        database.withWriteTransaction {
+            val dao = database.libraryFtsSearchDao()
+            if (dao.countFtsSyncTriggers() < 4) {
+                dao.createFtsSyncBeforeUpdateTrigger()
+                dao.createFtsSyncBeforeDeleteTrigger()
+                dao.createFtsSyncAfterUpdateTrigger()
+                dao.createFtsSyncAfterInsertTrigger()
+            }
+            if (dao.countOutboxTriggers() < 2) {
+                dao.createOutboxInsertTrigger()
+                dao.createOutboxUpdateTrigger()
+            }
+            if (dao.countIndexed() == 0) {
+                // First bootstrap (or repair): re-segment everything we know
+                // about - the active library plus every already-materialized
+                // row; stale content rows drop out through the projection read.
+                val targets = (dao.readActiveLibraryRevisionIds() +
+                    dao.readIndexedRevisionIds()).distinct()
+                for (revisionId in targets) {
+                    drainSearchRevision(dao, revisionId)
+                }
+            } else {
+                // Incremental path: drain the outbox revision by revision;
+                // each upsert/delete is mirrored into the FTS index by the
+                // room_fts_content_sync triggers.
+                while (true) {
+                    val batch = dao.readOutboxBatch()
+                    if (batch.isEmpty()) break
+                    for (revisionId in batch.distinct()) {
+                        drainSearchRevision(dao, revisionId)
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun drainSearchRevision(
+        dao: LibraryFtsSearchDao,
+        revisionId: String,
+    ) {
+        val row = dao.readRevisionForProjection(revisionId)
+        if (row == null) {
+            // Dropped from the library: the BEFORE_DELETE sync trigger
+            // removes the FTS row alongside the content row.
+            dao.deleteContent(revisionId)
+        } else {
+            val stem = CjkTextTokenizer.segment(row.title + "\n" + row.problemMarkdown)
+            val options = CjkTextTokenizer.segment(row.questionDocumentSnapshot.orEmpty())
+            val solution = CjkTextTokenizer.segment(row.answerSpecSnapshot.orEmpty())
+            val subject = CjkTextTokenizer.segment(row.subject)
+            val chapter = CjkTextTokenizer.segment(row.chapter)
+            val knowledge = CjkTextTokenizer.segment(row.knowledgePoints)
+            val tags = CjkTextTokenizer.segment(row.tags)
+            val errorReason = CjkTextTokenizer.segment(row.errorReason)
+            if (dao.countContentFor(revisionId) > 0) {
+                dao.updateContent(
+                    revisionId = revisionId,
+                    stemText = stem,
+                    optionsText = options,
+                    solutionText = solution,
+                    subject = subject,
+                    chapter = chapter,
+                    knowledgePoints = knowledge,
+                    tags = tags,
+                    errorReason = errorReason,
+                    formulaTokens = "",
+                )
+            } else {
+                dao.insertContent(
+                    revisionId = revisionId,
+                    stemText = stem,
+                    optionsText = options,
+                    solutionText = solution,
+                    subject = subject,
+                    chapter = chapter,
+                    knowledgePoints = knowledge,
+                    tags = tags,
+                    errorReason = errorReason,
+                    formulaTokens = "",
+                )
+            }
+        }
+        dao.clearOutboxFor(revisionId)
+    }
 
     override suspend fun libraryCatalogPage(
         searchText: String,
@@ -94,12 +245,9 @@ internal class RoomStudyDatabase(
         offset: Int,
         limit: Int,
     ): List<LibraryCatalogRow> {
-        refreshLibrarySearchProjection()
-        val ftsTokens = CjkTextTokenizer.segment(searchText)
         return database.libraryQueryDao()
             .page(
                 searchText = searchText,
-                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
@@ -118,10 +266,8 @@ internal class RoomStudyDatabase(
         knowledgePointId: String?,
         masteryId: String?,
     ): Int {
-        refreshLibrarySearchProjection()
         return database.libraryQueryDao().count(
             searchText = searchText,
-            ftsTokens = CjkTextTokenizer.segment(searchText),
             subjectId = subjectId,
             sectionId = sectionId,
             knowledgePointId = knowledgePointId,
@@ -137,12 +283,9 @@ internal class RoomStudyDatabase(
         masteryId: String?,
         facet: String,
     ): List<LibraryFacetCountRecord> {
-        refreshLibrarySearchProjection()
-        val ftsTokens = CjkTextTokenizer.segment(searchText)
         return when (facet) {
             "SUBJECT" -> database.libraryQueryDao().subjectFacets(
                 searchText = searchText,
-                ftsTokens = ftsTokens,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
                 masteryId = masteryId,
@@ -150,7 +293,6 @@ internal class RoomStudyDatabase(
 
             "SECTION" -> database.libraryQueryDao().sectionFacets(
                 searchText = searchText,
-                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 knowledgePointId = knowledgePointId,
                 masteryId = masteryId,
@@ -158,7 +300,6 @@ internal class RoomStudyDatabase(
 
             "KNOWLEDGE_POINT" -> database.libraryQueryDao().knowledgeFacets(
                 searchText = searchText,
-                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 sectionId = sectionId,
                 masteryId = masteryId,
@@ -166,52 +307,12 @@ internal class RoomStudyDatabase(
 
             "MASTERY" -> database.libraryQueryDao().masteryFacets(
                 searchText = searchText,
-                ftsTokens = ftsTokens,
                 subjectId = subjectId,
                 sectionId = sectionId,
                 knowledgePointId = knowledgePointId,
             ).map(LibraryFacetCountRow::toRecord)
 
             else -> error("Unsupported library facet kind: $facet")
-        }
-    }
-
-    /**
-     * Drains the search-projection outbox and guarantees the FTS index has
-     * been built at least once. Kept best-effort: a failed refresh degrades
-     * to the instr() fallback predicate instead of failing the query.
-     */
-    private suspend fun refreshLibrarySearchProjection() {
-        val ftsDao = database.libraryFtsSearchDao()
-        runCatching {
-            val pending = ftsDao.readOutboxBatch()
-            val indexEmpty = ftsDao.countIndexed() == 0
-            if (pending.isEmpty() && !indexEmpty) return
-            val targets = if (indexEmpty) {
-                ftsDao.readActiveLibraryRevisionIds()
-            } else {
-                pending
-            }
-            targets.forEach { revisionId ->
-                val row = ftsDao.readRevisionForProjection(revisionId)
-                if (row == null) {
-                    ftsDao.deleteContent(revisionId)
-                } else {
-                    val stemText = CjkTextTokenizer.segment(
-                        "${row.title}\n${row.problemMarkdown}",
-                    )
-                    val existing = ftsDao.countContentFor(revisionId)
-                    if (existing > 0) {
-                        ftsDao.updateContentStem(revisionId, stemText)
-                    } else {
-                        ftsDao.insertContent(revisionId, stemText)
-                    }
-                }
-                ftsDao.clearOutboxFor(revisionId)
-            }
-            if (targets.isNotEmpty()) {
-                ftsDao.rebuildIndex()
-            }
         }
     }
 
@@ -295,14 +396,99 @@ internal class RoomStudyDatabase(
 
     override suspend fun checkpointForBackup() {
         // WAL checkpoint so committed rows are captured before the archived
-        // database file is packaged. (A full SQLite Online Backup snapshot is
-        // targeted as a follow-up; the WAL checkpoint is correct and safe here.)
+        // database file is packaged. This stays the cheap flush; the archive
+        // flow itself uses snapshotForBackup below for the consistency
+        // snapshot.
         database.useConnection(isReadOnly = false) { connection ->
             connection.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { statement ->
                 while (statement.step()) {
                     // Checkpoint result row is intentionally consumed and ignored.
                 }
             }
+        }
+    }
+
+    override suspend fun snapshotForBackup(
+        sourceDatabaseFile: File,
+        snapshotTarget: File,
+    ) {
+        // Consistency snapshot for backup archives (see BackupPort docs).
+        //
+        // Preferred: VACUUM INTO (SQLite >= 3.27.0) writes a complete,
+        // transaction-consistent copy of the database into the target file
+        // even while concurrent writers are active; this matches the
+        // semantics required by the SQLite Online Backup API approach.
+        //
+        // Fallback (older SQLite builds): TRUNCATE WAL checkpoint plus a
+        // read-only byte copy of the main file, which is consistent as long
+        // as no writer commits during the copy. The backup flow guarantees
+        // that by running while the app is otherwise idle.
+        if (snapshotTarget.exists() && !snapshotTarget.delete()) {
+            error("Cannot replace existing backup snapshot target")
+        }
+        val sqliteVersion = readSqliteVersion()
+        if (sqliteVersion != null && isAtLeast(sqliteVersion, 3, 27, 0)) {
+            val escapedPath = snapshotTarget.absolutePath.replace("'", "''")
+            val succeeded = try {
+                database.useConnection(isReadOnly = false) { connection ->
+                    connection.usePrepared("VACUUM INTO '$escapedPath'") { statement ->
+                        while (statement.step()) {
+                            // VACUUM INTO produces no result rows.
+                        }
+                    }
+                }
+                snapshotTarget.isFile && snapshotTarget.length() > 0L
+            } catch (_: Exception) {
+                // Older SQLite builds reject the INTO clause; fall through to
+                // the checkpoint + read-only copy fallback.
+                false
+            }
+            if (succeeded) {
+                fsyncSnapshot(snapshotTarget)
+                return
+            }
+            if (snapshotTarget.exists()) snapshotTarget.delete()
+        }
+        // Fallback: checkpoint every WAL frame into the main file, then copy
+        // the main file through a plain read-only stream.
+        checkpointForBackup()
+        sourceDatabaseFile.inputStream().use { input ->
+            snapshotTarget.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        fsyncSnapshot(snapshotTarget)
+    }
+
+    private suspend fun readSqliteVersion(): String? {
+        val holder = arrayOfNulls<String>(1)
+        database.useConnection(isReadOnly = true) { connection ->
+            connection.usePrepared("SELECT sqlite_version()") { statement ->
+                if (statement.step()) {
+                    holder[0] = statement.getText(0)
+                }
+            }
+        }
+        return holder[0]
+    }
+
+    private fun isAtLeast(version: String, major: Int, minor: Int, patch: Int): Boolean {
+        val parts = version.split('.').mapNotNull { part -> part.toIntOrNull() }
+        val actual = listOf(
+            parts.getOrElse(0) { 0 },
+            parts.getOrElse(1) { 0 },
+            parts.getOrElse(2) { 0 },
+        )
+        val required = listOf(major, minor, patch)
+        for (index in 0..2) {
+            if (actual[index] != required[index]) return actual[index] > required[index]
+        }
+        return true
+    }
+
+    private fun fsyncSnapshot(file: File) {
+        runCatching {
+            java.io.RandomAccessFile(file, "r").use { raf -> raf.fd.sync() }
         }
     }
 
@@ -394,10 +580,46 @@ internal class RoomStudyDatabase(
             .map { row ->
                 ResolvedStudentModelPredictionRecord(
                     predictionId = row.predictionId,
+                    modelId = row.modelId,
+                    modelVersion = row.modelVersion,
+                    algorithmHash = row.algorithmHash,
                     predictedScore = row.predictedScore,
                     conservativeScore = row.conservativeScore,
                     wasIndependentCorrect = row.wasIndependentCorrect,
                     observedAtEpochMillis = row.observedAtEpochMillis,
+                )
+            }
+
+    override suspend fun recordVisualInteractionAttempt(
+        attempt: VisualInteractionAttemptRecord,
+    ) {
+        database.visualInteractionAttemptDao().insertAttempt(
+            VisualInteractionAttemptEntity(
+                attemptId = attempt.attemptId,
+                problemRevisionId = attempt.problemRevisionId,
+                actionKind = attempt.actionKind,
+                actionPayload = attempt.actionPayload,
+                feasible = attempt.feasible,
+                feedback = attempt.feedback,
+                attemptedAtEpochMillis = attempt.attemptedAtEpochMillis,
+            ),
+        )
+    }
+
+    override suspend fun readVisualInteractionAttempts(
+        problemRevisionId: String,
+    ): List<VisualInteractionAttemptRecord> =
+        database.visualInteractionAttemptDao()
+            .findForProblemRevision(problemRevisionId)
+            .map { row ->
+                VisualInteractionAttemptRecord(
+                    attemptId = row.attemptId,
+                    problemRevisionId = row.problemRevisionId,
+                    actionKind = row.actionKind,
+                    actionPayload = row.actionPayload,
+                    feasible = row.feasible,
+                    feedback = row.feedback,
+                    attemptedAtEpochMillis = row.attemptedAtEpochMillis,
                 )
             }
 
@@ -2468,3 +2690,35 @@ private fun String?.toCatalogLabels(): List<String> = this
     ?.distinct()
     ?.sorted()
     .orEmpty()
+
+private fun LibraryFtsSearchDao.LibrarySearchHitRow.toCatalogRow() = LibraryCatalogRow(
+    entryId = entryId,
+    title = title,
+    problemMarkdown = problemMarkdown,
+    subject = subject,
+    chapterLabels = chapterLabels.toCatalogLabels(),
+    knowledgeLabels = knowledgeLabels.toCatalogLabels(),
+    masteryId = masteryId,
+    createdAtEpochMillis = createdAtEpochMillis,
+    updatedAtEpochMillis = updatedAtEpochMillis,
+    nextReviewAtEpochMillis = nextReviewAtEpochMillis,
+    retrievability = retrievability,
+)
+
+private class RefreshingPagingSource<T : Any>(
+    private val beforeLoad: suspend () -> Unit,
+    private val delegate: PagingSource<Int, T>,
+) : PagingSource<Int, T>() {
+    override fun registerInvalidatedCallback(onInvalidatedCallback: () -> Unit) {
+        delegate.registerInvalidatedCallback(onInvalidatedCallback)
+    }
+
+    override fun unregisterInvalidatedCallback(onInvalidatedCallback: () -> Unit) {
+        delegate.unregisterInvalidatedCallback(onInvalidatedCallback)
+    }
+
+    override suspend fun load(params: PagingSource.LoadParams<Int>): PagingSource.LoadResult<Int, T> {
+        runCatching { beforeLoad() }
+        return delegate.load(params)
+    }
+}

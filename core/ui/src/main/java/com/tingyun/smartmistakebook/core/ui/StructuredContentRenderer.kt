@@ -56,6 +56,7 @@ import com.tingyun.smartmistakebook.core.model.FigureAxis
 import com.tingyun.smartmistakebook.core.model.FigureCoordinate
 import com.tingyun.smartmistakebook.core.model.FigureSchema
 import com.tingyun.smartmistakebook.core.model.FigureSeriesStyle
+import com.tingyun.smartmistakebook.core.model.FormulaAccessibility
 import com.tingyun.smartmistakebook.core.model.InlineToken
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.ReadableMathText
@@ -137,16 +138,16 @@ fun SafeMarkdownText(
 
 @Composable
 private fun FormulaBlock(block: ContentBlock.Formula) {
+    // Spoken-text construction lives in the pure, JVM-testable FormulaAccessibility
+    // helper (core:model), so TalkBack semantics can be unit-tested without Compose.
     val spokenDescription = remember(block.alternativeText, block.latex) {
-        block.alternativeText.ifBlank {
-            "公式文本：${block.latex.take(StructuredContentLimits.MAX_ACCESSIBILITY_CHARS)}"
-        }
+        FormulaAccessibility.spokenDescription(block.alternativeText, block.latex)
     }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
-                contentDescription = "公式（结构化渲染）：$spokenDescription"
+                contentDescription = FormulaAccessibility.contentDescription(spokenDescription)
             },
         color = JadeSoft,
         contentColor = Ink,
@@ -585,7 +586,9 @@ private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedStri
                 append(token.value)
             }
 
-            is InlineToken.Emphasis -> withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+            is InlineToken.Emphasis -> withStyle(
+                SpanStyle(fontStyle = FontStyle.Italic),
+            ) {
                 append(token.value)
             }
 

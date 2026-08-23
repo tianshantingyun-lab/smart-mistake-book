@@ -744,9 +744,9 @@ internal data class LearnerKnowledgeMasteryStateEntity(
     @ColumnInfo(name = "knowledge_node_id")
     val knowledgeNodeId: String,
     @ColumnInfo(name = "probability_independent_correct")
-    val probabilityIndependentCorrect: Double,
+    val masteryScore: Double,
     @ColumnInfo(name = "lower_bound_independent_correct")
-    val lowerBoundIndependentCorrect: Double,
+    val conservativeMasteryScore: Double,
     @ColumnInfo(name = "evidence_mass")
     val evidenceMass: Double,
     @ColumnInfo(name = "last_independent_error_at_epoch_millis")

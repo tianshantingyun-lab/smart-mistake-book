@@ -1,5 +1,8 @@
 package com.tingyun.smartmistakebook.core.database.port
 
+import com.tingyun.smartmistakebook.core.database.ReviewSessionAdvanceCommand
+import com.tingyun.smartmistakebook.core.database.ReviewSessionAdvanceResult
+import com.tingyun.smartmistakebook.core.database.ReviewSessionRecord
 import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
 import kotlinx.coroutines.flow.Flow
 
@@ -20,4 +23,23 @@ interface ReviewReadPort {
         learnerId: String,
         limit: Int,
     ): Flow<List<Long>>
+}
+
+/**
+ * Port for review plan/session writes and deprecated P0 inspection.
+ */
+interface ReviewWritePort {
+    suspend fun saveReviewPlan(bundle: ReviewPlanBundle)
+
+    suspend fun saveReviewSession(session: ReviewSessionRecord)
+
+    /**
+     * Replays an already committed review transition. It must never create a new transition.
+     * New answers must enter through [recordReviewAttempt], which creates the attempt and advances
+     * its queue item in one write transaction.
+     */
+    @Deprecated("New review transitions must use recordReviewAttempt")
+    suspend fun advanceReviewSession(
+        command: ReviewSessionAdvanceCommand,
+    ): ReviewSessionAdvanceResult
 }

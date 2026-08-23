@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -57,9 +58,12 @@ import androidx.compose.ui.window.DialogProperties
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanelKind
+import com.tingyun.smartmistakebook.core.domain.visual.VisualProblemConstraints
+import com.tingyun.smartmistakebook.core.model.VisualInteractionAttempt
 import com.tingyun.smartmistakebook.core.visual.runtime.CompiledTutorVisualDocument
 import com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualDocumentCompiler
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @Composable
 fun TutorVisualDocumentContent(
@@ -67,6 +71,8 @@ fun TutorVisualDocumentContent(
     modifier: Modifier = Modifier,
     onOpenOriginal: (() -> Unit)? = null,
     onReportIncorrect: (() -> Unit)? = null,
+    visualConstraints: VisualProblemConstraints? = null,
+    onVisualAttempt: ((VisualInteractionAttempt) -> Unit)? = null,
 ) {
     val compiledResult = remember(scene) { runCatching { TutorVisualDocumentCompiler.compile(scene) } }
     val compiled = compiledResult.getOrNull()?.takeIf { it.integrity.canRender }
@@ -83,6 +89,8 @@ fun TutorVisualDocumentContent(
         modifier = modifier,
         onOpenOriginal = onOpenOriginal,
         onReportIncorrect = onReportIncorrect,
+        visualConstraints = visualConstraints,
+        onVisualAttempt = onVisualAttempt,
     )
 }
 
@@ -92,6 +100,8 @@ private fun TutorVisualDocumentPlayer(
     modifier: Modifier,
     onOpenOriginal: (() -> Unit)?,
     onReportIncorrect: (() -> Unit)?,
+    visualConstraints: VisualProblemConstraints?,
+    onVisualAttempt: ((VisualInteractionAttempt) -> Unit)?,
 ) {
     val scene = compiled.scene
     val context = LocalContext.current
@@ -108,6 +118,18 @@ private fun TutorVisualDocumentPlayer(
     val selectedPanel = scene.panels[selectedPanelIndex.coerceIn(scene.panels.indices)]
     val frame = remember(compiled, stepIndex, timeSeconds) {
         compiled.evaluate(timeSeconds, stepIndex)
+    }
+    val eventSink = LocalVisualInteractionEventSink.current
+    val interactionScope = rememberCoroutineScope()
+    val effectiveConstraints = remember(compiled, visualConstraints) {
+        visualConstraints ?: deriveDefaultVisualConstraints(compiled)
+    }
+    val handleVisualAttempt: (VisualInteractionAttempt) -> Unit = { attempt ->
+        onVisualAttempt?.invoke(attempt)
+        val sink = eventSink
+        if (sink != null) {
+            interactionScope.launch { runCatching { sink.record(attempt) } }
+        }
     }
 
     LaunchedEffect(playing, scene.durationSeconds, animationsEnabled) {
@@ -171,6 +193,8 @@ private fun TutorVisualDocumentPlayer(
                 panel = selectedPanel,
                 frame = frame,
                 profile = profile,
+                visualConstraints = effectiveConstraints,
+                onVisualAttempt = handleVisualAttempt,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(if (fullscreen) 1.35f else 1.45f)
@@ -345,6 +369,8 @@ private fun TutorVisualPanelContent(
     frame: com.tingyun.smartmistakebook.core.visual.runtime.TutorVisualFrame,
     profile: TutorVisualRenderProfile,
     modifier: Modifier,
+    visualConstraints: VisualProblemConstraints?,
+    onVisualAttempt: (VisualInteractionAttempt) -> Unit,
 ) {
     when (panel.kind) {
         TutorVisualPanelKind.DIAGRAM_2D -> TutorVisual2DPanel(
@@ -352,6 +378,8 @@ private fun TutorVisualPanelContent(
             panel = panel,
             frame = frame,
             modifier = modifier,
+            visualConstraints = visualConstraints,
+            onVisualAttempt = onVisualAttempt,
         )
         TutorVisualPanelKind.SCENE_3D -> TutorVisual3DPanel(
             compiled = compiled,

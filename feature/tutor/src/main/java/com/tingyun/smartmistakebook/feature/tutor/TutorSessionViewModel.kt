@@ -12,10 +12,11 @@ import com.tingyun.smartmistakebook.core.domain.SaveTutorDraftToLibraryUseCase
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
-import com.tingyun.smartmistakebook.core.model.RecoveryAction
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
-import com.tingyun.smartmistakebook.core.model.userRecoverableError
+import com.tingyun.smartmistakebook.core.model.ActionType
+import com.tingyun.smartmistakebook.core.model.AppFailure
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
+import com.tingyun.smartmistakebook.core.model.Retryability
+import com.tingyun.smartmistakebook.core.model.appFailure
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -44,13 +45,13 @@ internal class TutorSessionViewModel(
     private val _saveInProgress = MutableStateFlow(false)
     val saveInProgress = _saveInProgress.asStateFlow()
 
-    private val _saveError = MutableStateFlow<UserRecoverableError?>(null)
+    private val _saveError = MutableStateFlow<AppFailure?>(null)
     val saveError = _saveError.asStateFlow()
 
     private val _endInProgress = MutableStateFlow(false)
     val endInProgress = _endInProgress.asStateFlow()
 
-    private val _endError = MutableStateFlow<UserRecoverableError?>(null)
+    private val _endError = MutableStateFlow<AppFailure?>(null)
     val endError = _endError.asStateFlow()
 
     private val _longTermWritesBlocked = MutableStateFlow(
@@ -110,11 +111,11 @@ internal class TutorSessionViewModel(
 
     fun save(session: ConfirmedTutorSession) {
         if (_longTermWritesBlocked.value) {
-            _saveError.value = userRecoverableError(
-                code = AppErrorCode.VALIDATION_FAILED,
+            _saveError.value = appFailure(
+                code = AppFailureCode.VALIDATION_FAILED,
                 title = "这次不会写入长期记录",
                 message = "你已选择这次不写入长期记录。",
-                dataSafe = true,
+                dataPreserved = true,
             )
             return
         }
@@ -152,12 +153,13 @@ internal class TutorSessionViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                _saveError.value = userRecoverableError(
-                    code = AppErrorCode.DATABASE_WRITE_FAILED,
+                _saveError.value = appFailure(
+                    code = AppFailureCode.DATABASE_WRITE_FAILED,
                     title = "还没有保存完成",
                     message = "还没有保存完成，请直接重试；不会重复加入错题本。",
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             } finally {
                 _saveInProgress.value = false
@@ -192,12 +194,13 @@ internal class TutorSessionViewModel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                _endError.value = userRecoverableError(
-                    code = AppErrorCode.DATABASE_WRITE_FAILED,
+                _endError.value = appFailure(
+                    code = AppFailureCode.DATABASE_WRITE_FAILED,
                     title = "还没有结束成功",
                     message = "还没有结束成功，这道临时题仍保留；你可以直接重试。",
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             } finally {
                 _endInProgress.value = false

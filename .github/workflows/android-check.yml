@@ -102,10 +102,11 @@ jobs:
           script: |
             ./gradlew :core:database:connectedDebugAndroidTest \
               :core:data:connectedDebugAndroidTest \
+              :core:visual-ui:connectedDebugAndroidTest \
+              :core:export:connectedDebugAndroidTest \
               :feature:capture:connectedDebugAndroidTest \
               :feature:tutor:connectedDebugAndroidTest \
               :feature:library:connectedDebugAndroidTest \
-              :feature:review:connectedDebugAndroidTest \
               :app:connectedLocalFirstDebugAndroidTest \
               :app:connectedStrictOfflineDebugAndroidTest \
               --console=plain

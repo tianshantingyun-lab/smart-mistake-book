@@ -94,7 +94,7 @@ fun onCapturePhoto() {
 
 3. **实现工具调用执行**
    - 检测 `TutorLobbyOutput.suggestedAction`
-   - 如果是 `SaveToLibrary`，调用 `saveTutorExampleMistake()`
+   - 如果是 `SaveToLibrary`，调用 `saveTutorProblem(...)`（早期的演示种子保存接口已按审计 9.2/PR-05 删除）
 
 **文件：**
 - `core/data/.../RoomModelTaskRepository.kt`

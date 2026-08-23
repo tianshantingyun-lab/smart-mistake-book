@@ -360,8 +360,8 @@ class ReviewPlannerTest {
             now - 1,
         )
         val highButExpired = base.knowledgeMasteryStates.getValue("kc-a").copy(
-            probabilityIndependentCorrect = 0.99,
-            lowerBoundIndependentCorrect = 0.98,
+            masteryScore = 0.99,
+            conservativeMasteryScore = 0.98,
             lastEvidenceAtEpochMillis = now - 1,
             independentCorrectObservations = listOf(
                 IndependentCorrectObservation(
@@ -393,8 +393,8 @@ class ReviewPlannerTest {
     private fun snapshot(memories: List<ProblemMemoryState>): LearnerSnapshot {
         val mastery = KnowledgeMasteryState(
             knowledgeNodeId = "kc-a",
-            probabilityIndependentCorrect = 0.4,
-            lowerBoundIndependentCorrect = 0.2,
+            masteryScore = 0.4,
+            conservativeMasteryScore = 0.2,
             evidenceMass = 2.0,
             status = MasteryStatus.LEARNING,
             calibrationSupport = CalibrationSupport.SUPPORTED,

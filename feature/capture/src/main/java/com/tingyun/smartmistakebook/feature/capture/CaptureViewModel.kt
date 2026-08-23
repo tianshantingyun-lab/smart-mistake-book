@@ -17,11 +17,12 @@ import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowStateMachine
 import com.tingyun.smartmistakebook.core.domain.ConfirmCapturedProblemRequest
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
+import com.tingyun.smartmistakebook.core.model.ActionType
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.RecoveryAction
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
-import com.tingyun.smartmistakebook.core.model.userRecoverableError
+import com.tingyun.smartmistakebook.core.model.AppFailure
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
+import com.tingyun.smartmistakebook.core.model.Retryability
+import com.tingyun.smartmistakebook.core.model.appFailure
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -57,7 +58,7 @@ class CaptureViewModel(
         },
     )
     private val providerCapabilities = MutableStateFlow<ProviderCapabilitySnapshot?>(null)
-    private val userError = MutableStateFlow<UserRecoverableError?>(null)
+    private val userError = MutableStateFlow<AppFailure?>(null)
     private val pendingTutorSessionId = MutableStateFlow<String?>(null)
     private val importedDraftEvent = MutableStateFlow<CaptureDraftImportedEvent?>(null)
     private val confirmedTutorSession = MutableStateFlow<ConfirmedTutorSession?>(null)
@@ -206,8 +207,8 @@ class CaptureViewModel(
                         canRetry = true,
                     ),
                 )
-                userError.value = userRecoverableError(
-                    code = AppErrorCode.DATABASE_WRITE_FAILED,
+                userError.value = appFailure(
+                    code = AppFailureCode.DATABASE_WRITE_FAILED,
                     title = "这次保存没有完成",
                     message = when (origin) {
                         CaptureEntryOrigin.LIBRARY ->
@@ -215,8 +216,9 @@ class CaptureViewModel(
                         CaptureEntryOrigin.TUTOR ->
                             "题目已经留在本机，但讲题会话可能还没有打开。请直接重试；不会自动存入错题本。"
                     },
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             }
         }
@@ -330,8 +332,8 @@ class CaptureViewModel(
                         canRetry = true,
                     ),
                 )
-                userError.value = userRecoverableError(
-                    code = AppErrorCode.ASSET_UNREADABLE,
+                userError.value = appFailure(
+                    code = AppFailureCode.ASSET_UNREADABLE,
                     title = "题图没有安全保存",
                     message = when (command.purpose) {
                         CaptureAcquisitionPurpose.NEW_CAPTURE,
@@ -340,8 +342,9 @@ class CaptureViewModel(
                         CaptureAcquisitionPurpose.APPEND_DRAFT ->
                             "补拍的页面没有保存成功，原来的页面仍然安全保留，请重试。"
                     },
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             }
         }

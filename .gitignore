@@ -26,8 +26,6 @@ website/node_modules/
 website/dist/
 website/coverage/
 .mimosa/
-tools/
 tmp_*.py
-build.log
-build-final.log
+*.log
 benchmark/build/

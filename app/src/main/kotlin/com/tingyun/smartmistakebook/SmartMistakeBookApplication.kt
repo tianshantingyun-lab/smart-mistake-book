@@ -5,6 +5,7 @@ import android.os.StrictMode
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecovery
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.library.LibraryCatalogRepositoryFactory
@@ -16,6 +17,7 @@ import com.tingyun.smartmistakebook.core.data.model.ModelTaskRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.model.RestrictedModelAssetSourceFactory
 import com.tingyun.smartmistakebook.core.data.model.UnavailableModelGateway
 import com.tingyun.smartmistakebook.core.data.study.StudyExperienceRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.study.VisualInteractionEventSinkFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorConversationRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
@@ -36,6 +38,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.domain.visual.VisualInteractionEventSink
 import com.tingyun.smartmistakebook.feature.capture.CaptureCacheMaintenance
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
@@ -64,6 +67,14 @@ class SmartMistakeBookApplication : Application() {
 
     val studyDatabase: StudyDatabasePort
         get() = database
+
+    /** Best-effort sink for visual-interaction attempts; null until the database opens. */
+    val visualInteractionSink: VisualInteractionEventSink?
+        get() = if (::database.isInitialized) visualInteractionSinkLazy else null
+
+    private val visualInteractionSinkLazy: VisualInteractionEventSink by lazy {
+        VisualInteractionEventSinkFactory.create(database)
+    }
 
     lateinit var mistakeDetailRepository: MistakeDetailRepository
         private set
@@ -110,6 +121,9 @@ class SmartMistakeBookApplication : Application() {
         }
         CaptureCacheMaintenance.pruneExpiredFiles(this)
         try {
+            // Repair any interrupted restore BEFORE the database is opened so
+            // a half-swapped generation can never become visible to Room.
+            BackupRestoreStartupRecovery.recoverOnStartup(this)
             database = StudyDatabaseFactory.open(this)
             studyRepository = StudyExperienceRepositoryFactory.create(
                 database = database,

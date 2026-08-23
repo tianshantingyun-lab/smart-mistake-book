@@ -139,9 +139,7 @@ interface ModelTaskDatabasePort {
 
     suspend fun reserveModelTaskRemoteDispatch(
         command: ReserveModelTaskRemoteDispatchCommand,
-    ): ModelTaskDispatchReservationResult = throw UnsupportedOperationException(
-        "Atomic model task dispatch reservations are not available",
-    )
+    ): ModelTaskDispatchReservationResult
 
     suspend fun transitionModelTask(command: TransitionModelTaskCommand): ModelTaskWriteResult
 }

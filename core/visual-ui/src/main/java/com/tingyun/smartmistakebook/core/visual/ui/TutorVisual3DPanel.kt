@@ -90,6 +90,9 @@ internal fun TutorVisual3DPanel(
                     }
                 },
         ) {
+            // TODO(PR-11): the Filament path has no picking yet. View.pick
+            // needs a real device/GPU to validate; taps on the Filament
+            // surface are ignored until a device-backed implementation lands.
             if (useFilament) {
                 FilamentVisualSurface(
                     geometries = geometries,
@@ -148,9 +151,11 @@ private fun TutorVisualFallback3DCanvas(
     val secondary = MaterialTheme.colorScheme.secondary
     Canvas(modifier.pointerInput(Unit) {
         detectTapGestures { offset ->
-            // Simple picking: find closest element to tap
-            val closest = geometries.minByOrNull { geometry ->
-                val state = frame.elements[geometry.elementId] ?: return@minByOrNull Double.MAX_VALUE
+            // Fallback picking (audit PR-11): the nearest projected element
+            // wins, but only inside the pick radius; tapping empty space
+            // clears the selection instead of grabbing the farthest item.
+            val distancesSquared = geometries.mapNotNull { geometry ->
+                val state = frame.elements[geometry.elementId] ?: return@mapNotNull null
                 val projected = TutorVisualFallbackProjector.project(
                     elements = listOf(geometry),
                     latticeInstances = emptyList(),
@@ -159,13 +164,14 @@ private fun TutorVisualFallback3DCanvas(
                     width = size.width.toDouble(),
                     height = size.height.toDouble(),
                 )
-                if (projected.isEmpty()) return@minByOrNull Double.MAX_VALUE
+                if (projected.isEmpty()) return@mapNotNull null
                 val center = projected.first().center
                 val dx = center.x - offset.x.toDouble()
                 val dy = center.y - offset.y.toDouble()
-                dx * dx + dy * dy
-            }
-            onElementSelected(closest?.elementId)
+                geometry.elementId to dx * dx + dy * dy
+            }.toMap()
+            val pickRadius = minOf(size.width, size.height).toDouble() * FALLBACK_PICK_RADIUS_FRACTION
+            onElementSelected(resolvePickHit(distancesSquared, pickRadius * pickRadius))
         }
     }) {
         drawRect(paper)
@@ -256,3 +262,14 @@ private fun TutorVisualFallback3DCanvas(
         }
     }
 }
+
+private const val FALLBACK_PICK_RADIUS_FRACTION = 0.12
+
+/** Nearest element wins, but only inside the squared threshold. */
+internal fun resolvePickHit(
+    distancesSquared: Map<String, Double>,
+    thresholdSquared: Double,
+): String? = distancesSquared
+    .minByOrNull { it.value }
+    ?.takeIf { it.value <= thresholdSquared }
+    ?.key

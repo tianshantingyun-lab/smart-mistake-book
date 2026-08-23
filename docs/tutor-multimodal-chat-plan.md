@@ -182,8 +182,8 @@ override suspend fun executeTutorToolCall(
     return when (toolCall) {
         is TutorToolCall.SaveToMistakeLibrary -> {
             try {
-                // 调用现有的保存错题逻辑
-                saveTutorExampleMistake(toolCall.practiceUnitId)
+                // 调用现有的保存错题逻辑（演示种子保存接口已按审计 9.2/PR-05 删除，改用正式保存命令）
+                saveTutorProblem(saveCommandFor(toolCall.practiceUnitId))
                 ToolCallResult.Success("已加入错题本")
             } catch (e: Exception) {
                 ToolCallResult.Failure("加入失败：${e.message}")

@@ -46,26 +46,33 @@ internal data class SmbkFileRecord(
     val byteSize: Long,
 )
 
+/**
+ * Resource budgets enforced while streaming untrusted archives. The defaults
+ * are the production limits; tests may inject smaller values to exercise the
+ * rejection branches without moving hundreds of megabytes.
+ */
+internal data class SmbkResourceLimits(
+    /** Maximum number of entries allowed in a backup archive. */
+    val maxEntryCount: Int = 10_000,
+    /** Maximum size of a single decompressed entry (100 MB). */
+    val maxSingleEntryBytes: Long = 100L * 1024 * 1024,
+    /** Maximum total decompressed size of all entries (500 MB). */
+    val maxTotalDecompressedBytes: Long = 500L * 1024 * 1024,
+    /** Maximum manifest text length (1 MB). */
+    val maxManifestChars: Int = 1_000_000,
+    /** Maximum allowed compression ratio (uncompressed / compressed). */
+    val maxCompressionRatio: Double = 100.0,
+) {
+    companion object {
+        val DEFAULT = SmbkResourceLimits()
+    }
+}
+
 internal object SmbkArchiveCodec {
     private const val MANIFEST_ENTRY = "manifest.json"
     private const val DATABASE_ENTRY = "database.sqlite"
     private const val ASSET_PREFIX = "assets/"
     private const val CHECKSUM_ENTRY = "checksums.sha256"
-
-    /** Maximum number of entries allowed in a backup archive. */
-    private const val MAX_ENTRY_COUNT = 10_000
-
-    /** Maximum size of a single decompressed entry (100 MB). */
-    private const val MAX_SINGLE_ENTRY_BYTES = 100L * 1024 * 1024
-
-    /** Maximum total decompressed size of all entries (500 MB). */
-    private const val MAX_TOTAL_DECOMPRESSED_BYTES = 500L * 1024 * 1024
-
-    /** Maximum manifest text length (1 MB). */
-    private const val MAX_MANIFEST_CHARS = 1_000_000
-
-    /** Maximum allowed compression ratio (uncompressed / compressed). */
-    private const val MAX_COMPRESSION_RATIO = 100.0
 
     private val json = Json { ignoreUnknownKeys = false }
 
@@ -131,128 +138,235 @@ internal object SmbkArchiveCodec {
         )
     }
 
-    fun validate(archive: InputStream): BackupValidation {
-        val entries = mutableMapOf<String, ByteArray>()
+    /**
+     * Streams an untrusted archive once and validates it WITHOUT buffering
+     * data entries in memory:
+     *   - every data entry is streamed to a scratch file on disk while a
+     *     SHA-256 digest is updated incrementally;
+     *   - only small metadata (entry names, hex digests, sizes, the manifest
+     *     and checksum text, each independently size-bounded) stays in memory;
+     *   - resource budgets (entry count, duplicates, path traversal, single
+     *     entry size, total decompressed size, compression ratio) are enforced
+     *     while streaming, so a hostile archive is rejected as early as the
+     *     limit is crossed;
+     *   - scratch files are always removed before returning.
+     */
+    fun validate(
+        archive: InputStream,
+        scratchDir: File,
+        limits: SmbkResourceLimits = SmbkResourceLimits.DEFAULT,
+    ): BackupValidation {
+        require(scratchDir.isDirectory || scratchDir.mkdirs()) {
+            "Cannot create backup validation scratch directory"
+        }
+        val stagedFiles = mutableListOf<File>()
+        val stagedDigests = mutableMapOf<String, String>()
+        val stagedSizes = mutableMapOf<String, Long>()
         val checksums = mutableMapOf<String, String>()
         var manifest: SmbkManifestV1? = null
         var totalDecompressedBytes = 0L
         var entryCount = 0
         val seenEntries = mutableSetOf<String>()
+        try {
+            ZipInputStream(archive).use { zip ->
+                while (true) {
+                    val entry = zip.nextEntry ?: break
 
-        ZipInputStream(archive).use { zip ->
-            while (true) {
-                val entry = zip.nextEntry ?: break
+                    // Duplicate entry detection
+                    if (entry.name in seenEntries) {
+                        return BackupValidation.Invalid("重复的归档条目: ${entry.name}")
+                    }
+                    seenEntries += entry.name
 
-                // Duplicate entry detection
-                if (entry.name in seenEntries) {
-                    return BackupValidation.Invalid("重复的归档条目: ${entry.name}")
-                }
-                seenEntries += entry.name
-
-                entryCount++
-                if (entryCount > MAX_ENTRY_COUNT) {
-                    return BackupValidation.Invalid("归档条目数量超过上限 ($MAX_ENTRY_COUNT)")
-                }
-
-                // Path traversal check
-                if (entry.name.contains("..") || entry.name.startsWith("/")) {
-                    return BackupValidation.Invalid("非法路径: ${entry.name}")
-                }
-
-                // Stream entry data with size limits
-                val bytes = readEntryBytes(zip, entry.name)
-                    ?: return BackupValidation.Invalid("无法读取条目: ${entry.name}")
-
-                totalDecompressedBytes += bytes.size
-                if (totalDecompressedBytes > MAX_TOTAL_DECOMPRESSED_BYTES) {
-                    return BackupValidation.Invalid("解压后总大小超过上限")
-                }
-
-                when (entry.name) {
-                    MANIFEST_ENTRY -> {
-                        val text = bytes.decodeToString()
-                        if (text.length > MAX_MANIFEST_CHARS) {
-                            return BackupValidation.Invalid("manifest 内容过长")
-                        }
-                        manifest = json.decodeFromString(
-                            SmbkManifestV1.serializer(),
-                            text,
+                    entryCount++
+                    if (entryCount > limits.maxEntryCount) {
+                        return BackupValidation.Invalid(
+                            "归档条目数量超过上限 (${limits.maxEntryCount})",
                         )
                     }
-                    CHECKSUM_ENTRY -> {
-                        bytes.decodeToString().lineSequence().forEach { line ->
-                            if (line.isBlank()) return@forEach
-                            val separator = line.indexOf(" *")
-                            if (separator > 0) {
-                                checksums[line.substring(separator + 2)] =
-                                    line.substring(0, separator)
+
+                    // Path traversal check
+                    if (entry.name.contains("..") || entry.name.startsWith("/")) {
+                        return BackupValidation.Invalid("非法路径: ${entry.name}")
+                    }
+
+                    when (entry.name) {
+                        MANIFEST_ENTRY -> {
+                            val text = readBoundedText(zip, limits)
+                                ?: return BackupValidation.Invalid("manifest 内容过长")
+                            manifest = json.decodeFromString(
+                                SmbkManifestV1.serializer(),
+                                text,
+                            )
+                        }
+                        CHECKSUM_ENTRY -> {
+                            val text = readBoundedText(zip, limits)
+                                ?: return BackupValidation.Invalid("checksums 内容过长")
+                            text.lineSequence().forEach { line ->
+                                if (line.isBlank()) return@forEach
+                                val separator = line.indexOf(" *")
+                                if (separator > 0) {
+                                    checksums[line.substring(separator + 2)] =
+                                        line.substring(0, separator)
+                                }
                             }
                         }
+                        else -> {
+                            val scratchFile = File(scratchDir, "entry-$entryCount.tmp")
+                            val result = streamDataEntry(
+                                zip = zip,
+                                target = scratchFile,
+                                compressedSize = entry.compressedSize,
+                                budgetRemaining = limits.maxTotalDecompressedBytes -
+                                    totalDecompressedBytes,
+                                limits = limits,
+                            ) ?: return BackupValidation.Invalid(
+                                "${entry.name} 超过解压资源上限",
+                            )
+                            stagedFiles += scratchFile
+                            stagedDigests[entry.name] = result.sha256Hex
+                            stagedSizes[entry.name] = result.bytesWritten
+                            totalDecompressedBytes += result.bytesWritten
+                        }
                     }
-                    else -> entries[entry.name] = bytes
+                    zip.closeEntry()
                 }
-                zip.closeEntry()
             }
-        }
 
-        val parsed = manifest ?: return BackupValidation.Invalid("缺少 manifest.json")
-        if (parsed.formatVersion != SmbkManifestV1.FORMAT_VERSION) {
-            return BackupValidation.Invalid("备份格式版本过新，暂不支持恢复")
-        }
-        if (parsed.hashAlgorithm != "SHA-256") {
-            return BackupValidation.Invalid("不支持的校验算法")
-        }
-        val expectedPaths = parsed.files.map { it.path }.toSet()
-        if (expectedPaths != entries.keys) {
-            return BackupValidation.Invalid("备份文件列表与内容不一致")
-        }
-        if (checksums != parsed.files.associate { it.path to it.sha256 }) {
-            return BackupValidation.Invalid("checksums.sha256 与 manifest 不一致")
-        }
-        parsed.files.forEach { record ->
-            val bytes = entries[record.path] ?: return BackupValidation.Invalid(
-                "缺少 ${record.path}",
+            val parsed = manifest ?: return BackupValidation.Invalid("缺少 manifest.json")
+            if (parsed.formatVersion != SmbkManifestV1.FORMAT_VERSION) {
+                return BackupValidation.Invalid("备份格式版本过新，暂不支持恢复")
+            }
+            if (parsed.hashAlgorithm != "SHA-256") {
+                return BackupValidation.Invalid("不支持的校验算法")
+            }
+            val expectedPaths = parsed.files.map { it.path }.toSet()
+            if (expectedPaths != stagedSizes.keys) {
+                return BackupValidation.Invalid("备份文件列表与内容不一致")
+            }
+            if (checksums != parsed.files.associate { it.path to it.sha256 }) {
+                return BackupValidation.Invalid("checksums.sha256 与 manifest 不一致")
+            }
+            parsed.files.forEach { record ->
+                val size = stagedSizes[record.path]
+                    ?: return BackupValidation.Invalid("缺少 ${record.path}")
+                if (size != record.byteSize) {
+                    return BackupValidation.Invalid("${record.path} 大小不一致")
+                }
+                // The SHA-256 was computed while streaming; no re-read needed.
+                if (stagedDigests[record.path] != record.sha256) {
+                    return BackupValidation.Invalid("${record.path} 校验失败")
+                }
+            }
+            return BackupValidation.Valid(
+                manifest = BackupManifestSummary(
+                    formatVersion = parsed.formatVersion,
+                    databaseSchemaVersion = parsed.databaseSchemaVersion,
+                    createdAtEpochMillis = parsed.createdAtEpochMillis,
+                    problemCount = parsed.problemCount,
+                    assetCount = parsed.assetCount,
+                    fileCount = parsed.files.size,
+                ),
+                checkedFileCount = parsed.files.size,
+                totalBytes = parsed.files.sumOf { it.byteSize },
             )
-            if (bytes.size.toLong() != record.byteSize) {
-                return BackupValidation.Invalid("${record.path} 大小不一致")
-            }
-            if (sha256(bytes) != record.sha256) {
-                return BackupValidation.Invalid("${record.path} 校验失败")
-            }
+        } catch (failure: Exception) {
+            return BackupValidation.Invalid("备份校验失败：${failure.message.orEmpty()}")
+        } finally {
+            stagedFiles.forEach { file -> file.delete() }
+            // Safety sweep: remove any partial scratch file left by an entry
+            // that exceeded a budget mid-stream.
+            scratchDir.listFiles { file -> file.name.startsWith("entry-") }
+                .orEmpty()
+                .forEach { file -> file.delete() }
         }
-        return BackupValidation.Valid(
-            manifest = BackupManifestSummary(
-                formatVersion = parsed.formatVersion,
-                databaseSchemaVersion = parsed.databaseSchemaVersion,
-                createdAtEpochMillis = parsed.createdAtEpochMillis,
-                problemCount = parsed.problemCount,
-                assetCount = parsed.assetCount,
-                fileCount = parsed.files.size,
-            ),
-            checkedFileCount = parsed.files.size,
-            totalBytes = parsed.files.sumOf { it.byteSize },
-        )
     }
 
-    private fun readEntryBytes(zip: ZipInputStream, entryName: String): ByteArray? {
-        val buffer = ByteArrayOutputStream()
-        val tempBuffer = ByteArray(8192)
-        var totalRead = 0
-        while (true) {
-            val bytesRead = zip.read(tempBuffer)
-            if (bytesRead == -1) break
-            totalRead += bytesRead
-            if (totalRead > MAX_SINGLE_ENTRY_BYTES) {
-                return null
+    private data class StreamedEntry(
+        val bytesWritten: Long,
+        val sha256Hex: String,
+    )
+
+    /**
+     * Streams one data entry to [target] while updating a SHA-256 digest,
+     * enforcing the per-entry size cap, the remaining total-decompression
+     * budget and the compression-ratio ceiling. Returns null when any limit
+     * is exceeded (the partial scratch file is deleted).
+     */
+    private fun streamDataEntry(
+        zip: ZipInputStream,
+        target: File,
+        compressedSize: Long,
+        budgetRemaining: Long,
+        limits: SmbkResourceLimits,
+    ): StreamedEntry? {
+        val digest = MessageDigest.getInstance("SHA-256")
+        var written = 0L
+        var exceeded = false
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        try {
+            target.outputStream().use { output ->
+                while (true) {
+                    val read = zip.read(buffer)
+                    if (read < 0) break
+                    if (read > 0) {
+                        written += read
+                        if (written > limits.maxSingleEntryBytes || written > budgetRemaining) {
+                            exceeded = true
+                            return null
+                        }
+                        digest.update(buffer, 0, read)
+                        output.write(buffer, 0, read)
+                    }
+                }
             }
-            buffer.write(tempBuffer, 0, bytesRead)
+            // Zip-bomb defence: reject pathological compression ratios as soon
+            // as the entry is fully decompressed.
+            if (compressedSize > 0 && written > 0) {
+                val ratio = written.toDouble() / compressedSize
+                if (ratio > limits.maxCompressionRatio) {
+                    exceeded = true
+                    return null
+                }
+            }
+            return StreamedEntry(
+                bytesWritten = written,
+                sha256Hex = digest.digest().joinToString("") { byte -> "%02x".format(byte) },
+            )
+        } catch (failure: Exception) {
+            exceeded = true
+            throw failure
+        } finally {
+            if (exceeded) target.delete()
         }
-        return buffer.toByteArray()
+    }
+
+    /** Reads a small metadata entry (manifest/checksums) with a hard byte cap. */
+    private fun readBoundedText(zip: ZipInputStream, limits: SmbkResourceLimits): String? {
+        // UTF-8 needs at most 4 bytes per char, so this cap guarantees the
+        // decoded text can never exceed maxManifestChars.
+        val maxBytes = limits.maxManifestChars.toLong() * 4L
+        val buffer = ByteArrayOutputStream()
+        val chunk = ByteArray(DEFAULT_BUFFER_SIZE)
+        var total = 0L
+        while (true) {
+            val read = zip.read(chunk)
+            if (read < 0) break
+            if (read > 0) {
+                total += read
+                if (total > maxBytes) return null
+                buffer.write(chunk, 0, read)
+            }
+        }
+        val text = buffer.toString(Charsets.UTF_8.name())
+        if (text.length > limits.maxManifestChars) return null
+        return text
     }
 
     fun unpack(
         archive: InputStream,
         destinationDir: File,
+        limits: SmbkResourceLimits = SmbkResourceLimits.DEFAULT,
     ): BackupValidation {
         require(destinationDir.isDirectory || destinationDir.mkdirs()) {
             "Cannot create backup staging directory"
@@ -271,8 +385,10 @@ internal object SmbkArchiveCodec {
                     // Resource budgets must be enforced during streaming so a
                     // malicious archive cannot exhaust disk before validation.
                     entryCount++
-                    if (entryCount > MAX_ENTRY_COUNT) {
-                        return BackupValidation.Invalid("归档条目数量超过上限 ($MAX_ENTRY_COUNT)")
+                    if (entryCount > limits.maxEntryCount) {
+                        return BackupValidation.Invalid(
+                            "归档条目数量超过上限 (${limits.maxEntryCount})",
+                        )
                     }
                     if (entry.name in seenEntries) {
                         return BackupValidation.Invalid("重复的归档条目: ${entry.name}")
@@ -300,18 +416,18 @@ internal object SmbkArchiveCodec {
                             val target = destinationFile(destinationDir, entry.name)
                                 ?: return BackupValidation.Invalid("备份包含非法路径 ${entry.name}")
                             val written = target.outputStream().use { output ->
-                                copyBounded(zip, output)
+                                copyBounded(zip, output, limits.maxSingleEntryBytes)
                             } ?: return BackupValidation.Invalid(
                                 "${entry.name} 超过单条目解压大小上限",
                             )
                             totalDecompressedBytes += written
-                            if (totalDecompressedBytes > MAX_TOTAL_DECOMPRESSED_BYTES) {
+                            if (totalDecompressedBytes > limits.maxTotalDecompressedBytes) {
                                 return BackupValidation.Invalid("解压后总大小超过上限")
                             }
                             val compressedSize = entry.compressedSize
                             if (compressedSize > 0 && written > 0) {
                                 val ratio = written.toDouble() / compressedSize
-                                if (ratio > MAX_COMPRESSION_RATIO) {
+                                if (ratio > limits.maxCompressionRatio) {
                                     return BackupValidation.Invalid(
                                         "${entry.name} 压缩比异常（1:$ratio）",
                                     )
@@ -368,8 +484,8 @@ internal object SmbkArchiveCodec {
         }
     }
 
-    /** Copies at most [MAX_SINGLE_ENTRY_BYTES]; returns bytes written or null when exceeded. */
-    private fun copyBounded(input: ZipInputStream, output: OutputStream): Long? {
+    /** Copies at most [maxBytes]; returns bytes written or null when exceeded. */
+    private fun copyBounded(input: ZipInputStream, output: OutputStream, maxBytes: Long): Long? {
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
         var total = 0L
         while (true) {
@@ -377,7 +493,7 @@ internal object SmbkArchiveCodec {
             if (read < 0) break
             if (read > 0) {
                 total += read
-                if (total > MAX_SINGLE_ENTRY_BYTES) return null
+                if (total > maxBytes) return null
                 output.write(buffer, 0, read)
             }
         }
@@ -427,11 +543,6 @@ internal object SmbkArchiveCodec {
         }
         return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
     }
-
-    private fun sha256(bytes: ByteArray): String =
-        MessageDigest.getInstance("SHA-256")
-            .digest(bytes)
-            .joinToString("") { byte -> "%02x".format(byte) }
 
     private const val DEFAULT_BUFFER_SIZE = 8_192
 }

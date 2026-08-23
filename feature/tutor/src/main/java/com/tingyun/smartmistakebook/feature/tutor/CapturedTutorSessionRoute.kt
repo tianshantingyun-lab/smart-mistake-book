@@ -85,7 +85,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
@@ -215,9 +215,9 @@ fun CapturedTutorSessionRoute(
 private fun CapturedTutorSessionContent(
     state: TutorSessionUiState,
     saveInProgress: Boolean,
-    saveError: UserRecoverableError?,
+    saveError: AppFailure?,
     endInProgress: Boolean,
-    endError: UserRecoverableError?,
+    endError: AppFailure?,
     onSave: (ConfirmedTutorSession) -> Unit,
     onRequestEnd: () -> Unit,
     onRetryLoad: () -> Unit,
@@ -342,9 +342,9 @@ internal fun LoadingTutorQuestion() {
 internal fun ReadyCapturedSession(
     session: ConfirmedTutorSession,
     saveInProgress: Boolean,
-    saveError: UserRecoverableError?,
+    saveError: AppFailure?,
     endInProgress: Boolean = false,
-    endError: UserRecoverableError? = null,
+    endError: AppFailure? = null,
     onSave: (ConfirmedTutorSession) -> Unit,
     onRequestEnd: () -> Unit = {},
     visualSourceAssetsReader: suspend () -> List<TutorVisualSourceAssetScope> = {

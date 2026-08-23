@@ -68,7 +68,7 @@ class HLRShadowModeManager(
                 difficulty = difficulty,
             )
         }
-        return extractHlrFeatures(
+        return extractHlrFeaturesForShadow(
             memory = memory,
             mastery = mastery,
             difficulty = difficulty,

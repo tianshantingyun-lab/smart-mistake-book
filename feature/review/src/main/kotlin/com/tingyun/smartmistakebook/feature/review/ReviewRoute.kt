@@ -118,7 +118,7 @@ fun ReviewRoute(
                 WeakPointRow(
                     title = weakness.displayName,
                     detail = "目前至少能独立完成 " +
-                        "${(weakness.lowerBoundIndependentCorrect * 100).toInt()}%",
+                        "${(weakness.conservativeMasteryScore * 100).toInt()}%",
                     icon = if (index == 0) {
                         Icons.AutoMirrored.Outlined.ShowChart
                     } else {

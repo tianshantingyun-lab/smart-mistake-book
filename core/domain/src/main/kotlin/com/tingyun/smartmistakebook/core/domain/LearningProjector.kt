@@ -785,7 +785,7 @@ class LearningProjector(
         attribution: KnowledgeEvidenceAttribution,
         effectiveAtEpochMillis: Long,
     ): KnowledgeMasteryState {
-        val probability = previous?.probabilityIndependentCorrect ?: INITIAL_MASTERY_PROBABILITY
+        val probability = previous?.masteryScore ?: INITIAL_MASTERY_PROBABILITY
         val weight = attempt.evidence.weight * attribution.weight
         val positive = attempt.evidence.signedWeight > 0
         val updatedProbability = if (positive) {
@@ -832,7 +832,7 @@ class LearningProjector(
         }
         val startsConflict = independentError && previous?.let {
             it.status == MasteryStatus.MASTERED ||
-                (it.lowerBoundIndependentCorrect >= ClearlyMasteredForSkipPolicy.LOWER_BOUND &&
+                (it.conservativeMasteryScore >= ClearlyMasteredForSkipPolicy.LOWER_BOUND &&
                     it.evidenceMass >= ClearlyMasteredForSkipPolicy.EVIDENCE_MASS)
         } == true
         val conflictSince = when {
@@ -881,8 +881,8 @@ class LearningProjector(
         }
         return KnowledgeMasteryState(
             knowledgeNodeId = knowledgeNodeId,
-            probabilityIndependentCorrect = updatedProbability,
-            lowerBoundIndependentCorrect = lowerBound,
+            masteryScore = updatedProbability,
+            conservativeMasteryScore = lowerBound,
             evidenceMass = evidenceMass,
             independentCorrectObservations = observations,
             lastIndependentErrorAtEpochMillis = lastErrorAt,
@@ -982,8 +982,8 @@ class LearningProjector(
                         practiceUnitId = event.assessmentSnapshot.practiceUnitId,
                         knowledgeNodeId = attribution.knowledgeNodeId,
                         featureFingerprint = computeFeatureFingerprint(mastery, event),
-                        predictedScore = mastery.probabilityIndependentCorrect,
-                        conservativeScore = mastery.lowerBoundIndependentCorrect,
+                        predictedScore = mastery.masteryScore,
+                        conservativeScore = mastery.conservativeMasteryScore,
                         predictionWindowStartEpochMillis = projectedAt,
                         predictionWindowEndEpochMillis = projectedAt + 7 * 86_400_000L, // 7-day window
                         predictedAtEpochMillis = projectedAt,
@@ -1005,7 +1005,7 @@ class LearningProjector(
     ): String {
         return buildString {
             append("mass=${mastery.evidenceMass}")
-            append(";prob=${mastery.probabilityIndependentCorrect}")
+            append(";prob=${mastery.masteryScore}")
             append(";independent=${mastery.independentCorrectObservations.size}")
             append(";attempt=${attempt.evidence.weight}")
             append(";family=${attempt.itemFamilyId}")

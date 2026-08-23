@@ -1,13 +1,9 @@
 package com.tingyun.smartmistakebook.core.domain
 
-import com.tingyun.smartmistakebook.core.model.EventTimeTrust
-import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
-import com.tingyun.smartmistakebook.core.model.LearningModelVersion
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
-import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import com.tingyun.smartmistakebook.core.model.ProjectionStatus
 import com.tingyun.smartmistakebook.core.model.ReviewDifficultyBand
 import com.tingyun.smartmistakebook.core.model.ReviewPlan
@@ -16,33 +12,6 @@ import com.tingyun.smartmistakebook.core.model.ReviewReason
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-
-/** Extract HLR features from the current memory/mastery state. */
-internal fun extractHlrFeatures(
-    memory: ProblemMemoryState,
-    mastery: KnowledgeMasteryState?,
-    difficulty: Double,
-    nowEpochMillis: Long,
-): HLRFeatures {
-    val daysSinceFirstSeen = (nowEpochMillis -
-        (memory.lastReviewedAtEpochMillis - memory.stabilityDays * 86_400_000L))
-        .toDouble() / 86_400_000.0
-    val timeBetweenReviewsDays = memory.stabilityDays
-    val consecutiveCorrectStreak =
-        (memory.independentCorrectCount - memory.lapseCount).coerceAtLeast(0).toDouble()
-    return HLRFeatures(
-        independentCorrectCount = memory.independentCorrectCount.toDouble(),
-        assistedCorrectCount = memory.assistedCorrectCount.toDouble(),
-        lapseCount = memory.lapseCount.toDouble(),
-        answerRevealCount = memory.answerRevealCount.toDouble(),
-        evidenceMass = mastery?.evidenceMass ?: 0.0,
-        difficulty = difficulty,
-        timeBetweenReviewsDays = timeBetweenReviewsDays,
-        daysSinceFirstSeen = daysSinceFirstSeen.coerceAtLeast(0.0),
-        consecutiveCorrectStreak = consecutiveCorrectStreak,
-        lastResponseLatencyNormalized = 0.0,
-    )
-}
 
 data class ReviewCandidate(
     val practiceUnitId: String,
@@ -56,6 +25,10 @@ data class ReviewCandidate(
     val eligibleSinceEpochMillis: Long? = null,
     val recentFamilyCount: Int = 0,
     val recentSourceCount: Int = 0,
+    /** Subject the mistake belongs to; drives the V2 "same-subject run" hard constraint. */
+    val subjectId: String? = null,
+    /** Item-type dimension for the personalized duration model; null until the data layer exposes it. */
+    val itemType: String? = null,
 ) {
     init {
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
@@ -63,6 +36,12 @@ data class ReviewCandidate(
         require(itemFamilyId.isNotBlank()) { "Item family id must not be blank" }
         require(sourceBundleId == null || sourceBundleId.isNotBlank()) {
             "Source bundle id must not be blank when provided"
+        }
+        require(subjectId == null || subjectId.isNotBlank()) {
+            "Subject id must not be blank when provided"
+        }
+        require(itemType == null || itemType.isNotBlank()) {
+            "Item type must not be blank when provided"
         }
         require(difficulty.isFinite() && difficulty in 0.0..1.0) {
             "Difficulty must be between zero and one"
@@ -106,15 +85,7 @@ data class ReviewPlanningRequest(
 /** Versioned, deterministic review queue planning under a strict time budget. */
 class ReviewPlanner(
     private val forgettingCurve: ForgettingCurve = ForgettingCurve(),
-    private val hlrPredictor: HalfLifeRegressionPredictor? = null,
 ) {
-    /**
-     * Shadow predictions generated during planning. These are not used for
-     * scheduling but are stored for later calibration.
-     */
-    var shadowPredictions: List<HLRShadowPrediction> = emptyList()
-        private set
-
     fun plan(request: ReviewPlanningRequest): ReviewPlan {
         require(request.learnerSnapshot.freshness == LearnerSnapshotFreshness.CURRENT) {
             "Review plans require a current learner snapshot"
@@ -177,43 +148,6 @@ class ReviewPlanner(
                     .problemMemoryStates[candidate.practiceUnitId]
                     ?.nextReviewAtEpochMillis,
             )
-        }
-
-        // Generate HLR shadow predictions for calibration
-        if (hlrPredictor != null) {
-            val shadowPreds = mutableListOf<HLRShadowPrediction>()
-            for (scoredCandidate in scored) {
-                val memory = request.learnerSnapshot.problemMemoryStates[scoredCandidate.candidate.practiceUnitId]
-                val mastery = scoredCandidate.candidate.knowledgeNodeIds.mapNotNull {
-                    request.learnerSnapshot.knowledgeMasteryStates[it]
-                }.firstOrNull()
-
-                if (memory != null) {
-                    val deltaSeconds = (now - memory.lastReviewedAtEpochMillis) / 1000.0
-                    val features = extractHlrFeatures(
-                        memory = memory,
-                        mastery = mastery,
-                        difficulty = scoredCandidate.candidate.difficulty,
-                        nowEpochMillis = now,
-                    )
-                    val shadowPrediction = HLRShadowPrediction(
-                        predictionId = "shadow-${scoredCandidate.candidate.practiceUnitId}-$now",
-                        modelVersion = LearningModelVersion(
-                            modelId = "hlr-shadow-v1",
-                            version = "0.1.0-experimental",
-                            algorithmHash = "hlr-recall-v1",
-                        ),
-                        practiceUnitId = scoredCandidate.candidate.practiceUnitId,
-                        features = features,
-                        predictedRecallProbability = hlrPredictor.predict(features, deltaSeconds),
-                        halfLifeSeconds = hlrPredictor.computeHalfLife(features),
-                        predictedAtEpochMillis = now,
-                        timeTrust = EventTimeTrust.TRUSTED,
-                    )
-                    shadowPreds.add(shadowPrediction)
-                }
-            }
-            shadowPredictions = shadowPreds
         }
 
         return ReviewPlan(
@@ -304,7 +238,7 @@ class ReviewPlanner(
                     reasons += ReviewReason.CALIBRATION_CHECK
                     1.0
                 }
-                else -> 1.0 - state.lowerBoundIndependentCorrect
+                else -> 1.0 - state.conservativeMasteryScore
             }
         }
         val weakness = (masteryRisks + List(

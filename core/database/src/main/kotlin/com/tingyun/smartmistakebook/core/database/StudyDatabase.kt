@@ -17,8 +17,8 @@ import com.tingyun.smartmistakebook.core.database.dao.KnowledgeNodeRelationDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeResearchReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeTeachingMaterialDao
 import com.tingyun.smartmistakebook.core.database.dao.LearningDao
-import com.tingyun.smartmistakebook.core.database.dao.LibraryQueryDao
 import com.tingyun.smartmistakebook.core.database.dao.LibraryFtsSearchDao
+import com.tingyun.smartmistakebook.core.database.dao.LibraryQueryDao
 import com.tingyun.smartmistakebook.core.database.dao.PredictionAuditDao
 import com.tingyun.smartmistakebook.core.database.dao.ModelTaskTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.MistakeDetailDao
@@ -33,6 +33,7 @@ import com.tingyun.smartmistakebook.core.database.dao.ReviewPlanTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorInteractionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorExposureDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorConversationDao
+import com.tingyun.smartmistakebook.core.database.dao.VisualInteractionAttemptDao
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEventEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEvidenceAttributionEntity
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentEvidenceSnapshotEntity
@@ -46,11 +47,9 @@ import com.tingyun.smartmistakebook.core.database.entity.AssessmentAnswerRevealE
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentPresentationEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
-import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchContentEntity
-import com.tingyun.smartmistakebook.core.database.entity.FtsLibrarySearchContentEntity
-import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
 import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
+import com.tingyun.smartmistakebook.core.database.entity.VisualInteractionAttemptEntity
 import com.tingyun.smartmistakebook.core.database.entity.CanonicalSourceAssetEntity
 import com.tingyun.smartmistakebook.core.database.entity.AttemptCorrectionEntity
 import com.tingyun.smartmistakebook.core.database.entity.AttemptEventEntity
@@ -67,10 +66,13 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeResearchReview
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeResearchReviewSourceEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchFeatureEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialEntity
+import com.tingyun.smartmistakebook.core.database.entity.FtsLibrarySearchContentEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialNodeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.IndependentCorrectObservationEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerKnowledgeMasteryStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProblemMemoryStateEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchContentEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearnerProjectionSnapshotEntity
 import com.tingyun.smartmistakebook.core.database.entity.LearningSequenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.LibraryCatalogView
@@ -112,7 +114,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 33
+internal const val STUDY_DATABASE_VERSION = 34
 
 @Database(
     views = [LibraryCatalogView::class],
@@ -192,6 +194,7 @@ internal const val STUDY_DATABASE_VERSION = 33
         LibrarySearchOutboxEntity::class,
         StudentModelPredictionEntity::class,
         PredictionOutcomeEntity::class,
+        VisualInteractionAttemptEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -245,6 +248,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
 
     abstract fun predictionAuditDao(): PredictionAuditDao
 
+    abstract fun visualInteractionAttemptDao(): VisualInteractionAttemptDao
+
     abstract fun batchImportDao(): BatchImportDao
 }
 
@@ -291,8 +296,9 @@ object StudyDatabaseFactory {
             TUTOR_CONVERSATION_MIGRATION_28_29,
             LIBRARY_CATALOG_VIEW_MIGRATION_29_30,
             TUTOR_CONVERSATION_DRAFT_MIGRATION_30_31,
-            LIBRARY_SEARCH_FTS_MIGRATION_31_32,
+            LIBRARY_SEARCH_MIGRATION_31_32,
             PREDICTION_AUDIT_MIGRATION_32_33,
+            VISUAL_INTERACTION_MIGRATION_33_34,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

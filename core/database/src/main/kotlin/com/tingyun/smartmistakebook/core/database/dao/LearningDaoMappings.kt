@@ -421,8 +421,8 @@ internal fun LearnerSnapshot.toMasteryEntities(
             projectionName = projectionName,
             learnerId = learnerId,
             knowledgeNodeId = state.knowledgeNodeId,
-            probabilityIndependentCorrect = state.probabilityIndependentCorrect,
-            lowerBoundIndependentCorrect = state.lowerBoundIndependentCorrect,
+            masteryScore = state.masteryScore,
+            conservativeMasteryScore = state.conservativeMasteryScore,
             evidenceMass = state.evidenceMass,
             lastIndependentErrorAtEpochMillis = state.lastIndependentErrorAtEpochMillis,
             lastIndependentErrorSequence = state.lastIndependentErrorSequence,
@@ -548,8 +548,8 @@ internal fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
         knowledgeMasteryStates = masteryStates.associate { state ->
             state.knowledgeNodeId to KnowledgeMasteryState(
                 knowledgeNodeId = state.knowledgeNodeId,
-                probabilityIndependentCorrect = state.probabilityIndependentCorrect,
-                lowerBoundIndependentCorrect = state.lowerBoundIndependentCorrect,
+                masteryScore = state.masteryScore,
+                conservativeMasteryScore = state.conservativeMasteryScore,
                 evidenceMass = state.evidenceMass,
                 independentCorrectObservations = observationsByKnowledge[state.knowledgeNodeId]
                     .orEmpty()

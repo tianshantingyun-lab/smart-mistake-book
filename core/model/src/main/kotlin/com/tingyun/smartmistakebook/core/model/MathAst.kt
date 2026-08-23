@@ -2,7 +2,8 @@ package com.tingyun.smartmistakebook.core.model
 
 /**
  * Math AST nodes for structured formula representation.
- * Supports nested fractions, radicals, scripts, matrices, and aligned equations.
+ * Supports nested fractions, radicals, scripts, matrices, aligned equations,
+ * and piecewise cases blocks.
  */
 sealed interface MathNode {
     data class Fraction(
@@ -53,6 +54,11 @@ sealed interface MathNode {
         val rows: List<List<MathNode>>,
     ) : MathNode
 
+    /** A piecewise `cases` block: one node per row, drawn behind a left brace. */
+    data class Cases(
+        val rows: List<MathNode>,
+    ) : MathNode
+
     data class Operator(
         val name: String,
         val symbol: String,
@@ -92,6 +98,12 @@ sealed interface MathToken {
     object SubscriptOp : MathToken
     object Carat : MathToken
     object Underscore : MathToken
+
+    /** A `\\` row separator inside aligned/matrix/cases environments. */
+    object RowSeparator : MathToken
+
+    /** A `&` column separator inside aligned/matrix/cases environments. */
+    object ColumnSeparator : MathToken
 }
 
 enum class BracketType {
@@ -120,6 +132,10 @@ object MathTokenizer {
         while (pos < trimmed.length) {
             val remaining = trimmed.substring(pos)
             when {
+                remaining.startsWith("\\\\") -> {
+                    tokens.add(MathToken.RowSeparator)
+                    pos += 2
+                }
                 remaining.startsWith("\\") -> {
                     val match = COMMAND_PATTERN.find(remaining)
                     if (match != null) {
@@ -165,6 +181,10 @@ object MathTokenizer {
                     tokens.add(MathToken.Space)
                     pos++
                 }
+                remaining.startsWith("&") -> {
+                    tokens.add(MathToken.ColumnSeparator)
+                    pos++
+                }
                 NUMBER_PATTERN.containsMatchIn(remaining) -> {
                     val match = NUMBER_PATTERN.find(remaining)!!
                     tokens.add(MathToken.Number(match.value))
@@ -203,7 +223,11 @@ object MathParser {
         while (current < tokens.size) {
             val token = tokens[current]
             when (token) {
-                is MathToken.RightBrace, is MathToken.RightBracket -> break
+                is MathToken.RightBrace,
+                is MathToken.RightBracket,
+                is MathToken.RowSeparator,
+                is MathToken.ColumnSeparator,
+                -> break
                 is MathToken.Command -> {
                     val (node, nextPos) = parseCommand(token.name, tokens, current + 1)
                     items.add(node)
@@ -245,7 +269,12 @@ object MathParser {
                     items.add(MathNode.Atom(token.value))
                     current++
                 }
-                is MathToken.Space -> current++
+                // Spaces are preserved as atoms so the rendered text and the
+                // box layout keep the visual spacing of the source formula.
+                is MathToken.Space -> {
+                    items.add(MathNode.Atom(" "))
+                    current++
+                }
                 else -> current++
             }
         }
@@ -290,7 +319,20 @@ object MathParser {
             }
             "vec" -> {
                 val (content, pos1) = parseAtom(tokens, pos)
-                MathNode.Operator("vec", "⃗") to pos1
+                MathNode.Group(listOf(content, MathNode.Atom("⃗"))) to pos1
+            }
+            "overline" -> {
+                val (content, pos1) = parseAtom(tokens, pos)
+                MathNode.Group(listOf(content, MathNode.Atom("̅"))) to pos1
+            }
+            "begin" -> {
+                val (envNameNode, pos1) = parseAtom(tokens, pos)
+                parseEnvironment(nodeToString(envNameNode), tokens, pos1)
+            }
+            "end" -> {
+                // Stray \end without a matching \begin: swallow the name and degrade to empty.
+                val (_, pos1) = parseAtom(tokens, pos)
+                MathNode.Row(emptyList()) to pos1
             }
             "text" -> {
                 val (content, pos1) = parseAtom(tokens, pos)
@@ -364,6 +406,107 @@ object MathParser {
         }
     }
 
+    /**
+     * Parses the body of a `\begin{name} ... \end{name}` environment into rows of cells,
+     * splitting on `&` (columns) and `\\` (rows). Tolerates a missing `\end` by running
+     * to the end of the input, and skips tokens that cannot start an item so the loop
+     * always terminates.
+     */
+    private fun parseEnvironmentRows(tokens: List<MathToken>, pos: Int): Pair<List<List<MathNode>>, Int> {
+        val rows = mutableListOf<List<MathNode>>()
+        var cells = mutableListOf<MathNode>()
+        var current = pos
+
+        fun flushRow() {
+            if (cells.isNotEmpty()) {
+                rows.add(cells)
+            }
+            cells = mutableListOf()
+        }
+
+        while (current < tokens.size) {
+            val token = tokens[current]
+            if (token is MathToken.Command && token.name == "end") {
+                val (_, nameEnd) = parseAtom(tokens, current + 1)
+                flushRow()
+                return rows to nameEnd
+            }
+            when (token) {
+                is MathToken.ColumnSeparator -> current++
+                is MathToken.RowSeparator -> {
+                    flushRow()
+                    current++
+                }
+                // Leading spaces between separators are cosmetic; drop them so cells
+                // do not start with stray space atoms.
+                is MathToken.Space -> current++
+                else -> {
+                    val (node, nextPos) = parseExpression(tokens, current)
+                    if (nextPos <= current) {
+                        // Guard: skip tokens that cannot start an item (stray closers).
+                        current++
+                    } else {
+                        cells.add(trimCell(node))
+                        current = nextPos
+                    }
+                }
+            }
+        }
+        flushRow()
+        return rows to current
+    }
+
+    /** Drops trailing space atoms a cell accumulated before a separator. */
+    private fun trimCell(node: MathNode): MathNode {
+        if (node !is MathNode.Row) return node
+        val trimmed = node.items.dropLastWhile { it is MathNode.Atom && it.symbol == " " }
+        return when {
+            trimmed.size == node.items.size -> node
+            trimmed.isEmpty() -> MathNode.Row(emptyList())
+            trimmed.size == 1 -> trimmed[0]
+            else -> MathNode.Row(trimmed)
+        }
+    }
+
+    private fun parseEnvironment(name: String, tokens: List<MathToken>, pos: Int): Pair<MathNode, Int> {
+        val (rows, endPos) = parseEnvironmentRows(tokens, pos)
+        val node: MathNode = when (name) {
+            "cases" -> MathNode.Cases(rows.map { cellsToNode(it) })
+            "aligned", "align", "alignedat", "alignat", "gather", "gathered" ->
+                MathNode.AlignedRows(rows)
+            "matrix", "pmatrix", "bmatrix", "Bmatrix", "vmatrix", "Vmatrix" -> {
+                val (left, right) = MATRIX_DELIMITERS.getValue(name)
+                MathNode.Matrix(rows, left, right)
+            }
+            // Unknown environment: degrade to aligned rows rather than dropping content.
+            else -> MathNode.AlignedRows(rows)
+        }
+        return node to endPos
+    }
+
+    private val MATRIX_DELIMITERS = mapOf(
+        "matrix" to ("" to ""),
+        "pmatrix" to ("(" to ")"),
+        "bmatrix" to ("[" to "]"),
+        "Bmatrix" to ("{" to "}"),
+        "vmatrix" to ("|" to "|"),
+        "Vmatrix" to ("‖" to "‖"),
+    )
+
+    /** Joins the cells of one row into a single node. */
+    private fun cellsToNode(cells: List<MathNode>): MathNode = when (cells.size) {
+        0 -> MathNode.Row(emptyList())
+        1 -> cells[0]
+        else -> MathNode.Row(cells)
+    }
+
+    private fun nodeToString(node: MathNode): String = when (node) {
+        is MathNode.Atom -> node.symbol
+        is MathNode.Text -> node.value
+        is MathNode.Row -> node.items.joinToString("") { nodeToString(it) }
+        else -> ""
+    }
+
     private val GREEK_MAP = mapOf(
         "alpha" to "α", "beta" to "β", "gamma" to "γ", "delta" to "δ",
         "epsilon" to "ε", "varepsilon" to "ε", "zeta" to "ζ", "eta" to "η",
@@ -408,6 +551,10 @@ object MathRenderer {
         }
         is MathNode.AlignedRows -> node.rows.joinToString(" \\\\ ") { row ->
             row.joinToString(" & ") { render(it) }
+        }
+        is MathNode.Cases -> buildString {
+            append("{ ")
+            append(node.rows.joinToString("; ") { render(it) })
         }
         is MathNode.Operator -> node.symbol
         is MathNode.Text -> node.value

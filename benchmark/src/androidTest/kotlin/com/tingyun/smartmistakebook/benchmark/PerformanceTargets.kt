@@ -62,10 +62,9 @@ object PerformanceTargets {
  * A performance measurement that may not exist yet.
  */
 sealed interface PerformanceMeasurement {
-    /** Measured value in ms (or the unit of the metric). */
-    data class Measured(val valueMs: Long) : PerformanceMeasurement {
-        val meetsTarget: Boolean get() = valueMs < targetFor()
-        private fun targetFor(): Long = 0 // overridden by caller comparison
+    /** Measured value in ms (or the unit of the metric) plus its declared target. */
+    data class Measured(val valueMs: Long, val targetMs: Long) : PerformanceMeasurement {
+        val meetsTarget: Boolean get() = valueMs < targetMs
     }
 
     /** No benchmark output recorded; must not be treated as a pass. */
@@ -80,13 +79,13 @@ object PerformanceMeasurementReader {
     /**
      * Read a single metric from the benchmark results, e.g. "coldStartMs".
      */
-    fun readMetric(metricName: String): PerformanceMeasurement {
+    fun readMetric(metricName: String, targetMs: Long): PerformanceMeasurement {
         val results = PerformanceTargets.loadBenchmarkResults() ?: return PerformanceMeasurement.NotMeasured
         val value = results.values.mapNotNull { json ->
             json.optLong(metricName).takeIf { it > 0 }
         }.firstOrNull()
         return if (value != null) {
-            PerformanceMeasurement.Measured(value)
+            PerformanceMeasurement.Measured(valueMs = value, targetMs = targetMs)
         } else {
             PerformanceMeasurement.NotMeasured
         }

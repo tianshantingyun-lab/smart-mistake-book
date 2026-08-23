@@ -1817,8 +1817,8 @@ class StudyDatabaseInstrumentedTest {
 
     private fun untrustedMasteryState(checkpoint: Long) = KnowledgeMasteryState(
         knowledgeNodeId = KNOWLEDGE_ID,
-        probabilityIndependentCorrect = 0.72,
-        lowerBoundIndependentCorrect = 0.54,
+        masteryScore = 0.72,
+        conservativeMasteryScore = 0.54,
         evidenceMass = 1.0,
         independentCorrectObservations = listOf(
             IndependentCorrectObservation(

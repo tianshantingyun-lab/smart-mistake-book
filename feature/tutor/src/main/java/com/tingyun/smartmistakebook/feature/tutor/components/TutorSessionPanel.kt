@@ -73,10 +73,11 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
-import com.tingyun.smartmistakebook.core.model.RecoveryAction
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
-import com.tingyun.smartmistakebook.core.model.userRecoverableError
+import com.tingyun.smartmistakebook.core.model.ActionType
+import com.tingyun.smartmistakebook.core.model.AppFailure
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
+import com.tingyun.smartmistakebook.core.model.Retryability
+import com.tingyun.smartmistakebook.core.model.appFailure
 import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
@@ -214,7 +215,7 @@ internal fun TutorModelPanel(
         mutableStateOf<String?>(null)
     }
     var chatStartError by remember(question.sessionId) {
-        mutableStateOf<UserRecoverableError?>(null)
+        mutableStateOf<AppFailure?>(null)
     }
     var reportedVisualSceneIds by rememberSaveable(
         question.sessionId,

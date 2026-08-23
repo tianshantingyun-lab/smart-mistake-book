@@ -1,0 +1,35 @@
+{
+  "_comment": "Offline golden set scaffold for the knowledge retrieval quality gate (audit §11.5). Query ids use the same stable knowledge-node id scheme as the learning projections (e.g. 'math:monotonicity'). The exemplar queries below only prove the gate mechanics; real golden content expansion and human double-review are content-team work items and are intentionally not part of this scaffold.",
+  "queries": [
+    {
+      "query_id": "math-function-monotonicity",
+      "query_text": "怎么判断一个函数在某个区间上是单调递增的？",
+      "subject": "数学",
+      "expected_knowledge_ids": ["math:monotonicity"]
+    },
+    {
+      "query_id": "physics-newton-second-law",
+      "query_text": "牛顿第二定律里加速度和合外力是什么关系？",
+      "subject": "物理",
+      "expected_knowledge_ids": ["physics:newton-2"]
+    },
+    {
+      "query_id": "math-quadratic-extremum",
+      "query_text": "二次函数的最值怎么求？",
+      "subject": "数学",
+      "expected_knowledge_ids": ["math:quadratic-function", "math:monotonicity"]
+    },
+    {
+      "query_id": "chemistry-equation-balancing",
+      "query_text": "化学方程式配平为什么要遵守质量守恒？",
+      "subject": "化学",
+      "expected_knowledge_ids": ["chemistry:equation-balancing"]
+    },
+    {
+      "query_id": "english-tense-consistency",
+      "query_text": "英语写作里时态前后不一致怎么修改？",
+      "subject": "英语",
+      "expected_knowledge_ids": ["english:tense-consistency"]
+    }
+  ]
+}

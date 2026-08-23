@@ -5,8 +5,8 @@ enum class ReviewRetryReason {
     REVEAL_RECORDING,
 }
 
-fun reviewRetryError(reason: ReviewRetryReason): UserRecoverableError = userRecoverableError(
-    code = AppErrorCode.DATABASE_WRITE_FAILED,
+fun reviewRetryError(reason: ReviewRetryReason): AppFailure = appFailure(
+    code = AppFailureCode.DATABASE_WRITE_FAILED,
     title = when (reason) {
         ReviewRetryReason.SUBMISSION_RECORDING -> "这次作答还没确认写入"
         ReviewRetryReason.REVEAL_RECORDING -> "完整讲解还没安全记录"
@@ -17,6 +17,7 @@ fun reviewRetryError(reason: ReviewRetryReason): UserRecoverableError = userReco
         ReviewRetryReason.REVEAL_RECORDING ->
             "讲解尚未安全记录，因此暂未显示。请重试打开讲解。"
     },
-    dataSafe = true,
-    primaryAction = RecoveryAction.RETRY,
+    dataPreserved = true,
+    retryability = Retryability.RETRYABLE,
+    primaryAction = ActionType.RETRY,
 )

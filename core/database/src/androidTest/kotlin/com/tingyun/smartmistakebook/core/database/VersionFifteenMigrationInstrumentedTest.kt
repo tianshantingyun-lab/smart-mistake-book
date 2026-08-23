@@ -20,7 +20,7 @@ class VersionFifteenMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 15)
             val migrated = StudyDatabaseFactory.open(context, databaseName)
 
-            assertEquals(STUDY_DATABASE_VERSION, 31)
+            assertEquals(STUDY_DATABASE_VERSION, 34)
             val conversation = migrated.createTutorConversation(
                 CreateTutorConversationDatabaseCommand(
                     conversationId = "conversation-after-v15",

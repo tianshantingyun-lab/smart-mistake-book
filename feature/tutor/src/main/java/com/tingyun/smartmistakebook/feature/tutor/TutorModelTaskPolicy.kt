@@ -925,7 +925,7 @@ private fun StudyProfileOverview.toTutorKnowledgeEvidence(
                 ::weaknessPriority,
             )
                 .thenByDescending { it.lastIndependentErrorAtEpochMillis ?: Long.MIN_VALUE }
-                .thenBy { it.lowerBoundIndependentCorrect }
+                .thenBy { it.conservativeMasteryScore }
                 .thenByDescending { it.lastEvidenceAtEpochMillis ?: Long.MIN_VALUE }
                 .thenBy { it.knowledgeNodeId },
         )
@@ -939,7 +939,7 @@ private fun StudyProfileOverview.toTutorKnowledgeEvidence(
                 questionPriority,
             )
                 .thenByDescending { it.lastEvidenceAtEpochMillis ?: Long.MIN_VALUE }
-                .thenByDescending { it.lowerBoundIndependentCorrect }
+                .thenByDescending { it.conservativeMasteryScore }
                 .thenBy { it.knowledgeNodeId },
         )
         .take(MAX_STRENGTH_EVIDENCE)
@@ -948,7 +948,7 @@ private fun StudyProfileOverview.toTutorKnowledgeEvidence(
             knowledgeNodeId = summary.knowledgeNodeId,
             displayName = summary.displayName,
             level = summary.status.toTutorEvidenceLevel(),
-            independentCorrectLowerBound = summary.lowerBoundIndependentCorrect,
+            independentCorrectLowerBound = summary.conservativeMasteryScore,
             evidenceMass = summary.evidenceMass
                 .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_EVIDENCE_MASS),
             independentCorrectObservationCount = summary.independentCorrectObservationCount

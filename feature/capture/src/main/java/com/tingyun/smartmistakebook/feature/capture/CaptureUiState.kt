@@ -4,7 +4,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowState
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
 
 enum class CaptureResumeLoadState {
     NOT_REQUESTED,
@@ -19,7 +19,7 @@ data class CaptureWorkflowUiState(
     val workflow: CaptureWorkflowState = CaptureWorkflowState(),
     val resumeState: CaptureResumeLoadState = CaptureResumeLoadState.NOT_REQUESTED,
     val providerCapabilities: ProviderCapabilitySnapshot? = null,
-    val userError: UserRecoverableError? = null,
+    val userError: AppFailure? = null,
     val pendingTutorSessionId: String? = null,
     val importedDraft: CaptureDraftImportedEvent? = null,
     val confirmedTutorSession: ConfirmedTutorSession? = null,

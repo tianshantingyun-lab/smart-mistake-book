@@ -50,13 +50,14 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
-import com.tingyun.smartmistakebook.core.model.RecoveryAction
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
+import com.tingyun.smartmistakebook.core.model.ActionType
+import com.tingyun.smartmistakebook.core.model.AppFailure
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
-import com.tingyun.smartmistakebook.core.model.userRecoverableError
+import com.tingyun.smartmistakebook.core.model.Retryability
+import com.tingyun.smartmistakebook.core.model.appFailure
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -132,7 +133,7 @@ internal fun TutorLobbyRoute(
     var provider by remember { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var providerLoadFailed by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable(activeConversationId) { mutableStateOf("") }
-    var sendError by remember { mutableStateOf<UserRecoverableError?>(null) }
+    var sendError by remember { mutableStateOf<AppFailure?>(null) }
     var sendInFlight by rememberSaveable { mutableStateOf(false) }
     var draftPersistJob by remember { mutableStateOf<Job?>(null) }
     val hasActiveTask = conversationTasks.any { task ->
@@ -180,11 +181,11 @@ internal fun TutorLobbyRoute(
     fun startMessage(message: String, approvedAtEpochMillis: Long) {
         val currentProvider = provider
         if (currentProvider == null || !currentProvider.supports(ModelTaskKind.TUTOR_LOBBY)) {
-            sendError = userRecoverableError(
+            sendError = appFailure(
                 code = if (providerLoadFailed) {
-                    AppErrorCode.PROVIDER_NOT_CONFIGURED
+                    AppFailureCode.PROVIDER_NOT_CONFIGURED
                 } else {
-                    AppErrorCode.PROVIDER_CAPABILITY_MISMATCH
+                    AppFailureCode.PROVIDER_CAPABILITY_MISMATCH
                 },
                 title = if (providerLoadFailed) {
                     "暂时读不到模型配置"
@@ -196,8 +197,8 @@ internal fun TutorLobbyRoute(
                 } else {
                     "当前模型还不能处理对话，请先完成模型配置和能力测试。"
                 },
-                dataSafe = true,
-                primaryAction = RecoveryAction.OPEN_SETTINGS,
+                dataPreserved = true,
+                primaryAction = ActionType.OPEN_SETTINGS,
             )
             return
         }
@@ -324,12 +325,13 @@ internal fun TutorLobbyRoute(
                 throw cancelled
             } catch (e: Exception) {
                 android.util.Log.e("TutorLobby", "Failed to send message", e)
-                sendError = userRecoverableError(
-                    code = AppErrorCode.NETWORK_UNAVAILABLE,
+                sendError = appFailure(
+                    code = AppFailureCode.NETWORK_UNAVAILABLE,
                     title = "这条消息已经保留",
                     message = "这条消息已经保留，但暂时没有发出去。",
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             } finally {
                 sendInFlight = false

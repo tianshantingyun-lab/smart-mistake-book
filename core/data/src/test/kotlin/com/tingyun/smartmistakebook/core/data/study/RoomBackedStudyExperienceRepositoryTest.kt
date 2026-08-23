@@ -15,6 +15,8 @@ import com.tingyun.smartmistakebook.core.database.SplitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.ProblemDraftSplitResult
 import com.tingyun.smartmistakebook.core.database.ProblemDraftEditWorkspaceRecord
 import com.tingyun.smartmistakebook.core.database.SaveProblemDraftEditWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.ModelTaskDispatchReservationResult
+import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
 import com.tingyun.smartmistakebook.core.database.ProblemDraftEditWorkspaceWriteResult
 import com.tingyun.smartmistakebook.core.database.ConsumeProblemDraftEditWorkspaceCommand
 import com.tingyun.smartmistakebook.core.database.ConfirmAndCommitProblemDraftFromWorkspaceCommand
@@ -98,13 +100,12 @@ import com.tingyun.smartmistakebook.core.database.ReviewSessionRecord
 import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecord
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.SeedResult
+import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
-import com.tingyun.smartmistakebook.core.database.StudentModelPredictionRecord
-import com.tingyun.smartmistakebook.core.database.ResolvedStudentModelPredictionRecord
+
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
-import com.tingyun.smartmistakebook.core.domain.SaveStudyMistakeResult
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
@@ -119,6 +120,7 @@ import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -236,32 +238,6 @@ class RoomBackedStudyExperienceRepositoryTest {
                 listOf("learner:local", "learner:local"),
                 database.tutorExposureReconcileLearners,
             )
-        } finally {
-            repository.close()
-            applicationScope.cancel()
-        }
-    }
-
-    @Test
-    fun saveTutorExampleMovesFromFourToFiveExactlyOnce() = runBlocking {
-        val database = FakeStudyDatabasePort()
-        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
-        val repository = repository(database, applicationScope)
-
-        try {
-            repository.initialize()
-
-            val first = repository.saveTutorExampleMistake()
-            val second = repository.saveTutorExampleMistake()
-
-            assertTrue(first is SaveStudyMistakeResult.Saved)
-            assertEquals(5, first.entryCount)
-            assertTrue(second is SaveStudyMistakeResult.AlreadySaved)
-            assertEquals(5, second.entryCount)
-            assertEquals(5, repository.snapshot.value.mistakeCount)
-            assertTrue(repository.snapshot.value.tutorExampleSaved)
-            assertEquals(null, repository.snapshot.value.tutorPracticeUnitId)
-            assertEquals(null, repository.snapshot.value.tutorDecision)
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -441,7 +417,8 @@ class RoomBackedStudyExperienceRepositoryTest {
             assertEquals(null, repository.snapshot.value.tutorDecision)
             database.failProjectionReads = true
 
-            assertTrue(runCatching { repository.saveTutorExampleMistake() }.isFailure)
+            // Any snapshot-republishing operation must surface the projection failure.
+            assertTrue(runCatching { repository.refresh() }.isFailure)
 
             val failed = repository.snapshot.value
             assertEquals(StudyDataStatus.ERROR, failed.status)
@@ -649,6 +626,12 @@ private class MutableClock(
 }
 
 @Suppress("OVERRIDE_DEPRECATION")
+private data class ResolvedPredictionOutcomeCall(
+    val practiceUnitId: String,
+    val wasIndependentCorrect: Boolean,
+    val observedAtEpochMillis: Long,
+)
+
 private class FakeStudyDatabasePort : StudyDatabasePort {
     private val mistakes = MutableStateFlow<List<MistakeRecord>>(emptyList())
     private val learningLedgerHead = MutableStateFlow(0L)
@@ -675,6 +658,36 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     var failProjectionReads: Boolean = false
     val savedPlans = mutableListOf<ReviewPlanBundle>()
     val tutorExposureReconcileLearners = mutableListOf<String>()
+    val recordedPredictions = mutableListOf<StudentModelPredictionRecord>()
+    val resolvedPredictionOutcomes = mutableListOf<ResolvedPredictionOutcomeCall>()
+
+    override suspend fun recordStudentModelPredictions(
+        predictions: List<StudentModelPredictionRecord>,
+    ) {
+        recordedPredictions += predictions
+    }
+
+    override suspend fun resolveStudentModelPredictions(
+        practiceUnitId: String,
+        wasIndependentCorrect: Boolean,
+        observedAtEpochMillis: Long,
+        responseLatencyMs: Long?,
+        hintCount: Int,
+    ): Int {
+        resolvedPredictionOutcomes += ResolvedPredictionOutcomeCall(
+            practiceUnitId = practiceUnitId,
+            wasIndependentCorrect = wasIndependentCorrect,
+            observedAtEpochMillis = observedAtEpochMillis,
+        )
+        return recordedPredictions.count { it.practiceUnitId == practiceUnitId }
+    }
+
+    override suspend fun reserveModelTaskRemoteDispatch(
+        command: ReserveModelTaskRemoteDispatchCommand,
+    ): ModelTaskDispatchReservationResult =
+        error("Model task dispatch reservations are outside this study-repository fake")
+
+    override suspend fun snapshotForBackup(sourceDatabaseFile: File, snapshotTarget: File) = Unit
 
     val problemCount: Int
         get() = problemIds.size
@@ -1102,21 +1115,6 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readMistakeRevisionHistory(problemId: String):
         List<MistakeRevisionSummaryRecord> = emptyList()
-
-    override suspend fun recordStudentModelPredictions(predictions: List<StudentModelPredictionRecord>) = Unit
-
-    override suspend fun resolveStudentModelPredictions(
-        practiceUnitId: String,
-        wasIndependentCorrect: Boolean,
-        observedAtEpochMillis: Long,
-        responseLatencyMs: Long?,
-        hintCount: Int,
-    ): Int = 0
-
-    override suspend fun readResolvedStudentModelPredictions(
-        modelId: String,
-        modelVersion: String,
-    ): List<ResolvedStudentModelPredictionRecord> = emptyList()
 
     override suspend fun checkpointForBackup() = Unit
 

@@ -592,7 +592,7 @@ internal fun StorageScreen(
         )
     }
 
-    RootPageColumn {
+    RootPageColumn(modifier = Modifier.testTag("storage_screen")) {
         SecondaryHeader(title = "存储、备份与导出", onBack = onBack)
         SectionHeader("本机存储")
         val current = inventory

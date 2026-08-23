@@ -101,7 +101,7 @@ class LearningMasteryScreenInstrumentedTest {
         knowledgeNodeId = id,
         displayName = name,
         status = status,
-        lowerBoundIndependentCorrect = confidence,
+        conservativeMasteryScore = confidence,
         evidenceMass = 4.0,
         independentCorrectObservationCount = 3,
         lastEvidenceAtEpochMillis = lastEvidenceAtEpochMillis,

@@ -11,10 +11,11 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.printToString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
+import com.tingyun.smartmistakebook.core.data.study.StudyFixtureRegistry
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
-import com.tingyun.smartmistakebook.core.domain.SaveStudyMistakeResult
+import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
+import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
@@ -248,7 +249,10 @@ class RootTutorFailClosedInstrumentedTest {
     }
 
     companion object {
-        const val TUTOR_PRACTICE_UNIT_ID = M1CuratedStudySeed.TUTOR_PRACTICE_UNIT_ID
+        // Local literal mirroring the curated tutor practice unit of the debug
+        // fixture; androidTest must not reference the debug-only seed directly
+        // (audit section 9.2 / PR-05).
+        const val TUTOR_PRACTICE_UNIT_ID = "practice:m1:derivative-sign-change:whole"
         const val SECOND_PRACTICE_UNIT_ID = "practice:m1:closed-interval-extrema:whole"
         const val CAPTURED_PRACTICE_UNIT_ID = "practice:captured:exact-original"
         const val CAPTURED_QUESTION_MARKDOWN = "已保存原题：若 x + 3 = 7，求 x。"
@@ -347,8 +351,14 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
 
     override suspend fun initialize() = Unit
 
-    override suspend fun saveTutorExampleMistake(): SaveStudyMistakeResult =
-        SaveStudyMistakeResult.Saved(entryCount = 1)
+    override suspend fun saveTutorProblem(
+        command: SaveTutorProblemCommand,
+    ): SaveTutorProblemReceipt =
+        // Fail-closed fake: it holds no problem objects, so saving any
+        // referenced problem must report the reference as missing.
+        SaveTutorProblemReceipt.ReferenceNotFound(
+            reason = "This fail-closed test repository holds no problem object for ${command.conversationId}",
+        )
 
     override suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact? {
         artifactRequests += practiceUnitId
@@ -480,7 +490,9 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
 }
 
 private fun requireArtifact(practiceUnitId: String): VerifiedTeachingArtifact =
-    requireNotNull(M1CuratedStudySeed.teachingArtifactForPracticeUnit(practiceUnitId))
+    requireNotNull(
+        StudyFixtureRegistry.source.teachingArtifactForPracticeUnit(practiceUnitId),
+    ) { "No verified teaching artifact is registered for $practiceUnitId" }
 
 private fun VerifiedTeachingArtifact.askDecision(): AdaptiveDecision = AdaptiveDecision(
     kind = AdaptiveDecisionKind.ASK,

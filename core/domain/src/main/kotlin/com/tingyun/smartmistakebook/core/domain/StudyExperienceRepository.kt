@@ -104,7 +104,7 @@ data class StudyKnowledgeSummary(
     val knowledgeNodeId: String,
     val displayName: String,
     val status: MasteryStatus,
-    val lowerBoundIndependentCorrect: Double,
+    val conservativeMasteryScore: Double,
     val evidenceMass: Double = 0.0,
     val independentCorrectObservationCount: Int = 0,
     val lastEvidenceAtEpochMillis: Long? = null,
@@ -116,8 +116,8 @@ data class StudyKnowledgeSummary(
         require(knowledgeNodeId.isNotBlank()) { "Knowledge summary id must not be blank" }
         require(displayName.isNotBlank()) { "Knowledge summary name must not be blank" }
         require(
-            lowerBoundIndependentCorrect.isFinite() &&
-                lowerBoundIndependentCorrect in 0.0..1.0,
+            conservativeMasteryScore.isFinite() &&
+                conservativeMasteryScore in 0.0..1.0,
         ) { "Knowledge summary lower bound must be between zero and one" }
         require(evidenceMass.isFinite() && evidenceMass >= 0.0) {
             "Knowledge summary evidence mass must not be negative"
@@ -168,14 +168,6 @@ data class StudyExperienceSnapshot(
 
     val mistakeCount: Int
         get() = catalog.size
-}
-
-sealed interface SaveStudyMistakeResult {
-    val entryCount: Int
-
-    data class Saved(override val entryCount: Int) : SaveStudyMistakeResult
-
-    data class AlreadySaved(override val entryCount: Int) : SaveStudyMistakeResult
 }
 
 data class StudyChoiceSubmission(
@@ -305,11 +297,6 @@ interface StudyExperienceRepository : AutoCloseable {
 
     /** Saves the currently tutored problem as an exact, immutable mistake entry. */
     suspend fun saveTutorProblem(command: SaveTutorProblemCommand): SaveTutorProblemReceipt
-
-    @Deprecated(
-        "Demo-seed path for debug/test only. Production must use saveTutorProblem.",
-    )
-    suspend fun saveTutorExampleMistake(): SaveStudyMistakeResult
 
     suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact?
 

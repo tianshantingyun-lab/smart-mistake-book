@@ -52,10 +52,11 @@ import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_CONTENT_DIMENSIONS
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_RELATION_KINDS
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
-import com.tingyun.smartmistakebook.core.model.RecoveryAction
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
-import com.tingyun.smartmistakebook.core.model.userRecoverableError
+import com.tingyun.smartmistakebook.core.model.ActionType
+import com.tingyun.smartmistakebook.core.model.AppFailure
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
+import com.tingyun.smartmistakebook.core.model.Retryability
+import com.tingyun.smartmistakebook.core.model.appFailure
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
@@ -94,7 +95,7 @@ internal fun MistakeOrganizationSection(
     }
     var isContinuingPausedOrganization by remember(key, modelTasks) { mutableStateOf(false) }
     var message by rememberSaveable(key) { mutableStateOf<String?>(null) }
-    var error by remember(key) { mutableStateOf<UserRecoverableError?>(null) }
+    var error by remember(key) { mutableStateOf<AppFailure?>(null) }
     var isPreparing by rememberSaveable(key) { mutableStateOf(false) }
     var attempt by rememberSaveable(key) { mutableStateOf(0) }
     var preparationDismissed by rememberSaveable(key) { mutableStateOf(false) }
@@ -151,12 +152,13 @@ internal fun MistakeOrganizationSection(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                error = userRecoverableError(
-                    code = AppErrorCode.NETWORK_UNAVAILABLE,
+                error = appFailure(
+                    code = AppFailureCode.NETWORK_UNAVAILABLE,
                     title = "整理没有完成",
                     message = "整理失败，请稍后重试",
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             }
         }
@@ -168,12 +170,12 @@ internal fun MistakeOrganizationSection(
             !availableProvider.supports(ModelTaskKind.PROBLEM_CLASSIFY) ||
             availableProvider.executionLocation == ModelExecutionLocation.UNAVAILABLE
         ) {
-            error = userRecoverableError(
-                code = AppErrorCode.PROVIDER_CAPABILITY_MISMATCH,
+            error = appFailure(
+                code = AppFailureCode.PROVIDER_CAPABILITY_MISMATCH,
                 title = "暂时无法继续整理",
                 message = "暂时无法继续整理",
-                dataSafe = true,
-                primaryAction = RecoveryAction.OPEN_SETTINGS,
+                dataPreserved = true,
+                primaryAction = ActionType.OPEN_SETTINGS,
             )
             return@continueRecoveredOrganization
         }
@@ -200,12 +202,13 @@ internal fun MistakeOrganizationSection(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                error = userRecoverableError(
-                    code = AppErrorCode.NETWORK_UNAVAILABLE,
+                error = appFailure(
+                    code = AppFailureCode.NETWORK_UNAVAILABLE,
                     title = "整理没有完成",
                     message = "整理失败，请稍后重试",
-                    dataSafe = true,
-                    primaryAction = RecoveryAction.RETRY,
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
                 )
             } finally {
                 isContinuingPausedOrganization = false
@@ -300,12 +303,13 @@ internal fun MistakeOrganizationSection(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            error = userRecoverableError(
-                code = AppErrorCode.NETWORK_UNAVAILABLE,
+            error = appFailure(
+                code = AppFailureCode.NETWORK_UNAVAILABLE,
                 title = "整理没有完成",
                 message = "整理失败，请稍后重试",
-                dataSafe = true,
-                primaryAction = RecoveryAction.RETRY,
+                dataPreserved = true,
+                retryability = Retryability.RETRYABLE,
+                primaryAction = ActionType.RETRY,
             )
         }
     }
@@ -338,12 +342,12 @@ internal fun MistakeOrganizationSection(
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            error = userRecoverableError(
-                code = AppErrorCode.PROVIDER_NOT_CONFIGURED,
+            error = appFailure(
+                code = AppFailureCode.PROVIDER_NOT_CONFIGURED,
                 title = "暂时无法准备智能整理",
                 message = "暂时无法准备智能整理",
-                dataSafe = true,
-                primaryAction = RecoveryAction.OPEN_SETTINGS,
+                dataPreserved = true,
+                primaryAction = ActionType.OPEN_SETTINGS,
             )
             preparationDismissed = true
         } finally {

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.tingyun.smartmistakebook.core.data.study.StudyFixtureRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -24,7 +25,14 @@ class RootVisualCaptureInstrumentedTest {
     fun seedCuratedFixture() {
         runBlocking {
             val application = composeRule.activity.application as SmartMistakeBookApplication
-            application.studyRepository.saveTutorExampleMistake()
+            // Debug-only fixture injection through the audit seam (PR-05): the
+            // registry holds curated content in debug builds and stays empty in
+            // release, so this seed fails closed outside debug/test builds.
+            val bundle = checkNotNull(
+                StudyFixtureRegistry.source.bundle(includeTutorMistake = true),
+            ) { "Curated fixture content is not available in this build" }
+            application.studyDatabase.seedFixture(bundle)
+            application.studyRepository.refresh()
         }
     }
 

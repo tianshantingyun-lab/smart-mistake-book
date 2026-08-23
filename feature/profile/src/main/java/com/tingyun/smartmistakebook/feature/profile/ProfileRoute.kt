@@ -260,7 +260,7 @@ private fun WeaknessSection(
             WeaknessRow(
                 title = weakness.displayName,
                 detail = "${weakness.status.displayLabel()} · 根据多次独立作答估计",
-                mastery = weakness.lowerBoundIndependentCorrect.toFloat(),
+                mastery = weakness.conservativeMasteryScore.toFloat(),
                 icon = if (index % 2 == 0) Icons.Outlined.Functions else Icons.Outlined.Bolt,
                 modifier = if (index == 0) Modifier.padding(top = 10.dp) else Modifier,
             )

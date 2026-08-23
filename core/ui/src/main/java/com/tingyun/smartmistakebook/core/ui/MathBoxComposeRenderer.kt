@@ -3,22 +3,24 @@ package com.tingyun.smartmistakebook.core.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.tingyun.smartmistakebook.core.model.MathBox
 import com.tingyun.smartmistakebook.core.model.MathBudget
 import com.tingyun.smartmistakebook.core.model.MathBoxBuilder
-import com.tingyun.smartmistakebook.core.model.MathNode
-import com.tingyun.smartmistakebook.core.model.MathParser
+import com.tingyun.smartmistakebook.core.model.MathMetrics
 import com.tingyun.smartmistakebook.core.model.parseAndBuildBox
 
 /**
@@ -26,13 +28,18 @@ import com.tingyun.smartmistakebook.core.model.parseAndBuildBox
  *
  * Unlike the Unicode-linear [com.tingyun.smartmistakebook.core.model
  * .ReadableMathText] fallback, this draws true fraction bars, radical signs,
- * and matrix grids from [MathBox] dimensions. It is the production wrapper
- * around `Tokenizer -> Parser -> AST -> Budget -> BoxLayout -> Compose draw`
+ * matrix grids and cases braces from [MathBox] dimensions. It is the
+ * production wrapper around
+ * `Tokenizer -> Parser -> AST -> Budget -> BoxLayout -> Compose draw`
  * mandated by the audit (section 13).
  *
  * Parsing is budget-bounded via [parseAndBuildBox]; when the formula exceeds
- * budget or fails to parse, the caller should fall back to
- * [com.tingyun.smartmistakebook.core.model.ReadableMathText].
+ * budget or fails to parse, the composable degrades to [fallbackText] or the
+ * raw formula text (原文透传).
+ *
+ * Box dimensions are derived from [fontSize] (sp, already scaled by the
+ * system font scale via [LocalDensity]), so formulas keep proportional size
+ * at 200% font scale.
  */
 @Composable
 fun MathFormulaBox(
@@ -40,56 +47,48 @@ fun MathFormulaBox(
     modifier: Modifier = Modifier,
     color: Color = Color.Black,
     fallbackText: String? = null,
+    fontSize: TextUnit = 16.sp,
 ) {
-    val box = rememberMathBox(formula)
-    val content = when (box) {
-        null -> fallbackText ?: formula
-        else -> null
+    val density = LocalDensity.current
+    // sp -> px applies the system font scale, so 200% font doubles the boxes.
+    val fontSizePx = with(density) { fontSize.toPx() }
+    val box = remember(formula, fontSizePx) {
+        val result = parseAndBuildBox(formula)
+        result.node?.let { node ->
+            val metrics = MathMetrics.of(fontSizePx)
+            val laid = MathBoxBuilder.buildBox(node, metrics)
+            // Re-check the layout budget at the effective font size; a huge
+            // font scale can push a budget-valid formula past the layout cap.
+            laid.takeIf { MathBudget.checkLayoutSize(it.width, it.height, metrics) == null }
+        }
     }
 
+    val content = if (box == null) fallbackText ?: formula else null
     if (content != null) {
-        androidx.compose.material3.Text(
+        Text(
             text = content,
             modifier = modifier,
             color = color,
+            fontSize = fontSize,
         )
         return
     }
 
+    val laidOut = box ?: return
     Box(modifier = modifier) {
-        val boxNonNull = box
-        if (boxNonNull != null) {
-            Canvas(
-                modifier = Modifier
-                    .size(
-                        width = with(androidx.compose.ui.platform.LocalDensity.current) {
-                            boxNonNull.width.toDp()
-                        },
-                        height = with(androidx.compose.ui.platform.LocalDensity.current) {
-                            boxNonNull.height.toDp()
-                        },
-                    ),
-            ) {
-                drawMathBox(boxNonNull, Offset.Zero, color, 1f)
-            }
+        Canvas(
+            modifier = Modifier
+                .size(
+                    width = with(density) { laidOut.width.toDp() },
+                    height = with(density) { laidOut.height.toDp() },
+                ),
+        ) {
+            drawMathBox(laidOut, Offset.Zero, color, maxOf(1f, fontSizePx * 0.0625f))
         }
     }
 }
 
-/**
- * Returns the parsed [MathBox] for a formula, or null when it exceeds budget.
- */
-@Composable
-private fun rememberMathBox(formula: String): MathBox? {
-    return androidx.compose.runtime.remember(formula) {
-        val result = parseAndBuildBox(formula)
-        result.node?.let { MathBoxBuilder.buildBox(it) }
-    }
-}
-
-private val DENSITY = 1f
-
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMathBox(
+private fun DrawScope.drawMathBox(
     box: MathBox,
     origin: Offset,
     color: Color,
@@ -170,31 +169,62 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMathBox(
         }
 
         is MathBox.MatrixBox -> drawMatrix(box, origin, color, strokeWidth)
-        is MathBox.AlignedBox -> drawMatrixRows(box.rows, origin, color, strokeWidth)
+        is MathBox.AlignedBox -> {
+            val charHeight = box.rows.firstOrNull()?.firstOrNull()?.height ?: 16f
+            drawMatrixRows(
+                rows = box.rows,
+                origin = origin,
+                color = color,
+                strokeWidth = strokeWidth,
+                columnGap = charHeight,
+                rowGap = charHeight * 0.25f,
+            )
+        }
+        is MathBox.CasesBox -> {
+            val charHeight = box.rows.firstOrNull()?.height ?: 16f
+            val braceWidth = charHeight * 0.75f
+            drawTextDelimiter("{", origin, box.height, color)
+            var cursorY = origin.y
+            box.rows.forEach { row ->
+                drawMathBox(row, Offset(origin.x + braceWidth, cursorY), color, strokeWidth)
+                cursorY += row.height + box.rowGap
+            }
+        }
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMatrix(
+private fun DrawScope.drawMatrix(
     box: MathBox.MatrixBox,
     origin: Offset,
     color: Color,
     strokeWidth: Float,
 ) {
+    val charHeight = box.rows.firstOrNull()?.firstOrNull()?.height ?: 16f
+    val charWidth = charHeight * 0.5f
     drawTextDelimiter(box.leftDelimiter, origin, box.height, color)
-    drawMatrixRows(box.rows, Offset(origin.x + 8f, origin.y), color, strokeWidth)
+    drawMatrixRows(
+        rows = box.rows,
+        origin = Offset(origin.x + charWidth, origin.y),
+        color = color,
+        strokeWidth = strokeWidth,
+        columnGap = charWidth,
+        rowGap = charHeight * 0.25f,
+    )
     drawTextDelimiter(
         box.rightDelimiter,
-        Offset(origin.x + box.width - 8f, origin.y),
+        Offset(origin.x + box.width - charWidth, origin.y),
         box.height,
         color,
     )
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMatrixRows(
+private fun DrawScope.drawMatrixRows(
     rows: List<List<MathBox>>,
     origin: Offset,
     color: Color,
     strokeWidth: Float,
+    columnGap: Float,
+    rowGap: Float,
 ) {
     var cursorY = origin.y
     rows.forEachIndexed { rowIndex, row ->
@@ -203,24 +233,28 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawMatrixRows(
         row.forEachIndexed { colIndex, cell ->
             // Center the cell vertically within the row.
             drawMathBox(cell, Offset(cursorX, cursorY + (rowHeight - cell.height) / 2f), color, strokeWidth)
-            cursorX += cell.width + 8f
+            cursorX += cell.width + columnGap
             if (colIndex < row.lastIndex) {
                 drawLine(
                     color,
-                    Offset(cursorX - 4f, origin.y),
-                    Offset(cursorX - 4f, origin.y + boxHeight(rows)),
+                    Offset(cursorX - columnGap / 2f, origin.y),
+                    Offset(cursorX - columnGap / 2f, origin.y + boxHeight(rows, rowGap)),
                     strokeWidth / 2,
                 )
             }
         }
         cursorY += rowHeight
+        if (rowIndex < rows.lastIndex) {
+            cursorY += rowGap
+        }
     }
 }
 
-private fun boxHeight(rows: List<List<MathBox>>): Float =
-    rows.sumOf { row -> (row.maxOfOrNull { it.height } ?: 0f).toDouble() }.toFloat()
+private fun boxHeight(rows: List<List<MathBox>>, rowGap: Float): Float =
+    rows.sumOf { row -> (row.maxOfOrNull { it.height } ?: 0f).toDouble() }.toFloat() +
+        rowGap * (rows.size - 1).coerceAtLeast(0)
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTextDelimiter(
+private fun DrawScope.drawTextDelimiter(
     delimiter: String,
     origin: Offset,
     height: Float,
@@ -241,9 +275,14 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTextDelimiter(
 private fun Color.toArgbInt(): Int = this.toArgb()
 
 /**
- * Parse-bounded entry point: returns the [MathBox] for a formula, or null.
+ * Parse-bounded entry point: returns the [MathBox] for a formula, or null
+ * when parsing fails or any budget (including layout width/height) is
+ * violated at the given [metrics].
  */
-fun buildMathBoxOrNull(formula: String): MathBox? {
+fun buildMathBoxOrNull(formula: String, metrics: MathMetrics = MathMetrics.DEFAULT): MathBox? {
     val result = parseAndBuildBox(formula)
-    return result.node?.let { MathBoxBuilder.buildBox(it) }
+    return result.node?.let { node ->
+        MathBoxBuilder.buildBox(node, metrics)
+            .takeIf { MathBudget.checkLayoutSize(it.width, it.height, metrics) == null }
+    }
 }

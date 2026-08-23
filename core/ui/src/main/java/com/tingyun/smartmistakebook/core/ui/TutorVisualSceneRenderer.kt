@@ -49,6 +49,8 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualProgramScene
 import com.tingyun.smartmistakebook.core.visual.ui.TutorVisualDocumentContent
+import com.tingyun.smartmistakebook.core.domain.visual.VisualProblemConstraints
+import com.tingyun.smartmistakebook.core.model.VisualInteractionAttempt
 
 /**
  * Deterministically renders the bounded tutor scene contract. This renderer has no network,
@@ -60,6 +62,8 @@ fun TutorVisualSceneRenderer(
     modifier: Modifier = Modifier,
     onOpenOriginal: (() -> Unit)? = null,
     onReportIncorrect: (() -> Unit)? = null,
+    visualConstraints: VisualProblemConstraints? = null,
+    onVisualAttempt: ((VisualInteractionAttempt) -> Unit)? = null,
 ) {
     SceneFrame(
         scene = scene,
@@ -79,6 +83,8 @@ fun TutorVisualSceneRenderer(
                 scene = scene,
                 onOpenOriginal = onOpenOriginal,
                 onReportIncorrect = onReportIncorrect,
+                visualConstraints = visualConstraints,
+                onVisualAttempt = onVisualAttempt,
             )
         }
     }

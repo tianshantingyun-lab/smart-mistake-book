@@ -133,7 +133,7 @@ class TutorLocalIntentPanelInstrumentedTest {
                 knowledgeNodeId = "knowledge-1",
                 displayName = "导数变号",
                 status = MasteryStatus.LEARNING,
-                lowerBoundIndependentCorrect = 0.35,
+                conservativeMasteryScore = 0.35,
             ),
         ),
     )

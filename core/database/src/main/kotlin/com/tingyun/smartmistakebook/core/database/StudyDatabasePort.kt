@@ -10,11 +10,22 @@ import com.tingyun.smartmistakebook.core.database.port.DraftReadPort
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeReadPort
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeWritePort
 import com.tingyun.smartmistakebook.core.database.port.LibraryReadPort
+import com.tingyun.smartmistakebook.core.database.port.AttemptWritePort
+import com.tingyun.smartmistakebook.core.database.port.DraftWritePort
+import com.tingyun.smartmistakebook.core.database.port.LearningLedgerPort
+import com.tingyun.smartmistakebook.core.database.port.LearningProjectionPort
 import com.tingyun.smartmistakebook.core.database.port.MistakeReadPort
 import com.tingyun.smartmistakebook.core.database.port.OrganizationReadPort
+import com.tingyun.smartmistakebook.core.database.port.OrganizationWritePort
+import com.tingyun.smartmistakebook.core.database.port.PredictionAuditPort
 import com.tingyun.smartmistakebook.core.database.port.ReviewReadPort
+import com.tingyun.smartmistakebook.core.database.port.ReviewWritePort
+import com.tingyun.smartmistakebook.core.database.port.SeedAssessmentPort
+import com.tingyun.smartmistakebook.core.database.port.TutorAnswerExposurePort
 import com.tingyun.smartmistakebook.core.database.port.TutorReadPort
+import com.tingyun.smartmistakebook.core.database.port.TutorSessionPort
 import com.tingyun.smartmistakebook.core.database.port.TutorWritePort
+import com.tingyun.smartmistakebook.core.database.port.VisualInteractionPort
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -1401,213 +1412,10 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
     LibraryReadPort, TutorReadPort, TutorWritePort,
     CaptureReadPort, CaptureWritePort, KnowledgeReadPort, KnowledgeWritePort,
     ReviewReadPort, MistakeReadPort, BackupPort, BatchImportReadPort, BatchImportWritePort,
-    DraftReadPort, OrganizationReadPort {
-
-    fun observeLearningLedgerHead(learnerId: String): Flow<Long> = flowOf(0L)
-
-    /** Persist shadow predictions produced during review planning (audit PR-07). */
-    suspend fun recordStudentModelPredictions(predictions: List<StudentModelPredictionRecord>)
-
-    /**
-     * Resolve every unresolved prediction for [practiceUnitId] whose window
-     * contains [observedAtEpochMillis] with the real attempt outcome.
-     * @return number of predictions resolved.
-     */
-    suspend fun resolveStudentModelPredictions(
-        practiceUnitId: String,
-        wasIndependentCorrect: Boolean,
-        observedAtEpochMillis: Long,
-        responseLatencyMs: Long? = null,
-        hintCount: Int = 0,
-    ): Int
-
-    /** Resolved prediction/outcome pairs for offline calibration. */
-    suspend fun readResolvedStudentModelPredictions(
-        modelId: String,
-        modelVersion: String,
-    ): List<ResolvedStudentModelPredictionRecord>
-
-    suspend fun createProblemDraft(command: CreateProblemDraftCommand): ProblemDraftWriteResult
-
-    suspend fun appendProblemDraftSourceAsset(
-        command: AppendProblemDraftSourceAssetCommand,
-    ): AppendProblemDraftSourceAssetResult
-
-    suspend fun reviseProblemDraft(command: ReviseProblemDraftCommand): ProblemDraftWriteResult
-
-    suspend fun replaceProblemDraft(
-        command: ReplaceProblemDraftCommand,
-    ): ProblemDraftReplacementResult
-
-    suspend fun splitProblemDraft(
-        command: SplitProblemDraftCommand,
-    ): ProblemDraftSplitResult
-
-    suspend fun readProblemDraft(draftId: String): ProblemDraftRecord?
-
-    suspend fun readProblemDraftEditWorkspace(
-        draftId: String,
-    ): ProblemDraftEditWorkspaceRecord?
-
-    suspend fun saveProblemDraftEditWorkspace(
-        command: SaveProblemDraftEditWorkspaceCommand,
-    ): ProblemDraftEditWorkspaceWriteResult
-
-    suspend fun consumeProblemDraftEditWorkspace(
-        command: ConsumeProblemDraftEditWorkspaceCommand,
-    ): Boolean
-
-    suspend fun commitProblemDraft(command: CommitProblemDraftCommand): CommitProblemDraftResult
-
-    suspend fun confirmAndCommitProblemDraftFromWorkspace(
-        command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
-    ): CommitProblemDraftResult
-
-    suspend fun confirmTutorSession(
-        command: ConfirmTutorSessionCommand,
-    ): TutorSessionWriteResult
-
-    suspend fun confirmTutorSessionFromWorkspace(
-        command: ConfirmTutorSessionFromWorkspaceCommand,
-    ): TutorSessionWriteResult
-
-    suspend fun readTutorSession(sessionId: String): TutorSessionRecord?
-
-    suspend fun commitTutorSession(
-        command: CommitTutorSessionCommand,
-    ): CommitProblemDraftResult
-
-    suspend fun endTutorSession(
-        command: EndTutorSessionCommand,
-    ): EndTutorSessionResult
-
-    suspend fun recordTutorChoice(command: PersistTutorChoiceCommand): TutorTurnResponseRecord
-
-    suspend fun recordTutorMove(command: PersistTutorMoveCommand): TutorTurnResponseRecord
-
-    suspend fun revealTutorSolution(command: PersistTutorRevealCommand): TutorTurnResponseRecord
-
-    suspend fun recordTutorSolutionExposure(
-        command: PersistTutorAnswerExposureCommand,
-    ): TutorAnswerExposureRecord
-
-    suspend fun bindTutorSessionProblemAnchor(
-        command: PersistTutorSessionAnchorCommand,
-    ): TutorSessionProblemAnchorRecord
-
-    suspend fun reconcileTutorAnswerExposures(learnerId: String, limit: Int = 100): Int = 0
-
-    suspend fun readTutorAnswerExposure(
-        modelTaskRequestId: String,
-    ): TutorAnswerExposureRecord? = null
-
-    suspend fun readTutorAnswerExposures(
-        modelTaskRequestIds: Set<String>,
-    ): List<TutorAnswerExposureRecord> = modelTaskRequestIds.mapNotNull { requestId ->
-        readTutorAnswerExposure(requestId)
-    }
-
-    suspend fun seedFixture(bundle: StudySeedBundle): SeedResult
-
-    suspend fun saveAssessmentItemSnapshot(item: AssessmentItemSnapshotSeedRecord)
-
-    suspend fun saveAssessmentEvidenceSnapshot(snapshot: AssessmentEvidenceSnapshot)
-
-    suspend fun appendAssessmentEvent(event: AssessmentEventSeedRecord)
-
-    suspend fun recordAttempt(command: AttemptWriteCommand): AttemptWriteResult
-
-    suspend fun recordReviewAttempt(
-        command: ReviewAttemptWriteCommand,
-    ): ReviewAttemptWriteResult
-
-    suspend fun recordAnswerReveal(command: AnswerRevealWriteCommand): AnswerRevealWriteResult
-
-    suspend fun reconcileAnswerRevealOutcomes(
-        learnerId: String,
-        limit: Int = 100,
-    ): List<AnswerRevealWriteResult>
-
-    suspend fun appendAttemptCorrection(correction: AttemptCorrectionRecord): AttemptCorrectionResult
-
-    suspend fun findAttemptPersistence(submissionId: String): AttemptPersistenceRecord?
-
-    suspend fun findAttemptAdvanceProof(attemptId: String): AttemptAdvanceProofRecord? = null
-
-    suspend fun markRelationsStaleForRevision(
-        problemRevisionId: String,
-        updatedAtEpochMillis: Long,
-    ): Int
-
-    suspend fun confirmProblemOrganization(
-        command: ConfirmProblemOrganizationCommand,
-    ): ConfirmProblemOrganizationResult
-
-    suspend fun loadProjectionBatch(
-        projectionName: String,
-        learnerId: String,
-        limit: Int,
-    ): ProjectionBatch
-
-    suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead
-
-    suspend fun readCurrentLearnerSnapshot(
-        projectionName: String,
-        learnerId: String,
-    ): PersistedLearnerSnapshot?
-
-    suspend fun commitProjection(commit: ProjectionCommit): PersistedLearnerSnapshot
-
-    suspend fun saveReviewPlan(bundle: ReviewPlanBundle)
-
-    suspend fun saveReviewSession(session: ReviewSessionRecord)
-
-    /**
-     * Replays an already committed review transition. It must never create a new transition.
-     * New answers must enter through [recordReviewAttempt], which creates the attempt and advances
-     * its queue item in one write transaction.
-     */
-    @Deprecated("New review transitions must use recordReviewAttempt")
-    suspend fun advanceReviewSession(
-        command: ReviewSessionAdvanceCommand,
-    ): ReviewSessionAdvanceResult
-
-    @Deprecated("P0 inspection only; keep data-layer wiring behind the repository boundary")
-    suspend fun readAssessmentSnapshotP0(
-        assessmentItemSnapshotId: String,
-    ): AssessmentItemSnapshotSeedRecord?
-
-    @Deprecated("P0 inspection only; keep data-layer wiring behind the repository boundary")
-    suspend fun readAttemptP0(attemptId: String): PersistedAttemptP0?
-
-    @Deprecated("P0 inspection only; keep data-layer wiring behind the repository boundary")
-    suspend fun readCorrectionP0(correctionId: String): PersistedCorrectionP0?
-
-    @Deprecated("P0 inspection only; keep data-layer wiring behind the repository boundary")
-    suspend fun readAnswerRevealP0(outcomeId: String): PersistedAnswerRevealP0?
+    DraftReadPort, OrganizationReadPort,
+    LearningLedgerPort, PredictionAuditPort, VisualInteractionPort,
+    DraftWritePort, TutorSessionPort, TutorAnswerExposurePort,
+    SeedAssessmentPort, AttemptWritePort, OrganizationWritePort,
+    LearningProjectionPort, ReviewWritePort {
 }
 
-/** Port-level prediction record for the student-model audit loop (PR-07). */
-data class StudentModelPredictionRecord(
-    val predictionId: String,
-    val modelId: String,
-    val modelVersion: String,
-    val algorithmHash: String,
-    val practiceUnitId: String,
-    val knowledgeNodeId: String?,
-    val featureFingerprint: String,
-    val predictedScore: Double,
-    val conservativeScore: Double,
-    val predictionWindowStartEpochMillis: Long,
-    val predictionWindowEndEpochMillis: Long,
-    val predictedAtEpochMillis: Long,
-)
-
-/** Resolved prediction with its real outcome, ready for calibration. */
-data class ResolvedStudentModelPredictionRecord(
-    val predictionId: String,
-    val predictedScore: Double,
-    val conservativeScore: Double,
-    val wasIndependentCorrect: Boolean,
-    val observedAtEpochMillis: Long,
-)

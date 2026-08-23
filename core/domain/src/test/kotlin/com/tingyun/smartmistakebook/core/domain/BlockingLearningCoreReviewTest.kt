@@ -165,7 +165,7 @@ class BlockingLearningCoreReviewTest {
         val kcA = result.snapshot.knowledgeMasteryStates.getValue("kc-a")
         val kcB = result.snapshot.knowledgeMasteryStates.getValue("kc-b")
         assertEquals(1.0, kcA.evidenceMass + kcB.evidenceMass, 1e-9)
-        assertTrue(kcA.probabilityIndependentCorrect > kcB.probabilityIndependentCorrect)
+        assertTrue(kcA.masteryScore > kcB.masteryScore)
     }
 
     @Test
@@ -444,8 +444,8 @@ class BlockingLearningCoreReviewTest {
     fun `conflicted mastery recovers after two new supported independent families and days`() {
         val highMastery = KnowledgeMasteryState(
             knowledgeNodeId = "kc-a",
-            probabilityIndependentCorrect = 0.94,
-            lowerBoundIndependentCorrect = 0.88,
+            masteryScore = 0.94,
+            conservativeMasteryScore = 0.88,
             evidenceMass = 4.0,
             status = MasteryStatus.MASTERED,
             calibrationSupport = CalibrationSupport.SUPPORTED,
@@ -692,8 +692,8 @@ class BlockingLearningCoreReviewTest {
         )
         val priorMastery = KnowledgeMasteryState(
             knowledgeNodeId = "kc-a",
-            probabilityIndependentCorrect = 0.98,
-            lowerBoundIndependentCorrect = 0.9,
+            masteryScore = 0.98,
+            conservativeMasteryScore = 0.9,
             evidenceMass = 2.0,
             independentCorrectObservations = listOf(trustedObservation),
             status = MasteryStatus.LEARNING,

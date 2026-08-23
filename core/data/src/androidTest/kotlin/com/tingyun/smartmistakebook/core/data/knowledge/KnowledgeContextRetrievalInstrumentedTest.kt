@@ -248,8 +248,8 @@ class KnowledgeContextRetrievalInstrumentedTest {
             knowledgeMasteryStates = points.associate { point ->
                 point.knowledgeNodeId to KnowledgeMasteryState(
                     knowledgeNodeId = point.knowledgeNodeId,
-                    probabilityIndependentCorrect = 0.0,
-                    lowerBoundIndependentCorrect = 0.0,
+                    masteryScore = 0.0,
+                    conservativeMasteryScore = 0.0,
                     evidenceMass = 0.0,
                     status = MasteryStatus.UNKNOWN,
                     calibrationSupport = CalibrationSupport.UNKNOWN,

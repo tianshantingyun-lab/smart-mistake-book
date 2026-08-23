@@ -44,8 +44,8 @@ class LearningProjectorTest {
     fun `independent error after high mastery enters conflicted state`() {
         val mastered = KnowledgeMasteryState(
             knowledgeNodeId = "kc-a",
-            probabilityIndependentCorrect = 0.94,
-            lowerBoundIndependentCorrect = 0.88,
+            masteryScore = 0.94,
+            conservativeMasteryScore = 0.88,
             evidenceMass = 4.0,
             status = MasteryStatus.MASTERED,
             calibrationSupport = CalibrationSupport.SUPPORTED,

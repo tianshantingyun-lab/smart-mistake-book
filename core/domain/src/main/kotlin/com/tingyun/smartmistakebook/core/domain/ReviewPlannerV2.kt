@@ -20,6 +20,10 @@ import java.security.MessageDigest
  * - Uncertainty as independent review value
  * - Knapsack/beam search/local swap optimization
  * - Fatigue and subject stacking constraints
+ * - Hard sequencing constraints (audit §7.2): the same item family never
+ *   appears in consecutive positions and the same subject never runs longer
+ *   than [MAX_SAME_SUBJECT_RUN] consecutive positions; both are validated at
+ *   sequence construction, so a violating candidate can never enter a plan
  * - Plan explanation for each selected item
  */
 class ReviewPlannerV2(
@@ -50,6 +54,9 @@ class ReviewPlannerV2(
 
         // Phase 2: Local swap optimization to improve diversity
         val optimized = localSwapOptimization(selected, scored, request.timeBudgetSeconds)
+        check(satisfiesHardConstraints(optimized)) {
+            "Review plan violated the hard sequencing constraints (audit §7.2)"
+        }
 
         val planFingerprint = canonicalPlanFingerprint(request, optimized)
         val queue = optimized.mapIndexed { index, scoredCandidate ->
@@ -106,26 +113,35 @@ class ReviewPlannerV2(
         }
 
         // Initialize beam with empty selections
-        var beam = listOf(
-            BeamState(
-                selected = emptyList(),
-                usedFamilies = emptyMap(),
-                usedSources = emptyMap(),
-                remainingSeconds = timeBudgetSeconds,
-                totalScore = 0.0,
-            ),
+        val initial = BeamState(
+            selected = emptyList(),
+            usedFamilies = emptyMap(),
+            usedSources = emptyMap(),
+            remainingSeconds = timeBudgetSeconds,
+            totalScore = 0.0,
         )
+        var beam = listOf(initial)
+        // Track the best state seen so far. Beam pruning and the hard
+        // sequencing constraints can drop every expandable state in a step;
+        // the search must still return the best partial plan instead of
+        // collapsing to an empty queue.
+        var best = initial
 
         for (step in 0 until MAX_BEAM_STEPS) {
             val newBeam = mutableListOf<BeamState>()
+            var advanced = false
 
             for (state in beam) {
                 // Score EVERY fitting candidate with incremental utility
                 // (do not pre-prune by static score alone, or valuable
-                // diverse candidates would never enter the beam).
+                // diverse candidates would never enter the beam). Candidates
+                // that violate the hard sequencing constraints are rejected
+                // here, at sequence construction, so they can never enter a
+                // plan.
                 val fitting = candidates.filter {
                     it.candidate.estimatedDurationSeconds <= state.remainingSeconds &&
-                        it.candidate.practiceUnitId !in state.usedPracticeUnits
+                        it.candidate.practiceUnitId !in state.usedPracticeUnits &&
+                        canAppend(state.selected, it)
                 }
 
                 if (fitting.isEmpty()) {
@@ -153,17 +169,23 @@ class ReviewPlannerV2(
                     )
                 }
 
+                if (candidateStates.isNotEmpty()) advanced = true
                 newBeam.addAll(candidateStates)
             }
 
             // Keep top beamWidth states by total score
             beam = newBeam.sortedByDescending(BeamState::totalScore).take(beamWidth)
+            if (beam.isEmpty()) break
+            val stepBest = beam.first()
+            if (stepBest.totalScore > best.totalScore) best = stepBest
 
-            // If no improvement possible, stop
-            if (beam.all { it.remainingSeconds <= 0 } || beam.size == 1) break
+            // Stop only when no beam state could add another candidate. The
+            // previous `beam.size == 1` shortcut abandoned the search while a
+            // single surviving state could still fill the remaining budget.
+            if (!advanced) break
         }
 
-        return beam.maxByOrNull(BeamState::totalScore)?.selected ?: emptyList()
+        return best.selected
     }
 
     /**
@@ -181,7 +203,8 @@ class ReviewPlannerV2(
 
         while (remaining.isNotEmpty() && remainingSeconds > 0) {
             val fitting = remaining.filter {
-                it.candidate.estimatedDurationSeconds <= remainingSeconds
+                it.candidate.estimatedDurationSeconds <= remainingSeconds &&
+                    canAppend(selected, it)
             }
             if (fitting.isEmpty()) break
 
@@ -236,12 +259,15 @@ class ReviewPlannerV2(
                     timeDelta + unselectedItem.candidate.estimatedDurationSeconds
                 if (newTime > timeBudgetSeconds) continue
 
+                val newSelection = currentSelection.toMutableList()
+                newSelection[i] = unselectedItem
+                // A swap must never break the hard sequencing constraints.
+                if (!satisfiesHardConstraints(newSelection)) continue
+
                 // Compare total utility (score sum + diversity bonus), not
                 // diversity alone, so a weak-but-diverse item cannot displace
                 // a high-value item.
                 val currentUtility = totalUtility(currentSelection)
-                val newSelection = currentSelection.toMutableList()
-                newSelection[i] = unselectedItem
                 val newUtility = totalUtility(newSelection)
 
                 if (newUtility > currentUtility) {
@@ -254,6 +280,35 @@ class ReviewPlannerV2(
         }
 
         return currentSelection
+    }
+
+    /**
+     * Hard sequencing constraints (audit §7.2), enforced where the sequence
+     * is constructed so a violating candidate can never be selected:
+     *
+     * - the same item family must never occupy two consecutive positions;
+     * - the same subject must never run longer than [MAX_SAME_SUBJECT_RUN]
+     *   consecutive positions (candidates without a subject are exempt).
+     *
+     * Returns true when [candidate] may be appended to [selected].
+     */
+    private fun canAppend(selected: List<ScoredCandidate>, candidate: ScoredCandidate): Boolean {
+        val last = selected.lastOrNull() ?: return true
+        if (candidate.candidate.itemFamilyId == last.candidate.itemFamilyId) return false
+        val subjectId = candidate.candidate.subjectId ?: return true
+        if (subjectId != last.candidate.subjectId) return true
+        val trailingRun = selected.asReversed()
+            .takeWhile { it.candidate.subjectId == subjectId }
+            .count()
+        return trailingRun < MAX_SAME_SUBJECT_RUN
+    }
+
+    /** True when the whole [selection] satisfies the hard sequencing constraints. */
+    private fun satisfiesHardConstraints(selection: List<ScoredCandidate>): Boolean {
+        for (index in selection.indices) {
+            if (!canAppend(selection.subList(0, index), selection[index])) return false
+        }
+        return true
     }
 
     /**
@@ -381,7 +436,7 @@ class ReviewPlannerV2(
                     reasons += ReviewReason.CALIBRATION_CHECK
                     1.0
                 }
-                else -> 1.0 - state.lowerBoundIndependentCorrect
+                else -> 1.0 - state.conservativeMasteryScore
             }
         }
 
@@ -492,6 +547,8 @@ class ReviewPlannerV2(
             }
             field("queue[$index].itemFamilyId", candidate.itemFamilyId)
             field("queue[$index].sourceBundleId", candidate.sourceBundleId)
+            field("queue[$index].subjectId", candidate.subjectId)
+            field("queue[$index].itemType", candidate.itemType)
             field("queue[$index].candidateDifficulty", java.lang.Double.toHexString(candidate.difficulty))
             field("queue[$index].candidateExamPriority", java.lang.Double.toHexString(candidate.examPriority))
             field(
@@ -524,12 +581,17 @@ class ReviewPlannerV2(
         /**
          * Replaces the candidate's static duration estimate with the
          * learner-bucket personalized prediction from [durationModel].
+         *
+         * Uses the candidate's real subject/item-type dimensions instead of
+         * impersonating a subject with a knowledge-node id, so the duration
+         * model buckets on `student × subject × itemType × difficulty`
+         * (audit §7.3) instead of degrading to fewer dimensions.
          */
         fun withModeledDuration(durationModel: LogDurationModel, learnerId: String): ScoredCandidate {
             val predicted = durationModel.expectedSeconds(
                 learnerId = learnerId,
-                subjectId = candidate.knowledgeNodeIds.firstOrNull(),
-                itemType = null,
+                subjectId = candidate.subjectId,
+                itemType = candidate.itemType,
                 difficulty = candidate.difficulty,
             )
             val modeled = if (predicted > 0) {
@@ -566,11 +628,13 @@ class ReviewPlannerV2(
         private const val FAMILY_PENALTY_WEIGHT = 0.3
         private const val SOURCE_PENALTY_WEIGHT = 0.2
         private const val MAX_DIVERSITY_PENALTY = 1.5
+        /** Hard constraint (audit §7.2): same-subject consecutive run limit. */
+        private const val MAX_SAME_SUBJECT_RUN = 3
         private const val DAY_MILLIS = 86_400_000.0
         private const val RECENT_LAPSE_WINDOW_MILLIS = 30L * 86_400_000L
         private const val WAITING_GRACE_DAYS = 7.0
         private const val WAITING_BONUS_RAMP_DAYS = 83.0
-        private const val PLAN_FINGERPRINT_SCHEMA_VERSION = "review-plan-canonical-v6"
+        private const val PLAN_FINGERPRINT_SCHEMA_VERSION = "review-plan-canonical-v7"
         private const val MAX_BEAM_STEPS = 20
     }
 }

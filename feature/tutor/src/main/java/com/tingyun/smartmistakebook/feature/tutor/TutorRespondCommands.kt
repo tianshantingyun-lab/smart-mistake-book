@@ -6,54 +6,58 @@ import com.tingyun.smartmistakebook.core.domain.TutorSendAction
 import com.tingyun.smartmistakebook.core.domain.TutorSendState
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorTurnSendStateMachine
-import com.tingyun.smartmistakebook.core.model.AppErrorCode
+import com.tingyun.smartmistakebook.core.model.ActionType
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.RecoveryAction
+import com.tingyun.smartmistakebook.core.model.AppFailure
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
-import com.tingyun.smartmistakebook.core.model.UserRecoverableError
-import com.tingyun.smartmistakebook.core.model.userRecoverableError
+import com.tingyun.smartmistakebook.core.model.AppFailureCode
+import com.tingyun.smartmistakebook.core.model.Retryability
+import com.tingyun.smartmistakebook.core.model.appFailure
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-internal fun tutorRespondInProgressError(): UserRecoverableError = userRecoverableError(
-    code = AppErrorCode.DISPATCH_BUDGET_EXHAUSTED,
+internal fun tutorRespondInProgressError(): AppFailure = appFailure(
+    code = AppFailureCode.DISPATCH_BUDGET_EXHAUSTED,
     title = TUTOR_RESPOND_IN_PROGRESS_TITLE,
     message = TUTOR_RESPOND_IN_PROGRESS_MESSAGE,
-    dataSafe = true,
-    primaryAction = RecoveryAction.RETRY,
+    dataPreserved = true,
+    retryability = Retryability.RETRYABLE,
+    primaryAction = ActionType.RETRY,
 )
 
-internal fun tutorRespondLimitError(): UserRecoverableError = userRecoverableError(
-    code = AppErrorCode.DISPATCH_BUDGET_EXHAUSTED,
+internal fun tutorRespondLimitError(): AppFailure = appFailure(
+    code = AppFailureCode.DISPATCH_BUDGET_EXHAUSTED,
     title = TUTOR_RESPOND_LIMIT_TITLE,
     message = TUTOR_RESPOND_LIMIT_MESSAGE,
-    dataSafe = true,
-    primaryAction = RecoveryAction.RETRY,
+    dataPreserved = true,
+    retryability = Retryability.RETRYABLE,
+    primaryAction = ActionType.RETRY,
 )
 
-internal fun tutorRespondValidationError(): UserRecoverableError = userRecoverableError(
-    code = AppErrorCode.VALIDATION_FAILED,
+internal fun tutorRespondValidationError(): AppFailure = appFailure(
+    code = AppFailureCode.VALIDATION_FAILED,
     title = TUTOR_RESPOND_VALIDATION_TITLE,
     message = TUTOR_RESPOND_VALIDATION_MESSAGE,
-    dataSafe = true,
+    dataPreserved = true,
 )
 
-internal fun tutorRespondNetworkError(): UserRecoverableError = userRecoverableError(
-    code = AppErrorCode.NETWORK_UNAVAILABLE,
+internal fun tutorRespondNetworkError(): AppFailure = appFailure(
+    code = AppFailureCode.NETWORK_UNAVAILABLE,
     title = TUTOR_RESPOND_NETWORK_TITLE,
     message = TUTOR_RESPOND_NETWORK_MESSAGE,
-    dataSafe = true,
-    primaryAction = RecoveryAction.RETRY,
+    dataPreserved = true,
+    retryability = Retryability.RETRYABLE,
+    primaryAction = ActionType.RETRY,
 )
 
 internal class TutorRespondCommands(
@@ -336,7 +340,7 @@ internal class TutorRespondSink(
     val setChatSubmitPending: (Boolean) -> Unit,
     val tutorSendState: () -> TutorSendState,
     val setTutorSendState: (TutorSendState) -> Unit,
-    val setChatStartError: (UserRecoverableError?) -> Unit,
+    val setChatStartError: (AppFailure?) -> Unit,
     val setLocallyStartedRespondRequestId: (String?) -> Unit,
     val pendingAction: () -> PendingTutorEgressAction?,
     val setPendingAction: (PendingTutorEgressAction?) -> Unit,

@@ -2,6 +2,8 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
+import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.ConsumedLedgerEventReceipt
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.LearningLedgerIntegrityException
@@ -24,11 +26,14 @@ import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
-import com.tingyun.smartmistakebook.core.database.StudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.domain.CalibrationInput
+import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurve
-import com.tingyun.smartmistakebook.core.domain.HLRShadowModeManager
+import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.domain.MasteryEvidencePolicy
+import com.tingyun.smartmistakebook.core.domain.PredictionAuditSink
+import com.tingyun.smartmistakebook.core.domain.RecallPredictionAudit
 import com.tingyun.smartmistakebook.core.domain.ReviewCandidate
 import com.tingyun.smartmistakebook.core.domain.ReviewCompletionStreak
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
@@ -36,7 +41,6 @@ import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanningRequest
-import com.tingyun.smartmistakebook.core.domain.SaveStudyMistakeResult
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
@@ -59,6 +63,9 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionR
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.model.AssessmentSubmissionContext
+import com.tingyun.smartmistakebook.core.model.CalibrationReport
+import com.tingyun.smartmistakebook.core.model.LearningModelVersion
+import com.tingyun.smartmistakebook.core.model.ReviewPlan
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -113,6 +120,14 @@ class RoomBackedStudyExperienceRepository(
     private val clock: Clock = Clock.systemDefaultZone(),
     private val studyZoneId: ZoneId = clock.zone,
     private val reviewTimeBudgetSeconds: Int = DEFAULT_REVIEW_TIME_BUDGET_SECONDS,
+    /**
+     * Feature flag for the review planner (audit §3.4 rollback switch): when true
+     * (default), plans are produced by the V2 planner with beam search, hard
+     * sequencing constraints and the personalized duration model; flipping it
+     * back to false restores the audited V1 greedy planner without any other
+     * code change.
+     */
+    private val useReviewPlannerV2: Boolean = DEFAULT_USE_REVIEW_PLANNER_V2,
     private val closeDatabaseOnClose: Boolean = false,
     private val initialFixture: StudySeedBundle? = null,
     private val fixtureSource: StudyFixtureSource = StudyFixtureRegistry.source,
@@ -130,8 +145,8 @@ class RoomBackedStudyExperienceRepository(
     private val reviewPlanner = ReviewPlanner()
     private val reviewPlannerV2 = ReviewPlannerV2()
     private val learningProjector = LearningProjector()
-    private val shadowMode = HLRShadowModeManager(enabled = true)
-    private val PREDICTION_HORIZON_MILLIS: Long = 7L * 24 * 60 * 60 * 1000
+    private val predictionAuditService = HLRPredictionAuditService()
+    private val predictionAuditSink: PredictionAuditSink = RoomPredictionAuditSink(database)
     private var initialized = false
     private var latestMistakes: List<MistakeRecord> = emptyList()
     private var latestPendingCorrectionCount: Int = 0
@@ -252,25 +267,6 @@ class RoomBackedStudyExperienceRepository(
         }
     }
 
-    override suspend fun saveTutorExampleMistake(): SaveStudyMistakeResult = runOperation {
-        // Demo-seed path (debug/test only): fails closed in production builds,
-        // where the fixture registry is empty (audit section 9.2).
-        val bundle = fixtureSource.bundle(includeTutorMistake = true)
-            ?: throw IllegalStateException(
-                "Curated fixture content is not available in this build",
-            )
-        val result = database.seedFixture(bundle)
-        latestMistakes = database.observeMistakes().first()
-        initialized = true
-        publishReadySnapshot(latestMistakes)
-        val entryCount = database.countMistakes()
-        if (result.insertedErrorBookEntryCount > 0) {
-            SaveStudyMistakeResult.Saved(entryCount)
-        } else {
-            SaveStudyMistakeResult.AlreadySaved(entryCount)
-        }
-    }
-
     override suspend fun saveTutorProblem(command: SaveTutorProblemCommand): SaveTutorProblemReceipt =
         runOperation {
             val committedAtEpochMillis = clock.millis()
@@ -360,13 +356,12 @@ class RoomBackedStudyExperienceRepository(
         val prepared = prepareChoiceSubmission(submission)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
         val writeResult = database.recordAttempt(prepared.command)
-        runCatching {
-            database.resolveStudentModelPredictions(
-                practiceUnitId = submission.practiceUnitId,
-                wasIndependentCorrect = prepared.isCorrect,
-                observedAtEpochMillis = submission.occurredAtEpochMillis,
-            )
-        }
+        backfillPredictionOutcome(
+            practiceUnitId = submission.practiceUnitId,
+            wasIndependentCorrect = prepared.isCorrect,
+            observedAtEpochMillis = submission.occurredAtEpochMillis,
+            responseLatencyMs = submission.durationSeconds * 1000L,
+        )
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
@@ -411,6 +406,12 @@ class RoomBackedStudyExperienceRepository(
                 reviewQueueItemId = queueItem.reviewQueueItemId,
                 practiceUnitId = queueItem.practiceUnitId,
             ),
+        )
+        backfillPredictionOutcome(
+            practiceUnitId = submission.practiceUnitId,
+            wasIndependentCorrect = prepared.isCorrect,
+            observedAtEpochMillis = submission.occurredAtEpochMillis,
+            responseLatencyMs = submission.durationSeconds * 1000L,
         )
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         latestMistakes = database.observeMistakes().first()
@@ -639,6 +640,71 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
+    /**
+     * Best-effort shadow-prediction persistence (audit §6.3): planning must
+     * never fail because the audit loop failed.
+     */
+    private suspend fun persistShadowPredictions(
+        request: ReviewPlanningRequest,
+        plan: ReviewPlan,
+    ) {
+        try {
+            predictionAuditService.planPredictions(
+                request = request,
+                scoredPracticeUnitIds = plan.queueItems.map { it.practiceUnitId },
+            ).forEach { audit -> predictionAuditSink.record(audit) }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Throwable) {
+            // Shadow audit degradation must never surface to the user.
+        }
+    }
+
+    /** Best-effort outcome backfill for every pending prediction covering the attempt. */
+    private suspend fun backfillPredictionOutcome(
+        practiceUnitId: String,
+        wasIndependentCorrect: Boolean,
+        observedAtEpochMillis: Long,
+        responseLatencyMs: Long?,
+    ) {
+        try {
+            predictionAuditSink.resolveOutcome(
+                practiceUnitId = practiceUnitId,
+                wasIndependentCorrect = wasIndependentCorrect,
+                observedAtEpochMillis = observedAtEpochMillis,
+                responseLatencyMs = responseLatencyMs,
+                hintCount = 0,
+            )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Throwable) {
+            // Shadow audit degradation must never surface to the user.
+        }
+    }
+
+    /**
+     * Calibration report for one model generation, computed over resolved
+     * prediction/outcome pairs persisted by the audit loop (audit §6.3).
+     */
+    suspend fun calibrationReport(modelVersion: LearningModelVersion): CalibrationReport {
+        val resolved = database.readResolvedStudentModelPredictions(
+            modelId = modelVersion.modelId,
+            modelVersion = modelVersion.version,
+        )
+        return CalibrationReportBuilder.build(
+            modelVersion = modelVersion,
+            resolved = resolved.map { row ->
+                CalibrationInput(
+                    predictedScore = row.predictedScore,
+                    conservativeScore = row.conservativeScore,
+                    wasIndependentCorrect = row.wasIndependentCorrect,
+                )
+            },
+            totalPredictions = resolved.size,
+            generatedAtEpochMillis = clock.millis(),
+        )
+    }
+
     private suspend fun currentLearnerSnapshot(): LearnerSnapshot =
         drainProjection()?.snapshot ?: LearnerSnapshot.empty(
             learnerId = learnerId,
@@ -679,6 +745,10 @@ class RoomBackedStudyExperienceRepository(
                     itemFamilyId = curatedEvidence?.itemFamilyId
                         ?: "saved-question:${mistake.practiceUnitId}",
                     sourceBundleId = curatedEvidence?.sourceBundleId,
+                    subjectId = mistake.subject,
+                    // Mistake records do not carry an item-type dimension yet; the
+                    // duration model buckets on (learner, subject, itemType=null,
+                    // difficulty) until the data layer exposes item types.
                     difficulty = learnerSnapshot.problemMemoryStates[mistake.practiceUnitId]
                         ?.difficulty ?: DEFAULT_CANDIDATE_DIFFICULTY,
                     estimatedDurationSeconds = mistake.estimatedSeconds,
@@ -688,17 +758,21 @@ class RoomBackedStudyExperienceRepository(
                     eligibleSinceEpochMillis = mistake.createdAtEpochMillis,
                 )
             }
-        val plan = reviewPlannerV2.plan(
-            ReviewPlanningRequest(
-                learnerSnapshot = learnerSnapshot,
-                candidates = candidates,
-                localDayEpochDay = planningContext.localDate.toEpochDay(),
-                timeZoneId = studyZoneId.id,
-                timeBudgetSeconds = reviewTimeBudgetSeconds,
-                planningAtEpochMillis = planningContext.planningAtEpochMillis,
-            ),
+        val request = ReviewPlanningRequest(
+            learnerSnapshot = learnerSnapshot,
+            candidates = candidates,
+            localDayEpochDay = planningContext.localDate.toEpochDay(),
+            timeZoneId = studyZoneId.id,
+            timeBudgetSeconds = reviewTimeBudgetSeconds,
+            planningAtEpochMillis = planningContext.planningAtEpochMillis,
         )
-        runCatching { persistShadowPredictions(candidates, learnerSnapshot, planningContext) }
+        val plan = if (useReviewPlannerV2) {
+            reviewPlannerV2.plan(request)
+        } else {
+            // Rollback path (audit §3.4): the audited V1 greedy planner.
+            reviewPlanner.plan(request)
+        }
+        persistShadowPredictions(request = request, plan = plan)
         return ReviewPlanBundle(
             plan = ReviewPlanRecord(
                 reviewPlanId = plan.planId,
@@ -993,7 +1067,7 @@ class RoomBackedStudyExperienceRepository(
         val weaknesses = knowledgeMasteryStates.values
             .filter { it.status != MasteryStatus.MASTERED }
             .sortedWith(
-                compareBy<KnowledgeMasteryState> { it.lowerBoundIndependentCorrect }
+                compareBy<KnowledgeMasteryState> { it.conservativeMasteryScore }
                     .thenBy { it.knowledgeNodeId },
             )
             .map { state ->
@@ -1004,7 +1078,7 @@ class RoomBackedStudyExperienceRepository(
                         ?: fallbackKnowledgeNames[state.knowledgeNodeId]
                         ?: state.knowledgeNodeId,
                     status = state.status,
-                    lowerBoundIndependentCorrect = state.lowerBoundIndependentCorrect,
+                    conservativeMasteryScore = state.conservativeMasteryScore,
                     evidenceMass = state.evidenceMass,
                     independentCorrectObservationCount =
                         state.independentCorrectObservations.size,
@@ -1018,7 +1092,7 @@ class RoomBackedStudyExperienceRepository(
         val strengths = knowledgeMasteryStates.values
             .filter { it.status == MasteryStatus.MASTERED }
             .sortedWith(
-                compareByDescending<KnowledgeMasteryState> { it.lowerBoundIndependentCorrect }
+                compareByDescending<KnowledgeMasteryState> { it.conservativeMasteryScore }
                     .thenBy { it.knowledgeNodeId },
             )
             .map { state ->
@@ -1029,7 +1103,7 @@ class RoomBackedStudyExperienceRepository(
                         ?: fallbackKnowledgeNames[state.knowledgeNodeId]
                         ?: state.knowledgeNodeId,
                     status = state.status,
-                    lowerBoundIndependentCorrect = state.lowerBoundIndependentCorrect,
+                    conservativeMasteryScore = state.conservativeMasteryScore,
                     evidenceMass = state.evidenceMass,
                     independentCorrectObservationCount =
                         state.independentCorrectObservations.size,
@@ -1123,52 +1197,6 @@ class RoomBackedStudyExperienceRepository(
             timeZoneId = studyZoneId.id,
             utcOffsetMinutes = local.offset.totalSeconds / 60,
         )
-    }
-
-    /**
-     * Persist HLR shadow predictions for the planned candidates (audit PR-07).
-     * Best-effort: calibration bookkeeping must never break planning.
-     */
-    private suspend fun persistShadowPredictions(
-        candidates: List<ReviewCandidate>,
-        learnerSnapshot: LearnerSnapshot,
-        planningContext: PlanningContext,
-    ) {
-        val now = planningContext.planningAtEpochMillis
-        val records = candidates.mapNotNull { candidate ->
-            val memory = learnerSnapshot.problemMemoryStates[candidate.practiceUnitId]
-            val mastery = candidate.knowledgeNodeIds.firstNotNullOfOrNull {
-                learnerSnapshot.knowledgeMasteryStates[it]
-            }
-            val features = shadowMode.extractFeatures(
-                memory = memory,
-                mastery = mastery,
-                difficulty = candidate.difficulty,
-                nowEpochMillis = now,
-            )
-            val deltaSeconds = memory?.lastReviewedAtEpochMillis
-                ?.let { (now - it) / 1000.0 } ?: 0.0
-            val prediction = shadowMode.predictShadow(
-                practiceUnitId = candidate.practiceUnitId,
-                features = features,
-                deltaSeconds = deltaSeconds.coerceAtLeast(0.0),
-            ) ?: return@mapNotNull null
-            StudentModelPredictionRecord(
-                predictionId = prediction.predictionId,
-                modelId = prediction.modelVersion.modelId,
-                modelVersion = prediction.modelVersion.version,
-                algorithmHash = prediction.modelVersion.algorithmHash,
-                practiceUnitId = prediction.practiceUnitId,
-                knowledgeNodeId = candidate.knowledgeNodeIds.firstOrNull(),
-                featureFingerprint = features.toString().hashCode().toString(),
-                predictedScore = prediction.predictedRecallProbability,
-                conservativeScore = (prediction.predictedRecallProbability * 0.9),
-                predictionWindowStartEpochMillis = now,
-                predictionWindowEndEpochMillis = now + PREDICTION_HORIZON_MILLIS,
-                predictedAtEpochMillis = now,
-            )
-        }
-        database.recordStudentModelPredictions(records)
     }
 
     private fun requireTeachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact =
@@ -1348,6 +1376,8 @@ class RoomBackedStudyExperienceRepository(
         const val DEFAULT_LEARNER_ID = "learner:local"
         private const val PROJECTION_NAME = "study-experience-v1"
         private const val DEFAULT_REVIEW_TIME_BUDGET_SECONDS = 20 * 60
+        /** Rollback switch for the V2 review planner; see [useReviewPlannerV2]. */
+        private const val DEFAULT_USE_REVIEW_PLANNER_V2 = true
         private const val DEFAULT_CANDIDATE_DIFFICULTY = 0.5
         private const val MAX_REPEAT_CAPTURE_BONUS_COUNT = 4
         private const val MAX_KNOWLEDGE_TOPIC_DEPTH = 6

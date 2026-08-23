@@ -96,7 +96,7 @@
 #### 4.3 工具调用执行
 - [ ] 实现 `executeTutorToolCall()` 函数
 - [ ] 处理 `SaveToLibrary` 操作
-- [ ] 集成现有的 `saveTutorExampleMistake()` 逻辑
+- [ ] 集成现有的 `saveTutorProblem(...)` 保存逻辑（原计划引用的演示种子保存接口已按审计 9.2/PR-05 删除）
 
 ### ⏳ 阶段 5：Prompt 设计
 

@@ -103,7 +103,7 @@
    - 检测到 `SaveToLibrary` 时执行
 
 3. **执行逻辑**
-   - 调用现有的 `saveTutorExampleMistake()` 函数
+   - 调用现有的 `saveTutorProblem(...)` 函数（早期的演示种子保存接口已按审计 9.2/PR-05 删除）
    - 将讲题会话保存到错题本
    - 返回确认消息给用户
 

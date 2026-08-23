@@ -51,4 +51,24 @@ object CjkTextTokenizer {
         }
         return builder.toString().trim()
     }
+
+    /**
+     * Splits a user query into index-aligned tokens using exactly the same
+     * transformation applied on the indexing side, so MATCH expressions built
+     * from these tokens can always find indexed text.
+     */
+    fun tokens(query: String): List<String> =
+        segment(query).split(' ').filter(String::isNotEmpty)
+
+    /** Quotes a single token as an FTS4 string literal (double quotes doubled). */
+    fun quotedPhrase(token: String): String =
+        "\"" + token.replace("\"", "\"\"") + "\""
+
+    /**
+     * Builds the implicit-AND FTS4 MATCH expression for a user query:
+     * every token becomes a quoted phrase, separated by spaces. Returns an
+     * empty string when the query carries no searchable token.
+     */
+    fun matchExpression(query: String): String =
+        tokens(query).joinToString(separator = " ", transform = ::quotedPhrase)
 }

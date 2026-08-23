@@ -402,8 +402,8 @@ class AdaptiveQuestionSelectorTest {
 
     private fun masteredState() = KnowledgeMasteryState(
         knowledgeNodeId = "kc-a",
-        probabilityIndependentCorrect = 0.93,
-        lowerBoundIndependentCorrect = 0.87,
+        masteryScore = 0.93,
+        conservativeMasteryScore = 0.87,
         evidenceMass = 2.0,
         independentCorrectObservations = listOf(
             observation("family-a", 1, 100),

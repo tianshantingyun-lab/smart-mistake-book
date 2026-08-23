@@ -17,7 +17,30 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * Backup/restore repository implementing the §10.3 target architecture in a
+ * deliberately constrained shape:
+ *
+ *   - Generation isolation: during restore the complete new data set is
+ *     materialized as the "next" generation (`<db>.next` + `source-assets.next`)
+ *     while the live set, once displaced, becomes the "previous" generation
+ *     (`<db>.prev` + `source-assets.prev`).
+ *   - Pointer/journal: the durable restore journal records the phase AND the
+ *     concrete generation paths, acting as the current-generation pointer.
+ *     `BackupRestoreStartupRecovery` reads it on next startup.
+ *   - Atomic switch: the live database and the live asset directory are each
+ *     replaced by a single atomic rename within the same directory; files and
+ *     parent directories are fsynced before and after the renames.
+ *   - Deviation from §10.3: the live database stays at its canonical Room
+ *     path (`getDatabasePath`) instead of living inside a generation-A/B
+ *     directory tree, because every consumer (Room builder, deleteAllData,
+ *     backup code) resolves that single path; moving it would ripple through
+ *     the Room open path and cannot be verified safely without a device.
+ *     The two remaining cross-artifact rename steps are covered by the
+ *     journal-driven startup rollback, which is exercised by tests.
+ */
 class AndroidBackupRepository(
     private val context: Context,
     private val database: StudyDatabasePort,
@@ -25,6 +48,10 @@ class AndroidBackupRepository(
     /** Maximum allowed compression ratio (uncompressed / compressed). */
     private companion object {
         const val MAX_COMPRESSION_RATIO = 100.0
+        const val ASSET_DIRECTORY = "source-assets"
+
+        /** Process-wide guard making concurrent restore requests idempotent-reject. */
+        val restoreInFlight = AtomicBoolean(false)
     }
 
     override suspend fun inspect(): StorageInventory = withContext(Dispatchers.IO) {
@@ -63,189 +90,284 @@ class AndroidBackupRepository(
         val assets = assetRoot.listFiles().orEmpty()
             .filter { it.isFile && !it.name.startsWith(".raw-") && !it.name.startsWith(".canonical-") }
             .sortedBy(File::getName)
-        database.checkpointForBackup()
-        SmbkArchiveCodec.create(
-            archive = destination,
-            database = databaseFile,
-            assets = if (options.includeAssets) assets else emptyList(),
-            databaseSchemaVersion = databaseFile.readSchemaVersion(),
-            problemCount = database.countMistakes(),
-            createdAtEpochMillis = System.currentTimeMillis(),
-        )
+        // Consistency snapshot: VACUUM INTO when the device SQLite supports it,
+        // otherwise WAL checkpoint + read-only copy (see BackupPort docs). The
+        // archive is always built from the snapshot file, never from the live
+        // database file.
+        val snapshotDir = File(context.cacheDir, "backup-snapshots").apply { mkdirs() }
+        val snapshotFile = File(snapshotDir, "snapshot-${System.nanoTime()}.db")
+        try {
+            database.snapshotForBackup(databaseFile, snapshotFile)
+            SmbkArchiveCodec.create(
+                archive = destination,
+                database = snapshotFile,
+                assets = if (options.includeAssets) assets else emptyList(),
+                databaseSchemaVersion = snapshotFile.readSchemaVersion(),
+                problemCount = database.countMistakes(),
+                createdAtEpochMillis = System.currentTimeMillis(),
+            )
+        } finally {
+            snapshotFile.delete()
+        }
     }
 
     override suspend fun validate(source: InputStream): BackupValidation =
         withContext(Dispatchers.IO) {
-            SmbkArchiveCodec.validate(source)
+            // Streaming validation: entries are written to a scratch directory
+            // and SHA-256 is computed while streaming; nothing large is kept
+            // in memory. The scratch directory is always cleaned up.
+            val scratch = File(context.cacheDir, "validate-${UUID.randomUUID()}")
+            try {
+                SmbkArchiveCodec.validate(source, scratch)
+            } finally {
+                scratch.deleteRecursively()
+            }
         }
 
     override suspend fun restore(source: InputStream): RestoreReceipt =
         withContext(Dispatchers.IO) {
-            val restoreId = UUID.randomUUID().toString()
-            val staging = File(context.cacheDir, "restore-$restoreId").apply { mkdirs() }
-            val rollback = File(context.filesDir, "restore-rollback-$restoreId").apply { mkdirs() }
-            val journal = RestoreJournal(context, restoreId)
-
+            // Idempotency: a second, overlapping restore request is rejected
+            // instead of racing the in-flight generation switch.
+            if (!restoreInFlight.compareAndSet(false, true)) {
+                throw BackupRestoreException("恢复已在进行中，重复的恢复请求被拒绝")
+            }
             try {
-                // Phase 1: Validate and unpack (counting compressed bytes for zip-bomb ratio)
-                journal.writePhase(RestorePhase.VALIDATING)
-                val countingSource = CountingInputStream(source)
-                val validation = SmbkArchiveCodec.unpack(countingSource, staging)
-                val valid = validation as? BackupValidation.Valid
-                    ?: throw BackupRestoreException(
-                        (validation as BackupValidation.Invalid).reason,
-                    )
-
-                // Phase 2: Free-space preflight
-                journal.writePhase(RestorePhase.PREFLIGHT)
-                val databaseFile = context.getDatabasePath(
-                    StudyDatabaseFactory.DEFAULT_DATABASE_NAME,
-                )
-                val assetRoot = canonicalAssetRoot()
-                val stagingDb = File(staging, "database.sqlite")
-                val currentDbSize = if (databaseFile.exists()) databaseFile.length() else 0L
-                val stagedDbSize = if (stagingDb.exists()) stagingDb.length() else 0L
-                val currentAssetSize = assetRoot.listFiles().orEmpty()
-                    .filter { it.isFile }
-                    .sumOf(File::length)
-                val stagedAssetSize = File(staging, "assets").listFiles().orEmpty()
-                    .filter { it.isFile }
-                    .sumOf(File::length)
-                val freeSpace = context.filesDir.freeSpace
-
-                // Calculate required space with safety margin
-                // Need space for:
-                // 1. New database (stagedDbSize)
-                // 2. New assets (stagedAssetSize)
-                // 3. Safety snapshot of current database (currentDbSize)
-                // 4. Safety snapshot of current assets (currentAssetSize)
-                // 5. Working space (10MB minimum)
-                val safetySnapshotSize = currentDbSize + currentAssetSize
-                val workingSpace = 10L * 1024 * 1024 // 10MB
-                val requiredSpace = stagedDbSize + stagedAssetSize + safetySnapshotSize + workingSpace
-
-                if (freeSpace < requiredSpace) {
-                    val availableMB = freeSpace / 1024 / 1024
-                    val requiredMB = requiredSpace / 1024 / 1024
-                    throw BackupRestoreException(
-                        "磁盘空间不足：需要 ${requiredMB}MB，可用 ${availableMB}MB。" +
-                            "其中新数据 ${stagedDbSize / 1024 / 1024}MB，" +
-                            "安全快照 ${safetySnapshotSize / 1024 / 1024}MB，" +
-                            "工作空间 ${workingSpace / 1024 / 1024}MB",
-                    )
-                }
-
-                // Verify compression ratio is reasonable (prevent zip bombs).
-                // Compare compressed archive bytes against decompressed staging size.
-                val compressedBytes = countingSource.count()
-                val totalStagedSize = stagedDbSize + stagedAssetSize
-                if (compressedBytes > 0 && totalStagedSize > 0) {
-                    val compressionRatio = totalStagedSize.toDouble() / compressedBytes
-                    if (compressionRatio > MAX_COMPRESSION_RATIO) {
-                        throw BackupRestoreException(
-                            "压缩比异常（1:$compressionRatio），可能存在损坏的归档",
-                        )
-                    }
-                }
-
-                // Phase 2b: Validate the STAGED database BEFORE any swap so a
-                // corrupt backup never replaces the live database.
-                val stagedDbValid = runCatching {
-                    validateStagedDatabase(stagingDb)
-                }
-                if (stagedDbValid.isFailure) {
-                    throw BackupRestoreException(
-                        "备份数据库预验证失败：${stagedDbValid.exceptionOrNull()?.message.orEmpty()}",
-                    )
-                }
-
-                // Phase 3: Write rollback journal
-                journal.writePhase(RestorePhase.BACKUP_CURRENT)
-                journal.recordCurrentState(databaseFile, assetRoot)
-
-                // Phase 4: Close database and swap files
-                journal.writePhase(RestorePhase.SWAPPING)
-                database.close()
-
-                listOf(
-                    File("${databaseFile.absolutePath}-wal"),
-                    File("${databaseFile.absolutePath}-shm"),
-                ).forEach { it.delete() }
-
-                swapFile(
-                    source = stagingDb,
-                    target = databaseFile,
-                    rollback = File(rollback, "database.sqlite"),
-                )
-
-                val existingAssets = assetRoot.listFiles().orEmpty()
-                    .filter { it.isFile }
-                    .toList()
-                existingAssets.forEach { asset ->
-                    swapFile(
-                        source = asset,
-                        target = File(rollback, asset.name),
-                        rollback = asset,
-                    )
-                }
-                val stagedAssets = File(staging, "assets").listFiles().orEmpty()
-                    .filter { it.isFile }
-                    .toList()
-                stagedAssets.forEach { staged ->
-                    swapFile(
-                        source = staged,
-                        target = File(assetRoot, staged.name),
-                        rollback = File(rollback, staged.name),
-                    )
-                }
-
-                // Phase 5: Verify restored database
-                journal.writePhase(RestorePhase.VERIFYING)
-                verifyRestoredDatabase(databaseFile)
-
-                // Phase 6: Fsync to ensure durability
-                journal.writePhase(RestorePhase.FSYNCING)
-                fsyncFile(databaseFile)
-                assetRoot.listFiles().orEmpty()
-                    .filter { it.isFile }
-                    .forEach { fsyncFile(it) }
-
-                // Phase 7: Clean up
-                journal.writePhase(RestorePhase.COMPLETED)
-                rollback.deleteRecursively()
-                staging.deleteRecursively()
-                journal.clear()
-
-                RestoreReceipt(
-                    databaseSchemaVersion = valid.manifest.databaseSchemaVersion,
-                    problemCount = valid.manifest.problemCount,
-                    assetCount = valid.manifest.assetCount,
-                    fileCount = valid.manifest.fileCount,
-                )
-            } catch (failure: Exception) {
-                // Attempt rollback if we have a journal
-                if (journal.exists()) {
-                    try {
-                        journal.writePhase(RestorePhase.ROLLING_BACK)
-                        rollbackFrom(failure, rollback, staging)
-                        journal.clear()
-                    } catch (rollbackFailure: Exception) {
-                        // Log rollback failure but throw original error
-                        journal.writePhase(RestorePhase.ROLLBACK_FAILED)
-                    }
-                } else {
-                    rollbackFrom(failure, rollback, staging)
-                }
-                throw failure
+                doRestore(source)
+            } finally {
+                restoreInFlight.set(false)
             }
         }
+
+    private fun doRestore(source: InputStream): RestoreReceipt {
+        val restoreId = UUID.randomUUID().toString()
+        val root = File(context.cacheDir, "restore-$restoreId")
+        val staging = File(root, "staging").apply { mkdirs() }
+        val journal = RestoreJournal(context, restoreId)
+
+        val databaseFile = context.getDatabasePath(StudyDatabaseFactory.DEFAULT_DATABASE_NAME)
+        val databasesDir = databaseFile.parentFile ?: context.filesDir
+        val assetRoot = canonicalAssetRoot()
+        val filesDir = assetRoot.parentFile ?: context.filesDir
+        val previousDb = File(databasesDir, "${databaseFile.name}.prev")
+        val nextDb = File(databasesDir, "${databaseFile.name}.next")
+        val previousAssets = File(filesDir, "$ASSET_DIRECTORY.prev")
+        val nextAssets = File(filesDir, "$ASSET_DIRECTORY.next")
+        var swapStarted = false
+
+        try {
+            // Phase 1: Validate and unpack (counting compressed bytes for zip-bomb ratio)
+            journal.writePhase(RestorePhase.VALIDATING)
+            val countingSource = CountingInputStream(source)
+            val validation = SmbkArchiveCodec.unpack(countingSource, staging)
+            val valid = validation as? BackupValidation.Valid
+                ?: throw BackupRestoreException(
+                    (validation as BackupValidation.Invalid).reason,
+                )
+
+            // Phase 2: Free-space preflight
+            journal.writePhase(RestorePhase.PREFLIGHT)
+            val stagingDb = File(staging, "database.sqlite")
+            val currentDbSize = if (databaseFile.exists()) databaseFile.length() else 0L
+            val stagedDbSize = if (stagingDb.exists()) stagingDb.length() else 0L
+            val currentAssetSize = assetRoot.listFiles().orEmpty()
+                .filter { it.isFile }
+                .sumOf(File::length)
+            val stagedAssetSize = File(staging, "assets").listFiles().orEmpty()
+                .filter { it.isFile }
+                .sumOf(File::length)
+            val freeSpace = context.filesDir.freeSpace
+
+            // Required space: next-generation database + assets copies, the
+            // displaced current generation kept for rollback, working space.
+            val safetySnapshotSize = currentDbSize + currentAssetSize
+            val workingSpace = 10L * 1024 * 1024 // 10MB
+            val requiredSpace =
+                stagedDbSize + stagedAssetSize + safetySnapshotSize + workingSpace
+
+            if (freeSpace < requiredSpace) {
+                val availableMB = freeSpace / 1024 / 1024
+                val requiredMB = requiredSpace / 1024 / 1024
+                throw BackupRestoreException(
+                    "磁盘空间不足：需要 ${requiredMB}MB，可用 ${availableMB}MB。" +
+                        "其中新数据 ${stagedDbSize / 1024 / 1024}MB，" +
+                        "安全快照 ${safetySnapshotSize / 1024 / 1024}MB，" +
+                        "工作空间 ${workingSpace / 1024 / 1024}MB",
+                )
+            }
+
+            // Verify compression ratio is reasonable (prevent zip bombs).
+            // Compare compressed archive bytes against decompressed staging size.
+            val compressedBytes = countingSource.count()
+            val totalStagedSize = stagedDbSize + stagedAssetSize
+            if (compressedBytes > 0 && totalStagedSize > 0) {
+                val compressionRatio = totalStagedSize.toDouble() / compressedBytes
+                if (compressionRatio > MAX_COMPRESSION_RATIO) {
+                    throw BackupRestoreException(
+                        "压缩比异常（1:$compressionRatio），可能存在损坏的归档",
+                    )
+                }
+            }
+
+            // Phase 2b: Validate the STAGED database BEFORE any swap so a
+            // corrupt or incompatible backup never replaces the live data:
+            // Room open + migrations + user_version + quick_check +
+            // foreign_key_check.
+            val stagedDbValid = runCatching {
+                validateStagedDatabase(stagingDb)
+            }
+            if (stagedDbValid.isFailure) {
+                throw BackupRestoreException(
+                    "备份数据库预验证失败：${stagedDbValid.exceptionOrNull()?.message.orEmpty()}",
+                )
+            }
+
+            // Phase 3: Prepare generations and record the rollback journal.
+            journal.writePhase(RestorePhase.BACKUP_CURRENT)
+            deleteGenerationArtifacts(previousDb, nextDb, previousAssets, nextAssets)
+            journal.recordGenerationPaths(
+                liveDatabasePath = databaseFile,
+                previousDatabasePath = previousDb,
+                nextDatabasePath = nextDb,
+                liveAssetDir = assetRoot,
+                previousAssetDir = previousAssets,
+                nextAssetDir = nextAssets,
+                stagingDir = root,
+            )
+            journal.recordCurrentState(databaseFile, assetRoot)
+
+            // Phase 4: Close the database and perform the atomic switch.
+            journal.writePhase(RestorePhase.SWAPPING)
+            database.close()
+            listOf(
+                File("${databaseFile.absolutePath}-wal"),
+                File("${databaseFile.absolutePath}-shm"),
+            ).forEach { it.delete() }
+
+            // Build the next asset generation and make it durable BEFORE any
+            // pointer moves.
+            nextAssets.mkdirs()
+            File(staging, "assets").listFiles().orEmpty()
+                .filter { it.isFile }
+                .forEach { staged ->
+                    val target = File(nextAssets, staged.name)
+                    staged.copyTo(target, overwrite = true)
+                    fsyncFile(target)
+                }
+            fsyncDir(nextAssets)
+
+            // Build the next database generation in the databases directory
+            // (same filesystem as the live file → rename will be atomic).
+            stagingDb.copyTo(nextDb, overwrite = true)
+            fsyncFile(nextDb)
+            fsyncDir(databasesDir)
+
+            swapStarted = true
+
+            // Atomic switch #1: database. Each rename is atomic within the
+            // same directory; the journal (written above) is the pointer that
+            // lets startup recovery undo a half-done switch.
+            if (databaseFile.exists() && !databaseFile.renameTo(previousDb)) {
+                error("Cannot displace live database into previous generation")
+            }
+            fsyncDir(databasesDir)
+            if (!nextDb.renameTo(databaseFile)) {
+                // Best-effort in-line repair before escalating to the journal.
+                if (previousDb.exists() && previousDb.renameTo(databaseFile)) {
+                    swapStarted = false
+                }
+                error("Cannot promote next database generation")
+            }
+            fsyncDir(databasesDir)
+
+            // Atomic switch #2: asset directory.
+            if (assetRoot.isDirectory && !assetRoot.renameTo(previousAssets)) {
+                error("Cannot displace live asset generation")
+            }
+            fsyncDir(filesDir)
+            if (!nextAssets.renameTo(assetRoot)) {
+                if (previousAssets.isDirectory && previousAssets.renameTo(assetRoot)) {
+                    fsyncDir(filesDir)
+                }
+                error("Cannot promote next asset generation")
+            }
+            fsyncDir(filesDir)
+
+            // Phase 5: Verify restored database
+            journal.writePhase(RestorePhase.VERIFYING)
+            verifyRestoredDatabase(databaseFile)
+
+            // Phase 6: Fsync to ensure durability
+            journal.writePhase(RestorePhase.FSYNCING)
+            fsyncFile(databaseFile)
+            fsyncDir(databasesDir)
+            fsyncDir(assetRoot)
+            fsyncDir(filesDir)
+
+            // Phase 7: Clean up previous generation + staging + journal.
+            journal.writePhase(RestorePhase.COMPLETED)
+            deleteGenerationArtifacts(previousDb, nextDb, previousAssets, nextAssets)
+            root.deleteRecursively()
+            journal.clear()
+
+            RestoreReceipt(
+                databaseSchemaVersion = valid.manifest.databaseSchemaVersion,
+                problemCount = valid.manifest.problemCount,
+                assetCount = valid.manifest.assetCount,
+                fileCount = valid.manifest.fileCount,
+            )
+        } catch (failure: Exception) {
+            runCatching { journal.writePhase(RestorePhase.ROLLING_BACK) }
+            val entry = journal.readEntry()
+            if (swapStarted && entry != null) {
+                val problems = RestoreGenerationSupport.rollback(context, entry)
+                if (problems.isNotEmpty()) {
+                    // A failed rollback must never silently trust the mixed
+                    // state: quarantine the untrusted generation artifacts.
+                    RestoreGenerationSupport.quarantine(context, entry)
+                    runCatching { journal.writePhase(RestorePhase.ROLLBACK_FAILED) }
+                    val quarantined = BackupRestoreException(
+                        "恢复失败且回滚不完整，相关数据已隔离：${problems.joinToString("; ")}",
+                        failure,
+                    )
+                    throw quarantined
+                }
+                RestoreGenerationSupport.cleanup(context, entry)
+                journal.clear()
+            } else {
+                // Nothing was swapped yet; just remove partial artifacts.
+                deleteGenerationArtifacts(previousDb, nextDb, previousAssets, nextAssets)
+                root.deleteRecursively()
+                journal.clear()
+            }
+            throw failure
+        }
+    }
+
+    private fun deleteGenerationArtifacts(
+        previousDb: File,
+        nextDb: File,
+        previousAssets: File,
+        nextAssets: File,
+    ) {
+        listOf(
+            previousDb,
+            File("${previousDb.absolutePath}-wal"),
+            File("${previousDb.absolutePath}-shm"),
+            nextDb,
+            File("${nextDb.absolutePath}-wal"),
+            File("${nextDb.absolutePath}-shm"),
+        ).forEach { it.delete() }
+        previousAssets.deleteRecursively()
+        nextAssets.deleteRecursively()
+    }
 
     override suspend fun deleteAllData(): DeleteAllDataReceipt = withContext(Dispatchers.IO) {
         val databaseFile = context.getDatabasePath(StudyDatabaseFactory.DEFAULT_DATABASE_NAME)
         val assetRoot = canonicalAssetRoot()
         val databaseBytes = databaseFile.length()
         val assetBytes = assetRoot.listFiles().orEmpty().filter { it.isFile }.sumOf(File::length)
-        val preferenceFiles = File(context.filesDir, "shared_prefs").listFiles().orEmpty()
+        // SharedPreferences live under the app data root, NOT under filesDir.
+        val preferenceFiles = File(context.dataDir, "shared_prefs").listFiles().orEmpty()
             .filter { it.isFile }
             .toList()
         val preferenceBytes = preferenceFiles.sumOf(File::length)
@@ -262,16 +384,24 @@ class AndroidBackupRepository(
             // WorkManager may not be initialized; continue cleanup
         }
 
-        // 2. Close and delete database files
+        // 2. Close and delete database files (including generation artifacts)
         database.close()
         listOf(
             databaseFile,
             File("${databaseFile.absolutePath}-wal"),
             File("${databaseFile.absolutePath}-shm"),
+            File("${databaseFile.absolutePath}.prev"),
+            File("${databaseFile.absolutePath}.next"),
         ).forEach { it.delete() }
 
-        // 3. Delete canonical assets
+        // 3. Delete canonical assets (including generation artifacts)
         assetRoot.listFiles().orEmpty().forEach { it.deleteRecursively() }
+        assetRoot.delete()
+        val assetParent = assetRoot.parentFile
+        if (assetParent != null) {
+            File(assetParent, "$ASSET_DIRECTORY.prev").deleteRecursively()
+            File(assetParent, "$ASSET_DIRECTORY.next").deleteRecursively()
+        }
 
         // 4. Delete SharedPreferences
         preferenceFiles.forEach { it.delete() }
@@ -312,6 +442,13 @@ class AndroidBackupRepository(
             // Notification manager may not be available
         }
 
+        // 10. Delete restore journals and quarantined restore artifacts.
+        context.noBackupFilesDir.listFiles().orEmpty()
+            .filter {
+                it.name.startsWith("restore-journal-") || it.name == "restore-quarantine"
+            }
+            .forEach { it.deleteRecursively() }
+
         DeleteAllDataReceipt(
             deletedDatabaseBytes = databaseBytes,
             deletedAssetBytes = assetBytes,
@@ -321,53 +458,8 @@ class AndroidBackupRepository(
         )
     }
 
-    private fun swapFile(
-        source: File,
-        target: File,
-        rollback: File,
-    ) {
-        if (!source.isFile) error("Restore source is missing: ${source.name}")
-        if (target.exists() && !target.renameTo(rollback)) {
-            error("Cannot stage current file for rollback: ${target.name}")
-        }
-        if (!source.renameTo(target)) {
-            if (rollback.exists() && !rollback.renameTo(target)) {
-                error("Cannot restore previous file after failed swap: ${target.name}")
-            }
-            error("Cannot replace target file: ${target.name}")
-        }
-    }
-
-    private fun rollbackFrom(
-        originalFailure: Exception,
-        rollback: File,
-        staging: File,
-    ) {
-        runCatching {
-            val databaseFile = context.getDatabasePath(
-                StudyDatabaseFactory.DEFAULT_DATABASE_NAME,
-            )
-            val databaseRollback = File(rollback, "database.sqlite")
-            if (databaseRollback.exists() && !databaseRollback.renameTo(databaseFile)) {
-                error("Cannot roll back database")
-            }
-            val assetRoot = canonicalAssetRoot()
-            rollback.listFiles().orEmpty()
-                .filter { it.isFile && it.name != "database.sqlite" }
-                .forEach { file ->
-                    if (!file.renameTo(File(assetRoot, file.name))) {
-                        error("Cannot roll back asset ${file.name}")
-                    }
-                }
-            staging.deleteRecursively()
-            rollback.deleteRecursively()
-        }.onFailure { rollbackFailure ->
-            originalFailure.addSuppressed(rollbackFailure)
-        }
-    }
-
     private fun canonicalAssetRoot(): File {
-        val root = File(context.filesDir, "source-assets")
+        val root = File(context.filesDir, ASSET_DIRECTORY)
         if (!root.isDirectory && !root.mkdirs() && !root.isDirectory) {
             error("Cannot access canonical asset vault")
         }
@@ -386,8 +478,15 @@ class AndroidBackupRepository(
 
     /**
      * Validate the staged database BEFORE it replaces the live one:
-     * quick_check for page-level corruption and foreign_key_check for
-     * referential integrity. Any failure aborts restore before swap.
+     *   1. Room opens a throwaway copy with the full production builder, so
+     *      every registered migration runs exactly as it would in production;
+     *   2. PRAGMA user_version of the migrated copy must equal the live
+     *      database's user_version (a backup from a newer schema is rejected
+     *      because Room cannot open it; an older one is accepted only after
+     *      it migrates to the same version);
+     *   3. quick_check for page-level corruption and foreign_key_check for
+     *      referential integrity.
+     * Any failure aborts restore before the swap.
      */
     private fun validateStagedDatabase(stagedDatabaseFile: File) {
         if (!stagedDatabaseFile.exists()) {
@@ -413,6 +512,43 @@ class AndroidBackupRepository(
                     }
                 }
             }
+        }
+
+        // Room-level pre-validation: run the staged database through the
+        // production builder (migrations included) on a throwaway copy.
+        val validationName = "restore-validate-${UUID.randomUUID()}.db"
+        val validationCopy = context.getDatabasePath(validationName)
+        var validationDatabase: StudyDatabasePort? = null
+        try {
+            stagedDatabaseFile.copyTo(validationCopy, overwrite = true)
+            validationDatabase = StudyDatabaseFactory.open(context, validationName)
+            validationDatabase.close()
+            validationDatabase = null
+            val migratedVersion = validationCopy.readSchemaVersion()
+            val liveDatabaseFile = context.getDatabasePath(
+                StudyDatabaseFactory.DEFAULT_DATABASE_NAME,
+            )
+            if (liveDatabaseFile.exists()) {
+                val liveVersion = liveDatabaseFile.readSchemaVersion()
+                if (migratedVersion != liveVersion) {
+                    throw BackupRestoreException(
+                        "备份数据库迁移后版本($migratedVersion)与当前数据库版本($liveVersion)不一致",
+                    )
+                }
+            }
+        } catch (validationFailure: Exception) {
+            if (validationFailure is BackupRestoreException) throw validationFailure
+            throw BackupRestoreException(
+                "备份数据库无法通过 Room 迁移校验：${validationFailure.message.orEmpty()}",
+                validationFailure,
+            )
+        } finally {
+            runCatching { validationDatabase?.close() }
+            listOf(
+                validationCopy,
+                File("${validationCopy.absolutePath}-wal"),
+                File("${validationCopy.absolutePath}-shm"),
+            ).forEach { it.delete() }
         }
     }
 
@@ -457,26 +593,12 @@ class AndroidBackupRepository(
             throw BackupRestoreException("无法打开恢复后的数据库", e)
         }
     }
-
-    /**
-     * Fsync a file to ensure it's written to physical storage.
-     */
-    private fun fsyncFile(file: File) {
-        if (!file.exists()) return
-        try {
-            java.io.RandomAccessFile(file, "rws").use { raf ->
-                raf.channel.force(true)
-            }
-        } catch (_: Exception) {
-            // Fsync may not be supported on all filesystems; continue
-        }
-    }
 }
 
 /**
- * Durable restore journal that tracks the restore phase. On process death,
- * the journal can be read on next startup to determine if a restore was
- * incomplete and needs rollback.
+ * Durable restore journal that tracks the restore phase AND the concrete
+ * generation paths. On process death, the journal is read on next startup
+ * (BackupRestoreStartupRecovery) to decide resume/rollback/quarantine.
  */
 internal class RestoreJournal(
     private val context: Context,
@@ -485,53 +607,94 @@ internal class RestoreJournal(
     private val journalFile: File
         get() = File(context.noBackupFilesDir, "restore-journal-$restoreId.json")
 
+    private var entry = JournalEntry(
+        restoreId = restoreId,
+        phase = RestorePhase.VALIDATING.name,
+        timestamp = System.currentTimeMillis(),
+    )
+
     fun exists(): Boolean = journalFile.exists()
 
     fun writePhase(phase: RestorePhase) {
-        val entry = JournalEntry(
-            restoreId = restoreId,
-            phase = phase.name,
-            timestamp = System.currentTimeMillis(),
+        entry = entry.copy(phase = phase.name, timestamp = System.currentTimeMillis())
+        persist()
+    }
+
+    /** Records the generation layout so startup recovery can execute rollback. */
+    fun recordGenerationPaths(
+        liveDatabasePath: File,
+        previousDatabasePath: File,
+        nextDatabasePath: File,
+        liveAssetDir: File,
+        previousAssetDir: File,
+        nextAssetDir: File,
+        stagingDir: File,
+    ) {
+        entry = entry.copy(
+            liveDatabasePath = liveDatabasePath.absolutePath,
+            previousDatabasePath = previousDatabasePath.absolutePath,
+            nextDatabasePath = nextDatabasePath.absolutePath,
+            liveAssetDir = liveAssetDir.absolutePath,
+            previousAssetDir = previousAssetDir.absolutePath,
+            nextAssetDir = nextAssetDir.absolutePath,
+            stagingDir = stagingDir.absolutePath,
         )
-        journalFile.writeText(
-            kotlinx.serialization.json.Json.encodeToString(entry),
-        )
+        persist()
     }
 
     fun recordCurrentState(databaseFile: File, assetRoot: File) {
-        val state = CurrentState(
-            databaseExists = databaseFile.exists(),
-            databaseSize = if (databaseFile.exists()) databaseFile.length() else 0,
-            assetCount = assetRoot.listFiles()?.size ?: 0,
-            freeSpace = context.filesDir.freeSpace,
-        )
-        val entry = JournalEntry(
-            restoreId = restoreId,
-            phase = RestorePhase.BACKUP_CURRENT.name,
+        entry = entry.copy(
             timestamp = System.currentTimeMillis(),
-            currentState = state,
+            currentState = CurrentState(
+                databaseExists = databaseFile.exists(),
+                databaseSize = if (databaseFile.exists()) databaseFile.length() else 0,
+                assetCount = assetRoot.listFiles()?.size ?: 0,
+                freeSpace = context.filesDir.freeSpace,
+            ),
         )
-        journalFile.writeText(
-            kotlinx.serialization.json.Json.encodeToString(entry),
-        )
+        persist()
     }
 
     fun clear() {
         if (journalFile.exists()) {
             journalFile.delete()
         }
+        fsyncDir(context.noBackupFilesDir)
     }
 
-    fun readPhase(): RestorePhase? {
+    fun readPhase(): RestorePhase? = readEntry()?.let { entry ->
+        runCatching { RestorePhase.valueOf(entry.phase) }.getOrNull()
+    }
+
+    fun readEntry(): JournalEntry? {
         if (!journalFile.exists()) return null
         return try {
-            val entry = kotlinx.serialization.json.Json.decodeFromString<JournalEntry>(
+            kotlinx.serialization.json.Json.decodeFromString(
+                JournalEntry.serializer(),
                 journalFile.readText(),
             )
-            RestorePhase.valueOf(entry.phase)
         } catch (_: Exception) {
             null
         }
+    }
+
+    /** Atomic journal write: temp file + fsync + rename over the journal. */
+    private fun persist() {
+        val text = kotlinx.serialization.json.Json.encodeToString(
+            JournalEntry.serializer(),
+            entry,
+        )
+        val parent = journalFile.parentFile ?: return
+        val temp = File(parent, "${journalFile.name}.tmp")
+        temp.outputStream().use { output ->
+            output.write(text.toByteArray())
+            output.flush()
+            runCatching { output.fd.sync() }
+        }
+        if (!temp.renameTo(journalFile)) {
+            temp.delete()
+        }
+        fsyncDir(parent)
     }
 }
 
@@ -553,6 +716,20 @@ internal data class JournalEntry(
     val phase: String,
     val timestamp: Long,
     val currentState: CurrentState? = null,
+    /** Live database file path (the current-generation pointer target). */
+    val liveDatabasePath: String? = null,
+    /** Previous-generation database copy created before the switch. */
+    val previousDatabasePath: String? = null,
+    /** Next-generation database staged for promotion. */
+    val nextDatabasePath: String? = null,
+    /** Live canonical asset directory. */
+    val liveAssetDir: String? = null,
+    /** Previous-generation asset directory created before the switch. */
+    val previousAssetDir: String? = null,
+    /** Next-generation asset directory staged for promotion. */
+    val nextAssetDir: String? = null,
+    /** Restore staging root (cacheDir/restore-<id>). */
+    val stagingDir: String? = null,
 )
 
 @kotlinx.serialization.Serializable

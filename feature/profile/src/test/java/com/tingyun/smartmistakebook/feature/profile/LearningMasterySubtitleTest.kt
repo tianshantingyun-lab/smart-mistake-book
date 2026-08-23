@@ -40,7 +40,7 @@ class LearningMasterySubtitleTest {
         knowledgeNodeId = "$subject:$name",
         displayName = name,
         status = status,
-        lowerBoundIndependentCorrect = 0.5,
+        conservativeMasteryScore = 0.5,
         subject = subject,
     )
 }

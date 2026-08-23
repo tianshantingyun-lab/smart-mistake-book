@@ -533,8 +533,8 @@ data class IndependentCorrectObservation(
 
 data class KnowledgeMasteryState(
     val knowledgeNodeId: String,
-    val probabilityIndependentCorrect: Double,
-    val lowerBoundIndependentCorrect: Double,
+    val masteryScore: Double,
+    val conservativeMasteryScore: Double,
     val evidenceMass: Double,
     val independentCorrectObservations: List<IndependentCorrectObservation> = emptyList(),
     val lastIndependentErrorAtEpochMillis: Long? = null,
@@ -550,12 +550,12 @@ data class KnowledgeMasteryState(
 ) {
     init {
         require(knowledgeNodeId.isNotBlank()) { "Knowledge-node id must not be blank" }
-        require(probabilityIndependentCorrect.isFinite() && probabilityIndependentCorrect in 0.0..1.0) {
+        require(masteryScore.isFinite() && masteryScore in 0.0..1.0) {
             "Mastery probability must be between zero and one"
         }
         require(
-            lowerBoundIndependentCorrect.isFinite() &&
-                lowerBoundIndependentCorrect in 0.0..probabilityIndependentCorrect,
+            conservativeMasteryScore.isFinite() &&
+                conservativeMasteryScore in 0.0..masteryScore,
         ) { "Mastery lower bound must be between zero and the point estimate" }
         require(evidenceMass.isFinite() && evidenceMass >= 0.0) { "Evidence mass must not be negative" }
         require(lastIndependentErrorAtEpochMillis == null || lastIndependentErrorAtEpochMillis >= 0) {

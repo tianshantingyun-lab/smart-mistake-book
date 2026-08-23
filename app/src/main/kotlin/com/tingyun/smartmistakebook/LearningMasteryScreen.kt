@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.model.AppFailure
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -34,7 +35,10 @@ import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
+import com.tingyun.smartmistakebook.core.ui.PageState
+import com.tingyun.smartmistakebook.core.ui.PageStateFrame
 import com.tingyun.smartmistakebook.core.ui.Track
+import com.tingyun.smartmistakebook.core.ui.pageStateForFailure
 import com.tingyun.smartmistakebook.core.ui.studentLabel
 
 @Composable
@@ -42,16 +46,29 @@ internal fun LearningMasteryScreen(
     overview: StudyProfileOverview,
     onBack: () -> Unit,
     nowEpochMillis: Long = System.currentTimeMillis(),
+    failure: AppFailure? = null,
+    onRetry: (() -> Unit)? = null,
 ) {
     val summaries = (overview.weaknesses + overview.strengths)
         .distinctBy(StudyKnowledgeSummary::knowledgeNodeId)
+    val pageState: PageState? = when {
+        failure != null -> pageStateForFailure(failure, onRetry)
+        summaries.isEmpty() -> PageState.Empty(
+            title = "还没有学习记录",
+            supportingText = "你做过并保存的题会自动整理到相应科目和知识点，不需要手动填写。",
+            actionLabel = "去错题本看看",
+            onAction = onBack,
+        )
+        else -> null
+    }
     RootPageColumn(modifier = Modifier.testTag("learning_mastery_screen")) {
         SecondaryHeader(title = "学习掌握", onBack = onBack)
-        if (summaries.isEmpty()) {
-            LearningMasteryEmptyState()
-            return@RootPageColumn
-        }
-
+        PageStateFrame(
+            state = pageState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("learning_mastery_states"),
+        ) {
         LearningMasterySummary(
             summaries = summaries,
             projectionIsCurrent = overview.projectionIsCurrent,
@@ -73,31 +90,7 @@ internal fun LearningMasteryScreen(
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
-    }
-}
-
-@Composable
-private fun LearningMasteryEmptyState() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 20.dp)
-            .background(JadeSoft.copy(alpha = 0.45f), RoundedCornerShape(12.dp))
-            .padding(horizontal = 18.dp, vertical = 18.dp)
-            .testTag("learning_mastery_empty"),
-    ) {
-        Text(
-            text = "还没有学习记录",
-            color = Ink,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(
-            text = "你做过并保存的题会自动整理到相应科目和知识点，不需要手动填写。",
-            modifier = Modifier.padding(top = 6.dp),
-            color = InkSecondary,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        }
     }
 }
 
@@ -240,7 +233,7 @@ private fun SubjectMasterySection(
     modifier: Modifier = Modifier,
 ) {
     val average = summaries
-        .map(StudyKnowledgeSummary::lowerBoundIndependentCorrect)
+        .map(StudyKnowledgeSummary::conservativeMasteryScore)
         .average()
         .toFloat()
         .coerceIn(0f, 1f)
@@ -307,14 +300,15 @@ private fun KnowledgeMasteryRow(
     summary: StudyKnowledgeSummary,
     modifier: Modifier = Modifier,
 ) {
-    val progress = summary.lowerBoundIndependentCorrect.toFloat().coerceIn(0f, 1f)
+    val progress = summary.conservativeMasteryScore.toFloat().coerceIn(0f, 1f)
     val percentage = (progress * 100).toInt()
     Column(
         modifier = modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
-                contentDescription =
-                    "${summary.displayName}，${summary.status.studentLabel()}，$percentage%"
+                contentDescription = "${summary.displayName}，掌握证据：${masteryEvidenceLabel(summary)}，" +
+                    "近期独立作答：${recentPracticeLabel(summary)}，" +
+                    "当前遗忘风险：${forgettingRiskLabel(summary)}"
             }
             .testTag("learning_mastery_point:${summary.knowledgeNodeId}"),
     ) {
@@ -383,3 +377,26 @@ internal fun recentActivityLabel(
 
 private const val MAX_RECENT_CHANGES = 4
 private const val DAY_MILLIS = 86_400_000L
+
+/** Audit §6.2: descriptive evidence labels instead of raw probabilities. */
+private fun masteryEvidenceLabel(summary: StudyKnowledgeSummary): String = when {
+    summary.evidenceMass >= 1.0 && summary.independentCorrectObservationCount >= 2 -> "较强"
+    summary.independentCorrectObservationCount > 0 -> "有限"
+    else -> "不足"
+}
+
+private fun recentPracticeLabel(summary: StudyKnowledgeSummary): String {
+    val correct = summary.independentCorrectObservationCount
+    val errors = if (summary.lastIndependentErrorAtEpochMillis != null) 1 else 0
+    val parts = buildList {
+        if (correct > 0) add("$correct 次正确")
+        if (errors > 0) add("$errors 次错误")
+    }
+    return parts.joinToString("、").ifEmpty { "暂无记录" }
+}
+
+private fun forgettingRiskLabel(summary: StudyKnowledgeSummary): String = when {
+    summary.conservativeMasteryScore >= 0.7 -> "低"
+    summary.conservativeMasteryScore >= 0.4 -> "中"
+    else -> "高"
+}

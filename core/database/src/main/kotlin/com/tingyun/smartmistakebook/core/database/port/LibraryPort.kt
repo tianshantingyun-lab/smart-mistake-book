@@ -45,4 +45,40 @@ interface LibraryReadPort {
         masteryId: String?,
         facet: String,
     ): List<LibraryFacetCountRecord>
+
+    /**
+     * FTS-backed paging source for non-blank search text. [matchQuery] is the
+     * implicit-AND FTS4 MATCH expression and [tokens] are the index-aligned
+     * query tokens used for relevance ranking; the implementation refreshes
+     * the search projection incrementally before loading pages. Default is a
+     * no-op hook so fakes without an FTS index keep compiling.
+     */
+    fun librarySearchPagingSource(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        tokens: List<String>,
+    ): PagingSource<Int, LibraryCatalogRow> =
+        error("FTS library search is not backed by this database port")
+
+    /** Counting twin of [librarySearchPagingSource]. */
+    suspend fun librarySearchCount(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+    ): Int = error("FTS library search is not backed by this database port")
+
+    /**
+     * Drains the library search outbox and applies pending revisions to the
+     * FTS projection row by row. Safe to call repeatedly; incremental by
+     * design (a full rebuild happens only as a repair).
+     */
+    suspend fun refreshLibrarySearchProjection() {
+        // No-op default for fakes without an FTS index.
+    }
 }

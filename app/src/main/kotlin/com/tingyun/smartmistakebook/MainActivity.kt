@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import com.tingyun.smartmistakebook.core.visual.ui.LocalVisualInteractionEventSink
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -15,9 +17,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         recordReviewOpenRequest(intent)
         enableEdgeToEdge()
+        val application = application as SmartMistakeBookApplication
         setContent {
-            SmartMistakeBookTheme {
-                SmartMistakeBookRoot(reviewOpenRequests)
+            CompositionLocalProvider(
+                LocalVisualInteractionEventSink provides application.visualInteractionSink,
+            ) {
+                SmartMistakeBookTheme {
+                    SmartMistakeBookRoot(reviewOpenRequests)
+                }
             }
         }
     }

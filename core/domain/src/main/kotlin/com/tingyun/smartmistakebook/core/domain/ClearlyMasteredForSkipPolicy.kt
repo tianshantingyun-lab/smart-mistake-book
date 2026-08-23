@@ -66,7 +66,7 @@ object ClearlyMasteredForSkipPolicy {
             atEpochMillis = atEpochMillis,
         )
         return state.status == MasteryStatus.MASTERED &&
-            state.lowerBoundIndependentCorrect >= policy.minimumLowerBound &&
+            state.conservativeMasteryScore >= policy.minimumLowerBound &&
             state.evidenceMass >= policy.minimumDirectObservations &&
             supported.sumOf(IndependentCorrectObservation::evidenceWeight) >= policy.minimumDirectObservations &&
             hasIndependentBreadth(

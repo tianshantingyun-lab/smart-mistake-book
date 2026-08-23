@@ -43,6 +43,7 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.tingyun.smartmistakebook.core.model.TutorVisualChartAxis
+import com.tingyun.smartmistakebook.core.model.TutorVisualChartPoint
 import com.tingyun.smartmistakebook.core.model.TutorVisualChartSeriesElement
 import com.tingyun.smartmistakebook.core.model.TutorVisualChartSeriesKind
 import com.tingyun.smartmistakebook.core.model.TutorVisualPanel
@@ -67,8 +68,18 @@ internal fun TutorVisualChartPanel(
         it.axis == TutorVisualChartAxis.LEFT && it.kind != TutorVisualChartSeriesKind.BAR
     }
     val rightSeries = allSeries.filter { it.axis == TutorVisualChartAxis.RIGHT }
+    // Frame binding (audit PR-11): the document model carries no
+    // per-frame series data, so points reveal along the x-domain as
+    // time progresses: everything up to the current frame is visible.
+    val visiblePointsBySeries = allSeries.associate { series ->
+        series.elementId to visiblePointsForFrame(series.points, frame.timeProgress)
+    }
     val modelKey = allSeries.map { series ->
-        series.elementId to frame.elements[series.elementId]?.focused
+        Triple(
+            series.elementId,
+            frame.elements[series.elementId]?.focused,
+            visiblePointsBySeries.getValue(series.elementId).size,
+        )
     }
     val modelProducer = remember(panel.panelId) { CartesianChartModelProducer() }
 
@@ -77,24 +88,24 @@ internal fun TutorVisualChartPanel(
             if (leftBars.isNotEmpty()) {
                 columnModel {
                     leftBars.forEach { series(
-                        it.points.map { point -> point.x },
-                        it.points.map { point -> point.y },
+                        visiblePointsBySeries.getValue(it.elementId).map { point -> point.x },
+                        visiblePointsBySeries.getValue(it.elementId).map { point -> point.y },
                     ) }
                 }
             }
             if (leftLines.isNotEmpty()) {
                 lineModel {
                     leftLines.forEach { series(
-                        it.points.map { point -> point.x },
-                        it.points.map { point -> point.y },
+                        visiblePointsBySeries.getValue(it.elementId).map { point -> point.x },
+                        visiblePointsBySeries.getValue(it.elementId).map { point -> point.y },
                     ) }
                 }
             }
             if (rightSeries.isNotEmpty()) {
                 lineModel {
                     rightSeries.forEach { series(
-                        it.points.map { point -> point.x },
-                        it.points.map { point -> point.y },
+                        visiblePointsBySeries.getValue(it.elementId).map { point -> point.x },
+                        visiblePointsBySeries.getValue(it.elementId).map { point -> point.y },
                     ) }
                 }
             }
@@ -258,4 +269,22 @@ internal fun TutorVisualChartPanel(
             }
         }
     }
+}
+
+/**
+ * Points visible at the given frame progress: the x-domain reveals
+ * left-to-right with time (series points are x-ordered by contract).
+ * The leading point always stays visible so the chart never empties.
+ */
+internal fun visiblePointsForFrame(
+    points: List<TutorVisualChartPoint>,
+    timeProgress: Double,
+): List<TutorVisualChartPoint> {
+    if (points.isEmpty()) return points
+    if (timeProgress >= 1.0) return points
+    val minX = points.first().x
+    val maxX = points.last().x
+    if (maxX <= minX) return points
+    val cutoff = minX + (maxX - minX) * timeProgress.coerceIn(0.0, 1.0)
+    return points.takeWhile { it.x <= cutoff }.ifEmpty { points.take(1) }
 }

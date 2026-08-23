@@ -618,8 +618,7 @@ interface CaptureWorkflowRepository {
 
     suspend fun replaceDraft(request: ReplaceCaptureDraftRequest): CaptureDraftSummary
 
-    suspend fun splitDraft(request: SplitCaptureDraftRequest): CaptureDraftSplitResult =
-        throw UnsupportedOperationException("Capture splitting is not implemented")
+    suspend fun splitDraft(request: SplitCaptureDraftRequest): CaptureDraftSplitResult
 
     suspend fun confirmForTutoring(
         request: ConfirmCapturedProblemRequest,
