@@ -190,6 +190,7 @@ internal class RoomStudyDatabase(
         ).forEach { sql ->
             connection.usePrepared(sql) { statement -> statement.step() }
         }
+        }
     }
 
     override suspend fun refreshLibrarySearchProjection() {
@@ -238,6 +239,9 @@ internal class RoomStudyDatabase(
             val knowledge = CjkTextTokenizer.segment(row.knowledgePoints)
             val tags = CjkTextTokenizer.segment(row.tags)
             val errorReason = CjkTextTokenizer.segment(row.errorReason)
+            val formulaTokens = FormulaSearchProjection.tokensForSnapshot(
+                row.questionDocumentSnapshot,
+            )
             if (dao.countContentFor(revisionId) > 0) {
                 dao.updateContent(
                     revisionId = revisionId,
@@ -249,7 +253,7 @@ internal class RoomStudyDatabase(
                     knowledgePoints = knowledge,
                     tags = tags,
                     errorReason = errorReason,
-                    formulaTokens = "",
+                    formulaTokens = formulaTokens,
                 )
             } else {
                 dao.insertContent(
@@ -262,7 +266,7 @@ internal class RoomStudyDatabase(
                     knowledgePoints = knowledge,
                     tags = tags,
                     errorReason = errorReason,
-                    formulaTokens = "",
+                    formulaTokens = formulaTokens,
                 )
             }
         }
