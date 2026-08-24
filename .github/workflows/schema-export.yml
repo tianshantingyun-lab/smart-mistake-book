@@ -32,11 +32,25 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
+      - name: Temporarily switch to direct room.schemaLocation export
+        run: |
+          python3 - <<'PYEOF'
+          import re
+          p = "core/database/build.gradle.kts"
+          text = open(p, encoding="utf-8").read()
+          text = text.replace("    alias(libs.plugins.androidx.room3)\n", "")
+          text = re.sub(r"room3 \{[^}]*\}\n", "", text)
+          text += '''
+          // TEMPORARY (task #39): direct schema export, plugin wiring produced no files.
+          ksp {
+              arg("room.schemaLocation", "$projectDir/schemas")
+          }
+          '''
+          open(p, "w", encoding="utf-8").write(text)
+          print(open(p, encoding="utf-8").read())
+          PYEOF
       - name: Run Room schema export (KSP)
-        run: >-
-          ./gradlew :core:database:kspDebugKotlin
-          -Pksp.arg.room.schemaLocation=$GITHUB_WORKSPACE/core/database/schemas
-          --console=plain
+        run: ./gradlew :core:database:kspDebugKotlin --console=plain
       - name: Diagnose schema export
         run: |
           echo "--- exported identityHash:"
@@ -45,9 +59,9 @@ jobs:
           echo "--- generated Room impl hash:"
           IMPL=$(find core/database/build -name 'StudyDatabase_Impl.kt' | head -n 1)
           echo "impl file: $IMPL"
-          grep -o "identityHash.*" "$IMPL" | head -n 3 || true
-          echo "--- schema json files under build dir:"
-          find core/database/build -name '*.json' -path '*chema*' -print || true
+          grep -oE "[a-f0-9]{32}" "$IMPL" | sort -u || true
+          echo "--- schema dir status:"
+          git status --porcelain -- core/database/schemas || true
       - name: Commit schema changes if any
         run: |
           if [ -n "$(git status --porcelain -- core/database/schemas)" ]; then
