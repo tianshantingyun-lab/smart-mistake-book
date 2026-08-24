@@ -287,11 +287,17 @@ internal fun TutorQuestionMemoryCard(
     modifier: Modifier = Modifier,
 ) {
     val now = remember(memory) { System.currentTimeMillis() }
+    // Qualitative retention bands only: precise probabilities require a
+    // calibrated model (audit section 6.4).
+    val retentionLabel = when {
+        memory.retrievabilityAtSnapshot >= 0.7 -> "记忆较稳"
+        memory.retrievabilityAtSnapshot >= 0.4 -> "记忆减弱"
+        else -> "记忆模糊"
+    }
     val status = when {
         !memory.projectionIsCurrent -> "学习记录正在重新计算，暂不判断当前掌握度"
-        memory.nextReviewAtEpochMillis <= now ->
-            "预计记忆保持 ${(memory.retrievabilityAtSnapshot * 100).toInt()}% · 已到复习时间"
-        else -> "预计记忆保持 ${(memory.retrievabilityAtSnapshot * 100).toInt()}% · 下次复习已安排"
+        memory.nextReviewAtEpochMillis <= now -> "$retentionLabel · 已到复习时间"
+        else -> "$retentionLabel · 下次复习已安排"
     }
     Surface(
         modifier = modifier

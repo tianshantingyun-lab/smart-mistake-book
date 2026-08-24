@@ -117,8 +117,13 @@ fun ReviewRoute(
             profile.weaknesses.take(2).forEachIndexed { index, weakness ->
                 WeakPointRow(
                     title = weakness.displayName,
-                    detail = "目前至少能独立完成 " +
-                        "${(weakness.conservativeMasteryScore * 100).toInt()}%",
+                    // Qualitative bands only: precise probabilities require a
+                    // calibrated model (audit section 6.4).
+                    detail = "独立作答把握：" + when {
+                        weakness.conservativeMasteryScore >= 0.7 -> "较稳"
+                        weakness.conservativeMasteryScore >= 0.4 -> "一般"
+                        else -> "薄弱"
+                    },
                     icon = if (index == 0) {
                         Icons.AutoMirrored.Outlined.ShowChart
                     } else {

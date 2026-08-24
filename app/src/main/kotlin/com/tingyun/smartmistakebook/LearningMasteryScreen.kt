@@ -301,7 +301,6 @@ private fun KnowledgeMasteryRow(
     modifier: Modifier = Modifier,
 ) {
     val progress = summary.conservativeMasteryScore.toFloat().coerceIn(0f, 1f)
-    val percentage = (progress * 100).toInt()
     Column(
         modifier = modifier
             .fillMaxWidth()
