@@ -1,28 +1,38 @@
-name: schema-export
+name: schema-export-temp
 
-# TEMPORARY one-shot workflow (task #39, cluster A): the committed
-# core/database/schemas/34.json identityHash lags the current entities
-# because the schema was never re-exported after later entity changes.
-# Room's KSP exportSchema writes the JSON into schemaDirectory during
-# kspDebugKotlin; this workflow runs that on CI and pushes the result.
-# Delete this file once the schema is realigned.
-
+# TEMPORARY workflow (task #39, cluster A). Two paths, in order:
+# 1) clean-export: a clean, cache-free, fully-rerun KSP schema export. The
+#    previous rounds suspected a stale incremental output, so clean the module
+#    and rerun everything; if the exported schemas change, commit them.
+# 2) runtime-dump (fallback, only if path 1 committed nothing): the KSP
+#    exportSchema wiring produced no files under this toolchain (AGP 9.3.0 /
+#    Kotlin 2.3.21 / KSP 2.3.10 / room3 3.0.0; four variants tried,
+#    copyRoomSchemas stayed NO-SOURCE), so run a temporary instrumented test
+#    that dumps the real v34 schema shape (sqlite_master rows +
+#    room_master_table identity_hash) from a freshly created Room database
+#    and reconstruct the stale exported 34.json from that dump.
+# DELETE this file and SchemaDumpInstrumentedTest.kt once aligned.
 on:
   push:
     paths:
       - ".github/workflows/schema-export.yml"
-  workflow_dispatch: {}
+      - "core/database/src/androidTest/kotlin/com/tingyun/smartmistakebook/core/database/SchemaDumpInstrumentedTest.kt"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  export:
+  clean-export:
     runs-on: ubuntu-latest
+    # Schema files are pushed back to main; default GITHUB_TOKEN is read-only,
+    # so grant contents:write to this job only.
     permissions:
       contents: write
     timeout-minutes: 60
+    outputs:
+      exported: ${{ steps.pushcheck.outputs.exported }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -32,41 +42,153 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
-      - name: Temporarily pass explicit room.internal schema dirs
+      - name: Clean full schema export (no build cache, rerun all tasks)
+        run: ./gradlew :core:database:clean :core:database:kspDebugKotlin :core:database:copyRoomSchemas --no-build-cache --rerun-tasks --console=plain
+      - name: Diagnose and commit exported schemas
+        id: pushcheck
         run: |
-          python3 - <<'PYEOF'
-          p = "core/database/build.gradle.kts"
-          text = open(p, encoding="utf-8").read()
-          text += '''
-          // TEMPORARY (task #39): the room3 plugin wiring produced no schema files
-          // (copyRoomSchemas NO-SOURCE); pass the internal dirs explicitly.
-          ksp {
-              arg("room.internal.schemaOutput", layout.buildDirectory.dir("intermediates/room/schemas/kspDebugKotlin").get().asFile.absolutePath)
-              arg("room.internal.schemaInput", projectDir.resolve("schemas").absolutePath)
-          }
-          '''
-          open(p, "w", encoding="utf-8").write(text)
-          print(open(p, encoding="utf-8").read())
-          PYEOF
-      - name: Run Room schema export (KSP)
-        run: ./gradlew :core:database:kspDebugKotlin :core:database:copyRoomSchemas --console=plain
-      - name: Diagnose schema export
-        run: |
-          echo "--- exported identityHash:"
-          grep -o '"identityHash": "[a-f0-9]*"' \
-            "core/database/schemas/com.tingyun.smartmistakebook.core.database.StudyDatabase/34.json" || true
           echo "--- json files produced under build:"
-          find core/database/build -name '*.json' -print | head -n 40 || true
+          find core/database/build -name '*.json' -path '*schemas*' -print || true
           echo "--- schema dir status:"
           git status --porcelain -- core/database/schemas || true
-      - name: Commit schema changes if any
-        run: |
-          if [ -n "$(git status --porcelain -- core/database/schemas)" ]; then
+          if git diff --quiet -- core/database/schemas; then
+            echo "exported=false" >> "$GITHUB_OUTPUT"
+            echo "Clean export produced no schema changes."
+          else
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add core/database/schemas
-            git commit -m "重新导出 Room schema 对齐实体"
-            git push
+            git commit -m "重新导出 Room schema 对齐实体（clean 全量导出，任务 #39 簇 A）" -m "防回归：变更 @Entity/@DatabaseView 后必须同步重新导出 core/database/schemas/*.json（identityHash 与 createSql），否则 FullMigrationMatrixInstrumentedTest 与各迁移测试会在 CI 失败。"
+            git push || (git pull --rebase && git push)
+            echo "exported=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  runtime-dump:
+    needs: clean-export
+    # Run even if clean-export failed: the dump path is independent of KSP.
+    if: always() && needs.clean-export.outputs.exported != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Emulator boot can take a while plus one connected test task.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - name: Grant Gradle wrapper permission
+        run: chmod +x gradlew
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 1800
+          # emulator-runner runs each non-empty `script` line in its own
+          # `sh -c`, so backslash line continuations do NOT work. Keep the
+          # gradle invocation on a single line.
+          script: |
+            ./gradlew :core:database:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.tingyun.smartmistakebook.core.database.SchemaDumpInstrumentedTest --console=plain
+      - name: Pull runtime schema dump from emulator
+        run: |
+          PKG="com.tingyun.smartmistakebook.core.database"
+          adb pull "/sdcard/Android/data/$PKG/files/room34-dump.txt" room34-dump.txt || adb pull "/sdcard/Android/data/$PKG.test/files/room34-dump.txt" room34-dump.txt
+          wc -l room34-dump.txt
+          head -n 1 room34-dump.txt
+      - name: Reconstruct 34.json from runtime dump
+        run: |
+          python3 - <<'PYEOF'
+          import io, json, sys
+
+          DUMP = "room34-dump.txt"
+          SCHEMA = "core/database/schemas/com.tingyun.smartmistakebook.core.database.StudyDatabase/34.json"
+
+          lines = io.open(DUMP, encoding="utf-8").read().split("\n")
+          assert lines and lines[0].startswith("IDENTITY_HASH "), "missing identity hash line"
+          hash_ = lines[0].split(" ", 1)[1].strip()
+
+          tables, views, indices, triggers = {}, {}, {}, {}
+          for ln in lines[1:]:
+              parts = ln.split("\u001f")
+              if len(parts) != 4:
+                  continue
+              typ, name, tbl_name, sql = parts
+              if not sql:
+                  continue
+              if typ == "table":
+                  tables[name] = sql
+              elif typ == "view":
+                  views[name] = sql
+              elif typ == "index":
+                  indices[name] = sql
+              elif typ == "trigger":
+                  triggers[name] = sql
+          print("dump objects: tables=%d views=%d indices=%d triggers=%d"
+                % (len(tables), len(views), len(indices), len(triggers)))
+
+          with io.open(SCHEMA, encoding="utf-8") as f:
+              schema = json.load(f)
+          db = schema["database"]
+          print("identityHash: %s -> %s" % (db.get("identityHash"), hash_))
+          db["identityHash"] = hash_
+
+          missing = []
+          for entity in db.get("entities", []):
+              tname = entity["tableName"]
+              if tname in tables:
+                  entity["createSql"] = tables[tname].replace("`%s`" % tname, "`${TABLE_NAME}`", 1)
+              else:
+                  missing.append("table:" + tname)
+              for index in entity.get("indices", []):
+                  iname = index["name"]
+                  if iname in indices:
+                      index["createSql"] = indices[iname].replace("`%s`" % tname, "`${TABLE_NAME}`", 1)
+                  else:
+                      missing.append("index:" + iname)
+              for i, trig_sql in enumerate(entity.get("contentSyncTriggers", []) or []):
+                  toks = trig_sql.split()
+                  trig_name = toks[5] if len(toks) > 5 and toks[1] == "TRIGGER" else None
+                  if trig_name and trig_name in triggers:
+                      entity["contentSyncTriggers"][i] = triggers[trig_name]
+                  else:
+                      missing.append("trigger:" + str(trig_name))
+          for view in db.get("views", []):
+              vname = view["viewName"]
+              if vname in views:
+                  view["createSql"] = views[vname].replace("`%s`" % vname, "`${VIEW_NAME}`", 1)
+              else:
+                  missing.append("view:" + vname)
+
+          if missing:
+              print("MISSING FROM DUMP:", missing)
+              sys.exit(1)
+
+          db["setupQueries"] = [
+              "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+              "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '%s')" % hash_,
+          ]
+          with io.open(SCHEMA, "w", encoding="utf-8") as f:
+              json.dump(schema, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          print("34.json reconstructed from runtime dump")
+          PYEOF
+      - name: Commit reconstructed schema
+        run: |
+          if git diff --quiet -- core/database/schemas; then
+            echo "Runtime dump matches exported schema; no changes needed."
           else
-            echo "no schema changes"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add core/database/schemas
+            git commit -m "重新导出 Room schema 对齐实体（运行期转储重建，任务 #39 簇 A）" -m "防回归：变更 @Entity/@DatabaseView 后必须同步重新导出 core/database/schemas/*.json（identityHash 与 createSql），否则 FullMigrationMatrixInstrumentedTest 与各迁移测试会在 CI 失败。本仓库工具链（AGP 9.3.0 / Kotlin 2.3.21 / KSP 2.3.10 / room3 3.0.0）下 KSP exportSchema 无法产出文件，必要时用运行期 sqlite_master 转储重建。"
+            git push || (git pull --rebase && git push)
           fi
