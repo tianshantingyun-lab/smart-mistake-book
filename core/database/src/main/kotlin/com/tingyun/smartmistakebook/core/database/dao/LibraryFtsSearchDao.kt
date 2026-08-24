@@ -5,7 +5,11 @@ import androidx.room3.ColumnInfo
 import androidx.room3.Dao
 import androidx.room3.DaoReturnTypeConverters
 import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomRawQuery
 import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
+import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchContentEntity
+import com.tingyun.smartmistakebook.core.database.entity.LibrarySearchOutboxEntity
 
 /**
  * Incremental maintenance and matching for the library FTS projection
@@ -242,134 +246,24 @@ interface LibraryFtsSearchDao {
     // ------------------------------------------------------------------
 
     /**
-     * Relevance-ranked paged search. [matchQuery] is the implicit-AND MATCH
-     * expression produced by CjkTextTokenizer on the query side (all query
-     * tokens must appear); [primaryStemPhrase]..[primaryFormulaPhrase] are the
-     * column-scoped phrase forms of the FIRST query token used to compute the
-     * weighted column-hit score, and the extraTokenPhrase parameters are the
-     * remaining query tokens (quoted phrases) used as tie-breaker boosts.
-     * Facet filters mirror LibraryQueryDao exactly by joining the
-     * library_catalog view.
+     * Relevance-ranked paged search, executed as a raw query.
+     *
+     * The weighted ranking sums per-column hit indicators computed as
+     * CASE WHEN EXISTS(...) constructs. Room's @Query SQL parser rejects
+     * CASE WHEN, so this query is declared as [RawQuery] to bypass static
+     * SQL validation and run verbatim; the runtime semantics stay FTS4-legal
+     * (MATCH only appears as a WHERE constraint, snippet() takes the bare
+     * table identifier). The caller constructs the [RoomRawQuery] in
+     * RoomStudyDatabase.buildLibrarySearchRawQuery with positional bindings
+     * only - no value is ever interpolated into the SQL text.
      */
-    @Query(
-        """
-        SELECT catalog.*,
-               snippet(library_search_fts, '【', '】', '…', -1, 12) AS snippet
-        FROM library_search_fts
-        JOIN library_search_content AS content
-            ON content.content_row_id = library_search_fts.docid
-        JOIN library_catalog AS catalog
-            ON catalog.problem_revision_id = content.problem_revision_id
-        WHERE library_search_fts MATCH :matchQuery
-          AND (:subjectId IS NULL OR catalog.subject = :subjectId)
-          AND (
-              :sectionId IS NULL OR EXISTS (
-                  SELECT 1 FROM problem_classification_binding AS classification
-                  WHERE classification.problem_id = catalog.problem_id
-                    AND classification.basis_revision_id = catalog.problem_revision_id
-                    AND classification.dimension = 'CHAPTER'
-                    AND classification.label_id = :sectionId
-              )
-          )
-          AND (
-              :knowledgePointId IS NULL OR EXISTS (
-                  SELECT 1 FROM problem_classification_binding AS classification
-                  WHERE classification.problem_id = catalog.problem_id
-                    AND classification.basis_revision_id = catalog.problem_revision_id
-                    AND classification.dimension = 'KNOWLEDGE'
-                    AND classification.label_id = :knowledgePointId
-              )
-          )
-          AND (:masteryId IS NULL OR catalog.mastery_id = :masteryId)
-        ORDER BY (
-            4 * (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.stem_text MATCH :primaryStemPhrase
-            ) THEN 1 ELSE 0 END)
-          + 3 * (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.solution_text MATCH :primarySolutionPhrase
-            ) THEN 1 ELSE 0 END)
-          + 2 * (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.knowledge_points MATCH :primaryKnowledgePhrase
-            ) THEN 1 ELSE 0 END)
-          + 2 * (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.subject MATCH :primarySubjectPhrase
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.options_text MATCH :primaryOptionsPhrase
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.chapter MATCH :primaryChapterPhrase
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.tags MATCH :primaryTagsPhrase
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.error_reason MATCH :primaryErrorReasonPhrase
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts AS rank
-                WHERE rank.docid = content.content_row_id
-                  AND rank.formula_tokens MATCH :primaryFormulaPhrase
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts
-                WHERE library_search_fts.docid = content.content_row_id
-                  AND library_search_fts MATCH :extraTokenPhrase1
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts
-                WHERE library_search_fts.docid = content.content_row_id
-                  AND library_search_fts MATCH :extraTokenPhrase2
-            ) THEN 1 ELSE 0 END)
-          + (CASE WHEN EXISTS (
-                SELECT 1 FROM library_search_fts
-                WHERE library_search_fts.docid = content.content_row_id
-                  AND library_search_fts MATCH :extraTokenPhrase3
-            ) THEN 1 ELSE 0 END)
-        ) DESC,
-            CASE :sort WHEN 'RECENTLY_CREATED' THEN catalog.created_at_epoch_millis END DESC,
-            CASE :sort WHEN 'NEXT_REVIEW' THEN catalog.next_review_at_epoch_millis END ASC,
-            CASE :sort WHEN 'LEAST_MASTERED' THEN catalog.retrievability END ASC,
-            catalog.updated_at_epoch_millis DESC,
-            catalog.entry_id ASC
-        """,
+    @RawQuery(
+        observedEntities = [
+            LibrarySearchContentEntity::class,
+            LibrarySearchOutboxEntity::class,
+        ],
     )
-    fun searchPagingSource(
-        matchQuery: String,
-        subjectId: String?,
-        sectionId: String?,
-        knowledgePointId: String?,
-        masteryId: String?,
-        sort: String,
-        primaryStemPhrase: String,
-        primaryOptionsPhrase: String,
-        primarySolutionPhrase: String,
-        primarySubjectPhrase: String,
-        primaryChapterPhrase: String,
-        primaryKnowledgePhrase: String,
-        primaryTagsPhrase: String,
-        primaryErrorReasonPhrase: String,
-        primaryFormulaPhrase: String,
-        extraTokenPhrase1: String,
-        extraTokenPhrase2: String,
-        extraTokenPhrase3: String,
-    ): PagingSource<Int, LibrarySearchHitRow>
+    fun searchPagingSource(query: RoomRawQuery): PagingSource<Int, LibrarySearchHitRow>
 
     /** Counting twin of [searchPagingSource] for totals and facets. */
     @Query(

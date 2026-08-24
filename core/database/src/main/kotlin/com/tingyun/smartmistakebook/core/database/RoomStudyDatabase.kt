@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database
 
 import androidx.paging.PagingSource
+import androidx.room3.RoomRawQuery
 import androidx.room3.withReadTransaction
 import androidx.room3.withWriteTransaction
 import com.tingyun.smartmistakebook.core.database.dao.MistakeRow
@@ -108,28 +109,139 @@ internal class RoomStudyDatabase(
             beforeLoad = ::refreshLibrarySearchProjection,
             delegate = MappingPagingSource(
                 delegate = database.libraryFtsSearchDao().searchPagingSource(
-                    matchQuery = matchQuery,
-                    subjectId = subjectId,
-                    sectionId = sectionId,
-                    knowledgePointId = knowledgePointId,
-                    masteryId = masteryId,
-                    sort = sort,
-                    primaryStemPhrase = primaryPhrase,
-                    primaryOptionsPhrase = primaryPhrase,
-                    primarySolutionPhrase = primaryPhrase,
-                    primarySubjectPhrase = primaryPhrase,
-                    primaryChapterPhrase = primaryPhrase,
-                    primaryKnowledgePhrase = primaryPhrase,
-                    primaryTagsPhrase = primaryPhrase,
-                    primaryErrorReasonPhrase = primaryPhrase,
-                    primaryFormulaPhrase = primaryPhrase,
-                    extraTokenPhrase1 = extras.getOrElse(0) { neverMatchPhrase },
-                    extraTokenPhrase2 = extras.getOrElse(1) { neverMatchPhrase },
-                    extraTokenPhrase3 = extras.getOrElse(2) { neverMatchPhrase },
+                    buildLibrarySearchRawQuery(
+                        matchQuery = matchQuery,
+                        subjectId = subjectId,
+                        sectionId = sectionId,
+                        knowledgePointId = knowledgePointId,
+                        masteryId = masteryId,
+                        sort = sort,
+                        primaryPhrase = primaryPhrase,
+                        extraTokenPhrases = listOf(
+                            extras.getOrElse(0) { neverMatchPhrase },
+                            extras.getOrElse(1) { neverMatchPhrase },
+                            extras.getOrElse(2) { neverMatchPhrase },
+                        ),
+                    ),
                 ),
                 transform = LibraryFtsSearchDao.LibrarySearchHitRow::toCatalogRow,
             ),
         )
+    }
+
+    /**
+     * Builds the FTS4 search statement for [LibraryFtsSearchDao.searchPagingSource]
+     * as a [RoomRawQuery].
+     *
+     * The weighted ranking sums per-column hit indicators expressed as
+     * CASE WHEN EXISTS(...) constructs, which Room's @Query SQL parser
+     * rejects; the statement therefore runs raw. Every dynamic value is
+     * bound positionally through the binding function (never interpolated),
+     * and the secondary sort term is chosen from a fixed whitelist, so no
+     * caller-controlled text reaches the SQL.
+     */
+    private fun buildLibrarySearchRawQuery(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        primaryPhrase: String,
+        extraTokenPhrases: List<String>,
+    ): RoomRawQuery {
+        val bindings = mutableListOf(matchQuery)
+        val filters = StringBuilder()
+        if (subjectId != null) {
+            filters.append("\n  AND catalog.subject = ?")
+            bindings += subjectId
+        }
+        if (sectionId != null) {
+            filters.append(
+                "\n  AND EXISTS (\n" +
+                    "      SELECT 1 FROM problem_classification_binding AS classification\n" +
+                    "      WHERE classification.problem_id = catalog.problem_id\n" +
+                    "        AND classification.basis_revision_id = catalog.problem_revision_id\n" +
+                    "        AND classification.dimension = 'CHAPTER'\n" +
+                    "        AND classification.label_id = ?\n" +
+                    "  )",
+            )
+            bindings += sectionId
+        }
+        if (knowledgePointId != null) {
+            filters.append(
+                "\n  AND EXISTS (\n" +
+                    "      SELECT 1 FROM problem_classification_binding AS classification\n" +
+                    "      WHERE classification.problem_id = catalog.problem_id\n" +
+                    "        AND classification.basis_revision_id = catalog.problem_revision_id\n" +
+                    "        AND classification.dimension = 'KNOWLEDGE'\n" +
+                    "        AND classification.label_id = ?\n" +
+                    "  )",
+            )
+            bindings += knowledgePointId
+        }
+        if (masteryId != null) {
+            filters.append("\n  AND catalog.mastery_id = ?")
+            bindings += masteryId
+        }
+        val ranking = StringBuilder()
+        listOf(
+            "stem_text" to 4,
+            "solution_text" to 3,
+            "knowledge_points" to 2,
+            "subject" to 2,
+            "options_text" to 1,
+            "chapter" to 1,
+            "tags" to 1,
+            "error_reason" to 1,
+            "formula_tokens" to 1,
+        ).forEachIndexed { index, (column, weight) ->
+            if (index > 0) ranking.append("\n  + ")
+            ranking.append(
+                "$weight * (CASE WHEN EXISTS (\n" +
+                    "    SELECT 1 FROM library_search_fts AS ranked\n" +
+                    "    WHERE ranked.docid = content.content_row_id\n" +
+                    "      AND ranked.$column MATCH ?\n" +
+                    ") THEN 1 ELSE 0 END)",
+            )
+            bindings += primaryPhrase
+        }
+        extraTokenPhrases.forEach { phrase ->
+            ranking.append(
+                "\n  + (CASE WHEN EXISTS (\n" +
+                    "    SELECT 1 FROM library_search_fts\n" +
+                    "    WHERE library_search_fts.docid = content.content_row_id\n" +
+                    "      AND library_search_fts MATCH ?\n" +
+                    ") THEN 1 ELSE 0 END)",
+            )
+            bindings += phrase
+        }
+        val sortClause = when (sort) {
+            "RECENTLY_CREATED" -> "catalog.created_at_epoch_millis DESC,\n    "
+            "NEXT_REVIEW" -> "catalog.next_review_at_epoch_millis ASC,\n    "
+            "LEAST_MASTERED" -> "catalog.retrievability ASC,\n    "
+            else -> ""
+        }
+        val sql = "SELECT catalog.*,\n" +
+            "       snippet(library_search_fts, '【', '】', '…', -1, 12) AS snippet\n" +
+            "FROM library_search_fts\n" +
+            "JOIN library_search_content AS content\n" +
+            "    ON content.content_row_id = library_search_fts.docid\n" +
+            "JOIN library_catalog AS catalog\n" +
+            "    ON catalog.problem_revision_id = content.problem_revision_id\n" +
+            "WHERE library_search_fts MATCH ?$filters\n" +
+            "ORDER BY (\n" +
+            "    $ranking\n" +
+            ") DESC,\n" +
+            "    $sortClause" +
+            "catalog.updated_at_epoch_millis DESC,\n" +
+            "    catalog.entry_id ASC"
+        val orderedBindings = bindings.toList()
+        return RoomRawQuery(sql) { statement ->
+            orderedBindings.forEachIndexed { index, value ->
+                statement.bindText(index + 1, value)
+            }
+        }
     }
 
     override suspend fun librarySearchCount(
