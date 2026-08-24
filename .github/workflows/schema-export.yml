@@ -33,7 +33,21 @@ jobs:
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       - name: Run Room schema export (KSP)
-        run: ./gradlew :core:database:kspDebugKotlin --console=plain
+        run: >-
+          ./gradlew :core:database:kspDebugKotlin
+          -Pksp.arg.room.schemaLocation=$GITHUB_WORKSPACE/core/database/schemas
+          --console=plain
+      - name: Diagnose schema export
+        run: |
+          echo "--- exported identityHash:"
+          grep -o '"identityHash": "[a-f0-9]*"' \
+            "core/database/schemas/com.tingyun.smartmistakebook.core.database.StudyDatabase/34.json" || true
+          echo "--- generated Room impl hash:"
+          IMPL=$(find core/database/build -name 'StudyDatabase_Impl.kt' | head -n 1)
+          echo "impl file: $IMPL"
+          grep -o "identityHash.*" "$IMPL" | head -n 3 || true
+          echo "--- schema json files under build dir:"
+          find core/database/build -name '*.json' -path '*chema*' -print || true
       - name: Commit schema changes if any
         run: |
           if [ -n "$(git status --porcelain -- core/database/schemas)" ]; then
