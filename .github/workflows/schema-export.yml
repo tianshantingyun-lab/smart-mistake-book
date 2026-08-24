@@ -96,99 +96,16 @@ jobs:
           # emulator-runner runs each non-empty `script` line in its own
           # `sh -c`, so backslash line continuations do NOT work. Keep the
           # gradle invocation on a single line.
+          # The emulator-runner action terminates the emulator as soon as the
+          # script returns, and runs every line in its own `sh -c` (no env
+          # carry-over, no multi-line commands): the dump retrieval,
+          # reconstruction and commit must all be single lines INSIDE this
+          # block. The rebuild logic lives in tools/schema_rebuild_tmp.py
+          # (temporary, deleted together with this workflow).
           script: |
             ./gradlew :core:database:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.tingyun.smartmistakebook.core.database.SchemaDumpInstrumentedTest --console=plain
-      - name: Pull runtime schema dump from emulator
-        run: |
-          PKG="com.tingyun.smartmistakebook.core.database"
-          adb pull "/sdcard/Android/data/$PKG/files/room34-dump.txt" room34-dump.txt || adb pull "/sdcard/Android/data/$PKG.test/files/room34-dump.txt" room34-dump.txt
-          wc -l room34-dump.txt
-          head -n 1 room34-dump.txt
-      - name: Reconstruct 34.json from runtime dump
-        run: |
-          python3 - <<'PYEOF'
-          import io, json, sys
-
-          DUMP = "room34-dump.txt"
-          SCHEMA = "core/database/schemas/com.tingyun.smartmistakebook.core.database.StudyDatabase/34.json"
-
-          lines = io.open(DUMP, encoding="utf-8").read().split("\n")
-          assert lines and lines[0].startswith("IDENTITY_HASH "), "missing identity hash line"
-          hash_ = lines[0].split(" ", 1)[1].strip()
-
-          tables, views, indices, triggers = {}, {}, {}, {}
-          for ln in lines[1:]:
-              parts = ln.split("\u001f")
-              if len(parts) != 4:
-                  continue
-              typ, name, tbl_name, sql = parts
-              if not sql:
-                  continue
-              if typ == "table":
-                  tables[name] = sql
-              elif typ == "view":
-                  views[name] = sql
-              elif typ == "index":
-                  indices[name] = sql
-              elif typ == "trigger":
-                  triggers[name] = sql
-          print("dump objects: tables=%d views=%d indices=%d triggers=%d"
-                % (len(tables), len(views), len(indices), len(triggers)))
-
-          with io.open(SCHEMA, encoding="utf-8") as f:
-              schema = json.load(f)
-          db = schema["database"]
-          print("identityHash: %s -> %s" % (db.get("identityHash"), hash_))
-          db["identityHash"] = hash_
-
-          missing = []
-          for entity in db.get("entities", []):
-              tname = entity["tableName"]
-              if tname in tables:
-                  entity["createSql"] = tables[tname].replace("`%s`" % tname, "`${TABLE_NAME}`", 1)
-              else:
-                  missing.append("table:" + tname)
-              for index in entity.get("indices", []):
-                  iname = index["name"]
-                  if iname in indices:
-                      index["createSql"] = indices[iname].replace("`%s`" % tname, "`${TABLE_NAME}`", 1)
-                  else:
-                      missing.append("index:" + iname)
-              for i, trig_sql in enumerate(entity.get("contentSyncTriggers", []) or []):
-                  toks = trig_sql.split()
-                  trig_name = toks[5] if len(toks) > 5 and toks[1] == "TRIGGER" else None
-                  if trig_name and trig_name in triggers:
-                      entity["contentSyncTriggers"][i] = triggers[trig_name]
-                  else:
-                      missing.append("trigger:" + str(trig_name))
-          for view in db.get("views", []):
-              vname = view["viewName"]
-              if vname in views:
-                  view["createSql"] = views[vname].replace("`%s`" % vname, "`${VIEW_NAME}`", 1)
-              else:
-                  missing.append("view:" + vname)
-
-          if missing:
-              print("MISSING FROM DUMP:", missing)
-              sys.exit(1)
-
-          db["setupQueries"] = [
-              "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-              "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '%s')" % hash_,
-          ]
-          with io.open(SCHEMA, "w", encoding="utf-8") as f:
-              json.dump(schema, f, indent=2, ensure_ascii=False)
-              f.write("\n")
-          print("34.json reconstructed from runtime dump")
-          PYEOF
-      - name: Commit reconstructed schema
-        run: |
-          if git diff --quiet -- core/database/schemas; then
-            echo "Runtime dump matches exported schema; no changes needed."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add core/database/schemas
-            git commit -m "重新导出 Room schema 对齐实体（运行期转储重建，任务 #39 簇 A）" -m "防回归：变更 @Entity/@DatabaseView 后必须同步重新导出 core/database/schemas/*.json（identityHash 与 createSql），否则 FullMigrationMatrixInstrumentedTest 与各迁移测试会在 CI 失败。本仓库工具链（AGP 9.3.0 / Kotlin 2.3.21 / KSP 2.3.10 / room3 3.0.0）下 KSP exportSchema 无法产出文件，必要时用运行期 sqlite_master 转储重建。"
-            git push || (git pull --rebase && git push)
-          fi
+            adb pull "/sdcard/Android/data/com.tingyun.smartmistakebook.core.database/files/room34-dump.txt" room34-dump.txt || adb pull "/sdcard/Android/data/com.tingyun.smartmistakebook.core.database.test/files/room34-dump.txt" room34-dump.txt
+            wc -l room34-dump.txt
+            head -n 1 room34-dump.txt
+            python3 tools/schema_rebuild_tmp.py
+            if git diff --quiet -- core/database/schemas; then echo "Runtime dump matches exported schema; no changes needed."; else git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"; git add core/database/schemas; git commit -m "重新导出 Room schema 对齐实体（运行期转储重建，任务 #39 簇 A）" -m "防回归：变更 @Entity/@DatabaseView 后必须同步重新导出 core/database/schemas/*.json（identityHash 与 createSql），否则 FullMigrationMatrixInstrumentedTest 与各迁移测试会在 CI 失败。"; git push || (git pull --rebase && git push); fi
