@@ -12,6 +12,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
+import java.nio.file.Files
 import java.security.MessageDigest
 import java.util.zip.CRC32
 import java.util.zip.Inflater
@@ -181,7 +182,7 @@ internal object SmbkArchiveCodec {
      */
     fun validate(
         archive: InputStream,
-        scratchDir: File = createTempDir("smbk-validate").also(File::deleteOnExit),
+        scratchDir: File = Files.createTempDirectory("smbk-validate").toFile().also(File::deleteOnExit),
         limits: SmbkResourceLimits = SmbkResourceLimits.DEFAULT,
     ): BackupValidation {
         require(scratchDir.isDirectory || scratchDir.mkdirs()) {
@@ -499,7 +500,7 @@ internal object SmbkArchiveCodec {
                             ((tail[index - 19].toInt() and 0xFF) shl 8) or
                             ((tail[index - 18].toInt() and 0xFF) shl 16) or
                             ((tail[index - 17].toInt() and 0xFF) shl 24)
-                        if (maybeLocator == ZIP64_EOCD_LOCATOR_SIG) {
+                        if (maybeLocator.toLong() == ZIP64_EOCD_LOCATOR_SIG) {
                             throw ArchiveIntegrityException("不支持 ZIP64 归档")
                         }
                     }
