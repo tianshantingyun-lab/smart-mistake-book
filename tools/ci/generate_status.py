@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render .github/workflows/status.md from real build outputs.
+"""Render docs/status.md from real build outputs.
 
 Values that have no measurement source are rendered as NOT_MEASURED,
 never as fabricated numbers (acceptance-audit 4.2 requirement).
@@ -18,7 +18,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 TEMPLATE = REPO / ".github" / "workflows" / "status-template.md"
-OUTPUT = REPO / ".github" / "workflows" / "status.md"
+OUTPUT = REPO / "docs" / "status.md"
 
 NOT_MEASURED = "NOT_MEASURED"
 

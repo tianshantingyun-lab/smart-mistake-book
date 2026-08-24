@@ -76,13 +76,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: status-report
-          path: .github/workflows/status.md
+          path: docs/status.md
       - name: Commit status report (main pushes only)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/status.md
+          git add docs/status.md
           git diff --cached --quiet || git commit -m "ci: update generated status report for ${GITHUB_SHA}"
           git push
 

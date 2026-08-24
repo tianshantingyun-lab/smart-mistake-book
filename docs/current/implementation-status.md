@@ -1,7 +1,7 @@
 # Implementation Status
 
 > **IMPORTANT**: This document contains hand-written status notes from development sessions.
-> For the authoritative, CI-generated build status, see `.github/workflows/status.md`
+> For the authoritative, CI-generated build status, see `docs/status.md`
 > (auto-generated from commit SHA, test XML results, APK/AAB hashes, and benchmark results).
 > Never claim "build passed" or "tests passed" based on this document alone.
 
