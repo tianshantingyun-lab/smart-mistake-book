@@ -19,47 +19,49 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SchemaDumpInstrumentedTest {
     @Test
-    fun dumpCurrentSchemaShape() = runBlocking {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val databaseName = "schema-dump-${System.nanoTime()}.db"
-        val store = StudyDatabaseFactory.open(context, databaseName)
-        try {
-            // Force the open helper to create all tables.
-            store.libraryCatalogCount("", null, null, null, null)
-        } finally {
-            store.close()
-        }
-        val lines = mutableListOf<String>()
-        SQLiteDatabase.openDatabase(
-            context.getDatabasePath(databaseName).absolutePath,
-            null,
-            SQLiteDatabase.OPEN_READONLY,
-        ).use { raw ->
-            raw.rawQuery(
-                "SELECT identity_hash FROM room_master_table WHERE id = 42",
+    fun dumpCurrentSchemaShape() {
+        runBlocking {
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val databaseName = "schema-dump-${System.nanoTime()}.db"
+            val store = StudyDatabaseFactory.open(context, databaseName)
+            try {
+                // Force the open helper to create all tables.
+                store.libraryCatalogCount("", null, null, null, null)
+            } finally {
+                store.close()
+            }
+            val lines = mutableListOf<String>()
+            SQLiteDatabase.openDatabase(
+                context.getDatabasePath(databaseName).absolutePath,
                 null,
-            ).use { cursor ->
-                if (cursor.moveToFirst()) {
-                    lines += "IDENTITY_HASH " + cursor.getString(0)
+                SQLiteDatabase.OPEN_READONLY,
+            ).use { raw ->
+                raw.rawQuery(
+                    "SELECT identity_hash FROM room_master_table WHERE id = 42",
+                    null,
+                ).use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        lines += "IDENTITY_HASH " + cursor.getString(0)
+                    }
+                }
+                raw.rawQuery(
+                    "SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY type, name",
+                    null,
+                ).use { cursor ->
+                    while (cursor.moveToNext()) {
+                        lines += listOf(
+                            cursor.getString(0),
+                            cursor.getString(1),
+                            cursor.getString(2),
+                            cursor.getString(3) ?: "",
+                        ).joinToString("\u001f")
+                    }
                 }
             }
-            raw.rawQuery(
-                "SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY type, name",
-                null,
-            ).use { cursor ->
-                while (cursor.moveToNext()) {
-                    lines += listOf(
-                        cursor.getString(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(3) ?: "",
-                    ).joinToString("\u001f")
-                }
-            }
+            val dump = File(context.getExternalFilesDir(null), "room34-dump.txt")
+            dump.writeText(lines.joinToString("\n"))
+            println("schema-dump written to ${dump.absolutePath} lines=${lines.size}")
+            context.deleteDatabase(databaseName)
         }
-        val dump = File(context.getExternalFilesDir(null), "room34-dump.txt")
-        dump.writeText(lines.joinToString("\n"))
-        println("schema-dump written to ${dump.absolutePath} lines=${lines.size}")
-        context.deleteDatabase(databaseName)
     }
 }
