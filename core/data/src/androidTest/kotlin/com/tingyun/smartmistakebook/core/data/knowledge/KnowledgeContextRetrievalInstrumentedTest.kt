@@ -197,8 +197,16 @@ class KnowledgeContextRetrievalInstrumentedTest {
             )
 
             store.commitProjection(masteryProjection(points))
-            val masteryReadMillis = mutableListOf<Long>()
+            // 冷启动预热：提交投影后的首次快照读取携带一次性成本（语句准备、
+            // 连接与缓存预热、JIT）；先跑足量预热轮次且预热结果不计入统计，
+            // 避免冷样本把 p95 拉高。
             var masteryCount = 0
+            repeat(MASTERY_READ_WARMUP_COUNT) {
+                masteryCount = checkNotNull(
+                    store.readCurrentLearnerSnapshot(PROJECTION_NAME, LEARNER_ID),
+                ).snapshot.knowledgeMasteryStates.size
+            }
+            val masteryReadMillis = mutableListOf<Long>()
             repeat(PERFORMANCE_SAMPLE_COUNT) {
                 val started = SystemClock.elapsedRealtimeNanos()
                 masteryCount = checkNotNull(
@@ -439,6 +447,7 @@ class KnowledgeContextRetrievalInstrumentedTest {
         const val PROJECTOR_VERSION = "knowledge-performance-projector-v1"
         const val LEARNER_ID = "learner:knowledge-performance"
         const val PERFORMANCE_SAMPLE_COUNT = 10
+        const val MASTERY_READ_WARMUP_COUNT = 3
         const val RECALL_P95_BUDGET_MILLIS = 150
         const val MASTERY_READ_P95_BUDGET_MILLIS = 250
     }

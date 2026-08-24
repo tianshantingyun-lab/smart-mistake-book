@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import androidx.room3.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -29,6 +30,7 @@ class PerformanceGateTest {
 
     private lateinit var database: StudyDatabase
     private lateinit var context: Context
+    private val databaseName = "performance-test-${System.nanoTime()}.db"
 
     @Before
     fun setup() {
@@ -36,7 +38,7 @@ class PerformanceGateTest {
         database = Room.databaseBuilder(
             context,
             StudyDatabase::class.java,
-            "performance-test-${System.nanoTime()}.db",
+            databaseName,
         ).build()
     }
 
@@ -154,17 +156,28 @@ class PerformanceGateTest {
     fun explainQueryPlanNoFullTableScan() = runBlocking {
         insertTestData(10_000)
 
-        // FTS 重构后 RoomDatabase.query(String) 不再可用；改走 room3 的原始
-        // prepared-statement 连接执行同一条 EXPLAIN QUERY PLAN，仍然读取
-        // detail 列（索引 3），全表扫描断言语义保持不变。
-        var plan = ""
+        // FTS 重构后 RoomDatabase.query(String) 不再可用；且 EXPLAIN QUERY PLAN
+        // 走 room3 prepared-statement 的 step 路径会被 framework 驱动抛出
+        // "Queries can be performed using SQLiteDatabase query or rawQuery
+        // methods only"。先借 Room 打开一次数据库（确保文件已创建），再用
+        // android.database.sqlite.SQLiteDatabase 打开同一文件，以 rawQuery 执行
+        // EXPLAIN QUERY PLAN 并消费 Cursor；读取 detail 列（索引 3）与
+        // 全表扫描断言语义保持不变。
         database.useConnection(isReadOnly = true) { connection ->
-            connection.usePrepared(
+            connection.usePrepared("SELECT 1") { statement -> statement.step() }
+        }
+        val plan = SQLiteDatabase.openDatabase(
+            context.getDatabasePath(databaseName).absolutePath,
+            null,
+            SQLiteDatabase.OPEN_READONLY,
+        ).use { rawDatabase ->
+            rawDatabase.rawQuery(
                 "EXPLAIN QUERY PLAN SELECT * FROM library_catalog WHERE title LIKE '%test%'",
-            ) { statement ->
-                plan = buildString {
-                    while (statement.step()) {
-                        appendLine(statement.getText(3))
+                null,
+            ).use { cursor ->
+                buildString {
+                    while (cursor.moveToNext()) {
+                        appendLine(cursor.getString(3))
                     }
                 }
             }
