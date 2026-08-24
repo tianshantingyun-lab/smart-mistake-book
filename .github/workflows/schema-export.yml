@@ -32,34 +32,31 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
-      - name: Temporarily switch to direct room.schemaLocation export
+      - name: Temporarily pass explicit room.internal schema dirs
         run: |
           python3 - <<'PYEOF'
-          import re
           p = "core/database/build.gradle.kts"
           text = open(p, encoding="utf-8").read()
-          text = text.replace("    alias(libs.plugins.androidx.room3)\n", "")
-          text = re.sub(r"room3 \{[^}]*\}\n", "", text)
           text += '''
-          // TEMPORARY (task #39): direct schema export, plugin wiring produced no files.
+          // TEMPORARY (task #39): the room3 plugin wiring produced no schema files
+          // (copyRoomSchemas NO-SOURCE); pass the internal dirs explicitly.
           ksp {
-              arg("room.schemaLocation", "$projectDir/schemas")
+              arg("room.internal.schemaOutput", layout.buildDirectory.dir("intermediates/room/schemas/kspDebugKotlin").get().asFile.absolutePath)
+              arg("room.internal.schemaInput", projectDir.resolve("schemas").absolutePath)
           }
           '''
           open(p, "w", encoding="utf-8").write(text)
           print(open(p, encoding="utf-8").read())
           PYEOF
       - name: Run Room schema export (KSP)
-        run: ./gradlew :core:database:kspDebugKotlin --console=plain
+        run: ./gradlew :core:database:kspDebugKotlin :core:database:copyRoomSchemas --console=plain
       - name: Diagnose schema export
         run: |
           echo "--- exported identityHash:"
           grep -o '"identityHash": "[a-f0-9]*"' \
             "core/database/schemas/com.tingyun.smartmistakebook.core.database.StudyDatabase/34.json" || true
-          echo "--- generated Room impl hash:"
-          IMPL=$(find core/database/build -name 'StudyDatabase_Impl.kt' | head -n 1)
-          echo "impl file: $IMPL"
-          grep -oE "[a-f0-9]{32}" "$IMPL" | sort -u || true
+          echo "--- json files produced under build:"
+          find core/database/build -name '*.json' -print | head -n 40 || true
           echo "--- schema dir status:"
           git status --porcelain -- core/database/schemas || true
       - name: Commit schema changes if any
