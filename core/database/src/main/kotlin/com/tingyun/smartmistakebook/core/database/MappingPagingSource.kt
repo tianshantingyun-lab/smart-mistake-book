@@ -21,5 +21,9 @@ internal class MappingPagingSource<Value : Any, R : Any>(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, R>): Int? = null
+    override fun getRefreshKey(state: PagingState<Int, R>): Int? {
+        // Keys are page offsets shared by both type domains, so the anchor
+        // position itself is the closest refresh index to the viewport.
+        return state.anchorPosition
+    }
 }

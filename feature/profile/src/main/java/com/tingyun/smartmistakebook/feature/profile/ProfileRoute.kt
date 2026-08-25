@@ -286,11 +286,8 @@ private fun WeaknessRow(
 ) {
     // Qualitative bands only: precise probabilities require a
     // calibrated model (audit section 6.4), aligned with ReviewRoute.
-    val masteryLabel = when {
-        mastery >= 0.7f -> "较稳"
-        mastery >= 0.4f -> "一般"
-        else -> "薄弱"
-    }
+    val masteryLabel =
+        com.tingyun.smartmistakebook.core.ui.masteryBandLabel(mastery.toDouble())
     Row(
         modifier = modifier
             .fillMaxWidth()

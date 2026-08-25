@@ -12,7 +12,7 @@ import com.tingyun.smartmistakebook.core.model.LearningModelVersion
  */
 class HLRShadowModeManager(
     private val predictor: HalfLifeRegressionPredictor = HalfLifeRegressionPredictor(),
-    private val enabled: Boolean = false,
+    private val enabled: Boolean = true,
 ) {
     /**
      * Model version for shadow predictions. Must be distinct from the
@@ -41,7 +41,7 @@ class HLRShadowModeManager(
         val halfLife = predictor.computeHalfLife(features)
 
         return HLRShadowPrediction(
-            predictionId = "shadow-${practiceUnitId}-${System.currentTimeMillis()}",
+            predictionId = "shadow-${practiceUnitId}-${System.currentTimeMillis()}-${java.util.UUID.randomUUID()}",
             modelVersion = shadowModelVersion,
             practiceUnitId = practiceUnitId,
             features = features,

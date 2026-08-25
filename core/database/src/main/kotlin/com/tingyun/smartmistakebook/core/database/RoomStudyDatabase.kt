@@ -2968,7 +2968,13 @@ private class RefreshingPagingSource<T : Any>(
         return delegate.getRefreshKey(state)
     }
     override suspend fun load(params: PagingSource.LoadParams<Int>): PagingSource.LoadResult<Int, T> {
-        runCatching { beforeLoad() }
+        try {
+            beforeLoad()
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            // Projection refresh is best-effort; delegate load still proceeds.
+        }
         return delegate.load(params)
     }
 }

@@ -29,3 +29,4 @@ website/coverage/
 tmp_*.py
 *.log
 benchmark/build/
+.qoder/
