@@ -77,16 +77,32 @@ class RoomLibraryCatalogRepository(
         limit: Int,
     ): LibraryCatalogPage = withContext(Dispatchers.IO) {
         require(offset >= 0 && limit > 0) { "Library page window is invalid" }
-        val page = database.libraryCatalogPage(
-            searchText = query.searchText.trim(),
-            subjectId = query.subjectId,
-            sectionId = query.sectionId,
-            knowledgePointId = query.knowledgePointId,
-            masteryId = query.masteryId,
-            sort = query.sort.name,
-            offset = offset,
-            limit = limit,
-        )
+        val searchText = query.searchText.trim()
+        val tokens = CjkTextTokenizer.tokens(searchText)
+        val page = if (tokens.isNotEmpty()) {
+            database.librarySearchPage(
+                matchQuery = CjkTextTokenizer.matchExpression(searchText),
+                subjectId = query.subjectId,
+                sectionId = query.sectionId,
+                knowledgePointId = query.knowledgePointId,
+                masteryId = query.masteryId,
+                sort = query.sort.name,
+                tokens = tokens,
+                offset = offset,
+                limit = limit,
+            )
+        } else {
+            database.libraryCatalogPage(
+                searchText = searchText,
+                subjectId = query.subjectId,
+                sectionId = query.sectionId,
+                knowledgePointId = query.knowledgePointId,
+                masteryId = query.masteryId,
+                sort = query.sort.name,
+                offset = offset,
+                limit = limit,
+            )
+        }
         LibraryCatalogPage(
             items = page.map(LibraryCatalogRow::toCatalogItem),
             totalCount = totalCount(query),
@@ -99,14 +115,28 @@ class RoomLibraryCatalogRepository(
         query: LibraryQuery,
         facet: LibraryFacetKind,
     ): List<LibraryFacetCount> = withContext(Dispatchers.IO) {
-        database.libraryCatalogFacets(
-            searchText = query.searchText.trim(),
-            subjectId = query.subjectId,
-            sectionId = query.sectionId,
-            knowledgePointId = query.knowledgePointId,
-            masteryId = query.masteryId,
-            facet = facet.name,
-        ).map { row ->
+        val searchText = query.searchText.trim()
+        val tokens = CjkTextTokenizer.tokens(searchText)
+        val rows = if (tokens.isNotEmpty()) {
+            database.librarySearchFacets(
+                matchQuery = CjkTextTokenizer.matchExpression(searchText),
+                subjectId = query.subjectId,
+                sectionId = query.sectionId,
+                knowledgePointId = query.knowledgePointId,
+                masteryId = query.masteryId,
+                facet = facet.name,
+            )
+        } else {
+            database.libraryCatalogFacets(
+                searchText = searchText,
+                subjectId = query.subjectId,
+                sectionId = query.sectionId,
+                knowledgePointId = query.knowledgePointId,
+                masteryId = query.masteryId,
+                facet = facet.name,
+            )
+        }
+        rows.map { row ->
             LibraryFacetCount(
                 id = row.id,
                 label = if (facet == LibraryFacetKind.MASTERY) {

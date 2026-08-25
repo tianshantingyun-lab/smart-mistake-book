@@ -149,8 +149,10 @@ internal class RoomStudyDatabase(
         sort: String,
         primaryPhrase: String,
         extraTokenPhrases: List<String>,
+        limit: Int? = null,
+        offset: Int? = null,
     ): RoomRawQuery {
-        val bindings = mutableListOf(matchQuery)
+        val bindings = mutableListOf<Any>(matchQuery)
         val filters = StringBuilder()
         if (subjectId != null) {
             filters.append("\n  AND catalog.subject = ?")
@@ -222,6 +224,10 @@ internal class RoomStudyDatabase(
             "LEAST_MASTERED" -> "catalog.retrievability ASC,\n    "
             else -> ""
         }
+        if (limit != null) {
+            bindings += limit.toLong()
+            bindings += offset!!.toLong()
+        }
         val sql = "SELECT catalog.*,\n" +
             "       snippet(library_search_fts, '【', '】', '…', -1, 12) AS snippet\n" +
             "FROM library_search_fts\n" +
@@ -235,11 +241,16 @@ internal class RoomStudyDatabase(
             ") DESC,\n" +
             "    $sortClause" +
             "catalog.updated_at_epoch_millis DESC,\n" +
-            "    catalog.entry_id ASC"
+            "    catalog.entry_id ASC" +
+            if (limit != null) "\nLIMIT ? OFFSET ?" else ""
         val orderedBindings = bindings.toList()
         return RoomRawQuery(sql) { statement ->
             orderedBindings.forEachIndexed { index, value ->
-                statement.bindText(index + 1, value)
+                when (value) {
+                    is Int -> statement.bindLong(index + 1, value.toLong())
+                    is Long -> statement.bindLong(index + 1, value)
+                    else -> statement.bindText(index + 1, value as String)
+                }
             }
         }
     }
@@ -260,6 +271,83 @@ internal class RoomStudyDatabase(
             knowledgePointId = knowledgePointId,
             masteryId = masteryId,
         )
+    }
+
+    override suspend fun librarySearchPage(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        tokens: List<String>,
+        offset: Int,
+        limit: Int,
+    ): List<LibraryCatalogRow> {
+        require(matchQuery.isNotBlank()) { "FTS search needs a non-blank MATCH expression" }
+        require(tokens.isNotEmpty()) { "FTS search needs at least one query token" }
+        refreshLibrarySearchProjection()
+        val primaryPhrase = CjkTextTokenizer.quotedPhrase(tokens.first())
+        val neverMatchPhrase = CjkTextTokenizer.quotedPhrase("\uFFFD")
+        val extras = tokens.drop(1).take(3).map(CjkTextTokenizer::quotedPhrase)
+        return database.libraryFtsSearchDao().searchPage(
+            buildLibrarySearchRawQuery(
+                matchQuery = matchQuery,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+                sort = sort,
+                primaryPhrase = primaryPhrase,
+                extraTokenPhrases = listOf(
+                    extras.getOrElse(0) { neverMatchPhrase },
+                    extras.getOrElse(1) { neverMatchPhrase },
+                    extras.getOrElse(2) { neverMatchPhrase },
+                ),
+                limit = limit,
+                offset = offset,
+            ),
+        ).map { it.toCatalogRow() }
+    }
+
+    override suspend fun librarySearchFacets(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        facet: String,
+    ): List<LibraryFacetCountRecord> {
+        require(matchQuery.isNotBlank()) { "FTS search needs a non-blank MATCH expression" }
+        refreshLibrarySearchProjection()
+        val dao = database.libraryFtsSearchDao()
+        return when (facet) {
+            "SUBJECT" -> dao.searchSubjectFacets(
+                matchQuery = matchQuery,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+            )
+            "SECTION" -> dao.searchSectionFacets(
+                matchQuery = matchQuery,
+                subjectId = subjectId,
+                knowledgePointId = knowledgePointId,
+                masteryId = masteryId,
+            )
+            "KNOWLEDGE_POINT" -> dao.searchKnowledgeFacets(
+                matchQuery = matchQuery,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                masteryId = masteryId,
+            )
+            "MASTERY" -> dao.searchMasteryFacets(
+                matchQuery = matchQuery,
+                subjectId = subjectId,
+                sectionId = sectionId,
+                knowledgePointId = knowledgePointId,
+            )
+            else -> error("Unsupported library facet kind: $facet")
+        }.map(LibraryFacetCountRow::toRecord)
     }
 
     /**

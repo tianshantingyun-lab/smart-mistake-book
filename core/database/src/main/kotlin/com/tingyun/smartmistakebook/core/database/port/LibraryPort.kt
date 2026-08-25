@@ -73,6 +73,30 @@ interface LibraryReadPort {
         masteryId: String?,
     ): Int = error("FTS library search is not backed by this database port")
 
+    /** Offset-paged twin of [librarySearchPagingSource] with identical ranking. */
+    suspend fun librarySearchPage(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        sort: String,
+        tokens: List<String>,
+        offset: Int,
+        limit: Int,
+    ): List<LibraryCatalogRow> = error("FTS library search is not backed by this database port")
+
+    /** FTS-scoped facet counts ([facet] mirrors LibraryQueryDao facet kinds). */
+    suspend fun librarySearchFacets(
+        matchQuery: String,
+        subjectId: String?,
+        sectionId: String?,
+        knowledgePointId: String?,
+        masteryId: String?,
+        facet: String,
+    ): List<LibraryFacetCountRecord> =
+        error("FTS library search is not backed by this database port")
+
     /**
      * Drains the library search outbox and applies pending revisions to the
      * FTS projection row by row. Safe to call repeatedly; incremental by

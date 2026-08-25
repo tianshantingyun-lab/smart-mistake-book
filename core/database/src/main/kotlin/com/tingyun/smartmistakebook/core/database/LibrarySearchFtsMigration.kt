@@ -114,5 +114,22 @@ internal val LIBRARY_SEARCH_MIGRATION_31_32 = object : Migration(31, 32) {
             GROUP BY revision.revision_id
             """.trimIndent(),
         )
+        // Outbox triggers must exist from the moment the migration lands:
+        // without them, revisions written between the upgrade and the first
+        // search projection refresh never queue an outbox row and silently
+        // stay missing from the FTS index (audit N1). Byte-identical to the
+        // lazy ensureSearchTriggers() statements in RoomStudyDatabase.
+        connection.execSQL(
+            "CREATE TRIGGER IF NOT EXISTS library_search_outbox_revision_insert " +
+                "AFTER INSERT ON `problem_revision` BEGIN " +
+                "INSERT INTO `library_search_outbox` (`revision_id`, `queued_at_epoch_millis`) " +
+                "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
+        )
+        connection.execSQL(
+            "CREATE TRIGGER IF NOT EXISTS library_search_outbox_revision_update " +
+                "AFTER UPDATE ON `problem_revision` BEGIN " +
+                "INSERT INTO `library_search_outbox` (`revision_id`, `queued_at_epoch_millis`) " +
+                "VALUES (NEW.`revision_id`, NEW.`created_at_epoch_millis`); END",
+        )
     }
 }
