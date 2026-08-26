@@ -35,6 +35,9 @@ interface PredictionAuditPort {
         modelId: String,
         modelVersion: String,
     ): List<ResolvedStudentModelPredictionRecord> = emptyList()
+
+    /** Last observed latency (ms) for a practice unit, used as HLR latency feature. */
+    suspend fun findLastPredictionLatencyMs(practiceUnitId: String): Long? = null
 }
 
 /**

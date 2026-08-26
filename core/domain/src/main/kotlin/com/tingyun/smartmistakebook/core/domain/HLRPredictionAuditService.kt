@@ -80,6 +80,7 @@ class HLRPredictionAuditService(
     fun planPredictions(
         request: ReviewPlanningRequest,
         scoredPracticeUnitIds: List<String>,
+        lastResponseLatenciesSeconds: Map<String, Int?> = emptyMap(),
     ): List<RecallPredictionAudit> {
         val now = request.planningAtEpochMillis
         val snapshot = request.learnerSnapshot
@@ -98,6 +99,7 @@ class HLRPredictionAuditService(
                         mastery = mastery,
                         difficulty = candidate.difficulty,
                         nowEpochMillis = now,
+                        lastResponseDurationSeconds = lastResponseLatenciesSeconds[practiceUnitId],
                     ),
                     deltaSeconds = (now - memory.lastReviewedAtEpochMillis) / 1000.0,
                     nowEpochMillis = now,

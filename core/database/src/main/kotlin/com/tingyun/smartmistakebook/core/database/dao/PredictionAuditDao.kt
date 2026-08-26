@@ -75,6 +75,20 @@ internal interface PredictionAuditDao {
 
     @Query("SELECT COUNT(*) FROM student_model_prediction WHERE resolved = 1")
     suspend fun countResolved(): Int
+
+    /** Last observed latency (ms) for a practice unit, used as HLR latency feature. */
+    @Query(
+        """
+        SELECT o.response_latency_ms
+        FROM prediction_outcome o
+        JOIN student_model_prediction p ON p.prediction_id = o.prediction_id
+        WHERE p.practice_unit_id = :practiceUnitId
+          AND o.response_latency_ms IS NOT NULL
+        ORDER BY o.observed_at_epoch_millis DESC
+        LIMIT 1
+        """,
+    )
+    suspend fun findLastLatencyMs(practiceUnitId: String): Long?
 }
 
 /**

@@ -829,6 +829,9 @@ internal class RoomStudyDatabase(
                 )
             }
 
+    override suspend fun findLastPredictionLatencyMs(practiceUnitId: String): Long? =
+        database.predictionAuditDao().findLastLatencyMs(practiceUnitId)
+
     override suspend fun recordVisualInteractionAttempt(
         attempt: VisualInteractionAttemptRecord,
     ) {

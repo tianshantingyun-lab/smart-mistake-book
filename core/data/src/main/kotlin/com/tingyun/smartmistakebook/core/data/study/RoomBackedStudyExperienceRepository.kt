@@ -661,9 +661,17 @@ class RoomBackedStudyExperienceRepository(
         plan: ReviewPlan,
     ) {
         try {
+            val latenciesSeconds = plan.queueItems.associate { item ->
+                val latencyMs = runCatching {
+                    database.findLastPredictionLatencyMs(item.practiceUnitId)
+                }.getOrNull()
+                val seconds = latencyMs?.let { (it / 1000L).toInt().coerceIn(0, 300) }
+                item.practiceUnitId to seconds
+            }
             predictionAuditService.planPredictions(
                 request = request,
                 scoredPracticeUnitIds = plan.queueItems.map { it.practiceUnitId },
+                lastResponseLatenciesSeconds = latenciesSeconds,
             ).forEach { audit -> predictionAuditSink.record(audit) }
         } catch (cancelled: CancellationException) {
             throw cancelled
