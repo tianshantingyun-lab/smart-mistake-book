@@ -152,13 +152,16 @@ internal fun JsonObject.toAssessment(modelVersion: String): CaptureAssessment {
     val actions = array("suggestedActions").map { item ->
         enumValue<CaptureAssessmentAction>(item.jsonPrimitive.content)
     }.distinct()
+    // questionRegions are page-local normalized coordinates; a valid response
+    // must satisfy the model-layer contract enforced inside CaptureAssessment.
+    val questionRegions = optionalArray("questionRegions").map { item ->
+        item.objectValue().toRegion()
+    }
     return CaptureAssessment(
         decision = decision,
         issues = issues,
         suggestedActions = actions,
-        questionRegions = optionalArray("questionRegions").map { item ->
-            item.objectValue().toRegion()
-        },
+        questionRegions = questionRegions,
         followingPageRelations = optionalArray("followingPageRelations").map { relation ->
             enumValue<CapturePageRelation>(relation.jsonPrimitive.content)
         },

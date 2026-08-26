@@ -72,7 +72,8 @@ internal object OpenAiModelTaskAdapters {
             "questionRegions数组，每项仅含left/top/right/bottom四个0到1坐标。" +
             "若画面包含2到12道互相独立的题，必须返回SPLIT，将MULTIPLE_QUESTIONS标为BLOCKING，" +
             "questionRegions按页面阅读顺序给出每道题的完整外接区域，包含题干、选项、图形和作答区，" +
-            "区域之间不得大面积重叠；其他decision必须返回空questionRegions。" +
+            "区域之间不得大面积重叠；否则questionRegions必须为空数组。" +
+            "其他decision必须返回空questionRegions。" +
             "同一道题跨页不算多题，内容未拍全时返回NEED_MORE_IMAGE。" +
             pageRelationRule
     }
