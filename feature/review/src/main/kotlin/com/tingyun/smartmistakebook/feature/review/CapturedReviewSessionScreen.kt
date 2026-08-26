@@ -150,6 +150,23 @@ fun CapturedReviewSessionScreen(
         OutlinedButton(
             onClick = {
                 state.submit(
+                    report = StudyReviewSelfReport.RECALLED_WITH_EFFORT,
+                    practiceUnitId = entry.practiceUnitId,
+                    presentationId = presentationId,
+                    submit = onSubmit,
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("review_self_report_effort"),
+            enabled = state.canSubmit(StudyReviewSelfReport.RECALLED_WITH_EFFORT),
+        ) {
+            Text(state.actionText(StudyReviewSelfReport.RECALLED_WITH_EFFORT))
+        }
+        Spacer(Modifier.height(10.dp))
+        OutlinedButton(
+            onClick = {
+                state.submit(
                     report = StudyReviewSelfReport.NEEDS_HELP,
                     practiceUnitId = entry.practiceUnitId,
                     presentationId = presentationId,
@@ -212,8 +229,13 @@ internal class CapturedReviewSessionViewModel(
         status == CapturedReviewSubmissionStatus.RECORDING && pendingReport() == report ->
             "正在保存…"
         status == CapturedReviewSubmissionStatus.FAILED && pendingReport() == report ->
-            if (report == StudyReviewSelfReport.RECALL_COMPLETED) "重新记录独立完成" else "重新记录并去讲题"
+            when (report) {
+                StudyReviewSelfReport.RECALL_COMPLETED -> "重新记录独立完成"
+                StudyReviewSelfReport.RECALLED_WITH_EFFORT -> "重新记录勉强做对"
+                StudyReviewSelfReport.NEEDS_HELP -> "重新记录并去讲题"
+            }
         report == StudyReviewSelfReport.RECALL_COMPLETED -> "我已独立做完"
+        report == StudyReviewSelfReport.RECALLED_WITH_EFFORT -> "勉强做对，但费了些劲"
         else -> "这里还卡住，去讲题"
     }
 

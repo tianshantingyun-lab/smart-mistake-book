@@ -226,6 +226,9 @@ sealed interface StudyReviewAdvanceResult {
 /** A one-tap report about the student's own saved question, never a claim of verified correctness. */
 enum class StudyReviewSelfReport {
     RECALL_COMPLETED,
+
+    /** Struggled through but got there unaided — feeds the HLR assisted-correct bucket. */
+    RECALLED_WITH_EFFORT,
     NEEDS_HELP,
 }
 

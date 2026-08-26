@@ -1457,6 +1457,20 @@ class RoomBackedStudyExperienceRepository(
                 memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
             )
 
+            // Middle tier (QA item B2): struggled through unaided. Positive
+            // but weaker than clean recall; feeds the HLR assistedCorrect
+            // feature so three-tier self-reports can calibrate the
+            // independent/assisted/lapse split.
+            StudyReviewSelfReport.RECALLED_WITH_EFFORT -> SelfReportDecision(
+                choiceMarkdown = "勉强做对",
+                evidence = LearningEvidence(
+                    direction = LearningEvidenceDirection.POSITIVE,
+                    weight = SELF_REPORTED_EFFORT_RECALL_WEIGHT,
+                    reason = LearningEvidenceReason.CORRECT_ON_RETRY,
+                ),
+                memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
+            )
+
             StudyReviewSelfReport.NEEDS_HELP -> SelfReportDecision(
                 choiceMarkdown = "这里还卡住",
                 evidence = LearningEvidence(
@@ -1536,6 +1550,7 @@ class RoomBackedStudyExperienceRepository(
         private const val MAX_REPEAT_CAPTURE_BONUS_COUNT = 4
         private const val MAX_KNOWLEDGE_TOPIC_DEPTH = 6
         private const val SELF_REPORTED_RECALL_WEIGHT = 0.35
+        private const val SELF_REPORTED_EFFORT_RECALL_WEIGHT = 0.25
         private const val SELF_REPORTED_STUCK_WEIGHT = 0.5
         private const val VISUAL_SATISFIED_WEIGHT = 0.25
         private const val VISUAL_VIOLATED_WEIGHT = 0.5

@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import kotlin.math.ln
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.LearningModelVersion
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
@@ -127,6 +128,7 @@ internal fun extractHlrFeaturesForShadow(
     mastery: KnowledgeMasteryState?,
     difficulty: Double,
     nowEpochMillis: Long,
+    lastResponseDurationSeconds: Int? = null,
 ): HLRFeatures {
     val daysSinceFirstSeen = (nowEpochMillis -
         (memory.lastReviewedAtEpochMillis - memory.stabilityDays * 86_400_000L))
@@ -144,7 +146,14 @@ internal fun extractHlrFeaturesForShadow(
         timeBetweenReviewsDays = timeBetweenReviewsDays,
         daysSinceFirstSeen = daysSinceFirstSeen.coerceAtLeast(0.0),
         consecutiveCorrectStreak = consecutiveCorrectStreak,
-        lastResponseLatencyNormalized = 0.0,
+        // Log-normalized against a 5-minute cap so slow handwriting tops out
+        // near 1.0 while instant recalls sit near 0 (QA item B1).
+        lastResponseLatencyNormalized = lastResponseDurationSeconds
+            ?.let { seconds ->
+                val clamped = seconds.coerceIn(0, 300)
+                ln(1.0 + clamped) / ln(301.0)
+            }
+            ?: 0.0,
     )
 }
 
