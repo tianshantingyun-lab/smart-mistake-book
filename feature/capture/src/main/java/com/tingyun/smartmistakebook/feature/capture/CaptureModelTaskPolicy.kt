@@ -11,9 +11,9 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 
 internal const val CAPTURE_SPLIT_NEEDS_SINGLE_PAGE =
-    "这页暂时不能自动整理，原图已经保留。"
+    "这页暂时不能自动整理，原图已经保留。请先裁剪图片，只保留一道题再录入。"
 internal const val CAPTURE_SPLIT_FAILED =
-    "这页还没整理好，原图已经保留。"
+    "这页还没整理好，原图已经保留。请先裁剪图片，只保留一道题再录入。"
 
 internal fun captureFailedTaskClearsAuthorization(status: ModelTaskStatus?): Boolean =
     status == ModelTaskStatus.RETRYABLE_FAILURE ||

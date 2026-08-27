@@ -169,8 +169,6 @@ class RootTutorFailClosedInstrumentedTest {
         waitForTag("library_empty_state")
         waitForText("还没有错题")
         composeRule.onAllNodesWithTag("library_capture_button").assertCountEquals(1)
-        composeRule.onAllNodesWithTag("library_pending_review").assertCountEquals(0)
-        composeRule.onAllNodesWithText("没有待处理题目").assertCountEquals(0)
         composeRule.onAllNodesWithTag("library_search_field").assertCountEquals(0)
         composeRule.onAllNodesWithText(TUTOR_TITLE, substring = false).assertCountEquals(0)
 

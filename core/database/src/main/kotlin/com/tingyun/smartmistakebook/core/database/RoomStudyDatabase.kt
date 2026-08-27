@@ -68,6 +68,7 @@ internal class RoomStudyDatabase(
 
     private val problemOrganization = RoomProblemOrganizationStore(database)
     private val batchImports = RoomBatchImportStore(database)
+    private val splitImports = RoomSplitImportStore(database)
     override fun observeMistakes(): Flow<List<MistakeRecord>> =
         database.problemDao().observeActiveMistakes().map { rows -> rows.map(MistakeRow::toRecord) }
 
@@ -593,6 +594,56 @@ internal class RoomStudyDatabase(
         database.invalidationTracker.createFlow(*PENDING_CAPTURE_TABLES).mapLatest {
             loadPendingCaptureBatch()
         }
+
+    override fun observeActiveSplitImports(): Flow<List<SplitImportJobRecord>> =
+        splitImports.observe()
+
+    override suspend fun readSplitImportJob(jobId: String): SplitImportJobRecord? {
+        require(jobId.isNotBlank())
+        return splitImports.read(jobId)
+    }
+
+    override suspend fun createSplitImportJob(
+        command: CreateSplitImportJobCommand,
+        questions: List<SplitImportQuestionSeed>,
+    ): SplitImportJobRecord = splitImports.create(command, questions)
+
+    override suspend fun markSplitImportReady(
+        jobId: String,
+        questionCount: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = splitImports.markReady(jobId, questionCount, occurredAtEpochMillis)
+
+    override suspend fun updateSplitImportSelection(
+        jobId: String,
+        questionOrdinal: Int,
+        selected: Boolean,
+        occurredAtEpochMillis: Long,
+    ): Boolean = splitImports.updateSelected(jobId, questionOrdinal, selected, occurredAtEpochMillis)
+
+    override suspend fun markSplitImportQuestionConfirmed(
+        jobId: String,
+        questionOrdinal: Int,
+        confirmState: String,
+        splitDraftId: String?,
+        occurredAtEpochMillis: Long,
+    ): Boolean = splitImports.markQuestionConfirmed(
+        jobId,
+        questionOrdinal,
+        confirmState,
+        splitDraftId,
+        occurredAtEpochMillis,
+    )
+
+    override suspend fun completeSplitImportJob(
+        jobId: String,
+        occurredAtEpochMillis: Long,
+    ): Boolean = splitImports.complete(jobId, occurredAtEpochMillis)
+
+    override suspend fun abandonSplitImportJob(
+        jobId: String,
+        occurredAtEpochMillis: Long,
+    ): Boolean = splitImports.abandon(jobId, occurredAtEpochMillis)
 
     override fun observeBatchImportJobs(): Flow<List<BatchImportJobRecord>> = batchImports.observe()
 

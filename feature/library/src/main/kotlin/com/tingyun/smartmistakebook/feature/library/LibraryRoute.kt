@@ -24,7 +24,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.PictureAsPdf
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Icon
@@ -63,10 +62,8 @@ import com.tingyun.smartmistakebook.core.ui.SubjectIcon
 fun LibraryRoute(
     entries: List<StudyCatalogEntry>,
     catalogRepository: LibraryCatalogRepository? = null,
-    pendingCaptureCount: Int,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
-    onOpenPendingCaptures: () -> Unit,
     onExportVisible: (List<String>) -> Unit,
     onOpenItem: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -86,10 +83,8 @@ fun LibraryRoute(
             entries.size
         },
         usePaging = catalogRepository != null,
-        pendingCaptureCount = pendingCaptureCount,
         onCapture = onCapture,
         onBatchImport = onBatchImport,
-        onOpenPendingCaptures = onOpenPendingCaptures,
         onExportVisible = onExportVisible,
         onOpenItem = onOpenItem,
         viewModel = libraryViewModel,
@@ -101,10 +96,8 @@ fun LibraryRoute(
 private fun LibraryContent(
     mistakeCount: Int,
     usePaging: Boolean,
-    pendingCaptureCount: Int,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
-    onOpenPendingCaptures: () -> Unit,
     onExportVisible: (List<String>) -> Unit,
     onOpenItem: (String) -> Unit,
     viewModel: LibraryViewModel,
@@ -158,13 +151,6 @@ private fun LibraryContent(
                 }
                 PaperDivider(Modifier.padding(vertical = 8.dp))
                 BatchImportEntryRow(onClick = onBatchImport)
-                if (pendingCaptureCount > 0) {
-                    PaperDivider(Modifier.padding(vertical = 8.dp))
-                    PendingReviewRow(
-                        pendingCaptureCount = pendingCaptureCount,
-                        onClick = onOpenPendingCaptures,
-                    )
-                }
                 PaperDivider(Modifier.padding(vertical = 8.dp))
                 if (emptyState != LibraryEmptyState.CATALOG_EMPTY) {
                     LibrarySearchField(
@@ -286,43 +272,6 @@ private fun BatchImportEntryRow(onClick: () -> Unit) {
         Icon(
             Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = "打开批量导入",
-            tint = SmartColors.InkSecondary,
-        )
-    }
-}
-
-@Composable
-private fun PendingReviewRow(
-    pendingCaptureCount: Int,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 48.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp)
-            .testTag("library_pending_review"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Schedule,
-            contentDescription = null,
-            tint = SmartColors.Jade,
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            text = "$pendingCaptureCount 道临时题记录已保留 · 继续处理",
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodySmall,
-            color = SmartColors.Ink,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-        )
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = "打开待处理题目",
             tint = SmartColors.InkSecondary,
         )
     }

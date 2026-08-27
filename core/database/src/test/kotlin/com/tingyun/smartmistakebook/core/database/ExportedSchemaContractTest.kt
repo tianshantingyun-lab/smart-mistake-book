@@ -47,10 +47,14 @@ class ExportedSchemaContractTest {
                     "entity ${entity.tableName} in ${file.name} must export createSql",
                     entity.createSql.isNotBlank(),
                 )
-                assertTrue(
-                    "entity ${entity.tableName} in ${file.name} must declare a primary key",
-                    entity.primaryKey.columnNames.isNotEmpty(),
-                )
+                // FTS4 virtual tables carry no physical primary key; Room
+                // exports them without one (valid since the v32 FTS index).
+                if (!entity.createSql.startsWith("CREATE VIRTUAL TABLE")) {
+                    assertTrue(
+                        "entity ${entity.tableName} in ${file.name} must declare a primary key",
+                        entity.primaryKey.columnNames.isNotEmpty(),
+                    )
+                }
             }
             assertTrue(
                 "schema must include the Room master table in ${file.name}",

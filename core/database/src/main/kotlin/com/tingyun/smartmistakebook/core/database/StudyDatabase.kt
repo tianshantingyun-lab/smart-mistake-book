@@ -30,6 +30,7 @@ import com.tingyun.smartmistakebook.core.database.dao.ProblemDraftTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.ProjectionTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.ReviewDao
 import com.tingyun.smartmistakebook.core.database.dao.ReviewPlanTransactionDao
+import com.tingyun.smartmistakebook.core.database.dao.SplitImportDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorInteractionDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorExposureDao
 import com.tingyun.smartmistakebook.core.database.dao.TutorConversationDao
@@ -47,6 +48,8 @@ import com.tingyun.smartmistakebook.core.database.entity.AssessmentAnswerRevealE
 import com.tingyun.smartmistakebook.core.database.entity.AssessmentPresentationEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
+import com.tingyun.smartmistakebook.core.database.entity.SplitImportJobEntity
+import com.tingyun.smartmistakebook.core.database.entity.SplitImportQuestionEntity
 import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
 import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.VisualInteractionAttemptEntity
@@ -114,7 +117,14 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 34
+internal const val STUDY_DATABASE_VERSION = 35
+
+/** Split-import status values mirrored into [SplitImportMigration]. */
+internal object SplitImportLedgerStrings {
+    const val PREPARING = "PREPARING"
+    const val READY = "READY"
+    const val COMPLETED = "COMPLETED"
+}
 
 @Database(
     views = [LibraryCatalogView::class],
@@ -195,6 +205,8 @@ internal const val STUDY_DATABASE_VERSION = 34
         StudentModelPredictionEntity::class,
         PredictionOutcomeEntity::class,
         VisualInteractionAttemptEntity::class,
+        SplitImportJobEntity::class,
+        SplitImportQuestionEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -250,6 +262,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
 
     abstract fun visualInteractionAttemptDao(): VisualInteractionAttemptDao
 
+    abstract fun splitImportDao(): SplitImportDao
+
     abstract fun batchImportDao(): BatchImportDao
 }
 
@@ -299,6 +313,7 @@ object StudyDatabaseFactory {
             LIBRARY_SEARCH_MIGRATION_31_32,
             PREDICTION_AUDIT_MIGRATION_32_33,
             VISUAL_INTERACTION_MIGRATION_33_34,
+            SPLIT_IMPORT_MIGRATION_34_35,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()
@@ -310,6 +325,9 @@ object StudyDatabaseFactory {
             context.applicationContext,
             StudyDatabase::class.java,
         ).setDriver(AndroidSQLiteDriver())
+            .addMigrations(
+                SPLIT_IMPORT_MIGRATION_34_35,
+            )
             .build()
         return RoomStudyDatabase(database)
     }

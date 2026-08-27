@@ -75,7 +75,8 @@ import com.tingyun.smartmistakebook.feature.library.MistakeBatchExportRoute
 import com.tingyun.smartmistakebook.feature.library.MAX_LIBRARY_BATCH_EXPORT_QUESTIONS
 import com.tingyun.smartmistakebook.feature.library.MistakeDetailRoute
 import com.tingyun.smartmistakebook.feature.library.MistakeExportRoute
-import com.tingyun.smartmistakebook.feature.library.PendingCaptureInboxRoute
+import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
+import com.tingyun.smartmistakebook.feature.library.SplitImportReviewRoute
 import com.tingyun.smartmistakebook.feature.profile.ProfileRoute
 import com.tingyun.smartmistakebook.feature.review.CapturedReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.review.ReviewRoute
@@ -99,10 +100,11 @@ internal object Routes {
     const val ReviewSession = "review/session"
     const val CaptureTutor = "capture/tutor"
     const val CaptureLibrary = "capture/library"
-    const val CaptureInbox = "capture/inbox"
     const val BatchImport = "capture/batch"
     const val LibraryBatchExport = "library/export"
     const val CaptureResume = "capture/resume/{draftId}"
+    const val SplitReview = "capture/split-review"
+    const val SplitReviewJob = "capture/split-review/{jobId}"
     const val CapturedTutorSession = "tutor/captured/{sessionId}"
     const val TutorHistory = "tutor/history"
     const val TutorTextConversation = "tutor/lobby/{conversationId}"
@@ -155,6 +157,8 @@ internal object Routes {
         "tutor/lobby/${Uri.encode(conversationId)}"
 
     fun captureResume(draftId: String): String = "capture/resume/${Uri.encode(draftId)}"
+
+    fun splitReview(jobId: String): String = "capture/split-review/${Uri.encode(jobId)}"
 }
 
 private data class RootDestination(
@@ -468,10 +472,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 LibraryRoute(
                     entries = experience.catalog,
                     catalogRepository = application.libraryCatalogRepository,
-                    pendingCaptureCount = experience.pendingCorrectionCount,
                     onCapture = { navController.navigate(Routes.CaptureLibrary) },
                     onBatchImport = { navController.navigate(Routes.BatchImport) },
-                    onOpenPendingCaptures = { navController.navigate(Routes.CaptureInbox) },
                     onExportVisible = { entryIds ->
                         pendingLibraryExportCount = entryIds.size
                         pendingLibraryExportEntryIds =
@@ -689,7 +691,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         }
                     },
                     onSplitReady = {
-                        navController.navigate(Routes.CaptureInbox) {
+                        navController.navigate(Routes.SplitReview) {
                             popUpTo(Routes.CaptureTutor) { inclusive = true }
                             launchSingleTop = true
                         }
@@ -717,23 +719,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         }
                     },
                     onSplitReady = {
-                        navController.navigate(Routes.CaptureInbox) {
+                        navController.navigate(Routes.SplitReview) {
                             popUpTo(Routes.CaptureLibrary) { inclusive = true }
                             launchSingleTop = true
                         }
-                    },
-                    onBack = navController::popBackStack,
-                )
-            }
-            composable(Routes.CaptureInbox) {
-                PendingCaptureInboxRoute(
-                    repository = application.captureRepository,
-                    onResumeDraft = { draftId ->
-                        navController.navigate(Routes.captureResume(draftId))
-                    },
-                    onOpenTutorSession = { sessionId ->
-                        freshTutorAutoStartAuthorization = null
-                        navController.navigate(Routes.capturedTutorSession(sessionId))
                     },
                     onBack = navController::popBackStack,
                 )
@@ -744,7 +733,24 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenDraft = { draftId ->
                         navController.navigate(Routes.captureResume(draftId))
                     },
+                    onSplitReady = {
+                        navController.navigate(Routes.SplitReview) {
+                            launchSingleTop = true
+                        }
+                    },
                     onBack = navController::popBackStack,
+                )
+            }
+            composable(Routes.SplitReview) {
+                SplitImportReviewRoute(
+                    repository = application.splitImportRepository,
+                    onOpenDraft = { draftId ->
+                        navController.navigate(Routes.captureResume(draftId)) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onFinished = { navController.popBackStack() },
+                    modifier = Modifier.testTag("root_split_review"),
                 )
             }
             composable(Routes.LibraryBatchExport) {
@@ -780,7 +786,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         }
                     },
                     onSplitReady = {
-                        navController.navigate(Routes.CaptureInbox) {
+                        navController.navigate(Routes.SplitReview) {
                             popUpTo(Routes.CaptureResume) { inclusive = true }
                             launchSingleTop = true
                         }

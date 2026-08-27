@@ -394,8 +394,15 @@ class RealProviderProtocolTest {
     fun tutorLobbyOutput_parsesCorrectly() {
         val responseJson = """
             {
-                "intent": "QUESTION",
-                "message": "这道题需要帮助吗？"
+                "intentDecision": {
+                    "intent": "CURRENT_QUESTION_HELP",
+                    "confidence": 0.9,
+                    "explicitActionRequest": false,
+                    "memoryPreference": "UNCHANGED",
+                    "requestedLocalCapability": "NONE",
+                    "lookupTerms": []
+                },
+                "messageMarkdown": "这道题需要帮助吗？"
             }
         """.trimIndent()
 

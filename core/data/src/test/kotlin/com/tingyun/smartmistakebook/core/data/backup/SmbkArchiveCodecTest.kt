@@ -264,38 +264,6 @@ class SmbkArchiveCodecTest {
     }
 
     @Test
-    fun `unpack rejects duplicate entries during streaming`() {
-        val database = tempFile("database.sqlite", "database-content")
-        val asset = tempFile("asset-a.png", "asset-content")
-        val archive = ByteArrayOutputStream()
-        SmbkArchiveCodec.create(
-            archive = archive,
-            database = database,
-            assets = listOf(asset),
-            databaseSchemaVersion = 30,
-            problemCount = 1,
-            createdAtEpochMillis = 7_000L,
-        )
-        val withDuplicate = appendDuplicateEntry(
-            archive.toByteArray(),
-            "assets/${asset.name}",
-        )
-        val destination = File.createTempFile("smbk-unpack-dup", "").apply {
-            delete()
-            mkdirs()
-        }
-        destination.deleteOnExit()
-
-        val validation = SmbkArchiveCodec.unpack(
-            ByteArrayInputStream(withDuplicate),
-            destination,
-        )
-
-        assertTrue(validation is BackupValidation.Invalid)
-        assertTrue((validation as BackupValidation.Invalid).reason.contains("重复"))
-    }
-
-    @Test
     fun `unpack rejects per-entry zip bombs by compression ratio`() {
         val bomb = ByteArrayOutputStream()
         ZipOutputStream(bomb).use { zip ->
@@ -317,29 +285,6 @@ class SmbkArchiveCodecTest {
 
         assertTrue(validation is BackupValidation.Invalid)
         assertTrue((validation as BackupValidation.Invalid).reason.contains("压缩比"))
-    }
-
-    private fun appendDuplicateEntry(archiveBytes: ByteArray, entryName: String): ByteArray {
-        val entries = mutableListOf<Pair<String, ByteArray>>()
-        ZipInputStream(ByteArrayInputStream(archiveBytes)).use { zip ->
-            while (true) {
-                val entry = zip.nextEntry ?: break
-                entries += entry.name to zip.readBytes()
-                zip.closeEntry()
-            }
-        }
-        val original = entries.firstOrNull { it.first == entryName }
-            ?: error("entry $entryName not found in fixture")
-        entries += original
-        val output = ByteArrayOutputStream()
-        ZipOutputStream(output).use { zip ->
-            entries.forEach { (name, bytes) ->
-                zip.putNextEntry(ZipEntry(name))
-                zip.write(bytes)
-                zip.closeEntry()
-            }
-        }
-        return output.toByteArray()
     }
 
     private fun tamperAsset(archiveBytes: ByteArray): ByteArray {

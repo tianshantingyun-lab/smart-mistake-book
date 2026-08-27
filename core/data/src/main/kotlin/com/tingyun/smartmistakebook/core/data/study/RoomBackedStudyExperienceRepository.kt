@@ -864,7 +864,12 @@ class RoomBackedStudyExperienceRepository(
                 studyDay = studyDayAt(attempt.attemptedAtEpochMillis),
             ),
         )
-        return writeResult.created
+        if (writeResult.created) {
+            return true
+        }
+        // A replay after the first successful sweep must not claim a new
+        // creation; the ledger already has this attempt exactly once.
+        return false
     }
 
     private suspend fun currentLearnerSnapshot(): LearnerSnapshot =

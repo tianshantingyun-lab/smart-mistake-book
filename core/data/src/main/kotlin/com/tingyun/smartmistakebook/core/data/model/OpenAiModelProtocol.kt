@@ -139,6 +139,20 @@ import okio.ByteString.Companion.toByteString
 internal object OpenAiModelProtocol {
     private val json = Json { ignoreUnknownKeys = true; isLenient = false }
 
+    /** Inputs that may carry approved image attachments. */
+    private fun com.tingyun.smartmistakebook.core.model.ModelTaskInput.acceptsImages(): Boolean = when (this) {
+        is com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput,
+        is com.tingyun.smartmistakebook.core.model.CaptureParseInput,
+        is com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput,
+        is com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput,
+        // Tutor plan/respond may attach the problem image when an egress
+        // manifest authorized it (kept for legacy compatibility).
+        is com.tingyun.smartmistakebook.core.model.TutorPlanInput,
+        is com.tingyun.smartmistakebook.core.model.TutorRespondInput,
+        -> true
+        else -> false
+    }
+
     fun requestBody(
         modelId: String,
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
@@ -175,19 +189,24 @@ internal object OpenAiModelProtocol {
         val taskPrompt = OpenAiModelTaskAdapters.prompt(input)
         val content = buildJsonArray {
             add(buildJsonObject { put("type", "text"); put("text", taskPrompt) })
-            images.forEach { image ->
-                add(
-                    buildJsonObject {
-                        put("type", "image_url")
-                        put(
-                            "image_url",
-                            buildJsonObject {
-                                put("url", "data:${image.mimeType};base64,${image.base64}")
-                                put("detail", "high")
-                            },
-                        )
-                    },
-                )
+            // Only image-capable inputs may reference approved images. The
+            // image_count is embedded in the fingerprint so a caller cannot
+            // slip an image into an input that never disclosed one.
+            if (input.acceptsImages() || stream && input is com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput) {
+                images.forEach { image ->
+                    add(
+                        buildJsonObject {
+                            put("type", "image_url")
+                            put(
+                                "image_url",
+                                buildJsonObject {
+                                    put("url", "data:${image.mimeType};base64,${image.base64}")
+                                    put("detail", "high")
+                                },
+                            )
+                        },
+                    )
+                }
             }
         }
         val payload = buildJsonObject {

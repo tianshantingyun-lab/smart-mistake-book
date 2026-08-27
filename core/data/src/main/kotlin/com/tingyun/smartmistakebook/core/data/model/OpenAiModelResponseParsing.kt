@@ -16,7 +16,7 @@ import kotlinx.serialization.json.jsonPrimitive
 internal fun parseObject(value: String): JsonObject = try {
     Json.parseToJsonElement(value).jsonObject
 } catch (_: Exception) {
-    throw InvalidModelResponseException()
+    throw InvalidModelResponseException("model response is not a JSON object")
 }
 
 internal fun JsonElement?.extractTextContent(): String? = when (this) {
@@ -128,4 +128,5 @@ internal fun NormalizedSourceRegion.contains(other: NormalizedSourceRegion): Boo
 internal inline fun <reified T : Enum<T>> enumValue(value: String): T =
     enumValues<T>().firstOrNull { it.name == value } ?: throw InvalidModelResponseException()
 
-internal class InvalidModelResponseException : IllegalArgumentException()
+internal class InvalidModelResponseException(message: String = "invalid model response") :
+    IllegalArgumentException(message)

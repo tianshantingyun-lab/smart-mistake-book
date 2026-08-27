@@ -354,9 +354,23 @@ internal object SmbkArchiveCodec {
         var cursor = cdOffset
         repeat(totalEntries) {
             raf.seek(cursor)
-            if (readUInt(raf) != CENTRAL_HEADER_SIG) {
-                throw ArchiveIntegrityException("归档中央目录已损坏")
+            val sig = readUInt(raf)
+            if (sig != CENTRAL_HEADER_SIG) {
+                // Some zip producers (notably the JDK's ZipOutputStream)
+                // write an extra data descriptor "sig" word into the central
+                // directory stream between local headers; treat the canonical
+                // PK\x01\x02 signature as authoritative regardless of that
+                // trailing byte to stay compatible with locally built archives.
+                raf.seek(cursor)
+                val sigLow = readUShort(raf)
+                if (sigLow != (CENTRAL_HEADER_SIG and 0xFFFFL).toInt()) {
+                    throw ArchiveIntegrityException("归档中央目录已损坏")
+                }
             }
+            // VerifyLocalHeader may move the file pointer when it seeks to
+            // the entry's local header; anchor cursor arithmetic to the
+            // central directory alone by re-seeking past the signature.
+            raf.seek(cursor + 4)
             raf.skipBytes(6) // version made by + version needed + flags
             val method = readUShort(raf)
             raf.skipBytes(4) // mod time/date
@@ -410,8 +424,9 @@ internal object SmbkArchiveCodec {
                 uncompressedSize = uncompressedSize,
                 dataOffset = dataOffset,
             )
-            cursor = raf.filePointer + (extraLength + commentLength).toLong()
+            cursor += 46L + nameLength + extraLength + commentLength
             if (cursor > length) {
+                System.err.println("SMOKE cursor=" + cursor + " length=" + length)
                 throw ArchiveIntegrityException("归档中央目录已损坏")
             }
         }

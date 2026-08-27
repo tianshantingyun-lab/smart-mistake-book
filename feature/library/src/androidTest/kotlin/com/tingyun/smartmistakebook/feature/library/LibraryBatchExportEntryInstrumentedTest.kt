@@ -29,10 +29,8 @@ class LibraryBatchExportEntryInstrumentedTest {
                         entry("chemistry-1", SubjectKind.CHEMISTRY.name, "平衡题"),
                         entry("math-2", SubjectKind.MATH.name, "函数题"),
                     ),
-                    pendingCaptureCount = 0,
                     onCapture = {},
                     onBatchImport = {},
-                    onOpenPendingCaptures = {},
                     onExportVisible = { exportedIds = it },
                     onOpenItem = {},
                 )
@@ -55,10 +53,8 @@ class LibraryBatchExportEntryInstrumentedTest {
             SmartMistakeBookTheme {
                 LibraryRoute(
                     entries = emptyList(),
-                    pendingCaptureCount = 0,
                     onCapture = {},
                     onBatchImport = {},
-                    onOpenPendingCaptures = {},
                     onExportVisible = {},
                     onOpenItem = {},
                 )

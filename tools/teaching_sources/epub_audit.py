@@ -96,7 +96,10 @@ def _rootfile_path(archive: zipfile.ZipFile) -> str:
     except KeyError as error:
         raise ValueError("EPUB is missing META-INF/container.xml") from error
     try:
-        root = ElementTree.fromstring(container)
+        root = ElementTree.fromstring(
+            container,
+            parser=ElementTree.XMLParser(resolve_entities=False),
+        )
     except ElementTree.ParseError as error:
         raise ValueError("EPUB container.xml is invalid") from error
     rootfile = root.find(
@@ -116,7 +119,10 @@ def _metadata(
     rootfile_path: str,
 ) -> tuple[str, str]:
     try:
-        package = ElementTree.fromstring(archive.read(rootfile_path))
+        package = ElementTree.fromstring(
+            archive.read(rootfile_path),
+            parser=ElementTree.XMLParser(resolve_entities=False),
+        )
     except KeyError as error:
         raise ValueError(f"EPUB rootfile does not exist: {rootfile_path}") from error
     except ElementTree.ParseError as error:

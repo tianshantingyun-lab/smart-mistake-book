@@ -21,6 +21,7 @@ import com.tingyun.smartmistakebook.core.database.port.PredictionAuditPort
 import com.tingyun.smartmistakebook.core.database.port.ReviewReadPort
 import com.tingyun.smartmistakebook.core.database.port.ReviewWritePort
 import com.tingyun.smartmistakebook.core.database.port.SeedAssessmentPort
+import com.tingyun.smartmistakebook.core.database.port.SplitImportPort
 import com.tingyun.smartmistakebook.core.database.port.TutorAnswerExposurePort
 import com.tingyun.smartmistakebook.core.database.port.TutorReadPort
 import com.tingyun.smartmistakebook.core.database.port.TutorSessionPort
@@ -47,6 +48,14 @@ import kotlinx.coroutines.flow.flowOf
 const val MAX_REVIEW_COMPLETION_HISTORY_DAYS = 1_500
 const val MAX_KNOWLEDGE_RECALL_CANDIDATES = 512
 
+/** Page-local normalized region persisted by the split-import ledger. */
+internal data class TrackedSourceRegion(
+    val left: Double,
+    val top: Double,
+    val right: Double,
+    val bottom: Double,
+)
+
 class AttemptIdempotencyConflictException(submissionId: String) :
     IllegalStateException("submissionId $submissionId was already used for a different payload")
 
@@ -63,6 +72,97 @@ class ProjectionCasConflictException(message: String) : IllegalStateException(me
 class LearningLedgerIntegrityException(message: String) : IllegalStateException(message)
 
 class ProblemDraftEditWorkspaceConflictException(message: String) : IllegalStateException(message)
+
+/**
+ * Split-import ingestion command. At most one job may own one source
+ * fingerprint so replays stay idempotent.
+ */
+data class CreateSplitImportJobCommand(
+    val jobId: String,
+    val sourceKind: String,
+    val sourceFingerprint: String,
+    val sourceUri: String,
+    val pageCount: Int,
+    val createdAtEpochMillis: Long,
+) {
+    init {
+        require(jobId.isNotBlank()) { "Split job id must not be blank" }
+        require(sourceKind.isNotBlank()) { "Split job source kind must not be blank" }
+        require(sourceFingerprint.isNotEmpty()) { "Split job source fingerprint must not be blank" }
+        require(sourceUri.isNotBlank()) { "Split job source image uri must not be blank" }
+        require(pageCount >= 1) { "Split job page count must be positive" }
+        require(createdAtEpochMillis >= 0) { "Split job creation time must not be negative" }
+    }
+}
+
+/** One cut piece of a split-import source, in reading order. */
+data class SplitImportQuestionSeed(
+    private val left: Double,
+    private val top: Double,
+    private val right: Double,
+    private val bottom: Double,
+    val pageIndex: Int,
+    val prioritised: Boolean = false,
+) {
+    init {
+        require(pageIndex >= 0) { "Split question page index must not be negative" }
+        require(left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite()) {
+            "Split region must be finite"
+        }
+        require(left in 0.0..1.0 && top in 0.0..1.0 && right in 0.0..1.0 && bottom in 0.0..1.0) {
+            "Split region must stay inside the normalized page"
+        }
+        require(left < right && top < bottom) { "Split region must have positive extent" }
+    }
+
+    fun regionLeft(): Double = left
+
+    fun regionTop(): Double = top
+
+    fun regionRight(): Double = right
+
+    fun regionBottom(): Double = bottom
+}
+
+data class SplitImportQuestionRecord(
+    val jobId: String,
+    val questionOrdinal: Int,
+    val pageIndex: Int,
+    val left: Double,
+    val top: Double,
+    val right: Double,
+    val bottom: Double,
+    val selected: Boolean,
+    val confirmState: String,
+    val splitDraftId: String?,
+)
+
+data class SplitImportJobRecord(
+    val jobId: String,
+    val sourceKind: String,
+    val sourceFingerprint: String,
+    val sourceUri: String,
+    val pageCount: Int,
+    val questionCount: Int,
+    val status: String,
+    val createdAtEpochMillis: Long,
+    val updatedAtEpochMillis: Long,
+    val questions: List<SplitImportQuestionRecord> = emptyList(),
+) {
+    init {
+        require(jobId.isNotBlank()) { "Split job id must not be blank" }
+        require(sourceKind.isNotBlank()) { "Split job source kind must not be blank" }
+        require(sourceUri.isNotBlank()) { "Split job source image uri must not be blank" }
+        require(pageCount >= 1) { "Split job page count must be positive" }
+        require(questionCount >= 0) { "Split job question count must not be negative" }
+        require(createdAtEpochMillis >= 0 && updatedAtEpochMillis >= createdAtEpochMillis) {
+            "Split job times are invalid"
+        }
+    }
+
+    val readyForReview: Boolean get() = status == StudyDbValue.SplitImportStatus.READY ||
+        status == StudyDbValue.SplitImportStatus.PREPARING
+}
 
 class ProblemDraftEditWorkspaceIntegrityException(message: String, cause: Throwable? = null) :
     IllegalStateException(message, cause)
@@ -132,6 +232,26 @@ object StudyDbValue {
         const val NEXT_QUESTION = "NEXT_QUESTION"
         const val KEPT_SEPARATE = "KEPT_SEPARATE"
         const val FAILED = "FAILED"
+    }
+
+    object SplitImportSourceKind {
+        const val SINGLE_PAGE = "SINGLE_PAGE"
+        const val BATCH = "BATCH"
+        const val PDF = "PDF"
+    }
+
+    object SplitImportStatus {
+        const val PREPARING = "PREPARING"
+        const val READY = "READY"
+        const val COMPLETED = "COMPLETED"
+        const val ABANDONED = "ABANDONED"
+    }
+
+    object SplitImportConfirmState {
+        const val PENDING = "PENDING"
+        const val SAVED = "SAVED"
+        const val TUTOR_SESSION = "TUTOR_SESSION"
+        const val REJECTED = "REJECTED"
     }
 
     object ErrorBookStatus {
@@ -1416,6 +1536,6 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
     LearningLedgerPort, PredictionAuditPort, VisualInteractionPort,
     DraftWritePort, TutorSessionPort, TutorAnswerExposurePort,
     SeedAssessmentPort, AttemptWritePort, OrganizationWritePort,
-    LearningProjectionPort, ReviewWritePort {
+    LearningProjectionPort, ReviewWritePort, SplitImportPort {
 }
 

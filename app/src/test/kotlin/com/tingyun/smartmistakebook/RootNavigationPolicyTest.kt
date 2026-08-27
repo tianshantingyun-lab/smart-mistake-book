@@ -24,7 +24,7 @@ class RootNavigationPolicyTest {
             Routes.ReviewSession,
             Routes.CaptureTutor,
             Routes.CaptureLibrary,
-            Routes.CaptureInbox,
+            Routes.SplitReview,
             Routes.BatchImport,
             Routes.LibraryBatchExport,
             Routes.CaptureResume,

@@ -35,6 +35,8 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
+import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
+import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
@@ -100,6 +102,9 @@ class SmartMistakeBookApplication : Application() {
     lateinit var reviewReminderRepository: ReviewReminderRepository
         private set
 
+    lateinit var splitImportRepository: SplitImportRepository
+        private set
+
     private lateinit var database: StudyDatabasePort
     private lateinit var reviewReminderCoordinator: ReviewReminderCoordinator
 
@@ -137,6 +142,7 @@ class SmartMistakeBookApplication : Application() {
             tutorTeachingReferenceRepository =
                 TutorTeachingReferenceRepositoryFactory.create(database)
             libraryCatalogRepository = LibraryCatalogRepositoryFactory.create(database)
+            splitImportRepository = SplitImportRepositoryFactory.create(database)
             reviewReminderRepository = DataStoreReviewReminderRepository(this, applicationScope)
             reviewReminderCoordinator = ReviewReminderCoordinator(
                 repository = reviewReminderRepository,
@@ -168,6 +174,7 @@ class SmartMistakeBookApplication : Application() {
                 capture = captureRepository,
                 processingScope = applicationScope,
                 modelTasks = modelTaskRepository,
+                splitImports = SplitImportRepositoryFactory.createConcrete(database),
             )
             backupRepository = BackupRepositoryFactory.create(this, database)
             OrphanAssetGc.enqueue(this)

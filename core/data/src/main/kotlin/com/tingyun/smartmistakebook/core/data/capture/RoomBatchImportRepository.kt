@@ -24,6 +24,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CreateBatchImportRequest
 import com.tingyun.smartmistakebook.core.domain.CreatePdfImportRequest
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
@@ -64,9 +65,11 @@ internal class RoomBatchImportRepository(
     private val processingScope: CoroutineScope,
     private val sourceStaging: BatchImportSourceStaging,
     private val modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
+    private val splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
 ) : BatchImportRepository {
     private val processingMutex = Mutex()
     private val organizationMutex = Mutex()
+    private var splitReadyJobId: String? = null
 
     init {
         processingScope.launch {
@@ -327,9 +330,40 @@ internal class RoomBatchImportRepository(
     private suspend fun process(jobId: String) = processingMutex.withLock {
         withContext(Dispatchers.IO) {
             database.requeueInterruptedBatchImportPages(jobId, System.currentTimeMillis())
+            val splitProvider = splitImports
             while (true) {
                 val page = database.claimNextBatchImportPage(jobId, System.currentTimeMillis())
                     ?: break
+                val splitDir = splitProvider?.let {
+                    recognizeAndSplitBatchPage(
+                        jobId = jobId,
+                        pageIndex = page.pageIndex,
+                        sourceUri = page.sourceUri,
+                        capturedWidth = 0,
+                        capturedHeight = 0,
+                        database = database,
+                        modelTasks = modelTasks,
+                        splitImports = it,
+                        occurrenceTime = page.createdAtEpochMillis,
+                    )
+                }
+                if (splitDir != null && splitDir is BatchSplitOutcome.SplitReady) {
+                    splitReadyJobId = splitDir.jobId
+                    database.finishBatchImportIfSettled(jobId, System.currentTimeMillis())
+                    return@withContext
+                }
+                when (splitDir) {
+                    BatchSplitOutcome.Failed -> {
+                        database.failBatchImportPage(
+                            jobId,
+                            page.pageIndex,
+                            "SPLIT_RECOGNITION_FAILED",
+                            System.currentTimeMillis(),
+                        )
+                        continue
+                    }
+                    else -> {}
+                }
                 val draft = try {
                     capture.importDraft(
                         CaptureDraftImportRequest(
@@ -547,12 +581,14 @@ object BatchImportRepositoryFactory {
         capture: CaptureWorkflowRepository,
         processingScope: CoroutineScope,
         modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
+        splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
     ): BatchImportRepository = RoomBatchImportRepository(
         database = database,
         capture = capture,
         processingScope = processingScope,
         sourceStaging = AndroidBatchImportSourceStaging(context),
         modelTasks = modelTasks,
+        splitImports = splitImports,
     )
 }
 

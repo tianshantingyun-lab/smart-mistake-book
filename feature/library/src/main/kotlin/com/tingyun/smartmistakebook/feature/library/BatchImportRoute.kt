@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 fun BatchImportRoute(
     repository: BatchImportRepository,
     onOpenDraft: (String) -> Unit,
+    onSplitReady: () -> Unit = {},
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -144,6 +145,7 @@ fun BatchImportRoute(
         onSkip = { jobId, page ->
             launchAction { repository.skipBatchImportPage(jobId, page) }
         },
+        onSplitReady = onSplitReady,
         organizationOffer = organizationOffer,
         isOrganizing = isOrganizing,
         onPrepareOrganization = { jobId ->
@@ -200,6 +202,7 @@ internal fun BatchImportContent(
     onResume: (String) -> Unit,
     onRetry: (String, Int) -> Unit,
     onSkip: (String, Int) -> Unit,
+    onSplitReady: () -> Unit = {},
     organizationOffer: BatchImportOrganizationOffer? = null,
     isOrganizing: Boolean = false,
     onPrepareOrganization: (String) -> Unit = {},

@@ -98,7 +98,9 @@ internal fun MistakeOrganizationSection(
     var error by remember(key) { mutableStateOf<AppFailure?>(null) }
     var isPreparing by rememberSaveable(key) { mutableStateOf(false) }
     var attempt by rememberSaveable(key) { mutableStateOf(0) }
-    var preparationDismissed by rememberSaveable(key) { mutableStateOf(false) }
+    // With organizationAutoRun the section runs automatically for a fresh
+    // revision; this stays as an explicit user-choice escape hatch only.
+    var organizationDisabledByUser by rememberSaveable(key) { mutableStateOf(false) }
     var applyState by remember(key) {
         mutableStateOf<AutomaticOrganizationState>(AutomaticOrganizationState.Idle)
     }
@@ -120,7 +122,7 @@ internal fun MistakeOrganizationSection(
         isContinuingPausedOrganization = false
         applyState = AutomaticOrganizationState.Idle
         correctionVisible = false
-        preparationDismissed = false
+        organizationDisabledByUser = false
         message = null
         error = null
     }
@@ -314,11 +316,11 @@ internal fun MistakeOrganizationSection(
         }
     }
 
-    LaunchedEffect(key, provider, attempt, preparationDismissed, recoveryComplete) {
+    LaunchedEffect(key, provider, attempt, organizationDisabledByUser, recoveryComplete) {
         if (!recoveryComplete) return@LaunchedEffect
         val availableProvider = provider ?: return@LaunchedEffect
         if (
-            preparationDismissed ||
+            organizationDisabledByUser ||
             preparation != null ||
             task != null ||
             !availableProvider.supports(ModelTaskKind.PROBLEM_CLASSIFY) ||
@@ -349,7 +351,6 @@ internal fun MistakeOrganizationSection(
                 dataPreserved = true,
                 primaryAction = ActionType.OPEN_SETTINGS,
             )
-            preparationDismissed = true
         } finally {
             isPreparing = false
         }
@@ -405,7 +406,7 @@ internal fun MistakeOrganizationSection(
             },
             hasPreparation = preparation != null,
             isPreparing = isPreparing,
-            preparationDismissed = preparationDismissed,
+            preparationDismissed = organizationDisabledByUser,
             hasRecoveredRequest = recoveredPendingRequest != null,
             isContinuingRecoveredRequest = isContinuingPausedOrganization,
             taskStatus = task?.status,
@@ -441,7 +442,7 @@ internal fun MistakeOrganizationSection(
                     requestToResume = null
                     recoveredPendingRequest = null
                     message = null
-                    preparationDismissed = true
+                    organizationDisabledByUser = true
                 },
                 onApprove = if (state.paused) {
                     continueRecoveredOrganization

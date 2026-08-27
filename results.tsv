@@ -1,0 +1,6 @@
+﻿commit	metric	resource	status	description
+39c853c	0	32	keep	baseline (v34 + 1~4 all green BUILD SUCCESSFUL 32s)
+34a04cd	0	54	keep	1-N1 outbox触发器迁移补建 + 2-knowledge-production接入构建/CI + 3-query/facets FTS同源路由
+c3f12b5	0	51	keep	4-RefreshingPagingSource取消透传+MappingPagingSource锚位 + MasteryBands统一
+604dfb0	0	55	keep	B1延迟特征归一化 + B2三档自评 RECALLED_WITH_EFFORT
+39c853c	0	32	keep	B1透传 findLastLatencyMs链路接实 (planPredictions Map透传)

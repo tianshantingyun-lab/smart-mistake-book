@@ -244,9 +244,15 @@ class TutorE2EProtocolTest {
     fun responseParser_rejectsExtraFields() {
         val responseJson = """
             {
-                "intent": "QUESTION",
-                "message": "test",
-                "unexpectedField": "should be ignored"
+                "intentDecision": {
+                    "intent": "CURRENT_QUESTION_HELP",
+                    "confidence": 0.9,
+                    "explicitActionRequest": false,
+                    "memoryPreference": "UNCHANGED",
+                    "requestedLocalCapability": "NONE",
+                    "lookupTerms": []
+                },
+                "messageMarkdown": "test"
             }
         """.trimIndent()
 
@@ -300,7 +306,7 @@ class TutorE2EProtocolTest {
     )
 
     private fun tutorLobbyContent(): String = """
-        {"intent":"QUESTION","message":"你好"}
+        {"intentDecision":{"intent":"CURRENT_QUESTION_HELP","confidence":0.9,"explicitActionRequest":false,"memoryPreference":"UNCHANGED","requestedLocalCapability":"NONE","lookupTerms":[]},"messageMarkdown":"你好"}
     """.trimIndent()
 
     private fun tutorPlanContent(): String = """
