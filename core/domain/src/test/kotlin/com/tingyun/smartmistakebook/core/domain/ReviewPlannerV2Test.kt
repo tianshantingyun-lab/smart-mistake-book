@@ -32,7 +32,7 @@ class ReviewPlannerV2Test {
                     unitId = "unit-$trial-$index",
                     familyId = "family-${random.nextInt(8)}",
                     sourceId = "source-${random.nextInt(6)}",
-                    difficulty = random.nextDouble(),
+                    difficulty = random.nextDouble(1.0, 10.0),
                     seconds = 60,
                     subjectId = "subject-${random.nextInt(3)}",
                 )
@@ -53,7 +53,7 @@ class ReviewPlannerV2Test {
                 unitId = "unit-$index",
                 familyId = "family-$index",
                 sourceId = "source-$index",
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-${index % 3}",
             )
@@ -82,7 +82,7 @@ class ReviewPlannerV2Test {
                     unitId = "unit-$trial-$index",
                     familyId = "family-${index % 10}",
                     sourceId = "source-${index % 7}",
-                    difficulty = random.nextDouble(),
+                    difficulty = random.nextDouble(1.0, 10.0),
                     seconds = 60,
                     subjectId = "subject-${random.nextInt(3)}",
                 )
@@ -103,7 +103,7 @@ class ReviewPlannerV2Test {
                 unitId = "unit-$index",
                 familyId = "family-$index",
                 sourceId = null,
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-${index % 2}",
             )
@@ -125,7 +125,7 @@ class ReviewPlannerV2Test {
                 unitId = "unit-$index",
                 familyId = "family-${index % 3}",
                 sourceId = "source-$index",
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-${index % 2}",
             )
@@ -149,7 +149,7 @@ class ReviewPlannerV2Test {
                 unitId = "single-$index",
                 familyId = "family-s$index",
                 sourceId = null,
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-single",
             )
@@ -158,7 +158,7 @@ class ReviewPlannerV2Test {
             unitId = "mixer",
             familyId = "family-mixer",
             sourceId = null,
-            difficulty = 0.5,
+            difficulty = 5.5,
             seconds = 60,
             subjectId = "subject-other",
         )
@@ -186,7 +186,7 @@ class ReviewPlannerV2Test {
     @Test
     fun `degenerate single candidate scenarios still fill the budget`() {
         val single = planner.plan(
-            request(listOf(candidate("unit-a", "family-a", null, 0.5, 60)), 600),
+            request(listOf(candidate("unit-a", "family-a", null, 5.5, 60)), 600),
         )
         assertEquals(listOf("unit-a"), single.queueItems.map { it.practiceUnitId })
         assertEquals(60, single.totalEstimatedDurationSeconds)
@@ -194,8 +194,8 @@ class ReviewPlannerV2Test {
         val pair = planner.plan(
             request(
                 listOf(
-                    candidate("unit-a", "family-a", null, 0.5, 60),
-                    candidate("unit-b", "family-b", null, 0.5, 60),
+                    candidate("unit-a", "family-a", null, 5.5, 60),
+                    candidate("unit-b", "family-b", null, 5.5, 60),
                 ),
                 600,
             ),
@@ -220,7 +220,7 @@ class ReviewPlannerV2Test {
                 unitId = "unit-$index",
                 familyId = "family-shared",
                 sourceId = "source-$index",
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-$index",
             )
@@ -243,7 +243,7 @@ class ReviewPlannerV2Test {
                 unitId = "low-$index",
                 familyId = "family-low-$index",
                 sourceId = null,
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-${index % 3}",
             )
@@ -253,7 +253,7 @@ class ReviewPlannerV2Test {
                 unitId = "high-$index",
                 familyId = "family-high-$index",
                 sourceId = null,
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
                 subjectId = "subject-${index % 3}",
             ).copy(examPriority = 1.0)

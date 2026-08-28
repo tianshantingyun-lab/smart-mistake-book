@@ -37,7 +37,13 @@ class LearningProjectorTest {
         assertEquals(setOf("attempt-1"), replay.ignoredAttemptIds)
         assertEquals(first.snapshot, replay.snapshot)
         assertEquals(setOf("kc-a", "kc-b"), first.snapshot.knowledgeMasteryStates.keys)
-        assertEquals(1.0, first.snapshot.knowledgeMasteryStates.values.sumOf { it.evidenceMass }, 1e-9)
+        // Spec 2.13: every bound KC receives the FULL evidence record; the
+        // binding split (0.6/0.4) only orders attributions, it no longer
+        // divides the evidence mass.
+        assertEquals(
+            listOf(1.0, 1.0),
+            first.snapshot.knowledgeMasteryStates.values.map { it.evidenceMass }.sorted(),
+        )
     }
 
     @Test
@@ -153,7 +159,7 @@ class LearningProjectorTest {
     }
 
     @Test
-    fun `visible tutor answer updates only problem memory once and schedules a short review`() {
+    fun `visible tutor answer refreshes the clock without double penalty`() {
         val learned = projector.project(
             LearnerSnapshot.empty("learner-1"),
             listOf(attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence())),
@@ -178,10 +184,14 @@ class LearningProjectorTest {
         val retried = projector.project(projected.snapshot, listOf(exposure), 2)
         val memory = projected.snapshot.problemMemoryStates.getValue("unit-1")
 
+        val stabilityBefore = learned.problemMemoryStates.getValue("unit-1").stabilityDays
         assertEquals(setOf(exposure.outcomeId), projected.appliedTutorAnswerExposureOutcomeIds)
-        assertEquals(1, memory.answerRevealCount)
-        assertEquals(1, memory.lapseCount)
-        assertEquals(2_000L + 10 * 60_000L, memory.nextReviewAtEpochMillis)
+        // Spec 2.5/2.6 merge: the exposure is a clock refresh only - it must
+        // not decay stability, count a lapse, or double-penalize the attempt
+        // that already happened.
+        assertEquals(stabilityBefore, memory.stabilityDays, 1e-9)
+        assertEquals(0, memory.answerRevealCount)
+        assertEquals(0, memory.lapseCount)
         assertEquals(masteryBefore, projected.snapshot.knowledgeMasteryStates)
         assertEquals(setOf(exposure.outcomeId), retried.ignoredTutorAnswerExposureOutcomeIds)
         assertEquals(projected.snapshot, retried.snapshot)

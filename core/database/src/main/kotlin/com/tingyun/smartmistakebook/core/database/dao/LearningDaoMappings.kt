@@ -161,6 +161,8 @@ internal fun Attempt.toEntity(
     learnerId: String,
     submissionId: String,
     canonicalFingerprint: String,
+    hintCount: Int = 0,
+    revealedBeforeAnswer: Boolean = false,
 ): AttemptEventEntity {
     val response = submittedResponse as? AttemptSubmittedResponse.Choice
     return AttemptEventEntity(
@@ -184,6 +186,8 @@ internal fun Attempt.toEntity(
         studyDayEpochDay = studyDay.epochDay,
         studyDayTimeZoneId = studyDay.timeZoneId,
         studyDayUtcOffsetMinutes = studyDay.utcOffsetMinutes,
+        hintCount = hintCount,
+        revealedBeforeAnswer = if (revealedBeforeAnswer) 1 else 0,
     )
 }
 
@@ -408,6 +412,10 @@ internal fun LearnerSnapshot.toMemoryEntities(projectionName: String) = problemM
             lastAttemptId = state.lastAttemptId,
             projectorVersion = state.projectorVersion,
             checkpointSequence = state.checkpointSequence,
+            lastEvidenceReason = state.lastEvidenceReason,
+            lastEvidenceDirection = state.lastEvidenceDirection,
+            consecutiveCrossDaySuccess = state.consecutiveCrossDaySuccess,
+            consecutiveCrossDayAgain = state.consecutiveCrossDayAgain,
         )
     }
 
@@ -432,6 +440,8 @@ internal fun LearnerSnapshot.toMasteryEntities(
             checkpointSequence = state.checkpointSequence,
             lastEvidenceAtEpochMillis = state.lastEvidenceAtEpochMillis,
             conflictSinceSequence = state.conflictSinceSequence,
+            lastEvidenceReason = state.lastEvidenceReason,
+            lastEvidenceDirection = state.lastEvidenceDirection,
         )
         state.independentCorrectObservations.forEachIndexed { ordinal, observation ->
             observations += IndependentCorrectObservationEntity(
@@ -543,6 +553,10 @@ internal fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
                 lastAttemptId = state.lastAttemptId,
                 projectorVersion = state.projectorVersion,
                 checkpointSequence = state.checkpointSequence,
+                lastEvidenceReason = state.lastEvidenceReason,
+                lastEvidenceDirection = state.lastEvidenceDirection,
+                consecutiveCrossDaySuccess = state.consecutiveCrossDaySuccess,
+                consecutiveCrossDayAgain = state.consecutiveCrossDayAgain,
             )
         },
         knowledgeMasteryStates = masteryStates.associate { state ->
@@ -588,6 +602,8 @@ internal fun LearnerProjectionSnapshotEntity.toPersistedSnapshot(
                 checkpointSequence = state.checkpointSequence,
                 lastEvidenceAtEpochMillis = state.lastEvidenceAtEpochMillis,
                 conflictSinceSequence = state.conflictSinceSequence,
+                lastEvidenceReason = state.lastEvidenceReason,
+                lastEvidenceDirection = state.lastEvidenceDirection,
             )
         },
         checkpoint = ProjectionCheckpoint(

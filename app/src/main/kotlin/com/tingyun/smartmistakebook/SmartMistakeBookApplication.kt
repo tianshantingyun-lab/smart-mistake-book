@@ -22,6 +22,7 @@ import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFa
 import com.tingyun.smartmistakebook.core.data.tutor.TutorConversationRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
+import com.tingyun.smartmistakebook.core.data.settings.DataStoreSchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
@@ -34,6 +35,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
+import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
 import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryFactory
@@ -43,6 +45,8 @@ import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.visual.VisualInteractionEventSink
 import com.tingyun.smartmistakebook.feature.capture.CaptureCacheMaintenance
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -56,6 +60,7 @@ class SmartMistakeBookApplication : Application() {
     val startupState = MutableStateFlow<StartupState>(StartupState.Initializing)
 
     lateinit var studyRepository: StudyExperienceRepository
+    lateinit var schedulingSettingsStore: SchedulingSettingsStore
         private set
 
     lateinit var captureRepository: CaptureWorkflowRepository
@@ -130,9 +135,18 @@ class SmartMistakeBookApplication : Application() {
             // a half-swapped generation can never become visible to Room.
             BackupRestoreStartupRecovery.recoverOnStartup(this)
             database = StudyDatabaseFactory.open(this)
+            schedulingSettingsStore = DataStoreSchedulingSettingsStore(this, applicationScope)
+            // Settings are read synchronously to mirror the synchronous database
+            // open above; a scheduling-flag flip applies on the next launch so a
+            // single session's projection model stays stable (spec 2.20).
+            val schedulingOptions = runBlocking { schedulingSettingsStore.options.first() }
+            val optimizedParameters = runBlocking { schedulingSettingsStore.optimizedParameters.first() }
             studyRepository = StudyExperienceRepositoryFactory.create(
                 database = database,
                 applicationScope = applicationScope,
+                schedulingOptions = schedulingOptions,
+                schedulingSettingsStore = schedulingSettingsStore,
+                optimizedFsrsParameters = optimizedParameters,
             )
             captureRepository = CaptureWorkflowRepositoryFactory.create(this, database)
             mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)

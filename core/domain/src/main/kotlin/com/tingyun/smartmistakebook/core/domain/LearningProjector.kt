@@ -53,7 +53,12 @@ data class LearningProjectionResult(
 
 /** Deterministic projection of a gap-free append-only attempt prefix into learner state. */
 class LearningProjector(
-    private val forgettingCurve: ForgettingCurve = ForgettingCurve(),
+    private val forgettingCurve: ForgettingCurve = ForgettingCurve(
+        algorithm = ForgettingCurveAlgorithm.FSRS6_POWER_LAW,
+    ),
+    private val memoryUpdateModel: MemoryUpdateModel = FsrsMemoryUpdateModel(
+        desiredRetention = DEFAULT_DESIRED_RETENTION,
+    ),
 ) {
     /** Test-only convenience. Production adapters must supply persistence-authoritative state. */
     internal fun project(
@@ -660,6 +665,8 @@ class LearningProjector(
                 eventSequence = attempt.eventSequence,
                 outcome = attempt.problemMemoryOutcome,
                 weight = attempt.evidence.weight,
+                evidenceReason = attempt.evidence.reason,
+                evidenceDirection = attempt.evidence.direction,
             )
         }
         val attributions = attempt.assessmentSnapshot.attributions
@@ -695,22 +702,46 @@ class LearningProjector(
         eventSequence = outcome.eventSequence,
         outcome = ProblemMemoryOutcome.ANSWER_REVEALED,
         weight = 0.0,
+        evidenceReason = LearningEvidenceReason.ANSWER_REVEALED,
+        evidenceDirection = LearningEvidenceDirection.NONE,
     )
 
     private fun projectTutorAnswerExposure(
         previous: ProblemMemoryState?,
         outcome: TutorAnswerExposureOutcome,
         effectiveAtEpochMillis: Long,
-    ): ProblemMemoryState = projectMemory(
-        previous = previous,
-        practiceUnitId = outcome.practiceUnitId,
-        eventId = outcome.outcomeId,
-        occurredAtEpochMillis = outcome.occurredAtEpochMillis,
-        effectiveAtEpochMillis = effectiveAtEpochMillis,
-        eventSequence = outcome.eventSequence,
-        outcome = ProblemMemoryOutcome.ANSWER_REVEALED,
-        weight = 0.0,
-    )
+    ): ProblemMemoryState {
+        // Spec §2.5/§2.6 merge: a tutor answer exposure never decays memory a
+        // second time. It only refreshes the clock (spec "S'=S 仅刷新时钟"),
+        // so an attempt that follows the exposure is measured from the
+        // exposure and lands on the conservative same-day branch.
+        val refreshedAt = maxOf(previous?.lastReviewedAtEpochMillis ?: 0, effectiveAtEpochMillis)
+        val stability = previous?.stabilityDays
+            ?: FsrsScheduleMath.initialStability(FsrsRating.AGAIN)
+        val difficulty = previous?.difficulty
+            ?: FsrsScheduleMath.clampDifficulty(FsrsScheduleMath.initialDifficulty(FsrsRating.AGAIN))
+        return ProblemMemoryState(
+            practiceUnitId = outcome.practiceUnitId,
+            stabilityDays = stability,
+            difficulty = difficulty,
+            lastReviewedAtEpochMillis = refreshedAt,
+            nextReviewAtEpochMillis = forgettingCurve.reviewAtTargetRetention(refreshedAt, stability),
+            independentCorrectCount = previous?.independentCorrectCount ?: 0,
+            assistedCorrectCount = previous?.assistedCorrectCount ?: 0,
+            lapseCount = previous?.lapseCount ?: 0,
+            answerRevealCount = (previous?.answerRevealCount ?: 0) + if (previous == null) 1 else 0,
+            lastLapseAtEpochMillis = previous?.lastLapseAtEpochMillis,
+            clockAnomalyCount = previous?.clockAnomalyCount ?: 0,
+            lastClockAnomalyAtEpochMillis = previous?.lastClockAnomalyAtEpochMillis,
+            lastAttemptId = outcome.outcomeId,
+            projectorVersion = VERSION,
+            checkpointSequence = outcome.eventSequence,
+            lastEvidenceReason = TUTOR_EXPOSURE_REASON,
+            lastEvidenceDirection = LearningEvidenceDirection.NONE.name,
+            consecutiveCrossDaySuccess = previous?.consecutiveCrossDaySuccess ?: 0,
+            consecutiveCrossDayAgain = previous?.consecutiveCrossDayAgain ?: 0,
+        )
+    }
 
     private fun projectMemory(
         previous: ProblemMemoryState?,
@@ -721,36 +752,66 @@ class LearningProjector(
         eventSequence: Long,
         outcome: ProblemMemoryOutcome,
         weight: Double,
+        evidenceReason: LearningEvidenceReason,
+        evidenceDirection: LearningEvidenceDirection,
     ): ProblemMemoryState {
-        val currentStability = previous?.stabilityDays ?: INITIAL_STABILITY_DAYS
-        val currentDifficulty = previous?.difficulty ?: INITIAL_DIFFICULTY
         require(effectiveAtEpochMillis >= occurredAtEpochMillis) {
             "Effective projection time must not precede the raw event time"
         }
         val clockRollback = occurredAtEpochMillis < effectiveAtEpochMillis
         val effectiveAttemptAt = maxOf(previous?.lastReviewedAtEpochMillis ?: 0, effectiveAtEpochMillis)
-        val stability = when (outcome) {
-            ProblemMemoryOutcome.INDEPENDENT_RECALL ->
-                currentStability * (1.0 + 1.6 * weight) + 0.25 * weight
-            ProblemMemoryOutcome.ASSISTED_RECALL ->
-                currentStability * (1.0 + 0.6 * weight) + 0.1 * weight
-            ProblemMemoryOutcome.RETRIEVAL_FAILURE -> currentStability * (0.7 - 0.25 * weight)
-            ProblemMemoryOutcome.ANSWER_REVEALED -> currentStability * ANSWER_REVEAL_STABILITY_FACTOR
-        }.coerceIn(MIN_STABILITY_DAYS, MAX_STABILITY_DAYS)
-        val difficulty = when (outcome) {
-            ProblemMemoryOutcome.INDEPENDENT_RECALL -> currentDifficulty - 0.08 * weight
-            ProblemMemoryOutcome.ASSISTED_RECALL -> currentDifficulty - 0.03 * weight
-            ProblemMemoryOutcome.RETRIEVAL_FAILURE -> currentDifficulty + 0.12 * weight
-            ProblemMemoryOutcome.ANSWER_REVEALED -> currentDifficulty + 0.12
-        }.coerceIn(0.0, 1.0)
-        val shortReview = outcome == ProblemMemoryOutcome.ANSWER_REVEALED || clockRollback
-        val nextReviewAt = if (shortReview) {
-            safeAdd(effectiveAttemptAt, SHORT_REVIEW_MILLIS)
-        } else {
-            forgettingCurve.reviewAtTargetRetention(effectiveAttemptAt, stability)
+        val rating = FsrsEvidenceRatingMapper.ratingFor(evidenceReason, weight)
+        val update = memoryUpdateModel.updateMemory(
+            previous = previous,
+            rating = rating,
+            outcome = outcome,
+            weight = weight,
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            effectiveAttemptAtEpochMillis = effectiveAttemptAt,
+        )
+        var stability = update.stabilityDays
+        var difficulty = update.difficulty
+        val crossDay = previous != null &&
+            effectiveAttemptAt - previous.lastReviewedAtEpochMillis >= DAY_MILLIS
+        val nextCrossDaySuccess = when {
+            previous == null -> if (rating == FsrsRating.AGAIN) 0 else 1
+            crossDay && rating != FsrsRating.AGAIN -> previous.consecutiveCrossDaySuccess + 1
+            else -> previous.consecutiveCrossDaySuccess
         }
+        val nextCrossDayAgain = when {
+            previous == null -> if (rating == FsrsRating.AGAIN) 1 else 0
+            crossDay && rating == FsrsRating.AGAIN -> previous.consecutiveCrossDayAgain + 1
+            crossDay && rating != FsrsRating.AGAIN -> 0
+            else -> previous.consecutiveCrossDayAgain
+        }
+        val wasLeeched = previous?.isLeeched == true
+        if (wasLeeched && difficulty > (previous?.difficulty ?: difficulty)) {
+            // Spec §2.16: while leeched, difficulty must not climb further.
+            difficulty = previous!!.difficulty
+        }
+        var nextReviewAt = update.nextReviewAtEpochMillis
         val isRetrievalFailure = outcome == ProblemMemoryOutcome.RETRIEVAL_FAILURE ||
             outcome == ProblemMemoryOutcome.ANSWER_REVEALED
+        if (
+            memoryUpdateModel is FsrsMemoryUpdateModel &&
+            nextCrossDaySuccess >= ProblemMemoryState.GRADUATION_SUCCESS_STREAK &&
+            !isRetrievalFailure
+        ) {
+            // Spec §2.10 graduation: once the streak is long enough and the
+            // regular interval reaches ninety days, schedule maintenance at a
+            // lower target retention instead.
+            val regularIntervalDays = FsrsScheduleMath.intervalDays(
+                stability,
+                memoryUpdateModel.desiredRetention,
+            )
+            if (regularIntervalDays >= GRADUATION_MIN_INTERVAL_DAYS) {
+                nextReviewAt = forgettingCurve.reviewAtTargetRetention(
+                    effectiveAttemptAt,
+                    stability,
+                    GRADUATION_TARGET_RETENTION,
+                )
+            }
+        }
 
         return ProblemMemoryState(
             practiceUnitId = practiceUnitId,
@@ -775,6 +836,10 @@ class LearningProjector(
             lastAttemptId = eventId,
             projectorVersion = VERSION,
             checkpointSequence = eventSequence,
+            lastEvidenceReason = evidenceReason.name,
+            lastEvidenceDirection = evidenceDirection.name,
+            consecutiveCrossDaySuccess = nextCrossDaySuccess,
+            consecutiveCrossDayAgain = nextCrossDayAgain,
         )
     }
 
@@ -786,7 +851,10 @@ class LearningProjector(
         effectiveAtEpochMillis: Long,
     ): KnowledgeMasteryState {
         val probability = previous?.masteryScore ?: INITIAL_MASTERY_PROBABILITY
-        val weight = attempt.evidence.weight * attribution.weight
+        // Spec §2.13: every bound KC receives the full evidence record
+        // (multi-skill all-record). Binding strength/ordering stays in the
+        // attribution snapshot for presentation; it no longer splits evidence.
+        val weight = attempt.evidence.weight
         val positive = attempt.evidence.signedWeight > 0
         val updatedProbability = if (positive) {
             probability + (1.0 - probability) * POSITIVE_LEARNING_RATE * weight
@@ -896,6 +964,8 @@ class LearningProjector(
                 effectiveAtEpochMillis,
             ),
             conflictSinceSequence = if (conflictRecovered) null else conflictSince,
+            lastEvidenceReason = attempt.evidence.reason.name,
+            lastEvidenceDirection = attempt.evidence.direction.name,
         )
     }
 
@@ -1014,16 +1084,15 @@ class LearningProjector(
 
     companion object {
         const val VERSION = LearningCoreVersions.PROJECTION_COMPOSITE
-        private const val INITIAL_STABILITY_DAYS = 0.5
-        private const val MIN_STABILITY_DAYS = 0.25
-        private const val MAX_STABILITY_DAYS = 3_650.0
-        private const val INITIAL_DIFFICULTY = 0.5
         private const val INITIAL_MASTERY_PROBABILITY = 0.5
         private const val POSITIVE_LEARNING_RATE = 0.32
         private const val NEGATIVE_LEARNING_RATE = 0.42
         private const val UNCERTAINTY_SCALE = 1.2
-        private const val ANSWER_REVEAL_STABILITY_FACTOR = 0.45
-        private const val SHORT_REVIEW_MILLIS = 10 * 60_000L
         private const val MAX_APPLIED_RECORDS = 4_096
+        private const val DAY_MILLIS = 86_400_000L
+        private const val GRADUATION_MIN_INTERVAL_DAYS = 90
+        const val GRADUATION_TARGET_RETENTION = 0.8
+        const val TUTOR_EXPOSURE_REASON = "TUTOR_EXPOSURE"
+        const val DEFAULT_DESIRED_RETENTION = FsrsMemoryUpdateModel.DEFAULT_DESIRED_RETENTION
     }
 }

@@ -353,7 +353,13 @@ internal abstract class AttemptTransactionDao {
             learnerId = command.learnerId,
             payloadFingerprint = fingerprint,
         )
-        val event = attempt.toEntity(command.learnerId, command.submissionId, fingerprint)
+        val event = attempt.toEntity(
+            learnerId = command.learnerId,
+            submissionId = command.submissionId,
+            canonicalFingerprint = fingerprint,
+            hintCount = command.hintCount,
+            revealedBeforeAnswer = command.revealedBeforeAnswer,
+        )
         val outbox = event.toOutbox()
         insertSubmission(submission)
         insertAttemptEvent(event)

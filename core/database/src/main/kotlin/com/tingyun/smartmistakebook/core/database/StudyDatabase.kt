@@ -50,6 +50,7 @@ import com.tingyun.smartmistakebook.core.database.entity.BatchImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
 import com.tingyun.smartmistakebook.core.database.entity.SplitImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.SplitImportQuestionEntity
+import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
 import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
 import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.VisualInteractionAttemptEntity
@@ -117,7 +118,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 35
+internal const val STUDY_DATABASE_VERSION = 36
 
 /** Split-import status values mirrored into [SplitImportMigration]. */
 internal object SplitImportLedgerStrings {
@@ -207,6 +208,7 @@ internal object SplitImportLedgerStrings {
         VisualInteractionAttemptEntity::class,
         SplitImportJobEntity::class,
         SplitImportQuestionEntity::class,
+        ReviewLogEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -314,6 +316,7 @@ object StudyDatabaseFactory {
             PREDICTION_AUDIT_MIGRATION_32_33,
             VISUAL_INTERACTION_MIGRATION_33_34,
             SPLIT_IMPORT_MIGRATION_34_35,
+            MASTERY_SCHEDULING_MIGRATION_35_36,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

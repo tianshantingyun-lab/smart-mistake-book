@@ -444,6 +444,10 @@ data class ProjectionCheckpoint(
 data class ProblemMemoryState(
     val practiceUnitId: String,
     val stabilityDays: Double,
+    /**
+     * FSRS difficulty in the 1..10 domain (spec mastery-scheduling §3.2);
+     * projection v5 migrated the previous 0..1 scale one-to-one via D = 1 + 9·d.
+     */
     val difficulty: Double,
     val lastReviewedAtEpochMillis: Long,
     val nextReviewAtEpochMillis: Long,
@@ -457,13 +461,20 @@ data class ProblemMemoryState(
     val lastAttemptId: String,
     val projectorVersion: String,
     val checkpointSequence: Long,
+    val lastEvidenceReason: String? = null,
+    val lastEvidenceDirection: String? = null,
+    val consecutiveCrossDaySuccess: Int = 0,
+    val consecutiveCrossDayAgain: Int = 0,
 ) {
     init {
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
         require(stabilityDays.isFinite() && stabilityDays > 0.0) { "Stability must be positive" }
-        require(difficulty.isFinite() && difficulty in 0.0..1.0) {
-            "Difficulty must be between zero and one"
+        require(difficulty.isFinite() && difficulty in 1.0..10.0) {
+            "Difficulty must be between one and ten"
         }
+        require(
+            consecutiveCrossDaySuccess >= 0 && consecutiveCrossDayAgain >= 0,
+        ) { "Cross-day streak counters must not be negative" }
         require(lastReviewedAtEpochMillis >= 0 && nextReviewAtEpochMillis >= 0) {
             "Review times must not be negative"
         }
@@ -483,6 +494,28 @@ data class ProblemMemoryState(
         require(lastAttemptId.isNotBlank()) { "Last attempt id must not be blank" }
         require(projectorVersion.isNotBlank()) { "Projector version must not be blank" }
         require(checkpointSequence >= 0) { "Checkpoint sequence must not be negative" }
+    }
+
+    /**
+     * Leech (spec §2.16): at least six lapses and the two most recent
+     * cross-day reviews were both graded Again. Leeched cards leave regular
+     * scheduling until a cross-day success resets [consecutiveCrossDayAgain].
+     */
+    val isLeeched: Boolean
+        get() = lapseCount >= LEECH_LAPSE_THRESHOLD && consecutiveCrossDayAgain >= LEECH_AGAIN_STREAK
+
+    /**
+     * Graduation (spec §2.10): three consecutive cross-day successes and a
+     * regular interval of at least ninety days move the card into
+     * maintenance scheduling at a lower target retention.
+     */
+    val isGraduationEligible: Boolean
+        get() = consecutiveCrossDaySuccess >= GRADUATION_SUCCESS_STREAK
+
+    companion object {
+        const val LEECH_LAPSE_THRESHOLD = 6
+        const val LEECH_AGAIN_STREAK = 2
+        const val GRADUATION_SUCCESS_STREAK = 3
     }
 }
 
@@ -551,6 +584,8 @@ data class KnowledgeMasteryState(
         it.occurredAtEpochMillis
     },
     val conflictSinceSequence: Long? = null,
+    val lastEvidenceReason: String? = null,
+    val lastEvidenceDirection: String? = null,
 ) {
     init {
         require(knowledgeNodeId.isNotBlank()) { "Knowledge-node id must not be blank" }

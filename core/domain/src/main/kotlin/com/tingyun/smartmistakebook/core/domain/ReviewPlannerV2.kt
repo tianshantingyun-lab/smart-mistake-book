@@ -42,18 +42,32 @@ class ReviewPlannerV2(
         // Apply the personalized duration model: each candidate's static
         // estimated duration is replaced by the learner-bucket prediction.
         val scored = request.candidates.mapNotNull { candidate ->
-            scoreCandidate(candidate, request.learnerSnapshot, now)
+            scoreCandidate(candidate, request.learnerSnapshot, now, request.knowledgePrerequisites)
                 ?.withModeledDuration(durationModel, request.learnerSnapshot.learnerId)
+        }
+
+        // Confusable partners (spec §6/C3): two candidates form a pair when
+        // their KCs share a prerequisite and their mastery differs by less
+        // than 0.2, so the interleaving pair can be scheduled together.
+        val confusablePartners = computeConfusablePartners(scored, request)
+        val scoredWithPairs = scored.map { scoredCandidate ->
+            val partners = confusablePartners[scoredCandidate.candidate.practiceUnitId].orEmpty()
+            if (partners.isEmpty()) {
+                scoredCandidate
+            } else {
+                scoredCandidate.copy(reasons = scoredCandidate.reasons + ReviewReason.CONFUSABLE_PAIR)
+            }
         }
 
         // Phase 1: Initial selection with beam search
         val selected = beamSearchSelection(
-            candidates = scored,
+            candidates = scoredWithPairs,
             timeBudgetSeconds = request.timeBudgetSeconds,
+            confusablePartners = confusablePartners,
         )
 
         // Phase 2: Local swap optimization to improve diversity
-        val optimized = localSwapOptimization(selected, scored, request.timeBudgetSeconds)
+        val optimized = localSwapOptimization(selected, scoredWithPairs, request.timeBudgetSeconds)
         check(satisfiesHardConstraints(optimized)) {
             "Review plan violated the hard sequencing constraints (audit §7.2)"
         }
@@ -103,13 +117,14 @@ class ReviewPlannerV2(
     private fun beamSearchSelection(
         candidates: List<ScoredCandidate>,
         timeBudgetSeconds: Int,
+        confusablePartners: Map<String, Set<String>> = emptyMap(),
         beamWidth: Int = 3,
     ): List<ScoredCandidate> {
         if (candidates.isEmpty()) return emptyList()
 
         // For small candidate sets, use simple greedy
         if (candidates.size <= beamWidth) {
-            return greedySelection(candidates, timeBudgetSeconds)
+            return greedySelection(candidates, timeBudgetSeconds, confusablePartners)
         }
 
         // Initialize beam with empty selections
@@ -152,7 +167,9 @@ class ReviewPlannerV2(
                 val candidateStates = fitting.mapNotNull { candidate ->
                     val familyPenalty = computeDynamicFamilyPenalty(candidate, state.usedFamilies)
                     val sourcePenalty = computeDynamicSourcePenalty(candidate, state.usedSources)
-                    val adjustedScore = candidate.score - familyPenalty - sourcePenalty
+                    val adjustedScore = candidate.score - familyPenalty - sourcePenalty +
+                        confusableBonus(candidate, state.selected, confusablePartners) -
+                        antiOscillationPenalty(candidate, state.selected, candidates)
                     if (adjustedScore <= 0) return@mapNotNull null
 
                     val newUsedFamilies = state.usedFamilies.increment(candidate.candidate.itemFamilyId)
@@ -194,6 +211,7 @@ class ReviewPlannerV2(
     private fun greedySelection(
         candidates: List<ScoredCandidate>,
         timeBudgetSeconds: Int,
+        confusablePartners: Map<String, Set<String>> = emptyMap(),
     ): List<ScoredCandidate> {
         val remaining = candidates.toMutableList()
         val selected = mutableListOf<ScoredCandidate>()
@@ -211,7 +229,9 @@ class ReviewPlannerV2(
             val adjustedCandidates = fitting.map { scored ->
                 val familyPenalty = computeDynamicFamilyPenalty(scored, usedFamilies)
                 val sourcePenalty = computeDynamicSourcePenalty(scored, usedSources)
-                val adjustedScore = scored.score - familyPenalty - sourcePenalty
+                val adjustedScore = scored.score - familyPenalty - sourcePenalty +
+                    confusableBonus(scored, selected, confusablePartners) -
+                    antiOscillationPenalty(scored, selected, fitting)
                 scored.copy(score = adjustedScore.coerceAtLeast(0.0))
             }
 
@@ -362,11 +382,35 @@ class ReviewPlannerV2(
         candidate: ReviewCandidate,
         snapshot: LearnerSnapshot,
         now: Long,
+        knowledgePrerequisites: Map<String, Set<String>> = emptyMap(),
     ): ScoredCandidate? {
+        // Spec 2.16: leeched cards are paused from regular scheduling until a
+        // cross-day success (or re-teaching) clears the Again streak.
+        if (candidate.leech) return null
         val memory = snapshot.problemMemoryStates[candidate.practiceUnitId]
         val masteryStates = candidate.knowledgeNodeIds.mapNotNull(snapshot.knowledgeMasteryStates::get)
         val missingKnowledgeCount = candidate.knowledgeNodeIds.size - masteryStates.size
         val reasons = linkedSetOf<ReviewReason>()
+
+        // Spec 2.9 prerequisite gate: a KC whose weakest prerequisite sits
+        // below the ready threshold reduces this candidate's value and asks
+        // for remedial teaching instead of pure repetition.
+        val prereqGap = prerequisiteGap(
+            candidate = candidate,
+            snapshot = snapshot,
+            knowledgePrerequisites = knowledgePrerequisites,
+        )
+        if (prereqGap > 0.0) reasons += ReviewReason.PREREQ_GAP
+
+        // Spec 2.10 graduation: a graduated card reaching its (long) due date
+        // enters the queue as maintenance, explained as such.
+        if (
+            memory != null &&
+            memory.isGraduationEligible &&
+            memory.nextReviewAtEpochMillis <= now
+        ) {
+            reasons += ReviewReason.GRADUATED_MAINTENANCE
+        }
 
         // Due risk
         val dueRisk = when {
@@ -495,7 +539,8 @@ class ReviewPlannerV2(
                 LAPSE_WEIGHT * lapseScore +
                 REPEAT_MISTAKE_WEIGHT * candidate.repeatMistakePriority +
                 EXAM_WEIGHT * candidate.examPriority +
-                WAITING_WEIGHT * waitingScore
+                WAITING_WEIGHT * waitingScore -
+                PREREQ_GAP_WEIGHT * prereqGap
             ).coerceAtLeast(0.0)
 
         return ScoredCandidate(
@@ -506,9 +551,126 @@ class ReviewPlannerV2(
         )
     }
 
+    /**
+     * Weakest-prerequisite gap (spec 2.9): max(0, tau_ready - min prereq
+     * mastery) over every KC of the candidate. Zero when no prerequisite data
+     * exists or every prerequisite is ready.
+     */
+    private fun prerequisiteGap(
+        candidate: ReviewCandidate,
+        snapshot: LearnerSnapshot,
+        knowledgePrerequisites: Map<String, Set<String>>,
+    ): Double {
+        var gap = 0.0
+        candidate.knowledgeNodeIds.forEach { knowledgeNodeId ->
+            val prerequisites = knowledgePrerequisites[knowledgeNodeId].orEmpty()
+            val weakest = prerequisites
+                .mapNotNull { prerequisiteId ->
+                    snapshot.knowledgeMasteryStates[prerequisiteId]?.conservativeMasteryScore
+                }
+                .minOrNull() ?: return@forEach
+            gap = maxOf(gap, (READY_TO_LEARN_THRESHOLD - weakest).coerceAtLeast(0.0))
+        }
+        return gap.coerceIn(0.0, 1.0)
+    }
+
+    /** Confusable partner map: shared prerequisite and mastery gap below 0.2. */
+    private fun computeConfusablePartners(
+        scored: List<ScoredCandidate>,
+        request: ReviewPlanningRequest,
+    ): Map<String, Set<String>> {
+        if (scored.size < 2) return emptyMap()
+        val snapshot = request.learnerSnapshot
+        val masteryOf = { knowledgeNodeIds: Set<String> ->
+            knowledgeNodeIds.mapNotNull { snapshot.knowledgeMasteryStates[it]?.conservativeMasteryScore }
+                .minOrNull()
+        }
+        val partners = mutableMapOf<String, MutableSet<String>>()
+        scored.forEachIndexed { index, left ->
+            val leftKcs = left.candidate.knowledgeNodeIds
+            if (leftKcs.isEmpty()) return@forEachIndexed
+            val leftPrereqs = leftKcs.flatMapTo(hashSetOf()) {
+                request.knowledgePrerequisites[it].orEmpty()
+            }
+            val leftMastery = masteryOf(leftKcs)
+            scored.drop(index + 1).forEach { right ->
+                val rightKcs = right.candidate.knowledgeNodeIds
+                if (rightKcs.isEmpty()) return@forEach
+                if (left.candidate.itemFamilyId == right.candidate.itemFamilyId) return@forEach
+                val sharedPrereq = rightKcs.any { it in leftPrereqs } ||
+                    leftKcs.any { knowledgeNodeId ->
+                        request.knowledgePrerequisites[knowledgeNodeId].orEmpty().any(rightKcs::contains)
+                    }
+                if (!sharedPrereq) return@forEach
+                val rightMastery = masteryOf(rightKcs)
+                if (leftMastery != null && rightMastery != null &&
+                    kotlin.math.abs(leftMastery - rightMastery) < CONFUSABLE_MASTERY_GAP
+                ) {
+                    partners.getOrPut(left.candidate.practiceUnitId) { mutableSetOf() }
+                        .add(right.candidate.practiceUnitId)
+                    partners.getOrPut(right.candidate.practiceUnitId) { mutableSetOf() }
+                        .add(left.candidate.practiceUnitId)
+                }
+            }
+        }
+        return partners
+    }
+
+    private fun confusableBonus(
+        candidate: ScoredCandidate,
+        selected: List<ScoredCandidate>,
+        confusablePartners: Map<String, Set<String>>,
+    ): Double {
+        val partners = confusablePartners[candidate.candidate.practiceUnitId] ?: return 0.0
+        val pairedSelected = selected.any { it.candidate.practiceUnitId in partners }
+        return if (pairedSelected) CONFUSABLE_BONUS else 0.0
+    }
+
+    /**
+     * Anti-oscillation damping (spec 2.18): at most two questions touching
+     * the same KC per session, and the weakest-only reason may not exceed a
+     * quarter of the session without due-risk support.
+     */
+    private fun antiOscillationPenalty(
+        candidate: ScoredCandidate,
+        selected: List<ScoredCandidate>,
+        availableAlternatives: List<ScoredCandidate>,
+    ): Double {
+        val candidateKcs = candidate.candidate.knowledgeNodeIds
+        if (candidateKcs.isEmpty()) return 0.0
+        val sameKcCount = selected.count { selectedCandidate ->
+            selectedCandidate.candidate.knowledgeNodeIds.any(candidateKcs::contains)
+        }
+        // The quota only steers the session when the backlog actually offers
+        // candidates that touch other KCs; a single-KC backlog must still
+        // fill the session.
+        val diverseAlternatives = availableAlternatives.any { alternative ->
+            alternative.candidate.practiceUnitId != candidate.candidate.practiceUnitId &&
+                alternative.candidate.knowledgeNodeIds.none(candidateKcs::contains)
+        }
+        if (sameKcCount >= MAX_PER_KNOWLEDGE_NODE_PER_SESSION && diverseAlternatives) {
+            return SAME_KC_EXHAUSTION_PENALTY
+        }
+        val weaknessOnlySelected = selected.count { scoredCandidate ->
+            ReviewReason.WEAK_KNOWLEDGE in scoredCandidate.reasons &&
+                ReviewReason.DUE_RECALL_RISK !in scoredCandidate.reasons
+        }
+        val candidateIsWeaknessOnly = ReviewReason.WEAK_KNOWLEDGE in candidate.reasons &&
+            ReviewReason.DUE_RECALL_RISK !in candidate.reasons
+        val dueAlternatives = availableAlternatives.any { alternative ->
+            ReviewReason.DUE_RECALL_RISK in alternative.reasons &&
+                alternative.candidate.practiceUnitId != candidate.candidate.practiceUnitId
+        }
+        if (candidateIsWeaknessOnly && selected.isNotEmpty() && dueAlternatives) {
+            val share = weaknessOnlySelected.toDouble() / (selected.size + 1)
+            if (share > MAX_WEAKNESS_ONLY_SHARE) return WEAKNESS_SHARE_PENALTY
+        }
+        return 0.0
+    }
+
     private fun difficultyBand(difficulty: Double): ReviewDifficultyBand = when {
-        difficulty < 0.35 -> ReviewDifficultyBand.EASY
-        difficulty < 0.7 -> ReviewDifficultyBand.MEDIUM
+        difficulty < EASY_DIFFICULTY_CEILING -> ReviewDifficultyBand.EASY
+        difficulty < MEDIUM_DIFFICULTY_CEILING -> ReviewDifficultyBand.MEDIUM
         else -> ReviewDifficultyBand.HARD
     }
 
@@ -618,7 +780,17 @@ class ReviewPlannerV2(
 
     companion object {
         const val VERSION = "review-planner-v2"
+        private const val EASY_DIFFICULTY_CEILING = 4.0
+        private const val MEDIUM_DIFFICULTY_CEILING = 7.0
         private const val WEAKNESS_THRESHOLD = 0.35
+        private const val READY_TO_LEARN_THRESHOLD = 0.6
+        private const val CONFUSABLE_MASTERY_GAP = 0.2
+        private const val PREREQ_GAP_WEIGHT = 2.0
+        private const val CONFUSABLE_BONUS = 1.5
+        private const val MAX_PER_KNOWLEDGE_NODE_PER_SESSION = 2
+        private const val SAME_KC_EXHAUSTION_PENALTY = 10.0
+        private const val MAX_WEAKNESS_ONLY_SHARE = 0.25
+        private const val WEAKNESS_SHARE_PENALTY = 3.0
         private const val DUE_WEIGHT = 5.0
         private const val WEAKNESS_WEIGHT = 3.0
         private const val LAPSE_WEIGHT = 1.0

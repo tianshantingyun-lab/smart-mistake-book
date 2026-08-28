@@ -144,7 +144,9 @@ internal fun extractHlrFeaturesForShadow(
         lapseCount = memory.lapseCount.toDouble(),
         answerRevealCount = memory.answerRevealCount.toDouble(),
         evidenceMass = mastery?.evidenceMass ?: 0.0,
-        difficulty = difficulty,
+        // The feature keeps its 0..1 training scale while memory/candidate
+        // difficulty now lives on the FSRS 1..10 domain.
+        difficulty = (difficulty / 10.0).coerceIn(0.0, 1.0),
         timeBetweenReviewsDays = timeBetweenReviewsDays,
         daysSinceFirstSeen = daysSinceFirstSeen.coerceAtLeast(0.0),
         consecutiveCorrectStreak = consecutiveCorrectStreak,

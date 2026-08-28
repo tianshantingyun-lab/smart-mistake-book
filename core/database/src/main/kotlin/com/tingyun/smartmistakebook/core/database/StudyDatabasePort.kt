@@ -1329,6 +1329,51 @@ data class AttemptWriteCommand(
     val occurredAtEpochMillis: Long,
     val durationSeconds: Int,
     val studyDay: StudyDayContext,
+    /** Real hint level recorded before the response (wiring A3). */
+    val hintCount: Int = 0,
+    val revealedBeforeAnswer: Boolean = false,
+)
+
+/**
+ * One collected review-log row (spec mastery-scheduling 3.1). [sourceId]
+ * makes inserts idempotent: UNIQUE(learner_id, source_id).
+ */
+data class ReviewLogEntry(
+    val learnerId: String,
+    val practiceUnitId: String,
+    val rating: Int,
+    val deltaTDays: Double,
+    val durationMs: Long,
+    val reviewedAtEpochMillis: Long,
+    val sourceKind: String,
+    val sourceId: String,
+    val evidenceWeight: Double,
+    val schedulingEligible: Boolean = true,
+    val timeBucket: String,
+    val recordedAtEpochMillis: Long,
+) {
+    init {
+        require(rating in 1..4) { "Review-log rating must be within 1..4" }
+        require(deltaTDays >= 0.0 && deltaTDays.isFinite()) { "Delta days must not be negative" }
+        require(durationMs >= 0) { "Duration must not be negative" }
+        require(reviewedAtEpochMillis >= 0 && recordedAtEpochMillis >= 0) {
+            "Review-log times must not be negative"
+        }
+        require(evidenceWeight.isFinite() && evidenceWeight in 0.0..1.0) {
+            "Review-log evidence weight must be between zero and one"
+        }
+    }
+}
+
+/** Projection of one review-log row for the evaluation harness/optimizer. */
+data class ReviewLogSampleRecord(
+    val practiceUnitId: String,
+    val reviewedAtEpochMillis: Long,
+    val rating: Int,
+    val durationMs: Long,
+    val timeBucket: String,
+    val sourceKind: String,
+    val evidenceWeight: Double,
 )
 
 data class AnswerRevealWriteCommand(

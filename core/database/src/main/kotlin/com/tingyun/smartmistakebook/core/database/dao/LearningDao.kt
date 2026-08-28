@@ -86,7 +86,26 @@ import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBi
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionConsumptionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.PresentationProjectionStateEntity
+import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
 import kotlinx.coroutines.flow.Flow
+
+
+/** Projection row for one collected review-log sample (spec 3.1). */
+data class ReviewLogSampleProjection(
+    @ColumnInfo(name = "practice_unit_id")
+    val practiceUnitId: String,
+    @ColumnInfo(name = "reviewed_at_utc")
+    val reviewedAtUtc: Long,
+    val rating: Int,
+    @ColumnInfo(name = "duration_ms")
+    val durationMs: Long,
+    @ColumnInfo(name = "time_bucket")
+    val timeBucket: String,
+    @ColumnInfo(name = "source_kind")
+    val sourceKind: String,
+    @ColumnInfo(name = "evidence_weight")
+    val evidenceWeight: Double,
+)
 
 
 @Dao
@@ -120,6 +139,34 @@ internal abstract class ImmutableLearningFactDao {
 
 @Dao
 internal abstract class LearningDao {
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertReviewLog(entries: List<ReviewLogEntity>)
+
+    /** Idempotent review-log collection (UNIQUE learner+source). */
+    open suspend fun recordReviewLog(entries: List<ReviewLogEntity>) {
+        insertReviewLog(entries)
+    }
+
+    @Query(
+        "SELECT card_id AS practice_unit_id, reviewed_at_utc, rating, duration_ms, time_bucket, " +
+            "source_kind, evidence_weight FROM review_log " +
+            "WHERE learner_id = :learnerId " +
+            "ORDER BY reviewed_at_utc ASC, review_log_id ASC LIMIT :limit",
+    )
+    abstract suspend fun readReviewLogSamples(learnerId: String, limit: Int): List<ReviewLogSampleProjection>
+
+    @Query(
+        "SELECT MAX(reviewed_at_utc) FROM review_log " +
+            "WHERE learner_id = :learnerId AND card_id = :practiceUnitId " +
+            "AND source_kind = :sourceKind AND scheduling_eligible = 1",
+    )
+    abstract suspend fun readLastReviewLogAt(
+        learnerId: String,
+        practiceUnitId: String,
+        sourceKind: String,
+    ): Long?
+
     @Query(
         "SELECT COALESCE(MAX(last_allocated_sequence), 0) " +
             "FROM learning_sequence WHERE learner_id = :learnerId",

@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ReviewReason
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 enum class StudyDataStatus {
@@ -180,6 +181,8 @@ data class StudyChoiceSubmission(
     val responseOrdinal: Int,
     val durationSeconds: Int,
     val occurredAtEpochMillis: Long,
+    /** Real hint level shown before the response; zero when no hint UI is active (A3). */
+    val hintCount: Int = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Choice request id must not be blank" }
@@ -189,6 +192,7 @@ data class StudyChoiceSubmission(
         require(responseOrdinal > 0) { "Response ordinal must be positive" }
         require(durationSeconds >= 0) { "Response duration must not be negative" }
         require(occurredAtEpochMillis >= 0) { "Response time must not be negative" }
+        require(hintCount >= 0) { "Hint count must not be negative" }
     }
 }
 
@@ -230,6 +234,58 @@ enum class StudyReviewSelfReport {
     /** Struggled through but got there unaided — feeds the HLR assisted-correct bucket. */
     RECALLED_WITH_EFFORT,
     NEEDS_HELP,
+}
+
+/**
+ * Four-button review rating (spec §2.21): the review UI only asks "费劲吗？"
+ * after a correct answer (Again is recorded automatically on a wrong answer),
+ * but all four ratings are accepted so detail-page annotations and future
+ * surfaces can submit any of them.
+ */
+enum class StudyReviewRating {
+    AGAIN,
+    HARD,
+    GOOD,
+    EASY,
+}
+
+data class StudyReviewRatingSubmission(
+    val requestId: String,
+    val presentationId: String,
+    val practiceUnitId: String,
+    val rating: StudyReviewRating,
+    val durationSeconds: Int,
+    val occurredAtEpochMillis: Long,
+) {
+    init {
+        require(requestId.isNotBlank()) { "Rating request id must not be blank" }
+        require(presentationId.isNotBlank()) { "Rating presentation id must not be blank" }
+        require(practiceUnitId.isNotBlank()) { "Rating practice unit id must not be blank" }
+        require(durationSeconds >= 0) { "Rating duration must not be negative" }
+        require(occurredAtEpochMillis >= 0) { "Rating time must not be negative" }
+    }
+}
+
+data class StudyReviewRatingSubmissionResult(
+    val attemptId: String,
+    val created: Boolean,
+    val rating: StudyReviewRating,
+    val evidenceReason: LearningEvidenceReason,
+    override val progress: StudyReviewSessionProgress,
+    override val nextPracticeUnitId: String?,
+    /** True when the anti-farming cooldown (spec §2.7) downgraded the report to observation-only. */
+    val evidenceSuppressedByCooldown: Boolean = false,
+) : StudyReviewAdvanceResult {
+    init {
+        require(attemptId.isNotBlank()) { "Rating attempt id must not be blank" }
+        require(
+            (progress.status == StudyReviewSessionStatus.COMPLETED) ==
+                (nextPracticeUnitId == null),
+        ) { "A completed review session must not expose a next practice unit" }
+        require(nextPracticeUnitId == null || nextPracticeUnitId.isNotBlank()) {
+            "Next review practice-unit id must not be blank"
+        }
+    }
 }
 
 data class StudyReviewSelfReportSubmission(
@@ -321,6 +377,37 @@ interface StudyExperienceRepository : AutoCloseable {
         submission: StudyReviewSelfReportSubmission,
     ): StudyReviewSelfReportSubmissionResult
 
+    /**
+     * Records a four-button review rating (spec §2.21) and atomically
+     * advances the persisted queue. Anti-farming cooldowns (spec §2.7)
+     * downgrade repeated subjective reports to observation-only rows in
+     * review_log while the session still advances.
+     */
+    suspend fun submitReviewRating(
+        sessionId: String,
+        expectedStateVersion: Long,
+        submission: StudyReviewRatingSubmission,
+    ): StudyReviewRatingSubmissionResult
+
+    /** Declares one exam (spec §2.17): subject plus the local exam day. */
+    suspend fun declareExam(entry: ExamCalendarEntry)
+
+    suspend fun removeExam(entryId: String)
+
+    /**
+     * Replays the collected review_log under FSRS-6 and the legacy
+     * exponential baseline (spec §2.20). Null before the harness sample
+     * floor is met.
+     */
+    suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport?
+
+    /**
+     * Runs the local FSRS-6 parameter optimizer (spec §2.11) over the
+     * collected review_log and stores the candidate parameters. Null when
+     * the data volume is below the fsrs-rs fitting thresholds.
+     */
+    suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result?
+
     suspend fun revealAnswer(request: StudyAnswerRevealRequest): StudyAnswerRevealResult
 
     suspend fun startOrResumeReviewSession(
@@ -373,6 +460,63 @@ data class SaveTutorProblemCommand(
             (problemRevisionId == null) != (ephemeralProblemId == null),
         ) { "Exactly one of problemRevisionId or ephemeralProblemId must be supplied" }
     }
+}
+
+/**
+ * Scheduling options the learner controls (spec §2.4 r*, §2.20 kill switch).
+ * Both flags are read at repository construction; flipping them takes effect
+ * on the next launch, keeping any single session's projection model stable.
+ */
+data class SchedulingOptions(
+    /** Target retention r* in the supported 0.7..0.97 band. */
+    val desiredRetention: Double = FsrsMemoryUpdateModel.DEFAULT_DESIRED_RETENTION,
+    /** Kill switch (spec §2.20): false restores the legacy exponential model. */
+    val useFsrsScheduling: Boolean = true,
+) {
+    init {
+        require(desiredRetention in 0.7..0.97) {
+            "Desired retention must be within the supported 0.7..0.97 range"
+        }
+    }
+}
+
+/** One user-declared exam (spec §2.17 exam mode). */
+@kotlinx.serialization.Serializable
+data class ExamCalendarEntry(
+    val entryId: String,
+    val subject: String,
+    /** Local day of the exam, as an epoch day. */
+    val examEpochDay: Long,
+    val title: String,
+) {
+    init {
+        require(entryId.isNotBlank()) { "Exam entry id must not be blank" }
+        require(subject.isNotBlank()) { "Exam subject must not be blank" }
+        require(examEpochDay >= 0) { "Exam day must not be negative" }
+        require(title.isNotBlank()) { "Exam title must not be blank" }
+    }
+}
+
+/**
+ * Durable scheduling settings owned by the data layer (DataStore-backed in
+ * production). Includes the exam calendar and any locally optimized FSRS
+ * parameters awaiting the next launch.
+ */
+interface SchedulingSettingsStore {
+    val options: Flow<SchedulingOptions>
+
+    suspend fun setOptions(options: SchedulingOptions)
+
+    val exams: Flow<List<ExamCalendarEntry>>
+
+    suspend fun addExam(entry: ExamCalendarEntry)
+
+    suspend fun removeExam(entryId: String)
+
+    /** Non-null once [FsrsParameterOptimizer] produced a candidate parameter set. */
+    val optimizedParameters: Flow<DoubleArray?>
+
+    suspend fun setOptimizedParameters(parameters: DoubleArray?)
 }
 
 /**

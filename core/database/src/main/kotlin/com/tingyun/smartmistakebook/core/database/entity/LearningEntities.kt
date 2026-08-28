@@ -346,6 +346,18 @@ internal data class AttemptEventEntity(
     val studyDayTimeZoneId: String,
     @ColumnInfo(name = "study_day_utc_offset_minutes")
     val studyDayUtcOffsetMinutes: Int,
+    /** Assistance level recorded before the response (spec 3.2, wiring A3). */
+    @ColumnInfo(name = "hint_count", defaultValue = "0")
+    val hintCount: Int = 0,
+    @ColumnInfo(name = "revealed_before_answer", defaultValue = "0")
+    val revealedBeforeAnswer: Int = 0,
+    /** Error-type channel columns (spec 7); populated from stage C onward. */
+    @ColumnInfo(name = "error_type")
+    val errorType: String? = null,
+    @ColumnInfo(name = "error_type_confidence")
+    val errorTypeConfidence: Double? = null,
+    @ColumnInfo(name = "low_confidence_correct", defaultValue = "0")
+    val lowConfidenceCorrect: Int = 0,
 )
 
 @Entity(
@@ -712,6 +724,14 @@ internal data class LearnerProblemMemoryStateEntity(
     val projectorVersion: String,
     @ColumnInfo(name = "checkpoint_sequence")
     val checkpointSequence: Long,
+    @ColumnInfo(name = "last_evidence_reason")
+    val lastEvidenceReason: String? = null,
+    @ColumnInfo(name = "last_evidence_direction")
+    val lastEvidenceDirection: String? = null,
+    @ColumnInfo(name = "consecutive_cross_day_success", defaultValue = "0")
+    val consecutiveCrossDaySuccess: Int = 0,
+    @ColumnInfo(name = "consecutive_cross_day_again", defaultValue = "0")
+    val consecutiveCrossDayAgain: Int = 0,
 )
 
 @Entity(
@@ -764,6 +784,10 @@ internal data class LearnerKnowledgeMasteryStateEntity(
     val lastEvidenceAtEpochMillis: Long?,
     @ColumnInfo(name = "conflict_since_sequence")
     val conflictSinceSequence: Long?,
+    @ColumnInfo(name = "last_evidence_reason")
+    val lastEvidenceReason: String? = null,
+    @ColumnInfo(name = "last_evidence_direction")
+    val lastEvidenceDirection: String? = null,
 )
 
 @Entity(
@@ -983,4 +1007,56 @@ internal data class PresentationProjectionStateEntity(
     val lastResponseOrdinal: Int,
     @ColumnInfo(name = "state_version")
     val stateVersion: Long,
+)
+
+/**
+ * Raw collected review evidence (spec mastery-scheduling 3.1). Collection is
+ * decoupled from scheduling: every graded interaction lands here exactly
+ * once per (learner, source), while scheduling state is owned by the
+ * projection. review_log feeds the evaluation harness and the local
+ * parameter optimizer, never the projector.
+ */
+@Entity(
+    tableName = "review_log",
+    indices = [
+        Index(
+            value = ["learner_id", "source_id"],
+            unique = true,
+        ),
+        Index(value = ["learner_id", "card_id"]),
+        Index(value = ["learner_id", "reviewed_at_utc"]),
+    ],
+)
+internal data class ReviewLogEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "review_log_id")
+    val reviewLogId: Long = 0,
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    @ColumnInfo(name = "card_id")
+    val cardId: String,
+    /** FSRS rating 1..4 (Again/Hard/Good/Easy) after the evidence mapping. */
+    val rating: Int,
+    @ColumnInfo(name = "delta_t_days")
+    val deltaTDays: Double,
+    @ColumnInfo(name = "duration_ms")
+    val durationMs: Long,
+    @ColumnInfo(name = "reviewed_at_utc")
+    val reviewedAtUtc: Long,
+    /** ATTEMPT / SELF_REPORT / VISUAL / TUTOR_EXPOSURE. */
+    @ColumnInfo(name = "source_kind")
+    val sourceKind: String,
+    /** Idempotency key (attempt id / outcome id / exposure outcome id). */
+    @ColumnInfo(name = "source_id")
+    val sourceId: String,
+    @ColumnInfo(name = "evidence_weight")
+    val evidenceWeight: Double,
+    /** False for observation-only rows (cooldown-suppressed, spec 2.7). */
+    @ColumnInfo(name = "scheduling_eligible", defaultValue = "1")
+    val schedulingEligible: Boolean = true,
+    /** MORNING/NOON/AFTERNOON/EVENING/NIGHT at review time (spec 2.12). */
+    @ColumnInfo(name = "time_bucket")
+    val timeBucket: String,
+    @ColumnInfo(name = "recorded_at")
+    val recordedAt: Long,
 )

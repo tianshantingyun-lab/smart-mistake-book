@@ -137,6 +137,7 @@ class CapturedReviewSessionViewModelTest {
         report = report,
         evidenceReason = when (report) {
             StudyReviewSelfReport.RECALL_COMPLETED -> LearningEvidenceReason.SELF_REPORTED_RECALL
+            StudyReviewSelfReport.RECALLED_WITH_EFFORT -> LearningEvidenceReason.CORRECT_ON_RETRY
             StudyReviewSelfReport.NEEDS_HELP -> LearningEvidenceReason.SELF_REPORTED_STUCK
         },
         progress = StudyReviewSessionProgress(

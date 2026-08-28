@@ -29,6 +29,8 @@ data class ReviewCandidate(
     val subjectId: String? = null,
     /** Item-type dimension for the personalized duration model; null until the data layer exposes it. */
     val itemType: String? = null,
+    /** Leech state (spec §2.16): paused from regular scheduling until re-taught. */
+    val leech: Boolean = false,
 ) {
     init {
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
@@ -43,8 +45,8 @@ data class ReviewCandidate(
         require(itemType == null || itemType.isNotBlank()) {
             "Item type must not be blank when provided"
         }
-        require(difficulty.isFinite() && difficulty in 0.0..1.0) {
-            "Difficulty must be between zero and one"
+        require(difficulty.isFinite() && difficulty in 1.0..10.0) {
+            "Difficulty must be between one and ten"
         }
         require(estimatedDurationSeconds > 0) { "Estimated duration must be positive" }
         require(examPriority.isFinite() && examPriority in 0.0..1.0) {
@@ -68,6 +70,12 @@ data class ReviewPlanningRequest(
     val timeZoneId: String,
     val timeBudgetSeconds: Int,
     val planningAtEpochMillis: Long,
+    /**
+     * KC prerequisite graph (spec §6, linkage L4): knowledge node id to its
+     * prerequisite knowledge node ids, sourced from the PREREQUISITE_OF
+     * relation table. Missing entries mean "no known prerequisites".
+     */
+    val knowledgePrerequisites: Map<String, Set<String>> = emptyMap(),
 ) {
     init {
         require(timeZoneId.isNotBlank()) { "Review planning time-zone id must not be blank" }
@@ -108,8 +116,16 @@ class ReviewPlanner(
             val fitting = remaining.filter { it.candidate.estimatedDurationSeconds <= remainingSeconds }
             if (fitting.isEmpty()) break
 
-            // Soft diversity: penalize repeated families/sources instead of hard exclusion
-            val adjustedCandidates = fitting.map { scored ->
+            // A session never repeats an item family or a source while a
+            // fresh alternative still fits the remaining budget.
+            val fresh = fitting.filter { scoredCandidate ->
+                scoredCandidate.candidate.itemFamilyId !in usedFamilies &&
+                    (scoredCandidate.candidate.sourceBundleId?.let(usedSources::contains) != true)
+            }
+            if (fresh.isEmpty()) break
+
+            // Soft diversity: penalize recently seen families/sources on top.
+            val adjustedCandidates = fresh.map { scored ->
                 val familyPenalty = (scored.candidate.recentFamilyCount * FAMILY_PENALTY_WEIGHT)
                     .coerceAtMost(MAX_DIVERSITY_PENALTY)
                 val sourcePenalty = (scored.candidate.recentSourceCount * SOURCE_PENALTY_WEIGHT)
@@ -118,7 +134,11 @@ class ReviewPlanner(
                 scored.copy(score = adjustedScore.coerceAtLeast(0.0))
             }
 
+            // Equal-priority candidates rotate through the difficulty cycle
+            // (medium, easy, hard) so a session mixes difficulty bands.
+            val desiredBand = DIFFICULTY_CYCLE[preferredBandIndex % DIFFICULTY_CYCLE.size]
             val scoreOrder = compareByDescending<ScoredCandidate>(ScoredCandidate::score)
+                .thenBy { if (it.difficultyBand == desiredBand) 0 else 1 }
                 .thenBy { it.candidate.practiceUnitId }
             val chosen = adjustedCandidates.sortedWith(scoreOrder).first()
 
@@ -296,8 +316,8 @@ class ReviewPlanner(
     }
 
     private fun difficultyBand(difficulty: Double): ReviewDifficultyBand = when {
-        difficulty < 0.35 -> ReviewDifficultyBand.EASY
-        difficulty < 0.7 -> ReviewDifficultyBand.MEDIUM
+        difficulty < EASY_DIFFICULTY_CEILING -> ReviewDifficultyBand.EASY
+        difficulty < MEDIUM_DIFFICULTY_CEILING -> ReviewDifficultyBand.MEDIUM
         else -> ReviewDifficultyBand.HARD
     }
 
@@ -373,6 +393,8 @@ class ReviewPlanner(
             ReviewDifficultyBand.EASY,
             ReviewDifficultyBand.HARD,
         )
+        private const val EASY_DIFFICULTY_CEILING = 4.0
+        private const val MEDIUM_DIFFICULTY_CEILING = 7.0
         private const val WEAKNESS_THRESHOLD = 0.35
         private const val DUE_WEIGHT = 5.0
         private const val WEAKNESS_WEIGHT = 3.0

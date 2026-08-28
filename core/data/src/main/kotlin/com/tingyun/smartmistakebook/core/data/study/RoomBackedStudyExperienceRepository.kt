@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.database.ProjectionBatchStopReason
 import com.tingyun.smartmistakebook.core.database.ProjectionCasConflictException
 import com.tingyun.smartmistakebook.core.database.ProjectionCommit
 import com.tingyun.smartmistakebook.core.database.ProjectionCommitMode
+import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
 import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
 import com.tingyun.smartmistakebook.core.database.ReviewPlanRecord
 import com.tingyun.smartmistakebook.core.database.ReviewAttemptWriteCommand
@@ -29,7 +30,14 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.domain.CalibrationInput
 import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
+import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurve
+import com.tingyun.smartmistakebook.core.domain.ForgettingCurveAlgorithm
+import com.tingyun.smartmistakebook.core.domain.FsrsRating
+import com.tingyun.smartmistakebook.core.domain.FsrsEvidenceRatingMapper
+import com.tingyun.smartmistakebook.core.domain.FsrsMemoryUpdateModel
+import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
+import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
 import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.domain.MasteryEvidencePolicy
@@ -38,11 +46,21 @@ import com.tingyun.smartmistakebook.core.domain.RecallPredictionAudit
 import com.tingyun.smartmistakebook.core.domain.ReviewCandidate
 import com.tingyun.smartmistakebook.core.domain.ReviewCompletionStreak
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
+import com.tingyun.smartmistakebook.core.domain.LegacyExponentialMemoryUpdateModel
 import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
+import com.tingyun.smartmistakebook.core.domain.ReviewSample
+import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
+import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
+import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
+import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanningRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
+import com.tingyun.smartmistakebook.core.domain.TimeBucketSplit
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
@@ -86,6 +104,7 @@ import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.LocalReviewSelfReportContract
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
+import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import com.tingyun.smartmistakebook.core.model.ProjectionStatus
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import com.tingyun.smartmistakebook.core.model.SubjectKind
@@ -132,6 +151,15 @@ class RoomBackedStudyExperienceRepository(
      * code change.
      */
     private val useReviewPlannerV2: Boolean = DEFAULT_USE_REVIEW_PLANNER_V2,
+    /**
+     * Scheduling options (spec mastery-scheduling 2.4 / 2.20): desired
+     * retention plus the FSRS kill switch. Read at construction so a single
+     * session's projection model stays stable; a flip applies on next launch.
+     */
+    private val schedulingOptions: SchedulingOptions = SchedulingOptions(),
+    private val schedulingSettingsStore: SchedulingSettingsStore? = null,
+    /** Locally optimized FSRS-6 parameters (spec 2.11); null keeps the verified defaults. */
+    private val optimizedFsrsParameters: DoubleArray? = null,
     private val closeDatabaseOnClose: Boolean = false,
     private val initialFixture: StudySeedBundle? = null,
     private val fixtureSource: StudyFixtureSource = StudyFixtureRegistry.source,
@@ -145,10 +173,36 @@ class RoomBackedStudyExperienceRepository(
     private val knowledgeNames = fixtureBundle?.knowledgeNodes
         ?.associate { it.knowledgeNodeId to it.displayName }
         ?: emptyMap()
-    private val forgettingCurve = ForgettingCurve()
+    private val forgettingCurve = ForgettingCurve(
+        algorithm = if (schedulingOptions.useFsrsScheduling) {
+            ForgettingCurveAlgorithm.FSRS6_POWER_LAW
+        } else {
+            ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
+        },
+    )
     private val reviewPlanner = ReviewPlanner()
-    private val reviewPlannerV2 = ReviewPlannerV2()
-    private val learningProjector = LearningProjector()
+    private val reviewPlannerV2 = ReviewPlannerV2(
+        forgettingCurve = ForgettingCurve(
+            algorithm = if (schedulingOptions.useFsrsScheduling) {
+                ForgettingCurveAlgorithm.FSRS6_POWER_LAW
+            } else {
+                ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
+            },
+        ),
+    )
+    private val learningProjector = LearningProjector(
+        forgettingCurve = forgettingCurve,
+        memoryUpdateModel = if (schedulingOptions.useFsrsScheduling) {
+            FsrsMemoryUpdateModel(
+                parameters = optimizedFsrsParameters ?: FsrsScheduleMath.DEFAULT_PARAMETERS,
+                desiredRetention = schedulingOptions.desiredRetention,
+            )
+        } else {
+            LegacyExponentialMemoryUpdateModel(
+                forgettingCurve = ForgettingCurve(),
+            )
+        },
+    )
     private val predictionAuditService = HLRPredictionAuditService()
     private val predictionAuditSink: PredictionAuditSink = RoomPredictionAuditSink(database)
     private var initialized = false
@@ -366,13 +420,28 @@ class RoomBackedStudyExperienceRepository(
         submission: StudyChoiceSubmission,
     ): StudyChoiceSubmissionResult = runOperation {
         val prepared = prepareChoiceSubmission(submission)
+        val priorMemory = currentLearnerSnapshot().problemMemoryStates
+            ?.get(submission.practiceUnitId)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
         val writeResult = database.recordAttempt(prepared.command)
+        if (writeResult.created) {
+            recordReviewLog(
+                practiceUnitId = submission.practiceUnitId,
+                evidence = prepared.command.evidence,
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                studyDay = prepared.command.studyDay,
+                sourceKind = SOURCE_KIND_ATTEMPT,
+                sourceId = writeResult.attempt.attemptId,
+                priorMemory = priorMemory,
+            )
+        }
         backfillPredictionOutcome(
             practiceUnitId = submission.practiceUnitId,
             wasIndependentCorrect = prepared.isCorrect,
             observedAtEpochMillis = submission.occurredAtEpochMillis,
             responseLatencyMs = submission.durationSeconds * 1000L,
+            hintCount = submission.hintCount,
         )
         latestMistakes = database.observeMistakes().first()
         initialized = true
@@ -409,6 +478,8 @@ class RoomBackedStudyExperienceRepository(
         }
 
         val prepared = prepareChoiceSubmission(submission)
+        val priorMemory = currentLearnerSnapshot().problemMemoryStates
+            ?.get(submission.practiceUnitId)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
         val writeResult = database.recordReviewAttempt(
             ReviewAttemptWriteCommand(
@@ -419,6 +490,18 @@ class RoomBackedStudyExperienceRepository(
                 practiceUnitId = queueItem.practiceUnitId,
             ),
         )
+        if (writeResult.attempt.created) {
+            recordReviewLog(
+                practiceUnitId = submission.practiceUnitId,
+                evidence = prepared.command.evidence,
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                studyDay = prepared.command.studyDay,
+                sourceKind = SOURCE_KIND_ATTEMPT,
+                sourceId = writeResult.attempt.attempt.attemptId,
+                priorMemory = priorMemory,
+            )
+        }
         backfillPredictionOutcome(
             practiceUnitId = submission.practiceUnitId,
             wasIndependentCorrect = prepared.isCorrect,
@@ -470,6 +553,8 @@ class RoomBackedStudyExperienceRepository(
             currentMistakes.singleOrNull { it.practiceUnitId == submission.practiceUnitId },
         ) { "The planned saved question is no longer active" }
         val prepared = prepareSelfReportSubmission(submission, mistake)
+        val priorMemory = currentLearnerSnapshot().problemMemoryStates
+            ?.get(submission.practiceUnitId)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
         val writeResult = database.recordReviewAttempt(
             ReviewAttemptWriteCommand(
@@ -480,6 +565,18 @@ class RoomBackedStudyExperienceRepository(
                 practiceUnitId = queueItem.practiceUnitId,
             ),
         )
+        if (writeResult.attempt.created) {
+            recordReviewLog(
+                practiceUnitId = submission.practiceUnitId,
+                evidence = prepared.command.evidence,
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                studyDay = prepared.command.studyDay,
+                sourceKind = SOURCE_KIND_SELF_REPORT,
+                sourceId = writeResult.attempt.attempt.attemptId,
+                priorMemory = priorMemory,
+            )
+        }
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         latestMistakes = currentMistakes
         initialized = true
@@ -496,6 +593,299 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
+    override suspend fun submitReviewRating(
+        sessionId: String,
+        expectedStateVersion: Long,
+        submission: StudyReviewRatingSubmission,
+    ): StudyReviewRatingSubmissionResult = runOperation {
+        require(sessionId.isNotBlank()) { "Review session id must not be blank" }
+        require(expectedStateVersion >= 0) { "Expected review-session version must not be negative" }
+        val reviewPlan = requireNotNull(
+            database.observeReviewPlanForSession(sessionId).first(),
+        ) { "No persisted review plan owns session $sessionId" }
+        val activeSession = (reviewPlan.activeSession ?: reviewPlan.latestSession)?.takeIf {
+            it.reviewSessionId == sessionId
+        } ?: error("Review session $sessionId does not belong to its persisted plan")
+        val orderedQueue = reviewPlan.queue.sortedBy { it.ordinal }
+        val queueItem = requireNotNull(
+            orderedQueue.singleOrNull { it.ordinal.toLong() == expectedStateVersion },
+        ) { "Expected review-session version does not identify one planned queue item" }
+        require(queueItem.practiceUnitId == submission.practiceUnitId) {
+            "Review rating belongs to another planned practice unit"
+        }
+        val currentMistakes = database.observeMistakes().first()
+        val mistake = requireNotNull(
+            currentMistakes.singleOrNull { it.practiceUnitId == submission.practiceUnitId },
+        ) { "The planned saved question is no longer active" }
+
+        val priorMemory = currentLearnerSnapshot().problemMemoryStates
+            ?.get(submission.practiceUnitId)
+        val cooldownActive = isWithinCooldown(
+            practiceUnitId = submission.practiceUnitId,
+            sourceKind = SOURCE_KIND_SELF_REPORT,
+            cooldownMillis = SUBJECTIVE_COOLDOWN_MILLIS,
+            atEpochMillis = submission.occurredAtEpochMillis,
+        )
+
+        if (cooldownActive) {
+            // Spec §2.7: repeated subjective reports inside the cooldown stay
+            // observation-only - they land in review_log, never in the
+            // scheduling ledger, and the session keeps its current position.
+            val evidence = ratingEvidenceFor(submission.rating)
+            recordReviewLog(
+                practiceUnitId = submission.practiceUnitId,
+                evidence = evidence,
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                studyDay = studyDayAt(submission.occurredAtEpochMillis),
+                sourceKind = SOURCE_KIND_SELF_REPORT,
+                sourceId = stableId("rating", submission.requestId),
+                priorMemory = priorMemory,
+                schedulingEligible = false,
+            )
+            val progress = activeSession.toProgress(orderedQueue.size)
+            return@runOperation StudyReviewRatingSubmissionResult(
+                attemptId = stableId("rating", submission.requestId),
+                created = false,
+                rating = submission.rating,
+                evidenceReason = evidence.reason,
+                progress = progress,
+                nextPracticeUnitId = orderedQueue
+                    .getOrNull(progress.currentOrdinal)
+                    ?.practiceUnitId,
+                evidenceSuppressedByCooldown = true,
+            )
+        }
+
+        val prepared = prepareRatingSubmission(submission, mistake)
+        database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
+        val writeResult = database.recordReviewAttempt(
+            ReviewAttemptWriteCommand(
+                attempt = prepared.command,
+                sessionId = sessionId,
+                expectedStateVersion = expectedStateVersion,
+                reviewQueueItemId = queueItem.reviewQueueItemId,
+                practiceUnitId = queueItem.practiceUnitId,
+            ),
+        )
+        if (writeResult.attempt.created) {
+            recordReviewLog(
+                practiceUnitId = submission.practiceUnitId,
+                evidence = prepared.command.evidence,
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                studyDay = prepared.command.studyDay,
+                sourceKind = SOURCE_KIND_SELF_REPORT,
+                sourceId = writeResult.attempt.attempt.attemptId,
+                priorMemory = priorMemory,
+            )
+        }
+        val progress = writeResult.advance.session.toProgress(orderedQueue.size)
+        StudyReviewRatingSubmissionResult(
+            attemptId = writeResult.attempt.attempt.attemptId,
+            created = writeResult.attempt.created,
+            rating = submission.rating,
+            evidenceReason = writeResult.attempt.attempt.evidence.reason,
+            progress = progress,
+            nextPracticeUnitId = orderedQueue
+                .getOrNull(progress.currentOrdinal)
+                ?.practiceUnitId,
+        )
+    }
+
+    override suspend fun declareExam(entry: ExamCalendarEntry) {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Exam declaration requires a scheduling settings store"
+        }
+        store.addExam(entry)
+    }
+
+    override suspend fun removeExam(entryId: String) {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Exam declaration requires a scheduling settings store"
+        }
+        store.removeExam(entryId)
+    }
+
+    override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? {
+        val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+            .map { row ->
+                ReviewSample(
+                    practiceUnitId = row.practiceUnitId,
+                    reviewedAtEpochMillis = row.reviewedAtEpochMillis,
+                    rating = ratingForOrdinal(row.rating),
+                    durationMs = row.durationMs,
+                )
+            }
+        if (samples.isEmpty()) return null
+        val eligible = samples.groupBy(ReviewSample::practiceUnitId).values.any { it.size >= 2 }
+        if (!eligible) return null
+        return SchedulingEvaluationHarness.evaluate(samples)
+    }
+
+    override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Parameter optimization requires a scheduling settings store"
+        }
+        val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+            .map { row ->
+                ReviewSample(
+                    practiceUnitId = row.practiceUnitId,
+                    reviewedAtEpochMillis = row.reviewedAtEpochMillis,
+                    rating = ratingForOrdinal(row.rating),
+                    durationMs = row.durationMs,
+                )
+            }
+        val result = FsrsParameterOptimizer.optimize(samples)
+        if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
+        store.setOptimizedParameters(result.parameters)
+        return result
+    }
+
+    private fun ratingForOrdinal(rating: Int): FsrsRating = FsrsRating.entries[
+        (rating - 1).coerceIn(0, FsrsRating.entries.size - 1)
+    ]
+
+    private fun ratingEvidenceFor(rating: StudyReviewRating): LearningEvidence = when (rating) {
+        StudyReviewRating.AGAIN -> LearningEvidence(
+            direction = LearningEvidenceDirection.NEGATIVE,
+            weight = 1.0,
+            reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
+        )
+        StudyReviewRating.HARD -> LearningEvidence(
+            direction = LearningEvidenceDirection.POSITIVE,
+            weight = RATING_HARD_WEIGHT,
+            reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
+        )
+        StudyReviewRating.GOOD -> LearningEvidence(
+            direction = LearningEvidenceDirection.POSITIVE,
+            weight = RATING_GOOD_WEIGHT,
+            reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
+        )
+        StudyReviewRating.EASY -> LearningEvidence(
+            direction = LearningEvidenceDirection.POSITIVE,
+            weight = RATING_EASY_WEIGHT,
+            reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
+        )
+    }
+
+    private fun prepareRatingSubmission(
+        submission: StudyReviewRatingSubmission,
+        mistake: MistakeRecord,
+    ): PreparedSelfReportSubmission {
+        val evidenceSnapshot = AssessmentEvidenceSnapshot(
+            snapshotId = stableId("rating-snapshot", submission.requestId),
+            assessmentItemId = LocalReviewSelfReportContract.ASSESSMENT_ITEM_ID_PREFIX +
+                stableId(
+                    namespace = "item",
+                    requestId = "${mistake.practiceUnitId}\n${mistake.problemRevisionId}",
+                ),
+            practiceUnitId = mistake.practiceUnitId,
+            problemRevisionId = mistake.problemRevisionId,
+            answerSpecId = LocalReviewSelfReportContract.ANSWER_SPEC_ID,
+            itemFamilyId = LocalReviewSelfReportContract.ITEM_FAMILY_ID,
+            sourceBundleId = null,
+            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
+            verification = AssessmentSnapshotVerification.VERIFIED,
+            calibration = CalibrationSnapshot.unknown(),
+            attributions = emptyList(),
+            capturedAtEpochMillis = submission.occurredAtEpochMillis,
+        )
+        val evidence = ratingEvidenceFor(submission.rating)
+        val memoryOutcome = if (submission.rating == StudyReviewRating.AGAIN) {
+            ProblemMemoryOutcome.RETRIEVAL_FAILURE
+        } else {
+            ProblemMemoryOutcome.ASSISTED_RECALL
+        }
+        return PreparedSelfReportSubmission(
+            evidenceSnapshot = evidenceSnapshot,
+            command = AttemptWriteCommand(
+                learnerId = learnerId,
+                submissionId = stableId("submission", submission.requestId),
+                attemptId = stableId("attempt", submission.requestId),
+                presentationId = submission.presentationId,
+                assessmentSnapshotId = evidenceSnapshot.snapshotId,
+                submittedResponse = AttemptSubmittedResponse.Choice(
+                    choiceId = "rating:${submission.rating.name}",
+                    choiceMarkdown = when (submission.rating) {
+                        StudyReviewRating.AGAIN -> "没想起来"
+                        StudyReviewRating.HARD -> "很费劲"
+                        StudyReviewRating.GOOD -> "正常"
+                        StudyReviewRating.EASY -> "很轻松"
+                    },
+                    submittedAtEpochMillis = submission.occurredAtEpochMillis,
+                ),
+                evidence = evidence,
+                problemMemoryOutcome = memoryOutcome,
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                studyDay = studyDayAt(submission.occurredAtEpochMillis),
+            ),
+        )
+    }
+
+    private suspend fun isWithinCooldown(
+        practiceUnitId: String,
+        sourceKind: String,
+        cooldownMillis: Long,
+        atEpochMillis: Long,
+    ): Boolean {
+        val last = database.readLastReviewLogAt(
+            learnerId = learnerId,
+            practiceUnitId = practiceUnitId,
+            sourceKind = sourceKind,
+        ) ?: return false
+        return atEpochMillis - last in 0 until cooldownMillis
+    }
+
+    private suspend fun recordReviewLog(
+        practiceUnitId: String,
+        evidence: LearningEvidence,
+        occurredAtEpochMillis: Long,
+        durationSeconds: Int,
+        studyDay: StudyDayContext,
+        sourceKind: String,
+        sourceId: String,
+        priorMemory: ProblemMemoryState?,
+        schedulingEligible: Boolean = true,
+    ) {
+        try {
+            val deltaDays = if (priorMemory == null || priorMemory.lastReviewedAtEpochMillis <= 0) {
+                0.0
+            } else {
+                (occurredAtEpochMillis - priorMemory.lastReviewedAtEpochMillis)
+                    .coerceAtLeast(0)
+                    .toDouble() / DAY_MILLIS_DOUBLE
+            }
+            val localHour = ((occurredAtEpochMillis + studyDay.utcOffsetMinutes * 60_000L) /
+                3_600_000L).mod(24L).toInt()
+            val rating = FsrsEvidenceRatingMapper.ratingFor(evidence.reason, evidence.weight)
+            database.recordReviewLogEntries(
+                listOf(
+                    ReviewLogEntry(
+                        learnerId = learnerId,
+                        practiceUnitId = practiceUnitId,
+                        rating = rating.ordinal + 1,
+                        deltaTDays = deltaDays,
+                        durationMs = durationSeconds * 1000L,
+                        reviewedAtEpochMillis = occurredAtEpochMillis,
+                        sourceKind = sourceKind,
+                        sourceId = sourceId,
+                        evidenceWeight = evidence.weight,
+                        schedulingEligible = schedulingEligible,
+                        timeBucket = TimeBucketSplit().bucketFor(localHour).name,
+                        recordedAtEpochMillis = clock.millis(),
+                    ),
+                ),
+            )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Throwable) {
+            // Review-log collection is decoupled from scheduling (spec §2.15):
+            // it must never break the user-visible flow.
+        }
+    }
+
     override suspend fun revealAnswer(
         request: StudyAnswerRevealRequest,
     ): StudyAnswerRevealResult = runOperation {
@@ -507,6 +897,8 @@ class RoomBackedStudyExperienceRepository(
         ) { "No verified evidence snapshot for assessment ${assessmentItem.id}" }
 
         database.saveAssessmentEvidenceSnapshot(evidenceSnapshot)
+        val priorMemory = currentLearnerSnapshot().problemMemoryStates
+            ?.get(request.practiceUnitId)
         val writeResult = database.recordAnswerReveal(
             AnswerRevealWriteCommand(
                 learnerId = learnerId,
@@ -518,6 +910,22 @@ class RoomBackedStudyExperienceRepository(
                 studyDay = studyDayAt(request.occurredAtEpochMillis),
             ),
         )
+        if (writeResult.created) {
+            recordReviewLog(
+                practiceUnitId = request.practiceUnitId,
+                evidence = LearningEvidence(
+                    direction = LearningEvidenceDirection.NONE,
+                    weight = 0.0,
+                    reason = LearningEvidenceReason.ANSWER_REVEALED,
+                ),
+                occurredAtEpochMillis = request.occurredAtEpochMillis,
+                durationSeconds = 0,
+                studyDay = studyDayAt(request.occurredAtEpochMillis),
+                sourceKind = SOURCE_KIND_ATTEMPT,
+                sourceId = writeResult.outcome.outcomeId,
+                priorMemory = priorMemory,
+            )
+        }
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
@@ -686,6 +1094,7 @@ class RoomBackedStudyExperienceRepository(
         wasIndependentCorrect: Boolean,
         observedAtEpochMillis: Long,
         responseLatencyMs: Long?,
+        hintCount: Int = 0,
     ) {
         try {
             predictionAuditSink.resolveOutcome(
@@ -693,7 +1102,7 @@ class RoomBackedStudyExperienceRepository(
                 wasIndependentCorrect = wasIndependentCorrect,
                 observedAtEpochMillis = observedAtEpochMillis,
                 responseLatencyMs = responseLatencyMs,
-                hintCount = 0,
+                hintCount = hintCount,
             )
         } catch (cancelled: CancellationException) {
             throw cancelled
@@ -777,6 +1186,16 @@ class RoomBackedStudyExperienceRepository(
         // carry no answer semantics and stay audit-only.
         if (attempt.actionKind !in DECISIVE_VISUAL_ACTION_KINDS) return false
         if (attempt.problemRevisionId != mistake.problemRevisionId) return false
+        // Spec 2.7: visual interactions cool down for one hour per unit.
+        if (isWithinCooldown(
+                practiceUnitId = mistake.practiceUnitId,
+                sourceKind = SOURCE_KIND_VISUAL,
+                cooldownMillis = VISUAL_COOLDOWN_MILLIS,
+                atEpochMillis = attempt.attemptedAtEpochMillis,
+            )
+        ) {
+            return false
+        }
         val bindings = database.readPracticeUnitKnowledgeBindings(mistake.practiceUnitId)
             .filter { binding -> binding.basisRevisionId == mistake.problemRevisionId }
             .sortedWith(compareBy({ it.acceptedAtEpochMillis }, { it.bindingId }))
@@ -865,11 +1284,40 @@ class RoomBackedStudyExperienceRepository(
             ),
         )
         if (writeResult.created) {
+            recordReviewLog(
+                practiceUnitId = mistake.practiceUnitId,
+                evidence = evidence,
+                occurredAtEpochMillis = attempt.attemptedAtEpochMillis,
+                durationSeconds = 0,
+                studyDay = studyDayAt(attempt.attemptedAtEpochMillis),
+                sourceKind = SOURCE_KIND_VISUAL,
+                sourceId = writeResult.attempt.attemptId,
+                priorMemory = null,
+            )
             return true
         }
         // A replay after the first successful sweep must not claim a new
         // creation; the ledger already has this attempt exactly once.
         return false
+    }
+
+    /**
+     * Exam-mode ramp (spec 2.17): during the fourteen days before a declared
+     * exam, matching candidates gain priority so they enter the queue before
+     * their regular due date. The ramp peaks at the exam day and falls back
+     * to zero automatically afterwards.
+     */
+    private suspend fun examPriorityFor(subject: String, localDayEpochDay: Long): Double {
+        val store = schedulingSettingsStore ?: return 0.0
+        val exams = store.exams.first().filter { it.subject == subject }
+        var best = 0.0
+        for (exam in exams) {
+            val daysUntil = exam.examEpochDay - localDayEpochDay
+            if (daysUntil in 0..EXAM_RAMP_DAYS) {
+                best = maxOf(best, 1.0 - daysUntil.toDouble() / EXAM_RAMP_DAYS)
+            }
+        }
+        return best.coerceIn(0.0, 1.0)
     }
 
     private suspend fun currentLearnerSnapshot(): LearnerSnapshot =
@@ -904,6 +1352,7 @@ class RoomBackedStudyExperienceRepository(
                     }
                 ReviewCandidate(
                     practiceUnitId = mistake.practiceUnitId,
+                    leech = learnerSnapshot.problemMemoryStates[mistake.practiceUnitId]?.isLeeched == true,
                     knowledgeNodeIds = mistake.knowledgeNodeIds.ifEmpty {
                         curatedEvidence?.attributions
                             ?.mapTo(linkedSetOf()) { it.knowledgeNodeId }
@@ -923,6 +1372,10 @@ class RoomBackedStudyExperienceRepository(
                         .coerceIn(0, MAX_REPEAT_CAPTURE_BONUS_COUNT).toDouble() /
                         MAX_REPEAT_CAPTURE_BONUS_COUNT,
                     eligibleSinceEpochMillis = mistake.createdAtEpochMillis,
+                    examPriority = examPriorityFor(
+                        subject = mistake.subject,
+                        localDayEpochDay = planningContext.localDate.toEpochDay(),
+                    ),
                 )
             }
         val request = ReviewPlanningRequest(
@@ -1432,6 +1885,8 @@ class RoomBackedStudyExperienceRepository(
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = studyDayAt(submission.occurredAtEpochMillis),
+                hintCount = submission.hintCount,
+                revealedBeforeAnswer = false,
             ),
             isCorrect = evaluation.isCorrect,
         )
@@ -1559,7 +2014,8 @@ class RoomBackedStudyExperienceRepository(
         private const val DEFAULT_REVIEW_TIME_BUDGET_SECONDS = 20 * 60
         /** Rollback switch for the V2 review planner; see [useReviewPlannerV2]. */
         private const val DEFAULT_USE_REVIEW_PLANNER_V2 = true
-        private const val DEFAULT_CANDIDATE_DIFFICULTY = 0.5
+        /** Difficulty mid-point on the FSRS 1..10 domain (spec 3.2). */
+        private const val DEFAULT_CANDIDATE_DIFFICULTY = 5.5
         private const val MAX_REPEAT_CAPTURE_BONUS_COUNT = 4
         private const val MAX_KNOWLEDGE_TOPIC_DEPTH = 6
         private const val SELF_REPORTED_RECALL_WEIGHT = 0.35
@@ -1580,6 +2036,18 @@ class RoomBackedStudyExperienceRepository(
             "SubmitHypothesis",
         )
         private const val PROJECTION_BATCH_SIZE = 100
+        private const val DAY_MILLIS_DOUBLE = 86_400_000.0
+        /** Spec 2.7 cooldowns: subjective reports 6h, visual interactions 1h. */
+        private const val SUBJECTIVE_COOLDOWN_MILLIS = 6L * 60 * 60 * 1000
+        private const val VISUAL_COOLDOWN_MILLIS = 1L * 60 * 60 * 1000
+        private const val SOURCE_KIND_ATTEMPT = "ATTEMPT"
+        private const val SOURCE_KIND_SELF_REPORT = "SELF_REPORT"
+        private const val SOURCE_KIND_VISUAL = "VISUAL"
+        private const val RATING_HARD_WEIGHT = FsrsEvidenceRatingMapper.RATING_HARD_WEIGHT
+        private const val RATING_GOOD_WEIGHT = FsrsEvidenceRatingMapper.RATING_GOOD_WEIGHT
+        private const val RATING_EASY_WEIGHT = FsrsEvidenceRatingMapper.RATING_EASY_WEIGHT
+        private const val REVIEW_LOG_SAMPLE_LIMIT = 100_000
+        private const val EXAM_RAMP_DAYS = 14
         private const val MAX_CAS_RETRIES = 4
         private const val MAX_PROJECTION_DRAIN_STEPS = 64
         private const val EVENT_KIND_ATTEMPT = "ATTEMPT"

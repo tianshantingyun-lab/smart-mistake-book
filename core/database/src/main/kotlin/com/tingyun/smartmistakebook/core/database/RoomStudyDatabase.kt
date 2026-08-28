@@ -46,6 +46,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewPlanEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewQueueItemEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewQueueKnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewQueueReasonEntity
+import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionAdvanceReceiptEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEntity
@@ -2173,6 +2174,46 @@ internal class RoomStudyDatabase(
     override suspend fun findAttemptPersistence(
         submissionId: String,
     ): AttemptPersistenceRecord? = database.learningDao().findAttemptPersistence(submissionId)
+
+    override suspend fun recordReviewLogEntries(entries: List<ReviewLogEntry>) {
+        database.learningDao().recordReviewLog(
+            entries.map { entry ->
+                ReviewLogEntity(
+                    learnerId = entry.learnerId,
+                    cardId = entry.practiceUnitId,
+                    rating = entry.rating,
+                    deltaTDays = entry.deltaTDays,
+                    durationMs = entry.durationMs,
+                    reviewedAtUtc = entry.reviewedAtEpochMillis,
+                    sourceKind = entry.sourceKind,
+                    sourceId = entry.sourceId,
+                    evidenceWeight = entry.evidenceWeight,
+                    schedulingEligible = entry.schedulingEligible,
+                    timeBucket = entry.timeBucket,
+                    recordedAt = entry.recordedAtEpochMillis,
+                )
+            },
+        )
+    }
+
+    override suspend fun readReviewLogSamples(learnerId: String, limit: Int): List<ReviewLogSampleRecord> =
+        database.learningDao().readReviewLogSamples(learnerId, limit).map { row ->
+            ReviewLogSampleRecord(
+                practiceUnitId = row.practiceUnitId,
+                reviewedAtEpochMillis = row.reviewedAtUtc,
+                rating = row.rating,
+                durationMs = row.durationMs,
+                timeBucket = row.timeBucket,
+                sourceKind = row.sourceKind,
+                evidenceWeight = row.evidenceWeight,
+            )
+        }
+
+    override suspend fun readLastReviewLogAt(
+        learnerId: String,
+        practiceUnitId: String,
+        sourceKind: String,
+    ): Long? = database.learningDao().readLastReviewLogAt(learnerId, practiceUnitId, sourceKind)
 
     override suspend fun findAttemptAdvanceProof(
         attemptId: String,

@@ -13,6 +13,9 @@ enum class ReviewReason {
     STALE_KNOWLEDGE,
     CLOCK_ANOMALY,
     LONG_WAITING,
+    PREREQ_GAP,
+    CONFUSABLE_PAIR,
+    GRADUATED_MAINTENANCE,
 }
 
 enum class ReviewDifficultyBand {

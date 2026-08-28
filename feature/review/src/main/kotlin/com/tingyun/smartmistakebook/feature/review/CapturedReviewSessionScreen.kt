@@ -29,8 +29,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
+import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
@@ -57,7 +61,8 @@ fun CapturedReviewSessionScreen(
     queuePosition: Int,
     queueSize: Int,
     onSubmit: suspend (StudyReviewSelfReportSubmission) -> StudyReviewSelfReportSubmissionResult,
-    onContinue: (StudyReviewSelfReportSubmissionResult) -> Unit,
+    onSubmitRating: suspend (StudyReviewRatingSubmission) -> StudyReviewRatingSubmissionResult,
+    onContinue: (StudyReviewAdvanceResult) -> Unit,
     onNeedsTutor: (StudyReviewSelfReportSubmissionResult) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -74,6 +79,13 @@ fun CapturedReviewSessionScreen(
             } else {
                 onContinue(recordedResult)
             }
+            state.markResultDispatched()
+        } else if (
+            state.status == CapturedReviewSubmissionStatus.RECORDED &&
+            state.ratingResult != null &&
+            !state.resultDispatched
+        ) {
+            onContinue(state.ratingResult!!)
             state.markResultDispatched()
         }
     }
@@ -180,6 +192,25 @@ fun CapturedReviewSessionScreen(
         ) {
             Text(state.actionText(StudyReviewSelfReport.NEEDS_HELP))
         }
+        // Four-key rating vocabulary (spec §2.21): the lightest grade "很轻松"
+        // rides the rating channel; the three keys above keep their audited
+        // self-report semantics. Together all four FSRS grades are reachable.
+        OutlinedButton(
+            onClick = {
+                state.submitRating(
+                    rating = StudyReviewRating.EASY,
+                    practiceUnitId = entry.practiceUnitId,
+                    presentationId = presentationId,
+                    submit = onSubmitRating,
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("review_rating_easy"),
+            enabled = state.canSubmit(StudyReviewSelfReport.RECALL_COMPLETED),
+        ) {
+            Text("很轻松（比平时省力）")
+        }
         if (state.status == CapturedReviewSubmissionStatus.FAILED) {
             Spacer(Modifier.height(10.dp))
             Text(
@@ -209,6 +240,9 @@ internal class CapturedReviewSessionViewModel(
     internal var resultDispatched by mutableStateOf(
         savedStateHandle.get<Boolean>(RESULT_DISPATCHED_KEY) ?: false,
     )
+        private set
+
+    internal var ratingResult by mutableStateOf<StudyReviewRatingSubmissionResult?>(null)
         private set
 
     private val presentationStartedAtEpochMillis: Long =
@@ -258,6 +292,41 @@ internal class CapturedReviewSessionViewModel(
                 val result = submit(command)
                 check(result.report == report) { "Persisted review report disagrees with the local control" }
                 persistResult(result)
+                updateStatus(CapturedReviewSubmissionStatus.RECORDED)
+            } catch (cancelled: CancellationException) {
+                updateStatus(CapturedReviewSubmissionStatus.IDLE)
+                throw cancelled
+            } catch (_: Exception) {
+                updateStatus(CapturedReviewSubmissionStatus.FAILED)
+            }
+        }
+    }
+
+    fun submitRating(
+        rating: StudyReviewRating,
+        practiceUnitId: String,
+        presentationId: String,
+        submit: suspend (StudyReviewRatingSubmission) -> StudyReviewRatingSubmissionResult,
+    ) {
+        // The rating channel shares the self-report lock: one subjective
+        // report per presentation visit, whichever key it came from.
+        if (status == CapturedReviewSubmissionStatus.RECORDING ||
+            status == CapturedReviewSubmissionStatus.RECORDED
+        ) return
+        updateStatus(CapturedReviewSubmissionStatus.RECORDING)
+        viewModelScope.launch {
+            try {
+                val now = System.currentTimeMillis()
+                val command = StudyReviewRatingSubmission(
+                    requestId = "request:$presentationId:rating:$rating:1",
+                    presentationId = presentationId,
+                    practiceUnitId = practiceUnitId,
+                    rating = rating,
+                    durationSeconds = elapsedSeconds(now),
+                    occurredAtEpochMillis = now,
+                )
+                val result = submit(command)
+                ratingResult = result
                 updateStatus(CapturedReviewSubmissionStatus.RECORDED)
             } catch (cancelled: CancellationException) {
                 updateStatus(CapturedReviewSubmissionStatus.IDLE)

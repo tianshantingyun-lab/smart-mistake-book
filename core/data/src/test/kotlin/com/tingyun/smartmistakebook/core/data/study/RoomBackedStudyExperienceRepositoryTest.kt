@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
+import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
+import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteResult
 import com.tingyun.smartmistakebook.core.database.AssessmentEventSeedRecord
@@ -885,13 +887,13 @@ private class MutableClock(
 }
 
 @Suppress("OVERRIDE_DEPRECATION")
-private data class ResolvedPredictionOutcomeCall(
+internal data class ResolvedPredictionOutcomeCall(
     val practiceUnitId: String,
     val wasIndependentCorrect: Boolean,
     val observedAtEpochMillis: Long,
 )
 
-private class FakeStudyDatabasePort : StudyDatabasePort {
+internal class FakeStudyDatabasePort : StudyDatabasePort {
     private val mistakes = MutableStateFlow<List<MistakeRecord>>(emptyList())
     private val learningLedgerHead = MutableStateFlow(0L)
     val knowledgeGroundingSummaries =
@@ -900,7 +902,7 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
         MutableStateFlow<List<ReviewedKnowledgeCoverageRecord>>(emptyList())
     private val entries = linkedMapOf<String, MistakeRecord>()
     private val problemIds = linkedSetOf<String>()
-    private val latestSessions = mutableMapOf<String, ReviewSessionRecord>()
+    internal val latestSessions = mutableMapOf<String, ReviewSessionRecord>()
     private val sessionRevisions = mutableMapOf<Pair<String, Long>, ReviewSessionRecord>()
     private val advanceProofs = mutableMapOf<String, AttemptAdvanceProofRecord>()
     private val advanceReceipts = mutableMapOf<String, ReviewSessionAdvanceReceipt>()
@@ -921,6 +923,7 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     val resolvedPredictionOutcomes = mutableListOf<ResolvedPredictionOutcomeCall>()
     val visualAttempts = mutableListOf<VisualInteractionAttemptRecord>()
     val practiceUnitBindings = mutableListOf<PracticeUnitKnowledgeBindingRecord>()
+    val reviewLogEntries = mutableListOf<ReviewLogEntry>()
     val resolvedStudentModelPredictions =
         mutableListOf<ResolvedStudentModelPredictionRecord>()
 
@@ -1668,6 +1671,40 @@ private class FakeStudyDatabasePort : StudyDatabasePort {
     ): AttemptCorrectionResult = error("appendAttemptCorrection is not used by these focused tests")
 
     override suspend fun findAttemptPersistence(submissionId: String): AttemptPersistenceRecord? = null
+
+    override suspend fun recordReviewLogEntries(entries: List<ReviewLogEntry>) {
+        reviewLogEntries += entries
+    }
+
+    override suspend fun readReviewLogSamples(learnerId: String, limit: Int): List<ReviewLogSampleRecord> =
+        reviewLogEntries
+            .filter { it.learnerId == learnerId }
+            .sortedBy { it.reviewedAtEpochMillis }
+            .take(limit)
+            .map { entry ->
+                ReviewLogSampleRecord(
+                    practiceUnitId = entry.practiceUnitId,
+                    reviewedAtEpochMillis = entry.reviewedAtEpochMillis,
+                    rating = entry.rating,
+                    durationMs = entry.durationMs,
+                    timeBucket = entry.timeBucket,
+                    sourceKind = entry.sourceKind,
+                    evidenceWeight = entry.evidenceWeight,
+                )
+            }
+
+    override suspend fun readLastReviewLogAt(
+        learnerId: String,
+        practiceUnitId: String,
+        sourceKind: String,
+    ): Long? = reviewLogEntries
+        .filter {
+            it.learnerId == learnerId &&
+                it.practiceUnitId == practiceUnitId &&
+                it.sourceKind == sourceKind &&
+                it.schedulingEligible
+        }
+        .maxOfOrNull { it.reviewedAtEpochMillis }
 
     fun addAdvanceProof(proof: AttemptAdvanceProofRecord) {
         advanceProofs[proof.attemptId] = proof

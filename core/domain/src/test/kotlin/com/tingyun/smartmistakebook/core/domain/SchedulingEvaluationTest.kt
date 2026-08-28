@@ -1,0 +1,181 @@
+package com.tingyun.smartmistakebook.core.domain
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class SchedulingEvaluationHarnessTest {
+
+    @Test
+    fun `replay emits one prediction per repeat review skipping the first`() {
+        val history = listOf(
+            sample("unit-1", DAY * 0, FsrsRating.GOOD),
+            sample("unit-1", DAY * 2, FsrsRating.GOOD),
+            sample("unit-1", DAY * 6, FsrsRating.AGAIN),
+            sample("unit-1", DAY * 9, FsrsRating.GOOD),
+        )
+
+        val predictions = SchedulingReplay.predict(history)
+
+        assertEquals(3, predictions.size)
+        assertTrue(predictions.all { (probability, _) -> probability in 0.0..1.0 })
+    }
+
+    @Test
+    fun `harness reports finite losses for both models`() {
+        val samples = syntheticHistory()
+
+        val report = SchedulingEvaluationHarness.evaluate(samples)
+
+        assertTrue(report.fsrs.isValidModel)
+        assertTrue(report.baseline.isValidModel)
+        assertTrue(report.fsrs.sampleCount > 0)
+        assertTrue(report.fsrs.logLoss > 0.0)
+        assertTrue(report.baseline.logLoss > 0.0)
+    }
+
+    @Test
+    fun `optimizer keeps defaults below the data floor`() {
+        val samples = (0 until 3).flatMap { card ->
+            listOf(
+                sample("unit-$card", DAY * 0, FsrsRating.GOOD),
+                sample("unit-$card", DAY * 3, FsrsRating.GOOD),
+            )
+        }
+
+        val result = FsrsParameterOptimizer.optimize(samples)
+
+        assertEquals(FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA, result.mode)
+        assertEquals(
+            FsrsScheduleMath.DEFAULT_PARAMETERS.toList(),
+            result.parameters.toList(),
+        )
+    }
+
+    @Test
+    fun `optimizer fits initial stability only in the narrow band`() {
+        val samples = syntheticHistory(cardCount = 10)
+
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 6)
+
+        assertEquals(FsrsParameterOptimizer.Mode.INITIAL_STABILITY_ONLY, result.mode)
+        assertEquals(listOf(0, 1, 2, 3, 4, 5), result.optimizedParameterIndices)
+        assertTrue(result.trainLogLoss.isFinite())
+    }
+
+    @Test
+    fun `optimizer full fit improves or preserves the default log loss on learnable data`() {
+        val samples = biasedHistory(correctStabilityGrowth = true, cardCount = 30)
+
+        val defaultLoss = SchedulingReplay.bceLogLoss(
+            samples.groupBy(ReviewSample::practiceUnitId).values
+                .filter { it.size >= 2 }
+                .flatMap { SchedulingReplay.predict(it) },
+        )
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 12)
+
+        assertEquals(FsrsParameterOptimizer.Mode.FULL_FIT, result.mode)
+        assertTrue(
+            "optimized ${result.trainLogLoss} should not exceed default $defaultLoss",
+            result.trainLogLoss <= defaultLoss + 0.05,
+        )
+    }
+
+    private fun syntheticHistory(cardCount: Int = 12): List<ReviewSample> = (0 until cardCount).flatMap { card ->
+        var at = DAY * card
+        var rating = if (card % 3 == 0) FsrsRating.AGAIN else FsrsRating.GOOD
+        buildList {
+            add(sample("unit-$card", at, rating))
+            for (step in 1..5) {
+                at += DAY * (2 + step)
+                rating = if (step == 3) FsrsRating.AGAIN else FsrsRating.GOOD
+                add(sample("unit-$card", at, rating))
+            }
+        }
+    }
+
+    private fun biasedHistory(correctStabilityGrowth: Boolean, cardCount: Int): List<ReviewSample> {
+        require(correctStabilityGrowth)
+        return (0 until cardCount).flatMap { card ->
+            var at = DAY * card
+            buildList {
+                add(sample("unit-$card", at, FsrsRating.GOOD))
+                var interval = 3
+                for (step in 1..7) {
+                    at += DAY * interval
+                    add(sample("unit-$card", at, FsrsRating.GOOD))
+                    interval = (interval * 1.6).toInt().coerceAtLeast(2)
+                }
+            }
+        }
+    }
+
+    private fun sample(unitId: String, at: Long, rating: FsrsRating) = ReviewSample(
+        practiceUnitId = unitId,
+        reviewedAtEpochMillis = at,
+        rating = rating,
+    )
+
+    private companion object {
+        const val DAY = 86_400_000L
+    }
+}
+
+class TimeOfDaySignalsTest {
+
+    @Test
+    fun `default bucket split maps a learner day`() {
+        assertEquals(TimeBucket.MORNING, TimeBucketSplit().bucketFor(7))
+        assertEquals(TimeBucket.NOON, TimeBucketSplit().bucketFor(12))
+        assertEquals(TimeBucket.AFTERNOON, TimeBucketSplit().bucketFor(15))
+        assertEquals(TimeBucket.EVENING, TimeBucketSplit().bucketFor(20))
+        assertEquals(TimeBucket.NIGHT, TimeBucketSplit().bucketFor(1))
+    }
+
+    @Test
+    fun `cold start multipliers stay neutral`() {
+        val observations = List(20) { index ->
+            TimeOfDayObservation(TimeBucket.MORNING, isCorrect = index % 2 == 0, durationMs = 5_000)
+        }
+
+        val profile = TimeOfDayCalibrator.profile(observations)
+
+        assertEquals(1.0, profile.multiplierFor(TimeBucket.MORNING), 0.0)
+        assertNull(profile.rtBaseline)
+    }
+
+    @Test
+    fun `strong bucket accuracy raises its shrunken multiplier`() {
+        val observations = buildList {
+            repeat(40) { add(TimeOfDayObservation(TimeBucket.MORNING, isCorrect = true, durationMs = 10_000)) }
+            repeat(40) { add(TimeOfDayObservation(TimeBucket.EVENING, isCorrect = false, durationMs = 10_000)) }
+        }
+
+        val profile = TimeOfDayCalibrator.profile(observations)
+
+        assertTrue(profile.multiplierFor(TimeBucket.MORNING) > 1.0)
+        assertTrue(profile.multiplierFor(TimeBucket.EVENING) < 1.0)
+        assertTrue(profile.multiplierFor(TimeBucket.MORNING) <= TimeOfDayCalibrator.MAX_MULTIPLIER)
+        assertNotNull(profile.rtBaseline)
+    }
+
+    @Test
+    fun `suspected guesses lose weight only below the personal lower tail`() {
+        val observations = List(60) { index ->
+            TimeOfDayObservation(
+                TimeBucket.MORNING,
+                isCorrect = true,
+                durationMs = 20_000L + index * 500,
+            )
+        }
+        val profile = TimeOfDayCalibrator.profile(observations)
+
+        val fluent = TimeOfDayCalibrator.correctedWeight(1.0, true, 20_000, profile)
+        val slow = TimeOfDayCalibrator.correctedWeight(1.0, true, 60_000, profile)
+
+        assertEquals(1.0 * TimeOfDayCalibrator.GUESS_WEIGHT_FACTOR, fluent, 1e-9)
+        assertEquals(1.0, slow, 1e-9)
+    }
+}

@@ -25,7 +25,7 @@ class HLRPredictionAuditServiceTest {
         val features = HLRFeatures(
             independentCorrectCount = 2.0,
             evidenceMass = 2.0,
-            difficulty = 0.5,
+            difficulty = 0.55,
             timeBetweenReviewsDays = 1.0,
             daysSinceFirstSeen = 5.0,
             consecutiveCorrectStreak = 1.0,
@@ -148,7 +148,7 @@ class HLRPredictionAuditServiceTest {
     private fun memory(unitId: String) = ProblemMemoryState(
         practiceUnitId = unitId,
         stabilityDays = 1.0,
-        difficulty = 0.5,
+        difficulty = 5.5,
         lastReviewedAtEpochMillis = now - 5 * DAY_MILLIS,
         nextReviewAtEpochMillis = now - DAY_MILLIS,
         lapseCount = 1,
@@ -162,7 +162,7 @@ class HLRPredictionAuditServiceTest {
         knowledgeNodeIds = setOf("kc-a"),
         itemFamilyId = "family-$unitId",
         sourceBundleId = null,
-        difficulty = 0.5,
+        difficulty = 5.5,
         estimatedDurationSeconds = 60,
     )
 

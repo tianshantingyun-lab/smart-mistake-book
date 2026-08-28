@@ -17,7 +17,8 @@ import androidx.room3.DatabaseView
             entry.accepted_at_epoch_millis AS created_at_epoch_millis,
             entry.updated_at_epoch_millis AS updated_at_epoch_millis,
             memory.next_review_at_epoch_millis,
-            memory.retrievability,
+            NULL AS retrievability,
+            memory.learner_id AS memory_learner_id,
             (
                 SELECT
                     CASE
@@ -38,7 +39,7 @@ import androidx.room3.DatabaseView
                    AND binding.practice_unit_id = entry.practice_unit_id
                    AND binding.basis_revision_id = revision.revision_id
                 WHERE mastery.projection_name = 'study-experience-v1'
-                  AND mastery.learner_id = 'learner:local'
+                  AND mastery.learner_id = memory.learner_id
             ) AS mastery_id,
             (
                 SELECT GROUP_CONCAT(classification.display_name, CHAR(31))
@@ -62,10 +63,11 @@ import androidx.room3.DatabaseView
         JOIN problem_revision AS revision
             ON revision.revision_id = entry.current_revision_id
            AND revision.problem_id = entry.problem_id
-        LEFT JOIN problem_memory_state AS memory
+        LEFT JOIN learner_problem_memory_state AS memory
             ON memory.practice_unit_id = entry.practice_unit_id
+           AND memory.projection_name = 'study-experience-v1'
         WHERE entry.status = 'ACTIVE'
-    """,
+    """
 )
 internal data class LibraryCatalogView(
     @ColumnInfo(name = "entry_id")
@@ -87,6 +89,8 @@ internal data class LibraryCatalogView(
     @ColumnInfo(name = "next_review_at_epoch_millis")
     val nextReviewAtEpochMillis: Long?,
     val retrievability: Double?,
+    @ColumnInfo(name = "memory_learner_id")
+    val memoryLearnerId: String?,
     @ColumnInfo(name = "mastery_id")
     val masteryId: String,
     @ColumnInfo(name = "chapter_labels")

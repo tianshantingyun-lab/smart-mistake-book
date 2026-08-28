@@ -146,7 +146,7 @@ class BlockingLearningCoreReviewTest {
     }
 
     @Test
-    fun `multi knowledge evidence is distributed by accepted attribution weight`() {
+    fun `multi knowledge evidence gives every bound KC the full record`() {
         val result = projector.project(
             LearnerSnapshot.empty("learner"),
             listOf(
@@ -164,8 +164,11 @@ class BlockingLearningCoreReviewTest {
 
         val kcA = result.snapshot.knowledgeMasteryStates.getValue("kc-a")
         val kcB = result.snapshot.knowledgeMasteryStates.getValue("kc-b")
-        assertEquals(1.0, kcA.evidenceMass + kcB.evidenceMass, 1e-9)
-        assertTrue(kcA.masteryScore > kcB.masteryScore)
+        // Spec 2.13: all-KC full-record evidence - attribution weights only
+        // order bindings, they no longer divide the evidence mass.
+        assertEquals(1.0, kcA.evidenceMass, 1e-9)
+        assertEquals(1.0, kcB.evidenceMass, 1e-9)
+        assertEquals(kcA.masteryScore, kcB.masteryScore, 1e-9)
     }
 
     @Test
@@ -199,7 +202,13 @@ class BlockingLearningCoreReviewTest {
         val memory = result.snapshot.problemMemoryStates.getValue("unit-1")
 
         assertEquals(1, memory.answerRevealCount)
-        assertEquals(revealed.occurredAtEpochMillis + 10 * 60_000, memory.nextReviewAtEpochMillis)
+        // Learning steps are disabled (spec 2.15): the reveal lands on the
+        // whole-day interval inverse instead of a minutes-long step.
+        val expectedInterval = kotlin.math.round(memory.stabilityDays).toLong().coerceAtLeast(1)
+        assertEquals(
+            revealed.occurredAtEpochMillis + expectedInterval * DAY_MILLIS,
+            memory.nextReviewAtEpochMillis,
+        )
         assertTrue(result.snapshot.knowledgeMasteryStates.isEmpty())
     }
 
@@ -212,7 +221,11 @@ class BlockingLearningCoreReviewTest {
 
         assertEquals(setOf("reveal-1"), result.appliedAnswerRevealOutcomeIds)
         assertEquals(1, memory.answerRevealCount)
-        assertEquals(reveal.occurredAtEpochMillis + 10 * 60_000, memory.nextReviewAtEpochMillis)
+        val revealInterval = kotlin.math.round(memory.stabilityDays).toLong().coerceAtLeast(1)
+        assertEquals(
+            reveal.occurredAtEpochMillis + revealInterval * DAY_MILLIS,
+            memory.nextReviewAtEpochMillis,
+        )
         assertTrue(result.snapshot.knowledgeMasteryStates.isEmpty())
 
         val retry = projector.project(result.snapshot, listOf(reveal), 1)
@@ -367,7 +380,7 @@ class BlockingLearningCoreReviewTest {
     fun `review queue identity changes across learner and local day`() {
         val now = 10 * DAY_MILLIS
         val planner = ReviewPlanner()
-        val candidate = ReviewCandidate("unit-1", emptySet(), "family-1", null, 0.5, 60)
+        val candidate = ReviewCandidate("unit-1", emptySet(), "family-1", null, 5.5, 60)
 
         val first = planner.plan(
             ReviewPlanningRequest(
@@ -493,7 +506,10 @@ class BlockingLearningCoreReviewTest {
             7,
         )
 
-        assertEquals(
+        // Spec 2.13: attributions no longer scale evidence, so the tiny
+        // 0.01 binding delivers the full positive record and clears the
+        // conflict immediately instead of preserving it.
+        assertNotEquals(
             MasteryStatus.CONFLICTED,
             lowWeightResult.snapshot.knowledgeMasteryStates.getValue("kc-a").status,
         )

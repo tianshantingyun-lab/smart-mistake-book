@@ -650,6 +650,13 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                 submission = submission,
                             )
                         },
+                        onSubmitRating = { submission ->
+                            repository.submitReviewRating(
+                                sessionId = sessionId,
+                                expectedStateVersion = sessionVersion,
+                                submission = submission,
+                            )
+                        },
                         onContinue = continueReview,
                         onNeedsTutor = { result ->
                             stageReviewAdvance(result)

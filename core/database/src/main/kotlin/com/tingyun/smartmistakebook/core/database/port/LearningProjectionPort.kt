@@ -9,6 +9,8 @@ import com.tingyun.smartmistakebook.core.database.AttemptCorrectionRecord
 import com.tingyun.smartmistakebook.core.database.AttemptCorrectionResult
 import com.tingyun.smartmistakebook.core.database.AttemptPersistenceRecord
 import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
+import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
+import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.AttemptWriteResult
 import com.tingyun.smartmistakebook.core.database.LearningLedgerRead
 import com.tingyun.smartmistakebook.core.database.PersistedAnswerRevealP0
@@ -54,6 +56,22 @@ interface AttemptWritePort {
     ): List<AnswerRevealWriteResult>
 
     suspend fun appendAttemptCorrection(correction: AttemptCorrectionRecord): AttemptCorrectionResult
+
+    /**
+     * Raw collected review evidence (spec mastery-scheduling 3.1). Insert is
+     * idempotent per (learner, source id); collection is decoupled from
+     * scheduling and never blocks the ledger path on failure.
+     */
+    suspend fun recordReviewLogEntries(entries: List<ReviewLogEntry>)
+
+    suspend fun readReviewLogSamples(learnerId: String, limit: Int): List<ReviewLogSampleRecord>
+
+    /** Most recent review-log timestamp for one card and evidence kind. */
+    suspend fun readLastReviewLogAt(
+        learnerId: String,
+        practiceUnitId: String,
+        sourceKind: String,
+    ): Long?
 
     suspend fun findAttemptPersistence(submissionId: String): AttemptPersistenceRecord?
 

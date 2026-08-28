@@ -29,10 +29,10 @@ class ReviewPlannerTest {
             ),
         )
         val candidates = listOf(
-            candidate("unit-a", "family-1", "source-1", 0.5, 300),
-            candidate("unit-b", "family-1", "source-2", 0.2, 300),
-            candidate("unit-c", "family-3", "source-1", 0.8, 300),
-            candidate("unit-d", "family-4", "source-4", 0.8, 300),
+            candidate("unit-a", "family-1", "source-1", 5.5, 300),
+            candidate("unit-b", "family-1", "source-2", 2.0, 300),
+            candidate("unit-c", "family-3", "source-1", 8.0, 300),
+            candidate("unit-d", "family-4", "source-4", 8.0, 300),
         )
 
         val plan = planner.plan(
@@ -60,9 +60,9 @@ class ReviewPlannerTest {
         val request = ReviewPlanningRequest(
             learnerSnapshot = snapshot(memories),
             candidates = listOf(
-                candidate("hard", "family-h", "source-h", 0.9, 60),
-                candidate("easy", "family-e", "source-e", 0.2, 60),
-                candidate("medium", "family-m", "source-m", 0.5, 60),
+                candidate("hard", "family-h", "source-h", 9.0, 60),
+                candidate("easy", "family-e", "source-e", 2.0, 60),
+                candidate("medium", "family-m", "source-m", 5.0, 60),
             ),
             localDayEpochDay = 10,
             timeZoneId = "Asia/Shanghai",
@@ -81,7 +81,7 @@ class ReviewPlannerTest {
     fun `planning time and candidate metadata cannot reuse an immutable plan identity`() {
         val baseRequest = ReviewPlanningRequest(
             learnerSnapshot = snapshot(listOf(memory("unit-a", dueOffsetDays = -1))),
-            candidates = listOf(candidate("unit-a", "family-a", "source-a", 0.5, 60)),
+            candidates = listOf(candidate("unit-a", "family-a", "source-a", 5.5, 60)),
             localDayEpochDay = 10,
             timeZoneId = "Asia/Shanghai",
             timeBudgetSeconds = 60,
@@ -92,7 +92,7 @@ class ReviewPlannerTest {
         val later = planner.plan(baseRequest.copy(planningAtEpochMillis = now + 1))
         val changedDifficulty = planner.plan(
             baseRequest.copy(
-                candidates = listOf(baseRequest.candidates.single().copy(difficulty = 0.55)),
+                candidates = listOf(baseRequest.candidates.single().copy(difficulty = 6.5)),
             ),
         )
 
@@ -106,7 +106,7 @@ class ReviewPlannerTest {
         val plan = planner.plan(
             ReviewPlanningRequest(
                 learnerSnapshot = snapshot(listOf(memory("unit-a", dueOffsetDays = -2))),
-                candidates = listOf(candidate("unit-a", "family-a", null, 0.5, 60)),
+                candidates = listOf(candidate("unit-a", "family-a", null, 5.5, 60)),
                 localDayEpochDay = 10,
                 timeZoneId = "Asia/Shanghai",
                 timeBudgetSeconds = 60,
@@ -130,8 +130,8 @@ class ReviewPlannerTest {
         val baseRequest = ReviewPlanningRequest(
             learnerSnapshot = snapshot,
             candidates = listOf(
-                candidate("unit-a", "family-a", "source-a", 0.5, 60),
-                candidate("unit-z", "family-z", "source-z", 0.5, 60),
+                candidate("unit-a", "family-a", "source-a", 5.5, 60),
+                candidate("unit-z", "family-z", "source-z", 5.5, 60),
             ),
             localDayEpochDay = 10,
             timeZoneId = "Asia/Shanghai",
@@ -160,10 +160,10 @@ class ReviewPlannerTest {
 
     @Test
     fun `older unscheduled mistake outranks a newly arrived equal candidate`() {
-        val old = candidate("unit-z", "family-z", "source-z", 0.5, 60).copy(
+        val old = candidate("unit-z", "family-z", "source-z", 5.5, 60).copy(
             eligibleSinceEpochMillis = 0,
         )
-        val recent = candidate("unit-a", "family-a", "source-a", 0.5, 60).copy(
+        val recent = candidate("unit-a", "family-a", "source-a", 5.5, 60).copy(
             eligibleSinceEpochMillis = now - DAY_MILLIS,
         )
 
@@ -209,7 +209,7 @@ class ReviewPlannerTest {
                 unitId = "unit-${index.toString().padStart(4, '0')}",
                 familyId = "family-$index",
                 sourceId = "source-$index",
-                difficulty = 0.5,
+                difficulty = 5.5,
                 seconds = 60,
             ).copy(
                 eligibleSinceEpochMillis =
@@ -245,7 +245,7 @@ class ReviewPlannerTest {
                 memories[practiceUnitId] = ProblemMemoryState(
                     practiceUnitId = practiceUnitId,
                     stabilityDays = 30.0,
-                    difficulty = 0.5,
+                    difficulty = 5.5,
                     lastReviewedAtEpochMillis = planningAt,
                     nextReviewAtEpochMillis = planningAt + 30 * DAY_MILLIS,
                     lapseCount = 0,
@@ -265,7 +265,7 @@ class ReviewPlannerTest {
             ReviewPlanningRequest(
                 learnerSnapshot = snapshot(listOf(memory("unit-a", dueOffsetDays = -1)))
                     .copy(freshness = LearnerSnapshotFreshness.STALE),
-                candidates = listOf(candidate("unit-a", "family-a", null, 0.5, 60)),
+                candidates = listOf(candidate("unit-a", "family-a", null, 5.5, 60)),
                 localDayEpochDay = 10,
                 timeZoneId = "Asia/Shanghai",
                 timeBudgetSeconds = 60,
@@ -278,7 +278,7 @@ class ReviewPlannerTest {
     fun `planner refuses a decision time before the projected snapshot`() {
         ReviewPlanningRequest(
             learnerSnapshot = snapshot(listOf(memory("unit-a", dueOffsetDays = -1))),
-            candidates = listOf(candidate("unit-a", "family-a", null, 0.5, 60)),
+            candidates = listOf(candidate("unit-a", "family-a", null, 5.5, 60)),
             localDayEpochDay = 10,
             timeZoneId = "Asia/Shanghai",
             timeBudgetSeconds = 60,
@@ -292,7 +292,7 @@ class ReviewPlannerTest {
             learnerSnapshot = snapshot(listOf(memory("unit-a", dueOffsetDays = -1))).copy(
                 correctionWatermarkEpochMillis = now + 1,
             ),
-            candidates = listOf(candidate("unit-a", "family-a", null, 0.5, 60)),
+            candidates = listOf(candidate("unit-a", "family-a", null, 5.5, 60)),
             localDayEpochDay = 10,
             timeZoneId = "Asia/Shanghai",
             timeBudgetSeconds = 60,
@@ -313,7 +313,7 @@ class ReviewPlannerTest {
                     knowledgeMasteryStates = mapOf("kc-a" to conflicted),
                 ),
                 candidates = listOf(
-                    candidate("unit-a", "family-a", null, 0.5, 60).copy(
+                    candidate("unit-a", "family-a", null, 5.5, 60).copy(
                         knowledgeNodeIds = setOf("kc-a", "kc-missing"),
                     ),
                 ),
@@ -338,7 +338,7 @@ class ReviewPlannerTest {
         val plan = planner.plan(
             ReviewPlanningRequest(
                 learnerSnapshot = snapshot(listOf(futureMemory)),
-                candidates = listOf(candidate("unit-a", "family-a", null, 0.5, 60)),
+                candidates = listOf(candidate("unit-a", "family-a", null, 5.5, 60)),
                 localDayEpochDay = 10,
                 timeZoneId = "Asia/Shanghai",
                 timeBudgetSeconds = 60,
@@ -378,7 +378,7 @@ class ReviewPlannerTest {
                 learnerSnapshot = base.copy(
                     knowledgeMasteryStates = mapOf("kc-a" to highButExpired),
                 ),
-                candidates = listOf(candidate("unit-a", "family-a", null, 0.5, 60)),
+                candidates = listOf(candidate("unit-a", "family-a", null, 5.5, 60)),
                 localDayEpochDay = 10,
                 timeZoneId = "Asia/Shanghai",
                 timeBudgetSeconds = 60,
@@ -413,7 +413,7 @@ class ReviewPlannerTest {
     private fun memory(unitId: String, dueOffsetDays: Long) = ProblemMemoryState(
         practiceUnitId = unitId,
         stabilityDays = 1.0,
-        difficulty = 0.5,
+        difficulty = 5.5,
         lastReviewedAtEpochMillis = now - 5 * DAY_MILLIS,
         nextReviewAtEpochMillis = now + dueOffsetDays * DAY_MILLIS,
         lapseCount = 1,
