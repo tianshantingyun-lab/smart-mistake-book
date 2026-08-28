@@ -271,11 +271,12 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **A3**：`StudyChoiceSubmission.hintCount` → `AttemptWriteCommand.hintCount/revealedBeforeAnswer` → attempt_event 列 → `resolveOutcome(hintCount)`；hint UI 未上线前恒为 0（列与链路已就绪）。
 - **考试模式（§2.17）**：考试日历存 DataStore；考前 14 天 ramp 进 `examPriority`（选题侧提前纳入，早复习理由已存在）；r*_exam 不进投影公式——投影必须事件确定性可重放，日历属可变外部状态，此为对 §2.17 的有意收窄。
 - **leech（§2.16）**：`lapseCount≥6 && consecutiveCrossDayAgain≥2` 派生态；planner 剔除常规排期；难度冻结；恢复=跨日成功自动清零（替代"手动恢复"，避免新增账本事件类型，重放安全）。
-- **反振荡（§2.18）**：同 KC 每会话 ≤2（硬配额， starving 安全）+ 最弱项占比 >25% 罚分；EMA 平滑因历史分数未存档而未实现（记录为缺口）。
+- **反振荡（§2.18）**：同 KC 每会话 ≤2（硬配额， starving 安全）+ 最弱项占比 >25% 罚分；**EMA 平滑（已闭合）**：`MasterySmoothing.smoothedMasteryScore` 以 7 天半衰衰减独立答对观测、按校准支持仍在期占比产出 EMA，与保守分 50/50 混合后作为 weakness 输入（双计划器接线），单日好坏不再直接冲击队列；先修门槛 τ_ready 仍读原始保守分（保守口径不被平滑放大）。
 - **毕业（§2.10）**：跨日成功 3 连 + I(r*,S)≥90 天 → next=I(0.8,S)，投影内确定性实现。
-- **C1（§2.13 修订版）**：全 KC 各记完整证据（投影不再乘 attribution.weight；binding 语义降级为排序/展示）。§3.4 伪 KC 因 attribution 表外键约束未落 mastery 态，无绑定题由 MISSING_KNOWLEDGE_EVIDENCE 理由维持调度（部分实现）。
+- **C1（§2.13 修订版）**：全 KC 各记完整证据（投影不再乘 attribution.weight；binding 语义降级为排序/展示）。
+- **§3.4 伪 KC（已闭合）**：`ensurePseudoKnowledgeBinding` 幂等创建 `pseudo:<SUBJECT>` 占位知识节点（MODEL_CANDIDATE、pseudo-node-v1）与按（题/修订/通道 taxonomy）键的伪绑定行，绕开 attribution 外键约束走标准归因路径；自评/评级快照对无绑定题自动携带伪归因（weight=1.0/PRIMARY/DIRECT，满足 §2.13 全证据语义）；计划器候选对无绑定题回落 `pseudo:<SUBJECT>`；伪绑定节点不计入 readyToLearn 前置判定（无 PREREQUISITE_OF 关系即无前置）。视觉通道维持审计 §12 的保守门（仅真实绑定），未放宽。
 - **时段/RT 信号（§2.12/2.14）**：review_log 记 time_bucket；`TimeOfDayCalibrator` 产出收缩乘数（桶样本 <30 恒为 1）与 log-normal RT 基线；猜疑低 RT 答对打 0.8 折，仅作用于证据权重、不进曲线；假期重估/中断/睡眠推断因无信号源未实现（曲线天然吸收长假衰减）。
 - **B6（§2.11）**：`SchedulingEvaluationHarness`（双模型 BCE log-loss + 时间序切分 + 上线门 `fsrsBeatsBaseline`）与 `FsrsParameterOptimizer`（Adam+中心差分，8/64 阈值，<64 仅拟合 w0..w5）；优化参数经 `SchedulingSettingsStore` 存储、下次启动生效（灰度=不动既有 due）。
 - **四键自评（§2.21/§9.3）**：捕获题复习界面四键（没想起来/很费劲/正常/很轻松）经 `submitReviewRating` 入账（Again=卡住键，权重 1.0/0.7/0.8/0.9 映射 G=1/2/3/4）；原三档自评 API 保留为详情页元认知通道；冷却拦截重复提交并返回 `evidenceSuppressedByCooldown`。
 
-**验证**：`core:domain` 226、`core:data` 204、`core:database` 59、`feature:review` 11、`app` 31（双 flavor）单元测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug`、`lintLocalFirstDebug/lintStrictOfflineDebug` 全绿；`core/database/schemas` 无 drift（新增 36.json 由 exportSchema 生成）。设备端 E2E（真机迁移 v35→v36、视图回归）按用户指示继续延后。
+**验证**：`core:domain` 230（含 MasterySmoothingTest 4 例）、`core:data` 204、`core:database` 59、`feature:review` 11、`app` 31（双 flavor）单元测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug`、`lintLocalFirstDebug/lintStrictOfflineDebug` 全绿；`core/database/schemas` 无 drift（新增 36.json 由 exportSchema 生成）。设备端 E2E（真机迁移 v35→v36、视图回归）按用户指示继续延后。

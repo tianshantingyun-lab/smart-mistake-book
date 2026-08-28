@@ -62,6 +62,12 @@ import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredi
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 
+/** Placeholder display name for pseudo-KC fallback nodes (spec §3.4). */
+internal const val PSEUDO_NODE_DISPLAY_NAME = "未归类知识点"
+
+/** Taxonomy marker carried by pseudo knowledge nodes themselves. */
+internal const val PSEUDO_TAXONOMY_VERSION = "pseudo-node-v1"
+
 internal class RoomStudyDatabase(
     internal val database: StudyDatabase,
 ) : StudyDatabasePort {
@@ -932,6 +938,63 @@ internal class RoomStudyDatabase(
                     acceptedAtEpochMillis = row.acceptedAtEpochMillis,
                 )
             }
+
+    override suspend fun ensurePseudoKnowledgeBinding(
+        practiceUnitId: String,
+        problemRevisionId: String,
+        taxonomyVersion: String,
+        subject: String,
+        acceptedAtEpochMillis: Long,
+    ): PracticeUnitKnowledgeBindingRecord? {
+        require(subject.isNotBlank()) { "subject must not be blank" }
+        val knowledgeNodeId = "pseudo:${subject.uppercase()}"
+        val bindingId = "pseudo-binding:$practiceUnitId:$problemRevisionId:$taxonomyVersion:$knowledgeNodeId"
+        val organizationDao = database.problemOrganizationDao()
+        // The pseudo node is a placeholder KC (spec §3.4): it exists so the
+        // knowledge-node foreign keys on mastery state are satisfied; it is
+        // never human-verified, hence MODEL_CANDIDATE.
+        if (organizationDao.readKnowledgeNode(knowledgeNodeId) == null) {
+            organizationDao.insertKnowledgeNodes(
+                listOf(
+                    KnowledgeNodeEntity(
+                        knowledgeNodeId = knowledgeNodeId,
+                        stableCode = knowledgeNodeId,
+                        subject = subject,
+                        displayName = PSEUDO_NODE_DISPLAY_NAME,
+                        canonicalName = "",
+                        nodeKind = "TOPIC",
+                        granularity = "TOPIC",
+                        aliasesText = "",
+                        boundaryMarkdown = null,
+                        verificationStatus = "MODEL_CANDIDATE",
+                        parentKnowledgeNodeId = null,
+                        taxonomyVersion = PSEUDO_TAXONOMY_VERSION,
+                        createdAtEpochMillis = acceptedAtEpochMillis,
+                    ),
+                ),
+            )
+        }
+        val binding = PracticeUnitKnowledgeBindingEntity(
+            bindingId = bindingId,
+            practiceUnitId = practiceUnitId,
+            knowledgeNodeId = knowledgeNodeId,
+            basisRevisionId = problemRevisionId,
+            strength = 1.0,
+            sourceType = "PSEUDO_FALLBACK",
+            taxonomyVersion = taxonomyVersion,
+            acceptedAtEpochMillis = acceptedAtEpochMillis,
+        )
+        organizationDao.insertKnowledgeBindings(listOf(binding))
+        val persisted = organizationDao.readKnowledgeBinding(bindingId) ?: return null
+        return PracticeUnitKnowledgeBindingRecord(
+            bindingId = persisted.bindingId,
+            practiceUnitId = persisted.practiceUnitId,
+            knowledgeNodeId = persisted.knowledgeNodeId,
+            basisRevisionId = persisted.basisRevisionId,
+            taxonomyVersion = persisted.taxonomyVersion,
+            acceptedAtEpochMillis = persisted.acceptedAtEpochMillis,
+        )
+    }
 
     override suspend fun readSubjectKnowledgeNodes(
         subject: String,

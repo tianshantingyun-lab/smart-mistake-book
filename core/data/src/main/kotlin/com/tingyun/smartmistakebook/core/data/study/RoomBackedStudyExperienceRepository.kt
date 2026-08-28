@@ -769,10 +769,17 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    private fun prepareRatingSubmission(
+    private suspend fun prepareRatingSubmission(
         submission: StudyReviewRatingSubmission,
         mistake: MistakeRecord,
     ): PreparedSelfReportSubmission {
+        val pseudoAttributions = buildPseudoAttribution(
+            practiceUnitId = mistake.practiceUnitId,
+            problemRevisionId = mistake.problemRevisionId,
+            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
+            subject = mistake.subject,
+            acceptedAtEpochMillis = submission.occurredAtEpochMillis,
+        )
         val evidenceSnapshot = AssessmentEvidenceSnapshot(
             snapshotId = stableId("rating-snapshot", submission.requestId),
             assessmentItemId = LocalReviewSelfReportContract.ASSESSMENT_ITEM_ID_PREFIX +
@@ -788,7 +795,7 @@ class RoomBackedStudyExperienceRepository(
             taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
             verification = AssessmentSnapshotVerification.VERIFIED,
             calibration = CalibrationSnapshot.unknown(),
-            attributions = emptyList(),
+            attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
         val evidence = ratingEvidenceFor(submission.rating)
@@ -820,6 +827,39 @@ class RoomBackedStudyExperienceRepository(
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = studyDayAt(submission.occurredAtEpochMillis),
+            ),
+        )
+    }
+
+    /**
+     * Spec 3.4 pseudo-KC fallback: when a saved question carries no accepted
+     * knowledge bindings, its subjective evidence still lands on the
+     * subject-scoped pseudo knowledge node through a deterministic pseudo
+     * binding, so mastery state is never lost for unbound questions.
+     */
+    private suspend fun buildPseudoAttribution(
+        practiceUnitId: String,
+        problemRevisionId: String,
+        taxonomyVersion: String,
+        subject: String,
+        acceptedAtEpochMillis: Long,
+    ): List<KnowledgeEvidenceAttribution> {
+        val binding = database.ensurePseudoKnowledgeBinding(
+            practiceUnitId = practiceUnitId,
+            problemRevisionId = problemRevisionId,
+            taxonomyVersion = taxonomyVersion,
+            subject = subject,
+            acceptedAtEpochMillis = acceptedAtEpochMillis,
+        ) ?: return emptyList()
+        return listOf(
+            KnowledgeEvidenceAttribution(
+                bindingId = binding.bindingId,
+                knowledgeNodeId = binding.knowledgeNodeId,
+                weight = 1.0,
+                basisRevisionId = binding.basisRevisionId,
+                taxonomyVersion = binding.taxonomyVersion,
+                role = EvidenceAttributionRole.PRIMARY,
+                certainty = EvidenceAttributionCertainty.DIRECT,
             ),
         )
     }
@@ -1357,6 +1397,12 @@ class RoomBackedStudyExperienceRepository(
                         curatedEvidence?.attributions
                             ?.mapTo(linkedSetOf()) { it.knowledgeNodeId }
                             .orEmpty()
+                            .ifEmpty {
+                                // Spec §3.4: unbound questions fall back to the
+                                // subject-scoped pseudo KC so their mastery
+                                // evidence stays visible to the planner.
+                                setOf("pseudo:${mistake.subject.uppercase()}")
+                            }
                     },
                     itemFamilyId = curatedEvidence?.itemFamilyId
                         ?: "saved-question:${mistake.practiceUnitId}",
@@ -1892,10 +1938,17 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    private fun prepareSelfReportSubmission(
+    private suspend fun prepareSelfReportSubmission(
         submission: StudyReviewSelfReportSubmission,
         mistake: MistakeRecord,
     ): PreparedSelfReportSubmission {
+        val pseudoAttributions = buildPseudoAttribution(
+            practiceUnitId = mistake.practiceUnitId,
+            problemRevisionId = mistake.problemRevisionId,
+            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
+            subject = mistake.subject,
+            acceptedAtEpochMillis = submission.occurredAtEpochMillis,
+        )
         val evidenceSnapshot = AssessmentEvidenceSnapshot(
             snapshotId = stableId("self-report-snapshot", submission.requestId),
             assessmentItemId = LocalReviewSelfReportContract.ASSESSMENT_ITEM_ID_PREFIX +
@@ -1911,7 +1964,7 @@ class RoomBackedStudyExperienceRepository(
             taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
             verification = AssessmentSnapshotVerification.VERIFIED,
             calibration = CalibrationSnapshot.unknown(),
-            attributions = emptyList(),
+            attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
         val reportDecision = when (submission.report) {

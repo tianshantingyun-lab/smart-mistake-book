@@ -480,7 +480,9 @@ class ReviewPlannerV2(
                     reasons += ReviewReason.CALIBRATION_CHECK
                     1.0
                 }
-                else -> 1.0 - state.conservativeMasteryScore
+                // Spec 2.18: weakness input is the 7-day half-life smoothed
+                // mastery, damping single-day swings.
+                else -> 1.0 - MasterySmoothing.smoothedMasteryScore(state, now)
             }
         }
 

@@ -353,7 +353,7 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     @Test
-    fun capturedReviewSelfReportAdvancesOnceWithoutKnowledgeAttribution() = runBlocking {
+    fun capturedReviewSelfReportAttributesToPseudoKnowledgeNode() = runBlocking {
         val database = FakeStudyDatabasePort().apply {
             addMistake(
                 MistakeRecord(
@@ -411,7 +411,12 @@ class RoomBackedStudyExperienceRepositoryTest {
             assertFalse(replay.created)
             assertEquals(first.progress, replay.progress)
             assertEquals(0.35, database.lastAttemptCommand?.evidence?.weight ?: -1.0, 0.0)
-            assertTrue(database.lastEvidenceSnapshot?.attributions?.isEmpty() == true)
+            // Spec 3.4: the unbound question attributes its evidence to the
+            // subject-scoped pseudo KC through the pseudo binding.
+            val pseudoAttribution = database.lastEvidenceSnapshot?.attributions?.singleOrNull()
+            assertEquals("pseudo:MATH", pseudoAttribution?.knowledgeNodeId)
+            assertEquals(1.0, pseudoAttribution?.weight ?: -1.0, 0.0)
+            assertTrue(database.pseudoBindingCalls.all { it == "pseudo:MATH" })
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -926,6 +931,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val reviewLogEntries = mutableListOf<ReviewLogEntry>()
     val resolvedStudentModelPredictions =
         mutableListOf<ResolvedStudentModelPredictionRecord>()
+    val pseudoBindingCalls = mutableListOf<String>()
+    var pseudoKnowledgeBindingEnabled = true
 
     override suspend fun recordStudentModelPredictions(
         predictions: List<StudentModelPredictionRecord>,
@@ -1705,6 +1712,27 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
                 it.schedulingEligible
         }
         .maxOfOrNull { it.reviewedAtEpochMillis }
+
+    override suspend fun ensurePseudoKnowledgeBinding(
+        practiceUnitId: String,
+        problemRevisionId: String,
+        taxonomyVersion: String,
+        subject: String,
+        acceptedAtEpochMillis: Long,
+    ): PracticeUnitKnowledgeBindingRecord? {
+        if (!pseudoKnowledgeBindingEnabled) return null
+        val knowledgeNodeId = "pseudo:${subject.uppercase()}"
+        val bindingId = "pseudo-binding:$practiceUnitId:$problemRevisionId:$taxonomyVersion:$knowledgeNodeId"
+        pseudoBindingCalls += knowledgeNodeId
+        return PracticeUnitKnowledgeBindingRecord(
+            bindingId = bindingId,
+            practiceUnitId = practiceUnitId,
+            knowledgeNodeId = knowledgeNodeId,
+            basisRevisionId = problemRevisionId,
+            taxonomyVersion = taxonomyVersion,
+            acceptedAtEpochMillis = acceptedAtEpochMillis,
+        )
+    }
 
     fun addAdvanceProof(proof: AttemptAdvanceProofRecord) {
         advanceProofs[proof.attemptId] = proof

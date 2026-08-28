@@ -62,6 +62,21 @@ interface VisualInteractionPort {
     suspend fun readPracticeUnitKnowledgeBindings(
         practiceUnitId: String,
     ): List<PracticeUnitKnowledgeBindingRecord> = emptyList()
+
+    /**
+     * Pseudo-KC fallback (spec mastery-scheduling §3.4): idempotently ensures
+     * the subject-scoped pseudo knowledge node (`pseudo:<subject>`) and a
+     * practice-unit binding for this exact revision/taxonomy pair exist, so
+     * an unbound question can carry mastery evidence through the standard
+     * attribution path. Returns the binding record to attribute against.
+     */
+    suspend fun ensurePseudoKnowledgeBinding(
+        practiceUnitId: String,
+        problemRevisionId: String,
+        taxonomyVersion: String,
+        subject: String,
+        acceptedAtEpochMillis: Long,
+    ): PracticeUnitKnowledgeBindingRecord? = null
 }
 
 /** Port-level prediction record for the student-model audit loop (PR-07). */
