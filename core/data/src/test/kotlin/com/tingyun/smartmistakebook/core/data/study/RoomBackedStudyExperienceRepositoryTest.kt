@@ -1682,7 +1682,15 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun findAttemptPersistence(submissionId: String): AttemptPersistenceRecord? = null
 
     override suspend fun recordTeachingAdvisories(entries: List<TeachingAdvisoryRecord>) {
-        teachingAdvisories += entries
+        entries.forEach { entry ->
+            // Mirror the Room UNIQUE(learner, source id, kind) dedup.
+            teachingAdvisories.removeAll {
+                it.learnerId == entry.learnerId &&
+                    it.sourceId == entry.sourceId &&
+                    it.advisoryKind == entry.advisoryKind
+            }
+            teachingAdvisories += entry
+        }
     }
 
     override fun observeTeachingAdvisories(

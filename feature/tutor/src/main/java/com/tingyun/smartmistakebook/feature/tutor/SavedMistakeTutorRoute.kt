@@ -12,7 +12,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
@@ -34,6 +37,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -63,6 +67,12 @@ fun SavedMistakeTutorRoute(
     onBack: () -> Unit,
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
     onRecordTeachingFocus: (sessionId: String, practiceUnitId: String, labels: List<String>) -> Unit = { _, _, _ -> },
+    /** Silent misconception debrief request on session exit; no UI surface. */
+    onRequestDebrief: (sessionId: String, practiceUnitId: String, stemMarkdown: String, transcriptMarkdown: String, labels: List<String>) -> Unit = { _, _, _, _, _ -> },
+    /** Silent misconception advisory write when a debrief completes. */
+    onRecordMisconception: (sessionId: String, practiceUnitId: String, payloadMarkdown: String) -> Unit = { _, _, _ -> },
+    /** Stored advisories injected into the tutor prompt (read side of the loop). */
+    priorTeachingAdvisories: List<String> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
     val stateFlow: Flow<MistakeDetailState> = remember(key, repository) {
@@ -122,6 +132,9 @@ fun SavedMistakeTutorRoute(
                 onOpenModelSettings = onOpenModelSettings,
                 onBack = onBack,
                 onRecordTeachingFocus = onRecordTeachingFocus,
+                onRequestDebrief = onRequestDebrief,
+                onRecordMisconception = onRecordMisconception,
+                priorTeachingAdvisories = priorTeachingAdvisories,
                 modifier = modifier.testTag("saved_mistake_tutor_screen"),
             )
         }
@@ -172,6 +185,12 @@ internal fun SavedMistakeTutorContent(
     onBack: () -> Unit = {},
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
     onRecordTeachingFocus: (sessionId: String, practiceUnitId: String, labels: List<String>) -> Unit = { _, _, _ -> },
+    /** Silent misconception debrief request on session exit; no UI surface. */
+    onRequestDebrief: (sessionId: String, practiceUnitId: String, stemMarkdown: String, transcriptMarkdown: String, labels: List<String>) -> Unit = { _, _, _, _, _ -> },
+    /** Silent misconception advisory write when a debrief completes. */
+    onRecordMisconception: (sessionId: String, practiceUnitId: String, payloadMarkdown: String) -> Unit = { _, _, _ -> },
+    /** Stored advisories injected into the tutor prompt (read side of the loop). */
+    priorTeachingAdvisories: List<String> = emptyList(),
     clock: () -> Long = System::currentTimeMillis,
     modifier: Modifier = Modifier,
 ) {
@@ -188,12 +207,38 @@ internal fun SavedMistakeTutorContent(
             learningMemory = learningMemory,
             relatedKnowledgeNodeIds = relatedKnowledgeNodeIds,
             reviewedTeachingReferences = reviewedTeachingReferences,
+            priorTeachingAdvisories = priorTeachingAdvisories,
         )
     }
     val identity = state.detail.identity
     // Three-store closed loop: whenever the model's plan names teaching
     // focus labels, persist them as advisories in the mastery database.
     // Silent by design (user decision) - no prompt, no badge.
+    var debriefLabels by remember(question.sessionId) { mutableStateOf(emptyList<String>()) }
+    var debriefTranscript by remember(question.sessionId) { mutableStateOf("") }
+    DisposableEffect(question.sessionId, modelTasks) {
+        onDispose {
+            // Silent debrief on session exit (user-approved, no UI surface).
+            val stem = question.questionDocument.document.blocks
+                .mapNotNull { block ->
+                    when (block) {
+                        is com.tingyun.smartmistakebook.core.model.ContentBlock.Paragraph -> block.markdown
+                        is com.tingyun.smartmistakebook.core.model.ContentBlock.Formula -> block.alternativeText
+                        else -> null
+                    }
+                }
+                .joinToString(separator = "\n")
+            if (debriefLabels.isNotEmpty() && stem.isNotBlank()) {
+                onRequestDebrief(
+                    question.sessionId,
+                    identity.practiceUnitId,
+                    stem.take(com.tingyun.smartmistakebook.core.model.TutorDebriefInput.MAX_DEBRIEF_STEM_CHARS),
+                    debriefTranscript.take(com.tingyun.smartmistakebook.core.model.TutorDebriefInput.MAX_DEBRIEF_TRANSCRIPT_CHARS),
+                    debriefLabels,
+                )
+            }
+        }
+    }
     LaunchedEffect(question.sessionId, modelTasks) {
         modelTasks
             .observeRecentBySubject(question.sessionId, ModelTaskKind.TUTOR_PLAN, limit = 8)
@@ -207,6 +252,21 @@ internal fun SavedMistakeTutorContent(
                         output.sessionId,
                         identity.practiceUnitId,
                         labels,
+                    )
+                }
+            }
+    }
+    LaunchedEffect(question.sessionId, modelTasks, onRecordMisconception) {
+        modelTasks
+            .observeRecentBySubject(question.sessionId, ModelTaskKind.LEARNING_SUMMARIZE, limit = 4)
+            .collect { tasks ->
+                tasks.forEach { task ->
+                    val output = task.output as? TutorDebriefOutput ?: return@forEach
+                    val misconception = output.misconceptionMarkdown ?: return@forEach
+                    onRecordMisconception(
+                        output.sessionId,
+                        output.practiceUnitId,
+                        misconception,
                     )
                 }
             }
@@ -275,6 +335,7 @@ internal fun savedMistakeTutorQuestion(
     learningMemory: StudyQuestionMemory? = null,
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+    priorTeachingAdvisories: List<String> = emptyList(),
 ): TutorQuestionContext {
     val identity = state.detail.identity
     state.detail.tutorConversation?.let { conversation ->
@@ -305,6 +366,7 @@ internal fun savedMistakeTutorQuestion(
         learningMemory = learningMemory,
         relatedKnowledgeNodeIds = relatedKnowledgeNodeIds,
         reviewedTeachingReferences = reviewedTeachingReferences,
+        priorTeachingAdvisories = priorTeachingAdvisories,
     )
 }
 

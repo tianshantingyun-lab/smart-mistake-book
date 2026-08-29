@@ -85,6 +85,14 @@ object ModelTaskContractRegistry {
             prohibitedDisclosures = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
         ),
         ModelTaskContract(
+            kind = ModelTaskKind.LEARNING_SUMMARIZE,
+            egressPurpose = ModelEgressPurpose.TUTORING,
+            promptPolicyVersion = ModelPromptPolicyVersions.LEARNING_SUMMARIZE,
+            assetPolicy = ModelTaskAssetPolicy.FORBIDDEN,
+            requiredDisclosures = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE,
+            prohibitedDisclosures = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
+        ),
+        ModelTaskContract(
             kind = ModelTaskKind.TUTOR_RESPOND,
             egressPurpose = ModelEgressPurpose.TUTORING,
             promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_RESPOND,

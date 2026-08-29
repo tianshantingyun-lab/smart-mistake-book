@@ -25,6 +25,7 @@ import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
+import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorQuestionLearningEvidence
@@ -384,6 +385,8 @@ internal data class TutorQuestionContext(
     val learningMemory: StudyQuestionMemory? = null,
     val relatedKnowledgeNodeIds: Set<String> = emptySet(),
     val reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+    /** Stored model advisories for this question (three-store loop read side). */
+    val priorTeachingAdvisories: List<String> = emptyList(),
 ) {
     init {
         require(sessionId.isNotBlank())
@@ -477,6 +480,63 @@ internal fun tutorPlanRequestId(
     return "tutor-plan:$sessionFingerprint:${question.revisionNumber}:$cycleOrdinal:${priorTurns.size + 1}:$providerVersion:$TUTOR_PROMPT_POLICY_VERSION:$attempt"
 }
 
+/**
+ * Silent post-session debrief request (three-store loop). Privacy-first:
+ * only built for providers that keep the transcript on-device
+ * (LOCAL_NO_EGRESS); external-provider configurations skip the debrief
+ * silently rather than ship the transcript without a per-session approval.
+ */
+/** Public app-facing wrapper (feature-internal builder stays hidden). */
+fun buildTutorDebriefRequestForApp(
+    capabilities: ProviderCapabilitySnapshot,
+    sessionId: String,
+    practiceUnitId: String,
+    subject: String,
+    questionStemMarkdown: String,
+    transcriptMarkdown: String,
+    knowledgeLabels: List<String>,
+    requestId: String,
+    occurredAtEpochMillis: Long,
+): com.tingyun.smartmistakebook.core.model.ModelTaskRequest? = buildTutorDebriefRequest(
+    capabilities = capabilities,
+    sessionId = sessionId,
+    practiceUnitId = practiceUnitId,
+    subject = subject,
+    questionStemMarkdown = questionStemMarkdown,
+    transcriptMarkdown = transcriptMarkdown,
+    knowledgeLabels = knowledgeLabels,
+    requestId = requestId,
+    occurredAtEpochMillis = occurredAtEpochMillis,
+)
+
+internal fun buildTutorDebriefRequest(
+    capabilities: ProviderCapabilitySnapshot,
+    sessionId: String,
+    practiceUnitId: String,
+    subject: String,
+    questionStemMarkdown: String,
+    transcriptMarkdown: String,
+    knowledgeLabels: List<String>,
+    requestId: String,
+    occurredAtEpochMillis: Long,
+): ModelTaskRequest? {
+    if (capabilities.executionLocation != ModelExecutionLocation.LOCAL_NO_EGRESS) return null
+    val input = TutorDebriefInput(
+        sessionId = sessionId,
+        practiceUnitId = practiceUnitId,
+        subject = subject,
+        questionStemMarkdown = questionStemMarkdown,
+        transcriptMarkdown = transcriptMarkdown,
+        knowledgeLabels = knowledgeLabels,
+    )
+    return ModelTaskRequest(
+        requestId = requestId,
+        input = input,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        egressManifest = null,
+    )
+}
+
 internal fun buildTutorPlanRequest(
     session: ConfirmedTutorSession,
     profile: StudyProfileOverview,
@@ -527,6 +587,7 @@ internal fun buildTutorPlanRequest(
         projectionIsCurrent = profile.projectionIsCurrent,
         reviewedTeachingReferences = question.reviewedTeachingReferences,
         questionLearningEvidence = question.learningMemory?.toTutorEvidence(occurredAtEpochMillis),
+        priorTeachingAdvisories = question.priorTeachingAdvisories,
         cycleOrdinal = cycleOrdinal,
         priorConversationMemory = priorConversationMemory,
         priorCycleStudentMessages = priorCycleStudentMessages,

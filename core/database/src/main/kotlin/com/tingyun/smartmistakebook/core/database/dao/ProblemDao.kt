@@ -51,6 +51,14 @@ internal data class MistakeRow(
 
 @Dao
 internal interface ProblemDao {
+
+    @Query(
+        "SELECT * FROM knowledge_question_lattice " +
+            "WHERE memory_learner_id IS NULL OR memory_learner_id = :learnerId " +
+            "ORDER BY practice_unit_id, knowledge_node_id",
+    )
+    fun observeKnowledgeQuestionLattice(learnerId: String): Flow<List<com.tingyun.smartmistakebook.core.database.entity.KnowledgeQuestionLatticeView>>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertProblems(problems: List<ProblemEntity>): List<Long>
 

@@ -116,6 +116,8 @@ internal data class LibraryCatalogView(
             binding.taxonomy_version AS binding_taxonomy_version,
             entry.entry_id AS entry_id,
             entry.status AS entry_status,
+            mastery.learner_id AS kc_learner_id,
+            memory.learner_id AS memory_learner_id,
             mastery.lower_bound_independent_correct AS kc_conservative_mastery,
             mastery.status AS kc_status,
             mastery.last_evidence_direction AS kc_last_evidence_direction,
@@ -152,6 +154,10 @@ internal data class KnowledgeQuestionLatticeView(
     val entryId: String?,
     @ColumnInfo(name = "entry_status")
     val entryStatus: String?,
+    @ColumnInfo(name = "kc_learner_id")
+    val kcLearnerId: String?,
+    @ColumnInfo(name = "memory_learner_id")
+    val memoryLearnerId: String?,
     @ColumnInfo(name = "kc_conservative_mastery")
     val kcConservativeMastery: Double?,
     @ColumnInfo(name = "kc_status")

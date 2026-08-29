@@ -60,6 +60,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
@@ -84,6 +85,7 @@ import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.tutor.CapturedTutorSessionRoute
 import com.tingyun.smartmistakebook.feature.tutor.SavedMistakeTutorRoute
 import com.tingyun.smartmistakebook.feature.tutor.TutorHistoryRoute
+import com.tingyun.smartmistakebook.feature.tutor.buildTutorDebriefRequestForApp
 import com.tingyun.smartmistakebook.feature.tutor.TutorRoute
 import java.util.UUID
 import kotlinx.coroutines.CancellationException
@@ -867,6 +869,17 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 if (key == null) {
                     ReviewSessionGateMessage("没有找到这道错题")
                 } else {
+                    var priorAdvisories by remember(key.entryId) {
+                        mutableStateOf<List<TeachingAdvisoryRecord>>(emptyList())
+                    }
+                    LaunchedEffect(key.entryId) {
+                        val practiceUnitId = experience.catalog
+                            .firstOrNull { it.entryId == key.entryId }
+                            ?.practiceUnitId
+                        application.studyRepository
+                            .observeTeachingAdvisories(practiceUnitId)
+                            .collect { priorAdvisories = it }
+                    }
                     SavedMistakeTutorRoute(
                         key = key,
                         repository = application.mistakeDetailRepository,
@@ -886,6 +899,43 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                 }
                             }
                         },
+                        onRequestDebrief = { sessionId, practiceUnitId, stemMarkdown, transcriptMarkdown, labels ->
+                            // Silent debrief (user-approved, no UI): local-only
+                            // providers run it; external-provider configs skip
+                            // rather than ship the transcript unapproved.
+                            application.applicationScope.launch {
+                                runCatching {
+                                    val capabilities = application.modelTaskRepository.capabilities()
+                                    val request = buildTutorDebriefRequestForApp(
+                                        capabilities = capabilities,
+                                        sessionId = sessionId,
+                                        practiceUnitId = practiceUnitId,
+                                        subject = experience.catalog
+                                            .firstOrNull { it.practiceUnitId == practiceUnitId }
+                                            ?.subject
+                                            ?: "GENERAL",
+                                        questionStemMarkdown = stemMarkdown,
+                                        transcriptMarkdown = transcriptMarkdown,
+                                        knowledgeLabels = labels,
+                                        requestId = "debrief:$sessionId:${System.nanoTime()}",
+                                        occurredAtEpochMillis = System.currentTimeMillis(),
+                                    ) ?: return@launch
+                                    application.modelTaskRepository.execute(request).collect { /* fire-and-forget; MISCONCEPTION observer persists the result */ }
+                                }
+                            }
+                        },
+                        onRecordMisconception = { sessionId, practiceUnitId, payloadMarkdown ->
+                            application.applicationScope.launch {
+                                runCatching {
+                                    application.studyRepository.recordMisconceptionAdvisory(
+                                        sessionId = sessionId,
+                                        practiceUnitId = practiceUnitId,
+                                        payloadMarkdown = payloadMarkdown,
+                                    )
+                                }
+                            }
+                        },
+                        priorTeachingAdvisories = priorAdvisories.map { it.payloadMarkdown },
                         profile = experience.profile,
                         learningMemory = experience.catalog.firstOrNull { catalogEntry ->
                             catalogEntry.entryId == key.entryId &&

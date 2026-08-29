@@ -103,6 +103,7 @@ internal class ReviewLogSink(
                     rating = ratingForOrdinal(row.rating),
                     durationMs = row.durationMs,
                     sourceKind = row.sourceKind,
+                    plannedReason = row.plannedReason,
                 )
             }
 

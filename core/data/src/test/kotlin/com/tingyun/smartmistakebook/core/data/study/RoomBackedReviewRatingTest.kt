@@ -180,4 +180,63 @@ class RoomBackedReviewRatingTest {
         knowledgeNodeIds = setOf("knowledge:function-monotonicity"),
     )
 
+    @Test
+    fun `teaching focus labels persist as idempotent advisories`() = runBlocking {
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(ratingMistake())
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+
+            val labels = listOf("配方法", "二次函数对称轴")
+            repository.recordTeachingFocus(
+                sessionId = "session-1",
+                practiceUnitId = "rating-practice-unit",
+                labels = labels,
+            )
+            repository.recordTeachingFocus(
+                sessionId = "session-1",
+                practiceUnitId = "rating-practice-unit",
+                labels = labels,
+            )
+
+            // UNIQUE(learner, source id, kind): replays never duplicate.
+            assertEquals(1, database.teachingAdvisories.size)
+            val advisory = database.teachingAdvisories.single()
+            assertEquals("TEACHING_FOCUS", advisory.advisoryKind)
+            assertEquals("配方法、二次函数对称轴", advisory.payloadMarkdown)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun `misconception advisory persists with its own kind`() = runBlocking {
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(ratingMistake())
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+
+            repository.recordMisconceptionAdvisory(
+                sessionId = "session-2",
+                practiceUnitId = "rating-practice-unit",
+                payloadMarkdown = "把判别式符号与开口方向混淆",
+            )
+
+            val advisory = database.teachingAdvisories.single()
+            assertEquals("MISCONCEPTION", advisory.advisoryKind)
+            assertEquals("把判别式符号与开口方向混淆", advisory.payloadMarkdown)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
 }

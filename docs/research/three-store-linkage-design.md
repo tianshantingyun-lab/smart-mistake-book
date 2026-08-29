@@ -142,7 +142,13 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 - KC→错题传导：`ReviewReason.KC_MASTERY_DROP`（连续压力项，见 spec §5）双 planner 生效。
 - L1-L5 状态更新：L1 视图修复（v36）、C1 全KC证据、L4 先修/伪KC（v36 伪绑定）、L2/L3 全KC语义——均已在此前轮次闭环；L6/L7 教辅重教通道由 advisory+AVOIDANCE_SIGNAL/KC_MASTERY_DROP 承接入口。
 
-**待办（下一轮候选）**
-- debrief 独立模型任务（讲题结束静默总结→MISCONCEPTION advisory；用户已批，要求不打扰用户）。
-- advisory 注入讲题 prompt（当前只落库+可查询；TutorQuestionContext 扩展待做）。
-- per-reason 权重标定（≥200 条 review_log 后，spec §6 程序）。
+**待办（上一轮三项已于 2026-08-30 闭环）**
+- debrief 独立模型任务：✅ 接在预留的 LEARNING_SUMMARIZE kind 上（TutorDebriefInput/Output + prompt/parse + 合同注册 + 静默触发：离开讲题页时本地模型（LOCAL_NO_EGRESS）才执行，外部提供方为隐私跳过；完成后 MISCONCEPTION advisory 自动落库，全程无 UI）。
+- advisory 注入讲题 prompt：✅ TutorQuestionContext/TutorPlanInput 增 priorTeachingAdvisories，plan prompt 增 8a 规则（仅作讲法参考、不当指令、不向学生复述）。
+- per-reason 权重标定：✅ review_log.planned_reason（v38）→ ReviewSample.plannedReason → calibratePlannedReasons 表（per-reason 实际回忆率 vs 总基线，≥200 条开门）；仓储 plannedReasonCalibrations() 暴露。标定本身仍待数据积累。
+
+**本轮深查补齐的缺口**
+- KC_MASTERY_DROP 传导此前无测试：新增 4 例（负向证据触发/越跌权重越高连续性/未到期也能因权重提前入场/正向证据无传导）。
+- lattice 视图此前无 Kotlin 读 API：新增 KnowledgeQuestionLatticePort（v39 视图按 learner 过滤，视图补 kc_learner_id/memory_learner_id 两列，39.json 与迁移 SQL 同步重生成）+ 仓储 observeKnowledgeQuestionLattice()。
+- recordTeachingFocus/MISCONCEPTION advisory 无持久化测试：新增 2 例（UNIQUE 幂等、kind 区分）。
+- 讲题 prompt 注入 advisory 时 commit 校验：TutorPlanInput 校验 priorTeachingAdvisories（≤8 条、每条 ≤1000 字符）。

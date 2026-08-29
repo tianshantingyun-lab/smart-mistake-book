@@ -563,6 +563,11 @@ object ModelTaskCompletionValidator {
         request: ModelTaskRequest,
         output: ModelTaskOutput,
     ): List<ModelTaskCompletionIssue> = when (val input = request.input) {
+        is TutorDebriefInput -> if (output is TutorDebriefOutput && output.sessionId == input.sessionId) {
+            emptyList()
+        } else {
+            listOf(typeMismatch())
+        }
         is CaptureAssessmentInput -> if (output is CaptureAssessmentOutput) {
             if (
                 input.followingSourceAssets.size ==

@@ -50,6 +50,8 @@ import com.tingyun.smartmistakebook.core.domain.ReviewCompletionStreak
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
 import com.tingyun.smartmistakebook.core.domain.LegacyExponentialMemoryUpdateModel
 import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
+import com.tingyun.smartmistakebook.core.domain.KnowledgeQuestionLatticeRow
+import com.tingyun.smartmistakebook.core.domain.PlannedReasonCalibration
 import com.tingyun.smartmistakebook.core.domain.ReviewSample
 import com.tingyun.smartmistakebook.core.domain.SourceCalibration
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
@@ -129,6 +131,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -753,6 +756,53 @@ class RoomBackedStudyExperienceRepository(
     override fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>> =
         database.observeTeachingAdvisories(learnerId, practiceUnitId)
 
+    override fun observeKnowledgeQuestionLattice(): Flow<List<KnowledgeQuestionLatticeRow>> =
+        database.observeKnowledgeQuestionLattice(learnerId).map { rows ->
+            rows.map { row ->
+                KnowledgeQuestionLatticeRow(
+                    practiceUnitId = row.practiceUnitId,
+                    knowledgeNodeId = row.knowledgeNodeId,
+                    bindingStrength = row.bindingStrength,
+                    basisRevisionId = row.basisRevisionId,
+                    bindingTaxonomyVersion = row.bindingTaxonomyVersion,
+                    entryId = row.entryId,
+                    entryStatus = row.entryStatus,
+                    kcConservativeMastery = row.kcConservativeMastery,
+                    kcStatus = row.kcStatus,
+                    kcLastEvidenceDirection = row.kcLastEvidenceDirection,
+                    kcLastEvidenceAt = row.kcLastEvidenceAt,
+                    questionStabilityDays = row.questionStabilityDays,
+                    questionDifficulty = row.questionDifficulty,
+                    questionNextReviewAt = row.questionNextReviewAt,
+                    questionLapseCount = row.questionLapseCount,
+                    questionCrossDayAgain = row.questionCrossDayAgain,
+                )
+            }
+        }
+
+    override suspend fun recordMisconceptionAdvisory(
+        sessionId: String,
+        practiceUnitId: String,
+        payloadMarkdown: String,
+        cycleOrdinal: Int,
+    ) {
+        database.recordTeachingAdvisories(
+            listOf(
+                TeachingAdvisoryRecord(
+                    advisoryId = "advisory:$sessionId:misconception:$cycleOrdinal",
+                    learnerId = learnerId,
+                    practiceUnitId = practiceUnitId,
+                    knowledgeNodeId = null,
+                    advisoryKind = "MISCONCEPTION",
+                    payloadMarkdown = payloadMarkdown,
+                    confidence = null,
+                    sourceId = "$sessionId:$cycleOrdinal",
+                    createdAtEpochMillis = clock.millis(),
+                ),
+            ),
+        )
+    }
+
     override suspend fun declareExam(entry: ExamCalendarEntry) {
         val store = requireNotNull(schedulingSettingsStore) {
             "Exam declaration requires a scheduling settings store"
@@ -777,6 +827,9 @@ class RoomBackedStudyExperienceRepository(
 
     override suspend fun sourceCalibrations(): List<SourceCalibration> =
         reviewLogSink.sourceCalibrations()
+
+    override suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> =
+        SchedulingEvaluationHarness.calibratePlannedReasons(reviewLogSink.reviewSamples())
 
     override suspend fun suggestedReminderMinute(): Int? = reviewLogSink.suggestedReminderMinute()
 

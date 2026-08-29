@@ -25,6 +25,7 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
@@ -129,6 +130,7 @@ class FakeModelGateway(
             )
         }
         is TutorPlanInput -> error("The capture-only demo provider cannot plan tutor turns")
+        is TutorDebriefInput -> error("The capture-only demo provider cannot summarize tutor debriefs")
         is TutorLobbyInput -> error("The capture-only demo provider cannot answer tutor lobby messages")
         is TutorRespondInput -> error("The capture-only demo provider cannot answer tutor messages")
         is TutorVisualGenerateInput -> error("The capture-only demo provider cannot generate tutor visuals")

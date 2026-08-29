@@ -367,6 +367,7 @@ class RoomModelTaskRepository internal constructor(
                     is CaptureParseInput -> "题面已准备好"
                     is TutorPlanInput -> "讲解已准备好"
                     is TutorLobbyInput -> "回复已准备好"
+                    is com.tingyun.smartmistakebook.core.model.TutorDebriefInput -> "讲题要点已整理"
                     is TutorRespondInput -> "回复已准备好"
                     is com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput ->
                         "图形讲解已准备好"

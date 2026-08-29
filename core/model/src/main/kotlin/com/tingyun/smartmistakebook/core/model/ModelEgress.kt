@@ -45,6 +45,7 @@ object ModelPromptPolicyVersions {
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
     const val TUTOR_LOBBY = "tutor-lobby-v1-intent-boundary"
+    const val LEARNING_SUMMARIZE = "learning-summarize-v1-tutor-debrief"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
 
     fun currentFor(kind: ModelTaskKind): String? = when (kind) {
@@ -56,6 +57,7 @@ object ModelPromptPolicyVersions {
         ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE
         ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW
         ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY
+        ModelTaskKind.LEARNING_SUMMARIZE -> LEARNING_SUMMARIZE
         ModelTaskKind.PROBLEM_CLASSIFY -> PROBLEM_ORGANIZATION
         ModelTaskKind.PROBLEM_RELATE,
         ModelTaskKind.TUTOR_EVALUATE,
@@ -496,6 +498,9 @@ private fun ModelEgressManifest.requireAuthorizes(
         }
     }
     when (val input = request.input) {
+        is TutorDebriefInput -> {
+            require(purpose == ModelEgressPurpose.TUTORING)
+        }
         is CaptureAssessmentInput -> {
             require(purpose == ModelEgressPurpose.CAPTURE_TO_DOCUMENT)
             val expectedAssetIds = buildSet {

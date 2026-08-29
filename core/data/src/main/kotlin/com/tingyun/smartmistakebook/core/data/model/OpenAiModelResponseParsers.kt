@@ -63,6 +63,8 @@ import com.tingyun.smartmistakebook.core.model.TutorDiagramEdgeStyle
 import com.tingyun.smartmistakebook.core.model.TutorDiagramNode
 import com.tingyun.smartmistakebook.core.model.TutorDiagramNodeShape
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceChainScene
+import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
+import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
@@ -465,6 +467,10 @@ internal fun JsonObject.toTutorIntentDecision(): TutorIntentDecision {
 }
 
 
+internal val TUTOR_DEBRIEF_WIRE_KEYS = setOf(
+    "misconceptionMarkdown",
+    "teachingFocusLabels",
+)
 internal val TUTOR_PLAN_WIRE_KEYS = setOf(
     "openingMarkdown",
     "diagnosticQuestion",
@@ -499,3 +505,20 @@ internal val TUTOR_DIAGNOSTIC_WIRE_KEYS = setOf("stemMarkdown", "promptMarkdown"
 internal val TUTOR_DIAGNOSTIC_CHOICE_WIRE_KEYS =
     setOf("markdown", "feedbackMarkdown", "isCorrect")
 internal val TUTOR_MOVE_WIRE_KEYS = setOf("label", "type")
+
+internal fun JsonObject.toTutorDebrief(
+    input: TutorDebriefInput,
+    modelVersion: String,
+): TutorDebriefOutput {
+    requireOnlyKeys(TUTOR_DEBRIEF_WIRE_KEYS)
+    val misconception = optionalString("misconceptionMarkdown")
+    val focusLabels = optionalArray("teachingFocusLabels")
+        .mapNotNull { element -> (element as? kotlinx.serialization.json.JsonPrimitive)?.content }
+    return TutorDebriefOutput(
+        sessionId = input.sessionId,
+        practiceUnitId = input.practiceUnitId,
+        misconceptionMarkdown = misconception,
+        teachingFocusLabels = focusLabels,
+        modelVersion = modelVersion,
+    )
+}

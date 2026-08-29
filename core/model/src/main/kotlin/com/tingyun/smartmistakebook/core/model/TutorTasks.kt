@@ -558,6 +558,8 @@ data class TutorPlanInput(
     val priorCycleStudentMessages: List<String> = emptyList(),
     val turnOrdinal: Int = 1,
     val priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
+    /** Stored model advisories (teaching focus / misconception) for this question. */
+    val priorTeachingAdvisories: List<String> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_PLAN
@@ -581,6 +583,12 @@ data class TutorPlanInput(
             subject = subject,
             label = "Tutor planning",
         )
+        require(priorTeachingAdvisories.size <= TutorDebriefInput.MAX_DEBRIEF_LABELS) {
+            "Tutor planning disclosed too many stored advisories"
+        }
+        priorTeachingAdvisories.forEach { advisory ->
+            advisory.requireSafeModelText("Stored teaching advisory", 1_000, true)
+        }
         require(turnOrdinal in 1..MAX_TURNS) { "Tutor turn ordinal exceeds the conversation budget" }
         require(cycleOrdinal > 0) { "Tutor cycle ordinal must be positive" }
         require((cycleOrdinal == 1) == (priorConversationMemory == null)) {
@@ -1067,3 +1075,93 @@ private val TUTOR_SCENE_IMAGE_MARKER = Regex("!\\s*\\[")
 private val TUTOR_SCENE_URL = Regex(
     "(?i)(?:\\b(?:https?|ftp|file|mailto|data|javascript):\\S*|\\bwww\\.[^\\s]+)",
 )
+
+
+/**
+ * Silent post-session debrief (three-store closed loop): after a saved
+ * mistake tutoring visit the model summarizes the misconception and the
+ * teaching focus it just covered. The output lands in the mastery
+ * database's advisory layer (llm_teaching_advisory) - never in learning
+ * evidence. Trigger is fully silent (user decision): no prompt, no badge.
+ */
+@Serializable
+@SerialName("tutor_debrief_input")
+data class TutorDebriefInput(
+    val sessionId: String,
+    val practiceUnitId: String,
+    val subject: String,
+    /** The confirmed question stem the session was about (bounded). */
+    val questionStemMarkdown: String,
+    /** Bounded transcript of this visit's tutor turns (student-safe text). */
+    val transcriptMarkdown: String,
+    /** Knowledge labels the session's plan already named. */
+    val knowledgeLabels: List<String> = emptyList(),
+) : ModelTaskInput {
+    override val kind: ModelTaskKind
+        get() = ModelTaskKind.LEARNING_SUMMARIZE
+
+    override val subjectId: String
+        get() = sessionId
+
+    init {
+        sessionId.requireSafeModelText("Tutor debrief session id", ModelTaskRequest.MAX_ID_CHARS, false)
+        practiceUnitId.requireSafeModelText("Tutor debrief practice unit", ModelTaskRequest.MAX_ID_CHARS, false)
+        subject.requireSafeModelText("Tutor debrief subject", MAX_DEBRIEF_SUBJECT_CHARS, false)
+        questionStemMarkdown.requireSafeModelText(
+            "Tutor debrief question stem",
+            MAX_DEBRIEF_STEM_CHARS,
+            true,
+        )
+        transcriptMarkdown.requireSafeModelText(
+            "Tutor debrief transcript",
+            MAX_DEBRIEF_TRANSCRIPT_CHARS,
+            true,
+        )
+        require(knowledgeLabels.size <= MAX_DEBRIEF_LABELS) {
+            "Tutor debrief disclosed too many knowledge labels"
+        }
+        knowledgeLabels.forEach { label ->
+            label.requireSafeModelText("Tutor debrief knowledge label", MAX_DEBRIEF_LABEL_CHARS, false)
+        }
+    }
+
+    companion object {
+        const val MAX_DEBRIEF_SUBJECT_CHARS = 32
+        const val MAX_DEBRIEF_STEM_CHARS = 4_000
+        const val MAX_DEBRIEF_TRANSCRIPT_CHARS = 12_000
+        const val MAX_DEBRIEF_LABELS = 8
+        const val MAX_DEBRIEF_LABEL_CHARS = 64
+    }
+}
+
+/** The debrief's advisory payload; both fields are advisory-layer text. */
+@Serializable
+@SerialName("tutor_debrief_output")
+data class TutorDebriefOutput(
+    val sessionId: String,
+    val practiceUnitId: String,
+    /** The misconception this visit exposed, or null when none surfaced. */
+    val misconceptionMarkdown: String?,
+    /** The teaching focus labels the visit actually covered (1..8). */
+    val teachingFocusLabels: List<String>,
+    val modelVersion: String,
+) : ModelTaskOutput {
+    init {
+        require(misconceptionMarkdown == null || misconceptionMarkdown.isNotBlank()) {
+            "A present misconception must not be blank"
+        }
+        require(misconceptionMarkdown == null || misconceptionMarkdown.length <= MAX_MISCONCEPTION_CHARS) {
+            "Tutor debrief misconception exceeds the budget"
+        }
+        require(teachingFocusLabels.isNotEmpty() && teachingFocusLabels.size <= TutorDebriefInput.MAX_DEBRIEF_LABELS) {
+            "Tutor debrief must name one to eight teaching focus labels"
+        }
+        teachingFocusLabels.forEach { label ->
+            label.requireSafeModelText("Tutor debrief focus label", TutorDebriefInput.MAX_DEBRIEF_LABEL_CHARS, false)
+        }
+    }
+
+    companion object {
+        const val MAX_MISCONCEPTION_CHARS = 1_000
+    }
+}

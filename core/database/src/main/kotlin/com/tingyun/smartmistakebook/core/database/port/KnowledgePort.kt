@@ -130,3 +130,37 @@ interface KnowledgeWritePort {
         command: ResolveKnowledgeGroundingCommand,
     ): KnowledgeGroundingResolutionRecord
 }
+
+/**
+ * Read surface for the knowledge-question lattice (v39 view): every
+ * (knowledge node, practice unit) binding joined with that node's mastery
+ * and that question's memory - the structured view the KC-to-question
+ * weight propagation and tutor context assembly read.
+ */
+interface KnowledgeQuestionLatticePort {
+    fun observeKnowledgeQuestionLattice(
+        learnerId: String,
+    ): Flow<List<KnowledgeQuestionLatticeRecord>> = kotlinx.coroutines.flow.flowOf(emptyList())
+}
+
+/** One lattice row (v39 view). Mastery/memory halves are null when absent. */
+data class KnowledgeQuestionLatticeRecord(
+    val practiceUnitId: String,
+    val knowledgeNodeId: String,
+    val bindingStrength: Double,
+    val basisRevisionId: String,
+    val bindingTaxonomyVersion: String,
+    val entryId: String?,
+    val entryStatus: String?,
+    val kcLearnerId: String?,
+    val memoryLearnerId: String?,
+    val kcConservativeMastery: Double?,
+    val kcStatus: String?,
+    val kcLastEvidenceDirection: String?,
+    val kcLastEvidenceAt: Long?,
+    val questionStabilityDays: Double?,
+    val questionDifficulty: Double?,
+    val questionNextReviewAt: Long?,
+    val questionLapseCount: Int?,
+    val questionCrossDayAgain: Int?,
+)

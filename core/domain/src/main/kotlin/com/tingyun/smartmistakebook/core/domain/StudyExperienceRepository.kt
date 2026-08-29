@@ -429,6 +429,25 @@ interface StudyExperienceRepository : AutoCloseable {
     /** The learner's stored teaching advisories, newest first (read side). */
     fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>>
 
+    /**
+     * The knowledge-question lattice (spec §5): the explicit (knowledge
+     * node x mistake x mastery) read surface the KC-to-question weight
+     * propagation is defined over.
+     */
+    fun observeKnowledgeQuestionLattice(): Flow<List<KnowledgeQuestionLatticeRow>> = kotlinx.coroutines.flow.flowOf(emptyList())
+
+    /**
+     * Persists the silent debrief's misconception summary as a
+     * MISCONCEPTION advisory (three-store loop). No-op when the debrief
+     * found no misconception.
+     */
+    suspend fun recordMisconceptionAdvisory(
+        sessionId: String,
+        practiceUnitId: String,
+        payloadMarkdown: String,
+        cycleOrdinal: Int = 1,
+    )
+
     /** Declares one exam (spec §2.17): subject plus the local exam day. */
     suspend fun declareExam(entry: ExamCalendarEntry)
 
@@ -447,6 +466,9 @@ interface StudyExperienceRepository : AutoCloseable {
      * paired-outcome floor is met; suggestions are advisory only.
      */
     suspend fun sourceCalibrations(): List<SourceCalibration> = emptyList()
+
+    /** Per-planned-reason realized recall (spec §6 recalibration, advisory). */
+    suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> = emptyList()
 
     /**
      * Reminder minute at the learner's personal peak time bucket midpoint
@@ -585,3 +607,24 @@ sealed interface SaveTutorProblemReceipt {
     /** The referenced problem object no longer exists. */
     data class ReferenceNotFound(val reason: String) : SaveTutorProblemReceipt
 }
+
+
+/** Domain view of one lattice row (core.database's record mapped 1:1). */
+data class KnowledgeQuestionLatticeRow(
+    val practiceUnitId: String,
+    val knowledgeNodeId: String,
+    val bindingStrength: Double,
+    val basisRevisionId: String,
+    val bindingTaxonomyVersion: String,
+    val entryId: String?,
+    val entryStatus: String?,
+    val kcConservativeMastery: Double?,
+    val kcStatus: String?,
+    val kcLastEvidenceDirection: String?,
+    val kcLastEvidenceAt: Long?,
+    val questionStabilityDays: Double?,
+    val questionDifficulty: Double?,
+    val questionNextReviewAt: Long?,
+    val questionLapseCount: Int?,
+    val questionCrossDayAgain: Int?,
+)

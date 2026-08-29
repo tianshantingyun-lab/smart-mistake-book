@@ -65,6 +65,7 @@ import com.tingyun.smartmistakebook.core.model.TutorDiagramNodeShape
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceChainScene
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -208,6 +209,7 @@ internal class OpenAiCompatibleModelGateway(
                                     is TutorRespondInput -> "模型正在回应你对当前题的追问"
                                     is TutorVisualGenerateInput -> "正在核对题图并组织直观讲解"
                                     is TutorVisualReviewInput -> "正在复核图中的关键关系"
+                                    is TutorDebriefInput -> "正在安静地整理这次讲题的要点"
                                     is ProblemOrganizationInput -> "模型正在提出待确认的分类和题目联系"
                                 },
                             ),
@@ -458,6 +460,7 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is CaptureParseInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
+        is TutorDebriefInput -> emptyList()
         is TutorPlanInput,
         is TutorLobbyInput,
         is TutorRespondInput,

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 39,
-    "identityHash": "f77d790c20be9004c2d7bdb85097aeaa",
+    "identityHash": "1cd1d4034e65f21f01ad8f8222b0b199",
     "entities": [
       {
         "tableName": "problem",
@@ -9056,12 +9056,12 @@
       },
       {
         "viewName": "knowledge_question_lattice",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n            binding.practice_unit_id AS practice_unit_id,\n            binding.knowledge_node_id AS knowledge_node_id,\n            binding.strength AS binding_strength,\n            binding.basis_revision_id AS basis_revision_id,\n            binding.taxonomy_version AS binding_taxonomy_version,\n            entry.entry_id AS entry_id,\n            entry.status AS entry_status,\n            mastery.lower_bound_independent_correct AS kc_conservative_mastery,\n            mastery.status AS kc_status,\n            mastery.last_evidence_direction AS kc_last_evidence_direction,\n            mastery.last_evidence_at_epoch_millis AS kc_last_evidence_at,\n            memory.stability_days AS question_stability_days,\n            memory.difficulty AS question_difficulty,\n            memory.next_review_at_epoch_millis AS question_next_review_at,\n            memory.lapse_count AS question_lapse_count,\n            memory.consecutive_cross_day_again AS question_cross_day_again\n        FROM practice_unit_knowledge_binding AS binding\n        LEFT JOIN learner_knowledge_mastery_state AS mastery\n            ON mastery.knowledge_node_id = binding.knowledge_node_id\n           AND mastery.projection_name = 'study-experience-v1'\n        LEFT JOIN learner_problem_memory_state AS memory\n            ON memory.practice_unit_id = binding.practice_unit_id\n           AND memory.projection_name = 'study-experience-v1'\n        LEFT JOIN error_book_entry AS entry\n            ON entry.practice_unit_id = binding.practice_unit_id\n           AND entry.status = 'ACTIVE'"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n            binding.practice_unit_id AS practice_unit_id,\n            binding.knowledge_node_id AS knowledge_node_id,\n            binding.strength AS binding_strength,\n            binding.basis_revision_id AS basis_revision_id,\n            binding.taxonomy_version AS binding_taxonomy_version,\n            entry.entry_id AS entry_id,\n            entry.status AS entry_status,\n            mastery.learner_id AS kc_learner_id,\n            memory.learner_id AS memory_learner_id,\n            mastery.lower_bound_independent_correct AS kc_conservative_mastery,\n            mastery.status AS kc_status,\n            mastery.last_evidence_direction AS kc_last_evidence_direction,\n            mastery.last_evidence_at_epoch_millis AS kc_last_evidence_at,\n            memory.stability_days AS question_stability_days,\n            memory.difficulty AS question_difficulty,\n            memory.next_review_at_epoch_millis AS question_next_review_at,\n            memory.lapse_count AS question_lapse_count,\n            memory.consecutive_cross_day_again AS question_cross_day_again\n        FROM practice_unit_knowledge_binding AS binding\n        LEFT JOIN learner_knowledge_mastery_state AS mastery\n            ON mastery.knowledge_node_id = binding.knowledge_node_id\n           AND mastery.projection_name = 'study-experience-v1'\n        LEFT JOIN learner_problem_memory_state AS memory\n            ON memory.practice_unit_id = binding.practice_unit_id\n           AND memory.projection_name = 'study-experience-v1'\n        LEFT JOIN error_book_entry AS entry\n            ON entry.practice_unit_id = binding.practice_unit_id\n           AND entry.status = 'ACTIVE'"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f77d790c20be9004c2d7bdb85097aeaa')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1cd1d4034e65f21f01ad8f8222b0b199')"
     ]
   }
 }

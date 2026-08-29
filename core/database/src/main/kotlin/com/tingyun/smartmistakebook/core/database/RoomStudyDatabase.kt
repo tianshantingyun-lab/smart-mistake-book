@@ -62,6 +62,7 @@ import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRec
 import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
+import com.tingyun.smartmistakebook.core.database.port.KnowledgeQuestionLatticeRecord
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 
 /** Placeholder display name for pseudo-KC fallback nodes (spec §3.4). */
@@ -975,6 +976,34 @@ internal class RoomStudyDatabase(
                     confidence = row.confidence,
                     sourceId = row.sourceId,
                     createdAtEpochMillis = row.createdAtEpochMillis,
+                )
+            }
+        }
+
+    override fun observeKnowledgeQuestionLattice(
+        learnerId: String,
+    ): Flow<List<KnowledgeQuestionLatticeRecord>> =
+        database.problemDao().observeKnowledgeQuestionLattice(learnerId).map { rows ->
+            rows.map { row ->
+                KnowledgeQuestionLatticeRecord(
+                    practiceUnitId = row.practiceUnitId,
+                    knowledgeNodeId = row.knowledgeNodeId,
+                    bindingStrength = row.bindingStrength,
+                    basisRevisionId = row.basisRevisionId,
+                    bindingTaxonomyVersion = row.bindingTaxonomyVersion,
+                    entryId = row.entryId,
+                    entryStatus = row.entryStatus,
+                    kcLearnerId = row.kcLearnerId,
+                    memoryLearnerId = row.memoryLearnerId,
+                    kcConservativeMastery = row.kcConservativeMastery,
+                    kcStatus = row.kcStatus,
+                    kcLastEvidenceDirection = row.kcLastEvidenceDirection,
+                    kcLastEvidenceAt = row.kcLastEvidenceAt,
+                    questionStabilityDays = row.questionStabilityDays,
+                    questionDifficulty = row.questionDifficulty,
+                    questionNextReviewAt = row.questionNextReviewAt,
+                    questionLapseCount = row.questionLapseCount,
+                    questionCrossDayAgain = row.questionCrossDayAgain,
                 )
             }
         }

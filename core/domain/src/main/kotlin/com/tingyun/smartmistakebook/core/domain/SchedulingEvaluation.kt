@@ -19,6 +19,8 @@ data class ReviewSample(
     val durationMs: Long = 0,
     /** ATTEMPT / SELF_REPORT / VISUAL — source calibration key (spec §2.5). */
     val sourceKind: String = ATTEMPT_KIND,
+    /** Planner reason snapshot carried onto the attempt (spec §6 calibration). */
+    val plannedReason: String? = null,
 ) {
     val isCorrect: Boolean get() = rating != FsrsRating.AGAIN
 
@@ -202,6 +204,28 @@ object SchedulingEvaluationHarness {
     private fun rate(samples: List<ReviewSample>): Double =
         if (samples.isEmpty()) Double.NaN else samples.count(ReviewSample::isCorrect).toDouble() / samples.size
 
+    /**
+     * Per-planned-reason realized recall (spec §6 weight recalibration):
+     * groups collected samples by the planner reason that scheduled them and
+     * reports each group's recall against the overall baseline. Advisory
+     * only - weight constants change by human decision at the >=200-sample
+     * threshold, never automatically.
+     */
+    fun calibratePlannedReasons(samples: List<ReviewSample>): List<PlannedReasonCalibration> {
+        val withReason = samples.filter { it.plannedReason != null }
+        if (withReason.isEmpty()) return emptyList()
+        val overall = rate(withReason)
+        return withReason.groupBy(ReviewSample::plannedReason)
+            .map { (reason, rows) ->
+                PlannedReasonCalibration(
+                    plannedReason = reason.orEmpty(),
+                    sampleCount = rows.size,
+                    realizedRecallRate = rate(rows),
+                    overallRecallRate = overall,
+                )
+            }
+            .sortedByDescending(PlannedReasonCalibration::sampleCount)
+    }
 
     fun evaluate(
         samples: List<ReviewSample>,
@@ -434,4 +458,23 @@ object FsrsParameterOptimizer {
     private const val LEARNING_RATE = 2e-3
     private const val BETA1 = 0.9
     private const val BETA2 = 0.999
+}
+
+/**
+ * Per-planned-reason realized recall (spec §6 weight recalibration):
+ * advisory analysis; weight constants change by human decision at the
+ * >=200-sample threshold, never automatically.
+ */
+data class PlannedReasonCalibration(
+    val plannedReason: String,
+    val sampleCount: Int,
+    val realizedRecallRate: Double,
+    val overallRecallRate: Double,
+) {
+    /** Spec §6: recalibration analysis activates at two hundred samples. */
+    val hasSufficientSamples: Boolean get() = sampleCount >= MIN_SAMPLES
+
+    companion object {
+        const val MIN_SAMPLES = 200
+    }
 }
