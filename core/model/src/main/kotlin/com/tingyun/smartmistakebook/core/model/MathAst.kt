@@ -228,7 +228,34 @@ object MathParser {
                 is MathToken.RowSeparator,
                 is MathToken.ColumnSeparator,
                 -> break
+                is MathToken.LeftBracket -> {
+                    // Function-style grouping such as f(x) must keep its
+                    // bracket glyphs in the readable output and stay one
+                    // unit for a following ^ or _ (so (a+b)^2 lifts the
+                    // whole group). RightBracket therefore acts as a group
+                    // closer here, not as a top-level terminator; before
+                    // this branch a stray ")" ended the whole parse and
+                    // silently dropped the rest of the formula.
+                    val (node, nextPos) = parseExpression(tokens, current + 1)
+                    val open = if (token.type == BracketType.PAREN) "(" else "["
+                    val close = if (token.type == BracketType.PAREN) ")" else "]"
+                    items.add(
+                        MathNode.Group(listOf(MathNode.Atom(open), node, MathNode.Atom(close))),
+                    )
+                    current = nextPos
+                    if (current < tokens.size && tokens[current] is MathToken.RightBracket) {
+                        current++
+                    }
+                }
                 is MathToken.Command -> {
+                    if (token.name == "end") {
+                        // \end{...} terminates the enclosing environment's
+                        // rows; leave it unconsumed so parseEnvironmentRows
+                        // handles the boundary. Swallowing it here (as a
+                        // command with an empty payload) leaked an empty Row
+                        // into the last cell of every environment.
+                        break
+                    }
                     val (node, nextPos) = parseCommand(token.name, tokens, current + 1)
                     items.add(node)
                     current = nextPos
@@ -244,7 +271,7 @@ object MathParser {
                 is MathToken.SuperscriptOp -> {
                     val (exp, nextPos) = parseAtom(tokens, current + 1)
                     if (items.isNotEmpty()) {
-                        val base = items.removeLast()
+                        val base = items.removeAt(items.lastIndex)
                         items.add(MathNode.Superscript(base, exp))
                     }
                     current = nextPos
@@ -252,7 +279,7 @@ object MathParser {
                 is MathToken.SubscriptOp -> {
                     val (idx, nextPos) = parseAtom(tokens, current + 1)
                     if (items.isNotEmpty()) {
-                        val base = items.removeLast()
+                        val base = items.removeAt(items.lastIndex)
                         items.add(MathNode.Subscript(base, idx))
                     }
                     current = nextPos
@@ -284,11 +311,15 @@ object MathParser {
     }
 
     private fun parseAtom(tokens: List<MathToken>, pos: Int): Pair<MathNode, Int> {
-        if (pos >= tokens.size) return MathNode.Row(emptyList()) to pos
-        val token = tokens[pos]
+        var start = pos
+        // LaTeX allows space between a command and its unbraced argument
+        // (\vec F): skip leading spaces so the argument is not read as empty.
+        while (start < tokens.size && tokens[start] is MathToken.Space) start++
+        if (start >= tokens.size) return MathNode.Row(emptyList()) to start
+        val token = tokens[start]
         return when (token) {
             is MathToken.LeftBrace -> {
-                val (node, nextPos) = parseExpression(tokens, pos + 1)
+                val (node, nextPos) = parseExpression(tokens, start + 1)
                 val endPos = if (nextPos < tokens.size && tokens[nextPos] is MathToken.RightBrace) {
                     nextPos + 1
                 } else {
@@ -296,13 +327,13 @@ object MathParser {
                 }
                 node to endPos
             }
-            is MathToken.Number -> MathNode.Atom(token.value) to pos + 1
-            is MathToken.Letter -> MathNode.Atom(token.value) to pos + 1
+            is MathToken.Number -> MathNode.Atom(token.value) to start + 1
+            is MathToken.Letter -> MathNode.Atom(token.value) to start + 1
             is MathToken.Command -> {
-                val (node, nextPos) = parseCommand(token.name, tokens, pos + 1)
+                val (node, nextPos) = parseCommand(token.name, tokens, start + 1)
                 node to nextPos
             }
-            else -> MathNode.Row(emptyList()) to pos + 1
+            else -> MathNode.Row(emptyList()) to start + 1
         }
     }
 
@@ -565,12 +596,19 @@ object MathRenderer {
 
     private fun toSuperscript(node: MathNode): String {
         val text = render(node)
-        return text.map { SUPERSCRIPT_MAP[it] ?: it }.joinToString("")
+        val mapped = text.map { SUPERSCRIPT_MAP[it] ?: it }
+        // Multi-character or unmappable scripts cannot be lifted into
+        // Unicode superscripts; keep the script relationship explicit
+        // instead of rendering it as baseline text (x^(ab), never "xab").
+        val liftable = text.all { SUPERSCRIPT_MAP.containsKey(it) }
+        return if (liftable) mapped.joinToString("") else "^($text)"
     }
 
     private fun toSubscript(node: MathNode): String {
         val text = render(node)
-        return text.map { SUBSCRIPT_MAP[it] ?: it }.joinToString("")
+        val mapped = text.map { SUBSCRIPT_MAP[it] ?: it }
+        val liftable = text.all { SUBSCRIPT_MAP.containsKey(it) }
+        return if (liftable) mapped.joinToString("") else "_($text)"
     }
 
     private val SUPERSCRIPT_MAP = mapOf(

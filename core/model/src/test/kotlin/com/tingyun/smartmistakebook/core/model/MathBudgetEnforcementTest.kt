@@ -112,10 +112,17 @@ class MathBudgetEnforcementTest {
 
     @Test
     fun `layout height budget is enforced`() {
-        // 50 aligned rows of 3-level stacked fractions: tall but within every
-        // structural budget, so the layout height check must be the one firing.
-        val row = "\\frac{\\frac{a}{a}}{a}"
-        val body = row + "\\\\$row".repeat(MathBudget.MAX_ALIGNED_ROWS - 1)
+        // 20 aligned rows of depth-10 nested fractions. A chain of k \fracs
+        // consumes k+1 atoms (the row separator must never be swallowed as
+        // an argument), and LaTeX command names extend over letters, so the
+        // last \frac needs a space before its first argument. Token budget:
+        // 22/row * 20 rows + 19 separators + 20 environment tokens = 479
+        // <= 500; nesting 10 <= 10, rows 20 <= 50, depth 11 <= 20, nodes
+        // 421 <= 1000 all hold, so the laid-out height (~287 line-heights)
+        // must be the one to fire. The former 50-row 3-level fixture was
+        // unsatisfiable: 719 tokens tripped the token budget first.
+        val row = "\\frac".repeat(10) + " " + "a".repeat(11)
+        val body = row + "\\\\$row".repeat(19)
         assertBudgetError("\\begin{aligned}$body\\end{aligned}", "布局过高")
     }
 
