@@ -281,3 +281,5 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **四键自评（§2.21/§9.3）**：捕获题复习界面四键（没想起来/很费劲/正常/很轻松）经 `submitReviewRating` 入账（Again=卡住键，权重 1.0/0.7/0.8/0.9 映射 G=1/2/3/4）；原三档自评 API 保留为详情页元认知通道；冷却拦截重复提交并返回 `evidenceSuppressedByCooldown`。
 
 **验证**：`core:domain` 234（含 MasterySmoothingTest 4 例、SleepWindowInferenceTest 4 例）、`core:data` 204、`core:database` 59、`feature:review` 11、`app` 31（双 flavor）单元测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug`、`lintLocalFirstDebug/lintStrictOfflineDebug` 全绿；`core/database/schemas` 无 drift（新增 36.json 由 exportSchema 生成）。设备端验证（模拟器 Pixel 6/Android 14，2026-08-29 执行）：`:core:database:connectedDebugAndroidTest` 全绿——1→37 全版本迁移矩阵、v35→36 数据换算（0.5→5.5 实测）、伪 KC 外键落库、review_log 读写往返、v33 链结构等价；应用装机启动 smoke 通过（user_version=37、review_log 三交互列实测在位、睡眠日志静默落盘、错题本 library_catalog 视图渲染正常）。旧版 sqlite-master 逐字节对比测试按 Room 迁移校验口径改为结构等价对比（ALTER 追加列与运行时触发器使字节对比不可达），并修复其冻结旧版本号的陈旧断言。
+
+**未验证项（待接钩子）**：edit_count 通道当前仅覆盖选择流的答案修改（重试序数-1）；自评/评级复习界面没有文本输入场景，该计数恒为 0——将来任何作答文本输入上线时，接 `ReviewInteractionTracker` 增设的 `onEdit()` 钩子即可闭环（Tracker 类已预留扩展点，v37 列已就位）。
