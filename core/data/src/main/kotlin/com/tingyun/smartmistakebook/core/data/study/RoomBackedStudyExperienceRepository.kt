@@ -35,7 +35,6 @@ import com.tingyun.smartmistakebook.core.domain.AttentionSignal
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurve
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurveAlgorithm
-import com.tingyun.smartmistakebook.core.domain.FsrsRating
 import com.tingyun.smartmistakebook.core.domain.FsrsEvidenceRatingMapper
 import com.tingyun.smartmistakebook.core.domain.FsrsMemoryUpdateModel
 import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
@@ -63,11 +62,6 @@ import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
-import com.tingyun.smartmistakebook.core.domain.TimeBucket
-import com.tingyun.smartmistakebook.core.domain.TimeBucketSplit
-import com.tingyun.smartmistakebook.core.domain.TimeOfDayCalibrator
-import com.tingyun.smartmistakebook.core.domain.TimeOfDayProfile
-import com.tingyun.smartmistakebook.core.domain.TimeOfDayObservation
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
@@ -211,6 +205,12 @@ class RoomBackedStudyExperienceRepository(
         },
     )
     private val predictionAuditService = HLRPredictionAuditService()
+    private val reviewLogSink = ReviewLogSink(
+        database = database,
+        learnerId = learnerId,
+        clock = clock,
+        studyZoneId = studyZoneId,
+    )
     private val predictionAuditSink: PredictionAuditSink = RoomPredictionAuditSink(database)
     private var initialized = false
     private var latestMistakes: List<MistakeRecord> = emptyList()
@@ -432,13 +432,13 @@ class RoomBackedStudyExperienceRepository(
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
         val writeResult = database.recordAttempt(prepared.command)
         if (writeResult.created) {
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = submission.practiceUnitId,
                 evidence = prepared.command.evidence,
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = prepared.command.studyDay,
-                sourceKind = SOURCE_KIND_ATTEMPT,
+                sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.attempt.attemptId,
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
@@ -504,13 +504,13 @@ class RoomBackedStudyExperienceRepository(
             ),
         )
         if (writeResult.attempt.created) {
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = submission.practiceUnitId,
                 evidence = prepared.command.evidence,
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = prepared.command.studyDay,
-                sourceKind = SOURCE_KIND_ATTEMPT,
+                sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
@@ -586,13 +586,13 @@ class RoomBackedStudyExperienceRepository(
             ),
         )
         if (writeResult.attempt.created) {
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = submission.practiceUnitId,
                 evidence = prepared.command.evidence,
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = prepared.command.studyDay,
-                sourceKind = SOURCE_KIND_SELF_REPORT,
+                sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
@@ -645,7 +645,7 @@ class RoomBackedStudyExperienceRepository(
             ?.get(submission.practiceUnitId)
         val cooldownActive = isWithinCooldown(
             practiceUnitId = submission.practiceUnitId,
-            sourceKind = SOURCE_KIND_SELF_REPORT,
+            sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
             cooldownMillis = SUBJECTIVE_COOLDOWN_MILLIS,
             atEpochMillis = submission.occurredAtEpochMillis,
         )
@@ -655,13 +655,13 @@ class RoomBackedStudyExperienceRepository(
             // observation-only - they land in review_log, never in the
             // scheduling ledger, and the session keeps its current position.
             val evidence = ratingEvidenceFor(submission.rating)
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = submission.practiceUnitId,
                 evidence = evidence,
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = studyDayAt(submission.occurredAtEpochMillis),
-                sourceKind = SOURCE_KIND_SELF_REPORT,
+                sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
                 sourceId = stableId("rating", submission.requestId),
                 priorMemory = priorMemory,
                 schedulingEligible = false,
@@ -695,13 +695,13 @@ class RoomBackedStudyExperienceRepository(
             ),
         )
         if (writeResult.attempt.created) {
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = submission.practiceUnitId,
                 evidence = prepared.command.evidence,
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 studyDay = prepared.command.studyDay,
-                sourceKind = SOURCE_KIND_SELF_REPORT,
+                sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
@@ -737,7 +737,7 @@ class RoomBackedStudyExperienceRepository(
     }
 
     override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? {
-        val samples = reviewSamples()
+        val samples = reviewLogSink.reviewSamples()
         if (samples.isEmpty()) return null
         val eligible = samples.groupBy(ReviewSample::practiceUnitId).values.any { it.size >= 2 }
         if (!eligible) return null
@@ -745,60 +745,19 @@ class RoomBackedStudyExperienceRepository(
     }
 
     override suspend fun sourceCalibrations(): List<SourceCalibration> =
-        SchedulingEvaluationHarness.calibrateSources(reviewSamples())
+        reviewLogSink.sourceCalibrations()
 
-    private suspend fun reviewSamples(): List<ReviewSample> =
-        database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
-            .map { row ->
-                ReviewSample(
-                    practiceUnitId = row.practiceUnitId,
-                    reviewedAtEpochMillis = row.reviewedAtEpochMillis,
-                    rating = ratingForOrdinal(row.rating),
-                    durationMs = row.durationMs,
-                    sourceKind = row.sourceKind,
-                )
-            }
-
-    override suspend fun suggestedReminderMinute(): Int? {
-        val samples = reviewSamples()
-        if (samples.isEmpty()) return null
-        val observations = samples.mapNotNull { sample ->
-            val bucket = runCatching { TimeBucket.valueOf(bucketNameAt(sample.reviewedAtEpochMillis)) }
-                .getOrNull() ?: return@mapNotNull null
-            TimeOfDayObservation(
-                bucket = bucket,
-                isCorrect = sample.isCorrect,
-                durationMs = sample.durationMs,
-            )
-        }
-        if (observations.isEmpty()) return null
-        val profile = TimeOfDayCalibrator.profile(observations)
-        val split = TimeBucketSplit()
-        val peak = TimeBucket.entries
-            .filter { (profile.samplesPerBucket[it] ?: 0) >= TimeOfDayCalibrator.MIN_BUCKET_SAMPLES }
-            .maxByOrNull { profile.multiplierFor(it) } ?: return null
-        return split.midpointMinute(peak)
-    }
-
-    private fun bucketNameAt(epochMillis: Long): String {
-        val localHour = ((epochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(epochMillis)).totalSeconds * 1000L) / 3_600_000L).mod(24L).toInt()
-        return TimeBucketSplit().bucketFor(localHour).name
-    }
+    override suspend fun suggestedReminderMinute(): Int? = reviewLogSink.suggestedReminderMinute()
 
     override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? {
         val store = requireNotNull(schedulingSettingsStore) {
             "Parameter optimization requires a scheduling settings store"
         }
-        val samples = reviewSamples()
-        val result = FsrsParameterOptimizer.optimize(samples)
+        val result = FsrsParameterOptimizer.optimize(reviewLogSink.reviewSamples())
         if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
         store.setOptimizedParameters(result.parameters)
         return result
     }
-
-    private fun ratingForOrdinal(rating: Int): FsrsRating = FsrsRating.entries[
-        (rating - 1).coerceIn(0, FsrsRating.entries.size - 1)
-    ]
 
     private fun ratingEvidenceFor(rating: StudyReviewRating): LearningEvidence = when (rating) {
         StudyReviewRating.AGAIN -> LearningEvidence(
@@ -856,7 +815,7 @@ class RoomBackedStudyExperienceRepository(
         val evidence = if (ratingBase.direction == LearningEvidenceDirection.NONE) {
             ratingBase
         } else {
-            val factor = subjectiveSignalFactor(
+            val factor = reviewLogSink.subjectiveSignalFactor(
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
                 interruptionCount = submission.interruptionCount,
@@ -910,44 +869,6 @@ class RoomBackedStudyExperienceRepository(
      * response-time guess discount (Meyer 2010 via the RT baseline) all only
      * ever shrink the weight of a subjective report.
      */
-    private suspend fun subjectiveSignalFactor(
-        occurredAtEpochMillis: Long,
-        durationSeconds: Int,
-        interruptionCount: Int,
-        awayMillis: Long,
-        isCorrect: Boolean,
-    ): Double {
-        val attention = AttentionSignal.attentionFactor(interruptionCount, awayMillis)
-        val profile = timeOfDayProfile()
-        val timeOfDay = profile
-            ?.multiplierFor(TimeBucketSplit().bucketFor(localHourAt(occurredAtEpochMillis)))
-            ?: 1.0
-        val rtDiscount = profile
-            ?.let { TimeOfDayCalibrator.correctedWeight(1.0, isCorrect, durationSeconds * 1000L, it) }
-            ?: 1.0
-        return (attention * timeOfDay * rtDiscount).coerceIn(0.0, 1.0)
-    }
-
-    private suspend fun timeOfDayProfile(): TimeOfDayProfile? {
-        val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
-        if (samples.isEmpty()) return null
-        val observations = samples.mapNotNull { row ->
-            val bucket = runCatching { TimeBucket.valueOf(row.timeBucket) }.getOrNull()
-                ?: return@mapNotNull null
-            TimeOfDayObservation(
-                bucket = bucket,
-                isCorrect = row.rating > 1,
-                durationMs = row.durationMs,
-            )
-        }
-        if (observations.isEmpty()) return null
-        return TimeOfDayCalibrator.profile(observations)
-    }
-
-    private fun localHourAt(epochMillis: Long): Int =
-        ((epochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(epochMillis)).totalSeconds * 1000L) /
-            3_600_000L).mod(24L).toInt()
-
     private suspend fun buildPseudoAttribution(
         practiceUnitId: String,
         problemRevisionId: String,
@@ -989,64 +910,6 @@ class RoomBackedStudyExperienceRepository(
         return atEpochMillis - last in 0 until cooldownMillis
     }
 
-    private suspend fun recordReviewLog(
-        practiceUnitId: String,
-        evidence: LearningEvidence,
-        occurredAtEpochMillis: Long,
-        durationSeconds: Int,
-        studyDay: StudyDayContext,
-        sourceKind: String,
-        sourceId: String,
-        priorMemory: ProblemMemoryState?,
-        schedulingEligible: Boolean = true,
-        scrollUpCount: Int = 0,
-        editCount: Int = 0,
-        interruptionCount: Int = 0,
-        awayMillis: Long = 0,
-        plannedReason: String? = null,
-    ) {
-        try {
-            val deltaDays = if (priorMemory == null || priorMemory.lastReviewedAtEpochMillis <= 0) {
-                0.0
-            } else {
-                (occurredAtEpochMillis - priorMemory.lastReviewedAtEpochMillis)
-                    .coerceAtLeast(0)
-                    .toDouble() / DAY_MILLIS_DOUBLE
-            }
-            val localHour = ((occurredAtEpochMillis + studyDay.utcOffsetMinutes * 60_000L) /
-                3_600_000L).mod(24L).toInt()
-            val rating = FsrsEvidenceRatingMapper.reportedRatingFor(evidence.reason, evidence.weight)
-            database.recordReviewLogEntries(
-                listOf(
-                    ReviewLogEntry(
-                        learnerId = learnerId,
-                        practiceUnitId = practiceUnitId,
-                        rating = rating.ordinal + 1,
-                        deltaTDays = deltaDays,
-                        durationMs = durationSeconds * 1000L,
-                        reviewedAtEpochMillis = occurredAtEpochMillis,
-                        sourceKind = sourceKind,
-                        sourceId = sourceId,
-                        evidenceWeight = evidence.weight,
-                        schedulingEligible = schedulingEligible,
-                        timeBucket = TimeBucketSplit().bucketFor(localHour).name,
-                        scrollUpCount = scrollUpCount,
-                        editCount = editCount,
-                        interruptionCount = interruptionCount,
-                        awayMillis = awayMillis,
-                        plannedReason = plannedReason,
-                        recordedAtEpochMillis = clock.millis(),
-                    ),
-                ),
-            )
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            // Review-log collection is decoupled from scheduling (spec §2.15):
-            // it must never break the user-visible flow.
-        }
-    }
-
     override suspend fun revealAnswer(
         request: StudyAnswerRevealRequest,
     ): StudyAnswerRevealResult = runOperation {
@@ -1072,7 +935,7 @@ class RoomBackedStudyExperienceRepository(
             ),
         )
         if (writeResult.created) {
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = request.practiceUnitId,
                 evidence = LearningEvidence(
                     direction = LearningEvidenceDirection.NONE,
@@ -1082,7 +945,7 @@ class RoomBackedStudyExperienceRepository(
                 occurredAtEpochMillis = request.occurredAtEpochMillis,
                 durationSeconds = 0,
                 studyDay = studyDayAt(request.occurredAtEpochMillis),
-                sourceKind = SOURCE_KIND_ATTEMPT,
+                sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.outcome.outcomeId,
                 priorMemory = priorMemory,
             )
@@ -1350,7 +1213,7 @@ class RoomBackedStudyExperienceRepository(
         // Spec 2.7: visual interactions cool down for one hour per unit.
         if (isWithinCooldown(
                 practiceUnitId = mistake.practiceUnitId,
-                sourceKind = SOURCE_KIND_VISUAL,
+                sourceKind = ReviewLogSink.SOURCE_KIND_VISUAL,
                 cooldownMillis = VISUAL_COOLDOWN_MILLIS,
                 atEpochMillis = attempt.attemptedAtEpochMillis,
             )
@@ -1445,13 +1308,13 @@ class RoomBackedStudyExperienceRepository(
             ),
         )
         if (writeResult.created) {
-            recordReviewLog(
+            reviewLogSink.record(
                 practiceUnitId = mistake.practiceUnitId,
                 evidence = evidence,
                 occurredAtEpochMillis = attempt.attemptedAtEpochMillis,
                 durationSeconds = 0,
                 studyDay = studyDayAt(attempt.attemptedAtEpochMillis),
-                sourceKind = SOURCE_KIND_VISUAL,
+                sourceKind = ReviewLogSink.SOURCE_KIND_VISUAL,
                 sourceId = writeResult.attempt.attemptId,
                 priorMemory = null,
             )
@@ -1460,21 +1323,6 @@ class RoomBackedStudyExperienceRepository(
         // A replay after the first successful sweep must not claim a new
         // creation; the ledger already has this attempt exactly once.
         return false
-    }
-
-    /**
-     * Avoidance units (spec 6 / D'Mello 2013): cards switched away from at
-     * least twice per attempt while graded poorly, twice within the recent
-     * window - a difficulty or aversion marker that steers re-teaching.
-     */
-    private fun avoidancePracticeUnitIds(samples: List<ReviewLogSampleRecord>): Set<String> {
-        val now = clock.millis()
-        return samples.asSequence()
-            .filter { now - it.reviewedAtEpochMillis in 0..AVOIDANCE_LOOKBACK_MILLIS }
-            .filter { it.interruptionCount >= AttentionSignal.AVOIDANCE_SWITCH_THRESHOLD && it.rating <= AttentionSignal.AVOIDANCE_MAX_RATING }
-            .groupBy(ReviewLogSampleRecord::practiceUnitId)
-            .filterValues { rows -> rows.size >= AVOIDANCE_MIN_OCCURRENCES }
-            .keys
     }
 
     /**
@@ -1515,8 +1363,7 @@ class RoomBackedStudyExperienceRepository(
         learnerSnapshot: LearnerSnapshot,
         planningContext: PlanningContext,
     ): ReviewPlanBundle {
-        val reviewLogSamples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
-        val avoidanceUnits = avoidancePracticeUnitIds(reviewLogSamples)
+        val avoidanceUnits = reviewLogSink.avoidancePracticeUnitIds()
         val candidates = mistakes
             .sortedBy(MistakeRecord::practiceUnitId)
             .distinctBy(MistakeRecord::practiceUnitId)
@@ -2064,9 +1911,10 @@ class RoomBackedStudyExperienceRepository(
             submission.interruptionCount,
             submission.awayMillis,
         )
-        val rtFactor = timeOfDayProfile()
-            ?.let { TimeOfDayCalibrator.correctedWeight(1.0, evaluation.isCorrect, submission.durationSeconds * 1000L, it) }
-            ?: 1.0
+        val rtFactor = reviewLogSink.responseTimeDiscount(
+            isCorrect = evaluation.isCorrect,
+            durationMs = submission.durationSeconds * 1000L,
+        )
         val discountedEvidence = decision.evidence.let { evidence ->
             val factor = (attentionFactor * rtFactor).coerceIn(0.0, 1.0)
             if (factor < 1.0 && evidence.direction != LearningEvidenceDirection.NONE) {
@@ -2125,7 +1973,7 @@ class RoomBackedStudyExperienceRepository(
             attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
-        val signalFactor = subjectiveSignalFactor(
+        val signalFactor = reviewLogSink.subjectiveSignalFactor(
             occurredAtEpochMillis = submission.occurredAtEpochMillis,
             durationSeconds = submission.durationSeconds,
             interruptionCount = submission.interruptionCount,
@@ -2254,20 +2102,13 @@ class RoomBackedStudyExperienceRepository(
             "SubmitHypothesis",
         )
         private const val PROJECTION_BATCH_SIZE = 100
-        private const val DAY_MILLIS_DOUBLE = 86_400_000.0
         /** Spec 2.7 cooldowns: subjective reports 6h, visual interactions 1h. */
         private const val SUBJECTIVE_COOLDOWN_MILLIS = 6L * 60 * 60 * 1000
         private const val VISUAL_COOLDOWN_MILLIS = 1L * 60 * 60 * 1000
-        private const val SOURCE_KIND_ATTEMPT = "ATTEMPT"
-        private const val SOURCE_KIND_SELF_REPORT = "SELF_REPORT"
-        private const val SOURCE_KIND_VISUAL = "VISUAL"
         private const val RATING_HARD_WEIGHT = FsrsEvidenceRatingMapper.RATING_HARD_WEIGHT
         private const val RATING_GOOD_WEIGHT = FsrsEvidenceRatingMapper.RATING_GOOD_WEIGHT
         private const val RATING_EASY_WEIGHT = FsrsEvidenceRatingMapper.RATING_EASY_WEIGHT
-        private const val REVIEW_LOG_SAMPLE_LIMIT = 100_000
         private const val EXAM_RAMP_DAYS = 14
-        private const val AVOIDANCE_LOOKBACK_MILLIS = 30L * 24 * 60 * 60 * 1000
-        private const val AVOIDANCE_MIN_OCCURRENCES = 2
         private const val MAX_CAS_RETRIES = 4
         private const val MAX_PROJECTION_DRAIN_STEPS = 64
         private const val EVENT_KIND_ATTEMPT = "ATTEMPT"
