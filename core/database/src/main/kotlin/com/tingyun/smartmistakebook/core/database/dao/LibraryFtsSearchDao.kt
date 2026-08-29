@@ -254,7 +254,7 @@ internal interface LibraryFtsSearchDao {
      * SQL validation and run verbatim; the runtime semantics stay FTS4-legal
      * (MATCH only appears as a WHERE constraint, snippet() takes the bare
      * table identifier). The caller constructs the [RoomRawQuery] in
-     * RoomStudyDatabase.buildLibrarySearchRawQuery with positional bindings
+     * RoomLibrarySearchStore.buildLibrarySearchRawQuery with positional bindings
      * only - no value is ever interpolated into the SQL text.
      */
     @RawQuery(
