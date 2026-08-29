@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.domain
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -112,10 +113,50 @@ class SchedulingEvaluationHarnessTest {
         }
     }
 
-    private fun sample(unitId: String, at: Long, rating: FsrsRating) = ReviewSample(
+    @Test
+    fun `source calibration pairs subjective positives with the next real attempt`() {
+        val samples = listOf(
+            sample("unit-1", DAY * 0, FsrsRating.GOOD, sourceKind = "ATTEMPT"),
+            sample("unit-1", DAY * 2, FsrsRating.GOOD, sourceKind = "SELF_REPORT"),
+            sample("unit-1", DAY * 4, FsrsRating.AGAIN, sourceKind = "ATTEMPT"),
+            sample("unit-2", DAY * 0, FsrsRating.GOOD, sourceKind = "ATTEMPT"),
+            sample("unit-2", DAY * 2, FsrsRating.EASY, sourceKind = "SELF_REPORT"),
+            sample("unit-2", DAY * 5, FsrsRating.GOOD, sourceKind = "ATTEMPT"),
+        )
+
+        val calibration = SchedulingEvaluationHarness.calibrateSources(samples)
+
+        assertEquals(1, calibration.size)
+        val selfReport = calibration.single()
+        assertEquals("SELF_REPORT", selfReport.sourceKind)
+        assertEquals(2, selfReport.positiveReportCount)
+        assertEquals(2, selfReport.nextAttemptCount)
+        // One of the two follow-up attempts failed, the other succeeded.
+        assertEquals(0.5, selfReport.realizedRecallRate, 1e-9)
+        assertFalse(selfReport.hasSufficientPairs)
+        assertFalse(selfReport.suggestsDowngrade)
+    }
+
+    @Test
+    fun `optimizer reports a finite validation loss under the hold out protocol`() {
+        val samples = syntheticHistory(cardCount = 12)
+
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 6)
+
+        assertTrue(result.validationLogLoss.isFinite())
+        assertTrue(result.trainLogLoss.isFinite())
+    }
+
+    private fun sample(
+        unitId: String,
+        at: Long,
+        rating: FsrsRating,
+        sourceKind: String = ReviewSample.ATTEMPT_KIND,
+    ) = ReviewSample(
         practiceUnitId = unitId,
         reviewedAtEpochMillis = at,
         rating = rating,
+        sourceKind = sourceKind,
     )
 
     private companion object {
@@ -124,6 +165,16 @@ class SchedulingEvaluationHarnessTest {
 }
 
 class TimeOfDaySignalsTest {
+
+    @Test
+    fun `peak bucket midpoint maps to minutes after midnight`() {
+        val split = TimeBucketSplit()
+        assertEquals(8 * 60, split.midpointMinute(TimeBucket.MORNING))
+        assertEquals(16 * 60, split.midpointMinute(TimeBucket.AFTERNOON))
+        // Night spans across midnight: 23:00..05:00 midpoint is 02:00.
+        assertEquals(2 * 60, split.midpointMinute(TimeBucket.NIGHT))
+    }
+
 
     @Test
     fun `default bucket split maps a learner day`() {

@@ -52,6 +52,8 @@ internal fun ReminderScreen(
     repository: ReviewReminderRepository,
     onRefreshSchedule: () -> Unit,
     onBack: () -> Unit,
+    /** Personal peak-bucket suggestion (spec 2.12); null before enough samples. */
+    suggestedMinute: Int? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -149,6 +151,13 @@ internal fun ReminderScreen(
                     },
                     color = InkSecondary,
                 )
+                if (suggestedMinute != null) {
+                    Text(
+                        "数据显示你 ${formatReminderTime(suggestedMinute)} 前后复习效果最好，可参考调整",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = InkSecondary,
+                    )
+                }
             }
             Switch(
                 checked = preferences.enabled,

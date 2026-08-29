@@ -120,3 +120,16 @@ internal val INTERACTION_SIGNAL_MIGRATION_36_37 = object : Migration(36, 37) {
         connection.execSQL("ALTER TABLE review_log ADD COLUMN interruption_count INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+
+/**
+ * v38: attention-signal duration ([away_millis], spec §2.14) and the planner
+ * reason snapshot ([planned_reason], spec §6 weight-calibration channel) on
+ * review_log.
+ */
+internal val ATTENTION_SIGNAL_MIGRATION_37_38 = object : Migration(37, 38) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE review_log ADD COLUMN away_millis INTEGER NOT NULL DEFAULT 0")
+        connection.execSQL("ALTER TABLE review_log ADD COLUMN planned_reason TEXT")
+    }
+}

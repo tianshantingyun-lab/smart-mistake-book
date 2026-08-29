@@ -165,6 +165,17 @@ enum class FsrsRating {
 /**
  * Evidence → FSRS rating mapping (spec §2.5). Keyed on (reason, weight) so
  * legacy reasons that serve multiple sources keep their distinct grades.
+ *
+ * Two consumers, two functions:
+ * - [schedulingRatingFor] drives the FSRS update (LearningProjector). It
+ *   applies two confidence refinements grounded in the research record:
+ *   subjective "very easy" reports cap at Good (Dunlosky & Rawson 2012:
+ *   86% of students over-estimate their learning, inflating stability), and
+ *   a discounted independent-correct weight (attention/RT discounts) drops
+ *   to Hard because a distracted correct answer is plausibly a guess.
+ * - [reportedRatingFor] keeps the learner's own key verbatim for the
+ *   review_log accounting column, so the honest report survives even when
+ *   scheduling is conservative.
  */
 object FsrsEvidenceRatingMapper {
     /** Four-button self-rating evidence weights (new review-UI channel). */
@@ -173,33 +184,61 @@ object FsrsEvidenceRatingMapper {
     const val RATING_HARD_WEIGHT = 0.7
     const val RATING_AGAIN_WEIGHT = 1.0
 
-    fun ratingFor(evidenceReason: LearningEvidenceReason, weight: Double): FsrsRating = when (evidenceReason) {
-        LearningEvidenceReason.INDEPENDENT_CORRECT -> FsrsRating.GOOD
-        LearningEvidenceReason.CORRECT_AFTER_HINT -> FsrsRating.GOOD
-        // Retry-correct covers both hint-channel (0.6) and legacy effort
-        // self-report (0.25); only the effort tier is conservative enough
-        // for Hard.
-        LearningEvidenceReason.CORRECT_ON_RETRY -> if (weight <= 0.25 + WEIGHT_EPSILON) {
-            FsrsRating.HARD
-        } else {
-            FsrsRating.GOOD
+    /**
+     * Independent-correct weight below this ceiling grades as Hard: it means
+     * a discount (attention/RT guess-slip correction) already touched the
+     * evidence, so the answer is not a clean recall.
+     */
+    const val LOW_CONFIDENCE_CORRECT_CEILING = 0.85
+
+    fun schedulingRatingFor(evidenceReason: LearningEvidenceReason, weight: Double): FsrsRating =
+        when (evidenceReason) {
+            LearningEvidenceReason.INDEPENDENT_CORRECT ->
+                if (weight < LOW_CONFIDENCE_CORRECT_CEILING - WEIGHT_EPSILON) {
+                    FsrsRating.HARD
+                } else {
+                    FsrsRating.GOOD
+                }
+            LearningEvidenceReason.SELF_REPORTED_RECALL ->
+                // Subjective reports never earn the Easy bonus: stability
+                // caps at Good while the reported key stays Easy in the log.
+                if (weight >= RATING_HARD_WEIGHT - WEIGHT_EPSILON) {
+                    FsrsRating.GOOD
+                } else {
+                    // Legacy detail-page self-report (0.35) also stays at
+                    // grade 3 per spec §2.5.
+                    FsrsRating.GOOD
+                }
+            else -> reportedRatingFor(evidenceReason, weight)
         }
-        LearningEvidenceReason.SELF_REPORTED_RECALL -> when {
-            weight >= RATING_EASY_WEIGHT - WEIGHT_EPSILON -> FsrsRating.EASY
-            weight >= RATING_GOOD_WEIGHT - WEIGHT_EPSILON -> FsrsRating.GOOD
-            weight >= RATING_HARD_WEIGHT - WEIGHT_EPSILON -> FsrsRating.HARD
-            // Legacy detail-page self-report (0.35) keeps grade 3 per spec 2.5.
-            else -> FsrsRating.GOOD
+
+    fun reportedRatingFor(evidenceReason: LearningEvidenceReason, weight: Double): FsrsRating =
+        when (evidenceReason) {
+            LearningEvidenceReason.INDEPENDENT_CORRECT -> FsrsRating.GOOD
+            LearningEvidenceReason.CORRECT_AFTER_HINT -> FsrsRating.GOOD
+            // Retry-correct covers both hint-channel (0.6) and legacy effort
+            // self-report (0.25); only the effort tier is conservative enough
+            // for Hard.
+            LearningEvidenceReason.CORRECT_ON_RETRY -> if (weight <= 0.25 + WEIGHT_EPSILON) {
+                FsrsRating.HARD
+            } else {
+                FsrsRating.GOOD
+            }
+            LearningEvidenceReason.SELF_REPORTED_RECALL -> when {
+                weight >= RATING_EASY_WEIGHT - WEIGHT_EPSILON -> FsrsRating.EASY
+                weight >= RATING_GOOD_WEIGHT - WEIGHT_EPSILON -> FsrsRating.GOOD
+                weight >= RATING_HARD_WEIGHT - WEIGHT_EPSILON -> FsrsRating.HARD
+                else -> FsrsRating.GOOD
+            }
+            LearningEvidenceReason.SELF_REPORTED_STUCK -> FsrsRating.AGAIN
+            LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED -> FsrsRating.HARD
+            LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED -> FsrsRating.AGAIN
+            LearningEvidenceReason.INDEPENDENT_INCORRECT -> FsrsRating.AGAIN
+            LearningEvidenceReason.INCORRECT_AFTER_HINT -> FsrsRating.AGAIN
+            LearningEvidenceReason.INCORRECT_ON_RETRY -> FsrsRating.AGAIN
+            LearningEvidenceReason.INCORRECT_AFTER_REVEAL -> FsrsRating.AGAIN
+            LearningEvidenceReason.ANSWER_REVEALED -> FsrsRating.AGAIN
         }
-        LearningEvidenceReason.SELF_REPORTED_STUCK -> FsrsRating.AGAIN
-        LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED -> FsrsRating.HARD
-        LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED -> FsrsRating.AGAIN
-        LearningEvidenceReason.INDEPENDENT_INCORRECT -> FsrsRating.AGAIN
-        LearningEvidenceReason.INCORRECT_AFTER_HINT -> FsrsRating.AGAIN
-        LearningEvidenceReason.INCORRECT_ON_RETRY -> FsrsRating.AGAIN
-        LearningEvidenceReason.INCORRECT_AFTER_REVEAL -> FsrsRating.AGAIN
-        LearningEvidenceReason.ANSWER_REVEALED -> FsrsRating.AGAIN
-    }
 
     private const val WEIGHT_EPSILON = 1e-6
 }

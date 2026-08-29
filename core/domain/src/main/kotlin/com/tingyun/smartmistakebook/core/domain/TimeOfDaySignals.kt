@@ -41,6 +41,26 @@ data class TimeBucketSplit(
         else -> TimeBucket.NIGHT
     }
 
+    /** Midpoint of one bucket's hour range, as minutes after local midnight. */
+    fun midpointMinute(bucket: TimeBucket): Int {
+        val startHour = when (bucket) {
+            TimeBucket.MORNING -> morningStartHour
+            TimeBucket.NOON -> noonStartHour
+            TimeBucket.AFTERNOON -> afternoonStartHour
+            TimeBucket.EVENING -> eveningStartHour
+            TimeBucket.NIGHT -> nightStartHour
+        }
+        val spanHours = when (bucket) {
+            TimeBucket.NIGHT -> DEFAULT_MORNING_START + 24 - nightStartHour
+            TimeBucket.MORNING -> noonStartHour - morningStartHour
+            TimeBucket.NOON -> afternoonStartHour - noonStartHour
+            TimeBucket.AFTERNOON -> eveningStartHour - afternoonStartHour
+            TimeBucket.EVENING -> nightStartHour - eveningStartHour
+        }
+        val minute = ((startHour + spanHours / 2.0) * 60).toInt()
+        return minute.mod(24 * 60)
+    }
+
     companion object {
         const val DEFAULT_MORNING_START = 5
         const val DEFAULT_NOON_START = 11

@@ -1064,6 +1064,12 @@ internal data class ReviewLogEntity(
     val editCount: Int = 0,
     @ColumnInfo(name = "interruption_count", defaultValue = "0")
     val interruptionCount: Int = 0,
+    /** Cumulative time away from the app during the attempt (spec 2.14). */
+    @ColumnInfo(name = "away_millis", defaultValue = "0")
+    val awayMillis: Long = 0,
+    /** Planner reason snapshot carried onto the attempt (spec 6 calibration). */
+    @ColumnInfo(name = "planned_reason")
+    val plannedReason: String? = null,
     @ColumnInfo(name = "recorded_at")
     val recordedAt: Long,
 )

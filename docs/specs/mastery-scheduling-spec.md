@@ -68,6 +68,8 @@ S'f = w11·D^{−w12}·((S+1)^{w13}−1)·e^{w14(1−R)}；clamp S'f ≤ S·e^{�
 
 产品升级：复习界面四键自评合一（Again/Hard/Good/Easy），三档自评降级为详情页元认知标注。
 
+**2.5a 实现细化（2026-08-29，证据见 weighting-refinement-research.md）**：mapper 拆双函数——`schedulingRatingFor`（喂 FSRS）把主观 `SELF_REPORTED_RECALL` 封顶 **Good**（Dunlosky & Rawson 2012：86% 自评过自信；Easy 稳定性奖励不给予主观报告），`reportedRatingFor`（review_log 记账）忠实记录用户键（4=很轻松）；`INDEPENDENT_CORRECT` weight<0.85 → **Hard**（注意力/RT 折价后的"低置信答对"镜像"高置信→4"）。来源校准表（`SourceCalibration`）：主观正性报告→同卡下次真实作答实际回忆率，≥30 对且低于基线 0.15 时**建议**降档（人工审批，不自动改映射）。
+
 ### 2.6 reveal 双罚合并
 `applyRevealCausality` 打标 `revealDecayAbsorbedByAttempt`；`projectMemory` 见标跳过 0.45 分支。reveal 后无 attempt 时保留 `S×0.45` 单次衰减。
 
@@ -100,6 +102,8 @@ w = [0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
      1.8729, 0.5425, 0.0912, 0.0658, 0.1542]
 ```
 实现细节核验补充：遗忘分支 clamp 为 `min(long_term, S/e^{w17·w18})`；fuzz 对 <2.5 天间隔不生效；`elapsed_days = max(0, 日历日差)`；W 数组长度即算法版本标记（FSRS-7 已出现于 srs-benchmark，log-loss 0.3437，实现需预留版本升级）。
+
+**2.11b 实现细化（2026-08-29）**：优化器采用 srs-benchmark 同口径时间序 hold-out（80/20 全局分位），目标=验证 log-loss，早停 patience=5，返回 train/valid 双损失。学习面分阶段：<8 默认；8–63 仅 w0–w5；≥64 加 w0–w14+w20（现行实现）；**解锁 w15/w16 的规则**：≥5k 样本且验证增益 >2%（规则已写，实现待数据）。BKT 学习率与 EMA 半衰不进可学习面。
 
 ### 2.15 同日复习规则【P0，srs-benchmark 实证】
 含同日复习评估时 FSRS-6 log-loss 0.346→0.3813（低于均值基线）、HLR 0.469→0.705——**同日语义是一等风险**。规则：
@@ -142,6 +146,8 @@ personal_multiplier[b] = 1 + shrink·(observed[b] − 1)
 ```
 详细依据见《behavior-signals-and-context-addendum.md》§四。
 
+**2.12a 实现细化（2026-08-29）**：乘数已接线但范围收窄为**仅主观通道**（自评/评级/视觉的 w_e ×= M[b]；真实作答不乘——其正确率本身已含时段效应，再乘会循环归因）；提醒排期落 `suggestedReminderMinute()`（峰值桶中点，达标才非空，设置页仅显示建议不自动改设定）。混合证据（May & Hasher 1998 同步效应 vs Brattico 2025 晚型早晨不差）支持保守收缩版。
+
 ### 2.13 多 KC 题证据挂载（修订 §2.8）
 **默认「全 KC 各记一次完整证据」**（multi-skill BKT 主流做法，Käser 2013；DataShop 实践），`binding.strength` 降级为排序/展示用途；仅当 KC 学习曲线证明过度共现噪声时才切换到 strength 归一分摊。KC 层是掌握状态权威挂载层，题层是观测层（Anki=card 层、RemNote=Rem 层、Khan=skill 层的行业共识）。换绑迁移简化：旧 KC 停止新证据即可，无需按 strength 拆历史。
 
@@ -149,6 +155,8 @@ personal_multiplier[b] = 1 + shrink·(observed[b] − 1)
 - 必记信号：首答相对分位（按个人 RT 基线的 log-normal 分位，van der Linden 层级模型；Meyer 2010 混合模型区分求解/猜测；Wise & Kong RTE）、提交文本+修改次数（answer-changing：改对多于改错，改对计成功但 weight 打折）、scroll-up 回看次数（D'Mello 组走神/回看信号）、会话内位置。
 - 修正用途唯一：全部用于 guess/slip 后验与 w_e 修正，**不进遗忘曲线**（Benjamin 1998：RT 流畅性是误导性元记忆线索）。
 - 客观事件：考前 r* 自适应上调（考后回落，Cepeda 2008 倒 U 的正确用法）；长假后按「假期时长+公共遗忘先验」重估 R（summer learning loss）；被打断作答降权（resumption lag）；真实考卷成绩作外部校准点；设备使用推断睡眠窗→days_since_sleep。
+
+**2.14a 实现细化（2026-08-29，切屏/注意力转移落入算法）**：① v38 review_log 增 `away_millis`（ON_PAUSE→ON_RESUME 累计离开时长，静默采集）与 `planned_reason`（选题理由快照，供标定）；② `AttentionSignal.attentionFactor(switches, awayMillis)`=1−0.12·max(0,switches−1)−0.05·⌊away/30s⌋（下限 0.6，首次切屏豁免；系数为工程先验待数据校准），乘入选择流与主观通道证据权重（Craik 1996 编码分心；Sana 2013 多任务）；③ 折价经 2.5a 低置信降档对真实作答生效；④ `isAvoidanceSignal(switches≥2 ∧ rating≤2)` 近 30 天 ≥2 次 → `AVOIDANCE_SIGNAL` 选题理由 +1.0 权重，导向重教（D'Mello 2013：走神率随难度上升、预测 ~18% 理解方差）。不进遗忘曲线公式。
 
 ---
 
@@ -198,6 +206,7 @@ review_log(id PK, learner_id, card_id /*practice_unit_id*/, rating INT 1..4,
 3. 队列解释文案：「为什么今天是这几题」（weakness/prereq/易混的 reasons 已有 ReviewReason 机制，补三种 reason 枚举）；
 4. 会话节奏：timeBudgetSeconds 已有；产品文案「超上限即停，宁散勿集」；
 5. 新学:复习配比不做硬编码比例，由 r* 与队列自然形成（复习为主的结果形态）。
+6. 权重重标定程序（2026-08-29）：v38 `planned_reason` 随作答入账后，per-reason/per-source 增益分析可跑；**≥200 条**样本触发首次标定；调整保持单调序（due > weakness > 重错≈考前 > 等待/lapse）；只经人工审批改常量，且必须在评估报告附前后 log-loss 对照。`SourceCalibration.suggestsDowngrade` 同口径建议映射修订。
 
 ---
 

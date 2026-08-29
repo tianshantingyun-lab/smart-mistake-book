@@ -1354,6 +1354,8 @@ data class ReviewLogEntry(
     val scrollUpCount: Int = 0,
     val editCount: Int = 0,
     val interruptionCount: Int = 0,
+    val awayMillis: Long = 0,
+    val plannedReason: String? = null,
     val recordedAtEpochMillis: Long,
 ) {
     init {
@@ -1361,6 +1363,7 @@ data class ReviewLogEntry(
         require(scrollUpCount >= 0 && editCount >= 0 && interruptionCount >= 0) {
             "Interaction counts must not be negative"
         }
+        require(awayMillis >= 0) { "Away time must not be negative" }
         require(deltaTDays >= 0.0 && deltaTDays.isFinite()) { "Delta days must not be negative" }
         require(durationMs >= 0) { "Duration must not be negative" }
         require(reviewedAtEpochMillis >= 0 && recordedAtEpochMillis >= 0) {
@@ -1384,6 +1387,8 @@ data class ReviewLogSampleRecord(
     val scrollUpCount: Int = 0,
     val editCount: Int = 0,
     val interruptionCount: Int = 0,
+    val awayMillis: Long = 0,
+    val plannedReason: String? = null,
 )
 
 data class AnswerRevealWriteCommand(

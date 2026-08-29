@@ -143,38 +143,74 @@ class FsrsScheduleMathTest {
     }
 
     @Test
+    fun `scheduling mapping caps subjective easy at good`() {
+        val subjective = LearningEvidenceReason.SELF_REPORTED_RECALL
+
+        assertEquals(
+            FsrsRating.GOOD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(subjective, 0.9),
+        )
+        assertEquals(
+            FsrsRating.GOOD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(subjective, 0.35),
+        )
+        // Non-subjective reasons keep their reported grade.
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED, 0.25),
+        )
+    }
+
+    @Test
+    fun `low confidence independent correct grades as hard`() {
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(LearningEvidenceReason.INDEPENDENT_CORRECT, 0.7),
+        )
+        assertEquals(
+            FsrsRating.GOOD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(LearningEvidenceReason.INDEPENDENT_CORRECT, 1.0),
+        )
+        // The reported key stays verbatim regardless of the discount.
+        assertEquals(
+            FsrsRating.GOOD,
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.INDEPENDENT_CORRECT, 0.7),
+        )
+    }
+
+    @Test
     fun `evidence ratings map per the migration table`() {
         assertEquals(
             FsrsRating.GOOD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.INDEPENDENT_CORRECT, 1.0),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.INDEPENDENT_CORRECT, 1.0),
         )
         assertEquals(
             FsrsRating.GOOD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.CORRECT_AFTER_HINT, 0.6),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.CORRECT_AFTER_HINT, 0.6),
         )
         assertEquals(
             FsrsRating.HARD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.CORRECT_ON_RETRY, 0.25),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.CORRECT_ON_RETRY, 0.25),
         )
         assertEquals(
             FsrsRating.GOOD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.CORRECT_ON_RETRY, 0.6),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.CORRECT_ON_RETRY, 0.6),
         )
         assertEquals(
             FsrsRating.EASY,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.SELF_REPORTED_RECALL, 0.9),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.SELF_REPORTED_RECALL, 0.9),
         )
         assertEquals(
             FsrsRating.GOOD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.SELF_REPORTED_RECALL, 0.8),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.SELF_REPORTED_RECALL, 0.8),
         )
         assertEquals(
             FsrsRating.GOOD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.SELF_REPORTED_RECALL, 0.35),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.SELF_REPORTED_RECALL, 0.35),
         )
         assertEquals(
             FsrsRating.HARD,
-            FsrsEvidenceRatingMapper.ratingFor(LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED, 0.25),
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED, 0.25),
         )
         for (negative in listOf(
             LearningEvidenceReason.INDEPENDENT_INCORRECT,
@@ -185,7 +221,7 @@ class FsrsScheduleMathTest {
             LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
             LearningEvidenceReason.ANSWER_REVEALED,
         )) {
-            assertEquals(FsrsRating.AGAIN, FsrsEvidenceRatingMapper.ratingFor(negative, 0.5))
+            assertEquals(FsrsRating.AGAIN, FsrsEvidenceRatingMapper.reportedRatingFor(negative, 0.5))
         }
     }
 

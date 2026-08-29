@@ -186,12 +186,14 @@ data class StudyChoiceSubmission(
     /** Silent interaction signals (spec §2.14), collected without UI prompts. */
     val scrollUpCount: Int = 0,
     val interruptionCount: Int = 0,
+    val awayMillis: Long = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Choice request id must not be blank" }
         require(scrollUpCount >= 0 && interruptionCount >= 0) {
             "Interaction counts must not be negative"
         }
+        require(awayMillis >= 0) { "Away time must not be negative" }
         require(presentationId.isNotBlank()) { "Presentation id must not be blank" }
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
         require(selectedChoiceId.isNotBlank()) { "Selected choice id must not be blank" }
@@ -265,12 +267,14 @@ data class StudyReviewRatingSubmission(
     /** Silent interaction signals (spec §2.14), collected without UI prompts. */
     val scrollUpCount: Int = 0,
     val interruptionCount: Int = 0,
+    val awayMillis: Long = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Rating request id must not be blank" }
         require(scrollUpCount >= 0 && interruptionCount >= 0) {
             "Interaction counts must not be negative"
         }
+        require(awayMillis >= 0) { "Away time must not be negative" }
         require(presentationId.isNotBlank()) { "Rating presentation id must not be blank" }
         require(practiceUnitId.isNotBlank()) { "Rating practice unit id must not be blank" }
         require(durationSeconds >= 0) { "Rating duration must not be negative" }
@@ -310,12 +314,14 @@ data class StudyReviewSelfReportSubmission(
     /** Silent interaction signals (spec §2.14), collected without UI prompts. */
     val scrollUpCount: Int = 0,
     val interruptionCount: Int = 0,
+    val awayMillis: Long = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Self-report request id must not be blank" }
         require(scrollUpCount >= 0 && interruptionCount >= 0) {
             "Interaction counts must not be negative"
         }
+        require(awayMillis >= 0) { "Away time must not be negative" }
         require(presentationId.isNotBlank()) { "Self-report presentation id must not be blank" }
         require(practiceUnitId.isNotBlank()) { "Self-report practice unit id must not be blank" }
         require(durationSeconds >= 0) { "Self-report duration must not be negative" }
@@ -418,6 +424,19 @@ interface StudyExperienceRepository : AutoCloseable {
      * floor is met.
      */
     suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport?
+
+    /**
+     * Per-source calibration (spec §2.5/A2): realized recall of the next
+     * real attempt after each subjective positive report. Empty before the
+     * paired-outcome floor is met; suggestions are advisory only.
+     */
+    suspend fun sourceCalibrations(): List<SourceCalibration> = emptyList()
+
+    /**
+     * Reminder minute at the learner's personal peak time bucket midpoint
+     * (spec §2.12 use 2). Null before any bucket reaches the sample floor.
+     */
+    suspend fun suggestedReminderMinute(): Int? = null
 
     /**
      * Runs the local FSRS-6 parameter optimizer (spec §2.11) over the

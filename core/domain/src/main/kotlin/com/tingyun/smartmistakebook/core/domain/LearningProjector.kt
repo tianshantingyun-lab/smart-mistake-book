@@ -760,7 +760,7 @@ class LearningProjector(
         }
         val clockRollback = occurredAtEpochMillis < effectiveAtEpochMillis
         val effectiveAttemptAt = maxOf(previous?.lastReviewedAtEpochMillis ?: 0, effectiveAtEpochMillis)
-        val rating = FsrsEvidenceRatingMapper.ratingFor(evidenceReason, weight)
+        val rating = FsrsEvidenceRatingMapper.schedulingRatingFor(evidenceReason, weight)
         val update = memoryUpdateModel.updateMemory(
             previous = previous,
             rating = rating,

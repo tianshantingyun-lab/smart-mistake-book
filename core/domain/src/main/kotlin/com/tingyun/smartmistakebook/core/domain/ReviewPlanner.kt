@@ -31,6 +31,12 @@ data class ReviewCandidate(
     val itemType: String? = null,
     /** Leech state (spec §2.16): paused from regular scheduling until re-taught. */
     val leech: Boolean = false,
+    /**
+     * Avoidance signal (spec §6 / D'Mello 2013): the learner repeatedly
+     * switched away from this card and graded it poorly - a difficulty or
+     * aversion marker routing it toward re-teaching.
+     */
+    val avoidance: Boolean = false,
 ) {
     init {
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
@@ -277,6 +283,9 @@ class ReviewPlanner(
         }
         if (lapseScore > 0.0) reasons += ReviewReason.RECENT_LAPSE
         if (candidate.repeatMistakePriority > 0.0) reasons += ReviewReason.REPEATED_MISTAKE
+        // Avoidance (spec 6 / D'Mello 2013): repeated switch-aways with poor
+        // grades mark a card the learner finds aversive; nudge re-teaching.
+        if (candidate.avoidance) reasons += ReviewReason.AVOIDANCE_SIGNAL
         if (candidate.examPriority > 0.0) reasons += ReviewReason.EXAM_PRIORITY
         val waitingScore = candidate.eligibleSinceEpochMillis
             ?.let { eligibleSince ->
@@ -306,6 +315,7 @@ class ReviewPlanner(
                 WEAKNESS_WEIGHT * weakness +
                 LAPSE_WEIGHT * lapseScore +
                 REPEAT_MISTAKE_WEIGHT * candidate.repeatMistakePriority +
+                AVOIDANCE_WEIGHT * (if (candidate.avoidance) 1.0 else 0.0) +
                 EXAM_WEIGHT * candidate.examPriority +
                 WAITING_WEIGHT * waitingScore
             ).coerceAtLeast(0.0)
@@ -402,6 +412,7 @@ class ReviewPlanner(
         private const val WEAKNESS_WEIGHT = 3.0
         private const val LAPSE_WEIGHT = 1.0
         private const val REPEAT_MISTAKE_WEIGHT = 2.0
+        private const val AVOIDANCE_WEIGHT = 1.0
         private const val EXAM_WEIGHT = 2.0
         private const val WAITING_WEIGHT = 1.5
         private const val FAMILY_PENALTY_WEIGHT = 0.3

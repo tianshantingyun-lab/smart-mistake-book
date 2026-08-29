@@ -924,10 +924,15 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 )
             }
             composable(Routes.Reminder) {
+                var suggestedReminderMinute by remember { mutableStateOf<Int?>(null) }
+                LaunchedEffect(Unit) {
+                    suggestedReminderMinute = application.studyRepository.suggestedReminderMinute()
+                }
                 ReminderScreen(
                     repository = application.reviewReminderRepository,
                     onRefreshSchedule = application::refreshReviewReminderSchedule,
                     onBack = navController::popBackStack,
+                    suggestedMinute = suggestedReminderMinute,
                 )
             }
             composable(Routes.Storage) {

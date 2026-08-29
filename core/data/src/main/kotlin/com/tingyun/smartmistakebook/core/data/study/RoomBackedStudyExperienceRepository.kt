@@ -19,6 +19,7 @@ import com.tingyun.smartmistakebook.core.database.ProjectionCasConflictException
 import com.tingyun.smartmistakebook.core.database.ProjectionCommit
 import com.tingyun.smartmistakebook.core.database.ProjectionCommitMode
 import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
+import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
 import com.tingyun.smartmistakebook.core.database.ReviewPlanRecord
 import com.tingyun.smartmistakebook.core.database.ReviewAttemptWriteCommand
@@ -30,6 +31,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.domain.CalibrationInput
 import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
+import com.tingyun.smartmistakebook.core.domain.AttentionSignal
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurve
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurveAlgorithm
@@ -49,6 +51,7 @@ import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
 import com.tingyun.smartmistakebook.core.domain.LegacyExponentialMemoryUpdateModel
 import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
 import com.tingyun.smartmistakebook.core.domain.ReviewSample
+import com.tingyun.smartmistakebook.core.domain.SourceCalibration
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
 import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
@@ -60,7 +63,10 @@ import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
+import com.tingyun.smartmistakebook.core.domain.TimeBucket
 import com.tingyun.smartmistakebook.core.domain.TimeBucketSplit
+import com.tingyun.smartmistakebook.core.domain.TimeOfDayCalibrator
+import com.tingyun.smartmistakebook.core.domain.TimeOfDayObservation
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
@@ -435,6 +441,7 @@ class RoomBackedStudyExperienceRepository(
                 sourceId = writeResult.attempt.attemptId,
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
+                awayMillis = submission.awayMillis,
                 // Answer changing (spec 2.14): every retry is one edit of
                 // the submitted answer for this presentation.
                 editCount = (submission.responseOrdinal - 1).coerceAtLeast(0),
@@ -506,6 +513,8 @@ class RoomBackedStudyExperienceRepository(
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
+                awayMillis = submission.awayMillis,
+                plannedReason = queueItem.reasonSnapshot.takeIf(String::isNotBlank),
                 // Answer changing (spec 2.14): every retry is one edit of
                 // the submitted answer for this presentation.
                 editCount = (submission.responseOrdinal - 1).coerceAtLeast(0),
@@ -587,6 +596,7 @@ class RoomBackedStudyExperienceRepository(
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
                 interruptionCount = submission.interruptionCount,
+                awayMillis = submission.awayMillis,
             )
         }
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
@@ -656,6 +666,7 @@ class RoomBackedStudyExperienceRepository(
                 schedulingEligible = false,
                 scrollUpCount = submission.scrollUpCount,
                 interruptionCount = submission.interruptionCount,
+                awayMillis = submission.awayMillis,
             )
             val progress = activeSession.toProgress(orderedQueue.size)
             return@runOperation StudyReviewRatingSubmissionResult(
@@ -694,6 +705,7 @@ class RoomBackedStudyExperienceRepository(
                 priorMemory = priorMemory,
                 scrollUpCount = submission.scrollUpCount,
                 interruptionCount = submission.interruptionCount,
+                awayMillis = submission.awayMillis,
             )
         }
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
@@ -724,34 +736,59 @@ class RoomBackedStudyExperienceRepository(
     }
 
     override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? {
-        val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
-            .map { row ->
-                ReviewSample(
-                    practiceUnitId = row.practiceUnitId,
-                    reviewedAtEpochMillis = row.reviewedAtEpochMillis,
-                    rating = ratingForOrdinal(row.rating),
-                    durationMs = row.durationMs,
-                )
-            }
+        val samples = reviewSamples()
         if (samples.isEmpty()) return null
         val eligible = samples.groupBy(ReviewSample::practiceUnitId).values.any { it.size >= 2 }
         if (!eligible) return null
         return SchedulingEvaluationHarness.evaluate(samples)
     }
 
-    override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? {
-        val store = requireNotNull(schedulingSettingsStore) {
-            "Parameter optimization requires a scheduling settings store"
-        }
-        val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+    override suspend fun sourceCalibrations(): List<SourceCalibration> =
+        SchedulingEvaluationHarness.calibrateSources(reviewSamples())
+
+    private suspend fun reviewSamples(): List<ReviewSample> =
+        database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
             .map { row ->
                 ReviewSample(
                     practiceUnitId = row.practiceUnitId,
                     reviewedAtEpochMillis = row.reviewedAtEpochMillis,
                     rating = ratingForOrdinal(row.rating),
                     durationMs = row.durationMs,
+                    sourceKind = row.sourceKind,
                 )
             }
+
+    override suspend fun suggestedReminderMinute(): Int? {
+        val samples = reviewSamples()
+        if (samples.isEmpty()) return null
+        val observations = samples.mapNotNull { sample ->
+            val bucket = runCatching { TimeBucket.valueOf(bucketNameAt(sample.reviewedAtEpochMillis)) }
+                .getOrNull() ?: return@mapNotNull null
+            TimeOfDayObservation(
+                bucket = bucket,
+                isCorrect = sample.isCorrect,
+                durationMs = sample.durationMs,
+            )
+        }
+        if (observations.isEmpty()) return null
+        val profile = TimeOfDayCalibrator.profile(observations)
+        val split = TimeBucketSplit()
+        val peak = TimeBucket.entries
+            .filter { (profile.samplesPerBucket[it] ?: 0) >= TimeOfDayCalibrator.MIN_BUCKET_SAMPLES }
+            .maxByOrNull { profile.multiplierFor(it) } ?: return null
+        return split.midpointMinute(peak)
+    }
+
+    private fun bucketNameAt(epochMillis: Long): String {
+        val localHour = ((epochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(epochMillis)).totalSeconds * 1000L) / 3_600_000L).mod(24L).toInt()
+        return TimeBucketSplit().bucketFor(localHour).name
+    }
+
+    override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Parameter optimization requires a scheduling settings store"
+        }
+        val samples = reviewSamples()
         val result = FsrsParameterOptimizer.optimize(samples)
         if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
         store.setOptimizedParameters(result.parameters)
@@ -814,7 +851,32 @@ class RoomBackedStudyExperienceRepository(
             attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
-        val evidence = ratingEvidenceFor(submission.rating)
+        val evidence = ratingEvidenceFor(submission.rating).let { base ->
+            if (base.direction == LearningEvidenceDirection.NONE) {
+                base
+            } else {
+                val discounted = adjustSubjectiveWeight(
+                    baseWeight = base.weight,
+                    direction = base.direction,
+                    occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                    interruptionCount = submission.interruptionCount,
+                    awayMillis = submission.awayMillis,
+                )
+                // Keep the Again key on its own reason even when discounted.
+                if (submission.rating == StudyReviewRating.AGAIN) {
+                    discounted.copy(
+                        direction = LearningEvidenceDirection.NEGATIVE,
+                        weight = (base.weight * AttentionSignal.attentionFactor(
+                            submission.interruptionCount,
+                            submission.awayMillis,
+                        )).coerceIn(0.0, 1.0),
+                        reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
+                    )
+                } else {
+                    discounted
+                }
+            }
+        }
         val memoryOutcome = if (submission.rating == StudyReviewRating.AGAIN) {
             ProblemMemoryOutcome.RETRIEVAL_FAILURE
         } else {
@@ -853,6 +915,51 @@ class RoomBackedStudyExperienceRepository(
      * subject-scoped pseudo knowledge node through a deterministic pseudo
      * binding, so mastery state is never lost for unbound questions.
      */
+    /**
+     * Subjective evidence discount (spec 2.14 + 2.12): attention switches and
+     * away-time (Craik 1996) plus the personal time-of-day multiplier
+     * (May & Hasher 1998; >=30 samples per bucket, cold start neutral) both
+     * only ever shrink the evidence weight of subjective reports.
+     */
+    private suspend fun adjustSubjectiveWeight(
+        baseWeight: Double,
+        direction: LearningEvidenceDirection,
+        occurredAtEpochMillis: Long,
+        interruptionCount: Int,
+        awayMillis: Long,
+    ): LearningEvidence {
+        val attention = AttentionSignal.attentionFactor(interruptionCount, awayMillis)
+        val timeOfDay = subjectiveTimeOfDayMultiplier(occurredAtEpochMillis)
+        val weight = (baseWeight * attention * timeOfDay).coerceIn(0.0, 1.0)
+        return LearningEvidence(
+            direction = direction,
+            weight = weight,
+            reason = when (direction) {
+                LearningEvidenceDirection.POSITIVE -> LearningEvidenceReason.SELF_REPORTED_RECALL
+                LearningEvidenceDirection.NEGATIVE -> LearningEvidenceReason.SELF_REPORTED_STUCK
+                LearningEvidenceDirection.NONE -> LearningEvidenceReason.ANSWER_REVEALED
+            },
+        )
+    }
+
+    private suspend fun subjectiveTimeOfDayMultiplier(occurredAtEpochMillis: Long): Double {
+        val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+        if (samples.isEmpty()) return 1.0
+        val observations = samples.mapNotNull { row ->
+            val bucket = runCatching { TimeBucket.valueOf(row.timeBucket) }.getOrNull()
+                ?: return@mapNotNull null
+            TimeOfDayObservation(
+                bucket = bucket,
+                isCorrect = row.rating > 1,
+                durationMs = row.durationMs,
+            )
+        }
+        if (observations.isEmpty()) return 1.0
+        val profile = TimeOfDayCalibrator.profile(observations)
+        val localHour = ((occurredAtEpochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(occurredAtEpochMillis)).totalSeconds * 1000L) / 3_600_000L).mod(24L).toInt()
+        return profile.multiplierFor(TimeBucketSplit().bucketFor(localHour))
+    }
+
     private suspend fun buildPseudoAttribution(
         practiceUnitId: String,
         problemRevisionId: String,
@@ -907,6 +1014,8 @@ class RoomBackedStudyExperienceRepository(
         scrollUpCount: Int = 0,
         editCount: Int = 0,
         interruptionCount: Int = 0,
+        awayMillis: Long = 0,
+        plannedReason: String? = null,
     ) {
         try {
             val deltaDays = if (priorMemory == null || priorMemory.lastReviewedAtEpochMillis <= 0) {
@@ -918,7 +1027,7 @@ class RoomBackedStudyExperienceRepository(
             }
             val localHour = ((occurredAtEpochMillis + studyDay.utcOffsetMinutes * 60_000L) /
                 3_600_000L).mod(24L).toInt()
-            val rating = FsrsEvidenceRatingMapper.ratingFor(evidence.reason, evidence.weight)
+            val rating = FsrsEvidenceRatingMapper.reportedRatingFor(evidence.reason, evidence.weight)
             database.recordReviewLogEntries(
                 listOf(
                     ReviewLogEntry(
@@ -936,6 +1045,8 @@ class RoomBackedStudyExperienceRepository(
                         scrollUpCount = scrollUpCount,
                         editCount = editCount,
                         interruptionCount = interruptionCount,
+                        awayMillis = awayMillis,
+                        plannedReason = plannedReason,
                         recordedAtEpochMillis = clock.millis(),
                     ),
                 ),
@@ -1364,6 +1475,21 @@ class RoomBackedStudyExperienceRepository(
     }
 
     /**
+     * Avoidance units (spec 6 / D'Mello 2013): cards switched away from at
+     * least twice per attempt while graded poorly, twice within the recent
+     * window - a difficulty or aversion marker that steers re-teaching.
+     */
+    private fun avoidancePracticeUnitIds(samples: List<ReviewLogSampleRecord>): Set<String> {
+        val now = clock.millis()
+        return samples.asSequence()
+            .filter { now - it.reviewedAtEpochMillis in 0..AVOIDANCE_LOOKBACK_MILLIS }
+            .filter { it.interruptionCount >= AttentionSignal.AVOIDANCE_SWITCH_THRESHOLD && it.rating <= AttentionSignal.AVOIDANCE_MAX_RATING }
+            .groupBy(ReviewLogSampleRecord::practiceUnitId)
+            .filterValues { rows -> rows.size >= AVOIDANCE_MIN_OCCURRENCES }
+            .keys
+    }
+
+    /**
      * Exam-mode ramp (spec 2.17): during the fourteen days before a declared
      * exam, matching candidates gain priority so they enter the queue before
      * their regular due date. The ramp peaks at the exam day and falls back
@@ -1401,6 +1527,8 @@ class RoomBackedStudyExperienceRepository(
         learnerSnapshot: LearnerSnapshot,
         planningContext: PlanningContext,
     ): ReviewPlanBundle {
+        val reviewLogSamples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+        val avoidanceUnits = avoidancePracticeUnitIds(reviewLogSamples)
         val candidates = mistakes
             .sortedBy(MistakeRecord::practiceUnitId)
             .distinctBy(MistakeRecord::practiceUnitId)
@@ -1415,6 +1543,7 @@ class RoomBackedStudyExperienceRepository(
                 ReviewCandidate(
                     practiceUnitId = mistake.practiceUnitId,
                     leech = learnerSnapshot.problemMemoryStates[mistake.practiceUnitId]?.isLeeched == true,
+                    avoidance = mistake.practiceUnitId in avoidanceUnits,
                     knowledgeNodeIds = mistake.knowledgeNodeIds.ifEmpty {
                         curatedEvidence?.attributions
                             ?.mapTo(linkedSetOf()) { it.knowledgeNodeId }
@@ -1939,6 +2068,20 @@ class RoomBackedStudyExperienceRepository(
                 responseOrdinal = submission.responseOrdinal,
             ),
         )
+        // Attention discount (spec 2.14): switches and away-time fragment
+        // encoding (Craik et al. 1996), so a distracted correct answer
+        // carries less weight and maps to a lower grade via the mapper.
+        val discountedEvidence = decision.evidence.let { evidence ->
+            val factor = AttentionSignal.attentionFactor(
+                submission.interruptionCount,
+                submission.awayMillis,
+            )
+            if (factor < 1.0 && evidence.direction != LearningEvidenceDirection.NONE) {
+                evidence.copy(weight = (evidence.weight * factor).coerceIn(0.0, 1.0))
+            } else {
+                evidence
+            }
+        }
         return PreparedChoiceSubmission(
             evidenceSnapshot = evidenceSnapshot,
             command = AttemptWriteCommand(
@@ -1948,7 +2091,7 @@ class RoomBackedStudyExperienceRepository(
                 presentationId = submission.presentationId,
                 assessmentSnapshotId = evidenceSnapshot.snapshotId,
                 submittedResponse = submittedResponse,
-                evidence = decision.evidence,
+                evidence = discountedEvidence,
                 problemMemoryOutcome = decision.problemMemoryOutcome,
                 occurredAtEpochMillis = submission.occurredAtEpochMillis,
                 durationSeconds = submission.durationSeconds,
@@ -1989,14 +2132,17 @@ class RoomBackedStudyExperienceRepository(
             attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
+        val adjustedBase = adjustSubjectiveWeight(
+            baseWeight = SELF_REPORTED_RECALL_WEIGHT,
+            direction = LearningEvidenceDirection.POSITIVE,
+            occurredAtEpochMillis = submission.occurredAtEpochMillis,
+            interruptionCount = submission.interruptionCount,
+            awayMillis = submission.awayMillis,
+        )
         val reportDecision = when (submission.report) {
             StudyReviewSelfReport.RECALL_COMPLETED -> SelfReportDecision(
                 choiceMarkdown = "我已独立完成",
-                evidence = LearningEvidence(
-                    direction = LearningEvidenceDirection.POSITIVE,
-                    weight = SELF_REPORTED_RECALL_WEIGHT,
-                    reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
-                ),
+                evidence = adjustedBase,
                 memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
             )
 
@@ -2006,9 +2152,9 @@ class RoomBackedStudyExperienceRepository(
             // independent/assisted/lapse split.
             StudyReviewSelfReport.RECALLED_WITH_EFFORT -> SelfReportDecision(
                 choiceMarkdown = "勉强做对",
-                evidence = LearningEvidence(
-                    direction = LearningEvidenceDirection.POSITIVE,
-                    weight = SELF_REPORTED_EFFORT_RECALL_WEIGHT,
+                evidence = adjustedBase.copy(
+                    weight = (adjustedBase.weight * SELF_REPORTED_EFFORT_RECALL_WEIGHT /
+                        SELF_REPORTED_RECALL_WEIGHT).coerceIn(0.0, 1.0),
                     reason = LearningEvidenceReason.CORRECT_ON_RETRY,
                 ),
                 memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
@@ -2016,9 +2162,10 @@ class RoomBackedStudyExperienceRepository(
 
             StudyReviewSelfReport.NEEDS_HELP -> SelfReportDecision(
                 choiceMarkdown = "这里还卡住",
-                evidence = LearningEvidence(
+                evidence = adjustedBase.copy(
                     direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = SELF_REPORTED_STUCK_WEIGHT,
+                    weight = (adjustedBase.weight * SELF_REPORTED_STUCK_WEIGHT /
+                        SELF_REPORTED_RECALL_WEIGHT).coerceIn(0.0, 1.0),
                     reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
                 ),
                 memoryOutcome = ProblemMemoryOutcome.RETRIEVAL_FAILURE,
@@ -2123,6 +2270,8 @@ class RoomBackedStudyExperienceRepository(
         private const val RATING_EASY_WEIGHT = FsrsEvidenceRatingMapper.RATING_EASY_WEIGHT
         private const val REVIEW_LOG_SAMPLE_LIMIT = 100_000
         private const val EXAM_RAMP_DAYS = 14
+        private const val AVOIDANCE_LOOKBACK_MILLIS = 30L * 24 * 60 * 60 * 1000
+        private const val AVOIDANCE_MIN_OCCURRENCES = 2
         private const val MAX_CAS_RETRIES = 4
         private const val MAX_PROJECTION_DRAIN_STEPS = 64
         private const val EVENT_KIND_ATTEMPT = "ATTEMPT"

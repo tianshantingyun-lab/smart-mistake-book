@@ -190,6 +190,7 @@ fun CapturedReviewSessionScreen(
                     presentationId = presentationId,
                     scrollUpCount = tracker.scrollUpCount,
                     interruptionCount = tracker.interruptionCount,
+                    awayMillis = tracker.awayMillis,
                     submit = onSubmit,
                 )
             },
@@ -208,6 +209,7 @@ fun CapturedReviewSessionScreen(
                     presentationId = presentationId,
                     scrollUpCount = tracker.scrollUpCount,
                     interruptionCount = tracker.interruptionCount,
+                    awayMillis = tracker.awayMillis,
                     submit = onSubmit,
                 )
             },
@@ -227,6 +229,7 @@ fun CapturedReviewSessionScreen(
                     presentationId = presentationId,
                     scrollUpCount = tracker.scrollUpCount,
                     interruptionCount = tracker.interruptionCount,
+                    awayMillis = tracker.awayMillis,
                     submit = onSubmit,
                 )
             },
@@ -248,6 +251,7 @@ fun CapturedReviewSessionScreen(
                     presentationId = presentationId,
                     scrollUpCount = tracker.scrollUpCount,
                     interruptionCount = tracker.interruptionCount,
+                    awayMillis = tracker.awayMillis,
                     submit = onSubmitRating,
                 )
             },
@@ -326,11 +330,12 @@ internal class CapturedReviewSessionViewModel(
         presentationId: String,
         scrollUpCount: Int = 0,
         interruptionCount: Int = 0,
+        awayMillis: Long = 0,
         submit: suspend (StudyReviewSelfReportSubmission) -> StudyReviewSelfReportSubmissionResult,
     ) {
         if (!canSubmit(report)) return
         val command = runCatching {
-            submissionCommand(report, practiceUnitId, presentationId, scrollUpCount, interruptionCount)
+            submissionCommand(report, practiceUnitId, presentationId, scrollUpCount, interruptionCount, awayMillis)
         }.getOrElse {
             updateStatus(CapturedReviewSubmissionStatus.FAILED)
             return
@@ -357,6 +362,7 @@ internal class CapturedReviewSessionViewModel(
         presentationId: String,
         scrollUpCount: Int = 0,
         interruptionCount: Int = 0,
+        awayMillis: Long = 0,
         submit: suspend (StudyReviewRatingSubmission) -> StudyReviewRatingSubmissionResult,
     ) {
         // The rating channel shares the self-report lock: one subjective
@@ -377,6 +383,7 @@ internal class CapturedReviewSessionViewModel(
                     occurredAtEpochMillis = now,
                     scrollUpCount = scrollUpCount,
                     interruptionCount = interruptionCount,
+                    awayMillis = awayMillis,
                 )
                 val result = submit(command)
                 ratingResult = result
@@ -429,6 +436,7 @@ internal class CapturedReviewSessionViewModel(
         presentationId: String,
         scrollUpCount: Int,
         interruptionCount: Int,
+        awayMillis: Long,
     ): StudyReviewSelfReportSubmission {
         savedStateHandle.get<String>(PENDING_REQUEST_ID_KEY)?.let { requestId ->
             return StudyReviewSelfReportSubmission(
@@ -456,6 +464,7 @@ internal class CapturedReviewSessionViewModel(
             occurredAtEpochMillis = now,
             scrollUpCount = scrollUpCount,
             interruptionCount = interruptionCount,
+            awayMillis = awayMillis,
         ).also(::persistCommand)
     }
 

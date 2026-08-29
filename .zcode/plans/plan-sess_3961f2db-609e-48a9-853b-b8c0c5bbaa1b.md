@@ -1,63 +1,41 @@
-# 实施计划：整卷/整页自动切分录入 + 自动分类减少手动 + 移除待办收件箱
+# 加权机制深化 + 切屏注意力信号 实施计划
 
-## 背景与目标
-- 不做 OCR、只依赖模型识别；尽量减少手动操作与判断题（尤其分类）。
-- 错题本页整页/PDF 导入 → 模型把一页切成多道题 → 独立「切分确认」界面勾选 → 录入所选 → 自动逐个进入每题确认保存。
-- 删除「待办收件箱」（PendingCaptureInbox）列表页；切分确认耗时、中途退出用**悬浮泡泡**返回并带提示。
-- 自动分类：一次性全局授权后，详情页对新题自动执行整理（现有 prepare→apply 链路复用）。
+## 研究依据（已检索取证，将落文档 docs/research/weighting-refinement-research.md）
+- **自评过自信**：Dunlosky & Rawson 2012（86% 学生 JOL 过自信→提前停止学习→两周后保持更差）→ 主观通道上限策略
+- **切屏=难度/厌恶信号**：D'Mello et al. 2013（走神率随文本难度上升；走神率预测 ~18% 理解方差）
+- **分心损伤编码**：Craik et al. 1996（编码期分心显著损伤后续记忆）；Sana et al. 2013（多任务 hindering 学习）→ 证据折价
+- **时段**：May & Hasher 1998 同步效应（编码/提取在最优时段）+ Brattico et al. 2025 混合证据（晚型者早晨并不差）→ 维持保守收缩版（个人乘数、≥30 样本、不写死人群级权重）
+- **可学习面**：fsrs-rs 8/64 阈值（已源码核验）+ srs-benchmark 时间序分割口径 → 优化器补 hold-out
 
-## 阶段 1：模型协议升级（页内多题切片输出）
-**目标**：让 OpenAI 网关（URV 同层适配器）输出 `CaptureAssessment` schema v3：`decision=SPLIT + MULTIPLE_QUESTIONS issue + questionRegions(2..12 区域框)`。
-- 文件（精读后修改）：
-  - `core/data/.../model/OpenAiModelProtocol.kt`（243 行，提示词构建/schema 版本）
-  - `core/data/.../model/OpenAiModelResponseParsers.kt`（498 行，Capture 解析器：新增 questionRegions 解析、坐标校验、`CaptureAssessment` v3 构造）
-  - `core/data/.../model/OpenAiModelTaskAdapters.kt`（411 行，请求适配带上足够 schemaVersion）
-  - `core/data/.../model/OpenAiModelTransport.kt`（284 行，如有协议版本传递）
-- 兼容策略：模型未返回 regions / 旧响应 → 保持现行为（不切分，按原单题流程）。现有契约校验（`CaptureAssessment` 的 schema v3 require）已保证非法输出失败闭环。
-- 测试：解析器单测（含 regions 合法/非法/缺失），`OpenAiModelResponseParsers` 现有测试模式扩展。
+## 阶段 A：自评置信校准（静态上限 + 数据校准）
+- A1 `FsrsEvidenceRatingMapper` 拆双函数：`schedulingRatingFor`（调度用：主观 SELF_REPORTED_RECALL ≥0.9 上限 Good，不再映射 EASY；review_log 记账用 `reportedRatingFor` 不降档记 4）。Projector 用调度版，recordReviewLog 用记账版
+- A2 harness 增 `SourceCalibrationReport`：按 source_kind 的"调度档≥3 → 同卡下次真实作答实际回忆率"校准表；≥30 对给出降档/回调建议（文档化人工审批，不自动改映射）
+- 测试：双映射函数、校准报告
 
-## 阶段 2：切分工作台持久化（数据库迁移 v35）
-**目标**：为「整卷汇总确认 + 泡泡恢复 + 录入进度」提供持久化状态。
-- 新增 Room 实体 + DAO + `StudyDatabasePort` 方法 + 迁移 `SPLIT_IMPORT_JOB_MIGRATION_34_35`：
-  - `split_import_job`：jobId、sourceKind(PDF/BATCH/SINGLE_PAGE)、pageCount、createdAt、status(PREPARING/READY/COMPLETED/ABANDONED)、来源（localUri/requestFingerprint）
-  - `split_import_question`：jobId、questionOrdinal、pageIndex、region、splitDraftId、selected、confirmState(PENDING/SAVED/TUTOR_SESSION/REJECTED)、resolvedEntryId?
-  - 迁移需手工编写 + 导出 schema（`exportSchema=true`，CI 有 drift 检查，务必同步 `core/database/schemas/35.json`）。
-- 域接口 `SplitImportRepository`（core:domain）+ Room 实现（core:data）+ 工厂（app 装配）。
-- 幂等/恢复：job 由 requestFingerprint 防重；进程被杀后可重读 job 继续。
-- 测试：迁移测试、DAO 单测、幂等重放。
+## 阶段 B：时段乘数接线（仅主观通道 + 提醒峰值桶）
+- B1 repository：主观提交（自评/评级/视觉）时从 review_log 现算 `TimeOfDayProfile`，w_e ×= multiplierFor(event 桶)——≥30 样本自动生效，冷启动恒 1；真实作答不乘（其正确率本身已含时段效应，避免循环）
+- B2 `suggestedReminderMinute()`：峰值桶中点分钟（达标时）；设置页显示一行建议（ReviewReminderScreen）
+- 测试：乘数应用、建议分钟
 
-## 阶段 3：切分确认界面 + 悬浮泡泡返回入口
-- 新增 `feature/library` 或 `feature/capture` 下：
-  - `SplitReviewRoute`（Composable）：块列表（题卡：第 N 题 + 块图预览 + 识别文本若有）、勾选/跳过、整卷汇总（PDF job 全部页聚合成一次确认）、底部「录入所选(N)」。
-  - 泡泡（悬浮返回入口）：root 层 overlay（`SmartMistakeBookRoot` 顶部）+ 状态（存在未完成 split job → 显示小圆点泡泡，点击回 `SplitReview` 路由，带提示文案「切分还在进行，点此继续」）。泡泡在 job COMPLETED/ABANDONED 后消失。
-  - 路由：新增 `Routes.SplitReview`、`Routes.SplitReviewResume`（jobId 参数，泡泡恢复用）；`SmartMistakeBookRoot` 接线。
-- 录入编排：点「录入所选」→ 依次打开每题 `CaptureScreen`（resume 该块 splitDraft，REVIEWING 相位）→ 每题确认保存/进讲题 → 自动进入下一题 → 全部完成后 job 标记 COMPLETED、泡泡消失。
-- 严格离线（strictOffline）：无模型不产生切分 job，不显示泡泡；整页按原单题流程。
-- 测试：Compose 测试（泡泡显隐、勾选/录入流转）、路由测试。
+## 阶段 C：选题权重标定设施（数据驱动，权重本轮不动）
+- C1 v38 迁移 review_log + `planned_reason TEXT`：submitReviewChoice/submitChoice 把 queueItem 主理由写入，使"计划理由→实际回忆"增益分析可行
+- C2 harness 增 per-reason/per-source 增益报告；spec §6 写重标定程序（≥200 条触发、单调序约束、人工审批常量）
 
-## 阶段 4：删除待办收件箱
-- 删除 `PendingCaptureInboxRoute.kt`、`Routes.CaptureInbox`、`SmartMistakeBookRoot` 中 CaptureInbox composable、`LibraryRoute` 的 `onOpenPendingCaptures` 入口、app 路由相关接线。
-- `pendingCorrectionCount`（StudyExperienceSnapshot 字段 + `RoomBackedStudyExperienceRepository` 的 pendingDraftObservationJob）处置：保留底层草稿计数逻辑但不展示收件箱入口（或改由泡泡承担“未完成事项”提示）。待精读后定最小改法。
-- 未完成切分块/单个草稿的返回入口 = 泡泡（切分 job）+ 捕获页自身恢复（capture/resume，已有）。
-- 测试：删除相关的 instrumented/UI 测试更新；确认无残留引用（编译+测试通过）。
+## 阶段 D：优化器防过拟合
+- D1 `FsrsParameterOptimizer`：全局时间 80/20 hold-out，优化目标改验证损失，早停（验证损失 5 轮不降）；返回 train/valid 双损失；阈值保持 8/64
+- D2 spec §2.11 学习面分阶段表（≥5k 且验证增益>2% 才考虑解锁 w15/w16，写为规则不实现）
+- 测试：合成数据 hold-out 不劣于默认参数
 
-## 阶段 5：自动分类减少手动确认
-- 一次性全局授权：DataStore 持久化 `organizationAutoRun: Boolean`（默认 true，设置页可关）。
-- `MistakeOrganizationSection`：授权开启时，详情页对新题（无任何已接受分类的 revision）自动执行 prepare→apply（现有 LaunchedEffect 链路已具备，改造 `preparationDismissed` 语义 + 移除每次同意卡片，仅在结果不可用/需确认时呈现）；提供撤销/再次整理入口。
-- 为保留「本地策略已接受」既有机制：`applySuccessfulOrganization` 路径（thresholds、合并保留、幂等）不改。
-- 测试：自动应用幂等、保留用户修正（现有测试扩展）。
+## 阶段 E：切屏/注意力转移落入算法
+- E1 Tracker：+累计离开时长（ON_PAUSE→ON_RESUME 差值累加）+`onEdit()` 钩子（顺带就绪上轮记录的 edit_count 待接点）
+- E2 v38 迁移：review_log + `away_millis`（默认 0）；Submission/端口/实体/DAO 全链路；迁移矩阵自动覆盖 1→38
+- E3 `AttentionSignal.attentionFactor(switches, awayMillis)`：1 − 0.12·(switches−1) − away 每 30s −0.05，下限 0.6（系数为工程先验，明示待数据校准）；主观+真实通道 w_e 同乘（Craik 编码分心依据）
+- E4 mapper 低置信答对降档：INDEPENDENT_CORRECT 且 weight<0.85 → HARD（分心/低 RT 折价由此对真实作答生效，对应 §2.5"高置信→4"的镜像）
+- E5 重教信号：ReviewReason 新增 AVOIDANCE_SIGNAL；repository 从 review_log 近 30 天统计（该卡 switches≥2 且 rating≤2 ≥2 次）→ candidate.avoidance → planner 加小权重(1.0)与重教理由
+- 测试：attentionFactor、mapper 降档、v38 迁移、planner avoidance
 
-## 阶段 6：CI 与验证
-- 单元测试：`testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest`（新增解析器/DAO/工作台/UI 相关）。
-- 构建：`assembleLocalFirstDebug assembleStrictOfflineDebug`。
-- 数据库：`core:database` 测试 + `git diff --exit-code -- core/database/schemas`（迁移 35 与导出 schema 一致）。
-- lint：`lintLocalFirstDebug lintStrictOfflineDebug`。
-- 手工验证清单（真机可做项）：PDF 导入→切分确认→录入全卷；切分中退出→泡泡回继续；strictOffline 降级；详情页自动分类。
+## 阶段 F：验证与回写
+- 全单测 + connected（1→38 矩阵）+ 双 flavor 构建/lint + 装机 smoke
+- spec §2.5/§2.11/§2.12/§2.14/§6 回写 + 研究文档 + 提交
 
-## 明确不做（本轮）
-- 限时整卷训练模式（用户已取消）。
-- capture 提交后自动触发分类的后台流水线（二期，本轮仅详情页自动执行）。
-- 云同步、变式题生成（用户明确不做）。
-
-## 待精读的接线文件（执行时先读）
-`feature/capture/.../CaptureScreen.kt`（maybeSplit 调用点 1047-1112、1361-1363）、`RoomBatchImportRepository`（PDF 导入 → job → 切分钩子）、`RoomCaptureWorkflowRepository.splitDraft`（块落库细节）、`StudyDatabasePort`/DAO/迁移样板、`SmartMistakeBookRoot`（路由与泡泡挂载）、`ListApp`（路由删除波及）、OpenAI 网关四件套、`MistakeOrganizationSection` 授权改造。
+**不做**：FSRS 公式内部不动（D/稳定性更新保持 py-fsrs 对拍基线）；BKT 学习率不进可学习面；权重常量数值不变（等 ≥200 条数据标定）。

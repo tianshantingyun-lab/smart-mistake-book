@@ -9,24 +9,59 @@ import androidx.lifecycle.Lifecycle
  * submission into review_log and only ever correct evidence weights — they
  * never enter the forgetting curve (Benjamin 1998).
  */
-class ReviewInteractionTracker {
+class ReviewInteractionTracker(
+    private val clock: () -> Long = DEFAULT_CLOCK,
+) {
     /** Upward scroll direction changes observed on the problem surface. */
     var scrollUpCount: Int = 0
         private set
 
-    /** Process-level interruptions (background/foreground flips) during one visit. */
+    /** Process-level interruptions (app switches / screen-away) during one visit. */
     var interruptionCount: Int = 0
+        private set
+
+    /** Cumulative time spent away from the app while the question was open. */
+    var awayMillis: Long = 0
+        private set
+
+    /** Text-edit operations on answer surfaces (0 until an editable answer ships). */
+    var editCount: Int = 0
         private set
 
     /** Last observed scroll offset, internal to the delta collector. */
     internal var lastScrollValue: Int? = null
+
+    private var pausedAtMillis: Long? = null
 
     /** @param delta signed scroll pixel delta; negative means scrolling back up. */
     fun onScrollDelta(delta: Int) {
         if (delta < 0) scrollUpCount += 1
     }
 
+    /** Hook for editable answer surfaces; silent until such a surface ships. */
+    fun onEdit() {
+        editCount += 1
+    }
+
     fun onLifecycleEvent(event: Lifecycle.Event) {
-        if (event == Lifecycle.Event.ON_PAUSE) interruptionCount += 1
+        when (event) {
+            Lifecycle.Event.ON_PAUSE -> {
+                if (pausedAtMillis == null) {
+                    interruptionCount += 1
+                    pausedAtMillis = clock()
+                }
+            }
+            Lifecycle.Event.ON_RESUME -> {
+                pausedAtMillis?.let { pausedAt ->
+                    awayMillis += (clock() - pausedAt).coerceAtLeast(0)
+                }
+                pausedAtMillis = null
+            }
+            else -> Unit
+        }
+    }
+
+    private companion object {
+        val DEFAULT_CLOCK: () -> Long = { System.currentTimeMillis() }
     }
 }

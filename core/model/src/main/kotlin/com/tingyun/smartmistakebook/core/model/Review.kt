@@ -16,6 +16,7 @@ enum class ReviewReason {
     PREREQ_GAP,
     CONFUSABLE_PAIR,
     GRADUATED_MAINTENANCE,
+    AVOIDANCE_SIGNAL,
 }
 
 enum class ReviewDifficultyBand {

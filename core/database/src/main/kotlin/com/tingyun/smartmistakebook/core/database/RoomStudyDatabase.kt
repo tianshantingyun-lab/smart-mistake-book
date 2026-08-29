@@ -2268,6 +2268,8 @@ internal class RoomStudyDatabase(
                     scrollUpCount = entry.scrollUpCount,
                     editCount = entry.editCount,
                     interruptionCount = entry.interruptionCount,
+                    awayMillis = entry.awayMillis,
+                    plannedReason = entry.plannedReason,
                     recordedAt = entry.recordedAtEpochMillis,
                 )
             },
@@ -2287,6 +2289,8 @@ internal class RoomStudyDatabase(
                 scrollUpCount = row.scrollUpCount,
                 editCount = row.editCount,
                 interruptionCount = row.interruptionCount,
+                awayMillis = row.awayMillis,
+                plannedReason = row.plannedReason,
             )
         }
 

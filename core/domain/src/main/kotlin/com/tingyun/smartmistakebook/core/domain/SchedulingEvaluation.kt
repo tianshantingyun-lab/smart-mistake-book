@@ -17,8 +17,45 @@ data class ReviewSample(
     val reviewedAtEpochMillis: Long,
     val rating: FsrsRating,
     val durationMs: Long = 0,
+    /** ATTEMPT / SELF_REPORT / VISUAL — source calibration key (spec §2.5). */
+    val sourceKind: String = ATTEMPT_KIND,
 ) {
     val isCorrect: Boolean get() = rating != FsrsRating.AGAIN
+
+    companion object {
+        const val ATTEMPT_KIND = "ATTEMPT"
+    }
+}
+
+/**
+ * Per-source calibration (spec §2.5): for every subjective positive report
+ * (self-report/rating graded Hard or better), find the next real attempt on
+ * the same card and compare its realized recall. A source whose realized
+ * recall sits well below the real-attempt baseline is over-claiming and the
+ * static mapping (subjective Easy cap) should be revisited - by human
+ * decision, never auto-rewritten.
+ */
+data class SourceCalibration(
+    val sourceKind: String,
+    val positiveReportCount: Int,
+    val nextAttemptCount: Int,
+    val realizedRecallRate: Double,
+    val attemptBaselineRecallRate: Double,
+) {
+    /** Minimum paired outcomes before any calibration suggestion is valid. */
+    val hasSufficientPairs: Boolean get() = nextAttemptCount >= MIN_PAIRED_OUTCOMES
+
+    /**
+     * Suggested static adjustment: downgrade when the source's realized
+     * recall underperforms the attempt baseline by more than the margin.
+     */
+    val suggestsDowngrade: Boolean
+        get() = hasSufficientPairs && realizedRecallRate <= attemptBaselineRecallRate - DOWNGRADE_MARGIN
+
+    companion object {
+        const val MIN_PAIRED_OUTCOMES = 30
+        const val DOWNGRADE_MARGIN = 0.15
+    }
 }
 
 data class ModelEvaluation(
@@ -120,6 +157,51 @@ object SchedulingReplay {
  * time-series split, and reports both log-losses plus the go/no-go gate.
  */
 object SchedulingEvaluationHarness {
+
+    /**
+     * Source calibration table (spec §2.5/A2): realized recall of the next
+     * real attempt after each subjective positive report, per source kind,
+ * against the real-attempt baseline.
+     */
+    fun calibrateSources(samples: List<ReviewSample>): List<SourceCalibration> {
+        val subjectiveKinds = samples.map(ReviewSample::sourceKind)
+            .filterNot { it == ReviewSample.ATTEMPT_KIND }
+            .toSortedSet()
+        if (subjectiveKinds.isEmpty()) return emptyList()
+        val perCard = samples.groupBy(ReviewSample::practiceUnitId)
+            .mapValues { (_, history) -> history.sortedBy(ReviewSample::reviewedAtEpochMillis) }
+        val attemptBaseline = perCard.values
+            .flatMap { history -> history.filter { it.sourceKind == ReviewSample.ATTEMPT_KIND } }
+        val attemptBaselineRate = rate(attemptBaseline)
+        return subjectiveKinds.map { sourceKind ->
+            var positiveReports = 0
+            var paired = 0
+            var correctNext = 0
+            perCard.values.forEach { history ->
+                history.forEachIndexed { index, sample ->
+                    if (sample.sourceKind != sourceKind || sample.rating < FsrsRating.HARD) {
+                        return@forEachIndexed
+                    }
+                    positiveReports += 1
+                    val nextAttempt = history.drop(index + 1)
+                        .firstOrNull { it.sourceKind == ReviewSample.ATTEMPT_KIND } ?: return@forEachIndexed
+                    paired += 1
+                    if (nextAttempt.isCorrect) correctNext += 1
+                }
+            }
+            SourceCalibration(
+                sourceKind = sourceKind,
+                positiveReportCount = positiveReports,
+                nextAttemptCount = paired,
+                realizedRecallRate = if (paired == 0) Double.NaN else correctNext.toDouble() / paired,
+                attemptBaselineRecallRate = attemptBaselineRate,
+            )
+        }
+    }
+
+    private fun rate(samples: List<ReviewSample>): Double =
+        if (samples.isEmpty()) Double.NaN else samples.count(ReviewSample::isCorrect).toDouble() / samples.size
+
 
     fun evaluate(
         samples: List<ReviewSample>,
@@ -235,6 +317,7 @@ object FsrsParameterOptimizer {
         val parameters: DoubleArray,
         val mode: Mode,
         val trainLogLoss: Double,
+        val validationLogLoss: Double,
         val sampleCount: Int,
         val optimizedParameterIndices: List<Int>,
     )
@@ -252,6 +335,7 @@ object FsrsParameterOptimizer {
                 FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf(),
                 Mode.INSUFFICIENT_DATA,
                 Double.NaN,
+                Double.NaN,
                 sampleCount,
                 emptyList(),
             )
@@ -262,11 +346,22 @@ object FsrsParameterOptimizer {
             (0..14).toList() + listOf(20)
         }
 
+        // Chronological hold-out (srs-benchmark protocol): optimization
+        // targets the validation tail so a winning parameter set generalizes
+        // forward instead of memorizing the past.
+        val cutoff = quantile(
+            samples.map(ReviewSample::reviewedAtEpochMillis).sorted(),
+            TRAIN_FRACTION,
+        )
+        val train = samples.filter { it.reviewedAtEpochMillis <= cutoff }
+        val validation = samples.filter { it.reviewedAtEpochMillis > cutoff }
+
         var parameters = FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf()
         val firstMoment = DoubleArray(FsrsScheduleMath.PARAMETER_COUNT)
         val secondMoment = DoubleArray(FsrsScheduleMath.PARAMETER_COUNT)
-        var bestLoss = lossFor(samples, parameters)
+        var bestLoss = validationLossFor(train, validation, parameters)
         var best = parameters.copyOf()
+        var stepsSinceImprovement = 0
         var step = 0
         for (iteration in 0 until iterations) {
             step += 1
@@ -274,7 +369,7 @@ object FsrsParameterOptimizer {
             for (index in fittedIndices) {
                 val upper = parameters.copyOf().also { it[index] = it[index] + EPSILON }
                 val lower = parameters.copyOf().also { it[index] = it[index] - EPSILON }
-                gradient[index] = (lossFor(samples, upper) - lossFor(samples, lower)) / (2 * EPSILON)
+                gradient[index] = (lossFor(train, upper) - lossFor(train, lower)) / (2 * EPSILON)
             }
             for (index in fittedIndices) {
                 firstMoment[index] = BETA1 * firstMoment[index] + (1 - BETA1) * gradient[index]
@@ -284,10 +379,14 @@ object FsrsParameterOptimizer {
                 parameters[index] -= LEARNING_RATE * firstCorrection / (sqrt(secondCorrection) + 1e-8)
                 parameters[index] = parameters[index].coerceIn(LOWER_BOUNDS[index], UPPER_BOUNDS[index])
             }
-            val currentLoss = lossFor(samples, parameters)
+            val currentLoss = validationLossFor(train, validation, parameters)
             if (currentLoss < bestLoss - 1e-9) {
                 bestLoss = currentLoss
                 best = parameters.copyOf()
+                stepsSinceImprovement = 0
+            } else {
+                stepsSinceImprovement += 1
+                if (stepsSinceImprovement >= EARLY_STOP_PATIENCE) break
             }
         }
         val mode = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
@@ -295,8 +394,27 @@ object FsrsParameterOptimizer {
         } else {
             Mode.FULL_FIT
         }
-        return Result(best, mode, bestLoss, sampleCount, fittedIndices)
+        return Result(
+            best,
+            mode,
+            lossFor(samples, best),
+            bestLoss,
+            sampleCount,
+            fittedIndices,
+        )
     }
+
+    private fun quantile(sorted: List<Long>, fraction: Double): Long {
+        if (sorted.isEmpty()) return 0
+        val index = (fraction * (sorted.size - 1)).toInt().coerceIn(0, sorted.size - 1)
+        return sorted[index]
+    }
+
+    private fun validationLossFor(
+        train: List<ReviewSample>,
+        validation: List<ReviewSample>,
+        parameters: DoubleArray,
+    ): Double = lossFor(if (validation.isEmpty()) train else validation, parameters)
 
     private fun lossFor(samples: List<ReviewSample>, parameters: DoubleArray): Double {
         val predictions = samples.groupBy(ReviewSample::practiceUnitId)
@@ -310,6 +428,8 @@ object FsrsParameterOptimizer {
     const val MIN_SAMPLES_FOR_FITTING = 8
     const val MIN_SAMPLES_FOR_FULL_FIT = 64
     const val DEFAULT_ITERATIONS = 24
+    const val TRAIN_FRACTION = 0.8
+    const val EARLY_STOP_PATIENCE = 5
     private const val EPSILON = 1e-4
     private const val LEARNING_RATE = 2e-3
     private const val BETA1 = 0.9
