@@ -200,15 +200,10 @@ object FsrsEvidenceRatingMapper {
                     FsrsRating.GOOD
                 }
             LearningEvidenceReason.SELF_REPORTED_RECALL ->
-                // Subjective reports never earn the Easy bonus: stability
-                // caps at Good while the reported key stays Easy in the log.
-                if (weight >= RATING_HARD_WEIGHT - WEIGHT_EPSILON) {
-                    FsrsRating.GOOD
-                } else {
-                    // Legacy detail-page self-report (0.35) also stays at
-                    // grade 3 per spec §2.5.
-                    FsrsRating.GOOD
-                }
+                // Subjective reports never earn the Easy bonus (Dunlosky &
+                // Rawson 2012 overconfidence): stability caps at Good while
+                // the reported key stays verbatim in the log.
+                FsrsRating.GOOD
             else -> reportedRatingFor(evidenceReason, weight)
         }
 

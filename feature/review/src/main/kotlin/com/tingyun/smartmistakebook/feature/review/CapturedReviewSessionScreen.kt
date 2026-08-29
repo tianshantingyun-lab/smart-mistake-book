@@ -113,12 +113,12 @@ fun CapturedReviewSessionScreen(
     }
     val problemScrollState = rememberScrollState()
     LaunchedEffect(problemScrollState, presentationId) {
+        var previousOffset = problemScrollState.value
         snapshotFlow { problemScrollState.value }
             .drop(1)
             .collect { value ->
-                tracker.onScrollDelta(value - (tracker.lastScrollValue ?: value.also {
-                    tracker.lastScrollValue = value
-                }))
+                tracker.onScrollDelta(value - previousOffset)
+                previousOffset = value
             }
     }
 

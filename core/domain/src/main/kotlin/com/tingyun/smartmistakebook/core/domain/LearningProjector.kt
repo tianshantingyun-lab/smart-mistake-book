@@ -784,10 +784,9 @@ class LearningProjector(
             crossDay && rating != FsrsRating.AGAIN -> 0
             else -> previous.consecutiveCrossDayAgain
         }
-        val wasLeeched = previous?.isLeeched == true
-        if (wasLeeched && difficulty > (previous?.difficulty ?: difficulty)) {
+        if (previous?.isLeeched == true && difficulty > previous.difficulty) {
             // Spec §2.16: while leeched, difficulty must not climb further.
-            difficulty = previous!!.difficulty
+            difficulty = previous.difficulty
         }
         var nextReviewAt = update.nextReviewAtEpochMillis
         val isRetrievalFailure = outcome == ProblemMemoryOutcome.RETRIEVAL_FAILURE ||

@@ -28,9 +28,6 @@ class ReviewInteractionTracker(
     var editCount: Int = 0
         private set
 
-    /** Last observed scroll offset, internal to the delta collector. */
-    internal var lastScrollValue: Int? = null
-
     private var pausedAtMillis: Long? = null
 
     /** @param delta signed scroll pixel delta; negative means scrolling back up. */

@@ -66,6 +66,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResul
 import com.tingyun.smartmistakebook.core.domain.TimeBucket
 import com.tingyun.smartmistakebook.core.domain.TimeBucketSplit
 import com.tingyun.smartmistakebook.core.domain.TimeOfDayCalibrator
+import com.tingyun.smartmistakebook.core.domain.TimeOfDayProfile
 import com.tingyun.smartmistakebook.core.domain.TimeOfDayObservation
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
@@ -851,31 +852,18 @@ class RoomBackedStudyExperienceRepository(
             attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
-        val evidence = ratingEvidenceFor(submission.rating).let { base ->
-            if (base.direction == LearningEvidenceDirection.NONE) {
-                base
-            } else {
-                val discounted = adjustSubjectiveWeight(
-                    baseWeight = base.weight,
-                    direction = base.direction,
-                    occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                    interruptionCount = submission.interruptionCount,
-                    awayMillis = submission.awayMillis,
-                )
-                // Keep the Again key on its own reason even when discounted.
-                if (submission.rating == StudyReviewRating.AGAIN) {
-                    discounted.copy(
-                        direction = LearningEvidenceDirection.NEGATIVE,
-                        weight = (base.weight * AttentionSignal.attentionFactor(
-                            submission.interruptionCount,
-                            submission.awayMillis,
-                        )).coerceIn(0.0, 1.0),
-                        reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
-                    )
-                } else {
-                    discounted
-                }
-            }
+        val ratingBase = ratingEvidenceFor(submission.rating)
+        val evidence = if (ratingBase.direction == LearningEvidenceDirection.NONE) {
+            ratingBase
+        } else {
+            val factor = subjectiveSignalFactor(
+                occurredAtEpochMillis = submission.occurredAtEpochMillis,
+                durationSeconds = submission.durationSeconds,
+                interruptionCount = submission.interruptionCount,
+                awayMillis = submission.awayMillis,
+                isCorrect = submission.rating != StudyReviewRating.AGAIN,
+            )
+            ratingBase.copy(weight = (ratingBase.weight * factor).coerceIn(0.0, 1.0))
         }
         val memoryOutcome = if (submission.rating == StudyReviewRating.AGAIN) {
             ProblemMemoryOutcome.RETRIEVAL_FAILURE
@@ -916,35 +904,33 @@ class RoomBackedStudyExperienceRepository(
      * binding, so mastery state is never lost for unbound questions.
      */
     /**
-     * Subjective evidence discount (spec 2.14 + 2.12): attention switches and
-     * away-time (Craik 1996) plus the personal time-of-day multiplier
-     * (May & Hasher 1998; >=30 samples per bucket, cold start neutral) both
-     * only ever shrink the evidence weight of subjective reports.
+     * Subjective evidence factor (spec 2.14 + 2.12): attention switches and
+     * away-time (Craik 1996), the personal time-of-day multiplier (May &
+     * Hasher 1998; >=30 samples per bucket, cold start neutral) and the
+     * response-time guess discount (Meyer 2010 via the RT baseline) all only
+     * ever shrink the weight of a subjective report.
      */
-    private suspend fun adjustSubjectiveWeight(
-        baseWeight: Double,
-        direction: LearningEvidenceDirection,
+    private suspend fun subjectiveSignalFactor(
         occurredAtEpochMillis: Long,
+        durationSeconds: Int,
         interruptionCount: Int,
         awayMillis: Long,
-    ): LearningEvidence {
+        isCorrect: Boolean,
+    ): Double {
         val attention = AttentionSignal.attentionFactor(interruptionCount, awayMillis)
-        val timeOfDay = subjectiveTimeOfDayMultiplier(occurredAtEpochMillis)
-        val weight = (baseWeight * attention * timeOfDay).coerceIn(0.0, 1.0)
-        return LearningEvidence(
-            direction = direction,
-            weight = weight,
-            reason = when (direction) {
-                LearningEvidenceDirection.POSITIVE -> LearningEvidenceReason.SELF_REPORTED_RECALL
-                LearningEvidenceDirection.NEGATIVE -> LearningEvidenceReason.SELF_REPORTED_STUCK
-                LearningEvidenceDirection.NONE -> LearningEvidenceReason.ANSWER_REVEALED
-            },
-        )
+        val profile = timeOfDayProfile()
+        val timeOfDay = profile
+            ?.multiplierFor(TimeBucketSplit().bucketFor(localHourAt(occurredAtEpochMillis)))
+            ?: 1.0
+        val rtDiscount = profile
+            ?.let { TimeOfDayCalibrator.correctedWeight(1.0, isCorrect, durationSeconds * 1000L, it) }
+            ?: 1.0
+        return (attention * timeOfDay * rtDiscount).coerceIn(0.0, 1.0)
     }
 
-    private suspend fun subjectiveTimeOfDayMultiplier(occurredAtEpochMillis: Long): Double {
+    private suspend fun timeOfDayProfile(): TimeOfDayProfile? {
         val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
-        if (samples.isEmpty()) return 1.0
+        if (samples.isEmpty()) return null
         val observations = samples.mapNotNull { row ->
             val bucket = runCatching { TimeBucket.valueOf(row.timeBucket) }.getOrNull()
                 ?: return@mapNotNull null
@@ -954,11 +940,13 @@ class RoomBackedStudyExperienceRepository(
                 durationMs = row.durationMs,
             )
         }
-        if (observations.isEmpty()) return 1.0
-        val profile = TimeOfDayCalibrator.profile(observations)
-        val localHour = ((occurredAtEpochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(occurredAtEpochMillis)).totalSeconds * 1000L) / 3_600_000L).mod(24L).toInt()
-        return profile.multiplierFor(TimeBucketSplit().bucketFor(localHour))
+        if (observations.isEmpty()) return null
+        return TimeOfDayCalibrator.profile(observations)
     }
+
+    private fun localHourAt(epochMillis: Long): Int =
+        ((epochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(epochMillis)).totalSeconds * 1000L) /
+            3_600_000L).mod(24L).toInt()
 
     private suspend fun buildPseudoAttribution(
         practiceUnitId: String,
@@ -2043,7 +2031,7 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    private fun prepareChoiceSubmission(
+    private suspend fun prepareChoiceSubmission(
         submission: StudyChoiceSubmission,
     ): PreparedChoiceSubmission {
         val artifact = requireTeachingArtifact(submission.practiceUnitId)
@@ -2068,14 +2056,19 @@ class RoomBackedStudyExperienceRepository(
                 responseOrdinal = submission.responseOrdinal,
             ),
         )
-        // Attention discount (spec 2.14): switches and away-time fragment
-        // encoding (Craik et al. 1996), so a distracted correct answer
-        // carries less weight and maps to a lower grade via the mapper.
+        // Attention + response-time discount (spec 2.14): switches and
+        // away-time fragment encoding (Craik et al. 1996) and a personally
+        // abnormally fast answer is a suspected guess (Meyer 2010), so the
+        // evidence weight shrinks and maps to a lower grade via the mapper.
+        val attentionFactor = AttentionSignal.attentionFactor(
+            submission.interruptionCount,
+            submission.awayMillis,
+        )
+        val rtFactor = timeOfDayProfile()
+            ?.let { TimeOfDayCalibrator.correctedWeight(1.0, evaluation.isCorrect, submission.durationSeconds * 1000L, it) }
+            ?: 1.0
         val discountedEvidence = decision.evidence.let { evidence ->
-            val factor = AttentionSignal.attentionFactor(
-                submission.interruptionCount,
-                submission.awayMillis,
-            )
+            val factor = (attentionFactor * rtFactor).coerceIn(0.0, 1.0)
             if (factor < 1.0 && evidence.direction != LearningEvidenceDirection.NONE) {
                 evidence.copy(weight = (evidence.weight * factor).coerceIn(0.0, 1.0))
             } else {
@@ -2132,17 +2125,21 @@ class RoomBackedStudyExperienceRepository(
             attributions = pseudoAttributions,
             capturedAtEpochMillis = submission.occurredAtEpochMillis,
         )
-        val adjustedBase = adjustSubjectiveWeight(
-            baseWeight = SELF_REPORTED_RECALL_WEIGHT,
-            direction = LearningEvidenceDirection.POSITIVE,
+        val signalFactor = subjectiveSignalFactor(
             occurredAtEpochMillis = submission.occurredAtEpochMillis,
+            durationSeconds = submission.durationSeconds,
             interruptionCount = submission.interruptionCount,
             awayMillis = submission.awayMillis,
+            isCorrect = true,
         )
         val reportDecision = when (submission.report) {
             StudyReviewSelfReport.RECALL_COMPLETED -> SelfReportDecision(
                 choiceMarkdown = "我已独立完成",
-                evidence = adjustedBase,
+                evidence = LearningEvidence(
+                    direction = LearningEvidenceDirection.POSITIVE,
+                    weight = (SELF_REPORTED_RECALL_WEIGHT * signalFactor).coerceIn(0.0, 1.0),
+                    reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
+                ),
                 memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
             )
 
@@ -2152,9 +2149,9 @@ class RoomBackedStudyExperienceRepository(
             // independent/assisted/lapse split.
             StudyReviewSelfReport.RECALLED_WITH_EFFORT -> SelfReportDecision(
                 choiceMarkdown = "勉强做对",
-                evidence = adjustedBase.copy(
-                    weight = (adjustedBase.weight * SELF_REPORTED_EFFORT_RECALL_WEIGHT /
-                        SELF_REPORTED_RECALL_WEIGHT).coerceIn(0.0, 1.0),
+                evidence = LearningEvidence(
+                    direction = LearningEvidenceDirection.POSITIVE,
+                    weight = (SELF_REPORTED_EFFORT_RECALL_WEIGHT * signalFactor).coerceIn(0.0, 1.0),
                     reason = LearningEvidenceReason.CORRECT_ON_RETRY,
                 ),
                 memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
@@ -2162,10 +2159,9 @@ class RoomBackedStudyExperienceRepository(
 
             StudyReviewSelfReport.NEEDS_HELP -> SelfReportDecision(
                 choiceMarkdown = "这里还卡住",
-                evidence = adjustedBase.copy(
+                evidence = LearningEvidence(
                     direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = (adjustedBase.weight * SELF_REPORTED_STUCK_WEIGHT /
-                        SELF_REPORTED_RECALL_WEIGHT).coerceIn(0.0, 1.0),
+                    weight = (SELF_REPORTED_STUCK_WEIGHT * signalFactor).coerceIn(0.0, 1.0),
                     reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
                 ),
                 memoryOutcome = ProblemMemoryOutcome.RETRIEVAL_FAILURE,

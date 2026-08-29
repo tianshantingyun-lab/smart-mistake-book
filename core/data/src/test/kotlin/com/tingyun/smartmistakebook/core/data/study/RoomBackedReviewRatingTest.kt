@@ -54,7 +54,7 @@ class RoomBackedReviewRatingTest {
             assertEquals(4, sample.rating)
             assertTrue(sample.schedulingEligible)
             assertEquals("SELF_REPORT", sample.sourceKind)
-            assertEquals(ReviewLogRatingAssertionHolder.RATING_WEIGHT_EASY, sample.evidenceWeight, 1e-9)
+            assertEquals(0.9, sample.evidenceWeight, 1e-9)
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -180,8 +180,4 @@ class RoomBackedReviewRatingTest {
         knowledgeNodeIds = setOf("knowledge:function-monotonicity"),
     )
 
-    /** Keeps magic numbers out of assertions while staying literal in one place. */
-    private object ReviewLogRatingAssertionHolder {
-        const val RATING_WEIGHT_EASY = 0.9
-    }
 }
