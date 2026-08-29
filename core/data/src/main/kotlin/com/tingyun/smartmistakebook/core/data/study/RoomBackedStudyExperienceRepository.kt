@@ -735,21 +735,13 @@ class RoomBackedStudyExperienceRepository(
     ) {
         val usable = labels.map(String::trim).filter(String::isNotBlank)
         if (usable.isEmpty()) return
-        val now = clock.millis()
-        database.recordTeachingAdvisories(
-            listOf(
-                TeachingAdvisoryRecord(
-                    advisoryId = "advisory:$sessionId:$cycleOrdinal:${usable.hashCode()}",
-                    learnerId = learnerId,
-                    practiceUnitId = practiceUnitId,
-                    knowledgeNodeId = null,
-                    advisoryKind = "TEACHING_FOCUS",
-                    payloadMarkdown = usable.joinToString(separator = "、"),
-                    confidence = null,
-                    sourceId = "$sessionId:$cycleOrdinal",
-                    createdAtEpochMillis = now,
-                ),
-            ),
+        insertAdvisory(
+            sessionId = sessionId,
+            practiceUnitId = practiceUnitId,
+            advisoryKind = TeachingAdvisoryRecord.KIND_TEACHING_FOCUS,
+            advisoryId = "advisory:$sessionId:$cycleOrdinal:${TeachingAdvisoryRecord.KIND_TEACHING_FOCUS}",
+            payloadMarkdown = usable.joinToString(separator = "、"),
+            cycleOrdinal = cycleOrdinal,
         )
     }
 
@@ -786,14 +778,32 @@ class RoomBackedStudyExperienceRepository(
         payloadMarkdown: String,
         cycleOrdinal: Int,
     ) {
+        insertAdvisory(
+            sessionId = sessionId,
+            practiceUnitId = practiceUnitId,
+            advisoryKind = TeachingAdvisoryRecord.KIND_MISCONCEPTION,
+            advisoryId = "advisory:$sessionId:$cycleOrdinal:${TeachingAdvisoryRecord.KIND_MISCONCEPTION}",
+            payloadMarkdown = payloadMarkdown,
+            cycleOrdinal = cycleOrdinal,
+        )
+    }
+
+    private suspend fun insertAdvisory(
+        sessionId: String,
+        practiceUnitId: String,
+        advisoryKind: String,
+        advisoryId: String,
+        payloadMarkdown: String,
+        cycleOrdinal: Int,
+    ) {
         database.recordTeachingAdvisories(
             listOf(
                 TeachingAdvisoryRecord(
-                    advisoryId = "advisory:$sessionId:misconception:$cycleOrdinal",
+                    advisoryId = advisoryId,
                     learnerId = learnerId,
                     practiceUnitId = practiceUnitId,
                     knowledgeNodeId = null,
-                    advisoryKind = "MISCONCEPTION",
+                    advisoryKind = advisoryKind,
                     payloadMarkdown = payloadMarkdown,
                     confidence = null,
                     sourceId = "$sessionId:$cycleOrdinal",

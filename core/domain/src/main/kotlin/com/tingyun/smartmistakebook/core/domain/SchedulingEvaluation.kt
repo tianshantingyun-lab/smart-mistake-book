@@ -212,15 +212,17 @@ object SchedulingEvaluationHarness {
      * threshold, never automatically.
      */
     fun calibratePlannedReasons(samples: List<ReviewSample>): List<PlannedReasonCalibration> {
-        val withReason = samples.filter { it.plannedReason != null }
+        val withReason = samples.mapNotNull { sample ->
+            sample.plannedReason?.let { reason -> sample to reason }
+        }
         if (withReason.isEmpty()) return emptyList()
-        val overall = rate(withReason)
-        return withReason.groupBy(ReviewSample::plannedReason)
+        val overall = rate(withReason.map { it.first })
+        return withReason.groupBy { it.second }
             .map { (reason, rows) ->
                 PlannedReasonCalibration(
-                    plannedReason = reason.orEmpty(),
+                    plannedReason = reason,
                     sampleCount = rows.size,
-                    realizedRecallRate = rate(rows),
+                    realizedRecallRate = rate(rows.map { it.first }),
                     overallRecallRate = overall,
                 )
             }
@@ -370,20 +372,25 @@ object FsrsParameterOptimizer {
             (0..14).toList() + listOf(20)
         }
 
-        // Chronological hold-out (srs-benchmark protocol): optimization
+        // Chronological hold-out (srs-benchmark protocol): each card's FULL
+        // history is replayed once and the prediction points are bucketed by
+        // timestamp, so validation reviews benefit from the train-segment
+        // memory instead of restarting from a cold card. Optimization
         // targets the validation tail so a winning parameter set generalizes
         // forward instead of memorizing the past.
         val cutoff = quantile(
             samples.map(ReviewSample::reviewedAtEpochMillis).sorted(),
             TRAIN_FRACTION,
         )
-        val train = samples.filter { it.reviewedAtEpochMillis <= cutoff }
-        val validation = samples.filter { it.reviewedAtEpochMillis > cutoff }
+        val cards = samples.groupBy(ReviewSample::practiceUnitId)
+            .values
+            .filter { it.size >= 2 }
+            .map { history -> history.sortedBy(ReviewSample::reviewedAtEpochMillis) }
 
         var parameters = FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf()
         val firstMoment = DoubleArray(FsrsScheduleMath.PARAMETER_COUNT)
         val secondMoment = DoubleArray(FsrsScheduleMath.PARAMETER_COUNT)
-        var bestLoss = validationLossFor(train, validation, parameters)
+        var bestLoss = lossFor(cards, cutoff, parameters, wantValidation = true)
         var best = parameters.copyOf()
         var stepsSinceImprovement = 0
         var step = 0
@@ -393,7 +400,8 @@ object FsrsParameterOptimizer {
             for (index in fittedIndices) {
                 val upper = parameters.copyOf().also { it[index] = it[index] + EPSILON }
                 val lower = parameters.copyOf().also { it[index] = it[index] - EPSILON }
-                gradient[index] = (lossFor(train, upper) - lossFor(train, lower)) / (2 * EPSILON)
+                gradient[index] = (lossFor(cards, cutoff, upper, wantValidation = false) -
+                    lossFor(cards, cutoff, lower, wantValidation = false)) / (2 * EPSILON)
             }
             for (index in fittedIndices) {
                 firstMoment[index] = BETA1 * firstMoment[index] + (1 - BETA1) * gradient[index]
@@ -403,7 +411,7 @@ object FsrsParameterOptimizer {
                 parameters[index] -= LEARNING_RATE * firstCorrection / (sqrt(secondCorrection) + 1e-8)
                 parameters[index] = parameters[index].coerceIn(LOWER_BOUNDS[index], UPPER_BOUNDS[index])
             }
-            val currentLoss = validationLossFor(train, validation, parameters)
+            val currentLoss = lossFor(cards, cutoff, parameters, wantValidation = true)
             if (currentLoss < bestLoss - 1e-9) {
                 bestLoss = currentLoss
                 best = parameters.copyOf()
@@ -421,7 +429,7 @@ object FsrsParameterOptimizer {
         return Result(
             best,
             mode,
-            lossFor(samples, best),
+            lossFor(cards, cutoff, best, wantValidation = false),
             bestLoss,
             sampleCount,
             fittedIndices,
@@ -434,17 +442,26 @@ object FsrsParameterOptimizer {
         return sorted[index]
     }
 
-    private fun validationLossFor(
-        train: List<ReviewSample>,
-        validation: List<ReviewSample>,
+    /**
+     * BCE over one bucket of the chronological split. Each card's full
+     * history is replayed (so validation keeps train-segment memory) and a
+     * prediction belongs to the bucket of the review it predicted.
+     */
+    private fun lossFor(
+        cards: List<List<ReviewSample>>,
+        cutoff: Long,
         parameters: DoubleArray,
-    ): Double = lossFor(if (validation.isEmpty()) train else validation, parameters)
-
-    private fun lossFor(samples: List<ReviewSample>, parameters: DoubleArray): Double {
-        val predictions = samples.groupBy(ReviewSample::practiceUnitId)
-            .values
-            .filter { it.size >= 2 }
-            .flatMap { SchedulingReplay.predict(it, parameters) }
+        wantValidation: Boolean,
+    ): Double {
+        val predictions = cards.flatMap { history ->
+            val reviewed = history.drop(1)
+            SchedulingReplay.predict(history, parameters)
+                .zip(reviewed) { pair, sample -> pair to sample }
+                .filter { (_, sample) ->
+                    (sample.reviewedAtEpochMillis > cutoff) == wantValidation
+                }
+                .map { (pair, _) -> pair }
+        }
         val loss = SchedulingReplay.bceLogLoss(predictions)
         return if (loss.isNaN()) 10.0 else loss
     }

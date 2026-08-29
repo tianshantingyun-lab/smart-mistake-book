@@ -37,6 +37,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
 import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -52,6 +53,8 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun SavedMistakeTutorRoute(
@@ -211,30 +214,21 @@ internal fun SavedMistakeTutorContent(
         )
     }
     val identity = state.detail.identity
-    // Three-store closed loop: whenever the model's plan names teaching
-    // focus labels, persist them as advisories in the mastery database.
-    // Silent by design (user decision) - no prompt, no badge.
-    var debriefLabels by remember(question.sessionId) { mutableStateOf(emptyList<String>()) }
-    var debriefTranscript by remember(question.sessionId) { mutableStateOf("") }
+    // Three-store loop write side: silent by product decision.
+    var debriefDraft by remember(question.sessionId) { mutableStateOf(DebriefDraft.EMPTY) }
     DisposableEffect(question.sessionId, modelTasks) {
         onDispose {
             // Silent debrief on session exit (user-approved, no UI surface).
-            val stem = question.questionDocument.document.blocks
-                .mapNotNull { block ->
-                    when (block) {
-                        is com.tingyun.smartmistakebook.core.model.ContentBlock.Paragraph -> block.markdown
-                        is com.tingyun.smartmistakebook.core.model.ContentBlock.Formula -> block.alternativeText
-                        else -> null
-                    }
-                }
-                .joinToString(separator = "\n")
-            if (debriefLabels.isNotEmpty() && stem.isNotBlank()) {
+            val stem = com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
+                .project(question.questionDocument.document)
+            val draft = debriefDraft
+            if (draft.labels.isNotEmpty() && stem.isNotBlank()) {
                 onRequestDebrief(
                     question.sessionId,
                     identity.practiceUnitId,
                     stem.take(com.tingyun.smartmistakebook.core.model.TutorDebriefInput.MAX_DEBRIEF_STEM_CHARS),
-                    debriefTranscript.take(com.tingyun.smartmistakebook.core.model.TutorDebriefInput.MAX_DEBRIEF_TRANSCRIPT_CHARS),
-                    debriefLabels,
+                    draft.transcript.take(com.tingyun.smartmistakebook.core.model.TutorDebriefInput.MAX_DEBRIEF_TRANSCRIPT_CHARS),
+                    draft.labels,
                 )
             }
         }
@@ -242,12 +236,14 @@ internal fun SavedMistakeTutorContent(
     LaunchedEffect(question.sessionId, modelTasks) {
         modelTasks
             .observeRecentBySubject(question.sessionId, ModelTaskKind.TUTOR_PLAN, limit = 8)
+            .distinctUntilChanged()
             .collect { tasks ->
                 tasks.forEach { task ->
                     val output = task.output as? TutorPlanOutput ?: return@forEach
                     val labels = output.plan.targetedEvidenceLabels +
                         output.plan.inferredKnowledgeLabels
                     if (labels.isEmpty()) return@forEach
+                    debriefDraft = debriefDraft.copy(labels = labels.distinct())
                     onRecordTeachingFocus(
                         output.sessionId,
                         identity.practiceUnitId,
@@ -256,9 +252,25 @@ internal fun SavedMistakeTutorContent(
                 }
             }
     }
+    LaunchedEffect(question.sessionId, modelTasks) {
+        modelTasks
+            .observeRecentBySubject(question.sessionId, ModelTaskKind.TUTOR_RESPOND, limit = 20)
+            .distinctUntilChanged()
+            .collect { tasks ->
+                val transcript = tasks
+                    .sortedBy { it.createdAtEpochMillis }
+                    .joinToString(separator = "\n") { task ->
+                        (task.output as? com.tingyun.smartmistakebook.core.model.TutorRespondOutput)
+                            ?.messageMarkdown
+                            .orEmpty()
+                    }
+                debriefDraft = debriefDraft.copy(transcript = transcript)
+            }
+    }
     LaunchedEffect(question.sessionId, modelTasks, onRecordMisconception) {
         modelTasks
             .observeRecentBySubject(question.sessionId, ModelTaskKind.LEARNING_SUMMARIZE, limit = 4)
+            .distinctUntilChanged()
             .collect { tasks ->
                 tasks.forEach { task ->
                     val output = task.output as? TutorDebriefOutput ?: return@forEach
@@ -419,5 +431,15 @@ internal fun TutorQuestionMemoryCard(
             )
             Text(status, color = InkSecondary, style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
+
+/** Accumulated silent-debrief inputs for one tutoring visit. */
+internal data class DebriefDraft(
+    val labels: List<String> = emptyList(),
+    val transcript: String = "",
+) {
+    companion object {
+        val EMPTY = DebriefDraft()
     }
 }

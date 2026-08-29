@@ -801,5 +801,10 @@ data class TeachingAdvisoryRecord(
     val confidence: Double?,
     val sourceId: String,
     val createdAtEpochMillis: Long,
-)
+) {
+    companion object {
+        const val KIND_TEACHING_FOCUS = "TEACHING_FOCUS"
+        const val KIND_MISCONCEPTION = "MISCONCEPTION"
+    }
+}
 

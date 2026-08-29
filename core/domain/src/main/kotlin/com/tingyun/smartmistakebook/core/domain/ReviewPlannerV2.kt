@@ -511,16 +511,8 @@ class ReviewPlannerV2(
         // re-teaching instead of plain rescheduling.
         if (candidate.avoidance) reasons += ReviewReason.AVOIDANCE_SIGNAL
 
-        // Spec 5 KC->question propagation: when a bound knowledge node's
-        // latest evidence was negative and mastery sits below the drop
-        // threshold, every question bound to that node gains continuous
-        // pressure (bigger drop -> bigger weight -> more likely to make the
-        // budget cut) plus an early-entry reason. Not a mechanical gate.
-        val kcDropPressure = masteryStates
-            .filter { it.lastEvidenceDirection == LearningEvidenceDirection.NEGATIVE.name }
-            .maxOfOrNull { state ->
-                (KC_DROP_MASTERY_THRESHOLD - state.conservativeMasteryScore) / KC_DROP_MASTERY_THRESHOLD
-            }?.coerceIn(0.0, 1.0) ?: 0.0
+        // Spec 5 KC->question propagation: continuous pressure shared with V1.
+        val kcDropPressure = kcMasteryDropPressure(masteryStates)
         if (kcDropPressure > 0.0) reasons += ReviewReason.KC_MASTERY_DROP
 
         // Exam priority
@@ -819,8 +811,6 @@ class ReviewPlannerV2(
         private const val LAPSE_WEIGHT = 1.0
         private const val REPEAT_MISTAKE_WEIGHT = 2.0
         private const val AVOIDANCE_WEIGHT = 1.0
-        private const val KC_DROP_MASTERY_THRESHOLD = 0.6
-        private const val KC_DROP_WEIGHT = 2.5
         private const val EXAM_WEIGHT = 2.0
         private const val WAITING_WEIGHT = 1.5
         private const val FAMILY_PENALTY_WEIGHT = 0.3

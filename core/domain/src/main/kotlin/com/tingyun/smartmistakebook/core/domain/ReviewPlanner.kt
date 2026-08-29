@@ -14,6 +14,24 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
+/**
+ * Spec 5 KC-to-question propagation: when a bound knowledge node's latest
+ * evidence was negative and mastery sits below the drop threshold, every
+ * question bound to that node gains continuous pressure (bigger drop ->
+ * bigger weight -> more likely to make the budget cut) plus an early-entry
+ * reason. Not a mechanical gate.
+ */
+internal const val KC_DROP_MASTERY_THRESHOLD = 0.6
+internal const val KC_DROP_WEIGHT = 2.5
+
+internal fun kcMasteryDropPressure(
+    masteryStates: List<com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState>,
+): Double = masteryStates
+    .filter { it.lastEvidenceDirection == LearningEvidenceDirection.NEGATIVE.name }
+    .maxOfOrNull { state ->
+        (KC_DROP_MASTERY_THRESHOLD - state.conservativeMasteryScore) / KC_DROP_MASTERY_THRESHOLD
+    }?.coerceIn(0.0, 1.0) ?: 0.0
+
 data class ReviewCandidate(
     val practiceUnitId: String,
     val knowledgeNodeIds: Set<String>,
@@ -284,20 +302,10 @@ class ReviewPlanner(
         }
         if (lapseScore > 0.0) reasons += ReviewReason.RECENT_LAPSE
         if (candidate.repeatMistakePriority > 0.0) reasons += ReviewReason.REPEATED_MISTAKE
-        // Avoidance (spec 6 / D'Mello 2013): repeated switch-aways with poor
-        // grades mark a card the learner finds aversive; nudge re-teaching.
         if (candidate.avoidance) reasons += ReviewReason.AVOIDANCE_SIGNAL
 
-        // Spec 5 KC->question propagation: when a bound knowledge node's
-        // latest evidence was negative and mastery sits below the drop
-        // threshold, every question bound to that node gains continuous
-        // pressure (bigger drop -> bigger weight -> more likely to make the
-        // budget cut) plus an early-entry reason. Not a mechanical gate.
-        val kcDropPressure = masteryStates
-            .filter { it.lastEvidenceDirection == LearningEvidenceDirection.NEGATIVE.name }
-            .maxOfOrNull { state ->
-                (KC_DROP_MASTERY_THRESHOLD - state.conservativeMasteryScore) / KC_DROP_MASTERY_THRESHOLD
-            }?.coerceIn(0.0, 1.0) ?: 0.0
+        // Spec 5 KC->question propagation: continuous pressure shared with V2.
+        val kcDropPressure = kcMasteryDropPressure(masteryStates)
         if (kcDropPressure > 0.0) reasons += ReviewReason.KC_MASTERY_DROP
         if (candidate.examPriority > 0.0) reasons += ReviewReason.EXAM_PRIORITY
         val waitingScore = candidate.eligibleSinceEpochMillis
@@ -428,8 +436,6 @@ class ReviewPlanner(
         private const val LAPSE_WEIGHT = 1.0
         private const val REPEAT_MISTAKE_WEIGHT = 2.0
         private const val AVOIDANCE_WEIGHT = 1.0
-        private const val KC_DROP_MASTERY_THRESHOLD = 0.6
-        private const val KC_DROP_WEIGHT = 2.5
         private const val EXAM_WEIGHT = 2.0
         private const val WAITING_WEIGHT = 1.5
         private const val FAMILY_PENALTY_WEIGHT = 0.3

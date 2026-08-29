@@ -60,8 +60,6 @@ internal class ReviewLogSink(
                     .coerceAtLeast(0)
                     .toDouble() / DAY_MILLIS
             }
-            val localHour = ((occurredAtEpochMillis + studyDay.utcOffsetMinutes * 60_000L) /
-                3_600_000L).mod(24L).toInt()
             val rating = FsrsEvidenceRatingMapper.reportedRatingFor(evidence.reason, evidence.weight)
             database.recordReviewLogEntries(
                 listOf(
@@ -76,7 +74,7 @@ internal class ReviewLogSink(
                         sourceId = sourceId,
                         evidenceWeight = evidence.weight,
                         schedulingEligible = schedulingEligible,
-                        timeBucket = TimeBucketSplit().bucketFor(localHour).name,
+                        timeBucket = bucketNameAt(occurredAtEpochMillis),
                         scrollUpCount = scrollUpCount,
                         editCount = editCount,
                         interruptionCount = interruptionCount,
@@ -90,8 +88,10 @@ internal class ReviewLogSink(
             throw cancelled
         } catch (failure: Throwable) {
             // Review-log collection is decoupled from scheduling (spec §2.15):
-            // it must never break the user-visible flow.
+            // it must never break the user-visible flow - but stays diagnosable.
+            android.util.Log.w("ReviewLogSink", "review_log write failed", failure)
         }
+        profileComputed = false
     }
 
     suspend fun reviewSamples(): List<ReviewSample> =
@@ -143,7 +143,7 @@ internal class ReviewLogSink(
         val attention = AttentionSignal.attentionFactor(interruptionCount, awayMillis)
         val profile = timeOfDayProfile()
         val timeOfDay = profile
-            ?.multiplierFor(TimeBucketSplit().bucketFor(localHourAt(occurredAtEpochMillis)))
+            ?.multiplierFor(bucketSplit.bucketFor(localHourAt(occurredAtEpochMillis)))
             ?: 1.0
         val rtDiscount = profile
             ?.let { TimeOfDayCalibrator.correctedWeight(1.0, isCorrect, durationSeconds * 1000L, it) }
@@ -158,17 +158,7 @@ internal class ReviewLogSink(
             ?: 1.0
 
     suspend fun suggestedReminderMinute(): Int? {
-        val samples = reviewSamples()
-        if (samples.isEmpty()) return null
-        val observations = samples.mapNotNull { sample ->
-            val bucket = runCatching { TimeBucket.valueOf(bucketNameAt(sample.reviewedAtEpochMillis)) }
-                .getOrNull() ?: return@mapNotNull null
-            TimeOfDayObservation(
-                bucket = bucket,
-                isCorrect = sample.isCorrect,
-                durationMs = sample.durationMs,
-            )
-        }
+        val observations = observations()
         if (observations.isEmpty()) return null
         val profile = TimeOfDayCalibrator.profile(observations)
         val split = TimeBucketSplit()
@@ -181,24 +171,37 @@ internal class ReviewLogSink(
     suspend fun sourceCalibrations(): List<SourceCalibration> =
         SchedulingEvaluationHarness.calibrateSources(reviewSamples())
 
+    // Calibration depends only on review_log rows, whose sole writer is
+    // record() below - cache the profile and invalidate on write so the
+    // per-submission path stays O(1) instead of re-reading the full log.
+    private var cachedProfile: TimeOfDayProfile? = null
+    private var profileComputed = false
+
     private suspend fun timeOfDayProfile(): TimeOfDayProfile? {
+        if (profileComputed) return cachedProfile
         val samples = database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
-        if (samples.isEmpty()) return null
-        val observations = samples.mapNotNull { row ->
-            val bucket = runCatching { TimeBucket.valueOf(row.timeBucket) }.getOrNull()
-                ?: return@mapNotNull null
-            TimeOfDayObservation(
-                bucket = bucket,
-                isCorrect = row.rating > 1,
-                durationMs = row.durationMs,
-            )
-        }
-        if (observations.isEmpty()) return null
-        return TimeOfDayCalibrator.profile(observations)
+        val observations = samples.mapNotNull(::toObservation)
+        cachedProfile = if (observations.isEmpty()) null else TimeOfDayCalibrator.profile(observations)
+        profileComputed = true
+        return cachedProfile
+    }
+
+    private suspend fun observations(): List<TimeOfDayObservation> =
+        database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+            .mapNotNull(::toObservation)
+
+    private fun toObservation(row: ReviewLogSampleRecord): TimeOfDayObservation? {
+        val bucket = runCatching { TimeBucket.valueOf(row.timeBucket) }.getOrNull()
+            ?: return null
+        return TimeOfDayObservation(
+            bucket = bucket,
+            isCorrect = row.rating > 1,
+            durationMs = row.durationMs,
+        )
     }
 
     private fun bucketNameAt(epochMillis: Long): String =
-        TimeBucketSplit().bucketFor(localHourAt(epochMillis)).name
+        bucketSplit.bucketFor(localHourAt(epochMillis)).name
 
     private fun localHourAt(epochMillis: Long): Int =
         ((epochMillis + studyZoneId.rules.getOffset(Instant.ofEpochMilli(epochMillis)).totalSeconds * 1000L) /
@@ -207,6 +210,8 @@ internal class ReviewLogSink(
     private fun ratingForOrdinal(rating: Int): FsrsRating = FsrsRating.entries[
         (rating - 1).coerceIn(0, FsrsRating.entries.size - 1)
     ]
+
+    private val bucketSplit = TimeBucketSplit()
 
     companion object {
         const val SOURCE_KIND_ATTEMPT = "ATTEMPT"
