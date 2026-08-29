@@ -31,3 +31,4 @@ tmp_*.py
 benchmark/build/
 .qoder/
 .tools/.pyenv/
+.tools/
