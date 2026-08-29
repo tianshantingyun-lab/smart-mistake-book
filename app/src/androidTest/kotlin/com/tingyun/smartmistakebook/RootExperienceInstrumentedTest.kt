@@ -84,8 +84,19 @@ class RootExperienceInstrumentedTest {
         composeRule.onNodeWithTag("profile_privacy_setting").performClick()
         waitForText("数据与隐私")
         waitForText("智能服务")
+        // The privacy copy differs by flavor's NetworkMode; assert the one
+        // this build actually shows instead of the localFirst wording.
+        val localFirstCopy = "只有你主动发起识题、讲题或整理时"
+        val strictOfflineCopy = "当前版本不使用联网智能服务"
+        val expectedPrivacyCopy = if (
+            com.tingyun.smartmistakebook.BuildConfig.FLAVOR == "strictOffline"
+        ) {
+            strictOfflineCopy
+        } else {
+            localFirstCopy
+        }
         composeRule.onAllNodesWithText(
-            "只有你主动发起识题、讲题或整理时",
+            expectedPrivacyCopy,
             substring = true,
         ).assertCountEquals(1)
         composeRule.onAllNodesWithText("尚未开放").assertCountEquals(0)

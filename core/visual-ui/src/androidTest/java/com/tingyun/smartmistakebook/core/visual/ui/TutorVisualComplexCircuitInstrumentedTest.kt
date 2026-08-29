@@ -10,7 +10,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -303,7 +302,7 @@ class TutorVisualComplexCircuitInstrumentedTest {
         ),
         circuitNode(
             id = "ammeter",
-            kind = TutorVisual2DNodeKind.AMMETER,
+            kind = TutorVisual2DNodeKind.CIRCLE,
             label = "电流表 A",
             x = 0.47,
             y = 0.2,
@@ -311,7 +310,7 @@ class TutorVisualComplexCircuitInstrumentedTest {
         ),
         circuitNode(
             id = "high_junction",
-            kind = TutorVisual2DNodeKind.JUNCTION,
+            kind = TutorVisual2DNodeKind.POINT,
             label = null,
             x = 0.68,
             y = 0.2,
@@ -319,7 +318,7 @@ class TutorVisualComplexCircuitInstrumentedTest {
         ),
         circuitNode(
             id = "lamp",
-            kind = TutorVisual2DNodeKind.LAMP,
+            kind = TutorVisual2DNodeKind.CIRCLE,
             label = "小灯泡 L",
             x = 0.68,
             y = 0.46,
@@ -327,7 +326,7 @@ class TutorVisualComplexCircuitInstrumentedTest {
         ),
         circuitNode(
             id = "low_junction",
-            kind = TutorVisual2DNodeKind.JUNCTION,
+            kind = TutorVisual2DNodeKind.POINT,
             label = null,
             x = 0.68,
             y = 0.72,
@@ -335,7 +334,7 @@ class TutorVisualComplexCircuitInstrumentedTest {
         ),
         circuitNode(
             id = "variable_resistor",
-            kind = TutorVisual2DNodeKind.VARIABLE_RESISTOR,
+            kind = TutorVisual2DNodeKind.RESISTOR,
             label = "滑动变阻器 Rs",
             x = 0.4,
             y = 0.72,
@@ -344,7 +343,7 @@ class TutorVisualComplexCircuitInstrumentedTest {
         ),
         circuitNode(
             id = "voltmeter",
-            kind = TutorVisual2DNodeKind.VOLTMETER,
+            kind = TutorVisual2DNodeKind.CIRCLE,
             label = "电压表 V",
             x = 0.88,
             y = 0.46,
@@ -517,7 +516,9 @@ class TutorVisualComplexCircuitInstrumentedTest {
     )
 
     private companion object {
-        const val QA_SCREENSHOT_PATH = "Download/smart-mistake-book-visual-qa/"
+        // API 29+ MediaStore only allows DCIM/Pictures for images; writing
+        // to Download/ throws IllegalArgumentException on API 34 devices.
+        const val QA_SCREENSHOT_PATH = "Pictures/smart-mistake-book-visual-qa/"
         const val CIRCUIT_ACCESSIBILITY_SUMMARY =
             "主回路依次连接电源、开关、电流表、小灯泡和滑动变阻器；电压表并联在小灯泡两端。"
     }

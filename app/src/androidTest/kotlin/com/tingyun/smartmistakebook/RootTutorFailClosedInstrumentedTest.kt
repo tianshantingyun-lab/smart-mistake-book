@@ -14,7 +14,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.tingyun.smartmistakebook.core.data.study.StudyFixtureRegistry
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
+import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
+import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
+import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
@@ -26,6 +29,8 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
+import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
@@ -398,6 +403,38 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         )
     }
 
+    override suspend fun submitReviewRating(
+        sessionId: String,
+        expectedStateVersion: Long,
+        submission: StudyReviewRatingSubmission,
+    ): StudyReviewRatingSubmissionResult = error("Review is outside this root Tutor test")
+
+    override suspend fun recordTeachingFocus(
+        sessionId: String,
+        practiceUnitId: String,
+        labels: List<String>,
+        cycleOrdinal: Int,
+    ) = Unit
+
+    override fun observeTeachingAdvisories(
+        practiceUnitId: String?,
+    ) = kotlinx.coroutines.flow.flowOf(emptyList<com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord>())
+
+    override suspend fun recordMisconceptionAdvisory(
+        sessionId: String,
+        practiceUnitId: String,
+        payloadMarkdown: String,
+        cycleOrdinal: Int,
+    ) = Unit
+
+    override suspend fun declareExam(entry: ExamCalendarEntry) = Unit
+
+    override suspend fun removeExam(entryId: String) = Unit
+
+    override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? = null
+
+    override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? = null
+
     override suspend fun submitReviewChoice(
         sessionId: String,
         expectedStateVersion: Long,
@@ -433,6 +470,8 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
             evidenceReason = when (submission.report) {
                 StudyReviewSelfReport.RECALL_COMPLETED ->
                     LearningEvidenceReason.SELF_REPORTED_RECALL
+                StudyReviewSelfReport.RECALLED_WITH_EFFORT ->
+                    LearningEvidenceReason.CORRECT_ON_RETRY
                 StudyReviewSelfReport.NEEDS_HELP -> LearningEvidenceReason.SELF_REPORTED_STUCK
             },
             progress = progress,
