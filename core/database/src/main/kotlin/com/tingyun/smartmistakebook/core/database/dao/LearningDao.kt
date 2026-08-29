@@ -105,6 +105,12 @@ data class ReviewLogSampleProjection(
     val sourceKind: String,
     @ColumnInfo(name = "evidence_weight")
     val evidenceWeight: Double,
+    @ColumnInfo(name = "scroll_up_count")
+    val scrollUpCount: Int,
+    @ColumnInfo(name = "edit_count")
+    val editCount: Int,
+    @ColumnInfo(name = "interruption_count")
+    val interruptionCount: Int,
 )
 
 
@@ -150,7 +156,8 @@ internal abstract class LearningDao {
 
     @Query(
         "SELECT card_id AS practice_unit_id, reviewed_at_utc, rating, duration_ms, time_bucket, " +
-            "source_kind, evidence_weight FROM review_log " +
+            "source_kind, evidence_weight, scroll_up_count, edit_count, interruption_count " +
+            "FROM review_log " +
             "WHERE learner_id = :learnerId " +
             "ORDER BY reviewed_at_utc ASC, review_log_id ASC LIMIT :limit",
     )

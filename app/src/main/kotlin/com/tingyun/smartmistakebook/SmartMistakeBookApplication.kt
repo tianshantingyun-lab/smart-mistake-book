@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook
 
+import android.app.Activity
 import android.app.Application
 import android.os.StrictMode
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
@@ -22,6 +23,7 @@ import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFa
 import com.tingyun.smartmistakebook.core.data.tutor.TutorConversationRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
+import com.tingyun.smartmistakebook.core.data.settings.DataStoreSleepJournalStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreSchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
@@ -36,6 +38,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
 import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
+import com.tingyun.smartmistakebook.core.domain.SleepJournalStore
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
 import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryFactory
@@ -61,6 +64,8 @@ class SmartMistakeBookApplication : Application() {
 
     lateinit var studyRepository: StudyExperienceRepository
     lateinit var schedulingSettingsStore: SchedulingSettingsStore
+        private set
+    lateinit var sleepJournalStore: SleepJournalStore
         private set
 
     lateinit var captureRepository: CaptureWorkflowRepository
@@ -158,6 +163,31 @@ class SmartMistakeBookApplication : Application() {
             libraryCatalogRepository = LibraryCatalogRepositoryFactory.create(database)
             splitImportRepository = SplitImportRepositoryFactory.create(database)
             reviewReminderRepository = DataStoreReviewReminderRepository(this, applicationScope)
+            sleepJournalStore = DataStoreSleepJournalStore(this, applicationScope)
+            registerActivityLifecycleCallbacks(
+                object : ActivityLifecycleCallbacks {
+                    // Silent sleep-window collection (spec 2.14): every time
+                    // the app becomes visible one activity stamp is journaled;
+                    // the gaps between stamps become the inferred nights.
+                    override fun onActivityStarted(activity: Activity) {
+                        applicationScope.launch {
+                            sleepJournalStore.recordActivity(System.currentTimeMillis())
+                        }
+                    }
+
+                    override fun onActivityCreated(activity: Activity, savedInstanceState: android.os.Bundle?) = Unit
+
+                    override fun onActivityResumed(activity: Activity) = Unit
+
+                    override fun onActivityPaused(activity: Activity) = Unit
+
+                    override fun onActivityStopped(activity: Activity) = Unit
+
+                    override fun onActivitySaveInstanceState(activity: Activity, outState: android.os.Bundle) = Unit
+
+                    override fun onActivityDestroyed(activity: Activity) = Unit
+                },
+            )
             reviewReminderCoordinator = ReviewReminderCoordinator(
                 repository = reviewReminderRepository,
                 platform = ReviewReminderPlatform(this),

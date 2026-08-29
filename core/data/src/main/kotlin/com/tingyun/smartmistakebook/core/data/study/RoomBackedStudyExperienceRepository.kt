@@ -434,6 +434,11 @@ class RoomBackedStudyExperienceRepository(
                 sourceKind = SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.attempt.attemptId,
                 priorMemory = priorMemory,
+                scrollUpCount = submission.scrollUpCount,
+                // Answer changing (spec 2.14): every retry is one edit of
+                // the submitted answer for this presentation.
+                editCount = (submission.responseOrdinal - 1).coerceAtLeast(0),
+                interruptionCount = submission.interruptionCount,
             )
         }
         backfillPredictionOutcome(
@@ -500,6 +505,11 @@ class RoomBackedStudyExperienceRepository(
                 sourceKind = SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
+                scrollUpCount = submission.scrollUpCount,
+                // Answer changing (spec 2.14): every retry is one edit of
+                // the submitted answer for this presentation.
+                editCount = (submission.responseOrdinal - 1).coerceAtLeast(0),
+                interruptionCount = submission.interruptionCount,
             )
         }
         backfillPredictionOutcome(
@@ -575,6 +585,8 @@ class RoomBackedStudyExperienceRepository(
                 sourceKind = SOURCE_KIND_SELF_REPORT,
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
+                scrollUpCount = submission.scrollUpCount,
+                interruptionCount = submission.interruptionCount,
             )
         }
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
@@ -642,6 +654,8 @@ class RoomBackedStudyExperienceRepository(
                 sourceId = stableId("rating", submission.requestId),
                 priorMemory = priorMemory,
                 schedulingEligible = false,
+                scrollUpCount = submission.scrollUpCount,
+                interruptionCount = submission.interruptionCount,
             )
             val progress = activeSession.toProgress(orderedQueue.size)
             return@runOperation StudyReviewRatingSubmissionResult(
@@ -678,6 +692,8 @@ class RoomBackedStudyExperienceRepository(
                 sourceKind = SOURCE_KIND_SELF_REPORT,
                 sourceId = writeResult.attempt.attempt.attemptId,
                 priorMemory = priorMemory,
+                scrollUpCount = submission.scrollUpCount,
+                interruptionCount = submission.interruptionCount,
             )
         }
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
@@ -888,6 +904,9 @@ class RoomBackedStudyExperienceRepository(
         sourceId: String,
         priorMemory: ProblemMemoryState?,
         schedulingEligible: Boolean = true,
+        scrollUpCount: Int = 0,
+        editCount: Int = 0,
+        interruptionCount: Int = 0,
     ) {
         try {
             val deltaDays = if (priorMemory == null || priorMemory.lastReviewedAtEpochMillis <= 0) {
@@ -914,6 +933,9 @@ class RoomBackedStudyExperienceRepository(
                         evidenceWeight = evidence.weight,
                         schedulingEligible = schedulingEligible,
                         timeBucket = TimeBucketSplit().bucketFor(localHour).name,
+                        scrollUpCount = scrollUpCount,
+                        editCount = editCount,
+                        interruptionCount = interruptionCount,
                         recordedAtEpochMillis = clock.millis(),
                     ),
                 ),

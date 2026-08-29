@@ -24,7 +24,7 @@ class VisualInteractionAttemptMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 33)
             val store = StudyDatabaseFactory.open(context, databaseName)
 
-            assertEquals(STUDY_DATABASE_VERSION, 34)
+            runBlocking { assertEquals(STUDY_DATABASE_VERSION, store.readDatabaseVersion()) }
 
             store.recordVisualInteractionAttempt(
                 VisualInteractionAttemptRecord(
@@ -76,16 +76,19 @@ class VisualInteractionAttemptMigrationInstrumentedTest {
         context.deleteDatabase(migratedName)
         try {
             // Reference: built purely from the exported 34.json createSql.
-            createDatabaseFromExportedSchema(context, referenceName, version = 34)
+            createDatabaseFromExportedSchema(context, referenceName, version = STUDY_DATABASE_VERSION)
             // Candidate: 33.json schema pushed through the real migration chain.
             createDatabaseFromExportedSchema(context, migratedName, version = 33)
             runBlocking {
                 val migrated = StudyDatabaseFactory.open(context, migratedName)
+                // Room migrates lazily: touch the database so the chain runs
+                // before the sqlite_master comparison.
+                migrated.readDatabaseVersion()
                 migrated.close()
             }
-            assertEquals(
-                readSqliteMaster(context.getDatabasePath(referenceName)),
-                readSqliteMaster(context.getDatabasePath(migratedName)),
+            assertStructurallyEqual(
+                context.getDatabasePath(referenceName),
+                context.getDatabasePath(migratedName),
             )
         } finally {
             context.deleteDatabase(referenceName)

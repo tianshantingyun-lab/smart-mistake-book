@@ -939,6 +939,18 @@ internal class RoomStudyDatabase(
                 )
             }
 
+    override suspend fun readDatabaseVersion(): Int {
+        var version = 0
+        database.useConnection(isReadOnly = true) { connection ->
+            connection.usePrepared("PRAGMA user_version") { statement ->
+                if (statement.step()) {
+                    version = statement.getLong(0).toInt()
+                }
+            }
+        }
+        return version
+    }
+
     override suspend fun ensurePseudoKnowledgeBinding(
         practiceUnitId: String,
         problemRevisionId: String,
@@ -2253,6 +2265,9 @@ internal class RoomStudyDatabase(
                     evidenceWeight = entry.evidenceWeight,
                     schedulingEligible = entry.schedulingEligible,
                     timeBucket = entry.timeBucket,
+                    scrollUpCount = entry.scrollUpCount,
+                    editCount = entry.editCount,
+                    interruptionCount = entry.interruptionCount,
                     recordedAt = entry.recordedAtEpochMillis,
                 )
             },
@@ -2269,6 +2284,9 @@ internal class RoomStudyDatabase(
                 timeBucket = row.timeBucket,
                 sourceKind = row.sourceKind,
                 evidenceWeight = row.evidenceWeight,
+                scrollUpCount = row.scrollUpCount,
+                editCount = row.editCount,
+                interruptionCount = row.interruptionCount,
             )
         }
 

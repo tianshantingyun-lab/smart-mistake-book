@@ -118,7 +118,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 36
+internal const val STUDY_DATABASE_VERSION = 37
 
 /** Split-import status values mirrored into [SplitImportMigration]. */
 internal object SplitImportLedgerStrings {
@@ -317,6 +317,7 @@ object StudyDatabaseFactory {
             VISUAL_INTERACTION_MIGRATION_33_34,
             SPLIT_IMPORT_MIGRATION_34_35,
             MASTERY_SCHEDULING_MIGRATION_35_36,
+            INTERACTION_SIGNAL_MIGRATION_36_37,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

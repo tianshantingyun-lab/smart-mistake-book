@@ -183,9 +183,15 @@ data class StudyChoiceSubmission(
     val occurredAtEpochMillis: Long,
     /** Real hint level shown before the response; zero when no hint UI is active (A3). */
     val hintCount: Int = 0,
+    /** Silent interaction signals (spec §2.14), collected without UI prompts. */
+    val scrollUpCount: Int = 0,
+    val interruptionCount: Int = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Choice request id must not be blank" }
+        require(scrollUpCount >= 0 && interruptionCount >= 0) {
+            "Interaction counts must not be negative"
+        }
         require(presentationId.isNotBlank()) { "Presentation id must not be blank" }
         require(practiceUnitId.isNotBlank()) { "Practice unit id must not be blank" }
         require(selectedChoiceId.isNotBlank()) { "Selected choice id must not be blank" }
@@ -256,9 +262,15 @@ data class StudyReviewRatingSubmission(
     val rating: StudyReviewRating,
     val durationSeconds: Int,
     val occurredAtEpochMillis: Long,
+    /** Silent interaction signals (spec §2.14), collected without UI prompts. */
+    val scrollUpCount: Int = 0,
+    val interruptionCount: Int = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Rating request id must not be blank" }
+        require(scrollUpCount >= 0 && interruptionCount >= 0) {
+            "Interaction counts must not be negative"
+        }
         require(presentationId.isNotBlank()) { "Rating presentation id must not be blank" }
         require(practiceUnitId.isNotBlank()) { "Rating practice unit id must not be blank" }
         require(durationSeconds >= 0) { "Rating duration must not be negative" }
@@ -295,9 +307,15 @@ data class StudyReviewSelfReportSubmission(
     val report: StudyReviewSelfReport,
     val durationSeconds: Int,
     val occurredAtEpochMillis: Long,
+    /** Silent interaction signals (spec §2.14), collected without UI prompts. */
+    val scrollUpCount: Int = 0,
+    val interruptionCount: Int = 0,
 ) {
     init {
         require(requestId.isNotBlank()) { "Self-report request id must not be blank" }
+        require(scrollUpCount >= 0 && interruptionCount >= 0) {
+            "Interaction counts must not be negative"
+        }
         require(presentationId.isNotBlank()) { "Self-report presentation id must not be blank" }
         require(practiceUnitId.isNotBlank()) { "Self-report practice unit id must not be blank" }
         require(durationSeconds >= 0) { "Self-report duration must not be negative" }

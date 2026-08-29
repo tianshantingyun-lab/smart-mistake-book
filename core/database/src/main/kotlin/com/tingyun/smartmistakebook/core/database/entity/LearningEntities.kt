@@ -1057,6 +1057,13 @@ internal data class ReviewLogEntity(
     /** MORNING/NOON/AFTERNOON/EVENING/NIGHT at review time (spec 2.12). */
     @ColumnInfo(name = "time_bucket")
     val timeBucket: String,
+    /** Silent interaction signals (spec 2.14), collected without UI prompts. */
+    @ColumnInfo(name = "scroll_up_count", defaultValue = "0")
+    val scrollUpCount: Int = 0,
+    @ColumnInfo(name = "edit_count", defaultValue = "0")
+    val editCount: Int = 0,
+    @ColumnInfo(name = "interruption_count", defaultValue = "0")
+    val interruptionCount: Int = 0,
     @ColumnInfo(name = "recorded_at")
     val recordedAt: Long,
 )

@@ -1350,10 +1350,17 @@ data class ReviewLogEntry(
     val evidenceWeight: Double,
     val schedulingEligible: Boolean = true,
     val timeBucket: String,
+    /** Silent interaction signals (spec §2.14); never surfaced as UI prompts. */
+    val scrollUpCount: Int = 0,
+    val editCount: Int = 0,
+    val interruptionCount: Int = 0,
     val recordedAtEpochMillis: Long,
 ) {
     init {
         require(rating in 1..4) { "Review-log rating must be within 1..4" }
+        require(scrollUpCount >= 0 && editCount >= 0 && interruptionCount >= 0) {
+            "Interaction counts must not be negative"
+        }
         require(deltaTDays >= 0.0 && deltaTDays.isFinite()) { "Delta days must not be negative" }
         require(durationMs >= 0) { "Duration must not be negative" }
         require(reviewedAtEpochMillis >= 0 && recordedAtEpochMillis >= 0) {
@@ -1374,6 +1381,9 @@ data class ReviewLogSampleRecord(
     val timeBucket: String,
     val sourceKind: String,
     val evidenceWeight: Double,
+    val scrollUpCount: Int = 0,
+    val editCount: Int = 0,
+    val interruptionCount: Int = 0,
 )
 
 data class AnswerRevealWriteCommand(

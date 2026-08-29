@@ -23,7 +23,7 @@ class LibrarySearchMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 31)
             val store = StudyDatabaseFactory.open(context, databaseName)
 
-            assertEquals(STUDY_DATABASE_VERSION, 34)
+            runBlocking { assertEquals(STUDY_DATABASE_VERSION, store.readDatabaseVersion()) }
 
             store.seedFixture(fixtureBundle())
             store.refreshLibrarySearchProjection()
@@ -89,15 +89,18 @@ class LibrarySearchMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, migratedName, version = 31)
             runBlocking {
                 val migrated = StudyDatabaseFactory.open(context, migratedName)
+                // Room migrates lazily: touch the database so the chain runs
+                // before the sqlite_master comparison.
+                migrated.readDatabaseVersion()
                 migrated.close()
             }
             // The migration chain intentionally does not create the FTS/outbox
             // triggers (they are created lazily by the first search refresh),
             // so the migrated schema must match the current exported schema
             // row for row.
-            assertEquals(
-                readSqliteMaster(context.getDatabasePath(referenceName)),
-                readSqliteMaster(context.getDatabasePath(migratedName)),
+            assertStructurallyEqual(
+                context.getDatabasePath(referenceName),
+                context.getDatabasePath(migratedName),
             )
             // Positive check for the lazy-trigger design: the first refresh
             // creates exactly the six search triggers.

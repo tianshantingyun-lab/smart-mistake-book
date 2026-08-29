@@ -42,7 +42,7 @@ class TutorConversationMigrationInstrumentedTest {
             )
             val message = migrated.observeTutorMessages("conversation-migrated").first()
 
-            assertEquals(STUDY_DATABASE_VERSION, 34)
+            runBlocking { assertEquals(STUDY_DATABASE_VERSION, migrated.readDatabaseVersion()) }
             assertEquals("conversation-migrated", conversation.conversationId)
             assertNotNull(message.singleOrNull())
             assertEquals("message-migrated", message.single().messageId)
@@ -61,7 +61,7 @@ class TutorConversationMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 29)
             val migrated = StudyDatabaseFactory.open(context, databaseName)
 
-            assertEquals(STUDY_DATABASE_VERSION, 34)
+            runBlocking { assertEquals(STUDY_DATABASE_VERSION, migrated.readDatabaseVersion()) }
             assertEquals(0, migrated.libraryCatalogCount("", null, null, null, null))
             migrated.close()
         } finally {
@@ -345,7 +345,7 @@ class TutorConversationMigrationInstrumentedTest {
             createDatabaseFromExportedSchema(context, databaseName, version = 30)
             val migrated = StudyDatabaseFactory.open(context, databaseName)
 
-            assertEquals(STUDY_DATABASE_VERSION, 34)
+            runBlocking { assertEquals(STUDY_DATABASE_VERSION, migrated.readDatabaseVersion()) }
             val conversation = migrated.createTutorConversation(
                 CreateTutorConversationDatabaseCommand(
                     conversationId = "conversation-after-v30",

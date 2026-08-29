@@ -1,6 +1,9 @@
 package com.tingyun.smartmistakebook.feature.review
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,9 +17,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +31,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -50,6 +59,7 @@ import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.SmartColors
 import com.tingyun.smartmistakebook.core.ui.studentSubjectLabel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 /** Reviews the student's exact saved transcription without inventing an answer key or another task. */
@@ -90,6 +100,28 @@ fun CapturedReviewSessionScreen(
         }
     }
 
+    // Silent interaction collection (spec 2.14): gestures and lifecycle
+    // flips are counted without any visible UI or prompt.
+    val tracker = remember(presentationId) { ReviewInteractionTracker() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, presentationId) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            tracker.onLifecycleEvent(event)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    val problemScrollState = rememberScrollState()
+    LaunchedEffect(problemScrollState, presentationId) {
+        snapshotFlow { problemScrollState.value }
+            .drop(1)
+            .collect { value ->
+                tracker.onScrollDelta(value - (tracker.lastScrollValue ?: value.also {
+                    tracker.lastScrollValue = value
+                }))
+            }
+    }
+
     val safeQueueSize = queueSize.coerceAtLeast(1)
     val safeQueuePosition = queuePosition.coerceIn(1, safeQueueSize)
     RootPageColumn(modifier = modifier.testTag("captured_review_session_root")) {
@@ -127,14 +159,21 @@ fun CapturedReviewSessionScreen(
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader(title = entry.title)
         Spacer(Modifier.height(12.dp))
-        SafeMarkdownText(
-            markdown = entry.problemMarkdown,
-            color = SmartColors.Ink,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 19.sp,
-                lineHeight = 30.sp,
-            ),
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false)
+                .verticalScroll(problemScrollState),
+        ) {
+            SafeMarkdownText(
+                markdown = entry.problemMarkdown,
+                color = SmartColors.Ink,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 19.sp,
+                    lineHeight = 30.sp,
+                ),
+            )
+        }
         Spacer(Modifier.height(24.dp))
         Text(
             text = "按这次的实际完成情况选一下",
@@ -149,6 +188,8 @@ fun CapturedReviewSessionScreen(
                     report = StudyReviewSelfReport.RECALL_COMPLETED,
                     practiceUnitId = entry.practiceUnitId,
                     presentationId = presentationId,
+                    scrollUpCount = tracker.scrollUpCount,
+                    interruptionCount = tracker.interruptionCount,
                     submit = onSubmit,
                 )
             },
@@ -165,6 +206,8 @@ fun CapturedReviewSessionScreen(
                     report = StudyReviewSelfReport.RECALLED_WITH_EFFORT,
                     practiceUnitId = entry.practiceUnitId,
                     presentationId = presentationId,
+                    scrollUpCount = tracker.scrollUpCount,
+                    interruptionCount = tracker.interruptionCount,
                     submit = onSubmit,
                 )
             },
@@ -182,6 +225,8 @@ fun CapturedReviewSessionScreen(
                     report = StudyReviewSelfReport.NEEDS_HELP,
                     practiceUnitId = entry.practiceUnitId,
                     presentationId = presentationId,
+                    scrollUpCount = tracker.scrollUpCount,
+                    interruptionCount = tracker.interruptionCount,
                     submit = onSubmit,
                 )
             },
@@ -201,6 +246,8 @@ fun CapturedReviewSessionScreen(
                     rating = StudyReviewRating.EASY,
                     practiceUnitId = entry.practiceUnitId,
                     presentationId = presentationId,
+                    scrollUpCount = tracker.scrollUpCount,
+                    interruptionCount = tracker.interruptionCount,
                     submit = onSubmitRating,
                 )
             },
@@ -277,11 +324,13 @@ internal class CapturedReviewSessionViewModel(
         report: StudyReviewSelfReport,
         practiceUnitId: String,
         presentationId: String,
+        scrollUpCount: Int = 0,
+        interruptionCount: Int = 0,
         submit: suspend (StudyReviewSelfReportSubmission) -> StudyReviewSelfReportSubmissionResult,
     ) {
         if (!canSubmit(report)) return
         val command = runCatching {
-            submissionCommand(report, practiceUnitId, presentationId)
+            submissionCommand(report, practiceUnitId, presentationId, scrollUpCount, interruptionCount)
         }.getOrElse {
             updateStatus(CapturedReviewSubmissionStatus.FAILED)
             return
@@ -306,6 +355,8 @@ internal class CapturedReviewSessionViewModel(
         rating: StudyReviewRating,
         practiceUnitId: String,
         presentationId: String,
+        scrollUpCount: Int = 0,
+        interruptionCount: Int = 0,
         submit: suspend (StudyReviewRatingSubmission) -> StudyReviewRatingSubmissionResult,
     ) {
         // The rating channel shares the self-report lock: one subjective
@@ -324,6 +375,8 @@ internal class CapturedReviewSessionViewModel(
                     rating = rating,
                     durationSeconds = elapsedSeconds(now),
                     occurredAtEpochMillis = now,
+                    scrollUpCount = scrollUpCount,
+                    interruptionCount = interruptionCount,
                 )
                 val result = submit(command)
                 ratingResult = result
@@ -374,6 +427,8 @@ internal class CapturedReviewSessionViewModel(
         report: StudyReviewSelfReport,
         practiceUnitId: String,
         presentationId: String,
+        scrollUpCount: Int,
+        interruptionCount: Int,
     ): StudyReviewSelfReportSubmission {
         savedStateHandle.get<String>(PENDING_REQUEST_ID_KEY)?.let { requestId ->
             return StudyReviewSelfReportSubmission(
@@ -399,6 +454,8 @@ internal class CapturedReviewSessionViewModel(
             report = report,
             durationSeconds = elapsedSeconds(now),
             occurredAtEpochMillis = now,
+            scrollUpCount = scrollUpCount,
+            interruptionCount = interruptionCount,
         ).also(::persistCommand)
     }
 

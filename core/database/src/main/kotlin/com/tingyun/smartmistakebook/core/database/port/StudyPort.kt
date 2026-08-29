@@ -63,6 +63,9 @@ interface VisualInteractionPort {
         practiceUnitId: String,
     ): List<PracticeUnitKnowledgeBindingRecord> = emptyList()
 
+    /** Diagnostic: the SQLite PRAGMA user_version of the opened database. */
+    suspend fun readDatabaseVersion(): Int = 0
+
     /**
      * Pseudo-KC fallback (spec mastery-scheduling §3.4): idempotently ensures
      * the subject-scoped pseudo knowledge node (`pseudo:<subject>`) and a
