@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.database.port
 
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -130,3 +131,20 @@ data class PracticeUnitKnowledgeBindingRecord(
     val taxonomyVersion: String,
     val acceptedAtEpochMillis: Long,
 )
+
+
+/**
+ * The model's own write surface inside the mastery database: advisory rows
+ * are the ONLY rows an LLM may author. Projection-owned state
+ * (learner_*_state) is exclusive to LearningProjector, so full replay never
+ * erases model judgment and evidence never absorbs it.
+ */
+interface MasteryAdvisoryPort {
+    /** Idempotent per (learner, source id, kind) - replays never duplicate. */
+    suspend fun recordTeachingAdvisories(entries: List<TeachingAdvisoryRecord>) = Unit
+
+    fun observeTeachingAdvisories(
+        learnerId: String,
+        practiceUnitId: String?,
+    ): Flow<List<TeachingAdvisoryRecord>> = flowOf(emptyList())
+}

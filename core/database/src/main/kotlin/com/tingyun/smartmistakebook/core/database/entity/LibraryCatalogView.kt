@@ -98,3 +98,76 @@ internal data class LibraryCatalogView(
     @ColumnInfo(name = "knowledge_labels")
     val knowledgeLabels: String?,
 )
+
+/**
+ * Knowledge-question lattice (three-store closed loop): the explicit
+ * (knowledge node x practice unit x mastery x memory) join that makes
+ * KC-to-question weight propagation a first-class query. Read-only,
+ * always fresh - propagation reads this instead of denormalized copies.
+ */
+@DatabaseView(
+    viewName = "knowledge_question_lattice",
+    value = """
+        SELECT
+            binding.practice_unit_id AS practice_unit_id,
+            binding.knowledge_node_id AS knowledge_node_id,
+            binding.strength AS binding_strength,
+            binding.basis_revision_id AS basis_revision_id,
+            binding.taxonomy_version AS binding_taxonomy_version,
+            entry.entry_id AS entry_id,
+            entry.status AS entry_status,
+            mastery.lower_bound_independent_correct AS kc_conservative_mastery,
+            mastery.status AS kc_status,
+            mastery.last_evidence_direction AS kc_last_evidence_direction,
+            mastery.last_evidence_at_epoch_millis AS kc_last_evidence_at,
+            memory.stability_days AS question_stability_days,
+            memory.difficulty AS question_difficulty,
+            memory.next_review_at_epoch_millis AS question_next_review_at,
+            memory.lapse_count AS question_lapse_count,
+            memory.consecutive_cross_day_again AS question_cross_day_again
+        FROM practice_unit_knowledge_binding AS binding
+        LEFT JOIN learner_knowledge_mastery_state AS mastery
+            ON mastery.knowledge_node_id = binding.knowledge_node_id
+           AND mastery.projection_name = 'study-experience-v1'
+        LEFT JOIN learner_problem_memory_state AS memory
+            ON memory.practice_unit_id = binding.practice_unit_id
+           AND memory.projection_name = 'study-experience-v1'
+        LEFT JOIN error_book_entry AS entry
+            ON entry.practice_unit_id = binding.practice_unit_id
+           AND entry.status = 'ACTIVE'
+    """,
+)
+internal data class KnowledgeQuestionLatticeView(
+    @ColumnInfo(name = "practice_unit_id")
+    val practiceUnitId: String,
+    @ColumnInfo(name = "knowledge_node_id")
+    val knowledgeNodeId: String,
+    @ColumnInfo(name = "binding_strength")
+    val bindingStrength: Double,
+    @ColumnInfo(name = "basis_revision_id")
+    val basisRevisionId: String,
+    @ColumnInfo(name = "binding_taxonomy_version")
+    val bindingTaxonomyVersion: String,
+    @ColumnInfo(name = "entry_id")
+    val entryId: String?,
+    @ColumnInfo(name = "entry_status")
+    val entryStatus: String?,
+    @ColumnInfo(name = "kc_conservative_mastery")
+    val kcConservativeMastery: Double?,
+    @ColumnInfo(name = "kc_status")
+    val kcStatus: String?,
+    @ColumnInfo(name = "kc_last_evidence_direction")
+    val kcLastEvidenceDirection: String?,
+    @ColumnInfo(name = "kc_last_evidence_at")
+    val kcLastEvidenceAt: Long?,
+    @ColumnInfo(name = "question_stability_days")
+    val questionStabilityDays: Double?,
+    @ColumnInfo(name = "question_difficulty")
+    val questionDifficulty: Double?,
+    @ColumnInfo(name = "question_next_review_at")
+    val questionNextReviewAt: Long?,
+    @ColumnInfo(name = "question_lapse_count")
+    val questionLapseCount: Int?,
+    @ColumnInfo(name = "question_cross_day_again")
+    val questionCrossDayAgain: Int?,
+)

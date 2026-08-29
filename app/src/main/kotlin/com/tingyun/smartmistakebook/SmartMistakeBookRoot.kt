@@ -875,6 +875,17 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                             application.tutorTeachingReferenceRepository,
                         modelTasks = application.modelTaskRepository,
                         interactions = application.tutorInteractionRepository,
+                        onRecordTeachingFocus = { sessionId, practiceUnitId, labels ->
+                            application.applicationScope.launch {
+                                runCatching {
+                                    application.studyRepository.recordTeachingFocus(
+                                        sessionId = sessionId,
+                                        practiceUnitId = practiceUnitId,
+                                        labels = labels,
+                                    )
+                                }
+                            }
+                        },
                         profile = experience.profile,
                         learningMemory = experience.catalog.firstOrNull { catalogEntry ->
                             catalogEntry.entryId == key.entryId &&

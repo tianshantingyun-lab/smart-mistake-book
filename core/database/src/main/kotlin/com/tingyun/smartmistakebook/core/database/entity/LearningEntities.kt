@@ -1073,3 +1073,45 @@ internal data class ReviewLogEntity(
     @ColumnInfo(name = "recorded_at")
     val recordedAt: Long,
 )
+
+/**
+ * LLM-authored teaching advisory (three-store closed loop): the model owns
+ * these rows inside the mastery database. Projection-owned state
+ * (learner_*_state) is never touched - full replay only ever rebuilds the
+ * projector's rows, so model judgment and learning evidence stay separate
+ * authorities. 审阅口径：讲题重点 (TEACHING_FOCUS) 与 误区 (MISCONCEPTION)。
+ */
+@Entity(
+    tableName = "llm_teaching_advisory",
+    indices = [
+        Index(
+            value = ["learner_id", "source_id", "advisory_kind"],
+            unique = true,
+        ),
+        Index(value = ["learner_id", "knowledge_node_id"]),
+        Index(value = ["learner_id", "practice_unit_id"]),
+    ],
+)
+internal data class LlmTeachingAdvisoryEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "advisory_id")
+    val advisoryId: String,
+    @ColumnInfo(name = "learner_id")
+    val learnerId: String,
+    @ColumnInfo(name = "practice_unit_id")
+    val practiceUnitId: String?,
+    @ColumnInfo(name = "knowledge_node_id")
+    val knowledgeNodeId: String?,
+    /** TEACHING_FOCUS / MISCONCEPTION. */
+    @ColumnInfo(name = "advisory_kind")
+    val advisoryKind: String,
+    @ColumnInfo(name = "payload_markdown")
+    val payloadMarkdown: String,
+    @ColumnInfo(name = "confidence")
+    val confidence: Double?,
+    /** Model task/session identifier for provenance and dedup. */
+    @ColumnInfo(name = "source_id")
+    val sourceId: String,
+    @ColumnInfo(name = "created_at_epoch_millis")
+    val createdAtEpochMillis: Long,
+)

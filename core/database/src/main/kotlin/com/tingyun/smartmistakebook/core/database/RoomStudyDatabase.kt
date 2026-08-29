@@ -47,6 +47,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewQueueItemEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewQueueKnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewQueueReasonEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
+import com.tingyun.smartmistakebook.core.database.entity.LlmTeachingAdvisoryEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionAdvanceReceiptEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEntity
@@ -61,6 +62,7 @@ import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRec
 import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 
 /** Placeholder display name for pseudo-KC fallback nodes (spec §3.4). */
 internal const val PSEUDO_NODE_DISPLAY_NAME = "未归类知识点"
@@ -938,6 +940,44 @@ internal class RoomStudyDatabase(
                     acceptedAtEpochMillis = row.acceptedAtEpochMillis,
                 )
             }
+
+    override suspend fun recordTeachingAdvisories(entries: List<TeachingAdvisoryRecord>) {
+        database.learningDao().recordTeachingAdvisories(
+            entries.map { entry ->
+                LlmTeachingAdvisoryEntity(
+                    advisoryId = entry.advisoryId,
+                    learnerId = entry.learnerId,
+                    practiceUnitId = entry.practiceUnitId,
+                    knowledgeNodeId = entry.knowledgeNodeId,
+                    advisoryKind = entry.advisoryKind,
+                    payloadMarkdown = entry.payloadMarkdown,
+                    confidence = entry.confidence,
+                    sourceId = entry.sourceId,
+                    createdAtEpochMillis = entry.createdAtEpochMillis,
+                )
+            },
+        )
+    }
+
+    override fun observeTeachingAdvisories(
+        learnerId: String,
+        practiceUnitId: String?,
+    ): Flow<List<TeachingAdvisoryRecord>> =
+        database.learningDao().observeTeachingAdvisories(learnerId, practiceUnitId).map { rows ->
+            rows.map { row ->
+                TeachingAdvisoryRecord(
+                    advisoryId = row.advisoryId,
+                    learnerId = row.learnerId,
+                    practiceUnitId = row.practiceUnitId,
+                    knowledgeNodeId = row.knowledgeNodeId,
+                    advisoryKind = row.advisoryKind,
+                    payloadMarkdown = row.payloadMarkdown,
+                    confidence = row.confidence,
+                    sourceId = row.sourceId,
+                    createdAtEpochMillis = row.createdAtEpochMillis,
+                )
+            }
+        }
 
     override suspend fun readDatabaseVersion(): Int {
         var version = 0

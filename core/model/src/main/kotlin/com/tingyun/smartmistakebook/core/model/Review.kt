@@ -17,6 +17,7 @@ enum class ReviewReason {
     CONFUSABLE_PAIR,
     GRADUATED_MAINTENANCE,
     AVOIDANCE_SIGNAL,
+    KC_MASTERY_DROP,
 }
 
 enum class ReviewDifficultyBand {

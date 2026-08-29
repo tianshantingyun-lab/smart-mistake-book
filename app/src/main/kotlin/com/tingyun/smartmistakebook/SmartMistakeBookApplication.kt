@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class SmartMistakeBookApplication : Application() {
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val startupState = MutableStateFlow<StartupState>(StartupState.Initializing)
 

@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
+import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
@@ -286,6 +287,18 @@ class ReviewPlanner(
         // Avoidance (spec 6 / D'Mello 2013): repeated switch-aways with poor
         // grades mark a card the learner finds aversive; nudge re-teaching.
         if (candidate.avoidance) reasons += ReviewReason.AVOIDANCE_SIGNAL
+
+        // Spec 5 KC->question propagation: when a bound knowledge node's
+        // latest evidence was negative and mastery sits below the drop
+        // threshold, every question bound to that node gains continuous
+        // pressure (bigger drop -> bigger weight -> more likely to make the
+        // budget cut) plus an early-entry reason. Not a mechanical gate.
+        val kcDropPressure = masteryStates
+            .filter { it.lastEvidenceDirection == LearningEvidenceDirection.NEGATIVE.name }
+            .maxOfOrNull { state ->
+                (KC_DROP_MASTERY_THRESHOLD - state.conservativeMasteryScore) / KC_DROP_MASTERY_THRESHOLD
+            }?.coerceIn(0.0, 1.0) ?: 0.0
+        if (kcDropPressure > 0.0) reasons += ReviewReason.KC_MASTERY_DROP
         if (candidate.examPriority > 0.0) reasons += ReviewReason.EXAM_PRIORITY
         val waitingScore = candidate.eligibleSinceEpochMillis
             ?.let { eligibleSince ->
@@ -299,7 +312,8 @@ class ReviewPlanner(
             reason == ReviewReason.CLOCK_ANOMALY ||
                 reason == ReviewReason.CALIBRATION_CHECK ||
                 reason == ReviewReason.REPEATED_MISTAKE ||
-                reason == ReviewReason.EXAM_PRIORITY
+                reason == ReviewReason.EXAM_PRIORITY ||
+                reason == ReviewReason.KC_MASTERY_DROP
         }
         if (
             memory != null &&
@@ -316,6 +330,7 @@ class ReviewPlanner(
                 LAPSE_WEIGHT * lapseScore +
                 REPEAT_MISTAKE_WEIGHT * candidate.repeatMistakePriority +
                 AVOIDANCE_WEIGHT * (if (candidate.avoidance) 1.0 else 0.0) +
+                KC_DROP_WEIGHT * kcDropPressure +
                 EXAM_WEIGHT * candidate.examPriority +
                 WAITING_WEIGHT * waitingScore
             ).coerceAtLeast(0.0)
@@ -413,6 +428,8 @@ class ReviewPlanner(
         private const val LAPSE_WEIGHT = 1.0
         private const val REPEAT_MISTAKE_WEIGHT = 2.0
         private const val AVOIDANCE_WEIGHT = 1.0
+        private const val KC_DROP_MASTERY_THRESHOLD = 0.6
+        private const val KC_DROP_WEIGHT = 2.5
         private const val EXAM_WEIGHT = 2.0
         private const val WAITING_WEIGHT = 1.5
         private const val FAMILY_PENALTY_WEIGHT = 0.3

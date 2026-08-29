@@ -87,6 +87,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ProjectionConsumptionEn
 import com.tingyun.smartmistakebook.core.database.entity.ProjectionOutboxEntity
 import com.tingyun.smartmistakebook.core.database.entity.PresentationProjectionStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
+import com.tingyun.smartmistakebook.core.database.entity.LlmTeachingAdvisoryEntity
 import kotlinx.coroutines.flow.Flow
 
 
@@ -166,6 +167,24 @@ internal abstract class LearningDao {
             "ORDER BY reviewed_at_utc ASC, review_log_id ASC LIMIT :limit",
     )
     abstract suspend fun readReviewLogSamples(learnerId: String, limit: Int): List<ReviewLogSampleProjection>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertTeachingAdvisories(entries: List<LlmTeachingAdvisoryEntity>)
+
+    /** Idempotent advisory collection (UNIQUE learner+source+kind). */
+    open suspend fun recordTeachingAdvisories(entries: List<LlmTeachingAdvisoryEntity>) {
+        insertTeachingAdvisories(entries)
+    }
+
+    @Query(
+        "SELECT * FROM llm_teaching_advisory WHERE learner_id = :learnerId " +
+            "AND (:practiceUnitId IS NULL OR practice_unit_id = :practiceUnitId) " +
+            "ORDER BY created_at_epoch_millis DESC LIMIT 50",
+    )
+    abstract fun observeTeachingAdvisories(
+        learnerId: String,
+        practiceUnitId: String?,
+    ): Flow<List<LlmTeachingAdvisoryEntity>>
 
     @Query(
         "SELECT MAX(reviewed_at_utc) FROM review_log " +

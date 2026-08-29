@@ -788,3 +788,18 @@ data class LearnerSnapshot(
         )
     }
 }
+
+/** One LLM-authored teaching advisory row (three-store closed loop, v39). */
+data class TeachingAdvisoryRecord(
+    val advisoryId: String,
+    val learnerId: String,
+    val practiceUnitId: String?,
+    val knowledgeNodeId: String?,
+    /** TEACHING_FOCUS / MISCONCEPTION. */
+    val advisoryKind: String,
+    val payloadMarkdown: String,
+    val confidence: Double?,
+    val sourceId: String,
+    val createdAtEpochMillis: Long,
+)
+

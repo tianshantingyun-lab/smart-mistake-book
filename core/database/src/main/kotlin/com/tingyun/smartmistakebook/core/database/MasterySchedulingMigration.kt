@@ -133,3 +133,42 @@ internal val ATTENTION_SIGNAL_MIGRATION_37_38 = object : Migration(37, 38) {
         connection.execSQL("ALTER TABLE review_log ADD COLUMN planned_reason TEXT")
     }
 }
+
+internal const val LLM_TEACHING_ADVISORY_DDL =
+    "CREATE TABLE IF NOT EXISTS `llm_teaching_advisory` (" +
+        "`advisory_id` TEXT NOT NULL, " +
+        "`learner_id` TEXT NOT NULL, " +
+        "`practice_unit_id` TEXT, " +
+        "`knowledge_node_id` TEXT, " +
+        "`advisory_kind` TEXT NOT NULL, " +
+        "`payload_markdown` TEXT NOT NULL, " +
+        "`confidence` REAL, " +
+        "`source_id` TEXT NOT NULL, " +
+        "`created_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`advisory_id`))"
+
+/**
+ * v39: llm_teaching_advisory (three-store closed loop; the model owns * authoritative rows inside the mastery database) plus the
+ * knowledge_question_lattice view - the explicit knowledge-point x mistake
+ * x mastery join that makes KC-to-question weight propagation first-class.
+ */
+internal val MASTERY_ADVISORY_MIGRATION_38_39 = object : Migration(38, 39) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(LLM_TEACHING_ADVISORY_DDL)
+        connection.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                "`index_llm_teaching_advisory_learner_id_source_id_advisory_kind` " +
+                "ON `llm_teaching_advisory` (`learner_id`, `source_id`, `advisory_kind`)")
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_llm_teaching_advisory_learner_id_knowledge_node_id` " +
+                "ON `llm_teaching_advisory` (`learner_id`, `knowledge_node_id`)")
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_llm_teaching_advisory_learner_id_practice_unit_id` " +
+                "ON `llm_teaching_advisory` (`learner_id`, `practice_unit_id`)")
+        connection.execSQL("DROP VIEW IF EXISTS `knowledge_question_lattice`")
+        connection.execSQL(KNOWLEDGE_QUESTION_LATTICE_VIEW_SQL)
+    }
+}
+
+/** Byte-exact re-creation of the lattice view; regenerated from 39.json. */
+internal val KNOWLEDGE_QUESTION_LATTICE_VIEW_SQL: String =
+    "CREATE VIEW `knowledge_question_lattice` AS SELECT\n" + "            binding.practice_unit_id AS practice_unit_id,\n" + "            binding.knowledge_node_id AS knowledge_node_id,\n" + "            binding.strength AS binding_strength,\n" + "            binding.basis_revision_id AS basis_revision_id,\n" + "            binding.taxonomy_version AS binding_taxonomy_version,\n" + "            entry.entry_id AS entry_id,\n" + "            entry.status AS entry_status,\n" + "            mastery.lower_bound_independent_correct AS kc_conservative_mastery,\n" + "            mastery.status AS kc_status,\n" + "            mastery.last_evidence_direction AS kc_last_evidence_direction,\n" + "            mastery.last_evidence_at_epoch_millis AS kc_last_evidence_at,\n" + "            memory.stability_days AS question_stability_days,\n" + "            memory.difficulty AS question_difficulty,\n" + "            memory.next_review_at_epoch_millis AS question_next_review_at,\n" + "            memory.lapse_count AS question_lapse_count,\n" + "            memory.consecutive_cross_day_again AS question_cross_day_again\n" + "        FROM practice_unit_knowledge_binding AS binding\n" + "        LEFT JOIN learner_knowledge_mastery_state AS mastery\n" + "            ON mastery.knowledge_node_id = binding.knowledge_node_id\n" + "           AND mastery.projection_name = 'study-experience-v1'\n" + "        LEFT JOIN learner_problem_memory_state AS memory\n" + "            ON memory.practice_unit_id = binding.practice_unit_id\n" + "           AND memory.projection_name = 'study-experience-v1'\n" + "        LEFT JOIN error_book_entry AS entry\n" + "            ON entry.practice_unit_id = binding.practice_unit_id\n" + "           AND entry.status = 'ACTIVE'"

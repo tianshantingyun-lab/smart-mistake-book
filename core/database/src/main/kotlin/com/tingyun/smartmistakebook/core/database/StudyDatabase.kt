@@ -51,6 +51,8 @@ import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
 import com.tingyun.smartmistakebook.core.database.entity.SplitImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.SplitImportQuestionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
+import com.tingyun.smartmistakebook.core.database.entity.LlmTeachingAdvisoryEntity
+import com.tingyun.smartmistakebook.core.database.entity.KnowledgeQuestionLatticeView
 import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
 import com.tingyun.smartmistakebook.core.database.entity.PredictionOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.VisualInteractionAttemptEntity
@@ -118,7 +120,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 38
+internal const val STUDY_DATABASE_VERSION = 39
 
 /** Split-import status values mirrored into [SplitImportMigration]. */
 internal object SplitImportLedgerStrings {
@@ -128,7 +130,7 @@ internal object SplitImportLedgerStrings {
 }
 
 @Database(
-    views = [LibraryCatalogView::class],
+    views = [LibraryCatalogView::class, KnowledgeQuestionLatticeView::class],
     entities = [
         ProblemEntity::class,
         ProblemRevisionEntity::class,
@@ -209,6 +211,7 @@ internal object SplitImportLedgerStrings {
         SplitImportJobEntity::class,
         SplitImportQuestionEntity::class,
         ReviewLogEntity::class,
+        LlmTeachingAdvisoryEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -319,6 +322,7 @@ object StudyDatabaseFactory {
             MASTERY_SCHEDULING_MIGRATION_35_36,
             INTERACTION_SIGNAL_MIGRATION_36_37,
             ATTENTION_SIGNAL_MIGRATION_37_38,
+            MASTERY_ADVISORY_MIGRATION_38_39,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

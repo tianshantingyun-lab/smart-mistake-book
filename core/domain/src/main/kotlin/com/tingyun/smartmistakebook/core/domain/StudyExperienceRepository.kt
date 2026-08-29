@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.model.LearningModelVersion
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ReviewReason
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -412,6 +413,21 @@ interface StudyExperienceRepository : AutoCloseable {
         expectedStateVersion: Long,
         submission: StudyReviewRatingSubmission,
     ): StudyReviewRatingSubmissionResult
+
+    /**
+     * Persists the model's own teaching-focus output for one tutoring
+     * session into the mastery database's advisory layer (three-store closed
+     * loop, spec §5). Idempotent per session turn; silent by design.
+     */
+    suspend fun recordTeachingFocus(
+        sessionId: String,
+        practiceUnitId: String,
+        labels: List<String>,
+        cycleOrdinal: Int = 1,
+    )
+
+    /** The learner's stored teaching advisories, newest first (read side). */
+    fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>>
 
     /** Declares one exam (spec §2.17): subject plus the local exam day. */
     suspend fun declareExam(entry: ExamCalendarEntry)

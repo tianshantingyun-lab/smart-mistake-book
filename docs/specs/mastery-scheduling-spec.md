@@ -194,6 +194,18 @@ review_log(id PK, learner_id, card_id /*practice_unit_id*/, rating INT 1..4,
 
 ## 5. 三库关联（摘要，全文见 linkage 文档）
 
+**三库定位与写权限矩阵（2026-08-29 闭环轮，与用户对齐）**
+
+| 库 | 权威写入方 | LLM 读 | LLM 写 |
+|---|---|---|---|
+| 知识库（knowledge_node/_relation/_teaching_material） | 审核包导入+grounding 人工决议 | 读、调用、**做映射** | 节点/关系/教辅**不可改**；映射经组织确认流程落 practice_unit_knowledge_binding（置信门槛/用户确认/凭证） |
+| 学生掌握库（learner_*_state 投影 + llm_teaching_advisory 咨询层） | **LearningProjector 独家**写投影行（账本事件→重放确定性）；**LLM 独家**写咨询层行 | 读 profile/lattice | 咨询层：`llm_teaching_advisory`（TEACHING_FOCUS/MISCONCEPTION；不放复习建议——复习只看权重与分类）。投影行直改=被重放覆盖，禁止 |
+| 错题库（error_book_entry/problem/practice_unit） | 捕获/修订/组织确认流程 | 读题面/分类 | 经既有 commit/organization 命令链（已是闭环） |
+
+**LLM 在掌握库的用途**（读投影+lattice → 输出 advisory）：讲题重点侧重（本次讲什么/误区是什么）、错因归类（接 §7 C5 列）、教辅选择参考；复习安排本身由权重与分类驱动，不写建议。
+
+**KC→错题权重联动律（用户定则）**：某题的作答改变某知识点的掌握分时，**所有绑定该知识点的题**的选题权重随之改变——实现为 planner 连续传导项：绑定 KC 最近证据为负且保守分低于 0.6 时，`KC_MASTERY_DROP` 压力 = (0.6−分)/0.6 ∈ [0,1]，score += 2.5×压力，并作为早入场理由（预算内按分数自然排序——**非机械闸门，压差越大越大概率触发复习**）。传导读取 `knowledge_question_lattice` 视图（v39），不落派生列（重放一致性优先）。
+
 键路：`attempt_event.practice_unit_id → binding(practice_unit_id,knowledge_node_id,strength,basis_revision,taxonomy) → knowledge_node(树/relation PREREQUISITE_OF) → learner_knowledge_mastery_state`；`learner_problem_memory_state.practice_unit_id → practice_unit → error_book_entry`。
 六个缺陷修复：L1 视图 learner 参数化；L2 全证据走 binding 分摊；L3 strength 入聚合；L4 前置进 planner + teaching_material 补救通道；L5 taxonomy_version 迁移策略（换绑不回滚、拆分按 strength 初值化）；L6/L7 重教通道（依赖错因/答案柱子，最后做）。
 

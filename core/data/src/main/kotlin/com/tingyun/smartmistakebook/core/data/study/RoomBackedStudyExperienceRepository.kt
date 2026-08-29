@@ -20,6 +20,7 @@ import com.tingyun.smartmistakebook.core.database.ProjectionCommit
 import com.tingyun.smartmistakebook.core.database.ProjectionCommitMode
 import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
 import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
 import com.tingyun.smartmistakebook.core.database.ReviewPlanRecord
 import com.tingyun.smartmistakebook.core.database.ReviewAttemptWriteCommand
@@ -126,6 +127,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -721,6 +723,35 @@ class RoomBackedStudyExperienceRepository(
                 ?.practiceUnitId,
         )
     }
+
+    override suspend fun recordTeachingFocus(
+        sessionId: String,
+        practiceUnitId: String,
+        labels: List<String>,
+        cycleOrdinal: Int,
+    ) {
+        val usable = labels.map(String::trim).filter(String::isNotBlank)
+        if (usable.isEmpty()) return
+        val now = clock.millis()
+        database.recordTeachingAdvisories(
+            listOf(
+                TeachingAdvisoryRecord(
+                    advisoryId = "advisory:$sessionId:$cycleOrdinal:${usable.hashCode()}",
+                    learnerId = learnerId,
+                    practiceUnitId = practiceUnitId,
+                    knowledgeNodeId = null,
+                    advisoryKind = "TEACHING_FOCUS",
+                    payloadMarkdown = usable.joinToString(separator = "、"),
+                    confidence = null,
+                    sourceId = "$sessionId:$cycleOrdinal",
+                    createdAtEpochMillis = now,
+                ),
+            ),
+        )
+    }
+
+    override fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>> =
+        database.observeTeachingAdvisories(learnerId, practiceUnitId)
 
     override suspend fun declareExam(entry: ExamCalendarEntry) {
         val store = requireNotNull(schedulingSettingsStore) {

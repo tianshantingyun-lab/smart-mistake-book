@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteResult
@@ -929,6 +930,7 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val visualAttempts = mutableListOf<VisualInteractionAttemptRecord>()
     val practiceUnitBindings = mutableListOf<PracticeUnitKnowledgeBindingRecord>()
     val reviewLogEntries = mutableListOf<ReviewLogEntry>()
+    val teachingAdvisories = mutableListOf<TeachingAdvisoryRecord>()
     val resolvedStudentModelPredictions =
         mutableListOf<ResolvedStudentModelPredictionRecord>()
     val pseudoBindingCalls = mutableListOf<String>()
@@ -1678,6 +1680,20 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     ): AttemptCorrectionResult = error("appendAttemptCorrection is not used by these focused tests")
 
     override suspend fun findAttemptPersistence(submissionId: String): AttemptPersistenceRecord? = null
+
+    override suspend fun recordTeachingAdvisories(entries: List<TeachingAdvisoryRecord>) {
+        teachingAdvisories += entries
+    }
+
+    override fun observeTeachingAdvisories(
+        learnerId: String,
+        practiceUnitId: String?,
+    ): Flow<List<TeachingAdvisoryRecord>> = kotlinx.coroutines.flow.flowOf(
+        teachingAdvisories.filter {
+            it.learnerId == learnerId &&
+                (practiceUnitId == null || it.practiceUnitId == practiceUnitId)
+        },
+    )
 
     override suspend fun recordReviewLogEntries(entries: List<ReviewLogEntry>) {
         reviewLogEntries += entries

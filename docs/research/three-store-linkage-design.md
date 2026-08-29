@@ -129,3 +129,20 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 3. **L4 前置接线**——依赖 L2（KC mastery 才有真实输入）；
 4. **L5 版本迁移**——依赖 L2/L4 稳定后做 v36；
 5. **L6/L7 重教通道**——依赖错因/答案柱子，最后。
+
+---
+
+## 闭环实施记录（2026-08-29，v39）
+
+**写权限矩阵**见 spec §5 表。关键裁决：LLM 的影响写入掌握库内**自己的表**（llm_teaching_advisory），不碰投影行——投影行由 LearningProjector 从账本独家重建，任何直改都会被全量重放覆盖；咨询层与证据层从此互不污染。
+
+**已落地**
+- v39：`llm_teaching_advisory` 表（UNIQUE(learner,source_id,kind) 幂等；TEACHING_FOCUS/MISCONCEPTION 两类）+ `knowledge_question_lattice` 视图（绑定×KC掌握×题记忆×错题的显式格点查询，KC→题传导的读取面）。
+- 讲题输出→advisory 静默落库：SavedMistakeTutorRoute 观察 TUTOR_PLAN 任务，`targetedEvidenceLabels/inferredKnowledgeLabels` 非空即经 `recordTeachingFocus` 写入（UNIQUE 幂等，无 UI）。
+- KC→错题传导：`ReviewReason.KC_MASTERY_DROP`（连续压力项，见 spec §5）双 planner 生效。
+- L1-L5 状态更新：L1 视图修复（v36）、C1 全KC证据、L4 先修/伪KC（v36 伪绑定）、L2/L3 全KC语义——均已在此前轮次闭环；L6/L7 教辅重教通道由 advisory+AVOIDANCE_SIGNAL/KC_MASTERY_DROP 承接入口。
+
+**待办（下一轮候选）**
+- debrief 独立模型任务（讲题结束静默总结→MISCONCEPTION advisory；用户已批，要求不打扰用户）。
+- advisory 注入讲题 prompt（当前只落库+可查询；TutorQuestionContext 扩展待做）。
+- per-reason 权重标定（≥200 条 review_log 后，spec §6 程序）。

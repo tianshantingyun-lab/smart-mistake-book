@@ -32,6 +32,8 @@ import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -59,6 +61,8 @@ fun SavedMistakeTutorRoute(
     learningMemory: StudyQuestionMemory? = null,
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit,
+    /** Silent teaching-focus persistence (three-store loop); no UI surface. */
+    onRecordTeachingFocus: (sessionId: String, practiceUnitId: String, labels: List<String>) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val stateFlow: Flow<MistakeDetailState> = remember(key, repository) {
@@ -117,6 +121,7 @@ fun SavedMistakeTutorRoute(
                 reviewedTeachingReferences = teachingReferences,
                 onOpenModelSettings = onOpenModelSettings,
                 onBack = onBack,
+                onRecordTeachingFocus = onRecordTeachingFocus,
                 modifier = modifier.testTag("saved_mistake_tutor_screen"),
             )
         }
@@ -165,6 +170,8 @@ internal fun SavedMistakeTutorContent(
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit = {},
+    /** Silent teaching-focus persistence (three-store loop); no UI surface. */
+    onRecordTeachingFocus: (sessionId: String, practiceUnitId: String, labels: List<String>) -> Unit = { _, _, _ -> },
     clock: () -> Long = System::currentTimeMillis,
     modifier: Modifier = Modifier,
 ) {
@@ -184,6 +191,26 @@ internal fun SavedMistakeTutorContent(
         )
     }
     val identity = state.detail.identity
+    // Three-store closed loop: whenever the model's plan names teaching
+    // focus labels, persist them as advisories in the mastery database.
+    // Silent by design (user decision) - no prompt, no badge.
+    LaunchedEffect(question.sessionId, modelTasks) {
+        modelTasks
+            .observeRecentBySubject(question.sessionId, ModelTaskKind.TUTOR_PLAN, limit = 8)
+            .collect { tasks ->
+                tasks.forEach { task ->
+                    val output = task.output as? TutorPlanOutput ?: return@forEach
+                    val labels = output.plan.targetedEvidenceLabels +
+                        output.plan.inferredKnowledgeLabels
+                    if (labels.isEmpty()) return@forEach
+                    onRecordTeachingFocus(
+                        output.sessionId,
+                        identity.practiceUnitId,
+                        labels,
+                    )
+                }
+            }
+    }
     LaunchedEffect(question.sessionId, identity.problemRevisionId, identity.practiceUnitId) {
         interactions.anchorSession(
             savedMistakeTutorAnchor(
