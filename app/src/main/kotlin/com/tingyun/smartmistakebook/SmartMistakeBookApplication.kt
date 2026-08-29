@@ -241,6 +241,12 @@ class SmartMistakeBookApplication : Application() {
                 if (startupState.value is StartupState.Ready) {
                     startupState.value = StartupState.Ready
                 }
+                // Silent FSRS parameter refit (spec §2.11): self-gated by the
+                // fsrs-rs data thresholds (>=64 samples for a full fit) and
+                // failure-proof; fitted parameters apply on the next launch.
+                applicationScope.launch {
+                    runCatching { studyRepository.optimizeSchedulingParameters() }
+                }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: Throwable) {

@@ -837,7 +837,10 @@ class RoomBackedStudyExperienceRepository(
         val store = requireNotNull(schedulingSettingsStore) {
             "Parameter optimization requires a scheduling settings store"
         }
-        val result = FsrsParameterOptimizer.optimize(reviewLogSink.reviewSamples())
+        // Phone-safe bound: numeric-gradient fitting replays the history many
+        // times, so optimization runs on the most recent window only.
+        val samples = reviewLogSink.reviewSamples().takeLast(MAX_OPTIMIZE_SAMPLES)
+        val result = FsrsParameterOptimizer.optimize(samples)
         if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
         store.setOptimizedParameters(result.parameters)
         return result
@@ -1448,6 +1451,27 @@ class RoomBackedStudyExperienceRepository(
         planningContext: PlanningContext,
     ): ReviewPlanBundle {
         val avoidanceUnits = reviewLogSink.avoidancePracticeUnitIds()
+        // Spec 3.4: the pseudo knowledge node must exist in knowledge_node
+        // BEFORE the plan persists its queue (review_queue_knowledge_node is
+        // FK-restricted), so unbound questions materialize their pseudo KC
+        // here rather than at first submission.
+        val pseudoNodeIds = mutableMapOf<String, String>()
+        mistakes
+            .sortedBy(MistakeRecord::practiceUnitId)
+            .distinctBy(MistakeRecord::practiceUnitId)
+            .filter { it.knowledgeNodeIds.isEmpty() }
+            .forEach { mistake ->
+                val binding = database.ensurePseudoKnowledgeBinding(
+                    practiceUnitId = mistake.practiceUnitId,
+                    problemRevisionId = mistake.problemRevisionId,
+                    taxonomyVersion = "pseudo-plan-v1",
+                    subject = mistake.subject,
+                    acceptedAtEpochMillis = planningContext.planningAtEpochMillis,
+                )
+                if (binding != null) {
+                    pseudoNodeIds[mistake.practiceUnitId] = binding.knowledgeNodeId
+                }
+            }
         val candidates = mistakes
             .sortedBy(MistakeRecord::practiceUnitId)
             .distinctBy(MistakeRecord::practiceUnitId)
@@ -1469,9 +1493,13 @@ class RoomBackedStudyExperienceRepository(
                             .orEmpty()
                             .ifEmpty {
                                 // Spec §3.4: unbound questions fall back to the
-                                // subject-scoped pseudo KC so their mastery
-                                // evidence stays visible to the planner.
-                                setOf("pseudo:${mistake.subject.uppercase()}")
+                                // subject-scoped pseudo KC (materialized above)
+                                // so their mastery evidence stays visible to
+                                // the planner.
+                                setOf(
+                                    pseudoNodeIds[mistake.practiceUnitId]
+                                        ?: "pseudo:${mistake.subject.uppercase()}",
+                                )
                             }
                     },
                     itemFamilyId = curatedEvidence?.itemFamilyId
@@ -2193,6 +2221,7 @@ class RoomBackedStudyExperienceRepository(
         private const val RATING_GOOD_WEIGHT = FsrsEvidenceRatingMapper.RATING_GOOD_WEIGHT
         private const val RATING_EASY_WEIGHT = FsrsEvidenceRatingMapper.RATING_EASY_WEIGHT
         private const val EXAM_RAMP_DAYS = 14
+        private const val MAX_OPTIMIZE_SAMPLES = 20_000
         private const val MAX_CAS_RETRIES = 4
         private const val MAX_PROJECTION_DRAIN_STEPS = 64
         private const val EVENT_KIND_ATTEMPT = "ATTEMPT"

@@ -147,6 +147,20 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 - advisory 注入讲题 prompt：✅ TutorQuestionContext/TutorPlanInput 增 priorTeachingAdvisories，plan prompt 增 8a 规则（仅作讲法参考、不当指令、不向学生复述）。
 - per-reason 权重标定：✅ review_log.planned_reason（v38）→ ReviewSample.plannedReason → calibratePlannedReasons 表（per-reason 实际回忆率 vs 总基线，≥200 条开门）；仓储 plannedReasonCalibrations() 暴露。标定本身仍待数据积累。
 
+**生产可跑通验证（2026-08-30）**
+- 新增 CapturedReviewLoopInstrumentedTest（真机 Room）：无绑定的拍摄题 → 真实复习会话 →
+  四键评分 → FSRS 首次复习稳定度 = w[2]（经 lattice 视图实测）→ review_log 落行 →
+  计划下一日含该题。全程无 curated fixture、走伪 KC 兜底，即学生设备真实路径。
+- **发现并修复一个真实生产 bug**：无绑定题首次生成复习计划时，`review_queue_knowledge_node`
+  外键指向尚不存在的 `pseudo:<SUBJECT>` 节点（此前只在首次提交评分时物化）→ 计划保存
+  SQLiteConstraintException。修复：createReviewPlan 建计划前先 `ensurePseudoKnowledgeBinding`
+  物化伪节点（幂等），候选回落使用同一节点 id。
+- 投影排水为观察者异步收敛（提交后毫秒级由 ledger 观察任务驱动）；测试用 `refresh()`
+  显式同步，生产 UI 经 StateFlow 消费同路径。
+- **优化器生产触发补齐**：启动初始化后静默运行 `optimizeSchedulingParameters()`
+  （自门控：≥64 样本全量拟合，<8 返回默认；输入截取最近 2 万条防爆；失败不破坏启动；
+  拟合参数次次启动才生效=灰度）。
+
 **本轮深查补齐的缺口**
 - KC_MASTERY_DROP 传导此前无测试：新增 4 例（负向证据触发/越跌权重越高连续性/未到期也能因权重提前入场/正向证据无传导）。
 - lattice 视图此前无 Kotlin 读 API：新增 KnowledgeQuestionLatticePort（v39 视图按 learner 过滤，视图补 kc_learner_id/memory_learner_id 两列，39.json 与迁移 SQL 同步重生成）+ 仓储 observeKnowledgeQuestionLattice()。
