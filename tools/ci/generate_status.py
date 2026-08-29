@@ -96,8 +96,26 @@ def lint_report(variant: str) -> tuple[int, int]:
 
 
 def compile_status(module: str) -> str:
-    classes = gradle_dir(module) / "build" / "classes"
-    return "OK" if classes.exists() and any(classes.rglob("*.class")) else NOT_MEASURED
+    base = gradle_dir(module) / "build"
+    classes = base / "classes"
+    if classes.exists() and any(classes.rglob("*.class")):
+        return "OK"
+    # AGP modules package compiled classes into intermediates JARs instead
+    # of loose .class files under build/classes.
+    for name in ("compile_library_classes_jar", "compile_app_classes_jar"):
+        candidate = base / "intermediates" / name
+        if candidate.exists() and any(candidate.rglob("*.jar")):
+            return "OK"
+    return NOT_MEASURED
+
+
+def app_compile_status(variant: str) -> str:
+    jar_dir = (
+        gradle_dir(":app") / "build" / "intermediates" / "compile_app_classes_jar" / variant
+    )
+    if jar_dir.exists() and any(jar_dir.rglob("*.jar")):
+        return "OK"
+    return NOT_MEASURED
 
 
 def main() -> int:
@@ -130,9 +148,9 @@ def main() -> int:
         values[f"{key}_STATUS"] = compile_status(module)
         values[f"{key}_DURATION"] = "-"
 
-    values["APP_LOCAL_FIRST_STATUS"] = compile_status(":app")
+    values["APP_LOCAL_FIRST_STATUS"] = app_compile_status("localFirstDebug")
     values["APP_LOCAL_FIRST_DURATION"] = "-"
-    values["APP_STRICT_OFFLINE_STATUS"] = NOT_MEASURED
+    values["APP_STRICT_OFFLINE_STATUS"] = app_compile_status("strictOfflineDebug")
     values["APP_STRICT_OFFLINE_DURATION"] = "-"
 
     for variant, key in (("localFirstDebug", "LINT_LOCAL_FIRST"), ("strictOfflineDebug", "LINT_STRICT_OFFLINE")):
@@ -161,27 +179,38 @@ def main() -> int:
     }
     aab_pattern = gradle_dir(":app") / "build" / "outputs" / "bundle"
     aabs = {p.name: p.stat().st_size for p in aab_pattern.rglob("*.aab")}
+    # tag is "<flavor>-<kind>"; upper() does not split camelCase, so the
+    # display key must be mapped explicitly to match the template
+    # (LOCAL_FIRST_DEBUG_..., not LOCALFIRST_DEBUG_...).
+    display_flavor = {
+        "localFirst": "LOCAL_FIRST",
+        "strictOffline": "STRICT_OFFLINE",
+        "unknown": "UNKNOWN",
+    }
     for tag, path in apks.items():
-        key = tag.upper().replace("-", "_")
-        release_rows[f"{key}_APK_SHA"] = sha256(path)
+        flavor, _, kind = tag.partition("-")
+        flavor_key = display_flavor.get(flavor, flavor.upper())
+        release_rows[f"{flavor_key}_{kind.upper()}_APK_SHA"] = sha256(path)
         size_mb = path.stat().st_size / (1024 * 1024)
-        if "RELEASE" in key:
-            flavor = "LOCAL_FIRST" if "LOCAL_FIRST" in key else "STRICT_OFFLINE"
-            release_rows[f"RELEASE_{flavor}_STATUS"] = "OK"
-            release_rows[f"RELEASE_{flavor}_APK_SIZE"] = f"{size_mb:.1f} MB"
+        if kind == "release":
+            release_rows[f"RELEASE_{flavor_key}_STATUS"] = "OK"
+            release_rows[f"RELEASE_{flavor_key}_APK_SIZE"] = f"{size_mb:.1f} MB"
     if aabs:
         first_aab = next(iter(aabs.values()))
         release_rows.setdefault("AAB_SIZE_PLACEHOLDER", f"{first_aab / (1024 * 1024):.1f} MB")
     values.update(release_rows)
 
-    # Anything still unresolved in the template is genuinely unmeasured.
-    rendered = re.sub(r"\{\{[A-Z0-9_]+\}\}", NOT_MEASURED, text)
+    overall = "PASS" if os.environ.get("JOB_STATUS", "success") == "success" else "FAIL"
+    values["OVERALL_STATUS"] = overall
+
+    # Known measurements first, then anything still unresolved in the
+    # template is genuinely unmeasured. The sweep must run AFTER value
+    # substitution: sweeping first erased every real value (acceptance
+    # audit: status.md rendered all-NOT_MEASURED even on green runs).
+    rendered = text
     for placeholder, value in values.items():
         rendered = rendered.replace("{{" + placeholder + "}}", value)
     rendered = re.sub(r"\{\{[A-Z0-9_]+\}\}", NOT_MEASURED, rendered)
-
-    overall = "PASS" if os.environ.get("JOB_STATUS", "success") == "success" else "FAIL"
-    rendered = rendered.replace("{{OVERALL_STATUS}}", overall)
 
     OUTPUT.write_text(rendered, encoding="utf-8")
     print(f"wrote {OUTPUT}")
