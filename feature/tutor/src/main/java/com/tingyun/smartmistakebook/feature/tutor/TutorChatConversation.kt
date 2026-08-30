@@ -114,6 +114,18 @@ internal fun latestTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<Model
 internal fun ModelTaskSnapshot.canRetryTutorResponse(): Boolean =
     request.input is TutorRespondInput && status == ModelTaskStatus.RETRYABLE_FAILURE
 
+/**
+ * Incremental reply body to render while a tutor response is still streaming. The provider is
+ * replaying the reply in deltas; matching a STREAMING snapshot exposes the running prefix the UI can
+ * show before the terminal [ModelTaskStatus.SUCCEEDED] lands. Any other status (or a blank body)
+ * means there is nothing half-typed to display, so the UI keeps its idle/progress state.
+ */
+internal fun ModelTaskSnapshot.streamingReplyBody(): String? {
+    if (request.input !is TutorRespondInput) return null
+    if (status != ModelTaskStatus.STREAMING) return null
+    return userMessage.takeIf { it.isNotBlank() }
+}
+
 private fun ModelTaskSnapshot.requiresTutorModelSettings(): Boolean {
     val code = failure?.code ?: return false
     return code.requiresModelSettings()
@@ -405,22 +417,50 @@ private fun TutorAssistantReplyBubble(
                             modifier = Modifier.testTag("tutor_chat_reply_paused"),
                         )
                     } else if (executionMatchesCurrentProvider) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .testTag("tutor_chat_reply_progress"),
-                                color = JadeActive,
-                                strokeWidth = 2.dp,
-                            )
-                            Text(
-                                "正在回复…",
-                                color = InkSecondary,
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
+                        val streamingBody = task.streamingReplyBody()
+                        if (streamingBody != null) {
+                            // Streaming reply: render the running prefix as it arrives, and keep a
+                            // compact generating indicator so the student knows it is not finished.
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                SafeMarkdownText(
+                                    markdown = streamingBody,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.testTag("tutor_chat_reply_streaming"),
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(14.dp),
+                                        color = JadeActive,
+                                        strokeWidth = 2.dp,
+                                    )
+                                    Text(
+                                        "正在继续生成…",
+                                        color = InkSecondary,
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
+                            }
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .testTag("tutor_chat_reply_progress"),
+                                    color = JadeActive,
+                                    strokeWidth = 2.dp,
+                                )
+                                Text(
+                                    "正在回复…",
+                                    color = InkSecondary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
                         }
                     } else {
                         Text(

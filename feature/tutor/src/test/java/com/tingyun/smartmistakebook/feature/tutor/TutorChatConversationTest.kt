@@ -28,6 +28,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -57,6 +58,32 @@ class TutorChatConversationTest {
             ).canRetryTutorResponse(),
         )
         assertFalse(response.canRetryTutorResponse())
+    }
+
+    @Test
+    fun streamingRespondTaskSurfacesItsIncrementalBody() {
+        val streaming = succeededResponse(responseOrdinal = 1, requestId = "response-1-attempt-1")
+            .copy(
+                status = ModelTaskStatus.STREAMING,
+                stateVersion = 2,
+                stage = ModelTaskStage.VALIDATING_OUTPUT,
+                userMessage = "这道题先看导数变号",
+                output = null,
+            )
+
+        assertEquals("这道题先看导数变号", streaming.streamingReplyBody())
+    }
+
+    @Test
+    fun nonStreamingRespondTaskHasNoIncrementalBodyToRender() {
+        // A task that is not yet saving progress, or already finished, must not render a
+        // half-typed streaming body.
+        assertNull(succeededResponse(responseOrdinal = 1).streamingReplyBody())
+        assertNull(
+            succeededResponse(responseOrdinal = 2)
+                .copy(status = ModelTaskStatus.RUNNING, userMessage = "正在准备")
+                .streamingReplyBody(),
+        )
     }
 
     @Test
