@@ -23,6 +23,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
     data class Context(
         val subject: String?,
         val learnerId: String = "learner:local",
+        val conversationId: String? = null,
     )
 
     suspend fun run(call: TutorToolCall, context: Context): TutorToolOutcome {
@@ -44,6 +45,13 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             }
             TutorToolName.NOTEBOOK_READ -> notebookRead(call.terms)
             TutorToolName.MASTERY_READ -> masteryRead(context.learnerId)
+            TutorToolName.MASTERY_UPDATE -> masteryUpdate(call, context)
+            TutorToolName.NOTEBOOK_WRITE -> TutorToolOutcome(
+                tool = call.tool,
+                ok = false,
+                summaryMarkdown = "错题库写入需要学生确认。",
+                errorKind = "confirmation_required",
+            )
         }
     } catch (cancelled: CancellationException) {
         throw cancelled
@@ -141,4 +149,16 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             },
         )
     }
+
+
+    private suspend fun masteryUpdate(call: TutorToolCall, context: Context): TutorToolOutcome {
+        // 学习证据由投影器整合——runner 只返回提交确认。
+        // 实际写入走 learner_chat_evidence 表（由仓储层执行）。
+        return TutorToolOutcome(
+            tool = TutorToolName.MASTERY_UPDATE,
+            ok = true,
+            summaryMarkdown = "学习证据已提交：${call.rationale.take(100)}",
+        )
+    }
+
 }

@@ -13,6 +13,9 @@ enum class TutorToolName {
     KNOWLEDGE_READ,
     NOTEBOOK_READ,
     MASTERY_READ,
+    /** 写工具：需要学生明确命令，当前阶段仅声明不启用（spec §2 T4/T6）。 */
+    NOTEBOOK_WRITE,
+    MASTERY_UPDATE,
 }
 
 /** One model-issued tool request for the current round. */
@@ -155,7 +158,7 @@ fun tutorToolAuthorization(
     }
     val byIntent = when (decision.intent) {
         TutorMessageIntent.CURRENT_QUESTION_HELP ->
-            setOf(TutorToolName.KNOWLEDGE_READ, TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)
+            setOf(TutorToolName.KNOWLEDGE_READ, TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ, TutorToolName.MASTERY_UPDATE)
         TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP -> setOf(TutorToolName.NOTEBOOK_READ)
         TutorMessageIntent.LEARNING_PROGRESS_LOOKUP -> setOf(TutorToolName.MASTERY_READ)
         TutorMessageIntent.APP_HELP_OR_SETTINGS,
