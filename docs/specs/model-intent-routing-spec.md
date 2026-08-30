@@ -127,3 +127,54 @@ T6 可创建/强化绑定（走 binding seed 契约）+ 提交节点级证据 �
 2. §4 披露扩展（附加 web_search 出网 = 查询词/URL；核心工具回填本地 Provider 不涉出网但入披露记录）+ promptPolicyVersion bump。
 3. §3.1 循环上限取值（2 轮回填）。
 4. §3.4 附加 web_search 的 Provider 白名单与 key 形态（学生自选搜索服务 + BYOK key；Wikipedia/Wiktionary 等 keyless 源可作为免配置默认，已实证）。
+
+## 9. v2.3 增补（2026-08-30 grill-me 轮四项决策）
+
+### 9.1 T6 落库：新会话证据表 `learner_chat_evidence`
+
+`review_log.cardId` 语义是"挂在题上的复习证据"，自由文本聊天没有对应题——不放宽旧表。新建表（投影器第二读源）：
+
+```
+learner_chat_evidence(
+  evidence_id PK, learner_id, conversation_id,
+  knowledge_node_id,          -- 目标知识节点
+  direction,                  -- POSITIVE / NEGATIVE
+  weight,                     -- 本地计算，非模型输入（见 9.2）
+  reason_markdown,            -- 模型给出的判定依据（必须引用会话具体内容）
+  source_kind = 'MODEL_CHAT', -- 审计与批量撤销的锚点
+  confidence,                 -- 模型自报意图置信度
+  created_at_epoch_millis
+)
+```
+
+投影器把它作为与 review_log 平级的证据读源，同一套公式整合。
+
+### 9.2 T6 证据类型：双向收 + 模型判方向 + 本地校验平衡（用户选 1+3）
+
+- **模型判 direction**（POSITIVE/NEGATIVE），但必须给出锚定理由（引用学生原话/作答行为），不许空判。
+- **本地校验层交叉核对**：同一会话内的客观信号（作答对错、响应时长、滚动/中断信号、历史证据）与模型判断冲突时——本地降权或拒绝（例：学生说"懂了"但同会话作答错误 → 正向证据降为观察级或拒收）。
+- **差异化权重**：NEGATIVE → 标准自报档；POSITIVE → 低权重封顶档（自报过自信，Dunlosky & Rawson 2012 已入研究依据）。两档常量入契约，待标定。
+
+### 9.3 难度评判的客观性与稳定性（用户硬要求："不能换一道题就把简单的说成难的"）
+
+**双轨难度，客观轨为主：**
+
+- **客观轨（权威）**：`problem_memory_state.difficulty`——投影器从真实作答按 FSRS 公式算出的题目难度。有真实作答数据的题，模型的说法**不参与**难度结论，只作为解释素材。
+- **模型轨（冷启动先验）**：无作答数据的新题，模型可提交难度判断——但必须走**锚定评分细则**而非自由印象：固定维度（步骤数、概念数量、计算量、前置知识依赖数）逐项打分 → 映射到难度档。输出标 `provisional`。
+- **收敛规则**：真实作答累积后，客观轨接管；provisional 判断与后续客观值做**漂移对照**（模型判"难"实际客观"易"的比率）——漂移率进标定报告，反哺细则。
+- **稳定性保障**：同一题重复判定应同档（一致性测试）；细则锚定 + 维度化打分天然抗"换题漂移"。
+
+### 9.4 意图不确定性的量化（宁漏记偏置 + 模型自评置信）
+
+- 模型输出的 `confidence`（0–1）语义锚定进 prompt：**"confidence = 消息文本明确指向该意图的文本证据程度，基于文本而非猜测"**。
+- 本地量化阈值（契约常量，待标定）：`confidence ≥ θ_evidence`（初值 0.7）→ 该意图下证据资格生效；`θ_evidence ≤ c < θ_route` → 正常回答但零证据；`c < θ_route` → 按 AMBIGUOUS 处理。
+- 偏置：**宁漏记**——不确定即零证据，权重纯净优先；漏记的辅导缺口由工具环主动问询缓解（模型可反问澄清，新消息重新判定）。
+
+### 9.5 工具环范围扩为全任务（用户决策：全部任务开环）
+
+- 所有 `ModelTaskKind` 的派遣均可带工具声明；逐任务重新评合同（每任务需要：工具子集声明、预算位、披露集合核对、退化路径）。
+- 首批接线顺序仍为 TUTOR_LOBBY/TUTOR_RESPOND（对话最需要），CAPTURE_PARSE/PROBLEM_CLASSIFY/TUTOR_PLAN 等在阶段 A2 逐个补合同；结构性工作（执行器、记账、审计）一次做全。
+
+### 9.6 遗留登记
+
+- KD-4（known-defects.md）：visual-ui 复杂电路测试在 CI 软渲染模拟器 `ComposeTimeoutException after 2000ms`（本地 6/6 绿）——空闲同步超时类环境敏感，与 KD-2 同族（本地/CI 时序差异），待专项。

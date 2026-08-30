@@ -81,3 +81,19 @@ unilaterally is forbidden (test-rigor rules).
 ratio), (b) CI-multiplied budget via a gradle-injected property, or
 (c) move the wall-clock gate to the macrobenchmark module and keep query-plan
 assertions here. Requires the performance-budget owner's approval.
+
+## KD-4 (open) · Visual-ui device-acceptance test times out on CI software rendering
+
+**Symptom.** `TutorVisualComplexCircuitInstrumentedTest#complexCircuitSemanticRedrawPassesDeviceAcceptanceAndSavesStepScreenshots`
+fails on CI with `ComposeTimeoutException after 2000 ms` (idle-sync wait).
+Passes locally 6/6 on WHPX hardware rendering (2026-08-30). The test has no
+explicit waitUntil — the timeout is Compose's internal idle synchronization,
+which a continuously-redrawing surface on software GL can fail to satisfy.
+
+**Disposition.** Same family as KD-2 (local/CI timing divergence) but NOT
+fixable by a budget constant: the failing wait is implicit. Options for the
+dedicated session: (a) disable animation/clock auto-advance for this test,
+(b) replace implicit idle waits with explicit `waitUntil(Ns)` on the specific
+condition, (c) gate the screenshot-acceptance path on real-GPU devices only.
+Until fixed, the instrumented job aborts at core:visual-ui, so downstream
+connected tasks (export/capture/tutor/library/app) still lack CI validation.
