@@ -50,6 +50,32 @@ cd D:\smb-build
 
 This is a local environment workaround only; CI runs on an ASCII path.
 
+## File-size and state-ownership rules
+
+The CI file-size gate (`tools/ci/check_file_size_gate.py`) rejects a branch
+only when it *introduces* a hard-line oversized file — it is baseline-aware and
+does not punish the existing backlog. Keep these limits in mind when writing or
+refactoring:
+
+- **Main source** (`src/main/`): warn above 600 lines, block above 1000.
+- **Tests** (`src/test/`, `src/androidTest/`): warn above 900, block above 1500.
+  Instrumented/black-box tests legitimately run longer than a unit of app code.
+
+Rules of thumb that keep files under these lines:
+
+- **State belongs in the narrowest scope that needs it.** Compose `remember` /
+  `rememberSaveable` state should stay in the Composable that owns it; only lift
+  it out when two or more functions genuinely share it. Do not move
+  `rememberSaveable` state into a plain class — it breaks the saveable registry.
+- **Logic lives in Policy/Commands, not inline in the Composable body.** A
+  Composable function should mostly *wire* state to UI. Extract a reusable
+  decision into a `Policy` (pure function, unit-testable) or a `Commands`
+  (side-effecting, driven by a `Sink` of state readers/writers), exactly as
+  `feature/capture` already does.
+- **Split by cohesion, not by file size alone.** When a file grows, pull out the
+  cohesive block (a store, a migration chain, a component) rather than moving
+  the largest chunk. Never split a file just to hit a line count.
+
 ## Contract and release entry points
 
 Read `docs/current/` before changing product, architecture, model task,
