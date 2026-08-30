@@ -9,6 +9,40 @@ Updated from the remediation plan for the Android client on `main`.
 
 ## Done and verified this turn
 
+- Tutor text tasks now stream over SSE end-to-end. `OpenAiSse.deltaChunks`
+  parses incremental delta bodies; `ModelHttpResponse.streamChunks` carries
+  them; `OpenAiCompatibleModelGateway` replays them as throttled
+  `ModelGatewayEvent.Progress` frames (every 8 frames) before the terminal
+  `Completed`; `TutorChatConversation` renders the running prefix in
+  `STREAMING` state. Throttling keeps the gate-way event count far below
+  `MAX_GATEWAY_EVENTS` so a long reply cannot be rejected as "too many events".
+  `OpenAiCompatibleModelGatewayTest` 43/43, `OpenAiSseDeltaChunksTest` 5/5,
+  `OpenAiSseTest` 2/2.
+- `supportsStreaming` is no longer hard-coded true: it is advertised only for a
+  provider that passed the structured-output capability probe, so an unverified
+  endpoint gets a conservative non-streaming request instead of a stream=true
+  dispatch that would fail and burn budget.
+- 5xx provider faults now map to a distinct `ModelFailureCode.SERVICE_UNAVAILABLE`
+  (retryable) instead of `NETWORK_UNAVAILABLE`, with a student-facing title
+  "模型服务暂时不可用". `AppFailure`'s exhaustive `toAppFailureCode` /
+  `appFailureMessage` map it to the existing `NETWORK_UNAVAILABLE` app code.
+- SSE stream read is now linear: `readSseAtMost` scans only a one-terminator
+  tail window instead of the whole accumulated buffer every chunk.
+  `OpenAiSseDoneTerminatorWindowTest` 3/3.
+- Quarantined the `d68114d` tool-loop work that failed to compile
+  (see `scratch/moved-ai-routing/`); `core:model` + all downstream modules
+  build again.
+
+## Verification (this session)
+
+- `:feature:tutor:testDebugUnitTest` (PowerShell foreground; Bash stdin pipe is
+  broken for Gradle test workers on this Windows host)
+- Comprehensive unit-test regression: core:model 252, core:data 215,
+  feature:tutor 88, feature:capture 117, feature:library 31, core:database 59
+  — 762 tests, 0 failures/errors.
+
+## Verified on earlier sessions
+
 - MOD-P1-013 continued: prompt/parse per task is OpenAiModelTaskAdapters. Protocol only builds
   the chat envelope and reads the SSE/JSON shell. Protocol is 243 lines; adapters 407.
   :core:data:testDebugUnitTest 170/170.
