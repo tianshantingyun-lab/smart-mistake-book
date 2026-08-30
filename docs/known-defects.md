@@ -97,3 +97,6 @@ dedicated session: (a) disable animation/clock auto-advance for this test,
 condition, (c) gate the screenshot-acceptance path on real-GPU devices only.
 Until fixed, the instrumented job aborts at core:visual-ui, so downstream
 connected tasks (export/capture/tutor/library/app) still lack CI validation.
+**Mitigation (2026-08-30)**: the CI instrumented step now runs with `--continue`,
+so a visual-ui failure no longer aborts the remaining suites — every other
+module keeps getting validated while this defect stays open.
