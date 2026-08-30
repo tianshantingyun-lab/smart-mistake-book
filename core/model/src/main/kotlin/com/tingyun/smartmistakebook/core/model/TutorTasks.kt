@@ -679,7 +679,11 @@ data class TutorRespondInput(
     val visibleTutorContextMarkdown: String? = null,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
     val requestedMove: TutorMoveType? = null,
-    val studentImageAssetRefs: List<String> = emptyList(),  // 新增：当前消息的图片
+    val studentImageAssetRefs: List<String> = emptyList(),
+    /** Non-empty enables the tool protocol for this dispatch (spec §3.1). */
+    val toolDeclarations: List<TutorToolName> = emptyList(),
+    /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
+    val toolRoundResults: List<TutorToolRoundResult> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
@@ -691,6 +695,24 @@ data class TutorRespondInput(
         sessionId.requireSafeModelText("Tutor response session id", ModelTaskRequest.MAX_ID_CHARS, false)
         require(draftRevisionNumber > 0) { "Tutor response draft revision must be positive" }
         subject.requireSafeModelText("Tutor response subject", TutorPlanInput.MAX_SUBJECT_CHARS, false)
+        require(toolDeclarations.size <= MAX_TOOL_DECLARATIONS) {
+            "Tutor response declares too many tools"
+        }
+        require(toolDeclarations.distinct().size == toolDeclarations.size) {
+            "Tutor response tool declarations must be distinct"
+        }
+        require(toolRoundResults.size <= TutorToolRoundResult.MAX_TOOL_ROUNDS) {
+            "Tutor response carries too many tool rounds"
+        }
+        require(toolRoundResults.isEmpty() || toolDeclarations.isNotEmpty()) {
+            "Tutor response tool rounds require declared tools"
+        }
+        require(
+            toolRoundResults.map(TutorToolRoundResult::roundOrdinal) ==
+                (1..toolRoundResults.size).toList(),
+        ) {
+            "Tutor response tool round ordinals must be sequential from one"
+        }
         require(questionDocument.blocks.isNotEmpty()) {
             "Tutor response requires the confirmed question"
         }
