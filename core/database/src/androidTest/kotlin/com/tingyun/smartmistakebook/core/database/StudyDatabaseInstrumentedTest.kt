@@ -1696,6 +1696,7 @@ class StudyDatabaseInstrumentedTest {
                     )
                 }
                 is com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome -> Unit
+                is com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted -> Unit
                 is com.tingyun.smartmistakebook.core.model.AttemptCorrection -> Unit
             }
         }
@@ -1712,6 +1713,7 @@ class StudyDatabaseInstrumentedTest {
             is com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome -> "ANSWER_REVEAL_OUTCOME"
             is com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome ->
                 "TUTOR_ANSWER_EXPOSURE_OUTCOME"
+            is com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted -> "CHAT_EVIDENCE_SUBMITTED"
             is com.tingyun.smartmistakebook.core.model.AttemptCorrection -> "ATTEMPT_CORRECTION"
         },
         eventId = event.ledgerEventId,

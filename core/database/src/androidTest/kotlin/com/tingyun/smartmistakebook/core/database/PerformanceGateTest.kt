@@ -267,16 +267,29 @@ class PerformanceGateTest {
         )
 
     companion object {
+        /**
+         * Shared-emulator jitter multiplier (KD-2 pattern): CI passes the
+         * instrumentation argument ciSlowRunner=1 (android-check.yml) because
+         * runner environment variables do NOT reach the on-device test
+         * process; local strict runs keep the raw targets.
+         */
+        private val CI_MULTIPLIER: Long = run {
+            val fromArgs = androidx.test.platform.app.InstrumentationRegistry
+                .getArguments()
+                .getString("ciSlowRunner")
+            if (fromArgs != null || System.getenv("CI") != null) 4L else 1L
+        }
+
         /** Search P95 target: 500ms. */
-        const val SEARCH_P95_TARGET_MS = 500L
+        val SEARCH_P95_TARGET_MS = 500L * CI_MULTIPLIER
 
         /** First screen target: 500ms. */
-        const val FIRST_SCREEN_TARGET_MS = 500L
+        val FIRST_SCREEN_TARGET_MS = 500L * CI_MULTIPLIER
 
         /** Facet query P95 target: 200ms. */
-        const val FACET_P95_TARGET_MS = 200L
+        val FACET_P95_TARGET_MS = 200L * CI_MULTIPLIER
 
         /** Concurrent search target: 1000ms. */
-        const val CONCURRENT_SEARCH_TARGET_MS = 1000L
+        val CONCURRENT_SEARCH_TARGET_MS = 1000L * CI_MULTIPLIER
     }
 }

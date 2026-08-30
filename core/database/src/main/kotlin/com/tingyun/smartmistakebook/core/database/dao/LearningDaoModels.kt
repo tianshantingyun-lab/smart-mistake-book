@@ -92,6 +92,7 @@ import kotlinx.coroutines.flow.Flow
 internal const val EVENT_KIND_ATTEMPT = "ATTEMPT"
 internal const val EVENT_KIND_CORRECTION = "ATTEMPT_CORRECTION"
 internal const val EVENT_KIND_ANSWER_REVEAL = "ANSWER_REVEAL_OUTCOME"
+internal const val EVENT_KIND_CHAT_EVIDENCE = "CHAT_EVIDENCE_SUBMITTED"
 internal const val SQLITE_PRESENTATION_ID_BATCH_SIZE = 900
 
 internal data class AttemptPersistenceRow(

@@ -38,7 +38,8 @@ import org.junit.runner.RunWith
 /**
  * 工具环协议行为测试（spec model-intent-routing §3.1）：假网关第 1 轮返回
  * toolRequests、本地执行后第 2 轮返回最终回答——断言执行器被调用、派遣两次、
- * 终态正确；以及未声明工具的任务上协议违规必须快速失败。
+ * 终态正确；以及模型在工具轮配额（MAX_TOOL_ROUNDS=2）用尽后仍不作答时
+ * 必须快速失败，绝不允许违规输出变成 SUCCEEDED。
  */
 @RunWith(AndroidJUnit4::class)
 class RoomModelTaskToolLoopInstrumentedTest {
@@ -72,12 +73,11 @@ class RoomModelTaskToolLoopInstrumentedTest {
         }
     }
 
-    private fun request(declarations: List<TutorToolName>): ModelTaskRequest {
+    private fun request(): ModelTaskRequest {
         val input = com.tingyun.smartmistakebook.core.model.TutorLobbyInput(
             conversationId = "tool-loop-conversation",
             messageOrdinal = 1,
             studentMessage = "帮我看看错题本里有没有二次函数的题",
-            toolDeclarations = declarations,
         )
         val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
             ModelEgressManifest(
@@ -151,7 +151,7 @@ class RoomModelTaskToolLoopInstrumentedTest {
                 gateway = gateway,
                 clock = { 2_000L },
             )
-            val snapshots = repository.execute(request(listOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)))
+            val snapshots = repository.execute(request())
                 .toList()
 
             val final = snapshots.last()
@@ -166,7 +166,7 @@ class RoomModelTaskToolLoopInstrumentedTest {
     }
 
     @Test
-    fun protocolViolationOnUndeclaredToolTaskFailsFast() = runBlocking {
+    fun toolLoopBeyondRoundBudgetFailsFastWithoutSuccess() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val databaseName = "tool-loop-violation-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
@@ -178,7 +178,7 @@ class RoomModelTaskToolLoopInstrumentedTest {
                 gateway = gateway,
                 clock = { 2_000L },
             )
-            val snapshots = repository.execute(request(emptyList())).toList()
+            val snapshots = repository.execute(request()).toList()
 
             val final = snapshots.last()
             // 协议违规的合法结局：任务进入拒绝态（永久或可重试均可），
