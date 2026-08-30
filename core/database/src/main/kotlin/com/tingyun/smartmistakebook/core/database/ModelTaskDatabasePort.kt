@@ -142,4 +142,8 @@ interface ModelTaskDatabasePort {
     ): ModelTaskDispatchReservationResult
 
     suspend fun transitionModelTask(command: TransitionModelTaskCommand): ModelTaskWriteResult
+
+    suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>)
+
+    suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>
 }

@@ -152,12 +152,32 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
 
 
     private suspend fun masteryUpdate(call: TutorToolCall, context: Context): TutorToolOutcome {
-        // 学习证据由投影器整合——runner 只返回提交确认。
-        // 实际写入走 learner_chat_evidence 表（由仓储层执行）。
+        // 学习证据写入 learner_chat_evidence 表（审计 + 投影器读源）。
+        // 模型只给 direction/reason/confidence——weight 由本地常量封顶，
+        // 掌握度数值由投影器公式产生（模型无数值权）。
+        val direction = when {
+            call.rationale.contains("懂") || call.rationale.contains("明白") ||
+                call.rationale.contains("掌握") -> "POSITIVE"
+            else -> "NEGATIVE"
+        }
+        val weight = if (direction == "POSITIVE") 0.18 else 0.35
+        val entry = com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity(
+            evidence_id = "chat-ev-${System.nanoTime()}",
+            learner_id = context.learnerId,
+            conversation_id = context.conversationId ?: "",
+            knowledge_node_id = call.terms.firstOrNull() ?: "",
+            direction = direction,
+            weight = weight,
+            reason_markdown = call.rationale,
+            confidence = 0.8,
+            source_kind = "MODEL_CHAT",
+            created_at_epoch_millis = System.currentTimeMillis(),
+        )
+        port.recordChatEvidence(listOf(entry))
         return TutorToolOutcome(
             tool = TutorToolName.MASTERY_UPDATE,
             ok = true,
-            summaryMarkdown = "学习证据已提交：${call.rationale.take(100)}",
+            summaryMarkdown = "学习证据已记录：$direction weight=$weight",
         )
     }
 

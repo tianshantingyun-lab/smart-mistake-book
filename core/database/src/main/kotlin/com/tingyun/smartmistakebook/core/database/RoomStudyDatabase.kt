@@ -1381,6 +1381,13 @@ internal class RoomStudyDatabase(
     ): ProjectionBatch = database.projectionTransactionDao()
         .loadProjectionBatch(projectionName, learnerId, limit)
 
+    override suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>) {
+        database.chatEvidenceDao().insertAll(entries)
+    }
+
+    override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
+        database.chatEvidenceDao().readByLearner(learnerId)
+
     override suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead {
         val base = database.projectionTransactionDao().loadLearningLedger(learnerId)
         // 投影器读源整合（spec model-intent-routing §5）：chat evidence 作为第二证据

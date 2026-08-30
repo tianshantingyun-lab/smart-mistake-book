@@ -1044,6 +1044,10 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         command: TransitionModelTaskCommand,
     ): ModelTaskWriteResult = error("Model tasks are outside this study-repository fake")
 
+    override suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>) { /* no-op in fake */ }
+
+    override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
+
     override fun observePendingProblemDraftCount(): Flow<Int> = MutableStateFlow(0)
 
     override fun observeLearningLedgerHead(learnerId: String): Flow<Long> = learningLedgerHead
