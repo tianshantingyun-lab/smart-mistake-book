@@ -275,7 +275,17 @@ internal fun TutorModelPanel(
 
     val currentProvider = provider
     val authorizationNow = clock()
-    var externalEgressLease by remember(
+    // The lease state must live for the whole session: keying it on the
+    // provider fields re-created the MutableState when the provider loaded
+    // (null -> configured), while planCommands (remembered on sessionId)
+    // kept the stale first-composition delegate — grants landed in the new
+    // state, reads saw the old one, and no externally-executed plan could
+    // ever start (KD-1, docs/known-defects.md).
+    val externalEgressLeaseState = remember(question.sessionId) {
+        mutableStateOf<TutorCompositionEgressLease?>(null)
+    }
+    var externalEgressLease by externalEgressLeaseState
+    LaunchedEffect(
         question.sessionId,
         question.revisionNumber,
         question.questionDocument.document.id,
@@ -286,7 +296,12 @@ internal fun TutorModelPanel(
         TUTOR_RESPOND_PROMPT_POLICY_VERSION,
         TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION,
         TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION,
-    ) { mutableStateOf<TutorCompositionEgressLease?>(null) }
+    ) {
+        // Provider identity or prompt policy changed: any previously granted
+        // lease no longer matches the execution target, so drop it (the
+        // pre-fix remember-keys did this implicitly by discarding the state).
+        externalEgressLease = null
+    }
     var forceResponseDisclosure by remember(
         question.sessionId,
         question.revisionNumber,
@@ -405,12 +420,22 @@ internal fun TutorModelPanel(
                 awaitingResponseAuthorization = {
                     pendingEgressState.action.awaitsResponseAuthorization()
                 },
-                executableProvider = { executablePlanProvider },
+                // Must read the backing state, not the composition-scoped
+                // `executablePlanProvider` val: this lambda is captured once
+                // by remember and would otherwise see the provider as it was
+                // during the FIRST composition (null), silently killing every
+                // auto-started turn (KD-1, docs/known-defects.md).
+                executableProvider = {
+                    provider?.takeIf { candidate ->
+                        candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
+                            candidate.supports(ModelTaskKind.TUTOR_PLAN)
+                    }
+                },
                 question = { question },
                 profile = { profile },
                 clock = clock,
                 planTasks = { tutorTasks },
-                lease = { externalEgressLease },
+                lease = { externalEgressLeaseState.value },
                 pendingAction = { pendingEgressState.action },
                 setPendingAction = { action ->
                     pendingEgressState = PendingTutorEgressState(action)
