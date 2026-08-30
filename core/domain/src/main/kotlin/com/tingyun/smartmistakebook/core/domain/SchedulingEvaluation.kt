@@ -329,14 +329,18 @@ object SchedulingEvaluationHarness {
  */
 object FsrsParameterOptimizer {
 
-    /** Per-index bounds mirroring the py-fsrs parameter validation ranges. */
-    private val LOWER_BOUNDS = doubleArrayOf(
+    /**
+     * Per-index bounds matching py-fsrs `LOWER_BOUNDS_PARAMETERS` / `UPPER_BOUNDS_PARAMETERS`
+     * (fsrs/scheduler.py) and fsrs-rs `parameter_clipper.rs`. The initial-stability rows (w0..w3)
+     * span to INITIAL_STABILITY_MAX = 100 days, not 10.
+     */
+    internal val LOWER_BOUNDS = doubleArrayOf(
         0.001, 0.001, 0.001, 0.001, 1.0, 0.001, 0.001, 0.001, 0.0, 0.0,
         0.001, 0.001, 0.001, 0.001, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.1,
     )
-    private val UPPER_BOUNDS = doubleArrayOf(
-        10.0, 10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 0.9, 5.0, 1.0,
-        5.0, 5.0, 2.0, 2.0, 5.0, 3.0, 5.0, 2.0, 2.0, 2.0, 0.8,
+    internal val UPPER_BOUNDS = doubleArrayOf(
+        100.0, 100.0, 100.0, 100.0, 10.0, 4.0, 4.0, 0.75, 4.5, 0.8,
+        3.5, 5.0, 0.25, 0.9, 4.0, 1.0, 6.0, 2.0, 2.0, 0.8, 0.8,
     )
 
     data class Result(

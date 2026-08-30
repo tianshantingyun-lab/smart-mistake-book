@@ -25,6 +25,27 @@ class SchedulingEvaluationHarnessTest {
     }
 
     @Test
+    fun `optimizer bounds match py-fsrs parameter validation ranges`() {
+        // py-fsrs UPPER_BOUNDS_PARAMETERS: initial stability rows span to 100 days;
+        // w12 (difficulty decay) = 0.25, w13 = 0.9, w15 (hard penalty) = 1.0,
+        // w16 (easy bonus) = 6.0, w19 (short-term exponent) = 0.8, w20 (decay) = 0.8.
+        assertEquals(100.0, FsrsParameterOptimizer.UPPER_BOUNDS[0], 1e-9)
+        assertEquals(100.0, FsrsParameterOptimizer.UPPER_BOUNDS[3], 1e-9)
+        assertEquals(4.0, FsrsParameterOptimizer.UPPER_BOUNDS[5], 1e-9)
+        assertEquals(0.75, FsrsParameterOptimizer.UPPER_BOUNDS[7], 1e-9)
+        assertEquals(0.25, FsrsParameterOptimizer.UPPER_BOUNDS[12], 1e-9)
+        assertEquals(0.9, FsrsParameterOptimizer.UPPER_BOUNDS[13], 1e-9)
+        assertEquals(1.0, FsrsParameterOptimizer.UPPER_BOUNDS[15], 1e-9)
+        assertEquals(6.0, FsrsParameterOptimizer.UPPER_BOUNDS[16], 1e-9)
+        assertEquals(0.8, FsrsParameterOptimizer.UPPER_BOUNDS[19], 1e-9)
+        assertEquals(0.8, FsrsParameterOptimizer.UPPER_BOUNDS[20], 1e-9)
+        // Lower bound w4 (difficulty intercept) is 1.0; w16 (easy bonus) is 1.0; w20 is 0.1.
+        assertEquals(1.0, FsrsParameterOptimizer.LOWER_BOUNDS[4], 1e-9)
+        assertEquals(1.0, FsrsParameterOptimizer.LOWER_BOUNDS[16], 1e-9)
+        assertEquals(0.1, FsrsParameterOptimizer.LOWER_BOUNDS[20], 1e-9)
+    }
+
+    @Test
     fun `harness reports finite losses for both models`() {
         val samples = syntheticHistory()
 
