@@ -721,6 +721,10 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(sentBody.contains("ID或未列出的字段"))
         assertTrue(sentBody.contains("不得出现图片、SVG、HTML、CSS、JS、代码"))
         assertTrue(sentBody.contains("inferredKnowledgeLabels给当前题涉及的1到8个知识标签"))
+        // Gap 10: the tutor plan prompt must tell the model how to treat CONFLICTED
+        // knowledge (previously mastered, recently independently wrong) — the highest-value
+        // tutoring focus — rather than leaving it to the model's generic understanding.
+        assertTrue(sentBody.contains("level=CONFLICTED的知识点表示“曾掌握但近期出现独立错误”"))
         assertEquals(TUTOR_SESSION_ID, output.sessionId)
         assertEquals("question-confirmed", output.questionDocumentId)
         val diagnostic = requireNotNull(output.plan.diagnosticItem)
