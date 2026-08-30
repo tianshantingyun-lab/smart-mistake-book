@@ -41,7 +41,18 @@ jobs:
       - name: Room schema drift check
         run: git diff --exit-code -- core/database/schemas
       - name: Unit tests
-        run: ./gradlew testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest --console=plain
+        # The flavor-named tasks only exist in :app; every other module's
+        # unit tests are listed explicitly or they never run in CI. Pure-JVM
+        # modules use `test`; Android library modules use the debug variant.
+        run: >
+          ./gradlew testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest
+          :core:domain:test :core:model:test :core:visual-runtime:test
+          :quality:visual-benchmark:test :knowledge-production:test
+          :core:data:testDebugUnitTest :core:database:testDebugUnitTest
+          :core:export:testDebugUnitTest :core:visual-ui:testDebugUnitTest
+          :feature:capture:testDebugUnitTest :feature:library:testDebugUnitTest
+          :feature:tutor:testDebugUnitTest :feature:profile:testDebugUnitTest
+          :feature:review:testDebugUnitTest --console=plain
       - name: Assemble local first debug
         run: ./gradlew :app:assembleLocalFirstDebug --console=plain
       - name: Assemble strict offline debug

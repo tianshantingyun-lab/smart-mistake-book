@@ -19,15 +19,19 @@ class TutorVisual2DRendererRegistryTest {
     @Test
     fun `each renderer declares exactly one supported kind`() {
         val kinds = defaultNodeRenderers.map(TutorVisual2DNodeRenderer::supportedKind)
-        assertEquals(kinds.size, kinds.toSet().size, "Each renderer must cover a unique kind")
+        assertEquals(
+            "Each renderer must cover a unique kind",
+            kinds.size,
+            kinds.toSet().size,
+        )
     }
 
     @Test
     fun `default renderers count matches enum entry count`() {
         assertEquals(
+            "Number of default renderers must equal number of enum entries",
             TutorVisual2DNodeKind.entries.size,
             defaultNodeRenderers.size,
-            "Number of default renderers must equal number of enum entries",
         )
     }
 
