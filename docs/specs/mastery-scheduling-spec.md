@@ -301,6 +301,17 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **B6（§2.11）**：`SchedulingEvaluationHarness`（双模型 BCE log-loss + 时间序切分 + 上线门 `fsrsBeatsBaseline`）与 `FsrsParameterOptimizer`（Adam+中心差分，8/64 阈值，<64 仅拟合 w0..w5）；优化参数经 `SchedulingSettingsStore` 存储、下次启动生效（灰度=不动既有 due）。
 - **四键自评（§2.21/§9.3）**：捕获题复习界面四键（没想起来/很费劲/正常/很轻松）经 `submitReviewRating` 入账（Again=卡住键，权重 1.0/0.7/0.8/0.9 映射 G=1/2/3/4）；原三档自评 API 保留为详情页元认知通道；冷却拦截重复提交并返回 `evidenceSuppressedByCooldown`。
 
+**2026-08-30 深度修复轮（缺口清零）**：对照 py-fsrs `fsrs/scheduler.py` 与 fsrs-rs `src/model.rs` 逐项核验后发现并修复下列正确性缺陷；权威依据见《docs/research/fsrs-algorithm-gap-analysis.md》。
+
+- **off-by-one（§2.4，严重）**：`FsrsRating` 是 0-based 枚举（ordinal 0..3），官方公式用 1-based rating（1..4）。`FsrsScheduleMath.shortTermStability` 与 `nextDifficulty` 两处 `rating.ordinal - 3` 应为 `rating.ordinal - 2`。原实现使 Good（最常见评级）难度每次错误上调约 +1.68、Easy 丢失降难度奖励；原测试 `FsrsScheduleMathTest` 把该错误自洽锁死，已改为断言 py-fsrs 官方精确值。`initialStability`/`initialDifficulty` 的 `rating.ordinal` 恰等于 G−1，本就正确，未改。
+- **日历日 delta_t（§2.1/§2.15）**：旧实现用 `floor(elapsed/24h)` 算复习间隔，跨本地午夜但不满 24h 时把跨日误判为同日，走错 short-term 分支。改为「learner 本地日历日差」（用户定则：本地时区，中国默认）。`ProblemMemoryState` 增 `lastReviewedEpochDay`（本地日序）；`MemoryUpdateModel.updateMemory` 增 `elapsedCalendarDays` 参数；`LearningProjector.projectMemory` 从事件的 `studyDay.epochDay` 算差；`ReviewLogSink` 的 `review_log.delta_t_days` 同步。Room schema v42：`learner_problem_memory_state` 增 `last_reviewed_epoch_day` 列，迁移用 UTC 日序近似回填存量行（存量无时区信息）。
+- **参数边界（§2.11/B6）**：`FsrsParameterOptimizer` 的 UPPER_BOUNDS 大面积偏离 py-fsrs（初始稳定性上界 10 而非 100、w12 2→0.25、w13 2→0.9、w15 3→1.0、w16 5→6.0、w19 2→0.8），注释却写 mirroring。已对齐官方，边界改为 internal 供测试断言。
+- **w15/w16 增益解锁（§2.11b）**：spec 承诺「≥5k 样本且验证增益 >2% 解锁 w15/w16」，原实现 fittedIndices 永不包含这两项。已补两阶段拟合：样本量 ≥5000 时用含 w15/w16 的扩展集再拟合，仅当验证 loss 相对下降 >2% 才采用（防小样本过拟合）。
+- **讲题侧重点 CONFLICTED（§2.5/§5）**：`KnowledgeMasteryState.CONFLICTED`（曾掌握 + 近期独立错误 = 假掌握）是最该讲题纠错的切入，但 tutorPlanPrompt/tutorRespondPrompt 只写了 MASTERED 与题级 STALE 的处理。已补指令：CONFLICTED 必须针对错误认知重讲清楚，不得当普通薄弱点一笔带过。
+- **LogDurationModel fallback**：`estimateSeconds` 的 `logEma ?: GLOBAL_PRIOR_SECONDS` 应取 `ln(先验)`，原 `exp(60)` 是天文数字（当前结构下不可达，属防御性修复）。
+
+**2026-08-30 验证**：`:core:model` 252、`:core:domain` 254（含新增 off-by-one 官方值、日历日跨午夜回归、参数边界、w15/w16 契约断言）、`:core:data` 218、`:core:database` 59、`:feature:tutor` 88、`:feature:capture` 117、`:feature:library` 31——合计 1019 测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug` 双 flavor 构建通过；`ExportedSchemaContractTest` 通过（v41 identityHash 与 v40 一致，v42 因加列而变）。**未验证**：v42 迁移的 device 级全量矩阵（`FullMigrationMatrixInstrumentedTest`）需模拟器，本机未跑，标 UNVERIFIED。
+
 **验证**：`core:domain` 234（含 MasterySmoothingTest 4 例、SleepWindowInferenceTest 4 例）、`core:data` 204、`core:database` 59、`feature:review` 11、`app` 31（双 flavor）单元测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug`、`lintLocalFirstDebug/lintStrictOfflineDebug` 全绿；`core/database/schemas` 无 drift（新增 36.json 由 exportSchema 生成）。设备端验证（模拟器 Pixel 6/Android 14，2026-08-29 执行）：`:core:database:connectedDebugAndroidTest` 全绿——1→37 全版本迁移矩阵、v35→36 数据换算（0.5→5.5 实测）、伪 KC 外键落库、review_log 读写往返、v33 链结构等价；应用装机启动 smoke 通过（user_version=37、review_log 三交互列实测在位、睡眠日志静默落盘、错题本 library_catalog 视图渲染正常）。旧版 sqlite-master 逐字节对比测试按 Room 迁移校验口径改为结构等价对比（ALTER 追加列与运行时触发器使字节对比不可达），并修复其冻结旧版本号的陈旧断言。
 
 **未验证项（待接钩子）**：edit_count 通道当前仅覆盖选择流的答案修改（重试序数-1）；自评/评级复习界面没有文本输入场景，该计数恒为 0——将来任何作答文本输入上线时，接 `ReviewInteractionTracker` 增设的 `onEdit()` 钩子即可闭环（Tracker 类已预留扩展点，v37 列已就位）。
