@@ -21,6 +21,13 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskRemoteDispatchPolicy
+import com.tingyun.smartmistakebook.core.model.TutorToolName
+import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
+import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
+import com.tingyun.smartmistakebook.core.model.TutorToolRoundResult
+import com.tingyun.smartmistakebook.core.model.tutorToolAuthorization
+import com.tingyun.smartmistakebook.core.data.study.RoomTutorToolRunner
+import com.tingyun.smartmistakebook.core.model.ModelTaskInput
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
@@ -49,6 +56,8 @@ class RoomModelTaskRepository internal constructor(
     private val gateway: ModelGateway,
     private val clock: () -> Long = System::currentTimeMillis,
 ) : ModelTaskRepository {
+    private val toolRunner = RoomTutorToolRunner(database)
+
     override suspend fun capabilities(): ProviderCapabilitySnapshot = gateway.capabilities()
 
     override fun observe(requestId: String): Flow<ModelTaskSnapshot?> =
@@ -126,9 +135,18 @@ class RoomModelTaskRepository internal constructor(
                 )
                 return@flow
             }
+            // 工具环（spec model-intent-routing §3.1）：模型可在作答前申请本地只读查询。
+            // 每轮派遣独立 reserve（预算记账，MAX_DISPATCHES=3 = 2 轮查询 + 1 轮作答）；
+            // 本地工具执行不占派遣预算。第 3 轮起不再声明工具，模型必须直接作答。
+            var roundRequest = request
+            var toolRoundsUsed = 0
+            var toolRoundResults = emptyList<TutorToolRoundResult>()
+            val declaredTools = toolDeclarationsFor(roundRequest.input)
+            var answered = false
+            while (!answered) {
             val execution = try {
                 ModelEgressPolicy.authorize(
-                    request = request,
+                    request = roundRequest,
                     provider = declaredProvider,
                     nowEpochMillis = clock(),
                 )
@@ -188,6 +206,7 @@ class RoomModelTaskRepository internal constructor(
             var eventCount = 0
             var terminalEventSeen = false
             var providerStarted = false
+            var toolRound: TutorToolRequestsOutput? = null
             withTimeout(MODEL_TASK_TIMEOUT_MILLIS) {
                 gateway.execute(execution)
                     .onEach { event ->
@@ -209,6 +228,12 @@ class RoomModelTaskRepository internal constructor(
                             }
                             is ModelGatewayEvent.Failed -> Unit
                         }
+                        if (event is ModelGatewayEvent.Completed && event.output is TutorToolRequestsOutput) {
+                            // 工具申请轮：不落终态，本地执行后回填进入下一轮
+                            toolRound = event.output as TutorToolRequestsOutput
+                            terminalEventSeen = true
+                            return@onEach
+                        }
                         current = applyGatewayEvent(
                             current = current,
                             event = event,
@@ -224,6 +249,40 @@ class RoomModelTaskRepository internal constructor(
             }
             if (!terminalEventSeen) {
                 throw InvalidProviderProtocol("模型没有返回完成状态")
+            }
+            val requests = toolRound
+            if (requests == null) {
+                answered = true
+            } else {
+                toolRoundsUsed += 1
+                if (toolRoundsUsed > TutorToolRoundResult.MAX_TOOL_ROUNDS) {
+                    throw InvalidProviderProtocol("模型在工具配额用尽后仍未作答")
+                }
+                val authorization = tutorToolAuthorization(requests.intentDecision, declaredTools)
+                val outcomes = requests.calls.map { call ->
+                    if (call.tool !in authorization.allowedTools) {
+                        TutorToolOutcome(
+                            tool = call.tool,
+                            ok = false,
+                            summaryMarkdown = "该意图下未授权此查询。",
+                            errorKind = "not_authorized",
+                        )
+                    } else {
+                        toolRunner.run(call, toolContext(roundRequest.input))
+                    }
+                }
+                toolRoundResults = toolRoundResults + TutorToolRoundResult(
+                    roundOrdinal = toolRoundsUsed,
+                    outcomes = outcomes,
+                )
+                val nextDeclarations =
+                    if (toolRoundsUsed >= TutorToolRoundResult.MAX_TOOL_ROUNDS) {
+                        emptyList()
+                    } else {
+                        declaredTools.toList()
+                    }
+                roundRequest = withToolLoopState(roundRequest, nextDeclarations, toolRoundResults)
+            }
             }
         } catch (concurrent: ConcurrentModelTaskTransition) {
             database.readModelTask(request.requestId)?.let { latest -> emit(latest) }
@@ -557,6 +616,39 @@ class RoomModelTaskRepository internal constructor(
             .digest(requestId.toByteArray(StandardCharsets.UTF_8))
             .take(16)
             .joinToString(separator = "") { byte -> "%02x".format(byte) }
+
+    /** Per-kind tool declarations (spec §2): respond 全套；lobby 无科目上下文，不含 knowledge_read。 */
+    private fun toolDeclarationsFor(input: ModelTaskInput): Set<TutorToolName> = when (input) {
+        is TutorRespondInput -> setOf(
+            TutorToolName.KNOWLEDGE_READ,
+            TutorToolName.NOTEBOOK_READ,
+            TutorToolName.MASTERY_READ,
+        )
+        is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)
+        else -> emptySet()
+    }
+
+    private fun withToolLoopState(
+        request: ModelTaskRequest,
+        declarations: List<TutorToolName>,
+        results: List<TutorToolRoundResult>,
+    ): ModelTaskRequest {
+        val input = when (val currentInput = request.input) {
+            is TutorLobbyInput -> currentInput.copy(
+                toolDeclarations = declarations,
+                toolRoundResults = results,
+            )
+            is TutorRespondInput -> currentInput.copy(
+                toolDeclarations = declarations,
+                toolRoundResults = results,
+            )
+            else -> return request
+        }
+        return request.copy(input = input)
+    }
+
+    private fun toolContext(input: ModelTaskInput): RoomTutorToolRunner.Context =
+        RoomTutorToolRunner.Context(subject = (input as? TutorRespondInput)?.subject)
 }
 
 object ModelTaskRepositoryFactory {

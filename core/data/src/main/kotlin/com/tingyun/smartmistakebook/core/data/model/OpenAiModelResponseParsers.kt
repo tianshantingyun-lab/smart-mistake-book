@@ -67,6 +67,8 @@ import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
 import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorToolCall
+import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -436,6 +438,30 @@ internal fun JsonObject.toTutorRespond(
         visualRequest = optionalObject("visualRequest")?.toTutorVisualGenerationRequest(),
         suggestedMoves = suggestedMoves,
         intentDecision = intentDecision,
+        modelVersion = modelVersion,
+    )
+}
+
+internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS = setOf("intentDecision", "toolRequests")
+private val TUTOR_TOOL_CALL_WIRE_KEYS = setOf("tool", "terms", "rationale")
+
+internal fun JsonObject.toTutorToolRequests(
+    modelVersion: String,
+): TutorToolRequestsOutput {
+    requireOnlyKeys(TUTOR_TOOL_REQUESTS_WIRE_KEYS)
+    return TutorToolRequestsOutput(
+        intentDecision = objectValue("intentDecision").toTutorIntentDecision(),
+        calls = optionalArray("toolRequests")
+            ?.mapIndexed { index, element ->
+                val call = element.objectValue()
+                call.requireOnlyKeys(TUTOR_TOOL_CALL_WIRE_KEYS)
+                TutorToolCall(
+                    tool = enumValue(call.requiredString("tool")),
+                    rationale = call.requiredString("rationale"),
+                    terms = call.optionalArray("terms").map(JsonElement::requiredPrimitiveString),
+                )
+            }
+            ?: throw InvalidModelResponseException(),
         modelVersion = modelVersion,
     )
 }

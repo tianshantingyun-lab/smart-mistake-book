@@ -41,10 +41,10 @@ enum class ModelEgressDataClass {
 object ModelPromptPolicyVersions {
     const val CAPTURE_DOCUMENT = "capture-document-policy-v1"
     const val TUTOR_PLAN = "tutor-plan-v10-subject-memory-and-reviewed-teaching"
-    const val TUTOR_RESPOND = "tutor-respond-v4-subject-memory-and-reviewed-teaching"
+    const val TUTOR_RESPOND = "tutor-respond-v5-tool-loop"
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
-    const val TUTOR_LOBBY = "tutor-lobby-v1-intent-boundary"
+    const val TUTOR_LOBBY = "tutor-lobby-v2-tool-loop"
     const val LEARNING_SUMMARIZE = "learning-summarize-v1-tutor-debrief"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
 
