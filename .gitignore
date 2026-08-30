@@ -37,3 +37,4 @@ benchmark/build/
 scratch/
 # Accidental nested clone (AI tooling) - never commit
 smb-toolloop/
+nul
