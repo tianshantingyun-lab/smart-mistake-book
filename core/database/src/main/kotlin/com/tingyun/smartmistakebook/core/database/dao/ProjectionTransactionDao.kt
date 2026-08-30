@@ -38,9 +38,8 @@ import com.tingyun.smartmistakebook.core.model.AppliedTutorAnswerExposureRecord
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
 import com.tingyun.smartmistakebook.core.model.Attempt
+import com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted
 import com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome
-import com.tingyun.smartmistakebook.core.model.AttemptCorrection
-import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
 import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
@@ -1113,7 +1112,7 @@ internal abstract class ProjectionTransactionDao {
             when (val event = persisted.event) {
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
-                is TutorAnswerExposureOutcome -> null
+                is TutorAnswerExposureOutcome, is ChatEvidenceSubmitted -> null
             }
         }
         val persistedStates = if (presentationIds.isEmpty()) {

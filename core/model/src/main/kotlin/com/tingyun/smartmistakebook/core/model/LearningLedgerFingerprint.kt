@@ -14,6 +14,19 @@ object LearningLedgerFingerprint {
         is AnswerRevealOutcome -> answerReveal(event)
         is TutorAnswerExposureOutcome -> tutorAnswerExposure(event)
         is AttemptCorrection -> correction(event)
+        is ChatEvidenceSubmitted -> chatEvidence(event)
+    }
+
+    fun chatEvidence(event: ChatEvidenceSubmitted): String = digest {
+        field("eventType", "CHAT_EVIDENCE_SUBMITTED")
+        field("schemaVersion", SCHEMA_VERSION)
+        field("evidenceId", event.evidenceId)
+        field("conversationId", event.conversationId)
+        field("knowledgeNodeId", event.knowledgeNodeId)
+        field("direction", event.direction.name)
+        field("weight", event.weight.toString())
+        field("eventSequence", event.eventSequence)
+        field("occurredAtEpochMillis", event.occurredAtEpochMillis)
     }
 
     fun answerReveal(outcome: AnswerRevealOutcome): String = digest {

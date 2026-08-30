@@ -113,6 +113,7 @@ import com.tingyun.smartmistakebook.core.model.ProjectionStatus
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
+import com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -1732,6 +1733,7 @@ class RoomBackedStudyExperienceRepository(
                 is AttemptCorrection -> EVENT_KIND_CORRECTION
                 is com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome -> EVENT_KIND_ANSWER_REVEAL
                 is TutorAnswerExposureOutcome -> EVENT_KIND_TUTOR_ANSWER_EXPOSURE
+                is ChatEvidenceSubmitted -> EVENT_KIND_CHAT_EVIDENCE
             },
             eventId = event.ledgerEventId,
             eventSequence = event.eventSequence,
@@ -2238,6 +2240,7 @@ class RoomBackedStudyExperienceRepository(
         private const val EVENT_KIND_CORRECTION = "ATTEMPT_CORRECTION"
         private const val EVENT_KIND_ANSWER_REVEAL = "ANSWER_REVEAL_OUTCOME"
         private const val EVENT_KIND_TUTOR_ANSWER_EXPOSURE = "TUTOR_ANSWER_EXPOSURE_OUTCOME"
+        private const val EVENT_KIND_CHAT_EVIDENCE = "CHAT_EVIDENCE_SUBMITTED"
     }
 }
 

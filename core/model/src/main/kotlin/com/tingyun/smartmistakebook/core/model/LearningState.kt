@@ -385,6 +385,50 @@ data class TutorAnswerExposureOutcome(
         get() = outcomeId
 }
 
+/**
+ * Chat evidence submitted via the mastery_update tool (spec model-intent-routing §5).
+ * The model supplies direction/reason/confidence — the weight is a local constant
+ * (never model-supplied) so mastery values remain formula-computed. Fully automatic:
+ * no student confirmation needed because the model cannot fabricate the weight.
+ */
+data class ChatEvidenceSubmitted(
+    val evidenceId: String,
+    val conversationId: String,
+    val knowledgeNodeId: String,
+    val direction: LearningEvidenceDirection,
+    /** Local constant per direction tier (POSITIVE low cap, NEGATIVE standard). */
+    val weight: Double,
+    val reasonMarkdown: String,
+    val confidence: Double,
+    override val occurredAtEpochMillis: Long,
+    override val eventSequence: Long,
+) : IncrementalLearningEvent {
+    init {
+        require(evidenceId.isNotBlank()) { "Chat evidence id must not be blank" }
+        require(conversationId.isNotBlank()) { "Chat evidence conversation id must not be blank" }
+        require(knowledgeNodeId.isNotBlank()) { "Chat evidence knowledge node id must not be blank" }
+        require(weight in 0.0..MAX_CHAT_EVIDENCE_WEIGHT) {
+            "Chat evidence weight $weight exceeds the $MAX_CHAT_EVIDENCE_WEIGHT cap"
+        }
+        require(reasonMarkdown.isNotBlank()) { "Chat evidence reason must not be blank" }
+        require(confidence in 0.0..1.0) { "Chat evidence confidence must be between zero and one" }
+        require(occurredAtEpochMillis >= 0) { "Chat evidence time must not be negative" }
+        require(eventSequence > 0) { "Chat evidence sequence must be positive" }
+    }
+
+    override val ledgerEventId: String
+        get() = evidenceId
+
+    companion object {
+        /** 正向（我懂了）低权重封顶：自报过自信对冲（Dunlosky & Rawson 2012）。 */
+        const val POSITIVE_WEIGHT = 0.18
+        /** 负向（卡点/不懂）标准自报档。 */
+        const val NEGATIVE_WEIGHT = 0.35
+        /** 任意方向的全局封顶。 */
+        const val MAX_CHAT_EVIDENCE_WEIGHT = 0.35
+    }
+}
+
 /** Corrections are only consumed by a full ledger replay; incremental projection rejects them by type. */
 data class AttemptCorrection(
     val correctionId: String,
