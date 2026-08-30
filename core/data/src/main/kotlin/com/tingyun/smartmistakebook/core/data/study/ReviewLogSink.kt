@@ -56,9 +56,11 @@ internal class ReviewLogSink(
             val deltaDays = if (priorMemory == null || priorMemory.lastReviewedAtEpochMillis <= 0) {
                 0.0
             } else {
-                (occurredAtEpochMillis - priorMemory.lastReviewedAtEpochMillis)
+                // Calendar-day delta (learner-local), matching FSRS delta_t semantics: a review
+                // crossing local midnight is a new study day even under 24 wall-clock hours.
+                (studyDay.epochDay - priorMemory.lastReviewedEpochDay)
                     .coerceAtLeast(0)
-                    .toDouble() / DAY_MILLIS
+                    .toDouble()
             }
             val rating = FsrsEvidenceRatingMapper.reportedRatingFor(evidence.reason, evidence.weight)
             database.recordReviewLogEntries(
@@ -218,7 +220,6 @@ internal class ReviewLogSink(
         const val SOURCE_KIND_SELF_REPORT = "SELF_REPORT"
         const val SOURCE_KIND_VISUAL = "VISUAL"
 
-        private const val DAY_MILLIS = 86_400_000.0
         private const val AVOIDANCE_LOOKBACK_MILLIS = 30L * 24 * 60 * 60 * 1000
         private const val AVOIDANCE_MIN_OCCURRENCES = 2
         private const val REVIEW_LOG_SAMPLE_LIMIT = 100_000

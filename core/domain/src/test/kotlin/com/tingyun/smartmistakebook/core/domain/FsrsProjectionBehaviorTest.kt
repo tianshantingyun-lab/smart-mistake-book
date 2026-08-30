@@ -79,6 +79,33 @@ class FsrsProjectionBehaviorTest {
     }
 
     @Test
+    fun `cross midnight review under 24 wall clock hours still counts as a new day`() {
+        val first = projector.project(
+            LearnerSnapshot.empty("learner-1"),
+            listOf(attempt("a-1", 1, easyEvidence(), occurredAt = DAY_MILLIS)),
+            1,
+        ).snapshot
+        val firstStability = first.problemMemoryStates.getValue("unit-1").stabilityDays
+
+        // Second review is only 30 wall-clock minutes later (DAY_MILLIS + 60_000), but its
+        // learner-local calendar day is the next day (epoch day 2) — a cross-midnight review that
+        // must take the long-run branch, not the same-day short-term branch.
+        val crossingMidnight = attempt("a-2", 2, easyEvidence(), occurredAt = DAY_MILLIS + 60_000)
+            .copy(studyDay = StudyDayContext(epochDay = 2, timeZoneId = "Asia/Shanghai", utcOffsetMinutes = 480))
+        val second = projector.project(first, listOf(crossingMidnight), 2)
+        val memory = second.snapshot.problemMemoryStates.getValue("unit-1")
+
+        // Cross-day success must advance the streak (same-day would keep it at 1).
+        assertEquals(2, memory.consecutiveCrossDaySuccess)
+        // The long-run recall branch grows stability past the short-term floor; the same-day
+        // branch for Good would leave it at the short-term value (which equals the seed here).
+        assertTrue(
+            "cross-midnight Good must grow stability via the long-run branch, got ${memory.stabilityDays}",
+            memory.stabilityDays > firstStability,
+        )
+    }
+
+    @Test
     fun `cross day again counts toward the leech streak and lowers stability`() {
         val seeded = seededCrossDay()
         val lastReviewedAt = seeded.memory.lastReviewedAtEpochMillis

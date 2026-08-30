@@ -2,7 +2,6 @@ package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
-import kotlin.math.floor
 
 /** Result of applying one evidence event to a card's memory state. */
 data class MemoryUpdateResult(
@@ -32,6 +31,12 @@ interface MemoryUpdateModel {
         weight: Double,
         occurredAtEpochMillis: Long,
         effectiveAttemptAtEpochMillis: Long,
+        /**
+         * Calendar-day delta between this review and the previous one (learner-local epoch day
+         * difference), not a 24-hour wall-clock floor. FSRS uses it as delta_t; a cross-midnight
+         * review under 24 hours apart is still a new day.
+         */
+        elapsedCalendarDays: Double,
     ): MemoryUpdateResult
 }
 
@@ -61,6 +66,7 @@ class FsrsMemoryUpdateModel(
         weight: Double,
         occurredAtEpochMillis: Long,
         effectiveAttemptAtEpochMillis: Long,
+        elapsedCalendarDays: Double,
     ): MemoryUpdateResult {
         val stability: Double
         val difficulty: Double
@@ -70,10 +76,7 @@ class FsrsMemoryUpdateModel(
                 FsrsScheduleMath.initialDifficulty(rating, parameters),
             )
         } else {
-            val elapsedDays = floor(
-                (effectiveAttemptAtEpochMillis - previous.lastReviewedAtEpochMillis).toDouble() /
-                    DAY_MILLIS,
-            ).coerceAtLeast(0.0)
+            val elapsedDays = elapsedCalendarDays.coerceAtLeast(0.0)
             stability = if (elapsedDays < 1.0) {
                 FsrsScheduleMath.shortTermStability(previous.stabilityDays, rating, parameters)
             } else if (rating == FsrsRating.AGAIN) {
@@ -137,6 +140,7 @@ class LegacyExponentialMemoryUpdateModel(
         weight: Double,
         occurredAtEpochMillis: Long,
         effectiveAttemptAtEpochMillis: Long,
+        elapsedCalendarDays: Double,
     ): MemoryUpdateResult {
         val currentStability = previous?.stabilityDays ?: INITIAL_STABILITY_DAYS
         val currentDifficulty = previous?.difficulty ?: INITIAL_DIFFICULTY

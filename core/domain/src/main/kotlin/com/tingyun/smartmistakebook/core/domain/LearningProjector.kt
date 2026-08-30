@@ -320,7 +320,10 @@ class LearningProjector(
             projectedAt = effectiveAt
         }
 
-        val appliedEventCount = appliedAttempts.size + appliedReveals.size + appliedTutorExposures.size
+        val appliedEventCount = appliedAttempts.size +
+            appliedReveals.size +
+            appliedTutorExposures.size +
+            appliedChatEvidences.size
         val lastSequence = previous.checkpoint.lastSequence + appliedEventCount
         val projectionStatus = when {
             sequenceConflicts.isNotEmpty() -> ProjectionStatus.CONFLICTED
@@ -407,7 +410,6 @@ class LearningProjector(
                     answerRevealSequences.put(event.presentationId, event.eventSequence) == null,
                 ) { "A presentation may have only one terminal answer-reveal outcome" }
                 is TutorAnswerExposureOutcome -> Unit
-                is ChatEvidenceSubmitted -> Unit
                 is ChatEvidenceSubmitted -> Unit
                 is AttemptCorrection -> {
                     require(event.attemptId in attemptsById) {
@@ -723,6 +725,7 @@ class LearningProjector(
                 occurredAtEpochMillis = attempt.occurredAtEpochMillis,
                 effectiveAtEpochMillis = effectiveAtEpochMillis,
                 eventSequence = attempt.eventSequence,
+                eventEpochDay = attempt.studyDay.epochDay,
                 outcome = attempt.problemMemoryOutcome,
                 weight = attempt.evidence.weight,
                 evidenceReason = attempt.evidence.reason,
@@ -760,6 +763,7 @@ class LearningProjector(
         occurredAtEpochMillis = outcome.occurredAtEpochMillis,
         effectiveAtEpochMillis = effectiveAtEpochMillis,
         eventSequence = outcome.eventSequence,
+        eventEpochDay = outcome.studyDay.epochDay,
         outcome = ProblemMemoryOutcome.ANSWER_REVEALED,
         weight = 0.0,
         evidenceReason = LearningEvidenceReason.ANSWER_REVEALED,
@@ -810,6 +814,8 @@ class LearningProjector(
         occurredAtEpochMillis: Long,
         effectiveAtEpochMillis: Long,
         eventSequence: Long,
+        /** Learner-local calendar day (epoch day) of this review event. */
+        eventEpochDay: Long,
         outcome: ProblemMemoryOutcome,
         weight: Double,
         evidenceReason: LearningEvidenceReason,
@@ -821,6 +827,11 @@ class LearningProjector(
         val clockRollback = occurredAtEpochMillis < effectiveAtEpochMillis
         val effectiveAttemptAt = maxOf(previous?.lastReviewedAtEpochMillis ?: 0, effectiveAtEpochMillis)
         val rating = FsrsEvidenceRatingMapper.schedulingRatingFor(evidenceReason, weight)
+        // Calendar-day delta (spec §2.1/§2.15): a review crossing the learner-local midnight is a
+        // new study day even when it is under 24 wall-clock hours from the previous review.
+        val elapsedCalendarDays = (
+            eventEpochDay - (previous?.lastReviewedEpochDay ?: eventEpochDay)
+            ).toDouble().coerceAtLeast(0.0)
         val update = memoryUpdateModel.updateMemory(
             previous = previous,
             rating = rating,
@@ -828,11 +839,11 @@ class LearningProjector(
             weight = weight,
             occurredAtEpochMillis = occurredAtEpochMillis,
             effectiveAttemptAtEpochMillis = effectiveAttemptAt,
+            elapsedCalendarDays = elapsedCalendarDays,
         )
         var stability = update.stabilityDays
         var difficulty = update.difficulty
-        val crossDay = previous != null &&
-            effectiveAttemptAt - previous.lastReviewedAtEpochMillis >= DAY_MILLIS
+        val crossDay = previous != null && elapsedCalendarDays >= 1.0
         val nextCrossDaySuccess = when {
             previous == null -> if (rating == FsrsRating.AGAIN) 0 else 1
             crossDay && rating != FsrsRating.AGAIN -> previous.consecutiveCrossDaySuccess + 1
@@ -877,6 +888,7 @@ class LearningProjector(
             stabilityDays = stability,
             difficulty = difficulty,
             lastReviewedAtEpochMillis = effectiveAttemptAt,
+            lastReviewedEpochDay = eventEpochDay,
             nextReviewAtEpochMillis = nextReviewAt,
             independentCorrectCount = (previous?.independentCorrectCount ?: 0) +
                 if (outcome == ProblemMemoryOutcome.INDEPENDENT_RECALL) 1 else 0,

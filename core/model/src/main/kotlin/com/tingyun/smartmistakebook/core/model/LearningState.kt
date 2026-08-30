@@ -494,6 +494,12 @@ data class ProblemMemoryState(
      */
     val difficulty: Double,
     val lastReviewedAtEpochMillis: Long,
+    /**
+     * The learner-local calendar day (epoch day) of [lastReviewedAtEpochMillis], used by FSRS to
+     * compute the calendar-day delta_t between reviews instead of a 24-hour wall-clock floor. A
+     * review 30 minutes after the previous one that crosses local midnight is a new study day.
+     */
+    val lastReviewedEpochDay: Long = lastReviewedAtEpochMillis / 86_400_000L,
     val nextReviewAtEpochMillis: Long,
     val independentCorrectCount: Int = 0,
     val assistedCorrectCount: Int = 0,
@@ -522,6 +528,7 @@ data class ProblemMemoryState(
         require(lastReviewedAtEpochMillis >= 0 && nextReviewAtEpochMillis >= 0) {
             "Review times must not be negative"
         }
+        require(lastReviewedEpochDay >= 0) { "Last-reviewed epoch day must not be negative" }
         require(nextReviewAtEpochMillis >= lastReviewedAtEpochMillis) {
             "Next review must not precede the latest review"
         }

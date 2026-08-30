@@ -702,6 +702,8 @@ internal data class LearnerProblemMemoryStateEntity(
     val difficulty: Double,
     @ColumnInfo(name = "last_reviewed_at_epoch_millis")
     val lastReviewedAtEpochMillis: Long,
+    @ColumnInfo(name = "last_reviewed_epoch_day", defaultValue = "0")
+    val lastReviewedEpochDay: Long = 0,
     @ColumnInfo(name = "next_review_at_epoch_millis")
     val nextReviewAtEpochMillis: Long,
     @ColumnInfo(name = "independent_correct_count")
