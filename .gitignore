@@ -32,3 +32,8 @@ benchmark/build/
 .qoder/
 .tools/.pyenv/
 .tools/
+
+# Local scratch for quarantined in-progress work (not part of build)
+scratch/
+# Accidental nested clone (AI tooling) - never commit
+smb-toolloop/

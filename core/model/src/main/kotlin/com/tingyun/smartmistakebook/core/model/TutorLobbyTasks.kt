@@ -17,10 +17,6 @@ data class TutorLobbyInput(
     val messageOrdinal: Int,
     val studentMessage: String,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
-    /** Non-empty enables the tool protocol for this dispatch (spec §3.1). */
-    val toolDeclarations: List<TutorToolName> = emptyList(),
-    /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
-    val toolRoundResults: List<TutorToolRoundResult> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_LOBBY
@@ -29,24 +25,6 @@ data class TutorLobbyInput(
         get() = conversationId
 
     init {
-        require(toolDeclarations.size <= MAX_TOOL_DECLARATIONS) {
-            "Tutor lobby declares too many tools"
-        }
-        require(toolDeclarations.distinct().size == toolDeclarations.size) {
-            "Tutor lobby tool declarations must be distinct"
-        }
-        require(toolRoundResults.size <= TutorToolRoundResult.MAX_TOOL_ROUNDS) {
-            "Tutor lobby carries too many tool rounds"
-        }
-        require(toolRoundResults.isEmpty() || toolDeclarations.isNotEmpty()) {
-            "Tutor lobby tool rounds require declared tools"
-        }
-        require(
-            toolRoundResults.map(TutorToolRoundResult::roundOrdinal) ==
-                (1..toolRoundResults.size).toList(),
-        ) {
-            "Tutor lobby tool round ordinals must be sequential from one"
-        }
         conversationId.requireSafeModelText(
             "Tutor lobby conversation id",
             ModelTaskRequest.MAX_ID_CHARS,
