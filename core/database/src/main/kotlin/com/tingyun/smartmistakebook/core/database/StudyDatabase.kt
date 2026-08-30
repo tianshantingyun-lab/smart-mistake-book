@@ -10,6 +10,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.sqlite.execSQL
 import com.tingyun.smartmistakebook.core.database.dao.AttemptTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.BatchImportDao
+import com.tingyun.smartmistakebook.core.database.dao.ChatEvidenceDao
 import com.tingyun.smartmistakebook.core.database.dao.FixtureSeedDao
 import com.tingyun.smartmistakebook.core.database.dao.ImmutableLearningFactDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeGroundingDao
@@ -51,6 +52,7 @@ import com.tingyun.smartmistakebook.core.database.entity.BatchImportPageEntity
 import com.tingyun.smartmistakebook.core.database.entity.SplitImportJobEntity
 import com.tingyun.smartmistakebook.core.database.entity.SplitImportQuestionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewLogEntity
+import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
 import com.tingyun.smartmistakebook.core.database.entity.LlmTeachingAdvisoryEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeQuestionLatticeView
 import com.tingyun.smartmistakebook.core.database.entity.StudentModelPredictionEntity
@@ -120,7 +122,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.model.ModelTaskCodec
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
 
-internal const val STUDY_DATABASE_VERSION = 39
+internal const val STUDY_DATABASE_VERSION = 40
 
 /** Split-import status values mirrored into [SplitImportMigration]. */
 internal object SplitImportLedgerStrings {
@@ -212,6 +214,7 @@ internal object SplitImportLedgerStrings {
         SplitImportQuestionEntity::class,
         ReviewLogEntity::class,
         LlmTeachingAdvisoryEntity::class,
+        com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -252,6 +255,7 @@ internal abstract class StudyDatabase : RoomDatabase() {
     abstract fun pendingCaptureDao(): PendingCaptureDao
 
     abstract fun modelTaskTransactionDao(): ModelTaskTransactionDao
+    abstract fun chatEvidenceDao(): ChatEvidenceDao
 
     abstract fun tutorInteractionDao(): TutorInteractionDao
 
@@ -323,6 +327,7 @@ object StudyDatabaseFactory {
             INTERACTION_SIGNAL_MIGRATION_36_37,
             ATTENTION_SIGNAL_MIGRATION_37_38,
             MASTERY_ADVISORY_MIGRATION_38_39,
+            CHAT_EVIDENCE_MIGRATION_39_40,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()
