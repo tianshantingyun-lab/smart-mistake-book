@@ -1,113 +1,107 @@
-# 大模型意图识别路由 Spec（意图驱动工具环 + 写路由矩阵）
+# 大模型意图识别路由 Spec v2（六工具授权矩阵 + 工具环）
 
-状态：方案征集稿（待用户批准合同变更项）
+状态：方案征集稿 v2（待用户批准合同变更项）
 日期：2026-08-30
-动机（用户原话归纳）：①"用户提问之后，在回答前应该自己思考调用工具"——模型自主决定何时查库；②"遇见闲聊，不需要调数据库，也不需要改写数据库权重"——写路由按意图门控。
+v1 → v2 变更：按用户指示把工具集固定为 **6 个**；新增工具环协议、合法性/参数校验/多轮控制等新问题面；掌握度写工具与冻结合同的冲突给出调和方案。动机（用户原话）：①"用户提问之后，在回答前应该自己思考调用工具"；②"闲聊不需要调数据库，也不需要改写数据库权重"；③错题库写"需要学生明确命令，否则不能自己调用"；④未提及的问题由实现方自行探索补全。
 
 ## 0. 目标与非目标
 
 目标：
 
-1. **读侧工具环**：回答前模型可自主申请本地数据工具（知识召回、错题本检索、学习进度摘要），本地执行、结果回填后作答。模型成为路由器，取代"确定性预查或查不到"的现状。
-2. **写路由矩阵**：按意图决定本次输出是否有资格产生学习状态写入。闲聊/帮助类意图零触碰（不进 review_log、不进掌握度证据、不产出 advisory、不改任何权重）；当前题求助类意图保持既有证据链路。
-3. 优雅退化：不支持工具环的 Provider 单发直答（现状行为），意图决策照常随回答产出。
+1. **六工具授权矩阵**：模型在回答前可自主申请 6 个本地/受控工具（见 §2），其中两个写工具受"学生明确命令"门控。
+2. **工具环协议**：单发网关升级为可多轮的工具调用循环，含循环上限、参数校验、幻觉与越权处理、结果回填。
+3. **写路由**：工具环之外，意图决策继续驱动"证据资格"矩阵（v1 §3.3，保留）——闲聊/帮助零学习状态触碰。
 
-非目标（硬边界，不动）：
+非目标（硬边界不动）：模型直接计算并写入掌握度数值（见 §5 的调和方案）；改写学生原话；云端路由服务；向学生展示内部流水线状态（确认对话框除外——那是学生决策）。
 
-- 模型直接写掌握度/权重/投影状态——写永远只经确定性投影器（冻结合同：模型无权写掌握度）。
-- 改写学生原话——学生消息进 prompt 恒为原话。
-- 三次派遣预算、最小记忆、披露同意边界——全部维持，仅按 §4 记账。
+## 1. 现状基线（v1 §2 结论不变，此处只列增量事实）
 
-## 1. 术语
+- 网关为单发 `chat.completions` + `response_format: json_object`，**无 tools 协议**（`OpenAiCompatibleModelGateway` / `OpenAiModelProtocol.kt:213`）。
+- 意图决策（7 意图 + requestedLocalCapability 白名单 + lookupTerms + memoryPreference）随 TUTOR_LOBBY/TUTOR_RESPOND 输出产出，memoryPreference 已真消费。
+- 写面事实：聊天路径今天只写会话内容/曝光/debrief advisory；权重只经确定性投影器（`LearningProjector`）。
 
-- **工具环（tool loop）**：回答派遣内，模型输出工具调用申请 → 本地执行 → 结果回填 → 继续作答的循环。
-- **本地读工具**：只读的本地数据访问面，参数受意图约束，结果有大小上限。
-- **证据资格（evidence eligibility）**：本次模型输出产生的学习证据是否有资格进入确定性投影/长期记录。资格由写路由矩阵决定，投影照常确定性执行。
-- **单段退化**：Provider 不支持工具环时，回退到现状单发 JSON（意图决策随回答产出）。
+## 2. 六工具授权矩阵
 
-## 2. 现状盘点（2026-08-30 审查结论）
+| # | 工具 | 类型 | 数据面 | 授权类 | 派遣预算 | flavor 可用性 |
+|---|---|---|---|---|---|---|
+| T1 | `web_search_fetch` 网页搜索拉取 | 读（外部） | 互联网 | **独立能力开关**（BYOK 搜索 key + 学生一次性同意）；strictOffline 无此工具 | 占真实派遣 | localFirst 才有 |
+| T2 | `knowledge_read` 读取知识库 | 读（本地） | 知识库 | 意图门控（当前题/检索类自动可用） | 本地免费 | 双 flavor |
+| T3 | `notebook_read` 读取调用错题库 | 读（本地） | 错题库 | 意图门控（READ_MISTAKE_NOTEBOOK 或当前题上下文） | 本地免费 | 双 flavor |
+| T4 | `notebook_write` 改写（增减）错题库 | **写**（本地） | 错题库 | **学生明确命令**：模型环内只能"申请"，两段式——环暂停 → 学生确认 UI → 确定性执行器落库 | 本地免费 | 双 flavor |
+| T5 | `mastery_read` 读取学生掌握情况 | 读（本地） | 掌握度投影 | 意图门控（LEARNING_PROGRESS/当前题） | 本地免费 | 双 flavor |
+| T6 | `mastery_write` 改写学生掌握情况 | **写**（本地） | 掌握度投影 | **两段式 + 确定性执行**（见 §5 调和） | 本地免费 | 双 flavor |
 
-已存在：
+设计原则：**读工具模型自主调用；写工具模型只能申请，学生确认后由确定性代码执行**。T4/T6 永远不在工具环内直接生效。
 
-- 12 种 `ModelTaskKind` + `ModelTaskContractRegistry`（promptPolicyVersion、披露集合、预算，parity test 锁定）。任务选择是确定性 UI 流程，模型不参与。
-- 意图决策随回答产出：`TUTOR_LOBBY`（`TutorLobbyRoute`）与 `TUTOR_RESPOND` 输出 `intentDecision`：7 意图（CURRENT_QUESTION_HELP / MISTAKE_NOTEBOOK_LOOKUP / LEARNING_PROGRESS_LOOKUP / APP_HELP_OR_SETTINGS / CASUAL_CONVERSATION / END_OR_PAUSE / AMBIGUOUS）+ confidence + explicitActionRequest + memoryPreference + requestedLocalCapability + lookupTerms（0–6 词，仅限 READ 意图）。
-- `requestedLocalCapability` 白名单硬约束：lobby 只允许 NONE/READ_MISTAKE_NOTEBOOK/READ_LEARNING_PROGRESS，越权 → `TUTOR_INTENT_BOUNDARY_VIOLATION`。
-- `memoryPreference=BLOCK_LONG_TERM_WRITES_FOR_SESSION` **已真消费**：`TutorIntentAuthorityPolicy.authorize` → `blocksTutorLongTermWrites()` 挡长期写入。
-- 知识召回（`readSubjectKnowledgeRecallCandidates` → `KnowledgeContextRetriever.select`）仅在错题确认/组织流程确定性触发。
+## 3. 工具环协议（读工具 T1/T2/T3/T5 的多轮循环）
 
-缺失（本 spec 要补的三个洞）：
+wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 `tools=[{type:"function", function:{name, description, parameters:JSONSchema}}]`；模型 `assistant.tool_calls[{id, function:{name, arguments:JSON字符串}}]`；结果以 `{role:"tool", tool_call_id, content}` 回填。参数参考 langchain4j 的 `ToolSpecification / ToolExecutionRequest / ToolExecutionResultMessage` 三件套与本仓现有严格 JSON 校验风格。
 
-1. READ 意图只过滤内存快照展示，**回答前不查库、结果不喂回模型**。
-2. **无工具环**：网关是单发 `chat.completions` + `response_format: json_object`，无 tools 协议。
-3. **无写路由矩阵**：意图决策目前不约束"证据资格"——一个被打分为 CASUAL_CONVERSATION 的回答，其上下文仍走既有会话写入面（会话内容、曝光、debrief 资格），没有"闲聊零触碰"的显式门。
+### 3.1 循环控制（多轮问题）
 
-预留未接线：`TUTOR_EVALUATE` / `REVIEW_RERANK` / `PROBLEM_RELATE` 三个契约零调度点。
+- **上限**：`maxToolCallingRoundTrips = 2`（沿用 langchain4j 的 round-trip 概念）——即一次逻辑操作 = 首轮派遣 + 至多 1 轮工具回填 + 终答派遣 ≤ 3 次真实派遣，与冻结合同三次预算严格对齐；本地工具执行不占预算（合同原文）。
+- **上下文膨胀**：每轮回填结果设字符上限（单工具 ≤ 2k 字符摘要、总计 ≤ 4k，常量入契约）；超限截断并在结果中注明 `truncated`。
+- **循环/重复检测**：同参数工具调用重复申请 → 直接返回缓存结果并提示模型停止申请；第 2 轮结束后强制 `tool_choice: "none"` 收口作答。
+- **取消**：任一环节学生取消 → 环终止，已产生的派遣按既有出站清单语义记账（可恢复需显式"继续"）。
 
-## 3. 设计
+### 3.2 调用合法性（授权矩阵执行点）
 
-### 3.1 读侧工具环
+- **合法集** = f(意图, flavor, Provider 能力, 学生授权)。执行器在环内逐调用校验：工具是否存在、当前意图/flavor 是否允许、写工具是否处于"学生已确认"状态。
+- **幻觉工具**（模型调不存在的工具）：显式返回错误型 tool 结果（`unknown_tool`），模型可自纠；连续两次幻觉 → 终止环、单段作答（对齐 langchain4j 的 ToolHallucinationStrategy 思路）。
+- **越权申请**（如闲聊意图申请 T3/T5，或任何环内申请 T4/T6）：返回 `tool_not_authorized` 结果 + 记 `TUTOR_INTENT_BOUNDARY_VIOLATION` 类审计；T4/T6 的申请一律转为"确认请求"而非执行（§5）。
+- **意图-工具映射**：CURRENT_QUESTION_HELP → T1(如开)/T2/T3/T5；MISTAKE_NOTEBOOK_LOOKUP → T3(+T5 摘要)；LEARNING_PROGRESS_LOOKUP → T5；APP_HELP/CASUAL/AMBIGUOUS → 无工具。
 
-- 工具（首期三个，全部只读、本地执行、免费不占派遣预算——冻结合同原文"本地执行不占该预算"）：
-  - `knowledge_recall(terms: string[], limit)` → `readSubjectKnowledgeRecallCandidates`（知识节点+关系摘要）
-  - `notebook_lookup(terms: string[], subject?, limit)` → 错题本目录检索（复用 library FTS/目录查询，只读）
-  - `progress_summary()` → 学习进度摘要（只读投影读面）
-- 循环上限：一次逻辑操作内**至多 2 轮工具申请 + 1 轮最终作答 = 3 次真实派遣**（预算不变）；第 3 轮后模型必须作答。
-- 回填内容最小化：工具结果以结构化摘要回填（条目数、标题、id、匹配词命中），单工具结果上限字符数（复用 TutorRespondInput 量级），不整库倾倒。
-- 派遣记账：工具环所有真实 dispatch 记入同一逻辑操作预算；超预算 → 截断工具声明，强制单段作答。
+### 3.3 参数校验
 
-### 3.2 能力协商与退化
+- 每工具一份 JSON Schema（入契约注册表，与 promptPolicyVersion 一起 parity 锁定）：类型、必填、枚举、长度/数量上限、terms 白名单来源（仅学生原话词元，延续 lookupTerms"不得臆测"）。
+- 校验失败：包装成错误型 tool 结果回给模型（可自纠重试，消耗轮次）——不抛穿、不中断会话（langchain4j 的 wrapToolArgumentsExceptions 模式）。
+- 注入面：字符串参数过滤控制字符/超长/非白名单字段；只读工具天然幂等，读参数不需确认。
 
-- `ProviderCapabilitySnapshot` 增 `supportsToolLoop`（探测：`ModelCapabilityTester` 发带 `tools` 的探测请求，收到 `tool_calls`/合法拒答即支持）。
-- 不支持 → 单段退化：现状行为（intentDecision 随回答产出，lookupTerms 仍用于本地面板过滤）。工具环是增强，不是依赖。
+### 3.4 环外新问题（自探索补全）
 
-### 3.3 写路由矩阵（意图 × 允许的写入面）
+- **提示注入**（T1 特有）：网页内容是不可信输入——回填一律包在带来源标注的"不可信数据"块内，系统指令永不从中取值；搜索结果只回标题+摘要+URL（≤上限），拉取正文须二次意图；未成年人内容安全过滤挂搜索侧（BYOK key 配置处声明）。**web_search_fetch 的每次出网走独立披露同意**（搜索词 = 学生原话派生词，出网前学生可见）。
+- **静默 UX**：工具执行不显示流水线（冻结合同）；仅"正在准备这道题"态；确认对话框是学生决策，不属于流水线展示。
+- **失败语义**：本地工具异常 → 错误型 tool 结果（模型可换路）；连续失败 → 降级单段作答。
+- **审计**：每次调用记入 model_task 快照（工具名/参数哈希/结果大小/耗时/授权依据/确认 id）——预算核查、标定与事后追责统一数据源。
+- **成本**：T1 搜索 API 为 BYOK 付费项；T2–T6 本地零边际成本。T1 使用频次入披露同意文案。
+- **幂等**：写工具以确认 id 为幂等键，重复确认/恢复重放不重复落库。
 
-| intent | 会话内容存储 | 曝光/尝试证据 | review_log 证据资格 | advisory 资格（debrief） | 权重/投影 |
-|---|---|---|---|---|---|
-| CURRENT_QUESTION_HELP | ✓ | ✓ | ✓ | ✓ | 仅经投影器 |
-| MISTAKE_NOTEBOOK_LOOKUP | ✓ | ✗ | ✗ | ✗ | 仅经投影器 |
-| LEARNING_PROGRESS_LOOKUP | ✓ | ✗ | ✗ | ✗ | 仅经投影器 |
-| APP_HELP_OR_SETTINGS | ✓ | ✗ | ✗ | ✗ | 不触碰 |
-| CASUAL_CONVERSATION | ✓ | ✗ | ✗ | ✗ | 不触碰 |
-| END_OR_PAUSE | ✓ | ✗ | ✗ | 会话收尾 debrief 资格 | 仅经投影器 |
-| AMBIGUOUS | ✓ | ✗ | ✗ | ✗ | 不触碰 |
+## 4. 读工具实现映射（全部复用既有链路）
 
-- 投影器与写入面**实现不动**；变化是入口处新增"证据资格"门：意图不符合的输出不得进入证据/记录通道（student 侧 `memoryPreference=BLOCK` 语义不变，且与学生偏好取**交**——任一方禁止即禁止）。
-- confidence 门：低置信意图按保守档处理（视为 AMBIGUOUS，零证据资格），阈值常量化待数据标定。
-- 闲聊零触碰的验证是硬测试（§6）。
+- T2 → `readSubjectKnowledgeRecallCandidates` + `KnowledgeContextRetriever.select`（摘要化输出）。
+- T3 → 错题本目录/FTS 查询（`libraryQueryDao`/FTS 管线，只读）。
+- T5 → 掌握度投影只读面（`learner_*_state` / 观察快照，含 KC/记忆状态摘要）。
+- T4 → `CreateProblemDraft/revise/replace` 命令链（学生确认后执行；增=新建草稿链路，减=状态变更链路）。
+- T6 → 见 §5。
 
-### 3.4 工具环期间的安全语义
+## 5. 掌握度写工具与冻结合同的调和（**需用户决策 ★**）
 
-- 工具执行是本地读，无出网；**工具结果回填模型 = 新的出网内容**，仅在 egress manifest 披露集合覆盖"检索结果摘要"时允许（§4）。
-- 工具参数（terms）只接受来自 studentMessage/会话的词（延续 lookupTerms"不得臆测"约束），长度与数量上限复用 lookupTerms 常量。
+冻结合同："模型不能直接写掌握度"；实现现状：写只经确定性投影器。调和方案（推荐，两段式）：
 
-## 4. 合同与协议变更（需批准项加 ★）
+1. 模型环内调用 T6 = **提交一份"掌握度调整提案"**：必须引用既有证据 id（attempt/review_log）、指明目标知识节点、给出理由——**模型不给数值，给申请**。
+2. 系统 UI 弹学生确认（"模型建议把 X 的掌握下调/记录一次卡顿，确认吗？"）。
+3. 学生确认后，由投影器按申请吸收为一次**确定性证据提交**（权重计算仍由投影公式完成，模型输出永不直接成为数值）。
+4. 全程审计（提案内容/确认 id/最终投影结果）。
 
-1. ★ **披露集合扩展**：外部 Provider 工具环回填的检索结果摘要属于新披露面——`TUTOR_LOBBY/TUTOR_RESPOND` 的 manifest `disclosedData` 增加"本次会话工具检索结果摘要"条目；LOCAL_NO_EGRESS 不受影响。
-2. ★ **promptPolicyVersion bump**：`TUTOR_LOBBY/TUTOR_RESPOND` 增加工具环变体（新版本号），旧版本契约保留用于不支持工具环的退化路径。
-3. `ModelCapabilityTester` 增加 `supportsToolLoop` 探测项（非破坏，附加探测）。
-4. 预算记账规则澄清：工具环多轮 dispatch 共享同一逻辑操作 3 次预算（与冻结合同一致，无变更）。
-
-## 5. 数据模型
-
-- `model_task` 快照增加工具环轮次记录（每轮 request/response 摘要、工具名/参数/结果大小/耗时）——审计与预算核查依据；无新表。
-- 证据资格门不加字段：不合格输出本来就到不了证据通道（负向测试锁定）。
+备选（不推荐）：T6 降级为只读"掌握情况解释"工具，写仍只走复习/作答链路——若你担心高中生误确认。
 
 ## 6. 测试与验收
 
-- 契约测试：工具声明集合、预算记账（3 轮截断）、退化路径（无 tools 能力 → 单段）、披露集合 bump parity。
-- 负向测试（KD 式硬门）：CASUAL/AMBIGUOUS 输出 + 任意后续动作 ⇒ 零 review_log/零证据/零 advisory/投影不变；READ 意图 + 工具结果回填 ⇒ 回答 prompt 含结果摘要且不超上限。
-- 单元：工具参数过滤（臆测词拒绝）、结果截断、能力探测解析。
-- 仪器：Lobby 真实流程——闲聊会话后断言学习状态全库不变；READ 会话后断言回答引用了检索结果。
+- 契约：六工具 schema parity、预算记账（3 派遣含环）、退化路径、披露集合。
+- 负向：幻觉工具/越权申请/闲聊 + T4/T6 申请 → 零执行 + 审计记录；CASUAL 会话后学习状态全库不变；参数注入拒绝。
+- 正向：READ 意图 → 工具回填 → 回答引用结果；T4/T6 确认后确定性落库且幂等。
+- 仪器：Lobby 全流程（闲聊零写入 / 检索引用 / 写确认两段式）。
 
-## 7. 分期
+## 7. 分期（修订）
 
-- **阶段 A（纯本地，零新增派遣）**：写路由矩阵落地——意图→证据资格门接进会话/advisory/证据入口；低置信保守档。先做，因为它把用户最关心的"闲聊不改权重"关死，且不动网关。
-- **阶段 B（网关）**：能力探测 + 工具环协议 + 三工具实现 + 预算记账 + 退化路径。
-- **阶段 C（预留契约启用）**：TUTOR_EVALUATE（回答后自评，产出喂写路由复核）/ REVIEW_RERANK（复习重排）——与 A/B 解耦，独立排期。
+- **A**：写路由矩阵（v1 §3.3）+ 读工具环 T2/T3/T5（能力探测 + 退化 + 预算记账 + 审计）。
+- **B**：特权工具两段式 T4/T6（确认 UI + 确定性执行器 + 幂等）。
+- **C**：T1 web_search_fetch（独立能力开关 + BYOK 搜索 key + 注入加固 + 成本披露）。
+- **D**：TUTOR_EVALUATE / REVIEW_RERANK / PROBLEM_RELATE 启用（独立排期）。
 
 ## 8. 待用户批准项汇总
 
-1. §4.1 披露集合扩展（外部 Provider 工具结果出网）。
-2. §4.2 promptPolicyVersion bump（两个任务）。
-3. §3.3 写路由矩阵本身（尤其 CURRENT_QUESTION_HELP 之外的意图全部零证据资格——比现状更收紧）。
+1. §2 授权矩阵整体（尤其 T6 的存在本身）。
+2. §5 掌握度写调和方案（推荐：提案 + 学生确认 + 投影器确定性执行；备选：T6 只读化）。
+3. §4 披露扩展（工具结果回填、T1 出网）+ promptPolicyVersion bump。
+4. §3.1 循环上限取值（2 轮回填）。
