@@ -90,9 +90,10 @@ internal fun TutorVisual3DPanel(
                     }
                 },
         ) {
-            // TODO(PR-11): the Filament path has no picking yet. View.pick
-            // needs a real device/GPU to validate; taps on the Filament
-            // surface are ignored until a device-backed implementation lands.
+            // PR-11 picking: Filament taps resolve against the rendered depth
+            // buffer (View.pick) and select the hit element; GPU-backed
+            // behavior is validated on a real device, the emulator path is
+            // covered by the fallback canvas below.
             if (useFilament) {
                 FilamentVisualSurface(
                     geometries = geometries,
@@ -101,6 +102,7 @@ internal fun TutorVisual3DPanel(
                     camera = camera,
                     modifier = Modifier.fillMaxSize(),
                     onReadyChanged = { filamentReady = it },
+                    onElementSelected = { selectedElementId = it },
                 )
             }
             if (!useFilament || !filamentReady) {

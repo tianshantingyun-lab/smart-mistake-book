@@ -7,11 +7,13 @@ import android.os.Looper
 import android.view.Choreographer
 import android.view.Surface
 import android.view.SurfaceView
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.filament.Box
 import com.google.android.filament.Camera
@@ -62,6 +64,7 @@ internal fun FilamentVisualSurface(
     camera: TutorVisualCamera,
     modifier: Modifier,
     onReadyChanged: (Boolean) -> Unit,
+    onElementSelected: (String?) -> Unit = {},
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val controller = remember(context) { FilamentVisualController(context) }
@@ -81,13 +84,25 @@ internal fun FilamentVisualSurface(
     }
     AndroidView(
         factory = { controller.surfaceView },
-        modifier = modifier,
+        modifier = modifier
+            .pointerInput(controller) {
+                detectTapGestures { offset ->
+                    controller.pickAt(offset.x, offset.y)
+                }
+            },
     )
     DisposableEffect(controller) {
         onDispose {
             onReadyChanged(false)
             controller.destroy()
         }
+    }
+    // PR-11 picking: filament resolves the tap against the rendered depth
+    // buffer a couple of frames after View.pick, so the callback surfaces
+    // the entity asynchronously on the main looper.
+    DisposableEffect(controller, onElementSelected) {
+        controller.pickListener = onElementSelected
+        onDispose { controller.pickListener = null }
     }
 }
 
@@ -114,6 +129,8 @@ private class FilamentVisualController(
     private var destroyed = false
     private var viewportWidth = 1
     private var viewportHeight = 1
+    var pickListener: ((String?) -> Unit)? = null
+    private val entityToElement = HashMap<Int, String>()
     private val frameCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (!started || destroyed) return
@@ -265,6 +282,25 @@ private class FilamentVisualController(
         engine.destroy()
     }
 
+    /**
+     * PR-11 picking: queues a picking query at the tap position. The result
+     * arrives on the main looper a couple of rendered frames later; empty
+     * space resolves to null so the selection clears, mirroring the
+     * fallback canvas behavior.
+     */
+    fun pickAt(xPx: Float, yPx: Float) {
+        if (destroyed || swapChain == null) return
+        val height = viewportHeight
+        val x = xPx.toInt().coerceIn(0, max(0, viewportWidth - 1))
+        // View.pick documents a bottom-origin y axis (GL convention);
+        // Compose taps arrive top-origin, so the coordinate flips.
+        val y = (height - yPx.toInt()).coerceIn(0, max(0, height - 1))
+        view.pick(x, y, Handler(Looper.getMainLooper())) { result ->
+            if (destroyed) return@pick
+            pickListener?.invoke(entityToElement[result.renderable])
+        }
+    }
+
     private fun createPalette() {
         val source = requireNotNull(material)
         PALETTE.forEach { color ->
@@ -321,6 +357,7 @@ private class FilamentVisualController(
             transform.toMatrix(),
         )
         scene.addEntity(entity)
+        entityToElement[entity] = elementId
         records += RenderableRecord(
             elementId = elementId,
             instanceId = instanceId,
@@ -409,6 +446,7 @@ private class FilamentVisualController(
             EntityManager.get().destroy(record.entity)
         }
         records.clear()
+        entityToElement.clear()
         meshes.values.forEach { mesh ->
             engine.destroyVertexBuffer(mesh.vertexBuffer)
             engine.destroyIndexBuffer(mesh.indexBuffer)
