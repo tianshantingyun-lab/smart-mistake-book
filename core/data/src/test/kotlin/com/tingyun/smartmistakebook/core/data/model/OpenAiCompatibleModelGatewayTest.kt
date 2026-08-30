@@ -1814,7 +1814,11 @@ class OpenAiCompatibleModelGatewayTest {
                 ModelHttpResponse(
                     statusCode = 200,
                     body = envelope(tutorPayload()),
-                    streamChunks = listOf("开场：这", "道题先看导数", "变号。"),
+                    // Each frame is its own long delta so the accumulated body clears the 64-char
+                    // emit threshold and the gateway surfaces a genuine progressive prefix.
+                    streamChunks = listOf(
+                        "开场：这道题先看导数变号，再讨论驻点与极值的分布。补充：注意定义域端点是否闭合，从而判断单调区间是否能够合并。",
+                    ),
                 )
             },
             clock = { AUTHORIZATION_NOW },
@@ -1831,7 +1835,10 @@ class OpenAiCompatibleModelGatewayTest {
 
         // The provider streamed tutor content, so the gateway must surface a final progressive
         // message that is exactly the concatenated delta body.
-        assertEquals("开场：这道题先看导数变号。", streamedContent)
+        assertEquals(
+            "开场：这道题先看导数变号，再讨论驻点与极值的分布。补充：注意定义域端点是否闭合，从而判断单调区间是否能够合并。",
+            streamedContent,
+        )
         // The final event still carries a parseable tutor plan.
         assertEquals(TUTOR_SESSION_ID, (terminal.output as TutorPlanOutput).sessionId)
     }

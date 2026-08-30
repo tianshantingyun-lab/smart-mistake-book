@@ -407,24 +407,36 @@ private suspend fun emitStreamingThenCompletion(
         emit(terminal)
         return
     }
-    var consumed = 0
-    var running = 0
-    for (i in chunks.indices) {
-        running += chunks[i].length
-        if (running - consumed >= STREAM_EMIT_CHAR_THRESHOLD) {
+    // Emit a running prefix every few SSE frames so the UI can render the reply as it arrives
+    // without flooding the event stream or writing the database on every single delta. The number
+    // of frames is bounded by the transcript length, so this stays well under the repository's
+    // gateway-event cap.
+    var lastEmitted = 0
+    for (index in chunks.indices) {
+        if (index + 1 - lastEmitted >= STREAM_EMIT_CHUNK_INTERVAL) {
             emit(
                 ModelGatewayEvent.Progress(
                     stage = ModelTaskStage.VALIDATING_OUTPUT,
-                    userMessage = chunks.take(i + 1).joinToString(""),
+                    userMessage = chunks.take(index + 1).joinToString(""),
                 ),
             )
-            consumed = running
+            lastEmitted = index + 1
         }
+    }
+    // Guarantee a final progressive frame even for a short reply (or when evenly-spaced frames
+    // happened to land just before the end), so the UI always shows the typed body while streaming.
+    if (lastEmitted != chunks.size) {
+        emit(
+            ModelGatewayEvent.Progress(
+                stage = ModelTaskStage.VALIDATING_OUTPUT,
+                userMessage = chunks.joinToString(""),
+            ),
+        )
     }
     emit(terminal)
 }
 
-private const val STREAM_EMIT_CHAR_THRESHOLD = 12
+private const val STREAM_EMIT_CHUNK_INTERVAL = 8
 
 private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnapshot {
     if (!isConfigured) return UNCONFIGURED_CAPABILITIES
