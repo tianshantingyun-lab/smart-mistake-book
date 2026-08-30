@@ -455,8 +455,18 @@ class KnowledgeContextRetrievalInstrumentedTest {
          * above. GitHub runner emulators measure ~2-3x slower than local
          * hardware (KD-2: 278ms p95 vs the 250ms local budget), so CI runs
          * get a 4x-multiplied budget while local runs keep the strict gate.
+         *
+         * The flag travels via the instrumentation argument
+         * (ciSlowRunner, set by android-check.yml) because runner
+         * environment variables do NOT propagate into the on-device test
+         * process — System.getenv("CI") is always null there.
          */
-        private val CI_MULTIPLIER = if (System.getenv("CI") != null) 4L else 1L
+        private val CI_MULTIPLIER: Long = run {
+            val fromArgs = androidx.test.platform.app.InstrumentationRegistry
+                .getArguments()
+                .getString("ciSlowRunner")
+            if (fromArgs != null || System.getenv("CI") != null) 4L else 1L
+        }
         val RECALL_P95_BUDGET_MILLIS = 150L * CI_MULTIPLIER
         val MASTERY_READ_P95_BUDGET_MILLIS = 250L * CI_MULTIPLIER
     }
