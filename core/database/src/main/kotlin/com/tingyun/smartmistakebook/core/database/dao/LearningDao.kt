@@ -116,6 +116,8 @@ data class ReviewLogSampleProjection(
     val awayMillis: Long,
     @ColumnInfo(name = "planned_reason")
     val plannedReason: String?,
+    @ColumnInfo(name = "delta_t_days")
+    val deltaTDays: Double?,
 )
 
 
@@ -162,7 +164,7 @@ internal abstract class LearningDao {
     @Query(
         "SELECT card_id AS practice_unit_id, reviewed_at_utc, rating, duration_ms, time_bucket, " +
             "source_kind, evidence_weight, scroll_up_count, edit_count, interruption_count, " +
-            "away_millis, planned_reason FROM review_log " +
+            "away_millis, planned_reason, delta_t_days FROM review_log " +
             "WHERE learner_id = :learnerId " +
             "ORDER BY reviewed_at_utc ASC, review_log_id ASC LIMIT :limit",
     )

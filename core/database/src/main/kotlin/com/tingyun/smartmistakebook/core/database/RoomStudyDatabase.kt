@@ -54,9 +54,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEn
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentCodec
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
-import com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted
-import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
-import com.tingyun.smartmistakebook.core.model.LearningLedgerFingerprint
+import com.tingyun.smartmistakebook.core.database.LearningLedgerRead
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -1348,6 +1346,7 @@ internal class RoomStudyDatabase(
                 interruptionCount = row.interruptionCount,
                 awayMillis = row.awayMillis,
                 plannedReason = row.plannedReason,
+                deltaTDays = row.deltaTDays,
             )
         }
 
@@ -1382,42 +1381,14 @@ internal class RoomStudyDatabase(
         .loadProjectionBatch(projectionName, learnerId, limit)
 
     override suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>) {
-        database.chatEvidenceDao().insertAll(entries)
+        database.chatEvidenceDao().insertAsLedgerEvents(entries)
     }
 
     override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
         database.chatEvidenceDao().readByLearner(learnerId)
 
-    override suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead {
-        val base = database.projectionTransactionDao().loadLearningLedger(learnerId)
-        // 投影器读源整合（spec model-intent-routing §5）：chat evidence 作为第二证据
-        // 读源追加到 ledger。只在 base COMPLETE 时追加（GAP/CONFLICT 时序列已断）。
-        if (base.status != LearningLedgerReadStatus.COMPLETE) return base
-        val chatEntries = database.chatEvidenceDao().readByLearner(learnerId)
-        if (chatEntries.isEmpty()) return base
-        var nextSeq = (base.validPrefix.lastOrNull()?.event?.eventSequence ?: 0L) + 1
-        val chatEvents = chatEntries.map { entry ->
-            ChatEvidenceSubmitted(
-                evidenceId = entry.evidence_id,
-                conversationId = entry.conversation_id,
-                knowledgeNodeId = entry.knowledge_node_id,
-                direction = LearningEvidenceDirection.valueOf(entry.direction),
-                weight = entry.weight,
-                reasonMarkdown = entry.reason_markdown,
-                confidence = entry.confidence,
-                occurredAtEpochMillis = entry.created_at_epoch_millis,
-                eventSequence = nextSeq++,
-            )
-        }
-        return base.copy(
-            validPrefix = base.validPrefix + chatEvents.map {
-                PersistedLearningLedgerEvent(
-                    event = it,
-                    canonicalFingerprint = LearningLedgerFingerprint.event(it),
-                )
-            },
-        )
-    }
+    override suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead =
+        database.projectionTransactionDao().loadLearningLedger(learnerId)
 
     override suspend fun readCurrentLearnerSnapshot(
         projectionName: String,

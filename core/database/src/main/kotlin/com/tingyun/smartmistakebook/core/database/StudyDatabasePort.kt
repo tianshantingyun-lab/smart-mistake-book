@@ -1392,6 +1392,7 @@ data class ReviewLogSampleRecord(
     val interruptionCount: Int = 0,
     val awayMillis: Long = 0,
     val plannedReason: String? = null,
+    val deltaTDays: Double? = null,
 )
 
 data class AnswerRevealWriteCommand(

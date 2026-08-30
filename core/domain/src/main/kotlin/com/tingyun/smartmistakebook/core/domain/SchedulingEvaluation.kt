@@ -21,6 +21,12 @@ data class ReviewSample(
     val sourceKind: String = ATTEMPT_KIND,
     /** Planner reason snapshot carried onto the attempt (spec §6 calibration). */
     val plannedReason: String? = null,
+    /**
+     * Calendar-day delta from the prior review, captured at collection time from the learner-local
+     * study day. Null when unknown (legacy samples); the replay then falls back to a wall-clock
+     * floor over [reviewedAtEpochMillis].
+     */
+    val deltaTDays: Double? = null,
 ) {
     val isCorrect: Boolean get() = rating != FsrsRating.AGAIN
 
@@ -112,8 +118,9 @@ object SchedulingReplay {
                 lastReviewedAt = sample.reviewedAtEpochMillis
                 continue
             }
-            val elapsedDays = ((sample.reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS)
-                .coerceAtLeast(0.0)
+            val elapsedDays = sample.deltaTDays ?: (
+                (sample.reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS
+                ).coerceAtLeast(0.0)
             if (elapsedDays < 1.0) {
                 // Same-day repeats carry no long-run prediction (spec §2.15).
                 stability = FsrsScheduleMath.shortTermStability(stability, sample.rating, parameters)
@@ -292,8 +299,9 @@ object SchedulingEvaluationHarness {
                 lastReviewedAt = sample.reviewedAtEpochMillis
                 continue
             }
-            val elapsedDays = ((sample.reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS)
-                .coerceAtLeast(0.0)
+            val elapsedDays = sample.deltaTDays ?: (
+                (sample.reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS
+                ).coerceAtLeast(0.0)
             val probability = if (elapsedDays <= 0.0) {
                 1.0
             } else {

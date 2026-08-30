@@ -106,6 +106,7 @@ internal class ReviewLogSink(
                     durationMs = row.durationMs,
                     sourceKind = row.sourceKind,
                     plannedReason = row.plannedReason,
+                    deltaTDays = row.deltaTDays,
                 )
             }
 

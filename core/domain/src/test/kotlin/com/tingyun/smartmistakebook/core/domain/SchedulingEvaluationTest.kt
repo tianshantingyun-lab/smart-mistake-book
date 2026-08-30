@@ -10,6 +10,22 @@ import org.junit.Test
 class SchedulingEvaluationHarnessTest {
 
     @Test
+    fun `replay prefers the collected calendar day delta over a wall clock floor`() {
+        // Two reviews 30 wall-clock minutes apart but on consecutive learner-local days: the
+        // collected delta_t_days=1 must drive the long-run branch, not the same-day short-term one.
+        val history = listOf(
+            sample("unit-1", DAY * 0, FsrsRating.GOOD, deltaTDays = null), // first, no prior
+            sample("unit-1", DAY * 0 + 30 * 60_000L, FsrsRating.GOOD, deltaTDays = 1.0),
+        )
+
+        val predictions = SchedulingReplay.predict(history)
+
+        // A 30-minute gap under a wall-clock floor would be same-day (0 predictions); the
+        // collected calendar-day delta of 1.0 must yield exactly one long-run prediction.
+        assertEquals(1, predictions.size)
+    }
+
+    @Test
     fun `replay emits one prediction per repeat review skipping the first`() {
         val history = listOf(
             sample("unit-1", DAY * 0, FsrsRating.GOOD),
@@ -193,11 +209,13 @@ class SchedulingEvaluationHarnessTest {
         at: Long,
         rating: FsrsRating,
         sourceKind: String = ReviewSample.ATTEMPT_KIND,
+        deltaTDays: Double? = null,
     ) = ReviewSample(
         practiceUnitId = unitId,
         reviewedAtEpochMillis = at,
         rating = rating,
         sourceKind = sourceKind,
+        deltaTDays = deltaTDays,
     )
 
     private companion object {
