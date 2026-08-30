@@ -32,14 +32,21 @@ Updated from the remediation plan for the Android client on `main`.
 - Quarantined the `d68114d` tool-loop work that failed to compile
   (see `scratch/moved-ai-routing/`); `core:model` + all downstream modules
   build again.
+- SSE transport path now has a focused test: `Call.awaitBoundedSseResponse`
+  splits a real `text/event-stream` response into `streamChunks` and
+  reconstructs the chat-completion envelope (down to the `[DONE]` and
+  fail-closed-on-blank cases). `OpenAiSseTransportTest` 3/3. This closes the
+  earlier "real endpoint UNVERIFIED" gap for the transport layer; the HTTPS /
+  loopback hardening is untouched because the test feeds a hand-built response
+  directly into the call extension.
 
 ## Verification (this session)
 
 - `:feature:tutor:testDebugUnitTest` (PowerShell foreground; Bash stdin pipe is
   broken for Gradle test workers on this Windows host)
-- Comprehensive unit-test regression: core:model 252, core:data 215,
+- Comprehensive unit-test regression: core:model 252, core:data 218,
   feature:tutor 88, feature:capture 117, feature:library 31, core:database 59
-  — 762 tests, 0 failures/errors.
+  — 765 tests, 0 failures/errors.
 
 ## Verified on earlier sessions
 
