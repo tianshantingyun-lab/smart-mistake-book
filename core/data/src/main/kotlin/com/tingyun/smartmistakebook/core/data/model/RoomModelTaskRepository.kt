@@ -290,7 +290,10 @@ class RoomModelTaskRepository internal constructor(
                     } else {
                         declaredTools.toList()
                     }
-                roundRequest = withToolLoopState(roundRequest, nextDeclarations, toolRoundResults)
+                roundRequest = roundRequest.copy(
+                    input = roundRequest.input,
+                    egressManifest = roundRequest.egressManifest,
+                )
             }
             }
         } catch (concurrent: ConcurrentModelTaskTransition) {
@@ -637,24 +640,6 @@ class RoomModelTaskRepository internal constructor(
         else -> emptySet()
     }
 
-    private fun withToolLoopState(
-        request: ModelTaskRequest,
-        declarations: List<TutorToolName>,
-        results: List<TutorToolRoundResult>,
-    ): ModelTaskRequest {
-        val input = when (val currentInput = request.input) {
-            is TutorLobbyInput -> currentInput.copy(
-                toolDeclarations = declarations,
-                toolRoundResults = results,
-            )
-            is TutorRespondInput -> currentInput.copy(
-                toolDeclarations = declarations,
-                toolRoundResults = results,
-            )
-            else -> return request
-        }
-        return request.copy(input = input)
-    }
 
     private fun toolContext(input: ModelTaskInput): RoomTutorToolRunner.Context =
         RoomTutorToolRunner.Context(subject = (input as? TutorRespondInput)?.subject)

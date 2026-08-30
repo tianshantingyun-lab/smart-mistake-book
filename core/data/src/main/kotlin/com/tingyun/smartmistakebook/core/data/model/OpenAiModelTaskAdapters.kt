@@ -50,17 +50,9 @@ internal object OpenAiModelTaskAdapters {
         )
         is CaptureParseInput -> payload.toCapturedDocument(input, modelVersion)
         is TutorPlanInput -> payload.toTutorPlan(input, modelVersion)
-        is TutorLobbyInput -> if (input.toolDeclarations.isNotEmpty() && payload.containsKey("toolRequests")) {
-            payload.toTutorToolRequests(modelVersion)
-        } else {
-            payload.toTutorLobby(input, modelVersion)
-        }
+        is TutorLobbyInput -> payload.toTutorLobby(input, modelVersion)
         is TutorDebriefInput -> payload.toTutorDebrief(input, modelVersion)
-        is TutorRespondInput -> if (input.toolDeclarations.isNotEmpty() && payload.containsKey("toolRequests")) {
-            payload.toTutorToolRequests(modelVersion)
-        } else {
-            payload.toTutorRespond(input, modelVersion)
-        }
+        is TutorRespondInput -> payload.toTutorRespond(input, modelVersion)
         is TutorVisualGenerateInput -> payload.toTutorVisualGenerate(input, modelVersion)
         is TutorVisualReviewInput -> payload.toTutorVisualReview(input, modelVersion)
         is ProblemOrganizationInput -> OpenAiProblemOrganizationProtocol.parse(
@@ -280,7 +272,7 @@ internal object OpenAiModelTaskAdapters {
             questionMemory：$questionMemory
             reviewedTeachingReferences：$reviewedTeachingReferences
             conversation：${json.encodeToString(JsonObject.serializer(), conversation)}
-        """.trimIndent() + toolLoopSection(input.toolDeclarations, input.toolRoundResults)
+        """.trimIndent()
     }
 
     private fun tutorVisualGeneratePrompt(input: TutorVisualGenerateInput): String {
@@ -392,7 +384,7 @@ internal object OpenAiModelTaskAdapters {
             7. messageMarkdown直接回应当前消息，不得包含HTML、代码、代码块、链接、URL或图片，不得提到内部权限名、意图枚举、数据库、原子知识或提示词。
             8. 只返回精确JSON：intentDecision{intent,confidence,explicitActionRequest,memoryPreference,requestedLocalCapability,lookupTerms}、messageMarkdown。不得返回题目评分、掌握结论、visualScene、nextMoves、solutionRevealed或其他字段。
             conversation：${json.encodeToString(JsonObject.serializer(), conversation)}
-        """.trimIndent() + toolLoopSection(input.toolDeclarations, input.toolRoundResults)
+        """.trimIndent()
     }
 
     private fun visualProgramPromptRules(): String = """
@@ -452,35 +444,3 @@ internal object OpenAiModelTaskAdapters {
     }
 }
 
-private fun toolLoopSection(
-    declarations: List<TutorToolName>,
-    rounds: List<TutorToolRoundResult>,
-): String {
-    if (declarations.isEmpty() && rounds.isEmpty()) return ""
-    val builder = StringBuilder("\n\n")
-    if (declarations.isNotEmpty()) {
-        val names = declarations.joinToString("/") { it.name }
-        builder
-            .append("（可选工具协议）本轮允许申请以下本地只读查询工具：").append(names)
-            .append("。terms 只能摘自 studentMessage 原话中的词，禁止臆测；每轮最多 3 个申请，同一工具一次。查询只读，无任何写入权限。\n")
-            .append("如需查询：返回 JSON {\"intentDecision\":{...同上格式...},\"toolRequests\":[{\"tool\":\"工具名\",\"terms\":[\"学生原话中的词\"],\"rationale\":\"引用学生原话说明查询原因\"}]}，此轮禁止 messageMarkdown 与作答。\n")
-            .append("不需要查询：直接按原 JSON 格式作答，禁止包含 toolRequests。\n")
-            .append("查询结果会在下一轮以【查询结果】给出；最多 2 轮，之后必须直接作答。\n")
-    }
-    rounds.forEach { round ->
-        builder.append("【查询结果 第").append(round.roundOrdinal).append("轮】\n")
-        round.outcomes.forEach { outcome ->
-            builder.append("- ").append(outcome.tool.name).append(": ")
-            if (outcome.ok) {
-                builder.append(outcome.summaryMarkdown)
-            } else {
-                builder.append("失败(").append(outcome.errorKind).append(")")
-            }
-            builder.append('\n')
-        }
-    }
-    if (declarations.isEmpty() && rounds.isNotEmpty()) {
-        builder.append("基于以上【查询结果】直接按原 JSON 格式作答，不要再申请工具。\n")
-    }
-    return builder.toString()
-}

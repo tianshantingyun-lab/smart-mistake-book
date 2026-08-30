@@ -20,4 +20,7 @@ interface ChatEvidenceDao {
 
     @Query("DELETE FROM learner_chat_evidence WHERE conversation_id = :conversationId")
     suspend fun deleteByConversation(conversationId: Int): Int
+
+    @Query("SELECT * FROM learner_chat_evidence WHERE learner_id = :learnerId ORDER BY created_at_epoch_millis")
+    suspend fun readByLearner(learnerId: String): List<LearnerChatEvidenceEntity>
 }
