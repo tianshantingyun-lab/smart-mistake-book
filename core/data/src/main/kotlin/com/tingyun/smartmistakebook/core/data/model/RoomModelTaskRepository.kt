@@ -56,7 +56,7 @@ class RoomModelTaskRepository internal constructor(
     private val gateway: ModelGateway,
     private val clock: () -> Long = System::currentTimeMillis,
 ) : ModelTaskRepository {
-    private val toolRunner = RoomTutorToolRunner(database)
+    internal val toolRunner = RoomTutorToolRunner(database)
 
     override suspend fun capabilities(): ProviderCapabilitySnapshot = gateway.capabilities()
 
@@ -229,8 +229,17 @@ class RoomModelTaskRepository internal constructor(
                             is ModelGatewayEvent.Failed -> Unit
                         }
                         if (event is ModelGatewayEvent.Completed && event.output is TutorToolRequestsOutput) {
-                            // 工具申请轮：不落终态，本地执行后回填进入下一轮
+                            // 工具申请轮：不落终态，转回 QUEUED（RUNNING→QUEUED 合法，
+                            // RUNNING→RUNNING 被 canTransitionTo 拒绝）后进入下一轮
                             toolRound = event.output as TutorToolRequestsOutput
+                            current = transition(
+                                current = current,
+                                nextStatus = ModelTaskStatus.QUEUED,
+                                stage = ModelTaskStage.PREPARING,
+                                userMessage = "正在查阅资料",
+                                provider = declaredProvider,
+                            )
+                            emit(current)
                             terminalEventSeen = true
                             return@onEach
                         }

@@ -15,13 +15,19 @@ import kotlinx.coroutines.flow.first
  * outcomes instead of exceptions so the loop can continue.
  */
 internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
+    /** 观测面：工具环协议测试断言执行器确实被调用。 */
+    var executedCallCount: Int = 0
+        private set
+
     /** Student context the tools need; lobby sessions have no subject. */
     data class Context(
         val subject: String?,
         val learnerId: String = "learner:local",
     )
 
-    suspend fun run(call: TutorToolCall, context: Context): TutorToolOutcome = try {
+    suspend fun run(call: TutorToolCall, context: Context): TutorToolOutcome {
+        executedCallCount += 1
+        return try {
         when (call.tool) {
             TutorToolName.KNOWLEDGE_READ -> {
                 val subject = context.subject
@@ -48,6 +54,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             summaryMarkdown = "查询没有完成，可以换个说法再试。",
             errorKind = "failed",
         )
+    }
     }
 
     private suspend fun knowledgeRead(subject: String, terms: List<String>): TutorToolOutcome {
