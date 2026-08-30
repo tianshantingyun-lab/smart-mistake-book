@@ -1802,6 +1802,37 @@ class OpenAiCompatibleModelGatewayTest {
         stream = ByteArrayInputStream(IMAGE),
     )
 
+    @Test
+    fun streamingTutorPlanEmitsIncrementalProgressBeforeCompletion() = runBlocking {
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _, _, _ ->
+                ModelHttpResponse(
+                    statusCode = 200,
+                    body = envelope(tutorPayload()),
+                    streamChunks = listOf("开场：这", "道题先看导数", "变号。"),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutor(gateway)).toList()
+        // The gateway also emits pre-flight phase Progress events (reading image, validating) and a
+        // terminal Completed. The streamed content is the final Progress before Completion.
+        val streamedContent = events
+            .filterIsInstance<ModelGatewayEvent.Progress>()
+            .lastOrNull()
+            ?.userMessage
+        val terminal = events.last() as ModelGatewayEvent.Completed
+
+        // The provider streamed tutor content, so the gateway must surface a final progressive
+        // message that is exactly the concatenated delta body.
+        assertEquals("开场：这道题先看导数变号。", streamedContent)
+        // The final event still carries a parseable tutor plan.
+        assertEquals(TUTOR_SESSION_ID, (terminal.output as TutorPlanOutput).sessionId)
+    }
+
     private fun modelTransport(
         post: suspend (String, CharArray, String) -> ModelHttpResponse,
     ): ModelHttpTransport = ModelHttpTransport { baseUrl, apiKey, requestBody, beforeEnqueue ->

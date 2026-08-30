@@ -39,6 +39,46 @@ internal object OpenAiSse {
         return (delta["content"] as? JsonPrimitive)?.contentOrNull
     }
 
+    /**
+     * Incremental delta bodies in transport order. Each emission is the raw content that arrived in
+     * one SSE frame; a frame never contributes the [DONE] terminator or a blank body. Malformed
+     * frames are skipped so a stray byte cannot poison an otherwise well-formed stream.
+     *
+     * A [DONE] terminator frame ends the stream: any bytes that follow it (e.g. a trailing chunk
+     * that raced with the terminal event) are ignored.
+     */
+    fun deltaChunks(raw: String): Sequence<String> = sequence {
+        for (block in OpenAiSse.eventDataBlocksTerminated(raw)) {
+            if (block == DONE_BLOCK) break
+            val content = deltaContent(block)
+            if (!content.isNullOrBlank()) {
+                yield(content)
+            }
+        }
+    }
+
+    private fun eventDataBlocksTerminated(raw: String): Sequence<String> = sequence {
+        val current = StringBuilder()
+        for (rawLine in raw.split('\n')) {
+            val line = rawLine.trimEnd('\r')
+            if (line.isEmpty()) {
+                val block = current.toString()
+                if (current.isNotEmpty()) {
+                    yield(block)
+                    current.clear()
+                }
+                continue
+            }
+            if (!line.startsWith("data:")) continue
+            val payload = line.removePrefix("data:").trimStart()
+            if (current.isNotEmpty()) current.append('\n')
+            current.append(payload)
+        }
+        if (current.isNotEmpty()) yield(current.toString())
+    }
+
+    private const val DONE_BLOCK = "[DONE]"
+
     fun reconstructedChatCompletion(rawSse: String): String {
         val content = eventDataBlocks(rawSse)
             .mapNotNull(::deltaContent)

@@ -242,7 +242,12 @@ internal class OpenAiCompatibleModelGateway(
                                 )
                             },
                         )
-                        emit(response.toGatewayEvent(execution, currentProvider.modelId))
+                        emitStreamingThenCompletion(
+                            response = response,
+                            execution = execution,
+                            modelId = currentProvider.modelId,
+                            emit = ::emit,
+                        )
                     } finally {
                         images.forEach(ApprovedImage::close)
                     }
@@ -382,6 +387,44 @@ private fun ModelHttpResponse.toGatewayEvent(
         failure(INVALID_RESPONSE)
     }
 }
+
+/**
+ * For a streaming tutor response, replay the provider's incremental delta bodies as progressive
+ * [ModelGatewayEvent.Progress] events before the terminal [Completed]. This keeps the persisted task
+ * in [ModelTaskStatus.STREAMING] so the tutor UI can render the reply as it arrives. Only *tutor text
+ * calls* arrive with [ModelHttpResponse.streamChunks]; every other path falls through to the single
+ * terminal event so non-streaming behaviour is unchanged.
+ */
+private suspend fun emitStreamingThenCompletion(
+    response: ModelHttpResponse,
+    execution: ModelGatewayExecution,
+    modelId: String,
+    emit: suspend (ModelGatewayEvent) -> Unit,
+) {
+    val terminal = response.toGatewayEvent(execution, modelId)
+    val chunks = response.streamChunks
+    if (chunks == null || response.statusCode !in 200..299) {
+        emit(terminal)
+        return
+    }
+    var consumed = 0
+    var running = 0
+    for (i in chunks.indices) {
+        running += chunks[i].length
+        if (running - consumed >= STREAM_EMIT_CHAR_THRESHOLD) {
+            emit(
+                ModelGatewayEvent.Progress(
+                    stage = ModelTaskStage.VALIDATING_OUTPUT,
+                    userMessage = chunks.take(i + 1).joinToString(""),
+                ),
+            )
+            consumed = running
+        }
+    }
+    emit(terminal)
+}
+
+private const val STREAM_EMIT_CHAR_THRESHOLD = 12
 
 private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnapshot {
     if (!isConfigured) return UNCONFIGURED_CAPABILITIES

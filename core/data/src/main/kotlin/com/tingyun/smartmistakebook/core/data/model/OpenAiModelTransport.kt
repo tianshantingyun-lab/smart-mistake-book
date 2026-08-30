@@ -30,6 +30,12 @@ import okhttp3.Response
 internal data class ModelHttpResponse(
     val statusCode: Int,
     val body: String,
+    /**
+     * Raw incremental delta bodies when the provider streamed a tutor text task. When present, the
+     * gateway emits progressive [ModelGatewayEvent.Progress] events before the terminal [Completed].
+     * Null for non-streaming transports and for SSE surfaces the caller did not request.
+     */
+    val streamChunks: List<String>? = null,
 )
 
 internal fun interface ModelHttpTransport {
@@ -221,8 +227,19 @@ internal suspend fun Call.awaitBoundedSseResponse(
                             } else {
                                 raw
                             }
+                            val chunks = if (it.code in 200..299) {
+                                OpenAiSse.deltaChunks(raw).toList()
+                            } else {
+                                null
+                            }
                             if (continuation.isActive) {
-                                continuation.resume(ModelHttpResponse(it.code, body))
+                                continuation.resume(
+                                    ModelHttpResponse(
+                                        statusCode = it.code,
+                                        body = body,
+                                        streamChunks = chunks?.takeIf { it.isNotEmpty() },
+                                    ),
+                                )
                             }
                         }
                     } catch (failure: Throwable) {
