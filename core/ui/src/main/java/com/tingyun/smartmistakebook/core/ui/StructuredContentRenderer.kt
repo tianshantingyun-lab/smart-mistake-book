@@ -32,8 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.Role
@@ -401,13 +403,35 @@ private fun CartesianFigure(
 
         schema.polylines.forEach { line ->
             val color = line.style.color()
-            line.points.zipWithNext().forEach { (start, end) ->
-                drawLine(
-                    color = color,
-                    start = Offset(xToPixel(start.x), yToPixel(start.y)),
-                    end = Offset(xToPixel(end.x), yToPixel(end.y)),
-                    strokeWidth = 2.5.dp.toPx(),
-                )
+            if (line.curved && line.points.size >= 2) {
+                // Smooth cubic through the points (mirrors the PDF renderer).
+                val path = Path()
+                path.moveTo(xToPixel(line.points[0].x), yToPixel(line.points[0].y))
+                val s = line.smoothness.coerceIn(0f, 1f)
+                var i = 1
+                while (i < line.points.size - 1) {
+                    val prev = line.points[i - 1]
+                    val cur = line.points[i]
+                    val next = line.points[i + 1]
+                    val dx = ((next.x - prev.x) * s).toFloat()
+                    val dy = ((next.y - prev.y) * s).toFloat()
+                    path.cubicTo(
+                        xToPixel(cur.x - dx / 2f), yToPixel(cur.y - dy / 2f),
+                        xToPixel(cur.x + dx / 2f), yToPixel(cur.y + dy / 2f),
+                        xToPixel(next.x), yToPixel(next.y),
+                    )
+                    i += 1
+                }
+                drawPath(path, color = color, style = Stroke(width = 2.5.dp.toPx()))
+            } else {
+                line.points.zipWithNext().forEach { (start, end) ->
+                    drawLine(
+                        color = color,
+                        start = Offset(xToPixel(start.x), yToPixel(start.y)),
+                        end = Offset(xToPixel(end.x), yToPixel(end.y)),
+                        strokeWidth = 2.5.dp.toPx(),
+                    )
+                }
             }
             line.points.forEach { point ->
                 drawCircle(color, radius = 2.5.dp.toPx(), center = Offset(xToPixel(point.x), yToPixel(point.y)))
