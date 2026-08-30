@@ -98,7 +98,7 @@ class LogDurationModel {
         }
 
         fun estimateSeconds(): Double = (
-            logEma ?: GLOBAL_PRIOR_SECONDS
+            logEma ?: kotlin.math.ln(GLOBAL_PRIOR_SECONDS)
             ).let { kotlin.math.exp(it) }
 
         fun p80Seconds(): Double {
