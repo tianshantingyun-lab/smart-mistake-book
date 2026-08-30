@@ -105,6 +105,26 @@ class SchedulingEvaluationHarnessTest {
         )
     }
 
+    @Test
+    fun `w15 w16 unlock contract matches spec section 2_11b`() {
+        // Spec §2.11b: unlock hard/easy penalty coefficients only at >=5000 samples
+        // and only when validation loss improves by more than 2%.
+        assertEquals(5_000, FsrsParameterOptimizer.UNLOCK_W15_W16_MIN_SAMPLES)
+        assertEquals(0.02, FsrsParameterOptimizer.UNLOCK_W15_W16_GAIN_MARGIN, 1e-9)
+    }
+
+    @Test
+    fun `optimizer below the w15 w16 floor never fits those coefficients`() {
+        val samples = syntheticHistory(cardCount = 30)  // well under 5000
+
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 6)
+
+        assertEquals(FsrsParameterOptimizer.Mode.FULL_FIT, result.mode)
+        // w15 (hard penalty) and w16 (easy bonus) must stay out of the fitted set below the floor.
+        assertTrue(15 !in result.optimizedParameterIndices)
+        assertTrue(16 !in result.optimizedParameterIndices)
+    }
+
     private fun syntheticHistory(cardCount: Int = 12): List<ReviewSample> = (0 until cardCount).flatMap { card ->
         var at = DAY * card
         var rating = if (card % 3 == 0) FsrsRating.AGAIN else FsrsRating.GOOD

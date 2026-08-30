@@ -370,7 +370,7 @@ object FsrsParameterOptimizer {
                 emptyList(),
             )
         }
-        val fittedIndices = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
+        val baseIndices = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
             (0..5).toList()
         } else {
             (0..14).toList() + listOf(20)
@@ -391,6 +391,50 @@ object FsrsParameterOptimizer {
             .filter { it.size >= 2 }
             .map { history -> history.sortedBy(ReviewSample::reviewedAtEpochMillis) }
 
+        var (bestParams, bestValidationLoss) = fit(cards, cutoff, baseIndices, iterations)
+        var bestTrainLoss = lossFor(cards, cutoff, bestParams, wantValidation = false)
+        var fittedIndices = baseIndices
+
+        // Spec §2.11b: unlock the hard/easy penalty coefficients (w15/w16) only when the sample
+        // volume reaches the unlock floor AND doing so improves validation loss by more than the
+        // gain margin — a guard against overfitting two extra parameters on insufficient data.
+        if (sampleCount >= UNLOCK_W15_W16_MIN_SAMPLES) {
+            val extendedIndices = (baseIndices + listOf(15, 16)).distinct()
+            val (extendedParams, extendedValidationLoss) = fit(cards, cutoff, extendedIndices, iterations)
+            val relativeGain = (bestValidationLoss - extendedValidationLoss) / bestValidationLoss
+            if (bestValidationLoss.isFinite() && relativeGain > UNLOCK_W15_W16_GAIN_MARGIN) {
+                bestParams = extendedParams
+                bestValidationLoss = extendedValidationLoss
+                bestTrainLoss = lossFor(cards, cutoff, bestParams, wantValidation = false)
+                fittedIndices = extendedIndices
+            }
+        }
+
+        val mode = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
+            Mode.INITIAL_STABILITY_ONLY
+        } else {
+            Mode.FULL_FIT
+        }
+        return Result(
+            bestParams,
+            mode,
+            bestTrainLoss,
+            bestValidationLoss,
+            sampleCount,
+            fittedIndices,
+        )
+    }
+
+    /**
+     * Runs one bounded-Adam fit over [fittedIndices] and returns the best parameters plus their
+     * validation log-loss. The default parameters seed every fit so each stage is independent.
+     */
+    private fun fit(
+        cards: List<List<ReviewSample>>,
+        cutoff: Long,
+        fittedIndices: List<Int>,
+        iterations: Int,
+    ): Pair<DoubleArray, Double> {
         var parameters = FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf()
         val firstMoment = DoubleArray(FsrsScheduleMath.PARAMETER_COUNT)
         val secondMoment = DoubleArray(FsrsScheduleMath.PARAMETER_COUNT)
@@ -425,19 +469,7 @@ object FsrsParameterOptimizer {
                 if (stepsSinceImprovement >= EARLY_STOP_PATIENCE) break
             }
         }
-        val mode = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
-            Mode.INITIAL_STABILITY_ONLY
-        } else {
-            Mode.FULL_FIT
-        }
-        return Result(
-            best,
-            mode,
-            lossFor(cards, cutoff, best, wantValidation = false),
-            bestLoss,
-            sampleCount,
-            fittedIndices,
-        )
+        return best to bestLoss
     }
 
     private fun quantile(sorted: List<Long>, fraction: Double): Long {
@@ -472,6 +504,10 @@ object FsrsParameterOptimizer {
 
     const val MIN_SAMPLES_FOR_FITTING = 8
     const val MIN_SAMPLES_FOR_FULL_FIT = 64
+    /** Spec §2.11b: unlock w15/w16 only at this sample volume. */
+    const val UNLOCK_W15_W16_MIN_SAMPLES = 5_000
+    /** Spec §2.11b: unlock w15/w16 only when validation loss improves by more than this fraction. */
+    const val UNLOCK_W15_W16_GAIN_MARGIN = 0.02
     const val DEFAULT_ITERATIONS = 24
     const val TRAIN_FRACTION = 0.8
     const val EARLY_STOP_PATIENCE = 5
