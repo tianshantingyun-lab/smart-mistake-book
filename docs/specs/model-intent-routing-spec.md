@@ -43,6 +43,7 @@ wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 
 - **上限**：`maxToolCallingRoundTrips = 2`（沿用 langchain4j 的 round-trip 概念）——即一次逻辑操作 = 首轮派遣 + 至多 1 轮工具回填 + 终答派遣 ≤ 3 次真实派遣，与冻结合同三次预算严格对齐；本地工具执行不占预算（合同原文）。
 - **上下文膨胀**：每轮回填结果设字符上限（单工具 ≤ 2k 字符摘要、总计 ≤ 4k，常量入契约）；超限截断并在结果中注明 `truncated`。
 - **循环/重复检测**：同参数工具调用重复申请 → 直接返回缓存结果并提示模型停止申请；第 2 轮结束后强制 `tool_choice: "none"` 收口作答。
+- **限额原语（spring-ai 模式，主源核验）**：per-tool 限额 map + 总量限额 + 豁免集 + 越限行为枚举（`RETURN_ERROR_RESPONSE` / `THROW`）。本 spec 取值：T6 低限（每会话配额）+ breach=RETURN_ERROR_RESPONSE；读工具高限或豁免。
 - **取消**：任一环节学生取消 → 环终止，已产生的派遣按既有出站清单语义记账（可恢复需显式"继续"）。
 
 ### 3.2 调用合法性（授权矩阵执行点）
@@ -54,7 +55,7 @@ wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 
 
 ### 3.3 参数校验
 
-- 每工具一份 JSON Schema（入契约注册表，与 promptPolicyVersion 一起 parity 锁定）：类型、必填、枚举、长度/数量上限、terms 白名单来源（仅学生原话词元，延续 lookupTerms"不得臆测"）。
+- 每工具一份 JSON Schema（入契约注册表，与 promptPolicyVersion 一起 parity 锁定）：类型、必填、枚举、长度/数量上限、terms 白名单来源（仅学生原话词元，延续 lookupTerms"不得臆测"）。Schema 按 OpenAI **strict 模式**表达（`strict:true`：全字段 required + additionalProperties:false，openai-python 原文核验）——形态在协议层即收敛，校验器只做语义层（terms 来源、配额、越权）。
 - 校验失败：包装成错误型 tool 结果回给模型（可自纠重试，消耗轮次）——不抛穿、不中断会话（langchain4j 的 wrapToolArgumentsExceptions 模式）。
 - 注入面：字符串参数过滤控制字符/超长/非白名单字段；只读工具天然幂等，读参数不需确认。
 
@@ -129,6 +130,8 @@ T6 可创建/强化绑定（走 binding seed 契约）+ 提交节点级证据 �
 4. §3.4 附加 web_search 的 Provider 白名单与 key 形态（学生自选搜索服务 + BYOK key；Wikipedia/Wiktionary 等 keyless 源可作为免配置默认，已实证）。
 
 ## 9. v2.3 增补（2026-08-30 grill-me 轮四项决策）
+
+> 研究依据与主源引用见 `docs/research/intent-tool-routing-research.md`（工具环协议/限额/安全为主源核验；IRT/ECD/会话式知识追踪为方向参照，待文献核验）。
 
 ### 9.1 T6 落库：新会话证据表 `learner_chat_evidence`
 
