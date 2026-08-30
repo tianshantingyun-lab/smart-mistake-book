@@ -98,7 +98,9 @@ object FsrsScheduleMath {
      * multiplier is floored at 1.0 (py-fsrs `_short_term_stability`).
      */
     fun shortTermStability(stability: Double, rating: FsrsRating, parameters: DoubleArray = DEFAULT_PARAMETERS): Double {
-        val multiplier = exp(parameters[17] * (rating.ordinal - 3 + parameters[18])) *
+        // py-fsrs `_short_term_stability` uses the 1-based rating; FsrsRating.ordinal is 0-based,
+        // so (ordinal - 2) equals (rating - 3).
+        val multiplier = exp(parameters[17] * (rating.ordinal - 2 + parameters[18])) *
             stability.pow(-parameters[19])
         val floored = if (rating == FsrsRating.AGAIN) multiplier else multiplier.coerceAtLeast(1.0)
         return clampStability(stability * floored)
@@ -149,7 +151,9 @@ object FsrsScheduleMath {
      */
     fun nextDifficulty(difficulty: Double, rating: FsrsRating, parameters: DoubleArray = DEFAULT_PARAMETERS): Double {
         val meanReversionTarget = initialDifficulty(FsrsRating.EASY, parameters)
-        val delta = -(parameters[6] * (rating.ordinal - 3))
+        // py-fsrs `_next_difficulty` uses the 1-based rating; FsrsRating.ordinal is 0-based,
+        // so (ordinal - 2) equals (rating - 3).
+        val delta = -(parameters[6] * (rating.ordinal - 2))
         val linearDamped = difficulty + (10.0 - difficulty) * delta / 9.0
         return clampDifficulty(parameters[7] * meanReversionTarget + (1.0 - parameters[7]) * linearDamped)
     }

@@ -120,16 +120,24 @@ class FsrsScheduleMathTest {
 
     @Test
     fun `difficulty mean reversion matches py-fsrs composition`() {
-        // py-fsrs: arg1 = unclamped D0(Easy); arg2 = D + (10-D)*(-w6*(G-3))/9;
+        // py-fsrs `_next_difficulty` (rating is 1-based): arg1 = unclamped D0(Easy);
+        // delta_difficulty = -w6*(rating-3); arg2 = D + (10-D)*delta/9;
         // next = w7*arg1 + (1-w7)*arg2, clamped to 1..10.
-        val w = FsrsScheduleMath.DEFAULT_PARAMETERS
-        val difficulty = 5.0
-        val arg1 = w[4] - exp(w[5] * 3.0) + 1.0
-        val delta = -(w[6] * (FsrsRating.GOOD.ordinal - 3))
-        val arg2 = difficulty + (10.0 - difficulty) * delta / 9.0
-        val expected = (w[7] * arg1 + (1 - w[7]) * arg2)
+        // Official values for D=5.0 (computed from py-fsrs / fsrs-rs sources):
+        assertEquals(8.3417623693, FsrsScheduleMath.nextDifficulty(5.0, FsrsRating.AGAIN), 1e-9)
+        assertEquals(6.6659953693, FsrsScheduleMath.nextDifficulty(5.0, FsrsRating.HARD), 1e-9)
+        assertEquals(4.9902283693, FsrsScheduleMath.nextDifficulty(5.0, FsrsRating.GOOD), 1e-9)
+        assertEquals(3.3144613693, FsrsScheduleMath.nextDifficulty(5.0, FsrsRating.EASY), 1e-9)
+    }
 
-        assertEquals(expected, FsrsScheduleMath.nextDifficulty(difficulty, FsrsRating.GOOD), 1e-9)
+    @Test
+    fun `short term stability matches py-fsrs composition`() {
+        // py-fsrs `_short_term_stability` (rating 1-based): sinc = e^(w17*(rating-3+w18)) * S^-w19,
+        // floored at 1.0 for Hard/Good/Easy. Official values for S=10.0:
+        assertEquals(3.0512489356, FsrsScheduleMath.shortTermStability(10.0, FsrsRating.AGAIN), 1e-9)
+        assertEquals(10.0, FsrsScheduleMath.shortTermStability(10.0, FsrsRating.HARD), 1e-9)
+        assertEquals(10.0, FsrsScheduleMath.shortTermStability(10.0, FsrsRating.GOOD), 1e-9)
+        assertEquals(15.5343079472, FsrsScheduleMath.shortTermStability(10.0, FsrsRating.EASY), 1e-9)
     }
 
     @Test
