@@ -257,6 +257,7 @@ private fun java.io.InputStream.readSseAtMost(maxBytes: Int): String {
     val output = StringBuilder()
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var total = 0
+    var lastScannedEnd = 0
     try {
         while (true) {
             val read = read(buffer)
@@ -264,13 +265,29 @@ private fun java.io.InputStream.readSseAtMost(maxBytes: Int): String {
             total += read
             if (total > maxBytes) throw InvalidModelResponseException()
             output.append(String(buffer, 0, read, StandardCharsets.UTF_8))
-            if (output.contains("data: [DONE]")) break
+            // Only the tail can contain the terminator once a chunk has been appended; scanning the
+            // whole accumulated buffer on every chunk makes the read quadratic for long streams.
+            // Keep a one-terminator overlap so a [DONE] split across two chunks is still caught.
+            if (containsDoneTerminatorAfter(output, lastScannedEnd)) break
+            lastScannedEnd = output.length
         }
         return output.toString()
     } finally {
         Arrays.fill(buffer, 0.toByte())
     }
 }
+
+/**
+ * True when the accumulated SSE text contains `data: [DONE]` at or after [scannedThrough], allowing
+ * an overlap so the terminator is detected even when its bytes straddle two read chunks. The window
+ * is just the terminator length, so the scan stays linear in the number of chunks.
+ */
+internal fun containsDoneTerminatorAfter(accumulated: CharSequence, scannedThrough: Int): Boolean {
+    val windowStart = (scannedThrough - SSE_DONE_TERMINATOR.length).coerceAtLeast(0)
+    return accumulated.substring(windowStart).contains(SSE_DONE_TERMINATOR)
+}
+
+private const val SSE_DONE_TERMINATOR = "data: [DONE]"
 
 private fun java.io.InputStream.readAtMost(maxBytes: Int): ByteArray {
     val output = ByteArrayOutputStream(minOf(maxBytes, 16 * 1024))
