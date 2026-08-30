@@ -28,6 +28,7 @@ import com.tingyun.smartmistakebook.core.model.PresentationProjectionState
 import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
 import com.tingyun.smartmistakebook.core.model.ProjectionStatus
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
+import com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted
 import kotlin.math.sqrt
 
 data class LearningProjectionResult(
@@ -97,6 +98,7 @@ class LearningProjector(
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
                 is TutorAnswerExposureOutcome -> null
+                is ChatEvidenceSubmitted -> null
             }
         }
         require(incomingPresentationIds.all(authoritativePresentationStates::containsKey)) {
@@ -147,6 +149,8 @@ class LearningProjector(
                     previous.appliedTutorAnswerExposureRecords[event.outcomeId]?.let {
                         it.eventSequence to it.canonicalFingerprint
                     }
+                is ChatEvidenceSubmitted ->
+                    null
             }
             val idExistsAsAnotherType = when (event) {
                 is Attempt -> event.attemptId in previous.appliedAnswerRevealRecords ||
@@ -155,6 +159,7 @@ class LearningProjector(
                     event.outcomeId in previous.appliedTutorAnswerExposureRecords
                 is TutorAnswerExposureOutcome -> event.outcomeId in previous.appliedAttemptRecords ||
                     event.outcomeId in previous.appliedAnswerRevealRecords
+                is ChatEvidenceSubmitted -> false
             }
             when {
                 recorded != null &&
@@ -193,6 +198,8 @@ class LearningProjector(
         val appliedAttempts = linkedSetOf<String>()
         val appliedReveals = linkedSetOf<String>()
         val appliedTutorExposures = linkedSetOf<String>()
+        val appliedChatEvidences = linkedSetOf<String>()
+        val chatEvidenceRecords = mutableMapOf<String, ChatEvidenceSubmitted>()
         val ambiguous = linkedSetOf<String>()
         val sequenceConflicts = linkedSetOf<String>()
         val deferred = linkedSetOf<String>()
@@ -300,6 +307,14 @@ class LearningProjector(
                     )
                     appliedTutorExposures += event.outcomeId
                 }
+                is ChatEvidenceSubmitted -> {
+                    masteryStates[event.knowledgeNodeId] = projectChatEvidence(
+                        previous = masteryStates[event.knowledgeNodeId],
+                        event = event,
+                        effectiveAtEpochMillis = effectiveAt,
+                    )
+                    appliedChatEvidences += event.evidenceId
+                }
             }
             expectedSequence++
             projectedAt = effectiveAt
@@ -392,6 +407,8 @@ class LearningProjector(
                     answerRevealSequences.put(event.presentationId, event.eventSequence) == null,
                 ) { "A presentation may have only one terminal answer-reveal outcome" }
                 is TutorAnswerExposureOutcome -> Unit
+                is ChatEvidenceSubmitted -> Unit
+                is ChatEvidenceSubmitted -> Unit
                 is AttemptCorrection -> {
                     require(event.attemptId in attemptsById) {
                         "A correction must follow the attempt it replaces"
@@ -496,6 +513,13 @@ class LearningProjector(
                         eventSequence = event.eventSequence,
                     )
                 }
+                is ChatEvidenceSubmitted -> {
+                    masteryStates[event.knowledgeNodeId] = projectChatEvidence(
+                        previous = masteryStates[event.knowledgeNodeId],
+                        event = event,
+                        effectiveAtEpochMillis = effectiveAt,
+                    )
+                }
                 is AttemptCorrection -> {
                     correctionRecords[event.correctionId] = AppliedCorrectionRecord(
                         correctionId = event.correctionId,
@@ -547,6 +571,42 @@ class LearningProjector(
         )
     }
 
+    private fun projectChatEvidence(
+        previous: KnowledgeMasteryState?,
+        event: ChatEvidenceSubmitted,
+        effectiveAtEpochMillis: Long,
+    ): KnowledgeMasteryState {
+        val probability = previous?.masteryScore ?: INITIAL_MASTERY_PROBABILITY
+        val positive = event.direction == LearningEvidenceDirection.POSITIVE
+        val weight = event.weight
+        val updatedProbability = if (positive) {
+            probability + (1.0 - probability) * POSITIVE_LEARNING_RATE * weight
+        } else {
+            probability - probability * NEGATIVE_LEARNING_RATE * weight
+        }.coerceIn(0.0, 1.0)
+        val evidenceMass = (previous?.evidenceMass ?: 0.0) + weight
+        val lowerBound = masteryLowerBound(updatedProbability, evidenceMass)
+        val status = when {
+            evidenceMass < 1.0 -> MasteryStatus.UNKNOWN
+            clearlyMastered(lowerBound, evidenceMass, emptyList(), null, null, effectiveAtEpochMillis) ->
+                MasteryStatus.MASTERED
+            else -> MasteryStatus.LEARNING
+        }
+        return KnowledgeMasteryState(
+            knowledgeNodeId = event.knowledgeNodeId,
+            masteryScore = updatedProbability,
+            conservativeMasteryScore = lowerBound,
+            evidenceMass = evidenceMass,
+            independentCorrectObservations = previous?.independentCorrectObservations.orEmpty(),
+            lastIndependentErrorAtEpochMillis = previous?.lastIndependentErrorAtEpochMillis,
+            lastIndependentErrorSequence = previous?.lastIndependentErrorSequence,
+            status = status,
+            calibrationSupport = previous?.calibrationSupport ?: CalibrationSupport.UNKNOWN,
+            projectorVersion = VERSION,
+            checkpointSequence = event.eventSequence,
+        )
+    }
+
     private fun requireCompatibleSnapshot(previous: LearnerSnapshot) {
         require(
             previous.checkpoint.projectorVersion == VERSION ||
@@ -570,7 +630,7 @@ class LearningProjector(
             when (event) {
                 is Attempt -> event.presentationId
                 is AnswerRevealOutcome -> event.presentationId
-                is TutorAnswerExposureOutcome -> null
+                is TutorAnswerExposureOutcome, is ChatEvidenceSubmitted -> null
             }
         }
         .distinct()
@@ -1086,6 +1146,7 @@ class LearningProjector(
         private const val INITIAL_MASTERY_PROBABILITY = 0.5
         private const val POSITIVE_LEARNING_RATE = 0.32
         private const val NEGATIVE_LEARNING_RATE = 0.42
+
         private const val UNCERTAINTY_SCALE = 1.2
         private const val MAX_APPLIED_RECORDS = 4_096
         private const val DAY_MILLIS = 86_400_000L
