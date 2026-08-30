@@ -88,6 +88,8 @@ enum class ModelFailureCode {
     TIMEOUT,
     INVALID_RESPONSE,
     PROVIDER_REJECTED_INPUT,
+    /** The provider accepted the connection but returned a 5xx service fault. */
+    SERVICE_UNAVAILABLE,
     UNKNOWN,
 }
 

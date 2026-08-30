@@ -367,7 +367,7 @@ private fun ModelHttpResponse.toGatewayEvent(
                     true,
                 )
                 in 500..599 -> ModelTaskFailure(
-                    ModelFailureCode.NETWORK_UNAVAILABLE,
+                    ModelFailureCode.SERVICE_UNAVAILABLE,
                     "模型服务暂时不可用，任务已保留",
                     true,
                 )
@@ -451,7 +451,10 @@ private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnaps
         supportedTasks = supportedTasks,
         supportsImageInput = verification?.supportsImageInput == true,
         supportsStructuredOutput = verification?.supportsStructuredOutput == true,
-        supportsStreaming = true,
+        // Streaming is only advertised once the provider passed a structured-output probe. A
+        // stream=true tutor request against an unverified endpoint would otherwise fail closed on a
+        // provider that was never confirmed to speak SSE, burning a dispatch.
+        supportsStreaming = verification?.supportsStructuredOutput == true,
         executionLocation = if (supportedTasks.isEmpty()) {
             ModelExecutionLocation.UNAVAILABLE
         } else {

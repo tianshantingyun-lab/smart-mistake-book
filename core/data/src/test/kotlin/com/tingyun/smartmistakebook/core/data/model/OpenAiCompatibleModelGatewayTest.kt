@@ -136,6 +136,9 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(capabilities.supportedTasks.isEmpty())
         assertFalse(capabilities.supportsImageInput)
         assertFalse(capabilities.supportsStructuredOutput)
+        // An unverified provider must not be advertised as streaming-capable, else the gateway would
+        // send a stream=true tutor request to an endpoint that was never confirmed to support SSE.
+        assertFalse(capabilities.supportsStreaming)
     }
 
     @Test
@@ -484,7 +487,7 @@ class OpenAiCompatibleModelGatewayTest {
         val events = gateway.execute(authorizedAssessment(gateway)).toList()
         val failed = events.last() as ModelGatewayEvent.Failed
 
-        assertEquals(ModelFailureCode.NETWORK_UNAVAILABLE, failed.failure.code)
+        assertEquals(ModelFailureCode.SERVICE_UNAVAILABLE, failed.failure.code)
         assertTrue(failed.failure.retryable)
     }
 

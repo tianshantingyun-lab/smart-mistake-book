@@ -231,6 +231,7 @@ fun ModelFailureCode.toAppFailureCode(): AppFailureCode = when (this) {
     ModelFailureCode.EGRESS_AUTHORIZATION_INVALID -> AppFailureCode.EGRESS_LEASE_EXPIRED
     ModelFailureCode.PROVIDER_CAPABILITY_MISSING -> AppFailureCode.PROVIDER_CAPABILITY_MISMATCH
     ModelFailureCode.NETWORK_UNAVAILABLE -> AppFailureCode.NETWORK_UNAVAILABLE
+    ModelFailureCode.SERVICE_UNAVAILABLE -> AppFailureCode.NETWORK_UNAVAILABLE
     ModelFailureCode.AUTHENTICATION_FAILED -> AppFailureCode.PROVIDER_AUTH_FAILED
     ModelFailureCode.RATE_LIMITED -> AppFailureCode.RATE_LIMITED
     ModelFailureCode.TIMEOUT -> AppFailureCode.NETWORK_UNAVAILABLE
@@ -247,6 +248,7 @@ fun ModelTaskFailure.toAppFailure(): AppFailure = appFailure(
         ModelFailureCode.EGRESS_AUTHORIZATION_INVALID -> "这次授权已经失效"
         ModelFailureCode.PROVIDER_CAPABILITY_MISSING -> "当前模型能力不匹配"
         ModelFailureCode.NETWORK_UNAVAILABLE -> "暂时连不上模型"
+        ModelFailureCode.SERVICE_UNAVAILABLE -> "模型服务暂时不可用"
         ModelFailureCode.AUTHENTICATION_FAILED -> "模型认证失败"
         ModelFailureCode.RATE_LIMITED -> "模型请求较多"
         ModelFailureCode.TIMEOUT -> "模型响应超时"
