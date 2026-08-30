@@ -118,6 +118,33 @@ def app_compile_status(variant: str) -> str:
     return NOT_MEASURED
 
 
+def kover_coverage(module: str) -> tuple[str, str]:
+    """Line/branch coverage percentages from the module's Kover XML report."""
+    report = gradle_dir(module) / "build" / "reports" / "kover" / "report.xml"
+    if not report.exists():
+        return NOT_MEASURED, NOT_MEASURED
+    try:
+        root = ET.parse(report).getroot()
+    except ET.ParseError:
+        return NOT_MEASURED, NOT_MEASURED
+    counters: dict[str, tuple[int, int]] = {}
+    for counter in root.iter("counter"):
+        kind = counter.get("type", "")
+        if kind in ("LINE", "BRANCH"):
+            missed = int(counter.get("missed", 0))
+            covered = int(counter.get("covered", 0))
+            counters[kind] = (missed, covered)
+    if not counters:
+        return NOT_MEASURED, NOT_MEASURED
+
+    def percentage(kind: str) -> str:
+        missed, covered = counters[kind]
+        total = missed + covered
+        return f"{covered / total * 100:.1f}%" if total else NOT_MEASURED
+
+    return percentage("LINE"), percentage("BRANCH")
+
+
 def main() -> int:
     if not TEMPLATE.exists():
         print(f"template missing: {TEMPLATE}", file=sys.stderr)
@@ -163,6 +190,17 @@ def main() -> int:
             values[f"{key}_STATUS"] = "OK"
             values[f"{key}_ERRORS"] = str(errors)
             values[f"{key}_WARNINGS"] = str(warnings)
+
+    # Coverage: only modules with a Kover XML report render values; the rest
+    # stay NOT_MEASURED (android-module unit-test coverage needs AGP
+    # integration and is not wired yet).
+    domain_line, domain_branch = kover_coverage(":core:domain")
+    values["CORE_DOMAIN_LINE_COVERAGE"] = domain_line
+    values["CORE_DOMAIN_BRANCH_COVERAGE"] = domain_branch
+    values["CORE_DATA_LINE_COVERAGE"] = NOT_MEASURED
+    values["CORE_DATA_BRANCH_COVERAGE"] = NOT_MEASURED
+    values["CORE_DATABASE_LINE_COVERAGE"] = NOT_MEASURED
+    values["CORE_DATABASE_BRANCH_COVERAGE"] = NOT_MEASURED
 
     apks = apk_outputs()
     release_rows = {
