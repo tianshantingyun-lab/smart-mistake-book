@@ -1,8 +1,9 @@
-# 大模型意图识别路由 Spec v2.1（六工具授权矩阵 + 工具环）
+# 大模型意图识别路由 Spec v2.2（五核心工具 + 工具环 + 可选联网附加）
 
-状态：方案征集稿 v2.1（T1 本地化已实证、T6 定为全自动证据提交；待批准项见 §8）
+状态：方案征集稿 v2.2（T6 全自动证据提交已批准；联网搜索移出核心、降为 BYOK key 附加功能）
 日期：2026-08-30
 v1 → v2 变更：按用户指示把工具集固定为 **6 个**；新增工具环协议、合法性/参数校验/多轮控制等新问题面；掌握度写工具与冻结合同的冲突给出调和方案。动机（用户原话）：①"用户提问之后，在回答前应该自己思考调用工具"；②"闲聊不需要调数据库，也不需要改写数据库权重"；③错题库写"需要学生明确命令，否则不能自己调用"；④未提及的问题由实现方自行探索补全。
+v2 → v2.2 变更：T6 全自动证据提交语义获用户批准；**联网搜索移出核心工具集**（"把联网搜索功能去掉…先做一个附加功能保留，需要提供搜索API key才行"）——核心收敛为五个全本地工具，联网检索降为 BYOK key 附加能力。
 
 ## 0. 目标与非目标
 
@@ -24,16 +25,16 @@ v1 → v2 变更：按用户指示把工具集固定为 **6 个**；新增工具
 
 | # | 工具 | 类型 | 数据面 | 授权类 | 派遣预算 | flavor 可用性 |
 |---|---|---|---|---|---|---|
-| T1 | `reference_lookup` / `url_fetch`（原"网页搜索拉取"的本地化形态，见 §3.4） | 读（受控外部） | 开放百科/直连 URL/本地语料 | **无第三方搜索 API**：keyless 直连白名单源 + URL 直拉 + 本地语料检索；strictOffline 仅本地语料 | 占真实派遣 | 见 §3.4 |
 | T2 | `knowledge_read` 读取知识库 | 读（本地） | 知识库 | 意图门控（当前题/检索类自动可用） | 本地免费 | 双 flavor |
 | T3 | `notebook_read` 读取调用错题库 | 读（本地） | 错题库 | 意图门控（READ_MISTAKE_NOTEBOOK 或当前题上下文） | 本地免费 | 双 flavor |
 | T4 | `notebook_write` 改写（增减）错题库 | **写**（本地） | 错题库 | **学生明确命令**：模型环内只能"申请"，两段式——环暂停 → 学生确认 UI → 确定性执行器落库 | 本地免费 | 双 flavor |
 | T5 | `mastery_read` 读取学生掌握情况 | 读（本地） | 掌握度投影 | 意图门控（LEARNING_PROGRESS/当前题） | 本地免费 | 双 flavor |
-| T6 | `mastery_update` 学习证据提交（自动改写掌握情况，见 §5） | **写**（本地，全自动） | 掌握度投影 | **无学生确认**：模型自动调用；提交的是证据事件而非数值，由确定性投影器自动落库 | 本地免费 | 双 flavor |
+| T6 | `mastery_update` 学习证据提交（自动改写掌握情况，见 §5，已批准） | **写**（本地，全自动） | 掌握度投影 | **无学生确认**：模型自动调用；提交的是证据事件而非数值，由确定性投影器自动落库 | 本地免费 | 双 flavor |
+| 附加 | `web_search`（联网搜索 + URL 直拉，可选附加功能） | 读（外部） | 互联网 | **仅在学生配置 BYOK 搜索 API key 后存在**；一次性能力开启同意；strictOffline 无此工具 | 占真实派遣 | 仅 localFirst + 已配 key |
 
-设计原则：**读工具模型自主调用；数值永远由确定性投影器计算**。T4 需学生明确命令；T6 全自动但只写"证据事件"，模型永不直接给掌握度数值（§5）。
+设计原则：**核心五工具全本地**（T2–T6）；**读工具模型自主调用；数值永远由确定性投影器计算**。T4 需学生明确命令；T6 全自动但只写"证据事件"，模型永不直接给掌握度数值（§5）。联网搜索是**附加功能**：未配置搜索 key 的学生，该工具在环内不存在（非报错，是声明集合里就没有）。
 
-## 3. 工具环协议（读工具 T1/T2/T3/T5 的多轮循环）
+## 3. 工具环协议（核心读工具 T2/T3/T5 的多轮循环；附加 web_search 见 §3.4）
 
 wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 `tools=[{type:"function", function:{name, description, parameters:JSONSchema}}]`；模型 `assistant.tool_calls[{id, function:{name, arguments:JSON字符串}}]`；结果以 `{role:"tool", tool_call_id, content}` 回填。参数参考 langchain4j 的 `ToolSpecification / ToolExecutionRequest / ToolExecutionResultMessage` 三件套与本仓现有严格 JSON 校验风格。
 
@@ -49,7 +50,7 @@ wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 
 - **合法集** = f(意图, flavor, Provider 能力)。执行器在环内逐调用校验：工具是否存在、当前意图/flavor 是否允许、T6 是否满足意图与配额。
 - **幻觉工具**（模型调不存在的工具）：显式返回错误型 tool 结果（`unknown_tool`），模型可自纠；连续两次幻觉 → 终止环、单段作答（对齐 langchain4j 的 ToolHallucinationStrategy 思路）。
 - **越权申请**（如闲聊意图申请 T3/T5/T6，或环内申请 T4）：返回 `tool_not_authorized` 结果 + 记 `TUTOR_INTENT_BOUNDARY_VIOLATION` 类审计；T4 的申请一律转为"确认请求"而非执行（§2）。
-- **意图-工具映射**：CURRENT_QUESTION_HELP → T1(如开)/T2/T3/T5；MISTAKE_NOTEBOOK_LOOKUP → T3(+T5 摘要)；LEARNING_PROGRESS_LOOKUP → T5；APP_HELP/CASUAL/AMBIGUOUS → 无工具。
+- **意图-工具映射**：CURRENT_QUESTION_HELP → T2/T3/T5（+附加 web_search，如已配 key）；MISTAKE_NOTEBOOK_LOOKUP → T3(+T5 摘要)；LEARNING_PROGRESS_LOOKUP → T5；APP_HELP/CASUAL/AMBIGUOUS → 无工具。
 
 ### 3.3 参数校验
 
@@ -59,7 +60,7 @@ wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 
 
 ### 3.4 环外新问题（自探索补全）
 
-- **提示注入**（T1/T4 特有）：外部/模型产生的内容是**不可信输入**——回填一律包在带来源标注的"不可信数据"块内，系统指令永不从中取值。
+- **提示注入**（附加 web_search/T4 特有）：外部/模型产生的内容是**不可信输入**——回填一律包在带来源标注的"不可信数据"块内，系统指令永不从中取值。
 - **T1 本地化实证（2026-08-30）**：纯零出网的"网页搜索"不成立（索引在远端）；无 key 爬搜索引擎结果页不可靠（DuckDuckGo HTML 端点实测返回 CAPTCHA，已否决）。可行的本地优先三件套：
   1. **`reference_lookup`**：keyless 直连白名单结构化源（已实证：Wikipedia/Wiktionary REST API 无需任何 key，返回标题/摘要/链接的结构化 JSON，明确允许程序化访问；白名单后续可扩开放教育资料源）。出网内容 = 查询词（学生原话派生）。
   2. **`url_fetch`**：学生显式粘贴 URL 时才拉取正文（本地 readability 抽取），非学生指令不主动拉。
@@ -67,7 +68,7 @@ wire 采用 OpenAI 工具协议（已对 openai-python 源码核验）：请求 
 - **静默 UX**：工具执行不显示流水线（冻结合同）；仅"正在准备这道题"态；确认对话框（仅 T4）是学生决策，不属于流水线展示。
 - **失败语义**：本地工具异常 → 错误型 tool 结果（模型可换路）；连续失败 → 降级单段作答。
 - **审计**：每次调用记入 model_task 快照（工具名/参数哈希/结果大小/耗时/授权依据/确认 id）——预算核查、标定与事后追责统一数据源。
-- **成本**：T1 搜索 API 为 BYOK 付费项；T2–T6 本地零边际成本。T1 使用频次入披露同意文案。
+- **成本**：附加 web_search 的搜索 API 为 BYOK 付费项；核心五工具本地零边际成本。附加工具使用频次入披露同意文案。
 - **幂等**：写工具以确认 id 为幂等键，重复确认/恢复重放不重复落库。
 
 ## 4. 读工具实现映射（全部复用既有链路）
@@ -117,12 +118,12 @@ T6 可创建/强化绑定（走 binding seed 契约）+ 提交节点级证据 �
 
 - **A**：写路由矩阵（§3.3）+ 读工具环 T2/T3/T5（能力探测 + 退化 + 预算记账 + 审计）。
 - **B**：T6 `mastery_update` 全自动证据提交（证据/绑定 seed 契约 + weight 封顶 + 配额 + 投影器整合）+ T4 两段式（确认 UI + 确定性执行器 + 幂等）。
-- **C**：T1 三件套（`reference_lookup` keyless 白名单源 + `url_fetch` + `local_corpus_search`；注入加固 + 出网披露）。
+- **C（可选附加）**：联网搜索——BYOK 搜索 API key 接入（Provider 白名单）+ 注入加固 + 出网披露 + 能力开关 UI；`local_corpus_search`（零出网本地语料检索）可独立先行，不属于联网功能。
 - **D**：TUTOR_EVALUATE / REVIEW_RERANK / PROBLEM_RELATE 启用（独立排期）。
 
-## 8. 待用户批准项汇总
+## 8. 批准状态
 
-1. §2 授权矩阵整体 + §5 T6 全自动证据提交语义（"模型不得写数值"精确化修正）。
-2. §4 披露扩展（T1 出网 = 查询词/URL；工具结果回填本地 Provider 不涉出网但入披露记录）+ promptPolicyVersion bump。
+1. **§2 授权矩阵整体 + §5 T6 全自动证据提交语义：已批准（2026-08-30，用户确认）**。补充的时机语义（§5.3）：模型负责"适时"调用——环内实时判断 + 会话收尾兜底槽。
+2. §4 披露扩展（附加 web_search 出网 = 查询词/URL；核心工具回填本地 Provider 不涉出网但入披露记录）+ promptPolicyVersion bump。
 3. §3.1 循环上限取值（2 轮回填）。
-4. §3.4 T1 源白名单初始集（Wikipedia/Wiktionary 已实证 keyless；其余开放教育源后续扩充）。
+4. §3.4 附加 web_search 的 Provider 白名单与 key 形态（学生自选搜索服务 + BYOK key；Wikipedia/Wiktionary 等 keyless 源可作为免配置默认，已实证）。
