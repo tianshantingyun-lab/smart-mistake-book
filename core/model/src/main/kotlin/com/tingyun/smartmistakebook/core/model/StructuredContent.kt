@@ -125,6 +125,14 @@ data class FigurePolyline(
     val points: List<FigureCoordinate>,
     val label: String? = null,
     val style: FigureSeriesStyle = FigureSeriesStyle.PRIMARY,
+    /**
+     * When true the polyline is drawn as a smooth cubic through [points].
+     * [smoothness] in 0..1 trades between near-straight segments (low) and a
+     * pronounced curve (high). Both default to the legacy straight-segment
+     * behaviour so old payloads decode unchanged.
+     */
+    val curved: Boolean = false,
+    val smoothness: Float = 0.2f,
 )
 
 @Serializable
