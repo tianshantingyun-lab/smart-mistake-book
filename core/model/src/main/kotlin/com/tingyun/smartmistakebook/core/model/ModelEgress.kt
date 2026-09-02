@@ -51,6 +51,7 @@ object ModelPromptPolicyVersions {
     fun currentFor(kind: ModelTaskKind): String? = when (kind) {
         ModelTaskKind.CAPTURE_ASSESS,
         ModelTaskKind.CAPTURE_PARSE,
+        ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
         -> CAPTURE_DOCUMENT
         ModelTaskKind.TUTOR_PLAN -> TUTOR_PLAN
         ModelTaskKind.TUTOR_RESPOND -> TUTOR_RESPOND
@@ -527,6 +528,15 @@ private fun ModelEgressManifest.requireAuthorizes(
                         followingGrant.height == source.height &&
                         followingGrant.selectedRegion == source.selectedRegion,
                 ) { "Following assessment asset changed after approval" }
+            }
+        }
+
+        is ImagePipelineClassifyInput -> {
+            require(purpose == ModelEgressPurpose.CAPTURE_TO_DOCUMENT)
+            val grant = assets.singleOrNull { it.assetId == input.sourceAssetId }
+                ?: error("Image pipeline classify asset is outside egress scope")
+            require(grant.width == input.imageWidth && grant.height == input.imageHeight) {
+                "Image pipeline classify dimensions changed after approval"
             }
         }
 

@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureParseInput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyInput
 import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationException
 import com.tingyun.smartmistakebook.core.model.ModelEgressPolicy
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
@@ -436,6 +437,7 @@ class RoomModelTaskRepository internal constructor(
                 userMessage = when (current.request.input) {
                     is CaptureAssessmentInput -> "图片检查已完成，可以继续转写题面"
                     is CaptureParseInput -> "题面已准备好"
+                    is ImagePipelineClassifyInput -> "题面分类已完成"
                     is TutorPlanInput -> "讲解已准备好"
                     is TutorLobbyInput -> "回复已准备好"
                     is com.tingyun.smartmistakebook.core.model.TutorDebriefInput -> "讲题要点已整理"

@@ -16,6 +16,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentSeverity
 import com.tingyun.smartmistakebook.core.model.CapturePageRelation
 import com.tingyun.smartmistakebook.core.model.CaptureParseInput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyInput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
@@ -204,6 +205,7 @@ internal class OpenAiCompatibleModelGateway(
                                 userMessage = when (execution.request.input) {
                                     is CaptureAssessmentInput -> "模型正在判断题目是否拍全"
                                     is CaptureParseInput -> "模型正在整理可核对的题面"
+                                    is ImagePipelineClassifyInput -> "模型正在判断题目是否需要配图"
                                     is TutorPlanInput -> "模型正在准备当前题的讲解"
                                     is TutorLobbyInput -> "模型正在理解你的消息"
                                     is TutorRespondInput -> "模型正在回应你对当前题的追问"
@@ -496,6 +498,7 @@ private fun ModelGatewayExecution.isReadyForNetwork(
     val manifest = request.egressManifest ?: return false
     val requiresImageInput = request.input is CaptureAssessmentInput ||
         request.input is CaptureParseInput ||
+        request.input is ImagePipelineClassifyInput ||
         request.input is TutorVisualGenerateInput ||
         request.input is TutorVisualReviewInput
     return provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
@@ -516,6 +519,7 @@ private fun ModelGatewayExecution.requireImageRequestFits(
             input.followingSourceAssets.forEach { add(it.assetId) }
         }
         is CaptureParseInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
+        is ImagePipelineClassifyInput -> listOf(input.sourceAssetId)
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorDebriefInput -> emptyList()

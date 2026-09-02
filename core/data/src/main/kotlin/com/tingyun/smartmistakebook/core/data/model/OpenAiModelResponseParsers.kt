@@ -26,6 +26,8 @@ import com.tingyun.smartmistakebook.core.model.FigurePoint
 import com.tingyun.smartmistakebook.core.model.FigurePolyline
 import com.tingyun.smartmistakebook.core.model.FigureSchema
 import com.tingyun.smartmistakebook.core.model.FigureSeriesStyle
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyOutput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineProblemKind
 import com.tingyun.smartmistakebook.core.model.ModelEgressAuthorizationException
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_MAX_ASSET_BYTES
 import com.tingyun.smartmistakebook.core.model.ModelEgressPolicy
@@ -264,6 +266,23 @@ internal fun JsonObject.toCapturedDocument(
             document = sanitized.document,
             blockEvidence = evidence,
         ),
+        modelVersion = modelVersion,
+    )
+}
+
+internal fun JsonObject.toImagePipelineClassify(
+    modelVersion: String,
+): ImagePipelineClassifyOutput {
+    val kind = requiredString("problemKind")
+    val problemKind = enumValue<ImagePipelineProblemKind>(kind.uppercase())
+    val textMarkdown = optionalString("textMarkdown") ?: ""
+    val formulas = array("formulas").mapNotNull { item ->
+        (item as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull
+    }
+    return ImagePipelineClassifyOutput(
+        problemKind = problemKind,
+        textMarkdown = textMarkdown,
+        formulas = formulas,
         modelVersion = modelVersion,
     )
 }

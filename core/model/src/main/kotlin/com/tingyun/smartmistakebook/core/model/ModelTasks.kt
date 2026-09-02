@@ -20,6 +20,7 @@ enum class ModelTaskKind {
     TUTOR_EVALUATE,
     REVIEW_RERANK,
     LEARNING_SUMMARIZE,
+    IMAGE_PIPELINE_CLASSIFY,
 }
 
 @Serializable
@@ -176,6 +177,35 @@ data class CaptureAssessmentInput(
                 MAX_CAPTURE_TOTAL_PIXELS,
         ) {
             "Capture page comparison exceeds the total pixel budget"
+        }
+    }
+}
+
+/**
+ * Reads a photographed problem and classifies whether it is figure-bearing
+ * or text-only, and for text-only problems extracts the structured content
+ * (text + formulas). This is the routing entry of the image pipeline: the
+ * multimodal model judges the problem, then the pipeline routes the figure
+ * to MCP image-to-image (if present) or the text to the local typesetter.
+ */
+@Serializable
+@SerialName("image_pipeline_classify")
+data class ImagePipelineClassifyInput(
+    val sourceAssetId: String,
+    val imageWidth: Int,
+    val imageHeight: Int,
+    val subjectIdOverride: String? = null,
+) : ModelTaskInput {
+    override val kind: ModelTaskKind
+        get() = ModelTaskKind.IMAGE_PIPELINE_CLASSIFY
+
+    override val subjectId: String
+        get() = subjectIdOverride ?: sourceAssetId
+
+    init {
+        require(sourceAssetId.isNotBlank()) { "Image pipeline classify asset id must not be blank" }
+        require(imageWidth > 0 && imageHeight > 0) {
+            "Image pipeline classify dimensions must be positive"
         }
     }
 }
@@ -501,6 +531,61 @@ private fun NormalizedSourceRegion.overlapRatioOfSmaller(other: NormalizedSource
 @Serializable
 sealed interface ModelTaskOutput
 
+/**
+ * Whether the photographed problem contains a figure (which routes to MCP
+ * image-to-image) or is text-only (which routes to the local typesetter).
+ */
+@Serializable
+enum class ImagePipelineProblemKind {
+    WITH_FIGURE,
+    TEXT_ONLY,
+}
+
+/**
+ * Structured content extracted for a text-only problem: the normalized text
+ * and its formulas (LaTeX). For WITH_FIGURE problems the model does not need
+ * to transcribe the figure; the original photo is passed to MCP.
+ */
+@Serializable
+@SerialName("image_pipeline_classify_output")
+data class ImagePipelineClassifyOutput(
+    val problemKind: ImagePipelineProblemKind,
+    val textMarkdown: String = "",
+    val formulas: List<String> = emptyList(),
+    val modelVersion: String = "",
+) : ModelTaskOutput
+
+/**
+ * The clean, handwriting-free problem sheet produced by the image pipeline.
+ *
+ * For WITH_FIGURE problems [cleanImageBytes] holds the MCP-redrawn figure and
+ * [cleanImageMimeType] its type; for TEXT_ONLY problems [textMarkdown] and
+ * [formulas] carry the structured content the local typesetter lays out. Only
+ * one branch is populated — the pipeline routes to exactly one producer.
+ */
+@Serializable
+data class ImageCleanSheet(
+    val problemKind: ImagePipelineProblemKind,
+    val cleanImageBytes: ByteArray? = null,
+    val cleanImageMimeType: String? = null,
+    val textMarkdown: String = "",
+    val formulas: List<String> = emptyList(),
+    val modelVersion: String = "",
+) {
+    init {
+        when (problemKind) {
+            ImagePipelineProblemKind.WITH_FIGURE ->
+                require(cleanImageBytes != null && !cleanImageMimeType.isNullOrBlank()) {
+                    "A WITH_FIGURE clean sheet must carry the redrawn image"
+                }
+            ImagePipelineProblemKind.TEXT_ONLY ->
+                require(textMarkdown.isNotBlank()) {
+                    "A TEXT_ONLY clean sheet must carry the structured text"
+                }
+        }
+    }
+}
+
 @Serializable
 @SerialName("capture_assessment_output")
 data class CaptureAssessmentOutput(
@@ -583,6 +668,11 @@ object ModelTaskCompletionValidator {
                     ),
                 )
             }
+        } else {
+            listOf(typeMismatch())
+        }
+        is ImagePipelineClassifyInput -> if (output is ImagePipelineClassifyOutput) {
+            emptyList()
         } else {
             listOf(typeMismatch())
         }

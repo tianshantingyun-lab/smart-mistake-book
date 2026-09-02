@@ -10,6 +10,9 @@ import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.CapturePageRelation
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyInput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyOutput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineProblemKind
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
@@ -129,6 +132,12 @@ class FakeModelGateway(
                 modelVersion = "demo/capture-parse-v1",
             )
         }
+        is ImagePipelineClassifyInput -> ImagePipelineClassifyOutput(
+            problemKind = ImagePipelineProblemKind.TEXT_ONLY,
+            textMarkdown = "演示题面：仅演示任务流程，不是从当前题图识别出的文字。",
+            formulas = emptyList(),
+            modelVersion = "demo/image-pipeline-classify-v1",
+        )
         is TutorPlanInput -> error("The capture-only demo provider cannot plan tutor turns")
         is TutorDebriefInput -> error("The capture-only demo provider cannot summarize tutor debriefs")
         is TutorLobbyInput -> error("The capture-only demo provider cannot answer tutor lobby messages")
@@ -146,7 +155,11 @@ class FakeModelGateway(
             providerId = "demo-provider",
             providerDisplayName = "演示模型",
             modelId = "capture-pipeline-demo-v1",
-            supportedTasks = setOf(ModelTaskKind.CAPTURE_ASSESS, ModelTaskKind.CAPTURE_PARSE),
+            supportedTasks = setOf(
+                ModelTaskKind.CAPTURE_ASSESS,
+                ModelTaskKind.CAPTURE_PARSE,
+                ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
+            ),
             supportsImageInput = true,
             supportsStructuredOutput = true,
             supportsStreaming = true,

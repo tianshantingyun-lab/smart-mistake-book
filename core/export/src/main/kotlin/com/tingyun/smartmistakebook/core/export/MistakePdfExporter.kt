@@ -8,6 +8,8 @@ import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
+import com.tingyun.smartmistakebook.core.model.MathBox
+import com.tingyun.smartmistakebook.core.model.MathMetrics
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -17,6 +19,7 @@ import java.io.RandomAccessFile
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.UUID
+import kotlin.math.max
 import kotlin.math.min
 
 internal const val PREPARED_PDF_FILE_NAME = "mistake.pdf"
@@ -462,6 +465,7 @@ private object DeterministicMistakePdfRenderer {
     private const val META_LINE_HEIGHT = 16f
     private const val FORMULA_TEXT_SIZE = 13f
     private const val FORMULA_LINE_HEIGHT = 20f
+    private const val FORMULA_VERTICAL_PADDING = 3f
 
     fun render(input: MistakePdfExportInput, output: File) {
         val plan = createPlan(input)
@@ -484,6 +488,21 @@ private object DeterministicMistakePdfRenderer {
                         is PlannedItem.Line -> {
                             top += item.style.lineHeight
                             page.canvas.drawText(item.text, LEFT, top, paintFor(item.style))
+                        }
+                        is PlannedItem.Formula -> {
+                            val metrics = MathMetrics.of(item.fontSizePx)
+                            CanvasMathBoxRenderer.drawBox(
+                                canvas = page.canvas,
+                                box = item.box,
+                                origin = CanvasMathBoxRenderer.CanvasPoint(
+                                    LEFT,
+                                    top + (item.height - item.box.height) / 2f,
+                                ),
+                                color = Color.rgb(42, 45, 43),
+                                strokeWidth = maxOf(1f, item.fontSizePx * 0.0625f),
+                                metrics = metrics,
+                            )
+                            top += item.height
                         }
                         is PlannedItem.Figure -> {
                             val bounds = RectF(
@@ -537,8 +556,7 @@ private object DeterministicMistakePdfRenderer {
                         )
                     is MistakePdfBlock.Formula -> {
                         if (block.latex.isNotBlank()) {
-                            val formula = if (block.display) block.latex else "\$${block.latex}\$"
-                            addWrapped(formula, LineStyle.FORMULA)
+                            addFormula(block.latex, display = block.display)
                         }
                         if (block.alternativeText.isNotBlank()) {
                             addWrapped("读作：${block.alternativeText}", LineStyle.META)
@@ -647,6 +665,26 @@ private object DeterministicMistakePdfRenderer {
         }
     }
 
+    /**
+     * Adds a laid-out formula as a [PlannedItem.Formula]. The latex is parsed
+     * once at plan time (via MathBox) so its height participates in pagination;
+     * when parsing or budget fails the formula falls back to a monospace line,
+     * preserving the pre-MathBox exporter behaviour.
+     */
+    private fun MutableList<PlannedItem>.addFormula(latex: String, display: Boolean) {
+        val fontSizePx = paintFor(LineStyle.FORMULA).textSize
+        val metrics = MathMetrics.of(fontSizePx)
+        val box = CanvasMathBoxRenderer.buildMathBox(latex, metrics)
+        if (box == null) {
+            val formula = if (display) latex else "\$$latex\$"
+            addWrapped(formula, LineStyle.FORMULA)
+            return
+        }
+        val lineHeight = LineStyle.BODY.lineHeight
+        val stripHeight = maxOf(box.height + FORMULA_VERTICAL_PADDING * 2f, lineHeight)
+        add(PlannedItem.Formula(latex = latex, box = box, fontSizePx = fontSizePx, height = stripHeight))
+    }
+
     private fun paintFor(style: LineStyle) = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.rgb(42, 45, 43)
         textSize = style.textSize
@@ -668,6 +706,13 @@ private object DeterministicMistakePdfRenderer {
 
         data class Figure(
             val block: MistakePdfBlock.Figure,
+            override val height: Float,
+        ) : PlannedItem
+
+        data class Formula(
+            val latex: String,
+            val box: MathBox,
+            val fontSizePx: Float,
             override val height: Float,
         ) : PlannedItem
     }
