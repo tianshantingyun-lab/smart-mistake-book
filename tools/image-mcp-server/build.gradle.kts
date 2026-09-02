@@ -1,0 +1,37 @@
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.shadow)
+    application
+}
+
+application {
+    mainClass.set("com.tingyun.mcp.figure.ImageMcpServerKt")
+}
+
+group = "com.tingyun"
+version = "0.1.0"
+
+dependencies {
+    implementation(dependencies.platform(libs.ktor.bom))
+    implementation(libs.mcp.kotlin.server)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.okhttp)
+    implementation(libs.slf4j.simple)
+    runtimeOnly(libs.kotlin.logging)
+
+    testImplementation(kotlin("test"))
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockwebserver)
+    testImplementation(libs.junit.jupiter)
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+kotlin {
+    jvmToolchain(21)
+}
