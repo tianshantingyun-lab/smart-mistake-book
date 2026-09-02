@@ -35,7 +35,7 @@
 
 ## 3. 方案（五层，按依赖方向）
 
-### 3.1 model 层 — 恢复载体字段（schema version 不变）
+### 3.1 model 层 — 恢复载体字段（schema version 5→6 + 指纹平移）
 
 给 `TutorLobbyInput` 与 `TutorRespondInput` 追加（复刻 `11f3189` 完整形态，含 init 校验）：
 
@@ -51,6 +51,18 @@ init 校验（与 `11f3189` 一致）：
 - `toolRoundResults.size <= TutorToolRoundResult.MAX_TOOL_ROUNDS(2)`；
 - `toolRoundResults.isEmpty() || toolDeclarations.isNotEmpty()`；
 - roundOrdinal 从 1 顺序递增。
+
+**schema version 处理（用户确认：bump schema + 指纹平移，不做"不变"捷径）：**
+`ModelTaskRequest.CURRENT_SCHEMA_VERSION` 5→6（新常量 `TUTOR_TOOL_CARRIER_SCHEMA_VERSION = 6`，放在 `ModelTasks.kt` companion）。
+原因：`ModelTaskCodec`/`ModelTaskLogicalOperationFingerprint` 用 `encodeDefaults=true`，加两个默认空字段会改变所有编码 JSON 的指纹。`ModelTaskEntity.toSnapshot()` 每次读回都重算 `operationFingerprint` 并与库中列比对——**不加处理时，升级后读回任何旧 tutor 行都会抛 `LearningLedgerIntegrityException`**（列是旧编码指纹，重算是新编码指纹）。本项目已有同形先例缺陷：`studentImageAssetRefs`（commit 151b1e3）以同样"加默认字段不 bump"落地，旧 `TutorRespondInput` 行同样会在升级后读回失败——本次平移一并覆盖。
+
+**指纹平移实现**（对齐既有 `withoutLegacyTutorStudentContext` 模式）：
+- `ModelTaskRequest.fingerprintPayload()` 的 schema 分支后加一个 strip：`schemaVersion < TUTOR_TOOL_CARRIER_SCHEMA_VERSION` 时对 `TutorRespondInput`/`TutorLobbyInput`（及其内嵌 `TutorChatHistoryEntry`）去掉空的 `toolDeclarations`/`toolRoundResults`/`studentImageAssetRefs` 键，使新旧编码对齐；
+- 新逻辑操作在 v6 编码（含空键）下指纹 = 新语义指纹；
+- 旧 v5 行读回时 `request.schemaVersion=5` 仍被保留（decode 不重写版本），按 v5 strip 规则重算 = 旧语义指纹 → 与库中列一致，`toSnapshot()` 通过。
+- `ModelTaskSnapshot` 逻辑不变：`requestFingerprint`（v5 用 `MIN_SUPPORTED_SCHEMA_VERSION` 路径、v6 用当前路径）与 `toSnapshot()` 的 `operationFingerprint` 都基于 `request.schemaVersion` 决定编码，天然自洽。
+
+`TutorToolName`/`TutorToolRoundResult`/`TutorToolOutcome` 定义于 `core.model` 同包，无需 import。`TutorChatHistoryEntry.studentImageAssetRefs` 一并纳入 strip（同一"空列表默认字段"缺陷）。
 
 > 关于第二轮声明集：有 `toolRoundResults` 时声明集**收敛而非清空**——保留首轮已声明、且本轮仍允许的工具（通常即已用工具本身），
 > 以保持 `toolRoundResults.isNotEmpty() → toolDeclarations.isNotEmpty()` 恒成立；
@@ -123,7 +135,7 @@ spec §5.2 明确定义 T6 安全边界 = **模型提交证据事件 + 本地确
 
 ## 6. 分期
 
-- **P1（本设计落地）**：3.1–3.4 + 3.6 + 测试。读工具闭环真实可达（T2/T3/T5）。
+- **P1（本设计落地）**：3.1（含 schema 5→6 指纹平移）–3.4 + 3.6 + 测试。读工具闭环真实可达（T2/T3/T5）。
 - **P2**：3.5 T6 语义接入——声明集并列 T6、执行器改模型自判 direction + 本地 weight 封顶落库 + 每会话配额。与 P1 共用同一工具环通道，协议层不变。
 - **P3（远期，spec 目标态）**：路线 A OpenAI 原生 `tools` 协议适配层。需真实 provider 兼容性验证。
 
@@ -131,3 +143,4 @@ spec §5.2 明确定义 T6 安全边界 = **模型提交证据事件 + 本地确
 
 - 路线 B 与真实 DeepSeek 端点的实际推理质量（模型是否遵循 prompt 声明正确吐 `toolRequests`）需设备/真机会话验证——本设计文档不承诺模型行为，只保证协议可往返。
 - 本地 web 检索通道被环境阻断（open-websearch "resolves to private network"），DeepSeek 官方 tools 文档未能核实；路线 B 不依赖该事实。
+- 旧版本持久化 tutor 行的实际存留量未知（模型任务无显式清理/保留策略）。指纹平移（§3.1）保证即使存在旧行也安全读回，不依赖存留量假设。
