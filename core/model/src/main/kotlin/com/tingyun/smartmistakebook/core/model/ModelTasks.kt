@@ -344,7 +344,8 @@ data class ModelTaskRequest(
         const val TUTOR_STUDENT_CONTEXT_SCHEMA_VERSION = 3
         const val CAPTURE_PAGE_RELATION_SCHEMA_VERSION = 4
         const val TUTOR_VISUAL_SCHEMA_VERSION = 5
-        const val CURRENT_SCHEMA_VERSION = TUTOR_VISUAL_SCHEMA_VERSION
+        const val TUTOR_TOOL_CARRIER_SCHEMA_VERSION = 6
+        const val CURRENT_SCHEMA_VERSION = TUTOR_TOOL_CARRIER_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -1159,7 +1160,8 @@ object ModelTaskLogicalOperationFingerprint {
             append('\n')
             append(
                 logicalOperationJson.encodeToString(ModelTaskInput.serializer(), input)
-                    .withoutEmptyPageComparison(input),
+                    .withoutEmptyPageComparison(input)
+                    .withoutEmptyToolCarrier(input),
             )
         }
 }
@@ -1194,6 +1196,7 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
         )
             .withoutLegacyTutorStudentContext(input)
             .withoutEmptyPageComparison(input)
+            .withoutEmptyToolCarrier(input)
     } else {
         ModelTaskCodec.encodeRequest(this).let { encoded ->
             encoded
@@ -1211,6 +1214,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.TUTOR_TOOL_CARRIER_SCHEMA_VERSION) {
+                        it.withoutEmptyToolCarrier(input)
+                    } else {
+                        it
+                    }
+                }
         }
     }
 
@@ -1224,6 +1234,24 @@ private fun String.withoutLegacyTutorStudentContext(input: ModelTaskInput): Stri
 private fun String.withoutEmptyPageComparison(input: ModelTaskInput): String =
     if (input is CaptureAssessmentInput && input.followingSourceAssets.isEmpty()) {
         replace(",\"followingSourceAssets\":[]", "")
+    } else {
+        this
+    }
+
+/**
+ * 去掉工具环空载体键（spec 2026-09-02-tool-loop-wiring §3.1 指纹平移）。
+ *
+ * schemaVersion 5 的编码器不知道 toolDeclarations/toolRoundResults 字段——旧 v5 行存的是
+ * 不含这两键的编码。本 helper 只在 schemaVersion < 6 的 fingerprint 路径调用（request 级），
+ * 及逻辑操作指纹的无 schema 路径（抹平空载体键，使同一逻辑输入跨版本哈希一致）。
+ *
+ * 注意 studentImageAssetRefs 不属于本 helper：它在 schemaVersion 5 期（151b1e3）已存在，
+ * 当前 main 的 v5 行已含该空键，strip 会破坏其读回一致性。
+ */
+private fun String.withoutEmptyToolCarrier(input: ModelTaskInput): String =
+    if (input is TutorLobbyInput || input is TutorRespondInput) {
+        replace(",\"toolDeclarations\":[]", "")
+            .replace(",\"toolRoundResults\":[]", "")
     } else {
         this
     }
