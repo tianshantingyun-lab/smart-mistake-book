@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.database.port
 
 import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetCommand
 import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetResult
+import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftResult
 import com.tingyun.smartmistakebook.core.database.ConfirmAndCommitProblemDraftFromWorkspaceCommand
@@ -78,6 +79,16 @@ interface DraftWritePort {
     suspend fun confirmAndCommitProblemDraftFromWorkspace(
         command: ConfirmAndCommitProblemDraftFromWorkspaceCommand,
     ): CommitProblemDraftResult
+
+    /**
+     * Attaches a clean-redraw canonical asset to an already-committed problem
+     * revision under the CLEAN_IMAGE role. Returns false when the revision
+     * does not exist. Idempotent.
+     */
+    suspend fun attachCleanRedrawAsset(
+        revisionId: String,
+        asset: CanonicalSourceAssetRecord,
+    ): Boolean
 }
 /**
  * Port for problem organization writes.

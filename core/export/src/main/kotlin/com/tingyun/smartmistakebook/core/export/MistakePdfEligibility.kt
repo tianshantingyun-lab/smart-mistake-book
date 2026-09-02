@@ -9,6 +9,8 @@ import com.tingyun.smartmistakebook.core.model.SafeInlineMarkdown
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
+internal const val CLEAN_IMAGE_SOURCE_ROLE = "CLEAN_IMAGE"
+
 enum class MistakePdfIneligibility {
     LOADING,
     LEGACY_CONTENT,
@@ -132,6 +134,7 @@ object MistakePdfEligibility {
                 subtitle = "${identity.subject} · 第 ${identity.revisionNumber} 版",
                 documentTitle = document.document.title,
                 blocks = blocks,
+                cleanImageLocalUri = cleanImageUri(state.detail.source),
                 questionDocumentSha256 = documentFingerprint,
                 inputSha256 = exportFingerprint(
                     identity.errorBookEntryId,
@@ -144,6 +147,18 @@ object MistakePdfEligibility {
                 ),
             ),
         )
+    }
+
+    private fun cleanImageUri(
+        source: com.tingyun.smartmistakebook.core.domain.MistakeSourceSet,
+    ): String? = when (source) {
+        is com.tingyun.smartmistakebook.core.domain.MistakeSourceSet.Present ->
+            source.assets.firstNotNullOfOrNull { asset ->
+                (asset.location as? com.tingyun.smartmistakebook.core.domain.MistakeSourceLocation.Available)
+                    ?.takeIf { asset.role == CLEAN_IMAGE_SOURCE_ROLE }
+                    ?.localUri
+            }
+        else -> null
     }
 
     private fun safeInlineText(value: String): String = buildString {
@@ -182,6 +197,7 @@ class MistakePdfExportInput internal constructor(
     val maxPages: Int = MistakePdfExportLimits.MAX_SINGLE_PAGES,
     val maxRenderedLines: Int = MistakePdfExportLimits.MAX_SINGLE_RENDERED_LINES,
     val maxPdfBytes: Long = MistakePdfExportLimits.MAX_SINGLE_PDF_BYTES,
+    val cleanImageLocalUri: String? = null,
 )
 
 sealed interface MistakePdfBlock {

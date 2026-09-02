@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.export
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
@@ -466,6 +468,7 @@ private object DeterministicMistakePdfRenderer {
     private const val FORMULA_TEXT_SIZE = 13f
     private const val FORMULA_LINE_HEIGHT = 20f
     private const val FORMULA_VERTICAL_PADDING = 3f
+    private const val MAX_CLEAN_IMAGE_EDGE_PX = 2000
 
     fun render(input: MistakePdfExportInput, output: File) {
         val plan = createPlan(input)
@@ -514,6 +517,21 @@ private object DeterministicMistakePdfRenderer {
                             DeterministicPdfFigureRenderer.draw(page.canvas, item.block, bounds)
                             top += item.height
                         }
+                        is PlannedItem.Image -> {
+                            val bounds = RectF(
+                                LEFT,
+                                top,
+                                PAGE_WIDTH - RIGHT,
+                                top + item.height,
+                            )
+                            page.canvas.drawBitmap(
+                                item.bitmap,
+                                null,
+                                bounds,
+                                Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG),
+                            )
+                            top += item.height
+                        }
                     }
                 }
                 val footer = "第 ${pageIndex + 1} / ${plan.size} 页"
@@ -545,6 +563,13 @@ private object DeterministicMistakePdfRenderer {
                 ?.takeIf { it.isNotBlank() && it != input.title }
                 ?.let { addWrapped("题面标题：$it", LineStyle.META) }
             add(PlannedItem.Line("", LineStyle.SPACER))
+            input.cleanImageLocalUri?.let { uri ->
+                decodeCleanImage(uri)?.let { bitmap ->
+                    add(PlannedItem.Line("干净题面", LineStyle.SECTION_HEADING))
+                    add(PlannedItem.Image(bitmap))
+                    add(PlannedItem.Line("", LineStyle.SPACER))
+                }
+            }
             input.blocks.forEach { block ->
                 when (block) {
                     is MistakePdfBlock.Paragraph -> addWrapped(block.text, LineStyle.BODY)
@@ -624,6 +649,21 @@ private object DeterministicMistakePdfRenderer {
             throw MistakePdfExportException(MistakePdfExportFailure.PAGE_LIMIT_EXCEEDED)
         }
         return pages
+    }
+
+    private fun decodeCleanImage(uri: String): Bitmap? {
+        val path = uri.removePrefix("file://")
+        return runCatching {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            val longEdge = max(bounds.outWidth, bounds.outHeight)
+            var sampleSize = 1
+            while (longEdge / sampleSize > MAX_CLEAN_IMAGE_EDGE_PX) sampleSize *= 2
+            BitmapFactory.decodeFile(
+                path,
+                BitmapFactory.Options().apply { inSampleSize = sampleSize },
+            )
+        }.getOrNull()
     }
 
     private fun MutableList<PlannedItem>.addWrapped(
@@ -715,6 +755,13 @@ private object DeterministicMistakePdfRenderer {
             val fontSizePx: Float,
             override val height: Float,
         ) : PlannedItem
+
+        data class Image(
+            val bitmap: Bitmap,
+        ) : PlannedItem {
+            override val height: Float =
+                bitmap.height * (PAGE_WIDTH - LEFT - RIGHT) / bitmap.width.coerceAtLeast(1)
+        }
     }
 
     private enum class LineStyle(

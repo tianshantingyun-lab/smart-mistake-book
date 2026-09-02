@@ -1167,6 +1167,11 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         command: ConfirmTutorSessionFromWorkspaceCommand,
     ): TutorSessionWriteResult = error("Capture is outside this study-repository fake")
 
+    override suspend fun attachCleanRedrawAsset(
+        revisionId: String,
+        asset: com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord,
+    ): Boolean = error("Capture is outside this study-repository fake")
+
     override suspend fun readTutorSession(sessionId: String): TutorSessionRecord? = null
 
     override suspend fun commitTutorSession(

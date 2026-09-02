@@ -39,7 +39,9 @@ import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
+import com.tingyun.smartmistakebook.core.domain.CleanImageGenerator
 import com.tingyun.smartmistakebook.core.domain.CapturedProblemCommitSummary
+import java.io.File
 import com.tingyun.smartmistakebook.core.domain.ConfirmCapturedProblemRequest
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.ConsumeCaptureDraftWorkspaceRequest
@@ -84,6 +86,7 @@ class RoomCaptureWorkflowRepository internal constructor(
     private val database: StudyDatabasePort,
     private val assetVault: AndroidCanonicalAssetVault,
     private val localTextRecognizer: LocalQuestionTextRecognizer,
+    private val cleanRedraw: CleanImageGenerator? = null,
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<PendingCaptureItem>> =
         database.observePendingCaptureDrafts().map { records ->
@@ -318,7 +321,7 @@ class RoomCaptureWorkflowRepository internal constructor(
             require(draft.origin == StudyDbValue.CaptureOrigin.LIBRARY) {
                 "Only mistake-library captures may be saved during confirmation"
             }
-            assetVault.resolve(draft.sourceAsset)
+            val originalFile = assetVault.resolve(draft.sourceAsset)
             val expected = request.workspaceIdentity.toDatabaseExpectation()
             val suffix = confirmationStableSuffix(request.workspaceIdentity)
             val result = database.confirmAndCommitProblemDraftFromWorkspace(
@@ -337,7 +340,7 @@ class RoomCaptureWorkflowRepository internal constructor(
                     ),
                 ),
             )
-            CapturedProblemCommitSummary(
+            val summary = CapturedProblemCommitSummary(
                 draftId = request.draftId,
                 problemId = result.receipt.problemId,
                 problemRevisionId = result.receipt.problemRevisionId,
@@ -345,7 +348,53 @@ class RoomCaptureWorkflowRepository internal constructor(
                 errorBookEntryId = result.receipt.errorBookEntryId,
                 created = result.created,
             )
+            // Commit-time clean redraw: never blocks or fails the commit. A missing or
+            // failing generator leaves the revision with the original photo only.
+            if (result.created) {
+                runCatching {
+                    redrawAndAttachClean(
+                        original = originalFile,
+                        originalMimeType = draft.sourceAsset.mimeType,
+                        revisionId = result.receipt.problemRevisionId,
+                    )
+                }
+            }
+            summary
         }
+
+    private suspend fun redrawAndAttachClean(
+        original: File,
+        originalMimeType: String,
+        revisionId: String,
+    ) {
+        val generator = cleanRedraw ?: return
+        val clean = generator.generateClean(original.readBytes(), originalMimeType)
+        attachCleanRedrawImage(
+            problemRevisionId = revisionId,
+            cleanImageBytes = clean.bytes,
+            cleanImageMimeType = clean.mimeType,
+        )
+    }
+
+    override suspend fun attachCleanRedrawImage(
+        problemRevisionId: String,
+        cleanImageBytes: ByteArray,
+        cleanImageMimeType: String,
+    ): Boolean = withContext(Dispatchers.IO) {
+        require(cleanImageMimeType == "image/jpeg" || cleanImageMimeType == "image/png") {
+            "Clean redraw must be a JPEG or PNG"
+        }
+        val asset = assetVault.persistCleanImageBytes(
+            bytes = cleanImageBytes,
+            mimeType = cleanImageMimeType,
+            sourceType = StudyDbValue.SourceAssetType.CAMERA,
+            createdAtEpochMillis = System.currentTimeMillis(),
+        )
+        database.attachCleanRedrawAsset(
+            revisionId = problemRevisionId,
+            asset = asset,
+        )
+    }
 
     override suspend fun confirmForTutoring(
         request: ConfirmCapturedProblemRequest,
@@ -1101,10 +1150,15 @@ class RoomCaptureWorkflowRepository internal constructor(
 }
 
 object CaptureWorkflowRepositoryFactory {
-    fun create(context: Context, database: StudyDatabasePort): CaptureWorkflowRepository =
+    fun create(
+        context: Context,
+        database: StudyDatabasePort,
+        cleanRedraw: CleanImageGenerator? = null,
+    ): CaptureWorkflowRepository =
         RoomCaptureWorkflowRepository(
             database = database,
             assetVault = AndroidCanonicalAssetVault(context.applicationContext),
             localTextRecognizer = MlKitChineseQuestionTextRecognizer(context.applicationContext),
+            cleanRedraw = cleanRedraw,
         )
 }

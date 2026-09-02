@@ -714,9 +714,16 @@ private fun SourceAssetPreview(
     }
 }
 
+internal const val CLEAN_IMAGE_SOURCE_ROLE = "CLEAN_IMAGE"
+
 internal fun MistakeSourceSet.displayAssets(): List<MistakeSourceAsset> = when (this) {
     MistakeSourceSet.Missing -> emptyList()
-    is MistakeSourceSet.Present -> assets
+    is MistakeSourceSet.Present -> {
+        val clean = assets.filter { it.role == CLEAN_IMAGE_SOURCE_ROLE }
+        val original = assets.filterNot { it.role == CLEAN_IMAGE_SOURCE_ROLE }
+        // Clean redraws (if attached at commit time) come first; originals stay available.
+        clean + original
+    }
 }
 
 internal fun sourceStatusText(

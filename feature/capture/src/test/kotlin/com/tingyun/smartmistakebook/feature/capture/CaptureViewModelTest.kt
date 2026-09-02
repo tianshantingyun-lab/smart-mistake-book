@@ -409,6 +409,12 @@ private class FakeCaptureRepository(
         committedDraftIds += request.draftId
         return result.getOrThrow()
     }
+
+    override suspend fun attachCleanRedrawImage(
+        problemRevisionId: String,
+        cleanImageBytes: ByteArray,
+        cleanImageMimeType: String,
+    ): Boolean = false
 }
 
 private class FakeModelTasks : ModelTaskRepository {

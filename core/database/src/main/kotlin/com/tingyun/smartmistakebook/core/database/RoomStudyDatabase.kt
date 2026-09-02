@@ -982,6 +982,16 @@ internal class RoomStudyDatabase(
         result
     }
 
+    override suspend fun attachCleanRedrawAsset(
+        revisionId: String,
+        asset: CanonicalSourceAssetRecord,
+    ): Boolean = database.withWriteTransaction {
+        database.problemDraftTransactionDao().attachCleanRedrawAsset(
+            revisionId = revisionId,
+            asset = asset,
+        )
+    }
+
     override suspend fun confirmTutorSession(
         command: ConfirmTutorSessionCommand,
     ): TutorSessionWriteResult = database.problemDraftTransactionDao().confirmTutorSession(command)

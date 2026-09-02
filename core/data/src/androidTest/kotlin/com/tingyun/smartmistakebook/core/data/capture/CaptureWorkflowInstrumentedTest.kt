@@ -107,6 +107,96 @@ class CaptureWorkflowInstrumentedTest {
     }
 
     @Test
+    fun attachCleanRedrawAddsCleanRoleAssetToCommittedRevision() = runBlocking {
+        val source = createPng(64, 64)
+        val imported = repository.importDraft(
+            CaptureDraftImportRequest(
+                requestId = "attach-clean-import",
+                localUri = privateUri(source).toString(),
+                source = CaptureInputSource.CAMERA,
+                origin = CaptureEntryOrigin.LIBRARY,
+                occurredAtEpochMillis = 1_000,
+            ),
+        )
+        val committed = repository.confirmAndCommit(
+            ConfirmCapturedProblemRequest(
+                requestId = "attach-clean-confirm",
+                draftId = imported.draftId,
+                expectedRevisionNumber = imported.revisionNumber,
+                subject = "MATH",
+                title = "含图函数题",
+                transcription = "求函数 f(x)=x^2 的单调区间。",
+                writingLayer = CaptureWritingLayer.PRINTED,
+                transcriptionReview = CaptureTranscriptionReview.MANUAL_ENTRY,
+                occurredAtEpochMillis = 2_000,
+            ),
+        )
+        assertTrue(committed.created)
+
+        val before = checkNotNull(database.readMistakeDetail(committed.errorBookEntryId))
+        assertEquals(1, before.sourceAssets.size)
+        assertEquals("QUESTION_SOURCE", before.sourceAssets.single().role)
+
+        assertTrue(
+            repository.attachCleanRedrawImage(
+                problemRevisionId = committed.problemRevisionId,
+                cleanImageBytes = createPng(32, 32).readBytes(),
+                cleanImageMimeType = "image/png",
+            ),
+        )
+
+        val after = checkNotNull(database.readMistakeDetail(committed.errorBookEntryId))
+        val roles = after.sourceAssets.map { it.role }.toSet()
+        assertTrue("expected QUESTION_SOURCE role", roles.contains("QUESTION_SOURCE"))
+        assertTrue("expected CLEAN_IMAGE role", roles.contains("CLEAN_IMAGE"))
+    }
+
+    @Test
+    fun committingWithGeneratorAttachesCleanRedrawAutomatically() = runBlocking {
+        val generatingRepository = RoomCaptureWorkflowRepository(
+            database,
+            AndroidCanonicalAssetVault(context),
+            noTextRecognizer(),
+            cleanRedraw = com.tingyun.smartmistakebook.core.domain.CleanImageGenerator { original, mime ->
+                com.tingyun.smartmistakebook.core.domain.CleanImageResult(
+                    createPng(24, 24).readBytes(),
+                    "image/png",
+                )
+            },
+        )
+        val source = createPng(48, 48)
+        val imported = generatingRepository.importDraft(
+            CaptureDraftImportRequest(
+                requestId = "auto-redraw-import",
+                localUri = privateUri(source).toString(),
+                source = CaptureInputSource.CAMERA,
+                origin = CaptureEntryOrigin.LIBRARY,
+                occurredAtEpochMillis = 1_000,
+            ),
+        )
+        val committed = generatingRepository.confirmAndCommit(
+            ConfirmCapturedProblemRequest(
+                requestId = "auto-redraw-confirm",
+                draftId = imported.draftId,
+                expectedRevisionNumber = imported.revisionNumber,
+                subject = "MATH",
+                title = "自动重绘函数题",
+                transcription = "求函数 f(x)=x^2 的单调区间。",
+                writingLayer = CaptureWritingLayer.PRINTED,
+                transcriptionReview = CaptureTranscriptionReview.MANUAL_ENTRY,
+                occurredAtEpochMillis = 2_000,
+            ),
+        )
+        assertTrue(committed.created)
+
+        val detail = checkNotNull(database.readMistakeDetail(committed.errorBookEntryId))
+        assertTrue(
+            "expected automatic CLEAN_IMAGE attach",
+            detail.sourceAssets.map { it.role }.contains("CLEAN_IMAGE"),
+        )
+    }
+
+    @Test
     fun batchImportKeepsSuccessfulPagesAndRetriesOnlyTheFailedPage() = runBlocking {
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val batchRepository = RoomBatchImportRepository(

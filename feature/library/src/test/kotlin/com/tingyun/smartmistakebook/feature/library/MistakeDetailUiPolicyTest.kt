@@ -44,9 +44,35 @@ class MistakeDetailUiPolicyTest {
         )
     }
 
-    private fun sourceAsset(location: MistakeSourceLocation) = MistakeSourceAsset(
-        role = "QUESTION_SOURCE",
-        sourceAssetId = "asset-1",
+    @Test
+    fun cleanRedrawAssetComesFirstWhenPresent() {
+        val clean = sourceAsset(
+            MistakeSourceLocation.Available("file:///clean.png"),
+            role = CLEAN_IMAGE_SOURCE_ROLE,
+        )
+        val original = sourceAsset(MistakeSourceLocation.Available("file:///original.png"))
+
+        val displayed = MistakeSourceSet.Present(listOf(original, clean)).displayAssets()
+
+        assertEquals(2, displayed.size)
+        assertEquals(CLEAN_IMAGE_SOURCE_ROLE, displayed.first().role)
+        assertEquals("QUESTION_SOURCE", displayed.last().role)
+    }
+
+    @Test
+    fun noCleanRedrawKeepsOriginalOrder() {
+        val a = sourceAsset(MistakeSourceLocation.Available("file:///a.png"))
+        val b = sourceAsset(MistakeSourceLocation.Available("file:///b.png"))
+
+        assertEquals(listOf(a, b), MistakeSourceSet.Present(listOf(a, b)).displayAssets())
+    }
+
+    private fun sourceAsset(
+        location: MistakeSourceLocation,
+        role: String = "QUESTION_SOURCE",
+    ) = MistakeSourceAsset(
+        role = role,
+        sourceAssetId = "asset-$role",
         contentSha256 = "a".repeat(64),
         mimeType = "image/jpeg",
         byteSize = 1_024,
