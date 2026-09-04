@@ -97,17 +97,7 @@ internal class OkHttpModelTransport : ModelHttpTransport {
             "Model request exceeds the upload budget"
         }
         val endpoint = PublicModelEndpoint.resolve(baseUrl)
-        val client = OkHttpClient.Builder()
-            .dns(FixedDns(endpoint.host, endpoint.addresses))
-            .proxy(Proxy.NO_PROXY)
-            .followRedirects(false)
-            .followSslRedirects(false)
-            .retryOnConnectionFailure(false)
-            .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .callTimeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .build()
+        val client = guardedModelClient(endpoint)
         val stream = requestBody.contains("\"stream\":true")
         val request = Request.Builder()
             .url(endpoint.url)
@@ -124,6 +114,45 @@ internal class OkHttpModelTransport : ModelHttpTransport {
     }
 }
 
+/**
+ * A clean-redraw endpoint resolved through the same SSRF guard as the chat
+ * gateway: the host is validated as HTTPS and publicly routable, and the client
+ * pins DNS to the approved addresses with no proxy, no redirects. The image
+ * channel composes `$baseUrl/images/edits` itself.
+ */
+internal data class GuardedEditsEndpoint(
+    val baseUrl: String,
+    val client: OkHttpClient,
+)
+
+/** Resolves the configured chat-service base to a guarded edits-capable client. */
+internal suspend fun resolveGuardedEdits(baseUrl: String): GuardedEditsEndpoint =
+    withContext(Dispatchers.IO) {
+        val validated = resolvePublicService(baseUrl)
+        GuardedEditsEndpoint(
+            baseUrl = validated.base.toString().trimEnd('/'),
+            client = guardedModelClient(validated.host, validated.addresses),
+        )
+    }
+
+internal fun guardedModelClient(
+    host: String,
+    addresses: List<InetAddress>,
+): OkHttpClient = OkHttpClient.Builder()
+    .dns(FixedDns(host, addresses))
+    .proxy(Proxy.NO_PROXY)
+    .followRedirects(false)
+    .followSslRedirects(false)
+    .retryOnConnectionFailure(false)
+    .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    .callTimeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+    .build()
+
+private fun guardedModelClient(endpoint: PublicModelEndpoint): OkHttpClient =
+    guardedModelClient(endpoint.host, endpoint.addresses)
+
 private data class PublicModelEndpoint(
     val url: HttpUrl,
     val host: String,
@@ -131,23 +160,40 @@ private data class PublicModelEndpoint(
 ) {
     companion object {
         suspend fun resolve(baseUrl: String): PublicModelEndpoint = withContext(Dispatchers.IO) {
-            val base = baseUrl.toHttpUrlOrNull()
-                ?: throw UnsafeModelEndpointException()
-            if (base.scheme != "https" || base.username.isNotEmpty() || base.password.isNotEmpty()) {
-                throw UnsafeModelEndpointException()
-            }
-            val addresses = InetAddress.getAllByName(base.host).toList()
-            if (addresses.isEmpty() || addresses.any { !it.isPubliclyRoutable() }) {
-                throw UnsafeModelEndpointException()
-            }
-            val endpoint = base.newBuilder()
+            val validated = resolvePublicService(baseUrl)
+            val endpoint = validated.base.newBuilder()
                 .addPathSegment("chat")
                 .addPathSegment("completions")
                 .build()
-            PublicModelEndpoint(endpoint, base.host, addresses.distinctBy { it.hostAddress })
+            PublicModelEndpoint(endpoint, validated.host, validated.addresses)
         }
     }
 }
+
+/**
+ * Validates the configured service address against the SSRF policy (HTTPS, no
+ * embedded credentials), resolves its host to addresses that are all publicly
+ * routable, and returns the validated URL with its pinned address list.
+ */
+private data class ValidatedPublicService(
+    val base: HttpUrl,
+    val host: String,
+    val addresses: List<InetAddress>,
+)
+
+private suspend fun resolvePublicService(baseUrl: String): ValidatedPublicService =
+    withContext(Dispatchers.IO) {
+        val base = baseUrl.toHttpUrlOrNull()
+            ?: throw UnsafeModelEndpointException()
+        if (base.scheme != "https" || base.username.isNotEmpty() || base.password.isNotEmpty()) {
+            throw UnsafeModelEndpointException()
+        }
+        val addresses = InetAddress.getAllByName(base.host).toList()
+        if (addresses.isEmpty() || addresses.any { !it.isPubliclyRoutable() }) {
+            throw UnsafeModelEndpointException()
+        }
+        ValidatedPublicService(base, base.host, addresses.distinctBy { it.hostAddress })
+    }
 
 private class FixedDns(
     private val approvedHost: String,

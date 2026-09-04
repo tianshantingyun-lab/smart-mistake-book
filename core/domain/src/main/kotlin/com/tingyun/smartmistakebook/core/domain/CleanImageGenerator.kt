@@ -8,7 +8,12 @@ package com.tingyun.smartmistakebook.core.domain
  * so the mistake-book commit stays fast and offline-safe.
  */
 fun interface CleanImageGenerator {
-    suspend fun generateClean(originalBytes: ByteArray, mimeType: String): CleanImageResult
+    /**
+     * Produces the clean redraw, or null when the generator declines (e.g. no
+     * capable model is configured). A null result leaves the revision with the
+     * original photo only; it is never a failure of the commit.
+     */
+    suspend fun generateClean(originalBytes: ByteArray, mimeType: String): CleanImageResult?
 }
 
 data class CleanImageResult(

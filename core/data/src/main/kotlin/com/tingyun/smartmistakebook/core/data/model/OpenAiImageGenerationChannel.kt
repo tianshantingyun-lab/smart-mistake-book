@@ -25,6 +25,7 @@ internal class OpenAiImageGenerationChannel(
     private val baseUrl: String = "https://api.openai.com/v1",
     private val modelId: String = DEFAULT_MODEL_ID,
     private val client: OkHttpClient = defaultClient(),
+    private val authorization: String? = null,
 ) : ImageGenerationChannel {
 
     override suspend fun redrawClean(request: ImageRedrawRequest): ImageRedrawResult =
@@ -45,6 +46,9 @@ internal class OpenAiImageGenerationChannel(
             val http = Request.Builder()
                 .url("$baseUrl/images/edits")
                 .post(body)
+                .apply {
+                    authorization?.let { header("Authorization", it) }
+                }
                 .build()
             client.newCall(http).execute().use { response ->
                 if (!response.isSuccessful) {

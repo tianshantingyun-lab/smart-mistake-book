@@ -76,7 +76,9 @@ import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -87,6 +89,7 @@ class RoomCaptureWorkflowRepository internal constructor(
     private val assetVault: AndroidCanonicalAssetVault,
     private val localTextRecognizer: LocalQuestionTextRecognizer,
     private val cleanRedraw: CleanImageGenerator? = null,
+    private val cleanRedrawScope: CoroutineScope? = null,
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<PendingCaptureItem>> =
         database.observePendingCaptureDrafts().map { records ->
@@ -348,16 +351,17 @@ class RoomCaptureWorkflowRepository internal constructor(
                 errorBookEntryId = result.receipt.errorBookEntryId,
                 created = result.created,
             )
-            // Commit-time clean redraw: never blocks or fails the commit. A missing or
-            // failing generator leaves the revision with the original photo only.
+            // Commit-time clean redraw: never blocks or fails the commit. When an
+            // application scope is injected the redraw runs in the background and
+            // the save returns immediately; otherwise (tests, no scope) it runs
+            // synchronously but still cannot fail the commit. A missing or failing
+            // generator leaves the revision with the original photo only.
             if (result.created) {
-                runCatching {
-                    redrawAndAttachClean(
-                        original = originalFile,
-                        originalMimeType = draft.sourceAsset.mimeType,
-                        revisionId = result.receipt.problemRevisionId,
-                    )
-                }
+                scheduleCleanRedraw(
+                    original = originalFile,
+                    originalMimeType = draft.sourceAsset.mimeType,
+                    revisionId = result.receipt.problemRevisionId,
+                )
             }
             summary
         }
@@ -368,7 +372,7 @@ class RoomCaptureWorkflowRepository internal constructor(
         revisionId: String,
     ) {
         val generator = cleanRedraw ?: return
-        val clean = generator.generateClean(original.readBytes(), originalMimeType)
+        val clean = generator.generateClean(original.readBytes(), originalMimeType) ?: return
         attachCleanRedrawImage(
             problemRevisionId = revisionId,
             cleanImageBytes = clean.bytes,
@@ -483,7 +487,41 @@ class RoomCaptureWorkflowRepository internal constructor(
             practiceUnitId = result.receipt.practiceUnitId,
             errorBookEntryId = result.receipt.errorBookEntryId,
             created = result.created,
-        )
+        ).also { summary ->
+            // Commit-time clean redraw for a tutor session saved into the
+            // mistake book; identical fail-closed semantics to library commits.
+            if (summary.created) {
+                scheduleCleanRedraw(
+                    original = assetVault.resolve(session.sourceAsset),
+                    originalMimeType = session.sourceAsset.mimeType,
+                    revisionId = summary.problemRevisionId,
+                )
+            }
+        }
+    }
+
+    /**
+     * Schedules the commit-time clean redraw. With an injected application scope
+     * the redraw is fire-and-forget in the background so the save never blocks;
+     * without one it runs inline (tests). Both paths are fail-closed.
+     */
+    private suspend fun scheduleCleanRedraw(
+        original: File,
+        originalMimeType: String,
+        revisionId: String,
+    ) {
+        val scope = cleanRedrawScope
+        if (scope != null) {
+            scope.launch {
+                runCatching {
+                    redrawAndAttachClean(original, originalMimeType, revisionId)
+                }
+            }
+        } else {
+            runCatching {
+                redrawAndAttachClean(original, originalMimeType, revisionId)
+            }
+        }
     }
 
     override suspend fun endTutorSessionWithoutSaving(
@@ -1154,11 +1192,13 @@ object CaptureWorkflowRepositoryFactory {
         context: Context,
         database: StudyDatabasePort,
         cleanRedraw: CleanImageGenerator? = null,
+        cleanRedrawScope: CoroutineScope? = null,
     ): CaptureWorkflowRepository =
         RoomCaptureWorkflowRepository(
             database = database,
             assetVault = AndroidCanonicalAssetVault(context.applicationContext),
             localTextRecognizer = MlKitChineseQuestionTextRecognizer(context.applicationContext),
             cleanRedraw = cleanRedraw,
+            cleanRedrawScope = cleanRedrawScope,
         )
 }

@@ -162,8 +162,7 @@ class CaptureWorkflowInstrumentedTest {
                     createPng(24, 24).readBytes(),
                     "image/png",
                 )
-            },
-        )
+            },        )
         val source = createPng(48, 48)
         val imported = generatingRepository.importDraft(
             CaptureDraftImportRequest(
@@ -652,6 +651,138 @@ class CaptureWorkflowInstrumentedTest {
         val pending = repository.observePendingCaptures().first().single()
         assertEquals(PendingCaptureStage.SOURCE_UNAVAILABLE, pending.stage)
         assertEquals(null, pending.tutorSessionId)
+    }
+
+    @Test
+    fun libraryCommitAttachesCleanRedrawInTheBackgroundAndReturnsImmediately() = runBlocking {
+        val cleanProduced = java.util.concurrent.atomic.AtomicBoolean(false)
+        val saveScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val asyncRepository = RoomCaptureWorkflowRepository(
+            database,
+            AndroidCanonicalAssetVault(context),
+            noTextRecognizer(),
+            cleanRedraw = com.tingyun.smartmistakebook.core.domain.CleanImageGenerator { original, mime ->
+                kotlinx.coroutines.delay(250)
+                cleanProduced.set(true)
+                com.tingyun.smartmistakebook.core.domain.CleanImageResult(
+                    createPng(22, 22).readBytes(),
+                    "image/png",
+                )
+            },
+            cleanRedrawScope = saveScope,
+        )
+        try {
+            val source = createPng(width = 96, height = 128)
+            val draft = asyncRepository.importDraft(
+                CaptureDraftImportRequest(
+                    requestId = "library-async-commit-import",
+                    localUri = privateUri(source).toString(),
+                    source = CaptureInputSource.CAMERA,
+                    origin = CaptureEntryOrigin.LIBRARY,
+                    occurredAtEpochMillis = 70_000,
+                ),
+            )
+            // confirmAndCommit must return promptly even though the redraw is still running.
+            val committed = withTimeout(2_000) {
+                asyncRepository.confirmAndCommit(
+                    ConfirmCapturedProblemRequest(
+                        requestId = "library-async-commit-confirm",
+                        draftId = draft.draftId,
+                        expectedRevisionNumber = draft.revisionNumber,
+                        subject = "MATH",
+                        title = "异步重绘直存",
+                        transcription = "求函数 f(x)=x² 的单调区间。",
+                        writingLayer = CaptureWritingLayer.PRINTED,
+                        transcriptionReview = CaptureTranscriptionReview.MANUAL_ENTRY,
+                        occurredAtEpochMillis = 71_000,
+                    ),
+                )
+            }
+            assertTrue(committed.created)
+            assertFalse(cleanProduced.get())
+
+            withTimeout(5_000) {
+                while (true) {
+                    val detail = checkNotNull(database.readMistakeDetail(committed.errorBookEntryId))
+                    if (detail.sourceAssets.any { it.role == "CLEAN_IMAGE" }) break
+                    kotlinx.coroutines.delay(50)
+                }
+            }
+            assertTrue(cleanProduced.get())
+        } finally {
+            saveScope.cancel()
+        }
+    }
+
+    @Test
+    fun tutorSaveAttachesCleanRedrawInTheBackgroundAndReturnsImmediately() = runBlocking {
+        val cleanProduced = java.util.concurrent.atomic.AtomicBoolean(false)
+        val saveScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val asyncRepository = RoomCaptureWorkflowRepository(
+            database,
+            AndroidCanonicalAssetVault(context),
+            noTextRecognizer(),
+            cleanRedraw = com.tingyun.smartmistakebook.core.domain.CleanImageGenerator { original, mime ->
+                // Simulate a slow remote edit so the save must return first.
+                kotlinx.coroutines.delay(300)
+                cleanProduced.set(true)
+                com.tingyun.smartmistakebook.core.domain.CleanImageResult(
+                    createPng(20, 20).readBytes(),
+                    "image/png",
+                )
+            },
+            cleanRedrawScope = saveScope,
+        )
+        try {
+            val source = createPng(width = 96, height = 128)
+            val draft = asyncRepository.importDraft(
+                CaptureDraftImportRequest(
+                    requestId = "tutor-async-save-import",
+                    localUri = privateUri(source).toString(),
+                    source = CaptureInputSource.CAMERA,
+                    origin = CaptureEntryOrigin.TUTOR,
+                    occurredAtEpochMillis = 60_000,
+                ),
+            )
+            val session = asyncRepository.confirmForTutoring(
+                ConfirmCapturedProblemRequest(
+                    requestId = "tutor-async-save-confirm",
+                    draftId = draft.draftId,
+                    expectedRevisionNumber = draft.revisionNumber,
+                    subject = "PHYSICS",
+                    title = "异步重绘测试",
+                    transcription = "物块在斜面上受力分析。",
+                    writingLayer = CaptureWritingLayer.PRINTED,
+                    transcriptionReview = CaptureTranscriptionReview.MANUAL_ENTRY,
+                    occurredAtEpochMillis = 61_000,
+                ),
+            )
+
+            // saveTutorSession must return promptly even though the redraw is still running.
+            val saved = withTimeout(2_000) {
+                asyncRepository.saveTutorSession(
+                    SaveTutorSessionRequest(
+                        requestId = "tutor-async-save",
+                        sessionId = session.sessionId,
+                        occurredAtEpochMillis = 62_000,
+                    ),
+                )
+            }
+            assertTrue(saved.created)
+            assertFalse(cleanProduced.get())
+
+            // The clean asset lands once the background redraw completes.
+            withTimeout(5_000) {
+                while (true) {
+                    val detail = checkNotNull(database.readMistakeDetail(saved.errorBookEntryId))
+                    if (detail.sourceAssets.any { it.role == "CLEAN_IMAGE" }) break
+                    kotlinx.coroutines.delay(50)
+                }
+            }
+            assertTrue(cleanProduced.get())
+        } finally {
+            saveScope.cancel()
+        }
     }
 
     @Test
