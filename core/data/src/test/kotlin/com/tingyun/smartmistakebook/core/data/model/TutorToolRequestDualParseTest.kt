@@ -1,8 +1,12 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import kotlinx.serialization.json.Json
@@ -22,6 +26,24 @@ class TutorToolRequestDualParseTest {
         priorMessages = emptyList(),
     )
 
+    private fun respondInput() = TutorRespondInput(
+        sessionId = "session-1",
+        draftRevisionNumber = 1,
+        subject = "数学",
+        questionDocument = QuestionDocument(
+            id = "question-1",
+            blocks = listOf(ContentBlock.Paragraph("stem", "求函数的单调区间")),
+        ),
+        relevantLearningEvidence = emptyList(),
+        projectionIsCurrent = true,
+        responseOrdinal = 1,
+        cycleOrdinal = 1,
+        turnOrdinal = 1,
+        studentMessage = "这一步怎么来的？",
+        priorMessages = emptyList(),
+        requestedMove = null,
+    )
+
     private fun toolRequestPayload() = json.parseToJsonElement("""
         {"intentDecision":{"intent":"MISTAKE_NOTEBOOK_LOOKUP","confidence":0.9,
           "explicitActionRequest":true,"memoryPreference":"UNCHANGED",
@@ -34,6 +56,14 @@ class TutorToolRequestDualParseTest {
           "explicitActionRequest":true,"memoryPreference":"UNCHANGED",
           "requestedLocalCapability":"READ_MISTAKE_NOTEBOOK","lookupTerms":["二次函数"]},
          "messageMarkdown":"错题本里有 2 道二次函数相关错题。"}
+    """.trimIndent()).jsonObject
+
+    private fun respondFinalAnswerPayload() = json.parseToJsonElement("""
+        {"intentDecision":{"intent":"MISTAKE_NOTEBOOK_LOOKUP","confidence":0.9,
+          "explicitActionRequest":true,"memoryPreference":"UNCHANGED",
+          "requestedLocalCapability":"READ_MISTAKE_NOTEBOOK","lookupTerms":["二次函数"]},
+         "messageMarkdown":"错题本里有 2 道二次函数相关错题。",
+         "solutionRevealed":false}
     """.trimIndent()).jsonObject
 
     @Test
@@ -55,5 +85,30 @@ class TutorToolRequestDualParseTest {
             finalAnswerPayload(), lobbyInput(), "test-model-v1",
         )
         assertTrue("无 toolRequests 应解析为终答", output is TutorLobbyOutput)
+    }
+
+    @Test
+    fun respondToolRequestPayloadParsesToToolRequestsOutput() {
+        val output = OpenAiModelTaskAdapters.parse(
+            toolRequestPayload(), respondInput(), "test-model-v1",
+        )
+        assertTrue("含 toolRequests 的 Respond payload 应解析为工具申请轮", output is TutorToolRequestsOutput)
+        val round = output as TutorToolRequestsOutput
+        assertEquals(TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP, round.intentDecision.intent)
+        assertEquals(1, round.calls.size)
+        assertEquals(TutorToolName.NOTEBOOK_READ, round.calls[0].tool)
+        assertEquals(listOf("二次函数"), round.calls[0].terms)
+    }
+
+    @Test
+    fun respondFinalAnswerPayloadParsesToRespondOutput() {
+        val output = OpenAiModelTaskAdapters.parse(
+            respondFinalAnswerPayload(), respondInput(), "test-model-v1",
+        )
+        assertTrue("无 toolRequests 的 Respond payload 应解析为终答", output is TutorRespondOutput)
+        val respond = output as TutorRespondOutput
+        assertEquals("错题本里有 2 道二次函数相关错题。", respond.messageMarkdown)
+        assertEquals("question-1", respond.questionDocumentId)
+        assertEquals(false, respond.solutionRevealed)
     }
 }
