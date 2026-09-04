@@ -423,12 +423,22 @@ internal object OpenAiModelTaskAdapters {
         }
         if (toolDeclarations.isNotEmpty()) {
             append("\n可用工具（仅以下工具可申请；terms 必须直接来自学生消息原词，不得臆测；" +
-                "每次申请需给 rationale 锚定理由）：")
-            append(toolDeclarations.joinToString("、") { it.name })
-            append("\n需要查询时，把整个输出改为返回 {\"intentDecision\":{...},\"toolRequests\":" +
+                "每次申请需给 rationale 锚定理由；单轮最多申请 3 个互不相同工具；未在上方列出的工具不可申请）：")
+            toolDeclarations.forEach { tool ->
+                append("- ${tool.name}：${toolPurposeDescription(tool)}\n")
+            }
+            append("需要查询时，把整个输出改为返回 {\"intentDecision\":{...},\"toolRequests\":" +
                 "[{\"tool\":\"<工具名>\",\"terms\":[\"<原词>\"],\"rationale\":\"<锚定理由>\"}]}；" +
                 "不需要查询时按正常规则返回最终回答。")
         }
+    }
+
+    private fun toolPurposeDescription(tool: TutorToolName): String = when (tool) {
+        TutorToolName.KNOWLEDGE_READ -> "读取这道题相关知识点讲解材料"
+        TutorToolName.NOTEBOOK_READ -> "检索错题本中匹配的错题"
+        TutorToolName.MASTERY_READ -> "读取学生对相关知识的掌握情况"
+        TutorToolName.NOTEBOOK_WRITE -> "写入错题本（需学生明确命令，当前阶段仅声明不启用）"
+        TutorToolName.MASTERY_UPDATE -> "更新掌握度（需学生明确命令，当前阶段仅声明不启用）"
     }
 
     private fun visualProgramPromptRules(): String = """

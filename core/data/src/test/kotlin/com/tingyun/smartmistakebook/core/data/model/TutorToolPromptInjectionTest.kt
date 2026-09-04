@@ -66,6 +66,11 @@ class TutorToolPromptInjectionTest {
         assertTrue(prompt.contains("NOTEBOOK_READ"))
         assertTrue(prompt.contains("toolRequests"))
         assertTrue(prompt.contains("rationale"))
+        assertTrue(prompt.contains("读取这道题相关知识点讲解材料"))
+        assertTrue(prompt.contains("检索错题本中匹配的错题"))
+        assertTrue(prompt.contains("读取学生对相关知识的掌握情况"))
+        assertTrue(prompt.contains("单轮最多申请 3 个互不相同工具"))
+        assertTrue(prompt.contains("未在上方列出的工具不可申请"))
     }
 
     @Test
