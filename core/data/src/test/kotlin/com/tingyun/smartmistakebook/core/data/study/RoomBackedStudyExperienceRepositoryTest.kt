@@ -1048,6 +1048,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
 
+    override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
+
     override fun observePendingProblemDraftCount(): Flow<Int> = MutableStateFlow(0)
 
     override fun observeLearningLedgerHead(learnerId: String): Flow<Long> = learningLedgerHead

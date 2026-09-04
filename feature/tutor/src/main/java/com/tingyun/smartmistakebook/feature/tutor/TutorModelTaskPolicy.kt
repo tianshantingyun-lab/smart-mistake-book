@@ -701,6 +701,7 @@ internal fun buildTutorRespondRequest(
             TutorToolName.KNOWLEDGE_READ,
             TutorToolName.NOTEBOOK_READ,
             TutorToolName.MASTERY_READ,
+            TutorToolName.MASTERY_UPDATE,
         ),
     )
     val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {

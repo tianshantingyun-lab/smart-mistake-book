@@ -13,9 +13,47 @@ enum class TutorToolName {
     KNOWLEDGE_READ,
     NOTEBOOK_READ,
     MASTERY_READ,
-    /** 写工具：需要学生明确命令，当前阶段仅声明不启用（spec §2 T4/T6）。 */
+    /** 写工具 T6：模型提语义证据、本地门控落库（spec §5）；T4 需学生明确命令，当前阶段仅声明不启用。 */
     NOTEBOOK_WRITE,
     MASTERY_UPDATE,
+}
+
+/**
+ * Model-judged evidence direction for a MASTERY_UPDATE call. The model
+ * decides the semantic sign; the local gate and weight table decide
+ * everything numeric (research tutor-evidence-gate §0.1).
+ */
+@Serializable
+enum class TutorEvidenceDirection {
+    POSITIVE,
+    NEGATIVE,
+}
+
+/**
+ * Model-judged tier of how well the student understands the current
+ * knowledge point (research tutor-evidence-gate §1: a noisy predictor, never
+ * a fact — self-report of understanding is systematically overconfident).
+ * The mapping to an evidence weight is local and constant (FSRS-grade
+ * analogy: STRUGGLING↔Again, UNCERTAIN↔Hard, CONFIDENT↔Good,
+ * MASTERED-with-behavioral-support↔Easy).
+ */
+@Serializable
+enum class TutorUnderstandingTier {
+    STRUGGLING,
+    UNCERTAIN,
+    CONFIDENT,
+    MASTERED,
+}
+
+/**
+ * Model-judged difficulty tier of the current problem. Advisory only —
+ * audited with the evidence, never enters the forgetting curve.
+ */
+@Serializable
+enum class TutorDifficultyTier {
+    EASY,
+    MEDIUM,
+    HARD,
 }
 
 /** One model-issued tool request for the current round. */
@@ -24,11 +62,31 @@ data class TutorToolCall(
     val tool: TutorToolName,
     val rationale: String,
     val terms: List<String> = emptyList(),
+    /**
+     * Model-judged semantic direction — MASTERY_UPDATE only. The model
+     * decides the sign (it is the semantic element only it can judge from
+     * the dialogue); the numeric weight stays local.
+     */
+    val direction: TutorEvidenceDirection? = null,
+    /**
+     * Model-judged understanding tier — MASTERY_UPDATE only. Semantic
+     * judgment; the tier→weight mapping stays local and constant.
+     */
+    val understanding: TutorUnderstandingTier? = null,
+    /** Model-judged difficulty tier (advisory, audited with the evidence). */
+    val difficultyTier: TutorDifficultyTier? = null,
+    /**
+     * Model's own confidence in its semantic judgment (0..1), MASTERY_UPDATE
+     * only. The local gate thresholds it against
+     * [com.tingyun.smartmistakebook.core.domain.MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD].
+     */
+    val confidence: Double = 0.8,
 ) {
     init {
         require(rationale.isNotBlank() && rationale.length <= MAX_TOOL_RATIONALE_CHARS) {
             "A tool call must state an anchored reason of at most $MAX_TOOL_RATIONALE_CHARS chars"
         }
+        require(confidence in 0.0..1.0) { "Tool call confidence must be in 0..1" }
         require(
             terms.size <= TutorIntentDecision.MAX_LOOKUP_TERMS &&
                 terms.all { term ->
@@ -43,6 +101,18 @@ data class TutorToolCall(
         if (tool != TutorToolName.MASTERY_READ) {
             require(terms.isNotEmpty()) {
                 "The $tool tool requires at least one lookup term"
+            }
+        }
+        if (tool == TutorToolName.MASTERY_UPDATE) {
+            require(direction != null) {
+                "A MASTERY_UPDATE call must state a model-judged evidence direction"
+            }
+            require(understanding != null) {
+                "A MASTERY_UPDATE call must state a model-judged understanding tier"
+            }
+        } else {
+            require(direction == null && understanding == null) {
+                "Only MASTERY_UPDATE carries a direction or understanding tier"
             }
         }
     }

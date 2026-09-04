@@ -977,14 +977,19 @@ class TutorModelTaskPolicyTest {
         )
         val input = request.input as TutorRespondInput
         assertTrue(
-            "Respond 应声明 T2/T3/T5",
+            "Respond 应声明读工具 T2/T3/T5 + 写工具 T6(MASTERY_UPDATE)",
             input.toolDeclarations.containsAll(
-                listOf(TutorToolName.KNOWLEDGE_READ, TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ),
+                listOf(
+                    TutorToolName.KNOWLEDGE_READ,
+                    TutorToolName.NOTEBOOK_READ,
+                    TutorToolName.MASTERY_READ,
+                    TutorToolName.MASTERY_UPDATE,
+                ),
             ),
         )
         assertFalse(
-            "P1 不应声明写工具 T6/T4",
-            input.toolDeclarations.any { it == TutorToolName.MASTERY_UPDATE || it == TutorToolName.NOTEBOOK_WRITE },
+            "Respond 不应声明 T4(NOTEBOOK_WRITE)——需学生显式确认，非自动写",
+            TutorToolName.NOTEBOOK_WRITE in input.toolDeclarations,
         )
     }
 

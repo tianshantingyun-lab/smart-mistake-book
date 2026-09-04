@@ -104,19 +104,30 @@ adapter.parse 对 Lobby/Respond 先探测 payload 是否含 `toolRequests` 键�
 - 死变量处置：现 `nextDeclarations`（`RoomModelTaskRepository.kt:288-293`）计算后从未被写进 `roundRequest`——是遗留死代码。接线时删除它，由 §3.4 的 `convergedDeclarations` helper 取代，确保第二轮携带正确的收敛声明集与上轮结果。
 - 授权交集逻辑不变（`tutorToolAuthorization`）。
 
-### 3.5 T6 `mastery_update` 接入（spec §5/§5.2 批准语义：无学生确认、一切自动）
+### 3.5 T6 `mastery_update` 接入（spec §5/§5.2 批准语义：无学生确认、一切自动）✅ P2 已实现（2026-09-05）
 
 spec §5.2 明确定义 T6 安全边界 = **模型提交证据事件 + 本地确定性整合**：
-`模型提交 {knowledgeNodeId, direction, reasonMarkdown, sourceId} → 本地意图门控 + 配额 + weight 封顶 + 审计 → 投影器落库`。
-"模型不可自主触发写工具/需学生确认"是 **T4 notebook_write**（§9.7 暂缓），**不适用于 T6**。T6 声明态修正如下：
+`模型提交 {knowledgeNodeId, direction, understanding, confidence, rationale} → 本地门控 + 权重表 + 配额 + 冷却 + 审计 → 投影器落库`。
+"模型不可自主触发写工具/需学生确认"是 **T4 notebook_write**（§9.7 暂缓），**不适用于 T6**。
 
-- **声明集**：`toolDeclarationsFor` 在 Respond 首轮将 `MASTERY_UPDATE` 与 T2/T3/T5 并列声明（模型在 `CURRENT_QUESTION_HELP` 下可申请；spec §3.3 意图-工具映射 CURRENT_QUESTION_HELP → T2/T3/T5，T6 由 §5 授权矩阵在当前题意图下放行——`TutorToolLoop.kt:161` 已含 MASTERY_UPDATE，保留）。
-- **授权交集**：`tutorToolAuthorization`（声明集 ∩ 意图矩阵）已保证 CASUAL/AMBIGUOUS/APP_HELP 下 T6 零声明 → 申请被拒 + `not_authorized` outcome，无需额外门控。
-- **执行器改造**：`RoomTutorToolRunner.masteryUpdate`（`RoomTutorToolRunner.kt:154`）现为关键词启发式判 direction，且当前不可达（声明集不含 T6）。按 spec §9.2 改为**模型判 direction + 本地交叉核对**，需契约级改动：
-  - `TutorToolCall` 增加 `direction: TutorEvidenceDirection`（POSITIVE/NEGATIVE，仅 T6 用），`TUTOR_TOOL_CALL_WIRE_KEYS` 同步加 `"direction"`（`OpenAiModelResponseParsers.kt:465`）——模型必须给锚定 rationale（引用学生原话/作答行为），不许空判。
-  - 本地不做 keywords 猜测；只做 weight 封顶常量（POSITIVE 0.18 低权重档 / NEGATIVE 0.35 标准档，对齐 spec §9.2 差异化权重）与落库（`recordChatEvidence`），数值永远由投影器公式产生——模型无数值权。
-  - **本地交叉核对（spec §9.2）**：同会话客观信号（作答对错/响应时长/历史证据）与模型判断冲突时降权或拒收——此层的会话客观信号读取依赖讲题会话事件源，P2 若该信号面未就绪则先落地"模型 direction + 本地 weight/配额/审计"，交叉核对标为待会话事件面接线的后续增强（不阻塞主链路）。
-- **配额**：每会话 T6 提交上限常量，breach=RETURN_ERROR_RESPONSE（spec §3.1 限额原语 T6 低限取值）。
+**已落地形态**（参数科学依据见 `docs/research/tutor-evidence-gate-research.md`，实现比本节初稿深化）：
+
+- **协议层（model）**：`TutorToolCall` 增 `direction: TutorEvidenceDirection?`（POSITIVE/NEGATIVE）、`understanding: TutorUnderstandingTier?`（STRUGGLING/UNCERTAIN/CONFIDENT/MASTERED）、`difficultyTier: TutorDifficultyTier?`（EASY/MEDIUM/HARD，advisory）、`confidence: Double = 0.8`。init 强制 MASTERY_UPDATE 必有 direction+understanding（缺则契约拒，协议违规 fail-fast），非 MASTERY_UPDATE 不得带。
+- **授权（model）**：`tutorToolAuthorization` CURRENT_QUESTION_HELP 意图矩阵已含 MASTERY_UPDATE；P2 声明集补全——`toolDeclarationsFor`（Respond）与 feature `buildTutorRespondRequest` 均含 MASTERY_UPDATE（与 T2/T3/T5 并列），故 prompt 广告、授权放行一致。CASUAL/AMBIGUOUS/APP_HELP 下 T6 零声明 → `not_authorized`。Lobby 无题上下文/证据资格，不含 T6。
+- **prompt（adapter）**：`toolPurposeDescription(MASTERY_UPDATE)` 写明字段规范（direction/understanding/terms=[知识点id]/confidence）+ 用途说明"只在你从对话中有确切依据判断学生理解/卡住时才申请；闲聊不要申请"；声明块含 T6 时补申请样例。
+- **门控（domain `MasteryWriteGate`，纯函数）**：模型只供语义，全部数值本地决定。7 门顺序：CONTRADICTORY_SEMANTICS（POSITIVE+STRUGGLING）→ EVIDENCE_BELOW_CONFIDENCE（θ=0.7）→ KNOWLEDGE_NODE_NOT_ANCHORED（terms[0] 须命中真实知识节点）→ MASTERED_WITHOUT_BEHAVIORAL_SUPPORT → SAME_KC_IN_COOLDOWN（12h）→ CONVERSATION_QUOTA_EXHAUSTED（8/会话）→ ATTENTION_BELOW_FLOOR（0.4）。权重表：POSITIVE 按 understanding 档位（UNCERTAIN 0.10 / CONFIDENT 0.15 / MASTERED 0.18，STRUGGLING 拒）、NEGATIVE 恒 0.35；全 ≤ MAX_EVIDENCE_WEIGHT 0.35。
+- **执行器（`RoomTutorToolRunner.masteryUpdate`）**：读 `call.direction/understanding/confidence`，会话证据（`readChatEvidenceByConversation`）算冷却/配额，terms[0] 经 `readKnowledgeNodesByIds` 验锚定，`hasBehavioralSupport` 由同会话客观作答信号提供（runner 侧信号面未接线时保守 false → MASTERED 高置信档被拒，见下）。Accepted → 落正常证据；Rejected → **落 rejected 观察行**（带拒因），outcome errorKind=`rejected:<reason>`。
+- **观察通道（db v43）**：`learner_chat_evidence` 增 `rejected_reason`/`rejected_at_epoch_millis`（可空）。`ChatEvidenceDao.insertAsLedgerEvents` 按 `isRejected` 分流：rejected 只 insertAll（可审计），**不分配学习序列、不写 projection_outbox → 投影器读不到 → 掌握度零影响**（研究 §3.3：被拒 ≠ 删除）。
+- **交叉核对/行为佐证（spec §9.2）**：MASTERED 高置信档要求同会话客观作答正确佐证（Koriat & Bjork 幻觉；Nelson & Dunlosky delayed-JOL）。**已落地**：gate 的 MASTERED_WITHOUT_BEHAVIORAL_SUPPORT 门；runner 侧 hasBehavioralSupport 信号源待 UI 会话事件面接线（当前保守 false → MASTERED 无佐证即拒，安全侧）。
+- **attentionFactor（研究 §2）**：`MasteryWriteGate.ATTENTION_REJECT_FLOOR=0.4`；`RoomTutorToolRunner.Context.attentionFactor`（默认 1.0）。**真实信号接线未做**：feature 讲题 UI 无切屏/离开采集（review 场景的 `AttentionSignal` 生产点在 `RoomBackedStudyExperienceRepository`/`ReviewLogSink`，非讲题会话）。P2 默认 1.0 不误伤，拒写线只在未来 UI 采集接入后触发——独立于 T6 协议闭环，标为后续 UI 接线。
+- **配额/审计**：`MAX_WRITES_PER_CONVERSATION=8` 由 gate 执行；全部 T6 写入（含 rejected）落 `learner_chat_evidence` 审计。
+
+**测试（已落地实证）**：
+- `MasteryWriteGateTest`（core:domain）：7 门逐门 + 权重表 + 常量对齐研究校准表。
+- `TutorToolRequestDualParseTest` +2：MASTERY_UPDATE 语义字段解析；缺 direction 契约拒绝。
+- `TutorToolPromptInjectionTest` +2：声明含 T6 → prompt 教字段+样例；不含 → 无 T6 文本。
+- `ChatEvidenceLedgerIntegrationTest` +1（instrumented，AVD 实跑）：rejected 行落库可审计但 loadLearningLedger 不含、不进投影。
+- `RoomModelTaskT6MasteryInstrumentedTest`（新，AVD 实跑）：T6 工具环端到端——Respond 会话 MASTERY_UPDATE → 授权放行（非 not_authorized）→ gate 拒未锚定 → rejected 观察行落库。
 
 ### 3.6 版本与披露
 

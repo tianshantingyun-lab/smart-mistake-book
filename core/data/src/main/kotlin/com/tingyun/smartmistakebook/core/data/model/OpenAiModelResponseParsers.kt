@@ -54,6 +54,9 @@ import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.StructuredContentSanitizer
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
+import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
+import com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier
 import com.tingyun.smartmistakebook.core.model.TutorComparisonRow
 import com.tingyun.smartmistakebook.core.model.TutorComparisonScene
 import com.tingyun.smartmistakebook.core.model.TutorConceptMapScene
@@ -462,7 +465,8 @@ internal fun JsonObject.toTutorRespond(
 }
 
 internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS = setOf("intentDecision", "toolRequests")
-private val TUTOR_TOOL_CALL_WIRE_KEYS = setOf("tool", "terms", "rationale")
+private val TUTOR_TOOL_CALL_WIRE_KEYS =
+    setOf("tool", "terms", "rationale", "direction", "understanding", "difficultyTier", "confidence")
 
 internal fun JsonObject.toTutorToolRequests(
     modelVersion: String,
@@ -478,6 +482,10 @@ internal fun JsonObject.toTutorToolRequests(
                     tool = enumValue(call.requiredString("tool")),
                     rationale = call.requiredString("rationale"),
                     terms = call.optionalArray("terms").map(JsonElement::requiredPrimitiveString),
+                    direction = call.optionalString("direction")?.let { enumValue<TutorEvidenceDirection>(it) },
+                    understanding = call.optionalString("understanding")?.let { enumValue<TutorUnderstandingTier>(it) },
+                    difficultyTier = call.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
+                    confidence = call.optionalDouble("confidence") ?: 0.8,
                 )
             }
             ?: throw InvalidModelResponseException(),

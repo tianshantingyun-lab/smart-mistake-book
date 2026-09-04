@@ -111,4 +111,43 @@ class TutorToolRequestDualParseTest {
         assertEquals("question-1", respond.questionDocumentId)
         assertEquals(false, respond.solutionRevealed)
     }
+
+    @Test
+    fun masteryUpdateToolRequestParsesSemanticFields() {
+        val payload = json.parseToJsonElement("""
+            {"intentDecision":{"intent":"CURRENT_QUESTION_HELP","confidence":0.95,
+              "explicitActionRequest":false,"memoryPreference":"UNCHANGED",
+              "requestedLocalCapability":"NONE","lookupTerms":[]},
+             "toolRequests":[{"tool":"MASTERY_UPDATE","terms":["knowledge-node-1"],
+               "rationale":"学生说现在理解了配方法，且刚独立做对一道同类题。",
+               "direction":"POSITIVE","understanding":"MASTERED","difficultyTier":"MEDIUM","confidence":0.85}]}
+        """.trimIndent()).jsonObject
+
+        val output = OpenAiModelTaskAdapters.parse(payload, respondInput(), "test-model-v1")
+        assertTrue(output is TutorToolRequestsOutput)
+        val round = output as TutorToolRequestsOutput
+        assertEquals(1, round.calls.size)
+        val call = round.calls[0]
+        assertEquals(TutorToolName.MASTERY_UPDATE, call.tool)
+        assertEquals(listOf("knowledge-node-1"), call.terms)
+        assertEquals(com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection.POSITIVE, call.direction)
+        assertEquals(com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier.MASTERED, call.understanding)
+        assertEquals(com.tingyun.smartmistakebook.core.model.TutorDifficultyTier.MEDIUM, call.difficultyTier)
+        assertEquals(0.85, call.confidence, 1e-9)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun masteryUpdateWithoutDirectionIsRejectedByModelContract() {
+        // MASTERY_UPDATE 缺 direction/understanding 触发 TutorToolCall.init require——
+        // 模型协议违规，契约层 fail-fast（绝不让无方向证据进 gate）。
+        val payload = json.parseToJsonElement("""
+            {"intentDecision":{"intent":"CURRENT_QUESTION_HELP","confidence":0.95,
+              "explicitActionRequest":false,"memoryPreference":"UNCHANGED",
+              "requestedLocalCapability":"NONE","lookupTerms":[]},
+             "toolRequests":[{"tool":"MASTERY_UPDATE","terms":["knowledge-node-1"],
+               "rationale":"学生说现在理解了。"}]}
+        """.trimIndent()).jsonObject
+
+        OpenAiModelTaskAdapters.parse(payload, respondInput(), "test-model-v1")
+    }
 }

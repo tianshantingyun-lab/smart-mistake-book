@@ -146,4 +146,11 @@ interface ModelTaskDatabasePort {
     suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>)
 
     suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>
+
+    /**
+     * Chat evidence for one conversation (research tutor-evidence-gate §4):
+     * the gate reads this to enforce the same-KC cooldown and the
+     * per-conversation write quota before accepting a MASTERY_UPDATE write.
+     */
+    suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>
 }

@@ -29,4 +29,15 @@ data class LearnerChatEvidenceEntity(
     /** 恒为 MODEL_CHAT——审计与批量撤销锚点。 */
     val source_kind: String,
     val created_at_epoch_millis: Long,
-)
+    /**
+     * v43: 门控拒写（research tutor-evidence-gate §3.3：被拒 ≠ 删除）——
+     * 非 NULL 表示该证据被本地门控拒绝，只作审计/补救观察，**不进投影**。
+     * NULL = 正常证据。
+     */
+    val rejected_reason: String? = null,
+    val rejected_at_epoch_millis: Long? = null,
+) {
+    /** True when this row is a rejected (observation-only, non-projected) evidence. */
+    val isRejected: Boolean
+        get() = rejected_reason != null
+}

@@ -51,7 +51,16 @@ internal abstract class ChatEvidenceDao {
     @Transaction
     open suspend fun insertAsLedgerEvents(entries: List<LearnerChatEvidenceEntity>) {
         if (entries.isEmpty()) return
-        val outboxRows = entries.map { entry ->
+        // Rejected rows are observation-only (research tutor-evidence-gate
+        // §3.3): they stay as an audit trail but never enter the ledger —
+        // no learning-sequence allocation, no projection_outbox row, so the
+        // projector can never see them.
+        val (accepted, rejected) = entries.partition { !it.isRejected }
+        if (rejected.isNotEmpty()) {
+            insertAll(rejected)
+        }
+        if (accepted.isEmpty()) return
+        val outboxRows = accepted.map { entry ->
             val sequence = allocateSequence(entry.learner_id)
             val event = entry.toChatEvidenceModel(sequence)
             ProjectionOutboxEntity(
@@ -65,7 +74,7 @@ internal abstract class ChatEvidenceDao {
                 createdAtEpochMillis = entry.created_at_epoch_millis,
             )
         }
-        insertAll(entries)
+        insertAll(accepted)
         insertOutboxRows(outboxRows)
     }
 

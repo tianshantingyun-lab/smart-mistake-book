@@ -2,9 +2,13 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
+import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
+import com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
@@ -24,7 +28,18 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         val subject: String?,
         val learnerId: String = "learner:local",
         val conversationId: String? = null,
-    )
+        /**
+         * Real-time attention factor for the current tutoring session
+         * (research tutor-evidence-gate §2): [MasteryWriteGate] rejects a
+         * write below its floor. Defaults to fully-attentive when the UI
+         * collection channel is not wired.
+         */
+        val attentionFactor: Double = 1.0,
+    ) {
+        init {
+            require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
+        }
+    }
 
     suspend fun run(call: TutorToolCall, context: Context): TutorToolOutcome {
         executedCallCount += 1
@@ -152,33 +167,99 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
 
 
     private suspend fun masteryUpdate(call: TutorToolCall, context: Context): TutorToolOutcome {
-        // 学习证据写入 learner_chat_evidence 表（审计 + 投影器读源）。
-        // 模型只给 direction/reason/confidence——weight 由本地常量封顶，
-        // 掌握度数值由投影器公式产生（模型无数值权）。
-        val direction = when {
-            call.rationale.contains("懂") || call.rationale.contains("明白") ||
-                call.rationale.contains("掌握") -> "POSITIVE"
-            else -> "NEGATIVE"
+        // 模型只给语义元素（direction/understanding/锚定 terms），weight 与
+        // 一切门控由本地 MasteryWriteGate 决定——模型无数值权，无关键词猜测。
+        // TutorToolCall.init 已强制 MASTERY_UPDATE 必须带 direction/understanding；
+        // 此处仍按"宁漏记"防御：缺字段时拒写而非默认负向。
+        val direction = call.direction
+        val understanding = call.understanding
+        val knowledgeNodeId = call.terms.firstOrNull().orEmpty()
+        val now = System.currentTimeMillis()
+        if (direction == null || understanding == null) {
+            return TutorToolOutcome(
+                tool = TutorToolName.MASTERY_UPDATE,
+                ok = false,
+                summaryMarkdown = "这条学习证据缺少模型的方向/理解判断，未计入掌握度。",
+                errorKind = "rejected:missing_semantics",
+            )
         }
-        val weight = if (direction == "POSITIVE") 0.18 else 0.35
-        val entry = com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity(
-            evidence_id = "chat-ev-${System.nanoTime()}",
-            learner_id = context.learnerId,
-            conversation_id = context.conversationId ?: "",
-            knowledge_node_id = call.terms.firstOrNull() ?: "",
-            direction = direction,
-            weight = weight,
-            reason_markdown = call.rationale,
-            confidence = 0.8,
-            source_kind = "MODEL_CHAT",
-            created_at_epoch_millis = System.currentTimeMillis(),
-        )
-        port.recordChatEvidence(listOf(entry))
-        return TutorToolOutcome(
-            tool = TutorToolName.MASTERY_UPDATE,
-            ok = true,
-            summaryMarkdown = "学习证据已记录：$direction weight=$weight",
-        )
-    }
 
+        // 会话证据（冷却/配额/行为佐证的读源）。
+        val conversationId = context.conversationId
+        val conversationEvidence = if (conversationId.isNullOrBlank()) {
+            emptyList()
+        } else {
+            port.readChatEvidenceByConversation(conversationId)
+        }
+        // 行为佐证：客观作答信号由 repository 的 attempt 事件承载——runner
+        // 拿不到时保守为 false，MASTERED 高置信档因此要求显式行为通道（见 gate）。
+        // 冷却：同 KC 最近一次被接受写入距今。
+        val acceptedEvidence = conversationEvidence.filter { !it.isRejected }
+        val lastSameKcWrite = acceptedEvidence
+            .filter { it.knowledge_node_id == knowledgeNodeId }
+            .maxOfOrNull { it.created_at_epoch_millis }
+        val sameKcLastWriteAgoMillis = lastSameKcWrite?.let { (now - it).coerceAtLeast(0) }
+
+        // KC 锚定：terms[0] 必须命中真实知识节点（防模型臆测节点）。
+        val anchored = knowledgeNodeId.isNotBlank() &&
+            port.readKnowledgeNodesByIds(setOf(knowledgeNodeId)).isNotEmpty()
+
+        val input = MasteryWriteGate.GateInput(
+            intentConfidence = 0.9, // 意图门已在 repository 层由 tutorToolAuthorization 把关
+            evidenceConfidence = call.confidence,
+            direction = direction,
+            understanding = understanding,
+            knowledgeNodeIsAnchored = anchored,
+            hasBehavioralSupport = false,
+            sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
+            writesThisConversation = acceptedEvidence.size,
+            attentionFactor = context.attentionFactor,
+        )
+        when (val result = MasteryWriteGate.evaluate(input)) {
+            is MasteryWriteGate.GateResult.Accepted -> {
+                val entry = LearnerChatEvidenceEntity(
+                    evidence_id = "chat-ev-${System.nanoTime()}",
+                    learner_id = context.learnerId,
+                    conversation_id = conversationId.orEmpty(),
+                    knowledge_node_id = knowledgeNodeId,
+                    direction = direction.name,
+                    weight = result.weight,
+                    reason_markdown = call.rationale,
+                    confidence = input.evidenceConfidence,
+                    source_kind = "MODEL_CHAT",
+                    created_at_epoch_millis = now,
+                )
+                port.recordChatEvidence(listOf(entry))
+                return TutorToolOutcome(
+                    tool = TutorToolName.MASTERY_UPDATE,
+                    ok = true,
+                    summaryMarkdown = "学习证据已记录：${direction.name} weight=${result.weight}",
+                )
+            }
+            is MasteryWriteGate.GateResult.Rejected -> {
+                // 被拒 ≠ 删除：落 rejected 审计行（不进投影），outcome 返回拒因。
+                val entry = LearnerChatEvidenceEntity(
+                    evidence_id = "chat-ev-${System.nanoTime()}",
+                    learner_id = context.learnerId,
+                    conversation_id = conversationId.orEmpty(),
+                    knowledge_node_id = knowledgeNodeId,
+                    direction = direction.name,
+                    weight = 0.0,
+                    reason_markdown = call.rationale,
+                    confidence = input.evidenceConfidence,
+                    source_kind = "MODEL_CHAT",
+                    created_at_epoch_millis = now,
+                    rejected_reason = result.reason.name,
+                    rejected_at_epoch_millis = now,
+                )
+                port.recordChatEvidence(listOf(entry))
+                return TutorToolOutcome(
+                    tool = TutorToolName.MASTERY_UPDATE,
+                    ok = false,
+                    summaryMarkdown = "这条学习证据未通过校验，未计入掌握度（${result.reason.name}）。",
+                    errorKind = "rejected:${result.reason.name}",
+                )
+            }
+        }
+    }
 }

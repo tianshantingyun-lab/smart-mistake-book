@@ -1397,6 +1397,9 @@ internal class RoomStudyDatabase(
     override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
         database.chatEvidenceDao().readByLearner(learnerId)
 
+    override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
+        database.chatEvidenceDao().readByConversation(conversationId)
+
     override suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead =
         database.projectionTransactionDao().loadLearningLedger(learnerId)
 

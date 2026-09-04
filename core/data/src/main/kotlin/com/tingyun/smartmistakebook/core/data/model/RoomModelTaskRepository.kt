@@ -636,6 +636,7 @@ class RoomModelTaskRepository internal constructor(
             TutorToolName.KNOWLEDGE_READ,
             TutorToolName.NOTEBOOK_READ,
             TutorToolName.MASTERY_READ,
+            TutorToolName.MASTERY_UPDATE,
         )
         is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)
         else -> emptySet()
@@ -659,7 +660,14 @@ class RoomModelTaskRepository internal constructor(
 
 
     private fun toolContext(input: ModelTaskInput): RoomTutorToolRunner.Context =
-        RoomTutorToolRunner.Context(subject = (input as? TutorRespondInput)?.subject)
+        RoomTutorToolRunner.Context(
+            subject = (input as? TutorRespondInput)?.subject,
+            // 会话锚：讲题会话的 conversationId 由 sessionId 确定性推导
+            // （CapturedTutorSessionRoute 的 CreateTutorConversationCommand 同规则），
+            // 供 MASTERY_UPDATE 的冷却/配额/审计按会话粒度工作。
+            conversationId = (input as? TutorRespondInput)?.sessionId
+                ?.let { "tutor-conv:captured:$it" },
+        )
 }
 
 object ModelTaskRepositoryFactory {

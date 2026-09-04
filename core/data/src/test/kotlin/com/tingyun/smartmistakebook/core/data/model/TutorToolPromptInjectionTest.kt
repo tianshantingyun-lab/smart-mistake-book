@@ -115,4 +115,24 @@ class TutorToolPromptInjectionTest {
             prompt.contains("- NOTEBOOK_READ：检索错题本中匹配的错题"),
         )
     }
+
+    @Test
+    fun masteryUpdateDeclaredPromptTeachesSemanticFieldsWithExample() {
+        val prompt = OpenAiModelTaskAdapters.prompt(
+            respond(toolDeclarations = listOf(TutorToolName.MASTERY_UPDATE)),
+        )
+        assertTrue("声明含 T6 时应列出其用途", prompt.contains("MASTERY_UPDATE"))
+        assertTrue("应教 direction 字段", prompt.contains("direction"))
+        assertTrue("应教 understanding 字段", prompt.contains("understanding"))
+        assertTrue("应给 T6 申请样例", prompt.contains("\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\""))
+    }
+
+    @Test
+    fun withoutMasteryUpdateDeclaredNoT6SemanticFieldsInPrompt() {
+        val prompt = OpenAiModelTaskAdapters.prompt(
+            respond(toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ)),
+        )
+        assertFalse(prompt.contains("MASTERY_UPDATE"))
+        assertFalse("无 T6 声明不应教 direction 语义字段", prompt.contains("\"direction\":\"POSITIVE\""))
+    }
 }

@@ -437,6 +437,11 @@ internal object OpenAiModelTaskAdapters {
                 append("需要查询时，把整个输出改为返回 {\"intentDecision\":{...},\"toolRequests\":" +
                     "[{\"tool\":\"<工具名>\",\"terms\":[\"<原词>\"],\"rationale\":\"<锚定理由>\"}]}；" +
                     "不需要查询时按正常规则返回最终回答。")
+                if (toolDeclarations.contains(TutorToolName.MASTERY_UPDATE)) {
+                    append("\nMASTERY_UPDATE 必须额外带 direction 与 understanding（见上用途说明）：" +
+                        "例如 {\"tool\":\"MASTERY_UPDATE\",\"terms\":[\"<知识点id>\"],\"rationale\":\"<锚定理由>\"," +
+                        "\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\"}。")
+                }
             }
         }
         // 拼到已 trimIndent 的模板尾部时，前导 \n 只换行不产生空行；
@@ -449,7 +454,11 @@ internal object OpenAiModelTaskAdapters {
         TutorToolName.NOTEBOOK_READ -> "检索错题本中匹配的错题"
         TutorToolName.MASTERY_READ -> "读取学生对相关知识的掌握情况"
         TutorToolName.NOTEBOOK_WRITE -> "写入错题本（需学生明确命令，当前阶段仅声明不启用）"
-        TutorToolName.MASTERY_UPDATE -> "更新掌握度（需学生明确命令，当前阶段仅声明不启用）"
+        TutorToolName.MASTERY_UPDATE ->
+            "提交一条学习证据：direction∈{POSITIVE,NEGATIVE}（学生这次是掌握还是卡住）、" +
+                "understanding∈{STRUGGLING,UNCERTAIN,CONFIDENT,MASTERED}（你对学生理解程度的判断）、" +
+                "terms=[知识点id]（须是当前题真实绑定的知识点）、confidence∈[0,1]（你判断的置信度）。" +
+                "只在你从对话中有确切依据判断学生理解/卡住时才申请；闲聊或泛泛而谈不要申请。"
     }
 
     private fun visualProgramPromptRules(): String = """
