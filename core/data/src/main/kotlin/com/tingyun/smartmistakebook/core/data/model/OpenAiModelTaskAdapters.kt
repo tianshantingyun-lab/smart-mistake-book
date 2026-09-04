@@ -55,9 +55,17 @@ internal object OpenAiModelTaskAdapters {
         is CaptureParseInput -> payload.toCapturedDocument(input, modelVersion)
         is ImagePipelineClassifyInput -> payload.toImagePipelineClassify(modelVersion)
         is TutorPlanInput -> payload.toTutorPlan(input, modelVersion)
-        is TutorLobbyInput -> payload.toTutorLobby(input, modelVersion)
+        is TutorLobbyInput -> if (payload.containsKey("toolRequests")) {
+            payload.toTutorToolRequests(modelVersion)
+        } else {
+            payload.toTutorLobby(input, modelVersion)
+        }
         is TutorDebriefInput -> payload.toTutorDebrief(input, modelVersion)
-        is TutorRespondInput -> payload.toTutorRespond(input, modelVersion)
+        is TutorRespondInput -> if (payload.containsKey("toolRequests")) {
+            payload.toTutorToolRequests(modelVersion)
+        } else {
+            payload.toTutorRespond(input, modelVersion)
+        }
         is TutorVisualGenerateInput -> payload.toTutorVisualGenerate(input, modelVersion)
         is TutorVisualReviewInput -> payload.toTutorVisualReview(input, modelVersion)
         is ProblemOrganizationInput -> OpenAiProblemOrganizationProtocol.parse(
