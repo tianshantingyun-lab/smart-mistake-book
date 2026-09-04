@@ -20,6 +20,7 @@ import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
+import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
@@ -159,6 +160,33 @@ class RoomModelTaskToolLoopInstrumentedTest {
             assertTrue(final.output is TutorLobbyOutput)
             assertEquals(2, gateway.dispatchCount)
             assertEquals(1, repository.toolRunner.executedCallCount)
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun secondDispatchCarriesRoundResultsAndNonEmptyDeclarations() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "tool-loop-carrier-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            val gateway = ScriptedGateway(provider, listOf(toolRequestOutput(), finalAnswerOutput()))
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            repository.execute(request()).toList()
+
+            assertEquals("应派遣两轮", 2, gateway.dispatchLog.size)
+            val second = gateway.dispatchLog[1].input as TutorLobbyInput
+            assertTrue("第二轮应携带首轮结果", second.toolRoundResults.isNotEmpty())
+            assertEquals(1, second.toolRoundResults[0].roundOrdinal)
+            assertEquals(TutorToolName.NOTEBOOK_READ, second.toolRoundResults[0].outcomes[0].tool)
+            assertTrue("第二轮声明集非空", second.toolDeclarations.isNotEmpty())
         } finally {
             database.close()
             context.deleteDatabase(databaseName)

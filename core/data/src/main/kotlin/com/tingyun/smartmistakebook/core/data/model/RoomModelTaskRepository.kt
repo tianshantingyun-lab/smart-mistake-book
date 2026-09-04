@@ -285,14 +285,13 @@ class RoomModelTaskRepository internal constructor(
                     roundOrdinal = toolRoundsUsed,
                     outcomes = outcomes,
                 )
-                val nextDeclarations =
-                    if (toolRoundsUsed >= TutorToolRoundResult.MAX_TOOL_ROUNDS) {
-                        emptyList()
-                    } else {
-                        declaredTools.toList()
-                    }
+                // 收敛声明集：保留本轮已声明且仍允许的工具（非空），配额由轮次守卫保证。
+                val converged = toolDeclarationsFor(roundRequest.input).toList()
                 roundRequest = roundRequest.copy(
-                    input = roundRequest.input,
+                    input = roundRequest.input.withToolRoundProgress(
+                        newRounds = toolRoundResults,
+                        convergedDeclarations = converged,
+                    ),
                     egressManifest = roundRequest.egressManifest,
                 )
             }
@@ -640,6 +639,22 @@ class RoomModelTaskRepository internal constructor(
         )
         is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)
         else -> emptySet()
+    }
+
+    /** 把已执行的工具轮结果与收敛声明集写回输入，供下一轮派遣携带（spec §3.4）。 */
+    private fun ModelTaskInput.withToolRoundProgress(
+        newRounds: List<TutorToolRoundResult>,
+        convergedDeclarations: List<TutorToolName>,
+    ): ModelTaskInput = when (this) {
+        is TutorLobbyInput -> copy(
+            toolRoundResults = newRounds,
+            toolDeclarations = convergedDeclarations,
+        )
+        is TutorRespondInput -> copy(
+            toolRoundResults = newRounds,
+            toolDeclarations = convergedDeclarations,
+        )
+        else -> this
     }
 
 
