@@ -224,6 +224,12 @@ private class FakeCaptureWorkflowRepository(
     override suspend fun confirmAndCommit(
         request: com.tingyun.smartmistakebook.core.domain.ConfirmCapturedProblemRequest,
     ): CapturedProblemCommitSummary = error("not used")
+
+    override suspend fun attachCleanRedrawImage(
+        problemRevisionId: String,
+        cleanImageBytes: ByteArray,
+        cleanImageMimeType: String,
+    ): Boolean = error("not used")
 }
 
 private class FakeTutorConversationRepository : TutorConversationRepository {

@@ -124,6 +124,52 @@ internal class AndroidCanonicalAssetVault(
         }
     }
 
+    /**
+     * Persists already-decoded image bytes (e.g. an MCP redraw result) as a
+     * canonical source asset. Enforces the same decoded bounds and encoded
+     * byte budget as [import]; the caller supplies the mime type, which drives
+     * the JPEG-vs-PNG canonical encoding.
+     */
+    fun persistCleanImageBytes(
+        bytes: ByteArray,
+        mimeType: String,
+        sourceType: String,
+        createdAtEpochMillis: Long,
+    ): CanonicalSourceAssetRecord {
+        require(bytes.isNotEmpty() && bytes.size <= MAX_CLEAN_INPUT_BYTES) {
+            "Clean image input is empty or exceeds the byte budget"
+        }
+        val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, boundsOptions)
+        val width = boundsOptions.outWidth
+        val height = boundsOptions.outHeight
+        check(width in 1..MAX_DIMENSION && height in 1..MAX_DIMENSION) {
+            "Clean image dimensions are outside the supported range"
+        }
+        check(width.toLong() * height <= MAX_PIXELS) {
+            "Clean image exceeds the decoded pixel budget"
+        }
+        var decoded: Bitmap? = null
+        return try {
+            val options = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
+            decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+                ?: error("Clean image pixels cannot be decoded")
+            persistBitmap(
+                bitmap = checkNotNull(decoded),
+                preferJpeg = mimeType == "image/jpeg",
+                sourceType = sourceType,
+                createdAtEpochMillis = createdAtEpochMillis,
+            )
+        } catch (outOfMemory: OutOfMemoryError) {
+            throw IllegalArgumentException(
+                "Clean image cannot be decoded within the device memory budget",
+                outOfMemory,
+            )
+        } finally {
+            decoded?.recycle()
+        }
+    }
+
     fun delete(record: CanonicalSourceAssetRecord) {
         val file = resolve(record)
         check(file.delete() || !file.exists()) { "Cannot delete unreferenced canonical asset" }
@@ -315,6 +361,7 @@ internal class AndroidCanonicalAssetVault(
     private companion object {
         const val ASSET_DIRECTORY = "source-assets"
         const val MAX_CANONICAL_BYTES = 24L * 1_024L * 1_024L
+        const val MAX_CLEAN_INPUT_BYTES = 24L * 1_024L * 1_024L
         const val MAX_DIMENSION = 8_192
         const val MAX_PIXELS = 16_000_000L
         const val MAX_EMPTY_READS = 16

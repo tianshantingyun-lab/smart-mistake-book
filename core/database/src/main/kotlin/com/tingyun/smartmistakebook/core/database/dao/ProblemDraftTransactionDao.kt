@@ -63,6 +63,8 @@ internal data class ExactCommittedProblemRow(
     val entryUpdatedAtEpochMillis: Long?,
 )
 
+internal const val CLEAN_IMAGE_SOURCE_ROLE = "CLEAN_IMAGE"
+
 @Dao
 internal abstract class ProblemDraftTransactionDao {
     @Query("SELECT COUNT(*) FROM problem_draft WHERE status = 'EDITING'")
@@ -671,6 +673,34 @@ internal abstract class ProblemDraftTransactionDao {
             return CommitProblemDraftResult(created = false, receipt = existing)
         }
         return commitValidated(command.commit, allowTutorDraft = true)
+    }
+
+    @Query("SELECT 1 FROM problem_revision WHERE revision_id = :revisionId LIMIT 1")
+    protected abstract suspend fun revisionExists(revisionId: String): Int?
+
+    /**
+     * Attaches a clean-redraw canonical asset to an already-committed problem
+     * revision under the CLEAN_IMAGE role. Idempotent: inserting the same
+     * canonical asset or the same link is a no-op. Returns false when the
+     * revision does not exist.
+     */
+    @Transaction
+    open suspend fun attachCleanRedrawAsset(
+        revisionId: String,
+        asset: CanonicalSourceAssetRecord,
+    ): Boolean {
+        require(revisionId.isNotBlank()) { "revisionId must not be blank" }
+        require(asset.sourceAssetId.isNotBlank()) { "asset sourceAssetId must not be blank" }
+        if (revisionExists(revisionId) == null) return false
+        insertSourceAsset(asset.toEntity())
+        insertRevisionSourceAsset(
+            ProblemRevisionSourceAssetEntity(
+                problemRevisionId = revisionId,
+                sourceAssetId = asset.sourceAssetId,
+                role = CLEAN_IMAGE_SOURCE_ROLE,
+            ),
+        )
+        return true
     }
 
     @Transaction

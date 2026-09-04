@@ -641,4 +641,16 @@ interface CaptureWorkflowRepository {
     suspend fun confirmAndCommit(
         request: ConfirmCapturedProblemRequest,
     ): CapturedProblemCommitSummary
+
+    /**
+     * Attaches a clean-redraw image to an already-committed problem revision as a
+     * CLEAN_IMAGE source asset, so mistake detail/export can prefer the clean sheet.
+     * Returns false when the revision does not exist. The bytes are re-encoded into
+     * the canonical asset vault; no network happens here.
+     */
+    suspend fun attachCleanRedrawImage(
+        problemRevisionId: String,
+        cleanImageBytes: ByteArray,
+        cleanImageMimeType: String,
+    ): Boolean
 }

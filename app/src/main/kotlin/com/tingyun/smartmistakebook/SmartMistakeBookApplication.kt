@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.StrictMode
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.capture.ConfiguredCleanImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecovery
@@ -153,7 +154,21 @@ class SmartMistakeBookApplication : Application() {
                 schedulingSettingsStore = schedulingSettingsStore,
                 optimizedFsrsParameters = optimizedParameters,
             )
-            captureRepository = CaptureWorkflowRepositoryFactory.create(this, database)
+            captureRepository = CaptureWorkflowRepositoryFactory.create(
+                context = this,
+                database = database,
+                // Production clean redraw reuses the user's configured model
+                // credential and runs off the commit path in the background; a
+                // missing/unconfigured/non-image model declines and the original
+                // photo is kept.
+                cleanRedraw = modelConfigurationStore?.let { store ->
+                    ConfiguredCleanImageGeneratorFactory.create(
+                        configurationStore = store,
+                        networkRequestsAllowed = capabilities.networkRequestsAllowed,
+                    )
+                },
+                cleanRedrawScope = applicationScope,
+            )
             mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)
             mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)
             tutorInteractionRepository = TutorInteractionRepositoryFactory.create(database)
