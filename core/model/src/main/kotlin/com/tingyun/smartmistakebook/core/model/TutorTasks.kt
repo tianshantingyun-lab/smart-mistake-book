@@ -680,6 +680,10 @@ data class TutorRespondInput(
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
     val requestedMove: TutorMoveType? = null,
     val studentImageAssetRefs: List<String> = emptyList(),  // 新增：当前消息的图片
+    /** Non-empty enables the tool protocol for this dispatch (spec §3.1). */
+    val toolDeclarations: List<TutorToolName> = emptyList(),
+    /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
+    val toolRoundResults: List<TutorToolRoundResult> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
@@ -729,6 +733,24 @@ data class TutorRespondInput(
         ) { "Tutor response prior chat exceeds its total text budget" }
         require(studentImageAssetRefs.size <= TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE) {
             "Too many images in current message (max ${TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE})"
+        }
+        require(toolDeclarations.size <= MAX_TOOL_DECLARATIONS) {
+            "Tutor response declares too many tools"
+        }
+        require(toolDeclarations.distinct().size == toolDeclarations.size) {
+            "Tutor response tool declarations must be distinct"
+        }
+        require(toolRoundResults.size <= TutorToolRoundResult.MAX_TOOL_ROUNDS) {
+            "Tutor response carries too many tool rounds"
+        }
+        require(toolRoundResults.isEmpty() || toolDeclarations.isNotEmpty()) {
+            "Tutor response tool rounds require declared tools"
+        }
+        require(
+            toolRoundResults.map(TutorToolRoundResult::roundOrdinal) ==
+                (1..toolRoundResults.size).toList(),
+        ) {
+            "Tutor response tool round ordinals must be sequential from one"
         }
     }
 

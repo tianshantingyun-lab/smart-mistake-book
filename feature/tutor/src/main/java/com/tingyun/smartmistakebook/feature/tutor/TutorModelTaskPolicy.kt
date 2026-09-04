@@ -32,6 +32,7 @@ import com.tingyun.smartmistakebook.core.model.TutorQuestionLearningEvidence
 import com.tingyun.smartmistakebook.core.model.TutorQuestionReviewStatus
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
+import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
@@ -696,6 +697,11 @@ internal fun buildTutorRespondRequest(
         visibleTutorContextMarkdown = visibleTutorContextMarkdown,
         priorMessages = priorMessages,
         requestedMove = requestedMove,
+        toolDeclarations = listOf(
+            TutorToolName.KNOWLEDGE_READ,
+            TutorToolName.NOTEBOOK_READ,
+            TutorToolName.MASTERY_READ,
+        ),
     )
     val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
         ModelEgressManifest(
