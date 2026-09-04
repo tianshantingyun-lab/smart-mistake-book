@@ -57,16 +57,20 @@ init 校验（与 `11f3189` 一致）：
 原因：`ModelTaskCodec`/`ModelTaskLogicalOperationFingerprint` 用 `encodeDefaults=true`，加两个默认空字段会改变所有编码 JSON 的指纹。`ModelTaskEntity.toSnapshot()` 每次读回都重算 `operationFingerprint` 并与库中列比对——**不加处理时，升级后读回任何旧 tutor 行都会抛 `LearningLedgerIntegrityException`**（列是旧编码指纹，重算是新编码指纹）。本项目已有同形先例缺陷：`studentImageAssetRefs`（commit 151b1e3）以同样"加默认字段不 bump"落地，旧 `TutorRespondInput` 行同样会在升级后读回失败——本次平移一并覆盖。
 
 **指纹平移实现**（对齐既有 `withoutLegacyTutorStudentContext` 模式）：
-- `ModelTaskRequest.fingerprintPayload()` 的 schema 分支后加一个 strip：`schemaVersion < TUTOR_TOOL_CARRIER_SCHEMA_VERSION` 时对 `TutorRespondInput`/`TutorLobbyInput`（及其内嵌 `TutorChatHistoryEntry`）去掉空的 `toolDeclarations`/`toolRoundResults`/`studentImageAssetRefs` 键，使新旧编码对齐；
+- `ModelTaskRequest.fingerprintPayload()` 的 schema 分支后加一个 strip：`schemaVersion < TUTOR_TOOL_CARRIER_SCHEMA_VERSION` 时对 `TutorRespondInput`/`TutorLobbyInput` 去掉空的 `toolDeclarations`/`toolRoundResults` 键，使新旧编码对齐；
 - 新逻辑操作在 v6 编码（含空键）下指纹 = 新语义指纹；
 - 旧 v5 行读回时 `request.schemaVersion=5` 仍被保留（decode 不重写版本），按 v5 strip 规则重算 = 旧语义指纹 → 与库中列一致，`toSnapshot()` 通过。
 - `ModelTaskSnapshot` 逻辑不变：`requestFingerprint`（v5 用 `MIN_SUPPORTED_SCHEMA_VERSION` 路径、v6 用当前路径）与 `toSnapshot()` 的 `operationFingerprint` 都基于 `request.schemaVersion` 决定编码，天然自洽。
 
-`TutorToolName`/`TutorToolRoundResult`/`TutorToolOutcome` 定义于 `core.model` 同包，无需 import。`TutorChatHistoryEntry.studentImageAssetRefs` 一并纳入 strip（同一"空列表默认字段"缺陷）。
+`TutorToolName`/`TutorToolRoundResult`/`TutorToolOutcome` 定义于 `core.model` 同包，无需 import。
+
+> **实现修正（最终审查证伪本节初稿）：** `studentImageAssetRefs`（及 `TutorChatHistoryEntry.studentImageAssetRefs`）**不在** strip 范围。该字段由 commit 151b1e3 在 **schemaVersion 5 期**引入——当前 main 的 v5 行已经用含该空键的编码落盘，存库指纹本就包含它；strip 它会让旧 v5 行读回时重算指纹与库中列**不符**。只有本次新增、v5 编码器不知道的 `toolDeclarations`/`toolRoundResults` 两个键需要 strip。实现（`ModelTasks.kt` `withoutEmptyToolCarrier`）与逻辑操作指纹的无 schema 路径均按此处理，本段据此定稿。
 
 > 关于第二轮声明集：有 `toolRoundResults` 时声明集**收敛而非清空**——保留首轮已声明、且本轮仍允许的工具（通常即已用工具本身），
 > 以保持 `toolRoundResults.isNotEmpty() → toolDeclarations.isNotEmpty()` 恒成立；
 > 工具配额上限由 `toolDeclarations` 仍 ≤5、以及 Repository 轮次守卫（§3.4）共同保证，不依赖清空声明集。
+>
+> **实现注记（P1 落地形态，最终审查确认有意为之）：** `RoomModelTaskRepository` 的收敛实现返回各 kind 的**静态全集**（Lobby → {T3,T5}、Respond → {T2,T3,T5}），而非"∩ 本轮授权"逐轮收窄——因每轮授权仍按首轮 `declaredTools` 全集做意图矩阵交集，未授权工具申请在授权层即被 `not_authorized` 拦截，收敛口径不影响正确性，仅第 2 轮 prompt 仍广告全集。后续如需收紧 prompt 只广告已用工具，改 `converged` 处按当轮 `authorization.allowedTools` 收窄即可——P1 不做的原因：收窄后 prompt 广告集与授权全集不一致会引入新的心智负担，且最坏情况（模型重试被拒工具）由轮次守卫 fail-fast 兜底，无新风险。
 
 默认空值 → 不启用工具协议的既有 dispatch 零行为变化（向后兼容，同 `11f3189` 语义）。
 
@@ -118,6 +122,13 @@ spec §5.2 明确定义 T6 安全边界 = **模型提交证据事件 + 本地确
 
 - prompt 版本 bump：`ModelPromptPolicyVersions.TUTOR_LOBBY` / `TUTOR_RESPOND` 加 `-tool-loop-wired` 后缀。
 - disclosure 集：核对 `ModelEgress.kt` 披露集合，工具声明的知识库/错题本/掌握度读取项纳入披露文案；本地工具执行不涉出网、不入 egress manifest（仅核心工具回填本地，spec §8 已批准"核心工具回填本地 Provider 不涉出网但入披露记录"）。
+
+> **egress 分类结论（最终审查收口，2026-09-05）：** 读工具结果经回填块注入第 2 轮 prompt 随请求出网，但**不新增** `ModelEgressDataClass`。三类结果都是同一会话内**学生已授权出网数据**的本地有界摘要，非新类别：
+> - `knowledgeRead` 结果（知识点候选）⊂ `SUBJECT_KNOWLEDGE_BASE`——`TUTOR_RESPOND_DISCLOSURE`/`TUTOR_PLAN_DISCLOSURE` 均已含；
+> - `masteryRead` 结果（掌握度摘要）⊂ `RELEVANT_LEARNING_EVIDENCE`（同源投影，非全量历史）；
+> - `notebookRead` 结果（错题标题+科目）⊂ 会话上下文（学生本会话内主动查询的自身错题，与 `TUTOR_CONVERSATION_CONTEXT` 同界）。
+>
+> 回填块携带 `[仅作本地参考，非学生原话]` 标注，模型/系统指令不从中取值作为权威。新增数据类会为"零新信息"引入整套 egress schema/disclosure universe 波纹（YAGNI 拒绝）。工具声明与本地执行本身不涉出网；第 1 轮 dispatch（模型申请）与第 2 轮 dispatch（携带摘要作答）复用同一 manifest——第 2 轮出网内容已在上一条结论覆盖。若未来工具返回超出已披露类别的原始行数据，需回到本结论重新评估披露边界。
 
 ## 4. 预算自洽（不破冻结合同）
 
