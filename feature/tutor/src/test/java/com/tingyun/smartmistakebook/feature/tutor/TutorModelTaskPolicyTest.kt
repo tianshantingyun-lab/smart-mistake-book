@@ -34,12 +34,14 @@ import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceLevel
 import com.tingyun.smartmistakebook.core.model.TutorKnowledgeEvidence
+import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorQuestionReviewStatus
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
+import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.studentAuthorizedSolutionRequest
@@ -957,6 +959,54 @@ class TutorModelTaskPolicyTest {
         )
     }
 
+    @Test
+    fun respondRequestCarriesReadToolDeclarations() {
+        val request = buildTutorRespondRequest(
+            question = session().toTutorQuestionContext(),
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "tutor-respond-declare-tools",
+            occurredAtEpochMillis = 300,
+            approvedAtEpochMillis = 300,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "这一步怎么来的？",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+        )
+        val input = request.input as TutorRespondInput
+        assertTrue(
+            "Respond 应声明 T2/T3/T5",
+            input.toolDeclarations.containsAll(
+                listOf(TutorToolName.KNOWLEDGE_READ, TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ),
+            ),
+        )
+        assertFalse(
+            "P1 不应声明写工具 T6/T4",
+            input.toolDeclarations.any { it == TutorToolName.MASTERY_UPDATE || it == TutorToolName.NOTEBOOK_WRITE },
+        )
+    }
+
+    @Test
+    fun lobbyRequestCarriesLookupToolDeclarations() {
+        val request = buildTutorLobbyRequest(
+            provider = provider(),
+            conversationId = "tutor-lobby-declare",
+            messageOrdinal = 1,
+            studentMessage = "帮我看看错题本里有没有二次函数",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = 300,
+        )
+        val input = request.input as TutorLobbyInput
+        assertTrue(
+            "Lobby 应声明 T3/T5（无科目不含 T2）",
+            input.toolDeclarations.containsAll(listOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)),
+        )
+        assertFalse(TutorToolName.KNOWLEDGE_READ in input.toolDeclarations)
+        assertFalse(TutorToolName.MASTERY_UPDATE in input.toolDeclarations)
+    }
+
     private fun turn(stem: String, choice: String) = TutorTurnHistoryEntry(
         turnOrdinal = 1,
         diagnosticStemMarkdown = stem,
@@ -988,7 +1038,11 @@ class TutorModelTaskPolicyTest {
         providerId = "provider",
         providerDisplayName = "兼容模型",
         modelId = "model",
-        supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.TUTOR_RESPOND),
+        supportedTasks = setOf(
+            ModelTaskKind.TUTOR_PLAN,
+            ModelTaskKind.TUTOR_RESPOND,
+            ModelTaskKind.TUTOR_LOBBY,
+        ),
         supportsImageInput = true,
         supportsStructuredOutput = true,
         supportsStreaming = false,

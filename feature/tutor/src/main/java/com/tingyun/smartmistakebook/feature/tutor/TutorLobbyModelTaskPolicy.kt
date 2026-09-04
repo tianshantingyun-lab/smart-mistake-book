@@ -9,6 +9,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
+import com.tingyun.smartmistakebook.core.model.TutorToolName
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
@@ -34,6 +35,7 @@ internal fun buildTutorLobbyRequest(
         messageOrdinal = messageOrdinal,
         studentMessage = studentMessage,
         priorMessages = priorMessages.takeLast(TutorLobbyInput.MAX_PRIOR_MESSAGES),
+        toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ),
     )
     val requestHash = sha256(
         buildString {
