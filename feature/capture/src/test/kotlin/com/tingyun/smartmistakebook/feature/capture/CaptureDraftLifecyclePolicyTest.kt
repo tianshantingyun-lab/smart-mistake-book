@@ -200,7 +200,7 @@ class CaptureDraftLifecyclePolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 10,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",

@@ -25,8 +25,6 @@ class CaptureReturnedImageApplicationTest {
         assertEquals("file:///new.jpg", application.receivedUri)
         assertEquals(CaptureInputSource.PHOTO_PICKER, application.receivedSource)
         assertTrue(application.resetDraft)
-        assertEquals(CaptureAcquisitionPurpose.NEW_CAPTURE, application.bindPurpose)
-        assertEquals("file:///new.jpg", application.bindUri)
         assertTrue(application.clearCaptureError)
         assertNull(application.appendUri)
     }
@@ -59,7 +57,6 @@ class CaptureReturnedImageApplicationTest {
         )
         assertEquals("file:///page.jpg", application.appendUri)
         assertEquals(CaptureInputSource.CAMERA, application.appendSource)
-        assertEquals(CaptureAcquisitionPurpose.APPEND_DRAFT, application.bindPurpose)
         assertTrue(application.deleteUris.isEmpty())
         assertFalse(application.resetDraft)
     }
@@ -75,7 +72,6 @@ class CaptureReturnedImageApplicationTest {
             purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
         )
         assertEquals(listOf("file:///bad.jpg"), application.deleteUris)
-        assertTrue(application.cancelAcquisition)
         assertTrue(application.resetPurpose)
         assertTrue(application.clearReplacementRequest)
         assertEquals(

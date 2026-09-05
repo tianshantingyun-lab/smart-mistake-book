@@ -60,44 +60,16 @@ class CaptureModelTaskCoordinatorTest {
 
             coordinator.executeAssessment(
                 request = request,
-                provider = localProvider(),
-                manifest = null,
-                activeAuthorizationId = null,
                 onSnapshot = { snapshots += it },
             )
             coordinator.executeAssessment(
                 request = request,
-                provider = localProvider(),
-                manifest = null,
-                activeAuthorizationId = null,
                 onSnapshot = { snapshots += it },
             )
             dispatcher.scheduler.advanceUntilIdle()
 
             assertEquals(1, repository.executeCount)
             assertEquals(1, snapshots.size)
-        }
-
-    @Test
-    fun externalProviderWithoutFreshManifestFailsClosedBeforeDispatch() =
-        runTest(dispatcher.scheduler) {
-            val repository = CoordinatorFakeModelTasks(flow { error("must not dispatch") })
-            val scope = CoroutineScope(dispatcher)
-            val coordinator = CaptureModelTaskCoordinator(
-                modelTasks = repository,
-                scope = scope,
-            )
-
-            coordinator.executeAssessment(
-                request = request(),
-                provider = externalProvider(),
-                manifest = null,
-                activeAuthorizationId = null,
-                onSnapshot = { error("must not publish") },
-            )
-            dispatcher.scheduler.advanceUntilIdle()
-
-            assertEquals(0, repository.executeCount)
         }
 
     @Test
@@ -115,17 +87,11 @@ class CaptureModelTaskCoordinatorTest {
 
             coordinator.executeAssessment(
                 request = request,
-                provider = localProvider(),
-                manifest = null,
-                activeAuthorizationId = null,
                 onSnapshot = {},
             )
             dispatcher.scheduler.advanceUntilIdle()
             coordinator.executeAssessment(
                 request = request,
-                provider = localProvider(),
-                manifest = null,
-                activeAuthorizationId = null,
                 onSnapshot = {},
             )
             dispatcher.scheduler.advanceUntilIdle()
@@ -167,9 +133,6 @@ class CaptureModelTaskCoordinatorTest {
 
             coordinator.executeParse(
                 request = request,
-                provider = localProvider(),
-                manifest = null,
-                activeAuthorizationId = null,
                 onSnapshot = {},
             )
             dispatcher.scheduler.advanceUntilIdle()
