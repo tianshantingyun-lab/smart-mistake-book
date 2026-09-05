@@ -440,7 +440,7 @@ fun ModelTaskRequest.agentConsentMatches(provider: ProviderCapabilitySnapshot): 
 
 /** True when the input discloses image bytes that require an image-capable provider. */
 fun ModelTaskInput.requiresImageInput(): Boolean =
-    isAgentConsentEligible && this !is TutorPlanInput && this !is TutorRespondInput
+    isAgentConsentEligible && requestsImageBytes
 
 object ModelEgressPolicy {
     fun authorize(

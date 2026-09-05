@@ -148,6 +148,16 @@ sealed interface ModelTaskInput {
      */
     val isAgentConsentEligible: Boolean
         get() = false
+
+    /**
+     * True when the input discloses image bytes (a source photo, page, or region
+     * crop) that require an image-capable provider. Distinct from
+     * [isAgentConsentEligible]: eligibility says a round may egress under global
+     * consent, image-bearing says it needs image capability. A text-only PLAN/RESPOND
+     * is eligible but not image-bearing. Computed, never serialized.
+     */
+    val requestsImageBytes: Boolean
+        get() = false
 }
 
 @Serializable
@@ -164,6 +174,9 @@ data class CaptureAssessmentInput(
         get() = ModelTaskKind.CAPTURE_ASSESS
 
     override val isAgentConsentEligible: Boolean
+        get() = true
+
+    override val requestsImageBytes: Boolean
         get() = true
 
     override val subjectId: String
@@ -216,6 +229,9 @@ data class ImagePipelineClassifyInput(
     override val isAgentConsentEligible: Boolean
         get() = true
 
+    override val requestsImageBytes: Boolean
+        get() = true
+
     override val subjectId: String
         get() = subjectIdOverride ?: sourceAssetId
 
@@ -241,6 +257,9 @@ data class CaptureParseInput(
         get() = ModelTaskKind.CAPTURE_PARSE
 
     override val isAgentConsentEligible: Boolean
+        get() = true
+
+    override val requestsImageBytes: Boolean
         get() = true
 
     override val subjectId: String

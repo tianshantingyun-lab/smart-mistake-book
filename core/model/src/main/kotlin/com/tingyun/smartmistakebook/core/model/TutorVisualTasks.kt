@@ -66,6 +66,9 @@ data class TutorVisualGenerateInput(
     override val isAgentConsentEligible: Boolean
         get() = true
 
+    override val requestsImageBytes: Boolean
+        get() = true
+
     override val subjectId: String
         get() = sessionId
 
@@ -147,6 +150,9 @@ data class TutorVisualReviewInput(
         get() = ModelTaskKind.TUTOR_VISUAL_REVIEW
 
     override val isAgentConsentEligible: Boolean
+        get() = true
+
+    override val requestsImageBytes: Boolean
         get() = true
 
     override val subjectId: String

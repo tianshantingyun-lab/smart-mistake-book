@@ -535,6 +535,7 @@ private fun ModelGatewayExecution.isReadyForNetwork(
 private fun ModelGatewayExecution.requireImageRequestFits(
     modelId: String,
 ): List<ApprovedImageReadPlan> {
+    if (!request.input.requestsImageBytes) return emptyList()
     val assetIds = when (val input = request.input) {
         is CaptureAssessmentInput -> buildList {
             add(input.sourceAssetId)
@@ -544,12 +545,7 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is ImagePipelineClassifyInput -> listOf(input.sourceAssetId)
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
-        is TutorDebriefInput -> emptyList()
-        is TutorPlanInput,
-        is TutorLobbyInput,
-        is TutorRespondInput,
-        is ProblemOrganizationInput,
-        -> emptyList()
+        else -> emptyList()
     }
     if (assetIds.isEmpty()) return emptyList()
 
