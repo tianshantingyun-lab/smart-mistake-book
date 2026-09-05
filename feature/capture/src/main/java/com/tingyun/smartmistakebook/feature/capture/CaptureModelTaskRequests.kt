@@ -5,7 +5,6 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 
 internal fun captureAssessmentRequest(
@@ -16,7 +15,7 @@ internal fun captureAssessmentRequest(
     imageWidth: Int,
     imageHeight: Int,
     occurredAtEpochMillis: Long,
-    egressManifest: ModelEgressManifest?,
+    agentConsentGranted: Boolean,
 ): ModelTaskRequest = ModelTaskRequest(
     requestId = requestId,
     input = CaptureAssessmentInput(
@@ -27,7 +26,7 @@ internal fun captureAssessmentRequest(
         imageHeight = imageHeight,
     ),
     occurredAtEpochMillis = occurredAtEpochMillis,
-    egressManifest = egressManifest,
+    agentConsentGranted = agentConsentGranted,
 )
 
 internal fun captureParseRequest(
@@ -38,7 +37,7 @@ internal fun captureParseRequest(
     sourcePages: List<CaptureSourcePage>,
     assessmentRequestIds: List<String>,
     occurredAtEpochMillis: Long,
-    egressManifest: ModelEgressManifest?,
+    agentConsentGranted: Boolean,
 ): ModelTaskRequest = ModelTaskRequest(
     requestId = requestId,
     input = CaptureParseInput(
@@ -58,5 +57,5 @@ internal fun captureParseRequest(
         assessmentRequestIds = assessmentRequestIds,
     ),
     occurredAtEpochMillis = occurredAtEpochMillis,
-    egressManifest = egressManifest,
+    agentConsentGranted = agentConsentGranted,
 )

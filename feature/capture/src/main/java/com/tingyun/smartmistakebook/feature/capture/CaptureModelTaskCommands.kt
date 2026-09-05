@@ -4,7 +4,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
+import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
@@ -21,9 +21,6 @@ internal class CaptureModelTaskCommands(
     suspend fun observeAssessment(requestId: String) {
         modelTasks.observe(requestId).collect { snapshot ->
             sink.setAssessmentSnapshot(snapshot)
-            if (captureFailedTaskClearsAuthorization(snapshot?.status)) {
-                sink.clearActiveAuthorization()
-            }
             sink.setPageAssessmentSnapshots(
                 captureUpdatedPageAssessmentSnapshots(
                     sourcePages = sink.sourcePages(),
@@ -68,39 +65,13 @@ internal class CaptureModelTaskCommands(
         }
     }
 
-    fun bindFreshEgress(
-        informedIntent: CaptureDraftEgressIntent?,
-        provider: ProviderCapabilitySnapshot?,
-        draftId: String?,
-        sourcePages: List<CaptureSourcePage>,
-        nowEpochMillis: Long,
-    ) {
-        if (informedIntent == null || provider == null || draftId == null ||
-            !informedIntent.matches(
-                provider = provider,
-                draftId = draftId,
-                sourcePages = sourcePages,
-                nowEpochMillis = nowEpochMillis,
-            )
-        ) {
-            sink.clearFreshEgressIntent()
-            return
-        }
-        val approvedManifest = sink.approveCaptureEgress(provider)
-        sink.setInitialTutorPlanAuthorizationId(
-            approvedManifest?.authorizationId?.takeIf { informedIntent.authorizesInitialTutorPlan },
-        )
-        sink.clearFreshEgressIntent()
-    }
-
     fun dispatchAssessment(
         provider: ProviderCapabilitySnapshot?,
         requestId: String?,
         sourceAssetId: String?,
         draftId: String?,
         occurredAt: Long?,
-        manifest: ModelEgressManifest?,
-        activeAuthorizationId: String?,
+        agentConsentGranted: Boolean,
     ) {
         val currentProvider = provider ?: return
         val currentRequestId = requestId ?: return
@@ -109,6 +80,11 @@ internal class CaptureModelTaskCommands(
         val assessedPage = sink.sourcePages().singleOrNull { it.sourceAssetId == currentAssetId }
             ?: return
         val currentOccurredAt = occurredAt ?: return
+        if (currentProvider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+            !agentConsentGranted
+        ) {
+            return
+        }
         val request = captureTaskRequestToDispatch(
             requestId = currentRequestId,
             pendingRecoveryRequest = sink.pendingAssessmentRecoveryRequest(),
@@ -121,29 +97,18 @@ internal class CaptureModelTaskCommands(
                 assessedPage.width,
                 assessedPage.height,
                 currentOccurredAt,
-                manifest,
+                agentConsentGranted,
             )
         }
-        coordinator.executeAssessment(
-            request = request,
-            provider = currentProvider,
-            manifest = manifest,
-            activeAuthorizationId = activeAuthorizationId,
-        ) { snapshot ->
+        coordinator.executeAssessment(request) { snapshot ->
             sink.clearPendingAssessmentRecovery()
             sink.setAssessmentSnapshot(snapshot)
-            if (captureFailedTaskClearsAuthorization(snapshot.status)) {
-                sink.clearActiveAuthorization()
-            }
         }
     }
 
     suspend fun observeParse(requestId: String) {
         modelTasks.observe(requestId).collect { snapshot ->
             sink.setParseSnapshot(snapshot)
-            if (captureFailedTaskClearsAuthorization(snapshot?.status)) {
-                sink.clearActiveAuthorization()
-            }
         }
     }
 
@@ -152,8 +117,7 @@ internal class CaptureModelTaskCommands(
         requestId: String?,
         draftId: String?,
         basisRevision: Int?,
-        manifest: ModelEgressManifest?,
-        activeAuthorizationId: String?,
+        agentConsentGranted: Boolean,
     ) {
         val currentProvider = provider ?: return
         val currentRequestId = requestId ?: return
@@ -161,6 +125,11 @@ internal class CaptureModelTaskCommands(
         val currentRevision = basisRevision ?: return
         val readiness = captureParseReadiness(sink.sourcePages(), sink.pageAssessmentSnapshots())
             ?: return
+        if (currentProvider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+            !agentConsentGranted
+        ) {
+            return
+        }
         val request = captureTaskRequestToDispatch(
             requestId = currentRequestId,
             pendingRecoveryRequest = sink.pendingParseRecoveryRequest(),
@@ -173,20 +142,12 @@ internal class CaptureModelTaskCommands(
                 sink.sourcePages(),
                 readiness.assessmentRequestIds,
                 readiness.occurredAtEpochMillis,
-                manifest,
+                agentConsentGranted,
             )
         }
-        coordinator.executeParse(
-            request = request,
-            provider = currentProvider,
-            manifest = manifest,
-            activeAuthorizationId = activeAuthorizationId,
-        ) { snapshot ->
+        coordinator.executeParse(request) { snapshot ->
             sink.clearPendingParseRecovery()
             sink.setParseSnapshot(snapshot)
-            if (captureFailedTaskClearsAuthorization(snapshot.status)) {
-                sink.clearActiveAuthorization()
-            }
         }
     }
 
@@ -226,22 +187,18 @@ internal class CaptureModelTaskSink(
     val setAssessmentSnapshot: (ModelTaskSnapshot?) -> Unit,
     val setParseSnapshot: (ModelTaskSnapshot?) -> Unit,
     val setPageAssessmentSnapshots: (List<ModelTaskSnapshot?>) -> Unit,
-    val clearActiveAuthorization: () -> Unit,
     val setSplitError: (String?) -> Unit,
     val setWorkflowInProgress: (Boolean) -> Unit,
     val resetDraft: () -> Unit,
     val onSplitReady: () -> Unit,
-    val clearFreshEgressIntent: () -> Unit,
-    val approveCaptureEgress: (ProviderCapabilitySnapshot) -> ModelEgressManifest?,
-    val setInitialTutorPlanAuthorizationId: (String?) -> Unit,
     val clearPendingAssessmentRecovery: () -> Unit,
     val clearPendingParseRecovery: () -> Unit,
     val replaceWorkspace: (CaptureWorkspaceUiState) -> Unit,
     val applyAdoptedText: (CaptureParseTextAdoption) -> Unit,
     val buildAssessmentRequest: (
-        String, String, String, Int, Int, Long, ModelEgressManifest?,
+        String, String, String, Int, Int, Long, Boolean,
     ) -> ModelTaskRequest,
     val buildParseRequest: (
-        String, String, Int, List<CaptureSourcePage>, List<String>, Long, ModelEgressManifest?,
+        String, String, Int, List<CaptureSourcePage>, List<String>, Long, Boolean,
     ) -> ModelTaskRequest,
 )

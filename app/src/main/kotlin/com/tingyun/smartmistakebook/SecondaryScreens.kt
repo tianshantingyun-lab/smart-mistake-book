@@ -502,10 +502,10 @@ internal fun CapabilityScreen(
 
 internal fun capabilityVerificationSummary(configuration: ModelConfigurationSnapshot): String {
     val verification = configuration.currentCapabilityVerification()
-        ?: return "配置已安全保存在本机。使用前请测试图片与讲解能力；发送当前题前会显示具体范围。"
+        ?: return "配置已安全保存在本机。使用前请测试图片与讲解能力；开启『模型智能体』后拍照与讲题会直接交给模型。"
     return when {
         verification.supportsImageInput && verification.supportsStructuredOutput ->
-            "能力已测试：可以读取题图并稳定整理讲解；发送当前题前会显示具体范围。"
+            "能力已测试：可以读取题图并稳定整理讲解。开启『模型智能体』后发送即处理，不再逐次询问。"
         verification.supportsStructuredOutput ->
             "能力已测试：文字讲解可用，当前模型暂不能可靠读取题图。"
         verification.supportsImageInput ->
@@ -575,7 +575,7 @@ internal fun DataPrivacyScreen(
         Text(
             text = when (capabilities.networkMode) {
                 NetworkMode.LOCAL_FIRST ->
-                    "只有你主动发起识题、讲题或整理时，才会发送当次已说明的题目内容。学习记录和整个错题本不会交给模型自行查看或修改。"
+                    "拍照、讲题或整理是你主动发起时才会进行；开启『模型智能体』后，发起即把当前内容交给已配置模型，不再逐次询问。学习记录和整个错题本不会交给模型自行查看或修改。"
 
                 NetworkMode.STRICT_OFFLINE ->
                     "当前版本不使用联网智能服务，本机内容不会发送给模型服务。"
