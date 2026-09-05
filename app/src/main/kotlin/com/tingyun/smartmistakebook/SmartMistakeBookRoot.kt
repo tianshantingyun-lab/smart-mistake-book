@@ -178,7 +178,7 @@ private data class TeachingArtifactLoad(
 
 private val rootDestinations = listOf(
     RootDestination(Routes.Review, "复习", Icons.Outlined.EventAvailable, "nav_review"),
-    RootDestination(Routes.Tutor, "讲题", Icons.AutoMirrored.Outlined.Chat, "nav_tutor"),
+    RootDestination(Routes.Tutor, "智能体", Icons.AutoMirrored.Outlined.Chat, "nav_tutor"),
     RootDestination(Routes.Library, "错题本", Icons.AutoMirrored.Outlined.MenuBook, "nav_library"),
     RootDestination(Routes.Profile, "我的", Icons.Outlined.ManageAccounts, "nav_profile"),
 )
