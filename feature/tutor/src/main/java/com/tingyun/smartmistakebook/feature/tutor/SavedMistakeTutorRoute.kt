@@ -76,6 +76,8 @@ fun SavedMistakeTutorRoute(
     onRecordMisconception: (sessionId: String, practiceUnitId: String, payloadMarkdown: String) -> Unit = { _, _, _ -> },
     /** Stored advisories injected into the tutor prompt (read side of the loop). */
     priorTeachingAdvisories: List<String> = emptyList(),
+    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
+    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val stateFlow: Flow<MistakeDetailState> = remember(key, repository) {
@@ -138,6 +140,7 @@ fun SavedMistakeTutorRoute(
                 onRequestDebrief = onRequestDebrief,
                 onRecordMisconception = onRecordMisconception,
                 priorTeachingAdvisories = priorTeachingAdvisories,
+                agentConsentEnabled = agentConsentEnabled,
                 modifier = modifier.testTag("saved_mistake_tutor_screen"),
             )
         }
@@ -194,6 +197,8 @@ internal fun SavedMistakeTutorContent(
     onRecordMisconception: (sessionId: String, practiceUnitId: String, payloadMarkdown: String) -> Unit = { _, _, _ -> },
     /** Stored advisories injected into the tutor prompt (read side of the loop). */
     priorTeachingAdvisories: List<String> = emptyList(),
+    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
+    agentConsentEnabled: Boolean = true,
     clock: () -> Long = System::currentTimeMillis,
     modifier: Modifier = Modifier,
 ) {
@@ -299,6 +304,7 @@ internal fun SavedMistakeTutorContent(
         modelTasks = modelTasks,
         interactions = interactions,
         onOpenModelSettings = onOpenModelSettings,
+        consentEnabled = agentConsentEnabled,
         clock = clock,
         headerContent = {
             TutorPageHeader(onBack)

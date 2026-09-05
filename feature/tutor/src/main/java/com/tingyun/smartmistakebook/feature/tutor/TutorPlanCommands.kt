@@ -6,7 +6,6 @@ import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
@@ -14,38 +13,26 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
+/**
+ * A plan turn may start when the provider can execute the kind AND, for an external
+ * provider, global agent consent is ON. Local-only providers never egress, so they need
+ * no consent. A configured external provider with consent OFF fails closed at the UI
+ * (blocked-settings card), not here.
+ */
 internal fun tutorPlanExecuteCanStart(
-    awaitingResponseAuthorization: Boolean,
-    hasExecutableProvider: Boolean,
-): Boolean = !awaitingResponseAuthorization && hasExecutableProvider
-
-internal fun tutorPlanAutoStartApprovedAt(
-    authorization: TutorAutoStartAuthorization?,
-    cycleOrdinal: Int,
-    priorConversationMemory: TutorConversationMemory?,
-    priorCycleStudentMessages: List<String>,
-    priorTurns: List<TutorTurnHistoryEntry>,
-    sessionId: String,
-    questionDocumentId: String,
-    revisionNumber: Int,
-    provider: ProviderCapabilitySnapshot,
-    nowEpochMillis: Long,
-): Long? = authorization
-    ?.takeIf {
-        cycleOrdinal == 1 &&
-            priorConversationMemory == null &&
-            priorCycleStudentMessages.isEmpty() &&
-            priorTurns.isEmpty() &&
-            it.matches(
-                sessionId = sessionId,
-                questionDocumentId = questionDocumentId,
-                revisionNumber = revisionNumber,
-                provider = provider,
-                promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
-                nowEpochMillis = nowEpochMillis,
-            )
+    provider: ProviderCapabilitySnapshot?,
+    consentEnabled: Boolean,
+): Boolean {
+    if (
+        provider == null ||
+        provider.executionLocation == ModelExecutionLocation.UNAVAILABLE ||
+        !provider.supports(ModelTaskKind.TUTOR_PLAN)
+    ) {
+        return false
     }
-    ?.approvedAtEpochMillis
+    return provider.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS ||
+        consentEnabled
+}
 
 internal class TutorPlanCommands(
     private val scope: CoroutineScope,
@@ -56,17 +43,9 @@ internal class TutorPlanCommands(
         priorConversationMemory: TutorConversationMemory?,
         priorCycleStudentMessages: List<String>,
         priorTurns: List<TutorTurnHistoryEntry>,
-        oneShotAutoStartAuthorization: TutorAutoStartAuthorization? = null,
     ) {
-        if (
-            !tutorPlanExecuteCanStart(
-                awaitingResponseAuthorization = sink.awaitingResponseAuthorization(),
-                hasExecutableProvider = sink.executableProvider() != null,
-            )
-        ) {
-            return
-        }
-        val provider = sink.executableProvider() ?: return
+        val provider = sink.provider() ?: return
+        if (!tutorPlanExecuteCanStart(provider, sink.consentEnabled())) return
         val question = sink.question()
         val attempt = tutorPlanAttemptCount(
             sink.planTasks().count { task ->
@@ -87,71 +66,27 @@ internal class TutorPlanCommands(
             priorTurns = priorTurns,
         )
         val occurredAt = sink.clock()
-        val leaseApprovedAt = sink.lease()?.approvedAtFor(
-            question = question,
-            provider = provider,
-            taskKind = ModelTaskKind.TUTOR_PLAN,
-            nowEpochMillis = occurredAt,
-        )
-        val autoStartApprovedAt = tutorPlanAutoStartApprovedAt(
-            authorization = oneShotAutoStartAuthorization,
-            cycleOrdinal = cycleOrdinal,
-            priorConversationMemory = priorConversationMemory,
-            priorCycleStudentMessages = priorCycleStudentMessages,
-            priorTurns = priorTurns,
-            sessionId = question.sessionId,
-            questionDocumentId = question.questionDocument.document.id,
-            revisionNumber = question.revisionNumber,
-            provider = provider,
-            nowEpochMillis = occurredAt,
-        )
-        val approvedAt = when (provider.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER ->
-                tutorExternalPlanApprovedAt(leaseApprovedAt, autoStartApprovedAt) ?: run {
-                    sink.clearLease()
-                    sink.setPendingAction(
-                        PendingTutorEgressAction.Plan(
-                            cycleOrdinal = cycleOrdinal,
-                            priorConversationMemory = priorConversationMemory,
-                            priorCycleStudentMessages = priorCycleStudentMessages,
-                            priorTurns = priorTurns,
-                        ),
-                    )
-                    return
-                }
-            ModelExecutionLocation.LOCAL_NO_EGRESS,
-            ModelExecutionLocation.UNAVAILABLE,
-            -> occurredAt
-        }
         val request = buildTutorPlanRequest(
             question = question,
             profile = sink.profile(),
             provider = provider,
             requestId = requestId,
             occurredAtEpochMillis = occurredAt,
-            approvedAtEpochMillis = approvedAt,
             cycleOrdinal = cycleOrdinal,
             priorConversationMemory = priorConversationMemory,
             priorCycleStudentMessages = priorCycleStudentMessages,
             priorTurns = priorTurns,
         )
-        if (sink.pendingAction() is PendingTutorEgressAction.Plan) {
-            sink.setPendingAction(null)
-        }
         scope.launch { sink.modelTasks.execute(request).collect() }
     }
 }
 
 internal class TutorPlanSink(
-    val awaitingResponseAuthorization: () -> Boolean,
-    val executableProvider: () -> ProviderCapabilitySnapshot?,
+    val provider: () -> ProviderCapabilitySnapshot?,
+    val consentEnabled: () -> Boolean,
     val question: () -> TutorQuestionContext,
     val profile: () -> StudyProfileOverview,
     val clock: () -> Long,
     val planTasks: () -> List<ModelTaskSnapshot>,
-    val lease: () -> TutorCompositionEgressLease?,
-    val pendingAction: () -> PendingTutorEgressAction?,
-    val setPendingAction: (PendingTutorEgressAction?) -> Unit,
-    val clearLease: () -> Unit,
     val modelTasks: ModelTaskRepository,
 )

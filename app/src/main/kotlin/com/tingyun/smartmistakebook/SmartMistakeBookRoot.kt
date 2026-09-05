@@ -204,6 +204,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
     val repository = application.studyRepository
     val baseCapabilities = application.capabilities
     val startupState by application.startupState.collectAsStateWithLifecycle()
+    val consentStore = application.modelAgentConsentStore
+    val agentConsentEnabled = consentStore?.consentEnabled
+        ?.collectAsStateWithLifecycle(initialValue = true)
+        ?.value ?: true
     val configurationStore = application.modelConfigurationStore
     val modelConfiguration = if (configurationStore != null) {
         configurationStore.configuration
@@ -815,6 +819,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     },
                     onBack = navController::popBackStack,
                     onEndedWithoutSave = { navController.popBackStack() },
+                    agentConsentEnabled = agentConsentEnabled,
                 )
             }
             composable(Routes.MistakeDetail) { entry ->
@@ -926,6 +931,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         }?.questionMemory,
                         onOpenModelSettings = { navController.navigate(Routes.Capability) },
                         onBack = navController::popBackStack,
+                        agentConsentEnabled = agentConsentEnabled,
                     )
                 }
             }

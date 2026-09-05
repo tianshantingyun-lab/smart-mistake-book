@@ -74,11 +74,10 @@ internal class TutorInteractionCommands(
     }
 
     fun continueTurn(requestedMove: TutorMoveType) {
-        if (sink.interactionBusy() || sink.awaitingResponseAuthorization()) return
+        if (sink.interactionBusy()) return
         if (
             !tutorMoveCanStart(
                 interactionBusy = sink.interactionBusy(),
-                awaitingAuthorization = sink.awaitingResponseAuthorization(),
                 hasExecutableProvider = sink.hasExecutableProvider(),
             )
         ) {
@@ -125,11 +124,9 @@ internal class TutorInteractionCommands(
     }
 
     fun restartCycle() {
-        if (sink.awaitingResponseAuthorization()) return
         val memory = sink.tutorResponses().toTutorConversationMemory(sink.answerExposureKeys())
         if (
             !tutorRestartCanStart(
-                awaitingAuthorization = false,
                 hasExecutableProvider = sink.hasExecutableProvider(),
                 hasConversationMemory = memory != null,
             )
@@ -154,7 +151,6 @@ internal class TutorInteractionSink(
     val interactionBusy: () -> Boolean,
     val setInteractionBusy: (Boolean) -> Unit,
     val setInteractionError: (String?) -> Unit,
-    val awaitingResponseAuthorization: () -> Boolean,
     val hasExecutableProvider: () -> Boolean,
     val openModelSettings: () -> Unit,
     val currentCycleResponses: () -> List<TutorTurnResponse>,

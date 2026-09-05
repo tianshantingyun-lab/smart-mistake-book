@@ -23,14 +23,12 @@ internal sealed interface TutorVisualExistingDecision {
     data class ExecuteExisting(val request: ModelTaskRequest) : TutorVisualExistingDecision
 }
 
+/** Dedup on an already-pending identical input; a finished identical task is left resolved. */
 internal fun tutorVisualExistingDecision(
     existing: ModelTaskSnapshot?,
-    provider: ProviderCapabilitySnapshot,
-    taskKind: ModelTaskKind,
 ): TutorVisualExistingDecision = when {
     existing == null -> TutorVisualExistingDecision.ExecuteNew
-    existing.status.isTutorExecutionPending() &&
-        existing.coversCurrentTutorDisclosure(provider, taskKind) ->
+    existing.status.isTutorExecutionPending() ->
         TutorVisualExistingDecision.ExecuteExisting(existing.request)
     else -> TutorVisualExistingDecision.Skip
 }
@@ -42,9 +40,12 @@ internal class TutorVisualWorkCommands(
         val provider = sink.currentProvider()?.takeIf {
             tutorVisualProviderCanExecute(it, ModelTaskKind.TUTOR_VISUAL_GENERATE)
         }
-        val approvedAt = sink.generateApprovedAt()
         val assets = sink.sourceAssets()
-        if (provider == null || approvedAt == null || assets.isEmpty()) {
+        if (
+            provider == null ||
+            !visualAgentEligible(provider, ModelTaskKind.TUTOR_VISUAL_GENERATE) ||
+            assets.isEmpty()
+        ) {
             sink.setGenerateBuildFailures(emptySet())
             return
         }
@@ -59,7 +60,6 @@ internal class TutorVisualWorkCommands(
                     focusMarkdown = seed.request.focusMarkdown,
                     explanationMarkdown = seed.explanationMarkdown,
                     occurredAtEpochMillis = sink.clock(),
-                    approvedAtEpochMillis = approvedAt,
                 )
             }.getOrNull()
             if (request == null) {
@@ -71,8 +71,6 @@ internal class TutorVisualWorkCommands(
                     existing = sink.generationTasks().lastOrNull { task ->
                         task.request.input == request.input
                     },
-                    provider = provider,
-                    taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
                 )
             ) {
                 TutorVisualExistingDecision.ExecuteNew ->
@@ -89,9 +87,12 @@ internal class TutorVisualWorkCommands(
         val provider = sink.currentProvider()?.takeIf {
             tutorVisualProviderCanExecute(it, ModelTaskKind.TUTOR_VISUAL_REVIEW)
         }
-        val approvedAt = sink.reviewApprovedAt()
         val assets = sink.sourceAssets()
-        if (provider == null || approvedAt == null || assets.isEmpty()) {
+        if (
+            provider == null ||
+            !visualAgentEligible(provider, ModelTaskKind.TUTOR_VISUAL_REVIEW) ||
+            assets.isEmpty()
+        ) {
             sink.setReviewBuildFailures(emptySet())
             return
         }
@@ -112,7 +113,6 @@ internal class TutorVisualWorkCommands(
                     generated = resolution.output,
                     reviewReasonCodes = resolution.reasonCodes,
                     occurredAtEpochMillis = sink.clock(),
-                    approvedAtEpochMillis = approvedAt,
                 )
             }.getOrNull()
             if (request == null) {
@@ -124,8 +124,6 @@ internal class TutorVisualWorkCommands(
                     existing = sink.reviewTasks().lastOrNull { task ->
                         task.request.input == request.input
                     },
-                    provider = provider,
-                    taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
                 )
             ) {
                 TutorVisualExistingDecision.ExecuteNew ->
@@ -137,14 +135,28 @@ internal class TutorVisualWorkCommands(
         }
         sink.setReviewBuildFailures(failures)
     }
+
+    /**
+     * Visual work is decorative enrichment. An external provider must satisfy the live
+     * agent gate (consent ON + capability + image input for these image-bearing kinds);
+     * a local provider needs no consent because it never egresses.
+     */
+    private fun visualAgentEligible(
+        provider: ProviderCapabilitySnapshot,
+        taskKind: ModelTaskKind,
+    ): Boolean = when (provider.executionLocation) {
+        ModelExecutionLocation.EXTERNAL_PROVIDER ->
+            tutorAgentChatEnabled(provider, sink.consentEnabled(), taskKind)
+        ModelExecutionLocation.LOCAL_NO_EGRESS -> true
+        ModelExecutionLocation.UNAVAILABLE -> false
+    }
 }
 
 internal class TutorVisualWorkSink(
     val currentProvider: () -> ProviderCapabilitySnapshot?,
+    val consentEnabled: () -> Boolean,
     val question: () -> TutorQuestionContext,
     val clock: () -> Long,
-    val generateApprovedAt: () -> Long?,
-    val reviewApprovedAt: () -> Long?,
     val sourceAssets: () -> List<TutorVisualSourceAssetScope>,
     val selectedSeeds: () -> List<TutorVisualWorkSeed>,
     val generationTasks: () -> List<ModelTaskSnapshot>,
