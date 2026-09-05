@@ -292,6 +292,8 @@ internal object OpenAiModelProtocol {
         com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ -> "读取学生对相关知识的掌握情况"
         com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE -> "提交一条学习证据（模型判 direction/understanding/confidence，权重本地定）"
         com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_WRITE -> "写入错题本（需学生明确命令，环内不可自主执行）"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.FIGURE_REDRAW ->
+            "把当前题的手写/涂改原图重绘成干净题面（仅含图题需要时调用）"
     }
 
     /**
@@ -304,6 +306,7 @@ internal object OpenAiModelProtocol {
      */
     private fun strictFunctionSchema(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): JsonObject {
         val masterySemantics = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE
+        val figureRedraw = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.FIGURE_REDRAW
         return buildJsonObject {
             put("type", "object")
             put(
@@ -372,6 +375,15 @@ internal object OpenAiModelProtocol {
                             },
                         )
                     }
+                    if (figureRedraw) {
+                        put(
+                            "sourceAssetId",
+                            buildJsonObject {
+                                put("type", "string")
+                                put("description", "要重绘的原题图 asset id（当前题的源图）")
+                            },
+                        )
+                    }
                 },
             )
             if (masterySemantics) {
@@ -383,6 +395,15 @@ internal object OpenAiModelProtocol {
                         add(JsonPrimitive("direction"))
                         add(JsonPrimitive("understanding"))
                         add(JsonPrimitive("confidence"))
+                    },
+                )
+            } else if (figureRedraw) {
+                put(
+                    "required",
+                    buildJsonArray {
+                        add(JsonPrimitive("terms"))
+                        add(JsonPrimitive("rationale"))
+                        add(JsonPrimitive("sourceAssetId"))
                     },
                 )
             } else {

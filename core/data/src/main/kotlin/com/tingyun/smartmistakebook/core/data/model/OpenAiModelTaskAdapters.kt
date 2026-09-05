@@ -459,6 +459,9 @@ internal object OpenAiModelTaskAdapters {
                 "understanding∈{STRUGGLING,UNCERTAIN,CONFIDENT,MASTERED}（你对学生理解程度的判断）、" +
                 "terms=[知识点id]（须是当前题真实绑定的知识点）、confidence∈[0,1]（你判断的置信度）。" +
                 "只在你从对话中有确切依据判断学生理解/卡住时才申请；闲聊或泛泛而谈不要申请。"
+        TutorToolName.FIGURE_REDRAW ->
+            "把当前题的手写/涂改原图重绘成干净题面。仅当题目含图且需要干净图时调用；" +
+                "sourceAssetId=当前题源图 asset id。纯文字题不需要调用。"
     }
 
     private fun visualProgramPromptRules(): String = """

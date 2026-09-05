@@ -6,6 +6,7 @@ import android.os.StrictMode
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.capture.ConfiguredCleanImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.capture.CleanRedrawToolFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecovery
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
@@ -226,6 +227,18 @@ class SmartMistakeBookApplication : Application() {
             modelTaskRepository = ModelTaskRepositoryFactory.create(
                 database = database,
                 gateway = gateway,
+                // FIGURE_REDRAW 工具：模型在讲题环里自主决定是否重绘当前题源图。
+                // 复用已配置模型引擎；未配置/无图生图能力时工具为 null（环内 decline）。
+                cleanRedrawTool = modelConfigurationStore?.let { store ->
+                    CleanRedrawToolFactory.create(
+                        context = this,
+                        database = database,
+                        generator = ConfiguredCleanImageGeneratorFactory.create(
+                            configurationStore = store,
+                            networkRequestsAllowed = capabilities.networkRequestsAllowed,
+                        ),
+                    )
+                },
             )
             batchImportRepository = BatchImportRepositoryFactory.create(
                 context = this,

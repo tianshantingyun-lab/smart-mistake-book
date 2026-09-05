@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.data.study
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
+import com.tingyun.smartmistakebook.core.domain.CleanRedrawTool
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
@@ -33,7 +34,10 @@ internal fun masteryUpdateEvidenceId(
  * digest — the model never sees raw rows, and failures become error
  * outcomes instead of exceptions so the loop can continue.
  */
-internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
+internal class RoomTutorToolRunner(
+    private val port: StudyDatabasePort,
+    private val cleanRedrawTool: CleanRedrawTool? = null,
+) {
     /** 观测面：工具环协议测试断言执行器确实被调用。 */
     var executedCallCount: Int = 0
         private set
@@ -57,6 +61,11 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
          * collection channel is not wired.
          */
         val attentionFactor: Double = 1.0,
+        /**
+         * Current tutor session id — FIGURE_REDRAW resolves the session's source
+         * asset through it. Null when the round has no captured session.
+         */
+        val sessionId: String? = null,
     ) {
         init {
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
@@ -89,6 +98,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                 summaryMarkdown = "错题库写入需要学生确认。",
                 errorKind = "confirmation_required",
             )
+            TutorToolName.FIGURE_REDRAW -> figureRedraw(call, context)
         }
     } catch (cancelled: CancellationException) {
         throw cancelled
@@ -187,6 +197,50 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         )
     }
 
+
+    private suspend fun figureRedraw(call: TutorToolCall, context: Context): TutorToolOutcome {
+        val tool = cleanRedrawTool
+            ?: return TutorToolOutcome(
+                tool = TutorToolName.FIGURE_REDRAW,
+                ok = false,
+                summaryMarkdown = "当前没有可用的题图重绘能力。",
+                errorKind = "no_redraw_tool",
+            )
+        val requestedAssetId = call.sourceAssetId
+        if (requestedAssetId.isNullOrBlank()) {
+            return TutorToolOutcome(
+                tool = TutorToolName.FIGURE_REDRAW,
+                ok = false,
+                summaryMarkdown = "重绘请求缺少要处理的题图。",
+                errorKind = "no_source_asset",
+            )
+        }
+        // 只允许重绘当前会话自己的源图：请求的 asset 必须命中会话的 source asset。
+        val session = context.sessionId?.let { sessionId ->
+            port.readTutorSession(sessionId)
+        }
+        val sessionAssetId = session?.sourceAsset?.sourceAssetId
+        if (sessionAssetId == null || sessionAssetId != requestedAssetId) {
+            return TutorToolOutcome(
+                tool = TutorToolName.FIGURE_REDRAW,
+                ok = false,
+                summaryMarkdown = "这张题图不属于当前会话，已拒绝重绘。",
+                errorKind = "asset_mismatch",
+            )
+        }
+        val clean = tool.redrawCleanImage(requestedAssetId)
+            ?: return TutorToolOutcome(
+                tool = TutorToolName.FIGURE_REDRAW,
+                ok = false,
+                summaryMarkdown = "重绘没有完成（当前模型未启用图生图，或这张图无法处理）。",
+                errorKind = "declined",
+            )
+        return TutorToolOutcome(
+            tool = TutorToolName.FIGURE_REDRAW,
+            ok = true,
+            summaryMarkdown = "已生成干净题面（将随题目保存展示）。",
+        )
+    }
 
     private suspend fun masteryUpdate(call: TutorToolCall, context: Context): TutorToolOutcome {
         // 模型只给语义元素（direction/understanding/锚定 terms），weight 与
