@@ -170,7 +170,9 @@ class RoomModelTaskRepository internal constructor(
                 return@flow
             }
             current = when (execution.permit) {
-                is ModelExecutionPermit.External -> {
+                is ModelExecutionPermit.External,
+                ModelExecutionPermit.ProviderConsented,
+                -> {
                     val reservation = database.reserveModelTaskRemoteDispatch(
                         ReserveModelTaskRemoteDispatchCommand(
                             taskId = current.taskId,

@@ -41,6 +41,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
 import com.tingyun.smartmistakebook.core.domain.CleanImageGenerator
 import com.tingyun.smartmistakebook.core.domain.CapturedProblemCommitSummary
+import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import java.io.File
 import com.tingyun.smartmistakebook.core.domain.ConfirmCapturedProblemRequest
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
@@ -64,6 +65,10 @@ import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerpri
 import com.tingyun.smartmistakebook.core.model.CaptureDraftWorkspaceCodec
 import com.tingyun.smartmistakebook.core.model.CaptureDraftWorkspaceFingerprint
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyInput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyOutput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineProblemKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
@@ -76,12 +81,14 @@ import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 
 class RoomCaptureWorkflowRepository internal constructor(
@@ -90,6 +97,7 @@ class RoomCaptureWorkflowRepository internal constructor(
     private val localTextRecognizer: LocalQuestionTextRecognizer,
     private val cleanRedraw: CleanImageGenerator? = null,
     private val cleanRedrawScope: CoroutineScope? = null,
+    private val modelTasks: ModelTaskRepository? = null,
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<PendingCaptureItem>> =
         database.observePendingCaptureDrafts().map { records ->
@@ -351,16 +359,20 @@ class RoomCaptureWorkflowRepository internal constructor(
                 errorBookEntryId = result.receipt.errorBookEntryId,
                 created = result.created,
             )
-            // Commit-time clean redraw: never blocks or fails the commit. When an
-            // application scope is injected the redraw runs in the background and
-            // the save returns immediately; otherwise (tests, no scope) it runs
-            // synchronously but still cannot fail the commit. A missing or failing
-            // generator leaves the revision with the original photo only.
+            // Model-decided clean redraw: the model looks at the photo and decides
+            // whether it is figure-bearing. Only WITH_FIGURE problems are redrawn;
+            // text-only problems keep the original. Never blocks or fails the commit —
+            // a missing/failing model, generator, or classify round leaves the revision
+            // with the original photo only.
             if (result.created) {
-                scheduleCleanRedraw(
+                decideAndRedraw(
                     original = originalFile,
                     originalMimeType = draft.sourceAsset.mimeType,
+                    sourceAssetId = draft.sourceAsset.sourceAssetId,
+                    sourceWidth = draft.sourceAsset.width,
+                    sourceHeight = draft.sourceAsset.height,
                     revisionId = result.receipt.problemRevisionId,
+                    subjectId = draft.draftId,
                 )
             }
             summary
@@ -378,6 +390,46 @@ class RoomCaptureWorkflowRepository internal constructor(
             cleanImageBytes = clean.bytes,
             cleanImageMimeType = clean.mimeType,
         )
+    }
+
+    /**
+     * Runs one IMAGE_PIPELINE_CLASSIFY round on the committed photo and redraws only
+     * when the model says WITH_FIGURE. Runs inline (the classify is fast); the redraw
+     * itself stays async via [cleanRedrawScope] when injected, else inline fail-closed.
+     */
+    private suspend fun decideAndRedraw(
+        original: File,
+        originalMimeType: String,
+        sourceAssetId: String,
+        sourceWidth: Int,
+        sourceHeight: Int,
+        revisionId: String,
+        subjectId: String,
+    ) {
+        val tasks = modelTasks ?: return
+        val shouldRedraw = try {
+            val classifyRequest = ModelTaskRequest(
+                requestId = "save-decision:$revisionId",
+                input = ImagePipelineClassifyInput(
+                    sourceAssetId = sourceAssetId,
+                    imageWidth = sourceWidth,
+                    imageHeight = sourceHeight,
+                    subjectIdOverride = subjectId,
+                ),
+                occurredAtEpochMillis = System.currentTimeMillis(),
+                captureEgressConsentGranted = true,
+            )
+            val terminal = tasks.execute(classifyRequest).last()
+            terminal.status == ModelTaskStatus.SUCCEEDED &&
+                (terminal.output as? ImagePipelineClassifyOutput)?.problemKind ==
+                ImagePipelineProblemKind.WITH_FIGURE
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            false
+        }
+        if (!shouldRedraw) return
+        scheduleCleanRedraw(original, originalMimeType, revisionId)
     }
 
     override suspend fun attachCleanRedrawImage(
@@ -488,13 +540,17 @@ class RoomCaptureWorkflowRepository internal constructor(
             errorBookEntryId = result.receipt.errorBookEntryId,
             created = result.created,
         ).also { summary ->
-            // Commit-time clean redraw for a tutor session saved into the
+            // Model-decided clean redraw for a tutor session saved into the
             // mistake book; identical fail-closed semantics to library commits.
             if (summary.created) {
-                scheduleCleanRedraw(
+                decideAndRedraw(
                     original = assetVault.resolve(session.sourceAsset),
                     originalMimeType = session.sourceAsset.mimeType,
+                    sourceAssetId = session.sourceAsset.sourceAssetId,
+                    sourceWidth = session.sourceAsset.width,
+                    sourceHeight = session.sourceAsset.height,
                     revisionId = summary.problemRevisionId,
+                    subjectId = session.draftId,
                 )
             }
         }
@@ -1193,6 +1249,7 @@ object CaptureWorkflowRepositoryFactory {
         database: StudyDatabasePort,
         cleanRedraw: CleanImageGenerator? = null,
         cleanRedrawScope: CoroutineScope? = null,
+        modelTasks: ModelTaskRepository? = null,
     ): CaptureWorkflowRepository =
         RoomCaptureWorkflowRepository(
             database = database,
@@ -1200,5 +1257,6 @@ object CaptureWorkflowRepositoryFactory {
             localTextRecognizer = MlKitChineseQuestionTextRecognizer(context.applicationContext),
             cleanRedraw = cleanRedraw,
             cleanRedrawScope = cleanRedrawScope,
+            modelTasks = modelTasks,
         )
 }

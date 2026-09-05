@@ -5,6 +5,9 @@ import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAsset
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAssetSource
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
+import com.tingyun.smartmistakebook.core.model.CaptureParseInput
+import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyInput
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 
@@ -18,24 +21,43 @@ internal class AndroidRestrictedModelAssetSource(
         execution: ModelGatewayExecution,
         assetId: String,
     ): RestrictedModelAsset {
-        val manifest = (execution.permit as? ModelExecutionPermit.External)?.manifest
-            ?: throw SecurityException("External model asset access requires an egress permit")
-        check(execution.request.egressManifest == manifest) {
-            "External model execution does not match its persisted egress manifest"
-        }
-        val grant = manifest.assets.singleOrNull { it.assetId == assetId }
-            ?: throw SecurityException("Asset is outside the approved egress scope")
-        require(grant.selectedRegion == null) {
-            "Region-scoped image egress remains blocked until a trusted crop stream is available"
-        }
         val record = database.readCanonicalSourceAsset(assetId)
             ?: throw SecurityException("Approved model asset is unavailable")
-        check(
-            record.contentSha256 == grant.sha256 &&
-                record.byteSize == grant.byteSize &&
-                record.width == grant.width &&
-                record.height == grant.height,
-        ) { "Approved model asset changed after authorization" }
+        when (val permit = execution.permit) {
+            is ModelExecutionPermit.External -> {
+                val manifest = permit.manifest
+                check(execution.request.egressManifest == manifest) {
+                    "External model execution does not match its persisted egress manifest"
+                }
+                val grant = manifest.assets.singleOrNull { it.assetId == assetId }
+                    ?: throw SecurityException("Asset is outside the approved egress scope")
+                require(grant.selectedRegion == null) {
+                    "Region-scoped image egress remains blocked until a trusted crop stream is available"
+                }
+                check(
+                    record.contentSha256 == grant.sha256 &&
+                        record.byteSize == grant.byteSize &&
+                        record.width == grant.width &&
+                        record.height == grant.height,
+                ) { "Approved model asset changed after authorization" }
+            }
+            ModelExecutionPermit.ProviderConsented -> {
+                // Global-consent read: the request carries consent and the capture
+                // pipeline authorized it; the asset must be one this request references
+                // and be a whole-image (no region) canonical asset. The record is the
+                // source of truth (no manifest grant to compare).
+                check(execution.request.captureEgressConsentGranted) {
+                    "Consented model asset access requires the consent flag"
+                }
+                check(execution.request.input is CaptureAssessmentInput ||
+                    execution.request.input is CaptureParseInput ||
+                    execution.request.input is ImagePipelineClassifyInput) {
+                    "Consented asset access is limited to the capture pipeline"
+                }
+            }
+            ModelExecutionPermit.LocalOnly ->
+                throw SecurityException("External model asset access requires an egress permit")
+        }
         val file = vault.resolve(record)
         return RestrictedModelAsset(
             assetId = record.sourceAssetId,

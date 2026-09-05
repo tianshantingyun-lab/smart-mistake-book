@@ -312,6 +312,13 @@ data class ModelTaskRequest(
     val input: ModelTaskInput,
     val occurredAtEpochMillis: Long,
     val egressManifest: ModelEgressManifest? = null,
+    /**
+     * True when the user has enabled global model-image consent in Settings, so a
+     * capture-pipeline round (assess/parse/classify) may egress to the configured
+     * image-capable provider without a per-photo manifest. Only meaningful at
+     * schemaVersion >= [CAPTURE_CONSENT_SCHEMA_VERSION].
+     */
+    val captureEgressConsentGranted: Boolean = false,
 ) {
     init {
         require(schemaVersion in MIN_SUPPORTED_SCHEMA_VERSION..CURRENT_SCHEMA_VERSION) {
@@ -320,6 +327,9 @@ data class ModelTaskRequest(
         require(schemaVersion >= EGRESS_SCHEMA_VERSION || egressManifest == null) {
             "Legacy model task requests cannot contain an egress manifest"
         }
+        require(
+            schemaVersion >= CAPTURE_CONSENT_SCHEMA_VERSION || !captureEgressConsentGranted,
+        ) { "Legacy model task requests cannot carry capture-consent" }
         require(
             schemaVersion >= TUTOR_STUDENT_CONTEXT_SCHEMA_VERSION ||
                 (input as? TutorPlanInput)?.priorCycleStudentMessages.isNullOrEmpty(),
@@ -345,7 +355,8 @@ data class ModelTaskRequest(
         const val CAPTURE_PAGE_RELATION_SCHEMA_VERSION = 4
         const val TUTOR_VISUAL_SCHEMA_VERSION = 5
         const val TUTOR_TOOL_CARRIER_SCHEMA_VERSION = 6
-        const val CURRENT_SCHEMA_VERSION = TUTOR_TOOL_CARRIER_SCHEMA_VERSION
+        const val CAPTURE_CONSENT_SCHEMA_VERSION = 7
+        const val CURRENT_SCHEMA_VERSION = CAPTURE_CONSENT_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -1221,6 +1232,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.CAPTURE_CONSENT_SCHEMA_VERSION) {
+                        it.withoutCaptureConsent()
+                    } else {
+                        it
+                    }
+                }
         }
     }
 
@@ -1255,6 +1273,14 @@ private fun String.withoutEmptyToolCarrier(input: ModelTaskInput): String =
     } else {
         this
     }
+
+/**
+ * 去掉 capture-consent 空键（schema 6→7 指纹平移）。encodeDefaults=true 使 v7 编码比 v6
+ * 多一个 "captureEgressConsentGranted":false 空键；旧 v6 行没有该键，故 schemaVersion<7 的
+ * fingerprint 路径需 strip 它，保证旧行读回时重算指纹一致（同 withoutEmptyToolCarrier 先例）。
+ */
+private fun String.withoutCaptureConsent(): String =
+    replace(",\"captureEgressConsentGranted\":false", "")
 
 internal fun NormalizedSourceRegion.isValidModelRegion(): Boolean =
     left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite() &&

@@ -358,6 +358,14 @@ sealed interface ModelExecutionPermit {
     data object LocalOnly : ModelExecutionPermit
 
     data class External(val manifest: ModelEgressManifest) : ModelExecutionPermit
+
+    /**
+     * Granted for capture-pipeline kinds (assess/parse/classify) when the user
+     * has enabled global model-image consent in Settings ("configuring the model
+     * = consent"). Carries no per-asset grant: the request's own asset refs plus
+     * the consent flag authorize the read. Tutor kinds always require a manifest.
+     */
+    data object ProviderConsented : ModelExecutionPermit
 }
 
 class ModelGatewayExecution internal constructor(
@@ -417,6 +425,13 @@ object ModelRequestPayloadBudget {
 }
 
 object ModelEgressPolicy {
+    /** Capture-pipeline kinds that may run under global model-image consent. */
+    private val CAPTURE_PIPELINE_KINDS = setOf(
+        ModelTaskKind.CAPTURE_ASSESS,
+        ModelTaskKind.CAPTURE_PARSE,
+        ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
+    )
+
     fun authorize(
         request: ModelTaskRequest,
         provider: ProviderCapabilitySnapshot,
@@ -427,6 +442,18 @@ object ModelEgressPolicy {
         -> ModelGatewayExecution(request, ModelExecutionPermit.LocalOnly)
 
         ModelExecutionLocation.EXTERNAL_PROVIDER -> {
+            // Global consent path: when the user enabled model-image consent in
+            // Settings and this is a capture-pipeline round (assess/parse/classify),
+            // the request may egress to the configured image-capable provider without
+            // a per-photo manifest. Tutor/classification kinds still require a manifest.
+            if (
+                request.captureEgressConsentGranted &&
+                request.input.kind in CAPTURE_PIPELINE_KINDS &&
+                provider.supportsImageInput &&
+                provider.supports(request.input.kind)
+            ) {
+                return ModelGatewayExecution(request, ModelExecutionPermit.ProviderConsented)
+            }
             val manifest = request.egressManifest ?: throw ModelEgressAuthorizationException(
                 ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED,
                 "需要你确认本次发送范围后，才能交给模型处理",
@@ -451,17 +478,34 @@ object ModelEgressPolicy {
         provider: ProviderCapabilitySnapshot,
         nowEpochMillis: Long = System.currentTimeMillis(),
     ) {
-        val permittedManifest = (execution.permit as? ModelExecutionPermit.External)?.manifest
-            ?: throw invalidCurrentAuthorization()
-        if (execution.request.egressManifest != permittedManifest) {
-            throw invalidCurrentAuthorization()
-        }
-
-        val currentExecution = authorize(execution.request, provider, nowEpochMillis)
-        val currentManifest = (currentExecution.permit as? ModelExecutionPermit.External)?.manifest
-            ?: throw invalidCurrentAuthorization()
-        if (currentManifest != permittedManifest) {
-            throw invalidCurrentAuthorization()
+        when (val permit = execution.permit) {
+            is ModelExecutionPermit.External -> {
+                val permittedManifest = permit.manifest
+                if (execution.request.egressManifest != permittedManifest) {
+                    throw invalidCurrentAuthorization()
+                }
+                val currentExecution = authorize(execution.request, provider, nowEpochMillis)
+                val currentManifest = (currentExecution.permit as? ModelExecutionPermit.External)?.manifest
+                    ?: throw invalidCurrentAuthorization()
+                if (currentManifest != permittedManifest) {
+                    throw invalidCurrentAuthorization()
+                }
+            }
+            ModelExecutionPermit.ProviderConsented -> {
+                // Re-validate the global-consent condition holds right now (toggle still on,
+                // provider still the configured image-capable one). The per-byte asset gate is
+                // enforced separately in the restricted asset source.
+                if (
+                    execution.request.captureEgressConsentGranted &&
+                    provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+                    provider.supportsImageInput &&
+                    provider.supports(execution.request.input.kind)
+                ) {
+                    return
+                }
+                throw invalidCurrentAuthorization()
+            }
+            ModelExecutionPermit.LocalOnly -> throw invalidCurrentAuthorization()
         }
     }
 

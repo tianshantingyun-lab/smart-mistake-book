@@ -189,7 +189,7 @@ internal class OpenAiCompatibleModelGateway(
                             },
                         ),
                     )
-                    val images = readApprovedImages(execution, imageReadPlan)
+                    val images = readApprovedImages(execution, provider.modelId, imageReadPlan)
                     try {
                         val stream = provider.supportsStreaming &&
                             execution.request.input.usesOpenAiSse()
@@ -320,21 +320,43 @@ internal class OpenAiCompatibleModelGateway(
 
     private suspend fun readApprovedImages(
         execution: ModelGatewayExecution,
+        modelId: String,
         imageReadPlan: List<ApprovedImageReadPlan>,
     ): List<ApprovedImage> {
         return buildList {
+            // Under ProviderConsented the plans carry byteSize == 0 (resolved at open);
+            // accumulate real sizes and enforce the budget once all are known.
+            val consented = execution.permit == ModelExecutionPermit.ProviderConsented
+            val consentedSizes = mutableListOf<Long>()
             try {
                 imageReadPlan.forEach { planned ->
                     assetSource.open(execution, planned.assetId).use { asset ->
                         require(asset.mimeType in APPROVED_IMAGE_MIME_TYPES) {
                             "Approved model asset is not a canonical image"
                         }
-                        if (asset.byteSize != planned.byteSize) {
-                            throw SecurityException("Approved model asset size changed after preflight")
+                        val actualSize = if (consented) {
+                            consentedSizes += asset.byteSize
+                            asset.byteSize
+                        } else {
+                            if (asset.byteSize != planned.byteSize) {
+                                throw SecurityException("Approved model asset size changed after preflight")
+                            }
+                            planned.byteSize
                         }
-                        val bytes = asset.stream.readExactlyBounded(planned.byteSize)
+                        val bytes = asset.stream.readExactlyBounded(actualSize)
                         add(ApprovedImage(asset.mimeType, bytes))
                     }
+                }
+                if (consented) {
+                    val nonImageJsonUtf8Bytes = OpenAiModelProtocol.nonImageJsonUtf8Bytes(
+                        modelId = modelId,
+                        input = execution.request.input,
+                        imageCount = imageReadPlan.size,
+                    )
+                    ModelRequestPayloadBudget.requirePreparedRequestFits(
+                        nonImageJsonUtf8Bytes = nonImageJsonUtf8Bytes,
+                        assetByteSizes = consentedSizes,
+                    )
                 }
             } catch (failure: Throwable) {
                 forEach(ApprovedImage::close)
@@ -495,19 +517,27 @@ private fun ModelConfigurationSnapshot.configurationFingerprint(): String {
 private fun ModelGatewayExecution.isReadyForNetwork(
     provider: ProviderCapabilitySnapshot,
 ): Boolean {
-    val manifest = request.egressManifest ?: return false
     val requiresImageInput = request.input is CaptureAssessmentInput ||
         request.input is CaptureParseInput ||
         request.input is ImagePipelineClassifyInput ||
         request.input is TutorVisualGenerateInput ||
         request.input is TutorVisualReviewInput
+    // Under global consent a capture-pipeline request may egress without a manifest.
+    val consentedCapture = permit == ModelExecutionPermit.ProviderConsented &&
+        request.captureEgressConsentGranted &&
+        (request.input is CaptureAssessmentInput ||
+            request.input is CaptureParseInput ||
+            request.input is ImagePipelineClassifyInput)
+    if (!consentedCapture && request.egressManifest == null) return false
     return provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
         provider.supportsStructuredOutput &&
         provider.supports(request.input.kind) &&
         (!requiresImageInput || provider.supportsImageInput) &&
-        manifest.providerId == provider.providerId &&
-        manifest.modelId == provider.modelId &&
-        manifest.providerConfigurationVersion == provider.providerConfigurationVersion
+        (consentedCapture ||
+            (request.egressManifest?.providerId == provider.providerId &&
+                request.egressManifest?.modelId == provider.modelId &&
+                request.egressManifest?.providerConfigurationVersion ==
+                provider.providerConfigurationVersion))
 }
 
 private fun ModelGatewayExecution.requireImageRequestFits(
@@ -531,28 +561,44 @@ private fun ModelGatewayExecution.requireImageRequestFits(
     }
     if (assetIds.isEmpty()) return emptyList()
 
-    val permittedManifest = (permit as? ModelExecutionPermit.External)?.manifest
-        ?: throw SecurityException("External model request has no current image grant")
-    if (request.egressManifest != permittedManifest) {
-        throw SecurityException("External model request does not match its image grant")
+    when (val permit = permit) {
+        is ModelExecutionPermit.External -> {
+            val permittedManifest = permit.manifest
+            if (request.egressManifest != permittedManifest) {
+                throw SecurityException("External model request does not match its image grant")
+            }
+            val imageReadPlan = assetIds.map { assetId ->
+                val byteSize = permittedManifest.assets
+                    .singleOrNull { grant -> grant.assetId == assetId }
+                    ?.byteSize
+                    ?: throw SecurityException("External model image grant is incomplete")
+                ApprovedImageReadPlan(assetId = assetId, byteSize = byteSize)
+            }
+            val nonImageJsonUtf8Bytes = OpenAiModelProtocol.nonImageJsonUtf8Bytes(
+                modelId = modelId,
+                input = request.input,
+                imageCount = assetIds.size,
+            )
+            ModelRequestPayloadBudget.requirePreparedRequestFits(
+                nonImageJsonUtf8Bytes = nonImageJsonUtf8Bytes,
+                assetByteSizes = imageReadPlan.map(ApprovedImageReadPlan::byteSize),
+            )
+            return imageReadPlan
+        }
+        ModelExecutionPermit.ProviderConsented -> {
+            // Global-consent read: byte sizes are resolved when each asset is opened
+            // (the restricted asset source verifies consent + reads the canonical
+            // record). Return plans without a preflight size; readApprovedImages
+            // enforces the budget from the real opened sizes.
+            check(request.captureEgressConsentGranted) {
+                "Consented image request requires the consent flag"
+            }
+            return assetIds.map { assetId -> ApprovedImageReadPlan(assetId = assetId, byteSize = 0L) }
+        }
+        ModelExecutionPermit.LocalOnly -> throw SecurityException(
+            "External model request has no current image grant",
+        )
     }
-    val imageReadPlan = assetIds.map { assetId ->
-        val byteSize = permittedManifest.assets
-            .singleOrNull { grant -> grant.assetId == assetId }
-            ?.byteSize
-            ?: throw SecurityException("External model image grant is incomplete")
-        ApprovedImageReadPlan(assetId = assetId, byteSize = byteSize)
-    }
-    val nonImageJsonUtf8Bytes = OpenAiModelProtocol.nonImageJsonUtf8Bytes(
-        modelId = modelId,
-        input = request.input,
-        imageCount = assetIds.size,
-    )
-    ModelRequestPayloadBudget.requirePreparedRequestFits(
-        nonImageJsonUtf8Bytes = nonImageJsonUtf8Bytes,
-        assetByteSizes = imageReadPlan.map(ApprovedImageReadPlan::byteSize),
-    )
-    return imageReadPlan
 }
 
 private fun java.io.InputStream.readExactlyBounded(expectedBytes: Long): ByteArray {

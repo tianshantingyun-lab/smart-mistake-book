@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.flow
 /** Debug-only provider used to exercise real task persistence and GUI states without uploading. */
 class FakeModelGateway(
     private val stepDelayMillis: Long = DEFAULT_STEP_DELAY_MILLIS,
+    private val classifyProblemKind: ImagePipelineProblemKind = ImagePipelineProblemKind.TEXT_ONLY,
 ) : ModelGateway {
     init {
         require(stepDelayMillis >= 0) { "Fake model delay must not be negative" }
@@ -133,8 +134,12 @@ class FakeModelGateway(
             )
         }
         is ImagePipelineClassifyInput -> ImagePipelineClassifyOutput(
-            problemKind = ImagePipelineProblemKind.TEXT_ONLY,
-            textMarkdown = "演示题面：仅演示任务流程，不是从当前题图识别出的文字。",
+            problemKind = classifyProblemKind,
+            textMarkdown = if (classifyProblemKind == ImagePipelineProblemKind.WITH_FIGURE) {
+                ""
+            } else {
+                "演示题面：仅演示任务流程，不是从当前题图识别出的文字。"
+            },
             formulas = emptyList(),
             modelVersion = "demo/image-pipeline-classify-v1",
         )
