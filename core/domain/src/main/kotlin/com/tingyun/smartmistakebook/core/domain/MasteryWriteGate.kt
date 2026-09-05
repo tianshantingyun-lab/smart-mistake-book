@@ -30,15 +30,40 @@ object MasteryWriteGate {
     const val EVIDENCE_CONFIDENCE_THRESHOLD = 0.7
 
     /**
-     * Per-conversation cooldown before the same KC accepts another model
-     * evidence write. [I] aligned with Khan Academy's 12h mastery-challenge
-     * cooldown; keeps repeated "I understand now" affirmations from stacking
-     * into one session.
+     * Per-learner cooldown before the same KC accepts another model evidence
+     * write, across ALL conversations. [I] aligned with Khan Academy's 12h
+     * mastery-challenge cooldown. Batch-intake note: 50 imported problems on
+     * the same KC still produce only ONE model judgment per 12h — that is
+     * intentional (Condorcet independence: the model's dialogue judgments on
+     * one KC within 12h are correlated, not independent evidence; the
+     * independent signal for further problems on that KC comes from real
+     * attempts on the attempt channel, not repeated model affirmations).
      */
     const val SAME_KC_COOLDOWN_MILLIS = 12L * 60 * 60 * 1000
 
-    /** Per-conversation cap on accepted MASTERY_UPDATE writes in one session. [I] */
-    const val MAX_WRITES_PER_CONVERSATION = 8
+    /**
+     * Per-conversation cap on accepted MASTERY_UPDATE writes in one session.
+     * [I] Sized for batch tutoring sessions: a user can import a full exam
+     * sheet (50+ problems, 20+ distinct KCs) and tutor through it in ONE
+     * conversation — one model judgment per KC — so 8 would reject legitimate
+     * batch learning at problem #9. 50 leaves ~2× headroom over that batch
+     * shape while still capping a runaway self-affirmation loop.
+     */
+    const val MAX_WRITES_PER_CONVERSATION = 50
+
+    /**
+     * Per-learner rolling-window cap on accepted MASTERY_UPDATE writes across
+     * all conversations. [I] Sized for batch intake at the 1_000+/day scale:
+     * a legitimate batch burst (one big import + tutoring session) lands
+     * around 50-100 writes/hour, while a runaway loop (3 calls × 2 rounds per
+     * respond, dozens of responds) reaches several hundred per hour. 100/h
+     * separates the two; the calibration channel (ChatEvidenceGateCalibration)
+     * tracks real pressure so the constant can be re-set from data.
+     */
+    const val MAX_WRITES_PER_LEARNER_WINDOW = 100
+
+    /** Rolling window for the per-learner cap. */
+    const val LEARNER_WINDOW_MILLIS = 1L * 60 * 60 * 1000
 
     /**
      * Attention floor: below this factor a write is rejected instead of
@@ -104,6 +129,8 @@ object MasteryWriteGate {
         SAME_KC_IN_COOLDOWN,
         /** per-conversation write quota exhausted. */
         CONVERSATION_QUOTA_EXHAUSTED,
+        /** per-learner rolling-window write quota exhausted (multi-session farm guard). */
+        LEARNER_WINDOW_QUOTA_EXHAUSTED,
         /** attention factor below the reject floor. */
         ATTENTION_BELOW_FLOOR,
         /** contradictory semantics (POSITIVE + STRUGGLING). */
@@ -118,8 +145,12 @@ object MasteryWriteGate {
         val knowledgeNodeIsAnchored: Boolean,
         /** True when a correct objective answer exists in the same session (behavioral support). */
         val hasBehavioralSupport: Boolean,
+        /** Age of the learner's most recent accepted write to the SAME KC (across all conversations). */
         val sameKcLastWriteAgoMillis: Long?,
+        /** Accepted writes in the current conversation. */
         val writesThisConversation: Int,
+        /** Accepted writes by this learner in the rolling [LEARNER_WINDOW_MILLIS] window. */
+        val writesThisLearnerInWindow: Int,
         val attentionFactor: Double,
     ) {
         init {
@@ -127,6 +158,7 @@ object MasteryWriteGate {
             require(evidenceConfidence in 0.0..1.0) { "Evidence confidence must be in 0..1" }
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
             require(writesThisConversation >= 0) { "Write count must not be negative" }
+            require(writesThisLearnerInWindow >= 0) { "Learner window write count must not be negative" }
             require(sameKcLastWriteAgoMillis == null || sameKcLastWriteAgoMillis >= 0) {
                 "Cooldown age must not be negative"
             }
@@ -173,6 +205,9 @@ object MasteryWriteGate {
         }
         if (input.writesThisConversation >= MAX_WRITES_PER_CONVERSATION) {
             return GateResult.Rejected(RejectReason.CONVERSATION_QUOTA_EXHAUSTED)
+        }
+        if (input.writesThisLearnerInWindow >= MAX_WRITES_PER_LEARNER_WINDOW) {
+            return GateResult.Rejected(RejectReason.LEARNER_WINDOW_QUOTA_EXHAUSTED)
         }
         if (input.attentionFactor < MIN_ATTENTION_FACTOR) {
             return GateResult.Rejected(RejectReason.ATTENTION_BELOW_FLOOR)

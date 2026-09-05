@@ -1050,6 +1050,16 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
 
+    override suspend fun lastAcceptedChatEvidenceAtForKc(learnerId: String, knowledgeNodeId: String): Long? = null
+
+    override suspend fun countAcceptedChatEvidenceSince(learnerId: String, sinceEpochMillis: Long): Int = 0
+
+    override suspend fun countAcceptedChatEvidenceInConversation(conversationId: String): Int = 0
+
+    override suspend fun countRejectedChatEvidenceByReason(learnerId: String): List<com.tingyun.smartmistakebook.core.database.dao.RejectedReasonCountRow> = emptyList()
+
+    override suspend fun countAcceptedChatEvidencePerHour(learnerId: String, sinceEpochMillis: Long): List<com.tingyun.smartmistakebook.core.database.dao.HourlyAcceptedCountRow> = emptyList()
+
     override fun observePendingProblemDraftCount(): Flow<Int> = MutableStateFlow(0)
 
     override fun observeLearningLedgerHead(learnerId: String): Flow<Long> = learningLedgerHead

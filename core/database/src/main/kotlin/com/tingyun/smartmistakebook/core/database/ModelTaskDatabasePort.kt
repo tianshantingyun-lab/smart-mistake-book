@@ -153,4 +153,21 @@ interface ModelTaskDatabasePort {
      * per-conversation write quota before accepting a MASTERY_UPDATE write.
      */
     suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>
+
+    // ---- Indexed gate queries (batch-scale: O(log n), no full-table pull) ----
+
+    /** Most recent accepted write to one KC by the learner, across all conversations. */
+    suspend fun lastAcceptedChatEvidenceAtForKc(learnerId: String, knowledgeNodeId: String): Long?
+
+    /** Accepted chat-evidence writes by the learner since [sinceEpochMillis]. */
+    suspend fun countAcceptedChatEvidenceSince(learnerId: String, sinceEpochMillis: Long): Int
+
+    /** Accepted chat-evidence writes in one conversation. */
+    suspend fun countAcceptedChatEvidenceInConversation(conversationId: String): Int
+
+    /** Rejected-write counts grouped by gate reason (calibration input). */
+    suspend fun countRejectedChatEvidenceByReason(learnerId: String): List<com.tingyun.smartmistakebook.core.database.dao.RejectedReasonCountRow>
+
+    /** Accepted-write counts per epoch hour since [sinceEpochMillis] (calibration input). */
+    suspend fun countAcceptedChatEvidencePerHour(learnerId: String, sinceEpochMillis: Long): List<com.tingyun.smartmistakebook.core.database.dao.HourlyAcceptedCountRow>
 }

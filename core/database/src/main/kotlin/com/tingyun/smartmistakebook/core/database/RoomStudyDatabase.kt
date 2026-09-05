@@ -1400,6 +1400,21 @@ internal class RoomStudyDatabase(
     override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
         database.chatEvidenceDao().readByConversation(conversationId)
 
+    override suspend fun lastAcceptedChatEvidenceAtForKc(learnerId: String, knowledgeNodeId: String): Long? =
+        database.chatEvidenceDao().lastAcceptedAtForKc(learnerId, knowledgeNodeId)
+
+    override suspend fun countAcceptedChatEvidenceSince(learnerId: String, sinceEpochMillis: Long): Int =
+        database.chatEvidenceDao().countAcceptedSince(learnerId, sinceEpochMillis)
+
+    override suspend fun countAcceptedChatEvidenceInConversation(conversationId: String): Int =
+        database.chatEvidenceDao().countAcceptedInConversation(conversationId)
+
+    override suspend fun countRejectedChatEvidenceByReason(learnerId: String): List<com.tingyun.smartmistakebook.core.database.dao.RejectedReasonCountRow> =
+        database.chatEvidenceDao().countRejectedByReason(learnerId)
+
+    override suspend fun countAcceptedChatEvidencePerHour(learnerId: String, sinceEpochMillis: Long): List<com.tingyun.smartmistakebook.core.database.dao.HourlyAcceptedCountRow> =
+        database.chatEvidenceDao().countAcceptedPerHour(learnerId, sinceEpochMillis)
+
     override suspend fun loadLearningLedger(learnerId: String): LearningLedgerRead =
         database.projectionTransactionDao().loadLearningLedger(learnerId)
 

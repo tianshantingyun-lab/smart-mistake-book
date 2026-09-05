@@ -471,6 +471,14 @@ interface StudyExperienceRepository : AutoCloseable {
     suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> = emptyList()
 
     /**
+     * Data-driven calibration for the mastery-evidence write gate
+     * (research tutor-evidence-gate §4): rejection composition and
+     * window-quota pressure from the collected chat evidence. Suggestions
+     * only — constants change by human decision, never automatically.
+     */
+    suspend fun chatEvidenceGateCalibration(): ChatEvidenceGateCalibration.GateCalibrationReport? = null
+
+    /**
      * Reminder minute at the learner's personal peak time bucket midpoint
      * (spec §2.12 use 2). Null before any bucket reaches the sample floor.
      */

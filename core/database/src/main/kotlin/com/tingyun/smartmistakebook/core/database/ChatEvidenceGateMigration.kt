@@ -21,5 +21,18 @@ internal val CHAT_EVIDENCE_GATE_REJECTION_MIGRATION_42_43 = object : Migration(4
             "ALTER TABLE `learner_chat_evidence` " +
                 "ADD COLUMN `rejected_at_epoch_millis` INTEGER DEFAULT NULL",
         )
+        // 写闸评估的三个精确查询的支撑索引（批量录入量级：万条/年）。
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_learner_chat_evidence_learner_id_knowledge_node_id_created_at_epoch_millis` " +
+                "ON `learner_chat_evidence` (`learner_id`, `knowledge_node_id`, `created_at_epoch_millis`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_learner_chat_evidence_learner_id_created_at_epoch_millis` " +
+                "ON `learner_chat_evidence` (`learner_id`, `created_at_epoch_millis`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_learner_chat_evidence_conversation_id` " +
+                "ON `learner_chat_evidence` (`conversation_id`)",
+        )
     }
 }

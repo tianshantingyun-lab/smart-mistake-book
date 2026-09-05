@@ -213,21 +213,20 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             )
         }
 
-        // 会话证据（冷却/配额/行为佐证的读源）。
+        // 门控数据源：三个索引支撑的精确查询（批量量级 O(log n)，不做全表拉取）。
+        // - 同 KC 冷却按 learner 粒度（跨会话）：防"我懂了"开新会话绕过。
+        // - 会话配额按本会话 accepted 数。
+        // - learner 滚动窗配额按 learner 最近窗口内 accepted 总数（防多会话 farm）。
         val conversationId = context.conversationId
-        val conversationEvidence = if (conversationId.isNullOrBlank()) {
-            emptyList()
-        } else {
-            port.readChatEvidenceByConversation(conversationId)
-        }
-        // 行为佐证：客观作答信号由 repository 的 attempt 事件承载——runner
-        // 拿不到时保守为 false，MASTERED 高置信档因此要求显式行为通道（见 gate）。
-        // 冷却：同 KC 最近一次被接受写入距今。
-        val acceptedEvidence = conversationEvidence.filter { !it.isRejected }
-        val lastSameKcWrite = acceptedEvidence
-            .filter { it.knowledge_node_id == knowledgeNodeId }
-            .maxOfOrNull { it.created_at_epoch_millis }
+        val lastSameKcWrite = port.lastAcceptedChatEvidenceAtForKc(context.learnerId, knowledgeNodeId)
         val sameKcLastWriteAgoMillis = lastSameKcWrite?.let { (now - it).coerceAtLeast(0) }
+        val acceptedInWindow = port.countAcceptedChatEvidenceSince(
+            learnerId = context.learnerId,
+            sinceEpochMillis = now - MasteryWriteGate.LEARNER_WINDOW_MILLIS,
+        )
+        val acceptedInConversation = context.conversationId
+            ?.let { port.countAcceptedChatEvidenceInConversation(it) }
+            ?: 0
 
         // KC 锚定：terms[0] 必须命中真实知识节点（防模型臆测节点），且——当存在当前题
         // 科目上下文时（Respond 派遣）——目标节点必须属于该科目。写工具只允许落到当前
@@ -250,7 +249,8 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             knowledgeNodeIsAnchored = anchored,
             hasBehavioralSupport = false,
             sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
-            writesThisConversation = acceptedEvidence.size,
+            writesThisConversation = acceptedInConversation,
+            writesThisLearnerInWindow = acceptedInWindow,
             attentionFactor = context.attentionFactor,
         )
         when (val result = MasteryWriteGate.evaluate(input)) {

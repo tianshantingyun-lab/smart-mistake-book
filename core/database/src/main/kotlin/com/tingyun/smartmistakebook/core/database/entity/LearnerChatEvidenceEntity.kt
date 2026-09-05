@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database.entity
 
 import androidx.room3.Entity
+import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
 /**
@@ -10,10 +11,19 @@ import androidx.room3.PrimaryKey
  *
  * 该表是审计与批量撤销的锚点：source_kind = MODEL_CHAT，conversation_id 关联
  * 产生证据的会话，可按会话批量撤销。
+ *
+ * 索引（按批量录入量级设计，万条/年）：写闸每次评估需要
+ * ① learner+KC 的最近写入（同 KC 冷却）② learner 时间窗计数（滚动窗配额）
+ * ③ conversation 计数（会话配额）——三个索引分别覆盖，避免全表扫描。
  */
 @Entity(
     tableName = "learner_chat_evidence",
     primaryKeys = ["evidence_id"],
+    indices = [
+        Index(value = ["learner_id", "knowledge_node_id", "created_at_epoch_millis"]),
+        Index(value = ["learner_id", "created_at_epoch_millis"]),
+        Index(value = ["conversation_id"]),
+    ],
 )
 data class LearnerChatEvidenceEntity(
     val evidence_id: String,

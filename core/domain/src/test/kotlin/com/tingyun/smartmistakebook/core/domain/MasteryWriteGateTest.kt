@@ -19,6 +19,7 @@ class MasteryWriteGateTest {
         hasBehavioralSupport: Boolean = true,
         sameKcLastWriteAgoMillis: Long? = null,
         writesThisConversation: Int = 0,
+        writesThisLearnerInWindow: Int = 0,
         attentionFactor: Double = 1.0,
     ) = GateInput(
         intentConfidence = 0.9,
@@ -29,6 +30,7 @@ class MasteryWriteGateTest {
         hasBehavioralSupport = hasBehavioralSupport,
         sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
         writesThisConversation = writesThisConversation,
+        writesThisLearnerInWindow = writesThisLearnerInWindow,
         attentionFactor = attentionFactor,
     )
 
@@ -116,6 +118,29 @@ class MasteryWriteGateTest {
     }
 
     @Test
+    fun `learner window quota exhaustion is rejected across conversations`() {
+        // A multi-session farm (N sessions × up to 8 each) must be capped by
+        // the per-learner rolling window even when each single conversation
+        // stays under its own quota.
+        assertRejected(
+            acceptedInput(
+                writesThisConversation = 0,
+                writesThisLearnerInWindow = MasteryWriteGate.MAX_WRITES_PER_LEARNER_WINDOW,
+            ),
+            RejectReason.LEARNER_WINDOW_QUOTA_EXHAUSTED,
+        )
+        // Below the window cap the write proceeds.
+        assertTrue(
+            MasteryWriteGate.evaluate(
+                acceptedInput(
+                    writesThisConversation = 0,
+                    writesThisLearnerInWindow = MasteryWriteGate.MAX_WRITES_PER_LEARNER_WINDOW - 1,
+                ),
+            ) is GateResult.Accepted,
+        )
+    }
+
+    @Test
     fun `attention below reject floor is rejected`() {
         assertRejected(
             acceptedInput(attentionFactor = MasteryWriteGate.MIN_ATTENTION_FACTOR - 0.01),
@@ -168,7 +193,9 @@ class MasteryWriteGateTest {
     fun `gate constants match the research calibration table`() {
         assertEquals(0.7, MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD, 1e-9)
         assertEquals(12L * 60 * 60 * 1000, MasteryWriteGate.SAME_KC_COOLDOWN_MILLIS)
-        assertEquals(8, MasteryWriteGate.MAX_WRITES_PER_CONVERSATION)
+        assertEquals(50, MasteryWriteGate.MAX_WRITES_PER_CONVERSATION)
+        assertEquals(100, MasteryWriteGate.MAX_WRITES_PER_LEARNER_WINDOW)
+        assertEquals(1L * 60 * 60 * 1000, MasteryWriteGate.LEARNER_WINDOW_MILLIS)
         assertEquals(0.4, MasteryWriteGate.MIN_ATTENTION_FACTOR, 1e-9)
     }
 }

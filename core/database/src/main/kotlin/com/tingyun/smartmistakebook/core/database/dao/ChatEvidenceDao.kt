@@ -22,8 +22,7 @@ import kotlinx.coroutines.flow.Flow
  * payload; the outbox row only carries identity/sequence/fingerprint.
  */
 @Dao
-internal abstract class ChatEvidenceDao {
-    /**
+internal abstract class ChatEvidenceDao {    /**
      * IGNORE (not ABORT): the evidence_id is a deterministic idempotency key —
      * a retried write of the same evidence (same request + tool + KC) must
      * silently no-op instead of failing the whole transaction on a PK clash.
@@ -93,6 +92,64 @@ internal abstract class ChatEvidenceDao {
     @Query("SELECT * FROM learner_chat_evidence WHERE learner_id = :learnerId ORDER BY created_at_epoch_millis")
     abstract suspend fun readByLearner(learnerId: String): List<LearnerChatEvidenceEntity>
 
+    /**
+     * Gate queries (batch-scale design: indexed, O(log n) instead of a full
+     * table pull). All three only count accepted evidence — rejected rows are
+     * observation-only and never gate.
+     */
+
+    /** Most recent accepted write to one KC by the learner (cross-conversation cooldown). */
+    @Query(
+        """
+        SELECT MAX(created_at_epoch_millis) FROM learner_chat_evidence
+        WHERE learner_id = :learnerId AND knowledge_node_id = :knowledgeNodeId
+          AND rejected_reason IS NULL
+        """,
+    )
+    abstract suspend fun lastAcceptedAtForKc(learnerId: String, knowledgeNodeId: String): Long?
+
+    /** Accepted writes by the learner since [sinceEpochMillis] (learner rolling-window quota). */
+    @Query(
+        """
+        SELECT COUNT(*) FROM learner_chat_evidence
+        WHERE learner_id = :learnerId AND rejected_reason IS NULL
+          AND created_at_epoch_millis >= :sinceEpochMillis
+        """,
+    )
+    abstract suspend fun countAcceptedSince(learnerId: String, sinceEpochMillis: Long): Int
+
+    /** Accepted writes in one conversation (conversation quota). */
+    @Query(
+        """
+        SELECT COUNT(*) FROM learner_chat_evidence
+        WHERE conversation_id = :conversationId AND rejected_reason IS NULL
+        """,
+    )
+    abstract suspend fun countAcceptedInConversation(conversationId: String): Int
+
+    /** Rejected-write counts grouped by gate reason (calibration input). */
+    @Query(
+        """
+        SELECT rejected_reason AS reason, COUNT(*) AS count FROM learner_chat_evidence
+        WHERE learner_id = :learnerId AND rejected_reason IS NOT NULL
+        GROUP BY rejected_reason
+        """,
+    )
+    abstract suspend fun countRejectedByReason(learnerId: String): List<RejectedReasonCountRow>
+
+    /** Accepted-write counts bucketed by epoch hour (calibration: window pressure). */
+    @Query(
+        """
+        SELECT created_at_epoch_millis / 3600000 AS hourBucket, COUNT(*) AS count
+        FROM learner_chat_evidence
+        WHERE learner_id = :learnerId AND rejected_reason IS NULL
+          AND created_at_epoch_millis >= :sinceEpochMillis
+        GROUP BY hourBucket
+        ORDER BY hourBucket DESC
+        """,
+    )
+    abstract suspend fun countAcceptedPerHour(learnerId: String, sinceEpochMillis: Long): List<HourlyAcceptedCountRow>
+
     private suspend fun allocateSequence(learnerId: String): Long {
         initializeSequence(LearningSequenceEntity(learnerId, 0))
         val current = checkNotNull(lastAllocatedSequence(learnerId))
@@ -117,3 +174,16 @@ internal fun LearnerChatEvidenceEntity.toChatEvidenceModel(eventSequence: Long):
         occurredAtEpochMillis = created_at_epoch_millis,
         eventSequence = eventSequence,
     )
+
+
+/** Projection row for rejected-write counts grouped by gate reason (calibration input). */
+data class RejectedReasonCountRow(
+    val reason: String,
+    val count: Int,
+)
+
+/** Projection row for accepted-write counts per epoch hour (calibration input). */
+data class HourlyAcceptedCountRow(
+    val hourBucket: Long,
+    val count: Int,
+)

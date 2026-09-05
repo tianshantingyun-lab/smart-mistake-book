@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 43,
-    "identityHash": "364b6e8d34d8916b8593e658814c085b",
+    "identityHash": "ae53362e2ee58a6c1ee7346277dc6877",
     "entities": [
       {
         "tableName": "problem",
@@ -9135,7 +9135,39 @@
           "columnNames": [
             "evidence_id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_learner_chat_evidence_learner_id_knowledge_node_id_created_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "knowledge_node_id",
+              "created_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_learner_chat_evidence_learner_id_knowledge_node_id_created_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `knowledge_node_id`, `created_at_epoch_millis`)"
+          },
+          {
+            "name": "index_learner_chat_evidence_learner_id_created_at_epoch_millis",
+            "unique": false,
+            "columnNames": [
+              "learner_id",
+              "created_at_epoch_millis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_learner_chat_evidence_learner_id_created_at_epoch_millis` ON `${TABLE_NAME}` (`learner_id`, `created_at_epoch_millis`)"
+          },
+          {
+            "name": "index_learner_chat_evidence_conversation_id",
+            "unique": false,
+            "columnNames": [
+              "conversation_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_learner_chat_evidence_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
+          }
+        ]
       }
     ],
     "views": [
@@ -9150,7 +9182,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '364b6e8d34d8916b8593e658814c085b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ae53362e2ee58a6c1ee7346277dc6877')"
     ]
   }
 }

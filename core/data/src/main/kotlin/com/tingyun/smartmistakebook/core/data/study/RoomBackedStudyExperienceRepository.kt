@@ -31,6 +31,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.domain.CalibrationInput
+import com.tingyun.smartmistakebook.core.domain.ChatEvidenceGateCalibration
 import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
 import com.tingyun.smartmistakebook.core.domain.AttentionSignal
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
@@ -841,6 +842,24 @@ class RoomBackedStudyExperienceRepository(
 
     override suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> =
         SchedulingEvaluationHarness.calibratePlannedReasons(reviewLogSink.reviewSamples())
+
+    override suspend fun chatEvidenceGateCalibration(): ChatEvidenceGateCalibration.GateCalibrationReport? {
+        val acceptedTotal = database.countAcceptedChatEvidenceSince(
+            learnerId = learnerId,
+            sinceEpochMillis = 0,
+        )
+        val rejected = database.countRejectedChatEvidenceByReason(learnerId)
+        // 30 天观察窗的每小时分布（校准看近期行为，不看全部历史）。
+        val hourWindowStart = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+        val perHour = database.countAcceptedChatEvidencePerHour(learnerId, hourWindowStart)
+        val observation = ChatEvidenceGateCalibration.GateObservation(
+            acceptedCount = acceptedTotal,
+            rejectedByReason = rejected.associate { it.reason to it.count },
+            acceptedPerHour = perHour.associate { it.hourBucket to it.count },
+        )
+        if (observation.totalObservations == 0) return null
+        return ChatEvidenceGateCalibration.calibrate(observation)
+    }
 
     override suspend fun suggestedReminderMinute(): Int? = reviewLogSink.suggestedReminderMinute()
 

@@ -110,8 +110,9 @@
 |---|---|---|---|
 | θ_route（意图路由置信） | 0.45（沿用） | 既有 | spec §9.4 已定 |
 | θ_evidence（证据资格置信） | 0.7 | spec §9.4 已定【I】 | 与 θ_route 拉开；模型判断 p≈0.8 的天花板下，0.7 是"可接受单票"下沿 |
-| 冷却窗（同会话同 KC 重复写） | 12h | 【I】对齐 Khan | Khan Mastery Challenge 12h 冷却 |
-| 每会话 T6 配额上限 | 8 条 | 【I】 | 对齐"多次分散证据"；单会话不触发升级 |
+| 冷却窗（同 KC 重复写，learner 级跨会话） | 12h | 【I】对齐 Khan | Khan Mastery Challenge 12h 冷却；批量录入 50 道同 KC 题也只出 1 条模型判断/12h——有意设计（Condorcet 独立性：12h 内同 KC 的对话判断相关非独立，独立信号来自真实作答通道） |
+| 每会话 T6 配额上限 | 50 条 | 【I】批量标准 | 一套卷 50+ 题、20+ KC 的连续讲题会话约 20-50 条证据；8 会在第 9 题误拦批量学习 |
+| learner 滚动窗配额 | 100 条/h | 【I】批量标准 | 合法批量突发 ≈50-100 条/h；异常自激循环（3 call×2 轮×几十轮 respond）数百条/h——100 分隔两者 |
 | 理解程度→权重档 | STRUGGLING: 0.35(负) / UNCERTAIN: 0.10 / CONFIDENT: 0.15 / MASTERED: 0.18(需行为佐证) | 【I】对齐 FSRS | FSRS w15/w16 + 自报打折（Deslauriers/Rozenblit/Koriat） |
 | 注意力小降权线 | factor ≥0.85 | 【I】 | 走神基线 30-40%，首切不重罚 |
 | 注意力中降权线 | 0.5-0.7 | 【I】 | Sana/Skowronek/Stothart |
@@ -120,6 +121,18 @@
 | 被拒证据 | 写观察通道（rejected 标记），不进投影 | 【I】依 Condorcet/OLM | 不删除可补救 |
 
 ---
+
+## 4a. 校准通道（已实现）：ChatEvidenceGateCalibration
+
+**先验 vs 校准的区别**：§4 表格的常量是**文献锚定的先验**（冷启动保护，未见过自家数据）；校准是**上线后用自家数据检验并修订先验**。两者是"假设 → 检验"关系，缺一不可。
+
+**实现**（对齐 SourceCalibration 模式：只建议、人工审批改常量，禁止自动改写）：
+- 数据源：learner_chat_evidence 的拒因分布（GROUP BY rejected_reason）+ 每小时 accepted 直方（30 天窗）
+- 输出（`StudyExperienceRepository.chatEvidenceGateCalibration()`）：
+  - windowPeakPressure：单小时峰值 / learner 窗配额（≥80% → 建议评估放宽）
+  - rejectionShares：各拒因占比（≥20% → 节流类查冷却/配额冲突；质量类查模型臆测/空判）
+- 样本门槛：总观测 <30 不出建议（对齐 SourceCalibration.MIN_PAIRED_OUTCOMES，防小样本过拟合）
+- 后续深化（需 attempt 关联，暂缓）：模型 POSITIVE 判断 → 同 KC 下次真实作答正确率（模型判断准确性的直接校准，比照 SourceCalibration 口径）
 
 ## 5. UNVERIFIED / 待办
 - Dunlosky & Rawson "86% 过自信"：全文封闭，**勿引用**（改引 Deslauriers/Rozenblit 已核实的定性结论）。
