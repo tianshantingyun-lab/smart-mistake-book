@@ -4,7 +4,6 @@ import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
-import com.tingyun.smartmistakebook.core.domain.CleanRedrawTool
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
@@ -57,9 +56,8 @@ class RoomModelTaskRepository internal constructor(
     private val database: StudyDatabasePort,
     private val gateway: ModelGateway,
     private val clock: () -> Long = System::currentTimeMillis,
-    private val cleanRedrawTool: CleanRedrawTool? = null,
 ) : ModelTaskRepository {
-    internal val toolRunner = RoomTutorToolRunner(database, cleanRedrawTool)
+    internal val toolRunner = RoomTutorToolRunner(database)
 
     override suspend fun capabilities(): ProviderCapabilitySnapshot = gateway.capabilities()
 
@@ -641,7 +639,6 @@ class RoomModelTaskRepository internal constructor(
             TutorToolName.NOTEBOOK_READ,
             TutorToolName.MASTERY_READ,
             TutorToolName.MASTERY_UPDATE,
-            TutorToolName.FIGURE_REDRAW,
         )
         is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)
         else -> emptySet()
@@ -675,8 +672,6 @@ class RoomModelTaskRepository internal constructor(
             // 幂等命名空间：同一 model-task request 的重试/多轮共享同一 evidenceId 命名空间，
             // 让 MASTERY_UPDATE 的 evidence_id 确定性派生（重试不重复落库）。
             evidenceIdNamespace = requestId,
-            // 会话锚：FIGURE_REDRAW 用它解析当前会话的源题图。
-            sessionId = (input as? TutorRespondInput)?.sessionId,
         )
 }
 
@@ -684,11 +679,9 @@ object ModelTaskRepositoryFactory {
     fun create(
         database: StudyDatabasePort,
         gateway: ModelGateway,
-        cleanRedrawTool: CleanRedrawTool? = null,
     ): ModelTaskRepository = RoomModelTaskRepository(
         database = database,
         gateway = gateway,
-        cleanRedrawTool = cleanRedrawTool,
     )
 }
 

@@ -16,12 +16,6 @@ enum class TutorToolName {
     /** 写工具 T6：模型提语义证据、本地门控落库（spec §5）；T4 需学生明确命令，当前阶段仅声明不启用。 */
     NOTEBOOK_WRITE,
     MASTERY_UPDATE,
-    /**
-     * 图生图工具：把一张带手写/涂改的原题图重绘成干净题面。
-     * 规则写在系统提示词，由模型自行判断何时需要（含图题目、讲解配图、
-     * 重复录入同一题）；本地执行走 guard 通道的 /v1/images/edits。
-     */
-    FIGURE_REDRAW,
 }
 
 /**
@@ -87,12 +81,6 @@ data class TutorToolCall(
      * [com.tingyun.smartmistakebook.core.domain.MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD].
      */
     val confidence: Double = 0.8,
-    /**
-     * Source image to redraw — FIGURE_REDRAW only. Carries the canonical source
-     * asset id of the current problem's photo; the executor resolves it via the
-     * session's source asset and must reject a mismatch.
-     */
-    val sourceAssetId: String? = null,
 ) {
     init {
         require(rationale.isNotBlank() && rationale.length <= MAX_TOOL_RATIONALE_CHARS) {
@@ -125,15 +113,6 @@ data class TutorToolCall(
         } else {
             require(direction == null && understanding == null) {
                 "Only MASTERY_UPDATE carries a direction or understanding tier"
-            }
-        }
-        if (tool == TutorToolName.FIGURE_REDRAW) {
-            require(!sourceAssetId.isNullOrBlank()) {
-                "A FIGURE_REDRAW call must state which source image to redraw"
-            }
-        } else {
-            require(sourceAssetId == null) {
-                "Only FIGURE_REDRAW carries a source asset id"
             }
         }
     }

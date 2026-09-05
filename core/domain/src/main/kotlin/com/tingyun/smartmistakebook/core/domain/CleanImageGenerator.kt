@@ -16,18 +16,6 @@ fun interface CleanImageGenerator {
     suspend fun generateClean(originalBytes: ByteArray, mimeType: String): CleanImageResult?
 }
 
-/**
- * The narrow seam a local tool-loop executor uses to redraw one canonical source
- * asset into a clean sheet. Implementations resolve the asset's bytes (file
- * vault) and run the image-to-image engine; kept asset-id-keyed so the tool
- * runner depends only on this one operation and never on capture persistence.
- * A null result means the generator declined (no capable model / network /
- * asset missing), which the caller surfaces as a non-fatal tool outcome.
- */
-fun interface CleanRedrawTool {
-    suspend fun redrawCleanImage(sourceAssetId: String): CleanImageResult?
-}
-
 data class CleanImageResult(
     val bytes: ByteArray,
     val mimeType: String,

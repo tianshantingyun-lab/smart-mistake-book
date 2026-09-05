@@ -6,7 +6,6 @@ import android.os.StrictMode
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.capture.ConfiguredCleanImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.capture.CleanRedrawToolFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecovery
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
@@ -155,21 +154,6 @@ class SmartMistakeBookApplication : Application() {
                 schedulingSettingsStore = schedulingSettingsStore,
                 optimizedFsrsParameters = optimizedParameters,
             )
-            captureRepository = CaptureWorkflowRepositoryFactory.create(
-                context = this,
-                database = database,
-                // Production clean redraw reuses the user's configured model
-                // credential and runs off the commit path in the background; a
-                // missing/unconfigured/non-image model declines and the original
-                // photo is kept.
-                cleanRedraw = modelConfigurationStore?.let { store ->
-                    ConfiguredCleanImageGeneratorFactory.create(
-                        configurationStore = store,
-                        networkRequestsAllowed = capabilities.networkRequestsAllowed,
-                    )
-                },
-                cleanRedrawScope = applicationScope,
-            )
             mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)
             mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)
             tutorInteractionRepository = TutorInteractionRepositoryFactory.create(database)
@@ -227,18 +211,24 @@ class SmartMistakeBookApplication : Application() {
             modelTaskRepository = ModelTaskRepositoryFactory.create(
                 database = database,
                 gateway = gateway,
-                // FIGURE_REDRAW 工具：模型在讲题环里自主决定是否重绘当前题源图。
-                // 复用已配置模型引擎；未配置/无图生图能力时工具为 null（环内 decline）。
-                cleanRedrawTool = modelConfigurationStore?.let { store ->
-                    CleanRedrawToolFactory.create(
-                        context = this,
-                        database = database,
-                        generator = ConfiguredCleanImageGeneratorFactory.create(
-                            configurationStore = store,
-                            networkRequestsAllowed = capabilities.networkRequestsAllowed,
-                        ),
+            )
+            captureRepository = CaptureWorkflowRepositoryFactory.create(
+                context = this,
+                database = database,
+                // Clean redraw engine: reused by the save decision round once the
+                // model classifies the committed photo as figure-bearing.
+                cleanRedraw = modelConfigurationStore?.let { store ->
+                    ConfiguredCleanImageGeneratorFactory.create(
+                        configurationStore = store,
+                        networkRequestsAllowed = capabilities.networkRequestsAllowed,
                     )
                 },
+                cleanRedrawScope = applicationScope,
+                // Save path runs a model classify round to decide redraw. Consent =
+                // configuring the model (a Settings toggle will gate this in a later
+                // stage); no model configured → no round, original photo kept.
+                modelTasks = modelTaskRepository,
+                captureConsentGranted = { modelConfigurationStore != null },
             )
             batchImportRepository = BatchImportRepositoryFactory.create(
                 context = this,

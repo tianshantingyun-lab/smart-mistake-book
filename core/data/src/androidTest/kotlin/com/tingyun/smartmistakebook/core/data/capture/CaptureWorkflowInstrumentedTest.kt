@@ -165,6 +165,7 @@ class CaptureWorkflowInstrumentedTest {
                 )
             },
             modelTasks = withFigureClassifyModelTasks(),
+            captureConsentGranted = { true },
         )
         val source = createPng(48, 48)
         val imported = generatingRepository.importDraft(
@@ -674,6 +675,7 @@ class CaptureWorkflowInstrumentedTest {
             },
             cleanRedrawScope = saveScope,
             modelTasks = withFigureClassifyModelTasks(),
+            captureConsentGranted = { true },
         )
         try {
             val source = createPng(width = 96, height = 128)
@@ -737,6 +739,7 @@ class CaptureWorkflowInstrumentedTest {
             },
             cleanRedrawScope = saveScope,
             modelTasks = withFigureClassifyModelTasks(),
+            captureConsentGranted = { true },
         )
         try {
             val source = createPng(width = 96, height = 128)
