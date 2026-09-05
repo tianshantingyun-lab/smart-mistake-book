@@ -57,6 +57,58 @@ class TutorTasksTest {
     }
 
     @Test
+    fun respondThinkingMarkdownRoundTripsAndValidates() {
+        val withThinking = respondOutput().copy(
+            thinkingMarkdown = "先看导数为正是否意味着函数始终上升。",
+        )
+        assertEquals(
+            withThinking,
+            ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(withThinking)),
+        )
+        assertTrue(ModelTaskCompletionValidator.validate(respondRequest(), withThinking).isEmpty())
+        assertEquals("先看导数为正是否意味着函数始终上升。", withThinking.thinkingMarkdown)
+    }
+
+    @Test
+    fun respondThinkingRejectsActiveContentAndOversizedText() {
+        assertTrue(
+            runCatching {
+                respondOutput().copy(thinkingMarkdown = "先算一下<script>run()</script>")
+            }.isFailure,
+        )
+        assertTrue(
+            runCatching {
+                respondOutput().copy(thinkingMarkdown = "详".repeat(TutorTurnPlan.MAX_THINKING_CHARS + 1))
+            }.isFailure,
+        )
+        // 空 thinking 视为未提供，允许。
+        assertEquals(null, respondOutput().thinkingMarkdown)
+    }
+
+    @Test
+    fun legacyRespondWithoutThinkingDecodesToNullThinking() {
+        // 旧产出（无 thinkingMarkdown 键）应向后兼容解码，thinking 填默认 null。
+        val encoded = ModelTaskCodec.encodeOutput(respondOutput())
+        val legacy = encoded.replace("\"thinkingMarkdown\":null,", "")
+        assertTrue("测试前提：编码应含 thinkingMarkdown 键", encoded != legacy)
+        val decoded = ModelTaskCodec.decodeOutput(legacy) as TutorRespondOutput
+        assertEquals(null, decoded.thinkingMarkdown)
+    }
+
+    @Test
+    fun planThinkingMarkdownRoundTripsAndValidates() {
+        val withThinking = output().copy(
+            plan = output().plan.copy(thinkingMarkdown = "这题先确认学生对导数符号的理解。"),
+        )
+        assertEquals(
+            withThinking,
+            ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(withThinking)),
+        )
+        assertTrue(ModelTaskCompletionValidator.validate(request(), withThinking).isEmpty())
+        assertEquals("这题先确认学生对导数符号的理解。", withThinking.plan.thinkingMarkdown)
+    }
+
+    @Test
     fun legacyTextResponseDefaultsToNoSolutionExposure() {
         val encoded = ModelTaskCodec.encodeOutput(respondOutput())
         val legacy = encoded

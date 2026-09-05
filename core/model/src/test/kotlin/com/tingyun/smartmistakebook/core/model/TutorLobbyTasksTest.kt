@@ -25,6 +25,28 @@ class TutorLobbyTasksTest {
     }
 
     @Test
+    fun lobbyThinkingMarkdownRoundTripsAndRejectsActiveContent() {
+        val withThinking = TutorLobbyOutput(
+            conversationId = "tutor-lobby",
+            messageOrdinal = 2,
+            messageMarkdown = "你可以把现在卡住的步骤直接发来。",
+            thinkingMarkdown = "这条消息只想确认学生从哪一步开始，不需要任何本地写入。",
+            intentDecision = TutorIntentDecision.ambiguousDefault(),
+            modelVersion = "model-v1",
+        )
+        assertEquals(
+            withThinking,
+            ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(withThinking)),
+        )
+        assertTrue(ModelTaskCompletionValidator.validate(request(), withThinking).isEmpty())
+        assertTrue(
+            runCatching {
+                withThinking.copy(thinkingMarkdown = "试着调用 javascript:alert(1)")
+            }.isFailure,
+        )
+    }
+
+    @Test
     fun lobbyRejectsContextMismatchAndEveryWriteLikeCapability() {
         val mismatch = TutorLobbyOutput(
             conversationId = "tutor-lobby",
@@ -55,6 +77,29 @@ class TutorLobbyTasksTest {
                 )
             }.isFailure,
         )
+    }
+
+    @Test
+    fun lobbyRejectsActiveHtmlLinksAndUrlsInBody() {
+        // C1：Lobby 终稿切 richtext 前必须与 Respond 同强度——正文不得含 HTML/链接/URL。
+        listOf(
+            "<div>答案</div>",
+            "看这条链接 [说明](https://example.com)",
+            "详见 https://example.com",
+            "`inline code`",
+        ).forEach { unsafe ->
+            assertTrue(
+                "Lobby 应拒绝: $unsafe",
+                runCatching {
+                    TutorLobbyOutput(
+                        conversationId = "tutor-lobby",
+                        messageOrdinal = 2,
+                        messageMarkdown = unsafe,
+                        modelVersion = "model-v1",
+                    )
+                }.isFailure,
+            )
+        }
     }
 
     @Test

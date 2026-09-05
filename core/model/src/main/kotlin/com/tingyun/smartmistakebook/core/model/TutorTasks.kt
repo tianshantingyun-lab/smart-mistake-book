@@ -873,6 +873,8 @@ data class TutorTurnPlan(
     val targetedEvidenceLabels: List<String>,
     val inferredKnowledgeLabels: List<String>,
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
+    /** Optional student-visible reasoning trace; folded by default, never re-fed to the model. */
+    val thinkingMarkdown: String? = null,
 ) {
     init {
         require(visualScene == null || visualRequest == null) {
@@ -882,6 +884,7 @@ data class TutorTurnPlan(
         solutionMarkdown.requireTutorMarkdown("Tutor solution", MAX_SOLUTION_CHARS)
         alternateMethodMarkdown.requireTutorMarkdown("Tutor alternate method", MAX_SOLUTION_CHARS)
         difficultyReasonMarkdown.requireTutorMarkdown("Tutor difficulty reason", MAX_REASON_CHARS)
+        thinkingMarkdown.requireThinkingMarkdown("Tutor thinking")
         diagnosticItem?.let { item ->
             require(item.choices.size <= MAX_INTERACTION_CHOICES) {
                 "A tutor interaction must stay within the bounded choice count"
@@ -938,6 +941,7 @@ data class TutorTurnPlan(
         const val MAX_INFERRED_LABELS = 8
         const val MAX_INTERACTION_CHOICES = 5
         const val MAX_SUGGESTED_MOVES = 3
+        const val MAX_THINKING_CHARS = 4_000
     }
 }
 
@@ -985,6 +989,8 @@ data class TutorRespondOutput(
     val visualRequest: TutorVisualGenerationRequest? = null,
     val suggestedMoves: List<TutorSuggestedMove> = emptyList(),
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
+    /** Optional student-visible reasoning trace; folded by default, never re-fed to the model. */
+    val thinkingMarkdown: String? = null,
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {
@@ -1009,6 +1015,7 @@ data class TutorRespondOutput(
             "Tutor response message",
             MAX_MESSAGE_MARKDOWN_CHARS,
         )
+        thinkingMarkdown.requireThinkingMarkdown("Tutor thinking")
         require(suggestedMoves.size <= TutorTurnPlan.MAX_SUGGESTED_MOVES) {
             "A tutor response may expose at most three contextual next moves"
         }
@@ -1033,6 +1040,12 @@ internal fun String.requireTutorMarkdown(label: String, maxChars: Int) {
     require("<script" !in normalized && "javascript:" !in normalized) {
         "$label contains active content"
     }
+}
+
+/** Optional student-visible reasoning trace on a tutor output; folded by default in the UI. */
+internal fun String?.requireThinkingMarkdown(label: String) {
+    if (this == null) return
+    requireTutorMarkdown(label, TutorTurnPlan.MAX_THINKING_CHARS)
 }
 
 private fun String.requireTutorRespondText(label: String, maxChars: Int) {

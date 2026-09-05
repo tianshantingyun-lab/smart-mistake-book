@@ -1105,6 +1105,36 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     @Test
+    fun tutorLobbyParsesThinkingMarkdownFromWire() = runBlocking {
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> error("Lobby must not read image assets") },
+            transport = modelTransport { _, _, _ ->
+                ModelHttpResponse(
+                    200,
+                    envelope(
+                        Json.encodeToString(
+                            buildJsonObject {
+                                put(
+                                    "intentDecision",
+                                    tutorIntentPayload(),
+                                )
+                                put("messageMarkdown", "这一步先确认你想从哪继续。")
+                                put("thinkingMarkdown", "先在本地确认意图，不需要任何写入。")
+                            },
+                        ),
+                    ),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val output = (gateway.execute(authorizedTutorLobby(gateway)).toList().last()
+            as ModelGatewayEvent.Completed).output as TutorLobbyOutput
+        assertEquals("先在本地确认意图，不需要任何写入。", output.thinkingMarkdown)
+    }
+
+    @Test
     fun tutorResponseParsesIntentWithoutGrantingDatabaseAuthority() = runBlocking {
         val output = parsedTutorResponse(
             tutorRespondPayload(
@@ -1169,6 +1199,50 @@ class OpenAiCompatibleModelGatewayTest {
             assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
             assertFalse(failed.failure.retryable)
         }
+    }
+
+    @Test
+    fun tutorResponseParsesThinkingMarkdownFromWire() = runBlocking {
+        val payload = tutorRespondPayload(
+            extraTopLevel = "thinkingMarkdown" to JsonPrimitive("先判断导数的符号区间。"),
+        )
+        val output = parsedTutorResponse(payload)
+        assertEquals("先判断导数的符号区间。", output.thinkingMarkdown)
+    }
+
+    @Test
+    fun tutorResponseAdmitsMissingThinkingMarkdownAsNull() = runBlocking {
+        val output = parsedTutorResponse(tutorRespondPayload())
+        assertEquals(null, output.thinkingMarkdown)
+    }
+
+    @Test
+    fun tutorResponseRejectsUnsafeThinkingMarkdown() = runBlocking {
+        val payload = tutorRespondPayload(
+            extraTopLevel = "thinkingMarkdown" to JsonPrimitive("试着执行<script>run()</script>"),
+        )
+        val failed = executeTutorRespondPayload(payload).last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+
+    @Test
+    fun tutorPlanParsesThinkingMarkdownFromWire() = runBlocking {
+        val payload = tutorPayload(
+            extraTopLevel = "thinkingMarkdown" to JsonPrimitive("这题先核对学生对导数符号的理解。"),
+        )
+        val output = executeTutorPayload(payload).last()
+            .let { it as ModelGatewayEvent.Completed }
+            .output as TutorPlanOutput
+        assertEquals("这题先核对学生对导数符号的理解。", output.plan.thinkingMarkdown)
+    }
+
+    @Test
+    fun tutorPlanAdmitsMissingThinkingMarkdownAsNull() = runBlocking {
+        val output = executeTutorPayload(tutorPayload()).last()
+            .let { it as ModelGatewayEvent.Completed }
+            .output as TutorPlanOutput
+        assertEquals(null, output.plan.thinkingMarkdown)
     }
 
     @Test

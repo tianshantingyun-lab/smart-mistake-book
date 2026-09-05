@@ -83,6 +83,8 @@ data class TutorLobbyOutput(
     val messageOrdinal: Int,
     val messageMarkdown: String,
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
+    /** Optional student-visible reasoning trace; folded by default, never re-fed to the model. */
+    val thinkingMarkdown: String? = null,
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {
@@ -92,10 +94,12 @@ data class TutorLobbyOutput(
             false,
         )
         require(messageOrdinal > 0) { "Tutor lobby output message ordinal must be positive" }
-        messageMarkdown.requireTutorMarkdown(
+        messageMarkdown.requireTutorSceneText(
             "Tutor lobby response",
             TutorRespondOutput.MAX_MESSAGE_MARKDOWN_CHARS,
+            true,
         )
+        thinkingMarkdown.requireThinkingMarkdown("Tutor thinking")
         require(intentDecision.requestedLocalCapability in ALLOWED_LOCAL_CAPABILITIES) {
             "Tutor lobby cannot request a local write or current-question action"
         }

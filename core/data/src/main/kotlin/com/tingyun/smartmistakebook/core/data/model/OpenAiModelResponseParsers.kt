@@ -417,6 +417,7 @@ internal fun JsonObject.toTutorPlan(
             targetedEvidenceLabels = targetedLabels,
             inferredKnowledgeLabels = inferredLabels,
             suggestedMoves = suggestedMoves,
+            thinkingMarkdown = optionalString("thinkingMarkdown"),
         ),
         modelVersion = modelVersion,
         cycleOrdinal = input.cycleOrdinal,
@@ -460,6 +461,7 @@ internal fun JsonObject.toTutorRespond(
         visualRequest = optionalObject("visualRequest")?.toTutorVisualGenerationRequest(),
         suggestedMoves = suggestedMoves,
         intentDecision = intentDecision,
+        thinkingMarkdown = optionalString("thinkingMarkdown"),
         modelVersion = modelVersion,
     )
 }
@@ -503,6 +505,7 @@ internal fun JsonObject.toTutorLobby(
         messageOrdinal = input.messageOrdinal,
         messageMarkdown = requiredString("messageMarkdown"),
         intentDecision = objectValue("intentDecision").toTutorIntentDecision(),
+        thinkingMarkdown = optionalString("thinkingMarkdown"),
         modelVersion = modelVersion,
     )
 }
@@ -535,6 +538,7 @@ internal val TUTOR_PLAN_WIRE_KEYS = setOf(
     "targetedEvidenceLabels",
     "inferredKnowledgeLabels",
     "nextMoves",
+    "thinkingMarkdown",
 )
 internal val TUTOR_RESPOND_WIRE_KEYS =
     setOf(
@@ -544,8 +548,9 @@ internal val TUTOR_RESPOND_WIRE_KEYS =
         "visualScene",
         "visualRequest",
         "nextMoves",
+        "thinkingMarkdown",
     )
-internal val TUTOR_LOBBY_WIRE_KEYS = setOf("intentDecision", "messageMarkdown")
+internal val TUTOR_LOBBY_WIRE_KEYS = setOf("intentDecision", "messageMarkdown", "thinkingMarkdown")
 internal val TUTOR_INTENT_WIRE_KEYS = setOf(
     "intent",
     "confidence",
