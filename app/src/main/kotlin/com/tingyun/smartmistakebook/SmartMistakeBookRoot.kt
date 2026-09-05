@@ -61,7 +61,6 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
@@ -247,9 +246,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             tutorArtifactLoad.practiceUnitId == experience.tutorPracticeUnitId
     }
     val navController = rememberNavController()
-    var freshTutorAutoStartAuthorization by remember {
-        mutableStateOf<TutorAutoStartAuthorization?>(null)
-    }
     var pendingLibraryExportEntryIds by rememberSaveable {
         mutableStateOf<List<String>>(emptyList())
     }
@@ -686,8 +682,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
-                    onTutorSessionReady = { sessionId, autoStartAuthorization ->
-                        freshTutorAutoStartAuthorization = autoStartAuthorization
+                    onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
                             popUpTo(Routes.CaptureTutor) { inclusive = true }
                             launchSingleTop = true
@@ -714,8 +709,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
-                    onTutorSessionReady = { sessionId, autoStartAuthorization ->
-                        freshTutorAutoStartAuthorization = autoStartAuthorization
+                    onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
                             popUpTo(Routes.CaptureLibrary) { inclusive = true }
                             launchSingleTop = true
@@ -781,8 +775,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
-                    onTutorSessionReady = { sessionId, autoStartAuthorization ->
-                        freshTutorAutoStartAuthorization = autoStartAuthorization
+                    onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
                             popUpTo(Routes.CaptureResume) { inclusive = true }
                             launchSingleTop = true
@@ -807,17 +800,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 val sessionId = entry.arguments?.getString("sessionId").orEmpty()
                 CapturedTutorSessionRoute(
                     sessionId = sessionId,
-                    autoStartAuthorization = freshTutorAutoStartAuthorization?.takeIf {
-                        it.sessionId == sessionId
-                    },
-                    onAutoStartAuthorizationConsumed = { consumedAuthorizationId ->
-                        if (
-                            freshTutorAutoStartAuthorization?.authorizationId ==
-                            consumedAuthorizationId
-                        ) {
-                            freshTutorAutoStartAuthorization = null
-                        }
-                    },
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     interactions = application.tutorInteractionRepository,

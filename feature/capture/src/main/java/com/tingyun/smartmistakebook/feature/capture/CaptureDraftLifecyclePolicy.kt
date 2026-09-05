@@ -5,14 +5,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureFailureCode
 import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
 import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
-import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
-import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 
 internal fun captureResumeShouldSkipLoad(
     requestedDraftId: String,
@@ -175,39 +168,6 @@ internal fun captureParseTextAdoption(
     return CaptureParseTextAdoption(
         transcription = structuredProjection,
         title = title,
-    )
-}
-
-internal fun captureTutorAutoStartAuthorization(
-    sessionId: String,
-    questionDocumentId: String,
-    revisionNumber: Int,
-    provider: ProviderCapabilitySnapshot?,
-    manifest: ModelEgressManifest?,
-    activeAuthorizationId: String?,
-    initialTutorPlanAuthorizationId: String?,
-    nowEpochMillis: Long,
-): TutorAutoStartAuthorization? {
-    val currentProvider = provider?.takeIf { capability ->
-        capability.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-            capability.supports(ModelTaskKind.TUTOR_PLAN)
-    } ?: return null
-    val currentManifest = manifest ?: return null
-    if (
-        currentManifest.authorizationId != activeAuthorizationId ||
-        currentManifest.authorizationId != initialTutorPlanAuthorizationId ||
-        !currentManifest.isModelEgressApprovalFresh(nowEpochMillis)
-    ) {
-        return null
-    }
-    return TutorAutoStartAuthorization.grant(
-        authorizationId = currentManifest.authorizationId,
-        sessionId = sessionId,
-        questionDocumentId = questionDocumentId,
-        revisionNumber = revisionNumber,
-        provider = currentProvider,
-        promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_PLAN,
-        approvedAtEpochMillis = currentManifest.approvedAtEpochMillis,
     )
 }
 

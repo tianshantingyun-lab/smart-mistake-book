@@ -6,10 +6,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureFailureCode
 import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 
 internal class CaptureWorkflowEventCommands(
     private val sink: CaptureWorkflowEventSink,
@@ -106,25 +103,10 @@ internal class CaptureWorkflowEventCommands(
         }
     }
 
-    fun consumeTutorSession(
-        session: ConfirmedTutorSession,
-        provider: ProviderCapabilitySnapshot?,
-        manifest: ModelEgressManifest?,
-        activeAuthorizationId: String?,
-        initialTutorPlanAuthorizationId: String?,
-        nowEpochMillis: Long,
-    ) {
-        val autoStart = captureTutorAutoStartAuthorization(
-            sessionId = session.sessionId,
-            questionDocumentId = session.questionDocument.document.id,
-            revisionNumber = session.draftRevisionNumber,
-            provider = provider,
-            manifest = manifest,
-            activeAuthorizationId = activeAuthorizationId,
-            initialTutorPlanAuthorizationId = initialTutorPlanAuthorizationId,
-            nowEpochMillis = nowEpochMillis,
-        )
-        sink.onTutorSessionReady(session.sessionId, autoStart)
+    fun consumeTutorSession(session: ConfirmedTutorSession) {
+        // First tutor plan runs under the global agent consent (no capture-side
+        // auto-start grant); navigation hands off with no authorization.
+        sink.onTutorSessionReady(session.sessionId)
         sink.setWorkflowInProgress(false)
         sink.consumeTutorSession(session.sessionId)
     }
@@ -166,6 +148,6 @@ internal class CaptureWorkflowEventSink(
     val clearWorkspace: () -> Unit,
     val markCommitKnown: () -> Unit,
     val markCommitUnknown: () -> Unit,
-    val onTutorSessionReady: (String, TutorAutoStartAuthorization?) -> Unit,
+    val onTutorSessionReady: (String) -> Unit,
     val consumeTutorSession: (String) -> Unit,
 )

@@ -84,7 +84,6 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import java.util.UUID
 import kotlinx.coroutines.CompletableDeferred
@@ -108,10 +107,7 @@ fun CaptureScreen(
     repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     onOpenModelSettings: () -> Unit,
-    onTutorSessionReady: (
-        sessionId: String,
-        autoStartAuthorization: TutorAutoStartAuthorization?,
-    ) -> Unit,
+    onTutorSessionReady: (sessionId: String) -> Unit,
     onLibraryEntryReady: (String) -> Unit,
     onSplitReady: () -> Unit,
     onBack: () -> Unit,
@@ -872,14 +868,7 @@ fun CaptureScreen(
 
     LaunchedEffect(workflowUiState.confirmedTutorSession?.sessionId) {
         val session = workflowUiState.confirmedTutorSession ?: return@LaunchedEffect
-        workflowEvents.consumeTutorSession(
-            session = session,
-            provider = providerCapabilities,
-            manifest = captureEgressManifest,
-            activeAuthorizationId = activeCaptureAuthorizationId,
-            initialTutorPlanAuthorizationId = initialTutorPlanCaptureAuthorizationId,
-            nowEpochMillis = System.currentTimeMillis(),
-        )
+        workflowEvents.consumeTutorSession(session)
     }
 
     LaunchedEffect(
@@ -926,7 +915,7 @@ fun CaptureScreen(
                 },
                 completeCachePrune = { initialCachePrune.complete(Unit) },
                 setResumeState = { resumeLoadStateName = it.name },
-                redirectTutor = { onTutorSessionReady(it, null) },
+                redirectTutor = { onTutorSessionReady(it) },
                 applyResumeDraft = { applied ->
                     activeEntryOriginName = applied.originName
                     receivedImageUri = applied.receivedImageUri
