@@ -35,6 +35,12 @@ data class ModelCapabilityVerification(
     val configurationUpdatedAtEpochMillis: Long,
     val supportsImageInput: Boolean,
     val supportsStructuredOutput: Boolean,
+    /**
+     * Whether the endpoint accepted a native OpenAI `tools` request in the probe.
+     * Defaults to false for stored verifications written before this field existed
+     * (Route A stays off until a fresh probe proves tools support).
+     */
+    val supportsFunctionCalling: Boolean = false,
     val testedAtEpochMillis: Long,
     /** Persisted start order for concurrent tests of this exact configuration generation. */
     val testStartSequence: Long = 0L,
@@ -56,6 +62,7 @@ data class ModelCapabilityVerification(
             "configurationUpdatedAtEpochMillis=$configurationUpdatedAtEpochMillis, " +
             "supportsImageInput=$supportsImageInput, " +
             "supportsStructuredOutput=$supportsStructuredOutput, " +
+            "supportsFunctionCalling=$supportsFunctionCalling, " +
             "testedAtEpochMillis=$testedAtEpochMillis, " +
             "testStartSequence=$testStartSequence" +
             ")"

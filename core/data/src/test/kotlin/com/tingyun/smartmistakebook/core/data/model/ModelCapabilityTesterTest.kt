@@ -53,9 +53,12 @@ class ModelCapabilityTesterTest {
         val completed = result as ModelCapabilityTestResult.Completed
         assertTrue(completed.verification.supportsImageInput)
         assertTrue(completed.verification.supportsStructuredOutput)
-        assertEquals(2, requestBodies.size)
+        // 结构化探测通过后追加 tools 探测（本 mock 不回 tool_calls/TOOLS_TOKEN → 判不支持）。
+        assertFalse(completed.verification.supportsFunctionCalling)
+        assertEquals(3, requestBodies.size)
         assertTrue(requestBodies.any { "image_url" in it })
         assertTrue(requestBodies.any { "response_format" in it })
+        assertTrue(requestBodies.any { "\"tools\"" in it && "synthetic_compat_check" in it })
         requestBodies.forEach { body ->
             assertFalse("questionDocument" in body)
             assertFalse("learningEvidence" in body)
@@ -112,6 +115,66 @@ class ModelCapabilityTesterTest {
 
         assertFalse(completed.verification.supportsImageInput)
         assertTrue(completed.verification.supportsStructuredOutput)
+    }
+
+    @Test
+    fun toolsProbeDetectsNativeFunctionCallingEndpoint() = runBlocking {
+        val store = FakeConfigurationStore(configuration())
+        val tester = OpenAiCompatibleModelCapabilityTester(
+            configurationStore = store,
+            transport = modelTransport { _, _, body ->
+                when {
+                    "image_url" in body -> ModelHttpResponse(200, envelope("Q7M2"))
+                    "\"tools\"" in body -> ModelHttpResponse(
+                        200,
+                        // 模拟原生 tools 端点：返回 assistant.tool_calls。
+                        """{"choices":[{"message":{"role":"assistant","content":null,
+                           "tool_calls":[{"id":"call_probe","type":"function",
+                             "function":{"name":"synthetic_compat_check","arguments":"{\"token\":\"SMART_MISTAKE_BOOK_TOOLS_V1\"}"}}]}}]}""",
+                    )
+                    else -> ModelHttpResponse(
+                        200,
+                        envelope("{\"capability_check\":\"SMART_MISTAKE_BOOK_STRUCTURED_V1\"}"),
+                    )
+                }
+            },
+            clock = { 2_000L },
+            probeTimeoutMillis = 1_000L,
+        )
+
+        val completed = tester.testSavedConfiguration() as ModelCapabilityTestResult.Completed
+
+        assertTrue(completed.verification.supportsImageInput)
+        assertTrue(completed.verification.supportsStructuredOutput)
+        assertTrue("原生 tools 探测应判支持", completed.verification.supportsFunctionCalling)
+    }
+
+    @Test
+    fun toolsProbeRunsOnlyAfterStructuredOutputPasses() = runBlocking {
+        val store = FakeConfigurationStore(configuration())
+        var toolsProbeCalls = 0
+        val tester = OpenAiCompatibleModelCapabilityTester(
+            configurationStore = store,
+            transport = modelTransport { _, _, body ->
+                if ("image_url" in body) {
+                    ModelHttpResponse(200, envelope("Q7M2"))
+                } else if ("\"tools\"" in body) {
+                    toolsProbeCalls += 1
+                    ModelHttpResponse(200, envelope("Q7M2"))
+                } else {
+                    // 结构化探测失败（400）
+                    ModelHttpResponse(400, "")
+                }
+            },
+            clock = { 2_000L },
+            probeTimeoutMillis = 1_000L,
+        )
+
+        val completed = tester.testSavedConfiguration() as ModelCapabilityTestResult.Completed
+
+        assertEquals(0, toolsProbeCalls)
+        assertFalse(completed.verification.supportsStructuredOutput)
+        assertFalse("结构化不支持时不应发 tools 探测", completed.verification.supportsFunctionCalling)
     }
 
     @Test

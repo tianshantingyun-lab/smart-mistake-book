@@ -14,6 +14,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
@@ -81,6 +82,20 @@ internal class OpenAiCompatibleModelCapabilityTester(
                 }
                 image.failureResult()?.let { return@use it }
 
+                // Route A 原生 tools 能力探测：仅当端点已证明结构化输出时才探测
+                // function calling（json_object 端点未必 tools 兼容）。探测失败不阻断
+                // 主配置验证——只是把 supportsFunctionCalling 置 false（Route A 保持关）。
+                val functionCalling = if (structured == ProbeOutcome.PASSED) {
+                    runProbe(
+                        baseUrl = credential.configuration.baseUrl,
+                        apiKey = keyChars,
+                        requestBody = toolsProbe(credential.configuration.modelId),
+                        accepts = ::acceptsTools,
+                    ) == ProbeOutcome.PASSED
+                } else {
+                    false
+                }
+
                 val verification = ModelCapabilityVerification(
                     provider = credential.configuration.provider,
                     baseUrl = credential.configuration.baseUrl,
@@ -90,6 +105,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
                         credential.configuration.updatedAtEpochMillis,
                     supportsImageInput = image == ProbeOutcome.PASSED,
                     supportsStructuredOutput = structured == ProbeOutcome.PASSED,
+                    supportsFunctionCalling = functionCalling,
                     testedAtEpochMillis = clock().coerceAtLeast(1L),
                     testStartSequence = testStartSequence,
                 )
@@ -189,6 +205,20 @@ internal class OpenAiCompatibleModelCapabilityTester(
         return content.uppercase().filter { it.isLetterOrDigit() } == IMAGE_RESPONSE_TOKEN
     }
 
+    private fun acceptsTools(body: String): Boolean {
+        // tools 能力 = 端点接受 tools 请求且模型实际发起 tool_call（而非忽略 tools、
+        // 照常回普通文本）。二者都满足才证明原生工具往返可用。
+        return runCatching {
+            val envelope = JSON.parseToJsonElement(body).jsonObject
+            val message = envelope["choices"]?.jsonArray?.firstOrNull()?.jsonObject
+                ?.get("message")?.jsonObject ?: return false
+            val toolCalls = message["tool_calls"]?.jsonArray
+            if (toolCalls != null && toolCalls.isNotEmpty()) return true
+            val content = message["content"]?.jsonPrimitive?.contentOrNull
+            content?.uppercase()?.filter { it.isLetterOrDigit() } == TOOLS_TOKEN
+        }.getOrDefault(false)
+    }
+
     private fun responseContent(body: String): String? = runCatching {
         JSON.parseToJsonElement(body).jsonObject["choices"]
             ?.jsonArray
@@ -222,6 +252,67 @@ internal class OpenAiCompatibleModelCapabilityTester(
                             "content",
                             "Synthetic compatibility check. Return exactly " +
                                 "{\"$STRUCTURED_TOKEN_FIELD\":\"$STRUCTURED_TOKEN\"}.",
+                        )
+                    },
+                )
+            },
+        )
+    }.toString()
+
+    private fun toolsProbe(modelId: String): String = buildJsonObject {
+        put("model", modelId)
+        put("temperature", 0)
+        put("max_tokens", 32)
+        put(
+            "tools",
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("type", "function")
+                        put(
+                            "function",
+                            buildJsonObject {
+                                put("name", "synthetic_compat_check")
+                                put("description", "Synthetic compatibility check")
+                                put(
+                                    "parameters",
+                                    buildJsonObject {
+                                        put("type", "object")
+                                        put(
+                                            "properties",
+                                            buildJsonObject {
+                                                put(
+                                                    "token",
+                                                    buildJsonObject {
+                                                        put("type", "string")
+                                                        put(
+                                                            "description",
+                                                            "Echo the code you were asked to return",
+                                                        )
+                                                    },
+                                                )
+                                            },
+                                        )
+                                        put("required", buildJsonArray { add(JsonPrimitive("token")) })
+                                        put("additionalProperties", JsonPrimitive(false))
+                                    },
+                                )
+                            },
+                        )
+                    },
+                )
+            },
+        )
+        put(
+            "messages",
+            buildJsonArray {
+                add(
+                    buildJsonObject {
+                        put("role", "user")
+                        put(
+                            "content",
+                            "Synthetic tools check. Call synthetic_compat_check with " +
+                                "token = \"$TOOLS_TOKEN\".",
                         )
                     },
                 )
@@ -290,6 +381,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
         const val DEFAULT_PROBE_TIMEOUT_MILLIS = 30_000L
         const val STRUCTURED_TOKEN_FIELD = "capability_check"
         const val STRUCTURED_TOKEN = "SMART_MISTAKE_BOOK_STRUCTURED_V1"
+        const val TOOLS_TOKEN = "SMART_MISTAKE_BOOK_TOOLS_V1"
         const val IMAGE_RESPONSE_TOKEN = "Q7M2"
         const val SYNTHETIC_IMAGE_BASE64 =
             "iVBORw0KGgoAAAANSUhEUgAAAUAAAACACAYAAAB6D7CqAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAtUSURB" +

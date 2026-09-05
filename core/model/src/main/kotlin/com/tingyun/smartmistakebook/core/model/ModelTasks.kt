@@ -103,6 +103,13 @@ data class ProviderCapabilitySnapshot(
     val supportsImageInput: Boolean,
     val supportsStructuredOutput: Boolean,
     val supportsStreaming: Boolean,
+    /**
+     * Whether the provider endpoint accepts native OpenAI `tools` requests
+     * (Route A tool-loop wire). Probed separately from structured output —
+     * a json_object endpoint is not necessarily tools-capable. Defaults to
+     * false; Route A stays off until a probe proves tools support.
+     */
+    val supportsFunctionCalling: Boolean = false,
     val isDemo: Boolean = false,
     val executionLocation: ModelExecutionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
     val providerConfigurationVersion: String = "unspecified-v1",

@@ -465,6 +465,8 @@ private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnaps
         supportedTasks = supportedTasks,
         supportsImageInput = verification?.supportsImageInput == true,
         supportsStructuredOutput = verification?.supportsStructuredOutput == true,
+        // Route A 原生 tools 能力：仅当探测证明端点接受原生 tools 请求才置真。
+        supportsFunctionCalling = verification?.supportsFunctionCalling == true,
         // Streaming is only advertised once the provider passed a structured-output probe. A
         // stream=true tutor request against an unverified endpoint would otherwise fail closed on a
         // provider that was never confirmed to speak SSE, burning a dispatch.

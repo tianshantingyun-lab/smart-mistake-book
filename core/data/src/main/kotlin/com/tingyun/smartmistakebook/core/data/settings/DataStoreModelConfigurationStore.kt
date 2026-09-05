@@ -502,6 +502,8 @@ internal class StoreDelegate(
         val testedAt = this[VERIFIED_TESTED_AT] ?: return null
         val imageInput = this[VERIFIED_IMAGE_INPUT] ?: return null
         val structuredOutput = this[VERIFIED_STRUCTURED_OUTPUT] ?: return null
+        // 老版本存的验证没有此键 → 默认 false（Route A 保持关，直到重新探测证明支持 tools）。
+        val functionCalling = this[VERIFIED_FUNCTION_CALLING] ?: false
         val testStartSequence = this[VERIFIED_TEST_START_SEQUENCE] ?: 0L
         if (configurationUpdatedAt <= 0L || testedAt <= 0L) return null
         return ModelCapabilityVerification(
@@ -512,6 +514,7 @@ internal class StoreDelegate(
             configurationUpdatedAtEpochMillis = configurationUpdatedAt,
             supportsImageInput = imageInput,
             supportsStructuredOutput = structuredOutput,
+            supportsFunctionCalling = functionCalling,
             testedAtEpochMillis = testedAt,
             testStartSequence = testStartSequence,
         )
@@ -528,6 +531,7 @@ internal class StoreDelegate(
             verification.configurationUpdatedAtEpochMillis
         this[VERIFIED_IMAGE_INPUT] = verification.supportsImageInput
         this[VERIFIED_STRUCTURED_OUTPUT] = verification.supportsStructuredOutput
+        this[VERIFIED_FUNCTION_CALLING] = verification.supportsFunctionCalling
         this[VERIFIED_TESTED_AT] = verification.testedAtEpochMillis
         this[VERIFIED_TEST_START_SEQUENCE] = verification.testStartSequence
     }
@@ -540,6 +544,7 @@ internal class StoreDelegate(
         remove(VERIFIED_CONFIGURATION_UPDATED_AT)
         remove(VERIFIED_IMAGE_INPUT)
         remove(VERIFIED_STRUCTURED_OUTPUT)
+        remove(VERIFIED_FUNCTION_CALLING)
         remove(VERIFIED_TESTED_AT)
         remove(VERIFIED_TEST_START_SEQUENCE)
     }
@@ -687,6 +692,7 @@ internal class StoreDelegate(
             longPreferencesKey("verified_configuration_updated_at_epoch_millis")
         val VERIFIED_IMAGE_INPUT = booleanPreferencesKey("verified_image_input")
         val VERIFIED_STRUCTURED_OUTPUT = booleanPreferencesKey("verified_structured_output")
+        val VERIFIED_FUNCTION_CALLING = booleanPreferencesKey("verified_function_calling")
         val VERIFIED_TESTED_AT = longPreferencesKey("verified_tested_at_epoch_millis")
         val VERIFIED_TEST_START_SEQUENCE =
             longPreferencesKey("verified_test_start_sequence")

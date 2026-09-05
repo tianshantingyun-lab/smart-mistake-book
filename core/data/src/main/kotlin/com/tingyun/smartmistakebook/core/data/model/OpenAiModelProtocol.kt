@@ -223,7 +223,12 @@ internal object OpenAiModelProtocol {
             put("model", modelId)
             put("temperature", 0.1)
             put("stream", stream)
-            put("response_format", buildJsonObject { put("type", "json_object") })
+            // Route A（原生 tools）与 json_object 信封互斥：tools 模式下 provider 用
+            // tool_calls 表达工具申请，同时发 response_format 会让严格 provider 拒绝或忽略。
+            // 仅 Route B（无原生 tools）保持 json_object 信封。
+            if (toolSchemas == null) {
+                put("response_format", buildJsonObject { put("type", "json_object") })
+            }
             toolSchemas?.let { put("tools", it) }
             put(
                 "messages",
