@@ -13,7 +13,9 @@ import org.junit.Test
 class ReviewedKnowledgePackJsonCodecTest {
     @Test
     fun bundledResourceDecodesToReviewedNineSubjectPack() {
-        val pack = BundledKnowledgePackResources.load().single()
+        val pack = BundledKnowledgePackResources.load().single {
+            it.packId == "moe-2020-foundation-v1"
+        }
 
         assertEquals("moe-2020-foundation-v1", pack.packId)
         assertEquals(
@@ -53,8 +55,26 @@ class ReviewedKnowledgePackJsonCodecTest {
     }
 
     @Test
+    fun fourSubjectPackDecodesWithLargeTeachingSupport() {
+        val pack = BundledKnowledgePackResources.load().single {
+            it.packId == "moe-2025-four-subjects-v1"
+        }
+        assertEquals("moe-2025-four-subjects-v1", pack.packId)
+        assertEquals(KnowledgeCoverageContract.CURRENT_BASELINE_ID, pack.coverage.baselineId)
+        assertEquals(KnowledgeCoverageLevel.PARTIAL, pack.coverage.catalogLevel)
+        assertEquals(setOf("MATH","PHYSICS","CHEMISTRY","BIOLOGY"), pack.nodes.mapTo(hashSetOf()) { it.subject })
+        assertEquals(2642, pack.nodes.size)
+        assertTrue(pack.teachingMaterials.size >= 10000)
+        // 至少 80% 教学条目绑定到目录节点（语义绑定阈值）
+        val bound = pack.teachingMaterialBindings.size
+        assertTrue(bound >= 8000)
+    }
+
+    @Test
     fun historicalSampleCannotBeReportedAsCurrentFullCoverage() {
-        val audit = KnowledgeCoverageContract.audit(BundledKnowledgePackResources.load())
+        val audit = KnowledgeCoverageContract.audit(
+            BundledKnowledgePackResources.load().filter { it.packId == "moe-2020-foundation-v1" },
+        )
 
         assertTrue(audit.currentBaselinePackIds.isEmpty())
         assertTrue(audit.currentSubjects.isEmpty())

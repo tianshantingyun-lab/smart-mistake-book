@@ -1,0 +1,2330 @@
+{
+ "schemaVersion": 2,
+ "packId": "moe-2025-four-subjects-v1",
+ "sources": [
+  {
+   "sourceId": "registry-kb-biology-misc:biology",
+   "subject": "BIOLOGY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "registry-kb-biology-misc:biology",
+   "publisher": "教辅汇编",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/material",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "6DCF1A9BC0E800977EB63197DD4221A6BAF056E53ED9DE6985AF31D900FF25F5",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "结构化总结（REVIEWED_SYNTHESIS），非原文。"
+  },
+  {
+   "sourceId": "registry-kb-biology-textbook-preserve:biology",
+   "subject": "BIOLOGY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "registry-kb-biology-textbook-preserve:biology",
+   "publisher": "教辅汇编",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/material",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "AE0F0750E5ECC4A52A0CFCEE8D39BCD6F1A2744F8DE917C8978664A009A34B4C",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "结构化总结（REVIEWED_SYNTHESIS），非原文。"
+  }
+ ],
+ "materials": [
+  {
+   "slug": "bio-mo-evolution-006",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "达尔文提出的自然选择学说对生物",
+   "summaryMarkdown": "达尔文提出的自然选择学说对生物的进化和适应的形成作出了合理的解释。",
+   "applicabilityMarkdown": "解答自然选择与适应的形成相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 达尔文提出的自然选择学说对生物的进化和适应的形成作出了合理的解释。\n2. 他认为适应的来源是可遗传的变异，适应是自然选择的结果。\n3. 它揭示了生物界的统一性是由于所有的生物都有共同祖先，而生物的多样性和适应性是进化的结果。",
+   "boundaryMarkdown": "本条为自然选择与适应的形成的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-007",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "共同由来学说和自然选择学说属于达尔文",
+   "summaryMarkdown": "共同由来学说和自然选择学说属于达尔文关于生物进化的两大学说，“化石、比较解剖学、胚胎学、细胞和分子水平”的证据都对应达尔文的共同由来学说。",
+   "applicabilityMarkdown": "用于自然选择与适应的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 共同由来学说和自然选择学说属于达尔文关于生物进化的两大学说，“化石、比较解剖学、胚胎学、细胞和分子水平”的证据都对应达尔文的共同由来学说。",
+   "boundaryMarkdown": "易错点：混淆共同由来学说和自然选择学说与生物进化证据而出错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-008",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "化石是研究生物进化直接的证据",
+   "summaryMarkdown": "化石是研究生物进化直接的证据，比较解剖学和胚胎学以及细胞和分子水平的研究为生物进化提供间接证据。",
+   "applicabilityMarkdown": "用于自然选择与适应的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 化石是研究生物进化直接的证据，比较解剖学和胚胎学以及细胞和分子水平的研究为生物进化提供间接证据。",
+   "boundaryMarkdown": "易错点：混淆生物进化的直接证据和间接证据而出错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-009",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "适应是普遍存在",
+   "summaryMarkdown": "适应是普遍存在的，所有的生物都具有适应环境的特征。",
+   "applicabilityMarkdown": "用于自然选择与适应的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 适应是普遍存在的，所有的生物都具有适应环境的特征。\n2. 但适应是针对一定的环境条件而言的，是一种暂时的现象。",
+   "boundaryMarkdown": "易错点：误认为“适应一旦形成，则是一种持久存在的现象”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-011",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "突变和基因重组产生进化的原材料",
+   "summaryMarkdown": "突变和基因重组产生进化的原材料，可遗传的变异来源于基因突变、基因重组、染色体变异。",
+   "applicabilityMarkdown": "解答协同进化与生物多样性的形成相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 突变和基因重组产生进化的原材料，可遗传的变异来源于基因突变、基因重组、染色体变异。\n2. 突变包括基因突变和染色体变异。\n3. 突变的有害和有利不是绝对的，这往往取决于生物的生存环境。\n4. 突变和重组都是随机的、不定向的，只为进化提供了原材料，不能决定生物进化的方向。",
+   "boundaryMarkdown": "突变和重组都是随机的、不定向的，只为进化提供了原材料，不能决定生物进化的方向。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-012",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "自然选择决定生物进化的方向",
+   "summaryMarkdown": "自然选择决定生物进化的方向。",
+   "applicabilityMarkdown": "解答协同进化与生物多样性的形成相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 自然选择决定生物进化的方向。\n2. 生物进化的实质是种群的基因频率的改变。\n3. 能够在自然状态下相互交配并且产生可育后代的一群生物称为一个物种。\n4. 物种形成的三个环节：突变和基因重组、自然选择、隔离。",
+   "boundaryMarkdown": "本条为协同进化与生物多样性的形成的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-014",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "关于捕食者在进化中的作用",
+   "summaryMarkdown": "关于捕食者在进化中的作用。",
+   "applicabilityMarkdown": "解答协同进化与生物多样性的形成相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 关于捕食者在进化中的作用，美国生态学家斯坦利提出了“收割理论”：捕食者往往捕食个体数量多的物种，这样就会避免出现一种或少数几种生物在生态系统中占绝对优势的局面，为其他物种的形成腾出空间。\n2. 捕食者的存在有利于增加物种多样性。",
+   "boundaryMarkdown": "本条为协同进化与生物多样性的形成的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-015",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "不同物种之间、生物与无机环境之间在",
+   "summaryMarkdown": "不同物种之间、生物与无机环境之间在相互影响中不断进化和发展，这就是协同进化。",
+   "applicabilityMarkdown": "解答协同进化与生物多样性的形成相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 不同物种之间、生物与无机环境之间在相互影响中不断进化和发展，这就是协同进化。\n2. 生物多样性主要包括三个层次的内容：遗传多样性（基因多样性）、物种多样性和生态系统多样性。",
+   "boundaryMarkdown": "本条为协同进化与生物多样性的形成的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-016",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "地球上最早出现的生物是异养厌氧",
+   "summaryMarkdown": "地球上最早出现的生物是异养厌氧的单细胞原核生物。",
+   "applicabilityMarkdown": "解答协同进化与生物多样性的形成相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 地球上最早出现的生物是异养厌氧的单细胞原核生物。\n2. 真核生物通过有性生殖，实现了基因重组，这就增强了生物变异的多样性，生物进化的速度明显加快。",
+   "boundaryMarkdown": "本条为协同进化与生物多样性的形成的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-019",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "一个种群中全部个体所含有的全部基因",
+   "summaryMarkdown": "一个种群中全部个体所含有的全部基因，叫做这个种群的基因库。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 一个种群中全部个体所含有的全部基因，叫做这个种群的基因库。\n2. 在一个种群基因库中，某个基因占全部等位基因数的比值，叫做基因频率。\n3. 基因型频率=×100%。\n4. 一个基因的频率＝该基因纯合子基因型频率＋１／２×杂合子基因型频率；（“必修二”P111“教材正文”）。",
+   "boundaryMarkdown": "易错点：混淆种群的基因库、基因频率和基因型频率等定义。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-020",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "利用遗传平衡定律需满足以下条件",
+   "summaryMarkdown": "利用遗传平衡定律需满足以下条件：①种群非常大。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. （1）利用遗传平衡定律需满足以下条件：①种群非常大；\n2. ②所有雌、雄个体之间自由交配；\n3. ③没有迁入和迁出；\n4. ④没有自然选择；⑤没有基因突变；（2）计算公式：当等位基因只有两个时（A、a），设p表示A基因的频率，q表示a基因的频率，则基因型AA的频率为p2，Aa的频率为2pq，aa的频率为q2；如果一个种群达到遗传平衡，其基因型频率应符合：p2＋2pq＋q2＝1。",
+   "boundaryMarkdown": "易错点：不能灵活运用遗传平衡定律计算基因频率和基因型频率。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-021",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "交配方式、交配方式、基因频率、基因型频率",
+   "summaryMarkdown": "交配方式：自交；交配方式：自交；基因频率：不改变；基因型频率：改变，且纯合子增多，杂合子减少。",
+   "applicabilityMarkdown": "解答协同进化与生物多样性的形成相关比较类题目时作为作答模板。",
+   "contentMarkdown": "1. 交配方式：自交；交配方式：自交；基因频率：不改变；基因型频率：改变，且纯合子增多，杂合子减少\n2. 交配方式：自由交配；交配方式：处于遗传平衡；基因频率：不改变；基因型频率：不改变\n3. 交配方式：自由交配；交配方式：不处于遗传平衡；基因频率：不改变；基因型频率：改变",
+   "boundaryMarkdown": "该对照限于协同进化与生物多样性的形成常规情境，表中未列条件需单独核实。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-022",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "类似的错误说法还",
+   "summaryMarkdown": "类似的错误说法还有：“基因突变可产生新的等基因，这就可以使种群的基因频率发生定向改变、染色体数目和结构的变异都能引起种群基因频率的定向改变”等。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 类似的错误说法还有：“基因突变可产生新的等基因，这就可以使种群的基因频率发生定向改变、染色体数目和结构的变异都能引起种群基因频率的定向改变”等。\n2. 其实，基因突变、染色体数目和结构的变异都能引起种群基因频率的改变，但不能引起定向改变，定向改变需经自然选择作用。",
+   "boundaryMarkdown": "易错点：误认为“只有基因突变才可使种群的基因频率发生改变”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-023",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "人工选择和自然选择的比较（1）区别",
+   "summaryMarkdown": "人工选择和自然选择的比较（1）区别：二者选择的标准不同，目的不同。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 人工选择和自然选择的比较（1）区别：二者选择的标准不同，目的不同。\n2. 人工选择是以“是否对人类有利”为标准，对人类有利的基因或性状被保留下来，不利的就被淘汰。\n3. 而自然选择的标准为“是否有利于该生物的生存”，有利于该生物生存的性状或基因就被保留下来，不利的就被淘汰。\n4. （2）联系：二者都能使被选择的种群的基因频率发生改变。",
+   "boundaryMarkdown": "易错点：混淆自然选择与人工选择（对应“回归教材10”）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-024",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在自然选择过程中",
+   "summaryMarkdown": "在自然选择过程中，直接受选择的是表型，而不是基因型。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 在自然选择过程中，直接受选择的是表型，而不是基因型。\n2. 基因型并不能在自然选择中起直接作用。\n3. （“必修二”P113“探究•实践”讨论T２）",
+   "boundaryMarkdown": "易错点：误认为“自然选择过程中直接受选择是基因型，所以会导致基因频率发生变化”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-025",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "物种是自然状态下能够自由交配并产生可",
+   "summaryMarkdown": "物种是自然状态下能够自由交配并产生可育后代的一群生物，一个物种可能因地理隔离而形成不同的种群。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 物种是自然状态下能够自由交配并产生可育后代的一群生物，一个物种可能因地理隔离而形成不同的种群。\n2. 种群是同一种生物、同一地点、同一时间形成的一个群体。\n3. 种群“小”，不同种群间有地理隔离；\n4. 物种“大”，不同物种间有生殖隔离；判断生物是不是同一物种，如果来历不明，形态结构相似，可靠依据是：看是否存在生殖隔离；若存在生殖隔离，则不是同一物种。",
+   "boundaryMarkdown": "易错点：混淆种群和物种、隔离及地理隔离和生殖隔离等概念。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-026",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在判断是否为同一个物种时",
+   "summaryMarkdown": "在判断是否为同一个物种时，既要看能否产生后代，又要看后代是否可育。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 在判断是否为同一个物种时，既要看能否产生后代，又要看后代是否可育。\n2. 两个个体能够交配产生后代，有可能子代高度不育，如马和驴，虽然能够产生子代，但子代不育，因此马和驴是两个物种。",
+   "boundaryMarkdown": "易错点：误认为“能产生后代的肯定是同一个物种”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-027",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "造成此错误的关键原因",
+   "summaryMarkdown": "造成此错误的关键原因是混淆了“自然选择、种群基因频率变化、生物进化、物种形成”间关系。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 造成此错误的关键原因是混淆了“自然选择、种群基因频率变化、生物进化、物种形成”间关系。\n2. 生物朝一定方向不断进化的原因是：在自然选择的作用下，种群的基因频率会发生定向改变。\n3. 生物进化的实质是种群基因频率的改变，即：在自然选择作用下，当种群基因频率发生变化时，我们说发生了进化，但生物进化不一定导致新物种的形成，隔离是新物种形成的必要条件，新物种形成的标志是产生生殖隔离。\n4. 是否形成了新的物种，还要看是否出现了生殖隔离；但是，新物种一旦形成，则说明生物肯定进化了。",
+   "boundaryMarkdown": "易错点：误认为“生物进化一定导致物种的形成”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-028",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "地理隔离不一定会形成新物种",
+   "summaryMarkdown": "地理隔离不一定会形成新物种（会出现生殖隔离）。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 地理隔离不一定会形成新物种（会出现生殖隔离）。\n2. 当地理隔离时间足够长、基因库差异明显时，才能形成生殖隔离。",
+   "boundaryMarkdown": "易错点：误认为“地理隔离一定会形成新物种（会出现生殖隔离）”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-029",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生物与生物之间的协同进化",
+   "summaryMarkdown": "生物与生物之间的协同进化，仅发生在不同物种之间，同种生物不存在协同进化。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 生物与生物之间的协同进化，仅发生在不同物种之间，同种生物不存在协同进化；\n2. 生物与无机环境间的协同进化，表现在生物能够适应一定的环境，也能影响环境。\n3. 即无机环境的选择作用可定向改变种群的基因频率，导致生物朝着一定方向进化；\n4. 生物的进化反过来又会影响无机环境。",
+   "boundaryMarkdown": "易错点：误认为“生物与生物间的协同进化可发生在同种之间”、误认为“生物与环境的协同进化仅表现为环境的选择作用”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-030",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在进化地位上越高等的生物",
+   "summaryMarkdown": "在进化地位上越高等的生物，不一定适应能力越强。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 在进化地位上越高等的生物，不一定适应能力越强。\n2. 因为进化过程中出现的新物种，有些是靠开辟环境中新的生存位置来生存和繁衍的，不一定就比原来的物种适应能力更强。\n3. 例如，海洋中的生物登陆后，形成许多新物种，开辟了新的生存空间，但是不能说这些新物种比海洋藻类的适应能力强。",
+   "boundaryMarkdown": "易错点：误认为“在进化地位上越高等的生物，适应能力就越强”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-031",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "捕食者对被捕食者种群生存发展的影响",
+   "summaryMarkdown": "捕食者对被捕食者种群生存发展的影响，仅针对两种生物间协同进化关系，应从种群角度运用协同进化原理解释：猎豹和羚羊因捕食关系，在进化上密切相关。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 捕食者对被捕食者种群生存发展的影响，仅针对两种生物间协同进化关系，应从种群角度运用协同进化原理解释：猎豹和羚羊因捕食关系，在进化上密切相关。\n2. 在捕食过程中，自然选择有利于羚羊种群中肌肉发达、动作敏捷的个体，同样也有利于猎豹种群中跑得快的个体，在进化上这属于两个物种间的协同进化。\n3. 上述现象也可说明，捕食者的存在对被捕食者种群的生存和发展是有利（有利、有害）的，其原因是：捕食者所吃掉的大多是被捕食者中年老、病弱或年幼的个体，客观上起到促进种群发展的作用。\n4. 而捕食者对物种多样性的影响应从一种生物对其他多种生物的影响理解：关于捕食者在进化中的作用，美国生态学家斯坦利提出了“收割理论”：捕食者往往捕食个体数量多的物种，这样就会避免出现一种或少数几种生物在生态系统中占绝对优势的局面，为其他物种的形成腾出空间；因此，捕食者的存在有利于增加物种多样性。",
+   "boundaryMarkdown": "易错点：混淆协同进化过程中“捕食者对被捕食者种群生存发展的影响”和“捕食者对物种多样性的影响”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-032",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "两个个体虽然能够交配产生后代",
+   "summaryMarkdown": "两个个体虽然能够交配产生后代，但子代有可能高度不育，如马和驴虽然能够产生子代，但子代不育，因此马和驴是两个物种。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 两个个体虽然能够交配产生后代，但子代有可能高度不育，如马和驴虽然能够产生子代，但子代不育，因此马和驴是两个物种。",
+   "boundaryMarkdown": "易错点：能产生后代≠同一物种。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-034",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "某种群的所有个体自交",
+   "summaryMarkdown": "某种群的所有个体自交，若没有进行选择，则自交后代的基因频率不变，基因型频率会改变，并且杂合子的基因型频率降低，纯合子的基因型频率升高。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. （1）某种群的所有个体自交，若没有进行选择，则自交后代的基因频率不变，基因型频率会改变，并且杂合子的基因型频率降低，纯合子的基因型频率升高。\n2. （2）某种群的所有个体自由交配，若没有基因突变且各种基因型的个体生活能力相同时，后代的基因频率不变。\n3. 后代的基因型频率是否改变有以下两种情况：如果没有达到遗传平衡，则后代的基因型频率会改变并达到遗传平衡；\n4. 如果已达到遗传平衡，则后代的基因型频率不会改变。",
+   "boundaryMarkdown": "易错点：混淆自交和自由交配时基因（型）频率的变化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-evolution-035",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "以红绿色盲为例",
+   "summaryMarkdown": "以红绿色盲为例。",
+   "applicabilityMarkdown": "用于协同进化与生物多样性的形成相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 以红绿色盲为例，红绿色盲为伴X染色体隐性遗传病，色盲基因b位于X染色体上，对男性（XY）而言，每个男性体细胞中只有一条X染色体，含有致病基因就为患者，不含则为正常个体，无携带者。\n2. 若某地区男性中色盲占x。\n3. 则此地区Xb的基因频率也为x，此地区女性色盲率则为x2。",
+   "boundaryMarkdown": "易错点：不能准确运用男性的基因型频率计算该地区X染色体的基因频率。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 生物的进化（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-194",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞周期是指连续分裂的细胞",
+   "summaryMarkdown": "细胞周期是指连续分裂的细胞，从一次分裂完成时开始到下一次分裂完成时为止。",
+   "applicabilityMarkdown": "解答细胞的增殖相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 细胞周期是指连续分裂的细胞，从一次分裂完成时开始到下一次分裂完成时为止。\n2. 只有部分进行有丝分裂的细胞有细胞周期。",
+   "boundaryMarkdown": "只有部分进行有丝分裂的细胞有细胞周期。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-195",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "染色体复制时期",
+   "summaryMarkdown": "染色体复制时期：分裂间期。",
+   "applicabilityMarkdown": "解答细胞的增殖相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 染色体复制时期：分裂间期；\n2. 中心体复制时期：分裂间期；\n3. 染色体加倍时期：后期；\n4. DNA复制时期：分裂间期（S期）；DNA加倍时期：分裂间期；染色单体形成时期：分裂间期；染色单体消失时期：后期；观察染色体最佳时期：中期；细胞板出现时较活跃的细胞器：高尔基体。",
+   "boundaryMarkdown": "本条为细胞的增殖的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-197",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "制作装片",
+   "summaryMarkdown": "观察根尖分生区组织细胞的有丝分裂：。",
+   "applicabilityMarkdown": "解答细胞的增殖相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 观察根尖分生区组织细胞的有丝分裂：\n2. （1）原理：甲紫溶液或醋酸洋红液将染色体染成深色、盐酸和酒精混合液将细胞解离。\n3. （2）选材：分裂旺盛、染色体数较少、分裂期所占比例较大的细胞。\n4. （3）制作装片",
+   "boundaryMarkdown": "本条为细胞的增殖的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-198",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "过程、所用试剂、时间、目的",
+   "summaryMarkdown": "过程：解离；所用试剂：盐酸和酒精混合液；时间：3～5 min；目的：用药液使组织中的细胞相互分离开来。",
+   "applicabilityMarkdown": "解答细胞的增殖相关比较类题目时作为作答模板。",
+   "contentMarkdown": "1. 过程：解离；所用试剂：盐酸和酒精混合液；时间：3～5 min；目的：用药液使组织中的细胞相互分离开来\n2. 过程：漂洗；所用试剂：清水；时间：约10 min；目的：洗去药液，防止解离过度\n3. 过程：染色；所用试剂：甲紫溶液（或醋酸洋红液）；时间：3～5 min；目的：使染色体着色\n4. 过程：制片；所用试剂：—；时间：—；目的：使细胞分散开来，有利于观察",
+   "boundaryMarkdown": "该对照限于细胞的增殖常规情境，表中未列条件需单独核实。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-199",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞呈正方形",
+   "summaryMarkdown": "观察：①低倍镜下观察：扫视整个装片，找到分生区细胞。",
+   "applicabilityMarkdown": "解答细胞的增殖相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. （4）观察：①低倍镜下观察：扫视整个装片，找到分生区细胞；\n2. 细胞呈正方形，排列紧密。\n3. ②高倍镜下观察：首先找出分裂中期的细胞，然后再找前期、后期、末期的细胞，最后观察分裂间期的细胞。",
+   "boundaryMarkdown": "本条为细胞的增殖的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-200",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞有丝分裂的过程",
+   "summaryMarkdown": "细胞有丝分裂的过程。",
+   "applicabilityMarkdown": "解答细胞的增殖相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 细胞有丝分裂的过程\n2. （1）前期（纺锤体的形成方式不同）：\n3. （2）末期（细胞质的分裂方式不同）\n4. ①高等植物细胞：在赤道板（不是结构）位置出现细胞板，由细胞的中央向四周扩展，逐渐形成新的细胞壁。最后，一个细胞分裂成两个子细胞；②动物细胞：细胞膜从中部向内凹陷将细胞缢裂为两部分，每部分都含有一个细胞核；（3）此外，还要注意间期（是否进行中心体的复制）；a.动物、低等植物细胞：有中心体的复制；b.高等植物细胞：无中心体的复制。",
+   "boundaryMarkdown": "（3）此外，还要注意间期（是否进行中心体的复制）；。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-观察根尖分生区组织细胞的有丝分裂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-201",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞分裂为细胞增殖的方式",
+   "summaryMarkdown": "细胞分裂为细胞增殖的方式，分裂的细胞不一定具有细胞周期，即：只有具有连续分裂能力的细胞才有细胞周期，如植物形成层细胞、根尖分生区细胞、动物皮肤生发层细胞等。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 细胞分裂为细胞增殖的方式，分裂的细胞不一定具有细胞周期，即：只有具有连续分裂能力的细胞才有细胞周期，如植物形成层细胞、根尖分生区细胞、动物皮肤生发层细胞等。\n2. 高度分化的细胞，如神经细胞、表皮细胞等没有细胞周期。\n3. 发生减数分裂的细胞没有细胞周期。",
+   "boundaryMarkdown": "易错点：混淆“细胞分裂、细胞增殖、细胞周期”而出错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-202",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "教材对有丝分裂结合后形成的子细胞",
+   "summaryMarkdown": "教材对有丝分裂结合后形成的子细胞的描述为“又可以进入分裂间期”，意味着并不是一定进入分裂间期。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 教材对有丝分裂结合后形成的子细胞的描述为“又可以进入分裂间期”，意味着并不是一定进入分裂间期。\n2. 分裂后一般分为三种细胞，一种是不再进行细胞分裂最后死亡，高度分化的细胞就是这种细胞，一种进入静止状态，不在进行细胞分裂，当条件适合时又会进入细胞分裂（癌症难治就是因为这种静止细胞，因为在静止状态的细胞，药物对其没有作用），最后一种就是进入新的下一个细胞周期，即教材描述的进入分裂间期，分裂间期结束后进行有丝分裂。",
+   "boundaryMarkdown": "易错点：误认为“有丝分裂形成的子细胞都进入分裂间期”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-观察根尖分生区组织细胞的有丝分裂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-203",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "一个细胞周期包括分裂间期和分裂期",
+   "summaryMarkdown": "一个细胞周期包括分裂间期和分裂期，在分裂间期结束后进行有丝分裂。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 一个细胞周期包括分裂间期和分裂期，在分裂间期结束后进行有丝分裂。\n2. 因此，有丝分裂是细胞周期中分裂期的主要表现形式，有丝分裂不包含分裂间期。",
+   "boundaryMarkdown": "易错点：误认为“有丝分裂包括分裂间期和分裂期2”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-204",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "染色质和染色体化学组成都主要",
+   "summaryMarkdown": "染色质和染色体化学组成都主要是DNA和蛋白质。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 染色质和染色体化学组成都主要是DNA和蛋白质，在细胞周期的间期以染色质的状态存在，这种状态有利于DNA复制及相关蛋白质合成（有利于转录的进行），在有丝分裂的前期，染色质丝螺旋缠绕，缩短变粗，成为染色体，这种状态有利于核中遗传物质（DNA）的平均分配。",
+   "boundaryMarkdown": "易错点：混淆染色质和染色体及其两种存在状态的意义。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-205",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "赤道板是一种假想平面",
+   "summaryMarkdown": "赤道板是一种假想平面，不是细胞结构，在光学显微镜下看不到。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 赤道板是一种假想平面，不是细胞结构，在光学显微镜下看不到。\n2. 细胞板是一种真实结构，在光学显微镜下能看到，出现在植物细胞有丝分裂的末期。",
+   "boundaryMarkdown": "易错点：混淆赤道板和细胞板。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-206",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "成分或结构、时期、原因",
+   "summaryMarkdown": "成分或结构：核DNA加倍；时期：细胞周期的间期；原因：DNA复制。",
+   "applicabilityMarkdown": "解答细胞的增殖相关比较类题目时作为作答模板。",
+   "contentMarkdown": "1. 成分或结构：核DNA加倍；时期：细胞周期的间期；原因：DNA复制\n2. 成分或结构：染色体数目加倍；时期：有丝分裂的后期；原因：着丝点分裂\n3. 成分或结构：中心体数目加倍；时期：细胞周期的间期；原因：中心体复制",
+   "boundaryMarkdown": "该对照限于细胞的增殖常规情境，表中未列条件需单独核实。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜成分和结构的探究历程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-207",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在分裂间期主要进行DNA复制和",
+   "summaryMarkdown": "在分裂间期主要进行DNA复制和有关蛋白质合成，而蛋白质合成涉及转录和翻译，转录过程中合成mRNA，所以，在分裂间期既有DNA合成，又有RNA合成。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 在分裂间期主要进行DNA复制和有关蛋白质合成，而蛋白质合成涉及转录和翻译，转录过程中合成mRNA，所以，在分裂间期既有DNA合成，又有RNA合成。",
+   "boundaryMarkdown": "易错点：误认为“分裂间期合成的核酸只有DNA”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-208",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在有丝分裂前期出现的染色体",
+   "summaryMarkdown": "在有丝分裂前期出现的染色体，每条染色体上的两条染色单体由一个共同的着丝粒连接着，每条染色体的着丝粒两侧都有纺锤丝牵引着染色体运动。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 在有丝分裂前期出现的染色体，每条染色体上的两条染色单体由一个共同的着丝粒连接着，每条染色体的着丝粒两侧都有纺锤丝牵引着染色体运动。\n2. 后期，每个着丝粒分裂成两个，姐妹染色单体分开，成为两条染色体。\n3. 综上分析，有丝分裂后期着丝粒本身分裂，而不是在纺锤丝牵引下分裂。\n4. （补充：着丝粒通常由无编码意义的高度重复DNA序列（连离粒DNA）组成；连离粒DNA复制控制模型认为，在细胞分裂间期的S期要进行DNA复制，但是连离粒DNA的复制却被某种因素所抑制，使姐妹染色单体连接在连离粒区，在有丝分裂中期或减数第二次分裂中期，又恢复了连离粒DNA的复制，产生了两个连离粒，从而将姐妹染色单体分开。",
+   "boundaryMarkdown": "易错点：误认为“有丝分裂后期着丝粒分裂是纺锤丝牵引的结果”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-观察根尖分生区组织细胞的有丝分裂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-209",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "动物细胞的纺锤体是由复制后的中",
+   "summaryMarkdown": "动物细胞的纺锤体是由复制后的中心粒发出的星射线形成的，而植物细胞的纺锤体是由细胞两极发出的纺锤丝构成的。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 动物细胞的纺锤体是由复制后的中心粒发出的星射线形成的，而植物细胞的纺锤体是由细胞两极发出的纺锤丝构成的。",
+   "boundaryMarkdown": "易错点：误认为“动物细胞和植物细胞有丝分裂过程中纺锤体的形成相同”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:动物细胞的吸水和失水",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-210",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "通过有丝分裂",
+   "summaryMarkdown": "通过有丝分裂，将复制的核DNA平均分配到两个子细胞中，对遗传有重要意义。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 通过有丝分裂，将复制的核DNA平均分配到两个子细胞中，对遗传有重要意义。\n2. 但是，细胞中的DNA，主要分布在细胞核中，细胞质中也有DNA（如线粒体中的DNA），细胞质中的DNA是随机、不均等分配的。",
+   "boundaryMarkdown": "易错点：误认为“有丝分裂的结果是将细胞中DNA平均分配到两个子细胞中，所以，对遗传有重要意义”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-观察根尖分生区组织细胞的有丝分裂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-211",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "解离的作用在于破坏细胞间质",
+   "summaryMarkdown": "解离的作用在于破坏细胞间质，使细胞分离，以便压片时分散。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 解离的作用在于破坏细胞间质，使细胞分离，以便压片时分散；\n2. 固定的作用在于固定细胞形态，如在低温诱导染色体加倍实验中用卡诺氏液固定细胞。",
+   "boundaryMarkdown": "易错点：解离≠固定。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-212",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "洋葱根尖可包括根冠、分生区、伸长区",
+   "summaryMarkdown": "洋葱根尖可包括根冠、分生区、伸长区、成熟区。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. （1）洋葱根尖可包括根冠、分生区、伸长区、成熟区，其中分生区细胞呈正方形、排列紧密，细胞分裂旺盛，适宜选作有丝分裂观察材料，而其他区域细胞已分化，不进行分裂，故不宜选作有丝分裂观察材料。\n2. （2）根尖分生区：根尖长度一般选5 cm左右，而分生区只在其最前端的2～3 mm（包藏于根冠之下）内，只有分生区细胞才进行细胞分裂。\n3. 实验时剪取根尖3 mm左右即可，不能过长，否则看到的大多数是伸长区的细胞。\n4. （3）细胞解离后已被杀死，观察不到动态分裂过程，因此要通过移动装片寻找不同时期的细胞分裂图像。",
+   "boundaryMarkdown": "易错点：不清楚根尖结构，混淆“根尖”与“根尖分生区”，进而导致不明确有丝分裂装片制作的适宜取材部位或不能正确进行观察结果评价。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-观察根尖分生区组织细胞的有丝分裂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-213",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生殖器官中精原细胞或卵原细胞",
+   "summaryMarkdown": "生殖器官中精原细胞或卵原细胞的形成过程为有丝分裂，故在生殖器官中不仅发生减数分裂过程，也发生有丝分裂过程，进行减数分裂装片观察时，两类分裂的细胞图像均可存在。",
+   "applicabilityMarkdown": "用于细胞的增殖相关选择题的排误判断与填空纠错。",
+   "contentMarkdown": "1. 生殖器官中精原细胞或卵原细胞的形成过程为有丝分裂，故在生殖器官中不仅发生减数分裂过程，也发生有丝分裂过程，进行减数分裂装片观察时，两类分裂的细胞图像均可存在。",
+   "boundaryMarkdown": "易错点：误认为生殖器官中不存在有丝分裂。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-214",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞分化使多细胞生物体中",
+   "summaryMarkdown": "细胞分化使多细胞生物体中的细胞趋向专门化，有利于提高生物体各种生理功能的效率。",
+   "applicabilityMarkdown": "解答细胞的分化相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 细胞分化使多细胞生物体中的细胞趋向专门化，有利于提高生物体各种生理功能的效率。\n2. 高度分化的植物细胞仍然具有发育成完整植株的能力。\n3. 原因是细胞中有全套的遗传物质。\n4. 动物和人体内仍保留着少数具有分裂和分化能力的细胞，这些细胞叫作干细胞。",
+   "boundaryMarkdown": "本条为细胞的分化的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-215",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞分化的原因是基因的选择性表达",
+   "summaryMarkdown": "细胞分化的原因是基因的选择性表达。",
+   "applicabilityMarkdown": "解答细胞的分化相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 细胞分化的原因是基因的选择性表达。\n2. 同一个体的两个细胞不同的直接原因是蛋白质不同，根本原因是mRNA不同；\n3. 两个个体不同的直接原因是蛋白质不同，根本原因是DNA不同。",
+   "boundaryMarkdown": "本条为细胞的分化的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-217",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞内的水分减少",
+   "summaryMarkdown": "衰老的细胞主要具有以下特征：。",
+   "applicabilityMarkdown": "解答细胞的衰老和死亡相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 衰老的细胞主要具有以下特征：\n2. （1）细胞内的水分减少，细胞萎缩，体积变小；\n3. （2）细胞内多种酶的活性降低，呼吸速率减慢，新陈代谢速率减慢；\n4. （3）细胞内的色素逐渐积累，妨碍细胞内物质的交流和传递；（4）细胞核的体积增大，核膜内折，染色质收缩、染色加深；（5）细胞膜通透性改变，使物质运输功能降低。",
+   "boundaryMarkdown": "本条为细胞的衰老和死亡的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-218",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "由基因所决定的细胞自动结束生命的过程",
+   "summaryMarkdown": "由基因所决定的细胞自动结束生命的过程，就叫细胞凋亡。",
+   "applicabilityMarkdown": "解答细胞的衰老和死亡相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 由基因所决定的细胞自动结束生命的过程，就叫细胞凋亡。\n2. 由于细胞凋亡受到严格的由遗传机制决定的程序性调控，所以它是一种程序性死亡。",
+   "boundaryMarkdown": "本条为细胞的衰老和死亡的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-219",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在成熟的生物体中",
+   "summaryMarkdown": "在成熟的生物体中，细胞的自然更新，某些被病原体感染的细胞的清除，也是通过细胞凋亡完成的。",
+   "applicabilityMarkdown": "解答细胞的衰老和死亡相关的选择题与填空题时直接引用。",
+   "contentMarkdown": "1. 在成熟的生物体中，细胞的自然更新，某些被病原体感染的细胞的清除，也是通过细胞凋亡完成的。\n2. 细胞凋亡对于多细胞生物体完成正常发育，维持内部环境的稳定，以及抵御外界各种因素的干扰都起着非常关键的作用。",
+   "boundaryMarkdown": "本条为细胞的衰老和死亡的结论性表述；新情境（新材料、新数据）下需先核对前提再套用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《第6章 细胞的生命历程（背诵版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-221",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "若视野较暗",
+   "summaryMarkdown": "显微镜的使用（ “找、移、转、调”）：。",
+   "applicabilityMarkdown": "用于“走近细胞”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 显微镜的使用（ “找、移、转、调”）：\n2. 首先，在低倍镜下观察清楚并找到目标，把要放大的物像移到视野中央。其次：转动转换器，换成高倍镜观察，并轻轻转动细准焦螺旋调节至看清物像为止。若视野较暗，可调节光圈和反光镜。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": []
+  },
+  {
+   "slug": "bio-mo-cell-222",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "把视野调暗",
+   "summaryMarkdown": "把视野调暗：使用小光圈、平面镜。",
+   "applicabilityMarkdown": "用于“走近细胞”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 把视野调暗：使用小光圈、平面镜；\n2. 把视野调亮：使用大光圈、凹面镜。\n3. 显微镜放大倍数＝目镜放大倍数×物镜放大倍数。\n4. 显微镜放大的是物像的长度或宽度，而不是面积或体积。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": []
+  },
+  {
+   "slug": "bio-mo-cell-223",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "目镜的长度与其放大倍数呈反比",
+   "summaryMarkdown": "目镜的长度与其放大倍数呈反比。",
+   "applicabilityMarkdown": "用于“走近细胞”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 目镜的长度与其放大倍数呈反比；\n2. 物镜的长度与其放大倍数呈正比。\n3. 视野中观察对象在视野外侧，要将它移到视野中央，遵循“哪偏哪移”原则。\n4. 如观察对象在视野的左下方，要将它移到视野中央，玻片应向左下方移动。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": []
+  },
+  {
+   "slug": "bio-mo-cell-225",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "支原体可能是最小、最简单的单细胞生物",
+   "summaryMarkdown": "支原体可能是最小、最简单的单细胞生物，没有细胞壁。",
+   "applicabilityMarkdown": "用于“走近细胞”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 支原体可能是最小、最简单的单细胞生物，没有细胞壁。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-226",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生物界与非生物界在元素种类上具",
+   "summaryMarkdown": "生物界与非生物界在元素种类上具有统一性，在元素的含量上具有差异性。",
+   "applicabilityMarkdown": "用于“细胞中的元素和化合物”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 生物界与非生物界在元素种类上具有统一性，在元素的含量上具有差异性。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条02 细胞中的元素和化合物（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:元素和化合物的相互推断-归纳总结",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-227",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生物组织中的成分鉴定",
+   "summaryMarkdown": "生物组织中的成分鉴定。",
+   "applicabilityMarkdown": "用于“细胞中的元素和化合物”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 生物组织中的成分鉴定\n2. ①还原糖＋斐林试剂→砖红色沉淀；\n3. ②淀粉＋碘液→蓝色；\n4. ③脂肪＋苏丹Ⅲ染液→橘黄色（染色后要用体积分数为50%酒精洗掉浮色）；④蛋白质（多肽）＋双缩脲试剂→紫色。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条02 细胞中的元素和化合物（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-228",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "斐林试剂",
+   "summaryMarkdown": "斐林试剂。",
+   "applicabilityMarkdown": "用于“细胞中的元素和化合物”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 斐林试剂\n2. ①组成：甲液：质量浓度为0.1g/mL的NaOH溶液；乙液：质量浓度为0.05g/mL的CuSO4溶液。②使用方法：等量混合使用，现配现用；水浴加热。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条02 细胞中的元素和化合物（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:元素和化合物的相互推断-归纳总结",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-229",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "双缩脲试剂",
+   "summaryMarkdown": "双缩脲试剂。",
+   "applicabilityMarkdown": "用于“细胞中的元素和化合物”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 双缩脲试剂\n2. ①组成：A液：质量浓度为0.1g/mL的NaOH溶液；B液：质量浓度为0.01g/mL的CuSO4溶液。\n3. ②使用方法：先加双缩脲试剂A液，摇匀，再加少量双缩脲试剂B液，摇匀，不需要加热。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条02 细胞中的元素和化合物（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:元素和化合物的相互推断-归纳总结",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-232",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "某些重要化合物的组成部分",
+   "summaryMarkdown": "无机盐的作用有：。",
+   "applicabilityMarkdown": "用于“细胞中的元素和化合物”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 无机盐的作用有：\n2. ①某些重要化合物的组成部分，如Mg是构成叶绿素的元素，Fe是构成血红素的元素。\n3. ②对于维持细胞和生物体的生命活动有重要作用，如血钙偏低时哺乳动物会抽搐。\n4. ③对维持细胞酸碱平衡非常重要；④维持正常渗透压，即水盐平衡。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条02 细胞中的元素和化合物（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:元素和化合物的相互推断-归纳总结",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-235",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "科学家将纤维素等其他糖类称为人类",
+   "summaryMarkdown": "科学家将纤维素等其他糖类称为人类的“第七类营养素”。",
+   "applicabilityMarkdown": "用于“细胞中的糖类和脂质”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 科学家将纤维素等其他糖类称为人类的“第七类营养素”。\n2. 组成脂质的化学元素主要是C 、H 、O ，有些脂质（磷脂）还含有N 、P 。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条03 细胞中的糖类和脂质（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-236",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "植物脂肪大多数含有不饱和脂肪酸",
+   "summaryMarkdown": "植物脂肪大多数含有不饱和脂肪酸，在室温时呈液态，而大多数动物脂肪含有饱和脂肪酸，室温时呈固态。",
+   "applicabilityMarkdown": "用于“细胞中的糖类和脂质”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 植物脂肪大多数含有不饱和脂肪酸，在室温时呈液态，而大多数动物脂肪含有饱和脂肪酸，室温时呈固态。\n2. 脂肪的功能有：①主要储能物质②绝热体③保温④缓冲和减压\n3. 磷脂的功能是：组成生物膜的重要成分\n4. 胆固醇的功能是：①动物细胞膜的重要成分②参与血液中脂质的运输",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条03 细胞中的糖类和脂质（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-237",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "性激素的功能",
+   "summaryMarkdown": "性激素的功能是：①促进生殖器官的发育以及生殖细胞的形成。",
+   "applicabilityMarkdown": "用于“细胞中的糖类和脂质”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 性激素的功能是：①促进生殖器官的发育以及生殖细胞的形成\n2. ②维持第二性征。\n3. 维生素D的功能：促进人和动物对钙和磷的吸收\n4. 脂质分子中氧的含量远远低于糖类，而氢的含量更高",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条03 细胞中的糖类和脂质（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-protein-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "蛋白质是生命活动的主要承担者",
+   "summaryMarkdown": "蛋白质是生命活动的主要承担者。",
+   "applicabilityMarkdown": "用于“蛋白质和核酸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 蛋白质是生命活动的主要承担者。\n2. 其功能包括：（1）构成细胞和生物体结构的重要物质，如肌肉、羽毛、头发；\n3. （2）催化作用，如酶；\n4. （3）运输功能，如血红蛋白；（4）信息传递和调节作用，如胰岛素；（5）免疫防御作用，如抗体；（ “狗催运面条”）。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条04 蛋白质和核酸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:环境因素参与调节植物的生命活动",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-protein-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "蛋白质种类繁多的原因是组成蛋白质",
+   "summaryMarkdown": "蛋白质种类繁多的原因是组成蛋白质的氨基酸的种类、数目和排列顺序不同以及肽链的盘曲、折叠方式及其形成的空间结构千差万别。",
+   "applicabilityMarkdown": "用于“蛋白质和核酸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 蛋白质种类繁多的原因是组成蛋白质的氨基酸的种类、数目和排列顺序不同以及肽链的盘曲、折叠方式及其形成的空间结构千差万别。\n2. 蛋白质经高温后变性失活，因为高温破坏了蛋白质的空间结构，但未破坏肽键，仍能与双缩脲试剂发生紫色反应。\n3. 核酸包括两大类：一类是脱氧核糖核酸，简称DNA；\n4. 另一类是核糖核酸，简称RNA。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条04 蛋白质和核酸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-protein-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "蛋白质的盐析、变性和水解",
+   "summaryMarkdown": "蛋白质的盐析、变性和水解。",
+   "applicabilityMarkdown": "用于“蛋白质和核酸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 蛋白质的盐析、变性和水解\n2. ①盐析：是由溶解度的变化引起的，蛋白质的空间结构不变。\n3. ②变性：是由于高温、过酸、过碱、重金属盐等因素导致蛋白质的空间结构发生不可逆的变化，肽链变得松散，蛋白质丧失了生物活性，但是肽键未被破坏，仍可与双缩脲试剂发生紫色反应。\n4. ③水解：在蛋白酶的作用下，肽键断裂，蛋白质分解为短肽和氨基酸，水解和脱水缩合的过程相反。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条04 蛋白质和核酸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质的功能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-membrane-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞膜的功能",
+   "summaryMarkdown": "细胞膜的功能有： ①将细胞与外界环境分隔开。",
+   "applicabilityMarkdown": "用于“细胞膜和细胞核”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞膜的功能有： ①将细胞与外界环境分隔开；\n2. ②控制物质进出细胞；\n3. ③进行细胞间的信息交流。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条05 细胞膜和细胞核（课前5分钟背默）2027年（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜的结构和功能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-membrane-002",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞间信息交流方式主要",
+   "summaryMarkdown": "细胞间信息交流方式主要有：①通过信号分子的传递，如激素、递质。",
+   "applicabilityMarkdown": "用于“细胞膜和细胞核”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞间信息交流方式主要有：①通过信号分子的传递，如激素、递质；\n2. ②通过细胞接触交流，如精卵细胞的识别和结合；\n3. ③通过细胞通道交流，如高等植物细胞间的胞间连丝。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条05 细胞膜和细胞核（课前5分钟背默）2027年（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对细胞膜的探究历程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-membrane-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞膜的结构特性是具有流动性",
+   "summaryMarkdown": "细胞膜的结构特性是具有流动性，功能特性是具有选择透过性。",
+   "applicabilityMarkdown": "用于“细胞膜和细胞核”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞膜的结构特性是具有流动性，功能特性是具有选择透过性。\n2. 细胞膜、细胞器膜和核膜等膜结构共同构成细胞的生物膜系统。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条05 细胞膜和细胞核（课前5分钟背默）2027年（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜的结构和功能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-membrane-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "许多化学反应在生物膜上进行",
+   "summaryMarkdown": "许多化学反应在生物膜上进行，广阔的膜面积为多种酶提供附着位点。",
+   "applicabilityMarkdown": "用于“细胞膜和细胞核”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 许多化学反应在生物膜上进行，广阔的膜面积为多种酶提供附着位点。\n2. 细胞内的生物膜把各种细胞器分隔开，使细胞内能够同时进行多种化学反应，而不会互相干扰，保证了细胞生命活动高效、有序地进行。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条05 细胞膜和细胞核（课前5分钟背默）2027年（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-membrane-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞核的结构",
+   "summaryMarkdown": "细胞核的结构：①核膜：双层膜，作用是把核内物质与细胞质分开。",
+   "applicabilityMarkdown": "用于“细胞膜和细胞核”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞核的结构：①核膜：双层膜，作用是把核内物质与细胞质分开。\n2. ②染色质：主要由DNA和蛋白质组成，DNA是遗传信息的载体。\n3. ③核仁：与某种RNA的合成以及核糖体的形成有关。\n4. ④核孔：作用是实现核质之间频繁的物质交换和信息交流。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条05 细胞膜和细胞核（课前5分钟背默）2027年（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞核的结构和功能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-membrane-006",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "染色体和染色质是同一种物质在",
+   "summaryMarkdown": "染色体和染色质是同一种物质在细胞不同时期的两种存在状态。",
+   "applicabilityMarkdown": "用于“细胞膜和细胞核”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 染色体和染色质是同一种物质在细胞不同时期的两种存在状态。\n2. 建构模型：模型的形式有物理模型、数学模型、概念模型等。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条05 细胞膜和细胞核（课前5分钟背默）2027年（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:用高倍显微镜观察叶绿体和细胞质的流动",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-organelle-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "高等植物细胞区别于动物细胞的结构",
+   "summaryMarkdown": "高等植物细胞区别于动物细胞的结构：细胞壁、叶绿体、液泡。",
+   "applicabilityMarkdown": "用于“细胞器和生物膜系统”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 高等植物细胞区别于动物细胞的结构：细胞壁、叶绿体、液泡；\n2. 动物、低等植物细胞区别于高等植物细胞的结构：中心体\n3. 原核细胞与真核细胞共有的细胞器：核糖体",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条06 细胞器和生物膜系统（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-organelle-002",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞内具有双层膜的结构",
+   "summaryMarkdown": "细胞内具有双层膜的结构：细胞核（核膜） 、线粒体、叶绿体。",
+   "applicabilityMarkdown": "用于“细胞器和生物膜系统”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞内具有双层膜的结构：细胞核（核膜） 、线粒体、叶绿体；\n2. 具有单层膜的结构：细胞膜、内质网、高尔基体、液泡、溶酶体；\n3. 不具有膜结构的细胞器：核糖体、中心体",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条06 细胞器和生物膜系统（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-organelle-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "植物细胞中含有色素的细胞器",
+   "summaryMarkdown": "植物细胞中含有色素的细胞器：液泡、叶绿体。",
+   "applicabilityMarkdown": "用于“细胞器和生物膜系统”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 植物细胞中含有色素的细胞器：液泡、叶绿体\n2. 细胞内含有DNA的结构：细胞核、线粒体、叶绿体；\n3. 含有RNA的结构：细胞核、线粒体、叶绿体、核糖体\n4. 细胞内与能量转换有关的结构：叶绿体、线粒体、细胞质基质",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条06 细胞器和生物膜系统（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-organelle-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "能形成“囊泡”的细胞结构",
+   "summaryMarkdown": "能形成“囊泡”的细胞结构：内质网、高尔基体、细胞膜。",
+   "applicabilityMarkdown": "用于“细胞器和生物膜系统”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 能形成“囊泡”的细胞结构：内质网、高尔基体、细胞膜\n2. 粗面内质网与分泌蛋白的合成、加工、运输有关，光面内质网与糖类代谢、脂质的合成于分泌等有关。\n3. 高尔基体在动物细胞内与溶酶体的形成有关，在植物细胞内与细胞壁的形成有关。\n4. 核糖体有0层膜，组成成分是RNA和蛋白质。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条06 细胞器和生物膜系统（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-organelle-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "真核细胞中有维持细胞形态",
+   "summaryMarkdown": "真核细胞中有维持细胞形态、锚定并支撑着许多细胞器的细胞骨架，其是由蛋白质纤维组成的网架结构。",
+   "applicabilityMarkdown": "用于“细胞器和生物膜系统”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 真核细胞中有维持细胞形态、锚定并支撑着许多细胞器的细胞骨架，其是由蛋白质纤维组成的网架结构。\n2. 用物理性质特殊的同位素来标记化学反应中原子的去向，称为同位素标记法。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条06 细胞器和生物膜系统（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-membrane-transport-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "当细胞液浓度小于外界溶液浓度时",
+   "summaryMarkdown": "当细胞液浓度小于外界溶液浓度时。",
+   "applicabilityMarkdown": "用于“物质运输”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 当细胞液浓度小于外界溶液浓度时，细胞失水，由于原生质层的伸缩性大于细胞壁，当细胞不断失水时，植物细胞就发生质壁分离现象，此时若将细胞放入清水中，细胞液浓度大于外界溶液，细胞吸水，发生质壁分离复原现象。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条07 物质运输（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-membrane-transport-002",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "用低倍显微镜观察紫色洋葱鳞片叶",
+   "summaryMarkdown": "用低倍显微镜观察紫色洋葱鳞片叶的外表皮细胞中紫色的中央液泡的大小。",
+   "applicabilityMarkdown": "用于“物质运输”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 用低倍显微镜观察紫色洋葱鳞片叶的外表皮细胞中紫色的中央液泡的大小\n2. 小分子、离子的跨膜运输方式（体现了膜的选择透过性）",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条07 物质运输（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-使用高倍显微镜观察几种细胞",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-membrane-transport-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "大分子、颗粒性物质的跨膜运输方式",
+   "summaryMarkdown": "大分子、颗粒性物质的跨膜运输方式（体现了膜的流动性）。",
+   "applicabilityMarkdown": "用于“物质运输”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 大分子、颗粒性物质的跨膜运输方式（体现了膜的流动性）\n2. （1）胞吞：消耗能量，如变形虫摄食。\n3. （2）胞吐：消耗能量，如抗体、蛋白质类激素等分泌蛋白的分泌。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条07 物质运输（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物大分子以碳链为骨架",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-membrane-transport-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "物质通过协助扩散进出细胞时需要借助膜",
+   "summaryMarkdown": "物质通过协助扩散进出细胞时需要借助膜上的转运蛋白，可以分为载体蛋白和通道蛋白两种类型。",
+   "applicabilityMarkdown": "用于“物质运输”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 物质通过协助扩散进出细胞时需要借助膜上的转运蛋白，可以分为载体蛋白和通道蛋白两种类型；\n2. 主动运输需要载体蛋白的协助。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条07 物质运输（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协助扩散",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-membrane-transport-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "载体蛋白的特性",
+   "summaryMarkdown": "载体蛋白的特性： ①特异性：一种载体蛋白通常只与一种或一类离子或分子结合，不同细胞膜上载体蛋白的种类不同。",
+   "applicabilityMarkdown": "用于“物质运输”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 载体蛋白的特性： ①特异性：一种载体蛋白通常只与一种或一类离子或分子结合，不同细胞膜上载体蛋白的种类不同。\n2. ②饱和性：当细胞膜上的载体蛋白全部参与物质运输后，细胞运输该物质的速率达最大值。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条07 物质运输（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分泌蛋白的合成和运输",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-membrane-transport-006",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "同一种物质进出不同细胞",
+   "summaryMarkdown": "同一种物质进出不同细胞的运输方式可能不同，如红细胞吸收葡萄糖的方式是协助扩散，小肠上皮细胞吸收葡萄糖的方式是主动运输。",
+   "applicabilityMarkdown": "用于“物质运输”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 同一种物质进出不同细胞的运输方式可能不同，如红细胞吸收葡萄糖的方式是协助扩散，小肠上皮细胞吸收葡萄糖的方式是主动运输。\n2. Na+ 、K+等无机盐离子一般以主动运输的方式进出细胞，但也可通过协助扩散进出细胞。\n3. RNA和蛋白质等大分子物质通过核孔进出细胞核，而不是通过胞吞、胞吐作用。\n4. 胞吞形成的囊泡，在细胞内可以被溶酶体降解。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条07 物质运输（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞中每时每刻都进行着许多化学反应",
+   "summaryMarkdown": "细胞中每时每刻都进行着许多化学反应，统称为细胞代谢，它是细胞生命活动的基础，其进行的主要场所是细胞质。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞中每时每刻都进行着许多化学反应，统称为细胞代谢，它是细胞生命活动的基础，其进行的主要场所是细胞质。\n2. 实验过程中人为改变的变量是自变量，因它改变而变化的变量是因变量，与实验目的无关，但会影响实验结果的变量是无关变量。\n3. 加热能促进H2O2分解是因为提供了能量。\n4. Fe3＋ 、H2O2酶能促进H2O2分解是因为降低了化学反应的活化能。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的水",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-002",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酶是活细胞产生的具有催化作用的有机物",
+   "summaryMarkdown": "活化能：分子从常态转变为容易发生化学反应的活跃状态所需要的能量。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 活化能：分子从常态转变为容易发生化学反应的活跃状态所需要的能量。\n2. 酶是活细胞产生的具有催化作用的有机物。\n3. 绝大多数酶的化学本质是蛋白质，少数是RNA。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酶的合成场所主要在核糖体",
+   "summaryMarkdown": "酶的合成场所主要在核糖体，还有细胞核、线粒体、叶绿体。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 酶的合成场所主要在核糖体，还有细胞核、线粒体、叶绿体。\n2. 酶的作用场所是细胞内、细胞外、生物体外。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的合成和利用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酶的特性",
+   "summaryMarkdown": "酶的特性：①高效性：同无机催化剂相比，酶降低活化能的作用更显著，因而催化效率更高。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 酶的特性：①高效性：同无机催化剂相比，酶降低活化能的作用更显著，因而催化效率更高。\n2. ②专一性：一种酶只能催化一种或一类化学反应。能催化淀粉水解的酶是淀粉酶，能催化植物细胞壁水解的酶是纤维素酶和果胶酶。③作用条件较温和：酶需要适宜的温度和pH。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的特性",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酶在反应过程中结构改变",
+   "summaryMarkdown": "酶在反应过程中结构改变，反应前后结构不变，化学性质不变，不提供能量，自身不会被消耗。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 酶在反应过程中结构改变，反应前后结构不变，化学性质不变，不提供能量，自身不会被消耗。\n2. 酶催化特定化学反应的能力称为酶活性。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种子萌发过程中细胞呼吸的变化分析",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-007",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "对于动物、人、真菌和大多数细菌来说",
+   "summaryMarkdown": "对于动物、人、真菌和大多数细菌来说，产生ATP的生理过程是呼吸作用。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 对于动物、人、真菌和大多数细菌来说，产生ATP的生理过程是呼吸作用；\n2. 对于绿色植物来说，产生ATP的生理过程是呼吸作用和光合作用。\n3. 以下细胞产生ATP的场所： ①夜晚12点的叶肉细胞：细胞质基质、线粒体②光照下的叶肉细胞：细胞质基质、线粒体、叶绿体③蛔虫体细胞：细胞质基质\n4. ATP在细胞中含量少，转化迅速，含量处于动态平衡。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": []
+  },
+  {
+   "slug": "bio-mo-enzyme-008",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "细胞内的吸能反应一般与ATP",
+   "summaryMarkdown": "细胞内的吸能反应一般与ATP的水解相联系，由其提供能量。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞内的吸能反应一般与ATP的水解相联系，由其提供能量；\n2. 放能反应一般与ATP的合成相联系，释放的能量储存在ATP中。\n3. ATP的组成元素是C 、H 、O、N 、P，生物体中具有相同组成元素的物质还有DNA 、RNA、磷脂等。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:动物细胞的吸水和失水",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-enzyme-009",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "ATP去掉1个磷酸基团后简称ADP",
+   "summaryMarkdown": "ATP去掉1个磷酸基团后简称ADP。",
+   "applicabilityMarkdown": "用于“酶和ATP”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. ATP去掉1个磷酸基团后简称ADP；\n2. ATP去掉2个磷酸基团后简称AMP，其中文名称为腺苷一磷酸或腺嘌呤核糖核苷酸，是组成RNA的基本单位之一。\n3. ATP与ADP的相互转化反应式不属于可逆反应，其中物质可逆，能量不可逆，酶不同，场所不同。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp与adp的转化",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-respiration-001",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "检测CO2",
+   "summaryMarkdown": "检测CO2： CO2可使澄清石灰水变浑浊，或使溴麝香草酚蓝溶液由蓝变绿再变黄。",
+   "applicabilityMarkdown": "用于“细胞呼吸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 检测CO2： CO2可使澄清石灰水变浑浊，或使溴麝香草酚蓝溶液由蓝变绿再变黄。\n2. 根据石灰水的混浊程度或溴麝香草酚蓝溶液变黄的时间长短，可以判断CO2的多少。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条09 细胞呼吸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究酵母菌细胞呼吸的方式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-respiration-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "无氧呼吸的两个阶段都在细胞质基质中",
+   "summaryMarkdown": "无氧呼吸的两个阶段都在细胞质基质中进行。",
+   "applicabilityMarkdown": "用于“细胞呼吸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 无氧呼吸的两个阶段都在细胞质基质中进行。\n2. 无氧呼吸第一阶段与有氧呼吸完全相同，都产生了共同的中间产物丙酮酸；\n3. 第二阶段，丙酮酸在不同酶的催化下生成酒精和CO2或乳酸。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条09 细胞呼吸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究酵母菌细胞呼吸的方式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-respiration-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "无氧呼吸在第一阶段释放出少量能量",
+   "summaryMarkdown": "无氧呼吸在第一阶段释放出少量能量，合成少量ATP，葡萄糖分子中的大部分能量则存留在酒精或乳酸中。",
+   "applicabilityMarkdown": "用于“细胞呼吸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 无氧呼吸在第一阶段释放出少量能量，合成少量ATP，葡萄糖分子中的大部分能量则存留在酒精或乳酸中。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条09 细胞呼吸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-respiration-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "无氧呼吸总反应式",
+   "summaryMarkdown": "无氧呼吸总反应式。",
+   "applicabilityMarkdown": "用于“细胞呼吸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 无氧呼吸总反应式\n2. ①酵母菌、多数植物等： 。\n3. ②高等动物、乳酸菌、马铃薯块茎等： 。\n4. 注：不同生物无氧呼吸的产物不同，是因为酶的种类不同。无氧呼吸产生的[H]实质是NADH（还原型辅酶Ⅰ ） 。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条09 细胞呼吸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究酵母菌细胞呼吸的方式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-cell-respiration-006",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "细胞呼吸原理的运用",
+   "summaryMarkdown": "细胞呼吸原理的运用。",
+   "applicabilityMarkdown": "用于“细胞呼吸”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 细胞呼吸原理的运用\n2. （1）O2浓度\n3. ①用透气的消毒纱布或“创可贴”包扎伤口，抑制破伤风杆菌等厌氧细菌的无氧呼吸。\n4. ②松土、稻田定期排水，促进根系的有氧呼吸，防止根系无氧呼吸而引起酒精中毒；③酿酒时，前期通入无菌空气让酵母菌进行有氧呼吸，大量繁殖；后期封闭发酵罐，让酵母菌进行无氧呼吸，产生酒精；④提倡慢跑等有氧运动，避免肌细胞无氧呼吸产生大量乳酸，而使肌肉酸胀乏力；（2） CO2浓度；食品真空包装、充加CO2能抑制细胞呼吸，延长保存期；（3）温度。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条09 细胞呼吸（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸原理的应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-002",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "豌豆做遗传学实验材料的优点",
+   "summaryMarkdown": "豌豆做遗传学实验材料的优点： ①豌豆是严格的自花传粉、闭花受粉植物，自然状态下一般是纯种。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 豌豆做遗传学实验材料的优点： ①豌豆是严格的自花传粉、闭花受粉植物，自然状态下一般是纯种。\n2. ②豌豆有多对易于区分、稳定遗传的相对性状。\n3. ③子代数量多，统计结果更可靠。\n4. ④豌豆花大，易于操作。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:豌豆用作遗传实验的材料",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "在杂种后代中同时出现显性性状和",
+   "summaryMarkdown": "在杂种后代中同时出现显性性状和隐性性状的现象，叫作性状分离。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 在杂种后代中同时出现显性性状和隐性性状的现象，叫作性状分离。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-004",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "人工异花传粉步骤",
+   "summaryMarkdown": "人工异花传粉步骤：去雄→套袋→人工传粉→套袋。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 人工异花传粉步骤：去雄→套袋→人工传粉→套袋。\n2. 去雄是指除去母本未成熟花的全部雄蕊，防止自花传粉，应在开花前（花蕾期）进行。\n3. 套袋的目的是防止外来花粉干扰。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "孟德尔对分离现象提出的假说",
+   "summaryMarkdown": "孟德尔对分离现象提出的假说： ①生物性状是由遗传因子决定的。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 孟德尔对分离现象提出的假说： ①生物性状是由遗传因子决定的。\n2. ②在体细胞中，遗传因子是成对存在的。\n3. ③形成生殖细胞时，成对的遗传因子彼此分离，进入不同的配子。\n4. ④受精时，雌雄配子的结合是随机的。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-006",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "孟德尔发现遗传定律用的研究方法",
+   "summaryMarkdown": "孟德尔发现遗传定律用的研究方法是假说—演绎法。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 孟德尔发现遗传定律用的研究方法是假说—演绎法。\n2. 表型：生物个体表现出来的性状，如豌豆的高茎、矮茎。\n3. 基因型：与表型有关的基因组成，如高茎豌豆基因型为DD或Dd，矮茎豌豆基因型为dd。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-007",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "表型与基因型的关系",
+   "summaryMarkdown": "表型与基因型的关系：基因型决定表型。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 表型与基因型的关系：基因型决定表型。\n2. 基因型相同，表型不一定相同（受环境影响）；\n3. 表型相同，基因型不一定相同。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因型-表型的推断",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-008",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "等位基因",
+   "summaryMarkdown": "等位基因：控制相对性状的基因，如D和d。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 等位基因：控制相对性状的基因，如D和d。\n2. 杂合子不能稳定遗传，自交后代会出现性状分离，如Dd×Dd。\n3. 纯合子能稳定遗传，自交后代不会出现性状分离，如DD×DD 、dd×dd。\n4. 对分离现象解释的验证方法：测交，即用F 1（待测个体）与隐性纯合子杂交。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-010",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "分离定律的适用范围",
+   "summaryMarkdown": "分离定律的适用范围：真核生物的性状遗传。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 分离定律的适用范围：真核生物的性状遗传。\n2. ②有性生殖生物的性状遗传。\n3. ③细胞核（细胞结构）遗传。\n4. ④一对相对性状的遗传。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律的概率计算-含自交与自由交配",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-011",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "假说-演绎法实验程序",
+   "summaryMarkdown": "假说-演绎法实验程序： （观察现象、）提出问题→ （分析问题、）提出假说→演绎推理→实验验证→得出结论。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 假说-演绎法实验程序： （观察现象、）提出问题→ （分析问题、）提出假说→演绎推理→实验验证→得出结论",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-segregation-law-012",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "判断显隐性的方法",
+   "summaryMarkdown": "判断显隐性的方法。",
+   "applicabilityMarkdown": "用于“分离定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 判断显隐性的方法\n2. ①自交法：相同性状的个体杂交，子代中新出现的性状为隐性。\n3. ②杂交法：相对性状的个体杂交，子代只表现一个性状，这个性状为显性。\n4. ③杂交与自交配合：如， P：红花×白花→F 1：白花、红花，若F 1白花自交全为白花，则白花对红花为隐性。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条15 分离定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-independent-assortment-002",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "进行有性生殖的真核生物的遗传",
+   "summaryMarkdown": "自由组合定律适用范围：。",
+   "applicabilityMarkdown": "用于“自由组合定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 自由组合定律适用范围：\n2. ①进行有性生殖的真核生物的遗传；\n3. ②适用于细胞核遗传，不适用于细胞质遗传；\n4. ③两对或两对以上等位基因独立遗传。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条16 自由组合定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自由组合定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-independent-assortment-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "1909年",
+   "summaryMarkdown": "1909年，丹麦生物学家约翰逊把“遗传因子”叫作基因，并且提出了表型（也叫性状）和基因型的概念。",
+   "applicabilityMarkdown": "用于“自由组合定律”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 1909年，丹麦生物学家约翰逊把“遗传因子”叫作基因，并且提出了表型（也叫性状）和基因型的概念。\n2. 表型指生物个体表现出来的性状，如豌豆的高茎和矮茎；\n3. 与表型有关的基因组成叫作基因型，如高茎豌豆的基因型是DD或Dd，矮茎豌豆的基因型是dd，控制相对性状的基因，叫作等位基因，如D和d。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条16 自由组合定律（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自由组合定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-sex-linked-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "萨顿的推论",
+   "summaryMarkdown": "萨顿的推论：基因是由染色体携带着从亲代传递给下一代的，即基因在染色体上。",
+   "applicabilityMarkdown": "用于“伴性遗传和人类遗传病”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 萨顿的推论：基因是由染色体携带着从亲代传递给下一代的，即基因在染色体上。\n2. 依据是基因和染色体行为存在着明显的平行关系。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条17 伴性遗传和人类遗传病（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-sex-linked-002",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "摩尔根通过果蝇杂交实验证明了萨顿",
+   "summaryMarkdown": "摩尔根通过果蝇杂交实验证明了萨顿的推论，实验方法是假说—演绎法。",
+   "applicabilityMarkdown": "用于“伴性遗传和人类遗传病”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 摩尔根通过果蝇杂交实验证明了萨顿的推论，实验方法是假说—演绎法。\n2. ①有多对易于区分的相对性状；\n3. ②子代数目多，统计结果更可靠；\n4. ③染色体数目少，易观察；④易饲养，成本低。 （前两点适用于所有遗传实验材料）。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条17 伴性遗传和人类遗传病（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-sex-linked-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "伴性遗传",
+   "summaryMarkdown": "伴性遗传：由性染色体上的基因控制的、与性别相关联的性状遗传。",
+   "applicabilityMarkdown": "用于“伴性遗传和人类遗传病”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 伴性遗传：由性染色体上的基因控制的、与性别相关联的性状遗传。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条17 伴性遗传和人类遗传病（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-sex-linked-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "人类红绿色盲是伴X染色体隐性遗传病",
+   "summaryMarkdown": "人类红绿色盲是伴X染色体隐性遗传病。",
+   "applicabilityMarkdown": "用于“伴性遗传和人类遗传病”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 人类红绿色盲是伴X染色体隐性遗传病。\n2. ①患者中男性多于女性；\n3. ②一般是隔代交叉遗传；\n4. ③女患者的父亲和儿子必患。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条17 伴性遗传和人类遗传病（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-sex-linked-005",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "抗维生素D佝偻病是伴X染色体显性遗传",
+   "summaryMarkdown": "抗维生素D佝偻病是伴X染色体显性遗传病。",
+   "applicabilityMarkdown": "用于“伴性遗传和人类遗传病”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 抗维生素D佝偻病是伴X染色体显性遗传病。\n2. ①患者中女性多于男性；\n3. ②一般是世代连续遗传；\n4. ③男患者的母亲和女儿必患。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条17 伴性遗传和人类遗传病（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-mo-sex-linked-006",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "通过遗传咨询和产前诊断等手段对",
+   "summaryMarkdown": "通过遗传咨询和产前诊断等手段对遗传病进行检测和预防，后者包括羊水检查、 B超检查、孕妇血细胞检查以及基因诊断等。",
+   "applicabilityMarkdown": "用于“伴性遗传和人类遗传病”的课前背默检查与选择题、填空题作答。",
+   "contentMarkdown": "1. 通过遗传咨询和产前诊断等手段对遗传病进行检测和预防，后者包括羊水检查、 B超检查、孕妇血细胞检查以及基因诊断等。\n2. 近亲婚配可增加隐性遗传病的发病风险。",
+   "boundaryMarkdown": "该条为背默核心结论，具体数值与反应式书写以教材原文为准。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-misc:biology",
+   "sourceLocator": "生物《默写小纸条17 伴性遗传和人类遗传病（课前5分钟背默）（教师版）》",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-textbook-cloning-human-ethics",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生殖性克隆人：中国政府的态度——禁止生殖性克隆人",
+   "summaryMarkdown": "中国政府的立场：禁止生殖性克隆人（克隆人严重违反人类伦理道德），不反对、支持治疗性克隆（如利用胚胎干细胞治疗疾病），且坚持‘已有的胚胎干细胞研究不能超过14天’等伦理约束。",
+   "applicabilityMarkdown": "生物技术与伦理（选必3）论述题。",
+   "contentMarkdown": "1. 生殖性克隆：通过克隆技术产生独立生存的克隆人个体——中国明确禁止。\n2. 理由：①严重违反人类伦理道德；②冲击现有婚姻、家庭和两性关系等伦理观念；③克隆人的心理和社会地位不明确；④克隆技术尚不成熟，可能生出有严重生理缺陷的孩子。\n3. 治疗性克隆：利用克隆技术获得胚胎干细胞用于治疗疾病——中国不反对、有条件支持。",
+   "boundaryMarkdown": "区分‘生殖性克隆’与‘治疗性克隆’是答题关键；伦理争论与科学技术可行性是两个层面。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-textbook-preserve:biology",
+   "sourceLocator": "人教版生物学选择性必修3 第四章第2节 关注生殖性克隆人",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": []
+  },
+  {
+   "slug": "bio-textbook-biological-weapons-ban",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "禁止生物武器：公约签署国承诺不发展、不生产、不储存生物武器",
+   "summaryMarkdown": "生物武器是指利用致病菌、病毒、生化毒剂等制成的大规模杀伤性武器；1972 年《禁止生物武器公约》签署国承诺在任何情况下不发展、不生产、不储存生物武器，并销毁现有储备。",
+   "applicabilityMarkdown": "生物技术与安全伦理（选必3）考点。",
+   "contentMarkdown": "1. 生物武器种类：致病菌（鼠疫杆菌、炭疽杆菌）、病毒（天花病毒）、生化毒剂（肉毒杆菌毒素）及经基因重组改造的致病菌。\n2. 特点：传染性强、传播途径广、成本低、危害持续时间长、主要伤害平民。\n3. 公约：1972 年签署《禁止生物武器公约》，中国是缔约国；公约缺乏核查机制是遗留问题。",
+   "boundaryMarkdown": "禁止生物武器是国际共识与法律义务；论述题需答‘种类举例+危害特点+公约立场’三层。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-textbook-preserve:biology",
+   "sourceLocator": "人教版生物学选择性必修3 第四章第3节 禁止生物武器",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": []
+  },
+  {
+   "slug": "bio-textbook-gene-engineering-uses-medicine-agri",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "基因工程的应用领域：医药（胰岛素/疫苗）、农牧业（抗虫转基因作物）、环境保护",
+   "summaryMarkdown": "基因工程应用分三领域：医药（重组人胰岛素、干扰素、乙肝疫苗）、农牧业（抗虫棉、转基因玉米、耐储番茄）、环境保护（分解污染物的转基因菌）。",
+   "applicabilityMarkdown": "基因工程应用实例判断（选必3重点）。",
+   "contentMarkdown": "1. 医药：把人胰岛素基因导入大肠杆菌/酵母菌，工业化生产重组人胰岛素（首个商品化基因工程药物）；还有干扰素、乙肝疫苗、人生长激素。\n2. 农牧业：Bt 毒蛋白基因→抗虫棉；蛋白酶抑制剂基因→抗虫作物；改变花色、延迟成熟（耐储番茄）。\n3. 环境：转基因‘超级菌’分解石油、吸收重金属。",
+   "boundaryMarkdown": "实例与所用基因要配对记忆（Bt 基因→苏云金芽孢杆菌→抗虫棉）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-textbook-preserve:biology",
+   "sourceLocator": "人教版生物学选择性必修3 第三章第3节 基因工程的应用",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因工程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "bio-textbook-gene-frequency-species-formation",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "种群基因组成的变化与物种的形成：基因频率改变→隔离→新物种",
+   "summaryMarkdown": "现代生物进化理论：突变和基因重组提供原材料、自然选择使种群基因频率定向改变、隔离导致物种形成——共同进化形成生物多样性。",
+   "applicabilityMarkdown": "进化与物种形成综合题（必修二重点）。",
+   "contentMarkdown": "1. 种群是生物进化的基本单位；基因频率=某基因占全部等位基因数的比例。\n2. 突变和基因重组→可遗传变异（不定向的原材料）。\n3. 自然选择→基因频率定向改变→生物进化（进化的实质）。\n4. 隔离（地理隔离→生殖隔离）→新物种形成，生殖隔离是新物种形成的标志；共同进化→生物多样性（基因、物种、生态系统多样性）。",
+   "boundaryMarkdown": "地理隔离不一定导致生殖隔离；物种形成的标志是出现生殖隔离，不是地理隔离。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-kb-biology-textbook-preserve:biology",
+   "sourceLocator": "人教版生物学必修2 第六章第3节 种群基因组成的变化与物种的形成",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  }
+ ]
+}

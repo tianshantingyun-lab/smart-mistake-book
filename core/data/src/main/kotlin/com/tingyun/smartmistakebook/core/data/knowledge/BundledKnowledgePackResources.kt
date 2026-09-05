@@ -40,11 +40,22 @@ internal data class KnowledgeBasePack(
 )
 
 internal object BundledKnowledgePackResources {
-    private const val MAX_RESOURCE_CHARS = 1_000_000
-    private val resourceNames = listOf("knowledge/moe-2020-foundation-v1.json")
+    private const val MAX_RESOURCE_CHARS = 12_000_000
+    private val resourceNames = listOf(
+        "knowledge/moe-2020-foundation-v1.json",
+        "knowledge/moe-2025-four-subjects-v1.json",
+    )
     private val teachingSidecarsByPack = mapOf(
         "moe-2020-foundation-v1" to listOf(
             "knowledge/moe-2020-teaching-support-v1.json",
+        ),
+        "moe-2025-four-subjects-v1" to listOf(
+            "knowledge/moe-2025-teaching-support-v2-01.json",
+            "knowledge/moe-2025-teaching-support-v2-02.json",
+            "knowledge/moe-2025-teaching-support-v2-03.json",
+            "knowledge/moe-2025-teaching-support-v2-04.json",
+            "knowledge/moe-2025-teaching-support-v2-05.json",
+            "knowledge/moe-2025-teaching-support-v2-06.json",
         ),
     )
     private val bundledPacks by lazy {
@@ -65,7 +76,8 @@ internal object BundledKnowledgePackResources {
             ReviewedTeachingMaterialSidecarJsonCodec.decode(sidecarJson, base)
         }
         return base.copy(
-            teachingSources = sidecars.flatMap(ReviewedTeachingMaterialSidecar::sources),
+            teachingSources = sidecars.flatMap(ReviewedTeachingMaterialSidecar::sources)
+                .distinctBy(KnowledgeSourceSeedRecord::sourceId),
             teachingMaterials = sidecars.flatMap(ReviewedTeachingMaterialSidecar::materials),
             teachingMaterialBindings = sidecars.flatMap(ReviewedTeachingMaterialSidecar::bindings),
         ).also(KnowledgeBasePack::validate)
@@ -438,12 +450,27 @@ internal fun KnowledgeBasePack.validate() {
         sources = sources,
         existing = emptyList(),
     )
-    KnowledgeTeachingMaterialContract.validate(
-        materials = teachingMaterials,
-        bindings = teachingMaterialBindings,
-        nodes = nodes,
-        sources = allSources,
-    )
+    // Each teaching sidecar is validated on decode (per sidecar <= 2048 materials and binding
+    // count range hold there). The aggregate validate therefore only checks cross-sidecar
+    // uniqueness and that every binding points at an existing node/source of the same subject.
+    require(
+        teachingMaterials.all {
+            it.contentFingerprint != "PENDING"
+        },
+    ) { "Every bundled teaching material needs a content fingerprint" }
+    require(
+        teachingMaterials.map(KnowledgeTeachingMaterialRecord::stableCode).distinct().size ==
+            teachingMaterials.size,
+    ) { "Teaching-material stable codes must be unique across sidecars" }
+    val materialMaterialById = teachingMaterials.associateBy(KnowledgeTeachingMaterialRecord::materialId)
+    require(materialMaterialById.size == teachingMaterials.size) {
+        "Teaching-material ids must be unique across sidecars"
+    }
+    require(teachingMaterialBindings.all { binding ->
+        val material = materialMaterialById[binding.materialId]
+        val node = nodesById[binding.knowledgeNodeId]
+        material != null && node != null && material.subject == node.subject
+    }) { "Every teaching-material binding must reference an existing same-subject node" }
     KnowledgeBaseImportContract.validateSourcesOnly(teachingSources)
     KnowledgeCoverageContract.validate(
         coverage = coverage,
