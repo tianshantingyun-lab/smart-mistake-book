@@ -324,8 +324,8 @@ internal class OpenAiCompatibleModelGateway(
         imageReadPlan: List<ApprovedImageReadPlan>,
     ): List<ApprovedImage> {
         return buildList {
-            // Under ProviderConsented the plans carry byteSize == 0 (resolved at open);
-            // accumulate real sizes and enforce the budget once all are known.
+            // Under ProviderConsented the plans carry no preflight size (resolved at
+            // open); accumulate real sizes and enforce the budget once all are known.
             val consented = execution.permit == ModelExecutionPermit.ProviderConsented
             val consentedSizes = mutableListOf<Long>()
             try {
@@ -334,15 +334,13 @@ internal class OpenAiCompatibleModelGateway(
                         require(asset.mimeType in APPROVED_IMAGE_MIME_TYPES) {
                             "Approved model asset is not a canonical image"
                         }
-                        val actualSize = if (consented) {
-                            consentedSizes += asset.byteSize
-                            asset.byteSize
-                        } else {
-                            if (asset.byteSize != planned.byteSize) {
+                        val actualSize = asset.byteSize
+                        planned.byteSize?.let { preflight ->
+                            if (actualSize != preflight) {
                                 throw SecurityException("Approved model asset size changed after preflight")
                             }
-                            planned.byteSize
                         }
+                        if (consented) consentedSizes += actualSize
                         val bytes = asset.stream.readExactlyBounded(actualSize)
                         add(ApprovedImage(asset.mimeType, bytes))
                     }
@@ -581,19 +579,19 @@ private fun ModelGatewayExecution.requireImageRequestFits(
             )
             ModelRequestPayloadBudget.requirePreparedRequestFits(
                 nonImageJsonUtf8Bytes = nonImageJsonUtf8Bytes,
-                assetByteSizes = imageReadPlan.map(ApprovedImageReadPlan::byteSize),
+                assetByteSizes = imageReadPlan.map { it.byteSize!! },
             )
             return imageReadPlan
         }
         ModelExecutionPermit.ProviderConsented -> {
             // Global-consent read: byte sizes are resolved when each asset is opened
             // (the restricted asset source verifies consent + reads the canonical
-            // record). Return plans without a preflight size; readApprovedImages
-            // enforces the budget from the real opened sizes.
+            // record). Plans carry no preflight size; readApprovedImages enforces
+            // the budget from the real opened sizes.
             check(request.captureEgressConsentGranted) {
                 "Consented image request requires the consent flag"
             }
-            return assetIds.map { assetId -> ApprovedImageReadPlan(assetId = assetId, byteSize = 0L) }
+            return assetIds.map { assetId -> ApprovedImageReadPlan(assetId = assetId, byteSize = null) }
         }
         ModelExecutionPermit.LocalOnly -> throw SecurityException(
             "External model request has no current image grant",
