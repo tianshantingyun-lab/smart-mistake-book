@@ -205,6 +205,101 @@ internal class RoomBatchImportStore(
         return database.batchImportDao().countRetainedSourceUri(sourceUri) > 0
     }
 
+    suspend fun resolveBoundary(
+        command: ResolveBatchImportBoundaryCommand,
+    ): BatchImportJobRecord {
+        require(command.jobId.isNotBlank())
+        require(command.pageIndex >= 0)
+        require(command.primaryDraftId.isNotBlank())
+        require(command.followingDraftId.isNotBlank())
+        require(command.occurredAtEpochMillis >= 0)
+        require(
+            command.resolution == StudyDbValue.BatchImportBoundaryStatus.SAME_QUESTION ||
+                command.resolution == StudyDbValue.BatchImportBoundaryStatus.NEXT_QUESTION ||
+                command.resolution == StudyDbValue.BatchImportBoundaryStatus.KEPT_SEPARATE,
+        )
+        database.withWriteTransaction {
+            val batchDao = database.batchImportDao()
+            val pages = batchDao.readPages(command.jobId)
+            val primaryPage = pages.getOrNull(command.pageIndex)
+                ?: throw ImmutablePayloadConflictException(
+                    "batch_import_boundary",
+                    "${command.jobId}:${command.pageIndex}",
+                )
+            val followingPage = pages.getOrNull(command.pageIndex + 1)
+                ?: throw ImmutablePayloadConflictException(
+                    "batch_import_boundary",
+                    "${command.jobId}:${command.pageIndex}",
+                )
+            if (
+                primaryPage.pageIndex != command.pageIndex ||
+                followingPage.pageIndex != command.pageIndex + 1 ||
+                primaryPage.status != StudyDbValue.BatchImportPageStatus.READY ||
+                followingPage.status != StudyDbValue.BatchImportPageStatus.READY ||
+                primaryPage.boundaryAfterStatus !=
+                StudyDbValue.BatchImportBoundaryStatus.CHECKING ||
+                primaryPage.resultDraftId != command.primaryDraftId ||
+                followingPage.resultDraftId != command.followingDraftId
+            ) {
+                throw ImmutablePayloadConflictException(
+                    "batch_import_boundary",
+                    "${command.jobId}:${command.pageIndex}",
+                )
+            }
+
+            if (
+                command.resolution == StudyDbValue.BatchImportBoundaryStatus.SAME_QUESTION &&
+                command.primaryDraftId != command.followingDraftId
+            ) {
+                val draftDao = database.problemDraftTransactionDao()
+                val primary = draftDao.read(command.primaryDraftId)
+                    ?: throw ImmutablePayloadConflictException(
+                        "problem_draft",
+                        command.primaryDraftId,
+                    )
+                val following = draftDao.read(command.followingDraftId)
+                    ?: throw ImmutablePayloadConflictException(
+                        "problem_draft",
+                        command.followingDraftId,
+                    )
+                if (
+                    database.problemDraftEditWorkspaceDao().read(command.primaryDraftId) != null ||
+                    database.problemDraftEditWorkspaceDao().read(command.followingDraftId) != null
+                ) {
+                    throw ImmutablePayloadConflictException(
+                        "problem_draft_bundle_workspace",
+                        command.primaryDraftId,
+                    )
+                }
+                draftDao.mergeSourceBundle(
+                    primaryDraftId = command.primaryDraftId,
+                    expectedPrimaryRevisionNumber = primary.currentRevision.revisionNumber,
+                    followingDraftId = command.followingDraftId,
+                    expectedFollowingRevisionNumber = following.currentRevision.revisionNumber,
+                    mergedAtEpochMillis = command.occurredAtEpochMillis,
+                )
+                check(
+                    batchDao.remapDraft(
+                        jobId = command.jobId,
+                        followingDraftId = command.followingDraftId,
+                        primaryDraftId = command.primaryDraftId,
+                        updatedAtEpochMillis = command.occurredAtEpochMillis,
+                    ) > 0,
+                ) { "Merged batch draft was not referenced by its batch" }
+            }
+            check(
+                batchDao.resolveBoundary(
+                    jobId = command.jobId,
+                    pageIndex = command.pageIndex,
+                    resolution = command.resolution,
+                    updatedAtEpochMillis = command.occurredAtEpochMillis,
+                ) == 1,
+            ) { "Claimed batch boundary could not be resolved" }
+            batchDao.touchJob(command.jobId, command.occurredAtEpochMillis)
+        }
+        return checkNotNull(read(command.jobId))
+    }
+
     private suspend fun updatePageAndTouch(
         jobId: String,
         occurredAtEpochMillis: Long,
