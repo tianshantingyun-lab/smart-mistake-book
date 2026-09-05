@@ -128,6 +128,31 @@ class TutorToolPromptInjectionTest {
     }
 
     @Test
+    fun masteryUpdateDeclaredPromptEncodesJudgmentNorms() {
+        val prompt = OpenAiModelTaskAdapters.prompt(
+            respond(toolDeclarations = listOf(TutorToolName.MASTERY_UPDATE)),
+        )
+        // 判断规范（研究 llm-mastery-judgment-regulation §1-§3）：
+        // 证据先行——rationale 必须逐字引用学生原话/行为。
+        assertTrue("应先列证据后判断（引用≥2条）", prompt.contains("逐字引用"))
+        // 防谄媚——"说懂了"是线索非事实，且必须能指出残留疑点。
+        assertTrue("学生口头声称只是线索不是事实", prompt.contains("只是线索不是事实"))
+        assertTrue("POSITIVE 须指出残留疑点/防迎合", prompt.contains("残留疑点"))
+        // 可观察 rubric——MASTERED 需独立做对+解释原理，非单次答对。
+        assertTrue("MASTERED 需独立做对且能解释原理", prompt.contains("独立做对") && prompt.contains("解释原理"))
+    }
+
+    @Test
+    fun judgmentNormsAbsentWithoutMasteryUpdateDeclared() {
+        val prompt = OpenAiModelTaskAdapters.prompt(
+            respond(toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ)),
+        )
+        assertFalse(prompt.contains("只是线索不是事实"))
+        assertFalse(prompt.contains("残留疑点"))
+        assertFalse(prompt.contains("解释原理"))
+    }
+
+    @Test
     fun withoutMasteryUpdateDeclaredNoT6SemanticFieldsInPrompt() {
         val prompt = OpenAiModelTaskAdapters.prompt(
             respond(toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ)),

@@ -438,9 +438,17 @@ internal object OpenAiModelTaskAdapters {
                     "[{\"tool\":\"<工具名>\",\"terms\":[\"<原词>\"],\"rationale\":\"<锚定理由>\"}]}；" +
                     "不需要查询时按正常规则返回最终回答。")
                 if (toolDeclarations.contains(TutorToolName.MASTERY_UPDATE)) {
-                    append("\nMASTERY_UPDATE 必须额外带 direction 与 understanding（见上用途说明）：" +
-                        "例如 {\"tool\":\"MASTERY_UPDATE\",\"terms\":[\"<知识点id>\"],\"rationale\":\"<锚定理由>\"," +
-                        "\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\"}。")
+                    append("\nMASTERY_UPDATE 判断规范（违反即不应申请）：")
+                    append("\n1. 先列证据后判断：rationale 必须逐字引用≥2条学生原话或可观察行为作为判定依据，" +
+                        "无具体证据不得给出 POSITIVE/升级判断。")
+                    append("\n2. 学生口头说\"懂了/会了\"只是线索不是事实，不能单独支撑 POSITIVE/MASTERED。")
+                    append("\n3. 任何 POSITIVE 判断必须同时指出学生仍可能卡住或混淆的地方；" +
+                        "说不出任何残留疑点=你在迎合学生，应降级或放弃申请。")
+                    append("\n4. 档位按可观察行为判：CONFIDENT 需学生无提示独立做对过（能迁移）；" +
+                        "MASTERED 需更进一步——学生独立做对且能用自己的话解释原理、并经间隔回顾仍能答对，" +
+                        "仅一次答对或仅\"跟着做对\"不足以判 MASTERED。")
+                    append("\n调用形如 {\"tool\":\"MASTERY_UPDATE\",\"terms\":[\"<知识点id>\"],\"rationale\":\"<逐字引用的学生原话/行为>\"," +
+                        "\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\",\"confidence\":0.8}。")
                 }
             }
         }
@@ -458,7 +466,8 @@ internal object OpenAiModelTaskAdapters {
             "提交一条学习证据：direction∈{POSITIVE,NEGATIVE}（学生这次是掌握还是卡住）、" +
                 "understanding∈{STRUGGLING,UNCERTAIN,CONFIDENT,MASTERED}（你对学生理解程度的判断）、" +
                 "terms=[知识点id]（须是当前题真实绑定的知识点）、confidence∈[0,1]（你判断的置信度）。" +
-                "只在你从对话中有确切依据判断学生理解/卡住时才申请；闲聊或泛泛而谈不要申请。"
+                "判断必须基于学生在本对话中表现出的可观察行为，不得凭学生口头声称或你的整体印象；" +
+                "学生说\"我懂了\"不算掌握证据，只能当作待验证的线索。"
     }
 
     private fun visualProgramPromptRules(): String = """
