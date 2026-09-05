@@ -278,7 +278,7 @@ class RoomModelTaskRepository internal constructor(
                             errorKind = "not_authorized",
                         )
                     } else {
-                        toolRunner.run(call, toolContext(roundRequest.input))
+                        toolRunner.run(call, toolContext(roundRequest.input, roundRequest.requestId))
                     }
                 }
                 toolRoundResults = toolRoundResults + TutorToolRoundResult(
@@ -659,7 +659,7 @@ class RoomModelTaskRepository internal constructor(
     }
 
 
-    private fun toolContext(input: ModelTaskInput): RoomTutorToolRunner.Context =
+    private fun toolContext(input: ModelTaskInput, requestId: String): RoomTutorToolRunner.Context =
         RoomTutorToolRunner.Context(
             subject = (input as? TutorRespondInput)?.subject,
             // 会话锚：讲题会话的 conversationId 由 sessionId 确定性推导
@@ -667,6 +667,9 @@ class RoomModelTaskRepository internal constructor(
             // 供 MASTERY_UPDATE 的冷却/配额/审计按会话粒度工作。
             conversationId = (input as? TutorRespondInput)?.sessionId
                 ?.let { "tutor-conv:captured:$it" },
+            // 幂等命名空间：同一 model-task request 的重试/多轮共享同一 evidenceId 命名空间，
+            // 让 MASTERY_UPDATE 的 evidence_id 确定性派生（重试不重复落库）。
+            evidenceIdNamespace = requestId,
         )
 }
 

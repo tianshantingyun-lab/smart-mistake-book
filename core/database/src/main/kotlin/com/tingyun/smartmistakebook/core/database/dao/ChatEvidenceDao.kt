@@ -23,7 +23,13 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 internal abstract class ChatEvidenceDao {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    /**
+     * IGNORE (not ABORT): the evidence_id is a deterministic idempotency key —
+     * a retried write of the same evidence (same request + tool + KC) must
+     * silently no-op instead of failing the whole transaction on a PK clash.
+     * Id derivation guarantees same id ⇒ same semantics.
+     */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertAll(entries: List<LearnerChatEvidenceEntity>)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)

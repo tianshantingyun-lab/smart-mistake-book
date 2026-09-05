@@ -13,6 +13,21 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
 /**
+ * Deterministic evidence id for a MASTERY_UPDATE write: the same
+ * (namespace = model-task requestId, tool, knowledge node) always maps to the
+ * same id, so a retried write is idempotent (Room IGNORE no-ops the second
+ * insert). Null namespace (direct/test callers) falls back to a unique but
+ * non-idempotent nanoTime id.
+ */
+internal fun masteryUpdateEvidenceId(
+    namespace: String?,
+    tool: TutorToolName,
+    knowledgeNodeId: String,
+): String = namespace
+    ?.let { "chat-ev:$it:${tool.name}:$knowledgeNodeId" }
+    ?: "chat-ev-${System.nanoTime()}"
+
+/**
  * Executes locally authorized read tools for the tutor tool loop
  * (spec model-intent-routing §2/§4). Every outcome is a capped markdown
  * digest — the model never sees raw rows, and failures become error
@@ -28,6 +43,13 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         val subject: String?,
         val learnerId: String = "learner:local",
         val conversationId: String? = null,
+        /**
+         * Namespace for deterministic evidence ids (the model-task requestId).
+         * Null keeps the legacy nanoTime fallback for direct/test callers;
+         * the tool loop always supplies it so a retried MASTERY_UPDATE is
+         * idempotent instead of appending duplicate evidence.
+         */
+        val evidenceIdNamespace: String? = null,
         /**
          * Real-time attention factor for the current tutoring session
          * (research tutor-evidence-gate §2): [MasteryWriteGate] rejects a
@@ -175,6 +197,13 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         val understanding = call.understanding
         val knowledgeNodeId = call.terms.firstOrNull().orEmpty()
         val now = System.currentTimeMillis()
+        // 幂等 evidence_id：同 request 命名空间内同工具+知识点映射同 id——
+        // 重试不重复落库（Room IGNORE 兜底，见 masteryUpdateEvidenceId）。
+        val evidenceId = masteryUpdateEvidenceId(
+            namespace = context.evidenceIdNamespace,
+            tool = call.tool,
+            knowledgeNodeId = knowledgeNodeId,
+        )
         if (direction == null || understanding == null) {
             return TutorToolOutcome(
                 tool = TutorToolName.MASTERY_UPDATE,
@@ -218,7 +247,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         when (val result = MasteryWriteGate.evaluate(input)) {
             is MasteryWriteGate.GateResult.Accepted -> {
                 val entry = LearnerChatEvidenceEntity(
-                    evidence_id = "chat-ev-${System.nanoTime()}",
+                    evidence_id = evidenceId,
                     learner_id = context.learnerId,
                     conversation_id = conversationId.orEmpty(),
                     knowledge_node_id = knowledgeNodeId,
@@ -239,7 +268,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             is MasteryWriteGate.GateResult.Rejected -> {
                 // 被拒 ≠ 删除：落 rejected 审计行（不进投影），outcome 返回拒因。
                 val entry = LearnerChatEvidenceEntity(
-                    evidence_id = "chat-ev-${System.nanoTime()}",
+                    evidence_id = evidenceId,
                     learner_id = context.learnerId,
                     conversation_id = conversationId.orEmpty(),
                     knowledge_node_id = knowledgeNodeId,
