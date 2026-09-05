@@ -48,6 +48,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.visual.VisualInteractionEventSink
 import com.tingyun.smartmistakebook.feature.capture.CaptureCacheMaintenance
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -59,7 +60,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class SmartMistakeBookApplication : Application() {
-    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    // SupervisorJob stops sibling cancellation but does NOT swallow a child's
+    // uncaught exception — without a handler it reaches the process default
+    // handler and kills the app. This backstop logs instead of crashing; the
+    // full stack stays visible in logcat.
+    private val coroutineCrashBackstop = CoroutineExceptionHandler { _, failure ->
+        android.util.Log.e("SmartMistakeBook", "Uncaught applicationScope coroutine failure", failure)
+    }
+
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + coroutineCrashBackstop)
 
     val startupState = MutableStateFlow<StartupState>(StartupState.Initializing)
 

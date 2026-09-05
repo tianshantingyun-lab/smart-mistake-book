@@ -79,6 +79,7 @@ fun CapturedReviewSessionScreen(
     val state: CapturedReviewSessionViewModel = viewModel(key = presentationId)
     LaunchedEffect(state.status, state.resultDispatched) {
         val recordedResult = state.recordedResult()
+        val ratingResult = state.ratingResult
         if (
             state.status == CapturedReviewSubmissionStatus.RECORDED &&
             recordedResult != null &&
@@ -92,10 +93,10 @@ fun CapturedReviewSessionScreen(
             state.markResultDispatched()
         } else if (
             state.status == CapturedReviewSubmissionStatus.RECORDED &&
-            state.ratingResult != null &&
+            ratingResult != null &&
             !state.resultDispatched
         ) {
-            onContinue(state.ratingResult!!)
+            onContinue(ratingResult)
             state.markResultDispatched()
         }
     }

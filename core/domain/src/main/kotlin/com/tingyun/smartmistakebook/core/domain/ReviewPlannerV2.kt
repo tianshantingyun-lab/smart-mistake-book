@@ -538,14 +538,11 @@ class ReviewPlannerV2(
         if (weakness >= WEAKNESS_THRESHOLD) reasons += ReviewReason.WEAK_KNOWLEDGE
 
         // Lapse risk
-        val lapseIsRecent = memory?.lastLapseAtEpochMillis?.let { lastLapseAt ->
-            now - lastLapseAt in 0..RECENT_LAPSE_WINDOW_MILLIS
-        } == true
-        val lapseScore = if (lapseIsRecent) {
-            (memory!!.lapseCount / 3.0).coerceAtMost(1.0)
-        } else {
-            0.0
-        }
+        val lapseScore = memory?.let { memoryState ->
+            memoryState.lastLapseAtEpochMillis
+                ?.takeIf { now - it in 0..RECENT_LAPSE_WINDOW_MILLIS }
+                ?.let { (memoryState.lapseCount / 3.0).coerceAtMost(1.0) }
+        } ?: 0.0
         if (lapseScore > 0.0) reasons += ReviewReason.RECENT_LAPSE
 
         // Repeat mistake

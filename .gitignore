@@ -37,4 +37,10 @@ benchmark/build/
 scratch/
 # Accidental nested clone (AI tooling) - never commit
 smb-toolloop/
-nul
+
+# AI/session tooling and large research artifacts (kept on disk, not tracked)
+.superpowers/
+.zcode/
+kb_tools/
+kb_pdf_samples/
+knowledge-research/

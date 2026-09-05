@@ -63,8 +63,9 @@ internal fun tutorRespondCollectCanStart(
     respondApprovedAtEpochMillis: Long?,
     chatSubmitPending: Boolean,
 ): Boolean {
-    if (!tutorRespondProviderCanExecute(provider)) return false
-    when (provider!!.executionLocation) {
+    val snapshot = provider ?: return false
+    if (!tutorRespondProviderCanExecute(snapshot)) return false
+    when (snapshot.executionLocation) {
         ModelExecutionLocation.LOCAL_NO_EGRESS ->
             if (requestHasEgressManifest && !allowExternalEnvelopeForLocalRecovery) return false
         ModelExecutionLocation.EXTERNAL_PROVIDER ->

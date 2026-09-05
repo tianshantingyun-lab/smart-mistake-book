@@ -426,7 +426,6 @@ internal object SmbkArchiveCodec {
             )
             cursor += 46L + nameLength + extraLength + commentLength
             if (cursor > length) {
-                System.err.println("SMOKE cursor=" + cursor + " length=" + length)
                 throw ArchiveIntegrityException("归档中央目录已损坏")
             }
         }
