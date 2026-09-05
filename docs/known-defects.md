@@ -22,7 +22,7 @@ integration (jacoco-style instrumentation of androidTest/unit variants) —
 a standalone infrastructure task, not tracked as a runtime defect.
 
 
-## KD-1 · Tutor external-authorization flow regression (instrumented)
+## KD-1 · Tutor external-authorization flow regression (instrumented) — NOT REPRODUCING ON CURRENT TREE (2026-09-06), CI green anchor still pending
 
 **Symptom.** 4 of 57 tests in `CapturedTutorSessionInstrumentedTest`
 (feature:tutor connected) fail deterministically on a fresh API-34 emulator:
@@ -63,6 +63,19 @@ timing — weakened by the expired-lease failure being a direct assertion.
 ~4-6 min, no known-good anchor — try fixture-era commits first), or add
 compose-state logging to `TutorModelPanel` and diff intended vs actual
 branch selection for the two LOCAL/EXTERNAL scenarios above.
+
+**Resolution evidence (2026-09-06).** The full suite was re-run twice on
+emulator-5554 (Pixel 6 AVD `test_device`, API 34) against the current tree
+(`2c62700` + in-flight workspace): `:feature:tutor:connectedDebugAndroidTest`
+→ **57/57 passed, twice** (fresh install each run; AGP uninstalls after the
+run). All four previously-deterministic failures pass. Suspected fix carriers
+are the tool-loop hardening commits landed 2026-09-05/06 (`7cb373e` Lobby
+disclosure boundary + T6 write-tool anchoring, `9f267f0` T6 mastery_update
+chain, `5a940a1` deterministic evidence ids, `c19b330` indexed gate queries).
+Status: keep this entry open until CI posts one green `connected` run for
+:feature:tutor (the historical failures were CI-run-specific; local green
+twice + fresh install is strong but not a CI anchor). Bisection against
+25fb15a is no longer needed unless CI still fails.
 
 ## KD-2 · Wall-clock p95 gate fails on CI runners (instrumented)
 
