@@ -11,7 +11,6 @@ import com.tingyun.smartmistakebook.core.database.ConsumeProblemDraftEditWorkspa
 import com.tingyun.smartmistakebook.core.database.ConfirmTutorSessionFromWorkspaceCommand
 import com.tingyun.smartmistakebook.core.database.CreateProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.EndTutorSessionCommand
-import com.tingyun.smartmistakebook.core.database.ExpectedProblemDraftEditWorkspace
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.ProblemDraftRevisionRecord
 import com.tingyun.smartmistakebook.core.database.ProblemDraftSourceAssetRecord
@@ -28,17 +27,13 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.TutorSessionRecord
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftImportRequest
 import com.tingyun.smartmistakebook.core.domain.AppendCaptureDraftPageRequest
-import com.tingyun.smartmistakebook.core.domain.CaptureDraftWorkspaceIdentity
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftWorkspaceSnapshot
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftSplitResult
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
-import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
-import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
-import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
 import com.tingyun.smartmistakebook.core.domain.CleanImageGenerator
 import com.tingyun.smartmistakebook.core.domain.CapturedProblemCommitSummary
 import java.io.File
@@ -54,11 +49,6 @@ import com.tingyun.smartmistakebook.core.domain.ReplaceCaptureDraftRequest
 import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
 import com.tingyun.smartmistakebook.core.domain.SaveCaptureDraftWorkspaceRequest
 import com.tingyun.smartmistakebook.core.domain.SplitCaptureDraftRequest
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
-import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CaptureDraftWorkspaceCodec
@@ -72,10 +62,7 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
-import com.tingyun.smartmistakebook.core.model.StructuredContentLimits
 import com.tingyun.smartmistakebook.core.model.WritingLayer
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -633,187 +620,6 @@ class RoomCaptureWorkflowRepository internal constructor(
         )
     }
 
-    private fun ProblemDraftEditWorkspaceRecord.toDomainWorkspaceSnapshot():
-        CaptureDraftWorkspaceSnapshot {
-        val workspace = try {
-            CaptureDraftWorkspaceCodec.decode(workspaceSnapshot)
-        } catch (failure: Exception) {
-            throw IllegalStateException("Persisted capture workspace is invalid", failure)
-        }
-        require(snapshotSchemaVersion == workspace.schemaVersion) {
-            "Persisted capture workspace schema mismatch"
-        }
-        return CaptureDraftWorkspaceSnapshot(
-            identity = CaptureDraftWorkspaceIdentity(
-                draftId = draftId,
-                basisRevisionNumber = basisRevisionNumber,
-                workspaceVersion = workspaceVersion,
-                workspaceFingerprint = workspaceFingerprint,
-                finalConfirmationRequest = workspace.finalConfirmationRequest,
-            ),
-            workspace = workspace,
-            updatedAtEpochMillis = updatedAtEpochMillis,
-        )
-    }
-
-    private fun PendingCaptureDraftRecord.validTutorSessionId(): String? {
-        val sessionId = tutorSessionId ?: return null
-        return sessionId.takeIf {
-            draft.origin == StudyDbValue.CaptureOrigin.TUTOR &&
-                tutorSessionDraftRevisionNumber == draft.currentRevision.revisionNumber
-        }
-    }
-
-    private fun PendingCaptureDraftRecord.validatedTasks(): ValidatedCaptureTasks {
-        val assessments = draft.sourceAssets.map { source ->
-            assessmentTasks.firstOrNull { task ->
-                (task.request.input as? CaptureAssessmentInput)?.sourceAssetId ==
-                    source.sourceAsset.sourceAssetId
-            }?.takeIf { it.matchesAssessment(draft, source) }
-        }
-        val parse = latestParseTask?.takeIf { it.matchesParse(draft, assessments) }
-        return ValidatedCaptureTasks(assessments = assessments, parse = parse)
-    }
-
-    private fun ModelTaskSnapshot.matchesAssessment(
-        draft: ProblemDraftRecord,
-        sourcePage: ProblemDraftSourceAssetRecord,
-    ): Boolean {
-        val input = request.input as? CaptureAssessmentInput ?: return false
-        val source = sourcePage.sourceAsset
-        return input.draftId == draft.draftId &&
-            draft.currentRevision.author != StudyDbValue.ProblemDraftAuthor.USER &&
-            input.sourceAssetId == source.sourceAssetId &&
-            input.origin == draft.origin.toAssessmentOrigin() &&
-            input.imageWidth == source.width &&
-            input.imageHeight == source.height &&
-            request.occurredAtEpochMillis == source.createdAtEpochMillis
-    }
-
-    private fun ModelTaskSnapshot.matchesParse(
-        draft: ProblemDraftRecord,
-        assessments: List<ModelTaskSnapshot?>,
-    ): Boolean {
-        val input = request.input as? CaptureParseInput ?: return false
-        if (assessments.size != draft.sourceAssets.size || assessments.any { it == null }) return false
-        val validatedAssessments = assessments.filterNotNull()
-        val requestedSources = input.sourceAssets.sortedBy { it.pageIndex }
-        val draftSources = draft.sourceAssets.sortedBy { it.pageIndex }
-        if (requestedSources.size != draftSources.size) return false
-        val parseProvider = provider
-        val providerBindingMatches = parseProvider == null ||
-            validatedAssessments.all { it.provider?.isDemo == parseProvider.isDemo }
-        return input.draftId == draft.draftId &&
-            input.origin == draft.origin.toAssessmentOrigin() &&
-            input.basisRevisionNumber == draft.currentRevision.revisionNumber &&
-            input.assessmentRequestIds == validatedAssessments.map { it.request.requestId } &&
-            validatedAssessments.zip(draftSources).all { (assessment, sourcePage) ->
-                val decision = (assessment.output as? CaptureAssessmentOutput)?.assessment?.decision
-                assessment.status == ModelTaskStatus.SUCCEEDED &&
-                    (decision == CaptureAssessmentDecision.PASS ||
-                        (decision == CaptureAssessmentDecision.NEED_MORE_IMAGE &&
-                            sourcePage.pageIndex < draftSources.lastIndex))
-            } &&
-            requestedSources.zip(draftSources).all { (requested, sourcePage) ->
-                val source = sourcePage.sourceAsset
-                requested.pageIndex == sourcePage.pageIndex &&
-                    requested.assetId == source.sourceAssetId &&
-                    requested.sha256 == source.contentSha256 &&
-                    requested.width == source.width &&
-                    requested.height == source.height
-            } &&
-            request.occurredAtEpochMillis >= draftSources.maxOf { it.sourceAsset.createdAtEpochMillis } &&
-            providerBindingMatches &&
-            (status != ModelTaskStatus.SUCCEEDED || parseProvider != null)
-    }
-
-    private fun PendingCaptureDraftRecord.stageFor(
-        tasks: ValidatedCaptureTasks,
-    ): PendingCaptureStage {
-        val requiresMoreCapture = tasks.assessments.lastOrNull()?.let { assessment ->
-            assessment.status == ModelTaskStatus.SUCCEEDED &&
-                (assessment.output as? CaptureAssessmentOutput)?.assessment?.decision in setOf(
-                CaptureAssessmentDecision.RECAPTURE,
-                CaptureAssessmentDecision.NEED_MORE_IMAGE,
-            )
-        } == true
-        if (requiresMoreCapture) {
-            return PendingCaptureStage.RECAPTURE_REQUIRED
-        }
-        if (tasks.assessments.any { it.isWorking() } || tasks.parse.isWorking()) {
-            return PendingCaptureStage.MODEL_WORKING
-        }
-        if (tasks.assessments.any { it.needsRetryOrManual() } || tasks.parse.needsRetryOrManual()) {
-            return PendingCaptureStage.RETRY_OR_MANUAL
-        }
-        if (tasks.parse?.status == ModelTaskStatus.SUCCEEDED) {
-            return if (tasks.parse.provider?.isDemo == false) {
-                PendingCaptureStage.READY_TO_REVIEW
-            } else {
-                PendingCaptureStage.MANUAL_REVIEW_REQUIRED
-            }
-        }
-        if (
-            draft.currentRevision.author in setOf(
-                StudyDbValue.ProblemDraftAuthor.LOCAL_OCR,
-                StudyDbValue.ProblemDraftAuthor.OPTIONAL_REMOTE_OCR,
-            ) &&
-            QuestionDocumentMarkdownProjection.project(
-                draft.currentRevision.questionDocument.document,
-            ).isNotBlank()
-        ) {
-            return PendingCaptureStage.MANUAL_REVIEW_REQUIRED
-        }
-        return PendingCaptureStage.READY_TO_CONTINUE
-    }
-
-    private fun ModelTaskSnapshot?.isWorking(): Boolean = this?.status in setOf(
-        ModelTaskStatus.WAITING_FOR_MODEL,
-        ModelTaskStatus.QUEUED,
-        ModelTaskStatus.RUNNING,
-        ModelTaskStatus.STREAMING,
-    )
-
-    private fun ModelTaskSnapshot?.needsRetryOrManual(): Boolean = this?.status in setOf(
-        ModelTaskStatus.RETRYABLE_FAILURE,
-        ModelTaskStatus.PERMANENT_FAILURE,
-        ModelTaskStatus.CANCELLED,
-    )
-
-    private fun CapturedQuestionDocument.captureWritingLayer(): CaptureWritingLayer {
-        val layers = blockEvidence.map(QuestionBlockEvidence::writingLayer)
-            .filterNot { it == WritingLayer.UNKNOWN || it == WritingLayer.DIAGRAM }
-            .distinct()
-        if (WritingLayer.MIXED in layers || layers.size > 1) return CaptureWritingLayer.MIXED
-        return when (layers.singleOrNull()) {
-            WritingLayer.PRINTED -> CaptureWritingLayer.PRINTED
-            WritingLayer.HANDWRITTEN -> CaptureWritingLayer.HANDWRITTEN
-            WritingLayer.MIXED -> CaptureWritingLayer.MIXED
-            WritingLayer.DIAGRAM -> CaptureWritingLayer.UNKNOWN
-            WritingLayer.UNKNOWN, null -> CaptureWritingLayer.UNKNOWN
-        }
-    }
-
-    private fun String.toDomainOrigin(): CaptureEntryOrigin = when (this) {
-        StudyDbValue.CaptureOrigin.LIBRARY -> CaptureEntryOrigin.LIBRARY
-        StudyDbValue.CaptureOrigin.TUTOR -> CaptureEntryOrigin.TUTOR
-        else -> error("Unknown pending capture origin")
-    }
-
-    private fun String.toAssessmentOrigin(): CaptureAssessmentOrigin = when (this) {
-        StudyDbValue.CaptureOrigin.LIBRARY -> CaptureAssessmentOrigin.LIBRARY
-        StudyDbValue.CaptureOrigin.TUTOR -> CaptureAssessmentOrigin.TUTOR
-        else -> error("Unknown pending capture origin")
-    }
-
-    private data class ValidatedCaptureTasks(
-        val assessments: List<ModelTaskSnapshot?>,
-        val parse: ModelTaskSnapshot?,
-    ) {
-        val assessment: ModelTaskSnapshot?
-            get() = assessments.filterNotNull().maxByOrNull { it.updatedAtEpochMillis }
-    }
-
     private suspend fun createInitialDraft(
         draftId: String,
         request: CaptureDraftImportRequest,
@@ -874,40 +680,6 @@ class RoomCaptureWorkflowRepository internal constructor(
         )
     }
 
-    private fun validateImportReplay(
-        draft: ProblemDraftRecord,
-        request: CaptureDraftImportRequest,
-        imported: CanonicalSourceAssetRecord,
-    ) {
-        val matchesPersistedBinding =
-            draft.requestFingerprint == importRequestFingerprint(request, imported) &&
-                draft.sourceAsset.hasSameCanonicalContent(imported)
-        if (!matchesPersistedBinding) {
-            throw ImmutablePayloadConflictException("capture_import_request", request.requestId)
-        }
-    }
-
-    private fun validateCompletedReplacement(
-        replaced: ProblemDraftRecord,
-        replacement: ProblemDraftRecord,
-        request: ReplaceCaptureDraftRequest,
-    ) {
-        val matchesDurableResult =
-            replaced.status == StudyDbValue.ProblemDraftStatus.ABANDONED &&
-                replaced.currentRevision.revisionNumber ==
-                    request.expectedReplacedRevisionNumber &&
-                replaced.updatedAtEpochMillis == request.occurredAtEpochMillis &&
-                replacement.origin == replaced.origin &&
-                replacement.createdAtEpochMillis == request.occurredAtEpochMillis &&
-                replacement.requestFingerprint == replacementRequestFingerprint(replaced, request)
-        if (!matchesDurableResult) {
-            throw ImmutablePayloadConflictException(
-                "capture_replacement_request",
-                request.requestId,
-            )
-        }
-    }
-
     private suspend fun recognizeReplacementBestEffort(
         replacement: ProblemDraftRecord,
     ): CaptureDraftSummary {
@@ -922,100 +694,6 @@ class RoomCaptureWorkflowRepository internal constructor(
             replacement.toSummary(recognitionFailed = true)
         }
     }
-
-    private fun CanonicalSourceAssetRecord.hasSameCanonicalContent(
-        other: CanonicalSourceAssetRecord,
-    ): Boolean = sourceAssetId == other.sourceAssetId &&
-        contentSha256 == other.contentSha256 &&
-        relativePath == other.relativePath &&
-        mimeType == other.mimeType &&
-        byteSize == other.byteSize &&
-        width == other.width &&
-        height == other.height
-
-    private fun importRequestFingerprint(
-        request: CaptureDraftImportRequest,
-        imported: CanonicalSourceAssetRecord,
-    ): String = requestFingerprint(
-        "capture-import-v2",
-        request.requestId,
-        request.source.toDbValue(),
-        request.origin.toDbValue(),
-        request.occurredAtEpochMillis.toString(),
-        imported.sourceAssetId,
-        imported.contentSha256,
-        imported.relativePath,
-        imported.mimeType,
-        imported.byteSize.toString(),
-        imported.width.toString(),
-        imported.height.toString(),
-    )
-
-    private fun replacementRequestFingerprint(
-        replaced: ProblemDraftRecord,
-        request: ReplaceCaptureDraftRequest,
-    ): String = requestFingerprint(
-        "capture-replacement-v2",
-        request.requestId,
-        request.replacedDraftId,
-        request.expectedReplacedRevisionNumber.toString(),
-        request.source.toDbValue(),
-        request.occurredAtEpochMillis.toString(),
-        replaced.origin,
-    )
-
-    private fun splitDraftId(
-        request: SplitCaptureDraftRequest,
-        regionIndex: Int,
-        region: NormalizedSourceRegion,
-    ): String = stableId(
-        "split-draft",
-        listOf(
-            request.requestId,
-            request.draftId,
-            request.assessmentRequestId,
-            regionIndex.toString(),
-            region.fingerprintValue(),
-        ).joinToString(separator = ":"),
-    )
-
-    private fun splitRequestFingerprint(
-        replaced: ProblemDraftRecord,
-        request: SplitCaptureDraftRequest,
-        region: NormalizedSourceRegion,
-        regionIndex: Int,
-        cropped: CanonicalSourceAssetRecord,
-    ): String = requestFingerprint(
-        "capture-split-v1",
-        request.requestId,
-        request.draftId,
-        request.expectedRevisionNumber.toString(),
-        request.assessmentRequestId,
-        request.sourceAssetId,
-        replaced.sourceAsset.contentSha256,
-        regionIndex.toString(),
-        region.fingerprintValue(),
-        cropped.contentSha256,
-        request.occurredAtEpochMillis.toString(),
-    )
-
-    private fun NormalizedSourceRegion.fingerprintValue(): String =
-        listOf(left, top, right, bottom).joinToString(separator = ",") { coordinate ->
-            coordinate.toString()
-        }
-
-    private fun List<NormalizedSourceRegion>.boundingRegion(): NormalizedSourceRegion =
-        NormalizedSourceRegion(
-            left = minOf { region -> region.left },
-            top = minOf { region -> region.top },
-            right = maxOf { region -> region.right },
-            bottom = maxOf { region -> region.bottom },
-        )
-
-    private fun requestFingerprint(vararg fields: String): String =
-        MessageDigest.getInstance("SHA-256")
-            .digest(fields.joinToString(separator = "\u001F").toByteArray(StandardCharsets.UTF_8))
-            .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
     private suspend fun recognizePendingDraft(
         draft: ProblemDraftRecord,
@@ -1099,86 +777,6 @@ class RoomCaptureWorkflowRepository internal constructor(
                 createdAtEpochMillis = asset.createdAtEpochMillis,
             )
         }
-
-    private fun ProblemDraftRecord.recognitionSummary(
-        recognitionFailed: Boolean,
-    ): CaptureRecognitionSummary {
-        if (recognitionFailed) {
-            return CaptureRecognitionSummary(state = CaptureRecognitionState.FAILED)
-        }
-        if (currentRevision.author != StudyDbValue.ProblemDraftAuthor.LOCAL_OCR) {
-            return CaptureRecognitionSummary()
-        }
-        val candidateText = QuestionDocumentMarkdownProjection.project(
-            currentRevision.questionDocument.document,
-        ).trim()
-        val evidence = currentRevision.questionDocument.blockEvidence
-        if (candidateText.isBlank()) {
-            return CaptureRecognitionSummary(
-                state = CaptureRecognitionState.NO_TEXT,
-                producerVersion = evidence.mapNotNull(QuestionBlockEvidence::producerVersion)
-                    .distinct()
-                    .singleOrNull(),
-            )
-        }
-        return CaptureRecognitionSummary(
-            state = CaptureRecognitionState.CANDIDATE_AVAILABLE,
-            candidateText = candidateText.take(StructuredContentLimits.MAX_TEXT_CHARS),
-            confidence = evidence.mapNotNull(QuestionBlockEvidence::confidence)
-                .takeIf(List<Double>::isNotEmpty)
-                ?.average(),
-            candidateBlockCount = currentRevision.questionDocument.document.blocks.size,
-            producerVersion = evidence.mapNotNull(QuestionBlockEvidence::producerVersion)
-                .distinct()
-                .singleOrNull(),
-        )
-    }
-
-    private fun CaptureInputSource.toDbValue(): String = when (this) {
-        CaptureInputSource.CAMERA -> StudyDbValue.SourceAssetType.CAMERA
-        CaptureInputSource.PHOTO_PICKER -> StudyDbValue.SourceAssetType.PHOTO_PICKER
-    }
-
-    private fun CaptureEntryOrigin.toDbValue(): String = when (this) {
-        CaptureEntryOrigin.LIBRARY -> StudyDbValue.CaptureOrigin.LIBRARY
-        CaptureEntryOrigin.TUTOR -> StudyDbValue.CaptureOrigin.TUTOR
-    }
-
-    private fun stableId(prefix: String, requestId: String): String =
-        "$prefix-${stableSuffix(requestId)}"
-
-    private fun CaptureDraftWorkspaceIdentity.toDatabaseExpectation():
-        ExpectedProblemDraftEditWorkspace {
-        val finalRequest = checkNotNull(finalConfirmationRequest) {
-            "Capture workspace has no final confirmation identity"
-        }
-        return ExpectedProblemDraftEditWorkspace(
-            draftId = draftId,
-            basisRevisionNumber = basisRevisionNumber,
-            workspaceVersion = workspaceVersion,
-            workspaceFingerprint = workspaceFingerprint,
-            finalRequestId = finalRequest.requestId,
-            finalOccurredAtEpochMillis = finalRequest.occurredAtEpochMillis,
-        )
-    }
-
-    private fun confirmationStableSuffix(identity: CaptureDraftWorkspaceIdentity): String {
-        val finalRequest = checkNotNull(identity.finalConfirmationRequest)
-        val canonical = listOf(
-            identity.draftId,
-            identity.basisRevisionNumber.toString(),
-            identity.workspaceVersion.toString(),
-            identity.workspaceFingerprint,
-            finalRequest.requestId,
-            finalRequest.occurredAtEpochMillis.toString(),
-        ).joinToString(separator = "\u001F")
-        return stableSuffix(canonical)
-    }
-
-    private fun stableSuffix(requestId: String): String = MessageDigest.getInstance("SHA-256")
-        .digest(requestId.toByteArray(StandardCharsets.UTF_8))
-        .take(16)
-        .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
     private companion object {
         const val CAPTURE_IMPORT_VERSION = "capture-import-v1"
