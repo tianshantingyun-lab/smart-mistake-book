@@ -22,6 +22,7 @@ import com.tingyun.smartmistakebook.core.data.study.StudyExperienceRepositoryFac
 import com.tingyun.smartmistakebook.core.data.study.VisualInteractionEventSinkFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorConversationRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreSleepJournalStore
@@ -34,6 +35,7 @@ import com.tingyun.smartmistakebook.core.domain.BackupRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
+import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
@@ -225,10 +227,13 @@ class SmartMistakeBookApplication : Application() {
                 },
                 cleanRedrawScope = applicationScope,
                 // Save path runs a model classify round to decide redraw. Consent =
-                // configuring the model (a Settings toggle will gate this in a later
-                // stage); no model configured → no round, original photo kept.
+                // the global "model agent" toggle AND a configured model; no consent or
+                // no model → no round, original photo kept.
                 modelTasks = modelTaskRepository,
-                captureConsentGranted = { modelConfigurationStore != null },
+                captureConsentGranted = {
+                    modelConfigurationStore != null &&
+                        runBlocking { modelAgentConsentStore?.current() ?: false }
+                },
             )
             batchImportRepository = BatchImportRepositoryFactory.create(
                 context = this,
@@ -317,6 +322,14 @@ class SmartMistakeBookApplication : Application() {
     val modelConfigurationStore: ModelConfigurationStore? by lazy {
         if (capabilities.networkRequestsAllowed) {
             DataStoreModelConfigurationStore(this, applicationScope)
+        } else {
+            null
+        }
+    }
+
+    val modelAgentConsentStore: ModelAgentConsentStore? by lazy {
+        if (capabilities.networkRequestsAllowed) {
+            DataStoreModelAgentConsentStore(this, applicationScope)
         } else {
             null
         }

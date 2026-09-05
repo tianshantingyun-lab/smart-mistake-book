@@ -48,6 +48,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelApiKey
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTestResult
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
@@ -106,6 +107,7 @@ internal fun CapabilityScreen(
     configurationStore: ModelConfigurationStore?,
     capabilityTester: ModelCapabilityTester?,
     onBack: () -> Unit,
+    modelAgentConsentStore: ModelAgentConsentStore? = null,
     calibrationReportProvider: (suspend () -> CalibrationReport)? = null,
 ) {
     val context = LocalContext.current
@@ -354,6 +356,50 @@ internal fun CapabilityScreen(
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .testTag("capability_operation_message"),
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            modelAgentConsentStore?.let { consentStore ->
+                val consentEnabled by consentStore.consentEnabled
+                    .collectAsStateWithLifecycle(initialValue = true)
+                PaperDivider(Modifier.padding(vertical = 16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = "模型智能体",
+                            color = Ink,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = "拍照题图与讲题内容可直接交给已配置的模型处理",
+                            modifier = Modifier.padding(top = 2.dp),
+                            color = InkSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = consentEnabled,
+                        onCheckedChange = { enabled ->
+                            screenScope.launch { consentStore.setConsentEnabled(enabled) }
+                        },
+                        modifier = Modifier.testTag("capability_agent_consent_switch"),
+                    )
+                }
+                Text(
+                    text = if (consentEnabled) {
+                        "已开启：拍照识别/整理、保存重绘和讲题对话会自动把当前内容交给模型，无需逐次确认。" +
+                            "关闭后，本机内容只在设置里重新开启后才外发。"
+                    } else {
+                        "已关闭：拍照识别/整理和讲题会暂停使用模型，仅在本机处理。要恢复智能整理与讲题，请打开此开关。" +
+                            "你仍可保存模型配置，随时回来开启。"
+                    },
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .testTag("capability_agent_consent_notice"),
                     color = InkSecondary,
                     style = MaterialTheme.typography.bodySmall,
                 )
