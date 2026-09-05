@@ -137,6 +137,14 @@ data class ProviderCapabilitySnapshot(
 sealed interface ModelTaskInput {
     val kind: ModelTaskKind
     val subjectId: String
+
+    /**
+     * True for the image-pipeline rounds (assess/parse/classify) whose photos may
+     * egress to the configured image-capable provider under global Settings consent,
+     * without a per-photo egress manifest. Computed, never serialized.
+     */
+    val isCapturePipelineKind: Boolean
+        get() = false
 }
 
 @Serializable
@@ -151,6 +159,9 @@ data class CaptureAssessmentInput(
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.CAPTURE_ASSESS
+
+    override val isCapturePipelineKind: Boolean
+        get() = true
 
     override val subjectId: String
         get() = draftId
@@ -199,6 +210,9 @@ data class ImagePipelineClassifyInput(
     override val kind: ModelTaskKind
         get() = ModelTaskKind.IMAGE_PIPELINE_CLASSIFY
 
+    override val isCapturePipelineKind: Boolean
+        get() = true
+
     override val subjectId: String
         get() = subjectIdOverride ?: sourceAssetId
 
@@ -222,6 +236,9 @@ data class CaptureParseInput(
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.CAPTURE_PARSE
+
+    override val isCapturePipelineKind: Boolean
+        get() = true
 
     override val subjectId: String
         get() = draftId

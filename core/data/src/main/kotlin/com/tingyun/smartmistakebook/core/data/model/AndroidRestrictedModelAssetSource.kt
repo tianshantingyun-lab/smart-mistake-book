@@ -5,9 +5,6 @@ import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAsset
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAssetSource
-import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
-import com.tingyun.smartmistakebook.core.model.CaptureParseInput
-import com.tingyun.smartmistakebook.core.model.ImagePipelineClassifyInput
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 
@@ -49,9 +46,7 @@ internal class AndroidRestrictedModelAssetSource(
                 check(execution.request.captureEgressConsentGranted) {
                     "Consented model asset access requires the consent flag"
                 }
-                check(execution.request.input is CaptureAssessmentInput ||
-                    execution.request.input is CaptureParseInput ||
-                    execution.request.input is ImagePipelineClassifyInput) {
+                check(execution.request.input.isCapturePipelineKind) {
                     "Consented asset access is limited to the capture pipeline"
                 }
             }

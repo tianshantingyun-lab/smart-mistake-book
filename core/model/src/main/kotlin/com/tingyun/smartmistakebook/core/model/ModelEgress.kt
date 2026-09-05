@@ -431,16 +431,10 @@ object ModelRequestPayloadBudget {
  */
 fun ModelTaskRequest.captureConsentMatches(provider: ProviderCapabilitySnapshot): Boolean =
     captureEgressConsentGranted &&
-        input.kind in CAPTURE_PIPELINE_KINDS &&
+        input.isCapturePipelineKind &&
         provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
         provider.supportsImageInput &&
         provider.supports(input.kind)
-
-private val CAPTURE_PIPELINE_KINDS = setOf(
-    ModelTaskKind.CAPTURE_ASSESS,
-    ModelTaskKind.CAPTURE_PARSE,
-    ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
-)
 
 object ModelEgressPolicy {
     fun authorize(
