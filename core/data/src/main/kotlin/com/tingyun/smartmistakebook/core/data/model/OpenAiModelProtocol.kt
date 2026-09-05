@@ -414,11 +414,18 @@ internal object OpenAiModelProtocol {
         // tool request (tools were advertised), map every tool_call into a
         // TutorToolRequestsOutput — the repository's existing tool loop takes it
         // from here unchanged (authorize / execute / backfill / next round).
+        // Standard native tool_calls carry content=null; per-round intent is then
+        // derived from the dispatch kind (Respond → CURRENT_QUESTION_HELP,
+        // Lobby → the declared lookup intent). A provider that does emit content
+        // may still restate the intent envelope, which takes precedence.
         val nativeToolCalls = message["tool_calls"]?.let { it as? JsonArray }?.toList()
         if (nativeToolCalls != null && nativeToolCalls.isNotEmpty()) {
             val responseContent = message["content"].extractTextContent()
-                ?: throw InvalidModelResponseException("Native tool calls without the intent envelope")
-            return nativeToolCalls.toTutorToolRequestsOutput(responseContent, modelVersion)
+            return nativeToolCalls.toTutorToolRequestsOutput(
+                input = input,
+                responseContent = responseContent,
+                modelVersion = modelVersion,
+            )
         }
         // Route B: json_object envelope (provider ignored tools, or none advertised).
         val content = message["content"].extractTextContent()
@@ -431,13 +438,17 @@ internal object OpenAiModelProtocol {
      * Maps native `assistant.tool_calls` into a TutorToolRequestsOutput so the
      * repository tool loop can authorize/execute them exactly as Route-B JSON
      * tool requests. arguments arrive as a JSON string per the OpenAI contract.
-     * The content envelope must restate the per-round `intentDecision` — the
-     * authorization matrix keys on it exactly as Route B does, and on later
-     * rounds the intent is re-derived (the Lobby kind set differs from the
-     * Respond matrix), so the caller owns it rather than this layer guessing.
+     *
+     * Per-round intent: if the content envelope restates an `intentDecision`,
+     * that takes precedence (Route B symmetric — authorization matrix keys on
+     * it, later rounds re-derive). Standard native tool_calls carry content=null,
+     * so the intent is derived from the dispatch kind instead — native tools
+     * never over-authorize because the repository still intersects with the
+     * declared set and the write anchor (Respond-only) stays.
      */
     private fun List<JsonElement>.toTutorToolRequestsOutput(
-        responseContent: String,
+        input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
+        responseContent: String?,
         modelVersion: String,
     ): TutorToolRequestsOutput {
         val calls = map { element ->
@@ -455,13 +466,38 @@ internal object OpenAiModelProtocol {
                 confidence = arguments.optionalDouble("confidence") ?: 0.8,
             )
         }
-        val responseObject = parseObject(responseContent)
-        val intentDecision = responseObject.objectValue("intentDecision").toTutorIntentDecision()
+        val intentDecision = responseContent
+            ?.let { runCatching { parseObject(it.unwrapJsonFence()) }.getOrNull() }
+            ?.let { payload -> runCatching { payload.objectValue("intentDecision") }.getOrNull() }
+            ?.let { intent -> runCatching { intent.toTutorIntentDecision() }.getOrNull() }
+            ?: nativeToolRoundIntent(input)
         return TutorToolRequestsOutput(
             intentDecision = intentDecision,
             calls = calls,
             modelVersion = modelVersion,
         )
+    }
+
+    /**
+     * Kind-appropriate intent for a native tool round when the provider did not
+     * restate one in content. Respond dispatches are always anchored to the
+     * current question → CURRENT_QUESTION_HELP; Lobby dispatches only declare
+     * NOTEBOOK_READ (fix-1) → MISTAKE_NOTEBOOK_LOOKUP. Derivation stays narrow
+     * so the authorization matrix gates the same as Route B would.
+     */
+    private fun nativeToolRoundIntent(
+        input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
+    ): com.tingyun.smartmistakebook.core.model.TutorIntentDecision = when (input) {
+        is com.tingyun.smartmistakebook.core.model.TutorLobbyInput ->
+            com.tingyun.smartmistakebook.core.model.TutorIntentDecision(
+                intent = com.tingyun.smartmistakebook.core.model.TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP,
+                confidence = 1.0,
+                explicitActionRequest = true,
+                memoryPreference = com.tingyun.smartmistakebook.core.model.TutorMemoryPreference.UNCHANGED,
+                requestedLocalCapability =
+                    com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability.READ_MISTAKE_NOTEBOOK,
+            )
+        else -> com.tingyun.smartmistakebook.core.model.TutorIntentDecision.currentQuestionDefault()
     }
 
     private const val SYSTEM_PROMPT =

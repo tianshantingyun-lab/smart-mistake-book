@@ -198,6 +198,11 @@ internal class OpenAiCompatibleModelGateway(
                             input = execution.request.input,
                             images = images,
                             stream = stream,
+                            // Route A（原生 tools）：仅当探测证明端点支持原生工具往返时才启用。
+                            // nativeToolSchemas 对未声明工具的输入/空声明返回 null → 无 tools
+                            // 字段，回落 Route B 信封；故此处可安全地按能力位宽放，不会污染
+                            // 非工具环 dispatch。
+                            enableNativeTools = provider.supportsFunctionCalling,
                         )
                         emit(
                             ModelGatewayEvent.Progress(

@@ -196,7 +196,8 @@ class OpenAiNativeToolsProtocolTest {
     }
 
     @Test
-    fun nativeToolCallsWithoutIntentEnvelopeRejected() {
+    fun contentNullNativeToolCallsDeriveLobbyIntentFromKind() {
+        // 标准原生 tool_calls：content=null，无意图信封 → 从 dispatch kind 推导。
         val envelope = toolCallEnvelope(
             """
             {"role":"assistant","content":null,
@@ -204,16 +205,44 @@ class OpenAiNativeToolsProtocolTest {
                "function":{"name":"NOTEBOOK_READ","arguments":"{\"terms\":[\"二次函数\"],\"rationale\":\"学生想找二次函数错题\"}"}}]}
             """.trimIndent(),
         )
-        try {
-            OpenAiModelProtocol.parseResponse(
-                responseBody = envelope,
-                input = lobbyInput(),
-                modelVersion = "test-model-v1",
-            )
-            assertTrue("缺 intentDecision 信封应契约拒", false)
-        } catch (expected: com.tingyun.smartmistakebook.core.data.model.InvalidModelResponseException) {
-            // 契约拒：工具轮必须携带本轮 intentDecision（授权矩阵依它门控，round 2 需重判）
-        }
+        val output = OpenAiModelProtocol.parseResponse(
+            responseBody = envelope,
+            input = lobbyInput(),
+            modelVersion = "test-model-v1",
+        )
+        assertTrue(output is TutorToolRequestsOutput)
+        val round = output as TutorToolRequestsOutput
+        assertEquals(
+            "Lobby 无 content 意图时应推导 MISTAKE_NOTEBOOK_LOOKUP（NOTEBOOK_READ 授权依赖）",
+            com.tingyun.smartmistakebook.core.model.TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP,
+            round.intentDecision.intent,
+        )
+        assertEquals(TutorToolName.NOTEBOOK_READ, round.calls.single().tool)
+    }
+
+    @Test
+    fun contentNullNativeToolCallsDeriveRespondIntentFromKind() {
+        // Respond 无 content 意图时应推导 CURRENT_QUESTION_HELP（T6/T2/T3/T5 授权依赖）。
+        val envelope = toolCallEnvelope(
+            """
+            {"role":"assistant","content":null,
+             "tool_calls":[{"id":"call_4","type":"function",
+               "function":{"name":"MASTERY_UPDATE",
+                 "arguments":"{\"terms\":[\"knowledge-node-1\"],\"rationale\":\"学生能独立完成同类题。\",\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\",\"confidence\":0.8}"}}]}
+            """.trimIndent(),
+        )
+        val output = OpenAiModelProtocol.parseResponse(
+            responseBody = envelope,
+            input = respondInput(),
+            modelVersion = "test-model-v1",
+        )
+        assertTrue(output is TutorToolRequestsOutput)
+        val round = output as TutorToolRequestsOutput
+        assertEquals(
+            com.tingyun.smartmistakebook.core.model.TutorMessageIntent.CURRENT_QUESTION_HELP,
+            round.intentDecision.intent,
+        )
+        assertEquals(TutorToolName.MASTERY_UPDATE, round.calls.single().tool)
     }
 
     @Test
