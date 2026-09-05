@@ -74,8 +74,8 @@ jobs:
         run: ./gradlew :knowledge-production:build --console=plain
       - name: Lint
         run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
-      - name: Domain coverage report (feeds the status report)
-        run: ./gradlew :core:domain:koverXmlReport --console=plain
+      - name: Unit-test coverage reports (feed the status report)
+        run: ./gradlew :core:domain:koverXmlReport :core:data:koverXmlReport :core:database:koverXmlReport --console=plain
       - name: Room schema drift recheck
         run: git diff --exit-code -- core/database/schemas
       - name: Generate machine-verifiable status report

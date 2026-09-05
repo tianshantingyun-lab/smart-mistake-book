@@ -137,6 +137,13 @@ def kover_coverage(module: str) -> tuple[str, str]:
     if not counters:
         return NOT_MEASURED, NOT_MEASURED
 
+    # Android-library Kover reports can come back with zero-coverage counters
+    # (agent not attached); render that as NOT_MEASURED instead of a misleading
+    # "0.0%".
+    line = counters.get("LINE", (0, 0))
+    if line[0] + line[1] == 0:
+        return NOT_MEASURED, NOT_MEASURED
+
     def percentage(kind: str) -> str:
         missed, covered = counters[kind]
         total = missed + covered
@@ -192,15 +199,15 @@ def main() -> int:
             values[f"{key}_WARNINGS"] = str(warnings)
 
     # Coverage: only modules with a Kover XML report render values; the rest
-    # stay NOT_MEASURED (android-module unit-test coverage needs AGP
-    # integration and is not wired yet).
-    domain_line, domain_branch = kover_coverage(":core:domain")
-    values["CORE_DOMAIN_LINE_COVERAGE"] = domain_line
-    values["CORE_DOMAIN_BRANCH_COVERAGE"] = domain_branch
-    values["CORE_DATA_LINE_COVERAGE"] = NOT_MEASURED
-    values["CORE_DATA_BRANCH_COVERAGE"] = NOT_MEASURED
-    values["CORE_DATABASE_LINE_COVERAGE"] = NOT_MEASURED
-    values["CORE_DATABASE_BRANCH_COVERAGE"] = NOT_MEASURED
+    # stay NOT_MEASURED (modules without the Kover plugin applied).
+    for module, prefix in (
+        (":core:domain", "CORE_DOMAIN"),
+        (":core:data", "CORE_DATA"),
+        (":core:database", "CORE_DATABASE"),
+    ):
+        line_pct, branch_pct = kover_coverage(module)
+        values[f"{prefix}_LINE_COVERAGE"] = line_pct
+        values[f"{prefix}_BRANCH_COVERAGE"] = branch_pct
 
     apks = apk_outputs()
     release_rows = {
