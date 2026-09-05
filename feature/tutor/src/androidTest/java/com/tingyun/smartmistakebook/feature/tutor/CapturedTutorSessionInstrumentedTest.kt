@@ -74,7 +74,6 @@ import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.UpdateTutorMessageStatusCommand
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
-import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
@@ -91,7 +90,6 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
 import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.model.TutorConceptMapScene
@@ -1345,121 +1343,6 @@ class CapturedTutorSessionInstrumentedTest {
     }
 
     @Test
-    fun authorizedExternalAutoStartExecutesOnlyTheInitialPlanWithoutAnotherConfirmation() {
-        val session = session()
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            includeInitialPlan = false,
-            externalProvider = true,
-        )
-        val interactions = RecordingTutorInteractions()
-        val authorization = TutorAutoStartAuthorization.grant(
-            authorizationId = "fresh-auto-start",
-            sessionId = session.sessionId,
-            questionDocumentId = session.questionDocument.document.id,
-            revisionNumber = session.draftRevisionNumber,
-            provider = modelTasks.capabilitySnapshot,
-            promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_PLAN,
-            approvedAtEpochMillis = 10_000L,
-        )
-        var authorizationConsumedFor: String? = null
-        var authorizationConsumedCalls = 0
-        composeRule.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { 10_000L },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = interactions,
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                    autoStartAuthorization = authorization,
-                    onAutoStartAuthorizationConsumed = { authorizationId ->
-                        authorizationConsumedFor = authorizationId
-                        authorizationConsumedCalls += 1
-                    },
-                )
-            }
-        }
-
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.planTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.onNodeWithTag("captured_tutor_disclosure").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").assertExists()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.runOnIdle {
-            assertEquals(1, modelTasks.executePlanCalls)
-            assertEquals(1, modelTasks.planRequests.size)
-            assertEquals(authorization.authorizationId, authorizationConsumedFor)
-            assertEquals(1, authorizationConsumedCalls)
-        }
-    }
-
-    @Test
-    fun changedProviderDoesNotReuseFreshCaptureAutoStartAuthorization() {
-        val session = session()
-        val currentProvider = ProviderCapabilitySnapshot(
-            providerId = "configured-provider",
-            providerDisplayName = "已更新模型",
-            modelId = "tutor-model-v1",
-            supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.TUTOR_RESPOND),
-            supportsImageInput = false,
-            supportsStructuredOutput = true,
-            supportsStreaming = true,
-            executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
-            providerConfigurationVersion = "configuration-v2",
-        )
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            includeInitialPlan = false,
-            externalProvider = true,
-            currentCapabilities = currentProvider,
-        )
-        val authorization = TutorAutoStartAuthorization.grant(
-            authorizationId = "stale-auto-start",
-            sessionId = session.sessionId,
-            questionDocumentId = session.questionDocument.document.id,
-            revisionNumber = session.draftRevisionNumber,
-            provider = currentProvider.copy(providerConfigurationVersion = "configuration-v1"),
-            promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_PLAN,
-            approvedAtEpochMillis = 10_000L,
-        )
-        var authorizationConsumedCalls = 0
-
-        composeRule.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { 10_001L },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                    autoStartAuthorization = authorization,
-                    onAutoStartAuthorizationConsumed = { authorizationId ->
-                        assertEquals(authorization.authorizationId, authorizationId)
-                        authorizationConsumedCalls += 1
-                    },
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("captured_tutor_disclosure").assertIsDisplayed()
-        composeRule.runOnIdle {
-            assertEquals(0, modelTasks.executePlanCalls)
-            assertEquals(1, authorizationConsumedCalls)
-        }
-    }
-
-    @Test
     fun localNoEgressFirstStartNeverShowsAnExternalProviderDisclosure() {
         val session = session()
         val modelTasks = ChatModelTaskRepository(
@@ -1494,13 +1377,12 @@ class CapturedTutorSessionInstrumentedTest {
     }
 
     @Test
-    fun restoredPendingExternalReplyWaitsForConsentThenExecutesItsExactRequestOnce() {
+    fun restoredPendingReplyAutoResumesAndExecutesItsExactRequestOnce() {
         val session = session()
         val exactMessage = "我不明白为什么要分区间"
         val modelTasks = ChatModelTaskRepository(
             session = session,
             restoredPendingMessage = exactMessage,
-            externalProvider = true,
         )
         composeRule.setContent {
             MaterialTheme {
@@ -1518,15 +1400,7 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_reply_paused").performScrollTo().assertExists()
         composeRule.onNodeWithTag("tutor_chat_reply_progress").assertDoesNotExist()
-        composeRule.onNodeWithText("继续对话").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertDoesNotExist()
-        composeRule.runOnIdle { assertEquals(0, modelTasks.executeRespondCalls) }
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) {
             modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
         }
@@ -1542,102 +1416,7 @@ class CapturedTutorSessionInstrumentedTest {
             assertEquals(1, input.cycleOrdinal)
             assertEquals(1, input.turnOrdinal)
         }
-        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
-    }
-
-    @Test
-    fun restoredPendingExternalPlanWaitsForConsentThenResumesTheExactTurnOnce() {
-        val session = session()
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            restoredPlanStatus = ModelTaskStatus.WAITING_FOR_MODEL,
-            externalProvider = true,
-        )
-        val originalRequest = modelTasks.planTasks.value.single().request
-        composeRule.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { 10_000L },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("captured_tutor_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithText("讲解已暂停").performScrollTo().assertExists()
-        composeRule.onNodeWithText("正在准备这道题").assertDoesNotExist()
-        composeRule.onNodeWithText("继续讲题").performScrollTo().assertExists()
-        composeRule.runOnIdle { assertEquals(0, modelTasks.executePlanCalls) }
-        composeRule.onNodeWithTag("captured_tutor_start_model")
-            .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.planTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.runOnIdle {
-            assertEquals(1, modelTasks.executePlanCalls)
-            val resumed = modelTasks.planRequests.single()
-            assertEquals(originalRequest.requestId, resumed.requestId)
-            assertEquals(originalRequest.input, resumed.input)
-        }
-        composeRule.onNodeWithTag("captured_tutor_disclosure").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
-    }
-
-    @Test
-    fun tutorExternalLeaseIsAskedAgainAfterStateRestorationWithoutCallingTheProvider() {
-        val session = session()
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            externalProvider = true,
-        )
-        val restorationTester = StateRestorationTester(composeRule)
-        restorationTester.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { 10_000L },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
-
-        restorationTester.emulateSavedInstanceStateRestore()
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertDoesNotExist()
-        composeRule.runOnIdle {
-            assertEquals(0, modelTasks.executePlanCalls)
-            assertEquals(0, modelTasks.executeRespondCalls)
-        }
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
-        composeRule.runOnIdle {
-            assertEquals(0, modelTasks.executePlanCalls)
-            assertEquals(0, modelTasks.executeRespondCalls)
-        }
+        composeRule.onNodeWithTag("tutor_chat_composer").assertExists()
     }
 
     @Test
@@ -1676,319 +1455,6 @@ class CapturedTutorSessionInstrumentedTest {
         }
     }
 
-    @Test
-    fun expiredLeaseKeepsExactReplyUntilOneConfirmationResumesIt() {
-        val session = session()
-        val exactMessage = "  授权过期后仍要发送这句话\n"
-        var now = 10_000L
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            externalProvider = true,
-        )
-        val restorationTester = StateRestorationTester(composeRule)
-        restorationTester.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { now },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer")
-            .assertIsDisplayed()
-            .performTextInput(exactMessage)
-        composeRule.runOnIdle {
-            now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1
-        }
-        composeRule.onNodeWithTag("tutor_chat_send").performClick()
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("captured_tutor_choice_choice-2").assertIsNotEnabled()
-        composeRule.runOnIdle { assertEquals(0, modelTasks.executeRespondCalls) }
-
-        restorationTester.emulateSavedInstanceStateRestore()
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertDoesNotExist()
-        composeRule.onNodeWithTag("captured_tutor_choice_choice-2").assertIsNotEnabled()
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.runOnIdle {
-            assertEquals(1, modelTasks.executeRespondCalls)
-            val resumedInput = modelTasks.respondRequests.single().input as TutorRespondInput
-            assertEquals(exactMessage, resumedInput.studentMessage)
-            assertEquals(null, resumedInput.requestedMove)
-        }
-    }
-
-    @Test
-    fun pendingExactReplyContinuesLocallyAfterProviderChange() {
-        val session = session()
-        val exactMessage = "  切换后仍发送这句话\n"
-        var now = 10_000L
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            externalProvider = true,
-        )
-        val restorationTester = StateRestorationTester(composeRule)
-        restorationTester.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { now },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer")
-            .assertIsDisplayed()
-            .performTextInput(exactMessage)
-        composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
-        composeRule.onNodeWithTag("tutor_chat_send").performClick()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.runOnIdle {
-            assertEquals(0, modelTasks.executeRespondCalls)
-            modelTasks.useCapabilities(
-                modelTasks.capabilitySnapshot.copy(
-                    providerDisplayName = "本机模型",
-                    executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
-                ),
-            )
-        }
-
-        restorationTester.emulateSavedInstanceStateRestore()
-
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
-        composeRule.runOnIdle {
-            assertEquals(1, modelTasks.executeRespondCalls)
-            val resumed = modelTasks.respondRequests.single()
-            assertEquals(exactMessage, (resumed.input as TutorRespondInput).studentMessage)
-            assertEquals(null, resumed.egressManifest)
-        }
-    }
-
-    @Test
-    fun expiredLeaseKeepsExactNextPlanUntilOneConfirmationResumesIt() {
-        val session = session()
-        var now = 10_000L
-        val interactions = RecordingTutorInteractions()
-        val completedTurn = tutorResponse("choice-2").copy(
-            requestedMove = TutorMoveType.CHANGE_REPRESENTATION,
-        )
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            externalProvider = true,
-        )
-        val restorationTester = StateRestorationTester(composeRule)
-        restorationTester.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { now },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = interactions,
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
-        composeRule.runOnIdle {
-            now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1
-            interactions.responses.value = listOf(completedTurn)
-        }
-
-        composeRule.onNodeWithTag("captured_tutor_disclosure").performScrollTo().assertExists()
-        composeRule.runOnIdle { assertEquals(0, modelTasks.executePlanCalls) }
-
-        restorationTester.emulateSavedInstanceStateRestore()
-
-        composeRule.onNodeWithTag("captured_tutor_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("captured_tutor_start_model")
-            .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.executePlanCalls == 1
-        }
-        composeRule.runOnIdle {
-            val resumedInput = modelTasks.planRequests.single().input as TutorPlanInput
-            val exactPriorTurn = resumedInput.priorTurns.single()
-            assertEquals(1, resumedInput.cycleOrdinal)
-            assertEquals(2, resumedInput.turnOrdinal)
-            assertEquals(completedTurn.turnOrdinal, exactPriorTurn.turnOrdinal)
-            assertEquals(completedTurn.diagnosticStemMarkdown, exactPriorTurn.diagnosticStemMarkdown)
-            assertEquals(completedTurn.selectedChoiceMarkdown, exactPriorTurn.selectedChoiceMarkdown)
-            assertEquals(completedTurn.selectionWasCorrect, exactPriorTurn.selectionWasCorrect)
-            assertEquals(completedTurn.feedbackMarkdown, exactPriorTurn.feedbackMarkdown)
-            assertEquals(completedTurn.requestedMove, exactPriorTurn.requestedMove)
-        }
-    }
-
-    @Test
-    fun expiredLeaseKeepsExactRetryAcrossStateRestoration() {
-        val session = session()
-        val exactMessage = "请沿用刚才的上下文再解释一次"
-        var now = 10_000L
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            externalProvider = true,
-        )
-        val restorationTester = StateRestorationTester(composeRule)
-        restorationTester.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { now },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer")
-            .assertIsDisplayed()
-            .performTextInput(exactMessage)
-        composeRule.onNodeWithTag("tutor_chat_send").performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.runOnIdle { modelTasks.publishLatestResponseFailure() }
-        composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().assertExists()
-        composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
-        composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().performClick()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.runOnIdle { assertEquals(1, modelTasks.executeRespondCalls) }
-
-        restorationTester.emulateSavedInstanceStateRestore()
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.executeRespondCalls == 2 &&
-                modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.runOnIdle {
-            val retriedInput = modelTasks.respondRequests.last().input as TutorRespondInput
-            assertEquals(exactMessage, retriedInput.studentMessage)
-            assertEquals(modelTasks.respondRequests.first().input, retriedInput)
-        }
-    }
-
-    @Test
-    fun pendingExactRetryContinuesLocallyWithoutAnotherRemoteOperation() {
-        val session = session()
-        val exactMessage = "继续刚才失败的原话"
-        var now = 10_000L
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            externalProvider = true,
-        )
-        val restorationTester = StateRestorationTester(composeRule)
-        restorationTester.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { now },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer")
-            .assertIsDisplayed()
-            .performTextInput(exactMessage)
-        composeRule.onNodeWithTag("tutor_chat_send").performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.runOnIdle { modelTasks.publishLatestResponseFailure() }
-        composeRule.runOnIdle { now += MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1 }
-        composeRule.onNodeWithTag("tutor_chat_retry").performScrollTo().performClick()
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.runOnIdle {
-            assertEquals(1, modelTasks.executeRespondCalls)
-            modelTasks.useCapabilities(
-                modelTasks.capabilitySnapshot.copy(
-                    providerDisplayName = "本机模型",
-                    executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
-                ),
-            )
-        }
-
-        restorationTester.emulateSavedInstanceStateRestore()
-
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.executeRespondCalls == 2 &&
-                modelTasks.respondTasks.value.lastOrNull()?.status == ModelTaskStatus.SUCCEEDED
-        }
-        composeRule.onNodeWithTag("tutor_respond_disclosure").assertDoesNotExist()
-        composeRule.runOnIdle {
-            val original = modelTasks.respondRequests.first()
-            val resumed = modelTasks.respondRequests.last()
-            assertEquals(original.requestId, resumed.requestId)
-            assertEquals(original.input, resumed.input)
-            assertEquals(original.egressManifest, resumed.egressManifest)
-            assertEquals(
-                ModelExecutionLocation.LOCAL_NO_EGRESS,
-                modelTasks.respondTasks.value.last().provider?.executionLocation,
-            )
-        }
-    }
 
     @Test
     fun retryableReplyRetriesTheExactPersistedRequest() {
@@ -2073,7 +1539,6 @@ class CapturedTutorSessionInstrumentedTest {
             restoredFailureCode = ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
             externalProvider = true,
         )
-        val originalRequest = modelTasks.respondTasks.value.single().request
         composeRule.setContent {
             MaterialTheme {
                 ReadyCapturedSession(
@@ -2090,25 +1555,14 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_model_settings").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_chat_retry").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
+        composeRule.onNodeWithText("这次回复没有完成。")
             .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.any { it.status == ModelTaskStatus.SUCCEEDED }
-        }
+            .assertExists()
+        composeRule.onNodeWithTag("tutor_chat_retry").assertDoesNotExist()
+        composeRule.onNodeWithTag("tutor_chat_model_settings").assertDoesNotExist()
         composeRule.runOnIdle {
             assertEquals(0, settingsRequests)
-            assertEquals(1, modelTasks.executeRespondCalls)
-            val renewed = modelTasks.respondRequests.single()
-            assertNotEquals(originalRequest.requestId, renewed.requestId)
-            assertEquals(originalRequest.input, renewed.input)
-            assertNotEquals(
-                originalRequest.egressManifest?.authorizationId,
-                renewed.egressManifest?.authorizationId,
-            )
+            assertEquals(0, modelTasks.executeRespondCalls)
         }
     }
 
@@ -2137,7 +1591,6 @@ class CapturedTutorSessionInstrumentedTest {
             externalProvider = true,
             currentCapabilities = changedProvider,
         )
-        val originalRequest = modelTasks.respondTasks.value.single().request
         composeRule.setContent {
             MaterialTheme {
                 ReadyCapturedSession(
@@ -2154,24 +1607,12 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_model_settings").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
+        composeRule.onNodeWithText("模型设置需要更新，题目已经保存。")
             .performScrollTo()
-            .performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            modelTasks.respondTasks.value.any { it.status == ModelTaskStatus.SUCCEEDED }
-        }
-
+            .assertExists()
+        composeRule.onNodeWithTag("tutor_chat_retry").assertDoesNotExist()
         composeRule.runOnIdle {
-            val recovered = modelTasks.respondRequests.single()
-            val recoveredInput = recovered.input as TutorRespondInput
-            assertEquals(originalRequest.input, recoveredInput)
-            assertEquals(exactMessage, recoveredInput.studentMessage)
-            assertEquals(2, recoveredInput.cycleOrdinal)
-            assertEquals(4, recoveredInput.turnOrdinal)
-            assertEquals(TutorMoveType.CHANGE_REPRESENTATION, recoveredInput.requestedMove)
-            assertEquals("configuration-v2", recovered.egressManifest?.providerConfigurationVersion)
+            assertEquals(0, modelTasks.executeRespondCalls)
         }
     }
 
@@ -2201,79 +1642,6 @@ class CapturedTutorSessionInstrumentedTest {
         composeRule.onNodeWithText("这次回复没有完成。").performScrollTo().assertExists()
         composeRule.onNodeWithTag("tutor_chat_retry").assertDoesNotExist()
         composeRule.runOnIdle { assertEquals(0, modelTasks.executeRespondCalls) }
-    }
-
-    @Test
-    fun pendingReplyFromAnOlderProviderIsStaticAndNeverOffersAnInvalidRetry() {
-        val session = session()
-        val currentProvider = ProviderCapabilitySnapshot(
-            providerId = "new-provider",
-            providerDisplayName = "新配置模型",
-            modelId = "new-model",
-            supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.TUTOR_RESPOND),
-            supportsImageInput = false,
-            supportsStructuredOutput = true,
-            supportsStreaming = true,
-            providerConfigurationVersion = "new-configuration",
-        )
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            restoredPendingMessage = "旧配置里还没回复的问题",
-            externalProvider = true,
-            currentCapabilities = currentProvider,
-        )
-        composeRule.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                    session = session,
-                    clock = { 10_000L },
-                    saveInProgress = false,
-                    saveError = null,
-                    onSave = {},
-                    modelTasks = modelTasks,
-                    interactions = RecordingTutorInteractions(),
-                    profile = StudyProfileOverview(),
-                    onOpenModelSettings = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_chat_legacy_incomplete")
-            .performScrollTo()
-            .assertExists()
-        composeRule.onNodeWithTag("tutor_chat_reply_progress").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_chat_retry").assertDoesNotExist()
-        composeRule.runOnIdle { assertEquals(0, modelTasks.executeRespondCalls) }
-    }
-
-    @Test
-    fun legacyConversationShowsOneCurrentProviderDisclosureBeforeReplying() {
-        val session = session()
-        val modelTasks = ChatModelTaskRepository(
-            session = session,
-            legacyPlanDisclosure = true,
-            externalProvider = true,
-        )
-        composeRule.setContent {
-            MaterialTheme {
-                ReadyCapturedSession(
-                        session = session,
-                        clock = { 10_000L },
-                        saveInProgress = false,
-                        saveError = null,
-                        onSave = {},
-                        modelTasks = modelTasks,
-                        interactions = RecordingTutorInteractions(),
-                        profile = StudyProfileOverview(),
-                        onOpenModelSettings = {},
-                    )
-            }
-        }
-
-        composeRule.onNodeWithTag("tutor_respond_disclosure").performScrollTo().assertExists()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertDoesNotExist()
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve").performClick()
-        composeRule.onNodeWithTag("tutor_chat_composer").assertIsDisplayed()
     }
 
     @Test
@@ -2421,18 +1789,12 @@ class CapturedTutorSessionInstrumentedTest {
             }
         }
 
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
         composeRule.onNodeWithTag("captured_tutor_restart_cycle")
             .performScrollTo()
             .performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) { modelTasks.planRequests.size == 1 }
         composeRule.runOnIdle { mounted.value = false }
         composeRule.runOnIdle { mounted.value = true }
-        composeRule.onNodeWithTag("tutor_respond_disclosure_approve")
-            .performScrollTo()
-            .performClick()
         composeRule.onNodeWithTag("captured_tutor_restart_cycle")
             .performScrollTo()
             .performClick()
@@ -2627,7 +1989,6 @@ class CapturedTutorSessionInstrumentedTest {
             provider = provider,
             requestId = "tutor-plan-action-only",
             occurredAtEpochMillis = 100,
-            approvedAtEpochMillis = 100,
         )
         val output = tutorOutput().copy(
             plan = tutorOutput().plan.copy(
@@ -2942,7 +2303,6 @@ class CapturedTutorSessionInstrumentedTest {
             provider = provider,
             requestId = "tutor-plan-restart-source",
             occurredAtEpochMillis = 100,
-            approvedAtEpochMillis = 100,
             priorTurns = priorTurns,
         )
         private val planSnapshot = ModelTaskSnapshot(
@@ -2965,7 +2325,6 @@ class CapturedTutorSessionInstrumentedTest {
             provider = provider,
             requestId = "tutor-respond-stuck-step",
             occurredAtEpochMillis = 50,
-            approvedAtEpochMillis = 50,
             responseOrdinal = 1,
             cycleOrdinal = 1,
             turnOrdinal = TutorPlanInput.MAX_TURNS,
@@ -3128,7 +2487,6 @@ class CapturedTutorSessionInstrumentedTest {
         private val restoredRequestedMove: TutorMoveType? = null,
         private val restoredPlanStatus: ModelTaskStatus = ModelTaskStatus.SUCCEEDED,
         private val includeInitialPlan: Boolean = true,
-        legacyPlanDisclosure: Boolean = false,
         externalProvider: Boolean = false,
         currentCapabilities: ProviderCapabilitySnapshot? = null,
         private val holdRespondExecution: Boolean = false,
@@ -3154,18 +2512,7 @@ class CapturedTutorSessionInstrumentedTest {
             provider = provider,
             requestId = "tutor-plan-chat",
             occurredAtEpochMillis = 100,
-            approvedAtEpochMillis = 100,
-        ).let { request ->
-            if (legacyPlanDisclosure) {
-                request.copy(
-                    egressManifest = requireNotNull(request.egressManifest).copy(
-                        promptPolicyVersion = "tutor-plan-v5",
-                    ),
-                )
-            } else {
-                request
-            }
-        }
+        )
         private val planSnapshot = ModelTaskSnapshot(
             taskId = "task-plan-chat",
             request = planRequest,
@@ -3230,7 +2577,6 @@ class CapturedTutorSessionInstrumentedTest {
                     provider = provider,
                     requestId = "tutor-respond-restored",
                     occurredAtEpochMillis = 300,
-                    approvedAtEpochMillis = 300,
                     responseOrdinal = 1,
                     cycleOrdinal = restoredCycleOrdinal,
                     turnOrdinal = restoredTurnOrdinal,
