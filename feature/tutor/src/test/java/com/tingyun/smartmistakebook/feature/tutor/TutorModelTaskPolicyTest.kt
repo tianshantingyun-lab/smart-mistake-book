@@ -13,14 +13,8 @@ import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
-import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
-import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
-import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
-import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
@@ -63,98 +57,33 @@ class TutorModelTaskPolicyTest {
     }
 
     @Test
-    fun compositionLeaseIsExactToQuestionProviderAndBothTutorPolicies() {
+    fun externalAgentRequestsCarryConsentAndNoPerItemManifest() {
         val question = session().toTutorQuestionContext()
-        val provider = provider()
-        val lease = TutorCompositionEgressLease.grant(
+        val plan = buildTutorPlanRequest(
             question = question,
-            provider = provider,
-            approvedAtEpochMillis = 100,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "consented-plan",
+            occurredAtEpochMillis = 100,
         )
-
-        assertEquals(
-            100L,
-            lease.approvedAtFor(question, provider, ModelTaskKind.TUTOR_PLAN, 1_000),
-        )
-        assertEquals(
-            100L,
-            lease.approvedAtFor(question, provider, ModelTaskKind.TUTOR_RESPOND, 1_000),
-        )
-        assertEquals(
-            null,
-            lease.approvedAtFor(
-                question.copy(sessionId = "another-session"),
-                provider,
-                ModelTaskKind.TUTOR_PLAN,
-                1_000,
-            ),
-        )
-        assertEquals(
-            null,
-            lease.approvedAtFor(
-                question.copy(revisionNumber = question.revisionNumber + 1),
-                provider,
-                ModelTaskKind.TUTOR_PLAN,
-                1_000,
-            ),
-        )
-        assertEquals(
-            null,
-            lease.approvedAtFor(
-                question,
-                provider(configurationVersion = "configuration-v2"),
-                ModelTaskKind.TUTOR_PLAN,
-                1_000,
-            ),
-        )
-        assertEquals(
-            null,
-            lease.copy(respondPromptPolicyVersion = "older-policy").approvedAtFor(
-                question,
-                provider,
-                ModelTaskKind.TUTOR_RESPOND,
-                1_000,
-            ),
-        )
-        assertEquals(
-            null,
-            lease.approvedAtFor(
-                question,
-                provider,
-                ModelTaskKind.TUTOR_PLAN,
-                1_000_000,
-            ),
-        )
-    }
-
-    @Test
-    fun planOnlyLeaseDoesNotAuthorizeResponseDisclosure() {
-        val question = session().toTutorQuestionContext()
-        val provider = provider()
-        val lease = TutorCompositionEgressLease.grant(
+        val respond = buildTutorRespondRequest(
             question = question,
-            provider = provider,
-            approvedAtEpochMillis = 100,
-            taskKinds = setOf(ModelTaskKind.TUTOR_PLAN),
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "consented-respond",
+            occurredAtEpochMillis = 100,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "这一步为什么？",
+            visibleTutorContextMarkdown = "先看符号。",
+            priorMessages = emptyList(),
         )
 
-        assertEquals(
-            100L,
-            lease.approvedAtFor(question, provider, ModelTaskKind.TUTOR_PLAN, 1_000),
-        )
-        assertEquals(
-            null,
-            lease.approvedAtFor(question, provider, ModelTaskKind.TUTOR_RESPOND, 1_000),
-        )
-        assertEquals(
-            null,
-            lease.approvedAtFor(
-                question,
-                provider,
-                ModelTaskKind.TUTOR_VISUAL_GENERATE,
-                1_000,
-            ),
-        )
+        assertTrue(plan.agentConsentGranted)
+        assertTrue(respond.agentConsentGranted)
+        assertTrue(plan.egressManifest == null)
+        assertTrue(respond.egressManifest == null)
     }
 
     @Test
@@ -225,173 +154,6 @@ class TutorModelTaskPolicyTest {
     }
 
     @Test
-    fun byokRecoveryRequiresAChangedConfigurationAndPreservesTheExactPendingReply() {
-        val oldProvider = provider(configurationVersion = "configuration-v1")
-        val changedProvider = provider(configurationVersion = "configuration-v2")
-        val original = buildTutorRespondRequest(
-            question = session().toTutorQuestionContext(),
-            profile = StudyProfileOverview(),
-            provider = oldProvider,
-            requestId = "tutor-respond-failed-byok",
-            occurredAtEpochMillis = 300,
-            approvedAtEpochMillis = 300,
-            responseOrdinal = 3,
-            cycleOrdinal = 2,
-            turnOrdinal = 4,
-            studentMessage = "  我卡在配方法第二步\n",
-            visibleTutorContextMarkdown = "正在解释配方法。",
-            priorMessages = listOf(TutorChatHistoryEntry("第一步呢？", "先整理二次项。")),
-            requestedMove = TutorMoveType.CHANGE_REPRESENTATION,
-        )
-        val failed = ModelTaskSnapshot(
-            taskId = "task-tutor-respond-failed-byok",
-            request = original,
-            requestFingerprint = ModelTaskFingerprint.of(original),
-            status = ModelTaskStatus.PERMANENT_FAILURE,
-            stateVersion = 2,
-            stage = ModelTaskStage.PREPARING,
-            userMessage = "模型设置需要更新",
-            attemptCount = 1,
-            provider = oldProvider,
-            failure = ModelTaskFailure(
-                ModelFailureCode.AUTHENTICATION_FAILED,
-                "认证失败",
-                retryable = false,
-            ),
-            createdAtEpochMillis = 300,
-            updatedAtEpochMillis = 301,
-        )
-
-        assertFalse(failed.requiresFreshTutorApproval(oldProvider))
-        assertTrue(failed.requiresFreshTutorApproval(changedProvider))
-
-        val timedOut = failed.copy(
-            failure = ModelTaskFailure(
-                ModelFailureCode.TIMEOUT,
-                "连接超时",
-                retryable = true,
-            ),
-        )
-        assertFalse(timedOut.requiresFreshTutorApproval(oldProvider))
-        assertTrue(timedOut.requiresFreshTutorApproval(changedProvider))
-
-        val legacyManifest = requireNotNull(original.egressManifest).copy(
-            promptPolicyVersion = "tutor-respond-legacy",
-        )
-        val legacyRequest = original.copy(egressManifest = legacyManifest)
-        val legacyPolicy = timedOut.copy(
-            request = legacyRequest,
-            requestFingerprint = ModelTaskFingerprint.of(legacyRequest),
-        )
-        assertTrue(legacyPolicy.requiresFreshTutorApproval(oldProvider))
-
-        val first = rebuildTutorRequestAfterApproval(failed, changedProvider, 500)
-        val restored = rebuildTutorRequestAfterApproval(failed, changedProvider, 500)
-        val changedAgain = rebuildTutorRequestAfterApproval(failed, changedProvider, 501)
-
-        assertEquals(first, restored)
-        assertEquals(original.input, first.input)
-        assertEquals(original.occurredAtEpochMillis, first.occurredAtEpochMillis)
-        assertNotEquals(original.requestId, first.requestId)
-        assertNotEquals(original.egressManifest?.authorizationId, first.egressManifest?.authorizationId)
-        assertEquals("configuration-v2", first.egressManifest?.providerConfigurationVersion)
-        assertNotEquals(first.requestId, changedAgain.requestId)
-    }
-
-    @Test
-    fun tutorDisclosureRequiresTheCurrentTaskSpecificPolicy() {
-        val provider = provider()
-        val current = buildTutorRespondRequest(
-            question = session().toTutorQuestionContext(),
-            profile = StudyProfileOverview(),
-            provider = provider,
-            requestId = "tutor-respond-current-disclosure",
-            occurredAtEpochMillis = 300,
-            approvedAtEpochMillis = 300,
-            responseOrdinal = 1,
-            cycleOrdinal = 1,
-            turnOrdinal = 1,
-            studentMessage = "解释这一步",
-            visibleTutorContextMarkdown = "先看当前式子。",
-            priorMessages = emptyList(),
-        )
-        val currentSnapshot = ModelTaskSnapshot(
-            taskId = "task-current-disclosure",
-            request = current,
-            requestFingerprint = ModelTaskFingerprint.of(current),
-            status = ModelTaskStatus.WAITING_FOR_MODEL,
-            stateVersion = 1,
-            stage = ModelTaskStage.PREPARING,
-            userMessage = "正在准备",
-            attemptCount = 1,
-            provider = provider,
-            createdAtEpochMillis = 300,
-            updatedAtEpochMillis = 301,
-        )
-        val legacyManifest = requireNotNull(current.egressManifest).copy(
-            promptPolicyVersion = "tutor-respond-legacy",
-        )
-        val legacyRequest = current.copy(egressManifest = legacyManifest)
-        val legacySnapshot = currentSnapshot.copy(
-            request = legacyRequest,
-            requestFingerprint = ModelTaskFingerprint.of(legacyRequest),
-        )
-
-        assertTrue(
-            currentSnapshot.coversCurrentTutorDisclosure(provider, ModelTaskKind.TUTOR_RESPOND),
-        )
-        assertFalse(
-            legacySnapshot.coversCurrentTutorDisclosure(provider, ModelTaskKind.TUTOR_RESPOND),
-        )
-        assertFalse(
-            currentSnapshot.coversCurrentTutorDisclosure(provider, ModelTaskKind.TUTOR_PLAN),
-        )
-    }
-
-    @Test
-    fun egressFailureRenewsTutorConsentWithoutASettingsChange() {
-        val provider = provider()
-        val original = buildTutorPlanRequest(
-            session = session(),
-            profile = StudyProfileOverview(),
-            provider = provider,
-            requestId = "tutor-plan-expired-approval",
-            occurredAtEpochMillis = 100,
-            approvedAtEpochMillis = 100,
-        )
-        val failed = ModelTaskSnapshot(
-            taskId = "task-tutor-plan-expired-approval",
-            request = original,
-            requestFingerprint = ModelTaskFingerprint.of(original),
-            status = ModelTaskStatus.PERMANENT_FAILURE,
-            stateVersion = 2,
-            stage = ModelTaskStage.PREPARING,
-            userMessage = "需要重新允许",
-            attemptCount = 1,
-            provider = provider,
-            failure = ModelTaskFailure(
-                ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
-                "授权已失效",
-                retryable = false,
-            ),
-            createdAtEpochMillis = 100,
-            updatedAtEpochMillis = 101,
-        )
-
-        listOf(
-            ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED,
-            ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
-        ).forEach { code ->
-            assertTrue(
-                failed.copy(
-                    failure = ModelTaskFailure(code, "授权需要更新", retryable = false),
-                ).requiresFreshTutorApproval(provider),
-            )
-        }
-        assertEquals(original.input, rebuildTutorRequestAfterApproval(failed, provider, 200).input)
-    }
-
-    @Test
     fun savedMistakeUsesStableMemoryForExactRevisionAndSeparatesChangedRevision() {
         val first = savedMistakeTutorQuestion(savedMistakeState("revision-3", revisionNumber = 3))
         val reopened = savedMistakeTutorQuestion(savedMistakeState("revision-3", revisionNumber = 3))
@@ -432,7 +194,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "saved-mistake-request",
             occurredAtEpochMillis = 20,
-            approvedAtEpochMillis = 20,
         )
 
         val input = request.input as TutorPlanInput
@@ -440,12 +201,12 @@ class TutorModelTaskPolicyTest {
         assertEquals(question.revisionNumber, input.draftRevisionNumber)
         assertEquals(question.questionDocument.document, input.questionDocument)
         assertEquals(setOf("knowledge-current"), question.relatedKnowledgeNodeIds)
-        assertTrue(requireNotNull(request.egressManifest).assets.isEmpty())
-        assertEquals(TUTOR_PROMPT_POLICY_VERSION, request.egressManifest?.promptPolicyVersion)
+        assertTrue(request.agentConsentGranted)
+        assertTrue(request.egressManifest == null)
     }
 
     @Test
-    fun requestDisclosesOnlyQuestionRelatedKnowledgeButNeverImageOrFullHistory() {
+    fun requestDisclosesOnlyQuestionRelatedKnowledgeUnderAgentConsent() {
         val request = buildTutorPlanRequest(
             question = session().toTutorQuestionContext().copy(
                 relatedKnowledgeNodeIds = setOf("node-1", "node-3"),
@@ -465,20 +226,17 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "tutor-request",
             occurredAtEpochMillis = 10,
-            approvedAtEpochMillis = 10,
         )
 
         val input = request.input as TutorPlanInput
-        val manifest = requireNotNull(request.egressManifest)
         assertEquals(
             listOf("node-1", "node-3"),
             input.relevantLearningEvidence.map { it.knowledgeNodeId },
         )
-        assertTrue(manifest.assets.isEmpty())
-        assertFalse(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in manifest.disclosedData)
-        assertFalse(ModelEgressDataClass.FULL_LEARNING_HISTORY in manifest.disclosedData)
-        assertTrue(ModelEgressDataClass.FULL_LEARNING_HISTORY in manifest.prohibitedData)
-        assertTrue(ModelEgressDataClass.API_CREDENTIALS in manifest.prohibitedData)
+        assertTrue(request.agentConsentGranted)
+        assertTrue(request.egressManifest == null)
+        assertFalse(input.relevantLearningEvidence.any { it.knowledgeNodeId == "node-2" })
+        assertFalse(input.relevantLearningEvidence.any { it.knowledgeNodeId == "other-subject" })
     }
 
     @Test
@@ -507,7 +265,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "bounded-timeline-request",
             occurredAtEpochMillis = now,
-            approvedAtEpochMillis = now,
         )
 
         val evidence = (request.input as TutorPlanInput).relevantLearningEvidence.single()
@@ -557,7 +314,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "tutor-unrelated-profile-request",
             occurredAtEpochMillis = 11,
-            approvedAtEpochMillis = 11,
         )
 
         val input = request.input as TutorPlanInput
@@ -614,7 +370,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "classified-question-global-memory-request",
             occurredAtEpochMillis = 11,
-            approvedAtEpochMillis = 11,
         )
 
         val evidence = (request.input as TutorPlanInput).relevantLearningEvidence
@@ -673,7 +428,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "bounded-subject-memory-request",
             occurredAtEpochMillis = now,
-            approvedAtEpochMillis = now,
         )
 
         val evidence = (request.input as TutorPlanInput).relevantLearningEvidence
@@ -699,7 +453,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "tutor-stale-request",
             occurredAtEpochMillis = 12,
-            approvedAtEpochMillis = 12,
         )
 
         val input = request.input as TutorPlanInput
@@ -730,7 +483,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "question-memory-request",
             occurredAtEpochMillis = 100,
-            approvedAtEpochMillis = 100,
         )
 
         val evidence = requireNotNull((request.input as TutorPlanInput).questionLearningEvidence)
@@ -738,10 +490,8 @@ class TutorModelTaskPolicyTest {
         assertEquals(3, evidence.retrievalFailureCount)
         assertEquals(0.41, evidence.retentionEstimate)
         assertEquals(TutorQuestionReviewStatus.DUE, evidence.reviewStatus)
-        assertTrue(
-            ModelEgressDataClass.QUESTION_LEARNING_EVIDENCE in
-                requireNotNull(request.egressManifest).disclosedData,
-        )
+        assertTrue(request.agentConsentGranted)
+        assertTrue(request.egressManifest == null)
     }
 
     @Test
@@ -764,7 +514,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "second-cycle-request",
             occurredAtEpochMillis = 200,
-            approvedAtEpochMillis = 200,
             cycleOrdinal = 2,
             priorConversationMemory = memory,
             priorCycleStudentMessages = exactMessages,
@@ -776,14 +525,8 @@ class TutorModelTaskPolicyTest {
         assertEquals(exactMessages, input.priorCycleStudentMessages)
         assertTrue(input.priorTurns.isEmpty())
         assertEquals(1, input.turnOrdinal)
-        assertTrue(
-            ModelEgressDataClass.STUDENT_TUTOR_MESSAGE in
-                requireNotNull(request.egressManifest).disclosedData,
-        )
-        assertTrue(
-            ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT in
-                requireNotNull(request.egressManifest).disclosedData,
-        )
+        assertTrue(request.agentConsentGranted)
+        assertTrue(request.egressManifest == null)
     }
 
     @Test
@@ -814,7 +557,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = requestId,
             occurredAtEpochMillis = 300,
-            approvedAtEpochMillis = 300,
             responseOrdinal = 2,
             cycleOrdinal = 2,
             turnOrdinal = 3,
@@ -824,7 +566,6 @@ class TutorModelTaskPolicyTest {
         )
 
         val input = request.input as TutorRespondInput
-        val manifest = requireNotNull(request.egressManifest)
         assertEquals(question.sessionId, input.sessionId)
         assertEquals(question.revisionNumber, input.draftRevisionNumber)
         assertEquals(question.questionDocument.document, input.questionDocument)
@@ -834,12 +575,8 @@ class TutorModelTaskPolicyTest {
         assertEquals(history, input.priorMessages)
         assertEquals(listOf("node-related"), input.relevantLearningEvidence.map { it.knowledgeNodeId })
         assertTrue(requestId.contains(":$TUTOR_RESPOND_PROMPT_POLICY_VERSION:"))
-        assertEquals(setOf(ModelTaskKind.TUTOR_RESPOND), manifest.authorizedTaskKinds)
-        assertTrue(ModelEgressDataClass.STUDENT_TUTOR_MESSAGE in manifest.disclosedData)
-        assertTrue(ModelEgressDataClass.TUTOR_CONVERSATION_CONTEXT in manifest.disclosedData)
-        assertTrue(ModelEgressDataClass.FULL_LEARNING_HISTORY in manifest.prohibitedData)
-        assertTrue(ModelEgressDataClass.API_CREDENTIALS in manifest.prohibitedData)
-        assertTrue(manifest.assets.isEmpty())
+        assertTrue(request.agentConsentGranted)
+        assertTrue(request.egressManifest == null)
     }
 
     @Test
@@ -967,7 +704,6 @@ class TutorModelTaskPolicyTest {
             provider = provider(),
             requestId = "tutor-respond-declare-tools",
             occurredAtEpochMillis = 300,
-            approvedAtEpochMillis = 300,
             responseOrdinal = 1,
             cycleOrdinal = 1,
             turnOrdinal = 1,

@@ -3,7 +3,6 @@ package com.tingyun.smartmistakebook.feature.tutor
 import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
-import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
@@ -27,7 +26,7 @@ import org.junit.Test
 
 class TutorVisualModelTaskPolicyTest {
     @Test
-    fun generationManifestGrantsOnlyTheExactCurrentQuestionImages() {
+    fun generationRequestCarriesExactSourceScopeUnderAgentConsent() {
         val request = buildTutorVisualGenerateRequest(
             question = question,
             provider = provider,
@@ -36,19 +35,13 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 1_000,
-            approvedAtEpochMillis = 900,
         )
         val input = request.input as TutorVisualGenerateInput
-        val manifest = requireNotNull(request.egressManifest)
 
         assertEquals(ModelTaskKind.TUTOR_VISUAL_GENERATE, input.kind)
         assertEquals(assets.map { it.toSourceRef() }, input.sourceAssets)
-        assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
-        assertEquals(setOf(ModelTaskKind.TUTOR_VISUAL_GENERATE), manifest.authorizedTaskKinds)
-        assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in manifest.disclosedData)
-        assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in manifest.disclosedData)
-        assertFalse(ModelEgressDataClass.FULL_LEARNING_HISTORY in manifest.disclosedData)
-        assertFalse(ModelEgressDataClass.API_CREDENTIALS in manifest.disclosedData)
+        assertTrue(request.agentConsentGranted)
+        assertTrue(request.egressManifest == null)
     }
 
     @Test
@@ -61,7 +54,6 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 1_000,
-            approvedAtEpochMillis = 900,
         )
         val later = buildTutorVisualGenerateRequest(
             question = question,
@@ -71,7 +63,6 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 2_000,
-            approvedAtEpochMillis = 1_900,
         )
         val changedSource = buildTutorVisualGenerateRequest(
             question = question,
@@ -81,7 +72,6 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 2_000,
-            approvedAtEpochMillis = 1_900,
         )
 
         assertEquals(first.requestId, later.requestId)
@@ -89,7 +79,7 @@ class TutorVisualModelTaskPolicyTest {
     }
 
     @Test
-    fun reviewAddsOnlyTheCandidateAndCannotBroadenTheImageScope() {
+    fun reviewAddsOnlyTheCandidateAndKeepsTheExactGenerationImageScope() {
         val generationRequest = buildTutorVisualGenerateRequest(
             question = question,
             provider = provider,
@@ -98,7 +88,6 @@ class TutorVisualModelTaskPolicyTest {
             focusMarkdown = "聚焦液面高度关系",
             explanationMarkdown = "先比较两侧液面。",
             occurredAtEpochMillis = 1_000,
-            approvedAtEpochMillis = 900,
         )
         val generated = TutorVisualGenerateOutput(
             sessionId = question.sessionId,
@@ -118,42 +107,83 @@ class TutorVisualModelTaskPolicyTest {
             generated = generated,
             reviewReasonCodes = setOf("low_generation_confidence"),
             occurredAtEpochMillis = 1_100,
-            approvedAtEpochMillis = 900,
         )
         val input = reviewRequest.input as TutorVisualReviewInput
-        val manifest = requireNotNull(reviewRequest.egressManifest)
 
         assertEquals(scene, input.candidateScene)
         assertEquals(assets.map { it.toSourceRef() }, input.sourceAssets)
-        assertEquals(assets.map { it.toEgressGrant() }, manifest.assets)
-        assertTrue(ModelEgressDataClass.MODEL_AUTHORED_VISUAL_CANDIDATE in manifest.disclosedData)
-        assertFalse(ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE in manifest.disclosedData)
+        val generationInput = generationRequest.input as TutorVisualGenerateInput
+        assertEquals(generationInput.sourceAssets, input.sourceAssets)
+        assertTrue(reviewRequest.agentConsentGranted)
+        assertTrue(reviewRequest.egressManifest == null)
     }
 
     @Test
-    fun oneCompositionApprovalCoversTextAndOptionalVisualWorkForTheSameQuestion() {
-        val lease = TutorCompositionEgressLease.grant(
-            question = question,
-            provider = provider,
-            approvedAtEpochMillis = 900,
+    fun visualAgentGateRequiresConsentAndImageCapabilityForExternalProviders() {
+        val imageCapable = provider
+        val structuredOnly = provider.copy(
+            supportsImageInput = false,
+        )
+        val local = provider.copy(
+            executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
         )
 
-        listOf(
-            ModelTaskKind.TUTOR_PLAN,
-            ModelTaskKind.TUTOR_RESPOND,
-            ModelTaskKind.TUTOR_VISUAL_GENERATE,
-            ModelTaskKind.TUTOR_VISUAL_REVIEW,
-        ).forEach { kind ->
-            assertEquals(
-                900L,
-                lease.approvedAtFor(
-                    question = question,
-                    provider = provider,
-                    taskKind = kind,
-                    nowEpochMillis = 1_000,
-                ),
-            )
-        }
+        assertTrue(
+            tutorAgentChatEnabled(
+                provider = imageCapable,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ),
+        )
+        assertTrue(
+            tutorAgentChatEnabled(
+                provider = imageCapable,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            ),
+        )
+        assertFalse(
+            tutorAgentChatEnabled(
+                provider = imageCapable,
+                consentEnabled = false,
+                kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ),
+        )
+        assertFalse(
+            tutorAgentChatEnabled(
+                provider = structuredOnly,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ),
+        )
+        assertFalse(
+            tutorAgentChatEnabled(
+                provider = structuredOnly,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            ),
+        )
+        assertTrue(
+            tutorAgentChatEnabled(
+                provider = structuredOnly,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_PLAN,
+            ),
+        )
+        assertTrue(
+            tutorAgentChatEnabled(
+                provider = structuredOnly,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_RESPOND,
+            ),
+        )
+        assertFalse(
+            tutorAgentChatEnabled(
+                provider = local,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ),
+        )
     }
 
     private companion object {

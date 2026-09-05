@@ -389,7 +389,6 @@ class TutorChatConversationTest {
             provider = provider,
             requestId = requestId,
             occurredAtEpochMillis = createdAtEpochMillis,
-            approvedAtEpochMillis = createdAtEpochMillis,
             responseOrdinal = responseOrdinal,
             cycleOrdinal = 1,
             turnOrdinal = 1,
