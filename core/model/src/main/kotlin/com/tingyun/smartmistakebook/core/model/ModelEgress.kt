@@ -360,10 +360,11 @@ sealed interface ModelExecutionPermit {
     data class External(val manifest: ModelEgressManifest) : ModelExecutionPermit
 
     /**
-     * Granted for capture-pipeline kinds (assess/parse/classify) when the user
-     * has enabled global model-image consent in Settings ("configuring the model
-     * = consent"). Carries no per-asset grant: the request's own asset refs plus
-     * the consent flag authorize the read. Tutor kinds always require a manifest.
+     * Granted for agent-eligible kinds (capture assess/parse/classify and tutor
+     * plan/respond/visual) when the user has enabled global model-agent consent in
+     * Settings ("configuring the model = consent"). Carries no per-asset grant: the
+     * request's own asset refs plus the consent flag authorize the read. Lobby and
+     * the organization/summarize routes always require a manifest.
      */
     data object ProviderConsented : ModelExecutionPermit
 }
@@ -425,16 +426,21 @@ object ModelRequestPayloadBudget {
 }
 
 /**
- * True when this request is a capture-pipeline round that the user has consented
- * (via the Settings toggle) to send to the configured image-capable provider.
+ * True when this agent-eligible request may egress to the configured provider
+ * under global consent, WITHOUT an image-capability constraint (a structured-only
+ * provider still runs text-only PLAN/RESPOND under consent). Image capability is
+ * enforced separately via [ModelTaskInput.requiresImageInput] at authorize time.
  * Single source of truth for authorize() and the gateway's pre-flight.
  */
-fun ModelTaskRequest.captureConsentMatches(provider: ProviderCapabilitySnapshot): Boolean =
-    captureEgressConsentGranted &&
-        input.isCapturePipelineKind &&
+fun ModelTaskRequest.agentConsentMatches(provider: ProviderCapabilitySnapshot): Boolean =
+    agentConsentGranted &&
+        input.isAgentConsentEligible &&
         provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-        provider.supportsImageInput &&
         provider.supports(input.kind)
+
+/** True when the input discloses image bytes that require an image-capable provider. */
+fun ModelTaskInput.requiresImageInput(): Boolean =
+    isAgentConsentEligible && this !is TutorPlanInput && this !is TutorRespondInput
 
 object ModelEgressPolicy {
     fun authorize(
@@ -447,11 +453,15 @@ object ModelEgressPolicy {
         -> ModelGatewayExecution(request, ModelExecutionPermit.LocalOnly)
 
         ModelExecutionLocation.EXTERNAL_PROVIDER -> {
-            // Global consent path: when the user enabled model-image consent in
-            // Settings and this is a capture-pipeline round (assess/parse/classify),
-            // the request may egress to the configured image-capable provider without
-            // a per-photo manifest. Tutor/classification kinds still require a manifest.
-            if (request.captureConsentMatches(provider)) {
+            // Global-consent path: when the user enabled model-agent consent and this
+            // is an agent-eligible round, the request may egress to the configured
+            // provider without a per-item manifest. Image-bearing kinds additionally
+            // require the provider to accept images. Lobby / organization routes still
+            // require a manifest.
+            if (
+                request.agentConsentMatches(provider) &&
+                (!request.input.requiresImageInput() || provider.supportsImageInput)
+            ) {
                 return ModelGatewayExecution(request, ModelExecutionPermit.ProviderConsented)
             }
             val manifest = request.egressManifest ?: throw ModelEgressAuthorizationException(
@@ -493,9 +503,14 @@ object ModelEgressPolicy {
             }
             ModelExecutionPermit.ProviderConsented -> {
                 // Re-validate the global-consent condition holds right now (toggle still on,
-                // provider still the configured image-capable one). The per-byte asset gate is
-                // enforced separately in the restricted asset source.
-                if (execution.request.captureConsentMatches(provider)) return
+                // provider still the configured one, image-capable for image kinds). The
+                // per-byte asset gate is enforced separately in the restricted asset source.
+                if (
+                    execution.request.agentConsentMatches(provider) &&
+                    (!execution.request.input.requiresImageInput() || provider.supportsImageInput)
+                ) {
+                    return
+                }
                 throw invalidCurrentAuthorization()
             }
             ModelExecutionPermit.LocalOnly -> throw invalidCurrentAuthorization()

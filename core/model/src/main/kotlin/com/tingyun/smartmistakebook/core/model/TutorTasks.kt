@@ -564,6 +564,9 @@ data class TutorPlanInput(
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_PLAN
 
+    override val isAgentConsentEligible: Boolean
+        get() = true
+
     override val subjectId: String
         get() = sessionId
 
@@ -687,6 +690,9 @@ data class TutorRespondInput(
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
+
+    override val isAgentConsentEligible: Boolean
+        get() = true
 
     override val subjectId: String
         get() = sessionId
