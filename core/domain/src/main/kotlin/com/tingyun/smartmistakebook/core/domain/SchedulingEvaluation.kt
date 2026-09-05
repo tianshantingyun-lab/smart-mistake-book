@@ -30,8 +30,19 @@ data class ReviewSample(
 ) {
     val isCorrect: Boolean get() = rating != FsrsRating.AGAIN
 
+    /**
+     * Elapsed calendar days from [lastReviewedAt] to this sample: the
+     * collected learner-local delta when present, otherwise a wall-clock day
+     * floor. Shared by every replay/optimizer path so the delta_t semantics
+     * stay identical across models (spec §2.20 parity).
+     */
+    fun elapsedDaysSince(lastReviewedAt: Long): Double = deltaTDays ?: (
+        (reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS
+        ).coerceAtLeast(0.0)
+
     companion object {
         const val ATTEMPT_KIND = "ATTEMPT"
+        private const val DAY_MILLIS = 86_400_000.0
     }
 }
 
@@ -118,9 +129,7 @@ object SchedulingReplay {
                 lastReviewedAt = sample.reviewedAtEpochMillis
                 continue
             }
-            val elapsedDays = sample.deltaTDays ?: (
-                (sample.reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS
-                ).coerceAtLeast(0.0)
+            val elapsedDays = sample.elapsedDaysSince(lastReviewedAt)
             if (elapsedDays < 1.0) {
                 // Same-day repeats carry no long-run prediction (spec §2.15).
                 stability = FsrsScheduleMath.shortTermStability(stability, sample.rating, parameters)
@@ -157,7 +166,6 @@ object SchedulingReplay {
         return total / predictions.size
     }
 
-    private const val DAY_MILLIS = 86_400_000.0
 }
 
 /**
@@ -286,7 +294,16 @@ object SchedulingEvaluationHarness {
     /**
      * The audited pre-FSRS model: exponential retention with the ad-hoc
      * stability multipliers, fed ratings mapped back to outcomes.
+     *
+     * The replay mirrors [SchedulingReplay.predict] so both models score the
+     * exact same prediction pairs (spec §2.20 parity): the first sample only
+     * seeds state, and a same-day repeat (elapsed < 1 day) carries no
+     * long-run retention signal — it advances state without emitting a
+     * prediction pair.
      */
+    internal fun legacyPredictionsForTest(history: List<ReviewSample>): List<Pair<Double, Boolean>> =
+        legacy(history)
+
     private fun legacy(history: List<ReviewSample>): List<Pair<Double, Boolean>> {
         val ordered = history.sortedBy(ReviewSample::reviewedAtEpochMillis)
         var stability = 0.5
@@ -299,14 +316,20 @@ object SchedulingEvaluationHarness {
                 lastReviewedAt = sample.reviewedAtEpochMillis
                 continue
             }
-            val elapsedDays = sample.deltaTDays ?: (
-                (sample.reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS
-                ).coerceAtLeast(0.0)
-            val probability = if (elapsedDays <= 0.0) {
-                1.0
-            } else {
-                pow(0.9, elapsedDays / stability)
+            val elapsedDays = sample.elapsedDaysSince(lastReviewedAt)
+            if (elapsedDays < 1.0) {
+                // Same-day repeats carry no long-run prediction (spec §2.15);
+                // advance state exactly like the FSRS replay does so the two
+                // models evaluate identical prediction sets.
+                stability = if (sample.isCorrect) {
+                    stability * 2.6 + 0.25
+                } else {
+                    (stability * 0.45).coerceAtLeast(0.25)
+                }
+                lastReviewedAt = sample.reviewedAtEpochMillis
+                continue
             }
+            val probability = pow(0.9, elapsedDays / stability)
             predictions += probability to sample.isCorrect
             stability = if (sample.isCorrect) {
                 stability * 2.6 + 0.25
@@ -326,7 +349,6 @@ object SchedulingEvaluationHarness {
 
     private fun pow(base: Double, exponent: Double): Double = Math.pow(base, exponent)
 
-    private const val DAY_MILLIS = 86_400_000.0
 }
 
 /**
@@ -367,18 +389,23 @@ object FsrsParameterOptimizer {
         iterations: Int = DEFAULT_ITERATIONS,
     ): Result {
         require(samples.isNotEmpty()) { "Optimization requires review samples" }
-        val sampleCount = samples.size
-        if (sampleCount < MIN_SAMPLES_FOR_FITTING) {
+        // The data-volume thresholds (fsrs-rs 8/64; spec §2.11b unlock floor)
+        // exist to keep the fit honest relative to how many outcomes the
+        // replay can actually score. First samples and same-day repeats never
+        // produce a prediction pair, so raw row counts over-state the learnable
+        // data; count the predictable (long-run) samples instead.
+        val predictableSampleCount = predictableSampleCount(samples)
+        if (predictableSampleCount < MIN_SAMPLES_FOR_FITTING) {
             return Result(
                 FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf(),
                 Mode.INSUFFICIENT_DATA,
                 Double.NaN,
                 Double.NaN,
-                sampleCount,
+                predictableSampleCount,
                 emptyList(),
             )
         }
-        val baseIndices = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
+        val baseIndices = if (predictableSampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
             (0..5).toList()
         } else {
             (0..14).toList() + listOf(20)
@@ -406,7 +433,7 @@ object FsrsParameterOptimizer {
         // Spec §2.11b: unlock the hard/easy penalty coefficients (w15/w16) only when the sample
         // volume reaches the unlock floor AND doing so improves validation loss by more than the
         // gain margin — a guard against overfitting two extra parameters on insufficient data.
-        if (sampleCount >= UNLOCK_W15_W16_MIN_SAMPLES) {
+        if (predictableSampleCount >= UNLOCK_W15_W16_MIN_SAMPLES) {
             val extendedIndices = (baseIndices + listOf(15, 16)).distinct()
             val (extendedParams, extendedValidationLoss) = fit(cards, cutoff, extendedIndices, iterations)
             val relativeGain = (bestValidationLoss - extendedValidationLoss) / bestValidationLoss
@@ -418,7 +445,7 @@ object FsrsParameterOptimizer {
             }
         }
 
-        val mode = if (sampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
+        val mode = if (predictableSampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
             Mode.INITIAL_STABILITY_ONLY
         } else {
             Mode.FULL_FIT
@@ -428,9 +455,32 @@ object FsrsParameterOptimizer {
             mode,
             bestTrainLoss,
             bestValidationLoss,
-            sampleCount,
+            predictableSampleCount,
             fittedIndices,
         )
+    }
+
+    /**
+     * Number of review samples the replay can emit a prediction pair for: the
+     * first review of each card only seeds state, and same-day repeats carry
+     * no long-run retention signal. A sample qualifies when it has a prior
+     * review at least one calendar day earlier.
+     */
+    internal fun predictableSampleCount(samples: List<ReviewSample>): Int {
+        var count = 0
+        samples.groupBy(ReviewSample::practiceUnitId)
+            .values
+            .forEach { history ->
+                val ordered = history.sortedBy(ReviewSample::reviewedAtEpochMillis)
+                if (ordered.size < 2) return@forEach
+                var lastReviewedAt = ordered.first().reviewedAtEpochMillis
+                for (sample in ordered.drop(1)) {
+                    val elapsedDays = sample.elapsedDaysSince(lastReviewedAt)
+                    if (elapsedDays >= 1.0) count += 1
+                    lastReviewedAt = sample.reviewedAtEpochMillis
+                }
+            }
+        return count
     }
 
     /**

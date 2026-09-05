@@ -847,6 +847,11 @@ class LearningProjector(
         val nextCrossDaySuccess = when {
             previous == null -> if (rating == FsrsRating.AGAIN) 0 else 1
             crossDay && rating != FsrsRating.AGAIN -> previous.consecutiveCrossDaySuccess + 1
+            // Spec §2.10: the streak counts *consecutive* cross-day successes —
+            // a cross-day lapse breaks the run. Without this reset the stale
+            // pre-lapse count would combine with post-lapse successes into a
+            // fake "three in a row" graduation trigger.
+            crossDay && rating == FsrsRating.AGAIN -> 0
             else -> previous.consecutiveCrossDaySuccess
         }
         val nextCrossDayAgain = when {

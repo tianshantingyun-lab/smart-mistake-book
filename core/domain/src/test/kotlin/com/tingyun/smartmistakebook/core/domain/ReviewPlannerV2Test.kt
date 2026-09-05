@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
@@ -284,8 +286,107 @@ class ReviewPlannerV2Test {
         assertTrue(plan.totalEstimatedDurationSeconds <= budget)
     }
 
-    private fun request(candidates: List<ReviewCandidate>, budget: Int) = ReviewPlanningRequest(
-        learnerSnapshot = snapshot(),
+    @Test
+    fun `swap keeps the high value item over a weak but more diverse one`() {
+        // Behavior-contract test (not a bug-reproduction): with a large score
+        // gap the swap phase must keep the high-value pair even when the
+        // alternative adds diversity. The old absolute total-utility bonus
+        // only mis-fired in a narrow band (score gap < diversity gain), which
+        // this scenario does not reproduce — it pins the contract that a
+        // weak-but-diverse item must not crowd out a high-value one.
+        // A and B are high-value: their KC is CONFLICTED (a mastery
+        // emergency), so each scores well above C, whose KC has recent
+        // supported evidence and near-certain mastery (low mastery risk).
+        // A and B share a source; C brings a different source and family, so
+        // swapping B for C would add diversity — but C's static value is far
+        // too low to justify displacing B. The swap phase must keep A and B.
+        val highValueSnapshot = masterySnapshot(
+            kcId = "kc-conflicted",
+            status = MasteryStatus.CONFLICTED,
+            mastery = 0.6,
+            conservative = 0.55,
+        )
+        val lowRiskState = KnowledgeMasteryState(
+            knowledgeNodeId = "kc-ok",
+            masteryScore = 0.95,
+            conservativeMasteryScore = 0.92,
+            evidenceMass = 4.0,
+            status = MasteryStatus.LEARNING,
+            calibrationSupport = CalibrationSupport.SUPPORTED,
+            projectorVersion = LearningProjector.VERSION,
+            checkpointSequence = 4,
+            lastEvidenceAtEpochMillis = now,
+            independentCorrectObservations = listOf(
+                IndependentCorrectObservation(
+                    itemFamilyId = "family-ok",
+                    studyDayEpochDay = now / DAY_MILLIS,
+                    occurredAtEpochMillis = now - 86_400_000L,
+                    eventSequence = 1,
+                    bindingId = "binding-ok",
+                    evidenceWeight = 1.0,
+                    calibration = CalibrationSnapshot(
+                        CalibrationSupport.SUPPORTED,
+                        "source",
+                        "v1",
+                        now - 86_400_000L,
+                        now + 86_400_000L,
+                    ),
+                ),
+            ),
+        )
+        val combined = highValueSnapshot.copy(
+            knowledgeMasteryStates = mapOf(
+                "kc-conflicted" to highValueSnapshot.knowledgeMasteryStates.getValue("kc-conflicted"),
+                "kc-ok" to lowRiskState,
+            ),
+        )
+        val a = candidate(
+            "a", "family-a", "source-shared", 5.5, 60, "subject-1", kc = "kc-conflicted",
+        )
+        val b = candidate(
+            "b", "family-b", "source-shared", 5.5, 60, "subject-2", kc = "kc-conflicted",
+        )
+        val c = candidate(
+            "c", "family-c", "source-other", 5.5, 60, "subject-3", kc = "kc-ok",
+        )
+
+        val plan = planner.plan(request(listOf(a, b, c), 120, combined))
+
+        val selected = plan.queueItems.map { it.practiceUnitId }.toSet()
+        assertEquals(setOf("a", "b"), selected)
+    }
+
+    private fun masterySnapshot(
+        kcId: String,
+        status: MasteryStatus,
+        mastery: Double,
+        conservative: Double,
+    ): LearnerSnapshot {
+        val masteryState = KnowledgeMasteryState(
+            knowledgeNodeId = kcId,
+            masteryScore = mastery,
+            conservativeMasteryScore = conservative,
+            evidenceMass = 2.0,
+            status = status,
+            calibrationSupport = CalibrationSupport.SUPPORTED,
+            projectorVersion = LearningProjector.VERSION,
+            checkpointSequence = 4,
+        )
+        return LearnerSnapshot(
+            learnerId = "learner-1",
+            problemMemoryStates = emptyMap(),
+            knowledgeMasteryStates = mapOf(kcId to masteryState),
+            checkpoint = ProjectionCheckpoint(4, LearningProjector.VERSION, now),
+            generatedAtEpochMillis = now,
+        )
+    }
+
+    private fun request(
+        candidates: List<ReviewCandidate>,
+        budget: Int,
+        learnerSnapshot: LearnerSnapshot = snapshot(),
+    ) = ReviewPlanningRequest(
+        learnerSnapshot = learnerSnapshot,
         candidates = candidates,
         localDayEpochDay = 10,
         timeZoneId = "Asia/Shanghai",
@@ -320,9 +421,10 @@ class ReviewPlannerV2Test {
         difficulty: Double,
         seconds: Int,
         subjectId: String? = null,
+        kc: String = "kc-a",
     ) = ReviewCandidate(
         practiceUnitId = unitId,
-        knowledgeNodeIds = setOf("kc-a"),
+        knowledgeNodeIds = setOf(kc),
         itemFamilyId = familyId,
         sourceBundleId = sourceId,
         subjectId = subjectId,

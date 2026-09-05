@@ -134,6 +134,52 @@ class FsrsProjectionBehaviorTest {
     }
 
     @Test
+    fun `cross day again resets the graduation success streak`() {
+        // Seed one cross-day success, then lapse on the next cross-day review:
+        // the success streak must reset to zero — two further successes must
+        // NOT read as "three in a row" (spec §2.10 counts consecutive
+        // cross-day successes; a lapse breaks the run).
+        val seeded = seededCrossDay()
+        val lapseAt = seeded.memory.lastReviewedAtEpochMillis + 3 * DAY_MILLIS
+        val lapsed = projector.project(
+            seeded.snapshot,
+            listOf(attempt("a-lapse", 4, wrongEvidence(), occurredAt = lapseAt)),
+            4,
+        )
+        val afterLapse = lapsed.snapshot.problemMemoryStates.getValue("unit-1")
+        assertEquals("a cross-day Again must clear the success streak", 0, afterLapse.consecutiveCrossDaySuccess)
+        assertEquals(1, afterLapse.consecutiveCrossDayAgain)
+
+        // Drive the card through two further cross-day successes (each review
+        // explicitly on a fresh calendar day after the lapse). If the streak
+        // had not been reset by the lapse, the second success would already
+        // read as three in a row and trigger graduation.
+        val lapseEpochDay = lapseAt / DAY_MILLIS
+        var snapshot = lapsed.snapshot
+        for (index in 1..2) {
+            val occurredAt = lapseAt + index * DAY_MILLIS
+            val crossDayAttempt = attempt(
+                "a-recover-$index",
+                4L + index,
+                easyEvidence(),
+                occurredAt = occurredAt,
+            ).copy(
+                studyDay = StudyDayContext(
+                    epochDay = lapseEpochDay + index,
+                    timeZoneId = "UTC",
+                    utcOffsetMinutes = 0,
+                ),
+            )
+            val result = projector.project(snapshot, listOf(crossDayAttempt), 4L + index)
+            snapshot = result.snapshot
+        }
+        val recovered = snapshot.problemMemoryStates.getValue("unit-1")
+        // Exactly two successes after the lapse; graduation needs three.
+        assertEquals(2, recovered.consecutiveCrossDaySuccess)
+        assertEquals(0, recovered.consecutiveCrossDayAgain)
+    }
+
+    @Test
     fun `leech freezes difficulty at its ceiling`() {
         val leeched = seededCrossDay().memory.copy(
             lapseCount = ProblemMemoryState.LEECH_LAPSE_THRESHOLD,

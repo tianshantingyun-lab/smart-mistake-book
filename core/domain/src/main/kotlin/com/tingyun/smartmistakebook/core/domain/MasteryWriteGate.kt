@@ -161,6 +161,10 @@ object MasteryWriteGate {
             REQUIRES_BEHAVIORAL_SUPPORT_FOR_MASTERED &&
             !input.hasBehavioralSupport
         ) {
+            // 研究底稿 §1.3 措辞为"无行为佐证则按 CONFIDENT 降级"；此处有意选
+            // "拒 + 观察通道"而非降级：MASTERED 无行为佐证时模型的"掌握"判断
+            // 与 CONFIDENT 无法区分（都落 0.15 会让档位边界失效），且宁漏记比
+            // 误记安全——被拒证据落 rejected 观察行，后续有真实作答佐证时可补救。
             return GateResult.Rejected(RejectReason.MASTERED_WITHOUT_BEHAVIORAL_SUPPORT)
         }
         val lastWrite = input.sameKcLastWriteAgoMillis

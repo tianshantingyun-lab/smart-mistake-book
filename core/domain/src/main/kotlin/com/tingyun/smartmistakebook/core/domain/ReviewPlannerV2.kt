@@ -68,7 +68,12 @@ class ReviewPlannerV2(
         )
 
         // Phase 2: Local swap optimization to improve diversity
-        val optimized = localSwapOptimization(selected, scoredWithPairs, request.timeBudgetSeconds)
+        val optimized = localSwapOptimization(
+            selected,
+            scoredWithPairs,
+            request.timeBudgetSeconds,
+            confusablePartners,
+        )
         check(satisfiesHardConstraints(optimized)) {
             "Review plan violated the hard sequencing constraints (audit §7.2)"
         }
@@ -255,11 +260,22 @@ class ReviewPlannerV2(
      *
      * `unselected` is recomputed after every accepted swap so that already
      * selected practice units can never be offered again as swap targets.
+     *
+     * The swap criterion is *marginal*, mirroring the incremental criterion
+     * the beam/greedy construction uses: an incoming item is evaluated
+     * against the selection with the outgoing item removed, exactly as if it
+     * were being appended in the outgoing item's place. Both candidates face
+     * the same context, so the comparison is strict — a low-value item cannot
+     * displace a high-value one merely because it adds a diversity dimension
+     * (that was the old absolute total-utility bug: the diversity term was a
+     * whole-selection constant, so swapping two mutually exclusive candidates
+     * changed almost nothing and the higher *static* score always won).
      */
     private fun localSwapOptimization(
         selected: List<ScoredCandidate>,
         allCandidates: List<ScoredCandidate>,
         timeBudgetSeconds: Int,
+        confusablePartners: Map<String, Set<String>> = emptyMap(),
     ): List<ScoredCandidate> {
         if (selected.size < 2) return selected
 
@@ -273,7 +289,14 @@ class ReviewPlannerV2(
             val unselected = allCandidates.filter {
                 it.candidate.practiceUnitId !in usedPracticeUnits
             }
-
+            // The context every candidate is scored against: the selection
+            // minus the position under swap. Both the outgoing and the
+            // incoming item face the same context, which makes their marginal
+            // scores directly comparable.
+            val rest = currentSelection.filterIndexed { index, _ -> index != i }
+            val restUsedFamilies = rest.groupingBy { it.candidate.itemFamilyId }.eachCount()
+            val restUsedSources = rest.mapNotNull { it.candidate.sourceBundleId }
+                .groupingBy { it }.eachCount()
             var improved = false
             for (unselectedItem in unselected) {
                 val newTime = currentSelection.sumOf { it.candidate.estimatedDurationSeconds } -
@@ -285,13 +308,29 @@ class ReviewPlannerV2(
                 // A swap must never break the hard sequencing constraints.
                 if (!satisfiesHardConstraints(newSelection)) continue
 
-                // Compare total utility (score sum + diversity bonus), not
-                // diversity alone, so a weak-but-diverse item cannot displace
-                // a high-value item.
-                val currentUtility = totalUtility(currentSelection)
-                val newUtility = totalUtility(newSelection)
+                // Marginal comparison against the SAME context for both items:
+                // the outgoing item is re-scored as if it were being appended
+                // to `rest`, and the incoming item likewise. Only a net gain
+                // (score gain minus any context penalty the incoming item
+                // introduces) is accepted.
+                val outgoingValue = marginalValue(
+                    candidate = currentItem,
+                    context = rest,
+                    restUsedFamilies = restUsedFamilies,
+                    restUsedSources = restUsedSources,
+                    allCandidates = allCandidates,
+                    confusablePartners = confusablePartners,
+                )
+                val incomingValue = marginalValue(
+                    candidate = unselectedItem,
+                    context = rest,
+                    restUsedFamilies = restUsedFamilies,
+                    restUsedSources = restUsedSources,
+                    allCandidates = allCandidates,
+                    confusablePartners = confusablePartners,
+                )
 
-                if (newUtility > currentUtility) {
+                if (incomingValue > outgoingValue) {
                     currentSelection = newSelection
                     improved = true
                     break
@@ -301,6 +340,32 @@ class ReviewPlannerV2(
         }
 
         return currentSelection
+    }
+
+    /**
+     * Marginal value of appending [candidate] to a fixed [context] (the
+     * selection without the position under swap): static score minus the
+     * dynamic context penalties the item would introduce, plus the confusable
+     * partner bonus it would earn. This is the same incremental criterion the
+     * greedy/beam construction applies, evaluated over the *remaining* items
+     * of the selection instead of the already-selected prefix.
+     */
+    private fun marginalValue(
+        candidate: ScoredCandidate,
+        context: List<ScoredCandidate>,
+        restUsedFamilies: Map<String, Int>,
+        restUsedSources: Map<String, Int>,
+        allCandidates: List<ScoredCandidate>,
+        confusablePartners: Map<String, Set<String>>,
+    ): Double {
+        // 与 greedy/beam 完全同构的边际判据：复用同一组动态罚 helper，
+        // 上下文换成"rest"（集合去掉换出位）的频次 map。复用保证两边
+        // 的 family/source 罚带同一 coerceAtMost 上限，不会一处封顶一处不封。
+        val familyPenalty = computeDynamicFamilyPenalty(candidate, restUsedFamilies)
+        val sourcePenalty = computeDynamicSourcePenalty(candidate, restUsedSources)
+        val confusable = confusableBonus(candidate, context, confusablePartners)
+        val antiOscillation = antiOscillationPenalty(candidate, context, allCandidates)
+        return candidate.score - familyPenalty - sourcePenalty + confusable - antiOscillation
     }
 
     /**
@@ -333,16 +398,6 @@ class ReviewPlannerV2(
     }
 
     /**
-     * Total utility of a selection: sum of adjusted scores plus a diversity
-     * bonus that rewards family/source/difficulty spread.
-     */
-    private fun totalUtility(selection: List<ScoredCandidate>): Double {
-        val scoreSum = selection.sumOf(ScoredCandidate::score)
-        val diversityBonus = computeDiversityScore(selection)
-        return scoreSum + diversityBonus
-    }
-
-    /**
      * Compute dynamic family penalty based on current queue composition.
      * Penalty grows with each additional item from the same family.
      */
@@ -367,16 +422,6 @@ class ReviewPlannerV2(
             ?: 0
         return (sourceCount * SOURCE_PENALTY_WEIGHT)
             .coerceAtMost(MAX_DIVERSITY_PENALTY)
-    }
-
-    /**
-     * Compute diversity score for a selection. Higher is better.
-     */
-    private fun computeDiversityScore(selection: List<ScoredCandidate>): Double {
-        val familyCount = selection.map { it.candidate.itemFamilyId }.distinct().size
-        val sourceCount = selection.mapNotNull { it.candidate.sourceBundleId }.distinct().size
-        val difficultyDistribution = selection.groupBy { it.difficultyBand }.size
-        return familyCount * 1.0 + sourceCount * 0.5 + difficultyDistribution * 0.3
     }
 
     private fun scoreCandidate(

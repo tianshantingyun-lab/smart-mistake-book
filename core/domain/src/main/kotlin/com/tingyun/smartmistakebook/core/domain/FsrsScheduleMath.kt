@@ -64,8 +64,8 @@ object FsrsScheduleMath {
 
     /**
      * Interval inverse I(r*, S) = (S/FACTOR)·(r*^(1/DECAY) − 1), rounded to a
-     * whole day with the py-fsrs floors (at least one day, at most the
-     * maximum interval).
+     * whole day with the py-fsrs `_next_interval` behavior (round to nearest,
+     * at least one day, at most the maximum interval).
      */
     fun intervalDays(stabilityDays: Double, desiredRetention: Double): Int {
         require(stabilityDays > 0.0) { "Stability must be positive" }

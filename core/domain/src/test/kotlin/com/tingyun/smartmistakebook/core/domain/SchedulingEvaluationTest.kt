@@ -204,6 +204,71 @@ class SchedulingEvaluationHarnessTest {
         assertTrue(result.trainLogLoss.isFinite())
     }
 
+    @Test
+    fun `legacy baseline skips same day repeats so both models score the same prediction pairs`() {
+        // A history whose every long-run prediction is preceded by a same-day
+        // repeat. The legacy baseline must skip the same-day review (it
+        // carries no long-run retention signal) instead of emitting a
+        // near-certainty pair, so the FSRS and baseline log-losses are
+        // computed over identical prediction sets (spec §2.20 parity).
+        val history = listOf(
+            sample("unit-1", DAY * 0, FsrsRating.GOOD, deltaTDays = null),
+            sample("unit-1", DAY * 0 + 30 * 60_000L, FsrsRating.GOOD, deltaTDays = 0.0),
+            sample("unit-1", DAY * 3, FsrsRating.GOOD, deltaTDays = 3.0),
+        )
+
+        val fsrsPredictions = SchedulingReplay.predict(history)
+        val legacyPredictions = SchedulingEvaluationHarness.legacyPredictionsForTest(history)
+
+        assertEquals("same-day repeats must not create legacy prediction pairs", fsrsPredictions.size, legacyPredictions.size)
+    }
+
+    @Test
+    fun `optimizer thresholds count predictable samples not raw rows`() {
+        // Thirty-six cards × (first sample + two same-day repeats + one
+        // cross-day review): 144 raw rows cross the 64-row FULL_FIT floor, but
+        // only the final review per card is predictable — 36 predictable
+        // samples still sit in the 8..63 INITIAL_STABILITY_ONLY band. Judging
+        // the band on raw rows would wrongly claim FULL_FIT and fit 16
+        // parameters to 36 data points.
+        val samples = (0 until 36).flatMap { card ->
+            listOf(
+                sample("unit-$card", DAY * card, FsrsRating.GOOD, deltaTDays = null),
+                sample("unit-$card", DAY * card + 1_000L, FsrsRating.GOOD, deltaTDays = 0.0),
+                sample("unit-$card", DAY * card + 2_000L, FsrsRating.GOOD, deltaTDays = 0.0),
+                sample("unit-$card", DAY * (card + 3), FsrsRating.GOOD, deltaTDays = 3.0),
+            )
+        }
+
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 4)
+
+        assertEquals(FsrsParameterOptimizer.Mode.INITIAL_STABILITY_ONLY, result.mode)
+        assertEquals(listOf(0, 1, 2, 3, 4, 5), result.optimizedParameterIndices)
+        assertTrue(result.trainLogLoss.isFinite())
+    }
+
+    @Test
+    fun `optimizer reports insufficient data when no cross day prediction exists`() {
+        // Every review is on the same calendar day as its predecessor: there
+        // is no long-run prediction to fit, so the optimizer must report
+        // insufficient data instead of fitting noise (raw rows would exceed
+        // the 8-sample floor here).
+        val samples = (0 until 10).flatMap { card ->
+            listOf(
+                sample("unit-$card", DAY * card, FsrsRating.GOOD, deltaTDays = null),
+                sample("unit-$card", DAY * card + 60_000L, FsrsRating.AGAIN, deltaTDays = 0.0),
+            )
+        }
+
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 4)
+
+        assertEquals(FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA, result.mode)
+        assertEquals(
+            FsrsScheduleMath.DEFAULT_PARAMETERS.toList(),
+            result.parameters.toList(),
+        )
+    }
+
     private fun sample(
         unitId: String,
         at: Long,

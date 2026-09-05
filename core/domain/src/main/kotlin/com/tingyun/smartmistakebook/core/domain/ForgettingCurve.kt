@@ -57,7 +57,8 @@ class ForgettingCurve(
             ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL ->
                 exp(ln(stabilityRetention) * elapsedMillis / DAY_MILLIS / state.stabilityDays)
             ForgettingCurveAlgorithm.FSRS6_POWER_LAW -> {
-                // py-fsrs floors elapsed time to whole UTC days.
+                // py-fsrs floors elapsed wall-clock time to whole days (the
+                // scheduling delta_t itself uses learner-local calendar days).
                 val elapsedDays = floor(elapsedMillis.toDouble() / DAY_MILLIS).coerceAtLeast(0.0)
                 FsrsScheduleMath.retention(elapsedDays, state.stabilityDays)
             }
