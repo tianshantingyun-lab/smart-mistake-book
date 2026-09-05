@@ -74,6 +74,12 @@ import com.tingyun.smartmistakebook.core.model.TutorEvidencePointKind
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationStep
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.TutorToolCall
+import com.tingyun.smartmistakebook.core.model.TutorToolName
+import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
+import com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier
+import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
 import com.tingyun.smartmistakebook.core.model.TutorLinearMotionScene
 import com.tingyun.smartmistakebook.core.model.TutorOscillationMotionScene
 import com.tingyun.smartmistakebook.core.model.TutorProcessStage
@@ -158,6 +164,7 @@ internal object OpenAiModelProtocol {
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
         images: List<ApprovedImage>,
         stream: Boolean = false,
+        enableNativeTools: Boolean = false,
     ): String = encodeRequestBody(
         modelId = modelId,
         input = input,
@@ -165,6 +172,7 @@ internal object OpenAiModelProtocol {
             EncodedImage(mimeType = image.mimeType, base64 = image.base64())
         },
         stream = stream,
+        enableNativeTools = enableNativeTools,
     )
 
     /** Exact UTF-8 size of the JSON shell, using the longest approved MIME type and no Base64. */
@@ -185,6 +193,7 @@ internal object OpenAiModelProtocol {
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
         images: List<EncodedImage>,
         stream: Boolean = false,
+        enableNativeTools: Boolean = false,
     ): String {
         val taskPrompt = OpenAiModelTaskAdapters.prompt(input)
         val content = buildJsonArray {
@@ -209,11 +218,13 @@ internal object OpenAiModelProtocol {
                 }
             }
         }
+        val toolSchemas = if (enableNativeTools) nativeToolSchemas(input) else null
         val payload = buildJsonObject {
             put("model", modelId)
             put("temperature", 0.1)
             put("stream", stream)
             put("response_format", buildJsonObject { put("type", "json_object") })
+            toolSchemas?.let { put("tools", it) }
             put(
                 "messages",
                 buildJsonArray {
@@ -235,6 +246,152 @@ internal object OpenAiModelProtocol {
         return json.encodeToString(JsonObject.serializer(), payload)
     }
 
+    /**
+     * Native OpenAI tools schemas for the tutor tool loop (spec model-intent-routing
+     * §3 wire: Route A). Emitted when [enableNativeTools] is set AND the input
+     * carries tool declarations — every declared tool becomes one `function` schema
+     * in strict mode (all fields required, no additional properties, §3.3).
+     * When a provider does not support native tools it ignores this field and the
+     * model answers inside the json_object envelope (Route B fallback) — the two
+     * routes are response-driven and coexist.
+     */
+    private fun nativeToolSchemas(
+        input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
+    ): JsonArray? {
+        val declarations = when (input) {
+            is com.tingyun.smartmistakebook.core.model.TutorRespondInput -> input.toolDeclarations
+            is com.tingyun.smartmistakebook.core.model.TutorLobbyInput -> input.toolDeclarations
+            else -> return null
+        }
+        if (declarations.isEmpty()) return null
+        return buildJsonArray {
+            declarations.forEach { tool ->
+                add(
+                    buildJsonObject {
+                        put("type", "function")
+                        put(
+                            "function",
+                            buildJsonObject {
+                                put("name", tool.name)
+                                put("description", nativeToolDescription(tool))
+                                put(
+                                    "parameters",
+                                    strictFunctionSchema(tool),
+                                )
+                            },
+                        )
+                    },
+                )
+            }
+        }
+    }
+
+    private fun nativeToolDescription(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): String = when (tool) {
+        com.tingyun.smartmistakebook.core.model.TutorToolName.KNOWLEDGE_READ -> "读取当前题相关知识点讲解材料"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_READ -> "检索错题本中匹配的错题"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ -> "读取学生对相关知识的掌握情况"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE -> "提交一条学习证据（模型判 direction/understanding/confidence，权重本地定）"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_WRITE -> "写入错题本（需学生明确命令，环内不可自主执行）"
+    }
+
+    /**
+     * Strict-mode function schema (spec model-intent-routing §3.3): every
+     * advertised property is required and additional properties are rejected,
+     * so the required array must exactly match the property set. MASTERY_UPDATE
+     * adds the model-judged semantic fields the model layer's
+     * [TutorToolCall] contract mandates (direction + understanding non-null);
+     * read tools stay minimal (terms + rationale).
+     */
+    private fun strictFunctionSchema(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): JsonObject {
+        val masterySemantics = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE
+        return buildJsonObject {
+            put("type", "object")
+            put(
+                "properties",
+                buildJsonObject {
+                    put(
+                        "terms",
+                        buildJsonObject {
+                            put("type", "array")
+                            put(
+                                "items",
+                                buildJsonObject {
+                                    put("type", "string")
+                                    put("description", "学生原话派生词元，不得臆测")
+                                },
+                            )
+                            put("maxItems", TutorIntentDecision.MAX_LOOKUP_TERMS)
+                            put("description", "直接来自学生消息原词的简短筛选词")
+                        },
+                    )
+                    put(
+                        "rationale",
+                        buildJsonObject {
+                            put("type", "string")
+                            put("description", "锚定理由：引用学生原话/行为")
+                        },
+                    )
+                    if (masterySemantics) {
+                        put(
+                            "direction",
+                            buildJsonObject {
+                                put("type", "string")
+                                put(
+                                    "enum",
+                                    buildJsonArray {
+                                        add(JsonPrimitive("POSITIVE"))
+                                        add(JsonPrimitive("NEGATIVE"))
+                                    },
+                                )
+                                put("description", "模型判定的证据方向")
+                            },
+                        )
+                        put(
+                            "understanding",
+                            buildJsonObject {
+                                put("type", "string")
+                                put(
+                                    "enum",
+                                    buildJsonArray {
+                                        add(JsonPrimitive("STRUGGLING"))
+                                        add(JsonPrimitive("UNCERTAIN"))
+                                        add(JsonPrimitive("CONFIDENT"))
+                                        add(JsonPrimitive("MASTERED"))
+                                    },
+                                )
+                                put("description", "模型判定的学生理解档位")
+                            },
+                        )
+                        put(
+                            "confidence",
+                            buildJsonObject {
+                                put("type", "number")
+                                put("minimum", 0.0)
+                                put("maximum", 1.0)
+                                put("description", "模型对自己判断的置信度 0..1")
+                            },
+                        )
+                    }
+                },
+            )
+            if (masterySemantics) {
+                put(
+                    "required",
+                    buildJsonArray {
+                        add(JsonPrimitive("terms"))
+                        add(JsonPrimitive("rationale"))
+                        add(JsonPrimitive("direction"))
+                        add(JsonPrimitive("understanding"))
+                        add(JsonPrimitive("confidence"))
+                    },
+                )
+            } else {
+                put("required", buildJsonArray { add(JsonPrimitive("terms")); add(JsonPrimitive("rationale")) })
+            }
+            put("additionalProperties", JsonPrimitive(false))
+        }
+    }
+
     private data class EncodedImage(
         val mimeType: String,
         val base64: String,
@@ -248,10 +405,58 @@ internal object OpenAiModelProtocol {
         val envelope = parseObject(responseBody)
         val message = envelope.array("choices").firstOrNull()?.objectValue()
             ?.objectValue("message") ?: throw InvalidModelResponseException()
+        // Route A: native tool_calls. When the provider answered with a structured
+        // tool request (tools were advertised), map every tool_call into a
+        // TutorToolRequestsOutput — the repository's existing tool loop takes it
+        // from here unchanged (authorize / execute / backfill / next round).
+        val nativeToolCalls = message["tool_calls"]?.let { it as? JsonArray }?.toList()
+        if (nativeToolCalls != null && nativeToolCalls.isNotEmpty()) {
+            val responseContent = message["content"].extractTextContent()
+                ?: throw InvalidModelResponseException("Native tool calls without the intent envelope")
+            return nativeToolCalls.toTutorToolRequestsOutput(responseContent, modelVersion)
+        }
+        // Route B: json_object envelope (provider ignored tools, or none advertised).
         val content = message["content"].extractTextContent()
             ?: throw InvalidModelResponseException()
         val payload = parseObject(content.unwrapJsonFence())
         return OpenAiModelTaskAdapters.parse(payload, input, modelVersion)
+    }
+
+    /**
+     * Maps native `assistant.tool_calls` into a TutorToolRequestsOutput so the
+     * repository tool loop can authorize/execute them exactly as Route-B JSON
+     * tool requests. arguments arrive as a JSON string per the OpenAI contract.
+     * The content envelope must restate the per-round `intentDecision` — the
+     * authorization matrix keys on it exactly as Route B does, and on later
+     * rounds the intent is re-derived (the Lobby kind set differs from the
+     * Respond matrix), so the caller owns it rather than this layer guessing.
+     */
+    private fun List<JsonElement>.toTutorToolRequestsOutput(
+        responseContent: String,
+        modelVersion: String,
+    ): TutorToolRequestsOutput {
+        val calls = map { element ->
+            val call = element.objectValue()
+            val function = call.objectValue("function")
+            val toolName = enumValue<TutorToolName>(function.requiredString("name"))
+            val arguments = parseObject(function.requiredString("arguments"))
+            TutorToolCall(
+                tool = toolName,
+                rationale = arguments.requiredString("rationale"),
+                terms = arguments.optionalArray("terms").map { it.jsonPrimitive.content },
+                direction = arguments.optionalString("direction")?.let { enumValue<TutorEvidenceDirection>(it) },
+                understanding = arguments.optionalString("understanding")?.let { enumValue<TutorUnderstandingTier>(it) },
+                difficultyTier = arguments.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
+                confidence = arguments.optionalDouble("confidence") ?: 0.8,
+            )
+        }
+        val responseObject = parseObject(responseContent)
+        val intentDecision = responseObject.objectValue("intentDecision").toTutorIntentDecision()
+        return TutorToolRequestsOutput(
+            intentDecision = intentDecision,
+            calls = calls,
+            modelVersion = modelVersion,
+        )
     }
 
     private const val SYSTEM_PROMPT =

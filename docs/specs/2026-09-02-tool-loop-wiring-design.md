@@ -1,7 +1,7 @@
 # 工具环接线设计：把讲题智能体的本地工具环接成真实闭环
 
-状态：方案稿（待审查）
-日期：2026-09-02
+状态：已实现（P1 读工具闭环 `400059a`；P2 T6 `mastery_update` 语义接入 `9f267f0`；P3 Route A 双轨适配层随 P3 提交落 main）
+日期：2026-09-02（§3.5/§3.7/§7 收口 2026-09-05）
 关联：`docs/specs/model-intent-routing-spec.md`（v2.3，工具环协议目标态）
 
 ## 0. 目标
@@ -159,10 +159,36 @@ spec §5.2 明确定义 T6 安全边界 = **模型提交证据事件 + 本地确
 
 - **P1（本设计落地）**：3.1（含 schema 5→6 指纹平移）–3.4 + 3.6 + 测试。读工具闭环真实可达（T2/T3/T5）。
 - **P2**：3.5 T6 语义接入——声明集并列 T6、执行器改模型自判 direction + 本地 weight 封顶落库 + 每会话配额。与 P1 共用同一工具环通道，协议层不变。
-- **P3（远期，spec 目标态）**：路线 A OpenAI 原生 `tools` 协议适配层。需真实 provider 兼容性验证。
+- **P3（spec 目标态）**：路线 A OpenAI 原生 `tools` 协议适配层。**已实现为双轨适配层**（2026-09-05，见 §3.7）；真实 provider 兼容性验证因无凭据端点而推迟（探测证据见 §7）。
+
+### 3.7 P3 双轨适配层：OpenAI 原生 tools 协议（spec model-intent-routing §3 目标态）✅ 已实现（2026-09-05）
+
+路线 A 只替换"模型如何表达工具申请"这一段 wire：Route B 用 `json_object` 信封让模型以 JSON 输出 `{intentDecision, toolRequests}`；Route A 在请求体附原生 `tools` schema，provider 支持则回 `assistant.tool_calls`，不支持则忽略 `tools` 字段、照常走信封——两路在 `parseResponse` 分轨，产出同形的 `TutorToolRequestsOutput`，授权/执行/回填/多轮由 repository 既有工具环接管。
+
+**已落地形态（协议层在 `core/data` `OpenAiModelProtocol.kt`）：**
+
+- **工具广告**：`requestBody`/`encodeRequestBody` 增 `enableNativeTools: Boolean = false`。开启且 `toolDeclarations` 非空时注入 `tools` 数组——每个声明工具一个 `{type:"function", function:{name, description, parameters}}`；`parameters` 为 **strict JSON Schema**（`additionalProperties:false` + 全部必填），read 工具只含 `terms`/`rationale`，MASTERY_UPDATE 含 `terms/rationale/direction/understanding/confidence`，枚举值对齐 model 层 `TutorEvidenceDirection`/`TutorUnderstandingTier`。
+- **响应分轨**：`parseResponse` 先探测 `message.tool_calls`——有则逐 call 按 name 分流到 `toTutorToolRequestsOutput`（arguments JSON 反序列化 + `direction`/`understanding`/`difficultyTier` 枚举映射，缺必填契约拒）；无 `tool_calls` 则照旧 Route B 信封解析。两条路产出同形 `TutorToolRequestsOutput`，其中 **`intentDecision` 一律来自响应 content 信封内携带的本轮意图**（与 Route B 的 `requiredString` 契约同构）——授权矩阵依它门控（`tutorToolAuthorization`），且第 2 轮起意图需重判（Lobby 的意图集与 Respond 矩阵不同），故由调用方/响应断言，协议层不臆造默认值；缺意图信封的原生工具轮契约拒。
+- **能力门控默认关**：`enableNativeTools=false` → 不注入 `tools` 字段，请求体与解析路径与现状完全一致，Route B 零行为变化；开关由上层策略决定（未接线 = 双轨共存、Route B 为当前默认）。
+- **测试（单测实证，8 项）**：`OpenAiNativeToolsProtocolTest`——开启+声明 → 请求含 tools schema 且 MASTERY_UPDATE/枚举/`additionalProperties:false` 就位；默认关 → 无 tools 字段（Route B 现状）；strict `required` 覆盖 MASTERY_UPDATE 全 5 语义字段 / 读工具最小集；`tool_calls` + 意图信封解析到 `TutorToolRequestsOutput`（MASTERY_UPDATE 语义字段/NOTEBOOK_READ terms）；缺意图信封契约拒；无 `tool_calls` 的信封 content 回落 Route B。
+
+> **为何停在协议层而非全链路：** Route A 全链路需要"凭证可达的真实 OpenAI 兼容 tools 端点"做兼容性验证（模型是否真回 `tool_calls`、回的结构是否符合 strict schema）。当前可探测通道均不满足（证据见 §7）：本机无 OpenAI/DeepSeek 凭据（401）；cc-switch 15721 是 Claude/Codex 协议代理，非 OpenAI tools 端点。协议适配层是纯本地可验证的最大闭合——其正确性不依赖任何 provider，日后拿到凭据端点只需上层把 `enableNativeTools` 置真即可走 Route A，工具环其余层零改动。
 
 ## 7. 待验证假设
 
 - 路线 B 与真实 DeepSeek 端点的实际推理质量（模型是否遵循 prompt 声明正确吐 `toolRequests`）需设备/真机会话验证——本设计文档不承诺模型行为，只保证协议可往返。
 - 本地 web 检索通道被环境阻断（open-websearch "resolves to private network"），DeepSeek 官方 tools 文档未能核实；路线 B 不依赖该事实。
 - 旧版本持久化 tutor 行的实际存留量未知（模型任务无显式清理/保留策略）。指纹平移（§3.1）保证即使存在旧行也安全读回，不依赖存留量假设。
+
+### P3 真实 provider 探测证据（2026-09-05 实测，逐通道）
+
+Route A 全链路验证需"凭证可达的真实 OpenAI 兼容 tools 端点"，本轮对可探测通道逐一实测，均不满足——据此把 P3 的"真实 provider 验证"显式推迟，保留协议层为本地可验证的最大闭合：
+
+| 通道 | 探测结果 | 结论 |
+|---|---|---|
+| openai.com 官方 | HTTP 401（本机无 API key，探测仅验证连通性） | 凭证不可达 → 无法验证 tools 行为 |
+| api.deepseek.com 官方 | HTTP 401（同上） | 凭证不可达 → 无法验证 tools 行为 |
+| 本地 cc-switch 代理 :15721 | 握手为 **Claude/Codex 协议**（`anthropic` 版本协商），非 OpenAI `tools`/`chat/completions` 端点 | 协议不兼容 → 不能充当 OpenAI tools 探测靶 |
+| 本地仿真（MockWebServer 假网关） | 已验证工具广告 + `tool_calls` 解析 + Route B 回落（§3.7 测试） | 只能证明协议层往返，不能证明 provider 兼容性 |
+
+**推迟含义：** 协议层（§3.7）已就绪且默认关——当前产物即 Route B（既有 JSON 信封链路），Route A 仅差上层开关置真。待任一真实 OpenAI 兼容 tools 端点可用（用户配置 BYOK/网关提供 OpenAI `chat/completions`+`tools` 端点）后，做一次真机对话验证模型是否回 `tool_calls`、结构是否符合 strict schema，即可放行 Route A。此假设与本设计已交付的 P1/P2 无耦合。
