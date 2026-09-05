@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.domain.RestrictedModelAsset
 import com.tingyun.smartmistakebook.core.domain.RestrictedModelAssetSource
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
+import com.tingyun.smartmistakebook.core.model.requiresImageInput
 
 internal class AndroidRestrictedModelAssetSource(
     context: Context,
@@ -39,15 +40,15 @@ internal class AndroidRestrictedModelAssetSource(
                 ) { "Approved model asset changed after authorization" }
             }
             ModelExecutionPermit.ProviderConsented -> {
-                // Global-consent read: the request carries consent and the capture
-                // pipeline authorized it; the asset must be one this request references
-                // and be a whole-image (no region) canonical asset. The record is the
-                // source of truth (no manifest grant to compare).
-                check(execution.request.captureEgressConsentGranted) {
+                // Global-consent read: the request carries consent and the agent consent
+                // authorized it; the asset must be one this request references and be a
+                // whole-image canonical asset. The record is the source of truth (no
+                // manifest grant to compare).
+                check(execution.request.agentConsentGranted) {
                     "Consented model asset access requires the consent flag"
                 }
-                check(execution.request.input.isCapturePipelineKind) {
-                    "Consented asset access is limited to the capture pipeline"
+                check(execution.request.input.requiresImageInput()) {
+                    "Consented asset access is limited to image-bearing agent rounds"
                 }
             }
             ModelExecutionPermit.LocalOnly ->

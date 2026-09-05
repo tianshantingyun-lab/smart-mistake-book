@@ -424,7 +424,7 @@ class RoomCaptureWorkflowRepository internal constructor(
                     subjectIdOverride = subjectId,
                 ),
                 occurredAtEpochMillis = System.currentTimeMillis(),
-                captureEgressConsentGranted = true,
+                agentConsentGranted = true,
             )
             val terminal = tasks.execute(classifyRequest).last()
             terminal.status == ModelTaskStatus.SUCCEEDED &&

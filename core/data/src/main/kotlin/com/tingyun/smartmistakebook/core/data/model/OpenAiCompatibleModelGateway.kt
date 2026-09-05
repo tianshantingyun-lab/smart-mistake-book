@@ -39,7 +39,8 @@ import com.tingyun.smartmistakebook.core.model.ModelRequestBudgetExceededExcepti
 import com.tingyun.smartmistakebook.core.model.ModelRequestPayloadBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
-import com.tingyun.smartmistakebook.core.model.captureConsentMatches
+import com.tingyun.smartmistakebook.core.model.agentConsentMatches
+import com.tingyun.smartmistakebook.core.model.requiresImageInput
 import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
@@ -516,20 +517,15 @@ private fun ModelConfigurationSnapshot.configurationFingerprint(): String {
 private fun ModelGatewayExecution.isReadyForNetwork(
     provider: ProviderCapabilitySnapshot,
 ): Boolean {
-    val requiresImageInput = request.input is CaptureAssessmentInput ||
-        request.input is CaptureParseInput ||
-        request.input is ImagePipelineClassifyInput ||
-        request.input is TutorVisualGenerateInput ||
-        request.input is TutorVisualReviewInput
-    // Under global consent a capture-pipeline request may egress without a manifest.
-    val consentedCapture = permit == ModelExecutionPermit.ProviderConsented &&
-        request.captureConsentMatches(provider)
-    if (!consentedCapture && request.egressManifest == null) return false
+    // Under global agent consent an agent-eligible request may egress without a manifest.
+    val consentedAgent = permit == ModelExecutionPermit.ProviderConsented &&
+        request.agentConsentMatches(provider)
+    if (!consentedAgent && request.egressManifest == null) return false
     return provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
         provider.supportsStructuredOutput &&
         provider.supports(request.input.kind) &&
-        (!requiresImageInput || provider.supportsImageInput) &&
-        (consentedCapture ||
+        (!request.input.requiresImageInput() || provider.supportsImageInput) &&
+        (consentedAgent ||
             (request.egressManifest?.providerId == provider.providerId &&
                 request.egressManifest?.modelId == provider.modelId &&
                 request.egressManifest?.providerConfigurationVersion ==
@@ -586,7 +582,7 @@ private fun ModelGatewayExecution.requireImageRequestFits(
             // (the restricted asset source verifies consent + reads the canonical
             // record). Plans carry no preflight size; readApprovedImages enforces
             // the budget from the real opened sizes.
-            check(request.captureEgressConsentGranted) {
+            check(request.agentConsentGranted) {
                 "Consented image request requires the consent flag"
             }
             return assetIds.map { assetId -> ApprovedImageReadPlan(assetId = assetId, byteSize = null) }
