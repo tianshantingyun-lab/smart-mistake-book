@@ -229,9 +229,18 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             .maxOfOrNull { it.created_at_epoch_millis }
         val sameKcLastWriteAgoMillis = lastSameKcWrite?.let { (now - it).coerceAtLeast(0) }
 
-        // KC 锚定：terms[0] 必须命中真实知识节点（防模型臆测节点）。
-        val anchored = knowledgeNodeId.isNotBlank() &&
-            port.readKnowledgeNodesByIds(setOf(knowledgeNodeId)).isNotEmpty()
+        // KC 锚定：terms[0] 必须命中真实知识节点（防模型臆测节点），且——当存在当前题
+        // 科目上下文时（Respond 派遣）——目标节点必须属于该科目。写工具只允许落到当前
+        // 教学上下文相关的知识点；游离/跨科目的 KC 写入一律视为未锚定拒写，防止模型在
+        // 一个科目会话里把证据写进无关科目。Lobby/无科目时不强加科目匹配（但 repository
+        // 层已保证写工具不会在 Lobby 派遣里到达这里）。
+        val knowledgeNode = if (knowledgeNodeId.isBlank()) {
+            null
+        } else {
+            port.readKnowledgeNodesByIds(setOf(knowledgeNodeId)).firstOrNull()
+        }
+        val anchored = knowledgeNode != null &&
+            (context.subject == null || knowledgeNode.subject == context.subject)
 
         val input = MasteryWriteGate.GateInput(
             intentConfidence = 0.9, // 意图门已在 repository 层由 tutorToolAuthorization 把关

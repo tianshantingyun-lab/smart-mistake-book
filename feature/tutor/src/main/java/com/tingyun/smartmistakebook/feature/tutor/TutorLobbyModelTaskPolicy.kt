@@ -35,7 +35,11 @@ internal fun buildTutorLobbyRequest(
         messageOrdinal = messageOrdinal,
         studentMessage = studentMessage,
         priorMessages = priorMessages.takeLast(TutorLobbyInput.MAX_PRIOR_MESSAGES),
-        toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ),
+        // Lobby 只声明错题本读取：MASTERY_READ 的产出（掌握度明细）无法归入 Lobby 的
+        // 披露集合（TUTOR_LOBBY_DISCLOSURE 仅 STUDENT_TUTOR_MESSAGE + TUTOR_CONVERSATION_CONTEXT），
+        // 注入 round-2 出网 prompt 会违反 least-disclosure；掌握度读取仅保留在 Respond
+        // （其披露集合含 RELEVANT_LEARNING_EVIDENCE）。
+        toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ),
     )
     val requestHash = sha256(
         buildString {

@@ -70,7 +70,9 @@ init 校验（与 `11f3189` 一致）：
 > 以保持 `toolRoundResults.isNotEmpty() → toolDeclarations.isNotEmpty()` 恒成立；
 > 工具配额上限由 `toolDeclarations` 仍 ≤5、以及 Repository 轮次守卫（§3.4）共同保证，不依赖清空声明集。
 >
-> **实现注记（P1 落地形态，最终审查确认有意为之）：** `RoomModelTaskRepository` 的收敛实现返回各 kind 的**静态全集**（Lobby → {T3,T5}、Respond → {T2,T3,T5}），而非"∩ 本轮授权"逐轮收窄——因每轮授权仍按首轮 `declaredTools` 全集做意图矩阵交集，未授权工具申请在授权层即被 `not_authorized` 拦截，收敛口径不影响正确性，仅第 2 轮 prompt 仍广告全集。后续如需收紧 prompt 只广告已用工具，改 `converged` 处按当轮 `authorization.allowedTools` 收窄即可——P1 不做的原因：收窄后 prompt 广告集与授权全集不一致会引入新的心智负担，且最坏情况（模型重试被拒工具）由轮次守卫 fail-fast 兜底，无新风险。
+> **实现注记（P1 落地形态，最终审查确认有意为之）：** `RoomModelTaskRepository` 的收敛实现返回各 kind 的**静态全集**（Respond → {T2,T3,T5,T6}），而非"∩ 本轮授权"逐轮收窄——因每轮授权仍按首轮 `declaredTools` 全集做意图矩阵交集，未授权工具申请在授权层即被 `not_authorized` 拦截，收敛口径不影响正确性，仅第 2 轮 prompt 仍广告全集。后续如需收紧 prompt 只广告已用工具，改 `converged` 处按当轮 `authorization.allowedTools` 收窄即可——P1 不做的原因：收窄后 prompt 广告集与授权全集不一致会引入新的心智负担，且最坏情况（模型重试被拒工具）由轮次守卫 fail-fast 兜底，无新风险。
+>
+> **Lobby 声明集修正（生产审查 2026-09-05）：** Lobby 只声明 NOTEBOOK_READ。原声明含 MASTERY_READ，但 MASTERY_READ 产出（掌握度明细）无法归入 `TUTOR_LOBBY_DISCLOSURE`（仅 STUDENT_TUTOR_MESSAGE + TUTOR_CONVERSATION_CONTEXT）——设计 §3.6"结果⊂已披露类目"仅对 Respond 成立（Respond 披露含 RELEVANT_LEARNING_EVIDENCE），Lobby 下会违反 least-disclosure。Lobby prompt 规则同步去掉 READ_LEARNING_PROGRESS 引导；掌握度读取只保留在 Respond（有题目/教学上下文）。
 
 默认空值 → 不启用工具协议的既有 dispatch 零行为变化（向后兼容，同 `11f3189` 语义）。
 
@@ -99,7 +101,7 @@ adapter.parse 对 Lobby/Respond 先探测 payload 是否含 `toolRequests` 键�
   `roundRequest = roundRequest.copy(input = nextRoundInput)`，
   其中 `nextRoundInput` 由 helper 构造（Lobby/Respond 各一）：`input.copy(toolRoundResults = newRounds, toolDeclarations = convergedDeclarations)`——替换现在的空 `copy()`（`RoomModelTaskRepository.kt:293`）。
   `convergedDeclarations`：有 `newRounds` 时收敛为"首轮声明 ∩ 本轮仍允许"（保留已用工具，非空，见 §3.1）；无新轮次（终答轮）时为原声明。
-- `toolDeclarationsFor` 首轮声明：`TutorRespondInput` → T2/T3/T5（P2 起并列 T6，见 §3.5）；`TutorLobbyInput` → T3/T5（无科目，不含 knowledge_read；T6 在 Lobby 无证据资格，不声明）。
+- `toolDeclarationsFor` 首轮声明：`TutorRespondInput` → T2/T3/T5（P2 起并列 T6，见 §3.5）；`TutorLobbyInput` → T3（仅 NOTEBOOK_READ；无科目不含 knowledge_read；MASTERY_READ 产出不可归入 Lobby 披露集合，见 §3.1 修正注记；T6 在 Lobby 无证据资格，不声明）。
 - 轮次上限守卫（现逻辑已存在，`RoomModelTaskRepository.kt:267-270`）：`toolRoundsUsed > MAX_TOOL_ROUNDS` 时抛 `InvalidProviderProtocol`（"模型在工具配额用尽后仍未作答"）→ 协议违规 fail-fast，绝不让无限工具轮变 SUCCEEDED。**收口靠轮数守卫抛错，不依赖声明集变空**。新设计不改变该机制。
 - 死变量处置：现 `nextDeclarations`（`RoomModelTaskRepository.kt:288-293`）计算后从未被写进 `roundRequest`——是遗留死代码。接线时删除它，由 §3.4 的 `convergedDeclarations` helper 取代，确保第二轮携带正确的收敛声明集与上轮结果。
 - 授权交集逻辑不变（`tutorToolAuthorization`）。
@@ -116,7 +118,7 @@ spec §5.2 明确定义 T6 安全边界 = **模型提交证据事件 + 本地确
 - **授权（model）**：`tutorToolAuthorization` CURRENT_QUESTION_HELP 意图矩阵已含 MASTERY_UPDATE；P2 声明集补全——`toolDeclarationsFor`（Respond）与 feature `buildTutorRespondRequest` 均含 MASTERY_UPDATE（与 T2/T3/T5 并列），故 prompt 广告、授权放行一致。CASUAL/AMBIGUOUS/APP_HELP 下 T6 零声明 → `not_authorized`。Lobby 无题上下文/证据资格，不含 T6。
 - **prompt（adapter）**：`toolPurposeDescription(MASTERY_UPDATE)` 写明字段规范（direction/understanding/terms=[知识点id]/confidence）+ 用途说明"只在你从对话中有确切依据判断学生理解/卡住时才申请；闲聊不要申请"；声明块含 T6 时补申请样例。
 - **门控（domain `MasteryWriteGate`，纯函数）**：模型只供语义，全部数值本地决定。7 门顺序：CONTRADICTORY_SEMANTICS（POSITIVE+STRUGGLING）→ EVIDENCE_BELOW_CONFIDENCE（θ=0.7）→ KNOWLEDGE_NODE_NOT_ANCHORED（terms[0] 须命中真实知识节点）→ MASTERED_WITHOUT_BEHAVIORAL_SUPPORT → SAME_KC_IN_COOLDOWN（12h）→ CONVERSATION_QUOTA_EXHAUSTED（8/会话）→ ATTENTION_BELOW_FLOOR（0.4）。权重表：POSITIVE 按 understanding 档位（UNCERTAIN 0.10 / CONFIDENT 0.15 / MASTERED 0.18，STRUGGLING 拒）、NEGATIVE 恒 0.35；全 ≤ MAX_EVIDENCE_WEIGHT 0.35。
-- **执行器（`RoomTutorToolRunner.masteryUpdate`）**：读 `call.direction/understanding/confidence`，会话证据（`readChatEvidenceByConversation`）算冷却/配额，terms[0] 经 `readKnowledgeNodesByIds` 验锚定，`hasBehavioralSupport` 由同会话客观作答信号提供（runner 侧信号面未接线时保守 false → MASTERED 高置信档被拒，见下）。Accepted → 落正常证据；Rejected → **落 rejected 观察行**（带拒因），outcome errorKind=`rejected:<reason>`。
+- **执行器（`RoomTutorToolRunner.masteryUpdate`）**：读 `call.direction/understanding/confidence`，会话证据（`readChatEvidenceByConversation`）算冷却/配额，terms[0] 经 `readKnowledgeNodesByIds` 验锚定——存在当前题科目上下文（Respond 派遣）时另要求目标节点**属于该科目**（写工具不得落到游离/跨科目 KC），`hasBehavioralSupport` 由同会话客观作答信号提供（runner 侧信号面未接线时保守 false → MASTERED 高置信档被拒，见下）。Accepted → 落正常证据；Rejected → **落 rejected 观察行**（带拒因），outcome errorKind=`rejected:<reason>`。
 - **观察通道（db v43）**：`learner_chat_evidence` 增 `rejected_reason`/`rejected_at_epoch_millis`（可空）。`ChatEvidenceDao.insertAsLedgerEvents` 按 `isRejected` 分流：rejected 只 insertAll（可审计），**不分配学习序列、不写 projection_outbox → 投影器读不到 → 掌握度零影响**（研究 §3.3：被拒 ≠ 删除）。
 - **交叉核对/行为佐证（spec §9.2）**：MASTERED 高置信档要求同会话客观作答正确佐证（Koriat & Bjork 幻觉；Nelson & Dunlosky delayed-JOL）。**已落地**：gate 的 MASTERED_WITHOUT_BEHAVIORAL_SUPPORT 门；runner 侧 hasBehavioralSupport 信号源待 UI 会话事件面接线（当前保守 false → MASTERED 无佐证即拒，安全侧）。
 - **attentionFactor（研究 §2）**：`MasteryWriteGate.ATTENTION_REJECT_FLOOR=0.4`；`RoomTutorToolRunner.Context.attentionFactor`（默认 1.0）。**真实信号接线未做**：feature 讲题 UI 无切屏/离开采集（review 场景的 `AttentionSignal` 生产点在 `RoomBackedStudyExperienceRepository`/`ReviewLogSink`，非讲题会话）。P2 默认 1.0 不误伤，拒写线只在未来 UI 采集接入后触发——独立于 T6 协议闭环，标为后续 UI 接线。

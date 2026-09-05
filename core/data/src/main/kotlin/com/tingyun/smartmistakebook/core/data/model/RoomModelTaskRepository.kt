@@ -270,7 +270,14 @@ class RoomModelTaskRepository internal constructor(
                 }
                 val authorization = tutorToolAuthorization(requests.intentDecision, declaredTools)
                 val outcomes = requests.calls.map { call ->
-                    if (call.tool !in authorization.allowedTools) {
+                    // 写工具（MASTERY_UPDATE）的不变式：只能在"当前题"（Respond）派遣里执行——
+                    // 它是本会话内唯一可落库的写工具，绝不能在没有题目上下文的 Lobby/其他轮次
+                    // 凭模型自报意图写成证据。授权矩阵只按"声明集 ∩ 意图"放行，此处显式锚定到
+                    // Respond 输入，防止声明集将来漂移（如 Lobby 误含 T6）时写工具静默越界。
+                    val writeAnchoredToCurrentQuestion =
+                        call.tool != TutorToolName.MASTERY_UPDATE ||
+                            roundRequest.input is TutorRespondInput
+                    if (call.tool !in authorization.allowedTools || !writeAnchoredToCurrentQuestion) {
                         TutorToolOutcome(
                             tool = call.tool,
                             ok = false,
@@ -638,7 +645,7 @@ class RoomModelTaskRepository internal constructor(
             TutorToolName.MASTERY_READ,
             TutorToolName.MASTERY_UPDATE,
         )
-        is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)
+        is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ)
         else -> emptySet()
     }
 

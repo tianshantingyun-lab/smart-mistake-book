@@ -1005,10 +1005,11 @@ class TutorModelTaskPolicyTest {
         )
         val input = request.input as TutorLobbyInput
         assertTrue(
-            "Lobby 应声明 T3/T5（无科目不含 T2）",
-            input.toolDeclarations.containsAll(listOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ)),
+            "Lobby 应只声明 T3(NOTEBOOK_READ)：MASTERY_READ 产出无法归入 Lobby 披露集合（least-disclosure），无科目亦不含 T2",
+            input.toolDeclarations == listOf(TutorToolName.NOTEBOOK_READ),
         )
         assertFalse(TutorToolName.KNOWLEDGE_READ in input.toolDeclarations)
+        assertFalse(TutorToolName.MASTERY_READ in input.toolDeclarations)
         assertFalse(TutorToolName.MASTERY_UPDATE in input.toolDeclarations)
     }
 

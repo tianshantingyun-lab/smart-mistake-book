@@ -53,7 +53,7 @@ class OpenAiNativeToolsProtocolTest {
         messageOrdinal = 1,
         studentMessage = "帮我看看错题本里有没有二次函数",
         priorMessages = emptyList(),
-        toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ),
+        toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ),
     )
 
     private fun toolCallEnvelope(nativeBody: String): String = """
