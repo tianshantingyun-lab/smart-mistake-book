@@ -177,10 +177,10 @@ class TutorVisualModelTaskPolicyTest {
                 kind = ModelTaskKind.TUTOR_RESPOND,
             ),
         )
-        assertFalse(
+        assertTrue(
             tutorAgentChatEnabled(
                 provider = local,
-                consentEnabled = true,
+                consentEnabled = false,
                 kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ),
         )

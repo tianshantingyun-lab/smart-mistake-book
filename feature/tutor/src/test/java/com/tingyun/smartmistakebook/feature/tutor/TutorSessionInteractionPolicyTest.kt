@@ -185,33 +185,43 @@ class TutorSessionInteractionPolicyTest {
     }
 
     @Test
-    fun planExecuteGatesOnProviderAndGlobalConsent() {
+    fun agentGateGovernsPlanDispatchAndContinueAndVisualProvider() {
         val external = provider()
         val local = provider(executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS)
 
-        assertFalse(tutorPlanExecuteCanStart(provider = null, consentEnabled = true))
         assertFalse(
-            tutorPlanExecuteCanStart(
+            tutorAgentChatEnabled(
+                provider = null,
+                consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_PLAN,
+            ),
+        )
+        assertFalse(
+            tutorAgentChatEnabled(
                 provider = external,
                 consentEnabled = false,
+                kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
-            tutorPlanExecuteCanStart(
+            tutorAgentChatEnabled(
                 provider = external,
                 consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
-            tutorPlanExecuteCanStart(
+            tutorAgentChatEnabled(
                 provider = local,
                 consentEnabled = false,
+                kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertFalse(
-            tutorPlanExecuteCanStart(
+            tutorAgentChatEnabled(
                 provider = provider(supportsPlan = false),
                 consentEnabled = true,
+                kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(tutorContinueAfterMove(hasChoicePayload = true, nextHistorySize = 1))
@@ -245,10 +255,11 @@ class TutorSessionInteractionPolicyTest {
                     kind = kind,
                 ),
             )
-            assertFalse(
+            // A local provider never egresses, so the single gate always admits it.
+            assertTrue(
                 tutorAgentChatEnabled(
                     provider = local,
-                    consentEnabled = true,
+                    consentEnabled = false,
                     kind = kind,
                 ),
             )

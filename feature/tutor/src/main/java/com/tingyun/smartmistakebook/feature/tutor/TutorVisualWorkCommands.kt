@@ -43,7 +43,7 @@ internal class TutorVisualWorkCommands(
         val assets = sink.sourceAssets()
         if (
             provider == null ||
-            !visualAgentEligible(provider, ModelTaskKind.TUTOR_VISUAL_GENERATE) ||
+            !tutorAgentChatEnabled(provider, sink.consentEnabled(), ModelTaskKind.TUTOR_VISUAL_GENERATE) ||
             assets.isEmpty()
         ) {
             sink.setGenerateBuildFailures(emptySet())
@@ -90,7 +90,7 @@ internal class TutorVisualWorkCommands(
         val assets = sink.sourceAssets()
         if (
             provider == null ||
-            !visualAgentEligible(provider, ModelTaskKind.TUTOR_VISUAL_REVIEW) ||
+            !tutorAgentChatEnabled(provider, sink.consentEnabled(), ModelTaskKind.TUTOR_VISUAL_REVIEW) ||
             assets.isEmpty()
         ) {
             sink.setReviewBuildFailures(emptySet())
@@ -134,21 +134,6 @@ internal class TutorVisualWorkCommands(
             }
         }
         sink.setReviewBuildFailures(failures)
-    }
-
-    /**
-     * Visual work is decorative enrichment. An external provider must satisfy the live
-     * agent gate (consent ON + capability + image input for these image-bearing kinds);
-     * a local provider needs no consent because it never egresses.
-     */
-    private fun visualAgentEligible(
-        provider: ProviderCapabilitySnapshot,
-        taskKind: ModelTaskKind,
-    ): Boolean = when (provider.executionLocation) {
-        ModelExecutionLocation.EXTERNAL_PROVIDER ->
-            tutorAgentChatEnabled(provider, sink.consentEnabled(), taskKind)
-        ModelExecutionLocation.LOCAL_NO_EGRESS -> true
-        ModelExecutionLocation.UNAVAILABLE -> false
     }
 }
 

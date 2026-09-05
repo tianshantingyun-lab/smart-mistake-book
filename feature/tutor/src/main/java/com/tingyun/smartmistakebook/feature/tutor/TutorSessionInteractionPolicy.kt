@@ -33,10 +33,12 @@ internal fun tutorPlanAttemptCount(
 ): Int = matchingTaskCount.coerceAtLeast(0)
 
 /**
- * The single live agent gate for a tutor send surface. Under global consent a send
- * dispatches immediately when the configured external provider supports the kind and
- * (for image-bearing visual kinds) accepts images; otherwise it fails closed at the UI.
- * PLAN/RESPOND are image-optional, so a structured-only provider still runs them.
+ * The single live agent gate for a tutor send surface. One place decides whether a send
+ * may reach the provider right now: a local provider always dispatches (it never egresses,
+ * so global consent is irrelevant), while an external provider dispatches only under global
+ * consent when it supports the kind and, for image-bearing visual kinds, accepts images.
+ * A null or UNAVAILABLE provider fails closed. PLAN/RESPOND are image-optional, so a
+ * structured-only provider still runs them; visual kinds require image input.
  */
 internal fun tutorAgentChatEnabled(
     provider: ProviderCapabilitySnapshot?,
@@ -44,9 +46,10 @@ internal fun tutorAgentChatEnabled(
     kind: ModelTaskKind,
 ): Boolean {
     val candidate = provider ?: return false
-    if (candidate.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER) return false
-    if (!consentEnabled) return false
+    if (candidate.executionLocation == ModelExecutionLocation.UNAVAILABLE) return false
     if (!candidate.supports(kind)) return false
+    if (candidate.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS) return true
+    if (!consentEnabled) return false
     val kindNeedsImage = kind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
         kind == ModelTaskKind.TUTOR_VISUAL_REVIEW
     return !kindNeedsImage || candidate.supportsImageInput
@@ -74,14 +77,14 @@ internal fun tutorRespondCollectCanStart(
     allowExternalEnvelopeForLocalRecovery: Boolean,
     chatSubmitPending: Boolean,
 ): Boolean {
-    if (!tutorRespondProviderCanExecute(provider)) return false
-    when (provider!!.executionLocation) {
-        ModelExecutionLocation.LOCAL_NO_EGRESS ->
-            if (requestHasEgressManifest && !allowExternalEnvelopeForLocalRecovery) return false
-        // 全局同意开启才允许外发；关闭时 UI 已隐藏输入框，这里同样 fail closed。
-        ModelExecutionLocation.EXTERNAL_PROVIDER ->
-            if (!consentEnabled) return false
-        ModelExecutionLocation.UNAVAILABLE -> return false
+    if (!tutorAgentChatEnabled(provider, consentEnabled, ModelTaskKind.TUTOR_RESPOND)) return false
+    // Respond-specific recovery: dispatch an external-enveloped persisted task under a
+    // local provider only when explicitly allowed.
+    if (provider!!.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&
+        requestHasEgressManifest &&
+        !allowExternalEnvelopeForLocalRecovery
+    ) {
+        return false
     }
     return !chatSubmitPending
 }

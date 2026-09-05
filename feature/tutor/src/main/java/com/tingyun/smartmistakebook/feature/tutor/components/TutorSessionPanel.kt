@@ -338,8 +338,7 @@ internal fun TutorModelPanel(
         if (
             observedTask == null &&
             executablePlanProvider != null &&
-            (executablePlanProvider.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS ||
-                consentEnabled)
+            tutorAgentChatEnabled(executablePlanProvider, consentEnabled, ModelTaskKind.TUTOR_PLAN)
         ) {
             executeTurn(1, null, emptyList(), emptyList())
         }
@@ -421,11 +420,8 @@ internal fun TutorModelPanel(
             candidate.supports(ModelTaskKind.TUTOR_RESPOND)
     } == true
     val latestRespondTasks = conversationProjection.latestRespondTasks
-    val respondAgentAuthorized = currentProvider?.let { p ->
-        p.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS ||
-            (p.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-                consentOn && p.supports(ModelTaskKind.TUTOR_RESPOND))
-    } == true
+    val respondAgentAuthorized =
+        tutorAgentChatEnabled(currentProvider, consentOn, ModelTaskKind.TUTOR_RESPOND)
     val chatSending = chatSubmitPending || latestRespondTasks.any { task ->
         currentProvider?.let(task::matchesTutorProvider) == true &&
             task.status.isTutorExecutionPending()

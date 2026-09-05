@@ -2,7 +2,6 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
-import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
@@ -14,26 +13,11 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
- * A plan turn may start when the provider can execute the kind AND, for an external
- * provider, global agent consent is ON. Local-only providers never egress, so they need
- * no consent. A configured external provider with consent OFF fails closed at the UI
- * (blocked-settings card), not here.
+ * A plan turn may start when the single agent gate allows dispatch to the provider right now.
+ * That gate is [tutorAgentChatEnabled] (location + consent + capability); it owns the decision
+ * so the panel and the command layer cannot drift. Local providers never egress, so they need
+ * no consent.
  */
-internal fun tutorPlanExecuteCanStart(
-    provider: ProviderCapabilitySnapshot?,
-    consentEnabled: Boolean,
-): Boolean {
-    if (
-        provider == null ||
-        provider.executionLocation == ModelExecutionLocation.UNAVAILABLE ||
-        !provider.supports(ModelTaskKind.TUTOR_PLAN)
-    ) {
-        return false
-    }
-    return provider.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS ||
-        consentEnabled
-}
-
 internal class TutorPlanCommands(
     private val scope: CoroutineScope,
     private val sink: TutorPlanSink,
@@ -45,7 +29,7 @@ internal class TutorPlanCommands(
         priorTurns: List<TutorTurnHistoryEntry>,
     ) {
         val provider = sink.provider() ?: return
-        if (!tutorPlanExecuteCanStart(provider, sink.consentEnabled())) return
+        if (!tutorAgentChatEnabled(provider, sink.consentEnabled(), ModelTaskKind.TUTOR_PLAN)) return
         val question = sink.question()
         val attempt = tutorPlanAttemptCount(
             sink.planTasks().count { task ->
