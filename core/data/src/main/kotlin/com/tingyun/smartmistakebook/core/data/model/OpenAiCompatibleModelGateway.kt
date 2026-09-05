@@ -39,6 +39,7 @@ import com.tingyun.smartmistakebook.core.model.ModelRequestBudgetExceededExcepti
 import com.tingyun.smartmistakebook.core.model.ModelRequestPayloadBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.captureConsentMatches
 import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
@@ -522,10 +523,7 @@ private fun ModelGatewayExecution.isReadyForNetwork(
         request.input is TutorVisualReviewInput
     // Under global consent a capture-pipeline request may egress without a manifest.
     val consentedCapture = permit == ModelExecutionPermit.ProviderConsented &&
-        request.captureEgressConsentGranted &&
-        (request.input is CaptureAssessmentInput ||
-            request.input is CaptureParseInput ||
-            request.input is ImagePipelineClassifyInput)
+        request.captureConsentMatches(provider)
     if (!consentedCapture && request.egressManifest == null) return false
     return provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
         provider.supportsStructuredOutput &&

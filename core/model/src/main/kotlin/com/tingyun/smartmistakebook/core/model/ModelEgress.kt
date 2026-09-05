@@ -424,14 +424,25 @@ object ModelRequestPayloadBudget {
     private const val BASE64_OUTPUT_GROUP_BYTES = 4L
 }
 
-object ModelEgressPolicy {
-    /** Capture-pipeline kinds that may run under global model-image consent. */
-    private val CAPTURE_PIPELINE_KINDS = setOf(
-        ModelTaskKind.CAPTURE_ASSESS,
-        ModelTaskKind.CAPTURE_PARSE,
-        ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
-    )
+/**
+ * True when this request is a capture-pipeline round that the user has consented
+ * (via the Settings toggle) to send to the configured image-capable provider.
+ * Single source of truth for authorize() and the gateway's pre-flight.
+ */
+fun ModelTaskRequest.captureConsentMatches(provider: ProviderCapabilitySnapshot): Boolean =
+    captureEgressConsentGranted &&
+        input.kind in CAPTURE_PIPELINE_KINDS &&
+        provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+        provider.supportsImageInput &&
+        provider.supports(input.kind)
 
+private val CAPTURE_PIPELINE_KINDS = setOf(
+    ModelTaskKind.CAPTURE_ASSESS,
+    ModelTaskKind.CAPTURE_PARSE,
+    ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
+)
+
+object ModelEgressPolicy {
     fun authorize(
         request: ModelTaskRequest,
         provider: ProviderCapabilitySnapshot,
@@ -446,12 +457,7 @@ object ModelEgressPolicy {
             // Settings and this is a capture-pipeline round (assess/parse/classify),
             // the request may egress to the configured image-capable provider without
             // a per-photo manifest. Tutor/classification kinds still require a manifest.
-            if (
-                request.captureEgressConsentGranted &&
-                request.input.kind in CAPTURE_PIPELINE_KINDS &&
-                provider.supportsImageInput &&
-                provider.supports(request.input.kind)
-            ) {
+            if (request.captureConsentMatches(provider)) {
                 return ModelGatewayExecution(request, ModelExecutionPermit.ProviderConsented)
             }
             val manifest = request.egressManifest ?: throw ModelEgressAuthorizationException(
@@ -495,14 +501,7 @@ object ModelEgressPolicy {
                 // Re-validate the global-consent condition holds right now (toggle still on,
                 // provider still the configured image-capable one). The per-byte asset gate is
                 // enforced separately in the restricted asset source.
-                if (
-                    execution.request.captureEgressConsentGranted &&
-                    provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-                    provider.supportsImageInput &&
-                    provider.supports(execution.request.input.kind)
-                ) {
-                    return
-                }
+                if (execution.request.captureConsentMatches(provider)) return
                 throw invalidCurrentAuthorization()
             }
             ModelExecutionPermit.LocalOnly -> throw invalidCurrentAuthorization()
