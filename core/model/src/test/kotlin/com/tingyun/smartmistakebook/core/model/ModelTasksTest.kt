@@ -5,6 +5,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent.Progress
 
 class ModelTasksTest {
     @Test
@@ -287,6 +288,36 @@ class ModelTasksTest {
             message = "响应包含不可见字符\u0000",
             retryable = false,
         )
+    }
+
+    @Test
+    fun progressTruncatesLongReplyInsteadOfRejecting() {
+        val longReply = "答".repeat(2400)
+        // T1 解耦：流式正文一旦超过安全边界，Progress 应截断到 MAX_PROGRESS_MESSAGE_CHARS
+        // 而非让整个模型任务失败（原 >500 即抛 IllegalArgumentException）。
+        val event = Progress.of(longReply)
+        val expectedLength = MAX_PROGRESS_MESSAGE_CHARS
+        assertTrue(
+            "长回复截断到 $expectedLength，实际 ${event.userMessage.length}",
+            event.userMessage.length == expectedLength,
+        )
+        assertEquals(longReply.take(expectedLength), event.userMessage)
+    }
+
+    @Test
+    fun progressKeepsShortReplyUnchanged() {
+        val shortReply = "简短回复"
+        val event = Progress.of(shortReply)
+        assertEquals(shortReply, event.userMessage)
+    }
+
+    @Test
+    fun progressOfLongReplyDoesNotThrow() {
+        // 旧行为（C4）：>500 的正文直接 Progress.init 抛 IllegalArgumentException →
+        // 网关掐成 INVALID_RESPONSE，整轮任务失败、正文不呈现。T1 解耦后必须不再抛。
+        val veryLongReply = "详".repeat(5000)
+        val event = Progress.of(veryLongReply)
+        assertEquals(MAX_PROGRESS_MESSAGE_CHARS, event.userMessage.length)
     }
 
     @Test(expected = IllegalArgumentException::class)

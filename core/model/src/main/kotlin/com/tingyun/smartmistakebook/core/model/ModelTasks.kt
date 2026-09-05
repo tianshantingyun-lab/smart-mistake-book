@@ -1096,8 +1096,22 @@ sealed interface ModelGatewayEvent {
         init {
             userMessage.requireSafeModelText(
                 label = "Model progress message",
-                maxChars = MAX_MESSAGE_CHARS,
+                maxChars = MAX_PROGRESS_MESSAGE_CHARS,
                 allowLineBreaks = true,
+            )
+        }
+
+        companion object {
+            /**
+             * Builds a progress event from a raw model-output prefix. The prefix is a
+             * *progressive preview*, not the finished reply, so it may legitimately exceed
+             * the snapshot status-message budget. Truncating here (instead of rejecting)
+             * keeps a long reply streaming instead of failing the whole task; the terminal
+             * [ModelGatewayEvent.Completed] always carries the full body.
+             */
+            fun of(text: String): Progress = Progress(
+                stage = ModelTaskStage.VALIDATING_OUTPUT,
+                userMessage = text.take(MAX_PROGRESS_MESSAGE_CHARS),
             )
         }
     }
@@ -1299,7 +1313,14 @@ internal const val MAX_CAPTURE_SOURCE_DIMENSION = 20_000
 internal const val MAX_CAPTURE_SOURCE_PIXELS = 100_000_000L
 private const val MAX_CAPTURE_TOTAL_PIXELS = 160_000_000L
 internal const val MAX_CAPTURE_SOURCE_ASSETS = 8
-private const val MAX_MESSAGE_CHARS = 500
+internal const val MAX_MESSAGE_CHARS = 500
+
+/**
+ * Per-frame budget for a streaming [ModelGatewayEvent.Progress] preview (snapshot status message).
+ * A raw model-output prefix is truncated to this before entering the snapshot; keeping the full
+ * body here would conflate a short status message with arbitrary-length reply content.
+ */
+const val MAX_PROGRESS_MESSAGE_CHARS = 2000
 internal const val MAX_MODEL_VERSION_CHARS = 256
 internal const val MAX_PROVIDER_ID_CHARS = 128
 private const val MAX_PROVIDER_DISPLAY_NAME_CHARS = 128

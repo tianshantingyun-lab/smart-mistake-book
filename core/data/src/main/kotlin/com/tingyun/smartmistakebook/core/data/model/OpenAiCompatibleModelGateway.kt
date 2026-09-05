@@ -422,10 +422,7 @@ private suspend fun emitStreamingThenCompletion(
     for (index in chunks.indices) {
         if (index + 1 - lastEmitted >= STREAM_EMIT_CHUNK_INTERVAL) {
             emit(
-                ModelGatewayEvent.Progress(
-                    stage = ModelTaskStage.VALIDATING_OUTPUT,
-                    userMessage = chunks.take(index + 1).joinToString(""),
-                ),
+                ModelGatewayEvent.Progress.of(chunks.take(index + 1).joinToString("")),
             )
             lastEmitted = index + 1
         }
@@ -434,10 +431,7 @@ private suspend fun emitStreamingThenCompletion(
     // happened to land just before the end), so the UI always shows the typed body while streaming.
     if (lastEmitted != chunks.size) {
         emit(
-            ModelGatewayEvent.Progress(
-                stage = ModelTaskStage.VALIDATING_OUTPUT,
-                userMessage = chunks.joinToString(""),
-            ),
+            ModelGatewayEvent.Progress.of(chunks.joinToString("")),
         )
     }
     emit(terminal)
