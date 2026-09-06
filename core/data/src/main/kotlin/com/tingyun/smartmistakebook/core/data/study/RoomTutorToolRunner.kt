@@ -47,6 +47,13 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         val learnerId: String = "learner:local",
         val conversationId: String? = null,
         /**
+         * The tutor session id (bare, not the prefixed conversation anchor).
+         * NOTEBOOK_WRITE needs it to resolve the capture draft: a tutor session's
+         * sessionId differs from its draftId, so the write path goes
+         * sessionId -> readTutorSession -> draftId -> readProblemDraft(draftId).
+         */
+        val tutorSessionId: String? = null,
+        /**
          * Namespace for deterministic evidence ids (the model-task requestId).
          * Null keeps the legacy nanoTime fallback for direct/test callers;
          * the tool loop always supplies it so a retried MASTERY_UPDATE is
@@ -161,8 +168,8 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
      * 生成——防臆造。commitTutorSession 内部幂等（已保存则只返回，不重复落库）。
      */
     private suspend fun notebookWrite(context: Context): TutorToolOutcome {
-        val conversationId = context.conversationId
-        if (conversationId.isNullOrBlank()) {
+        val sessionId = context.tutorSessionId
+        if (sessionId.isNullOrBlank()) {
             return TutorToolOutcome(
                 tool = TutorToolName.NOTEBOOK_WRITE,
                 ok = false,
@@ -170,7 +177,17 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                 errorKind = "no_conversation",
             )
         }
-        val draft = port.readProblemDraft(conversationId)
+        // 解析真实 draftId：tutor session 的 sessionId ≠ draftId，需先经
+        // readTutorSession(sessionId) 拿记录里的 draftId，再用它读题面 draft。
+        val tutorSession = port.readTutorSession(sessionId)
+            ?: return TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_WRITE,
+                ok = false,
+                summaryMarkdown = "当前会话未建立完整讲题上下文，无法保存。",
+                errorKind = "no_tutor_session",
+            )
+        val draftId = tutorSession.draftId
+        val draft = port.readProblemDraft(draftId)
             ?: return TutorToolOutcome(
                 tool = TutorToolName.NOTEBOOK_WRITE,
                 ok = false,
@@ -191,15 +208,15 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         val problemId = revision.draftId
         val result = port.commitTutorSession(
             CommitTutorSessionCommand(
-                sessionId = conversationId,
+                sessionId = sessionId,
                 commit = CommitProblemDraftCommand(
-                    commandId = "commit-$conversationId-$now",
-                    draftId = conversationId,
+                    commandId = "commit-$draftId-$now",
+                    draftId = draftId,
                     expectedRevisionNumber = revision.revisionNumber,
                     problemId = problemId,
-                    problemRevisionId = "$conversationId-rev-${revision.revisionNumber}",
-                    practiceUnitId = conversationId,
-                    errorBookEntryId = "entry-$conversationId-$now",
+                    problemRevisionId = "$draftId-rev-${revision.revisionNumber}",
+                    practiceUnitId = draftId,
+                    errorBookEntryId = "entry-$draftId-$now",
                     estimatedSeconds = 60,
                     committedAtEpochMillis = now,
                 ),

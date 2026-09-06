@@ -675,6 +675,10 @@ class RoomModelTaskRepository internal constructor(
             // 供 MASTERY_UPDATE 的冷却/配额/审计按会话粒度工作。
             conversationId = (input as? TutorRespondInput)?.sessionId
                 ?.let { "tutor-conv:captured:$it" },
+            // 裸 sessionId：NOTEBOOK_WRITE 用它 resolve 对应的 capture draft。
+            // sessionId（"tutor-session-..."）≠ draftId（"draft-..."），写路径需
+            // readTutorSession(sessionId) 拿 draftId 再 readProblemDraft(draftId)。
+            tutorSessionId = (input as? TutorRespondInput)?.sessionId,
             // 幂等命名空间：同一 model-task request 的重试/多轮共享同一 evidenceId 命名空间，
             // 让 MASTERY_UPDATE 的 evidence_id 确定性派生（重试不重复落库）。
             evidenceIdNamespace = requestId,
