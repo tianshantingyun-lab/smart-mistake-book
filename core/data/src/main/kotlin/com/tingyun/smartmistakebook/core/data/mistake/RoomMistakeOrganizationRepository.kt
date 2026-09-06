@@ -19,9 +19,11 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.ConfirmedProblemClassification
 import com.tingyun.smartmistakebook.core.domain.ConfirmedProblemRelation
+import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationOptions
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationPreparation
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
+import com.tingyun.smartmistakebook.core.domain.OrganizationOption
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationConfirmation
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationRelationKey
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationSelection
@@ -461,7 +463,162 @@ internal class RoomMistakeOrganizationRepository(
         ) { "Organization result does not match the persisted revision" }
         return PersistedOrganizationTask(task, input, output)
     }
+
+    override suspend fun correctConfirmedOrganization(
+        key: MistakeRevisionKey,
+        selection: ProblemOrganizationSelection,
+        correctedAtEpochMillis: Long,
+    ): ProblemOrganizationConfirmation = withContext(Dispatchers.IO) {
+        require(correctedAtEpochMillis > 0) { "correctedAtEpochMillis must be positive" }
+        require(selection.classificationIndexes.isEmpty() && selection.relationIndexes.isEmpty()) {
+            "Offline correction selects reviewed options, not model-output indexes"
+        }
+        require(selection.relationRemovals.isEmpty() && !selection.replaceRelations) {
+            "Offline correction does not change relations"
+        }
+        val current = currentOrganizationFor(key)
+        val command = buildOfflineCorrectionCommand(
+            entryId = key.entryId,
+            current = current.toOfflineCorrectionFacts(),
+            userClassifications = selection.userClassifications,
+            correctedAtEpochMillis = correctedAtEpochMillis,
+        )
+        val result = try {
+            database.confirmProblemOrganization(command)
+        } catch (_: ProblemOrganizationAuthorityConflictException) {
+            return@withContext ProblemOrganizationConfirmation(
+                created = false,
+                classificationCount = 0,
+                relationCount = 0,
+                applied = false,
+                preservedUserCorrection = true,
+            )
+        }
+        ProblemOrganizationConfirmation(
+            created = result.created,
+            classificationCount = result.receipt.classificationCount,
+            relationCount = result.receipt.relationCount,
+        )
+    }
+
+    override fun observeOrganizationOptions(
+        key: MistakeRevisionKey,
+    ): Flow<MistakeOrganizationOptions> =
+        database.observeConfirmedProblemOrganization(key.problemId, key.problemRevisionId)
+            .map { confirmed ->
+                // The confirmed organization only exposes the current subject
+                // indirectly through its labels; chapter/knowledge options are
+                // derived from the same confirmed classifications plus the
+                // mistake catalog subject (kept simple: current values are the
+                // seed options; richer reviewed-tree options are a follow-up).
+                val subject = runCatching {
+                    database.observeMistakes().first().singleOrNull {
+                        it.entryId == key.entryId &&
+                            it.problemId == key.problemId &&
+                            it.problemRevisionId == key.problemRevisionId
+                    }?.subject
+                }.getOrNull().orEmpty()
+                MistakeOrganizationOptions(
+                    subject = subject,
+                    chapters = confirmed.classifications
+                        .filter { it.dimension == ClassificationDimension.CHAPTER.name }
+                        .map { OrganizationOption(labelId = it.labelId, displayName = it.displayName) },
+                    knowledgeNodes = confirmed.classifications
+                        .filter { it.dimension == ClassificationDimension.KNOWLEDGE.name }
+                        .map { OrganizationOption(labelId = it.labelId, displayName = it.displayName) },
+                )
+            }
+
+    private suspend fun currentOrganizationFor(
+        key: MistakeRevisionKey,
+    ): CurrentOrganizationFacts {
+        val mistake = database.observeMistakes().first().singleOrNull {
+            it.entryId == key.entryId &&
+                it.problemId == key.problemId &&
+                it.problemRevisionId == key.problemRevisionId
+        } ?: error("The selected mistake revision is no longer current")
+        val detail = database.readExactMistakeDetail(
+            key.entryId,
+            key.problemId,
+            key.problemRevisionId,
+        ).requireCommittedDocument()
+        val subjectKind = runCatching { mistake.subject.toSubjectKind() }
+            .getOrDefault(SubjectKind.MATH)
+        return CurrentOrganizationFacts(
+            problemId = key.problemId,
+            problemRevisionId = key.problemRevisionId,
+            practiceUnitId = mistake.practiceUnitId,
+            subject = subjectKind,
+            questionDocument = detail.document,
+        )
+    }
+
+    private data class CurrentOrganizationFacts(
+        val problemId: String,
+        val problemRevisionId: String,
+        val practiceUnitId: String,
+        val subject: SubjectKind,
+        val questionDocument: com.tingyun.smartmistakebook.core.model.QuestionDocument,
+    ) {
+        fun toOfflineCorrectionFacts() = OfflineCorrectionFacts(
+            problemId = problemId,
+            problemRevisionId = problemRevisionId,
+            practiceUnitId = practiceUnitId,
+            subject = subject,
+            questionDocument = questionDocument,
+        )
+    }
 }
+
+/**
+ * Deterministic offline-correction command: rebuilds the durable organization
+ * facts from the currently confirmed mistake plus the user's picks, with no
+ * model task, no relations, and USER_CORRECTED authority. Pure so the
+ * authority/identity invariants are unit-testable without a database.
+ */
+internal fun buildOfflineCorrectionCommand(
+    entryId: String,
+    current: OfflineCorrectionFacts,
+    userClassifications: List<UserProblemClassification>,
+    correctedAtEpochMillis: Long,
+): ConfirmProblemOrganizationCommand {
+    require(correctedAtEpochMillis > 0) { "correctedAtEpochMillis must be positive" }
+    val classifications = userClassifications.map { classification ->
+        classification.toSuggestion()
+    }
+    require(classifications.any { it.dimension == ClassificationDimension.KNOWLEDGE }) {
+        "Keep at least one knowledge classification for review planning"
+    }
+    require(classifications.any { it.dimension == ClassificationDimension.CHAPTER }) {
+        "Keep at least one chapter classification for a clear hierarchy"
+    }
+    val input = ProblemOrganizationInput(
+        problemId = current.problemId,
+        problemRevisionId = current.problemRevisionId,
+        practiceUnitId = current.practiceUnitId,
+        subject = current.subject,
+        questionDocument = current.questionDocument,
+        relevantLearningEvidence = emptyList(),
+        relationCandidates = emptyList(),
+        knowledgeBaseNodes = emptyList(),
+    )
+    return buildConfirmationCommand(
+        requestId = "offline-correction:$entryId:$correctedAtEpochMillis",
+        input = input,
+        classifications = classifications,
+        relations = emptyList(),
+        acceptedAtEpochMillis = correctedAtEpochMillis,
+        acceptanceSource = BindingAcceptanceSource.USER_CORRECTED,
+    )
+}
+
+internal data class OfflineCorrectionFacts(
+    val problemId: String,
+    val problemRevisionId: String,
+    val practiceUnitId: String,
+    val subject: SubjectKind,
+    val questionDocument: com.tingyun.smartmistakebook.core.model.QuestionDocument,
+)
 
 object MistakeOrganizationRepositoryFactory {
     fun create(database: StudyDatabasePort): MistakeOrganizationRepository =

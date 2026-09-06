@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.mistake
 
 import com.tingyun.smartmistakebook.core.database.MistakeRecord
 import com.tingyun.smartmistakebook.core.domain.ProblemOrganizationRelationKey
+import com.tingyun.smartmistakebook.core.domain.UserProblemClassification
 import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.AtomicKnowledgeSuggestion
 import com.tingyun.smartmistakebook.core.model.ClassificationDimension
@@ -308,6 +309,83 @@ class RoomMistakeOrganizationRepositoryTest {
             relationCandidateScore(current, related) >
                 relationCandidateScore(current, alphabeticallyFirstButUnrelated),
         )
+    }
+
+    @Test
+    fun offlineCorrectionCommandIsDeterministicAndUserCorrected() {
+        val facts = OfflineCorrectionFacts(
+            problemId = "problem-1",
+            problemRevisionId = "revision-1",
+            practiceUnitId = "practice-1",
+            subject = SubjectKind.MATH,
+            questionDocument = document("question-1", "求函数最值"),
+        )
+        val first = buildOfflineCorrectionCommand(
+            entryId = "entry-1",
+            current = facts,
+            userClassifications = listOf(
+                UserProblemClassification(ClassificationDimension.CHAPTER, "函数"),
+                UserProblemClassification(ClassificationDimension.KNOWLEDGE, "二次函数最值"),
+            ),
+            correctedAtEpochMillis = 4_000,
+        )
+        val replay = buildOfflineCorrectionCommand(
+            entryId = "entry-1",
+            current = facts,
+            userClassifications = listOf(
+                UserProblemClassification(ClassificationDimension.CHAPTER, "函数"),
+                UserProblemClassification(ClassificationDimension.KNOWLEDGE, "二次函数最值"),
+            ),
+            correctedAtEpochMillis = 4_000,
+        )
+
+        assertEquals(first, replay)
+        assertEquals("problem-1", first.problemId)
+        assertEquals("revision-1", first.problemRevisionId)
+        assertEquals("practice-1", first.practiceUnitId)
+        assertEquals(2, first.classifications.size)
+        assertEquals(setOf("CHAPTER", "KNOWLEDGE"), first.classifications.map { it.dimension }.toSet())
+        assertEquals("USER_CORRECTED", first.classifications.first().acceptanceSource)
+        assertEquals("USER_CORRECTED", first.knowledgeBindings.single().sourceType)
+        assertEquals(1, first.knowledgeNodes.size)
+        assertEquals(1, first.knowledgeBindings.size)
+        assertEquals(0, first.relations.size)
+        assertFalse(first.replaceRelations)
+        assertEquals(emptySet<String>(), first.relationIdsToRemove)
+    }
+
+    @Test
+    fun offlineCorrectionRequiresBothDimensions() {
+        val facts = OfflineCorrectionFacts(
+            problemId = "problem-1",
+            problemRevisionId = "revision-1",
+            practiceUnitId = "practice-1",
+            subject = SubjectKind.MATH,
+            questionDocument = document("question-1", "求函数最值"),
+        )
+        val missingKnowledge = runCatching {
+            buildOfflineCorrectionCommand(
+                entryId = "entry-1",
+                current = facts,
+                userClassifications = listOf(
+                    UserProblemClassification(ClassificationDimension.CHAPTER, "函数"),
+                ),
+                correctedAtEpochMillis = 4_000,
+            )
+        }
+        assertTrue(missingKnowledge.isFailure)
+
+        val missingChapter = runCatching {
+            buildOfflineCorrectionCommand(
+                entryId = "entry-1",
+                current = facts,
+                userClassifications = listOf(
+                    UserProblemClassification(ClassificationDimension.KNOWLEDGE, "二次函数最值"),
+                ),
+                correctedAtEpochMillis = 4_000,
+            )
+        }
+        assertTrue(missingChapter.isFailure)
     }
 
     private fun input() = ProblemOrganizationInput(

@@ -147,4 +147,31 @@ interface MistakeOrganizationRepository {
         selection: ProblemOrganizationSelection,
         acceptedAtEpochMillis: Long,
     ): ProblemOrganizationConfirmation
+
+    /**
+     * User-corrects the organization of an already-imported mistake's current
+     * revision without needing an online model task. The selection is resolved
+     * against the reviewed knowledge tree only (never free text), and every
+     * durable fact is rebuilt deterministically from the currently confirmed
+     * organization plus the user's picks.
+     */
+    suspend fun correctConfirmedOrganization(
+        key: MistakeRevisionKey,
+        selection: ProblemOrganizationSelection,
+        correctedAtEpochMillis: Long,
+    ): ProblemOrganizationConfirmation
+
+    /** Reviewed chapter/knowledge options available to the user for a mistake revision. */
+    fun observeOrganizationOptions(key: MistakeRevisionKey): Flow<MistakeOrganizationOptions>
 }
+
+data class MistakeOrganizationOptions(
+    val subject: String,
+    val chapters: List<OrganizationOption>,
+    val knowledgeNodes: List<OrganizationOption>,
+)
+
+data class OrganizationOption(
+    val labelId: String,
+    val displayName: String,
+)
