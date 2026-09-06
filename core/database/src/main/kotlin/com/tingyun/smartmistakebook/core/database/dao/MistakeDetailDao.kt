@@ -35,6 +35,8 @@ internal data class MistakeDetailRow(
     val tutorQuestionRevisionNumber: Int?,
     @ColumnInfo(name = "user_note")
     val userNote: String? = null,
+    @ColumnInfo(name = "status")
+    val entryStatus: String? = null,
 )
 
 internal data class EntryRevisionRow(
@@ -191,6 +193,7 @@ internal abstract class MistakeDetailDao {
             revision.question_document_snapshot,
             revision.content_fingerprint,
             entry.user_note,
+            entry.status AS entry_status,
             tutor.session_id AS tutor_session_id,
             tutor.draft_revision_number AS tutor_question_revision_number
         FROM error_book_entry AS entry
@@ -224,6 +227,7 @@ internal abstract class MistakeDetailDao {
             revision.question_document_snapshot,
             revision.content_fingerprint,
             entry.user_note,
+            entry.status AS entry_status,
             tutor.session_id AS tutor_session_id,
             tutor.draft_revision_number AS tutor_question_revision_number
         FROM error_book_entry AS entry
@@ -262,6 +266,7 @@ internal abstract class MistakeDetailDao {
             revision.question_document_snapshot,
             revision.content_fingerprint,
             entry.user_note,
+            entry.status AS entry_status,
             NULL AS tutor_session_id,
             NULL AS tutor_question_revision_number
         FROM error_book_entry AS entry
@@ -444,4 +449,5 @@ private fun MistakeDetailRow.toRecord(
     tutorSessionId = tutorSessionId,
     tutorQuestionRevisionNumber = tutorQuestionRevisionNumber,
     userNote = userNote,
+    archived = entryStatus == com.tingyun.smartmistakebook.core.database.StudyDbValue.ErrorBookStatus.ARCHIVED,
 )

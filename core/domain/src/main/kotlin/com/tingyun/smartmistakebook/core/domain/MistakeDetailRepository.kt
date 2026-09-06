@@ -109,6 +109,8 @@ data class MistakeDetail(
     val tutorConversation: TutorConversationReference? = null,
     /** Learner's private note on the entry; never leaves the device in a model egress payload. */
     val userNote: String? = null,
+    /** True when the entry has been archived (hidden from surfaces, history preserved). */
+    val archived: Boolean = false,
 ) {
     init {
         require(fallbackMarkdown.isNotBlank()) { "Mistake fallback Markdown must not be blank" }

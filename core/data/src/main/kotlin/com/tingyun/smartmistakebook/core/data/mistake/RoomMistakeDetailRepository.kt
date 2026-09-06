@@ -194,6 +194,7 @@ internal class RoomMistakeDetailRepository(
         },
         tutorConversation = tutorConversationReference(),
         userNote = userNote,
+        archived = archived,
     )
 
     private fun MistakeDetailRecord.tutorConversationReference(): TutorConversationReference? {

@@ -381,11 +381,18 @@ private fun ReadyDetail(
                 repository = repository,
             )
             Spacer(Modifier.height(10.dp))
-            MistakeArchiveAction(
-                entryId = state.detail.identity.errorBookEntryId,
-                repository = repository,
-                onArchived = onBack,
-            )
+            if (state.detail.archived) {
+                MistakeRestoreAction(
+                    entryId = state.detail.identity.errorBookEntryId,
+                    repository = repository,
+                )
+            } else {
+                MistakeArchiveAction(
+                    entryId = state.detail.identity.errorBookEntryId,
+                    repository = repository,
+                    onArchived = onBack,
+                )
+            }
         }
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader("题面")
@@ -559,6 +566,69 @@ private fun MistakeUserNoteCard(
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.testTag("mistake_detail_note_message"),
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MistakeRestoreAction(
+    entryId: String,
+    repository: MistakeDetailRepository,
+) {
+    val scope = rememberCoroutineScope()
+    var restoring by remember { mutableStateOf(false) }
+    var error by rememberSaveable(entryId) { mutableStateOf<String?>(null) }
+
+    Column(Modifier.fillMaxWidth()) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("mistake_detail_archived_banner"),
+            shape = RoundedCornerShape(10.dp),
+            color = JadeSoft.copy(alpha = 0.5f),
+            border = BorderStroke(1.dp, Outline),
+        ) {
+            Column(Modifier.padding(14.dp)) {
+                Text(
+                    "这道题已移出错题本",
+                    color = Ink,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    "学习记录已保留，恢复后会重新出现在错题本和复习中。",
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        restoring = true
+                        scope.launch {
+                            try {
+                                val ok = repository.restoreEntry(
+                                    entryId = entryId,
+                                    at = System.currentTimeMillis(),
+                                )
+                                restoring = false
+                                if (!ok) error = "恢复失败，这道题可能已不存在"
+                            } catch (failure: Exception) {
+                                restoring = false
+                                error = failure.message ?: "恢复失败，请重试"
+                            }
+                        }
+                    },
+                    enabled = !restoring,
+                    modifier = Modifier.testTag("mistake_detail_restore"),
+                ) { Text(if (restoring) "恢复中…" else "恢复到错题本") }
+                error?.let {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = it,
+                        color = InkSecondary,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
     }

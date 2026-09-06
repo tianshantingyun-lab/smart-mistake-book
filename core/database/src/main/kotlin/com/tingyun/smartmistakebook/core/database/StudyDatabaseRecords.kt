@@ -676,6 +676,8 @@ data class MistakeDetailRecord(
     val practiceUnitId: String = "legacy-practice-unit",
     /** Learner's private note on the entry; never leaves the device in a model egress payload. */
     val userNote: String? = null,
+    /** True when the entry has been archived (hidden from surfaces, history preserved). */
+    val archived: Boolean = false,
 )
 
 data class MistakeDetailSourceAssetRecord(
