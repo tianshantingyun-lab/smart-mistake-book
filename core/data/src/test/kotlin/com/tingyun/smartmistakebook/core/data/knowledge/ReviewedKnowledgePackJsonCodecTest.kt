@@ -69,7 +69,9 @@ class ReviewedKnowledgePackJsonCodecTest {
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
         assertTrue(topicNodes.size >= 400)
         assertTrue(topicNodes.count { it.parentKnowledgeNodeId != null } >= 300)
-        assertTrue(pack.teachingMaterials.size >= 10000)
+        // 无绑定残渣在聚合层剔除后，材料量 = 绑定量（每个材料都绑到原子节点）
+        assertEquals(pack.teachingMaterialBindings.size, pack.teachingMaterials.size)
+        assertTrue(pack.teachingMaterials.size >= 8000)
         // 至少 80% 教学条目绑定到目录节点（语义绑定阈值）
         val bound = pack.teachingMaterialBindings.size
         assertTrue(bound >= 8000)

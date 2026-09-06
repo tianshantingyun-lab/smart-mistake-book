@@ -39332,7 +39332,7 @@
    "title": "斜面平抛的两条分解路线",
    "summaryMarkdown": "平抛与斜面结合的问题可用分解速度构建速度三角形，或分解位移构建位移三角形，两条路线按已知条件选择。",
    "applicabilityMarkdown": "物体从斜面水平抛出落回斜面，或垂直击中斜面类问题。",
-   "contentMarkdown": "1. 分解位移：$x=v_0t$、$y=\frac{1}{2}gt^2$，由位移偏角等于斜面倾角 θ 建立关系求时间。\n2. 分解速度：$v_x=v_0$、$v_y=gt$，由速度方向与斜面的夹角关系建立方程。\n3. 落回斜面用位移关系简便，涉及击中方向（垂直、平行）用速度关系。",
+   "contentMarkdown": "1. 分解位移：$x=v_0t$、$y=rac{1}{2}gt^2$，由位移偏角等于斜面倾角 θ 建立关系求时间。\n2. 分解速度：$v_x=v_0$、$v_y=gt$，由速度方向与斜面的夹角关系建立方程。\n3. 落回斜面用位移关系简便，涉及击中方向（垂直、平行）用速度关系。",
    "boundaryMarkdown": "倾角 θ 必须转化为位移偏角或速度偏角才能进入方程，两条路线不可混用同一角。",
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "registry-kb-physics-methods:physics",

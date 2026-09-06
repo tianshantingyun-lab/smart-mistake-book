@@ -61,11 +61,22 @@ object BundledKnowledgeBaseInstaller {
         val existingMaterials = database.readKnowledgeTeachingMaterialsByIds(expectedMaterials.keys)
             .associateBy(KnowledgeTeachingMaterialRecord::materialId)
         if (existingMaterials.isEmpty()) {
-            database.importKnowledgeTeachingMaterials(
-                materials = pack.teachingMaterials,
-                bindings = pack.teachingMaterialBindings,
-                sources = pack.teachingSources,
-            )
+            // 每次导入受 DB 契约单批上限约束（2048 条材料），bundled sidecar 总量超过它，
+            // 因此按上限分批，每批携带各自材料、绑定与涉及的来源。
+            val maxPerBatch = 2_000
+            val sourceById = pack.teachingSources.associateBy(KnowledgeSourceSeedRecord::sourceId)
+            pack.teachingMaterials.chunked(maxPerBatch).forEach { batch ->
+                val batchIds = batch.mapTo(hashSetOf(), KnowledgeTeachingMaterialRecord::materialId)
+                val batchBindings = pack.teachingMaterialBindings.filter {
+                    it.materialId in batchIds
+                }
+                val batchSourceIds = batch.mapTo(linkedSetOf()) { it.sourceId }
+                database.importKnowledgeTeachingMaterials(
+                    materials = batch,
+                    bindings = batchBindings,
+                    sources = batchSourceIds.mapNotNullTo(ArrayList()) { sourceById[it] },
+                )
+            }
             return
         }
         val expectedSources = pack.teachingSources.associateBy(

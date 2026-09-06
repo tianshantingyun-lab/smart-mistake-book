@@ -75,10 +75,16 @@ internal object BundledKnowledgePackResources {
             }
             ReviewedTeachingMaterialSidecarJsonCodec.decode(sidecarJson, base)
         }
+        val allMaterials = sidecars.flatMap(ReviewedTeachingMaterialSidecar::materials)
+        val boundMaterialIds = sidecars.flatMap(ReviewedTeachingMaterialSidecar::bindings)
+            .mapTo(hashSetOf(), KnowledgeTeachingMaterialNodeBindingRecord::materialId)
+        // DB 契约要求每个教学材料至少绑定一个原子知识点；sidecar 里未绑定的条目是提取残渣，
+        // 无法归因，不能导入。在聚合层统一剔除，保证 pack、幂等比对与契约一致。
+        val importableMaterials = allMaterials.filter { it.materialId in boundMaterialIds }
         return base.copy(
             teachingSources = sidecars.flatMap(ReviewedTeachingMaterialSidecar::sources)
                 .distinctBy(KnowledgeSourceSeedRecord::sourceId),
-            teachingMaterials = sidecars.flatMap(ReviewedTeachingMaterialSidecar::materials),
+            teachingMaterials = importableMaterials,
             teachingMaterialBindings = sidecars.flatMap(ReviewedTeachingMaterialSidecar::bindings),
         ).also(KnowledgeBasePack::validate)
     }

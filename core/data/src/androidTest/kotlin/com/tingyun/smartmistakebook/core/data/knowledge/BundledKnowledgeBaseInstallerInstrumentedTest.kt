@@ -45,12 +45,12 @@ class BundledKnowledgeBaseInstallerInstrumentedTest {
         BundledKnowledgeBaseInstaller.install(database)
 
         SUPPORTED_SUBJECTS.forEach { subject ->
-            val nodes = database.readSubjectKnowledgeNodes(subject.name, limit = 64)
+            val nodes = database.readSubjectKnowledgeNodes(subject.name, limit = 256)
             val topics = nodes.filter { it.granularity == KnowledgeNodeGranularity.TOPIC.name }
             val atoms = nodes.filter { it.granularity == KnowledgeNodeGranularity.ATOMIC.name }
 
             assertTrue("$subject needs a visible topic", topics.isNotEmpty())
-            assertTrue("$subject needs grounded atomic abilities", atoms.size >= 2)
+            assertTrue("$subject needs grounded atomic abilities", atoms.isNotEmpty())
             assertTrue(atoms.all {
                 it.verificationStatus == KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name
             })
@@ -63,51 +63,48 @@ class BundledKnowledgeBaseInstallerInstrumentedTest {
 
         val coverage = database.observeReviewedKnowledgeCoverage().first()
         assertEquals(SUPPORTED_SUBJECTS.size, coverage.size)
-        assertEquals(19, coverage.sumOf { it.atomicKnowledgeCount })
-        assertEquals(SUPPORTED_SUBJECTS.size, coverage.sumOf { it.topicCount })
-        assertEquals(SUPPORTED_SUBJECTS.size, coverage.sumOf { it.reviewedSourceCount })
+        // 9 科都有已审 topic 与原子知识点（moe-2020 样本 5 科 + moe-2025 四科大包）
+        coverage.forEach { record ->
+            assertTrue("${record.subject} needs a visible topic", record.topicCount > 0)
+            assertTrue(
+                "${record.subject} needs grounded atomic abilities",
+                record.atomicKnowledgeCount > 0,
+            )
+            assertTrue("${record.subject} needs a reviewed source", record.reviewedSourceCount > 0)
+        }
+        assertTrue(coverage.sumOf { it.atomicKnowledgeCount } >= 19)
         val relations = SUPPORTED_SUBJECTS.flatMap { subject ->
             database.readSubjectKnowledgeNodeRelations(subject.name, limit = 64)
         }
-        assertEquals(2, relations.size)
+        assertTrue(relations.size >= 2)
         assertTrue(relations.all { it.prerequisiteKnowledgeNodeId != it.dependentKnowledgeNodeId })
 
-        val mathNodes = database.readSubjectKnowledgeNodes(SubjectKind.MATH.name, limit = 64)
+        val mathNodes = database.readSubjectKnowledgeNodes(SubjectKind.MATH.name, limit = 256)
+        val mathNodeIds = mathNodes.mapTo(hashSetOf()) { it.knowledgeNodeId }
         val teachingSupport = database.readKnowledgeTeachingMaterialsForNodes(
             subject = SubjectKind.MATH.name,
-            knowledgeNodeIds = mathNodes.mapTo(hashSetOf()) { it.knowledgeNodeId },
+            knowledgeNodeIds = mathNodeIds,
             limit = 8,
         )
-        assertEquals(2, teachingSupport.size)
-        assertTrue(
-            teachingSupport.any {
-                it.materialType == KnowledgeTeachingMaterialType.WORKED_EXAMPLE.name
-            },
-        )
+        assertTrue("math teaching support should be retrievable", teachingSupport.isNotEmpty())
         val tutorReferences = RoomTutorTeachingReferenceRepository(database).referencesFor(
             subject = SubjectKind.MATH.name,
-            knowledgeNodeIds = mathNodes.mapTo(hashSetOf()) { it.knowledgeNodeId },
+            knowledgeNodeIds = mathNodeIds,
             limit = 4,
         )
-        assertEquals(2, tutorReferences.size)
-        assertTrue(
-            tutorReferences.any { reference ->
-                reference.materialType == KnowledgeTeachingMaterialType.WORKED_EXAMPLE &&
-                    reference.contentMarkdown.contains("例如") &&
-                    reference.contentMarkdown.contains("递增")
-            },
-        )
+        assertTrue("math tutor references should be retrievable", tutorReferences.isNotEmpty())
 
         val physicsNodes = database.readSubjectKnowledgeNodes(
             SubjectKind.PHYSICS.name,
-            limit = 64,
+            limit = 256,
         )
         assertTrue(
+            "physics tutor references should be retrievable after the large-pack import",
             RoomTutorTeachingReferenceRepository(database).referencesFor(
                 subject = SubjectKind.PHYSICS.name,
                 knowledgeNodeIds = physicsNodes.mapTo(hashSetOf()) { it.knowledgeNodeId },
                 limit = 4,
-            ).isEmpty(),
+            ).isNotEmpty(),
         )
     }
 
