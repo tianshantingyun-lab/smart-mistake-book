@@ -571,6 +571,24 @@ class MistakeOrganizationInstrumentedTest {
         override fun observeConfirmed(key: MistakeRevisionKey): Flow<ConfirmedMistakeOrganization> =
             confirmed
 
+        override suspend fun correctConfirmedOrganization(
+            key: MistakeRevisionKey,
+            selection: ProblemOrganizationSelection,
+            correctedAtEpochMillis: Long,
+        ): ProblemOrganizationConfirmation {
+            lastSelection = selection
+            return ProblemOrganizationConfirmation(
+                created = true,
+                classificationCount = selection.userClassifications.size,
+                relationCount = 0,
+            )
+        }
+
+        override fun observeOrganizationOptions(
+            key: MistakeRevisionKey,
+        ): Flow<com.tingyun.smartmistakebook.core.domain.MistakeOrganizationOptions> =
+            MutableStateFlow(com.tingyun.smartmistakebook.core.domain.MistakeOrganizationOptions("", emptyList(), emptyList()))
+
         override suspend fun applySuccessfulOrganization(
             requestId: String,
         ): ProblemOrganizationConfirmation {

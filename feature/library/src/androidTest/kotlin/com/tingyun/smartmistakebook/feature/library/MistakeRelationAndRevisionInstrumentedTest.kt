@@ -167,6 +167,17 @@ class MistakeRelationAndRevisionInstrumentedTest {
                     ),
                 )
 
+            override suspend fun correctConfirmedOrganization(
+                key: MistakeRevisionKey,
+                selection: ProblemOrganizationSelection,
+                correctedAtEpochMillis: Long,
+            ): ProblemOrganizationConfirmation = error("not used in this test")
+
+            override fun observeOrganizationOptions(
+                key: MistakeRevisionKey,
+            ): Flow<com.tingyun.smartmistakebook.core.domain.MistakeOrganizationOptions> =
+                flowOf(com.tingyun.smartmistakebook.core.domain.MistakeOrganizationOptions("", emptyList(), emptyList()))
+
             override suspend fun applySuccessfulOrganization(
                 requestId: String,
             ): ProblemOrganizationConfirmation = error("Confirmed data must not be applied again")
