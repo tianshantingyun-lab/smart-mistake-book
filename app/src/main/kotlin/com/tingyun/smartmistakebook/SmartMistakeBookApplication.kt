@@ -274,6 +274,11 @@ class SmartMistakeBookApplication : Application() {
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: Throwable) {
+                android.util.Log.e(
+                    "SmartMistakeBook",
+                    "Bundled knowledge install failed",
+                    failure,
+                )
                 startupState.value = StartupState.RecoverableFailure(
                     title = "本地知识包尚未准备好",
                     message = "错题和复习可以继续使用，自动分类会暂缓。",
