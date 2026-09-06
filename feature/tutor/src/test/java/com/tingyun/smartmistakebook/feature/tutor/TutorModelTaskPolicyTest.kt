@@ -987,8 +987,8 @@ class TutorModelTaskPolicyTest {
                 ),
             ),
         )
-        assertFalse(
-            "Respond 不应声明 T4(NOTEBOOK_WRITE)——需学生显式确认，非自动写",
+        assertTrue(
+            "Respond 应声明 T4(NOTEBOOK_WRITE)——模型可申请，但授权层要求 explicitActionRequest 确认门",
             TutorToolName.NOTEBOOK_WRITE in input.toolDeclarations,
         )
     }

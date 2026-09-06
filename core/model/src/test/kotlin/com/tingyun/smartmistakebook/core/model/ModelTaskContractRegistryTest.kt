@@ -44,7 +44,7 @@ class ModelTaskContractRegistryTest {
     @Test
     fun dispatchBudgetIsSharedAndNeverResetByRequestId() {
         ModelTaskContractRegistry.all().forEach { contract ->
-            assertEquals(3, contract.maxProviderDispatches)
+            assertEquals(ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES, contract.maxProviderDispatches)
             assertEquals(
                 ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES,
                 contract.maxProviderDispatches,

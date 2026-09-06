@@ -644,6 +644,7 @@ class RoomModelTaskRepository internal constructor(
             TutorToolName.NOTEBOOK_READ,
             TutorToolName.MASTERY_READ,
             TutorToolName.MASTERY_UPDATE,
+            TutorToolName.NOTEBOOK_WRITE,
         )
         is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ)
         else -> emptySet()

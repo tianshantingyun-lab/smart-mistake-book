@@ -9,12 +9,15 @@ import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent.Progress
 
 class ModelTasksTest {
     @Test
-    fun remoteDispatchBudgetAllowsTheInitialCallAndTwoRetriesOnly() {
-        assertEquals(true, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = 0))
-        assertEquals(true, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = 1))
-        assertEquals(true, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = 2))
-        assertEquals(false, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = 3))
-        assertEquals(false, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = 4))
+    fun remoteDispatchBudgetAllowsUpToTheConfiguredLimitOnly() {
+        val max = ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES
+        // attemptCount 从 0 起，可调度到 max-1；达到 max 后一律拒（防无限派遣）。
+        (0 until max).forEach { attempt ->
+            assertEquals("attemptCount=$attempt 应可调度", true, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = attempt))
+        }
+        (max until max + 2).forEach { attempt ->
+            assertEquals("attemptCount=$attempt 应被拒", false, ModelTaskRemoteDispatchPolicy.canSchedule(attemptCount = attempt))
+        }
     }
 
     @Test

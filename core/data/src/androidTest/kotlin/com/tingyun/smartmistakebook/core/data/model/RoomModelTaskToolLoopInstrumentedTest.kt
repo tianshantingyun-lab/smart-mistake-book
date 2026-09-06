@@ -39,7 +39,7 @@ import org.junit.runner.RunWith
 /**
  * 工具环协议行为测试（spec model-intent-routing §3.1）：假网关第 1 轮返回
  * toolRequests、本地执行后第 2 轮返回最终回答——断言执行器被调用、派遣两次、
- * 终态正确；以及模型在工具轮配额（MAX_TOOL_ROUNDS=2）用尽后仍不作答时
+ * 终态正确；以及模型在工具轮配额（MAX_TOOL_ROUNDS=5）用尽后仍不作答时
  * 必须快速失败，绝不允许违规输出变成 SUCCEEDED。
  */
 @RunWith(AndroidJUnit4::class)

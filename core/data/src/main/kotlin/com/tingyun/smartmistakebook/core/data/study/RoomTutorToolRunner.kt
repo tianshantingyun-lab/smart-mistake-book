@@ -1,9 +1,12 @@
 package com.tingyun.smartmistakebook.core.data.study
 
+import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
+import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
+import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
@@ -83,12 +86,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             TutorToolName.NOTEBOOK_READ -> notebookRead(call.terms)
             TutorToolName.MASTERY_READ -> masteryRead(context.learnerId)
             TutorToolName.MASTERY_UPDATE -> masteryUpdate(call, context)
-            TutorToolName.NOTEBOOK_WRITE -> TutorToolOutcome(
-                tool = call.tool,
-                ok = false,
-                summaryMarkdown = "错题库写入需要学生确认。",
-                errorKind = "confirmation_required",
-            )
+            TutorToolName.NOTEBOOK_WRITE -> notebookWrite(context)
         }
     } catch (cancelled: CancellationException) {
         throw cancelled
@@ -154,6 +152,72 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             ok = true,
             summaryMarkdown = "错题本匹配 ${rows.size} 条：\n${lines.joinToString("\n")}",
         )
+    }
+
+    /**
+     * 写错题本（T4）：把当前会话已识别、校验通过的真实题存入错题本。
+     * 学生确认门已在授权层（explicitActionRequest）把关；此处只做"当前会话确有已识别题面
+     * → 校验 → commit"。题面来源强锚定到 draft（学生手机上识别过的真实题），不是模型凭空
+     * 生成——防臆造。commitTutorSession 内部幂等（已保存则只返回，不重复落库）。
+     */
+    private suspend fun notebookWrite(context: Context): TutorToolOutcome {
+        val conversationId = context.conversationId
+        if (conversationId.isNullOrBlank()) {
+            return TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_WRITE,
+                ok = false,
+                summaryMarkdown = "当前会话没有可保存的题目。",
+                errorKind = "no_conversation",
+            )
+        }
+        val draft = port.readProblemDraft(conversationId)
+            ?: return TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_WRITE,
+                ok = false,
+                summaryMarkdown = "当前会话还没有识别出题目，无法保存。",
+                errorKind = "reference_not_found",
+            )
+        val revision = draft.currentRevision
+        val issues = CapturedQuestionDocumentValidator.validateForCommit(revision.questionDocument)
+        if (issues.isNotEmpty()) {
+            return TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_WRITE,
+                ok = false,
+                summaryMarkdown = "题目尚未准备就绪，无法保存。",
+                errorKind = "not_ready",
+            )
+        }
+        val now = System.currentTimeMillis()
+        val problemId = revision.draftId
+        val result = port.commitTutorSession(
+            CommitTutorSessionCommand(
+                sessionId = conversationId,
+                commit = CommitProblemDraftCommand(
+                    commandId = "commit-$conversationId-$now",
+                    draftId = conversationId,
+                    expectedRevisionNumber = revision.revisionNumber,
+                    problemId = problemId,
+                    problemRevisionId = "$conversationId-rev-${revision.revisionNumber}",
+                    practiceUnitId = conversationId,
+                    errorBookEntryId = "entry-$conversationId-$now",
+                    estimatedSeconds = 60,
+                    committedAtEpochMillis = now,
+                ),
+            ),
+        )
+        return if (result.created) {
+            TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_WRITE,
+                ok = true,
+                summaryMarkdown = "已保存到错题本。",
+            )
+        } else {
+            TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_WRITE,
+                ok = true,
+                summaryMarkdown = "这道题已在错题本里。",
+            )
+        }
     }
 
     private suspend fun masteryRead(learnerId: String): TutorToolOutcome {

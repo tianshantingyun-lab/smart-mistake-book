@@ -158,7 +158,7 @@ data class TutorToolRoundResult(
     }
 
     companion object {
-        const val MAX_TOOL_ROUNDS = 2
+        const val MAX_TOOL_ROUNDS = 5
     }
 }
 
@@ -228,7 +228,7 @@ fun tutorToolAuthorization(
     }
     val byIntent = when (decision.intent) {
         TutorMessageIntent.CURRENT_QUESTION_HELP ->
-            setOf(TutorToolName.KNOWLEDGE_READ, TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ, TutorToolName.MASTERY_UPDATE)
+            setOf(TutorToolName.KNOWLEDGE_READ, TutorToolName.NOTEBOOK_READ, TutorToolName.MASTERY_READ, TutorToolName.MASTERY_UPDATE, TutorToolName.NOTEBOOK_WRITE)
         TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP -> setOf(TutorToolName.NOTEBOOK_READ)
         TutorMessageIntent.LEARNING_PROGRESS_LOOKUP -> setOf(TutorToolName.MASTERY_READ)
         TutorMessageIntent.APP_HELP_OR_SETTINGS,
@@ -236,12 +236,26 @@ fun tutorToolAuthorization(
         TutorMessageIntent.END_OR_PAUSE,
         -> emptySet()
     }
-    val allowed = byIntent.intersect(declaredTools)
+    // 写工具（MASTERY_UPDATE / NOTEBOOK_WRITE）的确认门：MASTERY_UPDATE 由本地 gate 全权
+    // 决定（spec §5.2：模型提交证据+本地门控）；NOTEBOOK_WRITE 需要学生明确要求
+    // （explicitActionRequest，spec §9.7），模型自报"学生说收"才放行——本地无法独立验证，
+    // 靠授权矩阵 + 学生明确命令双重兜底。未明确确认的写工具申请一律不放行。
+    val allowed = byIntent.intersect(declaredTools).filterTo(mutableSetOf()) { tool ->
+        when (tool) {
+            TutorToolName.NOTEBOOK_WRITE -> decision.explicitActionRequest
+            // MASTERY_UPDATE 不需要 explicitActionRequest（本地 gate 做主）。
+            else -> true
+        }
+    }
     return TutorToolAuthorization(
         allowedTools = allowed,
         routeEligible = true,
         reason = if (allowed.isEmpty()) {
-            "intent ${decision.intent} has no declared tools"
+            if (TutorToolName.NOTEBOOK_WRITE in byIntent && !decision.explicitActionRequest) {
+                "NOTEBOOK_WRITE requires an explicit student request"
+            } else {
+                "intent ${decision.intent} has no declared tools"
+            }
         } else {
             "allowed ${allowed.map(TutorToolName::name)}"
         },

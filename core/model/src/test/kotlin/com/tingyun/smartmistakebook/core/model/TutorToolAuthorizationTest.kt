@@ -131,4 +131,43 @@ class TutorToolAuthorizationTest {
             ).allowedTools,
         )
     }
+
+    @Test
+    fun notebookWriteRequiresExplicitStudentRequest() {
+        val full = declared(TutorToolName.NOTEBOOK_READ, TutorToolName.NOTEBOOK_WRITE)
+        // 未明确确认（explicitActionRequest=false）→ T4 不放行（确认门）。
+        assertFalse(
+            "NOTEBOOK_WRITE 需 explicitActionRequest 确认门",
+            TutorToolName.NOTEBOOK_WRITE in tutorToolAuthorization(
+                decision(TutorMessageIntent.CURRENT_QUESTION_HELP, explicitActionRequest = false),
+                full,
+            ).allowedTools,
+        )
+        // 明确确认（explicitActionRequest=true）+ CURRENT_QUESTION_HELP + 已声明 → 放行。
+        assertTrue(
+            "CURRENT_QUESTION_HELP + 明确确认 + 已声明 → NOTEBOOK_WRITE 放行",
+            TutorToolName.NOTEBOOK_WRITE in tutorToolAuthorization(
+                decision(TutorMessageIntent.CURRENT_QUESTION_HELP, explicitActionRequest = true),
+                full,
+            ).allowedTools,
+        )
+    }
+
+    @Test
+    fun notebookWriteNeverAuthorizedOnNonCurrentQuestionIntent() {
+        val full = declared(TutorToolName.NOTEBOOK_WRITE)
+        listOf(
+            TutorMessageIntent.CASUAL_CONVERSATION,
+            TutorMessageIntent.AMBIGUOUS,
+            TutorMessageIntent.END_OR_PAUSE,
+        ).forEach { intent ->
+            assertFalse(
+                "$intent 下 T4 不应放行（byIntent 不含 NOTEBOOK_WRITE）",
+                TutorToolName.NOTEBOOK_WRITE in tutorToolAuthorization(
+                    decision(intent, explicitActionRequest = true),
+                    full,
+                ).allowedTools,
+            )
+        }
+    }
 }
