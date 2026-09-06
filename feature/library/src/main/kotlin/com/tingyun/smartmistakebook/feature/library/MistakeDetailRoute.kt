@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tingyun.smartmistakebook.core.domain.MistakeDetail
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailIdentity
+import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailState
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
@@ -376,7 +378,60 @@ private fun ReadyDetail(
                 onOpenModelSettings = onOpenModelSettings,
             )
         }
+        if (!isViewingHistoricalRevision && organizationRepository != null) {
+            MistakeOfflineCorrectionEntry(
+                key = checkNotNull(state.exportRevisionKeyOrNull()),
+                organizationRepository = organizationRepository,
+            )
+        }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun MistakeOfflineCorrectionEntry(
+    key: MistakeRevisionKey,
+    organizationRepository: MistakeOrganizationRepository,
+) {
+    val scope = rememberCoroutineScope()
+    var correctionVisible by rememberSaveable(key) { mutableStateOf(false) }
+    var message by rememberSaveable(key) { mutableStateOf<String?>(null) }
+    val confirmedFlow = remember(key, organizationRepository) {
+        organizationRepository.observeConfirmed(key)
+    }
+    val confirmed by confirmedFlow.collectAsStateWithLifecycle(
+        initialValue = ConfirmedMistakeOrganization(),
+    )
+    Column(Modifier.fillMaxWidth()) {
+        OutlineActionChip(
+            text = if (correctionVisible) "收起修改" else "修改章节 / 知识点",
+            onClick = { correctionVisible = !correctionVisible },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("mistake_detail_correct_organization"),
+        )
+        message?.let {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("mistake_offline_correction_message"),
+            )
+        }
+        if (correctionVisible) {
+            Spacer(Modifier.height(10.dp))
+            MistakeOfflineCorrectionEditor(
+                key = key,
+                confirmed = confirmed,
+                organizationRepository = organizationRepository,
+                onConfirmed = {
+                    correctionVisible = false
+                    message = "已保存章节 / 知识点修改"
+                },
+                onFailure = { failure -> message = failure },
+            )
+        }
     }
 }
 
