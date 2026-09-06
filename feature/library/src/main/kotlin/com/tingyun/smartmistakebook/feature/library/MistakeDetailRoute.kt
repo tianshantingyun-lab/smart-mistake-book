@@ -18,12 +18,14 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PictureAsPdf
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -185,6 +187,7 @@ internal fun MistakeDetailContent(
                 state = state,
                 onExport = { onExport(checkNotNull(state.exportRevisionKeyOrNull())) },
                 onTutor = { onTutor(checkNotNull(state.exportRevisionKeyOrNull())) },
+                onBack = onBack,
                 repository = checkNotNull(repository),
                 organizationRepository = organizationRepository,
                 modelTasks = modelTasks,
@@ -295,6 +298,7 @@ private fun ReadyDetail(
     state: MistakeDetailState.Ready,
     onExport: () -> Unit,
     onTutor: () -> Unit,
+    onBack: () -> Unit,
     repository: MistakeDetailRepository,
     organizationRepository: MistakeOrganizationRepository?,
     modelTasks: ModelTaskRepository?,
@@ -375,6 +379,12 @@ private fun ReadyDetail(
                 entryId = state.detail.identity.errorBookEntryId,
                 note = state.detail.userNote,
                 repository = repository,
+            )
+            Spacer(Modifier.height(10.dp))
+            MistakeArchiveAction(
+                entryId = state.detail.identity.errorBookEntryId,
+                repository = repository,
+                onArchived = onBack,
             )
         }
         PaperDivider(Modifier.padding(vertical = 18.dp))
@@ -550,6 +560,74 @@ private fun MistakeUserNoteCard(
                     modifier = Modifier.testTag("mistake_detail_note_message"),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MistakeArchiveAction(
+    entryId: String,
+    repository: MistakeDetailRepository,
+    onArchived: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    var showConfirm by rememberSaveable(entryId) { mutableStateOf(false) }
+    var archiving by remember { mutableStateOf(false) }
+    var error by rememberSaveable(entryId) { mutableStateOf<String?>(null) }
+
+    Column(Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { showConfirm = true },
+            enabled = !archiving,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("mistake_detail_archive"),
+        ) { Text("移出错题本") }
+        if (showConfirm) {
+            AlertDialog(
+                onDismissRequest = { showConfirm = false },
+                title = { Text("移出错题本？") },
+                text = {
+                    Text("题目会从错题本、搜索和复习中消失，但学习记录会保留，之后可以恢复。")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            archiving = true
+                            scope.launch {
+                                try {
+                                    val ok = repository.archiveEntry(
+                                        entryId = entryId,
+                                        at = System.currentTimeMillis(),
+                                    )
+                                    archiving = false
+                                    if (ok) {
+                                        showConfirm = false
+                                        onArchived()
+                                    } else {
+                                        error = "这道题不存在或已移出"
+                                    }
+                                } catch (failure: Exception) {
+                                    archiving = false
+                                    error = failure.message ?: "操作失败，请重试"
+                                }
+                            }
+                        },
+                    ) { Text("移出") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirm = false }) { Text("取消") }
+                },
+            )
+        }
+        error?.let {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = it,
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("mistake_detail_archive_error"),
+            )
         }
     }
 }
