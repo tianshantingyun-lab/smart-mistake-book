@@ -33,6 +33,10 @@ internal fun interface MistakeDetailRecordReader {
     suspend fun read(errorBookEntryId: String): MistakeDetailRecord?
 }
 
+internal fun interface MistakeNoteWriter {
+    suspend fun write(entryId: String, note: String?, updatedAtEpochMillis: Long): Boolean
+}
+
 internal fun interface ExactMistakeDetailRecordReader {
     suspend fun read(key: MistakeRevisionKey): MistakeDetailRecord?
 }
@@ -56,7 +60,18 @@ internal class RoomMistakeDetailRepository(
     private val revisionHistoryReader: MistakeRevisionHistoryReader =
         MistakeRevisionHistoryReader { emptyList() },
     private val assetUriResolver: CanonicalAssetUriResolver,
+    private val noteWriter: MistakeNoteWriter = MistakeNoteWriter { _, _, _ -> false },
 ) : MistakeDetailRepository {
+    override suspend fun updateUserNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Boolean {
+        require(entryId.isNotBlank()) { "entryId must not be blank" }
+        require(updatedAtEpochMillis >= 0) { "updatedAtEpochMillis must not be negative" }
+        val normalized = note?.trim()?.takeIf(String::isNotEmpty)
+        return noteWriter.write(entryId, normalized, updatedAtEpochMillis)
+    }
     override fun observe(errorBookEntryId: String): Flow<MistakeDetailState> {
         require(errorBookEntryId.isNotBlank()) { "errorBookEntryId must not be blank" }
         return flow {
@@ -146,6 +161,7 @@ internal class RoomMistakeDetailRepository(
             MistakeSourceSet.Present(sourceAssets.map { sourceAsset -> sourceAsset.toDomain() })
         },
         tutorConversation = tutorConversationReference(),
+        userNote = userNote,
     )
 
     private fun MistakeDetailRecord.tutorConversationReference(): TutorConversationReference? {
@@ -231,6 +247,7 @@ object MistakeDetailRepositoryFactory {
             assetUriResolver = CanonicalAssetUriResolver { sourceAsset ->
                 assetVault.resolve(sourceAsset).toURI().toASCIIString()
             },
+            noteWriter = MistakeNoteWriter(database::updateErrorBookEntryNote),
         )
     }
 }

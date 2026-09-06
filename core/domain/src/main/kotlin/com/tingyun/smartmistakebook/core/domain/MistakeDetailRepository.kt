@@ -24,6 +24,17 @@ interface MistakeDetailRepository {
     /** Lists every immutable formal revision belonging to one error-book entry. */
     fun observeRevisionHistory(errorBookEntryId: String): Flow<List<MistakeRevisionSummary>> =
         flowOf(emptyList())
+
+    /**
+     * Updates the learner's private note on an error-book entry. The note is
+     * user text (never model egress) and lives on the entry, not the
+     * append-only revision. Blank/whitespace notes are stored as null.
+     */
+    suspend fun updateUserNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Boolean = false
 }
 
 data class MistakeRevisionSummary(
@@ -89,6 +100,8 @@ data class MistakeDetail(
     val fallbackMarkdown: String,
     val source: MistakeSourceSet,
     val tutorConversation: TutorConversationReference? = null,
+    /** Learner's private note on the entry; never leaves the device in a model egress payload. */
+    val userNote: String? = null,
 ) {
     init {
         require(fallbackMarkdown.isNotBlank()) { "Mistake fallback Markdown must not be blank" }

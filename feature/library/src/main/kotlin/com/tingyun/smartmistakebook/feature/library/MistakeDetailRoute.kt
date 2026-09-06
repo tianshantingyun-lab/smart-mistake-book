@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.feature.library
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,12 +18,16 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.PictureAsPdf
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +67,7 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
+import kotlinx.coroutines.launch
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.StructuredContentRenderer
 import com.tingyun.smartmistakebook.core.ui.studentSubjectLabel
@@ -123,6 +129,7 @@ fun MistakeDetailRoute(
         onBack = onBack,
         onExport = onExport,
         onTutor = onTutor,
+        repository = repository,
         organizationRepository = organizationRepository,
         modelTasks = modelTasks,
         profile = profile,
@@ -144,6 +151,7 @@ internal fun MistakeDetailContent(
     onBack: () -> Unit,
     onExport: (MistakeRevisionKey) -> Unit,
     onTutor: (MistakeRevisionKey) -> Unit = {},
+    repository: MistakeDetailRepository? = null,
     organizationRepository: MistakeOrganizationRepository? = null,
     modelTasks: ModelTaskRepository? = null,
     profile: StudyProfileOverview = StudyProfileOverview(),
@@ -177,6 +185,7 @@ internal fun MistakeDetailContent(
                 state = state,
                 onExport = { onExport(checkNotNull(state.exportRevisionKeyOrNull())) },
                 onTutor = { onTutor(checkNotNull(state.exportRevisionKeyOrNull())) },
+                repository = checkNotNull(repository),
                 organizationRepository = organizationRepository,
                 modelTasks = modelTasks,
                 profile = profile,
@@ -286,6 +295,7 @@ private fun ReadyDetail(
     state: MistakeDetailState.Ready,
     onExport: () -> Unit,
     onTutor: () -> Unit,
+    repository: MistakeDetailRepository,
     organizationRepository: MistakeOrganizationRepository?,
     modelTasks: ModelTaskRepository?,
     profile: StudyProfileOverview,
@@ -360,6 +370,13 @@ private fun ReadyDetail(
             source = state.detail.source,
             revisionId = state.detail.identity.problemRevisionId,
         )
+        if (!isViewingHistoricalRevision) {
+            MistakeUserNoteCard(
+                entryId = state.detail.identity.errorBookEntryId,
+                note = state.detail.userNote,
+                repository = repository,
+            )
+        }
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader("题面")
         Spacer(Modifier.height(12.dp))
@@ -431,6 +448,108 @@ private fun MistakeOfflineCorrectionEntry(
                 },
                 onFailure = { failure -> message = failure },
             )
+        }
+    }
+}
+
+@Composable
+private fun MistakeUserNoteCard(
+    entryId: String,
+    note: String?,
+    repository: MistakeDetailRepository,
+) {
+    val scope = rememberCoroutineScope()
+    var editing by rememberSaveable(entryId) { mutableStateOf(false) }
+    var draft by rememberSaveable(entryId) { mutableStateOf(note.orEmpty()) }
+    var saving by remember { mutableStateOf(false) }
+    var message by rememberSaveable(entryId) { mutableStateOf<String?>(null) }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("mistake_detail_note"),
+        shape = RoundedCornerShape(10.dp),
+        color = JadeSoft.copy(alpha = 0.28f),
+        border = BorderStroke(1.dp, Outline),
+    ) {
+        Column(Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "错因 / 备注",
+                    color = Ink,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = {
+                    editing = !editing
+                    draft = note.orEmpty()
+                    message = null
+                }) {
+                    Text(if (editing) "取消" else if (note.isNullOrBlank()) "添加" else "编辑")
+                }
+            }
+            if (editing) {
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it.take(2000); message = null },
+                    placeholder = { Text("写下这道题错在哪、下次怎么避免…") },
+                    minLines = 2,
+                    maxLines = 6,
+                    enabled = !saving,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("mistake_detail_note_input"),
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        saving = true
+                        scope.launch {
+                            try {
+                                val saved = repository.updateUserNote(
+                                    entryId = entryId,
+                                    note = draft,
+                                    updatedAtEpochMillis = System.currentTimeMillis(),
+                                )
+                                saving = false
+                                if (saved) {
+                                    editing = false
+                                    message = "已保存备注"
+                                } else {
+                                    message = "保存失败，这道题可能已不存在"
+                                }
+                            } catch (failure: Exception) {
+                                saving = false
+                                message = failure.message ?: "保存失败，请重试"
+                            }
+                        }
+                    },
+                    enabled = !saving,
+                    colors = ButtonDefaults.buttonColors(containerColor = JadeActive),
+                    modifier = Modifier.testTag("mistake_detail_note_save"),
+                ) { Text(if (saving) "保存中…" else "保存备注") }
+            } else if (!note.isNullOrBlank()) {
+                Text(
+                    text = note,
+                    color = Ink,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                Text(
+                    text = "还没有备注。写下错因，下次复习时一眼想起。",
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            message?.let {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = it,
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.testTag("mistake_detail_note_message"),
+                )
+            }
         }
     }
 }

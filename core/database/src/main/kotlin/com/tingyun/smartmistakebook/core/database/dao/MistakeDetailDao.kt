@@ -32,6 +32,8 @@ internal data class MistakeDetailRow(
     val tutorSessionId: String?,
     @ColumnInfo(name = "tutor_question_revision_number")
     val tutorQuestionRevisionNumber: Int?,
+    @ColumnInfo(name = "user_note")
+    val userNote: String? = null,
 )
 
 internal data class MistakeDetailSourceAssetRow(
@@ -131,6 +133,7 @@ internal abstract class MistakeDetailDao {
             revision.problem_markdown,
             revision.question_document_snapshot,
             revision.content_fingerprint,
+            entry.user_note,
             tutor.session_id AS tutor_session_id,
             tutor.draft_revision_number AS tutor_question_revision_number
         FROM error_book_entry AS entry
@@ -163,6 +166,7 @@ internal abstract class MistakeDetailDao {
             revision.problem_markdown,
             revision.question_document_snapshot,
             revision.content_fingerprint,
+            entry.user_note,
             tutor.session_id AS tutor_session_id,
             tutor.draft_revision_number AS tutor_question_revision_number
         FROM error_book_entry AS entry
@@ -200,6 +204,7 @@ internal abstract class MistakeDetailDao {
             revision.problem_markdown,
             revision.question_document_snapshot,
             revision.content_fingerprint,
+            entry.user_note,
             NULL AS tutor_session_id,
             NULL AS tutor_question_revision_number
         FROM error_book_entry AS entry
@@ -381,4 +386,5 @@ private fun MistakeDetailRow.toRecord(
     },
     tutorSessionId = tutorSessionId,
     tutorQuestionRevisionNumber = tutorQuestionRevisionNumber,
+    userNote = userNote,
 )
