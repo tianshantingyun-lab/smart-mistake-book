@@ -143,6 +143,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
@@ -1030,6 +1031,20 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     }
 
     override fun observeMistakes(): Flow<List<MistakeRecord>> = mistakes
+
+    override suspend fun updateErrorBookEntryNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Boolean = error("entry notes are outside this study-repository fake")
+
+    override suspend fun archiveErrorBookEntry(entryId: String, at: Long): Boolean =
+        error("archive is outside this study-repository fake")
+
+    override suspend fun restoreErrorBookEntry(entryId: String, at: Long): Boolean =
+        error("restore is outside this study-repository fake")
+
+    override fun observeArchivedErrorBookEntries(): Flow<List<String>> = flowOf(emptyList())
 
     override fun observeModelTask(requestId: String): Flow<ModelTaskSnapshot?> =
         MutableStateFlow(null)

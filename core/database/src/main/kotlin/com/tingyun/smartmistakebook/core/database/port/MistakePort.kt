@@ -37,4 +37,15 @@ interface MistakeReadPort {
         note: String?,
         updatedAtEpochMillis: Long,
     ): Boolean
+
+    /**
+     * Reversibly removes an error-book entry from every user-facing surface
+     * (catalog, search, review, mastery) by archiving it; learning history is
+     * preserved and [restoreErrorBookEntry] brings it back.
+     */
+    suspend fun archiveErrorBookEntry(entryId: String, at: Long): Boolean
+
+    suspend fun restoreErrorBookEntry(entryId: String, at: Long): Boolean
+
+    fun observeArchivedErrorBookEntries(): Flow<List<String>>
 }

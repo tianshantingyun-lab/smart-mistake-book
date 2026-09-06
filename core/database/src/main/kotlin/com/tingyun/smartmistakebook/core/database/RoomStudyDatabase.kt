@@ -1270,6 +1270,32 @@ internal class RoomStudyDatabase(
     ): ConfirmProblemOrganizationResult = problemOrganization.confirm(command)
 
     override fun close() = database.close()
+
+    override suspend fun archiveErrorBookEntry(entryId: String, at: Long): Boolean =
+        database.withWriteTransaction {
+            val row = database.mistakeDetailDao().readEntryRevision(entryId) ?: return@withWriteTransaction false
+            val changed = database.mistakeDetailDao().setEntryStatus(entryId, StudyDbValue.ErrorBookStatus.ARCHIVED, at)
+            if (changed) {
+                // Remove from FTS search so archived mistakes stop appearing in search.
+                database.libraryFtsSearchDao().deleteContent(row.currentRevisionId)
+                database.libraryFtsSearchDao().clearOutboxFor(row.currentRevisionId)
+            }
+            changed
+        }
+
+    override suspend fun restoreErrorBookEntry(entryId: String, at: Long): Boolean =
+        database.withWriteTransaction {
+            val row = database.mistakeDetailDao().readEntryRevision(entryId) ?: return@withWriteTransaction false
+            val changed = database.mistakeDetailDao().setEntryStatus(entryId, StudyDbValue.ErrorBookStatus.ACTIVE, at)
+            if (changed) {
+                // Rebuild the FTS row so the restored mistake is searchable again.
+                librarySearch.reindexRevision(row.currentRevisionId)
+            }
+            changed
+        }
+
+    override fun observeArchivedErrorBookEntries(): Flow<List<String>> =
+        database.mistakeDetailDao().archivedEntries()
 }
 
 

@@ -35,6 +35,13 @@ interface MistakeDetailRepository {
         note: String?,
         updatedAtEpochMillis: Long,
     ): Boolean = false
+
+    /** Reversibly hides an error-book entry from all surfaces; history preserved. */
+    suspend fun archiveEntry(entryId: String, at: Long): Boolean = false
+
+    suspend fun restoreEntry(entryId: String, at: Long): Boolean = false
+
+    fun observeArchived(): Flow<List<String>> = flowOf(emptyList())
 }
 
 data class MistakeRevisionSummary(

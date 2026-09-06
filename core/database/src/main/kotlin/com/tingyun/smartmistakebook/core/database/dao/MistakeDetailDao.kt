@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.MistakeDetailRecord
 import com.tingyun.smartmistakebook.core.database.MistakeDetailSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRevisionSummaryRecord
+import kotlinx.coroutines.flow.Flow
 
 internal data class MistakeDetailRow(
     @ColumnInfo(name = "entry_id")
@@ -34,6 +35,13 @@ internal data class MistakeDetailRow(
     val tutorQuestionRevisionNumber: Int?,
     @ColumnInfo(name = "user_note")
     val userNote: String? = null,
+)
+
+internal data class EntryRevisionRow(
+    @ColumnInfo(name = "entry_id")
+    val entryId: String,
+    @ColumnInfo(name = "current_revision_id")
+    val currentRevisionId: String,
 )
 
 internal data class MistakeDetailSourceAssetRow(
@@ -119,6 +127,55 @@ internal abstract class MistakeDetailDao {
         require(updatedAtEpochMillis >= 0) { "updatedAtEpochMillis must not be negative" }
         return updateEntryNote(entryId, note, updatedAtEpochMillis) == 1
     }
+
+    @Query(
+        """
+        UPDATE error_book_entry
+        SET status = :status,
+            updated_at_epoch_millis = :updatedAtEpochMillis
+        WHERE entry_id = :entryId
+        """,
+    )
+    protected abstract suspend fun updateEntryStatus(
+        entryId: String,
+        status: String,
+        updatedAtEpochMillis: Long,
+    ): Int
+
+    open suspend fun setEntryStatus(
+        entryId: String,
+        status: String,
+        updatedAtEpochMillis: Long,
+    ): Boolean {
+        require(entryId.isNotBlank()) { "entryId must not be blank" }
+        require(updatedAtEpochMillis >= 0) { "updatedAtEpochMillis must not be negative" }
+        return updateEntryStatus(entryId, status, updatedAtEpochMillis) == 1
+    }
+
+    @Query(
+        """
+        SELECT entry_id, current_revision_id
+        FROM error_book_entry
+        WHERE entry_id = :entryId
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findEntryRevision(entryId: String): EntryRevisionRow?
+
+    open suspend fun readEntryRevision(entryId: String): EntryRevisionRow? =
+        findEntryRevision(entryId)
+
+    @Query(
+        """
+        SELECT entry_id
+        FROM error_book_entry
+        WHERE status = 'ARCHIVED'
+        ORDER BY updated_at_epoch_millis DESC
+        """,
+    )
+    protected abstract fun observeArchivedEntryIds(): Flow<List<String>>
+
+    open fun archivedEntries(): Flow<List<String>> = observeArchivedEntryIds()
 
     @Query(
         """

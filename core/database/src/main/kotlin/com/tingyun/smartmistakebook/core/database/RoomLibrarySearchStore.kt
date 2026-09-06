@@ -416,6 +416,11 @@ internal class RoomLibrarySearchStore(
         dao.clearOutboxFor(revisionId)
     }
 
+    /** Rebuilds one revision's FTS row from its projection (used on restore). */
+    internal suspend fun reindexRevision(revisionId: String) {
+        drainSearchRevision(database.libraryFtsSearchDao(), revisionId)
+    }
+
     suspend fun catalogPage(
         searchText: String,
         subjectId: String?,

@@ -37,6 +37,18 @@ internal fun interface MistakeNoteWriter {
     suspend fun write(entryId: String, note: String?, updatedAtEpochMillis: Long): Boolean
 }
 
+internal fun interface MistakeArchiver {
+    suspend fun archive(entryId: String, at: Long): Boolean
+}
+
+internal fun interface MistakeRestorer {
+    suspend fun restore(entryId: String, at: Long): Boolean
+}
+
+internal fun interface ArchivedObserver {
+    fun observe(): Flow<List<String>>
+}
+
 internal fun interface ExactMistakeDetailRecordReader {
     suspend fun read(key: MistakeRevisionKey): MistakeDetailRecord?
 }
@@ -60,8 +72,28 @@ internal class RoomMistakeDetailRepository(
     private val revisionHistoryReader: MistakeRevisionHistoryReader =
         MistakeRevisionHistoryReader { emptyList() },
     private val assetUriResolver: CanonicalAssetUriResolver,
-    private val noteWriter: MistakeNoteWriter = MistakeNoteWriter { _, _, _ -> false },
+    private val noteWriter: MistakeNoteWriter =
+        MistakeNoteWriter { _, _, _ -> false },
+    private val archiver: MistakeArchiver =
+        MistakeArchiver { _, _ -> false },
+    private val restorer: MistakeRestorer =
+        MistakeRestorer { _, _ -> false },
+    private val archivedObserver: ArchivedObserver =
+        ArchivedObserver { kotlinx.coroutines.flow.flowOf(emptyList()) },
 ) : MistakeDetailRepository {
+    override suspend fun archiveEntry(entryId: String, at: Long): Boolean {
+        require(entryId.isNotBlank()) { "entryId must not be blank" }
+        require(at >= 0) { "at must not be negative" }
+        return archiver.archive(entryId, at)
+    }
+
+    override suspend fun restoreEntry(entryId: String, at: Long): Boolean {
+        require(entryId.isNotBlank()) { "entryId must not be blank" }
+        require(at >= 0) { "at must not be negative" }
+        return restorer.restore(entryId, at)
+    }
+
+    override fun observeArchived(): Flow<List<String>> = archivedObserver.observe()
     override suspend fun updateUserNote(
         entryId: String,
         note: String?,
@@ -248,6 +280,9 @@ object MistakeDetailRepositoryFactory {
                 assetVault.resolve(sourceAsset).toURI().toASCIIString()
             },
             noteWriter = MistakeNoteWriter(database::updateErrorBookEntryNote),
+            archiver = MistakeArchiver(database::archiveErrorBookEntry),
+            restorer = MistakeRestorer(database::restoreErrorBookEntry),
+            archivedObserver = ArchivedObserver(database::observeArchivedErrorBookEntries),
         )
     }
 }
