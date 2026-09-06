@@ -8,16 +8,9 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessment
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
-import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
-import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
-import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlinx.coroutines.flow.last
@@ -43,6 +36,7 @@ internal suspend fun recognizeAndSplitBatchPage(
     modelTasks: ModelTaskRepository,
     splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository,
     occurrenceTime: Long,
+    consentEnabled: () -> Boolean,
 ): BatchSplitOutcome {
     val provider = modelTasks.capabilities()
     require(
@@ -60,12 +54,7 @@ internal suspend fun recognizeAndSplitBatchPage(
             imageHeight = capturedHeight,
         ),
         occurredAtEpochMillis = occurrenceTime,
-        egressManifest = batchSplitEgressManifest(
-            provider = provider,
-            jobId = jobId,
-            pageIndex = pageIndex,
-            sourceUri = sourceUri,
-        ),
+        agentConsentGranted = consentEnabled(),
     )
     val snapshot = modelTasks.execute(request).collectLast()
     if (snapshot.status != ModelTaskStatus.SUCCEEDED) {
@@ -109,37 +98,6 @@ private fun batchSplitFingerprint(jobId: String, pageIndex: Int, sourceUri: Stri
     MessageDigest.getInstance("SHA-256")
         .digest("batch-split\u001F$jobId\u001F$pageIndex\u001F$sourceUri".toByteArray(StandardCharsets.UTF_8))
         .joinToString("") { byte -> "%02x".format(byte) }
-
-private fun batchSplitEgressManifest(
-    provider: ProviderCapabilitySnapshot,
-    jobId: String,
-    pageIndex: Int,
-    sourceUri: String,
-): ModelEgressManifest? {
-    if (provider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER) return null
-    return ModelEgressManifest(
-        authorizationId = "batch-split-egress:$jobId:$pageIndex",
-        subjectId = stableBatchPageSubject(jobId, pageIndex),
-        purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
-        authorizedTaskKinds = setOf(ModelTaskKind.CAPTURE_ASSESS),
-        providerId = provider.providerId,
-        modelId = provider.modelId,
-        providerConfigurationVersion = provider.providerConfigurationVersion,
-        promptPolicyVersion = ModelPromptPolicyVersions.CAPTURE_DOCUMENT,
-        approvedAtEpochMillis = -1L,
-        assets = listOf(
-            ModelEgressAssetGrant(
-                assetId = "batch-image:$jobId:$pageIndex",
-                sha256 = batchSplitFingerprint(jobId, pageIndex, sourceUri),
-                byteSize = 0L,
-                width = 0,
-                height = 0,
-            ),
-        ),
-        disclosedData = ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE,
-        prohibitedData = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
-    )
-}
 
 internal sealed interface BatchSplitOutcome {
     data object Failed : BatchSplitOutcome

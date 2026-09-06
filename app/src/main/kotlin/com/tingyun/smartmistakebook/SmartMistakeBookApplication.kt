@@ -242,6 +242,12 @@ class SmartMistakeBookApplication : Application() {
                 processingScope = applicationScope,
                 modelTasks = modelTaskRepository,
                 splitImports = SplitImportRepositoryFactory.createConcrete(database),
+                // Batch page organization egresses page images; it runs only under the global
+                // "model agent" consent AND a configured model, mirroring the capture save path.
+                consentEnabled = {
+                    modelConfigurationStore != null &&
+                        runBlocking { modelAgentConsentStore?.current() ?: false }
+                },
             )
             backupRepository = BackupRepositoryFactory.create(this, database)
             OrphanAssetGc.enqueue(this)

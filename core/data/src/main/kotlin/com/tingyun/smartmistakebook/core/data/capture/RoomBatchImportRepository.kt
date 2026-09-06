@@ -11,8 +11,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.domain.BatchImportBoundaryStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationApproval
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationOffer
+import com.tingyun.smartmistakebook.core.domain.BatchOrganizationConsentException
 import com.tingyun.smartmistakebook.core.domain.BatchImportPage
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportRepository
@@ -31,11 +30,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CapturePageRelation
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
-import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
-import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -66,6 +61,7 @@ internal class RoomBatchImportRepository(
     private val sourceStaging: BatchImportSourceStaging,
     private val modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
     private val splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
+    private val consentEnabled: () -> Boolean = { false },
 ) : BatchImportRepository {
     private val processingMutex = Mutex()
     private val organizationMutex = Mutex()
@@ -203,54 +199,33 @@ internal class RoomBatchImportRepository(
             database.finishBatchImportIfSettled(jobId, now)
         }
 
-    override suspend fun prepareOrganization(jobId: String): BatchImportOrganizationOffer =
-        withContext(Dispatchers.IO) {
-            require(jobId.isNotBlank())
-            val job = database.readBatchImportJob(jobId)
-                ?: error("Batch import no longer exists")
-            require(job.status == StudyDbValue.BatchImportStatus.COMPLETED) {
-                "Batch import must finish before its pages can be organized"
-            }
-            val provider = modelTasks.capabilities()
-            require(provider.canOrganizeBatchPages()) {
-                "The configured model cannot compare adjacent question pages"
-            }
-            val disclosedPageIndexes = job.pages.zipWithNext()
-                .filter { (page, following) -> page.hasUnresolvedBoundaryWith(following) }
-                .flatMap { (page, following) -> listOf(page.pageIndex, following.pageIndex) }
-                .toSet()
-            require(disclosedPageIndexes.size >= 2) {
-                "Batch import has no adjacent saved pages left to organize"
-            }
-            BatchImportOrganizationOffer(
-                jobId = jobId,
-                pageCount = disclosedPageIndexes.size,
-                provider = provider,
-            )
-        }
-
-    override suspend fun organizeBatch(approval: BatchImportOrganizationApproval) =
+    override suspend fun organizeBatch(jobId: String) =
         organizationMutex.withLock {
             withContext(Dispatchers.IO) {
-                val provider = modelTasks.capabilities()
-                require(provider.matches(approval) && provider.canOrganizeBatchPages()) {
-                    "The configured model changed after page organization was approved"
+                require(jobId.isNotBlank())
+                if (!consentEnabled()) {
+                    throw BatchOrganizationConsentException()
                 }
-                val initial = database.readBatchImportJob(approval.jobId)
+                val provider = modelTasks.capabilities()
+                require(provider.canOrganizeBatchPages()) {
+                    "The configured model cannot compare adjacent question pages"
+                }
+                val occurredAtEpochMillis = System.currentTimeMillis()
+                val initial = database.readBatchImportJob(jobId)
                     ?: error("Batch import no longer exists")
                 require(initial.status == StudyDbValue.BatchImportStatus.COMPLETED)
                 database.requeueInterruptedBatchImportBoundaries(
-                    approval.jobId,
+                    jobId,
                     System.currentTimeMillis(),
                 )
 
-                val refreshed = database.readBatchImportJob(approval.jobId)
+                val refreshed = database.readBatchImportJob(jobId)
                     ?: error("Batch import no longer exists")
                 val pageSources = loadBatchPageSources(refreshed)
                 unresolvedBoundaryWindows(refreshed).forEach { boundaryIndexes ->
                     val claimed = boundaryIndexes.filter { pageIndex ->
                         database.claimBatchImportBoundary(
-                            approval.jobId,
+                            jobId,
                             pageIndex,
                             System.currentTimeMillis(),
                         )
@@ -258,7 +233,7 @@ internal class RoomBatchImportRepository(
                     if (claimed.size != boundaryIndexes.size) {
                         claimed.forEach { pageIndex ->
                             database.failBatchImportBoundary(
-                                approval.jobId,
+                                jobId,
                                 pageIndex,
                                 System.currentTimeMillis(),
                             )
@@ -271,11 +246,11 @@ internal class RoomBatchImportRepository(
                             checkNotNull(pageSources[pageIndex])
                         }
                         val request = pageRelationRequest(
-                            jobId = approval.jobId,
+                            jobId = jobId,
                             boundaryIndexes = boundaryIndexes,
                             sources = sources,
                             provider = provider,
-                            approval = approval,
+                            occurredAtEpochMillis = occurredAtEpochMillis,
                         )
                         val snapshot = modelTasks.execute(request).last()
                         val assessment = (snapshot.output as? CaptureAssessmentOutput)?.assessment
@@ -285,7 +260,7 @@ internal class RoomBatchImportRepository(
                         ) {
                             boundaryIndexes.forEach { pageIndex ->
                                 database.failBatchImportBoundary(
-                                    approval.jobId,
+                                    jobId,
                                     pageIndex,
                                     System.currentTimeMillis(),
                                 )
@@ -295,7 +270,7 @@ internal class RoomBatchImportRepository(
                         boundaryIndexes.zip(assessment.followingPageRelations)
                             .forEach { (pageIndex, relation) ->
                                 resolveBoundary(
-                                    jobId = approval.jobId,
+                                    jobId = jobId,
                                     pageIndex = pageIndex,
                                     relation = relation,
                                     assessmentDecision = assessment.decision,
@@ -304,7 +279,7 @@ internal class RoomBatchImportRepository(
                     } catch (cancelled: CancellationException) {
                         boundaryIndexes.forEach { pageIndex ->
                             database.failBatchImportBoundary(
-                                approval.jobId,
+                                jobId,
                                 pageIndex,
                                 System.currentTimeMillis(),
                             )
@@ -313,7 +288,7 @@ internal class RoomBatchImportRepository(
                     } catch (_: Exception) {
                         boundaryIndexes.forEach { pageIndex ->
                             database.failBatchImportBoundary(
-                                approval.jobId,
+                                jobId,
                                 pageIndex,
                                 System.currentTimeMillis(),
                             )
@@ -345,6 +320,7 @@ internal class RoomBatchImportRepository(
                         modelTasks = modelTasks,
                         splitImports = it,
                         occurrenceTime = page.createdAtEpochMillis,
+                        consentEnabled = consentEnabled,
                     )
                 }
                 if (splitDir != null && splitDir is BatchSplitOutcome.SplitReady) {
@@ -501,7 +477,7 @@ internal class RoomBatchImportRepository(
         boundaryIndexes: List<Int>,
         sources: List<CanonicalSourceAssetRecord>,
         provider: ProviderCapabilitySnapshot,
-        approval: BatchImportOrganizationApproval,
+        occurredAtEpochMillis: Long,
     ): ModelTaskRequest {
         require(boundaryIndexes.isNotEmpty())
         require(sources.size == boundaryIndexes.size + 1)
@@ -517,45 +493,11 @@ internal class RoomBatchImportRepository(
                 pageIndex = index + 1,
             )
         }
-        val manifest = if (
-            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
-        ) {
-            ModelEgressManifest(
-                authorizationId = stableId(
-                    "batch-page-approval",
-                    "$jobId:$windowKey:${approval.approvedAtEpochMillis}",
-                ),
-                subjectId = boundarySubjectId,
-                purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
-                authorizedTaskKinds = setOf(
-                    ModelTaskKind.CAPTURE_ASSESS,
-                    ModelTaskKind.CAPTURE_PARSE,
-                ),
-                providerId = provider.providerId,
-                modelId = provider.modelId,
-                providerConfigurationVersion = provider.providerConfigurationVersion,
-                promptPolicyVersion = ModelPromptPolicyVersions.CAPTURE_DOCUMENT,
-                approvedAtEpochMillis = approval.approvedAtEpochMillis,
-                assets = sources.map { source ->
-                    ModelEgressAssetGrant(
-                        assetId = source.sourceAssetId,
-                        sha256 = source.contentSha256,
-                        byteSize = source.byteSize,
-                        width = source.width,
-                        height = source.height,
-                    )
-                },
-                disclosedData = ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE,
-                prohibitedData = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
-            )
-        } else {
-            null
-        }
+        // Under global agent consent an external, image-capable, structured-output provider runs
+        // the boundary comparison without a per-job egress manifest; configure the model itself is
+        // the consent. The request id is deterministic so a retried window reuses the same task.
         return ModelTaskRequest(
-            requestId = stableId(
-                "batch-page",
-                "$jobId:$windowKey:${approval.approvedAtEpochMillis}",
-            ),
+            requestId = stableId("batch-page", "$jobId:$windowKey"),
             input = CaptureAssessmentInput(
                 draftId = boundarySubjectId,
                 sourceAssetId = primarySource.sourceAssetId,
@@ -564,8 +506,8 @@ internal class RoomBatchImportRepository(
                 imageHeight = primarySource.height,
                 followingSourceAssets = followingRefs,
             ),
-            occurredAtEpochMillis = approval.approvedAtEpochMillis,
-            egressManifest = manifest,
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            agentConsentGranted = true,
         )
     }
 
@@ -582,6 +524,7 @@ object BatchImportRepositoryFactory {
         processingScope: CoroutineScope,
         modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
         splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
+        consentEnabled: () -> Boolean = { false },
     ): BatchImportRepository = RoomBatchImportRepository(
         database = database,
         capture = capture,
@@ -589,6 +532,7 @@ object BatchImportRepositoryFactory {
         sourceStaging = AndroidBatchImportSourceStaging(context),
         modelTasks = modelTasks,
         splitImports = splitImports,
+        consentEnabled = consentEnabled,
     )
 }
 
@@ -653,13 +597,6 @@ private fun ProviderCapabilitySnapshot.canOrganizeBatchPages(): Boolean =
         supportsImageInput &&
         supportsStructuredOutput &&
         executionLocation != ModelExecutionLocation.UNAVAILABLE
-
-private fun ProviderCapabilitySnapshot.matches(
-    approval: BatchImportOrganizationApproval,
-): Boolean =
-    providerId == approval.providerId &&
-        modelId == approval.modelId &&
-        providerConfigurationVersion == approval.providerConfigurationVersion
 
 private object BatchOrganizationUnavailableModelTasks : ModelTaskRepository {
     private val provider = ProviderCapabilitySnapshot(

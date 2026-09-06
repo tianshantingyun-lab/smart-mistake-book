@@ -17,7 +17,6 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.data.model.ModelTaskRepositoryFactory
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationApproval
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
@@ -352,6 +351,7 @@ class BatchImportRepositoryInstrumentedTest {
                 capture = captureRepository(database),
                 processingScope = processingScope,
                 modelTasks = modelTasks,
+                consentEnabled = { true },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
@@ -366,19 +366,9 @@ class BatchImportRepositoryInstrumentedTest {
                 }.first()
             }
             val originalDraftIds = completed.pages.map { checkNotNull(it.draftId) }
-            val offer = repository.prepareOrganization(created.jobId)
-            val approvedAt = System.currentTimeMillis()
 
             val organizationMillis = measureTimeMillis {
-                repository.organizeBatch(
-                    BatchImportOrganizationApproval(
-                        jobId = created.jobId,
-                        providerId = offer.provider.providerId,
-                        modelId = offer.provider.modelId,
-                        providerConfigurationVersion = offer.provider.providerConfigurationVersion,
-                        approvedAtEpochMillis = approvedAt,
-                    ),
-                )
+                repository.organizeBatch(created.jobId)
             }
 
             val organized = withTimeout(5_000) {
@@ -423,6 +413,7 @@ class BatchImportRepositoryInstrumentedTest {
                 capture = captureRepository(database),
                 processingScope = processingScope,
                 modelTasks = modelTasks,
+                consentEnabled = { true },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
@@ -436,16 +427,7 @@ class BatchImportRepositoryInstrumentedTest {
                     jobs.firstOrNull()?.status == BatchImportStatus.COMPLETED
                 }.first()
             }
-            val offer = repository.prepareOrganization(created.jobId)
-            repository.organizeBatch(
-                BatchImportOrganizationApproval(
-                    jobId = created.jobId,
-                    providerId = offer.provider.providerId,
-                    modelId = offer.provider.modelId,
-                    providerConfigurationVersion = offer.provider.providerConfigurationVersion,
-                    approvedAtEpochMillis = System.currentTimeMillis(),
-                ),
-            )
+            repository.organizeBatch(created.jobId)
 
             val organized = checkNotNull(database.readBatchImportJob(created.jobId))
             assertEquals(2, organized.pages.mapNotNull { it.resultDraftId }.distinct().size)
