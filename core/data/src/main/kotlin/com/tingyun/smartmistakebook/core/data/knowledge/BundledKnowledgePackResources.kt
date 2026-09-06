@@ -201,6 +201,7 @@ private data class TopicBlueprint(
     val topicSlug: String,
     val topicName: String,
     val topicLocator: String,
+    val parentSlug: String? = null,
     val points: List<PointBlueprint>,
 )
 
@@ -254,20 +255,24 @@ private fun JsonElement.toCurrentSubjectBlueprint(index: Int): SubjectBlueprint 
     require(subject != SubjectKind.GENERAL) { "A curriculum pack cannot use GENERAL subject" }
     val topics = value.requiredArray("topics").mapIndexed { topicIndex, element ->
         val topic = element.requireObject("subjects[$index].topics[$topicIndex]")
-        topic.requireOnlyKeys(
-            "slug",
-            "name",
-            "sourceLocator",
-            "knowledgePoints",
-        )
+        // parentSlug 是可选键，不能进 requireOnlyKeys（那里同时要求键必填）
+        val unknownTopicKeys = topic.keys -
+            setOf("slug", "name", "sourceLocator", "parentSlug", "knowledgePoints")
+        require(unknownTopicKeys.isEmpty()) {
+            "Knowledge pack contains unknown keys: ${unknownTopicKeys.sorted()}"
+        }
+        val parentSlug = topic["parentSlug"]?.let { p ->
+            (p as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
+                ?: error("subjects[$index].topics[$topicIndex].parentSlug must be a string")
+        }
         val points = topic.requiredArray("knowledgePoints").mapIndexed { pointIndex, point ->
             point.toPointBlueprint("subjects[$index].topics[$topicIndex].knowledgePoints[$pointIndex]")
         }
-        require(points.isNotEmpty()) { "Every topic needs at least one knowledge point" }
         TopicBlueprint(
             topicSlug = topic.requiredString("slug"),
             topicName = topic.requiredString("name"),
             topicLocator = topic.requiredString("sourceLocator"),
+            parentSlug = parentSlug,
             points = points,
         )
     }
@@ -284,12 +289,28 @@ private fun SubjectBlueprint.validate() {
         "Topic slugs must be unique inside a subject"
     }
     val points = topics.flatMap(TopicBlueprint::points)
+    require(points.isNotEmpty()) { "Every subject needs at least one knowledge point" }
     require(points.map(PointBlueprint::slug).distinct().size == points.size) {
         "Knowledge-point slugs must be unique inside a subject"
     }
     val slugs = points.mapTo(hashSetOf(), PointBlueprint::slug)
     require(points.all { point -> point.prerequisiteSlugs.all(slugs::contains) }) {
         "Knowledge-point prerequisites must reference the same subject block"
+    }
+    // 嵌套 topic 校验：parentSlug 必须引用同科存在的 topic，且无环
+    val topicSlugs = topics.mapTo(hashSetOf(), TopicBlueprint::topicSlug)
+    require(topics.all { it.parentSlug == null || it.parentSlug in topicSlugs }) {
+        "Nested topic parentSlug must reference a topic in the same subject"
+    }
+    val parentBySlug = topics.associate { it.topicSlug to it.parentSlug }
+    topics.forEach { topic ->
+        var seen = mutableSetOf(topic.topicSlug)
+        var cursor: String? = topic.parentSlug
+        while (cursor != null) {
+            require(cursor !in seen) { "Topic nesting must not contain cycles" }
+            seen.add(cursor)
+            cursor = parentBySlug[cursor]
+        }
     }
 }
 
@@ -344,7 +365,9 @@ private fun SubjectBlueprint.toNodes(
             stableCode = "$taxonomyVersion:${subjectKey()}:topic:${topic.topicSlug}",
             subject = subject.name,
             displayName = topic.topicName,
-            parentKnowledgeNodeId = null,
+            parentKnowledgeNodeId = topic.parentSlug?.let { parentSlug ->
+                topicId(taxonomyVersion, parentSlug)
+            },
             taxonomyVersion = taxonomyVersion,
             createdAtEpochMillis = reviewedAt,
             canonicalName = topic.topicName,

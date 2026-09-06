@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.knowledge
 
 import com.tingyun.smartmistakebook.core.model.KnowledgeMaterialDerivationKind
+import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
 import com.tingyun.smartmistakebook.core.model.KnowledgeSourceContentUsePolicy
 import com.tingyun.smartmistakebook.core.model.KnowledgeTeachingMaterialType
 import com.tingyun.smartmistakebook.core.model.SubjectKind
@@ -63,7 +64,11 @@ class ReviewedKnowledgePackJsonCodecTest {
         assertEquals(KnowledgeCoverageContract.CURRENT_BASELINE_ID, pack.coverage.baselineId)
         assertEquals(KnowledgeCoverageLevel.PARTIAL, pack.coverage.catalogLevel)
         assertEquals(setOf("MATH","PHYSICS","CHEMISTRY","BIOLOGY"), pack.nodes.mapTo(hashSetOf()) { it.subject })
-        assertEquals(2642, pack.nodes.size)
+        assertEquals(3018, pack.nodes.size)
+        // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
+        val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
+        assertTrue(topicNodes.size >= 400)
+        assertTrue(topicNodes.count { it.parentKnowledgeNodeId != null } >= 300)
         assertTrue(pack.teachingMaterials.size >= 10000)
         // 至少 80% 教学条目绑定到目录节点（语义绑定阈值）
         val bound = pack.teachingMaterialBindings.size
@@ -347,6 +352,114 @@ class ReviewedKnowledgePackJsonCodecTest {
                   "boundary":"只读取图象已经呈现的增减变化。",
                   "sourceLocator":"函数性质主题",
                   "prerequisiteSlugs":["recognize-function-relation"]
+                }]
+              }
+            ]
+          }]
+        }
+        """.trimIndent()
+
+    @Test
+    fun currentSchemaSupportsNestedTopicsWithEmptyIntermediateLayers() {
+        val pack = ReviewedKnowledgePackJsonCodec.decode(nestedTopicPack())
+
+        val topics = pack.nodes.filter { it.granularity == KnowledgeNodeGranularity.TOPIC.name }
+        assertEquals(4, topics.size)
+        val byName = topics.associateBy { it.displayName }
+        val vol = byName.getValue("数学必修第一册")
+        val chap = byName.getValue("数学必修第一册·第三章")
+        val theme = byName.getValue("数学必修第一册·第三章·函数")
+        val leaf = byName.getValue("数学必修第一册·第三章·函数·单调性")
+        assertEquals(null, vol.parentKnowledgeNodeId)
+        assertEquals(vol.knowledgeNodeId, chap.parentKnowledgeNodeId)
+        assertEquals(chap.knowledgeNodeId, theme.parentKnowledgeNodeId)
+        assertEquals(theme.knowledgeNodeId, leaf.parentKnowledgeNodeId)
+        val atomic = pack.nodes.single { it.granularity == KnowledgeNodeGranularity.ATOMIC.name }
+        assertEquals(leaf.knowledgeNodeId, atomic.parentKnowledgeNodeId)
+    }
+
+    @Test
+    fun nestedTopicParentSlugMustReferenceExistingTopic() {
+        val failure = runCatching {
+            ReviewedKnowledgePackJsonCodec.decode(
+                nestedTopicPack().replace(
+                    "\"parentSlug\":\"数学必修第一册·第三章\"",
+                    "\"parentSlug\":\"不存在的主题\"",
+                ),
+            )
+        }.exceptionOrNull()
+
+        assertTrue(failure is IllegalArgumentException)
+        assertTrue(failure?.message.orEmpty().contains("reference a topic in the same subject"))
+    }
+
+    @Test
+    fun nestedTopicHierarchyCannotContainCycles() {
+        // 函数 的 parent 改为 单调性，而 单调性 的 parent 本就是 函数 —— 直接构成二环
+        val failure = runCatching {
+            ReviewedKnowledgePackJsonCodec.decode(
+                nestedTopicPack().replace(
+                    "\"parentSlug\":\"数学必修第一册·第三章\"",
+                    "\"parentSlug\":\"数学必修第一册·第三章·函数·单调性\"",
+                ),
+            )
+        }.exceptionOrNull()
+
+        assertTrue(failure is IllegalArgumentException)
+        assertTrue(failure?.message.orEmpty().contains("must not contain cycles"))
+    }
+
+    private fun nestedTopicPack(): String =
+        """
+        {
+          "schemaVersion":2,
+          "packId":"moe-2025-math-reviewed-v1",
+          "taxonomyVersion":"moe-2025-math-reviewed-v1",
+          "sourceNamespace":"moe-2025-reviewed-v1",
+          "reviewedAtEpochMillis":2,
+          "sourceUri":"https://www.ictr.edu.cn/policy/cheng/p/11.html",
+          "coverage":{
+            "baselineId":"moe-high-school-2017-2025",
+            "catalogLevel":"PARTIAL",
+            "teachingSupportLevel":"PARTIAL"
+          },
+          "subjects":[{
+            "subject":"MATH",
+            "sourceFingerprint":"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            "topics":[
+              {
+                "slug":"数学必修第一册",
+                "name":"数学必修第一册",
+                "sourceLocator":"定位：数学必修第一册",
+                "knowledgePoints":[]
+              },
+              {
+                "slug":"数学必修第一册·第三章",
+                "name":"数学必修第一册·第三章",
+                "sourceLocator":"定位：数学必修第一册 第三章",
+                "parentSlug":"数学必修第一册",
+                "knowledgePoints":[]
+              },
+              {
+                "slug":"数学必修第一册·第三章·函数",
+                "name":"数学必修第一册·第三章·函数",
+                "sourceLocator":"定位：数学必修第一册 第三章·函数",
+                "parentSlug":"数学必修第一册·第三章",
+                "knowledgePoints":[]
+              },
+              {
+                "slug":"数学必修第一册·第三章·函数·单调性",
+                "name":"数学必修第一册·第三章·函数·单调性",
+                "sourceLocator":"定位：数学必修第一册 第三章·函数·单调性",
+                "parentSlug":"数学必修第一册·第三章·函数",
+                "knowledgePoints":[{
+                  "slug":"read-monotonicity",
+                  "name":"从图象读取函数单调性",
+                  "aliases":[],
+                  "kind":"REPRESENTATION",
+                  "boundary":"只读取图象已经呈现的增减变化。",
+                  "sourceLocator":"函数主题",
+                  "prerequisiteSlugs":[]
                 }]
               }
             ]
