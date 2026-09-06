@@ -21,6 +21,7 @@ enum class ModelTaskKind {
     REVIEW_RERANK,
     LEARNING_SUMMARIZE,
     IMAGE_PIPELINE_CLASSIFY,
+    KNOWLEDGE_QUIZ,
 }
 
 @Serializable
@@ -615,6 +616,84 @@ data class CaptureParseOutput(
     }
 }
 
+/** One answer choice of a knowledge review quiz item. */
+@Serializable
+data class KnowledgeQuizChoice(
+    val choiceId: String,
+    val markdown: String,
+) {
+    init {
+        require(choiceId.isNotBlank()) { "Knowledge quiz choice id must not be blank" }
+        require(markdown.isNotBlank()) { "Knowledge quiz choice markdown must not be blank" }
+    }
+}
+
+/**
+ * Knowledge review quiz (spec dual-review-entry §3.3): ask the model to compose a
+ * multiple-choice item for one knowledge node, anchored to its teaching material's
+ * boundary so it can't stray beyond the node's real scope. Local-only, text-only,
+ * no image assets. The material's key fields are inlined so `core:model` stays
+ * decoupled from the Room/database teaching-material record.
+ */
+@Serializable
+@SerialName("knowledge_quiz_input")
+data class KnowledgeQuizInput(
+    val knowledgeNodeId: String,
+    override val subjectId: String,
+    val materialTitle: String,
+    val materialContentMarkdown: String,
+    val materialBoundaryMarkdown: String,
+    val lastMasteryScore: Double? = null,
+    val lastEvidenceAtEpochMillis: Long? = null,
+) : ModelTaskInput {
+    override val kind: ModelTaskKind
+        get() = ModelTaskKind.KNOWLEDGE_QUIZ
+
+    init {
+        require(knowledgeNodeId.isNotBlank()) { "Knowledge quiz node id must not be blank" }
+        require(subjectId.isNotBlank()) { "Knowledge quiz subject id must not be blank" }
+        require(materialTitle.isNotBlank()) { "Knowledge quiz material title must not be blank" }
+        require(materialContentMarkdown.isNotBlank()) {
+            "Knowledge quiz material content must not be blank"
+        }
+        require(materialBoundaryMarkdown.isNotBlank()) {
+            "Knowledge quiz material boundary must not be blank"
+        }
+        require(lastMasteryScore == null || lastMasteryScore.isFinite() && lastMasteryScore in 0.0..1.0) {
+            "Knowledge quiz last mastery must be between zero and one"
+        }
+        require(lastEvidenceAtEpochMillis == null || lastEvidenceAtEpochMillis >= 0) {
+            "Knowledge quiz last evidence time must not be negative"
+        }
+    }
+}
+
+@Serializable
+@SerialName("knowledge_quiz_output")
+data class KnowledgeQuizOutput(
+    val questionMarkdown: String,
+    val choices: List<KnowledgeQuizChoice>,
+    val correctChoiceId: String,
+    val modelVersion: String,
+) : ModelTaskOutput {
+    init {
+        require(questionMarkdown.isNotBlank()) { "Knowledge quiz question must not be blank" }
+        require(choices.size >= 2) { "Knowledge quiz needs at least two choices" }
+        require(choices.map { it.choiceId }.distinct().size == choices.size) {
+            "Knowledge quiz choice ids must be unique"
+        }
+        require(choices.any { it.choiceId == correctChoiceId }) {
+            "Knowledge quiz correct choice must be present among choices"
+        }
+        require(correctChoiceId.isNotBlank()) { "Knowledge quiz correct choice id must not be blank" }
+        modelVersion.requireSafeModelText(
+            label = "Knowledge quiz model version",
+            maxChars = MAX_MODEL_VERSION_CHARS,
+            allowLineBreaks = false,
+        )
+    }
+}
+
 enum class ModelTaskCompletionIssueCode {
     REQUEST_OUTPUT_TYPE_MISMATCH,
     INVALID_CAPTURE_DOCUMENT,
@@ -686,6 +765,11 @@ object ModelTaskCompletionValidator {
         }
         is CaptureParseInput -> if (output is CaptureParseOutput) {
             validateCaptureParse(input, output)
+        } else {
+            listOf(typeMismatch())
+        }
+        is KnowledgeQuizInput -> if (output is KnowledgeQuizOutput) {
+            emptyList()
         } else {
             listOf(typeMismatch())
         }

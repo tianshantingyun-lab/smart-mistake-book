@@ -217,6 +217,7 @@ internal class OpenAiCompatibleModelGateway(
                                     is TutorVisualGenerateInput -> "正在核对题图并组织直观讲解"
                                     is TutorVisualReviewInput -> "正在复核图中的关键关系"
                                     is TutorDebriefInput -> "正在安静地整理这次讲题的要点"
+                                    is com.tingyun.smartmistakebook.core.model.KnowledgeQuizInput -> "模型正在按知识点出复习题"
                                     is ProblemOrganizationInput -> "模型正在提出待确认的分类和题目联系"
                                 },
                             ),
@@ -449,6 +450,7 @@ private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnaps
             add(ModelTaskKind.TUTOR_RESPOND)
             add(ModelTaskKind.TUTOR_LOBBY)
             add(ModelTaskKind.PROBLEM_CLASSIFY)
+            add(ModelTaskKind.KNOWLEDGE_QUIZ)
             if (verification.supportsImageInput) {
                 add(ModelTaskKind.CAPTURE_ASSESS)
                 add(ModelTaskKind.CAPTURE_PARSE)
@@ -527,6 +529,8 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is TutorPlanInput,
         is TutorLobbyInput,
         is TutorRespondInput,
+        is TutorDebriefInput,
+        is com.tingyun.smartmistakebook.core.model.KnowledgeQuizInput,
         is ProblemOrganizationInput,
         -> emptyList()
     }

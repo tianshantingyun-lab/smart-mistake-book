@@ -144,6 +144,9 @@ class FakeModelGateway(
         is TutorRespondInput -> error("The capture-only demo provider cannot answer tutor messages")
         is TutorVisualGenerateInput -> error("The capture-only demo provider cannot generate tutor visuals")
         is TutorVisualReviewInput -> error("The capture-only demo provider cannot review tutor visuals")
+        is com.tingyun.smartmistakebook.core.model.KnowledgeQuizInput -> error(
+            "The capture-only demo provider cannot compose knowledge quizzes",
+        )
         is ProblemOrganizationInput -> error(
             "The capture-only demo provider cannot organize committed problems",
         )

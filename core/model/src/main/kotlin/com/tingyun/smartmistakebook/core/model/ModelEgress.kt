@@ -47,6 +47,7 @@ object ModelPromptPolicyVersions {
     const val TUTOR_LOBBY = "tutor-lobby-v3-tool-loop-wired"
     const val LEARNING_SUMMARIZE = "learning-summarize-v1-tutor-debrief"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
+    const val KNOWLEDGE_QUIZ = "knowledge-quiz-v1-boundary-anchored"
 
     fun currentFor(kind: ModelTaskKind): String? = when (kind) {
         ModelTaskKind.CAPTURE_ASSESS,
@@ -60,10 +61,10 @@ object ModelPromptPolicyVersions {
         ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY
         ModelTaskKind.LEARNING_SUMMARIZE -> LEARNING_SUMMARIZE
         ModelTaskKind.PROBLEM_CLASSIFY -> PROBLEM_ORGANIZATION
+        ModelTaskKind.KNOWLEDGE_QUIZ -> KNOWLEDGE_QUIZ
         ModelTaskKind.PROBLEM_RELATE,
         ModelTaskKind.TUTOR_EVALUATE,
         ModelTaskKind.REVIEW_RERANK,
-        ModelTaskKind.LEARNING_SUMMARIZE,
         -> null
     }
 }
@@ -191,7 +192,8 @@ data class ModelEgressManifest(
                     schemaVersion >= 2 && tutoringKind == ModelTaskKind.TUTOR_RESPOND ||
                     schemaVersion >= 4 && tutoringKind == ModelTaskKind.TUTOR_LOBBY ||
                     schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
-                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
+                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.TUTOR_VISUAL_REVIEW ||
+                    schemaVersion >= 5 && tutoringKind == ModelTaskKind.KNOWLEDGE_QUIZ,
             ) {
                 "Tutor egress must authorize exactly one supported tutoring task"
             }
@@ -203,6 +205,7 @@ data class ModelEgressManifest(
                     tutorVisualGenerateDisclosure(assets.any { it.selectedRegion != null })
                 ModelTaskKind.TUTOR_VISUAL_REVIEW ->
                     tutorVisualReviewDisclosure(assets.any { it.selectedRegion != null })
+                ModelTaskKind.KNOWLEDGE_QUIZ -> KNOWLEDGE_QUIZ_DISCLOSURE
             }
             // TUTOR_LOBBY 保持纯文字；视觉任务按输入是否含图片决定披露。
             require(disclosedData == expectedDisclosure) {
@@ -293,6 +296,15 @@ data class ModelEgressManifest(
 
         val TUTOR_RESPOND_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - TUTOR_RESPOND_DISCLOSURE
+
+        /** Knowledge review quiz discloses only the bounded node material + prior mastery. */
+        val KNOWLEDGE_QUIZ_DISCLOSURE = setOf(
+            ModelEgressDataClass.SUBJECT_KNOWLEDGE_BASE,
+            ModelEgressDataClass.RELEVANT_LEARNING_EVIDENCE,
+        )
+
+        val KNOWLEDGE_QUIZ_PROHIBITED_DATA =
+            ModelEgressDataClass.entries.toSet() - KNOWLEDGE_QUIZ_DISCLOSURE
 
         internal fun tutorRespondDisclosureForSchema(
             schemaVersion: Int,
@@ -501,6 +513,10 @@ private fun ModelEgressManifest.requireAuthorizes(
     when (val input = request.input) {
         is TutorDebriefInput -> {
             require(purpose == ModelEgressPurpose.TUTORING)
+        }
+        is KnowledgeQuizInput -> {
+            require(purpose == ModelEgressPurpose.TUTORING)
+            require(assets.isEmpty()) { "Knowledge quiz is text-only and never ships image assets" }
         }
         is CaptureAssessmentInput -> {
             require(purpose == ModelEgressPurpose.CAPTURE_TO_DOCUMENT)

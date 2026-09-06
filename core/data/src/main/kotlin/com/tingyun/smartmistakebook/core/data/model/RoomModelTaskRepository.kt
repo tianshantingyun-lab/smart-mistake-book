@@ -452,6 +452,7 @@ class RoomModelTaskRepository internal constructor(
                         "图形讲解已准备好"
                     is com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput ->
                         "图形讲解已复核"
+                    is com.tingyun.smartmistakebook.core.model.KnowledgeQuizInput -> "复习题已准备好"
                     is ProblemOrganizationInput -> "分类和题目联系建议已生成，请确认后再保存"
                 },
                 provider = current.provider,

@@ -120,6 +120,14 @@ object ModelTaskContractRegistry {
                 ModelEgressDataClass.entries.toSet() -
                     ModelEgressManifest.tutorVisualReviewDisclosure(false),
         ),
+        ModelTaskContract(
+            kind = ModelTaskKind.KNOWLEDGE_QUIZ,
+            egressPurpose = ModelEgressPurpose.TUTORING,
+            promptPolicyVersion = ModelPromptPolicyVersions.KNOWLEDGE_QUIZ,
+            assetPolicy = ModelTaskAssetPolicy.FORBIDDEN,
+            requiredDisclosures = ModelEgressManifest.KNOWLEDGE_QUIZ_DISCLOSURE,
+            prohibitedDisclosures = ModelEgressManifest.KNOWLEDGE_QUIZ_PROHIBITED_DATA,
+        ),
     ).associateBy(ModelTaskContract::kind)
 
     fun require(kind: ModelTaskKind): ModelTaskContract =
