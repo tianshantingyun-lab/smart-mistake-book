@@ -26,4 +26,15 @@ interface MistakeReadPort {
     suspend fun readMistakeRevisionHistory(
         problemId: String,
     ): List<MistakeRevisionSummaryRecord>
+
+    /**
+     * Writes the learner's private note on an error-book entry. The note is
+     * user text on the entry (not the append-only revision); it never enters a
+     * model egress payload. Returns false when the entry no longer exists.
+     */
+    suspend fun updateErrorBookEntryNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Boolean
 }

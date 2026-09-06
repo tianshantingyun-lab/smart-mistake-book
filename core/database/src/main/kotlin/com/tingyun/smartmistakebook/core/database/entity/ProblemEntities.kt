@@ -152,6 +152,8 @@ internal data class ErrorBookEntryEntity(
     val acceptedAtEpochMillis: Long,
     @ColumnInfo(name = "updated_at_epoch_millis")
     val updatedAtEpochMillis: Long,
+    @ColumnInfo(name = "user_note")
+    val userNote: String? = null,
 )
 
 @Entity(

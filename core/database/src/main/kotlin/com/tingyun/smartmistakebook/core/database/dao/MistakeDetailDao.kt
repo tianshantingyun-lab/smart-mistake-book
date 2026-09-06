@@ -96,6 +96,30 @@ internal data class MistakeRevisionSummaryRow(
 internal abstract class MistakeDetailDao {
     @Query(
         """
+        UPDATE error_book_entry
+        SET user_note = :note,
+            updated_at_epoch_millis = :updatedAtEpochMillis
+        WHERE entry_id = :entryId
+        """,
+    )
+    protected abstract suspend fun updateEntryNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Int
+
+    open suspend fun setUserNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Boolean {
+        require(entryId.isNotBlank()) { "entryId must not be blank" }
+        require(updatedAtEpochMillis >= 0) { "updatedAtEpochMillis must not be negative" }
+        return updateEntryNote(entryId, note, updatedAtEpochMillis) == 1
+    }
+
+    @Query(
+        """
         SELECT
             entry.entry_id,
             entry.problem_id,

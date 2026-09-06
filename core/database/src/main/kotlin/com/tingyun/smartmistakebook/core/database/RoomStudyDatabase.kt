@@ -582,6 +582,12 @@ internal class RoomStudyDatabase(
         return database.mistakeDetailDao().readRevisionHistory(errorBookEntryId)
     }
 
+    override suspend fun updateErrorBookEntryNote(
+        entryId: String,
+        note: String?,
+        updatedAtEpochMillis: Long,
+    ): Boolean = database.mistakeDetailDao().setUserNote(entryId, note, updatedAtEpochMillis)
+
     override suspend fun createProblemDraft(
         command: CreateProblemDraftCommand,
     ): ProblemDraftWriteResult = database.problemDraftTransactionDao().create(command)
