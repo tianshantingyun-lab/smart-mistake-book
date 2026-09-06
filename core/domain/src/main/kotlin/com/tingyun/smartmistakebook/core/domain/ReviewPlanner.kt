@@ -256,37 +256,7 @@ class ReviewPlanner(
             reasons += ReviewReason.CALIBRATION_CHECK
         }
         val masteryRisks = masteryStates.map { state ->
-            val currentSupportedEvidenceMass = state.independentCorrectObservations
-                .filter { it.calibrationSupportAt(now) == CalibrationSupport.SUPPORTED }
-                .sumOf { it.evidenceWeight }
-            val stale = state.status == MasteryStatus.STALE ||
-                state.lastEvidenceAtEpochMillis == null ||
-                now < (state.lastEvidenceAtEpochMillis ?: 0) ||
-                now - (state.lastEvidenceAtEpochMillis ?: now) >
-                ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS
-            when {
-                state.status == MasteryStatus.CONFLICTED -> {
-                    reasons += ReviewReason.CONFLICTED_KNOWLEDGE
-                    reasons += ReviewReason.CALIBRATION_CHECK
-                    1.0
-                }
-                state.status == MasteryStatus.UNKNOWN -> {
-                    reasons += ReviewReason.CALIBRATION_CHECK
-                    1.0
-                }
-                stale -> {
-                    reasons += ReviewReason.STALE_KNOWLEDGE
-                    reasons += ReviewReason.CALIBRATION_CHECK
-                    1.0
-                }
-                currentSupportedEvidenceMass <= 0.0 -> {
-                    reasons += ReviewReason.CALIBRATION_CHECK
-                    1.0
-                }
-                // Spec 2.18: weakness input is the 7-day half-life smoothed
-                // mastery, damping single-day swings.
-                else -> 1.0 - MasterySmoothing.smoothedMasteryScore(state, now)
-            }
+            masteryRiskFor(state, now, reasons)
         }
         val weakness = (masteryRisks + List(
             maxOf(missingKnowledgeCount, if (candidate.knowledgeNodeIds.isEmpty()) 1 else 0),
@@ -347,6 +317,120 @@ class ReviewPlanner(
             score = score,
             reasons = reasons,
             difficultyBand = difficultyBand(candidate.difficulty),
+        )
+    }
+
+    /**
+     * Shared mastery-risk scoring for a single knowledge node (spec
+     * dual-review-entry §3.2): CONFLICTED/STALE/UNKNOWN or unsupported evidence
+     * is high risk; otherwise the weakness is the 7-day-half-life smoothed
+     * mastery. Adds the matching reasons to [reasons]. Used both by
+     * [scoreCandidate] (per bound node) and [scoreKnowledgeNode] (node itself).
+     */
+    private fun masteryRiskFor(
+        state: com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState,
+        now: Long,
+        reasons: MutableSet<ReviewReason>,
+    ): Double {
+        val currentSupportedEvidenceMass = state.independentCorrectObservations
+            .filter { it.calibrationSupportAt(now) == CalibrationSupport.SUPPORTED }
+            .sumOf { it.evidenceWeight }
+        val stale = state.status == MasteryStatus.STALE ||
+            state.lastEvidenceAtEpochMillis == null ||
+            now < (state.lastEvidenceAtEpochMillis ?: 0) ||
+            now - (state.lastEvidenceAtEpochMillis ?: now) >
+            ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS
+        return when {
+            state.status == MasteryStatus.CONFLICTED -> {
+                reasons += ReviewReason.CONFLICTED_KNOWLEDGE
+                reasons += ReviewReason.CALIBRATION_CHECK
+                1.0
+            }
+            state.status == MasteryStatus.UNKNOWN -> {
+                reasons += ReviewReason.CALIBRATION_CHECK
+                1.0
+            }
+            stale -> {
+                reasons += ReviewReason.STALE_KNOWLEDGE
+                reasons += ReviewReason.CALIBRATION_CHECK
+                1.0
+            }
+            currentSupportedEvidenceMass <= 0.0 -> {
+                reasons += ReviewReason.CALIBRATION_CHECK
+                1.0
+            }
+            // Spec 2.18: weakness input is the 7-day half-life smoothed
+            // mastery, damping single-day swings.
+            else -> 1.0 - MasterySmoothing.smoothedMasteryScore(state, now)
+        }
+    }
+
+    /**
+     * Knowledge-node variant of [scoreCandidate] (spec dual-review-entry §3.2):
+     * scores a single knowledge node for today's knowledge review queue. The
+     * node has no practice-unit memory, so due risk comes from how long ago its
+     * last evidence was vs. the forgetting curve; mastery risk is shared with
+     * [scoreCandidate]. A node that is mastered, fresh, and isn't early/weak is
+     * skipped (returns null), mirroring [scoreCandidate]'s skip logic.
+     */
+    fun scoreKnowledgeNode(
+        knowledgeNodeId: String,
+        state: com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState?,
+        now: Long,
+    ): ScoredKnowledgeNode? {
+        val reasons = linkedSetOf<ReviewReason>()
+        val dueRisk = if (state == null) {
+            reasons += ReviewReason.NEWLY_ADDED
+            0.2
+        } else {
+            val lastEvidenceAt = state.lastEvidenceAtEpochMillis
+            if (lastEvidenceAt == null) {
+                reasons += ReviewReason.CALIBRATION_CHECK
+                1.0
+            } else if (now - lastEvidenceAt > ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS) {
+                reasons += ReviewReason.DUE_RECALL_RISK
+                reasons += ReviewReason.STALE_KNOWLEDGE
+                // Stall risk grows with days since last evidence, capped at 1.
+                val daysSince = (now - lastEvidenceAt).coerceAtLeast(0).toDouble() / DAY_MILLIS
+                (daysSince / KNOWLEDGE_DUE_RAMP_DAYS).coerceAtMost(1.0)
+            } else {
+                // Fresh evidence: due risk is the forget-curve retention loss.
+                reasons += ReviewReason.DUE_RECALL_RISK
+                1.0 - state.masteryScore
+            }
+        }
+        val masteryRisk = state
+            ?.let { masteryRiskFor(it, now, reasons) }
+            ?: run {
+                reasons += ReviewReason.MISSING_KNOWLEDGE_EVIDENCE
+                reasons += ReviewReason.CALIBRATION_CHECK
+                1.0
+            }
+        val weakness = maxOf(dueRisk, masteryRisk)
+        if (weakness >= WEAKNESS_THRESHOLD) reasons += ReviewReason.WEAK_KNOWLEDGE
+
+        // Skip a node that is mastered, fresh, and not otherwise early/weak.
+        val lastEvidenceForSkip = state?.lastEvidenceAtEpochMillis
+        val masteredFresh = state != null &&
+            state.status == MasteryStatus.MASTERED &&
+            lastEvidenceForSkip != null &&
+            now - lastEvidenceForSkip <= ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS
+        val hasEarlyReason = reasons.any { reason ->
+            reason == ReviewReason.CONFLICTED_KNOWLEDGE ||
+                reason == ReviewReason.STALE_KNOWLEDGE ||
+                reason == ReviewReason.CALIBRATION_CHECK
+        }
+        if (masteredFresh && !hasEarlyReason) return null
+        if (reasons.isEmpty()) return null
+
+        val score = (
+            DUE_WEIGHT * dueRisk +
+                WEAKNESS_WEIGHT * masteryRisk
+            ).coerceAtLeast(0.0)
+        return ScoredKnowledgeNode(
+            knowledgeNodeId = knowledgeNodeId,
+            score = score,
+            reasons = reasons,
         )
     }
 
@@ -421,6 +505,13 @@ class ReviewPlanner(
         val difficultyBand: ReviewDifficultyBand,
     )
 
+    /** Result of [scoreKnowledgeNode]: a knowledge node + its composite score. */
+    data class ScoredKnowledgeNode(
+        val knowledgeNodeId: String,
+        val score: Double,
+        val reasons: Set<ReviewReason>,
+    )
+
     companion object {
         const val VERSION = LearningCoreVersions.REVIEW_COMPOSITE
         private val DIFFICULTY_CYCLE = listOf(
@@ -445,6 +536,8 @@ class ReviewPlanner(
         private const val RECENT_LAPSE_WINDOW_MILLIS = 30L * 86_400_000L
         private const val WAITING_GRACE_DAYS = 7.0
         private const val WAITING_BONUS_RAMP_DAYS = 83.0
+        /** Days of evidence age at which a knowledge node's due risk saturates. */
+        private const val KNOWLEDGE_DUE_RAMP_DAYS = 30.0
         private const val PLAN_FINGERPRINT_SCHEMA_VERSION = "review-plan-canonical-v5"
     }
 }
