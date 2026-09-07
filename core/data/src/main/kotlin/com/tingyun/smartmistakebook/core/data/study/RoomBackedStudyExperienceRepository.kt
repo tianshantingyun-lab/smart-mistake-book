@@ -29,6 +29,10 @@ import com.tingyun.smartmistakebook.core.database.ReviewSessionRecord
 import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
+import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
+import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
+import com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult
+import com.tingyun.smartmistakebook.core.domain.knowledgeQuizMasteryVerdict
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.domain.CalibrationInput
 import com.tingyun.smartmistakebook.core.domain.ChatEvidenceGateCalibration
@@ -44,6 +48,8 @@ import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
 import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.domain.MasteryEvidencePolicy
+import com.tingyun.smartmistakebook.core.domain.NewIntroductionPolicy
+import com.tingyun.smartmistakebook.core.domain.LogDurationModel
 import com.tingyun.smartmistakebook.core.domain.PredictionAuditSink
 import com.tingyun.smartmistakebook.core.domain.RecallPredictionAudit
 import com.tingyun.smartmistakebook.core.domain.ReviewCandidate
@@ -189,6 +195,14 @@ class RoomBackedStudyExperienceRepository(
         },
     )
     private val reviewPlanner = ReviewPlanner()
+    /**
+     * ONE shared duration model (spec `batch-intake-spec.md` §6 L1 rollout):
+     * fed by the submission paths below, consumed by BOTH the review planner
+     * (per-candidate modeled duration) and the intake introduction decision
+     * (L1 personalized estimate for never-attempted questions). A single
+     * instance is what makes recorded samples reach the queries.
+     */
+    private val durationModel = LogDurationModel()
     private val reviewPlannerV2 = ReviewPlannerV2(
         forgettingCurve = ForgettingCurve(
             algorithm = if (schedulingOptions.useFsrsScheduling) {
@@ -197,6 +211,7 @@ class RoomBackedStudyExperienceRepository(
                 ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
             },
         ),
+        durationModel = durationModel,
     )
     private val learningProjector = LearningProjector(
         forgettingCurve = forgettingCurve,
@@ -212,6 +227,7 @@ class RoomBackedStudyExperienceRepository(
         },
     )
     private val predictionAuditService = HLRPredictionAuditService()
+
     private val reviewLogSink = ReviewLogSink(
         database = database,
         learnerId = learnerId,
@@ -334,6 +350,22 @@ class RoomBackedStudyExperienceRepository(
             latestMistakes = database.observeMistakes().first()
             latestPendingCorrectionCount = database.observePendingProblemDraftCount().first()
             latestKnowledgeCoverage = observeKnowledgeCoverageOverview().first()
+            // L1 warm-up (spec batch-intake-spec §6): replay recent real-answer
+            // durations into the shared duration model so personalization is
+            // available from the first plan after a restart, not only after
+            // fresh submissions accumulate.
+            val subjectByUnit = latestMistakes.associate { it.practiceUnitId to it.subject }
+            reviewLogSink.observedAttemptDurations().forEach { (practiceUnitId, seconds) ->
+                subjectByUnit[practiceUnitId]?.let { subject ->
+                    durationModel.record(
+                        learnerId = learnerId,
+                        subjectId = subject,
+                        itemType = null,
+                        difficulty = 5.0, // unused dimension; kept for API stability
+                        durationSeconds = seconds,
+                    )
+                }
+            }
             initialized = true
             try {
                 ingestPendingVisualInteractionAttempts(latestMistakes)
@@ -464,6 +496,13 @@ class RoomBackedStudyExperienceRepository(
             hintCount = submission.hintCount,
         )
         latestMistakes = database.observeMistakes().first()
+        // L1 rollout (spec batch-intake-spec §6): feed real answer attempts
+        // into the shared duration model (bucket = learner × subject) AFTER
+        // the snapshot refresh so the subject lookup succeeds.
+        recordObservedDuration(
+            practiceUnitId = submission.practiceUnitId,
+            durationSeconds = submission.durationSeconds.toDouble(),
+        )
         initialized = true
         publishReadySnapshot(latestMistakes)
         StudyChoiceSubmissionResult(
@@ -537,6 +576,12 @@ class RoomBackedStudyExperienceRepository(
         )
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         latestMistakes = database.observeMistakes().first()
+        // L1 rollout: feed the observed duration after the snapshot refresh
+        // so the subject lookup succeeds.
+        recordObservedDuration(
+            practiceUnitId = submission.practiceUnitId,
+            durationSeconds = submission.durationSeconds.toDouble(),
+        )
         initialized = true
         publishReadySnapshot(latestMistakes)
         StudyReviewChoiceSubmissionResult(
@@ -607,6 +652,14 @@ class RoomBackedStudyExperienceRepository(
                 awayMillis = submission.awayMillis,
             )
         }
+        // L1 rollout: feed the observed duration (subject already loaded above).
+        durationModel.record(
+            learnerId = learnerId,
+            subjectId = mistake.subject,
+            itemType = null,
+            difficulty = 5.0, // unused dimension; kept for API stability
+            durationSeconds = submission.durationSeconds.toDouble().coerceAtLeast(1.0),
+        )
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         latestMistakes = currentMistakes
         initialized = true
@@ -716,6 +769,14 @@ class RoomBackedStudyExperienceRepository(
                 awayMillis = submission.awayMillis,
             )
         }
+        // L1 rollout: feed the observed duration (subject already loaded above).
+        durationModel.record(
+            learnerId = learnerId,
+            subjectId = mistake.subject,
+            itemType = null,
+            difficulty = 5.0, // unused dimension; kept for API stability
+            durationSeconds = submission.durationSeconds.toDouble().coerceAtLeast(1.0),
+        )
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         StudyReviewRatingSubmissionResult(
             attemptId = writeResult.attempt.attempt.attemptId,
@@ -745,6 +806,70 @@ class RoomBackedStudyExperienceRepository(
             payloadMarkdown = usable.joinToString(separator = "、"),
             cycleOrdinal = cycleOrdinal,
         )
+    }
+
+    override suspend fun submitKnowledgeQuizFeedback(
+        requestId: String,
+        knowledgeNodeId: String,
+        correctChoiceId: String,
+        selectedChoiceId: String,
+        occurredAtEpochMillis: Long,
+    ): KnowledgeQuizFeedbackResult {
+        val isCorrect = selectedChoiceId == correctChoiceId
+        val verdict = knowledgeQuizMasteryVerdict(isCorrect)
+        val now = occurredAtEpochMillis
+        // 知识点锚定：节点必须真实存在于知识库，防止写入游离/臆造节点。
+        val anchored = database.readKnowledgeNodesByIds(setOf(knowledgeNodeId)).isNotEmpty()
+        val lastSameKcWrite = database.lastAcceptedChatEvidenceAtForKc(learnerId, knowledgeNodeId)
+        val sameKcLastWriteAgoMillis = lastSameKcWrite?.let { (now - it).coerceAtLeast(0) }
+        val acceptedInWindow = database.countAcceptedChatEvidenceSince(
+            learnerId = learnerId,
+            sinceEpochMillis = now - MasteryWriteGate.LEARNER_WINDOW_MILLIS,
+        )
+        // 知识点复习是独立会话，固定一个 conversation id（同一复习会话内计数防刷）。
+        val conversationId = KNOWLEDGE_QUIZ_CONVERSATION_ID
+        val acceptedInConversation = database.countAcceptedChatEvidenceInConversation(conversationId)
+        val input = MasteryWriteGate.GateInput(
+            intentConfidence = 1.0, // 本地确定的客观作答，非模型意图路由
+            evidenceConfidence = 1.0, // 客观对错，置信满
+            direction = verdict.direction,
+            understanding = verdict.understanding,
+            knowledgeNodeIsAnchored = anchored,
+            hasBehavioralSupport = verdict.hasBehavioralSupport,
+            sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
+            writesThisConversation = acceptedInConversation,
+            writesThisLearnerInWindow = acceptedInWindow,
+            attentionFactor = 1.0,
+        )
+        return when (val result = MasteryWriteGate.evaluate(input)) {
+            is MasteryWriteGate.GateResult.Accepted -> {
+                database.recordChatEvidence(
+                    listOf(
+                        LearnerChatEvidenceEntity(
+                            evidence_id = "knowledge-quiz:$requestId:$knowledgeNodeId",
+                            learner_id = learnerId,
+                            conversation_id = conversationId,
+                            knowledge_node_id = knowledgeNodeId,
+                            direction = verdict.direction.name,
+                            weight = result.weight,
+                            reason_markdown = "知识点复习作答（${if (isCorrect) "答对" else "答错"}）",
+                            confidence = 1.0,
+                            source_kind = "KNOWLEDGE_QUIZ",
+                            created_at_epoch_millis = now,
+                        ),
+                    ),
+                )
+                KnowledgeQuizFeedbackResult(
+                    isCorrect = isCorrect,
+                    evidenceRecorded = true,
+                )
+            }
+            is MasteryWriteGate.GateResult.Rejected -> KnowledgeQuizFeedbackResult(
+                isCorrect = isCorrect,
+                evidenceRecorded = false,
+                rejectedReason = result.reason.name,
+            )
+        }
     }
 
     override fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>> =
@@ -1165,6 +1290,14 @@ class RoomBackedStudyExperienceRepository(
             compareByDescending<MistakeRecord>(MistakeRecord::createdAtEpochMillis)
                 .thenBy(MistakeRecord::entryId),
         )
+        // Intake backlog (spec batch-intake §1): never-attempted questions
+        // (no memory state) that are NOT in today's plan queue — they stay in
+        // the backlog with no learning pressure until introduced.
+        val plannedUnitIds = reviewBundle.queue.mapTo(hashSetOf()) { it.practiceUnitId }
+        val intakeBacklog = orderedMistakes.filter { mistake ->
+            learnerSnapshot.problemMemoryStates[mistake.practiceUnitId] == null &&
+                mistake.practiceUnitId !in plannedUnitIds
+        }
         val referencedKnowledgeNodeIds = buildSet {
             addAll(learnerSnapshot.knowledgeMasteryStates.keys)
             orderedMistakes.forEach { mistake -> addAll(mistake.knowledgeNodeIds) }
@@ -1186,6 +1319,8 @@ class RoomBackedStudyExperienceRepository(
             review = reviewBundle.toOverview(
                 completedReviewDays = completedReviewDays,
                 currentLocalDay = planningContext.localDate.toEpochDay(),
+                intakeBacklogCount = intakeBacklog.size,
+                intakeMedianEstimateSeconds = intakeBacklog.medianEstimateSeconds(),
             ),
             profile = learnerSnapshot.toProfileOverview(
                 resolvedKnowledgeContexts = resolvedKnowledgeContexts,
@@ -1461,6 +1596,59 @@ class RoomBackedStudyExperienceRepository(
         return best.coerceIn(0.0, 1.0)
     }
 
+    /**
+     * Days until the nearest declared exam (any subject), or null when no
+     * exam is ahead — the catch-up input of [NewIntroductionPolicy] (spec
+     * `batch-intake-spec.md` §2): near an exam, intake converts by
+     * ceil(remaining backlog / days) instead of the fixed time share.
+     */
+    /**
+     * L2 tier baseline (spec §2): map the FSRS difficulty (1..10) onto the
+     * same EASY/MEDIUM/HARD bands the planner uses (ceilings 4/7) and return
+     * the model-tier baseline seconds for never-attempted questions.
+     */
+    private fun tierBaselineSecondsFor(difficulty: Double): Int = when {
+        difficulty < 4.0 -> LogDurationModel.TIER_BASELINE_EASY_SECONDS
+        difficulty < 7.0 -> LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS
+        else -> LogDurationModel.TIER_BASELINE_HARD_SECONDS
+    }
+
+    /**
+     * L1 rollout (spec batch-intake-spec §6): feed one real answer attempt's
+     * observed duration into the shared duration model, bucketed by
+     * (learner, subject). The bucket key deliberately drops the difficulty
+     * and item-type dimensions — difficulty drifts between record time
+     * (prior) and query time (current), which would make recorded samples
+     * never match the queries; duration is driven mainly by the learner and
+     * the subject. Runs AFTER the latest snapshot refresh so the subject is
+     * reliably available.
+     */
+    private suspend fun recordObservedDuration(
+        practiceUnitId: String,
+        durationSeconds: Double,
+    ) {
+        if (durationSeconds <= 0.0) return
+        val subject = latestMistakes
+            .firstOrNull { it.practiceUnitId == practiceUnitId }
+            ?.subject
+            ?: return
+        durationModel.record(
+            learnerId = learnerId,
+            subjectId = subject,
+            itemType = null,
+            difficulty = 5.0, // unused dimension; kept for API stability
+            durationSeconds = durationSeconds,
+        )
+    }
+
+    private suspend fun daysUntilNearestExam(localDayEpochDay: Long): Int? {
+        val store = schedulingSettingsStore ?: return null
+        return store.exams.first()
+            .map { (it.examEpochDay - localDayEpochDay).toInt() }
+            .filter { it >= 0 }
+            .minOrNull()
+    }
+
     private suspend fun currentLearnerSnapshot(): LearnerSnapshot =
         drainProjection()?.snapshot ?: LearnerSnapshot.empty(
             learnerId = learnerId,
@@ -1552,9 +1740,64 @@ class RoomBackedStudyExperienceRepository(
                     ),
                 )
             }
+
+        // Spec `batch-intake-spec.md` §1-I1/I2/I3: intake only adds inventory.
+        // Zero-evidence NEW questions (no memory state) enter today's plan
+        // only through NewIntroductionPolicy — the time-share slice (with
+        // exam catch-up) decides which of them are introduced today, and the
+        // rest stay in the backlog with NO learning pressure. Introduced
+        // questions accrue waiting from TODAY (eligibleSince = planningAt),
+        // never from their creation date, so an old backlog cannot outrank
+        // due reviews the day it finally gets opened.
+        val finalCandidates = run {
+            val freshIds = candidates
+                .filter { learnerSnapshot.problemMemoryStates[it.practiceUnitId] == null }
+                .mapTo(hashSetOf()) { it.practiceUnitId }
+            if (freshIds.isEmpty()) {
+                candidates
+            } else {
+                val fresh = candidates.filter { it.practiceUnitId in freshIds }
+                val seasoned = candidates.filter { it.practiceUnitId !in freshIds }
+                // Hypercorrection ordering input (spec §4): the multi-source
+                // confidence level of each card's most recent wrong attempt,
+                // judged from signals already stored in review_log.
+                val confidenceAtError = reviewLogSink.confidenceAtErrorByPracticeUnit()
+                val decision = NewIntroductionPolicy.decide(
+                    candidates = fresh.map { candidate ->
+                        NewIntroductionPolicy.IntakeCandidate(
+                            practiceUnitId = candidate.practiceUnitId,
+                            estimatedDurationSeconds = durationModel.expectedSecondsForNew(
+                                learnerId = learnerId,
+                                subjectId = candidate.subjectId,
+                                itemType = candidate.itemType,
+                                difficulty = candidate.difficulty,
+                                tierBaselineSeconds = tierBaselineSecondsFor(candidate.difficulty),
+                            ).toInt().coerceAtLeast(1),
+                            examPriority = candidate.examPriority,
+                            confidenceAtError = confidenceAtError[candidate.practiceUnitId],
+                            createdAtEpochMillis = candidate.eligibleSinceEpochMillis
+                                ?: planningContext.planningAtEpochMillis,
+                        )
+                    },
+                    timeBudgetSeconds = reviewTimeBudgetSeconds,
+                    daysLeftToExam = daysUntilNearestExam(planningContext.localDate.toEpochDay()),
+                )
+                val introducedIds = decision.introduced.mapTo(hashSetOf()) { it.practiceUnitId }
+                // Introduced-today questions start accruing waiting pressure
+                // now; everything else keeps its original eligibility.
+                val adjustedFresh = fresh.map { candidate ->
+                    if (candidate.practiceUnitId in introducedIds) {
+                        candidate.copy(eligibleSinceEpochMillis = planningContext.planningAtEpochMillis)
+                    } else {
+                        candidate
+                    }
+                }
+                seasoned + adjustedFresh.filter { it.practiceUnitId in introducedIds }
+            }
+        }
         val request = ReviewPlanningRequest(
             learnerSnapshot = learnerSnapshot,
-            candidates = candidates,
+            candidates = finalCandidates,
             localDayEpochDay = planningContext.localDate.toEpochDay(),
             timeZoneId = studyZoneId.id,
             timeBudgetSeconds = reviewTimeBudgetSeconds,
@@ -1925,6 +2168,8 @@ class RoomBackedStudyExperienceRepository(
     private fun ReviewPlanBundle.toOverview(
         completedReviewDays: List<Long>,
         currentLocalDay: Long,
+        intakeBacklogCount: Int,
+        intakeMedianEstimateSeconds: Int,
     ): StudyReviewOverview {
         val visibleSession = activeSession ?: latestSession
         val effectiveCompletedDays = if (
@@ -1956,11 +2201,12 @@ class RoomBackedStudyExperienceRepository(
                 completedLocalDays = effectiveCompletedDays,
                 currentLocalDay = currentLocalDay,
             ),
+            intakeBacklogCount = intakeBacklogCount,
+            intakeMedianEstimateSeconds = intakeMedianEstimateSeconds,
         )
     }
 
-    private fun ReviewSessionRecord.toProgress(queueSize: Int) = StudyReviewSessionProgress(
-        sessionId = reviewSessionId,
+    private fun ReviewSessionRecord.toProgress(queueSize: Int) = StudyReviewSessionProgress(        sessionId = reviewSessionId,
         planId = reviewPlanId,
         currentOrdinal = currentOrdinal,
         queueSize = queueSize,
@@ -2219,6 +2465,8 @@ class RoomBackedStudyExperienceRepository(
 
     companion object {
         const val DEFAULT_LEARNER_ID = "learner:local"
+        /** 知识点复习会话的固定 conversation id（同一复习会话内计数防刷，非聊天会话）。 */
+        private const val KNOWLEDGE_QUIZ_CONVERSATION_ID = "knowledge-quiz-review"
         private const val PROJECTION_NAME = "study-experience-v1"
         private const val DEFAULT_REVIEW_TIME_BUDGET_SECONDS = 20 * 60
         /** Rollback switch for the V2 review planner; see [useReviewPlannerV2]. */
@@ -2290,4 +2538,16 @@ private fun List<ReviewedKnowledgeCoverageRecord>.toKnowledgeCoverageOverview(
         reviewedSubjects = reviewedSubjects,
         pendingGaps = pendingGaps,
     )
+}
+
+
+/**
+ * Median of the intake backlog's estimated seconds (spec batch-intake §6 P3):
+ * the robust typical-item estimate for the coverage preview — a median is not
+ * skewed by a few oversized outliers. Empty list → 0.
+ */
+private fun List<MistakeRecord>.medianEstimateSeconds(): Int {
+    if (isEmpty()) return 0
+    val sorted = map(MistakeRecord::estimatedSeconds).sorted()
+    return sorted[sorted.size / 2]
 }

@@ -73,9 +73,20 @@ data class StudyReviewOverview(
     val sessionStateVersion: Long? = null,
     val completedToday: Boolean = false,
     val completionStreakDays: Int = 0,
+    /**
+     * Intake backlog (spec batch-intake §1): never-attempted questions NOT
+     * yet introduced into any daily plan. They accrue no learning pressure;
+     * the review surface renders them as a coverage promise
+     * ("每天约 X 题新学，M 天覆盖").
+     */
+    val intakeBacklogCount: Int = 0,
+    /** Median estimated seconds of the backlog items (preview per-day math). */
+    val intakeMedianEstimateSeconds: Int = 0,
 ) {
     init {
         require(completionStreakDays >= 0) { "Review completion streak must not be negative" }
+        require(intakeBacklogCount >= 0) { "Intake backlog must not be negative" }
+        require(intakeMedianEstimateSeconds >= 0) { "Intake estimate must not be negative" }
     }
 }
 
@@ -425,6 +436,19 @@ interface StudyExperienceRepository : AutoCloseable {
         labels: List<String>,
         cycleOrdinal: Int = 1,
     )
+
+    /**
+     * 知识点复习作答回写（spec dual-review-entry §3.4）：判答（对/错）→ 客观掌握度证据，
+     * 走本地 [MasteryWriteGate]（冷却/配额/注意力）门控，Accepted 才落库。答对/答错都是
+     * 客观信号，比模型自报更可信，但仍由本地门控做主（对齐 T6 MASTERY_UPDATE）。
+     */
+    suspend fun submitKnowledgeQuizFeedback(
+        requestId: String,
+        knowledgeNodeId: String,
+        correctChoiceId: String,
+        selectedChoiceId: String,
+        occurredAtEpochMillis: Long,
+    ): KnowledgeQuizFeedbackResult
 
     /** The learner's stored teaching advisories, newest first (read side). */
     fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>>

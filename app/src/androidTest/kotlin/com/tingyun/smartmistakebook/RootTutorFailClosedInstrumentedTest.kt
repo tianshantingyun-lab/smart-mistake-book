@@ -416,6 +416,17 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         cycleOrdinal: Int,
     ) = Unit
 
+    override suspend fun submitKnowledgeQuizFeedback(
+        requestId: String,
+        knowledgeNodeId: String,
+        correctChoiceId: String,
+        selectedChoiceId: String,
+        occurredAtEpochMillis: Long,
+    ) = com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult(
+        isCorrect = selectedChoiceId == correctChoiceId,
+        evidenceRecorded = true,
+    )
+
     override fun observeTeachingAdvisories(
         practiceUnitId: String?,
     ) = kotlinx.coroutines.flow.flowOf(emptyList<com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord>())
