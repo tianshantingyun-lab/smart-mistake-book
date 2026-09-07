@@ -426,6 +426,58 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     @Test
+    fun currentKnowledgeReviewPlanDerivesScopeFromTodaysReviewQueue() = runBlocking {
+        // 知识点复习范围 = 今天错题复习队列的题绑定知识点（spec dual-review-entry §3.2），
+        // 不是全知识库。今天唯一一道错题绑定 knowledge:function-monotonicity，且该点无
+        // 掌握证据（fresh/unknown → 高风险）→ 计划应把它排进队列。
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(
+                MistakeRecord(
+                    entryId = "captured-entry",
+                    problemId = "captured-problem",
+                    problemRevisionId = "captured-revision",
+                    practiceUnitId = "captured-practice-unit",
+                    sourceKey = "capture:photo-1",
+                    subject = "MATH",
+                    title = "函数原题",
+                    problemMarkdown = "求函数的单调区间。",
+                    status = "ACTIVE",
+                    createdAtEpochMillis = 1_000,
+                    nextReviewAtEpochMillis = null,
+                    retrievability = null,
+                    knowledgeNodeIds = setOf("knowledge:function-monotonicity"),
+                ),
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+            val plan = requireNotNull(
+                repository.currentKnowledgeReviewPlan("knowledge-review-start", 2_000),
+            )
+            assertEquals(
+                setOf("knowledge:function-monotonicity"),
+                database.savedPlans.single().queue.single().knowledgeNodeIds,
+            )
+            // 计划范围精确来自今天队列绑定点，不含无关节点。
+            assertTrue(plan.queue.isNotEmpty())
+            assertEquals(
+                "knowledge:function-monotonicity",
+                plan.queue.single().knowledgeNodeId,
+            )
+            // 无掌握态 → masteryScore 为空、但作为 high-risk 点进入计划。
+            assertTrue(plan.queue.single().masteryScore == null)
+            assertTrue(plan.queue.single().score >= 1.0)
+            assertEquals("MATH", plan.queue.single().subject)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
     fun feasibleVisualAttemptIsIngestedOnceWithDirectKnowledgeAttribution() = runBlocking {
         val database = FakeStudyDatabasePort().apply {
             addMistake(visualIngestMistake())

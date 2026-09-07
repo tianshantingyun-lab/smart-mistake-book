@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.domain
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -93,4 +94,55 @@ class KnowledgeReviewQueueTest {
         // 队列必须按分数降序排列（这是"排序取队"的核心保证）。
         assertTrue(queue.zipWithNext().all { (a, b) -> a.score >= b.score })
     }
+
+    @Test
+    fun sessionPlanRejectsDuplicateNodes() {
+        assertThrows(IllegalArgumentException::class.java) {
+            KnowledgeReviewSessionPlan(
+                queue = listOf(entry("kc1"), entry("kc1")),
+                timeBudgetSeconds = 600,
+            )
+        }
+    }
+
+    @Test
+    fun sessionPlanRejectsBlankEntryFields() {
+        assertThrows(IllegalArgumentException::class.java) {
+            KnowledgeReviewQueueEntry(
+                knowledgeNodeId = "",
+                subject = "MATH",
+                displayName = "一元二次方程",
+                masteryScore = 0.5,
+                lastEvidenceAtEpochMillis = now,
+                score = 1.0,
+                reasonNames = setOf("CALIBRATION_CHECK"),
+            )
+        }
+    }
+
+    @Test
+    fun sessionPlanAcceptsNoEvidenceNodeAsUnknown() {
+        // 无掌握态的知识点（从未有过证据）也必须是合法候选——planner 把它当 NEWLY_ADDED，
+        // 不能因为它没有掌握态条目就被计划拒绝。
+        val plan = KnowledgeReviewSessionPlan(
+            queue = listOf(
+                entry("kc-fresh").copy(
+                    masteryScore = null,
+                    lastEvidenceAtEpochMillis = null,
+                ),
+            ),
+            timeBudgetSeconds = 600,
+        )
+        assertTrue(plan.queue.single().masteryScore == null)
+    }
+
+    private fun entry(knowledgeNodeId: String) = KnowledgeReviewQueueEntry(
+        knowledgeNodeId = knowledgeNodeId,
+        subject = "MATH",
+        displayName = "知识点$knowledgeNodeId",
+        masteryScore = 0.5,
+        lastEvidenceAtEpochMillis = now,
+        score = 1.0,
+        reasonNames = setOf("CALIBRATION_CHECK"),
+    )
 }

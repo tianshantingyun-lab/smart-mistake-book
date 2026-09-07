@@ -32,7 +32,13 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult
+import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewCandidate
+import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewQueueEntry
+import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
 import com.tingyun.smartmistakebook.core.domain.knowledgeQuizMasteryVerdict
+import com.tingyun.smartmistakebook.core.domain.extractReviewKnowledgeScope
+import com.tingyun.smartmistakebook.core.domain.selectKnowledgeReviewQueue
+import com.tingyun.smartmistakebook.core.domain.ReviewScopeQuestion
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.domain.CalibrationInput
 import com.tingyun.smartmistakebook.core.domain.ChatEvidenceGateCalibration
@@ -1250,6 +1256,85 @@ class RoomBackedStudyExperienceRepository(
         }
         publishReadySnapshot(latestMistakes)
         session.toProgress(currentPlan.queue.size)
+    }
+
+    override suspend fun currentKnowledgeReviewPlan(
+        requestId: String,
+        occurredAtEpochMillis: Long,
+    ): KnowledgeReviewSessionPlan? = runOperation {
+        require(requestId.isNotBlank()) { "Knowledge-review request id must not be blank" }
+        require(occurredAtEpochMillis >= 0) { "Knowledge-review request time must not be negative" }
+        latestMistakes = database.observeMistakes().first()
+        initialized = true
+        publishReadySnapshot(latestMistakes)
+
+        val planningContext = planningContext(currentLearnerSnapshot())
+        val currentPlan = requireNotNull(
+            database.observeActiveReviewPlan(learnerId).first() ?: currentReviewPlan(planningContext),
+        ) {
+            "No current review plan is available"
+        }
+        // 知识点复习不要求错题会话已启动：今日有 current 计划（含已完成）即可据此排知识点。
+        val planQueue = currentPlan.queue
+        if (planQueue.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
+
+        // 范围 = 今天错题复习队列的题绑定知识点并集（T1），只取今天队列实际覆盖的点，
+        // 不把整个知识库拖进来（spec §1.3：范围 = 今天错题里涉及的知识点）。
+        val queueScope = extractReviewKnowledgeScope(
+            planQueue.map { queueItem ->
+                ReviewScopeQuestion(
+                    practiceUnitId = queueItem.practiceUnitId,
+                    knowledgeNodeIds = queueItem.knowledgeNodeIds,
+                )
+            },
+        )
+        if (queueScope.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
+
+        val learnerSnapshot = currentLearnerSnapshot()
+        val resolvedContexts = resolveKnowledgeContexts(queueScope)
+        // 科目权威来源：知识点节点自身的 subject（resolveKnowledgeContexts 解析自 knowledge_node），
+        // 兜底取今天队列中绑定该点的错题的 subject——两者都是知识库真值，不猜前缀。
+        val subjectByNode = resolvedContexts.mapValues { (_, context) -> context.subject } +
+            latestMistakes.asSequence()
+                .flatMap { mistake -> mistake.knowledgeNodeIds.map { it to mistake.subject } }
+                .filter { (knowledgeNodeId, _) -> knowledgeNodeId in queueScope }
+                .associate { (knowledgeNodeId, subject) ->
+                    knowledgeNodeId to runCatching { SubjectKind.valueOf(subject) }
+                        .getOrDefault(SubjectKind.GENERAL)
+                }
+        val candidateIds = queueScope.toList()
+        val selected = selectKnowledgeReviewQueue(
+            planner = reviewPlanner,
+            candidates = candidateIds.map { knowledgeNodeId ->
+                KnowledgeReviewCandidate(
+                    knowledgeNodeId = knowledgeNodeId,
+                    state = learnerSnapshot.knowledgeMasteryStates[knowledgeNodeId],
+                    estimatedDurationSeconds = LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS,
+                )
+            },
+            now = planningContext.planningAtEpochMillis,
+            timeBudgetSeconds = reviewTimeBudgetSeconds,
+        )
+        if (selected.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
+        KnowledgeReviewSessionPlan(
+            queue = selected.map { scored ->
+                val context = resolvedContexts[scored.knowledgeNodeId]
+                val state = learnerSnapshot.knowledgeMasteryStates[scored.knowledgeNodeId]
+                KnowledgeReviewQueueEntry(
+                    knowledgeNodeId = scored.knowledgeNodeId,
+                    subject = subjectByNode[scored.knowledgeNodeId]?.name
+                        ?: SubjectKind.GENERAL.name,
+                    displayName = context?.displayName
+                        ?: knowledgeNames[scored.knowledgeNodeId]
+                        ?: scored.knowledgeNodeId,
+                    masteryScore = state?.masteryScore,
+                    lastEvidenceAtEpochMillis = state?.lastEvidenceAtEpochMillis,
+                    score = scored.score,
+                    reasonNames = scored.reasons.mapTo(linkedSetOf()) { it.name },
+                )
+            },
+            timeBudgetSeconds = reviewTimeBudgetSeconds,
+        )
     }
 
     override fun close() {
