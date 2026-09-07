@@ -53,6 +53,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
+import com.tingyun.smartmistakebook.core.data.model.AttachedImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
@@ -77,9 +78,12 @@ import com.tingyun.smartmistakebook.feature.library.MAX_LIBRARY_BATCH_EXPORT_QUE
 import com.tingyun.smartmistakebook.feature.library.MistakeDetailRoute
 import com.tingyun.smartmistakebook.feature.library.MistakeExportRoute
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
+import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
 import com.tingyun.smartmistakebook.feature.library.SplitImportReviewRoute
 import com.tingyun.smartmistakebook.feature.profile.ProfileRoute
 import com.tingyun.smartmistakebook.feature.review.CapturedReviewSessionScreen
+import com.tingyun.smartmistakebook.feature.review.KnowledgeReviewQuizLoader
+import com.tingyun.smartmistakebook.feature.review.KnowledgeReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.review.ReviewRoute
 import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.tutor.CapturedTutorSessionRoute
@@ -100,6 +104,7 @@ internal object Routes {
     const val Library = "library"
     const val Profile = "profile"
     const val ReviewSession = "review/session"
+    const val KnowledgeReviewSession = "review/knowledge-session"
     const val CaptureTutor = "capture/tutor"
     const val CaptureLibrary = "capture/library"
     const val BatchImport = "capture/batch"
@@ -348,6 +353,13 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                 } catch (_: Exception) {
                                     // The shared repository snapshot exposes the fail-closed error state.
                                 }
+                            }
+                        },
+                        onStartKnowledgeReview = {
+                            // 知识点复习不要求错题会话已启动：目标路由进入时自行经
+                            // currentKnowledgeReviewPlan 组装今日知识点计划。
+                            navController.navigate(Routes.KnowledgeReviewSession) {
+                                launchSingleTop = true
                             }
                         },
                         modifier = Modifier.testTag("root_review"),
@@ -638,6 +650,23 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         },
                         onRevealAnswer = repository::revealAnswer,
                         onContinue = continueReview,
+                        onRequestTutorPretest = capturedEntry?.let { entry ->
+                            {
+                                // PretestRouting.TUTOR_JUDGED_FLOW (spec
+                                // batch-intake §3): free-response items with no
+                                // machine-checkable options hand the first
+                                // attempt to the tutor-judged session.
+                                navController.navigate(
+                                    Routes.mistakeTutor(
+                                        MistakeRevisionKey(
+                                            entryId = entry.entryId,
+                                            problemId = entry.problemId,
+                                            problemRevisionId = entry.problemRevisionId,
+                                        ),
+                                    ),
+                                )
+                            }
+                        },
                     )
                     capturedEntry != null -> CapturedReviewSessionScreen(
                         onBack = onReviewBack,
@@ -677,6 +706,58 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     )
                     else -> ReviewSessionGateMessage(
                         "当前题目暂时不可用，未记录本次作答。",
+                    )
+                }
+            }
+            composable(Routes.KnowledgeReviewSession) { entry ->
+                val destinationLifecycle by entry.lifecycle.currentStateFlow
+                    .collectAsStateWithLifecycle()
+                val onKnowledgeBack = {
+                    if (entry.lifecycle.currentState == Lifecycle.State.RESUMED) {
+                        navController.popBackStack()
+                    }
+                    Unit
+                }
+                BackHandler(onBack = onKnowledgeBack)
+                val planState by produceState<KnowledgeReviewSessionPlan?>(
+                    initialValue = null,
+                    key1 = experience.status,
+                ) {
+                    value = if (experience.status == StudyDataStatus.READY) {
+                        try {
+                            repository.currentKnowledgeReviewPlan(
+                                requestId = "knowledge-review-plan:${UUID.randomUUID()}",
+                                occurredAtEpochMillis = System.currentTimeMillis(),
+                            )
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (_: Exception) {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }
+                val quizLoader = remember {
+                    KnowledgeReviewQuizLoader(
+                        modelTasks = application.modelTaskRepository,
+                        references = application.tutorTeachingReferenceRepository,
+                    )
+                }
+                when {
+                    destinationLifecycle != Lifecycle.State.RESUMED ->
+                        ReviewSessionGateMessage("正在打开知识点复习…")
+                    experience.status != StudyDataStatus.READY ->
+                        ReviewSessionGateMessage("学习记录暂时不可用，知识点复习已暂停。")
+                    planState == null || planState!!.isEmpty ->
+                        ReviewSessionGateMessage("今天没有需要复习的知识点——都已掌握或尚未到期。")
+                    else -> KnowledgeReviewSessionScreen(
+                        plan = planState!!,
+                        onBack = onKnowledgeBack,
+                        loadQuiz = quizLoader::loadQuiz,
+                        submitAnswer = repository::submitKnowledgeQuizFeedback,
+                        onFinished = onKnowledgeBack,
+                        modifier = Modifier.testTag("root_knowledge_review_session"),
                     )
                 }
             }
@@ -824,6 +905,14 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     conversations = application.tutorConversationRepository,
                     profile = experience.profile,
                     catalogEntries = experience.catalog,
+                    attachedImageResolver = AttachedImageGeneratorFactory.create(
+                        context = application,
+                        configurationStore = configurationStore,
+                        networkRequestsAllowed = application.capabilities.networkRequestsAllowed,
+                        resolveCurrentSheetBytes = {
+                            application.captureRepository.readTutorSessionSheetBytes(sessionId)
+                        },
+                    ),
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onOpenMistakeNotebook = {
                         navController.navigate(Routes.Library) { launchSingleTop = true }
