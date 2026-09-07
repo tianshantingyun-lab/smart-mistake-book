@@ -355,12 +355,19 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                 }
                             }
                         },
-                        onStartKnowledgeReview = {
-                            // 知识点复习不要求错题会话已启动：目标路由进入时自行经
-                            // currentKnowledgeReviewPlan 组装今日知识点计划。
-                            navController.navigate(Routes.KnowledgeReviewSession) {
-                                launchSingleTop = true
+                        // 知识点复习的取题依赖模型现场生成（KNOWLEDGE_QUIZ），错题复习用本地
+                        // verified artifact——只有模型可用时才给出知识点入口，避免进会话后取题
+                        // 必然失败、重试无用的死路（strictOffline / 未配置模型时隐藏该入口）。
+                        onStartKnowledgeReview = if (capabilities.remoteModelAvailable) {
+                            {
+                                // 知识点复习不要求错题会话已启动：目标路由进入时自行经
+                                // currentKnowledgeReviewPlan 组装今日知识点计划。
+                                navController.navigate(Routes.KnowledgeReviewSession) {
+                                    launchSingleTop = true
+                                }
                             }
+                        } else {
+                            null
                         },
                         modifier = Modifier.testTag("root_review"),
                     )
