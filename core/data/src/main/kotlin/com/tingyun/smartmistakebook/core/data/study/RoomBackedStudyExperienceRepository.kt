@@ -1302,7 +1302,11 @@ class RoomBackedStudyExperienceRepository(
                     knowledgeNodeId to runCatching { SubjectKind.valueOf(subject) }
                         .getOrDefault(SubjectKind.GENERAL)
                 }
-        val candidateIds = queueScope.toList()
+        // 只排可出题的知识点：KNOWLEDGE_QUIZ 以讲解材料 boundary 为防臆造锚（spec §3.3），
+        // 无材料的伪节点（pseudo:*）或未装配材料的真节点无法出题，若进计划会让会话卡死。
+        val quizAbleNodeIds = quizAbleScopeNodes(queueScope, subjectByNode)
+        if (quizAbleNodeIds.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
+        val candidateIds = queueScope.filterTo(linkedSetOf()) { it in quizAbleNodeIds }
         val selected = selectKnowledgeReviewQueue(
             planner = reviewPlanner,
             candidates = candidateIds.map { knowledgeNodeId ->
@@ -2183,6 +2187,39 @@ class RoomBackedStudyExperienceRepository(
         }.toMap()
     }
 
+    /**
+     * 只保留可出题的知识点（spec dual-review-entry §3.3）：KNOWLEDGE_QUIZ 把讲解材料的
+     * boundaryMarkdown 当防臆造锚，无材料的伪节点（pseudo:*）/未装配材料节点无法出题。
+     * 逐科目读该组节点可用的讲解材料，再据 material↔node 绑定交集得出真正有材料覆盖的
+     * 节点集合——与派发时 TutorTeachingReferenceRepository 的解析口径一致，避免计划里
+     * 出现"排了却出不了题"的死节点。
+     */
+    private suspend fun quizAbleScopeNodes(
+        scope: Set<String>,
+        subjectByNode: Map<String, SubjectKind>,
+    ): Set<String> {
+        if (scope.isEmpty()) return emptySet()
+        val quizAble = linkedSetOf<String>()
+        scope
+            .mapNotNull { knowledgeNodeId ->
+                subjectByNode[knowledgeNodeId]?.let { subject -> knowledgeNodeId to subject }
+            }
+            .groupBy({ (_, subject) -> subject }, { (knowledgeNodeId, _) -> knowledgeNodeId })
+            .forEach { (subject, nodeIds) ->
+                val materials = database.readKnowledgeTeachingMaterialsForNodes(
+                    subject = subject.name,
+                    knowledgeNodeIds = nodeIds.toSet(),
+                    limit = MAX_KNOWLEDGE_QUIZ_SCOPE_MATERIALS,
+                )
+                if (materials.isEmpty()) return@forEach
+                val materialIds = materials.mapTo(linkedSetOf()) { it.materialId }
+                val covered = database.readKnowledgeTeachingMaterialNodeBindings(materialIds)
+                    .mapTo(linkedSetOf()) { it.knowledgeNodeId }
+                quizAble.addAll(covered.intersect(nodeIds))
+            }
+        return quizAble
+    }
+
     private fun LearnerSnapshot.toProfileOverview(
         resolvedKnowledgeContexts: Map<String, ResolvedKnowledgeContext>,
         fallbackKnowledgeNames: Map<String, String>,
@@ -2554,6 +2591,8 @@ class RoomBackedStudyExperienceRepository(
         private const val KNOWLEDGE_QUIZ_CONVERSATION_ID = "knowledge-quiz-review"
         private const val PROJECTION_NAME = "study-experience-v1"
         private const val DEFAULT_REVIEW_TIME_BUDGET_SECONDS = 20 * 60
+        /** 知识点复习范围材料读取上限（对齐 KnowledgeTeachingMaterialDao 的 1..64 约束）。 */
+        private const val MAX_KNOWLEDGE_QUIZ_SCOPE_MATERIALS = 64
         /** Rollback switch for the V2 review planner; see [useReviewPlannerV2]. */
         private const val DEFAULT_USE_REVIEW_PLANNER_V2 = true
         /** Difficulty mid-point on the FSRS 1..10 domain (spec 3.2). */

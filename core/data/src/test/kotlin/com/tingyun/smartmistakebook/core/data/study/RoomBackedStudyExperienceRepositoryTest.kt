@@ -426,10 +426,10 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     @Test
-    fun currentKnowledgeReviewPlanDerivesScopeFromTodaysReviewQueue() = runBlocking {
+    fun currentKnowledgeReviewPlanKeepsOnlyQuizAbleScopeFromTodaysQueue() = runBlocking {
         // 知识点复习范围 = 今天错题复习队列的题绑定知识点（spec dual-review-entry §3.2），
-        // 不是全知识库。今天唯一一道错题绑定 knowledge:function-monotonicity，且该点无
-        // 掌握证据（fresh/unknown → 高风险）→ 计划应把它排进队列。
+        // 不是全知识库。KNOWLEDGE_QUIZ 以讲解材料为防臆造锚（§3.3）——无材料的伪节点
+        // （pseudo:MATH，未绑定题的占位）必须被排除，否则会话会排一个永远出不了题的死点。
         val database = FakeStudyDatabasePort().apply {
             addMistake(
                 MistakeRecord(
@@ -445,8 +445,43 @@ class RoomBackedStudyExperienceRepositoryTest {
                     createdAtEpochMillis = 1_000,
                     nextReviewAtEpochMillis = null,
                     retrievability = null,
-                    knowledgeNodeIds = setOf("knowledge:function-monotonicity"),
+                    // 绑定两个点：一个有讲解材料（可出题），一个没有（pseudo 占位，应排除）。
+                    knowledgeNodeIds = setOf(
+                        "knowledge:function-monotonicity",
+                        "pseudo:MATH",
+                    ),
                 ),
+            )
+            knowledgeNodes += KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "knowledge:function-monotonicity",
+                stableCode = "math.function.monotonicity",
+                subject = "MATH",
+                displayName = "函数单调性",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "cn-highschool-m1-v1",
+                createdAtEpochMillis = 1_000,
+                canonicalName = "函数单调性",
+            )
+            teachingMaterials += KnowledgeTeachingMaterialRecord(
+                materialId = "material:function-monotonicity",
+                stableCode = "math.function.monotonicity",
+                subject = "MATH",
+                materialType = "CONCEPT_EXPLANATION",
+                title = "函数单调性讲解",
+                summaryMarkdown = "函数单调性的判定。",
+                applicabilityMarkdown = "用于导数判断单调区间。",
+                contentMarkdown = "函数单调性定义与判定方法。",
+                boundaryMarkdown = "只覆盖单调性判定，不涉及极值。",
+                derivationKind = "REVIEWED",
+                sourceId = "source:m1",
+                sourceLocator = "m1",
+                contentFingerprint = "fp-function-monotonicity",
+                reviewedAtEpochMillis = 1_000,
+            )
+            materialNodeBindings += KnowledgeTeachingMaterialNodeBindingRecord(
+                materialId = "material:function-monotonicity",
+                knowledgeNodeId = "knowledge:function-monotonicity",
+                role = "PRIMARY",
             )
         }
         val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
@@ -457,20 +492,16 @@ class RoomBackedStudyExperienceRepositoryTest {
             val plan = requireNotNull(
                 repository.currentKnowledgeReviewPlan("knowledge-review-start", 2_000),
             )
-            assertEquals(
-                setOf("knowledge:function-monotonicity"),
-                database.savedPlans.single().queue.single().knowledgeNodeIds,
-            )
-            // 计划范围精确来自今天队列绑定点，不含无关节点。
+            // 计划范围精确来自今天队列绑定点，且只保留可出题（有材料）的点。
             assertTrue(plan.queue.isNotEmpty())
             assertEquals(
                 "knowledge:function-monotonicity",
                 plan.queue.single().knowledgeNodeId,
             )
-            // 无掌握态 → masteryScore 为空、但作为 high-risk 点进入计划。
-            assertTrue(plan.queue.single().masteryScore == null)
-            assertTrue(plan.queue.single().score >= 1.0)
+            // 无材料伪节点被排除。
+            assertTrue(plan.queue.none { it.knowledgeNodeId == "pseudo:MATH" })
             assertEquals("MATH", plan.queue.single().subject)
+            assertEquals("函数单调性", plan.queue.single().displayName)
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -982,6 +1013,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val resolvedPredictionOutcomes = mutableListOf<ResolvedPredictionOutcomeCall>()
     val visualAttempts = mutableListOf<VisualInteractionAttemptRecord>()
     val practiceUnitBindings = mutableListOf<PracticeUnitKnowledgeBindingRecord>()
+    val knowledgeNodes = mutableListOf<KnowledgeNodeSeedRecord>()
+    val teachingMaterials = mutableListOf<KnowledgeTeachingMaterialRecord>()
+    val materialNodeBindings = mutableListOf<KnowledgeTeachingMaterialNodeBindingRecord>()
     val reviewLogEntries = mutableListOf<ReviewLogEntry>()
     val teachingAdvisories = mutableListOf<TeachingAdvisoryRecord>()
     val resolvedStudentModelPredictions =
@@ -1409,7 +1443,7 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     ): List<KnowledgeNodeSeedRecord> = emptyList()
 
     override suspend fun readKnowledgeNodesByIds(ids: Set<String>):
-        List<KnowledgeNodeSeedRecord> = emptyList()
+        List<KnowledgeNodeSeedRecord> = knowledgeNodes.filter { it.knowledgeNodeId in ids }
 
     override suspend fun readKnowledgeSourcesByIds(ids: Set<String>):
         List<KnowledgeSourceSeedRecord> = emptyList()
@@ -1430,13 +1464,25 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         subject: String,
         knowledgeNodeIds: Set<String>,
         limit: Int,
-    ): List<KnowledgeTeachingMaterialRecord> = emptyList()
+    ): List<KnowledgeTeachingMaterialRecord> = teachingMaterials
+        .asSequence()
+        .filter { material ->
+            material.subject == subject &&
+                materialNodeBindings.any { binding ->
+                    binding.materialId == material.materialId &&
+                        binding.knowledgeNodeId in knowledgeNodeIds
+                }
+        }
+        .take(limit)
+        .toList()
 
     override suspend fun readKnowledgeTeachingMaterialsByIds(materialIds: Set<String>):
-        List<KnowledgeTeachingMaterialRecord> = emptyList()
+        List<KnowledgeTeachingMaterialRecord> =
+        teachingMaterials.filter { it.materialId in materialIds }
 
     override suspend fun readKnowledgeTeachingMaterialNodeBindings(materialIds: Set<String>):
-        List<KnowledgeTeachingMaterialNodeBindingRecord> = emptyList()
+        List<KnowledgeTeachingMaterialNodeBindingRecord> =
+        materialNodeBindings.filter { it.materialId in materialIds }
 
     override fun observePendingKnowledgeGroundingRequests(
         limit: Int,
