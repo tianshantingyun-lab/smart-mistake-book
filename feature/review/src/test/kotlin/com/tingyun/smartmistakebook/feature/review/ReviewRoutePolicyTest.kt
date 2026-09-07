@@ -45,4 +45,23 @@ class ReviewRoutePolicyTest {
         )
         assertNull(reviewContinuityText(StudyReviewOverview()))
     }
+
+    @Test
+    fun knowledgeReviewEntryAppearsOnlyOnAnActiveReviewDay() {
+        assertTrue(
+            isKnowledgeReviewDay(
+                StudyReviewOverview(scheduledCount = 3, completedToday = false),
+            ),
+        )
+        // 已完成今天 → 不再建议知识点复习。
+        assertFalse(
+            isKnowledgeReviewDay(
+                StudyReviewOverview(scheduledCount = 3, completedToday = true),
+            ),
+        )
+        // 无今日计划 → 无知识点可复习。
+        assertFalse(
+            isKnowledgeReviewDay(StudyReviewOverview(scheduledCount = 0)),
+        )
+    }
 }

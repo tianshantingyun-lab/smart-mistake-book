@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tingyun.smartmistakebook.core.domain.NewIntroductionPolicy
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
@@ -48,6 +50,7 @@ fun ReviewRoute(
     overview: StudyReviewOverview,
     profile: StudyProfileOverview,
     onStartReview: () -> Unit,
+    onStartKnowledgeReview: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     RootPageColumn(
@@ -68,6 +71,16 @@ fun ReviewRoute(
             )
         }
         Spacer(Modifier.height(30.dp))
+        // 双复习入口（spec dual-review-entry §3.1）：知识点复习是今日错题的知识点排程伴侣，
+        // 学生可自由选，建议先巩固概念再做错题。是否真有知识点队列由会话屏在进入时经
+        // currentKnowledgeReviewPlan 决定（空则显示"今日无需复习"），首页不猜测、不重复排程。
+        if (onStartKnowledgeReview != null && isKnowledgeReviewDay(overview)) {
+            KnowledgeReviewEntryCard(
+                onClick = onStartKnowledgeReview,
+                modifier = Modifier.testTag("review_start_knowledge_review"),
+            )
+            Spacer(Modifier.height(12.dp))
+        }
         PrimaryActionButton(
             text = when {
                 overview.completedToday -> "今日复习已完成"
@@ -83,6 +96,18 @@ fun ReviewRoute(
             icon = Icons.AutoMirrored.Outlined.MenuBook,
             enabled = overview.scheduledCount > 0 && !overview.completedToday,
         )
+        // Intake backlog coverage promise (spec batch-intake §6 P3): questions
+        // recorded but not yet introduced carry no learning pressure; the
+        // surface shows them as a plan ("每天约 X 题新学，约 M 天覆盖") so a
+        // large import reads as a schedule, not a wall.
+        if (overview.intakeBacklogCount > 0) {
+            Spacer(Modifier.height(12.dp))
+            IntakeBacklogPreview(
+                backlogCount = overview.intakeBacklogCount,
+                medianEstimateSeconds = overview.intakeMedianEstimateSeconds,
+                modifier = Modifier.testTag("review_intake_backlog_preview"),
+            )
+        }
         reviewContinuityText(overview)?.let { continuity ->
             Spacer(Modifier.height(12.dp))
             Row(
@@ -137,6 +162,60 @@ internal fun shouldShowReviewSummary(
     scheduledCount: Int,
     hasLearningEvidence: Boolean,
 ): Boolean = scheduledCount > 0 || hasLearningEvidence
+
+/**
+ * 知识点复习入口只在"今天确有复习计划"时展示（spec dual-review-entry §3.1）——知识点范围
+ * 派生自今日错题队列，没有今日计划就没有可复习的知识点。已完成今天的不再建议。
+ */
+internal fun isKnowledgeReviewDay(overview: StudyReviewOverview): Boolean =
+    overview.scheduledCount > 0 && !overview.completedToday
+
+/** 知识点复习入口卡：与错题复习并列的第二个入口，建议先巩固概念再练题。 */
+@Composable
+private fun KnowledgeReviewEntryCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = SmartColors.JadeSoft.copy(alpha = 0.45f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Jade.copy(alpha = 0.5f)),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SubjectIcon(
+                icon = Icons.AutoMirrored.Outlined.ShowChart,
+                contentDescription = "知识点复习",
+                modifier = Modifier.size(44.dp),
+            )
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = "先复习知识点",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = SmartColors.Ink,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    text = "巩固今天涉及的概念，再做错题",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SmartColors.InkSecondary,
+                )
+            }
+            Text(
+                text = "开始",
+                color = SmartColors.JadeDark,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+}
 
 internal fun reviewContinuityText(overview: StudyReviewOverview): String? = when {
     overview.completionStreakDays <= 0 -> null
@@ -254,3 +333,51 @@ private fun WeakPointRow(
         }
     }
 }
+
+
+/**
+ * Intake-backlog coverage preview (spec batch-intake §6 P3): renders the
+ * backlog as a schedule — "每天约 X 题新学，约 M 天覆盖" — computed with the
+ * same NewIntroductionPolicy.preview the scheduler uses, so the promise
+ * matches what the daily introduction actually does. A median reference
+ * budget of 15 minutes of new material per day keeps the estimate stable
+ * without threading the full time-budget preference into this surface.
+ */
+@Composable
+private fun IntakeBacklogPreview(
+    backlogCount: Int,
+    medianEstimateSeconds: Int,
+    modifier: Modifier = Modifier,
+) {
+    val estimateSeconds = if (medianEstimateSeconds > 0) medianEstimateSeconds else 60
+    val preview = remember(backlogCount, estimateSeconds) {
+        NewIntroductionPolicy.preview(
+            backlogCount = backlogCount,
+            typicalItemSeconds = estimateSeconds,
+            timeBudgetSeconds = DEFAULT_INTAKE_DAILY_BUDGET_SECONDS,
+        )
+    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = SmartColors.JadeSoft.copy(alpha = 0.35f),
+                shape = RoundedCornerShape(12.dp),
+            )
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = if (preview.daysToCover <= 0) {
+                "还有 $backlogCount 道新题待引入"
+            } else {
+                "还有 $backlogCount 道新题待学：每天约 ${preview.perDayItems} 题，约 ${preview.daysToCover} 天覆盖"
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = SmartColors.Ink,
+        )
+    }
+}
+
+/** Reference daily budget (seconds) the intake preview is computed from. */
+private const val DEFAULT_INTAKE_DAILY_BUDGET_SECONDS = 900
