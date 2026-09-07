@@ -68,6 +68,28 @@ data class TutorAssessmentItem(
     }
 }
 
+/**
+ * 把知识点复习的考察输出（[KnowledgeQuizOutput]，spec dual-review-entry §3.3 P1 选择题）
+ * 映射成可渲染、可判答的 [TutorAssessmentItem]，复用其 [TutorAssessmentItem.evaluateChoice] 判答。
+ * 知识点复习考察项是纯选择题（无分叉 feedback），故选项不携带 feedbackMarkdown；判别标准
+ * 统一落在 evaluateChoice（选中 == correctChoiceId 即正确），UI 无需自行解释。
+ */
+fun KnowledgeQuizOutput.toTutorAssessmentItem(
+    knowledgeNodeId: String,
+    itemId: String,
+): TutorAssessmentItem = TutorAssessmentItem(
+    id = itemId,
+    stemMarkdown = questionMarkdown,
+    choices = choices.map { choice ->
+        TutorChoice(
+            id = choice.choiceId,
+            markdown = choice.markdown,
+        )
+    },
+    correctChoiceId = correctChoiceId,
+    knowledgeNodeIds = setOf(knowledgeNodeId),
+)
+
 enum class TutorAssistanceKind {
     HINT,
     ANSWER_REVEAL,
