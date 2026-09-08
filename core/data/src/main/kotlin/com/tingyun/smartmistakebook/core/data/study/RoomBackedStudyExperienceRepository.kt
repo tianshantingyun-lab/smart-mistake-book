@@ -30,6 +30,7 @@ import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
+import com.tingyun.smartmistakebook.core.domain.OptimalRetention
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewCandidate
@@ -580,6 +581,9 @@ class RoomBackedStudyExperienceRepository(
             wasIndependentCorrect = prepared.isCorrect,
             observedAtEpochMillis = submission.occurredAtEpochMillis,
             responseLatencyMs = submission.durationSeconds * 1000L,
+            // The review path must carry the hint count the submission holds;
+            // dropping it here made the whole hint channel read 0 (audit 2026-09-09).
+            hintCount = submission.hintCount,
         )
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         latestMistakes = database.observeMistakes().first()
@@ -1009,6 +1013,21 @@ class RoomBackedStudyExperienceRepository(
         if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
         store.setOptimizedParameters(result.parameters)
         return result
+    }
+
+    override suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? {
+        val snapshot = currentLearnerSnapshot()
+        val cards = snapshot.problemMemoryStates.values.map { memory ->
+            OptimalRetention.Card(
+                stabilityDays = memory.stabilityDays,
+                difficulty = memory.difficulty,
+            )
+        }
+        val parameters = schedulingSettingsStore
+            ?.optimizedParameters
+            ?.first()
+            ?: FsrsScheduleMath.DEFAULT_PARAMETERS
+        return OptimalRetention.recommend(cards, parameters)
     }
 
     private fun ratingEvidenceFor(rating: StudyReviewRating): LearningEvidence = when (rating) {

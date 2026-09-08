@@ -427,6 +427,54 @@ class ReviewPlannerV2Test {
         assertEquals(listOf("unit-decayed"), allowed.queueItems.map { it.practiceUnitId })
     }
 
+    @Test
+    fun `same-KC quota is waived while the knowledge node is not yet learned`() {
+        val candidates = (0 until 3).map { index ->
+            candidate("unit-$index", "family-$index", null, 5.5, 60, kc = "kc-a")
+        } + candidate("unit-other", "family-other", null, 5.5, 60, kc = "kc-b")
+        val readyB = masteryState("kc-b", mastery = 0.95, conservative = 0.9)
+
+        fun planWith(a: KnowledgeMasteryState) = planner.plan(
+            request(
+                candidates,
+                240,
+                LearnerSnapshot(
+                    learnerId = "learner-1",
+                    problemMemoryStates = emptyMap(),
+                    knowledgeMasteryStates = mapOf("kc-a" to a, "kc-b" to readyB),
+                    checkpoint = ProjectionCheckpoint(4, LearningProjector.VERSION, now),
+                    generatedAtEpochMillis = now,
+                ),
+            ),
+        )
+
+        // 研究 2026-09-09 §2: below the ready-to-learn threshold the KC is
+        // blocked first, so all three same-KC items may be scheduled.
+        val blockedFirst = planWith(masteryState("kc-a", mastery = 0.2, conservative = 0.1))
+            .queueItems.count { "kc-a" in it.knowledgeNodeIds }
+        // Once the KC is ready to learn, the interleaving quota binds again.
+        val interleaved = planWith(masteryState("kc-a", mastery = 0.95, conservative = 0.9))
+            .queueItems.count { "kc-a" in it.knowledgeNodeIds }
+
+        assertEquals(3, blockedFirst)
+        assertTrue("ready KC should be capped below the blocked-first run", interleaved < 3)
+    }
+
+    private fun masteryState(
+        id: String,
+        mastery: Double,
+        conservative: Double,
+    ) = KnowledgeMasteryState(
+        knowledgeNodeId = id,
+        masteryScore = mastery,
+        conservativeMasteryScore = conservative,
+        evidenceMass = 0.0,
+        status = MasteryStatus.LEARNING,
+        calibrationSupport = CalibrationSupport.SUPPORTED,
+        projectorVersion = LearningProjector.VERSION,
+        checkpointSequence = 4,
+    )
+
     /**
      * A snapshot whose KC carries recent, calibration-supported evidence, so no
      * integrity reason (CALIBRATION_CHECK / STALE_KNOWLEDGE) bypasses the early

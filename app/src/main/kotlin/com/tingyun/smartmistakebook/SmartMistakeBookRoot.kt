@@ -1118,9 +1118,16 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 val exams by application.schedulingSettingsStore.exams
                     .collectAsStateWithLifecycle(initialValue = emptyList())
                 val schedulingScope = rememberCoroutineScope()
+                var retentionHint by remember {
+                    mutableStateOf<com.tingyun.smartmistakebook.core.domain.OptimalRetention.Recommendation?>(null)
+                }
+                LaunchedEffect(schedulingOptions) {
+                    retentionHint = application.studyRepository.recommendedDesiredRetention()
+                }
                 SchedulingSettingsScreen(
                     options = schedulingOptions,
                     exams = exams,
+                    retentionHint = retentionHint,
                     onSetOptions = { updated ->
                         schedulingScope.launch {
                             application.schedulingSettingsStore.setOptions(updated)

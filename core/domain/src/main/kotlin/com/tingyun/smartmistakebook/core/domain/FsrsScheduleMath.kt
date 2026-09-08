@@ -12,7 +12,15 @@ import kotlin.math.pow
  * deterministic.
  */
 object FsrsScheduleMath {
-    /** py-fsrs DEFAULT_PARAMETERS, source-verified. Index 20 is the decay. */
+    /**
+     * py-fsrs DEFAULT_PARAMETERS, source-verified. Index 20 is the decay.
+     *
+     * Index 16 (the Easy stability bonus) is pinned to 1.0 instead of py-fsrs'
+     * 1.8729: [FsrsEvidenceRatingMapper.schedulingRatingFor] never returns EASY
+     * (subjective "very easy" caps at Good, assisted correct is Hard), so the
+     * bonus can never apply and the fitted value would be an unidentifiable,
+     * misleading free parameter (研究 2026-09-09 §7/§8).
+     */
     val DEFAULT_PARAMETERS: DoubleArray = doubleArrayOf(
         0.212,
         1.2931,
@@ -30,7 +38,7 @@ object FsrsScheduleMath {
         0.2629,
         1.6483,
         0.6014,
-        1.8729,
+        1.0,
         0.5425,
         0.0912,
         0.0658,

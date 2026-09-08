@@ -24,20 +24,11 @@ class ReviewInteractionTracker(
     var awayMillis: Long = 0
         private set
 
-    /** Text-edit operations on answer surfaces (0 until an editable answer ships). */
-    var editCount: Int = 0
-        private set
-
     private var pausedAtMillis: Long? = null
 
     /** @param delta signed scroll pixel delta; negative means scrolling back up. */
     fun onScrollDelta(delta: Int) {
         if (delta < 0) scrollUpCount += 1
-    }
-
-    /** Hook for editable answer surfaces; silent until such a surface ships. */
-    fun onEdit() {
-        editCount += 1
     }
 
     fun onLifecycleEvent(event: Lifecycle.Event) {

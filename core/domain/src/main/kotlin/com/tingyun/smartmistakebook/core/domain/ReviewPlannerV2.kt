@@ -623,6 +623,9 @@ class ReviewPlannerV2(
             score = score,
             reasons = reasons,
             difficultyBand = difficultyBand(candidate.difficulty),
+            weakestKnowledgeMastery = masteryStates.minOfOrNull { state ->
+                MasterySmoothing.smoothedMasteryScore(state, now)
+            },
         )
     }
 
@@ -723,7 +726,17 @@ class ReviewPlannerV2(
             alternative.candidate.practiceUnitId != candidate.candidate.practiceUnitId &&
                 alternative.candidate.knowledgeNodeIds.none(candidateKcs::contains)
         }
-        if (sameKcCount >= MAX_PER_KNOWLEDGE_NODE_PER_SESSION && diverseAlternatives) {
+        // Blocked-first phase (研究 2026-09-09 §2): a KC the student has not
+        // learned yet benefits from 2-3 consecutive items before interleaving
+        // helps (low prior knowledge is an "undesirable difficulty" moderator),
+        // so the quota only binds once the KC is at least ready-to-learn.
+        val weakestMastery = candidate.weakestKnowledgeMastery
+        val blockedFirst = weakestMastery != null && weakestMastery < READY_TO_LEARN_THRESHOLD
+        if (
+            sameKcCount >= MAX_PER_KNOWLEDGE_NODE_PER_SESSION &&
+            diverseAlternatives &&
+            !blockedFirst
+        ) {
             return SAME_KC_EXHAUSTION_PENALTY
         }
         val weaknessOnlySelected = selected.count { scoredCandidate ->
@@ -814,6 +827,13 @@ class ReviewPlannerV2(
         val score: Double,
         val reasons: Set<ReviewReason>,
         val difficultyBand: ReviewDifficultyBand,
+        /**
+         * Smoothed mastery of the candidate's weakest bound knowledge node, or
+         * null when no bound node has a mastery state. The same-KC interleaving
+         * quota is waived below [READY_TO_LEARN_THRESHOLD] so a not-yet-learned
+         * KC can be blocked first (研究 2026-09-09 §2).
+         */
+        val weakestKnowledgeMastery: Double? = null,
     ) {
         /**
          * Replaces the candidate's static duration estimate with the

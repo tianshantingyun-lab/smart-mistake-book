@@ -716,7 +716,12 @@ internal fun StorageScreen(
                     }
                 }
                 operationMessage = if (receipt != null) {
-                    "恢复完成：${receipt.problemCount} 道题、${receipt.assetCount} 张题图。请完全退出并重新打开应用。"
+                    val restartNote = if (receipt.restartRequired) {
+                        "请完全退出并重新打开应用。"
+                    } else {
+                        ""
+                    }
+                    "恢复完成：${receipt.problemCount} 道题、${receipt.assetCount} 张题图。$restartNote"
                 } else {
                     "无法读取所选备份。"
                 }

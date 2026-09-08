@@ -761,6 +761,47 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     @Test
+    fun `hint count reaches the prediction audit outcome`() = runBlocking {
+        val database = FakeStudyDatabasePort()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, scope)
+        val startedAt = Instant.parse("2026-01-02T08:05:00Z").toEpochMilli()
+
+        try {
+            repository.initialize()
+            val started = requireNotNull(
+                repository.startOrResumeReviewSession("hint-start", startedAt),
+            )
+            val practiceUnitId = repository.snapshot.value.review.scheduledPracticeUnitIds.first()
+            val artifact = requireNotNull(repository.teachingArtifact(practiceUnitId))
+
+            val submitted = repository.submitReviewChoice(
+                sessionId = started.sessionId,
+                expectedStateVersion = started.stateVersion,
+                submission = StudyChoiceSubmission(
+                    requestId = "hint-choice",
+                    presentationId = "review-presentation:hint",
+                    practiceUnitId = practiceUnitId,
+                    selectedChoiceId = artifact.assessmentItems.single().choices.first().id,
+                    responseOrdinal = 1,
+                    durationSeconds = 12,
+                    occurredAtEpochMillis = startedAt + 1,
+                    // A hint was shown before the graded answer; the prediction
+                    // audit must see it (spec §2.14; no UI produces this today,
+                    // so the channel itself is what this test pins).
+                    hintCount = 1,
+                ),
+            )
+
+            assertTrue(submitted.attempt.created)
+            assertEquals(1, database.resolvedPredictionOutcomes.last().hintCount)
+        } finally {
+            repository.close()
+            scope.cancel()
+        }
+    }
+
+    @Test
     fun reviewSessionProgressAndCompletionComeBackFromPersistence() = runBlocking {
         val database = FakeStudyDatabasePort()
         val firstScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
@@ -981,6 +1022,7 @@ internal data class ResolvedPredictionOutcomeCall(
     val practiceUnitId: String,
     val wasIndependentCorrect: Boolean,
     val observedAtEpochMillis: Long,
+    val hintCount: Int = 0,
 )
 
 internal class FakeStudyDatabasePort : StudyDatabasePort {
@@ -1042,6 +1084,7 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
             practiceUnitId = practiceUnitId,
             wasIndependentCorrect = wasIndependentCorrect,
             observedAtEpochMillis = observedAtEpochMillis,
+            hintCount = hintCount,
         )
         return recordedPredictions.count { it.practiceUnitId == practiceUnitId }
     }

@@ -96,13 +96,15 @@ class FsrsScheduleMathTest {
     }
 
     @Test
-    fun `hard penalty and easy bonus scale the growth increment`() {
+    fun `hard penalty scales the growth increment and the easy bonus is neutral`() {
         val good = FsrsScheduleMath.nextRecallStability(5.0, 10.0, 0.8, FsrsRating.GOOD)
         val hard = FsrsScheduleMath.nextRecallStability(5.0, 10.0, 0.8, FsrsRating.HARD)
         val easy = FsrsScheduleMath.nextRecallStability(5.0, 10.0, 0.8, FsrsRating.EASY)
 
         assertTrue(hard < good)
-        assertTrue(good < easy)
+        // w16 is pinned at 1.0: the evidence mapping never grades a review EASY
+        // (研究 2026-09-09 §7), so an EASY rating must not buy extra stability.
+        assertEquals(good, easy, 1e-9)
     }
 
     @Test

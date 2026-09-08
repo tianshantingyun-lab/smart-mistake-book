@@ -4,8 +4,12 @@
 The point of this gate is to stop a *newly added* megafile from landing,
 not to punish the existing backlog (51 main files are already over 600
 lines and 17 over 1000). So it inspects only the files this branch/tag
-changed relative to its base, and errors when one of those crosses a hard
-line.
+changed relative to its base, and errors when one of those *crosses* a hard
+line — a file that was already over the hard line at the base is reported as
+an advisory warning (it is backlog, not a new megafile), while a file that
+grew past the hard line in this change, or a brand-new oversized file, fails
+the gate. Before 2026-09-09 any touched file over the hard line failed, which
+contradicted this docstring and blocked unrelated work.
 
 Baseline
 --------
@@ -74,6 +78,21 @@ def line_count(path: Path) -> int:
         return 0
 
 
+def base_line_count(base: str, path: Path) -> int:
+    """Line count of the same path at the base ref; 0 when it did not exist."""
+    relative = path.relative_to(REPO).as_posix()
+    content = subprocess.run(
+        ["git", "show", f"{base}:{relative}"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if content.returncode != 0:
+        return 0
+    return len(content.stdout.splitlines())
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", help="ref to diff against (default origin/main)")
@@ -102,7 +121,12 @@ def main() -> int:
         lines = line_count(path)
         soft, hard = THRESHOLDS[kind]
         if lines > hard:
-            errors.append((lines, kind, path))
+            if base_line_count(base, path) > hard:
+                # Already over the hard line before this change: backlog, not a
+                # newly introduced megafile. Keep it visible, but do not block.
+                warnings.append((lines, kind, path))
+            else:
+                errors.append((lines, kind, path))
         elif lines > soft:
             warnings.append((lines, kind, path))
 
@@ -119,9 +143,9 @@ def main() -> int:
           "(thresholds: main 600/1000, test 900/1500)")
 
     if errors:
-        print("\nFile-size gate FAILED: this branch introduces a hard-line ",
-              "oversized file. Split cohesive blocks into their own file or ",
-              "component before merging.")
+        print("\nFile-size gate FAILED: this branch pushes a file past its hard ",
+              "line. Split cohesive blocks into their own file or component ",
+              "before merging.")
         return 1
     return 0
 

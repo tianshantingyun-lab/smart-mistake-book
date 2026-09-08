@@ -15,6 +15,7 @@ import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRemoteDispatchPolicy
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -199,23 +200,46 @@ class ModelTaskDatabaseInstrumentedTest {
     }
 
     @Test
-    fun logicalOperationDispatchReservationAtomicallyRejectsTheFourthEnvelope() = runBlocking {
-        val queued = (1..4).map { ordinal ->
-            val request = request(
-                requestId = "capture-assess:logical-$ordinal",
-                occurredAtEpochMillis = 100L + ordinal,
+    fun logicalOperationDispatchReservationAtomicallyRejectsEnvelopesBeyondTheBudget() =
+        runBlocking {
+            val budget = ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES
+            val queued = (1..budget + 1).map { ordinal ->
+                val request = request(
+                    requestId = "capture-assess:logical-$ordinal",
+                    occurredAtEpochMillis = 100L + ordinal,
+                )
+                val created = store.createModelTask(
+                    createCommand(request, taskId = "task-capture-logical-$ordinal"),
+                ).snapshot
+                store.transitionModelTask(
+                    transition(
+                        created,
+                        ModelTaskStatus.QUEUED,
+                        ModelTaskStage.PREPARING,
+                        occurredAtEpochMillis = 200L + ordinal,
+                    ),
+                ).snapshot
+            }
+
+            val reservations = queued.mapIndexed { index, snapshot ->
+                store.reserveModelTaskRemoteDispatch(
+                    ReserveModelTaskRemoteDispatchCommand(
+                        taskId = snapshot.taskId,
+                        expectedStateVersion = snapshot.stateVersion,
+                        expectedStatus = snapshot.status,
+                        provider = provider(),
+                        occurredAtEpochMillis = 300L + index,
+                    ),
+                )
+            }
+
+            assertEquals(budget, reservations.count { it.applied })
+            assertEquals(1, reservations.count { it.budgetExhausted })
+            assertEquals(
+                (1..budget).toList() + budget,
+                reservations.map { it.logicalDispatchCount },
             )
-            val created = store.createModelTask(
-                createCommand(request, taskId = "task-capture-logical-$ordinal"),
-            ).snapshot
-            store.transitionModelTask(
-                transition(
-                    created,
-                    ModelTaskStatus.QUEUED,
-                    ModelTaskStage.PREPARING,
-                    occurredAtEpochMillis = 200L + ordinal,
-                ),
-            ).snapshot
+            assertEquals(ModelTaskStatus.QUEUED, reservations.last().snapshot.status)
         }
 
     @Test
@@ -247,24 +271,6 @@ class ModelTaskDatabaseInstrumentedTest {
             ),
             recent.map { it.request.requestId },
         )
-    }
-
-        val reservations = queued.mapIndexed { index, snapshot ->
-            store.reserveModelTaskRemoteDispatch(
-                ReserveModelTaskRemoteDispatchCommand(
-                    taskId = snapshot.taskId,
-                    expectedStateVersion = snapshot.stateVersion,
-                    expectedStatus = snapshot.status,
-                    provider = provider(),
-                    occurredAtEpochMillis = 300L + index,
-                ),
-            )
-        }
-
-        assertEquals(3, reservations.count { it.applied })
-        assertEquals(1, reservations.count { it.budgetExhausted })
-        assertEquals(listOf(1, 2, 3, 3), reservations.map { it.logicalDispatchCount })
-        assertEquals(ModelTaskStatus.QUEUED, reservations.last().snapshot.status)
     }
 
     @Test
@@ -304,17 +310,20 @@ class ModelTaskDatabaseInstrumentedTest {
                     SQLiteDatabase.OPEN_READWRITE,
                 )
                 try {
+                    // The two legacy envelopes share one logical operation; their
+                    // counts must add up to the current dispatch budget so the
+                    // post-migration reservation is still rejected.
                     insertLegacyModelTask(
                         legacy,
                         taskId = "legacy-task-1",
                         request = request("legacy-request-1", 100),
-                        attemptCount = 1,
+                        attemptCount = 3,
                     )
                     insertLegacyModelTask(
                         legacy,
                         taskId = "legacy-task-2",
                         request = request("legacy-request-2", 110),
-                        attemptCount = 2,
+                        attemptCount = 3,
                     )
                 } finally {
                     legacy.close()
@@ -343,10 +352,13 @@ class ModelTaskDatabaseInstrumentedTest {
                     ),
                 )
 
-                assertEquals(3, next.attemptCount)
+                assertEquals(ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES, next.attemptCount)
                 assertFalse(exhausted.applied)
                 assertTrue(exhausted.budgetExhausted)
-                assertEquals(3, exhausted.logicalDispatchCount)
+                assertEquals(
+                    ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES,
+                    exhausted.logicalDispatchCount,
+                )
                 migrated.close()
             } finally {
                 context.deleteDatabase(databaseName)

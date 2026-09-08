@@ -289,7 +289,7 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **A4**：learner_problem_memory_state / learner_knowledge_mastery_state 增 `last_evidence_reason/direction`（另增 leech/毕业所需的跨日连胜计数字列，属 §3.2 的实现性扩展）。
 - **A5/L1（§3.3）**：library_catalog 视图改 join `learner_problem_memory_state`（projection_name 固定），learner_id 作为视图列暴露；迁移 SQL 由 36.json createSql 逐字节生成，保持 Room 运行时校验通过；retrievability 列置 NULL（真实值由仓库层从投影现算）。
 - **难度域迁移（§3.2）**：v36 一次性 `d→1+9d`；模型/计划器/时长模型输入全部迁到 1..10（difficultyBand 阈值 4/7；HLR 影子特征内归一化 /10）。
-- **A3**：`StudyChoiceSubmission.hintCount` → `AttemptWriteCommand.hintCount/revealedBeforeAnswer` → attempt_event 列 → `resolveOutcome(hintCount)`；hint UI 未上线前恒为 0（列与链路已就绪）。
+- **A3**：`StudyChoiceSubmission.hintCount` → `AttemptWriteCommand.hintCount/revealedBeforeAnswer` → attempt_event 列 → `resolveOutcome(hintCount)`。2026-09-09：复习路径此前在 `submitReviewChoice` 里漏传该值（链路虽就绪但恒为 0），已修并由 `RoomBackedStudyExperienceRepositoryTest.hint count reaches the prediction audit outcome` 锁定；hint UI 仍未上线，故生产值仍为 0，但通道本身已端到端验证。
 - **考试模式（§2.17）**：考试日历存 DataStore；考前 14 天 ramp 进 `examPriority`（选题侧提前纳入，早复习理由已存在）；r*_exam 不进投影公式——投影必须事件确定性可重放，日历属可变外部状态，此为对 §2.17 的有意收窄。
 - **leech（§2.16）**：`lapseCount≥6 && consecutiveCrossDayAgain≥2` 派生态；planner 剔除常规排期；难度冻结；恢复=跨日成功自动清零（替代"手动恢复"，避免新增账本事件类型，重放安全）。
 - **反振荡（§2.18）**：同 KC 每会话 ≤2（硬配额， starving 安全）+ 最弱项占比 >25% 罚分；**EMA 平滑（已闭合）**：`MasterySmoothing.smoothedMasteryScore` 以 7 天半衰衰减独立答对观测、按校准支持仍在期占比产出 EMA，与保守分 50/50 混合后作为 weakness 输入（双计划器接线），单日好坏不再直接冲击队列；先修门槛 τ_ready 仍读原始保守分（保守口径不被平滑放大）。
@@ -314,4 +314,4 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 
 **验证**：`core:domain` 234（含 MasterySmoothingTest 4 例、SleepWindowInferenceTest 4 例）、`core:data` 204、`core:database` 59、`feature:review` 11、`app` 31（双 flavor）单元测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug`、`lintLocalFirstDebug/lintStrictOfflineDebug` 全绿；`core/database/schemas` 无 drift（新增 36.json 由 exportSchema 生成）。设备端验证（模拟器 Pixel 6/Android 14，2026-08-29 执行）：`:core:database:connectedDebugAndroidTest` 全绿——1→37 全版本迁移矩阵、v35→36 数据换算（0.5→5.5 实测）、伪 KC 外键落库、review_log 读写往返、v33 链结构等价；应用装机启动 smoke 通过（user_version=37、review_log 三交互列实测在位、睡眠日志静默落盘、错题本 library_catalog 视图渲染正常）。旧版 sqlite-master 逐字节对比测试按 Room 迁移校验口径改为结构等价对比（ALTER 追加列与运行时触发器使字节对比不可达），并修复其冻结旧版本号的陈旧断言。
 
-**未验证项（待接钩子）**：edit_count 通道当前仅覆盖选择流的答案修改（重试序数-1）；自评/评级复习界面没有文本输入场景，该计数恒为 0——将来任何作答文本输入上线时，接 `ReviewInteractionTracker` 增设的 `onEdit()` 钩子即可闭环（Tracker 类已预留扩展点，v37 列已就位）。
+**未验证项**：edit_count 通道当前仅覆盖选择流的答案修改（重试序数-1）；自评/评级复习界面没有文本输入场景，该计数恒为 0。原先预留的 `ReviewInteractionTracker.onEdit()` 无任何调用方，属死代码，已于 2026-09-09 删除；将来任何作答文本输入上线时再加钩子即可闭环（v37 列已就位）。

@@ -430,11 +430,19 @@ object FsrsParameterOptimizer {
         var bestTrainLoss = lossFor(cards, cutoff, bestParams, wantValidation = false)
         var fittedIndices = baseIndices
 
-        // Spec §2.11b: unlock the hard/easy penalty coefficients (w15/w16) only when the sample
-        // volume reaches the unlock floor AND doing so improves validation loss by more than the
-        // gain margin — a guard against overfitting two extra parameters on insufficient data.
-        if (predictableSampleCount >= UNLOCK_W15_W16_MIN_SAMPLES) {
-            val extendedIndices = (baseIndices + listOf(15, 16)).distinct()
+        // Spec §2.11b: unlock the hard-penalty coefficient (w15) only when the sample
+        // volume reaches the unlock floor, enough HARD reviews exist to identify it,
+        // AND doing so improves validation loss by more than the gain margin — a guard
+        // against overfitting an extra parameter on insufficient data.
+        //
+        // w16 (easy bonus) is never fitted: the evidence mapping never grades a review
+        // EASY, so its training set is empty and any fitted value is unidentifiable
+        // (研究 2026-09-09 §7/§8). It stays pinned at 1.0.
+        if (
+            predictableSampleCount >= UNLOCK_W15_W16_MIN_SAMPLES &&
+            samples.count { it.rating == FsrsRating.HARD } >= MIN_HARD_SAMPLES_FOR_W15
+        ) {
+            val extendedIndices = (baseIndices + 15).distinct()
             val (extendedParams, extendedValidationLoss) = fit(cards, cutoff, extendedIndices, iterations)
             val relativeGain = (bestValidationLoss - extendedValidationLoss) / bestValidationLoss
             if (bestValidationLoss.isFinite() && relativeGain > UNLOCK_W15_W16_GAIN_MARGIN) {
@@ -564,6 +572,12 @@ object FsrsParameterOptimizer {
     const val MIN_SAMPLES_FOR_FULL_FIT = 64
     /** Spec §2.11b: unlock w15/w16 only at this sample volume. */
     const val UNLOCK_W15_W16_MIN_SAMPLES = 5_000
+    /**
+     * …and only when the HARD bucket itself is populated enough to identify the
+     * coefficient (研究 2026-09-09 §8: a user who never rates Hard leaves w15
+     * just as unidentifiable as w16 always is).
+     */
+    const val MIN_HARD_SAMPLES_FOR_W15 = 100
     /** Spec §2.11b: unlock w15/w16 only when validation loss improves by more than this fraction. */
     const val UNLOCK_W15_W16_GAIN_MARGIN = 0.02
     const val DEFAULT_ITERATIONS = 24

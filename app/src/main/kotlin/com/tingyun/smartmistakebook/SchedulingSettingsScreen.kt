@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
+import com.tingyun.smartmistakebook.core.domain.OptimalRetention
 import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
@@ -49,6 +50,7 @@ internal fun SchedulingSettingsScreen(
     onAddExam: (ExamCalendarEntry) -> Unit,
     onRemoveExam: (String) -> Unit,
     onBack: () -> Unit,
+    retentionHint: OptimalRetention.Recommendation? = null,
 ) {
     RootPageColumn(modifier = Modifier.testTag("root_scheduling_settings")) {
         SecondaryHeader(title = "复习排程", onBack = onBack)
@@ -77,6 +79,17 @@ internal fun SchedulingSettingsScreen(
                 .fillMaxWidth()
                 .testTag("scheduling_retention_slider"),
         )
+        // CMRR-style recommendation (研究 2026-09-09 §5): a reference value from
+        // the learner's own memory states, never applied automatically.
+        retentionHint?.let { hint ->
+            Text(
+                text = "参考值 ${(hint.desiredRetention * 100).roundToInt()}%（实验性，" +
+                    "由你自己的记忆状态模拟得出，仅供参考）",
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("scheduling_retention_hint"),
+            )
+        }
 
         PaperDivider(modifier = Modifier.padding(vertical = 12.dp))
 

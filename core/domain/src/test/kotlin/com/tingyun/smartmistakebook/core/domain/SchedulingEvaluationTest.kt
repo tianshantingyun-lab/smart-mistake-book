@@ -127,6 +127,33 @@ class SchedulingEvaluationHarnessTest {
         // and only when validation loss improves by more than 2%.
         assertEquals(5_000, FsrsParameterOptimizer.UNLOCK_W15_W16_MIN_SAMPLES)
         assertEquals(0.02, FsrsParameterOptimizer.UNLOCK_W15_W16_GAIN_MARGIN, 1e-9)
+        // 研究 2026-09-09 §8: the HARD bucket must itself be populated.
+        assertEquals(100, FsrsParameterOptimizer.MIN_HARD_SAMPLES_FOR_W15)
+    }
+
+    @Test
+    fun `easy bonus is pinned neutral and never fitted`() {
+        // 研究 2026-09-09 §7: schedulingRatingFor never returns EASY, so w16 can
+        // neither apply at runtime nor be identified from the review log.
+        assertEquals(1.0, FsrsScheduleMath.DEFAULT_PARAMETERS[16], 1e-12)
+        assertEquals(
+            1.0,
+            FsrsScheduleMath.nextRecallStability(
+                difficulty = 5.0,
+                stability = 10.0,
+                retrievability = 0.9,
+                rating = FsrsRating.EASY,
+            ) / FsrsScheduleMath.nextRecallStability(
+                difficulty = 5.0,
+                stability = 10.0,
+                retrievability = 0.9,
+                rating = FsrsRating.GOOD,
+            ),
+            1e-9,
+        )
+        val samples = syntheticHistory(cardCount = 30)
+        val result = FsrsParameterOptimizer.optimize(samples, iterations = 6)
+        assertTrue(16 !in result.optimizedParameterIndices)
     }
 
     @Test

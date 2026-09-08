@@ -529,6 +529,13 @@ interface StudyExperienceRepository : AutoCloseable {
      */
     suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result?
 
+    /**
+     * Experimental CMRR-style desired-retention recommendation over the
+     * learner's current memory states (研究 2026-09-09 §5). Null when too few
+     * cards carry memory to simulate anything meaningful.
+     */
+    suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? = null
+
     suspend fun revealAnswer(request: StudyAnswerRevealRequest): StudyAnswerRevealResult
 
     suspend fun startOrResumeReviewSession(
