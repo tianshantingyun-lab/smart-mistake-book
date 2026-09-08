@@ -198,9 +198,13 @@ internal class OpenAiCompatibleModelCapabilityTester(
             android.util.Log.w("ModelCapabilityTester", "$probeLabel probe: TIMEOUT")
             ProbeOutcome.CONNECTION_FAILED
         } else {
+            // Never log the provider response body: this code path also runs in
+            // release builds and the body can echo disclosed student content.
+            // The status code plus byte count is enough to diagnose a failed
+            // probe without moving content into logcat (audit 2026-09-09).
             android.util.Log.w(
                 "ModelCapabilityTester",
-                "$probeLabel probe status=${response.statusCode} body=${response.body.take(160)}",
+                "$probeLabel probe status=${response.statusCode} bodyBytes=${response.body.length}",
             )
             when (response.statusCode) {
                 in 200..299 -> if (accepts(protocol, response.body)) {

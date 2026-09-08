@@ -67,6 +67,7 @@ class ReviewContinuityInstrumentedTest {
                     onOpenLearningMastery = {},
                     onOpenDataPrivacy = {},
                     onOpenReminder = {},
+                    onOpenScheduling = {},
                     onOpenStorage = {},
                 )
             }

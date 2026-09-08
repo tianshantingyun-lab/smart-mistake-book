@@ -77,6 +77,7 @@ import com.tingyun.smartmistakebook.feature.library.MistakeBatchExportRoute
 import com.tingyun.smartmistakebook.feature.library.MAX_LIBRARY_BATCH_EXPORT_QUESTIONS
 import com.tingyun.smartmistakebook.feature.library.MistakeDetailRoute
 import com.tingyun.smartmistakebook.feature.library.MistakeExportRoute
+import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
 import com.tingyun.smartmistakebook.feature.library.SplitImportReviewRoute
@@ -111,7 +112,6 @@ internal object Routes {
     const val LibraryBatchExport = "library/export"
     const val CaptureResume = "capture/resume/{draftId}"
     const val SplitReview = "capture/split-review"
-    const val SplitReviewJob = "capture/split-review/{jobId}"
     const val CapturedTutorSession = "tutor/captured/{sessionId}"
     const val TutorHistory = "tutor/history"
     const val TutorTextConversation = "tutor/lobby/{conversationId}"
@@ -123,6 +123,7 @@ internal object Routes {
     const val LearningMastery = "profile/learning-mastery"
     const val Privacy = "settings/privacy"
     const val Reminder = "settings/reminder"
+    const val Scheduling = "settings/scheduling"
     const val Storage = "settings/storage"
 
     fun mistakeDetail(itemId: String): String = "mistake/${Uri.encode(itemId)}"
@@ -164,8 +165,6 @@ internal object Routes {
         "tutor/lobby/${Uri.encode(conversationId)}"
 
     fun captureResume(draftId: String): String = "capture/resume/${Uri.encode(draftId)}"
-
-    fun splitReview(jobId: String): String = "capture/split-review/${Uri.encode(jobId)}"
 }
 
 private data class RootDestination(
@@ -551,6 +550,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     },
                     onOpenDataPrivacy = { navController.navigate(Routes.Privacy) },
                     onOpenReminder = { navController.navigate(Routes.Reminder) },
+                    onOpenScheduling = { navController.navigate(Routes.Scheduling) },
                     onOpenStorage = { navController.navigate(Routes.Storage) },
                     modifier = Modifier.testTag("root_profile"),
                 )
@@ -1121,6 +1121,33 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onRefreshSchedule = application::refreshReviewReminderSchedule,
                     onBack = navController::popBackStack,
                     suggestedMinute = suggestedReminderMinute,
+                )
+            }
+            composable(Routes.Scheduling) {
+                val schedulingOptions by application.schedulingSettingsStore.options
+                    .collectAsStateWithLifecycle(initialValue = SchedulingOptions())
+                val exams by application.schedulingSettingsStore.exams
+                    .collectAsStateWithLifecycle(initialValue = emptyList())
+                val schedulingScope = rememberCoroutineScope()
+                SchedulingSettingsScreen(
+                    options = schedulingOptions,
+                    exams = exams,
+                    onSetOptions = { updated ->
+                        schedulingScope.launch {
+                            application.schedulingSettingsStore.setOptions(updated)
+                        }
+                    },
+                    onAddExam = { entry ->
+                        schedulingScope.launch {
+                            application.studyRepository.declareExam(entry)
+                        }
+                    },
+                    onRemoveExam = { entryId ->
+                        schedulingScope.launch {
+                            application.studyRepository.removeExam(entryId)
+                        }
+                    },
+                    onBack = navController::popBackStack,
                 )
             }
             composable(Routes.Storage) {

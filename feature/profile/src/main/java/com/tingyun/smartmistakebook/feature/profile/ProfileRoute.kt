@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Functions
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +69,7 @@ fun ProfileRoute(
     onOpenLearningMastery: () -> Unit,
     onOpenDataPrivacy: () -> Unit,
     onOpenReminder: () -> Unit,
+    onOpenScheduling: () -> Unit,
     onOpenStorage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -104,6 +106,7 @@ fun ProfileRoute(
             onOpenCapability = onOpenCapability,
             onOpenDataPrivacy = onOpenDataPrivacy,
             onOpenReminder = onOpenReminder,
+            onOpenScheduling = onOpenScheduling,
             onOpenStorage = onOpenStorage,
             modifier = Modifier.padding(top = 8.dp),
         )
@@ -348,6 +351,7 @@ private fun SettingsSection(
     onOpenCapability: () -> Unit,
     onOpenDataPrivacy: () -> Unit,
     onOpenReminder: () -> Unit,
+    onOpenScheduling: () -> Unit,
     onOpenStorage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -383,6 +387,14 @@ private fun SettingsSection(
             icon = Icons.Outlined.NotificationsNone,
             onClick = onOpenReminder,
             modifier = Modifier.testTag("profile_reminder_setting"),
+        )
+        PaperDivider(Modifier.padding(start = 52.dp))
+        SettingsRow(
+            title = "复习排程",
+            subtitle = "期望保持率、FSRS 开关与考试日历",
+            icon = Icons.Outlined.Tune,
+            onClick = onOpenScheduling,
+            modifier = Modifier.testTag("profile_scheduling_setting"),
         )
         PaperDivider(Modifier.padding(start = 52.dp))
         SettingsRow(

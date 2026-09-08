@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.pdf.PdfDocument
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.CancellationSignal
@@ -122,13 +123,31 @@ class PreparedPdfPrintDocumentAdapter(
                 return@execute
             }
             try {
-                val copiedDigest = copyAndDigest(prepared.file, destination, cancellationSignal)
-                if (copiedDigest != prepared.sha256) {
+                val requested = requestedPageIndexes(pages, prepared.pageCount)
+                if (requested == null) {
                     callback.onWriteFailed("PDF 暂时无法生成")
-                } else if (cancellationSignal.isCanceled) {
-                    callback.onWriteCancelled()
+                } else if (requested.size == prepared.pageCount) {
+                    // Whole document requested: stream the original file so the
+                    // printed output keeps its vector content.
+                    val copiedDigest = copyAndDigest(prepared.file, destination, cancellationSignal)
+                    if (copiedDigest != prepared.sha256) {
+                        callback.onWriteFailed("PDF 暂时无法生成")
+                    } else if (cancellationSignal.isCanceled) {
+                        callback.onWriteCancelled()
+                    } else {
+                        callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+                    }
                 } else {
-                    callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+                    // Partial range: the print framework honours the student's
+                    // selection only if the adapter writes exactly those pages.
+                    // Copying the whole file and reporting ALL_PAGES (the old
+                    // behaviour) printed every page regardless of the choice.
+                    writePageSubset(requested, destination, cancellationSignal)
+                    if (cancellationSignal.isCanceled) {
+                        callback.onWriteCancelled()
+                    } else {
+                        callback.onWriteFinished(pages)
+                    }
                 }
             } catch (_: Exception) {
                 if (cancellationSignal.isCanceled) {
@@ -143,6 +162,83 @@ class PreparedPdfPrintDocumentAdapter(
     override fun onFinish() {
         executor.shutdownNow()
         super.onFinish()
+    }
+
+    /**
+     * Expands the print framework's requested ranges into a contiguous page
+     * index list, or null when the request is unusable. `PageRange.ALL_PAGES`
+     * is open-ended (0..Int.MAX_VALUE), so every range is clamped to the real
+     * page count.
+     */
+    private fun requestedPageIndexes(
+        pages: Array<out PageRange>,
+        pageCount: Int,
+    ): List<Int>? {
+        if (pageCount <= 0 || pages.isEmpty()) return null
+        val indexes = sortedSetOf<Int>()
+        pages.forEach { range ->
+            if (range.start < 0) return null
+            val end = min(range.end, pageCount - 1)
+            for (index in range.start..end) indexes += index
+        }
+        return indexes.takeIf { it.isNotEmpty() }?.toList()
+    }
+
+    /** Re-renders only [pageIndexes] into [destination] via [PdfRenderer]. */
+    private fun writePageSubset(
+        pageIndexes: List<Int>,
+        destination: ParcelFileDescriptor,
+        cancellationSignal: CancellationSignal,
+    ) {
+        val source = ParcelFileDescriptor.open(
+            prepared.file,
+            ParcelFileDescriptor.MODE_READ_ONLY,
+        )
+        try {
+            PdfRenderer(source).use { renderer ->
+                val document = PdfDocument()
+                try {
+                    pageIndexes.forEachIndexed { ordinal, pageIndex ->
+                        if (cancellationSignal.isCanceled) return@forEachIndexed
+                        renderer.openPage(pageIndex).use { page ->
+                            val bitmap = Bitmap.createBitmap(
+                                page.width,
+                                page.height,
+                                Bitmap.Config.ARGB_8888,
+                            )
+                            try {
+                                bitmap.eraseColor(Color.WHITE)
+                                page.render(
+                                    bitmap,
+                                    null,
+                                    null,
+                                    PdfRenderer.Page.RENDER_MODE_FOR_PRINT,
+                                )
+                                val info = PdfDocument.PageInfo
+                                    .Builder(page.width, page.height, ordinal + 1)
+                                    .create()
+                                document.startPage(info).let { documentPage ->
+                                    documentPage.canvas.drawBitmap(bitmap, 0f, 0f, null)
+                                    document.finishPage(documentPage)
+                                }
+                            } finally {
+                                bitmap.recycle()
+                            }
+                        }
+                    }
+                    if (!cancellationSignal.isCanceled) {
+                        FileOutputStream(destination.fileDescriptor).use { output ->
+                            document.writeTo(output)
+                            output.flush()
+                        }
+                    }
+                } finally {
+                    document.close()
+                }
+            }
+        } finally {
+            source.close()
+        }
     }
 
     private fun copyAndDigest(

@@ -22,7 +22,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":core:model"))
     implementation(project(":core:domain"))
-    implementation(project(":core:data"))
     implementation(project(":core:ui"))
     implementation(project(":core:visual-runtime"))
     implementation(libs.androidx.lifecycle.viewmodel.compose)
