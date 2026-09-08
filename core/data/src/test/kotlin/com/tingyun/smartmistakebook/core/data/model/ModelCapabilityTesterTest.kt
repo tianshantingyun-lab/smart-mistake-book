@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
 import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -297,6 +298,28 @@ class ModelCapabilityTesterTest {
         assertFalse(retained.supportsStructuredOutput)
         assertEquals(2_000L, retained.testedAtEpochMillis)
         assertEquals(2L, retained.testStartSequence)
+    }
+
+    @Test
+    fun unimplementedConfiguredProtocolFailsTheProbeWithoutSendingAnyRequest() = runBlocking {
+        var transportCalls = 0
+        val store = FakeConfigurationStore(
+            configuration().copy(protocol = ModelProviderProtocol.ANTHROPIC_MESSAGES),
+        )
+        val tester = OpenAiCompatibleModelCapabilityTester(
+            configurationStore = store,
+            transport = modelTransport {
+                transportCalls += 1
+                ModelHttpResponse(200, envelope("unused"))
+            },
+            clock = { 2_000L },
+            probeTimeoutMillis = 1_000L,
+        )
+
+        // 配置的协议在本版本未实现 → 探测 fail fast（ProviderUnavailable），
+        // 绝不按 OpenAI 形状向真实端点发请求（spec §3.2 显式协议选择）。
+        assertEquals(ModelCapabilityTestResult.ProviderUnavailable, tester.testSavedConfiguration())
+        assertEquals(0, transportCalls)
     }
 
     private fun modelTransport(

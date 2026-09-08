@@ -37,7 +37,6 @@ import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
-import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.ModelRequestBudgetExceededException
 import com.tingyun.smartmistakebook.core.model.ModelRequestPayloadBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
@@ -197,9 +196,9 @@ internal class OpenAiCompatibleModelGateway(
                     try {
                         val stream = provider.supportsStreaming &&
                             execution.request.input.usesOpenAiSse()
-                        // P1 只实现 OpenAI Chat Completions，配置协议字段由任务 3 接入
-                        //（protocolFor(credential.configuration.protocol)）。
-                        val protocol = protocolFor(ModelProviderProtocol.DEFAULT)
+                        // 协议由配置驱动（spec §3.2 显式协议选择）；未实现的协议在此 fail fast，
+                        // 不会静默降级成别的协议去发请求。
+                        val protocol = protocolFor(credential.configuration.protocol)
                         val baseUrl = credential.configuration.baseUrl.toHttpUrlOrNull()
                             ?: throw UnsafeModelEndpointException()
                         val requestBody = protocol.requestBody(
@@ -494,13 +493,14 @@ private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnaps
         } else {
             ModelExecutionLocation.EXTERNAL_PROVIDER
         },
-        providerConfigurationVersion = "openai-compatible-v1-${fingerprint.take(32)}",
+        providerConfigurationVersion = "${protocol.wireId}-${fingerprint.take(32)}",
     )
 }
 
 private fun ModelConfigurationSnapshot.configurationFingerprint(): String {
     val canonical = listOf(
-        "openai-compatible-v1",
+        // 协议进指纹：切换协议必须让旧的能力验证与 egress 授权失效（spec §3.2）。
+        protocol.wireId,
         provider,
         baseUrl,
         modelId,

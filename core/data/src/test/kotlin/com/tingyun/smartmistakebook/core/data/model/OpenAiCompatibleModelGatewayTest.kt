@@ -35,6 +35,7 @@ import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_MAX_CLOCK_SKEW_MILLIS
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
@@ -1989,6 +1990,51 @@ class OpenAiCompatibleModelGatewayTest {
         // The final event still carries a parseable tutor plan.
         assertEquals(TUTOR_SESSION_ID, (terminal.output as TutorPlanOutput).sessionId)
     }
+
+    @Test
+    fun capabilityFingerprintChangesWhenTheProtocolChanges() = runBlocking {
+        val openAi = gatewayWithProtocol(ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS).capabilities()
+        val anthropic = gatewayWithProtocol(ModelProviderProtocol.ANTHROPIC_MESSAGES).capabilities()
+
+        // 协议进指纹：切换协议必须让旧的 providerId / 版本串失效（spec §3.2）。
+        assertTrue(openAi.providerId != anthropic.providerId)
+        assertTrue(
+            anthropic.providerConfigurationVersion
+                .startsWith(ModelProviderProtocol.ANTHROPIC_MESSAGES.wireId),
+        )
+    }
+
+    @Test
+    fun configuredProtocolDrivesTheWireProtocolInsteadOfAlwaysDefaulting() = runBlocking {
+        var transportCalls = 0
+        val gateway = gatewayWithProtocol(ModelProviderProtocol.ANTHROPIC_MESSAGES) {
+            transportCalls += 1
+        }
+
+        var failure: Throwable? = null
+        try {
+            gateway.execute(authorizedAssessment(gateway)).toList()
+        } catch (error: IllegalStateException) {
+            failure = error
+        }
+
+        // P1 未实现 Anthropic：必须显式失败且一个请求都不发，而不是按 OpenAI 形状发出去。
+        assertTrue("未实现协议必须显式失败", failure != null)
+        assertEquals(0, transportCalls)
+    }
+
+    private fun gatewayWithProtocol(
+        protocol: ModelProviderProtocol,
+        onPost: () -> Unit = {},
+    ): OpenAiCompatibleModelGateway = OpenAiCompatibleModelGateway(
+        configurationStore = FakeConfigurationStore(CONFIGURATION.copy(protocol = protocol)),
+        assetSource = assetSource { _, _ -> asset() },
+        transport = modelTransport { _ ->
+            onPost()
+            ModelHttpResponse(200, envelope(assessmentPayload()))
+        },
+        clock = { AUTHORIZATION_NOW },
+    )
 
     private fun modelTransport(
         post: suspend (WireRequest) -> ModelHttpResponse,

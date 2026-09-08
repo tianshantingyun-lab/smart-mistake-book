@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import java.util.Arrays
 import kotlinx.coroutines.flow.Flow
 
@@ -8,6 +9,11 @@ data class ModelConfigurationSnapshot(
     val provider: String = "",
     val baseUrl: String = "",
     val modelId: String = "",
+    /**
+     * Wire protocol this endpoint speaks (spec 2026-09-08-multi-protocol §3.2). Defaults to
+     * OpenAI-compatible so configurations saved before the field existed keep working unchanged.
+     */
+    val protocol: ModelProviderProtocol = ModelProviderProtocol.DEFAULT,
     val isConfigured: Boolean = false,
     val updatedAtEpochMillis: Long = 0L,
     /** Opaque, non-secret credential generation used to invalidate stale capability tests. */
@@ -19,6 +25,7 @@ data class ModelConfigurationSnapshot(
             "provider=$provider, " +
             "baseUrl=[REDACTED], " +
             "modelId=[REDACTED], " +
+            "protocol=${protocol.wireId}, " +
             "isConfigured=$isConfigured, " +
             "updatedAtEpochMillis=$updatedAtEpochMillis, " +
             "configurationVersion=[REDACTED], " +
@@ -111,6 +118,8 @@ data class ModelConfigurationUpdate(
     val provider: String,
     val baseUrl: String,
     val modelId: String,
+    /** Wire protocol to speak; defaults to OpenAI-compatible (spec §3.2 显式协议选择). */
+    val protocol: ModelProviderProtocol = ModelProviderProtocol.DEFAULT,
 )
 
 /** A closeable secret container whose string representation is always redacted. */

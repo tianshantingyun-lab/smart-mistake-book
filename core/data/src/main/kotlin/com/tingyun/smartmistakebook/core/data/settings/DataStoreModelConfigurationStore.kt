@@ -21,6 +21,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
 import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import java.io.IOException
 import java.util.Arrays
 import java.util.UUID
@@ -157,6 +158,8 @@ internal class StoreDelegate(
                         provider = current.configuration.provider,
                         baseUrl = current.configuration.baseUrl,
                         modelId = current.configuration.modelId,
+                        // 轮换密钥不得重置协议：沿用当前配置的协议（spec §3.2）。
+                        protocol = current.configuration.protocol,
                     ),
                     apiKey = chars,
                 )
@@ -344,6 +347,7 @@ internal class StoreDelegate(
                         values[PROVIDER] = configuration.provider
                         values[BASE_URL] = configuration.baseUrl
                         values[MODEL_ID] = configuration.modelId
+                        values[PROTOCOL] = configuration.protocol.wireId
                         values[IS_CONFIGURED] = true
                         values[UPDATED_AT] = updatedAt
                         values[CREDENTIAL_GENERATION_ID] = generationId
@@ -362,6 +366,7 @@ internal class StoreDelegate(
                     provider = configuration.provider,
                     baseUrl = configuration.baseUrl,
                     modelId = configuration.modelId,
+                    protocol = configuration.protocol,
                     isConfigured = true,
                     updatedAtEpochMillis = updatedAt,
                     configurationVersion = generationId,
@@ -461,11 +466,17 @@ internal class StoreDelegate(
     }
 
     private fun readStoredCredential(values: Preferences): StoredCredential? {
+        // 缺省键 = 本字段出现前的老配置 → 原样走 OpenAI 兼容（零迁移）；未知 wireId 说明配置由
+        // 更新版本写入，本版本无法按该协议通信 → fail closed（不静默降级成别的协议）。
+        val protocol = values[PROTOCOL]?.let { wireId ->
+            ModelProviderProtocol.entries.firstOrNull { it.wireId == wireId } ?: return null
+        } ?: ModelProviderProtocol.DEFAULT
         val validation = ModelConfigurationValidator.validate(
             update = ModelConfigurationUpdate(
                 provider = values[PROVIDER].orEmpty(),
                 baseUrl = values[BASE_URL].orEmpty(),
                 modelId = values[MODEL_ID].orEmpty(),
+                protocol = protocol,
             ),
             apiKey = charArrayOf('x'),
         )
@@ -479,6 +490,7 @@ internal class StoreDelegate(
             provider = validation.configuration.provider,
             baseUrl = validation.configuration.baseUrl,
             modelId = validation.configuration.modelId,
+            protocol = validation.configuration.protocol,
             isConfigured = values[IS_CONFIGURED] == true && updatedAt > 0L,
             updatedAtEpochMillis = updatedAt,
             configurationVersion = generationId,
@@ -604,6 +616,7 @@ internal class StoreDelegate(
                     provider = configuration.provider,
                     baseUrl = configuration.baseUrl,
                     modelId = configuration.modelId,
+                    protocol = configuration.protocol,
                 ),
                 apiKey = chars,
             ) is ModelConfigurationValidationResult.Valid
@@ -680,6 +693,8 @@ internal class StoreDelegate(
         val PROVIDER = stringPreferencesKey("provider")
         val BASE_URL = stringPreferencesKey("base_url")
         val MODEL_ID = stringPreferencesKey("model_id")
+        /** 协议 wireId（spec §3.2）；缺省 = 该字段出现前的老配置。 */
+        val PROTOCOL = stringPreferencesKey("protocol")
         val IS_CONFIGURED = booleanPreferencesKey("is_configured")
         val UPDATED_AT = longPreferencesKey("updated_at_epoch_millis")
         val CREDENTIAL_GENERATION_ID = stringPreferencesKey("credential_generation_id")

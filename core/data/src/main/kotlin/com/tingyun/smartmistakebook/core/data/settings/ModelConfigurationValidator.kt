@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.settings
 
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationIssue
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import java.net.URI
 import java.net.URISyntaxException
 
@@ -9,6 +10,7 @@ internal data class ValidatedModelConfiguration(
     val provider: String,
     val baseUrl: String,
     val modelId: String,
+    val protocol: ModelProviderProtocol,
 )
 
 internal sealed interface ModelConfigurationValidationResult {
@@ -64,6 +66,7 @@ internal object ModelConfigurationValidator {
                     provider = provider,
                     baseUrl = normalizedBaseUrl,
                     modelId = modelId,
+                    protocol = update.protocol,
                 ),
             )
         } else {

@@ -60,6 +60,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
                 val structured = runProbe(
                     baseUrl = credential.configuration.baseUrl,
                     modelId = credential.configuration.modelId,
+                    protocolId = credential.configuration.protocol,
                     apiKey = keyChars,
                     requestBody = structuredOutputProbe(credential.configuration.modelId),
                     accepts = ::acceptsStructuredOutput,
@@ -75,6 +76,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
                 val image = runProbe(
                     baseUrl = credential.configuration.baseUrl,
                     modelId = credential.configuration.modelId,
+                    protocolId = credential.configuration.protocol,
                     apiKey = keyChars,
                     requestBody = imageInputProbe(credential.configuration.modelId),
                     accepts = ::acceptsImageInput,
@@ -94,6 +96,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
                     runProbe(
                         baseUrl = credential.configuration.baseUrl,
                         modelId = credential.configuration.modelId,
+                        protocolId = credential.configuration.protocol,
                         apiKey = keyChars,
                         requestBody = toolsProbe(credential.configuration.modelId),
                         accepts = ::acceptsTools,
@@ -160,13 +163,14 @@ internal class OpenAiCompatibleModelCapabilityTester(
     private suspend fun runProbe(
         baseUrl: String,
         modelId: String,
+        protocolId: ModelProviderProtocol,
         apiKey: CharArray,
         requestBody: String,
         accepts: (String) -> Boolean,
     ): ProbeOutcome = try {
-        // 能力探测只走 OpenAI Chat Completions 信封（P1 唯一协议）；配置协议字段由
-        // 任务 3 接入，届时此处改为按 credential.configuration.protocol 取值。
-        val protocol = protocolFor(ModelProviderProtocol.DEFAULT)
+        // 探测信封按配置的协议构造（spec §3.2）。未实现的协议在 try 内 fail fast →
+        // 映射为 ProviderUnavailable，而不是按别的协议形状向真实端点发请求。
+        val protocol = protocolFor(protocolId)
         val response = withTimeoutOrNull(probeTimeoutMillis) {
             transport.post(
                 WireRequest(

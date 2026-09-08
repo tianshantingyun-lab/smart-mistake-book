@@ -15,6 +15,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationIssue
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationMutationResult
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
 import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import java.io.IOException
 import java.util.Arrays
 import java.util.concurrent.atomic.AtomicInteger
@@ -178,6 +179,8 @@ class StoreDelegateTest {
                 "provider",
                 "base_url",
                 "model_id",
+                // 协议 wireId 是非秘密元数据，随配置一起持久化（spec §3.2）。
+                "protocol",
                 "is_configured",
                 "updated_at_epoch_millis",
                 "credential_generation_id",
@@ -530,10 +533,82 @@ class StoreDelegateTest {
         assertEquals(0L, snapshot.updatedAtEpochMillis)
     }
 
-    private fun validUpdate() = ModelConfigurationUpdate(
+    @Test
+    fun `selected protocol round trips through storage`() = withStore { fixture ->
+        val saved = fixture.store.saveWithKey(
+            validUpdate(protocol = ModelProviderProtocol.ANTHROPIC_MESSAGES),
+            "secret",
+        ) as ModelConfigurationMutationResult.Success
+
+        assertEquals(ModelProviderProtocol.ANTHROPIC_MESSAGES, saved.configuration.protocol)
+        assertEquals(
+            ModelProviderProtocol.ANTHROPIC_MESSAGES,
+            fixture.store.configuration.first().protocol,
+        )
+        val credential = fixture.store.readCredential() as ModelCredentialReadResult.Available
+        try {
+            assertEquals(
+                ModelProviderProtocol.ANTHROPIC_MESSAGES,
+                credential.configuration.protocol,
+            )
+        } finally {
+            credential.apiKey.close()
+        }
+    }
+
+    @Test
+    fun `configuration saved before the protocol field existed reads as openai compatible`() =
+        withStore { fixture ->
+            fixture.store.saveWithKey(validUpdate(), "secret")
+            // 模拟本字段出现前写入的老配置：删掉 protocol 键，读回必须仍是 OpenAI 兼容。
+            fixture.dataStore.edit { values -> values.remove(stringPreferencesKey("protocol")) }
+
+            val credential = fixture.store.readCredential() as ModelCredentialReadResult.Available
+            try {
+                assertEquals(
+                    ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS,
+                    credential.configuration.protocol,
+                )
+            } finally {
+                credential.apiKey.close()
+            }
+        }
+
+    @Test
+    fun `unknown stored protocol fails closed instead of silently downgrading`() =
+        withStore { fixture ->
+            fixture.store.saveWithKey(validUpdate(), "secret")
+            fixture.dataStore.edit { values ->
+                values[stringPreferencesKey("protocol")] = "some-future-protocol-v9"
+            }
+
+            // 不认识的协议说明配置由更新版本写入，本版本不能假装它是 OpenAI 兼容。
+            assertEquals(ModelCredentialReadResult.Missing, fixture.store.readCredential())
+        }
+
+    @Test
+    fun `api key rotation keeps the configured protocol`() = withStore { fixture ->
+        fixture.store.saveWithKey(
+            validUpdate(protocol = ModelProviderProtocol.GEMINI_GENERATE_CONTENT),
+            "secret",
+        )
+
+        val rotated = fixture.store.rotateWithKey("rotated-secret")
+            as ModelConfigurationMutationResult.Success
+
+        assertEquals(
+            ModelProviderProtocol.GEMINI_GENERATE_CONTENT,
+            rotated.configuration.protocol,
+        )
+    }
+
+    private fun validUpdate(
+        protocol: ModelProviderProtocol = ModelProviderProtocol.DEFAULT,
+    ) = ModelConfigurationUpdate(
         provider = "openai-compatible",
         baseUrl = "api.example.com/v1/",
         modelId = "model-1",
+        protocol = protocol,
     )
 
     private suspend fun StoreDelegate.saveWithKey(
