@@ -1304,14 +1304,16 @@ class RoomBackedStudyExperienceRepository(
                 }
         // 只排可出题的知识点：KNOWLEDGE_QUIZ 以讲解材料 boundary 为防臆造锚（spec §3.3），
         // 无材料的伪节点（pseudo:*）或未装配材料的真节点无法出题，若进计划会让会话卡死。
-        val quizAbleNodeIds = quizAbleScopeNodes(queueScope, subjectByNode)
-        if (quizAbleNodeIds.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
-        val candidateIds = queueScope.filterTo(linkedSetOf()) { it in quizAbleNodeIds }
+        val materialGroupByNode = quizAbleScopeNodes(queueScope, subjectByNode)
+        if (materialGroupByNode.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
+        val candidateIds = queueScope.filterTo(linkedSetOf()) { it in materialGroupByNode }
         val selected = selectKnowledgeReviewQueue(
             planner = reviewPlanner,
             candidates = candidateIds.map { knowledgeNodeId ->
                 KnowledgeReviewCandidate(
                     knowledgeNodeId = knowledgeNodeId,
+                    subjectId = subjectByNode[knowledgeNodeId]?.name ?: SubjectKind.GENERAL.name,
+                    materialGroupId = materialGroupByNode[knowledgeNodeId],
                     state = learnerSnapshot.knowledgeMasteryStates[knowledgeNodeId],
                     estimatedDurationSeconds = LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS,
                 )
@@ -2188,15 +2190,18 @@ class RoomBackedStudyExperienceRepository(
      * 只保留可出题的知识点（spec dual-review-entry §3.3）：KNOWLEDGE_QUIZ 把讲解材料的
      * boundaryMarkdown 当防臆造锚，无材料的伪节点（pseudo:*）/未装配材料节点无法出题。
      * 逐科目读该组节点可用的讲解材料，再据 material↔node 绑定交集得出真正有材料覆盖的
-     * 节点集合——与派发时 TutorTeachingReferenceRepository 的解析口径一致，避免计划里
-     * 出现"排了却出不了题"的死节点。
+     * 节点——与派发时 TutorTeachingReferenceRepository 的解析口径一致，避免计划里出现
+     * "排了却出不了题"的死节点。
+     *
+     * 返回 节点 → 该节点的**讲解材料组**（多份材料时取 materialId 字典序最小者，确定性），
+     * 供队列做"同材料不连续出题"的交错（spec §3.2 多样性）。
      */
     private suspend fun quizAbleScopeNodes(
         scope: Set<String>,
         subjectByNode: Map<String, SubjectKind>,
-    ): Set<String> {
-        if (scope.isEmpty()) return emptySet()
-        val quizAble = linkedSetOf<String>()
+    ): Map<String, String> {
+        if (scope.isEmpty()) return emptyMap()
+        val materialGroupByNode = linkedMapOf<String, String>()
         scope
             .mapNotNull { knowledgeNodeId ->
                 subjectByNode[knowledgeNodeId]?.let { subject -> knowledgeNodeId to subject }
@@ -2210,11 +2215,15 @@ class RoomBackedStudyExperienceRepository(
                 )
                 if (materials.isEmpty()) return@forEach
                 val materialIds = materials.mapTo(linkedSetOf()) { it.materialId }
-                val covered = database.readKnowledgeTeachingMaterialNodeBindings(materialIds)
-                    .mapTo(linkedSetOf()) { it.knowledgeNodeId }
-                quizAble.addAll(covered.intersect(nodeIds))
+                database.readKnowledgeTeachingMaterialNodeBindings(materialIds).forEach { binding ->
+                    if (binding.knowledgeNodeId !in nodeIds) return@forEach
+                    val existing = materialGroupByNode[binding.knowledgeNodeId]
+                    if (existing == null || binding.materialId < existing) {
+                        materialGroupByNode[binding.knowledgeNodeId] = binding.materialId
+                    }
+                }
             }
-        return quizAble
+        return materialGroupByNode
     }
 
     private fun LearnerSnapshot.toProfileOverview(

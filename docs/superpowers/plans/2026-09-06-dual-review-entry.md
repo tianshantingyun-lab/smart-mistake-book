@@ -40,12 +40,12 @@
 ./gradlew :app:connectedLocalFirstDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.tingyun.smartmistakebook.DualReviewEntryInstrumentedTest,com.tingyun.smartmistakebook.KnowledgeReviewSessionInstrumentedTest
 ```
 
-**与 spec §3.2 的偏差（待确认，未擅自加机制）**：知识点队列选择 = 同构打分（`scoreKnowledgeNode`）+ 时间预算 + 按分数降序取队；句中的"多样性 + 难度循环"未实现：
+**spec §3.2 取队机制（2026-09-08 补齐"多样性 + 难度循环"）**：知识点队列现在与错题排程同一套取队机制——同构打分 + 时间预算 + 多样性 + 难度档轮换：
 
-- 多样性：研究文档要求的是"会话强制交错 ≥3 个知识点"（`docs/research/mastery-scheduling-research.md` P4），`KnowledgeReviewSessionPlan` 的去重约束使队列天然满足；错题排程的 family/source 硬约束针对"同题族重复"，知识点队列无此冗余。
-- 难度循环：`KnowledgeNode` 无难度维度（仅 subject/kind/granularity 等），无数据源可依；且 `knowledgeQuizPrompt` 规则 4 已让出题难度随 `lastMasteryScore` 自适应。
-
-若需按某维度实现（如同科降权、材料族交错、按掌握度分档），请指定维度与来源。
+- **多样性（软降权）**：同讲解材料重复出现 −0.3/次、同科目重复出现 −0.2/次，合计上限 −1.5（与错题排程的 family/source 降权同量级）。材料组 = 该点绑定材料中 materialId 字典序最小者（确定性）。
+- **难度循环**：`ReviewPlanner.DIFFICULTY_CYCLE`（MEDIUM→EASY→HARD）与错题排程共用；难度档由掌握度风险推出（无证据/冲突/过期 = HARD，风险 ≥0.35 = MEDIUM，其余 EASY），平局时轮换。知识点分数连续，平局主要出现在"无证据点（4.0 分）"与"中等掌握点（4.0 分）"之间。
+- **刻意差异**：多样性只做软降权，不做错题排程那种"同族已用即停"的硬约束——知识点常共享一份讲解材料，硬约束会在共用材料时截断队列（学生只复习到第一个点）。回归护栏：`neverDropsNodesWhenEveryCandidateSharesOneMaterial`。
+- 测试：`KnowledgeReviewQueueTest` 12/12（新增材料交错、科目交错、不截断、难度档、平局轮换 5 项）。
 
 ---
 

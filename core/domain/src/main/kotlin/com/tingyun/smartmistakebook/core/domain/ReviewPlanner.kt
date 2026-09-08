@@ -431,7 +431,19 @@ class ReviewPlanner(
             knowledgeNodeId = knowledgeNodeId,
             score = score,
             reasons = reasons,
+            difficultyBand = knowledgeDifficultyBand(masteryRisk),
         )
+    }
+
+    /**
+     * 知识点复习的难度档（spec dual-review-entry §3.2 "难度循环"）：由掌握度风险推出——
+     * 越薄弱/越无证据的点越难复习。与错题排程的 [difficultyBand] 同构，供
+     * [selectKnowledgeReviewQueue] 在分数平局时轮换难度档。
+     */
+    private fun knowledgeDifficultyBand(masteryRisk: Double): ReviewDifficultyBand = when {
+        masteryRisk >= 1.0 -> ReviewDifficultyBand.HARD
+        masteryRisk >= WEAKNESS_THRESHOLD -> ReviewDifficultyBand.MEDIUM
+        else -> ReviewDifficultyBand.EASY
     }
 
     private fun difficultyBand(difficulty: Double): ReviewDifficultyBand = when {
@@ -510,11 +522,14 @@ class ReviewPlanner(
         val knowledgeNodeId: String,
         val score: Double,
         val reasons: Set<ReviewReason>,
+        /** 掌握度风险推出的复习难度档（spec §3.2 难度循环），见 [knowledgeDifficultyBand]。 */
+        val difficultyBand: ReviewDifficultyBand,
     )
 
     companion object {
         const val VERSION = LearningCoreVersions.REVIEW_COMPOSITE
-        private val DIFFICULTY_CYCLE = listOf(
+        /** 会话内难度轮换顺序；错题与知识点排程共用（spec dual-review-entry §3.2）。 */
+        internal val DIFFICULTY_CYCLE = listOf(
             ReviewDifficultyBand.MEDIUM,
             ReviewDifficultyBand.EASY,
             ReviewDifficultyBand.HARD,

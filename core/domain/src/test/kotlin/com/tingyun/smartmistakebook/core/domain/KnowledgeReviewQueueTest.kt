@@ -1,15 +1,20 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
+import com.tingyun.smartmistakebook.core.model.ReviewDifficultyBand
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
  * 知识点复习队列编排（spec dual-review-entry §3.2）：今天复习的知识点队列由错题排程同构的
- * 打分（scoreKnowledgeNode，T2）决定——对候选知识点打分、排序、按预算取队。纯函数。
+ * 打分（scoreKnowledgeNode，T2）决定——打分、按时间预算取队，并在分数接近时用"同讲解材料/
+ * 同科目降权"和"难度档轮换"（与 ReviewPlanner.plan 同一套机制）让会话交错。纯函数。
  */
 class KnowledgeReviewQueueTest {
 
@@ -28,12 +33,41 @@ class KnowledgeReviewQueueTest {
         lastEvidenceAtEpochMillis = now,
     )
 
+    /** 一条被校准为 SUPPORTED 的独立答对观察——构造非 HARD 难度档所必需。 */
+    private fun supportedObservation(familyId: String) = IndependentCorrectObservation(
+        itemFamilyId = familyId,
+        studyDayEpochDay = 1,
+        occurredAtEpochMillis = now,
+        evidenceWeight = 1.0,
+        calibration = CalibrationSnapshot(
+            support = CalibrationSupport.SUPPORTED,
+            sourceId = "test-calibration",
+            version = "test-v1",
+            validFromEpochMillis = 0,
+            validUntilEpochMillis = now + 1,
+        ),
+    )
+
+    private fun candidate(
+        id: String,
+        subject: String = "MATH",
+        material: String? = "material-$id",
+        state: KnowledgeMasteryState? = null,
+        seconds: Int = 60,
+    ) = KnowledgeReviewCandidate(
+        knowledgeNodeId = id,
+        subjectId = subject,
+        materialGroupId = material,
+        state = state,
+        estimatedDurationSeconds = seconds,
+    )
+
     @Test
     fun skipsMasteredNodesAndKeepsRiskyOnes() {
         val candidates = listOf(
-            KnowledgeReviewCandidate("kc1", mastery("kc1", MasteryStatus.CONFLICTED), 60),
-            KnowledgeReviewCandidate("kc2", mastery("kc2", MasteryStatus.UNKNOWN), 60),
-            KnowledgeReviewCandidate("kc3", mastery("kc3", MasteryStatus.MASTERED), 60),
+            candidate("kc1", state = mastery("kc1", MasteryStatus.CONFLICTED)),
+            candidate("kc2", state = mastery("kc2", MasteryStatus.UNKNOWN)),
+            candidate("kc3", state = mastery("kc3", MasteryStatus.MASTERED)),
         )
         val queue = selectKnowledgeReviewQueue(
             planner = planner,
@@ -49,8 +83,8 @@ class KnowledgeReviewQueueTest {
     @Test
     fun respectsTheTimeBudget() {
         val candidates = listOf(
-            KnowledgeReviewCandidate("kc1", mastery("kc1", MasteryStatus.UNKNOWN), 120),
-            KnowledgeReviewCandidate("kc2", mastery("kc2", MasteryStatus.CONFLICTED), 120),
+            candidate("kc1", state = mastery("kc1", MasteryStatus.UNKNOWN), seconds = 120),
+            candidate("kc2", state = mastery("kc2", MasteryStatus.CONFLICTED), seconds = 120),
         )
         val queue = selectKnowledgeReviewQueue(
             planner = planner,
@@ -81,8 +115,8 @@ class KnowledgeReviewQueueTest {
             conservativeMasteryScore = 0.3,
         )
         val candidates = listOf(
-            KnowledgeReviewCandidate("kc1", mastery("kc1", MasteryStatus.CONFLICTED), 60),
-            KnowledgeReviewCandidate("kc-w", weak, 60),
+            candidate("kc1", state = mastery("kc1", MasteryStatus.CONFLICTED)),
+            candidate("kc-w", state = weak),
         )
         val queue = selectKnowledgeReviewQueue(
             planner = planner,
@@ -91,8 +125,108 @@ class KnowledgeReviewQueueTest {
             timeBudgetSeconds = 240,
         )
         assertTrue(queue.size == 2)
-        // 队列必须按分数降序排列（这是"排序取队"的核心保证）。
+        // 分数仍是主导：多样性/难度只做小幅调整，不足以翻转明显分差。
         assertTrue(queue.zipWithNext().all { (a, b) -> a.score >= b.score })
+    }
+
+    @Test
+    fun interleavesTeachingMaterialsInsteadOfQuizzingTheSameMaterialBackToBack() {
+        // 两个节点共用 m1、两个共用 m2，分数完全平局（都无证据）——降权让材料交错。
+        val candidates = listOf(
+            candidate("kc-a", material = "m1"),
+            candidate("kc-b", material = "m1"),
+            candidate("kc-c", material = "m2"),
+            candidate("kc-d", material = "m2"),
+        )
+        val queue = selectKnowledgeReviewQueue(
+            planner = planner,
+            candidates = candidates,
+            now = now,
+            timeBudgetSeconds = 240,
+        )
+        assertEquals(4, queue.size)
+        val materials = queue.map { scored ->
+            candidates.single { it.knowledgeNodeId == scored.knowledgeNodeId }.materialGroupId
+        }
+        assertTrue(materials.zipWithNext().all { (a, b) -> a != b })
+    }
+
+    @Test
+    fun interleavesSubjectsWhenMaterialsAlreadyDiffer() {
+        // 材料各不相同，只有科目重复——同科降权仍应让两个科目交错。
+        val candidates = listOf(
+            candidate("kc-a", subject = "MATH", material = "m1"),
+            candidate("kc-b", subject = "MATH", material = "m2"),
+            candidate("kc-c", subject = "PHYSICS", material = "m3"),
+            candidate("kc-d", subject = "PHYSICS", material = "m4"),
+        )
+        val queue = selectKnowledgeReviewQueue(
+            planner = planner,
+            candidates = candidates,
+            now = now,
+            timeBudgetSeconds = 240,
+        )
+        assertEquals(4, queue.size)
+        val subjects = queue.map { scored ->
+            candidates.single { it.knowledgeNodeId == scored.knowledgeNodeId }.subjectId
+        }
+        assertTrue(subjects.zipWithNext().all { (a, b) -> a != b })
+    }
+
+    @Test
+    fun neverDropsNodesWhenEveryCandidateSharesOneMaterial() {
+        // 回归护栏：多样性必须是软降权。若做成"硬约束"，全部共用一份材料时会截断到 1 个，
+        // 学生会永远只复习到一个知识点。
+        val candidates = (1..3).map { index -> candidate("kc-$index", material = "m-only") }
+        val queue = selectKnowledgeReviewQueue(
+            planner = planner,
+            candidates = candidates,
+            now = now,
+            timeBudgetSeconds = 240,
+        )
+        assertEquals(3, queue.size)
+    }
+
+    @Test
+    fun scoresKnowledgeNodesWithAMasteryDerivedDifficultyBand() {
+        // 无证据 → 最难（HARD）；有一份被支撑的答对观察、平滑掌握 0.5 → MEDIUM。
+        val medium = mastery("kc-mid", MasteryStatus.LEARNING).copy(
+            masteryScore = 0.5,
+            conservativeMasteryScore = 0.0,
+            evidenceMass = 1.0,
+            independentCorrectObservations = listOf(supportedObservation("family-mid")),
+        )
+        assertEquals(
+            ReviewDifficultyBand.HARD,
+            planner.scoreKnowledgeNode("kc-none", null, now)!!.difficultyBand,
+        )
+        assertEquals(
+            ReviewDifficultyBand.MEDIUM,
+            planner.scoreKnowledgeNode("kc-mid", medium, now)!!.difficultyBand,
+        )
+    }
+
+    @Test
+    fun cyclesDifficultyBandsWhenScoresTie() {
+        // 无证据节点与"平滑掌握 0.5"的节点同为 4.0 分（5×0.2+3×1.0 = 5×0.5+3×0.5）：
+        // 平局时按难度循环（首档 MEDIUM）先取中等难度的点，而不是永远按 id 取。
+        val medium = mastery("kc-mid", MasteryStatus.LEARNING).copy(
+            masteryScore = 0.5,
+            conservativeMasteryScore = 0.0,
+            evidenceMass = 1.0,
+            independentCorrectObservations = listOf(supportedObservation("family-mid")),
+        )
+        val candidates = listOf(
+            candidate("kc-none", material = "m-none"),
+            candidate("kc-mid", material = "m-mid", state = medium),
+        )
+        val queue = selectKnowledgeReviewQueue(
+            planner = planner,
+            candidates = candidates,
+            now = now,
+            timeBudgetSeconds = 240,
+        )
+        assertEquals(listOf("kc-mid", "kc-none"), queue.map { it.knowledgeNodeId })
     }
 
     @Test
