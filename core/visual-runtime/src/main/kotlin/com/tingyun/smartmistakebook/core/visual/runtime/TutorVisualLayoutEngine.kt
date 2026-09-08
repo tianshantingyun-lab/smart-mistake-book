@@ -71,6 +71,39 @@ data class TutorVisual2DLayout(
     }
 }
 
+/**
+ * The four "outside the spotlight" mask rectangles covering everything of a
+ * [panelWidth]x[panelHeight] surface except [target], each inflated by [inflate].
+ *
+ * This is the stable, no-blend-mode form of the OpenMAIC spotlight: instead of a
+ * whole-surface mask with a punched hole (which needs non-composited
+ * DstOut over already-drawn content), we clip the surface into 4 rectangles
+ * around the target and dim the outside. The four rects exactly tile the annulus
+ * between the inflated target and the panel edges, so the target is never dimmed
+ * and no gap is left around it.
+ */
+fun spotlightMaskRects(
+    panelWidth: Double,
+    panelHeight: Double,
+    target: TutorVisualRect,
+    inflate: Double,
+): List<TutorVisualRect> {
+    val hole = target.inflated(inflate).coerceWithin(panelWidth, panelHeight)
+    val left = TutorVisualRect(0.0, 0.0, hole.left, panelHeight)
+    val top = TutorVisualRect(hole.left, 0.0, hole.right, hole.top)
+    val right = TutorVisualRect(hole.right, 0.0, panelWidth, panelHeight)
+    val bottom = TutorVisualRect(hole.left, hole.bottom, hole.right, panelHeight)
+    return listOf(left, top, right, bottom).filter { it.width > 0.0 && it.height > 0.0 }
+}
+
+private fun TutorVisualRect.coerceWithin(width: Double, height: Double): TutorVisualRect =
+    TutorVisualRect(
+        left = left.coerceIn(0.0, width),
+        top = top.coerceIn(0.0, height),
+        right = right.coerceIn(0.0, width),
+        bottom = bottom.coerceIn(0.0, height),
+    )
+
 object TutorVisualLayoutEngine {
     fun layout(
         panel: TutorVisualPanel,

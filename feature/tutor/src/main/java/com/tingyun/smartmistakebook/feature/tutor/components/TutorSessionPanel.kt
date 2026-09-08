@@ -73,6 +73,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.AttachedImage
 import com.tingyun.smartmistakebook.core.model.ActionType
 import com.tingyun.smartmistakebook.core.model.AppFailure
 import com.tingyun.smartmistakebook.core.model.AppFailureCode
@@ -136,6 +137,7 @@ internal fun TutorModelPanel(
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onOpenVisualOriginal: () -> Unit = {},
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     onOpenModelSettings: () -> Unit,
     autoStartAuthorization: TutorAutoStartAuthorization? = null,
     onAutoStartAuthorizationConsumed: (String) -> Unit = {},
@@ -652,10 +654,15 @@ internal fun TutorModelPanel(
             task.status.isTutorExecutionPending()
     }
     val visualWorkSeeds = remember(tutorTasks, tutorRespondTasks) {
-        tutorVisualWorkSeeds(
-            planTasks = tutorTasks,
-            respondTasks = tutorRespondTasks,
-        )
+        // 2D/3D 结构化场景已隔离：不再生成视觉任务。改 TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED 恢复。
+        if (TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+            emptyList()
+        } else {
+            tutorVisualWorkSeeds(
+                planTasks = tutorTasks,
+                respondTasks = tutorRespondTasks,
+            )
+        }
     }
     val visualWorkPlan = remember(visualWorkSeeds) {
         planTutorVisualWork(visualWorkSeeds)
@@ -1212,6 +1219,7 @@ internal fun TutorModelPanel(
                         onRetry = { retryTutorResponse(timelineItem.task) },
                         onOpenModelSettings = onOpenModelSettings,
                         onOpenVisualOriginal = onOpenVisualOriginal,
+                        attachedImageResolver = attachedImageResolver,
                         onReportVisualIncorrect = ::reportVisualIncorrect,
                         onMove = { move ->
                             executeTutorResponse(

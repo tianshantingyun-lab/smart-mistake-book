@@ -177,4 +177,39 @@ class TutorVisualDocumentRuntimeTest {
             TutorVisualCacheKey.create("question-a", "abcd", "model-1", schemaVersion = 3),
         )
     }
+
+    @Test
+    fun spotlightMaskTilesObjectButNeverCoversTheTarget() {
+        val panel = TutorVisualRect(0.0, 0.0, 1000.0, 600.0)
+        val target = TutorVisualRect(400.0, 200.0, 600.0, 400.0)
+        val inflate = 8.0
+        val masks = spotlightMaskRects(panel.width, panel.height, target, inflate)
+        val hole = target.inflated(inflate)
+
+        // 4 mask rects tile the annulus around the hole: no gap, no overlap with hole.
+        var coveredMoon = 0.0
+        masks.forEach { mask ->
+            assertTrue(mask.left in 0.0..1000.0 && mask.right in 0.0..1000.0)
+            assertTrue(mask.top in 0.0..600.0 && mask.bottom in 0.0..600.0)
+            val overlapsHole = mask.left < hole.right && mask.right > hole.left &&
+                mask.top < hole.bottom && mask.bottom > hole.top
+            assertFalse("mask must not overlap the hole: $mask", overlapsHole)
+            coveredMoon += mask.width * mask.height
+        }
+        val panelArea = panel.width * panel.height
+        val holeArea = hole.width * hole.height
+        // The 4 masks cover the panel minus the hole (annulus area), so nothing is double-dimmed.
+        assertEquals(panelArea - holeArea, coveredMoon, 1e-6)
+    }
+
+    @Test
+    fun spotlightMaskDropsDegenerateSlicesWhenTargetTouchesAnEdge() {
+        // Target flush against the left edge → the left mask slice has zero width and is dropped.
+        val target = TutorVisualRect(0.0, 100.0, 300.0, 300.0)
+        val masks = spotlightMaskRects(1000.0, 600.0, target, 0.0)
+        assertTrue(masks.none { it.width == 0.0 || it.height == 0.0 })
+        // Still tiles everything except the target itself.
+        val area = masks.sumOf { it.width * it.height }
+        assertEquals(1000.0 * 600.0 - 300.0 * 200.0, area, 1e-6)
+    }
 }

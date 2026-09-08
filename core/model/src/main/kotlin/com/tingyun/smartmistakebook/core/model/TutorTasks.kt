@@ -955,6 +955,7 @@ data class TutorPlanOutput(
     val modelVersion: String,
     val cycleOrdinal: Int = 1,
     val turnOrdinal: Int = 1,
+    val attachedImages: List<AttachedImage> = emptyList(),
 ) : ModelTaskOutput {
     init {
         sessionId.requireSafeModelText("Tutor output session id", ModelTaskRequest.MAX_ID_CHARS, false)
@@ -965,6 +966,9 @@ data class TutorPlanOutput(
             false,
         )
         modelVersion.requireSafeModelText("Tutor model version", MAX_MODEL_VERSION_CHARS, false)
+        require(attachedImages.size <= AttachedImage.MAX_ATTACHED_IMAGES) {
+            "A tutor plan may attach at most ${AttachedImage.MAX_ATTACHED_IMAGES} figures"
+        }
         require(cycleOrdinal > 0) { "Tutor output cycle ordinal must be positive" }
         require(turnOrdinal in 1..TutorPlanInput.MAX_TURNS) {
             "Tutor output turn ordinal exceeds the conversation budget"
@@ -991,6 +995,8 @@ data class TutorRespondOutput(
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     /** Optional student-visible reasoning trace; folded by default, never re-fed to the model. */
     val thinkingMarkdown: String? = null,
+    /** Optional locally-rendered figures the model asked for; drawn after the body, never in markdown. */
+    val attachedImages: List<AttachedImage> = emptyList(),
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {
@@ -1016,6 +1022,9 @@ data class TutorRespondOutput(
             MAX_MESSAGE_MARKDOWN_CHARS,
         )
         thinkingMarkdown.requireThinkingMarkdown("Tutor thinking")
+        require(attachedImages.size <= AttachedImage.MAX_ATTACHED_IMAGES) {
+            "A tutor reply may attach at most ${AttachedImage.MAX_ATTACHED_IMAGES} figures"
+        }
         require(suggestedMoves.size <= TutorTurnPlan.MAX_SUGGESTED_MOVES) {
             "A tutor response may expose at most three contextual next moves"
         }
@@ -1030,6 +1039,53 @@ data class TutorRespondOutput(
 
     companion object {
         const val MAX_MESSAGE_MARKDOWN_CHARS = 12_000
+    }
+}
+
+/** The locally-rendered figure kinds a tutor reply may ask for. */
+@Serializable
+enum class AttachedImageKind {
+    /** Redraw the current question's problem sheet cleanly (handwriting removed); source is auto-resolved. */
+    REDRAW_PROBLEM,
+    /** Generate a worked-solution / process figure described by the model (text-to-image). */
+    GENERATE_PROCESS,
+}
+
+/**
+ * A model-authored request for one figure to attach to a tutor reply. This is a
+ * *request* (the model describes what it wants), not a persisted reference: the
+ * local image generator redraws/generates it, persists it as a canonical asset,
+ * and the reply renders it via a local-only image component.
+ *
+ * The description is free prose describing the figure; it carries no URL, no
+ * base64, no pixel/color directives. A REDRAW_PROBLEM seeds from the current
+ * question's sheet (auto-resolved, never model-supplied); a GENERATE_PROCESS is
+ * rendered from prose only. Rendering stays local — the model never emits a URI,
+ * so no remote-fetch path is introduced.
+ */
+@Serializable
+data class AttachedImage(
+    val imageId: String,
+    val kind: AttachedImageKind,
+    val description: String,
+    val accessibilityText: String = "",
+) {
+    init {
+        imageId.requireSafeModelText("Attached image id", MAX_ATTACHED_IMAGE_ID_CHARS, false)
+        require(description.isNotBlank() && description.length <= MAX_ATTACHED_DESC_CHARS) {
+            "Attached image description must be present and bounded"
+        }
+        description.requireTutorMarkdown("Attached image description", MAX_ATTACHED_DESC_CHARS)
+        accessibilityText
+            .takeIf { it.isNotBlank() }
+            ?.requireTutorMarkdown("Attached image accessibility", MAX_ACCESSIBILITY_TEXT_CHARS)
+    }
+
+    companion object {
+        const val MAX_ATTACHED_DESC_CHARS = 2_000
+        const val MAX_ACCESSIBILITY_TEXT_CHARS = 512
+        const val MAX_ATTACHED_IMAGE_ID_CHARS = 128
+        const val MAX_ATTACHED_IMAGES = 6
     }
 }
 
@@ -1084,7 +1140,7 @@ internal fun String.requireTutorSceneText(label: String, maxChars: Int, allowLin
     require(!TUTOR_SCENE_MARKDOWN_LINK.containsMatchIn(this)) { "$label contains a Markdown link" }
     require(!TUTOR_SCENE_REFERENCE_LINK.containsMatchIn(this)) { "$label contains a reference link" }
     require(!TUTOR_SCENE_IMAGE_MARKER.containsMatchIn(this)) { "$label contains image markup" }
-    require(!TUTOR_SCENE_URL.containsMatchIn(this)) { "$label contains a URL" }
+    require(!SafeInlineMarkdown.BARE_URL.containsMatchIn(this)) { "$label contains a URL" }
 }
 
 internal fun requireUniqueTutorSceneIds(sceneId: String, itemIds: List<String>) {
@@ -1107,9 +1163,6 @@ private val TUTOR_SCENE_REFERENCE_LINK = Regex(
     """\[[^\r\n]{1,256}]\s*\[[^\r\n]{0,256}]""",
 )
 private val TUTOR_SCENE_IMAGE_MARKER = Regex("!\\s*\\[")
-private val TUTOR_SCENE_URL = Regex(
-    "(?i)(?:\\b(?:https?|ftp|file|mailto|data|javascript):\\S*|\\bwww\\.[^\\s]+)",
-)
 
 
 /**

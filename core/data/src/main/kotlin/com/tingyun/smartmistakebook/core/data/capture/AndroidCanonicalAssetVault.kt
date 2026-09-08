@@ -175,6 +175,26 @@ internal class AndroidCanonicalAssetVault(
         check(file.delete() || !file.exists()) { "Cannot delete unreferenced canonical asset" }
     }
 
+    /**
+     * Reads the bytes of a local content URI (e.g. a session's source image) within
+     * the canonical input byte budget. Returns null when the stream is empty, over
+     * budget, or cannot be read. Local-only — the URI is never fetched remotely.
+     */
+    fun readUriBytes(uri: String): ByteArray? {
+        val parsed = Uri.parse(uri)
+        val scheme = parsed.scheme
+        if (scheme != "content" && scheme != "file") return null
+        val stream = if (scheme == "content") {
+            context.contentResolver.openInputStream(parsed)
+        } else {
+            parsed.path?.let(::File)?.takeIf(File::isFile)?.inputStream()
+        } ?: return null
+        return stream.use { input ->
+            val bytes = input.readBytes()
+            bytes.takeIf { it.isNotEmpty() && it.size <= MAX_CANONICAL_SOURCE_INPUT_BYTES }
+        }
+    }
+
     fun resolve(record: CanonicalSourceAssetRecord): File {
         val assetRoot = File(context.filesDir, ASSET_DIRECTORY).canonicalFile
         val file = File(context.filesDir, record.relativePath).canonicalFile

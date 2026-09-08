@@ -85,6 +85,8 @@ data class TutorLobbyOutput(
     val intentDecision: TutorIntentDecision = TutorIntentDecision.ambiguousDefault(),
     /** Optional student-visible reasoning trace; folded by default, never re-fed to the model. */
     val thinkingMarkdown: String? = null,
+    /** Optional locally-rendered figures the model asked for; drawn after the body, never in markdown. */
+    val attachedImages: List<AttachedImage> = emptyList(),
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {
@@ -100,6 +102,9 @@ data class TutorLobbyOutput(
             true,
         )
         thinkingMarkdown.requireThinkingMarkdown("Tutor thinking")
+        require(attachedImages.size <= AttachedImage.MAX_ATTACHED_IMAGES) {
+            "A tutor lobby reply may attach at most ${AttachedImage.MAX_ATTACHED_IMAGES} figures"
+        }
         require(intentDecision.requestedLocalCapability in ALLOWED_LOCAL_CAPABILITIES) {
             "Tutor lobby cannot request a local write or current-question action"
         }

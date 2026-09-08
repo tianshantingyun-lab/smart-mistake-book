@@ -88,16 +88,19 @@ internal fun TutorTurnContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SafeMarkdownText(plan.openingMarkdown, style = MaterialTheme.typography.bodyLarge)
-        resolvedVisualScene?.let { scene ->
-            TutorVisualSceneRenderer(
-                scene = scene,
-                onOpenOriginal = onOpenVisualOriginal,
-                onReportIncorrect = { onReportVisualIncorrect(scene.sceneId) },
-            )
-        }
-        if (item == null) {
-            plan.visualScene?.let { scene ->
-                TutorVisualSceneRenderer(scene)
+        // 2D/3D 结构化场景已隔离：不渲染。
+        if (!TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+            resolvedVisualScene?.let { scene ->
+                TutorVisualSceneRenderer(
+                    scene = scene,
+                    onOpenOriginal = onOpenVisualOriginal,
+                    onReportIncorrect = { onReportVisualIncorrect(scene.sceneId) },
+                )
+            }
+            if (item == null) {
+                plan.visualScene?.let { scene ->
+                    TutorVisualSceneRenderer(scene)
+                }
             }
         }
         item?.let { interaction ->
@@ -208,8 +211,11 @@ internal fun TutorTurnContent(
                 requireNotNull(submittedResponse.feedbackMarkdown),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            plan.visualScene?.let { scene ->
-                TutorVisualSceneRenderer(scene)
+            // 2D/3D 结构化场景已隔离：不渲染。
+            if (!TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+                plan.visualScene?.let { scene ->
+                    TutorVisualSceneRenderer(scene)
+                }
             }
             TutorMoveButtons(
                 moves = plan.suggestedMoves,
@@ -304,7 +310,10 @@ internal fun TutorChoiceFeedbackContent(
             requireNotNull(response.feedbackMarkdown),
             style = MaterialTheme.typography.bodyMedium,
         )
-        plan.visualScene?.let { scene -> TutorVisualSceneRenderer(scene) }
+        // 2D/3D 结构化场景已隔离：不渲染。
+        if (!TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+            plan.visualScene?.let { scene -> TutorVisualSceneRenderer(scene) }
+        }
         TutorMoveButtons(
             moves = plan.suggestedMoves,
             requestedMove = response.requestedMove,

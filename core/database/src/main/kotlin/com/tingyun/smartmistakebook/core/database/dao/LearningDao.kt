@@ -129,6 +129,21 @@ internal abstract class ImmutableLearningFactDao {
     @Query("SELECT * FROM assessment_item_snapshot WHERE assessment_item_snapshot_id = :id LIMIT 1")
     abstract suspend fun findAssessmentItem(id: String): AssessmentItemSnapshotEntity?
 
+    /**
+     * Latest assessment item for a practice unit (spec batch-intake §6 P2):
+     * the pretest router consumes its scoring mode / options / answer spec to
+     * decide which surface can carry the first attempt. Parameterized.
+     */
+    @Query(
+        """
+        SELECT * FROM assessment_item_snapshot
+        WHERE practice_unit_id = :practiceUnitId
+        ORDER BY item_revision DESC
+        LIMIT 1
+        """,
+    )
+    abstract suspend fun findLatestAssessmentItemForPracticeUnit(practiceUnitId: String): AssessmentItemSnapshotEntity?
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertAssessmentEvent(event: AssessmentEventEntity): Long
 

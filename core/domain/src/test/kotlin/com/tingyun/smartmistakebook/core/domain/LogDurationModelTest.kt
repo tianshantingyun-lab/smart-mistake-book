@@ -64,7 +64,10 @@ class LogDurationModelTest {
     }
 
     @Test
-    fun `buckets are isolated by learner subject item type and difficulty`() {
+    fun `buckets are isolated by learner and subject only`() {
+        // spec batch-intake-spec §6 L1: the bucket key is deliberately
+        // (learner, subject) — itemType/difficulty drift between record time
+        // and query time, so they must NOT isolate samples.
         model.record("learner-a", "math", "choice", 0.5, 300.0)
         assertEquals(300.0, model.expectedSeconds("learner-a", "math", "choice", 0.5), 1e-9)
 
@@ -80,23 +83,11 @@ class LogDurationModelTest {
             model.expectedSeconds("learner-a", "physics", "choice", 0.5),
             0.0,
         )
-        // Different item type, including the null-typed bucket.
-        assertEquals(
-            LogDurationModel.GLOBAL_PRIOR_SECONDS,
-            model.expectedSeconds("learner-a", "math", null, 0.5),
-            0.0,
-        )
-        assertEquals(
-            LogDurationModel.GLOBAL_PRIOR_SECONDS,
-            model.expectedSeconds("learner-a", "math", "fill-in", 0.5),
-            0.0,
-        )
-        // Different difficulty.
-        assertEquals(
-            LogDurationModel.GLOBAL_PRIOR_SECONDS,
-            model.expectedSeconds("learner-a", "math", "choice", 0.9),
-            0.0,
-        )
+        // Item type and difficulty SHARE the (learner, subject) bucket —
+        // drifting dimensions must not orphan recorded samples.
+        assertEquals(300.0, model.expectedSeconds("learner-a", "math", null, 0.5), 1e-9)
+        assertEquals(300.0, model.expectedSeconds("learner-a", "math", "fill-in", 0.5), 1e-9)
+        assertEquals(300.0, model.expectedSeconds("learner-a", "math", "choice", 0.9), 1e-9)
     }
 
     @Test

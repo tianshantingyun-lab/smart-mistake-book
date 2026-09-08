@@ -56,6 +56,9 @@ class ImageCleanSheetOrchestratorTest {
                         modelVersion = "gpt-image-2",
                     )
                 }
+
+                override suspend fun generate(request: ImageGenerationRequest): ImageRedrawResult =
+                    throw UnsupportedOperationException("generate not exercised by this fake")
             },
         )
 
@@ -100,6 +103,9 @@ class ImageCleanSheetOrchestratorTest {
             redrawChannel = object : ImageGenerationChannel {
                 override suspend fun redrawClean(request: ImageRedrawRequest): ImageRedrawResult =
                     throw ImageGenerationException("network down")
+
+                override suspend fun generate(request: ImageGenerationRequest): ImageRedrawResult =
+                    throw UnsupportedOperationException("generate not exercised by this fake")
             },
         )
 

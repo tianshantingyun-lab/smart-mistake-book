@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.capture
 
 import com.tingyun.smartmistakebook.core.data.model.ImageGenerationChannel
+import com.tingyun.smartmistakebook.core.data.model.ImageGenerationRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawResult
 import com.tingyun.smartmistakebook.core.domain.ModelApiKey
@@ -117,6 +118,9 @@ class ConfiguredCleanImageGeneratorTest {
                 imageBytes = cleanBytes.toByteArray(),
                 mimeType = cleanMime,
             )
+
+        override suspend fun generate(request: ImageGenerationRequest): ImageRedrawResult =
+            throw UnsupportedOperationException("generate not exercised by this fake")
     }
 
     private class ChannelFactory(

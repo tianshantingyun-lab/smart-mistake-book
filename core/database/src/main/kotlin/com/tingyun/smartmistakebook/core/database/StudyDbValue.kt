@@ -40,6 +40,7 @@ object StudyDbValue {
     object SourceAssetType {
         const val CAMERA = "CAMERA"
         const val PHOTO_PICKER = "PHOTO_PICKER"
+        const val TUTOR_ATTACHED = "TUTOR_ATTACHED"
     }
 
     object BatchImportStatus {

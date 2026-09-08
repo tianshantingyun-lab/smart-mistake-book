@@ -67,7 +67,12 @@ import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
+import com.tingyun.smartmistakebook.core.ui.TutorMarkdownTokens
+import com.tingyun.smartmistakebook.core.ui.AiReplyRichMarkdown
+import com.tingyun.smartmistakebook.core.ui.AttachedImagesSection
+import com.tingyun.smartmistakebook.core.ui.ThinkingCollapsibleCard
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
+import com.tingyun.smartmistakebook.core.model.AttachedImage
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -231,6 +236,7 @@ internal fun TutorChatExchange(
     localIntentContent: @Composable (TutorRespondInput, TutorRespondOutput) -> Unit = { _, _ -> },
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     assistantBottomModifier: Modifier = Modifier,
     modifier: Modifier = Modifier,
 ) {
@@ -257,6 +263,7 @@ internal fun TutorChatExchange(
             resolvedVisualScene = resolvedVisualScene,
             onOpenVisualOriginal = onOpenVisualOriginal,
             onReportVisualIncorrect = onReportVisualIncorrect,
+            attachedImageResolver = attachedImageResolver,
             assistantBottomModifier = assistantBottomModifier,
         )
     }
@@ -298,6 +305,7 @@ private fun TutorAssistantReplyBubble(
     resolvedVisualScene: TutorVisualDocumentScene?,
     onOpenVisualOriginal: () -> Unit,
     onReportVisualIncorrect: (String) -> Unit,
+    attachedImageResolver: (suspend (AttachedImage) -> String?)?,
     assistantBottomModifier: Modifier,
 ) {
     val input = task.request.input as TutorRespondInput
@@ -339,21 +347,40 @@ private fun TutorAssistantReplyBubble(
                                 )
                             }
                         } else {
-                            SafeMarkdownText(
-                                markdown = output.messageMarkdown,
-                                style = MaterialTheme.typography.bodyMedium,
+                            ThinkingCollapsibleCard(
+                                thinkingMarkdown = output.thinkingMarkdown,
+                                thinking = false,
                             )
-                            resolvedVisualScene?.let { scene ->
-                                TutorVisualSceneRenderer(
-                                    scene = scene,
-                                    onOpenOriginal = onOpenVisualOriginal,
-                                    onReportIncorrect = {
-                                        onReportVisualIncorrect(scene.sceneId)
-                                    },
-                                )
+                            AiReplyRichMarkdown(
+                                markdown = output.messageMarkdown,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            attachedImageResolver?.let { resolver ->
+                                output.attachedImages
+                                    .takeIf { it.isNotEmpty() }
+                                    ?.let { images ->
+                                        AttachedImagesSection(
+                                            images = images,
+                                            resolve = resolver,
+                                        )
+                                    }
+                            }
+                            if (!TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+                                resolvedVisualScene?.let { scene ->
+                                    TutorVisualSceneRenderer(
+                                        scene = scene,
+                                        onOpenOriginal = onOpenVisualOriginal,
+                                        onReportIncorrect = {
+                                            onReportVisualIncorrect(scene.sceneId)
+                                        },
+                                    )
+                                }
                             }
                             localIntentContent(input, output)
-                            output.visualScene?.let { TutorVisualSceneRenderer(it) }
+                            // 2D/3D 结构化场景已隔离：不渲染模型直接输出的 visualScene。
+                            if (!TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+                                output.visualScene?.let { TutorVisualSceneRenderer(it) }
+                            }
                             if (output.solutionRevealed) {
                                 Box(
                                     modifier = Modifier
@@ -424,8 +451,9 @@ private fun TutorAssistantReplyBubble(
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 SafeMarkdownText(
                                     markdown = streamingBody,
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = TutorMarkdownTokens.body,
                                     modifier = Modifier.testTag("tutor_chat_reply_streaming"),
+                                    streaming = true,
                                 )
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,

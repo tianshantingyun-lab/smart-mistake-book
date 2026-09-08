@@ -70,6 +70,8 @@ import com.tingyun.smartmistakebook.core.model.TutorDiagramNodeShape
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceChainScene
 import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
 import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
+import com.tingyun.smartmistakebook.core.model.AttachedImage
+import com.tingyun.smartmistakebook.core.model.AttachedImageKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
@@ -422,6 +424,7 @@ internal fun JsonObject.toTutorPlan(
         modelVersion = modelVersion,
         cycleOrdinal = input.cycleOrdinal,
         turnOrdinal = input.turnOrdinal,
+        attachedImages = optionalArray("attachedImages").map(JsonElement::toAttachedImage),
     )
 }
 
@@ -462,6 +465,7 @@ internal fun JsonObject.toTutorRespond(
         suggestedMoves = suggestedMoves,
         intentDecision = intentDecision,
         thinkingMarkdown = optionalString("thinkingMarkdown"),
+        attachedImages = optionalArray("attachedImages").map(JsonElement::toAttachedImage),
         modelVersion = modelVersion,
     )
 }
@@ -506,6 +510,7 @@ internal fun JsonObject.toTutorLobby(
         messageMarkdown = requiredString("messageMarkdown"),
         intentDecision = objectValue("intentDecision").toTutorIntentDecision(),
         thinkingMarkdown = optionalString("thinkingMarkdown"),
+        attachedImages = optionalArray("attachedImages").map(JsonElement::toAttachedImage),
         modelVersion = modelVersion,
     )
 }
@@ -539,6 +544,7 @@ internal val TUTOR_PLAN_WIRE_KEYS = setOf(
     "inferredKnowledgeLabels",
     "nextMoves",
     "thinkingMarkdown",
+    "attachedImages",
 )
 internal val TUTOR_RESPOND_WIRE_KEYS =
     setOf(
@@ -549,8 +555,25 @@ internal val TUTOR_RESPOND_WIRE_KEYS =
         "visualRequest",
         "nextMoves",
         "thinkingMarkdown",
+        "attachedImages",
     )
-internal val TUTOR_LOBBY_WIRE_KEYS = setOf("intentDecision", "messageMarkdown", "thinkingMarkdown")
+internal val TUTOR_LOBBY_WIRE_KEYS =
+    setOf("intentDecision", "messageMarkdown", "thinkingMarkdown", "attachedImages")
+internal val ATTACHED_IMAGE_WIRE_KEYS =
+    setOf("imageId", "kind", "description", "accessibilityText")
+
+/** Parses one model-authored [AttachedImage] intent from its wire object. */
+internal fun JsonElement.toAttachedImage(): AttachedImage {
+    val obj = objectValue()
+    obj.requireOnlyKeys(ATTACHED_IMAGE_WIRE_KEYS)
+    val kind = enumValue<AttachedImageKind>(obj.requiredString("kind"))
+    return AttachedImage(
+        imageId = obj.requiredString("imageId"),
+        kind = kind,
+        description = obj.requiredString("description"),
+        accessibilityText = obj.optionalString("accessibilityText").orEmpty(),
+    )
+}
 internal val TUTOR_INTENT_WIRE_KEYS = setOf(
     "intent",
     "confidence",

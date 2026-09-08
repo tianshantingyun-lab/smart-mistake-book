@@ -188,7 +188,7 @@ internal fun MistakeDetailContent(
                 onExport = { onExport(checkNotNull(state.exportRevisionKeyOrNull())) },
                 onTutor = { onTutor(checkNotNull(state.exportRevisionKeyOrNull())) },
                 onBack = onBack,
-                repository = checkNotNull(repository),
+                repository = repository,
                 organizationRepository = organizationRepository,
                 modelTasks = modelTasks,
                 profile = profile,
@@ -299,7 +299,7 @@ private fun ReadyDetail(
     onExport: () -> Unit,
     onTutor: () -> Unit,
     onBack: () -> Unit,
-    repository: MistakeDetailRepository,
+    repository: MistakeDetailRepository?,
     organizationRepository: MistakeOrganizationRepository?,
     modelTasks: ModelTaskRepository?,
     profile: StudyProfileOverview,
@@ -374,7 +374,7 @@ private fun ReadyDetail(
             source = state.detail.source,
             revisionId = state.detail.identity.problemRevisionId,
         )
-        if (!isViewingHistoricalRevision) {
+        if (!isViewingHistoricalRevision && repository != null) {
             MistakeUserNoteCard(
                 entryId = state.detail.identity.errorBookEntryId,
                 note = state.detail.userNote,

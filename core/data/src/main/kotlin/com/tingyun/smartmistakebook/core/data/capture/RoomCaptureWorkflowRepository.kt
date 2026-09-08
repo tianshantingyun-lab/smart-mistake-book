@@ -411,6 +411,14 @@ class RoomCaptureWorkflowRepository internal constructor(
             database.readTutorSession(sessionId)?.toDomainTutorSession()
         }
 
+    override suspend fun readTutorSessionSheetBytes(sessionId: String): ByteArray? =
+        withContext(Dispatchers.IO) {
+            require(sessionId.isNotBlank()) { "Tutor session id must not be blank" }
+            val session = database.readTutorSession(sessionId)?.toDomainTutorSession()
+                ?: return@withContext null
+            assetVault.readUriBytes(session.sourceImageUri)
+        }
+
     override suspend fun readTutorVisualSourceAssets(
         sessionId: String,
     ): List<com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope> =

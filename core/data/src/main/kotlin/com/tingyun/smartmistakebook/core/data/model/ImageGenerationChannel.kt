@@ -11,6 +11,45 @@ import kotlinx.serialization.Serializable
  */
 interface ImageGenerationChannel {
     suspend fun redrawClean(request: ImageRedrawRequest): ImageRedrawResult
+
+    /**
+     * Generates a figure from a prose prompt (text-to-image), optionally seeded
+     * by a source image (image-to-image). This is the "tutor figure" path —
+     * e.g. a worked-solution / process diagram that the model describes in
+     * [ImageGenerationRequest.prompt]. The MCP figure server may also expose it.
+     */
+    suspend fun generate(request: ImageGenerationRequest): ImageRedrawResult
+}
+
+/** A request to generate a figure from prose, optionally seeded by a source image. */
+@Serializable
+data class ImageGenerationRequest(
+    val prompt: String,
+    val sourceImageBytes: ByteArray? = null,
+    val sourceImageMimeType: String? = null,
+    val outputFormat: String = "png",
+    val maxDimension: Int = 1536,
+) {
+    init {
+        require(prompt.isNotBlank() && prompt.length <= MAX_PROMPT_CHARS) {
+            "Image generation prompt must be non-blank and bounded"
+        }
+        require(
+            (sourceImageBytes == null) == (sourceImageMimeType == null),
+        ) { "Source image bytes and mime type must be provided together" }
+        sourceImageMimeType?.let {
+            require(it == "image/jpeg" || it == "image/png") {
+                "Only JPEG/PNG source images are supported"
+            }
+        }
+        require(outputFormat == "png" || outputFormat == "jpeg" || outputFormat == "webp") {
+            "Unsupported output format: $outputFormat"
+        }
+    }
+
+    companion object {
+        const val MAX_PROMPT_CHARS = 32_000
+    }
 }
 
 /** A request to redraw a photographed problem into a clean figure. */

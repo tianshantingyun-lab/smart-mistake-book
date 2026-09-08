@@ -70,6 +70,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.AttachedImage
 import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
@@ -123,6 +124,7 @@ fun CapturedTutorSessionRoute(
     conversations: TutorConversationRepository,
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
@@ -169,6 +171,7 @@ fun CapturedTutorSessionRoute(
         profile = profile,
         catalogEntries = catalogEntries,
         longTermWritesBlocked = longTermWritesBlocked,
+        attachedImageResolver = attachedImageResolver,
         onLongTermWritesBlocked = viewModel::markLongTermWritesBlocked,
         onOpenModelSettings = onOpenModelSettings,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
@@ -228,6 +231,7 @@ private fun CapturedTutorSessionContent(
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry>,
     longTermWritesBlocked: Boolean,
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     onLongTermWritesBlocked: () -> Unit,
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
@@ -249,6 +253,7 @@ private fun CapturedTutorSessionContent(
                 visualSourceAssetsReader = {
                     repository.readTutorVisualSourceAssets(state.session.sessionId)
                 },
+                attachedImageResolver = attachedImageResolver,
                 modelTasks = modelTasks,
                 interactions = interactions,
                 profile = profile,
@@ -351,6 +356,7 @@ internal fun ReadyCapturedSession(
     visualSourceAssetsReader: suspend () -> List<TutorVisualSourceAssetScope> = {
         emptyList()
     },
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
     profile: StudyProfileOverview,
@@ -372,6 +378,7 @@ internal fun ReadyCapturedSession(
         profile = profile,
         modelTasks = modelTasks,
         visualSourceAssetsReader = visualSourceAssetsReader,
+        attachedImageResolver = attachedImageResolver,
         interactions = interactions,
         catalogEntries = catalogEntries,
         onLongTermWritesBlocked = onLongTermWritesBlocked,

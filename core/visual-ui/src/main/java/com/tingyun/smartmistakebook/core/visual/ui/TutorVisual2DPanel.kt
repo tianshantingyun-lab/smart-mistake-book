@@ -222,6 +222,13 @@ internal fun TutorVisual2DPanel(
                 }
             }
         }
+        TutorVisualSpotlightOverlay(
+            focusElementId = frame.step.primaryRelationElementId,
+            layout = layout,
+            widthPx = widthPx,
+            heightPx = heightPx,
+            modifier = Modifier.matchParentSize(),
+        )
     }
 }
 

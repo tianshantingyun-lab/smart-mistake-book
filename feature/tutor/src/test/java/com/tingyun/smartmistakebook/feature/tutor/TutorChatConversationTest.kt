@@ -269,6 +269,26 @@ class TutorChatConversationTest {
     }
 
     @Test
+    fun historyNeverLeaksThinkingIntoPriorContext() {
+        // T5：thinking 只当轮 UI 呈现，绝不进入 history/priorMessages（否则下一轮模型自见思考）。
+        val thinking = "这是内部思考链，不应回传给模型。"
+        val task = succeededResponse(
+            responseOrdinal = 1,
+            studentMessage = "为什么这里要变号？",
+            assistantMarkdown = "因为跨过零点后符号改变。",
+            thinkingMarkdown = thinking,
+        )
+
+        val history = tutorChatHistory(listOf(task), answerExposureKeys = emptySet())
+
+        assertEquals(1, history.size)
+        val entry = history.single()
+        assertTrue("assistantMarkdown 不得含 thinking", !entry.assistantMarkdown.contains("内部思考链"))
+        assertTrue("studentMessage 不得含 thinking", !entry.studentMessage.contains("内部思考链"))
+        assertEquals("因为跨过零点后符号改变。", entry.assistantMarkdown)
+    }
+
+    @Test
     fun historyKeepsACompleteAnswerAfterItsExactExposureWasRecorded() {
         val task = succeededResponse(
             responseOrdinal = 1,
@@ -378,6 +398,7 @@ class TutorChatConversationTest {
         studentMessage: String = "student-$responseOrdinal",
         assistantMarkdown: String = "assistant-$responseOrdinal",
         solutionRevealed: Boolean = false,
+        thinkingMarkdown: String? = null,
         createdAtEpochMillis: Long = responseOrdinal.toLong(),
         updatedAtEpochMillis: Long = createdAtEpochMillis,
     ): ModelTaskSnapshot {
@@ -414,6 +435,7 @@ class TutorChatConversationTest {
                 responseOrdinal = responseOrdinal,
                 messageMarkdown = assistantMarkdown,
                 solutionRevealed = solutionRevealed,
+                thinkingMarkdown = thinkingMarkdown,
                 intentDecision = TutorIntentDecision(
                     intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
                     confidence = 1.0,

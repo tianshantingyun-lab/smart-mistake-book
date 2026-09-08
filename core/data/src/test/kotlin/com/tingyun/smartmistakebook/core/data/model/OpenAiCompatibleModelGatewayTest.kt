@@ -67,6 +67,8 @@ import com.tingyun.smartmistakebook.core.model.TutorOscillationMotionScene
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.AttachedImage
+import com.tingyun.smartmistakebook.core.model.AttachedImageKind
 import com.tingyun.smartmistakebook.core.model.TutorSpatialDiagramScene
 import com.tingyun.smartmistakebook.core.model.TutorStepFlowScene
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
@@ -113,6 +115,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -1220,6 +1223,58 @@ class OpenAiCompatibleModelGatewayTest {
     fun tutorResponseRejectsUnsafeThinkingMarkdown() = runBlocking {
         val payload = tutorRespondPayload(
             extraTopLevel = "thinkingMarkdown" to JsonPrimitive("试着执行<script>run()</script>"),
+        )
+        val failed = executeTutorRespondPayload(payload).last() as ModelGatewayEvent.Failed
+        assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)
+    }
+
+    @Test
+    fun tutorResponseParsesAttachedImagesFromWire() = runBlocking {
+        val payload = tutorRespondPayload(
+            extraTopLevel = "attachedImages" to JsonArray(
+                listOf(
+                    buildJsonObject {
+                        put("imageId", "process-1")
+                        put("kind", "GENERATE_PROCESS")
+                        put("description", "数轴标注导数符号区间")
+                        put("accessibilityText", "导数符号区间图")
+                    },
+                    buildJsonObject {
+                        put("imageId", "redraw-1")
+                        put("kind", "REDRAW_PROBLEM")
+                        put("description", "重绘题面去除手写")
+                    },
+                ),
+            ),
+        )
+        val output = parsedTutorResponse(payload)
+        assertEquals(2, output.attachedImages.size)
+        assertEquals(AttachedImageKind.GENERATE_PROCESS, output.attachedImages[0].kind)
+        assertEquals("数轴标注导数符号区间", output.attachedImages[0].description)
+        assertEquals("导数符号区间图", output.attachedImages[0].accessibilityText)
+        assertEquals(AttachedImageKind.REDRAW_PROBLEM, output.attachedImages[1].kind)
+        assertEquals("redraw-1", output.attachedImages[1].imageId)
+    }
+
+    @Test
+    fun tutorResponseAdmitsMissingAttachedImagesAsEmpty() = runBlocking {
+        val output = parsedTutorResponse(tutorRespondPayload())
+        assertEquals(emptyList<AttachedImage>(), output.attachedImages)
+    }
+
+    @Test
+    fun tutorResponseRejectsUnknownAttachedImageKey() = runBlocking {
+        val payload = tutorRespondPayload(
+            extraTopLevel = "attachedImages" to JsonArray(
+                listOf(
+                    buildJsonObject {
+                        put("imageId", "bad-1")
+                        put("kind", "GENERATE_PROCESS")
+                        put("description", "图")
+                        put("sourceAssetId", "asset-9")
+                    },
+                ),
+            ),
         )
         val failed = executeTutorRespondPayload(payload).last() as ModelGatewayEvent.Failed
         assertEquals(ModelFailureCode.INVALID_RESPONSE, failed.failure.code)

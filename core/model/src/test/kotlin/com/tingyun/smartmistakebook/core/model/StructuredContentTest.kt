@@ -20,6 +20,65 @@ class StructuredContentTest {
     }
 
     @Test
+    fun `streaming parser keeps a trailing unclosed strong marker styled instead of literal`() {
+        val tokens = SafeInlineMarkdown.parseStreaming("前文 **正在加粗")
+
+        assertTrue(tokens.contains(InlineToken.Text("前文 ")))
+        assertTrue(tokens.contains(InlineToken.Strong("正在加粗")))
+        assertTrue(tokens.none { it is InlineToken.Text && it.value.contains("**") })
+    }
+
+    @Test
+    fun `streaming parser keeps a trailing unclosed code and formula marker styled`() {
+        assertTrue(SafeInlineMarkdown.parseStreaming("值 `x").contains(InlineToken.Code("x")))
+        assertTrue(SafeInlineMarkdown.parseStreaming("式 \$f(x)").contains(InlineToken.Formula("f(x)")))
+    }
+
+    @Test
+    fun `streaming parser leaves a bare trailing delimiter literal with no content`() {
+        // 单个 `$` 后无任何内容 → 无可渲染样式段，照普通 parse 降为字面量（与闭式 parse 一致）。
+        val tokens = SafeInlineMarkdown.parseStreaming("公式 \$")
+        assertTrue(tokens.contains(InlineToken.Text("$")))
+        assertTrue(tokens.none { it is InlineToken.Formula })
+    }
+
+    @Test
+    fun `streaming parser does not style an asterisk flanked by whitespace`() {
+        // "x * y" 的 `*` 是字面乘号，不是强调开环（content 以空白开头）；流式不得误挂起。
+        val tokens = SafeInlineMarkdown.parseStreaming("x * y")
+        assertTrue(tokens.none { it is InlineToken.Emphasis })
+        assertEquals(SafeInlineMarkdown.parse("x * y"), tokens)
+    }
+
+    @Test
+    fun `streaming parser closes the pending style once a real closing marker arrives`() {
+        // 流式首帧 "x * y" 是字面；补全成 "x *y*" 合法强调后应正常解析。
+        assertTrue(SafeInlineMarkdown.parseStreaming("x *y*").contains(InlineToken.Emphasis("y")))
+    }
+
+    @Test
+    fun `streaming parser degrades to plain parse when every marker is closed`() {
+        val complete = "已闭合 **重点** 和 *斜体*"
+        assertEquals(SafeInlineMarkdown.parse(complete), SafeInlineMarkdown.parseStreaming(complete))
+    }
+
+    @Test
+    fun `streaming parser returns to literal text once the pending marker closes`() {
+        // 末帧未闭合 → 加粗；补全 `**` 后走普通 parse → 字面量不再出现。
+        val tokens = SafeInlineMarkdown.parseStreaming("**重点**")
+        assertTrue(tokens.contains(InlineToken.Strong("重点")))
+        assertTrue(tokens.none { it is InlineToken.Text && it.value.contains("**") })
+    }
+
+    @Test
+    fun `streaming parser still falls back to inert text on active content`() {
+        val tokens = SafeInlineMarkdown.parseStreaming("**安全** 但 <script>")
+
+        assertTrue(tokens.all { it is InlineToken.Text || it is InlineToken.LineBreak })
+        assertTrue(SafeInlineMarkdown.requiresPlainTextFallback("**安全** 但 <script>"))
+    }
+
+    @Test
     fun `active content and remote images fall back to inert text`() {
         val candidates = listOf(
             "<b>不能执行</b> **也不解析强调**",

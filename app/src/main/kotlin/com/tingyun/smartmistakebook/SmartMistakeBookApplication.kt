@@ -246,6 +246,7 @@ class SmartMistakeBookApplication : Application() {
             )
             backupRepository = BackupRepositoryFactory.create(this, database)
             OrphanAssetGc.enqueue(this)
+            registerDebugHarness()
             startupState.value = StartupState.Ready
         } catch (cancelled: CancellationException) {
             throw cancelled
@@ -333,6 +334,9 @@ class SmartMistakeBookApplication : Application() {
         }
     }
 
+    /** Debug-only model-config seed harness (never present in release). */
+    private val testSeedReceiver = TestSeedModelConfigReceiver()
+
     val modelCapabilityTester: ModelCapabilityTester? by lazy {
         modelConfigurationStore?.let(ConfiguredModelCapabilityTesterFactory::create)
     }
@@ -342,5 +346,17 @@ class SmartMistakeBookApplication : Application() {
         database.close()
         applicationScope.cancel()
         super.onTerminate()
+    }
+
+    /** Registers the debug-only seed receiver so `adb am broadcast` can configure the model. */
+    private fun registerDebugHarness() {
+        if (!BuildConfig.DEBUG) return
+        // API 34 requires an explicit export flag for dynamic non-system receivers;
+        // exported only because QA drives it via adb from outside the app.
+        registerReceiver(
+            testSeedReceiver,
+            android.content.IntentFilter(TestSeedModelConfigReceiver.ACTION_TEST_SEED_MODEL_CONFIG),
+            android.content.Context.RECEIVER_EXPORTED,
+        )
     }
 }

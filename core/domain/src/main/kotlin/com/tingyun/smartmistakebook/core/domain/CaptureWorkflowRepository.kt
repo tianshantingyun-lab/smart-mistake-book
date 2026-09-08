@@ -630,6 +630,13 @@ interface CaptureWorkflowRepository {
         sessionId: String,
     ): List<TutorVisualSourceAssetScope> = emptyList()
 
+    /**
+     * Reads the current question's source-image bytes (its photographed sheet) for
+     * a model-authored REDRAW_PROBLEM figure. Returns null when there is no sheet
+     * or the bytes cannot be read — the caller degrades to that figure's absence.
+     */
+    suspend fun readTutorSessionSheetBytes(sessionId: String): ByteArray? = null
+
     suspend fun saveTutorSession(
         request: SaveTutorSessionRequest,
     ): CapturedProblemCommitSummary

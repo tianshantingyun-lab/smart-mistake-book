@@ -96,6 +96,82 @@ class TutorTasksTest {
     }
 
     @Test
+    fun attachedImagesRoundTripThroughTheOutputCodec() {
+        val withImage = respondOutput().copy(
+            attachedImages = listOf(
+                AttachedImage(
+                    imageId = "process-1",
+                    kind = AttachedImageKind.GENERATE_PROCESS,
+                    description = "用数轴标注 f'(x) 在 (−∞,0) 为正、(0,∞) 为负，展示导数符号区间。",
+                    accessibilityText = "数轴上导数符号区间的标注图",
+                ),
+                AttachedImage(
+                    imageId = "redraw-1",
+                    kind = AttachedImageKind.REDRAW_PROBLEM,
+                    description = "重绘题目原图，去除手写笔迹。",
+                ),
+            ),
+        )
+        assertEquals(
+            withImage,
+            ModelTaskCodec.decodeOutput(ModelTaskCodec.encodeOutput(withImage)),
+        )
+        assertTrue(ModelTaskCompletionValidator.validate(respondRequest(), withImage).isEmpty())
+        assertEquals(2, withImage.attachedImages.size)
+    }
+
+    @Test
+    fun attachedImageRejectsActiveContentAndOversizedDescription() {
+        assertTrue(
+            runCatching {
+                respondOutput().copy(
+                    attachedImages = listOf(
+                        AttachedImage(
+                            imageId = "bad-1",
+                            kind = AttachedImageKind.GENERATE_PROCESS,
+                            description = "画图<script>run()</script>",
+                        ),
+                    ),
+                )
+            }.isFailure,
+        )
+        assertTrue(
+            runCatching {
+                respondOutput().copy(
+                    attachedImages = listOf(
+                        AttachedImage(
+                            imageId = "bad-2",
+                            kind = AttachedImageKind.GENERATE_PROCESS,
+                            description = "描".repeat(AttachedImage.MAX_ATTACHED_DESC_CHARS + 1),
+                        ),
+                    ),
+                )
+            }.isFailure,
+        )
+    }
+
+    @Test
+    fun attachedImagesNeverExceedTheReplyBudget() {
+        val overflow = List(AttachedImage.MAX_ATTACHED_IMAGES + 1) { index ->
+            AttachedImage(
+                imageId = "img-$index",
+                kind = AttachedImageKind.GENERATE_PROCESS,
+                description = "第 $index 张图",
+            )
+        }
+        assertTrue(runCatching { respondOutput().copy(attachedImages = overflow) }.isFailure)
+    }
+
+    @Test
+    fun legacyRespondWithoutAttachedImagesDecodesToEmpty() {
+        val encoded = ModelTaskCodec.encodeOutput(respondOutput())
+        val legacy = encoded.replace("\"attachedImages\":[],", "")
+        assertTrue("测试前提：编码应含 attachedImages 键", encoded != legacy)
+        val decoded = ModelTaskCodec.decodeOutput(legacy) as TutorRespondOutput
+        assertEquals(emptyList<AttachedImage>(), decoded.attachedImages)
+    }
+
+    @Test
     fun planThinkingMarkdownRoundTripsAndValidates() {
         val withThinking = output().copy(
             plan = output().plan.copy(thinkingMarkdown = "这题先确认学生对导数符号的理解。"),

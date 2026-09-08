@@ -4,6 +4,8 @@ import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
 import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.AttentionSignal
+import com.tingyun.smartmistakebook.core.domain.AttemptConfidenceAssessment
+import com.tingyun.smartmistakebook.core.domain.ConfidenceLevel
 import com.tingyun.smartmistakebook.core.domain.FsrsEvidenceRatingMapper
 import com.tingyun.smartmistakebook.core.domain.FsrsRating
 import com.tingyun.smartmistakebook.core.domain.ReviewSample
@@ -111,6 +113,19 @@ internal class ReviewLogSink(
             }
 
     /**
+     * Observed real-answer durations for the duration-model warm-up (spec
+     * `batch-intake-spec.md` §6 L1): every review_log ATTEMPT row with a
+     * positive duration, newest first. Only real answer attempts feed the
+     * model — subjective reports and reveals are not solving-time evidence.
+     */
+    suspend fun observedAttemptDurations(): List<Pair<String, Double>> =
+        database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+            .asSequence()
+            .filter { it.sourceKind == SOURCE_KIND_ATTEMPT && it.durationMs > 0 }
+            .map { it.practiceUnitId to it.durationMs / 1000.0 }
+            .toList()
+
+    /**
      * Avoidance units (spec §6 / D'Mello 2013): cards switched away from at
      * least twice per attempt while graded poorly, twice within the recent
      * window - a difficulty or aversion marker that steers re-teaching.
@@ -127,6 +142,36 @@ internal class ReviewLogSink(
             .groupBy(ReviewLogSampleRecord::practiceUnitId)
             .filterValues { rows -> rows.size >= AVOIDANCE_MIN_OCCURRENCES }
             .keys
+    }
+
+    /**
+     * Confidence-at-error per practice unit (spec `batch-intake-spec.md` §4):
+     * the multi-source assessment over each card's MOST RECENT wrong attempt,
+     * using only signals already stored in review_log (attention switches /
+     * away-time / scroll-backs; answerWasWrong is inherent). High-confidence
+     * errors introduce first — the hypercorrection ordering (Butterfield &
+     * Metcalfe 2001). Cards with no wrong attempt are absent from the map.
+     */
+    suspend fun confidenceAtErrorByPracticeUnit(): Map<String, ConfidenceLevel> {
+        val now = clock.millis()
+        return database.readReviewLogSamples(learnerId, REVIEW_LOG_SAMPLE_LIMIT)
+            .asSequence()
+            .filter { now - it.reviewedAtEpochMillis in 0..AVOIDANCE_LOOKBACK_MILLIS }
+            .filter { it.rating == WRONG_ATTEMPT_RATING }
+            .groupBy(ReviewLogSampleRecord::practiceUnitId)
+            .mapValues { (_, rows) ->
+                val lastWrong = rows.maxBy(ReviewLogSampleRecord::reviewedAtEpochMillis)
+                AttemptConfidenceAssessment.assess(
+                    AttemptConfidenceAssessment.Signals(
+                        attentionFactor = AttentionSignal.attentionFactor(
+                            switchCount = lastWrong.interruptionCount,
+                            awayMillis = lastWrong.awayMillis,
+                        ),
+                        scrollUpCount = lastWrong.scrollUpCount,
+                        answerWasWrong = true,
+                    ),
+                ).level
+            }
     }
 
     /**
@@ -223,6 +268,9 @@ internal class ReviewLogSink(
 
         private const val AVOIDANCE_LOOKBACK_MILLIS = 30L * 24 * 60 * 60 * 1000
         private const val AVOIDANCE_MIN_OCCURRENCES = 2
+
+        /** review_log rating ordinal for AGAIN — a wrong attempt (FSRS 1-based). */
+        private const val WRONG_ATTEMPT_RATING = 1
         private const val REVIEW_LOG_SAMPLE_LIMIT = 100_000
     }
 }

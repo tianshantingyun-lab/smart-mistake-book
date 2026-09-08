@@ -160,18 +160,27 @@ internal class OpenAiCompatibleModelCapabilityTester(
         val response = withTimeoutOrNull(probeTimeoutMillis) {
             transport.post(baseUrl, apiKey, requestBody, beforeEnqueue = {})
         }
+        val probeLabel = if (requestBody.contains("capability_check")) "structured" else
+            if (requestBody.contains("Synthetic") && requestBody.contains("image_url")) "image" else "tools"
         if (response == null) {
+            android.util.Log.w("ModelCapabilityTester", "$probeLabel probe: TIMEOUT")
             ProbeOutcome.CONNECTION_FAILED
-        } else when (response.statusCode) {
-            in 200..299 -> if (accepts(response.body)) {
-                ProbeOutcome.PASSED
-            } else {
-                ProbeOutcome.UNSUPPORTED
+        } else {
+            android.util.Log.w(
+                "ModelCapabilityTester",
+                "$probeLabel probe status=${response.statusCode} body=${response.body.take(160)}",
+            )
+            when (response.statusCode) {
+                in 200..299 -> if (accepts(response.body)) {
+                    ProbeOutcome.PASSED
+                } else {
+                    ProbeOutcome.UNSUPPORTED
+                }
+                400, 415, 422 -> ProbeOutcome.UNSUPPORTED
+                401, 403 -> ProbeOutcome.AUTHENTICATION_FAILED
+                408, 425, 429, in 500..599 -> ProbeOutcome.PROVIDER_UNAVAILABLE
+                else -> ProbeOutcome.PROVIDER_UNAVAILABLE
             }
-            400, 415, 422 -> ProbeOutcome.UNSUPPORTED
-            401, 403 -> ProbeOutcome.AUTHENTICATION_FAILED
-            408, 425, 429, in 500..599 -> ProbeOutcome.PROVIDER_UNAVAILABLE
-            else -> ProbeOutcome.PROVIDER_UNAVAILABLE
         }
     } catch (cancelled: CancellationException) {
         throw cancelled
@@ -234,7 +243,10 @@ internal class OpenAiCompatibleModelCapabilityTester(
     private fun structuredOutputProbe(modelId: String): String = buildJsonObject {
         put("model", modelId)
         put("temperature", 0)
-        put("max_tokens", 32)
+        // Reasoning models spend tokens on chain-of-thought before the final JSON;
+        // a 32-token cap gets consumed by reasoning and the probe sees an empty
+        // message. Raise the cap so the token check is reachable.
+        put("max_tokens", 512)
         put("response_format", buildJsonObject { put("type", "json_object") })
         put(
             "messages",
@@ -262,7 +274,9 @@ internal class OpenAiCompatibleModelCapabilityTester(
     private fun toolsProbe(modelId: String): String = buildJsonObject {
         put("model", modelId)
         put("temperature", 0)
-        put("max_tokens", 32)
+        // Reasoning models burn tokens on chain-of-thought before issuing a
+        // tool call; 32 tokens gets truncated before the call is emitted.
+        put("max_tokens", 512)
         put(
             "tools",
             buildJsonArray {
@@ -323,7 +337,9 @@ internal class OpenAiCompatibleModelCapabilityTester(
     private fun imageInputProbe(modelId: String): String = buildJsonObject {
         put("model", modelId)
         put("temperature", 0)
-        put("max_tokens", 24)
+        // Same reasoning-budget fix as the structured probe: leave room for
+        // chain-of-thought so the visual code reply is not truncated to empty.
+        put("max_tokens", 512)
         put(
             "messages",
             buildJsonArray {
@@ -383,40 +399,12 @@ internal class OpenAiCompatibleModelCapabilityTester(
         const val STRUCTURED_TOKEN = "SMART_MISTAKE_BOOK_STRUCTURED_V1"
         const val TOOLS_TOKEN = "SMART_MISTAKE_BOOK_TOOLS_V1"
         const val IMAGE_RESPONSE_TOKEN = "Q7M2"
+        // A small legal PNG rendered with the code "Q7M2". Earlier constant
+        // concatenated a corrupted payload that providers reject as an
+        // unsupported image (400), which failed the image probe and made every
+        // capable model look "incompatible". This one is verified valid and the
+        // model reads the four-character code from it.
         const val SYNTHETIC_IMAGE_BASE64 =
-            "iVBORw0KGgoAAAANSUhEUgAAAUAAAACACAYAAAB6D7CqAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAtUSURB" +
-                "VHhe7Z3dcdRKEEadDFnw4BSIgRR454kMyIAIiMAJkAAJkAAB+Fb7lm7p9o6+7p4Zre3ROVXfC6vVrn7mqKclLw/PAAAX5cH/AwDAVfhPgE9PT89fv34lhJCl" +
-                "Y667EaC98PDwQAghS8dchwAJIZcMAiSEXDYpAT4+Pt7MnQkh5L3FXFYW4H4hAID3inIbAgSApVFuQ4AAsDTKbQgQAJZGuQ0BAsDSKLchQABYGuU2BAgAS6Pc" +
-                "hgABYGmU2xAgACyNchsCBIClUW5DgACwNMptCBAAlka5DQECwNIotyFAAFga5TYECABLo9yGAAFgaZTbECAALI1yGwIEgKVRbkOAALA0ym0IEACWRrkNAQLA" +
-                "0ii3IUAAWBrlNgQIAEuj3IYAAWBplNsQIAAsjXIbAgSApVFuQ4AAsDTKbQgQAJZGuQ0BAsDSKLchQABYGuU2BHhnfv369fzjx4/n79+/P3/+/Pn506dP/4v9" +
-                "m71my9iyADCGchsCPJm/f/8+//z580Vs+/1biYnRhGjrWhnbT/6CkIm9b4Q/f/7crDObUeyYPj09vVz0vnz5crP+b9++vbzGxbAf5TYEeBI2qOyE9jIbja3T" +
-                "1j3C79+/bwbaPWKDWWED3W9vJnZxGcEE6teZTS8mvZ6Loh1/O36QR7kNAZ5A70CuxD6jF6sm/PruEZOgYmS/jTByoaqyXXz8eqoxea4+I5iFchsCnIidkB8/" +
-                "frw5Wc+KfVZPNbCiAEemiB8+fLhZXzYVRrbvKD3H/2ootyHASdiJ6E/Oe6U6CFYUYG9FbO0Ev65KsoxUmVGqx/9qKLchwAm8pvy2VAbBigKM1n2E3Vzy66ok" +
-                "w0iPMRumw8cotyHAQUYriJnJSnBFAVp6JNBzI2KfiHudH9G+vTLKbQhwkN6e3/a8n8lon+35QL98JvZdMhJYVYB2Z7WKX0c1EWdOfX1G+qAro9yGAAfoGbA2" +
-                "HcpIant+0L8/SqYX9loCjJ7X69mf+0SP2XhmtC4Udgz98ir2/U3i+4th5QJrsoVblNsQYCfVqU3vYwv2nmpFGD0n+BoCjORnjArQZFFhtP9nUWTXb+JS50Z2" +
-                "PRa4RbkNAXZSmdrMuDLP/DwbbH7qPZKoSslWZhkBRs/QRfLfo9aVfTRGoda/JWoLbGT2jSXbB74Sym0IsIPK1CaSUYWKBCsiGCGqTip/pZEZ5NEymUpzw793" +
-                "n+y+VvhlW7ELSBb/3lYq67sKym0IsINo0G+xKkJNbarYurKVSaYXOErUQ6tufyS3bbtUxZm94Jgo/Hv3yR7jI6J9Y7H9UyHTCkGAtyi3IcAO1ADcp+euZET2" +
-                "xki1H1YlI+PqYMwK0KbU/t+3ZKUSfVYkyC1H2LH3y/pUqmMj+s6W6j6/AsptCLBI9uZHdiD2EIlny5nT4Kgayfb99mQGuC0TySXTB1MXMdu2UQHa++27WrYf" +
-                "g/DHrVqlZ/YPArxFuQ0BFslWYDaFOovMQLBU+mEVIgFVp74bme2yZaIebLTvM+8fFWCESbp6gcr0JavrvALKbQiwiJp+3etEzPSXLD1VWMQZU9+NrACNqIJT" +
-                "RAK3/Xu2AHuI9vu9v897QbkNARbJPNpwjxPRf14r2UcsKkQXgEg+iooAo2pIEW2D8dYEmLnoZW8AXQ3lNgRYxJ90rZwhHs9riDjT/xypfCsCjFoRqgpV1eN2" +
-                "7N6aAKOeq0Vt85VRbkOARfxJ18oZU09PVMVsmUkk3WpT31MRYCTjo+9SeZ9/rZV7EE3ZLfe46L5XlNsQYBF/4rVyNPhmkpGFpedmRItMRTT6WZlt2u9b1RM7" +
-                "EkKlcvSvtXI2mamvhervGOU2BFggIwHLWxLgrIFxdvVnZLZp/zlRH7Al5Og9e/xrrZxJVK1uGem7XgHlNgRY4KoCzGx3SzZVMtu037fRX2u0HkSvVI3+9VbO" +
-                "wvan6lXuM2Pfr4xyGwIskBGBZTUB3qP6MzLbtP+saHroe7FRReW3w7/eyhnY98zKryV5+D/KbQiwwBUFGEnDMqsCyWyT37f+9X38nwNG/T8vE/96K7OJpL6P" +
-                "Fzy0UW5DgAUyMrD4QXoGGVlYRh5LMaKe2cxnzzLb5Pdt9HjIXs6VZQ3/eiszqchv5n5fHeU2BFjEn4it+EF6BhlZWEaI/mTMMlph7slsk9+3UR9w/+eA/rV9" +
-                "fLUYLb9lFsjvPJTbEGARfzK2co+7clE1s2WEaMo4+wcfegQYtSU2WUSCaU0n/TKtzCDznN+W1vcEjXIbAiySaU63qonZZL6Hv6tZJfoML6NRMgL0fTrDL7PP" +
-                "JumoUqyud8so0UVmn7N+3GJ1lNsQYJFs5eX7STPJTE0tI1OlTL9ztL/oyQiwNeWO7lLb94yOW2tb/DKtjFCRX0vQkEO5DQEWyQxSy5lX6+yUKfpZKEVUMc2e" +
-                "/hqZfdsSYPS+3m3xy7XSS0V+md83hGOU2xBgkajntKXaB7Tejg2KTOUY3ZndMjJwounvGb2oSGSWlgCzx+QoR5WyX66VHrLys2OQOR9Ao9yGADvwJ+pRWtOq" +
-                "Fn4A24A8em92+mvpJTP9bYlolF4BGn65So6qdb9cK1Wy8rNpPfKbg3IbAuwgW4EdVRaeox5WS4QZSVQ+u0VmkJ5BZtuOBBhVrCp+H2/45VqpEN2J3jJy7OAW" +
-                "5TYE2EG2B2eJmte++mvFxGDVQHYAWUamv5HgR+8uHzEiwOzPg/kc9f8Mv2wrWbLHDvnNR7kNAXai/qjeR8noqPrzsc/LVjmjgoq2bfbjLxsjAqxclPZRvVq/" +
-                "bCsZsj9soL4L9KPchgA7yUwT9zmSoN2hzAyOSo4kkeG1+n/GiAArvdF91J1yv2wrGaKK2tL7H0lBjHIbAhygKi5VOZkgMwMlyugUKlNJnTVQRwRoRJVrK0cX" +
-                "JiNzfCMy+9Ni390q99Ec3dC5MsptCHCAbF9nHzvRbaAfDTz7956BvGVUThkJnUXms5UAey4gChOKX94nYuRY9kRdZK+KchsCHCR6yDbK/uo9OliUHLJEg95e" +
-                "P4tRAVbbElHPLdoXFkX1+8wIArxFuQ0BTqCn8pidWQ/NRtO+Mx6A3hgVYKZ/uU8ki1EBjl7QehJt0xVRbkOAk3gLErSM9oD8+nzOHGCjAjQq0onWNSLAzONN" +
-                "Z+TM4/NeUW5DgBPpfRZtdmzgRoP7CL8un+i5xhFmCDD60YN9IkYE+FoXRAR4i3IbApxM9q7fPWIDuCKsTNUSCWiEGQLM9mQzvcwRAVYq0ZlBgLcotyHAE7Be" +
-                "3FupBi2ZwW6sIMDsnfmMKHoFWO1Fzkxmu66GchsCPBEbCHZCzqoGbFqVrXD2yfYFVxCg4d/TSmY9vQLM7MezggBvUW5DgHfCKhM7Oa1HlRWiDUCrJP001sQa" +
-                "3a3dov7W1WOVqw1elRl3mo+w7fKf55P5fNvX/n0+GXrXk9mPZ+Xohx2ujHIbAnxFjgZ8lkzFlK3+AFZFuQ0BvnOsSjmqBivVH8CqKLchwEVoVYNUfwDabQhw" +
-                "Iaz3tN10ofoD+BflNgS4KJmbBQBXQLkNAQLA0ii3IUAAWBrlNgQIAEuj3IYAAWBplNsQIAAsjXIbAgSApVFuQ4AAsDTKbQgQAJZGuQ0BAsDSKLchQABYGuU2" +
-                "BAgAS6PchgABYGmU2xAgACyNchsCBIClUW5DgACwNMptCBAAlka5DQECwNIotyFAAFga5TYECABLo9yGAAFgaZTbECAALI1yGwIEgKVRbkOAALA0ym0IEACW" +
-                "RrkNAQLA0ii3IUAAWBrlNgQIAEuj3IYAAWBplNsQIAAsjXIbAgSApVFuQ4AAsDTKbYcCfHx8fPk3Qgh5zzGXlQVICCErBgESQi4bBEgIuWyaAnx6erqZOxNC" +
-                "yGox190IEADgaiBAALgs/wAJrDxrlPIboQAAAABJRU5ErkJggg=="
+            "iVBORw0KGgoAAAANSUhEUgAAAKAAAABACAIAAAAS6ev4AAADIUlEQVR4nO3dP0vrUBjH8dPqUhAjxTr4BiwWpFoFNTUEghQRl4J/BgWnvglxFXwJUqouOohbOxhxcVBxySBKHIqLIlgsUSi6aJ47HAiS63S5pseH32fpOUkKR76cNkOKMSISwFe83QuAn9UpX2KxWHvXAf+d/GzGDmYOgZnrDM1xz/Xbhb5tsYOZQ2DmEJg5BGYOgZlDYOYQmDkEZg6BmUNg5hCYOQRmDoGZQ2DmEJg5BGZOocA7Ozu5XG5iYmJ0dHRvb08IsbS0ZJqmaZqTk5O9vb3yskQisbCwELxreXk5kUjI8fb29tTUVDabPT4+jn79iiKir09xUJscHR3puu55HhF5nqfr+unpaXC2XC6vr6/LsaZpQ0NDHx8fROT7/vj4uKZpRNRoNAzD+Pz8dF03nU5H/ycoIlz226PRsyzr/Pw8mJ6dnc3MzMix7/vZbPbp6UlONU1bXV29uLggIsdxSqWSDOy67sHBARG1Wq1UKhXx+tURSqnKR7TrusPDw8F0ZGTk5uZGjqvV6tjYWF9fX3C2UCjYti2EsG27UCjIg+l0en5+XghxeHg4NzcX3dIV92326PX397+/vwfTt7e3ZDIpx4Zh3N7eBqc0TWs2m/l8noimp6dfX1/lDpbq9Xomk2k0GhGtWz2hlKrs4Ewm4zhOMHUcZ3BwUAhxeXnZ09MzMDDw9eJkMhmPx+/v74UQ3d3dwfFWq7W4uFipVFKpVFQLV9632aN3cnKi6/rLywsReZ6Xz+drtRoRFYvFr3dbRCT368bGxsrKyubmZnDE9/1isbi/vx/52tUSShl+LrpdLMt6eHiwLKujo8N1XSHE3d1dvV5/fHw0DOPv62dnZ9fW1q6uroIju7u7tm03m82tra2urq5arRbd6hUWk82Dp6VJjQffn5+fr6+vTdNs90J+n1BKRQPDPwulVOUmC34IAjOHwMwhMHMIzBwCM4fAzCEwcwjMHAIzh8DMITBzCMwcAjOHwMwhMHMIzBwCM4fAzCEwcwjMHAIzh8DMITBzCMwcAjOHwMyFf12I/5DFDHYwcwjMXAy/F+UNO5i5P+gYTZ49ANt4AAAAAElFTkSuQmCC"
     }
 }

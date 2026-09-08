@@ -8,6 +8,8 @@
 
 > **2026-07-23 原子记忆补充：** 题目只是能力证据的载体。归类模型必须把用户提供题目的真实解题步骤拆成原子知识/技能；掌握投影按原子节点在单科内跨题共享、跨科隔离。可见错题目录仍保持 `科目 → 板块 → 知识点`。本地知识库只保存知识本体，不保存题库；模型知识不足时提出受控检索请求，经来源审校后才能补充本体，不能直接编造或写掌握度。同一学科、父级与规范化查询形成稳定缺口指纹，允许跨题聚合研究，但每道题的触发事实仍独立留痕。该队列静默运行，不要求学生替系统判断资料权威性。
 
+> **2026-09-06 结构化场景渲染隔离（D-001 增补）：** 2D/3D 结构化场景渲染（`visualScene` / `TutorVisualSceneRenderer`，含 `TutorGuiSpec` 的声明式场景 step_flow/comparison/evidence_chain/process_timeline/concept_map/formula_derivation/spatial_diagram）**从当前产品隔离，暂停开发**。该功能需长久打磨、当前仅锦上添花、起不到关键作用，故从用户可见 UI 中移除：模型不再产出、`TUTOR_VISUAL_GENERATE`/`TUTOR_VISUAL_REVIEW` 生成任务不再触发、scene 不再渲染。**代码、模型字段、渲染器、视觉任务与测试全部保留，改动 `feature/tutor/TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED`（当前 true）即可整体恢复。** 边界：本隔离仅针对**结构化场景渲染**；**`attachedImages`（模型生成的位图）是另一功能**，与本隔离无关、不受影响。后续任务不得在未明确本边界的情况下擅自重新投入结构化场景渲染的开发。
+
 ## 1. 最终裁决
 
 产品定位改为：

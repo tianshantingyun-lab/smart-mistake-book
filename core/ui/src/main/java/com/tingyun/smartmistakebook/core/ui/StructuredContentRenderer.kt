@@ -42,11 +42,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -125,9 +122,10 @@ fun SafeMarkdownText(
     modifier: Modifier = Modifier,
     color: Color = Ink,
     emptyFallback: String? = null,
+    streaming: Boolean = false,
 ) {
     val displayText = markdown.ifBlank { emptyFallback.orEmpty() }
-    val annotated = remember(displayText) { displayText.toSafeAnnotatedString() }
+    val annotated = remember(displayText, streaming) { displayText.toSafeAnnotatedString(streaming) }
     Text(
         text = annotated,
         modifier = modifier,
@@ -573,40 +571,28 @@ private fun SymbolTableRow(
     }
 }
 
-private fun String.toSafeAnnotatedString(): AnnotatedString = buildAnnotatedString {
-    SafeInlineMarkdown.parse(this@toSafeAnnotatedString).forEach { token ->
+private fun String.toSafeAnnotatedString(streaming: Boolean = false): AnnotatedString = buildAnnotatedString {
+    val tokens = if (streaming) {
+        SafeInlineMarkdown.parseStreaming(this@toSafeAnnotatedString)
+    } else {
+        SafeInlineMarkdown.parse(this@toSafeAnnotatedString)
+    }
+    tokens.forEach { token ->
         when (token) {
             is InlineToken.Text -> append(token.value)
-            is InlineToken.Strong -> withStyle(
-                SpanStyle(
-                    fontWeight = FontWeight.ExtraBold,  // 使用更粗的字重
-                    background = JadeSoft.copy(alpha = 0.25f),  // 明显的背景高亮
-                ),
-            ) {
+            is InlineToken.Strong -> withStyle(TutorMarkdownTokens.strong) {
                 append(token.value)
             }
 
-            is InlineToken.Emphasis -> withStyle(
-                SpanStyle(fontStyle = FontStyle.Italic),
-            ) {
+            is InlineToken.Emphasis -> withStyle(TutorMarkdownTokens.emphasis) {
                 append(token.value)
             }
 
-            is InlineToken.Code -> withStyle(
-                SpanStyle(
-                    background = JadeSoft,
-                    fontFamily = FontFamily.Monospace,
-                ),
-            ) {
+            is InlineToken.Code -> withStyle(TutorMarkdownTokens.code) {
                 append(token.value)
             }
 
-            is InlineToken.Formula -> withStyle(
-                SpanStyle(
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Medium,  // 增加字重使公式更易读
-                ),
-            ) {
+            is InlineToken.Formula -> withStyle(TutorMarkdownTokens.formula) {
                 append(ReadableMathText.formula(token.value))
             }
 

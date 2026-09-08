@@ -92,4 +92,52 @@ class OpenAiImageGenerationChannelTest {
 
         assertTrue(error is ImageGenerationException)
     }
+
+    @Test
+    fun `generates a text-to-image figure via the generations endpoint`() = runBlocking {
+        val png = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 9, 8, 7)
+        val b64 = Base64.getEncoder().encodeToString(png)
+        server.enqueue(
+            MockResponse().setBody(
+                """{"created":1,"data":[{"b64_json":"$b64","mime_type":"image/png"}]}""",
+            ),
+        )
+
+        val result = channel.generate(
+            ImageGenerationRequest(
+                prompt = "画出函数 f(x)=x^2 的抛物线，标注顶点与对称轴。",
+            ),
+        )
+
+        val recorded = server.takeRequest()
+        assertEquals("/v1/images/generations", recorded.path)
+        val bodyText = recorded.body.readUtf8()
+        assertTrue(bodyText.contains("gpt-image-2"))
+        assertTrue(bodyText.contains("抛物线"))
+        assertTrue(result.imageBytes.contentEquals(png))
+        assertEquals("image/png", result.mimeType)
+    }
+
+    @Test
+    fun `generates a seeded figure via the edits endpoint when a source image is given`() = runBlocking {
+        val png = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 5, 6)
+        val b64 = Base64.getEncoder().encodeToString(png)
+        server.enqueue(
+            MockResponse().setBody(
+                """{"created":1,"data":[{"b64_json":"$b64","mime_type":"image/png"}]}""",
+            ),
+        )
+
+        channel.generate(
+            ImageGenerationRequest(
+                prompt = "基于此题图添加辅助线并重绘。",
+                sourceImageBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47),
+                sourceImageMimeType = "image/png",
+            ),
+        )
+
+        val recorded = server.takeRequest()
+        assertEquals("/v1/images/edits", recorded.path)
+        assertTrue(recorded.body.readUtf8().contains("辅助线"))
+    }
 }
