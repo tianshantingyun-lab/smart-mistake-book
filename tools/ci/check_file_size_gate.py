@@ -86,6 +86,8 @@ def base_line_count(base: str, path: Path) -> int:
         cwd=REPO,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if content.returncode != 0:
