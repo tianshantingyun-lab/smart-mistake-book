@@ -15,7 +15,8 @@
 ## 文件结构
 
 **创建：**
-- `core/data/src/main/kotlin/com/tingyun/smartmistakebook/core/data/model/wire/ModelWireProtocol.kt` —— 协议枚举 + 协议接口 + 协议解析入口。
+- `core/model/src/main/kotlin/com/tingyun/smartmistakebook/core/model/ModelProviderProtocol.kt` —— 协议枚举。**必须在 core:model**：core:domain（配置快照）与 core:data（协议实现）都要用它，core:model 是两者共同的上游。
+- `core/data/src/main/kotlin/com/tingyun/smartmistakebook/core/data/model/wire/ModelWireProtocol.kt` —— 协议接口 + 协议解析入口。
 - `core/data/src/main/kotlin/com/tingyun/smartmistakebook/core/data/model/wire/OpenAiChatCompletionsProtocol.kt` —— 现有 OpenAI 行为的协议实现（委托现有 `OpenAiModelProtocol`/`OpenAiSse`）。
 - `core/data/src/test/kotlin/com/tingyun/smartmistakebook/core/data/model/wire/OpenAiChatCompletionsProtocolTest.kt` —— 特征化测试：新实现与现状逐字节一致。
 
@@ -84,6 +85,7 @@ package com.tingyun.smartmistakebook.core.data.model.wire
 
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.data.model.OpenAiModelProtocol
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Assert.assertEquals
@@ -159,15 +161,10 @@ class OpenAiChatCompletionsProtocolTest {
 
 - [ ] **步骤 3：实现协议接口与 OpenAI 实现**
 
-`wire/ModelWireProtocol.kt`：
+`core/model/.../ModelProviderProtocol.kt`：
 
 ```kotlin
-package com.tingyun.smartmistakebook.core.data.model.wire
-
-import com.tingyun.smartmistakebook.core.data.model.ApprovedImage
-import com.tingyun.smartmistakebook.core.model.ModelTaskInput
-import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
-import okhttp3.HttpUrl
+package com.tingyun.smartmistakebook.core.model
 
 /** 模型 Provider 的线上协议族（spec 2026-09-08-multi-protocol §3.1）。 */
 enum class ModelProviderProtocol(val wireId: String) {
@@ -181,6 +178,18 @@ enum class ModelProviderProtocol(val wireId: String) {
         val DEFAULT: ModelProviderProtocol = OPENAI_CHAT_COMPLETIONS
     }
 }
+```
+
+`wire/ModelWireProtocol.kt`：
+
+```kotlin
+package com.tingyun.smartmistakebook.core.data.model.wire
+
+import com.tingyun.smartmistakebook.core.data.model.ApprovedImage
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
+import com.tingyun.smartmistakebook.core.model.ModelTaskInput
+import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
+import okhttp3.HttpUrl
 
 /**
  * 一个协议族要提供的**全部协议相关行为**。任务 prompt 与 JSON 解析不在此层
@@ -223,6 +232,7 @@ package com.tingyun.smartmistakebook.core.data.model.wire
 import com.tingyun.smartmistakebook.core.data.model.ApprovedImage
 import com.tingyun.smartmistakebook.core.data.model.OpenAiModelProtocol
 import com.tingyun.smartmistakebook.core.data.model.OpenAiSse
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.ModelTaskInput
 import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
 import okhttp3.HttpUrl
