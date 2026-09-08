@@ -19,7 +19,7 @@ import com.tingyun.smartmistakebook.core.model.toTutorAssessmentItem
  *
  * 消灭的失败：知识点复习的"取题"逻辑散在 Composable 无法测试、各节点材料解析标准不一。
  */
-internal class KnowledgeReviewQuizLoader(
+class KnowledgeReviewQuizLoader(
     private val modelTasks: ModelTaskRepository,
     private val references: TutorTeachingReferenceRepository,
 ) {
