@@ -28,6 +28,7 @@
 - `31c60f9`：计划只排**可出题**（有讲解材料）节点——生产知识包 3018 节点中 1575 个有材料（52.2%），不过滤会排入永远出不了题的死节点。
 - `1b89320`：知识点入口仅在模型可用（`remoteModelAvailable`）时给出——取题依赖模型现场生成，strictOffline 下会死路。
 - `604c33e`：入口按实算 count 显隐并显示"建议先复习知识点：N 个"（spec §3.1）。
+- 2026-09-08 验证补强：`KnowledgeQuizProtocolMockWebServerTest` 补上"请求侧 boundary 锚上 wire + 真实 HTTP 往返解析 + 越界回复拒绝"（3/3，此前只有响应侧解析测试）；设备实测 `BundledKnowledgeBaseInstallerInstrumentedTest` 验证真实知识包 → 真实 `referencesFor` 返回讲解材料（1/1）。
 
 已证实的关键链路（§3.4）：`submitKnowledgeQuizFeedback` → 门控 → `allocateSequence` 递增 `learning_sequence`（即 `observeLedgerHead` 的查询目标）→ projection outbox → `drainProjection` → `LearningProjector.projectChatEvidence` 更新 `knowledgeMasteryStates` → `scoreCandidate` 据此排程。知识点复习确实影响后续错题排程。
 
