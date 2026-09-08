@@ -12,6 +12,27 @@
 
 ---
 
+## 执行记录（2026-09-09）
+
+| 任务 | 提交 | 验证 |
+|---|---|---|
+| 1 删死代码 `TutorProviderMatrix` | `3b94b31` | core:data 308/0；任务审查 clean |
+| 2 抽协议层（行为不变） | `8f91a74` | 特征化 5/5；core:data 313/0；任务审查 clean（1 条重要发现经 amend 修复 + 定向复审确认） |
+| 3 配置字段 + 指纹动态化 | `36e85e9` | core:domain 339/0、core:data 321/0；全模块 1388/0；双 flavor 编译；设备 5/5 |
+
+执行中的计划偏差（均经控制者裁定并已回写本计划）：
+
+- 协议枚举下沉 `core:model`（core:domain 需引用）——文件结构与任务 2 已改。
+- 任务 2 的网关先用 `protocolFor(DEFAULT)`，任务 3 步骤 3b 翻到配置——已改。
+- `ModelCapabilityTester.kt` 是 `post` 签名变化的第三调用方（文件清单遗漏）——已补。
+- 能力探测的协议来源在任务 3 一并翻到配置：未实现协议 fail fast（`ProviderUnavailable`），
+  不按 OpenAI 形状向真实端点发请求。
+
+P1 验收（2026-09-09 当前证据）：全模块 **1388 单测 0 失败 0 错误**；`localFirst` +
+`strictOffline`（含 androidTest）编译通过；`connectedLocalFirstDebugAndroidTest` 设备实测 **5/5**。
+
+---
+
 ## 文件结构
 
 **创建：**
