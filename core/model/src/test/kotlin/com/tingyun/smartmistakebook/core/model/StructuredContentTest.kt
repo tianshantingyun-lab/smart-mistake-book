@@ -194,6 +194,21 @@ class StructuredContentTest {
     }
 
     @Test
+    fun `figure polyline curved fields default for legacy payloads`() {
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val legacy = """{"id":"line","points":[{"x":0.0,"y":0.0},{"x":1.0,"y":2.0}]}"""
+        val decoded = json.decodeFromString<FigurePolyline>(legacy)
+        assertEquals(false, decoded.curved)
+        assertEquals(0.2f, decoded.smoothness, 0.0001f)
+
+        val curved = json.decodeFromString<FigurePolyline>(
+            """{"id":"line","points":[{"x":0.0,"y":0.0},{"x":1.0,"y":2.0}],"curved":true,"smoothness":0.8f}""",
+        )
+        assertEquals(true, curved.curved)
+        assertEquals(0.8f, curved.smoothness, 0.0001f)
+    }
+
+    @Test
     fun `invalid axes degrade the whole figure to alternative text`() {
         val raw = QuestionDocument(
             id = "question",

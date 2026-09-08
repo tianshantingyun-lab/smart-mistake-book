@@ -76,12 +76,20 @@ internal object DeterministicPdfFigureRenderer {
         schema.polylines.forEach { line ->
             if (line.points.size >= 2) {
                 val path = Path()
+                val xs = FloatArray(line.points.size)
+                val ys = FloatArray(line.points.size)
                 line.points.forEachIndexed { index, point ->
-                    val x = map(point.x, schema.xAxis.minimum, schema.xAxis.maximum, plot.left, plot.right)
-                    val y = map(point.y, schema.yAxis.minimum, schema.yAxis.maximum, plot.bottom, plot.top)
-                    if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    xs[index] = map(point.x, schema.xAxis.minimum, schema.xAxis.maximum, plot.left, plot.right)
+                    ys[index] = map(point.y, schema.yAxis.minimum, schema.yAxis.maximum, plot.bottom, plot.top)
                 }
-                canvas.drawPath(path, seriesPaint(line.style))
+                if (line.curved) {
+                    drawCubicPolyline(canvas, xs, ys, line.smoothness, seriesPaint(line.style))
+                } else {
+                    for (index in xs.indices) {
+                        if (index == 0) path.moveTo(xs[index], ys[index]) else path.lineTo(xs[index], ys[index])
+                    }
+                    canvas.drawPath(path, seriesPaint(line.style))
+                }
                 line.label?.let { label ->
                     val anchor = line.points.last()
                     val x = map(anchor.x, schema.xAxis.minimum, schema.xAxis.maximum, plot.left, plot.right)
@@ -116,6 +124,36 @@ internal object DeterministicPdfFigureRenderer {
         if (schema.yAxis.label.isNotBlank()) {
             canvas.drawText(schema.yAxis.label, plot.left + 4f, plot.top + 10f, labelPaint)
         }
+    }
+
+    /**
+     * Draws a smooth cubic through [xs]/[ys] using [cubicTo]. Control points sit
+     * on the chord between neighbouring points, pulled toward the middle by
+     * [smoothness] (0 = near straight, 1 = pronounced curve), mirroring the
+     * cubic-intent idea used by established chart renderers.
+     */
+    private fun drawCubicPolyline(
+        canvas: Canvas,
+        xs: FloatArray,
+        ys: FloatArray,
+        smoothness: Float,
+        paint: Paint,
+    ) {
+        val s = smoothness.coerceIn(0f, 1f)
+        val path = Path()
+        path.moveTo(xs[0], ys[0])
+        var i = 1
+        while (i < xs.size - 1) {
+            val dx = (xs[i + 1] - xs[i - 1]) * s
+            val dy = (ys[i + 1] - ys[i - 1]) * s
+            val c1x = xs[i] - dx / 2f
+            val c1y = ys[i] - dy / 2f
+            val c2x = xs[i] + dx / 2f
+            val c2y = ys[i] + dy / 2f
+            path.cubicTo(c1x, c1y, c2x, c2y, xs[i + 1], ys[i + 1])
+            i += 1
+        }
+        canvas.drawPath(path, paint)
     }
 
     private fun drawTickLabels(
