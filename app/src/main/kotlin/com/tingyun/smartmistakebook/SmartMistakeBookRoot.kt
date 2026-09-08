@@ -330,9 +330,40 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 val destinationLifecycle by entry.lifecycle.currentStateFlow
                     .collectAsStateWithLifecycle()
                 if (destinationLifecycle == Lifecycle.State.RESUMED) {
+                    // 今日可复习知识点数（spec dual-review-entry §3.1）：仅在复习首页可见且模型
+                    // 可用时实算一次（含材料可出题过滤），避免把材料读取放进 snapshot 发布热路径。
+                    // 键含 planId/profile：计划或掌握态变化时重算；失败/无计划 → null（不显示入口）。
+                    val knowledgeReviewCount by produceState<Int?>(
+                        initialValue = null,
+                        key1 = experience.status,
+                        key2 = Triple(
+                            experience.review.planId,
+                            experience.profile,
+                            capabilities.remoteModelAvailable,
+                        ),
+                    ) {
+                        value = if (
+                            experience.status == StudyDataStatus.READY &&
+                            capabilities.remoteModelAvailable
+                        ) {
+                            try {
+                                repository.currentKnowledgeReviewPlan(
+                                    requestId = "knowledge-review-count:${UUID.randomUUID()}",
+                                    occurredAtEpochMillis = System.currentTimeMillis(),
+                                )?.queue?.size
+                            } catch (cancelled: CancellationException) {
+                                throw cancelled
+                            } catch (_: Exception) {
+                                null
+                            }
+                        } else {
+                            null
+                        }
+                    }
                     ReviewRoute(
                         overview = experience.review,
                         profile = experience.profile,
+                        knowledgeReviewCount = knowledgeReviewCount,
                         onStartReview = {
                             applicationUiScope.launch {
                                 try {

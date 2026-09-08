@@ -22,7 +22,7 @@ class DualReviewEntryInstrumentedTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun activeReviewDayShowsClickableKnowledgeEntry() {
+    fun computedKnowledgeCountShowsClickableEntry() {
         var knowledgeStarted = false
         composeRule.setContent {
             SmartMistakeBookTheme {
@@ -34,6 +34,7 @@ class DualReviewEntryInstrumentedTest {
                     profile = StudyProfileOverview(hasLearningEvidence = true),
                     onStartReview = {},
                     onStartKnowledgeReview = { knowledgeStarted = true },
+                    knowledgeReviewCount = 3,
                 )
             }
         }
@@ -44,7 +45,8 @@ class DualReviewEntryInstrumentedTest {
     }
 
     @Test
-    fun completedTodayDoesNotShowTheKnowledgeEntry() {
+    fun completedMistakeReviewKeepsTheKnowledgeEntryWhenKnowledgeRemains() {
+        // 两个入口独立、自由选：错题复习完成不隐藏知识点入口（只要还有可复习知识点）。
         composeRule.setContent {
             SmartMistakeBookTheme {
                 ReviewRoute(
@@ -56,23 +58,25 @@ class DualReviewEntryInstrumentedTest {
                     profile = StudyProfileOverview(hasLearningEvidence = true),
                     onStartReview = {},
                     onStartKnowledgeReview = {},
+                    knowledgeReviewCount = 2,
                 )
             }
         }
 
-        composeRule.onNodeWithTag("review_start_knowledge_review").assertDoesNotExist()
+        composeRule.onNodeWithTag("review_start_knowledge_review").assertIsDisplayed()
         composeRule.onNodeWithTag("review_start_button").assertIsNotEnabled()
     }
 
     @Test
-    fun noPlanTodayDoesNotShowTheKnowledgeEntry() {
+    fun zeroOrUnloadedKnowledgeCountDoesNotShowTheEntry() {
         composeRule.setContent {
             SmartMistakeBookTheme {
                 ReviewRoute(
-                    overview = StudyReviewOverview(scheduledCount = 0),
-                    profile = StudyProfileOverview(hasLearningEvidence = false),
+                    overview = StudyReviewOverview(scheduledCount = 5),
+                    profile = StudyProfileOverview(hasLearningEvidence = true),
                     onStartReview = {},
                     onStartKnowledgeReview = {},
+                    knowledgeReviewCount = 0,
                 )
             }
         }

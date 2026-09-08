@@ -51,6 +51,8 @@ fun ReviewRoute(
     profile: StudyProfileOverview,
     onStartReview: () -> Unit,
     onStartKnowledgeReview: (() -> Unit)? = null,
+    /** 今日可复习知识点数（spec §3.1）；null = 未加载/不可用。>0 才显示知识点入口。 */
+    knowledgeReviewCount: Int? = null,
     modifier: Modifier = Modifier,
 ) {
     RootPageColumn(
@@ -71,12 +73,14 @@ fun ReviewRoute(
             )
         }
         Spacer(Modifier.height(30.dp))
-        // 双复习入口（spec dual-review-entry §3.1）：知识点复习是今日错题的知识点排程伴侣，
-        // 学生可自由选，建议先巩固概念再做错题。是否真有知识点队列由会话屏在进入时经
-        // currentKnowledgeReviewPlan 决定（空则显示"今日无需复习"），首页不猜测、不重复排程。
-        if (onStartKnowledgeReview != null && isKnowledgeReviewDay(overview)) {
+        // 双复习入口（spec dual-review-entry §3.1）：知识点复习与错题复习并列、学生自由选，
+        // 建议先巩固概念再做错题。入口只在今天真有可复习知识点（count>0）时出现——count 由
+        // app 层经 currentKnowledgeReviewPlan 实算（含"有讲解材料可出题"过滤），首页不猜测；
+        // 错题复习是否完成不影响该入口（两者独立，自由选）。
+        if (knowledgeReviewEntryVisible(knowledgeReviewCount, onStartKnowledgeReview != null)) {
             KnowledgeReviewEntryCard(
-                onClick = onStartKnowledgeReview,
+                knowledgeCount = requireNotNull(knowledgeReviewCount),
+                onClick = requireNotNull(onStartKnowledgeReview),
                 modifier = Modifier.testTag("review_start_knowledge_review"),
             )
             Spacer(Modifier.height(12.dp))
@@ -164,15 +168,22 @@ internal fun shouldShowReviewSummary(
 ): Boolean = scheduledCount > 0 || hasLearningEvidence
 
 /**
- * 知识点复习入口只在"今天确有复习计划"时展示（spec dual-review-entry §3.1）——知识点范围
- * 派生自今日错题队列，没有今日计划就没有可复习的知识点。已完成今天的不再建议。
+ * 知识点复习入口的显隐规则（spec dual-review-entry §3.1）：今天真有可复习知识点
+ * （app 层实算的 [count] > 0，含"有讲解材料可出题"过滤）且已接线启动回调时才显示。
+ * 与错题复习是否完成无关——两者独立、学生自由选。
  */
-internal fun isKnowledgeReviewDay(overview: StudyReviewOverview): Boolean =
-    overview.scheduledCount > 0 && !overview.completedToday
+internal fun knowledgeReviewEntryVisible(
+    count: Int?,
+    hasStartCallback: Boolean,
+): Boolean = hasStartCallback && count != null && count > 0
 
-/** 知识点复习入口卡：与错题复习并列的第二个入口，建议先巩固概念再练题。 */
+/**
+ * 知识点复习入口卡：与错题复习并列的第二个入口，建议先巩固概念再练题。
+ * 显示今日可复习知识点数（spec §3.1"建议先复习知识点：XX 个"）。
+ */
 @Composable
 private fun KnowledgeReviewEntryCard(
+    knowledgeCount: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -202,7 +213,7 @@ private fun KnowledgeReviewEntryCard(
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    text = "巩固今天涉及的概念，再做错题",
+                    text = "建议先复习知识点：$knowledgeCount 个",
                     style = MaterialTheme.typography.bodySmall,
                     color = SmartColors.InkSecondary,
                 )
