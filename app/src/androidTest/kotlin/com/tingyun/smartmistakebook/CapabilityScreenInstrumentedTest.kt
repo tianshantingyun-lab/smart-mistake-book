@@ -5,6 +5,7 @@ import android.provider.MediaStore
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -25,6 +26,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
 import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.NetworkMode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
@@ -151,6 +153,74 @@ class CapabilityScreenInstrumentedTest {
         composeRule.onNodeWithText("本机配置与密钥已清除。")
             .performScrollTo()
             .assertExists()
+    }
+
+    @Test
+    fun protocolPickerShowsTheSavedProtocolAndSavesTheSelection() {
+        val saved = java.util.concurrent.atomic.AtomicReference<ModelConfigurationUpdate?>(null)
+        val store = ProtocolRecordingStore(
+            ModelConfigurationSnapshot(
+                provider = "兼容服务",
+                baseUrl = "https://api.example.com/v1",
+                modelId = "vision-model",
+                protocol = ModelProviderProtocol.ANTHROPIC_MESSAGES,
+                isConfigured = true,
+                updatedAtEpochMillis = 1_000L,
+                configurationVersion = "configuration-v1",
+            ),
+            saved,
+        )
+        setCapabilityContent(store)
+
+        // 已保存的协议呈选中态。
+        composeRule.onNodeWithTag("capability_protocol_ANTHROPIC_MESSAGES")
+            .performScrollTo()
+            .assertIsSelected()
+
+        composeRule.onNodeWithTag("capability_protocol_GEMINI_GENERATE_CONTENT")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithTag("capability_api_key").performScrollTo().performTextInput("secret")
+        composeRule.onNodeWithTag("capability_save").performScrollTo().performClick()
+        composeRule.waitForIdle()
+
+        assertEquals(
+            ModelProviderProtocol.GEMINI_GENERATE_CONTENT,
+            saved.get()?.protocol,
+        )
+    }
+
+    private class ProtocolRecordingStore(
+        initial: ModelConfigurationSnapshot,
+        private val saved: java.util.concurrent.atomic.AtomicReference<ModelConfigurationUpdate?>,
+    ) : ModelConfigurationStore {
+        private val state = MutableStateFlow(initial)
+        override val configuration: Flow<ModelConfigurationSnapshot> = state
+
+        override suspend fun save(
+            update: ModelConfigurationUpdate,
+            apiKey: ModelApiKey,
+        ): ModelConfigurationMutationResult {
+            saved.set(update)
+            return ModelConfigurationMutationResult.Success(
+                ModelConfigurationSnapshot(
+                    provider = update.provider,
+                    baseUrl = update.baseUrl,
+                    modelId = update.modelId,
+                    protocol = update.protocol,
+                    isConfigured = true,
+                    updatedAtEpochMillis = 2_000L,
+                    configurationVersion = "configuration-v2",
+                ),
+            )
+        }
+
+        override suspend fun rotateApiKey(apiKey: ModelApiKey): ModelConfigurationMutationResult =
+            error("Not used")
+
+        override suspend fun readCredential(): ModelCredentialReadResult = error("Not used")
+
+        override suspend fun clear(): ModelConfigurationMutationResult = error("Not used")
     }
 
     private fun setCapabilityContent(

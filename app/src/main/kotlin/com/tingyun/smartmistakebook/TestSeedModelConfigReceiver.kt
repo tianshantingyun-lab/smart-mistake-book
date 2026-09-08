@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.tingyun.smartmistakebook.core.domain.ModelApiKey
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 
 /**
  * Debug-only test harness: lets QA seed a model configuration from `adb`
@@ -29,6 +30,10 @@ class TestSeedModelConfigReceiver : BroadcastReceiver() {
         if (provider.isNullOrBlank() || baseUrl.isNullOrBlank() || modelId.isNullOrBlank() || apiKey.isNullOrBlank()) {
             return
         }
+        // 可选：--es protocol <wireId>（见 ModelProviderProtocol.wireId）；缺省 = OpenAI 兼容。
+        val protocol = intent.getStringExtra("protocol")
+            ?.let { wireId -> ModelProviderProtocol.entries.firstOrNull { it.wireId == wireId } }
+            ?: ModelProviderProtocol.DEFAULT
         val app = context.applicationContext as SmartMistakeBookApplication
         val store = app.modelConfigurationStore ?: return
         val original = goAsync()
@@ -43,6 +48,7 @@ class TestSeedModelConfigReceiver : BroadcastReceiver() {
                                 provider = provider,
                                 baseUrl = baseUrl,
                                 modelId = modelId,
+                                protocol = protocol,
                             ),
                             key,
                         )

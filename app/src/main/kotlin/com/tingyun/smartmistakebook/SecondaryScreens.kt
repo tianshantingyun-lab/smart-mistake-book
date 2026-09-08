@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +61,7 @@ import com.tingyun.smartmistakebook.core.domain.BackupRepository
 import com.tingyun.smartmistakebook.core.domain.BackupValidation
 import com.tingyun.smartmistakebook.core.domain.StorageInventory
 import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationReport
 import com.tingyun.smartmistakebook.core.model.NetworkMode
@@ -121,6 +123,7 @@ internal fun CapabilityScreen(
     var provider by remember { mutableStateOf("") }
     var baseUrl by remember { mutableStateOf("") }
     var modelId by remember { mutableStateOf("") }
+    var protocol by remember { mutableStateOf(ModelProviderProtocol.DEFAULT) }
     var apiKey by remember { mutableStateOf("") }
     var operation by remember { mutableStateOf(CapabilityOperation.IDLE) }
     var operationMessage by remember { mutableStateOf<String?>(null) }
@@ -144,6 +147,7 @@ internal fun CapabilityScreen(
         provider = configuration.provider
         baseUrl = configuration.baseUrl
         modelId = configuration.modelId
+        protocol = configuration.protocol
     }
 
     RootPageColumn(modifier = Modifier.testTag("capability_screen")) {
@@ -168,6 +172,35 @@ internal fun CapabilityScreen(
                 color = InkSecondary,
                 style = MaterialTheme.typography.bodyMedium,
             )
+            Text(
+                text = "接口协议（按服务商选择；选错协议会连不通）",
+                modifier = Modifier
+                    .padding(bottom = 6.dp)
+                    .testTag("capability_protocol_label"),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("capability_protocol_group"),
+            ) {
+                ModelProviderProtocol.entries.forEach { candidate ->
+                    FilterChip(
+                        selected = protocol == candidate,
+                        onClick = {
+                            protocol = candidate
+                            operationMessage = null
+                        },
+                        label = { Text(candidate.displayLabel()) },
+                        enabled = formEnabled,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 6.dp)
+                            .testTag("capability_protocol_${candidate.name}"),
+                    )
+                }
+            }
             OutlinedTextField(
                 value = provider,
                 onValueChange = {
@@ -205,7 +238,7 @@ internal fun CapabilityScreen(
                     .fillMaxWidth()
                     .padding(top = 10.dp)
                     .testTag("capability_base_url"),
-                label = { Text("Base URL（例如 https://服务地址/v1）") },
+                label = { Text("Base URL（${protocol.baseUrlHint()}）") },
                 enabled = formEnabled,
                 singleLine = true,
             )
@@ -235,6 +268,7 @@ internal fun CapabilityScreen(
                     val submittedProvider = provider
                     val submittedBaseUrl = baseUrl
                     val submittedModelId = modelId
+                    val submittedProtocol = protocol
                     val submittedApiKey = apiKey
                     operation = CapabilityOperation.SAVING
                     operationMessage = null
@@ -247,6 +281,7 @@ internal fun CapabilityScreen(
                                     provider = submittedProvider,
                                     baseUrl = submittedBaseUrl,
                                     modelId = submittedModelId,
+                                    protocol = submittedProtocol,
                                 ),
                                 apiKey = secret,
                             )
@@ -300,7 +335,8 @@ internal fun CapabilityScreen(
                 enabled = formEnabled && capabilityTester != null &&
                     configuration.isConfigured && apiKey.isBlank() &&
                     provider == configuration.provider &&
-                    baseUrl == configuration.baseUrl && modelId == configuration.modelId,
+                    baseUrl == configuration.baseUrl && modelId == configuration.modelId &&
+                    protocol == configuration.protocol,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
@@ -866,4 +902,23 @@ private fun ModelConfigurationMutationResult.toUserMessage(successMessage: Strin
     ModelConfigurationMutationResult.MissingConfiguration -> "本机没有可更新的配置。"
     ModelConfigurationMutationResult.StorageUnavailable ->
         "本机安全存储暂不可用，配置未生效。"
+}
+
+/** 设置界面里协议的中文标签（spec 2026-09-08-multi-protocol §3.2 显式协议选择）。 */
+private fun ModelProviderProtocol.displayLabel(): String = when (this) {
+    ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS -> "OpenAI 兼容（默认）"
+    ModelProviderProtocol.OPENAI_RESPONSES -> "OpenAI Responses"
+    ModelProviderProtocol.ANTHROPIC_MESSAGES -> "Anthropic Messages"
+    ModelProviderProtocol.GEMINI_GENERATE_CONTENT -> "Google Gemini"
+}
+
+/**
+ * Base URL 该填什么由协议决定：各协议的端点路径不同（如 Anthropic 是 /v1/messages、
+ * Gemini 是 /v1beta/models/{model}:generateContent），填错会直接连不通。
+ */
+private fun ModelProviderProtocol.baseUrlHint(): String = when (this) {
+    ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS -> "例如 https://服务地址/v1"
+    ModelProviderProtocol.OPENAI_RESPONSES -> "例如 https://api.openai.com/v1"
+    ModelProviderProtocol.ANTHROPIC_MESSAGES -> "例如 https://api.anthropic.com"
+    ModelProviderProtocol.GEMINI_GENERATE_CONTENT -> "例如 https://generativelanguage.googleapis.com"
 }
