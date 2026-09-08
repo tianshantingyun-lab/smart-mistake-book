@@ -1016,6 +1016,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val knowledgeNodes = mutableListOf<KnowledgeNodeSeedRecord>()
     val teachingMaterials = mutableListOf<KnowledgeTeachingMaterialRecord>()
     val materialNodeBindings = mutableListOf<KnowledgeTeachingMaterialNodeBindingRecord>()
+    val recordedChatEvidence =
+        mutableListOf<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>()
     val reviewLogEntries = mutableListOf<ReviewLogEntry>()
     val teachingAdvisories = mutableListOf<TeachingAdvisoryRecord>()
     val resolvedStudentModelPredictions =
@@ -1145,7 +1147,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         command: TransitionModelTaskCommand,
     ): ModelTaskWriteResult = error("Model tasks are outside this study-repository fake")
 
-    override suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>) { /* no-op in fake */ }
+    override suspend fun recordChatEvidence(entries: List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity>) {
+        recordedChatEvidence += entries
+    }
 
     override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
 
