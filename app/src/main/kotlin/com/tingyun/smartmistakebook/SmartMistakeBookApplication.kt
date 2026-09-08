@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook
 import android.app.Activity
 import android.app.Application
 import android.os.StrictMode
+import androidx.core.content.ContextCompat
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.capture.ConfiguredCleanImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
@@ -351,12 +352,16 @@ class SmartMistakeBookApplication : Application() {
     /** Registers the debug-only seed receiver so `adb am broadcast` can configure the model. */
     private fun registerDebugHarness() {
         if (!BuildConfig.DEBUG) return
-        // API 34 requires an explicit export flag for dynamic non-system receivers;
-        // exported only because QA drives it via adb from outside the app.
-        registerReceiver(
+        // API 33+ requires an explicit export flag for dynamically registered
+        // receivers; exported only because QA drives it via adb from outside the
+        // app. ContextCompat maps the flag to the right platform overload on every
+        // API level (masked to 0 before 33, two-argument before 26), so minSdk 23
+        // stays safe without a lint suppression.
+        ContextCompat.registerReceiver(
+            this,
             testSeedReceiver,
             android.content.IntentFilter(TestSeedModelConfigReceiver.ACTION_TEST_SEED_MODEL_CONFIG),
-            android.content.Context.RECEIVER_EXPORTED,
+            ContextCompat.RECEIVER_EXPORTED,
         )
     }
 }
