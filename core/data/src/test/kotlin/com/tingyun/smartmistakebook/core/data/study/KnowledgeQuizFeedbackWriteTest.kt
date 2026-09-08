@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import java.time.Clock
 import java.time.Instant
@@ -62,6 +63,7 @@ class KnowledgeQuizFeedbackWriteTest {
                 correctChoiceId = "A",
                 selectedChoiceId = "A",
                 occurredAtEpochMillis = 5_000,
+                conversationId = "knowledge-quiz-review:test-session",
             )
 
             assertTrue(result.isCorrect)
@@ -71,7 +73,7 @@ class KnowledgeQuizFeedbackWriteTest {
             assertEquals("kc-monotonicity", evidence.knowledge_node_id)
             assertEquals(TutorEvidenceDirection.POSITIVE.name, evidence.direction)
             assertEquals("KNOWLEDGE_QUIZ", evidence.source_kind)
-            assertEquals("knowledge-quiz-review", evidence.conversation_id)
+            assertEquals("knowledge-quiz-review:test-session", evidence.conversation_id)
             assertEquals("knowledge-quiz:req-correct:kc-monotonicity", evidence.evidence_id)
             assertTrue(evidence.weight > 0.0)
             assertEquals(5_000L, evidence.created_at_epoch_millis)
@@ -94,6 +96,7 @@ class KnowledgeQuizFeedbackWriteTest {
                 correctChoiceId = "A",
                 selectedChoiceId = "B",
                 occurredAtEpochMillis = 6_000,
+                conversationId = "knowledge-quiz-review:test-session",
             )
 
             assertFalse(result.isCorrect)
@@ -120,6 +123,7 @@ class KnowledgeQuizFeedbackWriteTest {
                 correctChoiceId = "A",
                 selectedChoiceId = "A",
                 occurredAtEpochMillis = 7_000,
+                conversationId = "knowledge-quiz-review:test-session",
             )
 
             assertTrue(result.isCorrect)
@@ -145,10 +149,41 @@ class KnowledgeQuizFeedbackWriteTest {
                     correctChoiceId = "A",
                     selectedChoiceId = "A",
                     occurredAtEpochMillis = 8_000L + attempt,
+                    conversationId = "knowledge-quiz-review:test-session",
                 )
             }
             val ids = database.recordedChatEvidence.map { it.evidence_id }.distinct()
             assertEquals(listOf("knowledge-quiz:req-retry:kc-monotonicity"), ids)
+        } finally {
+            repository.close()
+        }
+    }
+
+    /**
+     * Regression for the P1 where the conversation id was a global constant, so
+     * the per-session write quota became a lifetime quota: once 50 evidence rows
+     * were accepted, every later answer was rejected forever. A new session must
+     * start with a fresh quota.
+     */
+    @Test
+    fun aNewReviewSessionIsNotBlockedByAnExhaustedEarlierSession() = runBlocking {
+        val database = anchoredDatabase()
+        database.acceptedChatEvidenceByConversation[
+            "knowledge-quiz-review:exhausted-session"
+        ] = MasteryWriteGate.MAX_WRITES_PER_CONVERSATION
+        val repository = repository(database)
+
+        try {
+            val result = repository.submitKnowledgeQuizFeedback(
+                requestId = "req-new-session",
+                knowledgeNodeId = "kc-monotonicity",
+                correctChoiceId = "A",
+                selectedChoiceId = "A",
+                occurredAtEpochMillis = 9_000,
+                conversationId = "knowledge-quiz-review:new-session",
+            )
+
+            assertTrue("New session must not inherit an exhausted quota", result.evidenceRecorded)
         } finally {
             repository.close()
         }

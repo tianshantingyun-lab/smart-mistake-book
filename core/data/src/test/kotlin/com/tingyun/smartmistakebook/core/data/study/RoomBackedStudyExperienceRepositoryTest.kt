@@ -1159,7 +1159,11 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun countAcceptedChatEvidenceSince(learnerId: String, sinceEpochMillis: Long): Int = 0
 
-    override suspend fun countAcceptedChatEvidenceInConversation(conversationId: String): Int = 0
+    /** Per-conversation accepted-write counts; tests seed this to model quota use. */
+    val acceptedChatEvidenceByConversation: MutableMap<String, Int> = mutableMapOf()
+
+    override suspend fun countAcceptedChatEvidenceInConversation(conversationId: String): Int =
+        acceptedChatEvidenceByConversation[conversationId] ?: 0
 
     override suspend fun countRejectedChatEvidenceByReason(learnerId: String): List<com.tingyun.smartmistakebook.core.database.dao.RejectedReasonCountRow> = emptyList()
 

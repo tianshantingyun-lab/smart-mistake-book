@@ -148,6 +148,7 @@ internal class KnowledgeReviewSessionViewModel(
             correctChoiceId: String,
             selectedChoiceId: String,
             occurredAtEpochMillis: Long,
+            conversationId: String,
         ) -> KnowledgeQuizFeedbackResult,
     ) {
         if (submitStatus == KnowledgeQuizSubmitStatus.RECORDING) return
@@ -165,6 +166,7 @@ internal class KnowledgeReviewSessionViewModel(
                     item.correctChoiceId,
                     choiceId,
                     occurredAtEpochMillis,
+                    knowledgeQuizConversationId(),
                 )
                 check(result.isCorrect == item.evaluateChoice(choiceId).isCorrect) {
                     "Persisted knowledge-quiz verdict disagrees with the locally judged choice"
@@ -182,6 +184,14 @@ internal class KnowledgeReviewSessionViewModel(
             }
         }
     }
+
+    /**
+     * 本次知识点复习会话的写入门控标识（审计 2026-09-09 P1）：配额必须按"每次复习会话"
+     * 计数，而不是全局固定 id——后者会让每会话 50 条上限变成终身上限，写满后永久拒写。
+     * 会话起点持久化在 SavedStateHandle，进程重建后仍是同一次会话。
+     */
+    private fun knowledgeQuizConversationId(): String =
+        "knowledge-quiz-review:$sessionStartedAtEpochMillis"
 
     /** 进入下一知识点；若当前是末位则标记会话完成（Screen 负责返回首页）。 */
     fun continueToNext() {

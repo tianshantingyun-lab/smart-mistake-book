@@ -56,6 +56,7 @@ fun KnowledgeReviewSessionScreen(
         correctChoiceId: String,
         selectedChoiceId: String,
         occurredAtEpochMillis: Long,
+        conversationId: String,
     ) -> KnowledgeQuizFeedbackResult,
     onFinished: () -> Unit,
     modifier: Modifier = Modifier,
@@ -202,6 +203,7 @@ private fun KnowledgeQuizContent(
         correctChoiceId: String,
         selectedChoiceId: String,
         occurredAtEpochMillis: Long,
+        conversationId: String,
     ) -> KnowledgeQuizFeedbackResult,
 ) {
     SafeMarkdownText(

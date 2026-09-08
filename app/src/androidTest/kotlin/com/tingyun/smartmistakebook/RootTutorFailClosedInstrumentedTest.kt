@@ -422,6 +422,7 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         correctChoiceId: String,
         selectedChoiceId: String,
         occurredAtEpochMillis: Long,
+        conversationId: String,
     ) = com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult(
         isCorrect = selectedChoiceId == correctChoiceId,
         evidenceRecorded = true,

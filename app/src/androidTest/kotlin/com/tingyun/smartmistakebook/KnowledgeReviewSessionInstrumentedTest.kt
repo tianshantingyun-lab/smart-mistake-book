@@ -56,7 +56,7 @@ class KnowledgeReviewSessionInstrumentedTest {
                     plan = KnowledgeReviewSessionPlan(queue = listOf(node)),
                     onBack = {},
                     loadQuiz = { quizItem },
-                    submitAnswer = { requestId, knowledgeNodeId, correctChoiceId, selectedChoiceId, _ ->
+                    submitAnswer = { requestId, knowledgeNodeId, correctChoiceId, selectedChoiceId, _, _ ->
                         submitted = knowledgeNodeId to selectedChoiceId
                         KnowledgeQuizFeedbackResult(
                             isCorrect = selectedChoiceId == correctChoiceId,
@@ -99,7 +99,7 @@ class KnowledgeReviewSessionInstrumentedTest {
                         attempts += 1
                         if (attempts == 1) null else quizItem
                     },
-                    submitAnswer = { _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
+                    submitAnswer = { _, _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
                     onFinished = {},
                 )
             }

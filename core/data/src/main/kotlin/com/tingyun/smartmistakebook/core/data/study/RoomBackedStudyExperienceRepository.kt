@@ -820,6 +820,7 @@ class RoomBackedStudyExperienceRepository(
         correctChoiceId: String,
         selectedChoiceId: String,
         occurredAtEpochMillis: Long,
+        conversationId: String,
     ): KnowledgeQuizFeedbackResult {
         val isCorrect = selectedChoiceId == correctChoiceId
         val verdict = knowledgeQuizMasteryVerdict(isCorrect)
@@ -832,8 +833,10 @@ class RoomBackedStudyExperienceRepository(
             learnerId = learnerId,
             sinceEpochMillis = now - MasteryWriteGate.LEARNER_WINDOW_MILLIS,
         )
-        // 知识点复习是独立会话，固定一个 conversation id（同一复习会话内计数防刷）。
-        val conversationId = KNOWLEDGE_QUIZ_CONVERSATION_ID
+        // 知识点复习按"每次复习会话"计数防刷：调用方传入该次会话的 id（见
+        // KnowledgeReviewSessionViewModel），否则固定 id 会把每会话配额变成终身配额，
+        // 累计写满后永久拒写（审计 2026-09-09 P1）。
+        require(conversationId.isNotBlank()) { "Knowledge quiz conversation id must not be blank" }
         val acceptedInConversation = database.countAcceptedChatEvidenceInConversation(conversationId)
         val input = MasteryWriteGate.GateInput(
             intentConfidence = 1.0, // 本地确定的客观作答，非模型意图路由

@@ -460,6 +460,8 @@ interface StudyExperienceRepository : AutoCloseable {
         correctChoiceId: String,
         selectedChoiceId: String,
         occurredAtEpochMillis: Long,
+        /** Identifies one knowledge-review session; the write quota is per session. */
+        conversationId: String,
     ): KnowledgeQuizFeedbackResult
 
     /** The learner's stored teaching advisories, newest first (read side). */
