@@ -100,7 +100,6 @@ class KnowledgeReviewQueueTest {
         assertThrows(IllegalArgumentException::class.java) {
             KnowledgeReviewSessionPlan(
                 queue = listOf(entry("kc1"), entry("kc1")),
-                timeBudgetSeconds = 600,
             )
         }
     }
@@ -114,8 +113,6 @@ class KnowledgeReviewQueueTest {
                 displayName = "一元二次方程",
                 masteryScore = 0.5,
                 lastEvidenceAtEpochMillis = now,
-                score = 1.0,
-                reasonNames = setOf("CALIBRATION_CHECK"),
             )
         }
     }
@@ -131,7 +128,6 @@ class KnowledgeReviewQueueTest {
                     lastEvidenceAtEpochMillis = null,
                 ),
             ),
-            timeBudgetSeconds = 600,
         )
         assertTrue(plan.queue.single().masteryScore == null)
     }
@@ -142,7 +138,5 @@ class KnowledgeReviewQueueTest {
         displayName = "知识点$knowledgeNodeId",
         masteryScore = 0.5,
         lastEvidenceAtEpochMillis = now,
-        score = 1.0,
-        reasonNames = setOf("CALIBRATION_CHECK"),
     )
 }

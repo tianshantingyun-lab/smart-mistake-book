@@ -30,8 +30,6 @@ class KnowledgeReviewQuizLoaderTest {
         displayName = "函数单调性",
         masteryScore = null,
         lastEvidenceAtEpochMillis = null,
-        score = 4.0,
-        reasonNames = setOf("STALE_KNOWLEDGE"),
     )
 
     private fun material() = TutorTeachingReference(

@@ -31,7 +31,6 @@ class KnowledgeReviewSessionViewModelTest {
             entry("kc-confl", "冲突的知识点"),
             entry("kc-fresh", "无证据知识点"),
         ),
-        timeBudgetSeconds = 600,
     )
 
     private fun entry(knowledgeNodeId: String, displayName: String) = KnowledgeReviewQueueEntry(
@@ -40,8 +39,6 @@ class KnowledgeReviewSessionViewModelTest {
         displayName = displayName,
         masteryScore = 0.3,
         lastEvidenceAtEpochMillis = 1_000,
-        score = 4.0,
-        reasonNames = setOf("CONFLICTED_KNOWLEDGE", "CALIBRATION_CHECK"),
     )
 
     private fun quizItem(nodeId: String) = TutorAssessmentItem(

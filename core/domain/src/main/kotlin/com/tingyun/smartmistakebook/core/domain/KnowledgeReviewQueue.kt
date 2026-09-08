@@ -28,11 +28,8 @@ data class KnowledgeReviewCandidate(
 data class KnowledgeReviewSessionPlan(
     /** Ordered queue; empty exactly when today's scope has no risky node to review. */
     val queue: List<KnowledgeReviewQueueEntry> = emptyList(),
-    /** The time budget the queue was planned within (seconds). */
-    val timeBudgetSeconds: Int = 0,
 ) {
     init {
-        require(timeBudgetSeconds >= 0) { "Knowledge review plan budget must not be negative" }
         require(queue.map(KnowledgeReviewQueueEntry::knowledgeNodeId).distinct().size == queue.size) {
             "Knowledge review plan must not repeat a knowledge node"
         }
@@ -51,9 +48,6 @@ data class KnowledgeReviewQueueEntry(
     val displayName: String,
     val masteryScore: Double?,
     val lastEvidenceAtEpochMillis: Long?,
-    val score: Double,
-    /** Planner reason names (spec mastery-scheduling); kept as strings across the UI boundary. */
-    val reasonNames: Set<String>,
 ) {
     init {
         require(knowledgeNodeId.isNotBlank()) { "Knowledge review entry id must not be blank" }
@@ -65,7 +59,6 @@ data class KnowledgeReviewQueueEntry(
         require(lastEvidenceAtEpochMillis == null || lastEvidenceAtEpochMillis >= 0) {
             "Knowledge review entry evidence time must not be negative"
         }
-        require(reasonNames.none(String::isBlank)) { "Knowledge review reason names must not be blank" }
     }
 }
 

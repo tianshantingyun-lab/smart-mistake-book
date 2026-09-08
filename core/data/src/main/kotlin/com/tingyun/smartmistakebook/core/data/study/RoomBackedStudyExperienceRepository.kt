@@ -1333,11 +1333,8 @@ class RoomBackedStudyExperienceRepository(
                         ?: scored.knowledgeNodeId,
                     masteryScore = state?.masteryScore,
                     lastEvidenceAtEpochMillis = state?.lastEvidenceAtEpochMillis,
-                    score = scored.score,
-                    reasonNames = scored.reasons.mapTo(linkedSetOf()) { it.name },
                 )
             },
-            timeBudgetSeconds = reviewTimeBudgetSeconds,
         )
     }
 

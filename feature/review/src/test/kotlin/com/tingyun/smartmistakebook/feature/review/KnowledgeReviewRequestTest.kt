@@ -22,8 +22,6 @@ class KnowledgeReviewRequestTest {
         displayName = "函数单调性",
         masteryScore = 0.4,
         lastEvidenceAtEpochMillis = 5_000L,
-        score = 4.0,
-        reasonNames = setOf("STALE_KNOWLEDGE"),
     )
 
     private val reference = TutorTeachingReference(

@@ -44,9 +44,10 @@ internal class KnowledgeReviewSessionViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val plan: KnowledgeReviewSessionPlan,
 ) : ViewModel() {
-    private var currentIndex: Int by mutableStateOf(
+    internal var currentIndex: Int by mutableStateOf(
         savedStateHandle.get<Int>(CURRENT_INDEX_KEY) ?: 0,
     )
+        private set
 
     /** 当前展示的知识点；队列走完后为 null。 */
     val currentEntry: KnowledgeReviewQueueEntry?
@@ -187,11 +188,6 @@ internal class KnowledgeReviewSessionViewModel(
         if (!canContinue && !completed) return
         currentIndex += 1
         savedStateHandle[CURRENT_INDEX_KEY] = currentIndex
-        clearNodeState()
-    }
-
-    /** 撤销已提交的判决并回到本节点可重选状态（重建后若判决丢失时的安全网）。 */
-    fun resetNodeState() {
         clearNodeState()
     }
 
