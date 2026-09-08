@@ -20,8 +20,8 @@
 | 2 知识点排程 | `core/domain/ReviewPlanner.kt`（`scoreKnowledgeNode` + 共享 `masteryRiskFor`） | `01a99fe` | domain 测试 |
 | 3 KNOWLEDGE_QUIZ 任务 | `core/model/ModelTasks.kt` + `core/data/.../OpenAiModelTaskAdapters.kt` + `KnowledgeQuizWire.kt` + egress/contract | `6113922` `cefe853` | 协议/egress 测试 |
 | 4 判答回写 | `KnowledgeQuizVerdict.kt`（判决）+ `RoomBackedStudyExperienceRepository.submitKnowledgeQuizFeedback` | `d505075` `9cb93ca` | domain + data 测试 |
-| 5 双入口 UI | `ReviewRoute.kt` 入口卡 + `knowledgeReviewEntryVisible` 策略 + Root 懒加载 count | `838c58e` `604c33e` | 策略单测 + 仪器测试（编译） |
-| 6 会话 UI | ViewModel + Screen + Factory + 请求构造器 + `KnowledgeReviewQuizLoader` + Root 路由 | `3b1c556` `ffd6abd` `878011e` `118db82` `3e83ff8` `1b89320` `360cb68` | 19 个 JVM 单测 + 仪器测试（编译） |
+| 5 双入口 UI | `ReviewRoute.kt` 入口卡 + `knowledgeReviewEntryVisible` 策略 + Root 懒加载 count | `838c58e` `604c33e` | 策略单测 + 仪器测试（设备实测 3 项） |
+| 6 会话 UI | ViewModel + Screen + Factory + 请求构造器 + `KnowledgeReviewQuizLoader` + Root 路由 | `3b1c556` `ffd6abd` `878011e` `118db82` `3e83ff8` `1b89320` `360cb68` | 19 个 JVM 单测 + 仪器测试（设备实测 2 项） |
 
 补充实现（超出原计划、为消除真实缺陷）：
 
@@ -31,9 +31,20 @@
 
 已证实的关键链路（§3.4）：`submitKnowledgeQuizFeedback` → 门控 → `allocateSequence` 递增 `learning_sequence`（即 `observeLedgerHead` 的查询目标）→ projection outbox → `drainProjection` → `LearningProjector.projectChatEvidence` 更新 `knowledgeMasteryStates` → `scoreCandidate` 据此排程。知识点复习确实影响后续错题排程。
 
-验证汇总：`core:domain` 331/331、`feature:review` 32/32、`core:data` study 类全绿；`localFirst` + `strictOffline` + androidTest 三面编译通过。
+验证汇总（2026-09-08 强制复跑：清空测试产物后 `./gradlew test`，23 个测试任务全部实际执行）：**1364 个单测、0 失败 0 错误**——app 31、core:data 305、core:database 67、core:domain 331、core:export 14、core:model 294、core:ui 11、core:visual-runtime 11、core:visual-ui 12、feature:capture 117、feature:library 33、feature:profile 6、feature:review 32、feature:tutor 91、quality:visual-benchmark 9；`localFirst` + `strictOffline`（含 androidTest）编译通过。
 
-**未验证（需设备）**：`connectedLocalFirstDebugAndroidTest`（`DualReviewEntryInstrumentedTest`、`KnowledgeReviewSessionInstrumentedTest`）未在真机/模拟器执行——本环境无 adb/设备。
+**设备验证（2026-09-08 补，关闭原"未验证"项）**：`connectedLocalFirstDebugAndroidTest` 在模拟器（`test_device` AVD，Android 14 / API 34 / x86_64）实测 **5/5 通过、0 失败**——`DualReviewEntryInstrumentedTest` 3 项（入口显隐、可点、错题复习完成后知识点入口仍在）+ `KnowledgeReviewSessionInstrumentedTest` 2 项（自动取题→作答→判决→完成；取题失败→重试恢复）。命令：
+
+```
+./gradlew :app:connectedLocalFirstDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.tingyun.smartmistakebook.DualReviewEntryInstrumentedTest,com.tingyun.smartmistakebook.KnowledgeReviewSessionInstrumentedTest
+```
+
+**与 spec §3.2 的偏差（待确认，未擅自加机制）**：知识点队列选择 = 同构打分（`scoreKnowledgeNode`）+ 时间预算 + 按分数降序取队；句中的"多样性 + 难度循环"未实现：
+
+- 多样性：研究文档要求的是"会话强制交错 ≥3 个知识点"（`docs/research/mastery-scheduling-research.md` P4），`KnowledgeReviewSessionPlan` 的去重约束使队列天然满足；错题排程的 family/source 硬约束针对"同题族重复"，知识点队列无此冗余。
+- 难度循环：`KnowledgeNode` 无难度维度（仅 subject/kind/granularity 等），无数据源可依；且 `knowledgeQuizPrompt` 规则 4 已让出题难度随 `lastMasteryScore` 自适应。
+
+若需按某维度实现（如同科降权、材料族交错、按掌握度分档），请指定维度与来源。
 
 ---
 
