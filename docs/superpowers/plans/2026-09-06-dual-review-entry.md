@@ -32,7 +32,7 @@
 
 已证实的关键链路（§3.4）：`submitKnowledgeQuizFeedback` → 门控 → `allocateSequence` 递增 `learning_sequence`（即 `observeLedgerHead` 的查询目标）→ projection outbox → `drainProjection` → `LearningProjector.projectChatEvidence` 更新 `knowledgeMasteryStates` → `scoreCandidate` 据此排程。知识点复习确实影响后续错题排程。
 
-验证汇总（2026-09-08 强制复跑：清空测试产物后 `./gradlew test`，23 个测试任务全部实际执行）：**1364 个单测、0 失败 0 错误**——app 31、core:data 305、core:database 67、core:domain 331、core:export 14、core:model 294、core:ui 11、core:visual-runtime 11、core:visual-ui 12、feature:capture 117、feature:library 33、feature:profile 6、feature:review 32、feature:tutor 91、quality:visual-benchmark 9；`localFirst` + `strictOffline`（含 androidTest）编译通过。
+验证汇总（2026-09-08：清空测试产物强制复跑，随后协议测试与 §3.2 取队两处改动各自复跑）：**1372 个单测、0 失败 0 错误**——app 31、core:data 308、core:database 67、core:domain 336、core:export 14、core:model 294、core:ui 11、core:visual-runtime 11、core:visual-ui 12、feature:capture 117、feature:library 33、feature:profile 6、feature:review 32、feature:tutor 91、quality:visual-benchmark 9；`localFirst` + `strictOffline`（含 androidTest）编译通过。
 
 **设备验证（2026-09-08 补，关闭原"未验证"项）**：`connectedLocalFirstDebugAndroidTest` 在模拟器（`test_device` AVD，Android 14 / API 34 / x86_64）实测 **5/5 通过、0 失败**——`DualReviewEntryInstrumentedTest` 3 项（入口显隐、可点、错题复习完成后知识点入口仍在）+ `KnowledgeReviewSessionInstrumentedTest` 2 项（自动取题→作答→判决→完成；取题失败→重试恢复）。命令：
 
