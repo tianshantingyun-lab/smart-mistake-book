@@ -142,7 +142,7 @@ class KnowledgeReviewSessionViewModelTest {
             viewModel.submitAnswer(
                 requestId = "request:kq:1",
                 occurredAtEpochMillis = 1_000,
-                submit = { requestId, nodeId, correctChoiceId, selectedChoiceId, _ ->
+                submit = { requestId, nodeId, correctChoiceId, selectedChoiceId, _, _ ->
                     submitted += Triple(nodeId, correctChoiceId, selectedChoiceId)
                     KnowledgeQuizFeedbackResult(isCorrect = true, evidenceRecorded = true)
                 },
@@ -176,7 +176,7 @@ class KnowledgeReviewSessionViewModelTest {
             viewModel.submitAnswer(
                 requestId = "request:kq:wrong",
                 occurredAtEpochMillis = 1_000,
-                submit = { _, _, _, selectedChoiceId, _ ->
+                submit = { _, _, _, selectedChoiceId, _, _ ->
                     KnowledgeQuizFeedbackResult(
                         isCorrect = selectedChoiceId == "A",
                         evidenceRecorded = true,
@@ -209,7 +209,7 @@ class KnowledgeReviewSessionViewModelTest {
             viewModel.submitAnswer(
                 requestId = "request:kq:1",
                 occurredAtEpochMillis = 1_000,
-                submit = { _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
+                submit = { _, _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
             )
             advanceUntilIdle()
 
@@ -243,7 +243,7 @@ class KnowledgeReviewSessionViewModelTest {
             viewModel.submitAnswer(
                 requestId = "request:kq:last",
                 occurredAtEpochMillis = 1_000,
-                submit = { _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
+                submit = { _, _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
             )
             advanceUntilIdle()
 
@@ -272,7 +272,7 @@ class KnowledgeReviewSessionViewModelTest {
             viewModel.submitAnswer(
                 requestId = "request:kq:fail",
                 occurredAtEpochMillis = 1_000,
-                submit = { _, _, _, _, _ -> error("写入超时") },
+                submit = { _, _, _, _, _, _ -> error("写入超时") },
             )
             advanceUntilIdle()
 
@@ -281,7 +281,7 @@ class KnowledgeReviewSessionViewModelTest {
             viewModel.submitAnswer(
                 requestId = "request:kq:fail",
                 occurredAtEpochMillis = 1_000,
-                submit = { _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
+                submit = { _, _, _, _, _, _ -> KnowledgeQuizFeedbackResult(true, true) },
             )
             advanceUntilIdle()
             assertEquals(KnowledgeQuizSubmitStatus.RECORDED, viewModel.submitStatus)
