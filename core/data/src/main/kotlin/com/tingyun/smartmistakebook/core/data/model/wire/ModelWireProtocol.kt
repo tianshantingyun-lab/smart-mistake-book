@@ -53,8 +53,9 @@ internal interface ModelWireProtocol {
 /** 按配置协议取实现；未实现的协议显式失败，不静默降级。 */
 internal fun protocolFor(protocol: ModelProviderProtocol): ModelWireProtocol = when (protocol) {
     ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS -> OpenAiChatCompletionsProtocol
+    ModelProviderProtocol.OPENAI_RESPONSES -> OpenAiResponsesProtocol
     ModelProviderProtocol.ANTHROPIC_MESSAGES -> AnthropicMessagesProtocol
-    else -> error("Protocol $protocol is not implemented yet (P3+)")
+    else -> error("Protocol $protocol is not implemented yet (P4)")
 }
 
 /**

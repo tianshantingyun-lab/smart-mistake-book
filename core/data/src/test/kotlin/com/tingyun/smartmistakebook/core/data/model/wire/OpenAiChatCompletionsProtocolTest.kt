@@ -76,8 +76,8 @@ class OpenAiChatCompletionsProtocolTest {
         // （spec §3.2 显式协议选择）。上游 RoomModelTaskRepository 会把逃逸异常兜成
         // 可重试失败事件，因此这是 fail-closed 而不是崩溃。
         val error = assertThrows(IllegalStateException::class.java) {
-            protocolFor(ModelProviderProtocol.OPENAI_RESPONSES)
+            protocolFor(ModelProviderProtocol.GEMINI_GENERATE_CONTENT)
         }
-        assertTrue(error.message.orEmpty().contains(ModelProviderProtocol.OPENAI_RESPONSES.name))
+        assertTrue(error.message.orEmpty().contains(ModelProviderProtocol.GEMINI_GENERATE_CONTENT.name))
     }
 }
