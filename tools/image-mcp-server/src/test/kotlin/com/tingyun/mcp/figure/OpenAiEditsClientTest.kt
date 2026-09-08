@@ -97,6 +97,58 @@ class OpenAiEditsClientTest {
         assertTrue(error is EditsApiException)
     }
 
+    @Test
+    fun `generates a text-to-image figure via the generations endpoint`() = runBlocking {
+        val png = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 9, 8, 7)
+        val b64 = Base64.getEncoder().encodeToString(png)
+        server.enqueue(
+            MockResponse().setBody("""{"created":1,"data":[{"b64_json":"$b64","mime_type":"image/png"}]}"""),
+        )
+
+        val result = client.generate(instruction = "数轴标注导数正负区间")
+
+        val recorded = server.takeRequest()
+        assertEquals("/v1/images/generations", recorded.path)
+        assertEquals("Bearer test-key", recorded.getHeader("Authorization"))
+        val body = recorded.body.readUtf8()
+        assertTrue(body.contains("gpt-image-2"))
+        assertTrue(body.contains("数轴标注导数正负区间"))
+        assertTrue(result.image.contentEquals(png))
+        assertEquals("image/png", result.mimeType)
+    }
+
+    @Test
+    fun `generates a seeded figure via the edits endpoint when a source image is given`() = runBlocking {
+        val png = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 5, 6)
+        val b64 = Base64.getEncoder().encodeToString(png)
+        server.enqueue(
+            MockResponse().setBody("""{"created":1,"data":[{"b64_json":"$b64","mime_type":"image/png"}]}"""),
+        )
+
+        client.generate(
+            instruction = "添加辅助线并重绘此题图",
+            sourceImage = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47),
+            sourceMimeType = "image/png",
+        )
+
+        val recorded = server.takeRequest()
+        assertEquals("/v1/images/edits", recorded.path)
+        assertTrue(recorded.body.readUtf8().contains("辅助线"))
+    }
+
+    @Test
+    fun `generate requires source image and mime type together`() = runBlocking {
+        val error = runCatching {
+            client.generate(
+                instruction = "画辅助线",
+                sourceImage = byteArrayOf(1),
+                sourceMimeType = null,
+            )
+        }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+    }
+
     /** Splits a multipart body (raw bytes) into its parts, decoding each value separately. */
     private fun splitMultipartParts(body: ByteArray, boundary: String): List<MultipartPart> {
         val delimiter = "--$boundary".toByteArray(Charsets.ISO_8859_1)

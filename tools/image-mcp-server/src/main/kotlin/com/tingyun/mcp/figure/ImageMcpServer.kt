@@ -47,6 +47,7 @@ fun main() {
     )
 
     server.registerRedrawTool(edits)
+    server.registerGenerateProcessTool(edits)
 
     val transport = StdioServerTransport(
         input = System.`in`.asInput(),
@@ -97,6 +98,67 @@ private fun Server.registerRedrawTool(edits: OpenAiEditsClient) {
             edits.redrawClean(sourceImage = decoded, mimeType = mimeType)
         } catch (failure: Exception) {
             return@addTool errorResult("redraw failed: ${failure.message}")
+        }
+        CallToolResult(
+            content = listOf(
+                TextContent(
+                    buildJsonObject {
+                        put("status", "ok")
+                        put("image_b64", Base64.getEncoder().encodeToString(result.image))
+                        put("mime_type", result.mimeType)
+                        put("model", result.model)
+                    }.toString(),
+                ),
+            ),
+        )
+    }
+}
+
+private fun Server.registerGenerateProcessTool(edits: OpenAiEditsClient) {
+    addTool(
+        name = "generate_process_figure",
+        description = "为一道题目生成解析过程图：按instruction文生图（无源图），或基于源图改造（有 source_image_b64 时图生图）。输入 instruction 描述图要表达什么（如数轴标注导数正负区间），可选源图 base64；返回干净图 base64。",
+        inputSchema = ToolSchema(
+            properties = buildJsonObject {
+                putJsonObject("instruction") {
+                    put("type", "string")
+                    put("description", "平实中文描述要生成的图（解析步骤/数轴/标注等）")
+                }
+                putJsonObject("source_image_b64") {
+                    put("type", "string")
+                    put("description", "可选，图生图时的源图 base64 编码字节")
+                }
+                putJsonObject("source_mime_type") {
+                    put("type", "string")
+                    put("description", "可选，源图 MIME 类型：image/jpeg、image/png 或 image/webp")
+                }
+            },
+            required = listOf("instruction"),
+        ),
+    ) { request ->
+        val args = request.arguments ?: return@addTool errorResult("missing arguments")
+        val instruction = args["instruction"]?.jsonPrimitive?.contentOrNull
+            ?: return@addTool errorResult("instruction is required")
+        if (instruction.isBlank()) return@addTool errorResult("instruction must not be blank")
+        val sourceB64 = args["source_image_b64"]?.jsonPrimitive?.contentOrNull
+        val sourceMime = args["source_mime_type"]?.jsonPrimitive?.contentOrNull
+        if (sourceB64 == null != (sourceMime == null)) {
+            return@addTool errorResult("source_image_b64 and source_mime_type must be provided together")
+        }
+        val sourceBytes = sourceB64?.let { b64 ->
+            try {
+                Base64.getDecoder().decode(b64)
+            } catch (failure: IllegalArgumentException) {
+                return@addTool errorResult("source_image_b64 is not valid base64")
+            }
+        }
+        if (sourceBytes != null && (sourceBytes.isEmpty() || sourceBytes.size > MAX_INPUT_BYTES)) {
+            return@addTool errorResult("source image is empty or exceeds 20MB")
+        }
+        val result = try {
+            edits.generate(instruction, sourceBytes, sourceMime)
+        } catch (failure: Exception) {
+            return@addTool errorResult("generate failed: ${failure.message}")
         }
         CallToolResult(
             content = listOf(

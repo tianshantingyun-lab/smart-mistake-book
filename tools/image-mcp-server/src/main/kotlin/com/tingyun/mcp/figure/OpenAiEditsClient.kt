@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -45,25 +46,84 @@ internal class OpenAiEditsClient(
                 .header("Authorization", "Bearer $apiKey")
                 .post(body)
                 .build()
-            client.newCall(http).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw EditsApiException("HTTP ${response.code} ${response.message}")
-                }
-                val text = response.body?.string() ?: throw EditsApiException("empty response")
-                val parsed = json.decodeFromString<EditResponse>(text)
-                val b64 = parsed.data.firstOrNull()?.b64Json
-                    ?: throw EditsApiException("no image in response")
-                val bytes = Base64.getDecoder().decode(b64)
-                if (bytes.isEmpty() || bytes.size > MAX_OUTPUT_BYTES) {
-                    throw EditsApiException("invalid output size")
-                }
-                RedrawResult(
-                    image = bytes,
-                    mimeType = parsed.data.first().mimeType ?: "image/png",
-                    model = model,
-                )
-            }
+            execute(http)
         }
+
+    /**
+     * Generates a figure from a prose instruction. With a [sourceImage] it is
+     * image-to-image (`/v1/images/edits`); without, text-to-image
+     * (`/v1/images/generations`). Same gpt-image-2 model and base64 contract.
+     */
+    suspend fun generate(
+        instruction: String,
+        sourceImage: ByteArray? = null,
+        sourceMimeType: String? = null,
+    ): RedrawResult = withContext(Dispatchers.IO) {
+        require(instruction.isNotBlank() && instruction.length <= MAX_INSTRUCTION_CHARS) {
+            "Instruction must be non-blank and bounded"
+        }
+        require((sourceImage == null) == (sourceMimeType == null)) {
+            "Source image and mime type must be provided together"
+        }
+        val http = if (sourceImage != null) {
+            val ext = when (sourceMimeType) {
+                "image/jpeg" -> "jpg"
+                "image/webp" -> "webp"
+                else -> "png"
+            }
+            val body = MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("model", model)
+                .addFormDataPart("images[]", "source.$ext", sourceImage.toRequestBody(sourceMimeType!!.toMediaType()))
+                .addFormDataPart("prompt", instruction)
+                .addFormDataPart("size", "1536x1024")
+                .addFormDataPart("quality", "high")
+                .addFormDataPart("output_format", "png")
+                .build()
+            Request.Builder()
+                .url("$baseUrl/images/edits".toHttpUrl())
+                .header("Authorization", "Bearer $apiKey")
+                .post(body)
+                .build()
+        } else {
+            val jsonBody = json.encodeToString(
+                ImageGenerationRequestBody.serializer(),
+                ImageGenerationRequestBody(
+                    model = model,
+                    prompt = instruction,
+                    size = "1536x1024",
+                    quality = "high",
+                    outputFormat = "png",
+                    n = 1,
+                ),
+            ).toRequestBody(JSON_MEDIA_TYPE)
+            Request.Builder()
+                .url("$baseUrl/images/generations".toHttpUrl())
+                .header("Authorization", "Bearer $apiKey")
+                .header("Accept", "application/json")
+                .post(jsonBody)
+                .build()
+        }
+        execute(http)
+    }
+
+    private fun execute(http: Request): RedrawResult = client.newCall(http).execute().use { response ->
+        if (!response.isSuccessful) {
+            throw EditsApiException("HTTP ${response.code} ${response.message}")
+        }
+        val text = response.body?.string() ?: throw EditsApiException("empty response")
+        val parsed = json.decodeFromString<EditResponse>(text)
+        val b64 = parsed.data.firstOrNull()?.b64Json
+            ?: throw EditsApiException("no image in response")
+        val bytes = Base64.getDecoder().decode(b64)
+        if (bytes.isEmpty() || bytes.size > MAX_OUTPUT_BYTES) {
+            throw EditsApiException("invalid output size")
+        }
+        RedrawResult(
+            image = bytes,
+            mimeType = parsed.data.first().mimeType ?: "image/png",
+            model = model,
+        )
+    }
 
     private companion object {
         const val REDRAW_PROMPT =
@@ -71,6 +131,8 @@ internal class OpenAiEditsClient(
                 "仅去除照片中的手写笔迹、涂改、无关阴影与折痕，重绘成一张干净的题面图。" +
                 "不要改写、增删或重新排版任何印刷内容。"
         const val MAX_OUTPUT_BYTES = 24L * 1024L * 1024L
+        const val MAX_INSTRUCTION_CHARS = 32_000
+        val JSON_MEDIA_TYPE: MediaType = "application/json".toMediaType()
         val json = Json { ignoreUnknownKeys = true }
         fun defaultClient() = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -78,6 +140,17 @@ internal class OpenAiEditsClient(
             .build()
     }
 }
+
+/** JSON request body for `POST /v1/images/generations` (gpt-image-2 text-to-image). */
+@Serializable
+private data class ImageGenerationRequestBody(
+    val model: String,
+    val prompt: String,
+    val size: String,
+    val quality: String,
+    @SerialName("output_format") val outputFormat: String,
+    val n: Int = 1,
+)
 
 internal data class RedrawResult(
     val image: ByteArray,
