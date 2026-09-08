@@ -9,10 +9,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
-import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -39,9 +36,6 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateOutput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
-import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
-import com.tingyun.smartmistakebook.core.model.requiresEgressAuthorizationRenewal
-import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
@@ -88,108 +82,6 @@ internal fun ModelTaskSnapshot.toRespondAnswerExposureKey(): TutorAnswerExposure
     )
 }
 
-/**
- * A short-lived approval owned by the current tutor composition only.
- *
- * Persisted manifests prove exactly what an earlier request contained, but deliberately do not
- * recreate this lease after the screen or process is rebuilt.
- */
-internal data class TutorCompositionEgressLease(
-    val sessionId: String,
-    val revisionNumber: Int,
-    val questionDocumentId: String,
-    val providerId: String,
-    val modelId: String,
-    val providerConfigurationVersion: String,
-    val planPromptPolicyVersion: String,
-    val respondPromptPolicyVersion: String,
-    val visualGeneratePromptPolicyVersion: String,
-    val visualReviewPromptPolicyVersion: String,
-    val planApprovedAtEpochMillis: Long? = null,
-    val respondApprovedAtEpochMillis: Long? = null,
-    val visualGenerateApprovedAtEpochMillis: Long? = null,
-    val visualReviewApprovedAtEpochMillis: Long? = null,
-) {
-    fun approvedAtFor(
-        question: TutorQuestionContext,
-        provider: ProviderCapabilitySnapshot,
-        taskKind: ModelTaskKind,
-        nowEpochMillis: Long,
-    ): Long? {
-        val policyMatches = when (taskKind) {
-            ModelTaskKind.TUTOR_PLAN -> planPromptPolicyVersion == TUTOR_PROMPT_POLICY_VERSION
-            ModelTaskKind.TUTOR_RESPOND ->
-                respondPromptPolicyVersion == TUTOR_RESPOND_PROMPT_POLICY_VERSION
-            ModelTaskKind.TUTOR_VISUAL_GENERATE ->
-                visualGeneratePromptPolicyVersion == TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
-            ModelTaskKind.TUTOR_VISUAL_REVIEW ->
-                visualReviewPromptPolicyVersion == TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
-            else -> false
-        }
-        val taskApprovedAt = when (taskKind) {
-            ModelTaskKind.TUTOR_PLAN -> planApprovedAtEpochMillis
-            ModelTaskKind.TUTOR_RESPOND -> respondApprovedAtEpochMillis
-            ModelTaskKind.TUTOR_VISUAL_GENERATE -> visualGenerateApprovedAtEpochMillis
-            ModelTaskKind.TUTOR_VISUAL_REVIEW -> visualReviewApprovedAtEpochMillis
-            else -> null
-        }
-        return taskApprovedAt?.takeIf {
-            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-                provider.supports(taskKind) &&
-                sessionId == question.sessionId &&
-                revisionNumber == question.revisionNumber &&
-                questionDocumentId == question.questionDocument.document.id &&
-                providerId == provider.providerId &&
-                modelId == provider.modelId &&
-                providerConfigurationVersion == provider.providerConfigurationVersion &&
-                policyMatches &&
-                isModelEgressApprovalFresh(it, nowEpochMillis)
-        }
-    }
-
-    companion object {
-        fun grant(
-            question: TutorQuestionContext,
-            provider: ProviderCapabilitySnapshot,
-            approvedAtEpochMillis: Long,
-            taskKinds: Set<ModelTaskKind> = setOf(
-                ModelTaskKind.TUTOR_PLAN,
-                ModelTaskKind.TUTOR_RESPOND,
-                ModelTaskKind.TUTOR_VISUAL_GENERATE,
-                ModelTaskKind.TUTOR_VISUAL_REVIEW,
-            ),
-        ): TutorCompositionEgressLease {
-            require(provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER)
-            return TutorCompositionEgressLease(
-                sessionId = question.sessionId,
-                revisionNumber = question.revisionNumber,
-                questionDocumentId = question.questionDocument.document.id,
-                providerId = provider.providerId,
-                modelId = provider.modelId,
-                providerConfigurationVersion = provider.providerConfigurationVersion,
-                planPromptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
-                respondPromptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION,
-                visualGeneratePromptPolicyVersion =
-                    TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION,
-                visualReviewPromptPolicyVersion =
-                    TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION,
-                planApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
-                    ModelTaskKind.TUTOR_PLAN in taskKinds
-                },
-                respondApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
-                    ModelTaskKind.TUTOR_RESPOND in taskKinds
-                },
-                visualGenerateApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
-                    ModelTaskKind.TUTOR_VISUAL_GENERATE in taskKinds
-                },
-                visualReviewApprovedAtEpochMillis = approvedAtEpochMillis.takeIf {
-                    ModelTaskKind.TUTOR_VISUAL_REVIEW in taskKinds
-                },
-            )
-        }
-    }
-}
-
 internal fun ModelTaskSnapshot.matchesTutorProvider(
     provider: ProviderCapabilitySnapshot,
 ): Boolean {
@@ -205,176 +97,6 @@ internal fun ModelTaskSnapshot.matchesTutorProvider(
                 executedBy.providerConfigurationVersion == provider.providerConfigurationVersion
         } == true
     }
-}
-
-internal fun ModelTaskSnapshot.coversCurrentTutorDisclosure(
-    provider: ProviderCapabilitySnapshot,
-    taskKind: ModelTaskKind,
-): Boolean {
-    if (!matchesTutorProvider(provider)) return false
-    val manifest = request.egressManifest ?: return false
-    val promptPolicyVersion: String
-    val disclosedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
-    val prohibitedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
-    when (taskKind) {
-        ModelTaskKind.TUTOR_PLAN -> {
-            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE
-            prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA
-        }
-        ModelTaskKind.TUTOR_RESPOND -> {
-            promptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
-            prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
-        }
-        ModelTaskKind.TUTOR_VISUAL_GENERATE -> {
-            promptPolicyVersion = TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.tutorVisualGenerateDisclosure(
-                includesSelectedRegion = manifest.assets.any { asset ->
-                    asset.selectedRegion != null
-                },
-            )
-            prohibitedData =
-                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
-                    disclosedData
-        }
-        ModelTaskKind.TUTOR_VISUAL_REVIEW -> {
-            promptPolicyVersion = TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.tutorVisualReviewDisclosure(
-                includesSelectedRegion = manifest.assets.any { asset ->
-                    asset.selectedRegion != null
-                },
-            )
-            prohibitedData =
-                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
-                    disclosedData
-        }
-        else -> return false
-    }
-    return manifest.authorizedTaskKinds == setOf(taskKind) &&
-        manifest.promptPolicyVersion == promptPolicyVersion &&
-        manifest.disclosedData == disclosedData &&
-        manifest.prohibitedData == prohibitedData
-}
-
-internal fun ModelTaskSnapshot.requiresFreshTutorApproval(
-    provider: ProviderCapabilitySnapshot,
-): Boolean {
-    val failureCode = failure?.code ?: return false
-    return !coversCurrentTutorDisclosure(provider, request.input.kind) ||
-        failureCode.requiresEgressAuthorizationRenewal() ||
-        (failureCode.requiresModelSettings() && !matchesTutorProvider(provider))
-}
-
-internal fun tutorRecoveryRequestId(
-    failedRequest: ModelTaskRequest,
-    provider: ProviderCapabilitySnapshot,
-    approvedAtEpochMillis: Long,
-): String {
-    val taskName = when (failedRequest.input.kind) {
-        ModelTaskKind.TUTOR_PLAN -> "plan"
-        ModelTaskKind.TUTOR_RESPOND -> "respond"
-        ModelTaskKind.TUTOR_VISUAL_GENERATE -> "visual-generate"
-        ModelTaskKind.TUTOR_VISUAL_REVIEW -> "visual-review"
-        else -> error("Only tutor tasks can be recovered here")
-    }
-    val promptPolicy = when (failedRequest.input.kind) {
-        ModelTaskKind.TUTOR_PLAN -> TUTOR_PROMPT_POLICY_VERSION
-        ModelTaskKind.TUTOR_RESPOND -> TUTOR_RESPOND_PROMPT_POLICY_VERSION
-        ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
-        ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
-        else -> error("Only tutor tasks can be recovered here")
-    }
-    val fingerprint = sha256Hex(
-        buildString {
-            append(ModelTaskFingerprint.of(failedRequest))
-            appendLengthPrefixed(provider.providerId)
-            appendLengthPrefixed(provider.modelId)
-            appendLengthPrefixed(provider.providerConfigurationVersion)
-            appendLengthPrefixed(promptPolicy)
-            append('\n').append(approvedAtEpochMillis)
-        },
-    ).take(32)
-    return "tutor-$taskName:approved-recovery:$fingerprint"
-}
-
-/** Creates a new authorized envelope without changing any persisted tutoring input. */
-internal fun rebuildTutorRequestAfterApproval(
-    failedTask: ModelTaskSnapshot,
-    provider: ProviderCapabilitySnapshot,
-    approvedAtEpochMillis: Long,
-): ModelTaskRequest {
-    val taskKind = failedTask.request.input.kind
-    require(
-        taskKind == ModelTaskKind.TUTOR_PLAN ||
-            taskKind == ModelTaskKind.TUTOR_RESPOND ||
-            taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
-            taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
-    )
-    require(provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER)
-    require(provider.supports(taskKind))
-    val requestId = tutorRecoveryRequestId(
-        failedRequest = failedTask.request,
-        provider = provider,
-        approvedAtEpochMillis = approvedAtEpochMillis,
-    )
-    val assets = failedTask.request.egressManifest?.assets.orEmpty()
-    val promptPolicyVersion: String
-    val disclosedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
-    val prohibitedData: Set<com.tingyun.smartmistakebook.core.model.ModelEgressDataClass>
-    when (taskKind) {
-        ModelTaskKind.TUTOR_PLAN -> {
-            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE
-            prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA
-        }
-        ModelTaskKind.TUTOR_RESPOND -> {
-            promptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE
-            prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA
-        }
-        ModelTaskKind.TUTOR_VISUAL_GENERATE -> {
-            promptPolicyVersion = TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.tutorVisualGenerateDisclosure(
-                includesSelectedRegion = assets.any { asset -> asset.selectedRegion != null },
-            )
-            prohibitedData =
-                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
-                    disclosedData
-        }
-        ModelTaskKind.TUTOR_VISUAL_REVIEW -> {
-            promptPolicyVersion = TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
-            disclosedData = ModelEgressManifest.tutorVisualReviewDisclosure(
-                includesSelectedRegion = assets.any { asset -> asset.selectedRegion != null },
-            )
-            prohibitedData =
-                com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
-                    disclosedData
-        }
-    }
-    val manifest = ModelEgressManifest(
-        authorizationId = "authorization:$requestId",
-        subjectId = failedTask.request.input.subjectId,
-        purpose = ModelEgressPurpose.TUTORING,
-        authorizedTaskKinds = setOf(taskKind),
-        providerId = provider.providerId,
-        modelId = provider.modelId,
-        providerConfigurationVersion = provider.providerConfigurationVersion,
-        promptPolicyVersion = promptPolicyVersion,
-        approvedAtEpochMillis = approvedAtEpochMillis,
-        assets = assets,
-        disclosedData = disclosedData,
-        prohibitedData = prohibitedData,
-    )
-    require(manifest.authorizationId != failedTask.request.egressManifest?.authorizationId) {
-        "Tutor recovery must not reuse the failed authorization"
-    }
-    return ModelTaskRequest(
-        requestId = requestId,
-        input = failedTask.request.input,
-        occurredAtEpochMillis = failedTask.request.occurredAtEpochMillis,
-        egressManifest = manifest,
-    )
 }
 
 internal data class TutorQuestionContext(
@@ -544,7 +266,6 @@ internal fun buildTutorPlanRequest(
     provider: ProviderCapabilitySnapshot,
     requestId: String,
     occurredAtEpochMillis: Long,
-    approvedAtEpochMillis: Long,
     cycleOrdinal: Int = 1,
     priorConversationMemory: TutorConversationMemory? = null,
     priorCycleStudentMessages: List<String> = emptyList(),
@@ -555,7 +276,6 @@ internal fun buildTutorPlanRequest(
     provider = provider,
     requestId = requestId,
     occurredAtEpochMillis = occurredAtEpochMillis,
-    approvedAtEpochMillis = approvedAtEpochMillis,
     cycleOrdinal = cycleOrdinal,
     priorConversationMemory = priorConversationMemory,
     priorCycleStudentMessages = priorCycleStudentMessages,
@@ -568,7 +288,6 @@ internal fun buildTutorPlanRequest(
     provider: ProviderCapabilitySnapshot,
     requestId: String,
     occurredAtEpochMillis: Long,
-    approvedAtEpochMillis: Long,
     cycleOrdinal: Int = 1,
     priorConversationMemory: TutorConversationMemory? = null,
     priorCycleStudentMessages: List<String> = emptyList(),
@@ -595,29 +314,15 @@ internal fun buildTutorPlanRequest(
         turnOrdinal = priorTurns.size + 1,
         priorTurns = priorTurns,
     )
-    val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
-        ModelEgressManifest(
-            authorizationId = "authorization:$requestId",
-            subjectId = question.sessionId,
-            purpose = ModelEgressPurpose.TUTORING,
-            authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_PLAN),
-            providerId = provider.providerId,
-            modelId = provider.modelId,
-            providerConfigurationVersion = provider.providerConfigurationVersion,
-            promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
-            approvedAtEpochMillis = approvedAtEpochMillis,
-            assets = emptyList(),
-            disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE,
-            prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
-        )
-    } else {
-        null
-    }
+    // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单，
+    // 授权由 authorize() 的 ProviderConsented 分支依据 agentConsentGranted 判定。
     return ModelTaskRequest(
         requestId = requestId,
         input = input,
         occurredAtEpochMillis = occurredAtEpochMillis,
-        egressManifest = manifest,
+        agentConsentGranted =
+            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER,
+        egressManifest = null,
     )
 }
 
@@ -668,7 +373,6 @@ internal fun buildTutorRespondRequest(
     provider: ProviderCapabilitySnapshot,
     requestId: String,
     occurredAtEpochMillis: Long,
-    approvedAtEpochMillis: Long,
     responseOrdinal: Int,
     cycleOrdinal: Int,
     turnOrdinal: Int,
@@ -705,29 +409,14 @@ internal fun buildTutorRespondRequest(
             TutorToolName.NOTEBOOK_WRITE,
         ),
     )
-    val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
-        ModelEgressManifest(
-            authorizationId = "authorization:$requestId",
-            subjectId = question.sessionId,
-            purpose = ModelEgressPurpose.TUTORING,
-            authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_RESPOND),
-            providerId = provider.providerId,
-            modelId = provider.modelId,
-            providerConfigurationVersion = provider.providerConfigurationVersion,
-            promptPolicyVersion = TUTOR_RESPOND_PROMPT_POLICY_VERSION,
-            approvedAtEpochMillis = approvedAtEpochMillis,
-            assets = emptyList(),
-            disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE,
-            prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA,
-        )
-    } else {
-        null
-    }
+    // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单。
     return ModelTaskRequest(
         requestId = requestId,
         input = input,
         occurredAtEpochMillis = occurredAtEpochMillis,
-        egressManifest = manifest,
+        agentConsentGranted =
+            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER,
+        egressManifest = null,
     )
 }
 
@@ -777,7 +466,6 @@ internal fun buildTutorVisualGenerateRequest(
     focusMarkdown: String,
     explanationMarkdown: String,
     occurredAtEpochMillis: Long,
-    approvedAtEpochMillis: Long,
 ): ModelTaskRequest {
     require(provider.supports(ModelTaskKind.TUTOR_VISUAL_GENERATE))
     val orderedAssets = sourceAssets.sortedBy(TutorVisualSourceAssetScope::pageIndex)
@@ -800,18 +488,15 @@ internal fun buildTutorVisualGenerateRequest(
         focusMarkdown = focusMarkdown,
         explanationMarkdown = explanationMarkdown,
     )
+    // 配置模型 = 全局同意：视觉区域裁剪是受支持的运行时输入，region 随 input 的
+    // sourceAssets 携带，egress 由 authorize() 依据 agentConsentGranted 授权。
     return ModelTaskRequest(
         requestId = requestId,
         input = input,
         occurredAtEpochMillis = occurredAtEpochMillis,
-        egressManifest = buildTutorVisualManifest(
-            question = question,
-            provider = provider,
-            sourceAssets = orderedAssets,
-            taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
-            requestId = requestId,
-            approvedAtEpochMillis = approvedAtEpochMillis,
-        ),
+        agentConsentGranted =
+            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER,
+        egressManifest = null,
     )
 }
 
@@ -844,7 +529,6 @@ internal fun buildTutorVisualReviewRequest(
     generated: TutorVisualGenerateOutput,
     reviewReasonCodes: Set<String>,
     occurredAtEpochMillis: Long,
-    approvedAtEpochMillis: Long,
 ): ModelTaskRequest {
     require(provider.supports(ModelTaskKind.TUTOR_VISUAL_REVIEW))
     val generationInput = generationRequest.input as? TutorVisualGenerateInput
@@ -884,56 +568,9 @@ internal fun buildTutorVisualReviewRequest(
         requestId = requestId,
         input = input,
         occurredAtEpochMillis = occurredAtEpochMillis,
-        egressManifest = buildTutorVisualManifest(
-            question = question,
-            provider = provider,
-            sourceAssets = orderedAssets,
-            taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
-            requestId = requestId,
-            approvedAtEpochMillis = approvedAtEpochMillis,
-        ),
-    )
-}
-
-private fun buildTutorVisualManifest(
-    question: TutorQuestionContext,
-    provider: ProviderCapabilitySnapshot,
-    sourceAssets: List<TutorVisualSourceAssetScope>,
-    taskKind: ModelTaskKind,
-    requestId: String,
-    approvedAtEpochMillis: Long,
-): ModelEgressManifest? {
-    if (provider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER) return null
-    require(
-        taskKind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
-            taskKind == ModelTaskKind.TUTOR_VISUAL_REVIEW,
-    )
-    val grants = sourceAssets.map(TutorVisualSourceAssetScope::toEgressGrant)
-    val includesSelectedRegion = grants.any { grant -> grant.selectedRegion != null }
-    val disclosedData = when (taskKind) {
-        ModelTaskKind.TUTOR_VISUAL_GENERATE ->
-            ModelEgressManifest.tutorVisualGenerateDisclosure(includesSelectedRegion)
-        ModelTaskKind.TUTOR_VISUAL_REVIEW ->
-            ModelEgressManifest.tutorVisualReviewDisclosure(includesSelectedRegion)
-    }
-    return ModelEgressManifest(
-        authorizationId = "authorization:$requestId",
-        subjectId = question.sessionId,
-        purpose = ModelEgressPurpose.TUTORING,
-        authorizedTaskKinds = setOf(taskKind),
-        providerId = provider.providerId,
-        modelId = provider.modelId,
-        providerConfigurationVersion = provider.providerConfigurationVersion,
-        promptPolicyVersion = when (taskKind) {
-            ModelTaskKind.TUTOR_VISUAL_GENERATE -> TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION
-            ModelTaskKind.TUTOR_VISUAL_REVIEW -> TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION
-        },
-        approvedAtEpochMillis = approvedAtEpochMillis,
-        assets = grants,
-        disclosedData = disclosedData,
-        prohibitedData =
-            com.tingyun.smartmistakebook.core.model.ModelEgressDataClass.entries.toSet() -
-                disclosedData,
+        agentConsentGranted =
+            provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER,
+        egressManifest = null,
     )
 }
 

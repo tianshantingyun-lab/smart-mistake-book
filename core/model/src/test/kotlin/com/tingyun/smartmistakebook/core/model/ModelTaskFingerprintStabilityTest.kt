@@ -1,7 +1,11 @@
 package com.tingyun.smartmistakebook.core.model
 
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -110,5 +114,57 @@ class ModelTaskFingerprintStabilityTest {
             ModelTaskLogicalOperationFingerprint.of(v5.input),
             ModelTaskLogicalOperationFingerprint.of(reDecoded.input),
         )
+    }
+
+    @Test
+    fun legacyV7RowWithOldConsentKeyDecodesViaShimAndFingerprintIsStable() {
+        // 模拟 v7 时代写库的行：字段名是 captureEgressConsentGranted（schema v7）。
+        // v8 解码器 rename 后不认旧键（ignoreUnknownKeys=false），decode shim 需把它翻译。
+        // v7 init guard 不允许 agentConsentGranted=true，故手工往 JSON 注入旧键值 true，
+        // 等价于当年 v7 编码器实际会写出的行。
+        val classify = ImagePipelineClassifyInput(
+            sourceAssetId = "asset-1",
+            imageWidth = 1080,
+            imageHeight = 1440,
+        )
+        val v7 = ModelTaskRequest(
+            schemaVersion = 7,
+            requestId = "save-decision:legacy-v7",
+            input = classify,
+            occurredAtEpochMillis = 1_000,
+        )
+        val v7Encoded = ModelTaskCodec.encodeRequest(v7)
+        val legacyV7Json = v7Encoded
+            .replace("\"agentConsentGranted\":false", "\"captureEgressConsentGranted\":true")
+
+        val decoded = ModelTaskCodec.decodeRequest(legacyV7Json)
+        assertEquals(7, decoded.schemaVersion)
+        assertEquals(true, decoded.agentConsentGranted)
+        // 指纹稳定：decode 出的 v7 行（走 <8 strip，抹掉旧键）重算指纹 == 直接对旧 v7 JSON 的摘要
+        val legacyStripped = legacyV7Json.replace(",\"captureEgressConsentGranted\":true", "")
+        val expectedFingerprint = MessageDigest.getInstance("SHA-256")
+            .digest(legacyStripped.toByteArray(StandardCharsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        assertEquals(expectedFingerprint, ModelTaskFingerprint.of(decoded))
+    }
+
+    @Test
+    fun currentV8RequestEncodesNewConsentKey() {
+        // v8 编码必须用新键名，不能沿用旧键（否则 decode shim 判断会误伤）
+        val respond = respondInput()
+        val v8 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "respond:v8-new-key",
+            input = respond,
+            occurredAtEpochMillis = 1_000,
+            agentConsentGranted = true,
+        )
+        val encoded = ModelTaskCodec.encodeRequest(v8)
+        assertTrue("\"agentConsentGranted\":true" in encoded)
+        assertFalse("\"captureEgressConsentGranted\"" in encoded)
+        // 往返稳定
+        val decoded = ModelTaskCodec.decodeRequest(encoded)
+        assertEquals(true, decoded.agentConsentGranted)
+        assertEquals(ModelTaskFingerprint.of(v8), ModelTaskFingerprint.of(decoded))
     }
 }

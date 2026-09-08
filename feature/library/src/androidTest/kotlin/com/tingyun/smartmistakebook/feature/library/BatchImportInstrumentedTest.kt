@@ -8,16 +8,11 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
 import com.tingyun.smartmistakebook.core.domain.BatchImportBoundaryStatus
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationOffer
 import com.tingyun.smartmistakebook.core.domain.BatchImportPage
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
-import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.ui.SmartMistakeBookTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -78,17 +73,12 @@ class BatchImportInstrumentedTest {
     }
 
     @Test
-    fun organizationConsentUsesPlainLanguage() {
-        var approved = false
+    fun organizationRunsUnderGlobalConsentWithPlainLanguage() {
+        var organizedJobId: String? = null
         val pending = completedJob(
             firstDraftId = "draft-1",
             secondDraftId = "draft-2",
             firstBoundary = BatchImportBoundaryStatus.PENDING,
-        )
-        val offer = BatchImportOrganizationOffer(
-            jobId = pending.jobId,
-            pageCount = 2,
-            provider = provider(),
         )
         composeRule.setContent {
             SmartMistakeBookTheme {
@@ -101,8 +91,7 @@ class BatchImportInstrumentedTest {
                     onResume = {},
                     onRetry = { _, _ -> },
                     onSkip = { _, _ -> },
-                    organizationOffer = offer,
-                    onApproveOrganization = { approved = true },
+                    onOrganize = { jobId -> organizedJobId = jobId },
                     onOpenDraft = {},
                     onBack = {},
                 )
@@ -110,10 +99,11 @@ class BatchImportInstrumentedTest {
         }
 
         composeRule.onNodeWithText(
-            "会把这 2 页交给测试模型，只判断前后页面是不是同一道题；不会发送其他题目或学习记录。",
+            "自动识别跨页题目，之后会按一道道题显示，不需要手工合并。" +
+                "开启『模型智能体』后整理会直接交给已配置模型。",
         ).assertExists()
-        composeRule.onNodeWithText("同意并整理").performClick()
-        assertTrue(approved)
+        composeRule.onNodeWithText("开始分题").performClick()
+        assertEquals(pending.jobId, organizedJobId)
     }
 
     @Test
@@ -172,16 +162,5 @@ class BatchImportInstrumentedTest {
         ),
         createdAtEpochMillis = 1,
         updatedAtEpochMillis = 2,
-    )
-
-    private fun provider() = ProviderCapabilitySnapshot(
-        providerId = "fixture",
-        providerDisplayName = "测试模型",
-        modelId = "fixture-v1",
-        supportedTasks = setOf(ModelTaskKind.CAPTURE_ASSESS),
-        supportsImageInput = true,
-        supportsStructuredOutput = true,
-        supportsStreaming = false,
-        executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
     )
 }

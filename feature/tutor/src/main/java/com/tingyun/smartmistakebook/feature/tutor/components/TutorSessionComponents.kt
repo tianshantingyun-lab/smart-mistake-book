@@ -12,14 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
@@ -31,7 +29,6 @@ import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
-import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 
 @Composable
@@ -74,91 +71,6 @@ internal fun TutorStoredChoiceFeedback(
             SafeMarkdownText(
                 markdown = requireNotNull(response.feedbackMarkdown),
                 style = MaterialTheme.typography.bodySmall,
-            )
-        }
-    }
-}
-
-@Composable
-internal fun TutorDisclosureCard(
-    provider: ProviderCapabilitySnapshot,
-    onApprove: () -> Unit,
-    modifier: Modifier = Modifier,
-    title: String = "开始讲这道题",
-    actionText: String = "开始讲题",
-    actionContentDescription: String = "开始讲解当前题",
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("captured_tutor_disclosure"),
-        color = JadeSoft.copy(alpha = 0.45f),
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, Outline),
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = title,
-                color = Ink,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = "会把当前题、少量同科学习记录，以及你在本题中发送的消息和已显示的讲解发给 ${provider.providerDisplayName}；需要还原题图关系时，只会再使用本题原图，不会发送其他题目。",
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            PrimaryActionButton(
-                text = actionText,
-                onClick = onApprove,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("captured_tutor_start_model"),
-                contentDescription = actionContentDescription,
-            )
-        }
-    }
-}
-
-@Composable
-internal fun TutorRespondDisclosureCard(
-    provider: ProviderCapabilitySnapshot,
-    onApprove: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("tutor_respond_disclosure"),
-        color = JadeSoft.copy(alpha = 0.32f),
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, Outline),
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = "继续本题对话",
-                color = Ink,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = "会把当前题、少量同科学习记录、你发送的消息和已显示讲解发给 ${provider.providerDisplayName}；需要补充图解时，只会再使用本题原图，不会发送其他题目或完整学习记录。",
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            PrimaryActionButton(
-                text = "继续对话",
-                onClick = onApprove,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("tutor_respond_disclosure_approve"),
-                contentDescription = "允许与当前模型继续本题对话",
             )
         }
     }

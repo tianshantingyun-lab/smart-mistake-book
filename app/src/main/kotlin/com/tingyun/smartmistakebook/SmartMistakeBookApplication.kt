@@ -23,6 +23,7 @@ import com.tingyun.smartmistakebook.core.data.study.StudyExperienceRepositoryFac
 import com.tingyun.smartmistakebook.core.data.study.VisualInteractionEventSinkFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorConversationRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreSleepJournalStore
@@ -35,6 +36,7 @@ import com.tingyun.smartmistakebook.core.domain.BackupRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
+import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
@@ -164,21 +166,6 @@ class SmartMistakeBookApplication : Application() {
                 schedulingSettingsStore = schedulingSettingsStore,
                 optimizedFsrsParameters = optimizedParameters,
             )
-            captureRepository = CaptureWorkflowRepositoryFactory.create(
-                context = this,
-                database = database,
-                // Production clean redraw reuses the user's configured model
-                // credential and runs off the commit path in the background; a
-                // missing/unconfigured/non-image model declines and the original
-                // photo is kept.
-                cleanRedraw = modelConfigurationStore?.let { store ->
-                    ConfiguredCleanImageGeneratorFactory.create(
-                        configurationStore = store,
-                        networkRequestsAllowed = capabilities.networkRequestsAllowed,
-                    )
-                },
-                cleanRedrawScope = applicationScope,
-            )
             mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)
             mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)
             tutorInteractionRepository = TutorInteractionRepositoryFactory.create(database)
@@ -237,6 +224,27 @@ class SmartMistakeBookApplication : Application() {
                 database = database,
                 gateway = gateway,
             )
+            captureRepository = CaptureWorkflowRepositoryFactory.create(
+                context = this,
+                database = database,
+                // Clean redraw engine: reused by the save decision round once the
+                // model classifies the committed photo as figure-bearing.
+                cleanRedraw = modelConfigurationStore?.let { store ->
+                    ConfiguredCleanImageGeneratorFactory.create(
+                        configurationStore = store,
+                        networkRequestsAllowed = capabilities.networkRequestsAllowed,
+                    )
+                },
+                cleanRedrawScope = applicationScope,
+                // Save path runs a model classify round to decide redraw. Consent =
+                // the global "model agent" toggle AND a configured model; no consent or
+                // no model → no round, original photo kept.
+                modelTasks = modelTaskRepository,
+                captureConsentGranted = {
+                    modelConfigurationStore != null &&
+                        runBlocking { modelAgentConsentStore?.current() ?: false }
+                },
+            )
             batchImportRepository = BatchImportRepositoryFactory.create(
                 context = this,
                 database = database,
@@ -244,6 +252,12 @@ class SmartMistakeBookApplication : Application() {
                 processingScope = applicationScope,
                 modelTasks = modelTaskRepository,
                 splitImports = SplitImportRepositoryFactory.createConcrete(database),
+                // Batch page organization egresses page images; it runs only under the global
+                // "model agent" consent AND a configured model, mirroring the capture save path.
+                consentEnabled = {
+                    modelConfigurationStore != null &&
+                        runBlocking { modelAgentConsentStore?.current() ?: false }
+                },
             )
             backupRepository = BackupRepositoryFactory.create(this, database)
             OrphanAssetGc.enqueue(this)
@@ -337,6 +351,13 @@ class SmartMistakeBookApplication : Application() {
 
     /** Debug-only model-config seed harness (never present in release). */
     private val testSeedReceiver = TestSeedModelConfigReceiver()
+    val modelAgentConsentStore: ModelAgentConsentStore? by lazy {
+        if (capabilities.networkRequestsAllowed) {
+            DataStoreModelAgentConsentStore(this, applicationScope)
+        } else {
+            null
+        }
+    }
 
     val modelCapabilityTester: ModelCapabilityTester? by lazy {
         modelConfigurationStore?.let(ConfiguredModelCapabilityTesterFactory::create)

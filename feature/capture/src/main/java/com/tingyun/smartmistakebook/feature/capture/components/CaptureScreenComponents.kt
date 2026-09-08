@@ -248,14 +248,32 @@ internal fun CaptureActions(
             icon = Icons.Outlined.PhotoLibrary,
             contentDescription = "使用系统照片选择器选择题目图片并整理",
         )
+    }
+}
+
+@Composable
+internal fun CaptureModelAgentConsentBlock(
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.dp, Outline, RoundedCornerShape(8.dp))
+            .background(JadeSoft.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+            .padding(14.dp)
+            .testTag("capture_model_agent_consent_block"),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         Text(
-            text = captureInitialEgressDisclosure(provider, entryOrigin),
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth()
-                .testTag("capture_initial_egress_disclosure"),
-            color = InkMuted,
-            style = MaterialTheme.typography.bodySmall,
+            text = "需在设置中开启『模型智能体』后，拍照题图才会交给模型整理",
+            color = Ink,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        OutlineActionChip(
+            text = "去设置",
+            onClick = onOpenSettings,
+            modifier = Modifier.testTag("capture_model_agent_consent_settings"),
         )
     }
 }

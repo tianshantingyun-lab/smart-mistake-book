@@ -5,36 +5,13 @@ import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
 import com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import java.util.UUID
 
 internal class CaptureDraftStateCommands(
     private val sink: CaptureDraftStateSink,
 ) {
-    fun clearEgressApproval() {
-        sink.clearEgressApproval()
-    }
-
-    fun approveEgress(provider: ProviderCapabilitySnapshot): ModelEgressManifest? {
-        val currentDraftId = sink.draftId() ?: return null
-        val pages = sink.sourcePages()
-        if (pages.isEmpty()) return null
-        val authorizationId = UUID.randomUUID().toString()
-        val approvedAt = System.currentTimeMillis()
-        val manifest = buildCaptureEgressManifest(
-            authorizationId = authorizationId,
-            draftId = currentDraftId,
-            provider = provider,
-            sourcePages = pages,
-            approvedAtEpochMillis = approvedAt,
-        )
-        sink.rememberEgressApproval(manifest, provider)
-        return manifest
-    }
-
     fun retryAssessment() {
         sink.clearPendingAssessmentRecovery()
         val retry = nextCaptureTaskRetry(sink.assessmentSnapshot()?.status)
@@ -59,7 +36,6 @@ internal class CaptureDraftStateCommands(
 
     fun resetDraft() {
         sink.resetDraftFields()
-        clearEgressApproval()
         sink.clearWorkspace()
     }
 
@@ -81,7 +57,6 @@ internal class CaptureDraftStateCommands(
         draft: CaptureDraftSummary,
         requestId: String,
         occurredAtEpochMillis: Long,
-        sourceEgressIntent: CaptureSourceEgressIntent? = null,
     ) {
         val imported = captureImportedNewModelTasks(
             requestId = requestId,
@@ -89,8 +64,6 @@ internal class CaptureDraftStateCommands(
             pageCount = draft.sourcePages.size,
         )
         sink.applyImportedSummary(draft, imported, occurredAtEpochMillis)
-        clearEgressApproval()
-        sink.bindImportedEgress(draft, sourceEgressIntent)
     }
 }
 
@@ -101,8 +74,6 @@ internal class CaptureDraftStateSink(
     val parseSnapshot: () -> ModelTaskSnapshot?,
     val parseOutput: () -> CaptureParseOutput?,
     val workspace: () -> CaptureWorkspaceUiState?,
-    val clearEgressApproval: () -> Unit,
-    val rememberEgressApproval: (ModelEgressManifest, ProviderCapabilitySnapshot) -> Unit,
     val clearPendingAssessmentRecovery: () -> Unit,
     val replaceAssessmentRequestId: (String) -> Unit,
     val clearAssessmentSnapshotForActivePage: () -> Unit,
@@ -120,5 +91,4 @@ internal class CaptureDraftStateSink(
         CaptureImportedNewModelTasks,
         Long,
     ) -> Unit,
-    val bindImportedEgress: (CaptureDraftSummary, CaptureSourceEgressIntent?) -> Unit,
 )

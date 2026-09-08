@@ -112,6 +112,7 @@ class ModelEgressTest {
         val legacyJson = ModelTaskCodec.encodeRequest(request)
             .replace(",\"priorCycleStudentMessages\":[]", "")
             .replace(",\"egressManifest\":null", "")
+            .replace(",\"agentConsentGranted\":false", "")
         val decoded = ModelTaskCodec.decodeRequest(legacyJson)
         val expected = MessageDigest.getInstance("SHA-256")
             .digest(legacyJson.toByteArray(StandardCharsets.UTF_8))
@@ -160,6 +161,7 @@ class ModelEgressTest {
         )
         val encoded = ModelTaskCodec.encodeRequest(request)
         val legacyJson = encoded.replace(",\"priorCycleStudentMessages\":[]", "")
+            .replace(",\"agentConsentGranted\":false", "")
         val expectedFingerprint = MessageDigest.getInstance("SHA-256")
             .digest(legacyJson.toByteArray(StandardCharsets.UTF_8))
             .joinToString("") { "%02x".format(it) }

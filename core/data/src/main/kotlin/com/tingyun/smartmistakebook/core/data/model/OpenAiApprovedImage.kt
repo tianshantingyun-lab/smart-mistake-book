@@ -23,5 +23,9 @@ internal class ApprovedImage(
 
 internal data class ApprovedImageReadPlan(
     val assetId: String,
-    val byteSize: Long,
+    /**
+     * Expected asset byte size. Null under ProviderConsented (unknown until the
+     * asset is opened); the read resolves and enforces the budget from the real size.
+     */
+    val byteSize: Long?,
 )

@@ -18,7 +18,6 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.data.model.ModelTaskRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryFactory
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationApproval
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
@@ -353,6 +352,7 @@ class BatchImportRepositoryInstrumentedTest {
                 capture = captureRepository(database),
                 processingScope = processingScope,
                 modelTasks = modelTasks,
+                consentEnabled = { true },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
@@ -367,19 +367,9 @@ class BatchImportRepositoryInstrumentedTest {
                 }.first()
             }
             val originalDraftIds = completed.pages.map { checkNotNull(it.draftId) }
-            val offer = repository.prepareOrganization(created.jobId)
-            val approvedAt = System.currentTimeMillis()
 
             val organizationMillis = measureTimeMillis {
-                repository.organizeBatch(
-                    BatchImportOrganizationApproval(
-                        jobId = created.jobId,
-                        providerId = offer.provider.providerId,
-                        modelId = offer.provider.modelId,
-                        providerConfigurationVersion = offer.provider.providerConfigurationVersion,
-                        approvedAtEpochMillis = approvedAt,
-                    ),
-                )
+                repository.organizeBatch(created.jobId)
             }
 
             val organized = withTimeout(5_000) {
@@ -424,6 +414,7 @@ class BatchImportRepositoryInstrumentedTest {
                 capture = captureRepository(database),
                 processingScope = processingScope,
                 modelTasks = modelTasks,
+                consentEnabled = { true },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
@@ -437,16 +428,7 @@ class BatchImportRepositoryInstrumentedTest {
                     jobs.firstOrNull()?.status == BatchImportStatus.COMPLETED
                 }.first()
             }
-            val offer = repository.prepareOrganization(created.jobId)
-            repository.organizeBatch(
-                BatchImportOrganizationApproval(
-                    jobId = created.jobId,
-                    providerId = offer.provider.providerId,
-                    modelId = offer.provider.modelId,
-                    providerConfigurationVersion = offer.provider.providerConfigurationVersion,
-                    approvedAtEpochMillis = System.currentTimeMillis(),
-                ),
-            )
+            repository.organizeBatch(created.jobId)
 
             val organized = checkNotNull(database.readBatchImportJob(created.jobId))
             assertEquals(2, organized.pages.mapNotNull { it.resultDraftId }.distinct().size)
@@ -663,6 +645,62 @@ class BatchImportRepositoryInstrumentedTest {
                 "Split recognition must never fail a page: " + settled.pages.map { it.status },
                 2,
                 settled.pages.count { it.status == BatchImportPageStatus.READY },
+            )
+        } finally {
+            processingScope.cancel()
+        }
+    }
+
+    /**
+     * Global consent is the single egress gate for agent rounds: with it off, an
+     * external split round is never attempted, so the page import stays clean and
+     * no guaranteed-failure model task is written per page.
+     */
+    @Test
+    fun splitRecognitionSkipsExternalEgressWithoutGlobalConsentAndImportsEveryPage() = runBlocking {
+        val selected = listOf(insertImage(), insertImage())
+        val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val gateway = PageRelationGateway(CapturePageRelation.SAME_QUESTION)
+            val repository = BatchImportRepositoryFactory.create(
+                context = context,
+                database = database,
+                capture = captureRepository(database),
+                processingScope = processingScope,
+                modelTasks = ModelTaskRepositoryFactory.create(
+                    database = database,
+                    gateway = gateway,
+                ),
+                splitImports = SplitImportRepositoryFactory.createConcrete(database),
+                consentEnabled = { false },
+            )
+            val created = repository.createBatchImport(
+                CreateBatchImportRequest(
+                    requestId = "split-consent-off",
+                    localUris = selected.map(Uri::toString),
+                    occurredAtEpochMillis = 9_000,
+                ),
+            )
+            val settled = withTimeout(20_000) {
+                repository.observeBatchImports().first { jobs ->
+                    jobs.singleOrNull { it.jobId == created.jobId }?.let { job ->
+                        job.status == BatchImportStatus.COMPLETED ||
+                            job.pages.all { page ->
+                                page.status == BatchImportPageStatus.READY ||
+                                    page.status == BatchImportPageStatus.FAILED
+                            }
+                    } == true
+                }.single { it.jobId == created.jobId }
+            }
+            assertEquals(
+                "Every page must still import without consent: " + settled.pages.map { it.status },
+                2,
+                settled.pages.count { it.status == BatchImportPageStatus.READY },
+            )
+            assertEquals(0, gateway.executionCount)
+            assertNull(
+                "A consent-off external split must not persist a model task",
+                database.readModelTask("batch-split:${created.jobId}:0"),
             )
         } finally {
             processingScope.cancel()

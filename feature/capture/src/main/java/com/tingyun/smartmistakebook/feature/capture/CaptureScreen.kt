@@ -75,17 +75,11 @@ import com.tingyun.smartmistakebook.core.model.CaptureDraftEditorMode
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
-import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import java.util.UUID
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -108,15 +102,13 @@ fun CaptureScreen(
     repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     onOpenModelSettings: () -> Unit,
-    onTutorSessionReady: (
-        sessionId: String,
-        autoStartAuthorization: TutorAutoStartAuthorization?,
-    ) -> Unit,
+    onTutorSessionReady: (sessionId: String) -> Unit,
     onLibraryEntryReady: (String) -> Unit,
     onSplitReady: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     resumeDraftId: String? = null,
+    agentConsentGranted: Boolean = false,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -181,34 +173,11 @@ fun CaptureScreen(
     var providerCapabilities by remember(modelTasks) {
         mutableStateOf<ProviderCapabilitySnapshot?>(null)
     }
-    var activeCaptureAuthorizationId by remember(modelTasks) {
-        mutableStateOf<String?>(null)
-    }
-    var initialTutorPlanCaptureAuthorizationId by remember(modelTasks) {
-        mutableStateOf<String?>(null)
-    }
-    var freshCaptureEgressIntent by remember(modelTasks) {
-        mutableStateOf<CaptureDraftEgressIntent?>(null)
-    }
-    val informedEgressIntentSession = remember(modelTasks) {
-        CaptureInformedEgressIntentSession()
-    }
-    val captureExecutionLaunchGuard = remember(modelTasks) {
-        CaptureExternalExecutionLaunchGuard()
-    }
-    val captureModelTaskCoordinator = remember(modelTasks, coroutineScope) {
+    val modelExecutionCoordinator = remember(modelTasks, coroutineScope) {
         CaptureModelTaskCoordinator(
             modelTasks = modelTasks,
-            launchGuard = captureExecutionLaunchGuard,
             scope = coroutineScope,
         )
-    }
-    var egressAuthorizationId by rememberSaveable { mutableStateOf<String?>(null) }
-    var egressApprovedAtEpochMillis by rememberSaveable { mutableStateOf<Long?>(null) }
-    var egressApprovedProviderId by rememberSaveable { mutableStateOf<String?>(null) }
-    var egressApprovedModelId by rememberSaveable { mutableStateOf<String?>(null) }
-    var egressApprovedProviderConfigurationVersion by rememberSaveable {
-        mutableStateOf<String?>(null)
     }
     var activeEntryOriginName by rememberSaveable(resumeDraftId, entryOrigin) {
         mutableStateOf(entryOrigin.name)
@@ -260,85 +229,9 @@ fun CaptureScreen(
         ?.assessment?.decision
     val assessmentBlocksEntry = assessmentDecision != null &&
         assessmentDecision != CaptureAssessmentDecision.PASS
-    val egressApprovalMustBeRenewed = captureEgressApprovalMustBeRenewed(
-        assessmentSnapshot = assessmentSnapshot,
-        parseSnapshot = parseSnapshot,
-    )
-    val persistedCaptureEgress = assessmentSnapshot?.request?.egressManifest
-        ?: parseSnapshot?.request?.egressManifest
-    val captureAuthorizationNow = System.currentTimeMillis()
-    val savedCaptureEgress = providerCapabilities?.let { provider ->
-        val authorizationId = egressAuthorizationId
-        val approvedAt = egressApprovedAtEpochMillis
-        val currentDraftId = draftId
-        if (
-            authorizationId != null &&
-            approvedAt != null &&
-            currentDraftId != null &&
-            sourcePages.isNotEmpty() &&
-            egressApprovedProviderId == provider.providerId &&
-            egressApprovedModelId == provider.modelId &&
-            egressApprovedProviderConfigurationVersion ==
-            provider.providerConfigurationVersion
-        ) {
-            buildCaptureEgressManifest(
-                authorizationId = authorizationId,
-                draftId = currentDraftId,
-                provider = provider,
-                sourcePages = sourcePages,
-                approvedAtEpochMillis = approvedAt,
-            ).takeIf { manifest ->
-                manifest.isModelEgressApprovalFresh(captureAuthorizationNow)
-            }
-        } else {
-            null
-        }
-    }
-    val matchingPersistedCaptureEgress = providerCapabilities?.let { provider ->
-        val currentDraftId = draftId
-        persistedCaptureEgress?.takeIf { persisted ->
-            currentDraftId != null &&
-                sourcePages.isNotEmpty() &&
-                persisted.matchesCaptureApproval(
-                    draftId = currentDraftId,
-                    provider = provider,
-                    sourcePages = sourcePages,
-                ) && persisted.isModelEgressApprovalFresh(captureAuthorizationNow)
-        }
-    }
-    val captureEgressManifest = if (egressApprovalMustBeRenewed) {
-        null
-    } else {
-        listOfNotNull(savedCaptureEgress, matchingPersistedCaptureEgress)
-            .firstOrNull { manifest ->
-                manifest.authorizationId == activeCaptureAuthorizationId
-            }
-    }
-    val captureEgressApprovalRequired =
-        providerCapabilities?.requiresCaptureEgressApproval() == true
-    val captureRecoveryTask = providerCapabilities
-        ?.takeIf(ProviderCapabilitySnapshot::requiresCaptureEgressApproval)
-        ?.let {
-            parseSnapshot?.takeUnless { task -> task.status == ModelTaskStatus.SUCCEEDED }
-                ?: assessmentSnapshot?.takeUnless { task ->
-                    task.status == ModelTaskStatus.SUCCEEDED
-                }
-        }
-        ?.takeIf { captureEgressManifest == null }
-    val captureRecoveryAction = captureModelRecoveryAction(assessmentSnapshot, parseSnapshot)
-    val captureSettingsOnly = captureRecoveryAction == CaptureModelRecoveryAction.OPEN_SETTINGS &&
-        captureRecoveryTask?.let { task ->
-            providerCapabilities?.let(task::matchesCaptureProvider) != false
-        } != false
-    val captureContinuationRequired = captureEgressApprovalRequired &&
-        captureEgressManifest == null &&
-        freshCaptureEgressIntent == null &&
-        draftId != null &&
-        (resumeDraftId != null ||
-            captureRecoveryTask != null ||
-            persistedCaptureEgress != null ||
-            savedCaptureEgress != null ||
-            assessmentRequestId != null)
+    val captureModelConsentGranted = agentConsentGranted &&
+        providerCapabilities?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+        providerCapabilities?.supportsImageInput == true
     val candidateKind = if (structuredCandidate != null) {
         CaptureCandidateKind.MODEL_STRUCTURED
     } else if (recognitionStateName == CaptureRecognitionState.CANDIDATE_AVAILABLE.name) {
@@ -366,24 +259,6 @@ fun CaptureScreen(
                 parseSnapshot = { parseSnapshot },
                 parseOutput = { realParseOutput },
                 workspace = { workspaceState },
-                clearEgressApproval = {
-                    activeCaptureAuthorizationId = null
-                    initialTutorPlanCaptureAuthorizationId = null
-                    egressAuthorizationId = null
-                    egressApprovedAtEpochMillis = null
-                    egressApprovedProviderId = null
-                    egressApprovedModelId = null
-                    egressApprovedProviderConfigurationVersion = null
-                },
-                rememberEgressApproval = { manifest, provider ->
-                    egressAuthorizationId = manifest.authorizationId
-                    egressApprovedAtEpochMillis = manifest.approvedAtEpochMillis
-                    egressApprovedProviderId = provider.providerId
-                    egressApprovedModelId = provider.modelId
-                    egressApprovedProviderConfigurationVersion =
-                        provider.providerConfigurationVersion
-                    activeCaptureAuthorizationId = manifest.authorizationId
-                },
                 clearPendingAssessmentRecovery = { pendingAssessmentRecoveryRequest = null },
                 replaceAssessmentRequestId = { requestId ->
                     assessmentRequestId = requestId
@@ -440,7 +315,6 @@ fun CaptureScreen(
                     parseSnapshot = null
                     pendingParseRecoveryRequest = null
                     transcriptionEditedByUser = false
-                    freshCaptureEgressIntent = null
                 },
                 clearWorkspace = {
                     workspaceState = null
@@ -496,24 +370,9 @@ fun CaptureScreen(
                     assessmentOccurredAtEpochMillis = occurredAt
                     parseRequestId = imported.parseRequestId
                 },
-                bindImportedEgress = { draft, sourceEgressIntent ->
-                    freshCaptureEgressIntent = sourceEgressIntent?.bindDraft(
-                        draftId = draft.draftId,
-                        sourcePages = draft.sourcePages,
-                    )
-                    sourceEgressIntent?.let { informedEgressIntentSession.complete(it.intentId) }
-                },
             ),
         )
     }
-
-    fun clearCaptureEgressApproval() {
-        draftState.clearEgressApproval()
-    }
-
-    fun approveCaptureEgress(
-        provider: ProviderCapabilitySnapshot,
-    ): ModelEgressManifest? = draftState.approveEgress(provider)
 
     fun retryAssessmentProcessing() {
         draftState.retryAssessment()
@@ -539,9 +398,8 @@ fun CaptureScreen(
         draft: CaptureDraftSummary,
         requestId: String,
         occurredAtEpochMillis: Long,
-        sourceEgressIntent: CaptureSourceEgressIntent? = null,
     ) {
-        draftState.applyDraftSummary(draft, requestId, occurredAtEpochMillis, sourceEgressIntent)
+        draftState.applyDraftSummary(draft, requestId, occurredAtEpochMillis)
     }
 
     val workspaceCommands = remember(workspaceWriter) {
@@ -667,12 +525,6 @@ fun CaptureScreen(
                     receivedInputSource = source.name
                 },
                 resetDraft = { resetDraftState() },
-                bindReturnedSource = { purpose, uri ->
-                    informedEgressIntentSession.bindReturnedSource(
-                        purpose = purpose,
-                        sourceUri = uri,
-                    )
-                },
                 clearCaptureError = { captureError = null },
                 setReplacement = { uri, source ->
                     replacementCandidateUri = uri
@@ -680,7 +532,6 @@ fun CaptureScreen(
                 },
                 clearReplacementError = { replacementError = null },
                 persistAdditionalPage = { uri, source -> persistAdditionalPage(uri, source) },
-                cancelAcquisition = { informedEgressIntentSession.cancelAcquisition() },
                 resetPurpose = {
                     acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
                 },
@@ -782,11 +633,8 @@ fun CaptureScreen(
     val workflowEvents = remember {
         CaptureWorkflowEventCommands(
             sink = CaptureWorkflowEventSink(
-                applyDraftSummary = { draft, requestId, occurredAt, intent ->
-                    applyDraftSummary(draft, requestId, occurredAt, intent)
-                },
-                sourceEgressIntent = { purpose, uri ->
-                    informedEgressIntentSession.sourceFor(purpose = purpose, sourceUri = uri)
+                applyDraftSummary = { draft, requestId, occurredAt ->
+                    applyDraftSummary(draft, requestId, occurredAt)
                 },
                 clearCaptureError = { captureError = null },
                 pageAssessmentSnapshots = { sourcePageAssessmentSnapshots },
@@ -804,9 +652,6 @@ fun CaptureScreen(
                     parseRequestId = parseId
                     parseRetryNonce = 0
                 },
-                clearCaptureEgressApproval = { clearCaptureEgressApproval() },
-                bindFreshEgressIntent = { freshCaptureEgressIntent = it },
-                completeEgressIntent = { informedEgressIntentSession.complete(it) },
                 resetAcquisitionPurpose = {
                     acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
                 },
@@ -872,14 +717,7 @@ fun CaptureScreen(
 
     LaunchedEffect(workflowUiState.confirmedTutorSession?.sessionId) {
         val session = workflowUiState.confirmedTutorSession ?: return@LaunchedEffect
-        workflowEvents.consumeTutorSession(
-            session = session,
-            provider = providerCapabilities,
-            manifest = captureEgressManifest,
-            activeAuthorizationId = activeCaptureAuthorizationId,
-            initialTutorPlanAuthorizationId = initialTutorPlanCaptureAuthorizationId,
-            nowEpochMillis = System.currentTimeMillis(),
-        )
+        workflowEvents.consumeTutorSession(session)
     }
 
     LaunchedEffect(
@@ -926,7 +764,7 @@ fun CaptureScreen(
                 },
                 completeCachePrune = { initialCachePrune.complete(Unit) },
                 setResumeState = { resumeLoadStateName = it.name },
-                redirectTutor = { onTutorSessionReady(it, null) },
+                redirectTutor = { onTutorSessionReady(it) },
                 applyResumeDraft = { applied ->
                     activeEntryOriginName = applied.originName
                     receivedImageUri = applied.receivedImageUri
@@ -1022,11 +860,11 @@ fun CaptureScreen(
         afterWorkspaceFlush(onBack)
     }
 
-    val modelTaskCommands = remember(captureModelTaskCoordinator) {
+    val modelTaskCommands = remember(modelExecutionCoordinator) {
         CaptureModelTaskCommands(
             repository = repository,
             modelTasks = modelTasks,
-            coordinator = captureModelTaskCoordinator,
+            coordinator = modelExecutionCoordinator,
             sink = CaptureModelTaskSink(
                 sourcePages = { sourcePages },
                 pageAssessmentSnapshots = { sourcePageAssessmentSnapshots },
@@ -1043,16 +881,10 @@ fun CaptureScreen(
                 setAssessmentSnapshot = { assessmentSnapshot = it },
                 setParseSnapshot = { parseSnapshot = it },
                 setPageAssessmentSnapshots = { sourcePageAssessmentSnapshots = it },
-                clearActiveAuthorization = { activeCaptureAuthorizationId = null },
                 setSplitError = { splitError = it },
                 setWorkflowInProgress = { workflowInProgress = it },
                 resetDraft = { resetDraftState() },
                 onSplitReady = onSplitReady,
-                clearFreshEgressIntent = { freshCaptureEgressIntent = null },
-                approveCaptureEgress = { approveCaptureEgress(it) },
-                setInitialTutorPlanAuthorizationId = {
-                    initialTutorPlanCaptureAuthorizationId = it
-                },
                 clearPendingAssessmentRecovery = { pendingAssessmentRecoveryRequest = null },
                 clearPendingParseRecovery = { pendingParseRecoveryRequest = null },
                 replaceWorkspace = { adopted ->
@@ -1068,7 +900,7 @@ fun CaptureScreen(
                     adoptedText.title?.let { correctedTitle = it }
                 },
                 buildAssessmentRequest = {
-                    requestId, currentDraftId, sourceAssetId, width, height, occurredAt, manifest ->
+                    requestId, currentDraftId, sourceAssetId, width, height, occurredAt, consent ->
                     captureAssessmentRequest(
                         requestId = requestId,
                         draftId = currentDraftId,
@@ -1077,11 +909,11 @@ fun CaptureScreen(
                         imageWidth = width,
                         imageHeight = height,
                         occurredAtEpochMillis = occurredAt,
-                        egressManifest = manifest,
+                        agentConsentGranted = consent,
                     )
                 },
                 buildParseRequest = {
-                    requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, manifest ->
+                    requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, consent ->
                     captureParseRequest(
                         requestId = requestId,
                         draftId = currentDraftId,
@@ -1090,7 +922,7 @@ fun CaptureScreen(
                         sourcePages = pages,
                         assessmentRequestIds = assessmentIds,
                         occurredAtEpochMillis = occurredAt,
-                        egressManifest = manifest,
+                        agentConsentGranted = consent,
                     )
                 },
             ),
@@ -1117,27 +949,12 @@ fun CaptureScreen(
     }
 
     LaunchedEffect(
-        freshCaptureEgressIntent,
-        providerCapabilities,
-        draftId,
-        sourcePages,
-    ) {
-        modelTaskCommands.bindFreshEgress(
-            informedIntent = freshCaptureEgressIntent,
-            provider = providerCapabilities,
-            draftId = draftId,
-            sourcePages = sourcePages,
-            nowEpochMillis = System.currentTimeMillis(),
-        )
-    }
-
-    LaunchedEffect(
         assessmentRequestId,
         assessmentSourceAssetId,
         assessmentOccurredAtEpochMillis,
         assessmentRetryNonce,
         providerCapabilities,
-        captureEgressManifest?.authorizationId,
+        agentConsentGranted,
     ) {
         modelTaskCommands.dispatchAssessment(
             provider = providerCapabilities,
@@ -1145,8 +962,7 @@ fun CaptureScreen(
             sourceAssetId = assessmentSourceAssetId,
             draftId = draftId,
             occurredAt = assessmentOccurredAtEpochMillis,
-            manifest = captureEgressManifest,
-            activeAuthorizationId = activeCaptureAuthorizationId,
+            agentConsentGranted = agentConsentGranted,
         )
     }
 
@@ -1161,15 +977,14 @@ fun CaptureScreen(
         sourcePages,
         parseRetryNonce,
         providerCapabilities,
-        captureEgressManifest?.authorizationId,
+        agentConsentGranted,
     ) {
         modelTaskCommands.dispatchParse(
             provider = providerCapabilities,
             requestId = parseRequestId,
             draftId = draftId,
             basisRevision = draftRevisionNumber,
-            manifest = captureEgressManifest,
-            activeAuthorizationId = activeCaptureAuthorizationId,
+            agentConsentGranted = agentConsentGranted,
         )
     }
 
@@ -1295,65 +1110,12 @@ fun CaptureScreen(
                 )
             }
             if (!candidateUsable) {
-                providerCapabilities
-                    ?.takeIf {
-                        captureContinuationRequired && !captureSettingsOnly &&
-                            it.requiresCaptureEgressApproval()
-                    }
-                    ?.let { provider ->
-                        CaptureModelEgressConsentCard(
-                            provider = provider,
-                            approved = false,
-                            approveActionText = "继续整理这道题",
-                            onApprove = {
-                                if (
-                                    pendingAssessmentRecoveryRequest != null ||
-                                    pendingParseRecoveryRequest != null
-                                ) {
-                                    return@CaptureModelEgressConsentCard
-                                }
-                                val freshManifest = approveCaptureEgress(provider)
-                                    ?: return@CaptureModelEgressConsentCard
-                                captureRecoveryTask?.let { failedTask ->
-                                    val recoveryRequest = rebuildCaptureRequestAfterApproval(
-                                        failedTask = failedTask,
-                                        provider = provider,
-                                        freshManifest = freshManifest,
-                                    )
-                                    when (
-                                        val application = captureRecoveryApplication(
-                                            recoveryRequest = recoveryRequest,
-                                            sourcePages = sourcePages,
-                                            pageSnapshots = sourcePageAssessmentSnapshots,
-                                        )
-                                    ) {
-                                        is CaptureRecoveryApplication.Assessment -> {
-                                            pendingAssessmentRecoveryRequest = application.request
-                                            assessmentRequestId = application.request.requestId
-                                            assessmentSourceAssetId = application.sourceAssetId
-                                            assessmentOccurredAtEpochMillis =
-                                                application.request.occurredAtEpochMillis
-                                            assessmentRetryNonce = 0
-                                            assessmentSnapshot = null
-                                            sourcePageAssessmentSnapshots = application.pageSnapshots
-                                        }
-                                        is CaptureRecoveryApplication.Parse -> {
-                                            pendingParseRecoveryRequest = application.request
-                                            parseRequestId = application.request.requestId
-                                            parseRetryNonce = 0
-                                            parseSnapshot = null
-                                        }
-                                    }
-                                }
-                            },
-                            modifier = Modifier.padding(top = 14.dp),
-                        )
-                    }
-                if (
-                    !captureEgressApprovalRequired ||
-                    captureEgressManifest != null ||
-                    captureSettingsOnly
-                ) {
+                if (!captureModelConsentGranted) {
+                    CaptureModelAgentConsentBlock(
+                        onOpenSettings = { afterWorkspaceFlush(onOpenModelSettings) },
+                        modifier = Modifier.padding(top = 14.dp),
+                    )
+                } else {
                     CaptureModelTaskCard(
                         snapshot = assessmentSnapshot,
                         parseSnapshot = parseSnapshot,
@@ -1439,9 +1201,6 @@ fun CaptureScreen(
             )
             }
         } else if (receivedImageUri == null) {
-            // The controls and their callbacks must share this exact disclosure snapshot. Reading
-            // delegated state again inside an old callback could authorize a provider the student
-            // has not yet seen after capabilities refresh asynchronously.
             val disclosedProvider = providerCapabilities
             val disclosedEntryOrigin = activeEntryOrigin
             CaptureActions(
@@ -1449,27 +1208,11 @@ fun CaptureScreen(
                 entryOrigin = disclosedEntryOrigin,
                 onTakePicture = {
                     if (!cameraLaunchInProgress && !photoImportInProgress && !workflowInProgress) {
-                        informedEgressIntentSession.begin(
-                            provider = disclosedProvider,
-                            purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
-                            intentId = UUID.randomUUID().toString(),
-                            nowEpochMillis = System.currentTimeMillis(),
-                            authorizesInitialTutorPlan =
-                                disclosedEntryOrigin == CaptureEntryOrigin.TUTOR,
-                        )
                         launchCamera()
                     }
                 },
                 onPickPhoto = {
                     if (!cameraLaunchInProgress && !photoImportInProgress && !workflowInProgress) {
-                        informedEgressIntentSession.begin(
-                            provider = disclosedProvider,
-                            purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
-                            intentId = UUID.randomUUID().toString(),
-                            nowEpochMillis = System.currentTimeMillis(),
-                            authorizesInitialTutorPlan =
-                                disclosedEntryOrigin == CaptureEntryOrigin.TUTOR,
-                        )
                         launchPhotoPicker()
                     }
                 },

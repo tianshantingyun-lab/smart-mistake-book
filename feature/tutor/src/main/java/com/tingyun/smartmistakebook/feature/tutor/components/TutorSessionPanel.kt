@@ -1,31 +1,16 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.LibraryAddCheck
-import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
@@ -79,7 +63,6 @@ import com.tingyun.smartmistakebook.core.model.AppFailure
 import com.tingyun.smartmistakebook.core.model.AppFailureCode
 import com.tingyun.smartmistakebook.core.model.Retryability
 import com.tingyun.smartmistakebook.core.model.appFailure
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
@@ -94,7 +77,6 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
-import com.tingyun.smartmistakebook.core.model.isModelEgressApprovalFresh
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
@@ -139,8 +121,7 @@ internal fun TutorModelPanel(
     onOpenVisualOriginal: () -> Unit = {},
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     onOpenModelSettings: () -> Unit,
-    autoStartAuthorization: TutorAutoStartAuthorization? = null,
-    onAutoStartAuthorizationConsumed: (String) -> Unit = {},
+    consentEnabled: Boolean = false,
     conversationEnabled: Boolean = true,
     headerContent: @Composable () -> Unit = {},
     leadingContent: @Composable ColumnScope.() -> Unit = {},
@@ -169,6 +150,7 @@ internal fun TutorModelPanel(
         }
         return
     }
+    val consentOn = consentEnabled
     var provider by remember(question.sessionId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var providerLoadFailed by remember(question.sessionId) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -224,27 +206,6 @@ internal fun TutorModelPanel(
         question.revisionNumber,
         question.questionDocument.document.id,
     ) { mutableStateOf(emptyList<String>()) }
-    var planRecoveryRequestInFlight by remember(question.sessionId) {
-        mutableStateOf<String?>(null)
-    }
-    var pendingEgressState by rememberSaveable(
-        question.sessionId,
-        question.revisionNumber,
-        question.questionDocument.document.id,
-        stateSaver = pendingTutorEgressStateSaver,
-    ) { mutableStateOf(PendingTutorEgressState()) }
-    val responseActionAwaitingAuthorization =
-        pendingEgressState.action.awaitsResponseAuthorization()
-    var consumedAutoStartAuthorizationId by remember(
-        question.sessionId,
-        question.revisionNumber,
-        question.questionDocument.document.id,
-    ) { mutableStateOf<String?>(null) }
-    fun consumeAutoStartAuthorization(authorizationId: String) {
-        if (consumedAutoStartAuthorizationId == authorizationId) return
-        consumedAutoStartAuthorizationId = authorizationId
-        onAutoStartAuthorizationConsumed(authorizationId)
-    }
 
     LaunchedEffect(question.sessionId) {
         try {
@@ -276,59 +237,6 @@ internal fun TutorModelPanel(
     }
 
     val currentProvider = provider
-    val authorizationNow = clock()
-    // The lease state must live for the whole session: keying it on the
-    // provider fields re-created the MutableState when the provider loaded
-    // (null -> configured), while planCommands (remembered on sessionId)
-    // kept the stale first-composition delegate — grants landed in the new
-    // state, reads saw the old one, and no externally-executed plan could
-    // ever start (KD-1, docs/known-defects.md).
-    val externalEgressLeaseState = remember(question.sessionId) {
-        mutableStateOf<TutorCompositionEgressLease?>(null)
-    }
-    var externalEgressLease by externalEgressLeaseState
-    LaunchedEffect(
-        question.sessionId,
-        question.revisionNumber,
-        question.questionDocument.document.id,
-        currentProvider?.providerId,
-        currentProvider?.modelId,
-        currentProvider?.providerConfigurationVersion,
-        TUTOR_PROMPT_POLICY_VERSION,
-        TUTOR_RESPOND_PROMPT_POLICY_VERSION,
-        TUTOR_VISUAL_GENERATE_PROMPT_POLICY_VERSION,
-        TUTOR_VISUAL_REVIEW_PROMPT_POLICY_VERSION,
-    ) {
-        // Provider identity or prompt policy changed: any previously granted
-        // lease no longer matches the execution target, so drop it (the
-        // pre-fix remember-keys did this implicitly by discarding the state).
-        externalEgressLease = null
-    }
-    var forceResponseDisclosure by remember(
-        question.sessionId,
-        question.revisionNumber,
-        question.questionDocument.document.id,
-        currentProvider?.providerConfigurationVersion,
-    ) { mutableStateOf(false) }
-    fun grantExternalEgressLease(
-        providerForExecution: ProviderCapabilitySnapshot,
-        approvedAtEpochMillis: Long,
-        taskKinds: Set<ModelTaskKind> = setOf(
-            ModelTaskKind.TUTOR_PLAN,
-            ModelTaskKind.TUTOR_RESPOND,
-            ModelTaskKind.TUTOR_VISUAL_GENERATE,
-            ModelTaskKind.TUTOR_VISUAL_REVIEW,
-        ),
-    ) {
-        if (providerForExecution.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
-            externalEgressLease = TutorCompositionEgressLease.grant(
-                question = question,
-                provider = providerForExecution,
-                approvedAtEpochMillis = approvedAtEpochMillis,
-                taskKinds = taskKinds,
-            )
-        }
-    }
     val conversationProjection = remember(
         question.sessionId,
         question.revisionNumber,
@@ -372,77 +280,27 @@ internal fun TutorModelPanel(
         candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
             candidate.supports(ModelTaskKind.TUTOR_PLAN)
     }
-    val matchingAutoStartAuthorization = autoStartAuthorization
-        ?.takeUnless { it.authorizationId == consumedAutoStartAuthorizationId }
-        ?.takeIf { authorization ->
-            executablePlanProvider?.let { providerForExecution ->
-                authorization.matches(
-                    sessionId = question.sessionId,
-                    questionDocumentId = question.questionDocument.document.id,
-                    revisionNumber = question.revisionNumber,
-                    provider = providerForExecution,
-                    promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
-                    nowEpochMillis = authorizationNow,
-                )
-            } == true
-        }
-    val planLeaseApprovedAt = currentProvider?.let { candidate ->
-        when (candidate.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
-                question = question,
-                provider = candidate,
-                taskKind = ModelTaskKind.TUTOR_PLAN,
-                nowEpochMillis = authorizationNow,
-            )
-            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
-            ModelExecutionLocation.UNAVAILABLE -> null
-        }
-    }
-    val planFreshApprovalTask = currentProvider
-        ?.takeIf { candidate ->
-            candidate.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-                candidate.supports(ModelTaskKind.TUTOR_PLAN)
-        }
-        ?.let { candidate ->
-            observedTask?.takeIf { task ->
-                task.requiresFreshTutorApproval(candidate) ||
-                    (planLeaseApprovedAt == null &&
-                        (task.status.isTutorExecutionPending() ||
-                            task.status == ModelTaskStatus.RETRYABLE_FAILURE)) ||
-                    (planLeaseApprovedAt == null &&
-                        task.status == ModelTaskStatus.SUCCEEDED &&
-                        task.output !is TutorPlanOutput)
-            }
-        }
 
     val planCommands = remember(question.sessionId) {
         TutorPlanCommands(
             scope = scope,
             sink = TutorPlanSink(
-                awaitingResponseAuthorization = {
-                    pendingEgressState.action.awaitsResponseAuthorization()
-                },
                 // Must read the backing state, not the composition-scoped
                 // `executablePlanProvider` val: this lambda is captured once
                 // by remember and would otherwise see the provider as it was
                 // during the FIRST composition (null), silently killing every
                 // auto-started turn (KD-1, docs/known-defects.md).
-                executableProvider = {
+                provider = {
                     provider?.takeIf { candidate ->
                         candidate.executionLocation != ModelExecutionLocation.UNAVAILABLE &&
                             candidate.supports(ModelTaskKind.TUTOR_PLAN)
                     }
                 },
+                consentEnabled = { consentOn },
                 question = { question },
                 profile = { profile },
                 clock = clock,
                 planTasks = { tutorTasks },
-                lease = { externalEgressLeaseState.value },
-                pendingAction = { pendingEgressState.action },
-                setPendingAction = { action ->
-                    pendingEgressState = PendingTutorEgressState(action)
-                },
-                clearLease = { externalEgressLease = null },
                 modelTasks = modelTasks,
             ),
         )
@@ -453,14 +311,12 @@ internal fun TutorModelPanel(
         priorConversationMemory: TutorConversationMemory?,
         priorCycleStudentMessages: List<String>,
         priorTurns: List<TutorTurnHistoryEntry>,
-        oneShotAutoStartAuthorization: TutorAutoStartAuthorization? = null,
     ) {
         planCommands.executeTurn(
             cycleOrdinal = cycleOrdinal,
             priorConversationMemory = priorConversationMemory,
             priorCycleStudentMessages = priorCycleStudentMessages,
             priorTurns = priorTurns,
-            oneShotAutoStartAuthorization = oneShotAutoStartAuthorization,
         )
     }
 
@@ -477,61 +333,16 @@ internal fun TutorModelPanel(
         recoverableLocalPlanTask?.let { task -> modelTasks.execute(task.request).collect() }
     }
     LaunchedEffect(
-        observedTask?.request?.requestId,
         executablePlanProvider?.providerId,
-        executablePlanProvider?.modelId,
-        executablePlanProvider?.providerConfigurationVersion,
-        autoStartAuthorization?.authorizationId,
+        consentEnabled,
+        observedTask,
     ) {
-        val authorization = autoStartAuthorization
-            ?.takeUnless { it.authorizationId == consumedAutoStartAuthorizationId }
-        if (observedTask != null) {
-            authorization?.let { consumeAutoStartAuthorization(it.authorizationId) }
-            return@LaunchedEffect
-        }
-        val providerForExecution = executablePlanProvider ?: run {
-            if (currentProvider != null) {
-                authorization?.let { consumeAutoStartAuthorization(it.authorizationId) }
-            }
-            return@LaunchedEffect
-        }
-        when (providerForExecution.executionLocation) {
-            ModelExecutionLocation.LOCAL_NO_EGRESS -> {
-                executeTurn(1, null, emptyList(), emptyList())
-                authorization?.let { consumeAutoStartAuthorization(it.authorizationId) }
-            }
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> if (authorization != null) {
-                val authorizationMatches = authorization.matches(
-                    sessionId = question.sessionId,
-                    questionDocumentId = question.questionDocument.document.id,
-                    revisionNumber = question.revisionNumber,
-                    provider = providerForExecution,
-                    promptPolicyVersion = TUTOR_PROMPT_POLICY_VERSION,
-                    nowEpochMillis = clock(),
-                )
-                if (!authorizationMatches) {
-                    consumeAutoStartAuthorization(authorization.authorizationId)
-                    return@LaunchedEffect
-                }
-                grantExternalEgressLease(
-                    providerForExecution = providerForExecution,
-                    approvedAtEpochMillis = authorization.approvedAtEpochMillis,
-                    taskKinds = setOf(
-                        ModelTaskKind.TUTOR_PLAN,
-                        ModelTaskKind.TUTOR_VISUAL_GENERATE,
-                        ModelTaskKind.TUTOR_VISUAL_REVIEW,
-                    ),
-                )
-                executeTurn(
-                    cycleOrdinal = 1,
-                    priorConversationMemory = null,
-                    priorCycleStudentMessages = emptyList(),
-                    priorTurns = emptyList(),
-                    oneShotAutoStartAuthorization = authorization,
-                )
-                consumeAutoStartAuthorization(authorization.authorizationId)
-            }
-            ModelExecutionLocation.UNAVAILABLE -> Unit
+        if (
+            observedTask == null &&
+            executablePlanProvider != null &&
+            tutorAgentChatEnabled(executablePlanProvider, consentEnabled, ModelTaskKind.TUTOR_PLAN)
+        ) {
+            executeTurn(1, null, emptyList(), emptyList())
         }
     }
 
@@ -573,19 +384,17 @@ internal fun TutorModelPanel(
                     )
 
                     executablePlanProvider.executionLocation ==
-                        ModelExecutionLocation.LOCAL_NO_EGRESS ||
-                        planLeaseApprovedAt != null || matchingAutoStartAuthorization != null ->
+                        ModelExecutionLocation.EXTERNAL_PROVIDER && !consentEnabled ->
                         TutorModelStatusCard(
-                            title = "正在准备这道题",
-                            detail = "正在整理讲解，请稍候。",
+                            title = "需在设置中开启模型智能体",
+                            detail = "拍照与讲题需先在大模型设置里开启『模型智能体』。",
+                            actionLabel = "去设置",
+                            onAction = onOpenModelSettings,
                         )
 
-                    else -> TutorDisclosureCard(
-                        provider = executablePlanProvider,
-                        onApprove = {
-                            grantExternalEgressLease(executablePlanProvider, clock())
-                            executeTurn(1, null, emptyList(), emptyList())
-                        },
+                    else -> TutorModelStatusCard(
+                        title = "正在准备这道题",
+                        detail = "正在整理讲解，请稍候。",
                     )
                 }
             }
@@ -613,42 +422,8 @@ internal fun TutorModelPanel(
             candidate.supports(ModelTaskKind.TUTOR_RESPOND)
     } == true
     val latestRespondTasks = conversationProjection.latestRespondTasks
-    val responseFreshApprovalTask = currentProvider
-        ?.takeIf { candidate ->
-            candidate.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-                candidate.supports(ModelTaskKind.TUTOR_RESPOND)
-        }
-        ?.let { candidate ->
-            latestRespondTasks.lastOrNull()?.takeIf { task ->
-                task.requiresFreshTutorApproval(candidate)
-            }
-        }
-    val responseNeedsFreshAuthorization = responseFreshApprovalTask != null
-    val responseLeaseApprovedAt = currentProvider?.let { candidate ->
-        when (candidate.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
-                question = question,
-                provider = candidate,
-                taskKind = ModelTaskKind.TUTOR_RESPOND,
-                nowEpochMillis = authorizationNow,
-            )
-            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
-            ModelExecutionLocation.UNAVAILABLE -> null
-        }
-    }
-    val responseDisclosureRequired = currentProvider?.executionLocation ==
-        ModelExecutionLocation.EXTERNAL_PROVIDER &&
-        (forceResponseDisclosure || responseNeedsFreshAuthorization ||
-            responseLeaseApprovedAt == null)
-    val activeConversationApprovalAt = when (currentProvider?.executionLocation) {
-        ModelExecutionLocation.EXTERNAL_PROVIDER ->
-            responseLeaseApprovedAt.takeUnless { responseDisclosureRequired }
-        ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
-        ModelExecutionLocation.UNAVAILABLE,
-        null,
-        -> null
-    }
-    val respondAuthorized = respondSupported && activeConversationApprovalAt != null
+    val respondAgentAuthorized =
+        tutorAgentChatEnabled(currentProvider, consentOn, ModelTaskKind.TUTOR_RESPOND)
     val chatSending = chatSubmitPending || latestRespondTasks.any { task ->
         currentProvider?.let(task::matchesTutorProvider) == true &&
             task.status.isTutorExecutionPending()
@@ -672,30 +447,6 @@ internal fun TutorModelPanel(
     }
     var visualReviewBuildFailures by remember(question.sessionId) {
         mutableStateOf<Set<TutorVisualTurnAnchor>>(emptySet())
-    }
-    val visualGenerateApprovedAt = currentProvider?.let { candidate ->
-        when (candidate.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
-                question = question,
-                provider = candidate,
-                taskKind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
-                nowEpochMillis = authorizationNow,
-            )
-            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
-            ModelExecutionLocation.UNAVAILABLE -> null
-        }
-    }
-    val visualReviewApprovedAt = currentProvider?.let { candidate ->
-        when (candidate.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> externalEgressLease?.approvedAtFor(
-                question = question,
-                provider = candidate,
-                taskKind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
-                nowEpochMillis = authorizationNow,
-            )
-            ModelExecutionLocation.LOCAL_NO_EGRESS -> authorizationNow
-            ModelExecutionLocation.UNAVAILABLE -> null
-        }
     }
     val resolvedVisualScenes = remember(
         visualWorkSeeds,
@@ -751,10 +502,9 @@ internal fun TutorModelPanel(
         TutorVisualWorkCommands(
             sink = TutorVisualWorkSink(
                 currentProvider = { currentProvider },
+                consentEnabled = { consentOn },
                 question = { question },
                 clock = clock,
-                generateApprovedAt = { visualGenerateApprovedAt },
-                reviewApprovedAt = { visualReviewApprovedAt },
                 sourceAssets = { visualSourceAssets },
                 selectedSeeds = { visualWorkPlan.selectedSeeds },
                 generationTasks = { persistedVisualGenerationTasks },
@@ -772,7 +522,7 @@ internal fun TutorModelPanel(
         currentProvider?.providerId,
         currentProvider?.modelId,
         currentProvider?.providerConfigurationVersion,
-        visualGenerateApprovedAt,
+        consentEnabled,
         persistedVisualGenerationTasks,
     ) {
         visualWork.dispatchGenerate()
@@ -784,7 +534,7 @@ internal fun TutorModelPanel(
         currentProvider?.providerId,
         currentProvider?.modelId,
         currentProvider?.providerConfigurationVersion,
-        visualReviewApprovedAt,
+        consentEnabled,
         persistedVisualGenerationTasks,
         persistedVisualReviewTasks,
     ) {
@@ -796,6 +546,7 @@ internal fun TutorModelPanel(
             scope = scope,
             sink = TutorRespondSink(
                 currentProvider = { currentProvider },
+                consentEnabled = { consentOn },
                 question = { question },
                 profile = { profile },
                 clock = clock,
@@ -805,10 +556,6 @@ internal fun TutorModelPanel(
                 setTutorSendState = { tutorSendState = it },
                 setChatStartError = { chatStartError = it },
                 setLocallyStartedRespondRequestId = { locallyStartedRespondRequestId = it },
-                pendingAction = { pendingEgressState.action },
-                setPendingAction = { action ->
-                    pendingEgressState = PendingTutorEgressState(action)
-                },
                 setChatDraft = { chatDraft = it },
                 currentPlanOutput = { currentPlanOutput },
                 currentResponse = { currentResponse },
@@ -817,9 +564,6 @@ internal fun TutorModelPanel(
                 tutorRespondTasks = { tutorRespondTasks },
                 answerExposureKeys = { answerExposureKeys },
                 chatSending = { chatSending },
-                lease = { externalEgressLease },
-                setForceResponseDisclosure = { forceResponseDisclosure = it },
-                clearLease = { externalEgressLease = null },
                 modelTasks = modelTasks,
             ),
         )
@@ -829,14 +573,12 @@ internal fun TutorModelPanel(
         request: ModelTaskRequest,
         clearDraftOnPersist: Boolean,
         allowExternalEnvelopeForLocalRecovery: Boolean = false,
-        clearPendingActionOnPersist: PendingTutorEgressAction? = null,
         isRetry: Boolean = false,
     ) {
         respondCommands.collect(
             request = request,
             clearDraftOnPersist = clearDraftOnPersist,
             allowExternalEnvelopeForLocalRecovery = allowExternalEnvelopeForLocalRecovery,
-            clearPendingActionOnPersist = clearPendingActionOnPersist,
             isRetry = isRetry,
         )
     }
@@ -864,50 +606,17 @@ internal fun TutorModelPanel(
     }
     LaunchedEffect(
         recoverableRespondTask?.request?.requestId,
-        respondAuthorized,
-        responseFreshApprovalTask?.request?.requestId,
+        respondAgentAuthorized,
     ) {
-        if (respondAuthorized && responseFreshApprovalTask == null) {
+        if (respondAgentAuthorized) {
             recoverableRespondTask
                 ?.takeUnless { it.request.requestId == locallyStartedRespondRequestId }
                 ?.let { task -> modelTasks.execute(task.request).collect() }
         }
     }
-    val pendingLocalRetryTask = (pendingEgressState.action as? PendingTutorEgressAction.RetryResponse)
-        ?.let { pending ->
-            latestRespondTasks.firstOrNull { it.request.requestId == pending.requestId }
-        }
-    LaunchedEffect(
-        currentProvider?.providerId,
-        currentProvider?.modelId,
-        currentProvider?.providerConfigurationVersion,
-        currentProvider?.executionLocation,
-        currentPlanOutput,
-        pendingEgressState.action,
-        pendingLocalRetryTask?.request?.requestId,
-    ) {
-        if (
-            currentProvider?.executionLocation != ModelExecutionLocation.LOCAL_NO_EGRESS ||
-            !respondSupported || currentPlanOutput == null
-        ) {
-            return@LaunchedEffect
-        }
-        when (val pendingAction = pendingEgressState.action) {
-            is PendingTutorEgressAction.NewResponse -> executeTutorResponse(
-                message = pendingAction.message,
-                requestedMove = pendingAction.requestedMove,
-                clearDraftOnPersist = pendingAction.clearDraftOnPersist,
-            )
-            is PendingTutorEgressAction.RetryResponse ->
-                pendingLocalRetryTask?.let(::retryTutorResponse)
-            is PendingTutorEgressAction.Plan,
-            null,
-            -> Unit
-        }
-    }
 
     fun revealCurrentSolution(afterPreviewed: () -> Unit = {}) {
-        if (interactionBusy || responseActionAwaitingAuthorization) return
+        if (interactionBusy) return
         if (currentResponse?.solutionRevealed != true) {
             val previewKey = observedTask.toPlanSolutionPreviewKey() ?: return
             planSolutionPreviewKeys = planSolutionPreviewKeys + previewKey
@@ -923,14 +632,12 @@ internal fun TutorModelPanel(
         currentInput.priorCycleStudentMessages,
         nextTurnExists,
         executablePlanProvider?.providerConfigurationVersion,
-        externalEgressLease?.planApprovedAtEpochMillis,
-        responseActionAwaitingAuthorization,
+        consentEnabled,
     ) {
         if (
             currentHistory.isNotEmpty() &&
             currentHistory.size < TutorPlanInput.MAX_TURNS &&
-            !nextTurnExists &&
-            !responseActionAwaitingAuthorization
+            !nextTurnExists
         ) {
             executeTurn(
                 currentInput.cycleOrdinal,
@@ -964,7 +671,6 @@ internal fun TutorModelPanel(
                 interactionBusy = { interactionBusy },
                 setInteractionBusy = { interactionBusy = it },
                 setInteractionError = { interactionError = it },
-                awaitingResponseAuthorization = { responseActionAwaitingAuthorization },
                 hasExecutableProvider = { executablePlanProvider != null },
                 openModelSettings = onOpenModelSettings,
                 currentCycleResponses = { currentCycleResponses },
@@ -1023,8 +729,7 @@ internal fun TutorModelPanel(
         }
     }
     val composerContent: (@Composable () -> Unit)? = if (
-        respondSupported && currentPlanOutput != null && respondAuthorized &&
-        !responseActionAwaitingAuthorization
+        respondSupported && currentPlanOutput != null && respondAgentAuthorized
     ) {
         {
             TutorChatComposer(
@@ -1059,7 +764,7 @@ internal fun TutorModelPanel(
 
     TutorConversationFrame(
         header = headerContent,
-        autoScrollVersion = listOf(autoScrollVersion, respondAuthorized, chatStartError),
+        autoScrollVersion = listOf(autoScrollVersion, respondAgentAuthorized, chatStartError),
         forceFollowToken = locallyStartedRespondRequestId,
         blockAutoFollowToken = solutionExposureTracker.blockAutoFollowToken,
         modifier = modifier,
@@ -1117,11 +822,8 @@ internal fun TutorModelPanel(
                         response = response,
                         solutionRevealPreviewed = timelineItem.task.toPlanSolutionPreviewKey()
                             ?.let { it in planSolutionPreviewKeys } == true,
-                        awaitingContinuation = planFreshApprovalTask?.request?.requestId ==
-                            timelineItem.task.request.requestId,
-                        interactionEnabled = isTail && isCurrentTurn &&
-                            planFreshApprovalTask == null &&
-                            !responseActionAwaitingAuthorization,
+                        awaitingContinuation = false,
+                        interactionEnabled = isTail && isCurrentTurn,
                         executionMatchesCurrentProvider = executionMatches,
                         splitChoiceFeedback = true,
                         interactionBusy = interactionBusy,
@@ -1129,8 +831,7 @@ internal fun TutorModelPanel(
                         onRetry = ::retryCurrentPlan,
                         onSubmitChoice = ::submitCurrentChoice,
                         onRequestHint = if (
-                            respondSupported && respondAuthorized && !chatSending &&
-                            !responseActionAwaitingAuthorization
+                            respondSupported && respondAgentAuthorized && !chatSending
                         ) {
                             {
                                 executeTutorResponse(
@@ -1169,8 +870,7 @@ internal fun TutorModelPanel(
                             solutionRevealPreviewed = timelineItem.planTask
                                 .toPlanSolutionPreviewKey()
                                 ?.let { it in planSolutionPreviewKeys } == true,
-                            interactionEnabled = isTail && isCurrentTurn &&
-                                !responseActionAwaitingAuthorization,
+                            interactionEnabled = isTail && isCurrentTurn,
                             interactionBusy = interactionBusy,
                             interactionError = interactionError.takeIf { isTail && isCurrentTurn },
                             onContinue = ::continueCurrentTurn,
@@ -1193,8 +893,7 @@ internal fun TutorModelPanel(
                         timelineItem.task.failure?.code?.requiresModelSettings() == true
                     val recoveryEnabled = isTail && executionMatches &&
                         !chatSending && !interactionBusy &&
-                        (opensLocalSettings ||
-                            (responseFreshApprovalTask == null && respondAuthorized))
+                        (opensLocalSettings || respondAgentAuthorized)
                     val replyVisualAnchor = (timelineItem.task.request.input as? TutorRespondInput)?.let { input ->
                         TutorVisualTurnAnchor(
                             surface = TutorVisualTurnSurface.FOLLOW_UP,
@@ -1207,14 +906,12 @@ internal fun TutorModelPanel(
                     TutorChatExchange(
                         task = timelineItem.task,
                         resolvedVisualScene = replyVisualAnchor?.let(resolvedVisualScenes::get),
-                        awaitingContinuation = !respondAuthorized &&
+                        awaitingContinuation = !respondAgentAuthorized &&
                             timelineItem.task.status.isTutorExecutionPending(),
                         interactionEnabled = isTail && taskAllowsInteraction &&
-                            executionMatches && respondAuthorized &&
-                            !chatSending && !interactionBusy &&
-                            !responseActionAwaitingAuthorization,
-                        recoveryEnabled = recoveryEnabled &&
-                            !responseActionAwaitingAuthorization,
+                            executionMatches && respondAgentAuthorized &&
+                            !chatSending && !interactionBusy,
+                        recoveryEnabled = recoveryEnabled,
                         executionMatchesCurrentProvider = executionMatches,
                         onRetry = { retryTutorResponse(timelineItem.task) },
                         onOpenModelSettings = onOpenModelSettings,
@@ -1257,153 +954,6 @@ internal fun TutorModelPanel(
                     }
                     }
                 }
-            }
-        }
-        val pendingPlanAction = pendingEgressState.action as? PendingTutorEgressAction.Plan
-        if (
-            (planFreshApprovalTask != null || pendingPlanAction != null) &&
-            executablePlanProvider?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER
-        ) {
-            item("tutor_plan_recovery_disclosure") {
-                TutorDisclosureCard(
-                    provider = requireNotNull(executablePlanProvider),
-                    title = "继续讲这道题",
-                    actionText = "继续讲题",
-                    actionContentDescription = "继续讲解当前题",
-                    onApprove = {
-                        if (planFreshApprovalTask != null && planRecoveryRequestInFlight != null) {
-                            return@TutorDisclosureCard
-                        }
-                        val approvedAt = maxOf(
-                            clock(),
-                            (planFreshApprovalTask?.updatedAtEpochMillis ?: 0L) + 1,
-                        )
-                        val providerForRecovery = requireNotNull(executablePlanProvider)
-                        grantExternalEgressLease(
-                            providerForRecovery,
-                            approvedAt,
-                        )
-                        if (planFreshApprovalTask != null) {
-                            val canReuseExactRequest =
-                                !planFreshApprovalTask.requiresFreshTutorApproval(
-                                    providerForRecovery,
-                                ) &&
-                                    planFreshApprovalTask.coversCurrentTutorDisclosure(
-                                        providerForRecovery,
-                                        ModelTaskKind.TUTOR_PLAN,
-                                    ) &&
-                                    planFreshApprovalTask.request.egressManifest
-                                        ?.isModelEgressApprovalFresh(approvedAt) == true
-                            val request = if (canReuseExactRequest) {
-                                planFreshApprovalTask.request
-                            } else {
-                                rebuildTutorRequestAfterApproval(
-                                    failedTask = planFreshApprovalTask,
-                                    provider = providerForRecovery,
-                                    approvedAtEpochMillis = approvedAt,
-                                )
-                            }
-                            planRecoveryRequestInFlight = request.requestId
-                            scope.launch {
-                                try {
-                                    modelTasks.execute(request).collect()
-                                } finally {
-                                    planRecoveryRequestInFlight = null
-                                }
-                            }
-                        } else if (pendingPlanAction != null) {
-                            executeTurn(
-                                cycleOrdinal = pendingPlanAction.cycleOrdinal,
-                                priorConversationMemory =
-                                pendingPlanAction.priorConversationMemory,
-                                priorCycleStudentMessages =
-                                pendingPlanAction.priorCycleStudentMessages,
-                                priorTurns = pendingPlanAction.priorTurns,
-                            )
-                        }
-                    },
-                )
-            }
-        }
-        if (
-            respondSupported && currentPlanOutput != null && !respondAuthorized &&
-            planFreshApprovalTask == null
-        ) {
-            item("tutor_respond_disclosure") {
-                TutorRespondDisclosureCard(
-                    provider = requireNotNull(currentProvider),
-                    onApprove = {
-                        val pendingResponseAction = pendingEgressState.action
-                        val pendingRetryTask =
-                            (pendingResponseAction as? PendingTutorEgressAction.RetryResponse)
-                                ?.let { pending ->
-                                    latestRespondTasks.firstOrNull {
-                                        it.request.requestId == pending.requestId
-                                    }
-                                }
-                        if (
-                            pendingResponseAction is PendingTutorEgressAction.RetryResponse &&
-                            pendingRetryTask == null
-                        ) {
-                            return@TutorRespondDisclosureCard
-                        }
-                        val approvedAt = clock()
-                        grantExternalEgressLease(
-                            requireNotNull(currentProvider),
-                            approvedAt,
-                            taskKinds = setOf(
-                                ModelTaskKind.TUTOR_PLAN,
-                                ModelTaskKind.TUTOR_RESPOND,
-                                ModelTaskKind.TUTOR_VISUAL_GENERATE,
-                                ModelTaskKind.TUTOR_VISUAL_REVIEW,
-                            ),
-                        )
-                        forceResponseDisclosure = false
-                        if (pendingResponseAction is PendingTutorEgressAction.NewResponse) {
-                            executeTutorResponse(
-                                message = pendingResponseAction.message,
-                                requestedMove = pendingResponseAction.requestedMove,
-                                clearDraftOnPersist =
-                                pendingResponseAction.clearDraftOnPersist,
-                            )
-                            return@TutorRespondDisclosureCard
-                        }
-                        val taskToRecover = when (pendingResponseAction) {
-                            is PendingTutorEgressAction.RetryResponse -> pendingRetryTask
-                            else -> responseFreshApprovalTask ?: recoverableRespondTask ?: 
-                                latestRespondTasks.lastOrNull(ModelTaskSnapshot::canRetryTutorResponse)
-                        }
-                        taskToRecover?.let { failedTask ->
-                            val recoveryApprovedAt = maxOf(
-                                approvedAt,
-                                failedTask.updatedAtEpochMillis + 1,
-                            )
-                            val providerForRecovery = requireNotNull(currentProvider)
-                            val canReuseExactRequest =
-                                !failedTask.requiresFreshTutorApproval(providerForRecovery) &&
-                                    failedTask.coversCurrentTutorDisclosure(
-                                        providerForRecovery,
-                                        ModelTaskKind.TUTOR_RESPOND,
-                                    ) &&
-                                    failedTask.request.egressManifest
-                                        ?.isModelEgressApprovalFresh(recoveryApprovedAt) == true
-                            collectTutorRespondRequest(
-                                request = if (canReuseExactRequest) {
-                                    failedTask.request
-                                } else {
-                                    rebuildTutorRequestAfterApproval(
-                                        failedTask = failedTask,
-                                        provider = providerForRecovery,
-                                        approvedAtEpochMillis = recoveryApprovedAt,
-                                    )
-                                },
-                                clearDraftOnPersist = false,
-                                clearPendingActionOnPersist =
-                                    pendingResponseAction as? PendingTutorEgressAction.RetryResponse,
-                            )
-                        }
-                    },
-                )
             }
         }
         if (composerContent == null && chatStartError != null) {

@@ -42,12 +42,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationApproval
-import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationOffer
 import com.tingyun.smartmistakebook.core.domain.BatchImportPage
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportRepository
 import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
+import com.tingyun.smartmistakebook.core.domain.BatchOrganizationConsentException
 import com.tingyun.smartmistakebook.core.domain.CreateBatchImportRequest
 import com.tingyun.smartmistakebook.core.domain.CreatePdfImportRequest
 import com.tingyun.smartmistakebook.core.domain.MAX_BATCH_IMPORT_PAGES
@@ -71,7 +70,6 @@ fun BatchImportRoute(
     val jobs by repository.observeBatchImports().collectAsStateWithLifecycle(emptyList())
     val scope = rememberCoroutineScope()
     var message by remember { mutableStateOf<String?>(null) }
-    var organizationOffer by remember { mutableStateOf<BatchImportOrganizationOffer?>(null) }
     var isOrganizing by remember { mutableStateOf(false) }
     fun launchAction(action: suspend () -> Unit) {
         scope.launch {
@@ -146,38 +144,17 @@ fun BatchImportRoute(
             launchAction { repository.skipBatchImportPage(jobId, page) }
         },
         onSplitReady = onSplitReady,
-        organizationOffer = organizationOffer,
         isOrganizing = isOrganizing,
-        onPrepareOrganization = { jobId ->
-            scope.launch {
-                try {
-                    organizationOffer = repository.prepareOrganization(jobId)
-                    message = null
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    message = "请先在“我的”中配置能读取题图的大模型。"
-                }
-            }
-        },
-        onApproveOrganization = { offer ->
+        onOrganize = { jobId ->
             scope.launch {
                 isOrganizing = true
-                organizationOffer = null
                 try {
-                    repository.organizeBatch(
-                        BatchImportOrganizationApproval(
-                            jobId = offer.jobId,
-                            providerId = offer.provider.providerId,
-                            modelId = offer.provider.modelId,
-                            providerConfigurationVersion =
-                                offer.provider.providerConfigurationVersion,
-                            approvedAtEpochMillis = System.currentTimeMillis(),
-                        ),
-                    )
+                    repository.organizeBatch(jobId)
                     message = null
                 } catch (cancelled: CancellationException) {
                     throw cancelled
+                } catch (_: BatchOrganizationConsentException) {
+                    message = "请先在“我的”里开启『模型智能体』，再整理相邻页面。"
                 } catch (_: Exception) {
                     message = "这次还没有全部分好，页面都已保留，可以稍后继续。"
                 } finally {
@@ -185,7 +162,6 @@ fun BatchImportRoute(
                 }
             }
         },
-        onCancelOrganization = { organizationOffer = null },
         onOpenDraft = onOpenDraft,
         onBack = onBack,
         modifier = modifier,
@@ -203,11 +179,8 @@ internal fun BatchImportContent(
     onRetry: (String, Int) -> Unit,
     onSkip: (String, Int) -> Unit,
     onSplitReady: () -> Unit = {},
-    organizationOffer: BatchImportOrganizationOffer? = null,
     isOrganizing: Boolean = false,
-    onPrepareOrganization: (String) -> Unit = {},
-    onApproveOrganization: (BatchImportOrganizationOffer) -> Unit = {},
-    onCancelOrganization: () -> Unit = {},
+    onOrganize: (String) -> Unit = {},
     onOpenDraft: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -282,11 +255,8 @@ internal fun BatchImportContent(
                 item("organization") {
                     BatchOrganizationCard(
                         job = job,
-                        offer = organizationOffer?.takeIf { it.jobId == job.jobId },
                         isOrganizing = isOrganizing,
-                        onPrepare = { onPrepareOrganization(job.jobId) },
-                        onApprove = onApproveOrganization,
-                        onCancel = onCancelOrganization,
+                        onOrganize = { onOrganize(job.jobId) },
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -312,11 +282,8 @@ internal fun BatchImportContent(
 @Composable
 private fun BatchOrganizationCard(
     job: BatchImportJob,
-    offer: BatchImportOrganizationOffer?,
     isOrganizing: Boolean,
-    onPrepare: () -> Unit,
-    onApprove: (BatchImportOrganizationOffer) -> Unit,
-    onCancel: () -> Unit,
+    onOrganize: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth().testTag("batch_import_organization"),
@@ -337,10 +304,9 @@ private fun BatchOrganizationCard(
             Text(
                 text = when {
                     isOrganizing -> "正在按页面顺序整理，可以离开本页，原页面不会丢失。"
-                    offer != null ->
-                        "会把这 ${offer.pageCount} 页交给${offer.provider.providerDisplayName}，" +
-                            "只判断前后页面是不是同一道题；不会发送其他题目或学习记录。"
-                    else -> "自动识别跨页题目，之后会按一道道题显示，不需要手工合并。"
+                    else ->
+                        "自动识别跨页题目，之后会按一道道题显示，不需要手工合并。" +
+                            "开启『模型智能体』后整理会直接交给已配置模型。"
                 },
                 color = SmartColors.InkSecondary,
                 style = MaterialTheme.typography.bodySmall,
@@ -351,22 +317,11 @@ private fun BatchOrganizationCard(
                     color = SmartColors.Jade,
                     trackColor = SmartColors.Outline.copy(alpha = 0.6f),
                 )
-                offer == null -> PrimaryActionButton(
+                else -> PrimaryActionButton(
                     text = "开始分题",
-                    onClick = onPrepare,
+                    onClick = onOrganize,
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                 )
-                else -> Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlineActionChip("暂不整理", onCancel, modifier = Modifier.weight(1f))
-                    PrimaryActionButton(
-                        text = "同意并整理",
-                        onClick = { onApprove(offer) },
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    )
-                }
             }
         }
     }

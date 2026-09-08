@@ -21,7 +21,7 @@ class CaptureRecoveryApplicationTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 5,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
 
         val applied = captureRecoveryApplication(request, pages, snapshots)
@@ -44,7 +44,7 @@ class CaptureRecoveryApplicationTest {
             sourcePages = listOf(page(0, "asset-a")),
             assessmentRequestIds = listOf("assess-a"),
             occurredAtEpochMillis = 8,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
 
         val applied = captureRecoveryApplication(request, listOf(page(0, "asset-a")), emptyList())

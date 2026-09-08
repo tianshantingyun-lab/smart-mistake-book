@@ -47,7 +47,7 @@ class CaptureScreenStateRestorationTest {
                     repository = RestorationFakeResumeRepository(draft),
                     modelTasks = RestorationFakeModelTasks(),
                     onOpenModelSettings = {},
-                    onTutorSessionReady = { _, _ -> },
+                    onTutorSessionReady = {},
                     onLibraryEntryReady = {},
                     onSplitReady = {},
                     onBack = {},

@@ -8,7 +8,6 @@ import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorTurnSendStateMachine
 import com.tingyun.smartmistakebook.core.model.ActionType
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -68,22 +67,15 @@ internal class TutorRespondCommands(
         request: ModelTaskRequest,
         clearDraftOnPersist: Boolean,
         allowExternalEnvelopeForLocalRecovery: Boolean = false,
-        clearPendingActionOnPersist: PendingTutorEgressAction? = null,
         isRetry: Boolean = false,
     ) {
         val provider = sink.currentProvider() ?: return
-        val approvedAt = sink.lease()?.approvedAtFor(
-            question = sink.question(),
-            provider = provider,
-            taskKind = ModelTaskKind.TUTOR_RESPOND,
-            nowEpochMillis = sink.clock(),
-        )
         if (
             !tutorRespondCollectCanStart(
                 provider = provider,
+                consentEnabled = sink.consentEnabled(),
                 requestHasEgressManifest = request.egressManifest != null,
                 allowExternalEnvelopeForLocalRecovery = allowExternalEnvelopeForLocalRecovery,
-                respondApprovedAtEpochMillis = approvedAt,
                 chatSubmitPending = sink.chatSubmitPending(),
             )
         ) {
@@ -118,12 +110,6 @@ internal class TutorRespondCommands(
                 sink.modelTasks.execute(request).collect { snapshot ->
                     if (!persisted) {
                         persisted = true
-                        if (
-                            clearPendingActionOnPersist != null &&
-                            sink.pendingAction() == clearPendingActionOnPersist
-                        ) {
-                            sink.setPendingAction(null)
-                        }
                         if (clearDraftOnPersist) sink.setChatDraft("")
                     }
                     when (snapshot.status) {
@@ -175,15 +161,8 @@ internal class TutorRespondCommands(
         requestedMove: TutorMoveType? = null,
         clearDraftOnPersist: Boolean = false,
     ) {
-        val pendingResponseAction = sink.pendingAction() as? PendingTutorEgressAction.NewResponse
         if (
             !tutorRespondExecuteCanStart(
-                pendingAllowed = tutorRespondNewPendingAllowed(
-                    pending = sink.pendingAction(),
-                    message = message,
-                    requestedMove = requestedMove,
-                    clearDraftOnPersist = clearDraftOnPersist,
-                ),
                 hasPlanOutput = sink.currentPlanOutput() != null,
                 providerCanExecute = tutorRespondProviderCanExecute(sink.currentProvider()),
                 messageBlank = message.isBlank(),
@@ -229,28 +208,6 @@ internal class TutorRespondCommands(
             sink.clock(),
             respondTasks.maxOfOrNull { it.createdAtEpochMillis + 1 } ?: 0L,
         )
-        val leaseApprovedAt = sink.lease()?.approvedAtFor(
-            question = question,
-            provider = provider,
-            taskKind = ModelTaskKind.TUTOR_RESPOND,
-            nowEpochMillis = occurredAt,
-        )
-        val approvedAt = tutorRespondExternalApprovedAt(
-            location = provider.executionLocation,
-            leaseApprovedAtEpochMillis = leaseApprovedAt,
-            occurredAtEpochMillis = occurredAt,
-        ) ?: run {
-            sink.setForceResponseDisclosure(true)
-            sink.clearLease()
-            sink.setPendingAction(
-                PendingTutorEgressAction.NewResponse(
-                    message = message,
-                    requestedMove = requestedMove,
-                    clearDraftOnPersist = clearDraftOnPersist,
-                ),
-            )
-            return
-        }
         val request = try {
             buildTutorRespondRequest(
                 question = question,
@@ -258,7 +215,6 @@ internal class TutorRespondCommands(
                 provider = provider,
                 requestId = requestId,
                 occurredAtEpochMillis = occurredAt,
-                approvedAtEpochMillis = approvedAt,
                 responseOrdinal = responseOrdinal,
                 cycleOrdinal = currentInput.cycleOrdinal,
                 turnOrdinal = currentInput.turnOrdinal,
@@ -274,46 +230,18 @@ internal class TutorRespondCommands(
         collect(
             request = request,
             clearDraftOnPersist = clearDraftOnPersist,
-            clearPendingActionOnPersist = pendingResponseAction,
         )
     }
 
     fun retry(task: ModelTaskSnapshot) {
         if (!task.canRetryTutorResponse()) return
-        val exactPendingRetry = (sink.pendingAction() as? PendingTutorEgressAction.RetryResponse)
-            ?.takeIf { it.requestId == task.request.requestId }
-        if (
-            !tutorRespondRetryPendingAllowed(
-                pending = sink.pendingAction(),
-                requestId = task.request.requestId,
-            )
-        ) {
-            return
-        }
         val provider = sink.currentProvider()?.takeIf(::tutorRespondProviderCanExecute) ?: return
         val request = when (provider.executionLocation) {
-            ModelExecutionLocation.EXTERNAL_PROVIDER -> {
-                val approvedAt = sink.lease()?.approvedAtFor(
-                    question = sink.question(),
-                    provider = provider,
-                    taskKind = ModelTaskKind.TUTOR_RESPOND,
-                    nowEpochMillis = sink.clock(),
-                )
-                if (approvedAt == null) {
-                    sink.clearLease()
-                    sink.setForceResponseDisclosure(true)
-                    sink.setPendingAction(
-                        PendingTutorEgressAction.RetryResponse(task.request.requestId),
-                    )
-                    return
-                }
-                task.request
-            }
+            // 全局同意下，持久化的任务可直接重新 collect；gate 在 collect() 内再查一次。
+            ModelExecutionLocation.EXTERNAL_PROVIDER -> task.request
             ModelExecutionLocation.LOCAL_NO_EGRESS -> if (
                 task.request.egressManifest == null && task.matchesTutorProvider(provider)
             ) {
-                task.request
-            } else if (exactPendingRetry != null) {
                 task.request
             } else {
                 return
@@ -324,8 +252,6 @@ internal class TutorRespondCommands(
         collect(
             request = request,
             clearDraftOnPersist = false,
-            allowExternalEnvelopeForLocalRecovery = exactPendingRetry != null,
-            clearPendingActionOnPersist = exactPendingRetry,
             isRetry = true,
         )
     }
@@ -333,6 +259,7 @@ internal class TutorRespondCommands(
 
 internal class TutorRespondSink(
     val currentProvider: () -> ProviderCapabilitySnapshot?,
+    val consentEnabled: () -> Boolean,
     val question: () -> TutorQuestionContext,
     val profile: () -> StudyProfileOverview,
     val clock: () -> Long,
@@ -342,8 +269,6 @@ internal class TutorRespondSink(
     val setTutorSendState: (TutorSendState) -> Unit,
     val setChatStartError: (AppFailure?) -> Unit,
     val setLocallyStartedRespondRequestId: (String?) -> Unit,
-    val pendingAction: () -> PendingTutorEgressAction?,
-    val setPendingAction: (PendingTutorEgressAction?) -> Unit,
     val setChatDraft: (String) -> Unit,
     val currentPlanOutput: () -> TutorPlanOutput?,
     val currentResponse: () -> TutorTurnResponse?,
@@ -352,8 +277,5 @@ internal class TutorRespondSink(
     val tutorRespondTasks: () -> List<ModelTaskSnapshot>,
     val answerExposureKeys: () -> Set<TutorAnswerExposureKey>,
     val chatSending: () -> Boolean,
-    val lease: () -> TutorCompositionEgressLease?,
-    val setForceResponseDisclosure: (Boolean) -> Unit,
-    val clearLease: () -> Unit,
     val modelTasks: ModelTaskRepository,
 )

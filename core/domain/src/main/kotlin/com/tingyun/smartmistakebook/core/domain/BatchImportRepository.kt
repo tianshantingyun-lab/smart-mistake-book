@@ -1,6 +1,5 @@
 package com.tingyun.smartmistakebook.core.domain
 
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import kotlinx.coroutines.flow.Flow
 
 enum class BatchImportStatus {
@@ -103,37 +102,6 @@ data class BatchImportJob(
     }
 }
 
-data class BatchImportOrganizationOffer(
-    val jobId: String,
-    val pageCount: Int,
-    val provider: ProviderCapabilitySnapshot,
-) {
-    init {
-        require(jobId.isNotBlank()) { "Batch organization job id must not be blank" }
-        require(pageCount in 2..MAX_BATCH_IMPORT_PAGES) {
-            "Batch organization page count is outside the supported range"
-        }
-    }
-}
-
-data class BatchImportOrganizationApproval(
-    val jobId: String,
-    val providerId: String,
-    val modelId: String,
-    val providerConfigurationVersion: String,
-    val approvedAtEpochMillis: Long,
-) {
-    init {
-        require(jobId.isNotBlank()) { "Batch organization job id must not be blank" }
-        require(providerId.isNotBlank()) { "Batch organization provider id must not be blank" }
-        require(modelId.isNotBlank()) { "Batch organization model id must not be blank" }
-        require(providerConfigurationVersion.isNotBlank()) {
-            "Batch organization provider configuration version must not be blank"
-        }
-        require(approvedAtEpochMillis >= 0) { "Batch organization approval time must not be negative" }
-    }
-}
-
 data class CreateBatchImportRequest(
     val requestId: String,
     val localUris: List<String>,
@@ -179,9 +147,18 @@ interface BatchImportRepository {
 
     suspend fun skipBatchImportPage(jobId: String, pageIndex: Int)
 
-    suspend fun prepareOrganization(jobId: String): BatchImportOrganizationOffer
-
-    suspend fun organizeBatch(approval: BatchImportOrganizationApproval)
+    /**
+     * Organizes adjacent saved page boundaries under global agent consent. A configured,
+     * image-capable, structured-output external provider with consent ON may dispatch immediately;
+     * otherwise it fails closed (the caller surfaces a settings CTA). No per-job approval is
+     * required because configuring the model is itself the global consent.
+     */
+    suspend fun organizeBatch(jobId: String)
 }
+
+/** Thrown when batch organization would egress but the global model-agent consent is OFF. */
+class BatchOrganizationConsentException : IllegalStateException(
+    "Batch page organization requires the model-agent consent to be enabled",
+)
 
 const val MAX_BATCH_IMPORT_PAGES = 30

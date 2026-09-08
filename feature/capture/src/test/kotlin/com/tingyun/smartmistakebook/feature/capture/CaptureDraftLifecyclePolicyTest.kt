@@ -9,10 +9,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessment
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
-import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -194,70 +191,6 @@ class CaptureDraftLifecyclePolicyTest {
         assertNull(keepTitle?.title)
     }
 
-    @Test
-    fun tutorAutoStartRequiresAFreshMatchingExternalApproval() {
-        assertNull(
-            captureTutorAutoStartAuthorization(
-                sessionId = "session-1",
-                questionDocumentId = "document-1",
-                revisionNumber = 1,
-                provider = null,
-                manifest = null,
-                activeAuthorizationId = "auth-1",
-                initialTutorPlanAuthorizationId = "auth-1",
-                nowEpochMillis = 1_000,
-            ),
-        )
-        val provider = ProviderCapabilitySnapshot(
-            providerId = "external",
-            providerDisplayName = "外部",
-            modelId = "model-v1",
-            supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.CAPTURE_ASSESS),
-            supportsImageInput = true,
-            supportsStructuredOutput = true,
-            supportsStreaming = false,
-            executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
-            providerConfigurationVersion = "v1",
-        )
-        val manifest = buildCaptureEgressManifest(
-            authorizationId = "auth-1",
-            draftId = "draft-1",
-            provider = provider,
-            assetId = "asset-1",
-            assetSha256 = "a".repeat(64),
-            assetByteSize = 2_048,
-            assetWidth = 10,
-            assetHeight = 20,
-            approvedAtEpochMillis = 500,
-        )
-        val granted = captureTutorAutoStartAuthorization(
-            sessionId = "session-1",
-            questionDocumentId = "document-1",
-            revisionNumber = 1,
-            provider = provider,
-            manifest = manifest,
-            activeAuthorizationId = "auth-1",
-            initialTutorPlanAuthorizationId = "auth-1",
-            nowEpochMillis = 600,
-        )
-        assertNotNull(granted)
-        assertEquals("auth-1", granted?.authorizationId)
-        assertEquals("session-1", granted?.sessionId)
-        assertEquals(ModelPromptPolicyVersions.TUTOR_PLAN, granted?.promptPolicyVersion)
-        assertNull(
-            captureTutorAutoStartAuthorization(
-                sessionId = "session-1",
-                questionDocumentId = "document-1",
-                revisionNumber = 1,
-                provider = provider,
-                manifest = manifest,
-                activeAuthorizationId = "auth-other",
-                initialTutorPlanAuthorizationId = "auth-1",
-                nowEpochMillis = 600,
-            ),
-        )
-    }
-
     private fun succeededAssessment(requestId: String, assetId: String): ModelTaskSnapshot {
         val request = captureAssessmentRequest(
             requestId = requestId,
@@ -267,7 +200,7 @@ class CaptureDraftLifecyclePolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 10,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",

@@ -6,10 +6,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureFailureCode
 import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 
 internal class CaptureWorkflowEventCommands(
     private val sink: CaptureWorkflowEventSink,
@@ -21,7 +18,6 @@ internal class CaptureWorkflowEventCommands(
                     event.summary,
                     event.requestId,
                     event.occurredAtEpochMillis,
-                    sink.sourceEgressIntent(CaptureAcquisitionPurpose.NEW_CAPTURE, event.sourceUri),
                 )
                 sink.clearCaptureError()
             }
@@ -40,18 +36,6 @@ internal class CaptureWorkflowEventCommands(
                     event.occurredAtEpochMillis,
                     appended.parseRequestId,
                 )
-                sink.clearCaptureEgressApproval()
-                val sourceEgressIntent = sink.sourceEgressIntent(
-                    CaptureAcquisitionPurpose.APPEND_DRAFT,
-                    event.sourceUri,
-                )
-                sink.bindFreshEgressIntent(
-                    sourceEgressIntent?.bindDraft(
-                        draftId = event.summary.draftId,
-                        sourcePages = event.summary.sourcePages,
-                    ),
-                )
-                sourceEgressIntent?.let { sink.completeEgressIntent(it.intentId) }
                 sink.resetAcquisitionPurpose()
                 sink.deleteOwnedUri(event.sourceUri)
                 sink.clearPendingAppend()
@@ -65,7 +49,6 @@ internal class CaptureWorkflowEventCommands(
                     event.summary,
                     event.requestId,
                     event.occurredAtEpochMillis,
-                    sink.sourceEgressIntent(CaptureAcquisitionPurpose.REPLACE_DRAFT, event.sourceUri),
                 )
                 sink.clearReplacementState()
                 sink.clearCaptureError()
@@ -106,25 +89,10 @@ internal class CaptureWorkflowEventCommands(
         }
     }
 
-    fun consumeTutorSession(
-        session: ConfirmedTutorSession,
-        provider: ProviderCapabilitySnapshot?,
-        manifest: ModelEgressManifest?,
-        activeAuthorizationId: String?,
-        initialTutorPlanAuthorizationId: String?,
-        nowEpochMillis: Long,
-    ) {
-        val autoStart = captureTutorAutoStartAuthorization(
-            sessionId = session.sessionId,
-            questionDocumentId = session.questionDocument.document.id,
-            revisionNumber = session.draftRevisionNumber,
-            provider = provider,
-            manifest = manifest,
-            activeAuthorizationId = activeAuthorizationId,
-            initialTutorPlanAuthorizationId = initialTutorPlanAuthorizationId,
-            nowEpochMillis = nowEpochMillis,
-        )
-        sink.onTutorSessionReady(session.sessionId, autoStart)
+    fun consumeTutorSession(session: ConfirmedTutorSession) {
+        // First tutor plan runs under the global agent consent; navigation hands off
+        // with no capture-side authorization state.
+        sink.onTutorSessionReady(session.sessionId)
         sink.setWorkflowInProgress(false)
         sink.consumeTutorSession(session.sessionId)
     }
@@ -135,9 +103,7 @@ internal class CaptureWorkflowEventSink(
         CaptureDraftSummary,
         String,
         Long,
-        CaptureSourceEgressIntent?,
     ) -> Unit,
-    val sourceEgressIntent: (CaptureAcquisitionPurpose, String) -> CaptureSourceEgressIntent?,
     val clearCaptureError: () -> Unit,
     val pageAssessmentSnapshots: () -> List<ModelTaskSnapshot?>,
     val applyAppendedPages: (
@@ -149,9 +115,6 @@ internal class CaptureWorkflowEventSink(
         assessmentOccurredAtEpochMillis: Long,
         parseRequestId: String,
     ) -> Unit,
-    val clearCaptureEgressApproval: () -> Unit,
-    val bindFreshEgressIntent: (CaptureDraftEgressIntent?) -> Unit,
-    val completeEgressIntent: (String) -> Unit,
     val resetAcquisitionPurpose: () -> Unit,
     val deleteOwnedUri: (String?) -> Unit,
     val clearPendingAppend: () -> Unit,
@@ -166,6 +129,6 @@ internal class CaptureWorkflowEventSink(
     val clearWorkspace: () -> Unit,
     val markCommitKnown: () -> Unit,
     val markCommitUnknown: () -> Unit,
-    val onTutorSessionReady: (String, TutorAutoStartAuthorization?) -> Unit,
+    val onTutorSessionReady: (String) -> Unit,
     val consumeTutorSession: (String) -> Unit,
 )

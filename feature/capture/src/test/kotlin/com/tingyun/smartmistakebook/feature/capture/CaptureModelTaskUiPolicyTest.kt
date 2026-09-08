@@ -68,27 +68,6 @@ class CaptureModelTaskUiPolicyTest {
     }
 
     @Test
-    fun missingOrStaleSendApprovalReturnsToTheApprovalCard() {
-        val assessment = waitingSnapshot(assessmentRequest())
-        val required = failureSnapshot(
-            assessmentRequest(),
-            ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED,
-        )
-        val staleParse = failureSnapshot(
-            parseRequest(),
-            ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
-        )
-        val authentication = failureSnapshot(
-            parseRequest(),
-            ModelFailureCode.AUTHENTICATION_FAILED,
-        )
-
-        assertTrue(captureEgressApprovalMustBeRenewed(required, null))
-        assertTrue(captureEgressApprovalMustBeRenewed(assessment, staleParse))
-        assertFalse(captureEgressApprovalMustBeRenewed(assessment, authentication))
-    }
-
-    @Test
     fun temporaryFailureRetriesTheActiveStage() {
         val assessment = waitingSnapshot(assessmentRequest())
         val parse = failureSnapshot(parseRequest(), ModelFailureCode.NETWORK_UNAVAILABLE)

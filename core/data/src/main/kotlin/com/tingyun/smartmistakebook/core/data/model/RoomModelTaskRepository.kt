@@ -168,7 +168,9 @@ class RoomModelTaskRepository internal constructor(
                 return@flow
             }
             current = when (execution.permit) {
-                is ModelExecutionPermit.External -> {
+                is ModelExecutionPermit.External,
+                ModelExecutionPermit.ProviderConsented,
+                -> {
                     val reservation = database.reserveModelTaskRemoteDispatch(
                         ReserveModelTaskRemoteDispatchCommand(
                             taskId = current.taskId,
@@ -690,7 +692,10 @@ object ModelTaskRepositoryFactory {
     fun create(
         database: StudyDatabasePort,
         gateway: ModelGateway,
-    ): ModelTaskRepository = RoomModelTaskRepository(database = database, gateway = gateway)
+    ): ModelTaskRepository = RoomModelTaskRepository(
+        database = database,
+        gateway = gateway,
+    )
 }
 
 private class ConcurrentModelTaskTransition : RuntimeException()

@@ -370,6 +370,15 @@ sealed interface ModelExecutionPermit {
     data object LocalOnly : ModelExecutionPermit
 
     data class External(val manifest: ModelEgressManifest) : ModelExecutionPermit
+
+    /**
+     * Granted for agent-eligible kinds (capture assess/parse/classify and tutor
+     * plan/respond/visual) when the user has enabled global model-agent consent in
+     * Settings ("configuring the model = consent"). Carries no per-asset grant: the
+     * request's own asset refs plus the consent flag authorize the read. Lobby and
+     * the organization/summarize routes always require a manifest.
+     */
+    data object ProviderConsented : ModelExecutionPermit
 }
 
 class ModelGatewayExecution internal constructor(
@@ -428,6 +437,23 @@ object ModelRequestPayloadBudget {
     private const val BASE64_OUTPUT_GROUP_BYTES = 4L
 }
 
+/**
+ * True when this agent-eligible request may egress to the configured provider
+ * under global consent, WITHOUT an image-capability constraint (a structured-only
+ * provider still runs text-only PLAN/RESPOND under consent). Image capability is
+ * enforced separately via [ModelTaskInput.requiresImageInput] at authorize time.
+ * Single source of truth for authorize() and the gateway's pre-flight.
+ */
+fun ModelTaskRequest.agentConsentMatches(provider: ProviderCapabilitySnapshot): Boolean =
+    agentConsentGranted &&
+        input.isAgentConsentEligible &&
+        provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+        provider.supports(input.kind)
+
+/** True when the input discloses image bytes that require an image-capable provider. */
+fun ModelTaskInput.requiresImageInput(): Boolean =
+    isAgentConsentEligible && requestsImageBytes
+
 object ModelEgressPolicy {
     fun authorize(
         request: ModelTaskRequest,
@@ -439,6 +465,17 @@ object ModelEgressPolicy {
         -> ModelGatewayExecution(request, ModelExecutionPermit.LocalOnly)
 
         ModelExecutionLocation.EXTERNAL_PROVIDER -> {
+            // Global-consent path: when the user enabled model-agent consent and this
+            // is an agent-eligible round, the request may egress to the configured
+            // provider without a per-item manifest. Image-bearing kinds additionally
+            // require the provider to accept images. Lobby / organization routes still
+            // require a manifest.
+            if (
+                request.agentConsentMatches(provider) &&
+                (!request.input.requiresImageInput() || provider.supportsImageInput)
+            ) {
+                return ModelGatewayExecution(request, ModelExecutionPermit.ProviderConsented)
+            }
             val manifest = request.egressManifest ?: throw ModelEgressAuthorizationException(
                 ModelFailureCode.EGRESS_AUTHORIZATION_REQUIRED,
                 "需要你确认本次发送范围后，才能交给模型处理",
@@ -463,17 +500,32 @@ object ModelEgressPolicy {
         provider: ProviderCapabilitySnapshot,
         nowEpochMillis: Long = System.currentTimeMillis(),
     ) {
-        val permittedManifest = (execution.permit as? ModelExecutionPermit.External)?.manifest
-            ?: throw invalidCurrentAuthorization()
-        if (execution.request.egressManifest != permittedManifest) {
-            throw invalidCurrentAuthorization()
-        }
-
-        val currentExecution = authorize(execution.request, provider, nowEpochMillis)
-        val currentManifest = (currentExecution.permit as? ModelExecutionPermit.External)?.manifest
-            ?: throw invalidCurrentAuthorization()
-        if (currentManifest != permittedManifest) {
-            throw invalidCurrentAuthorization()
+        when (val permit = execution.permit) {
+            is ModelExecutionPermit.External -> {
+                val permittedManifest = permit.manifest
+                if (execution.request.egressManifest != permittedManifest) {
+                    throw invalidCurrentAuthorization()
+                }
+                val currentExecution = authorize(execution.request, provider, nowEpochMillis)
+                val currentManifest = (currentExecution.permit as? ModelExecutionPermit.External)?.manifest
+                    ?: throw invalidCurrentAuthorization()
+                if (currentManifest != permittedManifest) {
+                    throw invalidCurrentAuthorization()
+                }
+            }
+            ModelExecutionPermit.ProviderConsented -> {
+                // Re-validate the global-consent condition holds right now (toggle still on,
+                // provider still the configured one, image-capable for image kinds). The
+                // per-byte asset gate is enforced separately in the restricted asset source.
+                if (
+                    execution.request.agentConsentMatches(provider) &&
+                    (!execution.request.input.requiresImageInput() || provider.supportsImageInput)
+                ) {
+                    return
+                }
+                throw invalidCurrentAuthorization()
+            }
+            ModelExecutionPermit.LocalOnly -> throw invalidCurrentAuthorization()
         }
     }
 

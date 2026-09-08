@@ -19,7 +19,7 @@ class CaptureModelTaskRequestsTest {
             imageWidth = 100,
             imageHeight = 200,
             occurredAtEpochMillis = 10,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
 
         assertEquals("assess-1", request.requestId)
@@ -47,7 +47,7 @@ class CaptureModelTaskRequestsTest {
             sourcePages = pages,
             assessmentRequestIds = listOf("assess-a", "assess-b"),
             occurredAtEpochMillis = 20,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
 
         val input = request.input as CaptureParseInput

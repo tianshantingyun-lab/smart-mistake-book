@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -145,6 +146,26 @@ data class ProviderCapabilitySnapshot(
 sealed interface ModelTaskInput {
     val kind: ModelTaskKind
     val subjectId: String
+
+    /**
+     * True for rounds whose on-device content (photos or the tutor question/visual)
+     * may egress to the configured provider under global Settings consent, without a
+     * per-item egress manifest. Deliberately false for TUTOR_LOBBY (its own bounded
+     * disclosure route) and the confirmed-document organization/summarize routes.
+     * Computed, never serialized.
+     */
+    val isAgentConsentEligible: Boolean
+        get() = false
+
+    /**
+     * True when the input discloses image bytes (a source photo, page, or region
+     * crop) that require an image-capable provider. Distinct from
+     * [isAgentConsentEligible]: eligibility says a round may egress under global
+     * consent, image-bearing says it needs image capability. A text-only PLAN/RESPOND
+     * is eligible but not image-bearing. Computed, never serialized.
+     */
+    val requestsImageBytes: Boolean
+        get() = false
 }
 
 @Serializable
@@ -159,6 +180,12 @@ data class CaptureAssessmentInput(
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.CAPTURE_ASSESS
+
+    override val isAgentConsentEligible: Boolean
+        get() = true
+
+    override val requestsImageBytes: Boolean
+        get() = true
 
     override val subjectId: String
         get() = draftId
@@ -207,6 +234,12 @@ data class ImagePipelineClassifyInput(
     override val kind: ModelTaskKind
         get() = ModelTaskKind.IMAGE_PIPELINE_CLASSIFY
 
+    override val isAgentConsentEligible: Boolean
+        get() = true
+
+    override val requestsImageBytes: Boolean
+        get() = true
+
     override val subjectId: String
         get() = subjectIdOverride ?: sourceAssetId
 
@@ -230,6 +263,12 @@ data class CaptureParseInput(
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.CAPTURE_PARSE
+
+    override val isAgentConsentEligible: Boolean
+        get() = true
+
+    override val requestsImageBytes: Boolean
+        get() = true
 
     override val subjectId: String
         get() = draftId
@@ -320,6 +359,13 @@ data class ModelTaskRequest(
     val input: ModelTaskInput,
     val occurredAtEpochMillis: Long,
     val egressManifest: ModelEgressManifest? = null,
+    /**
+     * True when the user has enabled global agent-model consent in Settings, so an
+     * agent-eligible round (capture assess/parse/classify or tutor plan/respond/visual)
+     * may egress to the configured provider without a per-item egress manifest. Only
+     * meaningful at schemaVersion >= [AGENT_CONSENT_SCHEMA_VERSION].
+     */
+    val agentConsentGranted: Boolean = false,
 ) {
     init {
         require(schemaVersion in MIN_SUPPORTED_SCHEMA_VERSION..CURRENT_SCHEMA_VERSION) {
@@ -328,6 +374,9 @@ data class ModelTaskRequest(
         require(schemaVersion >= EGRESS_SCHEMA_VERSION || egressManifest == null) {
             "Legacy model task requests cannot contain an egress manifest"
         }
+        require(
+            schemaVersion >= CONSENT_INTRODUCED_SCHEMA_VERSION || !agentConsentGranted,
+        ) { "Legacy model task requests cannot carry agent-consent" }
         require(
             schemaVersion >= TUTOR_STUDENT_CONTEXT_SCHEMA_VERSION ||
                 (input as? TutorPlanInput)?.priorCycleStudentMessages.isNullOrEmpty(),
@@ -353,7 +402,11 @@ data class ModelTaskRequest(
         const val CAPTURE_PAGE_RELATION_SCHEMA_VERSION = 4
         const val TUTOR_VISUAL_SCHEMA_VERSION = 5
         const val TUTOR_TOOL_CARRIER_SCHEMA_VERSION = 6
-        const val CURRENT_SCHEMA_VERSION = TUTOR_TOOL_CARRIER_SCHEMA_VERSION
+        /** Schema at which the consent flag was introduced (as `captureEgressConsentGranted`). */
+        const val CONSENT_INTRODUCED_SCHEMA_VERSION = 7
+        /** Schema at which the consent field was renamed to `agentConsentGranted`. */
+        const val AGENT_CONSENT_SCHEMA_VERSION = 8
+        const val CURRENT_SCHEMA_VERSION = AGENT_CONSENT_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -1218,8 +1271,27 @@ object ModelTaskCodec {
     fun encodeRequest(value: ModelTaskRequest): String =
         json.encodeToString(ModelTaskRequest.serializer(), value).bounded()
 
-    fun decodeRequest(value: String): ModelTaskRequest =
-        json.decodeFromString(ModelTaskRequest.serializer(), value.bounded())
+    fun decodeRequest(value: String): ModelTaskRequest {
+        val bounded = value.bounded()
+        return try {
+            json.decodeFromString(ModelTaskRequest.serializer(), bounded)
+        } catch (failure: SerializationException) {
+            // Schema 7→8 renamed captureEgressConsentGranted→agentConsentGranted. A legacy v7
+            // row still carries the old key; under ignoreUnknownKeys=false the v8 decoder rejects
+            // it. Translate the old key to the new field and decode once more. A v8 row with the
+            // old key is genuinely malformed and still throws.
+            if (bounded.contains("\"schemaVersion\":7") &&
+                bounded.contains("\"captureEgressConsentGranted\"")
+            ) {
+                json.decodeFromString(
+                    ModelTaskRequest.serializer(),
+                    bounded.replace("\"captureEgressConsentGranted\"", "\"agentConsentGranted\""),
+                )
+            } else {
+                throw failure
+            }
+        }
+    }
 
     fun encodeOutput(value: ModelTaskOutput): String =
         json.encodeToString(ModelTaskOutput.serializer(), value).bounded()
@@ -1326,6 +1398,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.AGENT_CONSENT_SCHEMA_VERSION) {
+                        it.withoutAgentConsent()
+                    } else {
+                        it
+                    }
+                }
         }
     }
 
@@ -1360,6 +1439,18 @@ private fun String.withoutEmptyToolCarrier(input: ModelTaskInput): String =
     } else {
         this
     }
+
+/**
+ * 从 schema<8 行的指纹中排除 consent 字段（schema 7→8 改名平移）。consent 是传输层属性
+ * （该轮是否在同意下外发），不参与"同一语义操作"的指纹。v7 编码器写旧键
+ * "captureEgressConsentGranted"，v8 编码器写新键 "agentConsentGranted"；两者 true/false
+ * 都需抹平，使旧 v7 行读回（无论原值为 true 还是默认 false）重算指纹与存库一致。
+ */
+private fun String.withoutAgentConsent(): String =
+    replace(",\"captureEgressConsentGranted\":false", "")
+        .replace(",\"captureEgressConsentGranted\":true", "")
+        .replace(",\"agentConsentGranted\":false", "")
+        .replace(",\"agentConsentGranted\":true", "")
 
 internal fun NormalizedSourceRegion.isValidModelRegion(): Boolean =
     left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite() &&

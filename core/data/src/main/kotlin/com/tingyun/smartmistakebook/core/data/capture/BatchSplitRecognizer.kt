@@ -9,16 +9,9 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessment
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
-import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
-import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
-import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
-import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
-import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlinx.coroutines.flow.last
@@ -43,11 +36,21 @@ internal suspend fun recognizeAndSplitBatchPage(
     modelTasks: ModelTaskRepository,
     splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository,
     occurrenceTime: Long,
+    consentEnabled: () -> Boolean,
 ): BatchSplitOutcome {
     val provider = modelTasks.capabilities()
     if (provider.executionLocation == ModelExecutionLocation.UNAVAILABLE) {
         // Split recognition is an optional enhancement over the plain page import
         // that already succeeded; an unavailable provider degrades, never throws.
+        return BatchSplitOutcome.NotASplit
+    }
+    if (
+        provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
+        !consentEnabled()
+    ) {
+        // Without global agent consent an external round would be denied by the
+        // egress policy anyway; skipping it keeps the page import clean instead of
+        // writing a guaranteed PERMANENT_FAILURE row per batch page.
         return BatchSplitOutcome.NotASplit
     }
 
@@ -61,13 +64,9 @@ internal suspend fun recognizeAndSplitBatchPage(
             imageHeight = draft.height,
         ),
         occurredAtEpochMillis = occurrenceTime,
-        egressManifest = batchSplitEgressManifest(
-            provider = provider,
-            jobId = jobId,
-            pageIndex = pageIndex,
-            draft = draft,
-            occurrenceTime = occurrenceTime,
-        ),
+        // Batch page organization runs under the global agent consent; the page
+        // import that produced this draft is the same user action that consented.
+        agentConsentGranted = consentEnabled(),
     )
     val snapshot = modelTasks.execute(request).collectLast()
     if (snapshot.status != ModelTaskStatus.SUCCEEDED) {
@@ -104,49 +103,10 @@ internal suspend fun recognizeAndSplitBatchPage(
 private fun List<com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion>.isUsableSplit(): Boolean =
     size in 2..12 && all { it.left < it.right && it.top < it.bottom }
 
-private fun stableBatchPageSubject(jobId: String, pageIndex: Int): String =
-    "batch-split-subject:$jobId:$pageIndex"
-
 private fun batchSplitFingerprint(jobId: String, pageIndex: Int, sourceUri: String): String =
     MessageDigest.getInstance("SHA-256")
         .digest("batch-split\u001F$jobId\u001F$pageIndex\u001F$sourceUri".toByteArray(StandardCharsets.UTF_8))
         .joinToString("") { byte -> "%02x".format(byte) }
-
-private fun batchSplitEgressManifest(
-    provider: ProviderCapabilitySnapshot,
-    jobId: String,
-    pageIndex: Int,
-    draft: CaptureDraftSummary,
-    occurrenceTime: Long,
-): ModelEgressManifest? {
-    if (provider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER) return null
-    return ModelEgressManifest(
-        authorizationId = "batch-split-egress:$jobId:$pageIndex",
-        subjectId = stableBatchPageSubject(jobId, pageIndex),
-        purpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
-        authorizedTaskKinds = setOf(ModelTaskKind.CAPTURE_ASSESS),
-        providerId = provider.providerId,
-        modelId = provider.modelId,
-        providerConfigurationVersion = provider.providerConfigurationVersion,
-        promptPolicyVersion = ModelPromptPolicyVersions.CAPTURE_DOCUMENT,
-        // The page import that produced this draft is the approval event: its
-        // real timestamp satisfies the manifest's non-negative and
-        // not-before-request invariants, and the asset grant mirrors the
-        // canonical record the restricted asset source will re-verify.
-        approvedAtEpochMillis = occurrenceTime,
-        assets = listOf(
-            ModelEgressAssetGrant(
-                assetId = draft.sourceAssetId,
-                sha256 = draft.sourceAssetSha256,
-                byteSize = draft.byteSize,
-                width = draft.width,
-                height = draft.height,
-            ),
-        ),
-        disclosedData = ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE,
-        prohibitedData = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
-    )
-}
 
 internal sealed interface BatchSplitOutcome {
     data object Failed : BatchSplitOutcome

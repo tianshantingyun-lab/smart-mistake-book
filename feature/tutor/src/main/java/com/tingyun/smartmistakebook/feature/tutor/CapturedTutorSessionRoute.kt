@@ -71,7 +71,6 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.AttachedImage
-import com.tingyun.smartmistakebook.core.model.TutorAutoStartAuthorization
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
@@ -116,8 +115,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun CapturedTutorSessionRoute(
     sessionId: String,
-    autoStartAuthorization: TutorAutoStartAuthorization? = null,
-    onAutoStartAuthorizationConsumed: (String) -> Unit = {},
     repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
@@ -130,6 +127,8 @@ fun CapturedTutorSessionRoute(
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit,
     onEndedWithoutSave: () -> Unit = onBack,
+    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
+    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     var showEndConfirmation by rememberSaveable(sessionId) { mutableStateOf(false) }
@@ -177,8 +176,7 @@ fun CapturedTutorSessionRoute(
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
         onBack = onBack,
-        autoStartAuthorization = autoStartAuthorization,
-        onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+        agentConsentEnabled = agentConsentEnabled,
         modifier = modifier,
     )
 
@@ -237,8 +235,8 @@ private fun CapturedTutorSessionContent(
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
     onBack: () -> Unit,
-    autoStartAuthorization: TutorAutoStartAuthorization?,
-    onAutoStartAuthorizationConsumed: (String) -> Unit,
+    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
+    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -264,8 +262,7 @@ private fun CapturedTutorSessionContent(
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
                 onBack = onBack,
-                autoStartAuthorization = autoStartAuthorization,
-                onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+                agentConsentEnabled = agentConsentEnabled,
                 modifier = modifier.testTag("captured_tutor_session_screen"),
             )
 
@@ -367,9 +364,9 @@ internal fun ReadyCapturedSession(
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit = {},
-    autoStartAuthorization: TutorAutoStartAuthorization? = null,
-    onAutoStartAuthorizationConsumed: (String) -> Unit = {},
     clock: () -> Long = System::currentTimeMillis,
+    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
+    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     var sourceExpanded by rememberSaveable(session.sessionId) { mutableStateOf(false) }
@@ -388,8 +385,7 @@ internal fun ReadyCapturedSession(
         onOpenProfile = onOpenProfile,
         onOpenVisualOriginal = { sourceExpanded = true },
         onOpenModelSettings = onOpenModelSettings,
-        autoStartAuthorization = autoStartAuthorization,
-        onAutoStartAuthorizationConsumed = onAutoStartAuthorizationConsumed,
+        consentEnabled = agentConsentEnabled,
         clock = clock,
         conversationEnabled = !session.isEndedWithoutSave,
         headerContent = {

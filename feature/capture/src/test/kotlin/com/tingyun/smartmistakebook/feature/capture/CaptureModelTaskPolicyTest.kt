@@ -152,7 +152,7 @@ class CaptureModelTaskPolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 1,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
         val persisted = captureAssessmentRequest(
             requestId = "assess-1",
@@ -162,7 +162,7 @@ class CaptureModelTaskPolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 2,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
         val built = captureAssessmentRequest(
             requestId = "assess-1",
@@ -172,7 +172,7 @@ class CaptureModelTaskPolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 3,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
 
         assertSame(
@@ -195,7 +195,7 @@ class CaptureModelTaskPolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = 4,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
         assertSame(
             built,
@@ -260,7 +260,7 @@ class CaptureModelTaskPolicyTest {
             imageWidth = 10,
             imageHeight = 20,
             occurredAtEpochMillis = if (assetId == ASSET_B) 20 else 10,
-            egressManifest = null,
+            agentConsentGranted = false,
         )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",

@@ -10,6 +10,8 @@
 
 > **2026-09-06 结构化场景渲染隔离（D-001 增补）：** 2D/3D 结构化场景渲染（`visualScene` / `TutorVisualSceneRenderer`，含 `TutorGuiSpec` 的声明式场景 step_flow/comparison/evidence_chain/process_timeline/concept_map/formula_derivation/spatial_diagram）**从当前产品隔离，暂停开发**。该功能需长久打磨、当前仅锦上添花、起不到关键作用，故从用户可见 UI 中移除：模型不再产出、`TUTOR_VISUAL_GENERATE`/`TUTOR_VISUAL_REVIEW` 生成任务不再触发、scene 不再渲染。**代码、模型字段、渲染器、视觉任务与测试全部保留，改动 `feature/tutor/TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED`（当前 true）即可整体恢复。** 边界：本隔离仅针对**结构化场景渲染**；**`attachedImages`（模型生成的位图）是另一功能**，与本隔离无关、不受影响。后续任务不得在未明确本边界的情况下擅自重新投入结构化场景渲染的开发。
 
+> **2026-09-09 全局模型同意（D-001 增补，取代逐次确认）：** 产品决定（已定，不再复议）：**配置模型 = 全局同意**。学生在“我的 → 模型智能体”打开全局同意后，**智能体自主回合**（`ModelTaskInput.isAgentConsentEligible`，当前为 `CaptureAssessmentInput` / `CaptureParseInput` / `ImagePipelineClassifyInput` / `TutorPlanInput` / `TutorRespondInput` / `TutorVisualGenerateInput` / `TutorVisualReviewInput`）**不再逐次索要发送确认与 manifest**：`ModelEgressPolicy` 在同意开启、Provider 为外部且支持该任务类型时直接签发 `ModelExecutionPermit.ProviderConsented`；带图回合额外要求当前 Provider 接受图像输入，字节级门禁由受限资产源在打开每个资产时复核同意与 canonical 记录。**同意关闭、未配置模型或 Provider 不可用时一律失败关闭（不发送）**，`feature:tutor` 的统一闸门为 `tutorAgentChatEnabled(provider, consentEnabled, kind)`。**未列入智能体回合的请求**（`TutorLobbyInput`、`TutorDebriefInput`、`ProblemOrganizationInput`、`REVIEW_RERANK`、`LEARNING_SUMMARIZE` 等）**保持原有 manifest 门禁不变**：仍须显式授权、仍受披露范围与指纹校验约束。本增补取代上文针对“全局同意回合”的逐次知情意图与逐次授权表述；上文 `2026-09-06 结构化场景渲染隔离` 增补继续有效，`TUTOR_VISUAL_GENERATE`/`TUTOR_VISUAL_REVIEW` 不因本同意而重新触发。实现、行为矩阵与逐条测试影响见 `docs/design/tutor-agent-consent-design.md`。
+
 ## 1. 最终裁决
 
 产品定位改为：

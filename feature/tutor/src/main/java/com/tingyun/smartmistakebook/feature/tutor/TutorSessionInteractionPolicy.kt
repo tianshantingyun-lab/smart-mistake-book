@@ -7,7 +7,6 @@ import com.tingyun.smartmistakebook.core.domain.TutorTurnSendStateMachine
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
-import com.tingyun.smartmistakebook.core.model.TutorMoveType
 
 internal const val TUTOR_CHOICE_SAVE_ERROR = "这个选择暂时没有保存，请重试后再继续。"
 internal const val TUTOR_MOVE_SAVE_ERROR = "下一种讲法没有启动，请再试一次。"
@@ -21,25 +20,40 @@ internal fun tutorChoiceSubmissionCanStart(
 
 internal fun tutorMoveCanStart(
     interactionBusy: Boolean,
-    awaitingAuthorization: Boolean,
     hasExecutableProvider: Boolean,
-): Boolean = !interactionBusy && !awaitingAuthorization && hasExecutableProvider
+): Boolean = !interactionBusy && hasExecutableProvider
 
 internal fun tutorRestartCanStart(
-    awaitingAuthorization: Boolean,
     hasExecutableProvider: Boolean,
     hasConversationMemory: Boolean,
-): Boolean = !awaitingAuthorization && hasExecutableProvider && hasConversationMemory
+): Boolean = hasExecutableProvider && hasConversationMemory
 
 internal fun tutorPlanAttemptCount(
     matchingTaskCount: Int,
 ): Int = matchingTaskCount.coerceAtLeast(0)
 
-
-internal fun tutorExternalPlanApprovedAt(
-    leaseApprovedAtEpochMillis: Long?,
-    autoStartApprovedAtEpochMillis: Long?,
-): Long? = leaseApprovedAtEpochMillis ?: autoStartApprovedAtEpochMillis
+/**
+ * The single live agent gate for a tutor send surface. One place decides whether a send
+ * may reach the provider right now: a local provider always dispatches (it never egresses,
+ * so global consent is irrelevant), while an external provider dispatches only under global
+ * consent when it supports the kind and, for image-bearing visual kinds, accepts images.
+ * A null or UNAVAILABLE provider fails closed. PLAN/RESPOND are image-optional, so a
+ * structured-only provider still runs them; visual kinds require image input.
+ */
+internal fun tutorAgentChatEnabled(
+    provider: ProviderCapabilitySnapshot?,
+    consentEnabled: Boolean,
+    kind: ModelTaskKind,
+): Boolean {
+    val candidate = provider ?: return false
+    if (candidate.executionLocation == ModelExecutionLocation.UNAVAILABLE) return false
+    if (!candidate.supports(kind)) return false
+    if (candidate.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS) return true
+    if (!consentEnabled) return false
+    val kindNeedsImage = kind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
+        kind == ModelTaskKind.TUTOR_VISUAL_REVIEW
+    return !kindNeedsImage || candidate.supportsImageInput
+}
 
 internal const val TUTOR_RESPOND_IN_PROGRESS_TITLE = "这条消息还在处理中"
 internal const val TUTOR_RESPOND_IN_PROGRESS_MESSAGE = "这条消息还在处理中，请稍后重试。"
@@ -58,19 +72,19 @@ internal fun tutorRespondProviderCanExecute(
 
 internal fun tutorRespondCollectCanStart(
     provider: ProviderCapabilitySnapshot?,
+    consentEnabled: Boolean,
     requestHasEgressManifest: Boolean,
     allowExternalEnvelopeForLocalRecovery: Boolean,
-    respondApprovedAtEpochMillis: Long?,
     chatSubmitPending: Boolean,
 ): Boolean {
-    val snapshot = provider ?: return false
-    if (!tutorRespondProviderCanExecute(snapshot)) return false
-    when (snapshot.executionLocation) {
-        ModelExecutionLocation.LOCAL_NO_EGRESS ->
-            if (requestHasEgressManifest && !allowExternalEnvelopeForLocalRecovery) return false
-        ModelExecutionLocation.EXTERNAL_PROVIDER ->
-            if (respondApprovedAtEpochMillis == null) return false
-        ModelExecutionLocation.UNAVAILABLE -> return false
+    if (!tutorAgentChatEnabled(provider, consentEnabled, ModelTaskKind.TUTOR_RESPOND)) return false
+    // Respond-specific recovery: dispatch an external-enveloped persisted task under a
+    // local provider only when explicitly allowed.
+    if (provider!!.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&
+        requestHasEgressManifest &&
+        !allowExternalEnvelopeForLocalRecovery
+    ) {
+        return false
     }
     return !chatSubmitPending
 }
@@ -112,45 +126,9 @@ internal fun tutorRespondSendAdvance(
     }
 }
 
-internal fun tutorRespondNewPendingAllowed(
-    pending: PendingTutorEgressAction?,
-    message: String,
-    requestedMove: TutorMoveType?,
-    clearDraftOnPersist: Boolean,
-): Boolean = when (pending) {
-    is PendingTutorEgressAction.Plan,
-    is PendingTutorEgressAction.RetryResponse -> false
-    is PendingTutorEgressAction.NewResponse ->
-        pending.message == message &&
-            pending.requestedMove == requestedMove &&
-            pending.clearDraftOnPersist == clearDraftOnPersist
-    null -> true
-}
-
-internal fun tutorRespondRetryPendingAllowed(
-    pending: PendingTutorEgressAction?,
-    requestId: String,
-): Boolean = when (pending) {
-    null -> true
-    is PendingTutorEgressAction.RetryResponse -> pending.requestId == requestId
-    is PendingTutorEgressAction.Plan,
-    is PendingTutorEgressAction.NewResponse -> false
-}
-
 internal fun tutorRespondExecuteCanStart(
-    pendingAllowed: Boolean,
     hasPlanOutput: Boolean,
     providerCanExecute: Boolean,
     messageBlank: Boolean,
     chatSending: Boolean,
-): Boolean = pendingAllowed && hasPlanOutput && providerCanExecute && !messageBlank && !chatSending
-
-internal fun tutorRespondExternalApprovedAt(
-    location: ModelExecutionLocation,
-    leaseApprovedAtEpochMillis: Long?,
-    occurredAtEpochMillis: Long,
-): Long? = when (location) {
-    ModelExecutionLocation.EXTERNAL_PROVIDER -> leaseApprovedAtEpochMillis
-    ModelExecutionLocation.LOCAL_NO_EGRESS -> occurredAtEpochMillis
-    ModelExecutionLocation.UNAVAILABLE -> null
-}
+): Boolean = hasPlanOutput && providerCanExecute && !messageBlank && !chatSending

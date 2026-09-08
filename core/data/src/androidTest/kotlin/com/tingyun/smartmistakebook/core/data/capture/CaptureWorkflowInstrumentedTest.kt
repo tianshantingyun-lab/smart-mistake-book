@@ -35,6 +35,7 @@ import com.tingyun.smartmistakebook.core.domain.SplitCaptureDraftRequest
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
+import com.tingyun.smartmistakebook.core.model.ImagePipelineProblemKind
 import com.tingyun.smartmistakebook.core.model.CaptureParseInput
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
@@ -162,7 +163,10 @@ class CaptureWorkflowInstrumentedTest {
                     createPng(24, 24).readBytes(),
                     "image/png",
                 )
-            },        )
+            },
+            modelTasks = withFigureClassifyModelTasks(),
+            captureConsentGranted = { true },
+        )
         val source = createPng(48, 48)
         val imported = generatingRepository.importDraft(
             CaptureDraftImportRequest(
@@ -670,6 +674,8 @@ class CaptureWorkflowInstrumentedTest {
                 )
             },
             cleanRedrawScope = saveScope,
+            modelTasks = withFigureClassifyModelTasks(),
+            captureConsentGranted = { true },
         )
         try {
             val source = createPng(width = 96, height = 128)
@@ -732,6 +738,8 @@ class CaptureWorkflowInstrumentedTest {
                 )
             },
             cleanRedrawScope = saveScope,
+            modelTasks = withFigureClassifyModelTasks(),
+            captureConsentGranted = { true },
         )
         try {
             val source = createPng(width = 96, height = 128)
@@ -1752,6 +1760,15 @@ class CaptureWorkflowInstrumentedTest {
     private fun noTextRecognizer() = LocalQuestionTextRecognizer { _, _, _ ->
         LocalTextRecognition(emptyList(), "fixture-no-text-v1")
     }
+
+    /** A model-task repo whose classify round reports WITH_FIGURE (drives redraw). */
+    private fun withFigureClassifyModelTasks(): RoomModelTaskRepository = RoomModelTaskRepository(
+        database = database,
+        gateway = FakeModelGateway(
+            stepDelayMillis = 0,
+            classifyProblemKind = ImagePipelineProblemKind.WITH_FIGURE,
+        ),
+    )
 
 
     private fun clearOwnedFlatDirectory(
