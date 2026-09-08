@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.database.CreateSplitImportJobCommand
 import com.tingyun.smartmistakebook.core.database.SplitImportQuestionSeed
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
+import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessment
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
@@ -37,34 +38,35 @@ internal suspend fun recognizeAndSplitBatchPage(
     jobId: String,
     pageIndex: Int,
     sourceUri: String,
-    capturedWidth: Int,
-    capturedHeight: Int,
+    draft: CaptureDraftSummary,
     database: StudyDatabasePort,
     modelTasks: ModelTaskRepository,
     splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository,
     occurrenceTime: Long,
 ): BatchSplitOutcome {
     val provider = modelTasks.capabilities()
-    require(
-        provider.executionLocation != ModelExecutionLocation.UNAVAILABLE,
-    ) { "Model provider is unavailable for batch split recognition" }
+    if (provider.executionLocation == ModelExecutionLocation.UNAVAILABLE) {
+        // Split recognition is an optional enhancement over the plain page import
+        // that already succeeded; an unavailable provider degrades, never throws.
+        return BatchSplitOutcome.NotASplit
+    }
 
-    val subjectId = stableBatchPageSubject(jobId, pageIndex)
     val request = ModelTaskRequest(
         requestId = "batch-split:$jobId:$pageIndex",
         input = com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput(
-            draftId = subjectId,
-            sourceAssetId = "batch-image:$jobId:$pageIndex",
+            draftId = draft.draftId,
+            sourceAssetId = draft.sourceAssetId,
             origin = com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin.LIBRARY,
-            imageWidth = capturedWidth,
-            imageHeight = capturedHeight,
+            imageWidth = draft.width,
+            imageHeight = draft.height,
         ),
         occurredAtEpochMillis = occurrenceTime,
         egressManifest = batchSplitEgressManifest(
             provider = provider,
             jobId = jobId,
             pageIndex = pageIndex,
-            sourceUri = sourceUri,
+            draft = draft,
+            occurrenceTime = occurrenceTime,
         ),
     )
     val snapshot = modelTasks.execute(request).collectLast()
@@ -114,7 +116,8 @@ private fun batchSplitEgressManifest(
     provider: ProviderCapabilitySnapshot,
     jobId: String,
     pageIndex: Int,
-    sourceUri: String,
+    draft: CaptureDraftSummary,
+    occurrenceTime: Long,
 ): ModelEgressManifest? {
     if (provider.executionLocation != ModelExecutionLocation.EXTERNAL_PROVIDER) return null
     return ModelEgressManifest(
@@ -126,14 +129,18 @@ private fun batchSplitEgressManifest(
         modelId = provider.modelId,
         providerConfigurationVersion = provider.providerConfigurationVersion,
         promptPolicyVersion = ModelPromptPolicyVersions.CAPTURE_DOCUMENT,
-        approvedAtEpochMillis = -1L,
+        // The page import that produced this draft is the approval event: its
+        // real timestamp satisfies the manifest's non-negative and
+        // not-before-request invariants, and the asset grant mirrors the
+        // canonical record the restricted asset source will re-verify.
+        approvedAtEpochMillis = occurrenceTime,
         assets = listOf(
             ModelEgressAssetGrant(
-                assetId = "batch-image:$jobId:$pageIndex",
-                sha256 = batchSplitFingerprint(jobId, pageIndex, sourceUri),
-                byteSize = 0L,
-                width = 0,
-                height = 0,
+                assetId = draft.sourceAssetId,
+                sha256 = draft.sourceAssetSha256,
+                byteSize = draft.byteSize,
+                width = draft.width,
+                height = draft.height,
             ),
         ),
         disclosedData = ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE,

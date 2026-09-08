@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.data.model.ModelTaskRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.domain.BatchImportOrganizationApproval
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
@@ -619,6 +620,52 @@ class BatchImportRepositoryInstrumentedTest {
         val root = File(context.filesDir, BATCH_IMPORT_STAGING_DIRECTORY).canonicalFile
         return root.resolve(uri.pathSegments[1]).canonicalFile.also { session ->
             check(session.parentFile == root)
+        }
+    }
+
+    /**
+     * Regression for the P0 where the production wiring (which always supplies a
+     * split recognizer) made every batch page throw before import: with the
+     * default unavailable model provider, split recognition must degrade and
+     * every page must still land in the library (spec batch-intake I1).
+     */
+    @Test
+    fun splitRecognitionDegradesWhenTheModelIsUnavailableAndEveryPageStillImports() = runBlocking {
+        val selected = listOf(insertImage(), insertImage())
+        val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val repository = BatchImportRepositoryFactory.create(
+                context = context,
+                database = database,
+                capture = captureRepository(database),
+                processingScope = processingScope,
+                splitImports = SplitImportRepositoryFactory.createConcrete(database),
+            )
+            val created = repository.createBatchImport(
+                CreateBatchImportRequest(
+                    requestId = "split-degrades",
+                    localUris = selected.map(Uri::toString),
+                    occurredAtEpochMillis = 1_000,
+                ),
+            )
+            val settled = withTimeout(20_000) {
+                repository.observeBatchImports().first { jobs ->
+                    jobs.singleOrNull { it.jobId == created.jobId }?.let { job ->
+                        job.status == BatchImportStatus.COMPLETED ||
+                            job.pages.all { page ->
+                                page.status == BatchImportPageStatus.READY ||
+                                    page.status == BatchImportPageStatus.FAILED
+                            }
+                    } == true
+                }.single { it.jobId == created.jobId }
+            }
+            assertEquals(
+                "Split recognition must never fail a page: " + settled.pages.map { it.status },
+                2,
+                settled.pages.count { it.status == BatchImportPageStatus.READY },
+            )
+        } finally {
+            processingScope.cancel()
         }
     }
 

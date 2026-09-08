@@ -334,36 +334,11 @@ internal class RoomBatchImportRepository(
             while (true) {
                 val page = database.claimNextBatchImportPage(jobId, System.currentTimeMillis())
                     ?: break
-                val splitDir = splitProvider?.let {
-                    recognizeAndSplitBatchPage(
-                        jobId = jobId,
-                        pageIndex = page.pageIndex,
-                        sourceUri = page.sourceUri,
-                        capturedWidth = 0,
-                        capturedHeight = 0,
-                        database = database,
-                        modelTasks = modelTasks,
-                        splitImports = it,
-                        occurrenceTime = page.createdAtEpochMillis,
-                    )
-                }
-                if (splitDir != null && splitDir is BatchSplitOutcome.SplitReady) {
-                    splitReadyJobId = splitDir.jobId
-                    database.finishBatchImportIfSettled(jobId, System.currentTimeMillis())
-                    return@withContext
-                }
-                when (splitDir) {
-                    BatchSplitOutcome.Failed -> {
-                        database.failBatchImportPage(
-                            jobId,
-                            page.pageIndex,
-                            "SPLIT_RECOGNITION_FAILED",
-                            System.currentTimeMillis(),
-                        )
-                        continue
-                    }
-                    else -> {}
-                }
+                // Spec batch-intake I1: batch intake is plain intake — the page
+                // enters the library without any model involvement. Split
+                // recognition is an optional enhancement attempted only after
+                // the page is safely in the library, so a model outage can never
+                // block intake (and never leaves a page stuck in PROCESSING).
                 val draft = try {
                     capture.importDraft(
                         CaptureDraftImportRequest(
@@ -393,6 +368,31 @@ internal class RoomBatchImportRepository(
                         System.currentTimeMillis(),
                     ),
                 ) { "Claimed batch page could not be completed" }
+                if (splitProvider != null) {
+                    // Best-effort only: the page is already imported, so any
+                    // split failure (unavailable provider, model error, an
+                    // unusable region set) degrades to the plain page import.
+                    try {
+                        val splitDir = recognizeAndSplitBatchPage(
+                            jobId = jobId,
+                            pageIndex = page.pageIndex,
+                            sourceUri = page.sourceUri,
+                            draft = draft,
+                            database = database,
+                            modelTasks = modelTasks,
+                            splitImports = splitProvider,
+                            occurrenceTime = page.createdAtEpochMillis,
+                        )
+                        if (splitDir is BatchSplitOutcome.SplitReady) {
+                            splitReadyJobId = splitDir.jobId
+                        }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        // Intentionally swallowed: split recognition must never
+                        // fail a page that already landed in the library.
+                    }
+                }
                 if (!database.hasRetainedBatchImportSourceUri(page.sourceUri)) {
                     sourceStaging.delete(page.sourceUri)
                 }
