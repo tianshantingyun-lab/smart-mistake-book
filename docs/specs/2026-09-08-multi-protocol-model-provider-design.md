@@ -181,3 +181,23 @@ internal interface ModelWireProtocol {
 - **已核实（不再是风险）**：解析层已容忍 markdown 围栏——`unwrapJsonFence()` 在解析入口
   剥离 ```json 围栏（`OpenAiModelResponseParsing.kt:30`，用于 `OpenAiModelProtocol.parseResponse:433`）。
   因此没有 `json_object` 信封的协议，只要把文本块交给同一解析入口即可。
+
+## 8. 执行记录（2026-09-09，P1–P5 全部完成）
+
+| 阶段 | 提交 | 内容 |
+|---|---|---|
+| P1 | `3b94b31` `8f91a74` `36e85e9` | 删死代码 → 抽 `ModelWireProtocol`（OpenAI 行为逐字节不变）→ 配置 `protocol` 字段 + 指纹动态化 |
+| P2 | `dd233df` | Anthropic Messages 协议 + 探测请求/响应按协议分派 |
+| P3 | `9632afa` | OpenAI Responses 协议 |
+| P4 | `3e76ce8` | Gemini generateContent 协议；`protocolFor` 改穷尽 `when`（新增枚举未配实现即编译失败） |
+| P5 | `caa3ece` | 设置界面协议四选一（FilterChip）+ 按协议变化的 Base URL 提示 + 调试注入器 `protocol` 参数 + 仪器测试 |
+
+**验收（当前证据）**：全模块 **1419 单测 0 失败**；`localFirst` + `strictOffline`（含 androidTest）编译通过；设备仪器测试 **10/10**（`CapabilityScreenInstrumentedTest` 5 项含新增的协议选择/保存，`DualReviewEntryInstrumentedTest` 3 项，`KnowledgeReviewSessionInstrumentedTest` 2 项）。
+
+**形状取证**（实现时逐条核对官方源，来源写在各实现类注释里）：
+
+- Anthropic：`anthropics/anthropic-sdk-python`（`message_create_params.py`、`message.py`、`tool_param.py`、流式事件与 `text_delta.py`、`base64_image_source_param.py`）。
+- OpenAI Responses：`openai/openai-python`（README、`response_output_text.py`、`response_input_text_param.py`、`response_input_image_param.py`、`response_text_delta_event.py`）。
+- Gemini：`googleapis/googleapis` 的 `generative_service.proto` 与 `content.proto`（端点、`GenerateContentRequest`、`GenerationConfig.response_mime_type`、`GenerateContentResponse.candidates`、`Blob{mime_type,data}`）。
+
+**未验证（需真实 provider）**：三家协议的真实端点端到端（需要 API key）。本环境用 MockWebServer + 合成响应验证了协议形状、解析与流式；真实连通性需按 §3.3 表格逐家实拨（`adb` 注入示例见 `TestSeedModelConfigReceiver` 的 KDoc，带 `--es protocol <wireId>`）。
