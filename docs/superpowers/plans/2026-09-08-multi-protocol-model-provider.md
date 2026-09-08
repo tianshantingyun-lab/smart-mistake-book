@@ -23,6 +23,7 @@
 **修改：**
 - `core/data/src/main/kotlin/.../model/OpenAiModelTransport.kt` —— `post` 改收 `WireRequest`；SSE 解码委托协议。
 - `core/data/src/main/kotlin/.../model/OpenAiCompatibleModelGateway.kt` —— 按配置取协议、构造 `WireRequest`、解析委托协议、指纹动态化。
+- `core/data/src/main/kotlin/.../model/ModelCapabilityTester.kt` —— **`post` 签名变化的第三个调用方**（执行中发现）：探测请求同步改为构造 `WireRequest`（`protocolFor(DEFAULT)`，行为不变）。
 - `core/domain/src/main/kotlin/.../domain/ModelConfigurationStore.kt` —— `ModelConfigurationSnapshot`/`ModelConfigurationUpdate` 增 `protocol`。
 - `core/data/src/main/kotlin/.../domain/...`（DataStore 实现，见任务 3 步骤）—— 持久化协议字段。
 - 测试夹具：`modelTransport { ... }` 的所有调用点（随 `post` 签名变化）。
@@ -312,7 +313,10 @@ SSE 分支用 `request.protocol.reconstructedBody(raw)` 与 `request.protocol.st
 `OpenAiCompatibleModelGateway.execute` 内：
 
 ```kotlin
-val protocol = protocolFor(credential.configuration.protocol)
+// 任务 2 阶段配置还没有 protocol 字段（任务 3 才加），先用默认协议——DEFAULT 即
+// OPENAI_CHAT_COMPLETIONS，唯一实现，行为逐字节不变；任务 3 把它翻成
+// protocolFor(credential.configuration.protocol)（见任务 3 步骤 3b）。
+val protocol = protocolFor(ModelProviderProtocol.DEFAULT)
 val requestBody = protocol.requestBody(
     modelId = provider.modelId,
     input = execution.request.input,
@@ -430,6 +434,24 @@ val canonical = listOf(
 ./gradlew :core:domain:test :core:data:testDebugUnitTest --console=plain
 ```
 
+预期：`BUILD SUCCESSFUL`，0 失败。
+
+- [ ] **步骤 3b：把网关的协议来源翻到配置上**
+
+任务 2 阶段网关写的是 `protocolFor(ModelProviderProtocol.DEFAULT)`（因为当时还没有 `protocol`
+字段）。现在把它改成：
+
+```kotlin
+val protocol = protocolFor(credential.configuration.protocol)
+```
+
+并补一条测试：`ModelConfigurationSnapshot(protocol = ANTHROPIC_MESSAGES)` 时网关选到的协议
+实现是 `ANTHROPIC_MESSAGES` 对应的实现（P1 阶段 Anthropic 尚未实现 → 断言 `protocolFor`
+抛错信息包含协议名，证明"配置真的驱动了协议选择"，而不是永远走 DEFAULT）。
+
+- [ ] **步骤 3c：运行确认通过**
+
+运行：`./gradlew :core:data:testDebugUnitTest --console=plain`
 预期：`BUILD SUCCESSFUL`，0 失败。
 
 - [ ] **步骤 5：P1 全量验收（当前证据）**
