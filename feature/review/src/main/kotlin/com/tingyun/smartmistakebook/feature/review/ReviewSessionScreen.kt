@@ -1,10 +1,6 @@
 package com.tingyun.smartmistakebook.feature.review
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,11 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -30,14 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.disabled
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +48,6 @@ import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.ReviewRetryReason
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
-import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.model.TutorChoiceEvaluation
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.reviewRetryError
@@ -88,6 +74,14 @@ fun ReviewSessionScreen(
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyReviewChoiceSubmissionResult,
     onRevealAnswer: suspend (StudyAnswerRevealRequest) -> StudyAnswerRevealResult,
     onContinue: (StudyReviewChoiceSubmissionResult) -> Unit,
+    /**
+     * Pretest route for free-response items (spec batch-intake §3/§6 P2): a
+     * question with a teaching artifact but no machine-checkable assessment
+     * item routes to the tutor-judged pretest instead of showing "cannot
+     * answer". Null keeps the legacy unavailable state (e.g. the surface has
+     * no tutor navigation).
+     */
+    onRequestTutorPretest: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     when (val decision = TutorCapabilityGate().evaluate(capabilities, teachingArtifact)) {
@@ -95,11 +89,22 @@ fun ReviewSessionScreen(
             val sessionViewModel: ReviewSessionViewModel = viewModel(key = presentationId)
             val assessmentItem = decision.artifact.assessmentItems.singleOrNull()
             if (assessmentItem == null) {
-                ReviewSessionUnavailable(
-                    reason = TutorCapabilityBlockReason.NO_ASSESSMENT_ITEM,
-                    onBack = onBack,
-                    modifier = modifier,
-                )
+                if (onRequestTutorPretest != null) {
+                    // PretestRouting.TUTOR_JUDGED_FLOW: no options to score,
+                    // but a teaching artifact exists — route to the tutor
+                    // judge rather than declaring the question unanswerable.
+                    ReviewSessionPretestTutorRoute(
+                        onRequestTutorPretest = onRequestTutorPretest,
+                        onBack = onBack,
+                        modifier = modifier,
+                    )
+                } else {
+                    ReviewSessionUnavailable(
+                        reason = TutorCapabilityBlockReason.NO_ASSESSMENT_ITEM,
+                        onBack = onBack,
+                        modifier = modifier,
+                    )
+                }
             } else {
                 ReviewSessionContent(
                     artifact = decision.artifact,
@@ -187,7 +192,7 @@ private fun ReviewSessionContent(
         )
         Spacer(Modifier.height(20.dp))
         assessmentItem.choices.forEach { choice ->
-            ChoiceRow(
+            ReviewChoiceRow(
                 choice = choice,
                 isCorrect = assessmentItem.evaluateChoice(choice.id).isCorrect,
                 selectedChoice = selectedChoice,
@@ -300,13 +305,46 @@ private fun ReviewSessionContent(
     }
 }
 
+/**
+ * Pretest route for free-response items (spec batch-intake §3): the question
+ * has a teaching artifact but no machine-scorable options, so the review
+ * surface hands the student to the tutor-judged flow — the tutor session
+ * judges their attempt and the verdict lands as the first real attempt.
+ */
+@Composable
+private fun ReviewSessionPretestTutorRoute(
+    onRequestTutorPretest: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier,
+) {
+    RootPageColumn(modifier = modifier.testTag("review_session_root")) {
+        SessionHeader(onBack = onBack)
+        Spacer(Modifier.height(12.dp))
+        PaperDivider(Modifier.padding(vertical = 18.dp))
+        Text(
+            text = "这道题需要先试做再由讲解判定——去讲题里完成首次作答。",
+            modifier = Modifier.testTag("review_pretest_tutor_hint"),
+            color = SmartColors.InkSecondary,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Spacer(Modifier.height(20.dp))
+        PrimaryActionButton(
+            text = "去讲题判定",
+            onClick = onRequestTutorPretest,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .testTag("review_pretest_tutor_button"),
+        )
+    }
+}
+
 @Composable
 private fun ReviewSessionUnavailable(
     reason: TutorCapabilityBlockReason,
     onBack: () -> Unit,
     modifier: Modifier,
-) {
-    RootPageColumn(modifier = modifier.testTag("review_session_root")) {
+) {    RootPageColumn(modifier = modifier.testTag("review_session_root")) {
         SessionHeader(onBack = onBack)
         Spacer(Modifier.height(12.dp))
         PaperDivider(Modifier.padding(vertical = 18.dp))
@@ -354,79 +392,6 @@ private fun SessionHeader(onBack: () -> Unit, subject: String = "GENERAL") {
                 .getOrDefault(SubjectKind.GENERAL),
             contentDescription = subject,
             modifier = Modifier.size(42.dp),
-        )
-    }
-}
-
-@Composable
-private fun ChoiceRow(
-    choice: TutorChoice,
-    isCorrect: Boolean,
-    selectedChoice: String?,
-    submittedChoice: String?,
-    enabled: Boolean,
-    onSelect: (String) -> Unit,
-) {
-    val isSelected = selectedChoice == choice.id
-    val isSubmitted = submittedChoice != null
-    val isSubmittedSelection = submittedChoice == choice.id
-    val outlineColor = when {
-        isSubmittedSelection && isCorrect -> SmartColors.Jade
-        isSubmittedSelection -> SmartColors.ErrorWarm
-        isSelected -> SmartColors.Jade
-        else -> SmartColors.Outline
-    }
-    val backgroundColor = if (isSelected) SmartColors.JadeSoft else SmartColors.Paper
-    val shape = RoundedCornerShape(8.dp)
-    val stateLabel = when {
-        isSubmittedSelection && isCorrect -> "已提交，回答正确"
-        isSubmittedSelection -> "已提交，需要修正"
-        isSubmitted -> "未选择"
-        !enabled && isSelected -> "已选中，当前选择已锁定"
-        !enabled -> "当前不可选择"
-        isSelected -> "已选中，尚未提交"
-        else -> "可选择"
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(backgroundColor)
-            .border(1.dp, outlineColor, shape)
-            .clickable(
-                enabled = enabled && !isSubmitted,
-                role = Role.RadioButton,
-            ) { onSelect(choice.id) }
-            .semantics {
-                role = Role.RadioButton
-                selected = isSelected
-                stateDescription = stateLabel
-                if (!enabled || isSubmitted) disabled()
-            }
-            .padding(horizontal = 14.dp, vertical = 14.dp)
-            .testTag("review_choice_${choice.id}"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape)
-                .border(1.dp, outlineColor, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = choice.id,
-                color = SmartColors.Ink,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
-        Spacer(Modifier.width(12.dp))
-        SafeMarkdownText(
-            markdown = choice.markdown,
-            modifier = Modifier.weight(1f),
-            color = SmartColors.Ink,
-            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 25.sp),
         )
     }
 }

@@ -33,8 +33,6 @@ class KnowledgeReviewSessionInstrumentedTest {
         displayName = "函数单调性",
         masteryScore = null,
         lastEvidenceAtEpochMillis = null,
-        score = 4.0,
-        reasonNames = setOf("STALE_KNOWLEDGE"),
     )
 
     private val quizItem = TutorAssessmentItem(
@@ -55,7 +53,7 @@ class KnowledgeReviewSessionInstrumentedTest {
         composeRule.setContent {
             SmartMistakeBookTheme {
                 KnowledgeReviewSessionScreen(
-                    plan = KnowledgeReviewSessionPlan(queue = listOf(node), timeBudgetSeconds = 600),
+                    plan = KnowledgeReviewSessionPlan(queue = listOf(node)),
                     onBack = {},
                     loadQuiz = { quizItem },
                     submitAnswer = { requestId, knowledgeNodeId, correctChoiceId, selectedChoiceId, _ ->
@@ -95,7 +93,7 @@ class KnowledgeReviewSessionInstrumentedTest {
         composeRule.setContent {
             SmartMistakeBookTheme {
                 KnowledgeReviewSessionScreen(
-                    plan = KnowledgeReviewSessionPlan(queue = listOf(node), timeBudgetSeconds = 600),
+                    plan = KnowledgeReviewSessionPlan(queue = listOf(node)),
                     onBack = {},
                     loadQuiz = {
                         attempts += 1

@@ -1,18 +1,13 @@
 package com.tingyun.smartmistakebook.feature.review
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -28,13 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,14 +32,12 @@ import com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewQueueEntry
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
 import com.tingyun.smartmistakebook.core.model.TutorAssessmentItem
-import com.tingyun.smartmistakebook.core.model.TutorChoice
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.SmartColors
-import kotlinx.coroutines.CancellationException
 
 /**
  * 知识点复习会话（spec dual-review-entry §3.3/§3.4）：一次"今日知识点复习"从首页进入后，
@@ -227,13 +214,14 @@ private fun KnowledgeQuizContent(
     )
     Spacer(Modifier.height(20.dp))
     item.choices.forEach { choice ->
-        KnowledgeChoiceRow(
+        ReviewChoiceRow(
             choice = choice,
             isCorrect = item.evaluateChoice(choice.id).isCorrect,
             selectedChoice = viewModel.selectedChoice,
             submittedChoice = viewModel.submittedChoice,
             enabled = viewModel.submitStatus == KnowledgeQuizSubmitStatus.IDLE,
             onSelect = viewModel::select,
+            testTag = "knowledge_review_choice_${choice.id}",
         )
         Spacer(Modifier.height(10.dp))
     }
@@ -262,74 +250,6 @@ private fun KnowledgeQuizContent(
             } else {
                 "提交当前选择并回写掌握度"
             },
-        )
-    }
-}
-
-@Composable
-private fun KnowledgeChoiceRow(
-    choice: TutorChoice,
-    isCorrect: Boolean,
-    selectedChoice: String?,
-    submittedChoice: String?,
-    enabled: Boolean,
-    onSelect: (String) -> Unit,
-) {
-    val isSelected = selectedChoice == choice.id
-    val isSubmittedSelection = submittedChoice == choice.id
-    val outlineColor = when {
-        isSubmittedSelection && isCorrect -> SmartColors.Jade
-        isSubmittedSelection -> SmartColors.ErrorWarm
-        isSelected -> SmartColors.Jade
-        else -> SmartColors.Outline
-    }
-    val backgroundColor = if (isSelected) SmartColors.JadeSoft else SmartColors.Paper
-    val shape = RoundedCornerShape(8.dp)
-    val stateLabel = when {
-        isSubmittedSelection && isCorrect -> "已提交，回答正确"
-        isSubmittedSelection -> "已提交，需要修正"
-        !enabled && isSelected -> "已选中，当前选择已锁定"
-        isSelected -> "已选中，尚未提交"
-        else -> "可选择"
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(backgroundColor)
-            .border(1.dp, outlineColor, shape)
-            .clickable(
-                enabled = enabled && submittedChoice == null,
-                role = Role.RadioButton,
-            ) { onSelect(choice.id) }
-            .semantics {
-                role = Role.RadioButton
-                selected = isSelected
-                stateDescription = stateLabel
-            }
-            .padding(horizontal = 14.dp, vertical = 14.dp)
-            .testTag("knowledge_review_choice_${choice.id}"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape)
-                .border(1.dp, outlineColor, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = choice.id,
-                color = SmartColors.Ink,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
-        Spacer(Modifier.width(12.dp))
-        SafeMarkdownText(
-            markdown = choice.markdown,
-            modifier = Modifier.weight(1f),
-            color = SmartColors.Ink,
-            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 25.sp),
         )
     }
 }
