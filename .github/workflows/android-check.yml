@@ -76,6 +76,13 @@ jobs:
         run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
       - name: Unit-test coverage reports (feed the status report)
         run: ./gradlew :core:domain:koverXmlReport :core:data:koverXmlReport :core:database:koverXmlReport --console=plain
+      - name: File-size gate
+        # Baseline-aware: only files changed on this branch (vs origin/main) are
+        # checked, so the existing large-file backlog (already >600 lines) does
+        # not fail every run. The hard line (main 1000 / test 1500) blocks a
+        # newly introduced megafile. Push to main has no diff against itself and
+        # is skipped transparently.
+        run: python3 tools/ci/check_file_size_gate.py
       - name: Room schema drift recheck
         run: git diff --exit-code -- core/database/schemas
       - name: Generate machine-verifiable status report
