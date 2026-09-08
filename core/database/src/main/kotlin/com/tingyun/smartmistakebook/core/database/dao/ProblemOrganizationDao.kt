@@ -43,7 +43,7 @@ internal interface ProblemOrganizationDao {
         INNER JOIN knowledge_node_source_binding AS provenance
             ON provenance.knowledge_node_id = node.knowledge_node_id
            AND provenance.reviewed_at_epoch_millis IS NOT NULL
-        WHERE node.verification_status IN ('CURATED', 'SOURCE_GROUNDED')
+        WHERE node.verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
         GROUP BY node.subject
         ORDER BY node.subject ASC
         """,
@@ -116,7 +116,7 @@ internal interface ProblemOrganizationDao {
         """
         SELECT * FROM knowledge_node
         WHERE subject = :subject
-          AND verification_status IN ('CURATED', 'SOURCE_GROUNDED')
+          AND verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
         ORDER BY canonical_name ASC
         LIMIT :limit
         """,
@@ -134,7 +134,7 @@ internal interface ProblemOrganizationDao {
           ON node.knowledge_node_id = feature.knowledge_node_id
         WHERE feature.subject = :subject
           AND feature.search_feature IN (:searchFeatures)
-          AND node.verification_status IN ('CURATED', 'SOURCE_GROUNDED')
+          AND node.verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
         GROUP BY node.knowledge_node_id
         ORDER BY
             COUNT(DISTINCT feature.search_feature) DESC,
@@ -154,7 +154,7 @@ internal interface ProblemOrganizationDao {
         """
         SELECT COUNT(*) FROM knowledge_node
         WHERE subject = :subject
-          AND verification_status IN ('CURATED', 'SOURCE_GROUNDED')
+          AND verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
         """,
     )
     suspend fun countReviewedKnowledgeNodesBySubject(subject: String): Int

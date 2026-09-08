@@ -911,7 +911,17 @@ internal fun buildConfirmationCommand(
             canonicalName = classification.displayName,
             nodeKind = KnowledgeNodeKind.TOPIC.name,
             granularity = KnowledgeNodeGranularity.TOPIC.name,
-            verificationStatus = KnowledgeNodeVerificationStatus.MODEL_CANDIDATE.name,
+            // A node the student typed or corrected is user authority, not an
+            // unverified model candidate: it must be reusable as a candidate for
+            // later problems of the same knowledge point (audit 2026-09-09).
+            // Model-proposed labels accepted by local policy stay candidates.
+            verificationStatus = if (classification.acceptanceSource ==
+                BindingAcceptanceSource.USER_CORRECTED.name
+            ) {
+                KnowledgeNodeVerificationStatus.USER_CONFIRMED.name
+            } else {
+                KnowledgeNodeVerificationStatus.MODEL_CANDIDATE.name
+            },
         )
     }
     val topicNodesByName = topicNodes.associateBy { node ->

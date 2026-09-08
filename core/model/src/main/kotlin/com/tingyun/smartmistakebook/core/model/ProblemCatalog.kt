@@ -126,8 +126,21 @@ enum class KnowledgeNodeGranularity {
 }
 
 enum class KnowledgeNodeVerificationStatus {
+    /** Editorially curated taxonomy node. */
     CURATED,
+
+    /** Node grounded in a reviewed, human-checked source. */
     SOURCE_GROUNDED,
+
+    /**
+     * Node the student created or corrected by hand. It is the strongest
+     * authority for that student (the correction command is USER_CORRECTED),
+     * so it must be reusable as a classification candidate instead of being
+     * parked forever as an unverified model candidate (audit 2026-09-09).
+     */
+    USER_CONFIRMED,
+
+    /** Model-proposed node that no human has confirmed yet. */
     MODEL_CANDIDATE,
 }
 
