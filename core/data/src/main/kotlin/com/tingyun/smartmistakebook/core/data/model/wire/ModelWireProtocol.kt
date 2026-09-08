@@ -17,8 +17,6 @@ internal interface ModelWireProtocol {
     val protocol: ModelProviderProtocol
     /** 是否支持原生 tools 往返（仅 OpenAI 兼容为 true；新协议走 Route B）。 */
     val supportsNativeTools: Boolean
-    /** 是否有 json_object 信封（无则靠 prompt 约束 JSON）。 */
-    val supportsJsonObjectEnvelope: Boolean
 
     fun endpoint(baseUrl: HttpUrl, modelId: String, stream: Boolean): HttpUrl
 
@@ -50,12 +48,15 @@ internal interface ModelWireProtocol {
     fun probeResponseText(body: String): String?
 }
 
-/** 按配置协议取实现；未实现的协议显式失败，不静默降级。 */
+/**
+ * 按配置协议取实现。`when` 穷尽列出全部协议：新增枚举常量若没配实现会**编译失败**，
+ * 不会退化成运行期才发现的静默降级。
+ */
 internal fun protocolFor(protocol: ModelProviderProtocol): ModelWireProtocol = when (protocol) {
     ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS -> OpenAiChatCompletionsProtocol
     ModelProviderProtocol.OPENAI_RESPONSES -> OpenAiResponsesProtocol
     ModelProviderProtocol.ANTHROPIC_MESSAGES -> AnthropicMessagesProtocol
-    else -> error("Protocol $protocol is not implemented yet (P4)")
+    ModelProviderProtocol.GEMINI_GENERATE_CONTENT -> GeminiGenerateContentProtocol
 }
 
 /**

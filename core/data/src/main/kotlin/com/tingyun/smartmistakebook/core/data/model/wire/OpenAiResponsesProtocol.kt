@@ -37,7 +37,6 @@ import okhttp3.HttpUrl
 internal object OpenAiResponsesProtocol : ModelWireProtocol {
     override val protocol = ModelProviderProtocol.OPENAI_RESPONSES
     override val supportsNativeTools = false
-    override val supportsJsonObjectEnvelope = false
 
     override fun endpoint(baseUrl: HttpUrl, modelId: String, stream: Boolean): HttpUrl =
         baseUrl.newBuilder()

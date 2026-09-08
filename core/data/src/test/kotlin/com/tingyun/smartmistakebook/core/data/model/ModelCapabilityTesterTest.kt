@@ -300,28 +300,6 @@ class ModelCapabilityTesterTest {
         assertEquals(2L, retained.testStartSequence)
     }
 
-    @Test
-    fun unimplementedConfiguredProtocolFailsTheProbeWithoutSendingAnyRequest() = runBlocking {
-        var transportCalls = 0
-        val store = FakeConfigurationStore(
-            configuration().copy(protocol = ModelProviderProtocol.GEMINI_GENERATE_CONTENT),
-        )
-        val tester = OpenAiCompatibleModelCapabilityTester(
-            configurationStore = store,
-            transport = modelTransport {
-                transportCalls += 1
-                ModelHttpResponse(200, envelope("unused"))
-            },
-            clock = { 2_000L },
-            probeTimeoutMillis = 1_000L,
-        )
-
-        // 配置的协议在本版本未实现 → 探测 fail fast（ProviderUnavailable），
-        // 绝不按 OpenAI 形状向真实端点发请求（spec §3.2 显式协议选择）。
-        assertEquals(ModelCapabilityTestResult.ProviderUnavailable, tester.testSavedConfiguration())
-        assertEquals(0, transportCalls)
-    }
-
     private fun modelTransport(
         post: suspend (WireRequest) -> ModelHttpResponse,
     ): ModelHttpTransport = ModelHttpTransport { request, beforeEnqueue ->

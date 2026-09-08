@@ -60,14 +60,8 @@ internal class OpenAiCompatibleModelCapabilityTester(
             }
             val keyChars = apiKey.copyChars()
             try {
-                val protocol = try {
-                    protocolFor(credential.configuration.protocol)
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: IllegalStateException) {
-                    // 配置的协议本版本未实现：不发任何请求，直接判为不可用（fail fast）。
-                    return@use ModelCapabilityTestResult.ProviderUnavailable
-                }
+                // 协议解析是穷尽 when：全部协议都有实现，不存在"未实现协议"的运行期分支。
+                val protocol = protocolFor(credential.configuration.protocol)
 
                 val structured = runProbe(
                     baseUrl = credential.configuration.baseUrl,

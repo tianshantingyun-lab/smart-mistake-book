@@ -6,7 +6,6 @@ import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.data.model.OpenAiModelProtocol
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -67,17 +66,6 @@ class OpenAiChatCompletionsProtocolTest {
     fun protocolIsTheDefaultAndKeepsNativeTools() {
         assertEquals(ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS, protocol.protocol)
         assertTrue(protocol.supportsNativeTools)
-        assertTrue(protocol.supportsJsonObjectEnvelope)
     }
 
-    @Test
-    fun unsupportedProtocolsFailFastInsteadOfSilentlyFallingBackToOpenAi() {
-        // 尚未实现的协议（P3/P4）必须显式失败，而不是悄悄按 OpenAI 形状发请求
-        // （spec §3.2 显式协议选择）。上游 RoomModelTaskRepository 会把逃逸异常兜成
-        // 可重试失败事件，因此这是 fail-closed 而不是崩溃。
-        val error = assertThrows(IllegalStateException::class.java) {
-            protocolFor(ModelProviderProtocol.GEMINI_GENERATE_CONTENT)
-        }
-        assertTrue(error.message.orEmpty().contains(ModelProviderProtocol.GEMINI_GENERATE_CONTENT.name))
-    }
 }

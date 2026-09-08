@@ -2006,22 +2006,55 @@ class OpenAiCompatibleModelGatewayTest {
 
     @Test
     fun configuredProtocolDrivesTheWireProtocolInsteadOfAlwaysDefaulting() = runBlocking {
-        var transportCalls = 0
-        val gateway = gatewayWithProtocol(ModelProviderProtocol.GEMINI_GENERATE_CONTENT) {
-            transportCalls += 1
-        }
+        var sentUrl = ""
+        var sentBody = ""
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(
+                CONFIGURATION.copy(protocol = ModelProviderProtocol.GEMINI_GENERATE_CONTENT),
+            ),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { request ->
+                sentUrl = request.url.toString()
+                sentBody = request.body
+                ModelHttpResponse(200, geminiEnvelope(assessmentPayload()))
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
 
-        var failure: Throwable? = null
-        try {
-            gateway.execute(authorizedAssessment(gateway)).toList()
-        } catch (error: IllegalStateException) {
-            failure = error
-        }
+        val events = gateway.execute(authorizedAssessment(gateway)).toList()
 
-        // 尚未实现的协议（P4）：必须显式失败且一个请求都不发，而不是按 OpenAI 形状发出去。
-        assertTrue("未实现协议必须显式失败", failure != null)
-        assertEquals(0, transportCalls)
+        assertTrue(events.last() is ModelGatewayEvent.Completed)
+        // 配置的协议真的驱动了线上形状：Gemini 端点 + contents/parts 信封（不是 OpenAI 的 messages）。
+        assertTrue("应走 Gemini 端点，实际=$sentUrl", sentUrl.contains(":generateContent"))
+        assertTrue(sentBody.contains("\"contents\""))
+        assertTrue(sentBody.contains("\"parts\""))
+        assertTrue("不得出现 OpenAI 的 messages 信封", !sentBody.contains("\"messages\""))
     }
+
+    private fun geminiEnvelope(content: String): String = Json.encodeToString(
+        buildJsonObject {
+            put(
+                "candidates",
+                buildJsonArray {
+                    add(
+                        buildJsonObject {
+                            put(
+                                "content",
+                                buildJsonObject {
+                                    put(
+                                        "parts",
+                                        buildJsonArray {
+                                            add(buildJsonObject { put("text", content) })
+                                        },
+                                    )
+                                },
+                            )
+                        },
+                    )
+                },
+            )
+        },
+    )
 
     private fun gatewayWithProtocol(
         protocol: ModelProviderProtocol,

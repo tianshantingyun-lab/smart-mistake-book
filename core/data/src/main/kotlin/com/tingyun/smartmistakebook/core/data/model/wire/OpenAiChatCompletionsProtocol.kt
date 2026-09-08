@@ -26,7 +26,6 @@ import okhttp3.HttpUrl
 internal object OpenAiChatCompletionsProtocol : ModelWireProtocol {
     override val protocol = ModelProviderProtocol.OPENAI_CHAT_COMPLETIONS
     override val supportsNativeTools = true
-    override val supportsJsonObjectEnvelope = true
 
     override fun endpoint(baseUrl: HttpUrl, modelId: String, stream: Boolean): HttpUrl =
         baseUrl.newBuilder()
