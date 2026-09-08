@@ -203,11 +203,23 @@ object FsrsEvidenceRatingMapper {
                 } else {
                     FsrsRating.GOOD
                 }
-            LearningEvidenceReason.SELF_REPORTED_RECALL ->
+            LearningEvidenceReason.SELF_REPORTED_RECALL -> {
                 // Subjective reports never earn the Easy bonus (Dunlosky &
-                // Rawson 2012 overconfidence): stability caps at Good while
-                // the reported key stays verbatim in the log.
-                FsrsRating.GOOD
+                // Rawson 2012 overconfidence): stability caps at Good while the
+                // reported key stays verbatim in the log. The cap is a ceiling,
+                // not a floor — a "very effortful" (Hard) self-report must keep
+                // its penalty instead of being lifted to Good (audit 2026-09-09).
+                val reported = reportedRatingFor(evidenceReason, weight)
+                if (reported == FsrsRating.EASY) FsrsRating.GOOD else reported
+            }
+            // Assisted retrieval is not a clean recall: a correct answer that
+            // needed a hint (or a retry after one) earns the Hard penalty, so
+            // it can never produce the same stability gain as an independent
+            // recall. The weight still lands verbatim in review_log via
+            // reportedRatingFor (audit 2026-09-09).
+            LearningEvidenceReason.CORRECT_AFTER_HINT,
+            LearningEvidenceReason.CORRECT_ON_RETRY,
+            -> FsrsRating.HARD
             else -> reportedRatingFor(evidenceReason, weight)
         }
 

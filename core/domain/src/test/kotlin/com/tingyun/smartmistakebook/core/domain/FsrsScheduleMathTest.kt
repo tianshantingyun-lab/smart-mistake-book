@@ -170,6 +170,55 @@ class FsrsScheduleMathTest {
     }
 
     @Test
+    fun `the subjective cap is a ceiling not a floor`() {
+        // Audit 2026-09-09: the old mapping returned Good for every subjective
+        // report, lifting a "very effortful" (Hard) self-report to the same
+        // stability gain as an ordinary one. Only Easy is capped down.
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(
+                LearningEvidenceReason.SELF_REPORTED_RECALL,
+                FsrsEvidenceRatingMapper.RATING_HARD_WEIGHT,
+            ),
+        )
+        assertEquals(
+            FsrsRating.GOOD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(
+                LearningEvidenceReason.SELF_REPORTED_RECALL,
+                FsrsEvidenceRatingMapper.RATING_GOOD_WEIGHT,
+            ),
+        )
+    }
+
+    @Test
+    fun `assisted correct answers grade as hard`() {
+        // Audit 2026-09-09: a correct answer that needed a hint or a retry is
+        // assisted retrieval and must not earn the independent-recall gain.
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(
+                LearningEvidenceReason.CORRECT_AFTER_HINT,
+                0.6,
+            ),
+        )
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(
+                LearningEvidenceReason.CORRECT_ON_RETRY,
+                0.6,
+            ),
+        )
+        // The verbatim report still lands in review_log.
+        assertEquals(
+            FsrsRating.GOOD,
+            FsrsEvidenceRatingMapper.reportedRatingFor(
+                LearningEvidenceReason.CORRECT_AFTER_HINT,
+                0.6,
+            ),
+        )
+    }
+
+    @Test
     fun `low confidence independent correct grades as hard`() {
         assertEquals(
             FsrsRating.HARD,

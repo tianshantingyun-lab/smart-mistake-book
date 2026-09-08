@@ -41,9 +41,11 @@ class MasterySmoothingTest {
         val smoothedAfter = MasterySmoothing.smoothedMasteryScore(afterBadDay, now)
 
         assertTrue(smoothedAfter < smoothedBefore)
+        val dampedDrop = smoothedBefore - smoothedAfter
+        val rawDrop = before.conservativeMasteryScore - afterBadDay.conservativeMasteryScore
         assertTrue(
-            "single-day swing must be damped",
-            smoothedAfter > afterBadDay.conservativeMasteryScore,
+            "single-day swing must be damped ($dampedDrop vs raw $rawDrop)",
+            dampedDrop < rawDrop,
         )
     }
 
@@ -73,10 +75,11 @@ class MasterySmoothingTest {
     }
 
     @Test
-    fun `ancient and fresh identical observations share the same ema ratio`() {
-        // Relative decay only matters across mixed ages: two observations of
-        // equal weight and equal support produce the same ratio regardless of
-        // how old they are together.
+    fun `stale but still-supported evidence decays the smoothed score`() {
+        // Regression (audit 2026-09-09): the old formula decayed the numerator
+        // and the denominator identically, so age cancelled out and the EMA was
+        // identically 1 for uniformly-supported nodes — every weakness signal
+        // was halved. Stale evidence must now pull the smoothed score down.
         val bothAncient = mastery(
             conservative = 0.5,
             observations = listOf(
@@ -92,10 +95,12 @@ class MasterySmoothingTest {
             ),
         )
 
-        assertEquals(
-            MasterySmoothing.smoothedMasteryScore(bothAncient, now),
-            MasterySmoothing.smoothedMasteryScore(bothFresh, now),
-            1e-9,
+        val smoothedAncient = MasterySmoothing.smoothedMasteryScore(bothAncient, now)
+        val smoothedFresh = MasterySmoothing.smoothedMasteryScore(bothFresh, now)
+
+        assertTrue(
+            "stale evidence must smooth lower than fresh evidence ($smoothedAncient vs $smoothedFresh)",
+            smoothedAncient < smoothedFresh,
         )
     }
 
