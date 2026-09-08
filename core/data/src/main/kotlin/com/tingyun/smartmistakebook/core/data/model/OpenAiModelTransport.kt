@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.data.model.wire.ModelWireProtocol
 import com.tingyun.smartmistakebook.core.model.MODEL_EXTERNAL_TRANSPORT_REQUEST_LIMIT_BYTES
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -38,13 +39,17 @@ internal data class ModelHttpResponse(
     val streamChunks: List<String>? = null,
 )
 
+/** 一次按协议族构造的线上请求：URL/头/体由协议实现给出，传输层只负责发。 */
+internal class WireRequest(
+    val url: HttpUrl,
+    val headers: List<Pair<String, String>>,
+    val body: String,
+    val stream: Boolean,
+    val protocol: ModelWireProtocol,
+)
+
 internal fun interface ModelHttpTransport {
-    suspend fun post(
-        baseUrl: String,
-        apiKey: CharArray,
-        requestBody: String,
-        beforeEnqueue: suspend () -> Unit,
-    ): ModelHttpResponse
+    suspend fun post(request: WireRequest, beforeEnqueue: suspend () -> Unit): ModelHttpResponse
 }
 
 internal class UnsafeModelEndpointException : IllegalArgumentException()
@@ -85,29 +90,27 @@ internal fun InetAddress.isPubliclyRoutable(): Boolean {
 
 internal class OkHttpModelTransport : ModelHttpTransport {
     override suspend fun post(
-        baseUrl: String,
-        apiKey: CharArray,
-        requestBody: String,
+        request: WireRequest,
         beforeEnqueue: suspend () -> Unit,
     ): ModelHttpResponse {
         require(
-            requestBody.toByteArray(StandardCharsets.UTF_8).size.toLong() <=
+            request.body.toByteArray(StandardCharsets.UTF_8).size.toLong() <=
                 MODEL_EXTERNAL_TRANSPORT_REQUEST_LIMIT_BYTES,
         ) {
             "Model request exceeds the upload budget"
         }
-        val endpoint = PublicModelEndpoint.resolve(baseUrl)
+        val endpoint = PublicModelEndpoint.resolve(request.url)
         val client = guardedModelClient(endpoint)
-        val stream = requestBody.contains("\"stream\":true")
-        val request = Request.Builder()
+        val httpRequest = Request.Builder()
             .url(endpoint.url)
-            .header("Authorization", "Bearer ${String(apiKey)}")
-            .header("Accept", if (stream) SSE_ACCEPT else JSON_MEDIA_TYPE.toString())
-            .post(requestBody.toRequestBody(JSON_MEDIA_TYPE))
+            .apply {
+                request.headers.forEach { (name, value) -> header(name, value) }
+            }
+            .post(request.body.toRequestBody(JSON_MEDIA_TYPE))
             .build()
-        val call = client.newCall(request)
-        return if (stream) {
-            call.awaitBoundedSseResponse(beforeEnqueue)
+        val call = client.newCall(httpRequest)
+        return if (request.stream) {
+            call.awaitBoundedSseResponse(request.protocol, beforeEnqueue)
         } else {
             call.awaitBoundedResponse(beforeEnqueue)
         }
@@ -159,13 +162,9 @@ private data class PublicModelEndpoint(
     val addresses: List<InetAddress>,
 ) {
     companion object {
-        suspend fun resolve(baseUrl: String): PublicModelEndpoint = withContext(Dispatchers.IO) {
-            val validated = resolvePublicService(baseUrl)
-            val endpoint = validated.base.newBuilder()
-                .addPathSegment("chat")
-                .addPathSegment("completions")
-                .build()
-            PublicModelEndpoint(endpoint, validated.host, validated.addresses)
+        suspend fun resolve(url: HttpUrl): PublicModelEndpoint = withContext(Dispatchers.IO) {
+            val validated = resolvePublicService(url.toString())
+            PublicModelEndpoint(validated.base, validated.host, validated.addresses)
         }
     }
 }
@@ -247,6 +246,7 @@ internal suspend fun Call.awaitBoundedResponse(
 }
 
 internal suspend fun Call.awaitBoundedSseResponse(
+    protocol: ModelWireProtocol,
     beforeEnqueue: suspend () -> Unit,
 ): ModelHttpResponse {
     beforeEnqueue()
@@ -269,12 +269,12 @@ internal suspend fun Call.awaitBoundedSseResponse(
                             }
                             val raw = it.body.byteStream().readSseAtMost(MAX_RESPONSE_BYTES)
                             val body = if (it.code in 200..299) {
-                                OpenAiSse.reconstructedChatCompletion(raw)
+                                protocol.reconstructedBody(raw)
                             } else {
                                 raw
                             }
                             val chunks = if (it.code in 200..299) {
-                                OpenAiSse.deltaChunks(raw).toList()
+                                sseChunksOf(protocol, raw)
                             } else {
                                 null
                             }
@@ -297,6 +297,20 @@ internal suspend fun Call.awaitBoundedSseResponse(
             },
         )
     }
+}
+
+/**
+ * SSE 数据块按序经协议解析出文本增量（与 OpenAiSse.deltaChunks 语义一致：帧拆分与
+ * [DONE] 终止在帧级单一来源，帧内解析委托协议，P2+ 换协议只换解析）。
+ */
+private fun sseChunksOf(protocol: ModelWireProtocol, rawSse: String): List<String> {
+    val chunks = ArrayList<String>()
+    for (block in OpenAiSse.eventDataBlocksTerminated(rawSse)) {
+        if (block == OpenAiSse.DONE_BLOCK) break
+        val content = protocol.streamDelta(block) ?: continue
+        if (content.isNotBlank()) chunks.add(content)
+    }
+    return chunks
 }
 
 private fun java.io.InputStream.readSseAtMost(maxBytes: Int): String {
@@ -355,8 +369,9 @@ private fun java.io.InputStream.readAtMost(maxBytes: Int): ByteArray {
 
 private fun ByteArray.toIntOctets(): IntArray = IntArray(size) { this[it].toInt() and 0xff }
 
-private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
-private const val SSE_ACCEPT = "text/event-stream"
+/** 语义由协议族定义（OpenAiChatCompletionsProtocol.headers 复用，单一来源）。 */
+internal val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
+internal const val SSE_ACCEPT = "text/event-stream"
 private const val CONNECT_TIMEOUT_SECONDS = 15L
 private const val READ_TIMEOUT_SECONDS = 90L
 private const val WRITE_TIMEOUT_SECONDS = 45L

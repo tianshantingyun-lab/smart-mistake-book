@@ -33,7 +33,8 @@ class ModelCapabilityTesterTest {
         val requestBodies = mutableListOf<String>()
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 requestBodies += body
                 if ("image_url" in body) {
                     ModelHttpResponse(200, envelope("Q7M2"))
@@ -73,7 +74,8 @@ class ModelCapabilityTesterTest {
         var imageProbeCalls = 0
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 if ("image_url" in body) {
                     imageProbeCalls += 1
                     ModelHttpResponse(200, envelope("Q7M2"))
@@ -97,7 +99,8 @@ class ModelCapabilityTesterTest {
         val store = FakeConfigurationStore(configuration())
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 if ("image_url" in body) {
                     ModelHttpResponse(200, envelope("Q7N2"))
                 } else {
@@ -122,7 +125,8 @@ class ModelCapabilityTesterTest {
         val store = FakeConfigurationStore(configuration())
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 when {
                     "image_url" in body -> ModelHttpResponse(200, envelope("Q7M2"))
                     "\"tools\"" in body -> ModelHttpResponse(
@@ -155,7 +159,8 @@ class ModelCapabilityTesterTest {
         var toolsProbeCalls = 0
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 if ("image_url" in body) {
                     ModelHttpResponse(200, envelope("Q7M2"))
                 } else if ("\"tools\"" in body) {
@@ -183,7 +188,8 @@ class ModelCapabilityTesterTest {
         var calls = 0
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 calls += 1
                 if (calls == 2) {
                     store.state.value = configuration().copy(
@@ -229,7 +235,7 @@ class ModelCapabilityTesterTest {
         )
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, _ -> ModelHttpResponse(401, "") },
+            transport = modelTransport { _ -> ModelHttpResponse(401, "") },
             clock = { 2_000L },
             probeTimeoutMillis = 1_000L,
         )
@@ -251,7 +257,8 @@ class ModelCapabilityTesterTest {
         val releaseOlderProbe = CompletableDeferred<Unit>()
         val olderTester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 if (!olderProbeStarted.isCompleted) {
                     olderProbeStarted.complete(Unit)
                     releaseOlderProbe.await()
@@ -270,7 +277,7 @@ class ModelCapabilityTesterTest {
         )
         val newerTester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,
-            transport = modelTransport { _, _, _ -> ModelHttpResponse(401, "") },
+            transport = modelTransport { _ -> ModelHttpResponse(401, "") },
             clock = { 2_000L },
             probeTimeoutMillis = 1_000L,
         )
@@ -293,10 +300,10 @@ class ModelCapabilityTesterTest {
     }
 
     private fun modelTransport(
-        post: suspend (String, CharArray, String) -> ModelHttpResponse,
-    ): ModelHttpTransport = ModelHttpTransport { baseUrl, apiKey, requestBody, beforeEnqueue ->
+        post: suspend (WireRequest) -> ModelHttpResponse,
+    ): ModelHttpTransport = ModelHttpTransport { request, beforeEnqueue ->
         beforeEnqueue()
-        post(baseUrl, apiKey, requestBody)
+        post(request)
     }
 
     private fun configuration() = ModelConfigurationSnapshot(

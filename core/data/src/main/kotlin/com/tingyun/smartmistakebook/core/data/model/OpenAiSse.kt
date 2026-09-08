@@ -57,7 +57,7 @@ internal object OpenAiSse {
         }
     }
 
-    private fun eventDataBlocksTerminated(raw: String): Sequence<String> = sequence {
+    internal fun eventDataBlocksTerminated(raw: String): Sequence<String> = sequence {
         val current = StringBuilder()
         for (rawLine in raw.split('\n')) {
             val line = rawLine.trimEnd('\r')
@@ -77,7 +77,7 @@ internal object OpenAiSse {
         if (current.isNotEmpty()) yield(current.toString())
     }
 
-    private const val DONE_BLOCK = "[DONE]"
+    internal const val DONE_BLOCK = "[DONE]"
 
     fun reconstructedChatCompletion(rawSse: String): String {
         val content = eventDataBlocks(rawSse)

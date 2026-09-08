@@ -118,6 +118,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -179,7 +180,7 @@ class OpenAiCompatibleModelGatewayTest {
                 assetOpened = true
                 asset()
             },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 transportCalled = true
                 ModelHttpResponse(200, "{}")
             },
@@ -209,7 +210,7 @@ class OpenAiCompatibleModelGatewayTest {
                 store.state.value = store.state.value.copy(capabilityVerification = revoked)
                 asset()
             },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 transportCalled = true
                 ModelHttpResponse(200, envelope(assessmentPayload()))
             },
@@ -235,7 +236,7 @@ class OpenAiCompatibleModelGatewayTest {
                     MODEL_EGRESS_APPROVAL_TTL_MILLIS + 1
                 asset()
             },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 transportCalled = true
                 ModelHttpResponse(200, envelope(assessmentPayload()))
             },
@@ -262,7 +263,7 @@ class OpenAiCompatibleModelGatewayTest {
                     MODEL_EGRESS_MAX_CLOCK_SKEW_MILLIS - 1
                 asset()
             },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 transportCalled = true
                 ModelHttpResponse(200, envelope(assessmentPayload()))
             },
@@ -392,17 +393,16 @@ class OpenAiCompatibleModelGatewayTest {
     fun assessmentUsesOnlyApprovedImageAndMapsBoundedJson() = runBlocking {
         var sentBody = ""
         var sentKey = ""
-        var borrowedKey: CharArray? = null
+        val store = FakeConfigurationStore(CONFIGURATION)
         val gateway = OpenAiCompatibleModelGateway(
-            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            configurationStore = store,
             assetSource = assetSource { _, assetId ->
                 assertEquals(ASSET_ID, assetId)
                 asset()
             },
-            transport = modelTransport { _, key, body ->
-                borrowedKey = key
-                sentBody = body
-                sentKey = String(key)
+            transport = modelTransport { request ->
+                sentBody = request.body
+                sentKey = request.headers.single { it.first == "Authorization" }.second
                 ModelHttpResponse(200, envelope(assessmentPayload()))
             },
             clock = { AUTHORIZATION_NOW },
@@ -413,8 +413,13 @@ class OpenAiCompatibleModelGatewayTest {
 
         assertEquals(CaptureAssessmentDecision.PASS, output.assessment.decision)
         assertEquals(CONFIGURATION.modelId, output.assessment.modelVersion)
-        assertEquals("secret", sentKey)
-        assertTrue(borrowedKey?.all { it == '\u0000' } == true)
+        // WireRequest 只带 string headers：密钥以 Bearer 头到达协议层（等价旧 sentKey 断言）。
+        // 注意：网关 finally 对 keyChars 的 Arrays.fill 清零在本接口形状下无观测面；下面两条
+        // 分别覆盖「密钥到达线上」与「凭据容器用毕即关闭」，均不覆盖该清零本身。
+        assertEquals("Bearer secret", sentKey)
+        assertThrows(IllegalStateException::class.java) {
+            requireNotNull(store.lastIssuedKey).copyChars()
+        }
         assertTrue(sentBody.contains("data:image/jpeg;base64,"))
         assertFalse(sentBody.contains(DRAFT_ID))
         assertFalse(sentBody.contains(ASSET_ID))
@@ -434,7 +439,8 @@ class OpenAiCompatibleModelGatewayTest {
             val gateway = OpenAiCompatibleModelGateway(
                 configurationStore = FakeConfigurationStore(CONFIGURATION),
                 assetSource = assetSource { _, _ -> asset() },
-                transport = modelTransport { _, _, body ->
+                transport = modelTransport { wireRequest ->
+                    val body = wireRequest.body
                     val request = Request.Builder()
                         .url(server.url("/chat/completions"))
                         .header("Authorization", "Bearer secret")
@@ -463,7 +469,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(429, """{"error":{"message":"too many requests"}}""")
             },
             clock = { AUTHORIZATION_NOW },
@@ -481,7 +487,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(503, "service unavailable")
             },
             clock = { AUTHORIZATION_NOW },
@@ -500,7 +506,7 @@ class OpenAiCompatibleModelGatewayTest {
             val gateway = OpenAiCompatibleModelGateway(
                 configurationStore = FakeConfigurationStore(CONFIGURATION),
                 assetSource = assetSource { _, _ -> asset() },
-                transport = modelTransport { _, _, _ ->
+                transport = modelTransport { _ ->
                     ModelHttpResponse(statusCode, "unauthorized")
                 },
                 clock = { AUTHORIZATION_NOW },
@@ -519,7 +525,7 @@ class OpenAiCompatibleModelGatewayTest {
         val networkGateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ -> throw IOException("connection refused") },
+            transport = modelTransport { _ -> throw IOException("connection refused") },
             clock = { AUTHORIZATION_NOW },
         )
         val networkEvents = networkGateway.execute(authorizedAssessment(networkGateway)).toList()
@@ -531,7 +537,7 @@ class OpenAiCompatibleModelGatewayTest {
         val timeoutGateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ -> throw SocketTimeoutException("timed out") },
+            transport = modelTransport { _ -> throw SocketTimeoutException("timed out") },
             clock = { AUTHORIZATION_NOW },
         )
         val timeoutEvents = timeoutGateway.execute(authorizedAssessment(timeoutGateway)).toList()
@@ -546,7 +552,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(200, envelope(splitAssessmentPayload()))
             },
             clock = { AUTHORIZATION_NOW },
@@ -571,7 +577,7 @@ class OpenAiCompatibleModelGatewayTest {
                 assetOpened = true
                 asset()
             },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 transportCalled = true
                 ModelHttpResponse(200, envelope(parsePayload()))
             },
@@ -599,7 +605,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(200, envelope(parsePayload()))
             },
             clock = { AUTHORIZATION_NOW },
@@ -625,7 +631,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(200, envelope(figureParsePayload()))
             },
             clock = { AUTHORIZATION_NOW },
@@ -655,7 +661,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(200, envelope(invalidPayload))
             },
             clock = { AUTHORIZATION_NOW },
@@ -673,7 +679,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ -> ModelHttpResponse(401, "") },
+            transport = modelTransport { _ -> ModelHttpResponse(401, "") },
             clock = { AUTHORIZATION_NOW },
         )
 
@@ -695,7 +701,8 @@ class OpenAiCompatibleModelGatewayTest {
                 assetOpened = true
                 asset()
             },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(200, envelope(tutorPayload()))
             },
@@ -740,7 +747,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Tutor must not open image assets") },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(200, envelope(tutorPayload(includeDiagnostic = false)))
             },
             clock = { AUTHORIZATION_NOW },
@@ -892,7 +899,8 @@ class OpenAiCompatibleModelGatewayTest {
                 assetOpened = true
                 asset()
             },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(200, envelope(tutorRespondPayload()))
             },
@@ -943,7 +951,8 @@ class OpenAiCompatibleModelGatewayTest {
                 openedAssetId = assetId
                 asset()
             },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(
                     200,
@@ -1000,7 +1009,7 @@ class OpenAiCompatibleModelGatewayTest {
             val gateway = OpenAiCompatibleModelGateway(
                 configurationStore = FakeConfigurationStore(CONFIGURATION),
                 assetSource = assetSource { _, _ -> asset() },
-                transport = modelTransport { _, _, _ ->
+                transport = modelTransport { _ ->
                     ModelHttpResponse(
                         200,
                         envelope(
@@ -1031,7 +1040,8 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(
                     200,
@@ -1064,7 +1074,8 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Lobby must not read image assets") },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(
                     200,
@@ -1112,7 +1123,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Lobby must not read image assets") },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(
                     200,
                     envelope(
@@ -1366,7 +1377,8 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Tutor must not open image assets") },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(200, envelope(tutorPayload()))
             },
@@ -1401,7 +1413,8 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Tutor must not open image assets") },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(200, envelope(tutorPayload()))
             },
@@ -1444,7 +1457,8 @@ class OpenAiCompatibleModelGatewayTest {
                 assetOpened = true
                 asset()
             },
-            transport = modelTransport { _, _, body ->
+            transport = modelTransport { request ->
+                val body = request.body
                 sentBody = body
                 ModelHttpResponse(200, envelope(organizationPayload()))
             },
@@ -1943,7 +1957,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> asset() },
-            transport = modelTransport { _, _, _ ->
+            transport = modelTransport { _ ->
                 ModelHttpResponse(
                     statusCode = 200,
                     body = envelope(tutorPayload()),
@@ -1977,10 +1991,10 @@ class OpenAiCompatibleModelGatewayTest {
     }
 
     private fun modelTransport(
-        post: suspend (String, CharArray, String) -> ModelHttpResponse,
-    ): ModelHttpTransport = ModelHttpTransport { baseUrl, apiKey, requestBody, beforeEnqueue ->
+        post: suspend (WireRequest) -> ModelHttpResponse,
+    ): ModelHttpTransport = ModelHttpTransport { request, beforeEnqueue ->
         beforeEnqueue()
-        post(baseUrl, apiKey, requestBody)
+        post(request)
     }
 
     private fun assetSource(
@@ -2685,7 +2699,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Tutor must not open image assets") },
-            transport = modelTransport { _, _, _ -> ModelHttpResponse(200, envelope(payload)) },
+            transport = modelTransport { _ -> ModelHttpResponse(200, envelope(payload)) },
             clock = { AUTHORIZATION_NOW },
         )
         return gateway.execute(authorizedTutor(gateway)).toList()
@@ -2700,7 +2714,7 @@ class OpenAiCompatibleModelGatewayTest {
         val gateway = OpenAiCompatibleModelGateway(
             configurationStore = FakeConfigurationStore(CONFIGURATION),
             assetSource = assetSource { _, _ -> error("Tutor response must not open image assets") },
-            transport = modelTransport { _, _, _ -> ModelHttpResponse(200, envelope(payload)) },
+            transport = modelTransport { _ -> ModelHttpResponse(200, envelope(payload)) },
             clock = { AUTHORIZATION_NOW },
         )
         return gateway.execute(authorizedTutorRespond(gateway)).toList()
@@ -2803,9 +2817,7 @@ class OpenAiCompatibleModelGatewayTest {
             private set
 
         override suspend fun post(
-            baseUrl: String,
-            apiKey: CharArray,
-            requestBody: String,
+            request: WireRequest,
             beforeEnqueue: suspend () -> Unit,
         ): ModelHttpResponse {
             endpointPrepared.complete(Unit)
@@ -2822,6 +2834,9 @@ class OpenAiCompatibleModelGatewayTest {
     ) : ModelConfigurationStore {
         val state = MutableStateFlow(snapshot)
         private var credentialSecret = "secret"
+        /** 最近一次签发出来的密钥容器；用于断言网关用毕即 close（key 生命周期）。 */
+        var lastIssuedKey: ModelApiKey? = null
+            private set
         override val configuration: Flow<ModelConfigurationSnapshot> = state
 
         override suspend fun save(
@@ -2834,10 +2849,9 @@ class OpenAiCompatibleModelGatewayTest {
 
         override suspend fun readCredential(): ModelCredentialReadResult =
             if (credentialAvailable) {
-                ModelCredentialReadResult.Available(
-                    state.value,
-                    ModelApiKey.from(credentialSecret.toCharArray()),
-                )
+                val issued = ModelApiKey.from(credentialSecret.toCharArray())
+                lastIssuedKey = issued
+                ModelCredentialReadResult.Available(state.value, issued)
             } else {
                 ModelCredentialReadResult.Missing
             }

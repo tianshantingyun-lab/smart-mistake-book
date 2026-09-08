@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.data.model.wire.OpenAiChatCompletionsProtocol
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -38,7 +39,7 @@ class OpenAiSseTransportTest {
             body = sseBody,
         )
 
-        val response = call.awaitBoundedSseResponse {}
+        val response = call.awaitBoundedSseResponse(OpenAiChatCompletionsProtocol) {}
 
         assertEquals(200, response.statusCode)
         // The deltas must be surfaced as ordered chunks, not one coalesced blob.
@@ -60,7 +61,7 @@ class OpenAiSseTransportTest {
             body = "service unavailable",
         )
 
-        val response = call.awaitBoundedSseResponse {}
+        val response = call.awaitBoundedSseResponse(OpenAiChatCompletionsProtocol) {}
 
         assertEquals(500, response.statusCode)
         assertNull(response.streamChunks)
@@ -76,7 +77,7 @@ class OpenAiSseTransportTest {
         )
         var thrown: Throwable? = null
         try {
-            call.awaitBoundedSseResponse {}
+            call.awaitBoundedSseResponse(OpenAiChatCompletionsProtocol) {}
         } catch (e: Throwable) {
             thrown = e
         }

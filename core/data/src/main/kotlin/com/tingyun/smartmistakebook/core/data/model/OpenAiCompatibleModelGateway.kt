@@ -1,5 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.data.model.wire.ModelWireProtocol
+import com.tingyun.smartmistakebook.core.data.model.wire.protocolFor
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
@@ -35,6 +37,7 @@ import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.ModelRequestBudgetExceededException
 import com.tingyun.smartmistakebook.core.model.ModelRequestPayloadBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
@@ -136,6 +139,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okio.ByteString.Companion.toByteString
 
 /**
@@ -193,16 +197,22 @@ internal class OpenAiCompatibleModelGateway(
                     try {
                         val stream = provider.supportsStreaming &&
                             execution.request.input.usesOpenAiSse()
-                        val requestBody = OpenAiModelProtocol.requestBody(
+                        // P1 只实现 OpenAI Chat Completions，配置协议字段由任务 3 接入
+                        //（protocolFor(credential.configuration.protocol)）。
+                        val protocol = protocolFor(ModelProviderProtocol.DEFAULT)
+                        val baseUrl = credential.configuration.baseUrl.toHttpUrlOrNull()
+                            ?: throw UnsafeModelEndpointException()
+                        val requestBody = protocol.requestBody(
                             modelId = provider.modelId,
                             input = execution.request.input,
                             images = images,
                             stream = stream,
-                            // Route A（原生 tools）：仅当探测证明端点支持原生工具往返时才启用。
-                            // nativeToolSchemas 对未声明工具的输入/空声明返回 null → 无 tools
-                            // 字段，回落 Route B 信封；故此处可安全地按能力位宽放，不会污染
-                            // 非工具环 dispatch。
-                            enableNativeTools = provider.supportsFunctionCalling,
+                            // Route A（原生 tools）：仅当探测证明端点支持原生工具往返、
+                            // 且协议族支持原生工具时才启用。nativeToolSchemas 对未声明工具
+                            // 的输入/空声明返回 null → 无 tools 字段，回落 Route B 信封；
+                            // 故此处可安全地按能力位宽放，不会污染非工具环 dispatch。
+                            enableNativeTools = provider.supportsFunctionCalling &&
+                                protocol.supportsNativeTools,
                         )
                         emit(
                             ModelGatewayEvent.Progress(
@@ -240,9 +250,13 @@ internal class OpenAiCompatibleModelGateway(
                             nowEpochMillis = clock(),
                         )
                         val response = transport.post(
-                            baseUrl = credential.configuration.baseUrl,
-                            apiKey = keyChars,
-                            requestBody = requestBody,
+                            WireRequest(
+                                url = protocol.endpoint(baseUrl, provider.modelId, stream),
+                                headers = protocol.headers(keyChars, stream),
+                                body = requestBody,
+                                stream = stream,
+                                protocol = protocol,
+                            ),
                             beforeEnqueue = {
                                 requireCurrentAuthorizationBeforeEnqueue(
                                     execution = execution,
@@ -254,6 +268,7 @@ internal class OpenAiCompatibleModelGateway(
                             response = response,
                             execution = execution,
                             modelId = currentProvider.modelId,
+                            protocol = protocol,
                             emit = ::emit,
                         )
                     } finally {
@@ -359,6 +374,7 @@ object ConfiguredModelGatewayFactory {
 
 private fun ModelHttpResponse.toGatewayEvent(
     execution: ModelGatewayExecution,
+    protocol: ModelWireProtocol,
     modelVersion: String,
 ): ModelGatewayEvent {
     if (statusCode !in 200..299) {
@@ -389,7 +405,7 @@ private fun ModelHttpResponse.toGatewayEvent(
     }
     return try {
         ModelGatewayEvent.Completed(
-            OpenAiModelProtocol.parseResponse(body, execution.request.input, modelVersion),
+            protocol.parseCompletion(body, execution.request.input, modelVersion),
         )
     } catch (_: Exception) {
         failure(INVALID_RESPONSE)
@@ -407,9 +423,10 @@ private suspend fun emitStreamingThenCompletion(
     response: ModelHttpResponse,
     execution: ModelGatewayExecution,
     modelId: String,
+    protocol: ModelWireProtocol,
     emit: suspend (ModelGatewayEvent) -> Unit,
 ) {
-    val terminal = response.toGatewayEvent(execution, modelId)
+    val terminal = response.toGatewayEvent(execution, protocol, modelId)
     val chunks = response.streamChunks
     if (chunks == null || response.statusCode !in 200..299) {
         emit(terminal)

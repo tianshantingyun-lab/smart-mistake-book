@@ -5,9 +5,11 @@ import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTestStartResult
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityVerification
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityVerificationWriteResult
+import com.tingyun.smartmistakebook.core.data.model.wire.protocolFor
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
+import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import java.io.IOException
 import java.util.Arrays
 import kotlinx.coroutines.CancellationException
@@ -22,6 +24,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Creates the explicit, synthetic capability check used by the settings screen. */
 object ConfiguredModelCapabilityTesterFactory {
@@ -56,6 +59,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
             try {
                 val structured = runProbe(
                     baseUrl = credential.configuration.baseUrl,
+                    modelId = credential.configuration.modelId,
                     apiKey = keyChars,
                     requestBody = structuredOutputProbe(credential.configuration.modelId),
                     accepts = ::acceptsStructuredOutput,
@@ -70,6 +74,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
 
                 val image = runProbe(
                     baseUrl = credential.configuration.baseUrl,
+                    modelId = credential.configuration.modelId,
                     apiKey = keyChars,
                     requestBody = imageInputProbe(credential.configuration.modelId),
                     accepts = ::acceptsImageInput,
@@ -88,6 +93,7 @@ internal class OpenAiCompatibleModelCapabilityTester(
                 val functionCalling = if (structured == ProbeOutcome.PASSED) {
                     runProbe(
                         baseUrl = credential.configuration.baseUrl,
+                        modelId = credential.configuration.modelId,
                         apiKey = keyChars,
                         requestBody = toolsProbe(credential.configuration.modelId),
                         accepts = ::acceptsTools,
@@ -153,12 +159,29 @@ internal class OpenAiCompatibleModelCapabilityTester(
 
     private suspend fun runProbe(
         baseUrl: String,
+        modelId: String,
         apiKey: CharArray,
         requestBody: String,
         accepts: (String) -> Boolean,
     ): ProbeOutcome = try {
+        // 能力探测只走 OpenAI Chat Completions 信封（P1 唯一协议）；配置协议字段由
+        // 任务 3 接入，届时此处改为按 credential.configuration.protocol 取值。
+        val protocol = protocolFor(ModelProviderProtocol.DEFAULT)
         val response = withTimeoutOrNull(probeTimeoutMillis) {
-            transport.post(baseUrl, apiKey, requestBody, beforeEnqueue = {})
+            transport.post(
+                WireRequest(
+                    url = protocol.endpoint(
+                        baseUrl = baseUrl.toHttpUrlOrNull() ?: throw UnsafeModelEndpointException(),
+                        modelId = modelId,
+                        stream = false,
+                    ),
+                    headers = protocol.headers(apiKey, stream = false),
+                    body = requestBody,
+                    stream = false,
+                    protocol = protocol,
+                ),
+                beforeEnqueue = {},
+            )
         }
         val probeLabel = if (requestBody.contains("capability_check")) "structured" else
             if (requestBody.contains("Synthetic") && requestBody.contains("image_url")) "image" else "tools"

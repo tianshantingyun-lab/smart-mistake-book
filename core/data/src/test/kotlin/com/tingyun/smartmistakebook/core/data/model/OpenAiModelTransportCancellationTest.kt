@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.data.model.wire.OpenAiChatCompletionsProtocol
 import java.io.IOException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -30,7 +31,7 @@ class OpenAiModelTransportCancellationTest {
     fun cancellingTheCoroutineCancelsTheSseCall() = runBlocking {
         val call = HangingCall()
         val job = async {
-            call.awaitBoundedSseResponse { }
+            call.awaitBoundedSseResponse(OpenAiChatCompletionsProtocol) { }
         }
         delay(20)
         job.cancelAndJoin()
