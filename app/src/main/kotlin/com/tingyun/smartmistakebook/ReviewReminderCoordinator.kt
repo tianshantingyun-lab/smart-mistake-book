@@ -30,6 +30,8 @@ internal class ReviewReminderCoordinator(
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_TIME_CHANGED,
             Intent.ACTION_TIMEZONE_CHANGED,
+            // An app update cancels every alarm; re-arm on the update broadcast.
+            Intent.ACTION_MY_PACKAGE_REPLACED,
             -> reconcile(repository.current())
         }
     }

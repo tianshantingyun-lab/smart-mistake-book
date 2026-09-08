@@ -137,8 +137,9 @@ class RoomModelTaskRepository internal constructor(
                 return@flow
             }
             // 工具环（spec model-intent-routing §3.1）：模型可在作答前申请本地只读查询。
-            // 每轮派遣独立 reserve（预算记账，MAX_DISPATCHES=3 = 2 轮查询 + 1 轮作答）；
-            // 本地工具执行不占派遣预算。第 3 轮起不再声明工具，模型必须直接作答。
+            // 每轮派遣独立 reserve（预算记账，MAX_DISPATCHES=6 = 5 轮工具 + 1 轮终答，
+            // 见 a4109e1 与 D-001 2026-09-09 增补）；本地工具执行不占派遣预算。
+            // 工具轮配额用尽（MAX_TOOL_ROUNDS=5）后不再声明工具，模型必须直接作答。
             var roundRequest = request
             var toolRoundsUsed = 0
             var toolRoundResults = emptyList<TutorToolRoundResult>()

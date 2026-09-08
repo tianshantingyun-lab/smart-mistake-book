@@ -286,17 +286,32 @@ class ReviewPlanner(
             }
             ?: 0.0
         if (waitingScore > 0.0) reasons += ReviewReason.LONG_WAITING
-        val hasEarlyReviewReason = reasons.any { reason ->
+        // Early review check. Spec 2.17 defines the exam queue as the cards with
+        // R below the exam target, so an exam may only pull forward a card that
+        // has actually decayed; the FSRS stability gain is e^{w10(1−R)}−1, which
+        // is near zero at R≈1 (研究 2026-09-09 §5; Rohrer & Taylor 2005). The
+        // other early reasons stay unconditional: CLOCK_ANOMALY/CALIBRATION_CHECK
+        // are integrity checks, and REPEATED_MISTAKE / KC_MASTERY_DROP carry new
+        // negative evidence about the card or its knowledge node that the card's
+        // own retrievability cannot express (spec §5 KC→question propagation is
+        // a user rule).
+        val earlyReviewAllowed = reasons.any { reason ->
             reason == ReviewReason.CLOCK_ANOMALY ||
                 reason == ReviewReason.CALIBRATION_CHECK ||
                 reason == ReviewReason.REPEATED_MISTAKE ||
-                reason == ReviewReason.EXAM_PRIORITY ||
                 reason == ReviewReason.KC_MASTERY_DROP
-        }
+        } || (
+            ReviewReason.EXAM_PRIORITY in reasons &&
+                (memory?.let { memoryState ->
+                    forgettingCurve.estimateAt(memoryState, now)
+                        .takeIf { it.clockAnomaly != ClockAnomaly.TIME_ROLLBACK }
+                        ?.probability
+                } ?: 0.0) < EARLY_REVIEW_MAX_RETRIEVABILITY
+            )
         if (
             memory != null &&
             memory.nextReviewAtEpochMillis > now &&
-            !hasEarlyReviewReason
+            !earlyReviewAllowed
         ) {
             return null
         }
@@ -377,26 +392,55 @@ class ReviewPlanner(
         knowledgeNodeId: String,
         state: com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState?,
         now: Long,
+        /**
+         * Predicted recall probability of the items carrying this knowledge node
+         * (min over the bound practice units whose FSRS memory is known), or null
+         * when no carrying item has memory. When present it replaces the mastery
+         * proxy as the due-risk input: the forgetting curve R(t,S) is the
+         * principled time function (Cepeda et al. 2006/2008: interval meaning is
+         * relative to the retention target), while an evidence EMA does not decay
+         * with time inside the fresh window.
+         */
+        recallRisk: Double? = null,
     ): ScoredKnowledgeNode? {
+        require(recallRisk == null || recallRisk.isFinite() && recallRisk in 0.0..1.0) {
+            "Knowledge-node recall risk must be between zero and one"
+        }
         val reasons = linkedSetOf<ReviewReason>()
-        val dueRisk = if (state == null) {
-            reasons += ReviewReason.NEWLY_ADDED
-            0.2
-        } else {
-            val lastEvidenceAt = state.lastEvidenceAtEpochMillis
-            if (lastEvidenceAt == null) {
-                reasons += ReviewReason.CALIBRATION_CHECK
-                1.0
-            } else if (now - lastEvidenceAt > ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS) {
+        val dueRisk = when {
+            recallRisk != null -> {
                 reasons += ReviewReason.DUE_RECALL_RISK
-                reasons += ReviewReason.STALE_KNOWLEDGE
-                // Stall risk grows with days since last evidence, capped at 1.
-                val daysSince = (now - lastEvidenceAt).coerceAtLeast(0).toDouble() / DAY_MILLIS
-                (daysSince / KNOWLEDGE_DUE_RAMP_DAYS).coerceAtMost(1.0)
-            } else {
-                // Fresh evidence: due risk is the forget-curve retention loss.
-                reasons += ReviewReason.DUE_RECALL_RISK
-                1.0 - state.masteryScore
+                if (
+                    state?.lastEvidenceAtEpochMillis?.let {
+                        now - it > ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS
+                    } == true
+                ) {
+                    reasons += ReviewReason.STALE_KNOWLEDGE
+                }
+                1.0 - recallRisk
+            }
+            state == null -> {
+                reasons += ReviewReason.NEWLY_ADDED
+                0.2
+            }
+            else -> {
+                val lastEvidenceAt = state.lastEvidenceAtEpochMillis
+                if (lastEvidenceAt == null) {
+                    reasons += ReviewReason.CALIBRATION_CHECK
+                    1.0
+                } else if (
+                    now - lastEvidenceAt > ClearlyMasteredForSkipPolicy.MAX_EVIDENCE_AGE_MILLIS
+                ) {
+                    reasons += ReviewReason.DUE_RECALL_RISK
+                    reasons += ReviewReason.STALE_KNOWLEDGE
+                    // Stall risk grows with days since last evidence, capped at 1.
+                    val daysSince = (now - lastEvidenceAt).coerceAtLeast(0).toDouble() / DAY_MILLIS
+                    (daysSince / KNOWLEDGE_DUE_RAMP_DAYS).coerceAtMost(1.0)
+                } else {
+                    // Fresh evidence: due risk is the forget-curve retention loss.
+                    reasons += ReviewReason.DUE_RECALL_RISK
+                    1.0 - state.masteryScore
+                }
             }
         }
         val masteryRisk = state
@@ -547,6 +591,12 @@ class ReviewPlanner(
         private const val FAMILY_PENALTY_WEIGHT = 0.3
         private const val SOURCE_PENALTY_WEIGHT = 0.2
         private const val MAX_DIVERSITY_PENALTY = 1.5
+        /**
+         * An exam may pull a card forward only below this predicted recall
+         * (spec 2.17 defines the exam queue as `R < r*_exam`; 研究 2026-09-09 §5:
+         * the FSRS stability gain is e^{w10(1−R)}−1).
+         */
+        private const val EARLY_REVIEW_MAX_RETRIEVABILITY = 0.8
         private const val DAY_MILLIS = 86_400_000.0
         private const val RECENT_LAPSE_WINDOW_MILLIS = 30L * 86_400_000L
         private const val WAITING_GRACE_DAYS = 7.0

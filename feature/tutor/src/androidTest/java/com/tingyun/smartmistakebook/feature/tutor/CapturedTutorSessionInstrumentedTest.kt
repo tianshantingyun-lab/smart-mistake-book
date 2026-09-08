@@ -509,6 +509,14 @@ class CapturedTutorSessionInstrumentedTest {
 
         composeRule.onNodeWithText("从条件走到结论").assertDoesNotExist()
         composeRule.runOnIdle { response.value = tutorResponse("choice-1") }
+        if (TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
+            // D-001 2026-09-06 增补：结构化场景渲染已隔离，TutorTurnContent 不再渲染
+            // visualScene。本测试在隔离期验证"确实不渲染"，翻转 STRUCTURED_SCENE_ISOLATED
+            // 后自动恢复下面的原断言（场景在真实选择后出现）。
+            composeRule.onNodeWithText("从条件走到结论").assertDoesNotExist()
+            composeRule.onNodeWithText("再判断导数正负。").assertDoesNotExist()
+            return
+        }
         composeRule.onNodeWithText("从条件走到结论").performScrollTo().assertExists()
         composeRule.onNodeWithText("再判断导数正负。").performScrollTo().assertExists()
     }

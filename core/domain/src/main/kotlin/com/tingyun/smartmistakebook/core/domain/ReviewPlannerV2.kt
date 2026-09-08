@@ -431,8 +431,12 @@ class ReviewPlannerV2(
         knowledgePrerequisites: Map<String, Set<String>> = emptyMap(),
     ): ScoredCandidate? {
         // Spec 2.16: leeched cards are paused from regular scheduling until a
-        // cross-day success (or re-teaching) clears the Again streak.
-        if (candidate.leech) return null
+        // cross-day success clears the Again streak. A hard exclusion makes that
+        // recovery unreachable — the streak only clears by reviewing the card
+        // again — so the pause is a heavy ranking penalty instead: the card
+        // ranks far below every healthy candidate and only surfaces when the
+        // pool is otherwise thin. Its difficulty stays frozen (LearningProjector).
+        val leechRankFactor = if (candidate.leech) LEECH_RANK_FACTOR else 1.0
         val memory = snapshot.problemMemoryStates[candidate.practiceUnitId]
         val masteryStates = candidate.knowledgeNodeIds.mapNotNull(snapshot.knowledgeMasteryStates::get)
         val missingKnowledgeCount = candidate.knowledgeNodeIds.size - masteryStates.size
@@ -570,18 +574,32 @@ class ReviewPlannerV2(
             ?: 0.0
         if (waitingScore > 0.0) reasons += ReviewReason.LONG_WAITING
 
-        // Early review check
-        val hasEarlyReviewReason = reasons.any { reason ->
+        // Early review check. Spec 2.17 defines the exam queue as the cards with
+        // R below the exam target, so an exam may only pull forward a card that
+        // has actually decayed; the FSRS stability gain is e^{w10(1−R)}−1, which
+        // is near zero at R≈1 (研究 2026-09-09 §5; Rohrer & Taylor 2005). The
+        // other early reasons stay unconditional: CLOCK_ANOMALY/CALIBRATION_CHECK
+        // are integrity checks, and REPEATED_MISTAKE / KC_MASTERY_DROP carry new
+        // negative evidence about the card or its knowledge node that the card's
+        // own retrievability cannot express (spec §5 KC→question propagation is
+        // a user rule).
+        val earlyReviewAllowed = reasons.any { reason ->
             reason == ReviewReason.CLOCK_ANOMALY ||
                 reason == ReviewReason.CALIBRATION_CHECK ||
                 reason == ReviewReason.REPEATED_MISTAKE ||
-                reason == ReviewReason.EXAM_PRIORITY ||
                 reason == ReviewReason.KC_MASTERY_DROP
-        }
+        } || (
+            ReviewReason.EXAM_PRIORITY in reasons &&
+                (memory?.let { memoryState ->
+                    forgettingCurve.estimateAt(memoryState, now)
+                        .takeIf { it.clockAnomaly != ClockAnomaly.TIME_ROLLBACK }
+                        ?.probability
+                } ?: 0.0) < EARLY_REVIEW_MAX_RETRIEVABILITY
+            )
         if (
             memory != null &&
             memory.nextReviewAtEpochMillis > now &&
-            !hasEarlyReviewReason
+            !earlyReviewAllowed
         ) {
             return null
         }
@@ -598,7 +616,7 @@ class ReviewPlannerV2(
                 EXAM_WEIGHT * candidate.examPriority +
                 WAITING_WEIGHT * waitingScore -
                 PREREQ_GAP_WEIGHT * prereqGap
-            ).coerceAtLeast(0.0)
+            ).coerceAtLeast(0.0) * leechRankFactor
 
         return ScoredCandidate(
             candidate = candidate,
@@ -846,6 +864,18 @@ class ReviewPlannerV2(
         private const val CONFUSABLE_BONUS = 1.5
         private const val MAX_PER_KNOWLEDGE_NODE_PER_SESSION = 2
         private const val SAME_KC_EXHAUSTION_PENALTY = 10.0
+        /**
+         * Spec 2.16 leech pause: a leeched card ranks far below every healthy
+         * candidate but stays schedulable, because a cross-day success is the
+         * only path that clears the Again streak.
+         */
+        private const val LEECH_RANK_FACTOR = 0.15
+        /**
+         * An exam may pull a card forward only below this predicted recall
+         * (spec 2.17 defines the exam queue as `R < r*_exam`; 研究 2026-09-09 §5:
+         * the FSRS stability gain is e^{w10(1−R)}−1).
+         */
+        private const val EARLY_REVIEW_MAX_RETRIEVABILITY = 0.8
         private const val MAX_WEAKNESS_ONLY_SHARE = 0.25
         private const val WEAKNESS_SHARE_PENALTY = 3.0
         private const val DUE_WEIGHT = 5.0

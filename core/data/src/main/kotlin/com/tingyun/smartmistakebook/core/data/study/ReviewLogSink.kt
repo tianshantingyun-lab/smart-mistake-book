@@ -64,7 +64,14 @@ internal class ReviewLogSink(
                     .coerceAtLeast(0)
                     .toDouble()
             }
-            val rating = FsrsEvidenceRatingMapper.reportedRatingFor(evidence.reason, evidence.weight)
+            // review_log.rating is the rating the scheduler actually applied
+            // (entity contract: "after the evidence mapping"). Writing the raw
+            // reported key here made the FSRS optimizer fit on a distribution
+            // the online update never used (self-report Easy logged as 4 while
+            // scheduling capped at Good; hint/retry-assisted correct logged as
+            // Good while scheduling used Hard). The learner's own key survives
+            // verbatim in evidence_weight (0.9/0.8/0.7/1.0).
+            val rating = FsrsEvidenceRatingMapper.schedulingRatingFor(evidence.reason, evidence.weight)
             database.recordReviewLogEntries(
                 listOf(
                     ReviewLogEntry(

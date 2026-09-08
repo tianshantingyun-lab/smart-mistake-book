@@ -49,9 +49,11 @@ class RoomBackedReviewRatingTest {
 
             assertTrue(result.created)
             assertEquals(LearningEvidenceReason.SELF_REPORTED_RECALL, result.evidenceReason)
-            // The rating evidence maps to FSRS grade 4 (Easy) in review_log.
+            // review_log records the grade the scheduler applied: a subjective
+            // "Easy" caps at Good (Dunlosky & Rawson 2012 overconfidence), while
+            // the learner's own key survives in evidence_weight.
             val sample = database.reviewLogEntries.single()
-            assertEquals(4, sample.rating)
+            assertEquals(3, sample.rating)
             assertTrue(sample.schedulingEligible)
             assertEquals("SELF_REPORT", sample.sourceKind)
             assertEquals(0.9, sample.evidenceWeight, 1e-9)

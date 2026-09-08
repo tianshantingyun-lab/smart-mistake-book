@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ProblemOrganizationRece
 import com.tingyun.smartmistakebook.core.database.entity.ProblemRelationEntity
 import com.tingyun.smartmistakebook.core.model.BindingAcceptanceSource
 import com.tingyun.smartmistakebook.core.model.ClassificationDimension
+import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_CONTENT_DIMENSIONS
 import com.tingyun.smartmistakebook.core.model.PROBLEM_ORGANIZATION_RELATION_KINDS
 import com.tingyun.smartmistakebook.core.model.SubjectKind
@@ -104,11 +105,22 @@ internal class RoomProblemOrganizationStore(
             val knowledgeNodes = command.knowledgeNodes.map(KnowledgeNodeSeedRecord::toOrganizationEntity)
             if (knowledgeNodes.isNotEmpty()) {
                 dao.insertKnowledgeNodes(knowledgeNodes).zip(knowledgeNodes).forEach { (rowId, entity) ->
-                    if (
-                        rowId == -1L &&
-                        !dao.readKnowledgeNode(entity.knowledgeNodeId).sameAcceptedFact(entity)
-                    ) {
-                        throw ImmutablePayloadConflictException("knowledge_node", entity.knowledgeNodeId)
+                    if (rowId == -1L) {
+                        if (!dao.readKnowledgeNode(entity.knowledgeNodeId).sameAcceptedFact(entity)) {
+                            throw ImmutablePayloadConflictException(
+                                "knowledge_node",
+                                entity.knowledgeNodeId,
+                            )
+                        }
+                        // The node already exists with the same fact; only its
+                        // verification status may have been strengthened by this
+                        // write (MODEL_CANDIDATE → USER_CONFIRMED).
+                        if (
+                            entity.verificationStatus ==
+                            KnowledgeNodeVerificationStatus.USER_CONFIRMED.name
+                        ) {
+                            dao.promoteKnowledgeNodeToUserConfirmed(entity.knowledgeNodeId)
+                        }
                     }
                 }
             }
@@ -312,6 +324,10 @@ private fun KnowledgeNodeEntity?.sameAcceptedFact(other: KnowledgeNodeEntity): B
         displayName = other.displayName,
         taxonomyVersion = other.taxonomyVersion,
         createdAtEpochMillis = other.createdAtEpochMillis,
+        // Verification status is monotonic and upgraded explicitly by the
+        // caller (promoteKnowledgeNodeToUserConfirmed), so a stronger status on
+        // a later write is not a conflicting payload.
+        verificationStatus = other.verificationStatus,
     ) == other
 
 private fun PracticeUnitKnowledgeBindingEntity?.sameAcceptedFact(

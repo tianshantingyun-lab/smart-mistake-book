@@ -61,6 +61,17 @@ object ModelTaskContractRegistry {
             prohibitedDisclosures = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
         ),
         ModelTaskContract(
+            // The save-path classify round (RoomCaptureWorkflowRepository.decideAndRedraw)
+            // sends the committed photo to decide WITH_FIGURE vs TEXT_ONLY, so it
+            // carries the same image scope as the other capture-document rounds.
+            kind = ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
+            egressPurpose = ModelEgressPurpose.CAPTURE_TO_DOCUMENT,
+            promptPolicyVersion = ModelPromptPolicyVersions.CAPTURE_DOCUMENT,
+            assetPolicy = ModelTaskAssetPolicy.REQUIRED,
+            requiredDisclosures = ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE,
+            prohibitedDisclosures = ModelEgressManifest.CAPTURE_PROHIBITED_DATA,
+        ),
+        ModelTaskContract(
             kind = ModelTaskKind.PROBLEM_CLASSIFY,
             egressPurpose = ModelEgressPurpose.CLASSIFICATION,
             promptPolicyVersion = ModelPromptPolicyVersions.PROBLEM_ORGANIZATION,

@@ -1,11 +1,13 @@
 # Image Pipeline Decision
 
-> **Status: CONFIRMED DIRECTION (not yet implemented).**
+> **Status: CONFIRMED DIRECTION (partially implemented — see the status note in `image-pipeline-spec.md`).**
 > This records the agreed technical direction for turning a photographed
 > problem into a clean, printable problem PDF, and for generating tutoring
 > figures. It describes the *target* architecture, not current code. Items are
 > marked **[existing]** where the capability already exists in the codebase and
-> **[to-add]** where it does not.
+> **[to-add]** where it does not. As of 2026-09-09 the classify → redraw spine
+> runs in production (`decideAndRedraw` + `ConfiguredCleanImageGenerator`); the
+> MCP figure path and the local typesetter remain **[to-add]**.
 
 ## Goal
 

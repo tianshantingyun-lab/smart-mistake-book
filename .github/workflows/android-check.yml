@@ -67,7 +67,10 @@ jobs:
           RELEASE_STORE_PASSWORD=ci-dry-run-pass \
           RELEASE_KEY_ALIAS=ci-dry-run \
           RELEASE_KEY_PASSWORD=ci-dry-run-pass \
-          ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease --console=plain
+          ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease \
+            :app:bundleLocalFirstRelease :app:bundleStrictOfflineRelease --console=plain
+      - name: Release manifest gate (no debug activity, no over-broad FileProvider path)
+        run: python3 tools/ci/check_release_manifest.py
       - name: Compile macrobenchmark and baseline profile module
         run: ./gradlew :benchmark:assemble --console=plain
       - name: Build knowledge-production module

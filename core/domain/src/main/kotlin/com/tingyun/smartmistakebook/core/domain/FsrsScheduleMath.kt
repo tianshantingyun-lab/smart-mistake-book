@@ -171,14 +171,18 @@ enum class FsrsRating {
  * legacy reasons that serve multiple sources keep their distinct grades.
  *
  * Two consumers, two functions:
- * - [schedulingRatingFor] drives the FSRS update (LearningProjector). It
- *   applies two confidence refinements grounded in the research record:
- *   subjective "very easy" reports cap at Good (Dunlosky & Rawson 2012:
- *   86% of students over-estimate their learning, inflating stability), and
- *   a discounted independent-correct weight (attention/RT discounts) drops
- *   to Hard because a distracted correct answer is plausibly a guess.
- * - [reportedRatingFor] keeps the learner's own key verbatim for the
- *   review_log accounting column, so the honest report survives even when
+ * - [schedulingRatingFor] drives the FSRS update (LearningProjector) AND is
+ *   what `review_log.rating` records (ReviewLogSink), so the optimizer fits on
+ *   exactly the distribution the scheduler applied. It applies two confidence
+ *   refinements grounded in the research record: subjective "very easy"
+ *   reports cap at Good (Dunlosky & Rawson 2012: 86% of students over-estimate
+ *   their learning, inflating stability), and a discounted independent-correct
+ *   weight (attention/RT discounts) drops to Hard because a distracted correct
+ *   answer is plausibly a guess.
+ * - [reportedRatingFor] keeps the learner's own key verbatim as the *raw* grade;
+ *   it is the base table [schedulingRatingFor] refines, and its value remains
+ *   recoverable from the review_log `evidence_weight` column (0.9/0.8/0.7/1.0
+ *   for the four-button channel), so the honest report survives even when
  *   scheduling is conservative.
  */
 object FsrsEvidenceRatingMapper {

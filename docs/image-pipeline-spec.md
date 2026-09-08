@@ -1,10 +1,22 @@
 # Image Pipeline Specification
 
-> **Status: IMPLEMENTATION SPEC (direction confirmed; implementation pending).**
+> **Status: IMPLEMENTATION SPEC (direction confirmed; partially implemented).**
 > Companion to `docs/image-pipeline-decision.md` (the decision record). This
 > spec turns the confirmed direction into a buildable design. Items tagged
 > **[verified]** were confirmed by external research or existing code;
 > **[to-verify]** are open items (model reliability/cost) that need a pilot.
+>
+> **What actually runs today (2026-09-09):** the read/classify/redraw spine is
+> wired. `RoomCaptureWorkflowRepository.decideAndRedraw` runs one
+> `IMAGE_PIPELINE_CLASSIFY` round on the committed photo under the global model
+> consent, and a `WITH_FIGURE` answer schedules `ConfiguredCleanImageGenerator`
+> (`CleanImageGenerator`) to redraw and attach the clean figure. `TEXT_ONLY`
+> problems keep the original photo and go through the existing local
+> OCR/parse → typeset → PDF path, so no separate clean-sheet object is needed.
+> The `ImageCleanSheet`/`ImageCleanSheetOrchestrator` pair this spec originally
+> sketched was never called by production code and was removed on 2026-09-09
+> (see git history). Still **not implemented**: the MCP figure path for the
+> tutor "explaining" branch and any MathBox-style local typesetter of its own.
 
 ## 1. Goal & architecture (recap)
 

@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
+import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 
 /**
  * 知识点复习队列的一个候选：一个知识点 + 其当前掌握态（供 [ReviewPlanner.scoreKnowledgeNode]
@@ -16,6 +17,11 @@ data class KnowledgeReviewCandidate(
     val materialGroupId: String?,
     val state: KnowledgeMasteryState?,
     val estimatedDurationSeconds: Int,
+    /**
+     * 该知识点绑定题目的预测检索概率（取绑定题中已知 FSRS 记忆的最小 R），null = 无可用记忆。
+     * 供 [ReviewPlanner.scoreKnowledgeNode] 以遗忘曲线而非掌握度 EMA 估计到期风险。
+     */
+    val recallRisk: Double? = null,
 ) {
     init {
         require(knowledgeNodeId.isNotBlank()) { "Knowledge review candidate id must not be blank" }
@@ -24,6 +30,9 @@ data class KnowledgeReviewCandidate(
             "Knowledge review material group must not be blank when provided"
         }
         require(estimatedDurationSeconds > 0) { "Knowledge review estimate must be positive" }
+        require(recallRisk == null || recallRisk.isFinite() && recallRisk in 0.0..1.0) {
+            "Knowledge review candidate recall risk must be between zero and one"
+        }
     }
 }
 
@@ -84,6 +93,41 @@ data class KnowledgeReviewQueueEntry(
  * 消灭的失败：知识点复习缺少"今天复习哪些点、按什么顺序"的确定队列，导致 UI 无从排程，
  * 或连续出同一份材料/同一科目的题，跨科交错与题目多样性失效。
  */
+/**
+ * 知识点 → 其绑定题目的预测检索概率（取该点所有已知 FSRS 记忆中的**最小** R）。
+ *
+ * 用途：知识点自身没有记忆痕迹，其"是否快要忘"只能由承载它的题目来回答。取最小值是保守
+ * 选择——只要有一道绑定题濒临遗忘，该知识点就值得复习。没有已知记忆的点不出现在结果里，
+ * 由 [ReviewPlanner.scoreKnowledgeNode] 回退到掌握度估计。
+ *
+ * 依据：Cepeda et al. 2006/2008（间隔的意义相对于目标保持间隔）与 FSRS R(t,S) 曲线本身；
+ * 掌握度 EMA 在"新鲜"窗口内不随时间衰减，不适合作为到期风险的唯一输入。
+ *
+ * 消灭的失败：知识点到期风险此前用 `1 − masteryScore` 与"45 天悬崖"近似，排序既不随时间
+ * 连续变化，也与绑定题的真实遗忘状态脱节。
+ */
+fun knowledgeRecallRiskByNode(
+    boundPracticeUnitIdsByNode: Map<String, List<String>>,
+    memoryStates: Map<String, ProblemMemoryState>,
+    nowEpochMillis: Long,
+): Map<String, Double> = boundPracticeUnitIdsByNode.mapNotNull { (nodeId, unitIds) ->
+    unitIds.asSequence()
+        .mapNotNull { unitId -> memoryStates[unitId] }
+        .filter { it.stabilityDays > 0.0 && it.lastReviewedAtEpochMillis > 0 }
+        .map { memory ->
+            val elapsedDays = (nowEpochMillis - memory.lastReviewedAtEpochMillis)
+                .coerceAtLeast(0).toDouble() / DAY_MILLIS
+            FsrsScheduleMath.retention(
+                elapsedDays = elapsedDays,
+                stabilityDays = memory.stabilityDays,
+            )
+        }
+        .minOrNull()
+        ?.let { nodeId to it }
+}.toMap()
+
+private const val DAY_MILLIS = 86_400_000.0
+
 fun selectKnowledgeReviewQueue(
     planner: ReviewPlanner,
     candidates: List<KnowledgeReviewCandidate>,
@@ -97,6 +141,7 @@ fun selectKnowledgeReviewQueue(
                 knowledgeNodeId = candidate.knowledgeNodeId,
                 state = candidate.state,
                 now = now,
+                recallRisk = candidate.recallRisk,
             )?.let { scored -> scored to candidate }
         }
         .toMutableList()

@@ -94,6 +94,18 @@ internal interface ProblemOrganizationDao {
     @Query("SELECT * FROM knowledge_node WHERE knowledge_node_id = :id")
     suspend fun readKnowledgeNode(id: String): KnowledgeNodeEntity?
 
+    /**
+     * Verification status is the one monotonic attribute of an otherwise
+     * immutable knowledge node: once the student confirms the same label, a
+     * model candidate becomes user authority and must be reusable as a
+     * classification candidate (audit 2026-09-09). Never downgrades.
+     */
+    @Query(
+        "UPDATE knowledge_node SET verification_status = 'USER_CONFIRMED' " +
+            "WHERE knowledge_node_id = :id AND verification_status = 'MODEL_CANDIDATE'",
+    )
+    suspend fun promoteKnowledgeNodeToUserConfirmed(id: String): Int
+
     @Query(
         """
         SELECT * FROM knowledge_node

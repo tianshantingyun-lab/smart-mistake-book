@@ -5,6 +5,8 @@ import com.tingyun.smartmistakebook.core.model.CalibrationSupport
 import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
+import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
+import com.tingyun.smartmistakebook.core.model.ReviewReason
 import com.tingyun.smartmistakebook.core.model.ReviewDifficultyBand
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -61,6 +63,69 @@ class KnowledgeReviewQueueTest {
         state = state,
         estimatedDurationSeconds = seconds,
     )
+
+    @Test
+    fun knowledgeRecallRiskAggregatesTheWeakestBoundItemAndSkipsUnknownOnes() {
+        val memory = ProblemMemoryState(
+            practiceUnitId = "unit-1",
+            stabilityDays = 10.0,
+            difficulty = 5.0,
+            lastReviewedAtEpochMillis = now - 86_400_000L,
+            nextReviewAtEpochMillis = now,
+            lastAttemptId = "attempt-1",
+            projectorVersion = "test",
+            checkpointSequence = 1,
+        )
+        val risks = knowledgeRecallRiskByNode(
+            boundPracticeUnitIdsByNode = mapOf(
+                "kc-strong" to listOf("unit-1"),
+                "kc-no-memory" to listOf("unit-missing"),
+            ),
+            memoryStates = mapOf("unit-1" to memory),
+            nowEpochMillis = now,
+        )
+        // 一道稳定题的 R 很高（近 1），但仍是"已知记忆"。
+        assertTrue(risks.getValue("kc-strong") > 0.9)
+        // 没有已知记忆的绑定题不进结果，由调用方回退到掌握度估计。
+        assertTrue("kc-no-memory" !in risks)
+    }
+
+    @Test
+    fun knowledgeRecallRiskUsesTheMinimumOverBoundItems() {
+        val fresh = ProblemMemoryState(
+            practiceUnitId = "unit-fresh",
+            stabilityDays = 100.0,
+            difficulty = 5.0,
+            lastReviewedAtEpochMillis = now - 86_400_000L,
+            nextReviewAtEpochMillis = now,
+            lastAttemptId = "attempt-fresh",
+            projectorVersion = "test",
+            checkpointSequence = 1,
+        )
+        val decayed = fresh.copy(practiceUnitId = "unit-decayed", stabilityDays = 0.2)
+        val risks = knowledgeRecallRiskByNode(
+            boundPracticeUnitIdsByNode = mapOf("kc-1" to listOf("unit-fresh", "unit-decayed")),
+            memoryStates = mapOf("unit-fresh" to fresh, "unit-decayed" to decayed),
+            nowEpochMillis = now,
+        )
+        assertTrue(risks.getValue("kc-1") < 0.8)
+    }
+
+    @Test
+    fun scoreKnowledgeNodeUsesRecallRiskWhenProvided() {
+        val state = mastery("kc1", MasteryStatus.LEARNING)
+        val decayed = requireNotNull(
+            planner.scoreKnowledgeNode("kc1", state, now, recallRisk = 0.2),
+        )
+        val fresh = requireNotNull(
+            planner.scoreKnowledgeNode("kc1", state, now, recallRisk = 0.95),
+        )
+        assertTrue(ReviewReason.DUE_RECALL_RISK in decayed.reasons)
+        assertTrue(
+            "decayed score ${decayed.score} must exceed fresh score ${fresh.score}",
+            decayed.score > fresh.score,
+        )
+    }
 
     @Test
     fun skipsMasteredNodesAndKeepsRiskyOnes() {

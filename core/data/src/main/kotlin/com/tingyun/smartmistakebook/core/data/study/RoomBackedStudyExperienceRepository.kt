@@ -37,6 +37,7 @@ import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewQueueEntry
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
 import com.tingyun.smartmistakebook.core.domain.knowledgeQuizMasteryVerdict
 import com.tingyun.smartmistakebook.core.domain.extractReviewKnowledgeScope
+import com.tingyun.smartmistakebook.core.domain.knowledgeRecallRiskByNode
 import com.tingyun.smartmistakebook.core.domain.selectKnowledgeReviewQueue
 import com.tingyun.smartmistakebook.core.domain.ReviewScopeQuestion
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
@@ -1310,6 +1311,16 @@ class RoomBackedStudyExperienceRepository(
         val materialGroupByNode = quizAbleScopeNodes(queueScope, subjectByNode)
         if (materialGroupByNode.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
         val candidateIds = queueScope.filterTo(linkedSetOf()) { it in materialGroupByNode }
+        // 知识点没有自己的记忆痕迹：到期风险由今天队列中承载它的题目的 FSRS 检索概率聚合
+        // （取最小 R），而不是掌握度 EMA + 45 天悬崖（研究 2026-09-09 §1）。
+        val boundUnitsByNode = planQueue
+            .flatMap { item -> item.knowledgeNodeIds.map { nodeId -> nodeId to item.practiceUnitId } }
+            .groupBy({ it.first }, { it.second })
+        val recallRiskByNode = knowledgeRecallRiskByNode(
+            boundPracticeUnitIdsByNode = boundUnitsByNode,
+            memoryStates = learnerSnapshot.problemMemoryStates,
+            nowEpochMillis = planningContext.planningAtEpochMillis,
+        )
         val selected = selectKnowledgeReviewQueue(
             planner = reviewPlanner,
             candidates = candidateIds.map { knowledgeNodeId ->
@@ -1319,6 +1330,7 @@ class RoomBackedStudyExperienceRepository(
                     materialGroupId = materialGroupByNode[knowledgeNodeId],
                     state = learnerSnapshot.knowledgeMasteryStates[knowledgeNodeId],
                     estimatedDurationSeconds = LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS,
+                    recallRisk = recallRiskByNode[knowledgeNodeId],
                 )
             },
             now = planningContext.planningAtEpochMillis,

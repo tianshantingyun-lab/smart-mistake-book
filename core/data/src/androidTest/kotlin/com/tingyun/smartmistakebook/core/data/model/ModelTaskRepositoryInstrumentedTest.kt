@@ -19,6 +19,7 @@ import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRemoteDispatchPolicy
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -185,29 +186,31 @@ class ModelTaskRepositoryInstrumentedTest {
             clock = { ++now },
         )
         val originalRequest = externalRequest(provider = externalCapabilities)
+        val budget = ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES
 
-        val first = repository.execute(originalRequest).toList().last()
-        val second = repository.execute(originalRequest).toList().last()
-        val exhausted = repository.execute(originalRequest).toList().last()
+        // Dispatches 1..budget-1 stay retryable; the budget-th dispatch is still
+        // attempted, but its failure is terminal because the budget is now spent.
+        val attempts = (1..budget).map { repository.execute(originalRequest).toList().last() }
+        attempts.dropLast(1).forEachIndexed { index, snapshot ->
+            assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, snapshot.status)
+            assertEquals(index + 1, snapshot.attemptCount)
+        }
+        val exhausted = attempts.last()
 
-        assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, first.status)
-        assertEquals(1, first.attemptCount)
-        assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, second.status)
-        assertEquals(2, second.attemptCount)
         assertEquals(ModelTaskStatus.PERMANENT_FAILURE, exhausted.status)
-        assertEquals(3, exhausted.attemptCount)
+        assertEquals(budget, exhausted.attemptCount)
         assertEquals(ModelFailureCode.UNKNOWN, exhausted.failure?.code)
         assertEquals(false, exhausted.failure?.retryable)
         assertEquals(originalRequest, exhausted.request)
         assertEquals(ModelTaskFingerprint.of(originalRequest), exhausted.requestFingerprint)
-        assertEquals(3, capabilityCalls.get())
-        assertEquals(3, gatewayExecutions.get())
+        assertEquals(budget, capabilityCalls.get())
+        assertEquals(budget, gatewayExecutions.get())
 
         val replayed = repository.execute(originalRequest).toList().last()
 
         assertEquals(exhausted, replayed)
-        assertEquals(3, capabilityCalls.get())
-        assertEquals(3, gatewayExecutions.get())
+        assertEquals(budget, capabilityCalls.get())
+        assertEquals(budget, gatewayExecutions.get())
     }
 
     @Test
@@ -233,7 +236,8 @@ class ModelTaskRepositoryInstrumentedTest {
             },
             clock = { ++now },
         )
-        val envelopes = (1..4).map { ordinal ->
+        val budget = ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES
+        val envelopes = (1..budget + 1).map { ordinal ->
             externalRequest(
                 requestId = "capture-assess:logical-envelope-$ordinal",
                 occurredAtEpochMillis = 1_000L + ordinal,
@@ -246,13 +250,21 @@ class ModelTaskRepositoryInstrumentedTest {
 
         val completed = envelopes.map { envelope -> repository.execute(envelope).toList().last() }
 
-        assertEquals(listOf(1, 2, 3, 3), completed.map { it.attemptCount })
-        assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, completed[0].status)
-        assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, completed[1].status)
-        assertEquals(ModelTaskStatus.PERMANENT_FAILURE, completed[2].status)
-        assertEquals(ModelTaskStatus.PERMANENT_FAILURE, completed[3].status)
-        assertEquals(4, capabilityCalls.get())
-        assertEquals(3, gatewayExecutions.get())
+        // New requestIds and new provider envelopes share one durable budget:
+        // dispatches 1..budget-1 stay retryable, the budget-th dispatch's failure
+        // is terminal, and the next envelope is refused before the gateway.
+        assertEquals(
+            (1..budget).toList() + budget,
+            completed.map { it.attemptCount },
+        )
+        completed.take(budget - 1).forEach { snapshot ->
+            assertEquals(ModelTaskStatus.RETRYABLE_FAILURE, snapshot.status)
+        }
+        completed.drop(budget - 1).forEach { snapshot ->
+            assertEquals(ModelTaskStatus.PERMANENT_FAILURE, snapshot.status)
+        }
+        assertEquals(budget + 1, capabilityCalls.get())
+        assertEquals(budget, gatewayExecutions.get())
     }
 
     @Test
@@ -299,7 +311,8 @@ class ModelTaskRepositoryInstrumentedTest {
             },
             clock = { authorizationTime },
         )
-        (1..3).forEach { expectedAttempt ->
+        val budget = ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES
+        (1..budget).forEach { expectedAttempt ->
             val interrupted = interruptedRepository.execute(originalRequest).first { snapshot ->
                 snapshot.status == ModelTaskStatus.RUNNING &&
                     snapshot.attemptCount == expectedAttempt
@@ -327,7 +340,7 @@ class ModelTaskRepositoryInstrumentedTest {
         val exhausted = guardedRepository.execute(originalRequest).toList().last()
 
         assertEquals(ModelTaskStatus.PERMANENT_FAILURE, exhausted.status)
-        assertEquals(3, exhausted.attemptCount)
+        assertEquals(budget, exhausted.attemptCount)
         assertEquals(originalRequest, exhausted.request)
         assertEquals(ModelTaskFingerprint.of(originalRequest), exhausted.requestFingerprint)
         assertEquals(1, capabilityCalls.get())

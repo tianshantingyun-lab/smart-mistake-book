@@ -617,37 +617,6 @@ data class ImagePipelineClassifyOutput(
     val modelVersion: String = "",
 ) : ModelTaskOutput
 
-/**
- * The clean, handwriting-free problem sheet produced by the image pipeline.
- *
- * For WITH_FIGURE problems [cleanImageBytes] holds the MCP-redrawn figure and
- * [cleanImageMimeType] its type; for TEXT_ONLY problems [textMarkdown] and
- * [formulas] carry the structured content the local typesetter lays out. Only
- * one branch is populated — the pipeline routes to exactly one producer.
- */
-@Serializable
-data class ImageCleanSheet(
-    val problemKind: ImagePipelineProblemKind,
-    val cleanImageBytes: ByteArray? = null,
-    val cleanImageMimeType: String? = null,
-    val textMarkdown: String = "",
-    val formulas: List<String> = emptyList(),
-    val modelVersion: String = "",
-) {
-    init {
-        when (problemKind) {
-            ImagePipelineProblemKind.WITH_FIGURE ->
-                require(cleanImageBytes != null && !cleanImageMimeType.isNullOrBlank()) {
-                    "A WITH_FIGURE clean sheet must carry the redrawn image"
-                }
-            ImagePipelineProblemKind.TEXT_ONLY ->
-                require(textMarkdown.isNotBlank()) {
-                    "A TEXT_ONLY clean sheet must carry the structured text"
-                }
-        }
-    }
-}
-
 @Serializable
 @SerialName("capture_assessment_output")
 data class CaptureAssessmentOutput(

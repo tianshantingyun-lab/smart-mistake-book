@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.model.IndependentCorrectObservation
 import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
+import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
 import com.tingyun.smartmistakebook.core.model.ReviewReason
 import java.util.Random
@@ -355,6 +356,140 @@ class ReviewPlannerV2Test {
         val selected = plan.queueItems.map { it.practiceUnitId }.toSet()
         assertEquals(setOf("a", "b"), selected)
     }
+
+    @Test
+    fun `leeched card stays reachable but ranks below a healthy card`() {
+        val leeched = memoryState(
+            unitId = "unit-leech",
+            stabilityDays = 2.0,
+            difficulty = 9.0,
+            nextReviewAtEpochMillis = now - DAY_MILLIS,
+            lapseCount = 7,
+            consecutiveCrossDayAgain = 2,
+        )
+        val healthy = memoryState(
+            unitId = "unit-healthy",
+            stabilityDays = 2.0,
+            difficulty = 5.0,
+            nextReviewAtEpochMillis = now - DAY_MILLIS,
+        )
+        val snapshot = supportedSnapshot().copy(
+            problemMemoryStates = mapOf(
+                "unit-leech" to leeched,
+                "unit-healthy" to healthy,
+            ),
+        )
+        val leechCandidate = candidate("unit-leech", "family-leech", null, 9.0, 60)
+            .copy(leech = true)
+        val healthyCandidate = candidate("unit-healthy", "family-healthy", null, 5.0, 60)
+
+        // Spec 2.16 pause: with a healthy alternative the leeched card loses.
+        val paired = planner.plan(request(listOf(leechCandidate, healthyCandidate), 60, snapshot))
+        assertEquals(listOf("unit-healthy"), paired.queueItems.map { it.practiceUnitId })
+
+        // ...but it is never permanently unschedulable: the Again streak only
+        // clears through a cross-day success, so it must stay reachable when
+        // nothing else is due.
+        val solo = planner.plan(request(listOf(leechCandidate), 60, snapshot))
+        assertEquals(listOf("unit-leech"), solo.queueItems.map { it.practiceUnitId })
+    }
+
+    @Test
+    fun `an exam pulls a card forward only below the retrieval ceiling`() {
+        val known = memoryState(
+            unitId = "unit-known",
+            stabilityDays = 100.0,
+            difficulty = 5.0,
+            nextReviewAtEpochMillis = now + 30 * DAY_MILLIS,
+        )
+        val decayed = memoryState(
+            unitId = "unit-decayed",
+            stabilityDays = 0.2,
+            difficulty = 5.0,
+            nextReviewAtEpochMillis = now + 30 * DAY_MILLIS,
+        )
+        val snapshot = supportedSnapshot().copy(
+            problemMemoryStates = mapOf("unit-known" to known, "unit-decayed" to decayed),
+        )
+        val knownExam = candidate("unit-known", "family-known", null, 5.0, 60)
+            .copy(examPriority = 1.0)
+        val decayedExam = candidate("unit-decayed", "family-decayed", null, 5.0, 60)
+            .copy(examPriority = 1.0)
+
+        // R ≈ 1: an exam may not pull forward a card the student clearly still
+        // remembers (spec 2.17: the exam queue is `R < r*_exam`; 研究 2026-09-09
+        // §5 — FSRS gain is e^{w10(1−R)}−1).
+        val blocked = planner.plan(request(listOf(knownExam), 60, snapshot))
+        assertTrue(blocked.queueItems.isEmpty())
+
+        // R ≈ 0.6: the same exam reason does open the early review.
+        val allowed = planner.plan(request(listOf(decayedExam), 60, snapshot))
+        assertEquals(listOf("unit-decayed"), allowed.queueItems.map { it.practiceUnitId })
+    }
+
+    /**
+     * A snapshot whose KC carries recent, calibration-supported evidence, so no
+     * integrity reason (CALIBRATION_CHECK / STALE_KNOWLEDGE) bypasses the early
+     * review gate. [snapshot] leaves those reasons active, which is fine for the
+     * other tests but not for early-review assertions.
+     */
+    private fun supportedSnapshot(): LearnerSnapshot {
+        val state = KnowledgeMasteryState(
+            knowledgeNodeId = "kc-a",
+            masteryScore = 0.95,
+            conservativeMasteryScore = 0.92,
+            evidenceMass = 4.0,
+            status = MasteryStatus.LEARNING,
+            calibrationSupport = CalibrationSupport.SUPPORTED,
+            projectorVersion = LearningProjector.VERSION,
+            checkpointSequence = 4,
+            lastEvidenceAtEpochMillis = now,
+            independentCorrectObservations = listOf(
+                IndependentCorrectObservation(
+                    itemFamilyId = "family-ok",
+                    studyDayEpochDay = now / DAY_MILLIS,
+                    occurredAtEpochMillis = now - DAY_MILLIS,
+                    eventSequence = 1,
+                    bindingId = "binding-ok",
+                    evidenceWeight = 1.0,
+                    calibration = CalibrationSnapshot(
+                        CalibrationSupport.SUPPORTED,
+                        "source",
+                        "v1",
+                        now - DAY_MILLIS,
+                        now + DAY_MILLIS,
+                    ),
+                ),
+            ),
+        )
+        return LearnerSnapshot(
+            learnerId = "learner-1",
+            problemMemoryStates = emptyMap(),
+            knowledgeMasteryStates = mapOf("kc-a" to state),
+            checkpoint = ProjectionCheckpoint(4, LearningProjector.VERSION, now),
+            generatedAtEpochMillis = now,
+        )
+    }
+
+    private fun memoryState(
+        unitId: String,
+        stabilityDays: Double,
+        difficulty: Double,
+        nextReviewAtEpochMillis: Long,
+        lapseCount: Int = 0,
+        consecutiveCrossDayAgain: Int = 0,
+    ) = ProblemMemoryState(
+        practiceUnitId = unitId,
+        stabilityDays = stabilityDays,
+        difficulty = difficulty,
+        lastReviewedAtEpochMillis = now - DAY_MILLIS,
+        nextReviewAtEpochMillis = nextReviewAtEpochMillis,
+        lapseCount = lapseCount,
+        consecutiveCrossDayAgain = consecutiveCrossDayAgain,
+        lastAttemptId = "attempt-$unitId",
+        projectorVersion = LearningProjector.VERSION,
+        checkpointSequence = 4,
+    )
 
     private fun masterySnapshot(
         kcId: String,

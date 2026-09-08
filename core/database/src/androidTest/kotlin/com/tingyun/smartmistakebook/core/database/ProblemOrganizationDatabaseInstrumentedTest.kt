@@ -289,6 +289,40 @@ class ProblemOrganizationDatabaseInstrumentedTest {
     }
 
     @Test
+    fun userConfirmationPromotesAModelCandidateNodeWithoutConflictingOnItsPayload() = runBlocking {
+        // A policy/model write parks the node as an unverified candidate.
+        store.confirmProblemOrganization(command("candidate-node", "2".repeat(64)))
+        assertEquals(
+            "MODEL_CANDIDATE",
+            store.readKnowledgeNodesByIds(setOf(KNOWLEDGE)).single().verificationStatus,
+        )
+
+        // The student confirming the same label writes the identical node fact
+        // with the stronger status. That must upgrade the existing row rather
+        // than fail the immutable-payload check (audit 2026-09-09).
+        val base = command("user-confirmed-node", "3".repeat(64))
+        val confirmed = base.copy(
+            acceptedAtEpochMillis = 3_000,
+            knowledgeNodes = base.knowledgeNodes.map { node ->
+                node.copy(verificationStatus = "USER_CONFIRMED", createdAtEpochMillis = 3_000)
+            },
+            knowledgeBindings = base.knowledgeBindings.map { binding ->
+                binding.copy(acceptedAtEpochMillis = 3_000)
+            },
+            classifications = base.classifications.map { classification ->
+                classification.copy(acceptedAtEpochMillis = 3_000)
+            },
+            relations = emptyList(),
+        )
+        store.confirmProblemOrganization(confirmed)
+
+        assertEquals(
+            "USER_CONFIRMED",
+            store.readKnowledgeNodesByIds(setOf(KNOWLEDGE)).single().verificationStatus,
+        )
+    }
+
+    @Test
     fun reclassificationRetainsBindingsReferencedByLearningEvidence() = runBlocking {
         val initial = command("evidence-initial", "a".repeat(64))
         store.confirmProblemOrganization(initial)
