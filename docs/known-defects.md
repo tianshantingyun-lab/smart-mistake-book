@@ -3,6 +3,34 @@
 Fixed entries move to the commit history; this register only lists open
 items that block a gate or a release claim.
 
+## 2026-09-09 audit fixes (closed, see commit history)
+
+The full audit (`scratch/AUDIT-*-2026-09-09.md`) found and closed:
+
+- **P0 · batch import blocked in production** — split recognition threw before
+  every page could be imported (zero dimensions + fabricated egress manifest +
+  no try/catch). Intake now follows spec `batch-intake` I1: the page lands in
+  the library first, split recognition is best-effort afterwards. `fae1a82`.
+- **P1 · knowledge-quiz write quota was a lifetime quota** — a global
+  conversation id made the 50-write per-conversation cap permanent, so mastery
+  writes stopped forever after 50 accepted answers. The quota is now per review
+  session. `43ba61b`.
+- **Three algorithm defects** — `MasterySmoothing` EMA cancelled age out
+  (weakness halved), a "very effortful" self-report was lifted to Good, and
+  hint/retry-assisted correct answers earned the independent-recall gain.
+  `544b575`.
+- **Scheduling settings were unwritable** — `setOptions` / `declareExam` /
+  `removeExam` had no caller. New scheduling screen wires retention, the FSRS
+  switch and the exam calendar. `141a7e1`.
+- Export print ignored the requested page range; release builds logged the
+  provider response body; two sources carried literal NUL bytes; `feature:tutor`
+  declared an unused `core:data` dependency. `141a7e1`.
+- **User-created knowledge nodes were unreusable** — they were permanently
+  marked `MODEL_CANDIDATE` and excluded from candidate queries. New
+  `USER_CONFIRMED` tier. `7d4adc4`.
+
+Still open below.
+
 ## KD-2 (open) · Wall-clock p95 gate on CI runners
 
 Resolved for the current thresholds on 2026-08-30: the mastery/recall p95

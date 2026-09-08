@@ -12,9 +12,12 @@ Room is the single source of truth for learning facts. Composables receive
 immutable `UiState` and send `Action` objects; ViewModels and domain use cases
 own asynchronous work. Model providers never write database facts.
 
-Every external model request passes a machine-checkable contract from
-`ModelTaskContractRegistry`, an exact egress manifest, and a current in-process
-lease before dispatch. The logical operation budget is durable and shared
-across retries.
+Every external model request carries an exact egress manifest, a current
+in-process lease, and passes the runtime checks in `ModelEgressManifest`
+(disclosure set, asset scope, approval freshness, prompt-policy version) before
+dispatch. `ModelTaskContractRegistry` is the machine-checkable contract table
+those invariants are derived from; it is exercised by contract-parity tests
+rather than called on the dispatch path. The logical operation budget is
+durable and shared across retries.
 
 See `docs/current/architecture-contract.md` for the full contract.
