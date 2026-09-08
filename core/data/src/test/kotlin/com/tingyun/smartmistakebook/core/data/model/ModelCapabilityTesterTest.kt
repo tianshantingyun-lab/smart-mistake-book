@@ -304,7 +304,7 @@ class ModelCapabilityTesterTest {
     fun unimplementedConfiguredProtocolFailsTheProbeWithoutSendingAnyRequest() = runBlocking {
         var transportCalls = 0
         val store = FakeConfigurationStore(
-            configuration().copy(protocol = ModelProviderProtocol.ANTHROPIC_MESSAGES),
+            configuration().copy(protocol = ModelProviderProtocol.OPENAI_RESPONSES),
         )
         val tester = OpenAiCompatibleModelCapabilityTester(
             configurationStore = store,

@@ -72,12 +72,12 @@ class OpenAiChatCompletionsProtocolTest {
 
     @Test
     fun unsupportedProtocolsFailFastInsteadOfSilentlyFallingBackToOpenAi() {
-        // P1 只实现 OpenAI 兼容协议：配置指向其它协议时必须显式失败，而不是悄悄按 OpenAI
-        // 形状发请求（spec §3.2 显式协议选择）。上游 RoomModelTaskRepository 会把逃逸异常
-        // 兜成可重试失败事件，因此这是 fail-closed 而不是崩溃。
+        // 尚未实现的协议（P3/P4）必须显式失败，而不是悄悄按 OpenAI 形状发请求
+        // （spec §3.2 显式协议选择）。上游 RoomModelTaskRepository 会把逃逸异常兜成
+        // 可重试失败事件，因此这是 fail-closed 而不是崩溃。
         val error = assertThrows(IllegalStateException::class.java) {
-            protocolFor(ModelProviderProtocol.ANTHROPIC_MESSAGES)
+            protocolFor(ModelProviderProtocol.OPENAI_RESPONSES)
         }
-        assertTrue(error.message.orEmpty().contains(ModelProviderProtocol.ANTHROPIC_MESSAGES.name))
+        assertTrue(error.message.orEmpty().contains(ModelProviderProtocol.OPENAI_RESPONSES.name))
     }
 }

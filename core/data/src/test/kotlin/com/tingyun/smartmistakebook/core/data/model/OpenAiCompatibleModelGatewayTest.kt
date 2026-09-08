@@ -2007,7 +2007,7 @@ class OpenAiCompatibleModelGatewayTest {
     @Test
     fun configuredProtocolDrivesTheWireProtocolInsteadOfAlwaysDefaulting() = runBlocking {
         var transportCalls = 0
-        val gateway = gatewayWithProtocol(ModelProviderProtocol.ANTHROPIC_MESSAGES) {
+        val gateway = gatewayWithProtocol(ModelProviderProtocol.OPENAI_RESPONSES) {
             transportCalls += 1
         }
 
@@ -2018,7 +2018,7 @@ class OpenAiCompatibleModelGatewayTest {
             failure = error
         }
 
-        // P1 未实现 Anthropic：必须显式失败且一个请求都不发，而不是按 OpenAI 形状发出去。
+        // 尚未实现的协议（P3）：必须显式失败且一个请求都不发，而不是按 OpenAI 形状发出去。
         assertTrue("未实现协议必须显式失败", failure != null)
         assertEquals(0, transportCalls)
     }
