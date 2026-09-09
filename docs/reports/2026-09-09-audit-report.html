@@ -577,14 +577,20 @@
     <div class="sec-head"><span class="idx">§4</span><h2>遗留与未验证</h2></div>
 
     <div class="callout">
-      <h3>文件规模门：0 错误 / 10 条存量告警</h3>
+      <h3>文件规模门：0 错误 / 存量告警继续下降</h3>
       <p>
         core:model 四个超线文件已按内聚拆分（<code>ModelTasks</code> 1471→796、
-        <code>TutorTasks</code> 1261→890、<code>StructuredContent</code> 1070→854）。
-        门禁本身改为"<strong>本次越过硬线才报错</strong>"：基线已超线的存量文件记警告
-        （含 <code>RoomBackedStudyExperienceRepository.kt</code> 2717 行、
-        <code>SmartMistakeBookRoot.kt</code> 1252 行），新增超大文件或本次越线仍会阻断。
-        剩下三个单巨类/巨函数与两个巨测试文件的拆分需要真重构，列为下一步。
+        <code>TutorTasks</code> 1261→890、<code>StructuredContent</code> 1070→854）；
+        本轮继续拆掉五个：
+        <code>RoomBackedStudyExperienceRepository.kt</code> 2717→959（抽出 12 个内聚协作类）、
+        <code>SmartMistakeBookRoot.kt</code> 1252→990（两个 NavHost destination 独立成文件）、
+        <code>CapturedTutorSessionInstrumentedTest.kt</code> 2935→942+889+1153（抽象基类 + 两个测试类，设备端 46/46）、
+        <code>CaptureWorkflowInstrumentedTest.kt</code> 1802→837+758+268（同法）。
+        门禁本身是"<strong>本次越过硬线才报错</strong>"：基线已超线的存量文件记警告。
+        唯一剩余超线文件是 <code>CaptureScreen.kt</code>（1281 行）——它的四个命令构建器
+        闭包捕获约 30 个 <code>rememberSaveable</code> 状态，直接搬到独立文件会丢掉进程重建后的恢复语义；
+        安全拆法需要先建状态持有类 + 自定义 <code>Saver</code>，属于独立改造，已在
+        <code>docs/known-defects.md</code> KD-6 记录。
       </p>
     </div>
 
@@ -612,7 +618,10 @@
     <div class="sec-head"><span class="idx">§5</span><h2>下一步</h2></div>
     <ul>
       <li><strong>真实 Provider 端到端</strong>：按 <code>scratch/PROVIDER-E2E-CHECKLIST-2026-09-09.md</code> 走一遍采集→分类→重绘→讲题，验证全局同意下的实际出站行为。</li>
-      <li><strong>拆分三个巨类/巨函数</strong>：<code>RoomBackedStudyExperienceRepository.kt</code>(2717)、<code>SmartMistakeBookRoot.kt</code>(1252)、<code>CapturedTutorSessionInstrumentedTest.kt</code>(2935) 需要按成员/职责重构，不是纯搬运。</li>
+      <li><strong>拆分 <code>CaptureScreen.kt</code>(1281)</strong>：先建 <code>CaptureScreenState</code> 持有类并给它写
+        <code>rememberSaveable</code> 的 <code>Saver</code>，再把四个命令构建器（sourceImport / workflowEvents /
+        resumeCommands / modelTaskCommands）与 UI 树移出，预计可降到 ~600 行；在此之前保持现状
+        （门禁记为存量告警，不阻断）。</li>
       <li><strong>算法延后项的触发条件</strong>：CMRR 待真实数据量；w16 与优化器可辨识性改进随参数持久化加版本号一并处理。</li>
     </ul>
   </section>

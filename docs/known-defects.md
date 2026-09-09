@@ -168,3 +168,34 @@ branch, `:core:database` 5.2% / 6.9%.
 methods that need a real database; those are covered by instrumented tests,
 which neither Kover nor this Jacoco path can measure — the low number is real
 for *unit*-test coverage, not a measurement failure.
+
+## KD-6 (open, accepted) · `CaptureScreen.kt` exceeds the 1000-line main-file limit
+
+**Symptom.** `feature/capture/.../CaptureScreen.kt` is 1281 lines; the file-size
+gate reports it as a pre-existing over-limit warning (it is over the hard line
+already at `origin/main`, so it does not block a merge).
+
+**Cause.** The whole screen is one composable whose four command builders
+(`CaptureSourceImportCommands`, `CaptureWorkflowEventCommands`,
+`CaptureResumeCommands`, `CaptureModelTaskCommands`) are constructed inline and
+their sink lambdas close over ~30 locals declared with `rememberSaveable`. The
+remaining bulk is a single UI tree that reads 56 of those locals.
+
+**Why it is not split yet.** Moving the builders or the UI tree into another
+file without a state holder would either (a) require passing 30-56 parameters
+per function, or (b) move the state out of `rememberSaveable` and silently lose
+process-death restoration for the capture flow — a real behavior regression.
+The safe shape is a `CaptureScreenState` holder with an explicit
+`Saver` (or `mapSaver`) plus extension-function builders, which is a
+standalone refactor rather than a move.
+
+**Plan when picked up.** 1) introduce `CaptureScreenState` with a `Saver` that
+round-trips every currently-saveable field; 2) move the four builders to
+`CaptureScreenCommands.kt` as extension functions taking the non-state
+dependencies (`context`, `coroutineScope`, `workflowViewModel`, `repository`,
+`modelTasks`, `coordinator`); 3) move the UI tree to `CaptureScreenContent.kt`
+reading the holder; 4) re-run `:feature:capture:connectedDebugAndroidTest`
+(23 tests) and the capture unit tests.
+
+**Verification that would close it.** `python3 tools/ci/check_file_size_gate.py`
+reporting no warning for this path, plus the connected suite green.
