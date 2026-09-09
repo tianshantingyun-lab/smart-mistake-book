@@ -126,6 +126,7 @@ class RootExperienceInstrumentedTest {
     fun libraryItemOpensRepositoryBackedDetailAndReturnsToCatalog() {
         navigateAndWait("nav_library", "root_library")
 
+        waitForTag("library_item_entry:m1:closed-interval-extrema")
         composeRule.onNodeWithTag("library_item_entry:m1:closed-interval-extrema")
             .performScrollTo()
             .performClick()
@@ -140,6 +141,9 @@ class RootExperienceInstrumentedTest {
     @Test
     fun savedMistakeTutorKeepsStableBottomNavigationWithoutLeavingTheQuestion() {
         navigateAndWait("nav_library", "root_library")
+        // Cold-start: the study snapshot publishes the curated catalog after the
+        // shell renders, so wait for the entry instead of asserting immediately.
+        waitForTag("library_item_entry:m1:closed-interval-extrema")
         composeRule.onNodeWithTag("library_item_entry:m1:closed-interval-extrema")
             .performScrollTo()
             .performClick()
@@ -277,13 +281,17 @@ class RootExperienceInstrumentedTest {
         val collection = MediaStore.Images.Media.getContentUri(
             MediaStore.VOLUME_EXTERNAL_PRIMARY,
         )
+        // A fixed display name collides across re-runs on the same emulator
+        // (MediaStore refuses to build a unique file that already exists), so
+        // the screenshot name is unique per invocation.
+        val displayName = "tutor-shell-${System.currentTimeMillis()}.png"
         val uri = checkNotNull(
             resolver.insert(
                 collection,
                 ContentValues().apply {
                     put(
                         MediaStore.Images.Media.DISPLAY_NAME,
-                        "tutor-saved-shell-current-20260722.png",
+                        displayName,
                     )
                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
                     put(
