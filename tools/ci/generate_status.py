@@ -118,28 +118,41 @@ def app_compile_status(variant: str) -> str:
     return NOT_MEASURED
 
 
+def coverage_reports(module: str) -> list[Path]:
+    """Candidate coverage XMLs: Kover for JVM modules, the AGP+Jacoco report for
+    Android libraries (Kover 0.9.1 cannot see AGP 9's built-in-Kotlin variants
+    — see KD-5). The first one with real counters wins."""
+    gradle = gradle_dir(module)
+    return [
+        gradle / "build" / "reports" / "kover" / "report.xml",
+        gradle / "build" / "reports" / "coverage" / "unit-test.xml",
+    ]
+
+
 def kover_coverage(module: str) -> tuple[str, str]:
-    """Line/branch coverage percentages from the module's Kover XML report."""
-    report = gradle_dir(module) / "build" / "reports" / "kover" / "report.xml"
-    if not report.exists():
-        return NOT_MEASURED, NOT_MEASURED
-    try:
-        root = ET.parse(report).getroot()
-    except ET.ParseError:
-        return NOT_MEASURED, NOT_MEASURED
+    """Line/branch coverage percentages from the module's coverage XML."""
     counters: dict[str, tuple[int, int]] = {}
-    for counter in root.iter("counter"):
-        kind = counter.get("type", "")
-        if kind in ("LINE", "BRANCH"):
-            missed = int(counter.get("missed", 0))
-            covered = int(counter.get("covered", 0))
-            counters[kind] = (missed, covered)
+    for report in coverage_reports(module):
+        if not report.exists():
+            continue
+        try:
+            root = ET.parse(report).getroot()
+        except ET.ParseError:
+            continue
+        counters = {}
+        for counter in root.iter("counter"):
+            kind = counter.get("type", "")
+            if kind in ("LINE", "BRANCH"):
+                missed = int(counter.get("missed", 0))
+                covered = int(counter.get("covered", 0))
+                counters[kind] = (missed, covered)
+        # A report with zero counters means nothing was instrumented; try the
+        # next candidate instead of rendering a misleading "0.0%".
+        line = counters.get("LINE", (0, 0))
+        if counters and line[0] + line[1] > 0:
+            break
     if not counters:
         return NOT_MEASURED, NOT_MEASURED
-
-    # Android-library Kover reports can come back with zero-coverage counters
-    # (agent not attached); render that as NOT_MEASURED instead of a misleading
-    # "0.0%".
     line = counters.get("LINE", (0, 0))
     if line[0] + line[1] == 0:
         return NOT_MEASURED, NOT_MEASURED
@@ -198,8 +211,9 @@ def main() -> int:
             values[f"{key}_ERRORS"] = str(errors)
             values[f"{key}_WARNINGS"] = str(warnings)
 
-    # Coverage: only modules with a Kover XML report render values; the rest
-    # stay NOT_MEASURED (modules without the Kover plugin applied).
+    # Coverage: only modules with a coverage XML render values; the rest stay
+    # NOT_MEASURED. JVM modules use Kover, Android libraries the AGP+Jacoco
+    # report (see coverage_report).
     for module, prefix in (
         (":core:domain", "CORE_DOMAIN"),
         (":core:data", "CORE_DATA"),

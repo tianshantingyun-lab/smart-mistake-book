@@ -78,7 +78,12 @@ jobs:
       - name: Lint
         run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
       - name: Unit-test coverage reports (feed the status report)
-        run: ./gradlew :core:domain:koverXmlReport :core:data:koverXmlReport :core:database:koverXmlReport --console=plain
+        # JVM modules use Kover; Android libraries use the AGP+Jacoco report
+        # because Kover 0.9.1 cannot see AGP 9's built-in-Kotlin variants (KD-5).
+        run: >
+          ./gradlew :core:domain:koverXmlReport
+          :core:data:unitTestCoverageXmlReport :core:database:unitTestCoverageXmlReport
+          --console=plain
       - name: File-size gate
         # Baseline-aware: only files changed on this branch (vs origin/main) are
         # checked, so the existing large-file backlog (already >600 lines) does

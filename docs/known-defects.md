@@ -41,13 +41,13 @@ query-plan assertions are unchanged. If a runner slowdown grows beyond the
 multiplied budget, revisit with a runner-relative bound or move the gate to
 the macrobenchmark module.
 
-## KD-3 (open) · Coverage rows for Android modules in status.md
+## KD-3 (resolved 2026-09-09) · Coverage rows for Android modules in status.md
 
 `:core:domain` line/branch coverage is wired (Kover → generate_status.py).
-The `:core:database` and `:core:data` rows remain NOT_MEASURED: those are
-Android modules and unit-test coverage for them needs AGP+Kover
-integration (jacoco-style instrumentation of androidTest/unit variants) —
-a standalone infrastructure task, not tracked as a runtime defect.
+The `:core:database` and `:core:data` rows were NOT_MEASURED because those
+Android modules could not be instrumented. Resolved by the AGP + Jacoco path
+described in KD-5: status.md now reports `:core:data` 53.9% / 39.1% and
+`:core:database` 5.2% / 6.9%.
 
 
 ## KD-1 · Tutor external-authorization flow regression (instrumented) — NOT REPRODUCING ON CURRENT TREE (2026-09-06), CI green anchor still pending
@@ -142,24 +142,29 @@ connected tasks (export/capture/tutor/library/app) still lack CI validation.
 so a visual-ui failure no longer aborts the remaining suites — every other
 module keeps getting validated while this defect stays open.
 
-## KD-5 (open) · Android-library coverage is not collectible with Kover 0.9.1 + AGP 9
+## KD-5 (resolved 2026-09-09) · Android-library coverage was not collectible with Kover 0.9.1 + AGP 9
 
-**Symptom.** `:core:data:koverXmlReport` and `:core:database:koverXmlReport`
-produce a report with zero classes (`LINE covered=0 missed=0`), so `docs/status.md`
-reports both modules as `NOT_MEASURED` while `:core:domain` (a `kotlin.jvm`
-module) reports 72.5% line / 51.8% branch. No variant-specific Kover task
-(`koverXmlReportDebug`) is created for the Android-library modules, and an
-explicit `kover { currentProject { createVariant("unitTest") { add("debug") } } }`
-fails with *"Could not find the provided variant 'debug'"* — Kover sees no
-Android build variant at all.
+**Symptom.** `:core:data:koverXmlReport` / `:core:database:koverXmlReport`
+produced a report with zero classes (`LINE covered=0 missed=0`), so
+`docs/status.md` reported both modules as `NOT_MEASURED` while `:core:domain`
+(a `kotlin.jvm` module) reported 72.5% / 51.8%. No variant-specific Kover task
+existed, and an explicit `createVariant("unitTest") { add("debug") }` failed
+with *"Could not find the provided variant 'debug'"*.
 
 **Cause.** These modules apply `com.android.library` with AGP 9's built-in
-Kotlin support (no `org.jetbrains.kotlin.android` plugin), and Kover 0.9.1's
-variant detection is built on the Kotlin Android plugin's variant model.
+Kotlin support (no `org.jetbrains.kotlin.android`), and Kover 0.9.1's variant
+detection is built on the Kotlin Android plugin's variant model.
 
-**Disposition (2026-09-09).** Not fixed: the CI step still runs and the status
-report stays honest (`NOT_MEASURED`). Options for a dedicated session:
-(a) upgrade Kover once it supports AGP 9 built-in Kotlin, (b) switch those two
-modules to the JaCoCo path (`kover { useJacoco(...) }` or an AGP
-`testCoverageEnabled` setup), or (c) move the unit tests of those modules into
-a JVM-only module. Do **not** fake the number.
+**Resolution (2026-09-09).** Switched the two Android-library modules off Kover
+onto AGP's own instrumentation: `buildTypes { debug { enableUnitTestCoverage = true } }`
+plus a `JacocoReport` task `unitTestCoverageXmlReport` that writes
+`build/reports/coverage/unit-test.xml` (generated `*_Impl`/`*_Factory` classes
+excluded, since Room output is not hand-written code).
+`tools/ci/generate_status.py` now reads Kover first and falls back to that XML,
+so `docs/status.md` reports real numbers: `:core:data` 53.9% line / 39.1%
+branch, `:core:database` 5.2% / 6.9%.
+
+**Known limitation.** `:core:database`'s logic lives mostly in DAO default
+methods that need a real database; those are covered by instrumented tests,
+which neither Kover nor this Jacoco path can measure — the low number is real
+for *unit*-test coverage, not a measurement failure.

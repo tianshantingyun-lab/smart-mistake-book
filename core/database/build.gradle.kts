@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room3)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kover)
+    jacoco
 }
 
 android {
@@ -18,6 +18,11 @@ android {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildTypes {
+        getByName("debug") {
+            enableUnitTestCoverage = true
+        }
     }
 }
 
@@ -39,4 +44,37 @@ dependencies {
 
 room3 {
     schemaDirectory("$projectDir/schemas")
+}
+
+/**
+ * Unit-test coverage for an Android library (KD-5): Kover 0.9.1 cannot see
+ * AGP 9's built-in-Kotlin build variants, so this module uses AGP's own
+ * instrumentation (`enableUnitTestCoverage`) plus a Jacoco report with a
+ * stable XML path that `tools/ci/generate_status.py` reads.
+ */
+tasks.register<JacocoReport>("unitTestCoverageXmlReport") {
+    dependsOn("testDebugUnitTest")
+    reports {
+        xml.required.set(true)
+        html.required.set(false)
+        csv.required.set(false)
+        xml.outputLocation.set(layout.buildDirectory.file("reports/coverage/unit-test.xml"))
+    }
+    executionData.setFrom(
+        layout.buildDirectory.file(
+            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+        ),
+    )
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    // AGP 9 built-in Kotlin compiles to intermediates/built_in_kotlinc; the
+    // javac output stays in intermediates/javac. Both are needed.
+    classDirectories.setFrom(
+        fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug")) {
+            include("**/classes/**")
+            exclude("**/R.class", "**/BuildConfig.class", "**/*_Impl.class", "**/*_Factory.class")
+        },
+        fileTree(layout.buildDirectory.dir("intermediates/javac/debug/classes")) {
+            exclude("**/R.class", "**/BuildConfig.class", "**/*_Impl.class", "**/*_Factory.class")
+        },
+    )
 }
