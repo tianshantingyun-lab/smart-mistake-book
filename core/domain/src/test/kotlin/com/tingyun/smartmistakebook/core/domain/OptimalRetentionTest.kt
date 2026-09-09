@@ -50,13 +50,33 @@ class OptimalRetentionTest {
     }
 
     @Test
-    fun `weaker cards push the recommendation higher than strong cards`() {
+    fun `strong graduated cards justify higher retention than weak cards`() {
+        // With the lapse force, a lapse destroys accumulated stability and
+        // re-mastering a previously stable card costs more reviews than
+        // re-learning a weak one, so a graduated deck is scheduled at a higher
+        // target than a weak deck. (Under the pre-lapse model the strong deck
+        // collapsed to the retention floor, so this relationship was inverted.)
         val weak = requireNotNull(OptimalRetention.recommend(cards(40, stabilityDays = 2.0)))
         val strong = requireNotNull(OptimalRetention.recommend(cards(40, stabilityDays = 200.0)))
 
         assertTrue(
             "weak=${weak.desiredRetention} strong=${strong.desiredRetention}",
-            weak.desiredRetention >= strong.desiredRetention,
+            strong.desiredRetention > weak.desiredRetention,
+        )
+    }
+
+    @Test
+    fun `graduated deck does not collapse to the retention floor`() {
+        // Regression (2026-09-10): without the lapse force the cost/memorized
+        // curve was monotone decreasing and a mature deck's "optimum" was the
+        // lowest supported retention (0.70 = highest-forgetting regime). The
+        // lapse force must restore an interior minimum for a graduated deck.
+        val graduated = requireNotNull(
+            OptimalRetention.recommend(cards(40, stabilityDays = 60.0)),
+        )
+        assertTrue(
+            "graduated deck recommends ${graduated.desiredRetention} (at the floor)",
+            graduated.desiredRetention > OptimalRetention.MIN_DESIRED_RETENTION,
         )
     }
 }

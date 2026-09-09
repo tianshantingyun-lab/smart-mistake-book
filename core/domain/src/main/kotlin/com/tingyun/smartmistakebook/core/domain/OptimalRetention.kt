@@ -13,8 +13,18 @@ import kotlin.math.pow
  * This is a **simplified** simulator, not a port of fsrs-rs's deck scheduler:
  * it models only the long-run review stream of the cards the learner already
  * has (no new-card introduction, no learning steps, no per-rating cost table).
+ * It models the lapse force (研究 2026-09-10): each review succeeds with
+ * probability R; on failure the expected cost includes [LAPSE_RECOVERY_REVIEWS]
+ * relearning review(s) and the expected stability averages the grown and
+ * collapsed branches. Without this force the cost/memorized curve is monotone
+ * decreasing and the optimum degenerates to the retention floor, which would
+ * push every learner toward the highest-forgetting regime.
+ *
  * It therefore reports an *experimental* recommendation, and returns null
- * whenever the data is too thin to be meaningful.
+ * whenever the data is too thin to be meaningful. Card sets dominated by
+ * still-learning items (very low stability) can still read at the floor — the
+ * relearning force for such cards is under-modelled — so the readout is
+ * trusted most for learners with a graduated review deck.
  *
  * 消灭的失败：此前只有一个手动的保持率滑杆，学生没有任何基于自己真实记忆
  * 状态的取值参考。
@@ -27,6 +37,14 @@ object OptimalRetention {
     const val MAX_DESIRED_RETENTION = 0.95
     const val RETENTION_STEP = 0.01
 
+    /**
+     * Extra expected reviews a forgotten card costs to recover (the relearning
+     * encounter after an Again, mirroring Anki's default single relearning
+     * step). This is the cost that makes low retention expensive; combined with
+     * the stability collapse on lapse it restores the CMRR interior minimum.
+     */
+    const val LAPSE_RECOVERY_REVIEWS = 1
+
     /** One card's current memory state; retrievability is derived from it. */
     data class Card(val stabilityDays: Double, val difficulty: Double) {
         init {
@@ -38,7 +56,7 @@ object OptimalRetention {
     data class Point(
         val desiredRetention: Double,
         val memorized: Double,
-        val reviewCount: Int,
+        val reviewCount: Double,
     ) {
         /** The CMRR objective: lower is better. */
         val costPerMemorized: Double
@@ -78,7 +96,7 @@ object OptimalRetention {
         horizonDays: Int,
     ): Point {
         var memorized = 0.0
-        var reviews = 0
+        var reviews = 0.0
         val horizon = horizonDays.toDouble()
         cards.forEach { card ->
             var stability = card.stabilityDays
@@ -90,15 +108,32 @@ object OptimalRetention {
                     .coerceAtLeast(1.0)
                 val span = minOf(interval, horizon - elapsed)
                 memorized += averageRetention(span, stability) * span
-                reviews += 1
                 val retrievabilityAtReview = FsrsScheduleMath.retention(interval, stability)
-                stability = FsrsScheduleMath.nextRecallStability(
+                // Lapse force (fsrs-rs CMRR): a review succeeds only with
+                // probability R. The expected cost of the cycle includes the
+                // relearning review(s) after a failure, and the expected next
+                // stability averages the grown (Good) and collapsed (Again)
+                // branches. Without this force the cost/memorized curve is
+                // monotone decreasing and the "optimum" degenerates to the
+                // lowest supported retention — the relearning arm that creates
+                // the CMRR interior minimum is exactly what is missing.
+                val failProbability = (1.0 - retrievabilityAtReview).coerceIn(0.0, 1.0)
+                reviews += 1.0 + failProbability * LAPSE_RECOVERY_REVIEWS
+                val grownStability = FsrsScheduleMath.nextRecallStability(
                     difficulty = card.difficulty,
                     stability = stability,
                     retrievability = retrievabilityAtReview,
                     rating = FsrsRating.GOOD,
                     parameters = parameters,
                 )
+                val lapseStability = FsrsScheduleMath.nextForgetStability(
+                    difficulty = card.difficulty,
+                    stability = stability,
+                    retrievability = retrievabilityAtReview,
+                    parameters = parameters,
+                )
+                stability = failProbability * lapseStability +
+                    (1.0 - failProbability) * grownStability
                 elapsed += interval
             }
         }
