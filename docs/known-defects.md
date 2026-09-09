@@ -141,3 +141,25 @@ connected tasks (export/capture/tutor/library/app) still lack CI validation.
 **Mitigation (2026-08-30)**: the CI instrumented step now runs with `--continue`,
 so a visual-ui failure no longer aborts the remaining suites — every other
 module keeps getting validated while this defect stays open.
+
+## KD-5 (open) · Android-library coverage is not collectible with Kover 0.9.1 + AGP 9
+
+**Symptom.** `:core:data:koverXmlReport` and `:core:database:koverXmlReport`
+produce a report with zero classes (`LINE covered=0 missed=0`), so `docs/status.md`
+reports both modules as `NOT_MEASURED` while `:core:domain` (a `kotlin.jvm`
+module) reports 72.5% line / 51.8% branch. No variant-specific Kover task
+(`koverXmlReportDebug`) is created for the Android-library modules, and an
+explicit `kover { currentProject { createVariant("unitTest") { add("debug") } } }`
+fails with *"Could not find the provided variant 'debug'"* — Kover sees no
+Android build variant at all.
+
+**Cause.** These modules apply `com.android.library` with AGP 9's built-in
+Kotlin support (no `org.jetbrains.kotlin.android` plugin), and Kover 0.9.1's
+variant detection is built on the Kotlin Android plugin's variant model.
+
+**Disposition (2026-09-09).** Not fixed: the CI step still runs and the status
+report stays honest (`NOT_MEASURED`). Options for a dedicated session:
+(a) upgrade Kover once it supports AGP 9 built-in Kotlin, (b) switch those two
+modules to the JaCoCo path (`kover { useJacoco(...) }` or an AGP
+`testCoverageEnabled` setup), or (c) move the unit tests of those modules into
+a JVM-only module. Do **not** fake the number.
