@@ -587,10 +587,13 @@
         <code>CapturedTutorSessionInstrumentedTest.kt</code> 2935→942+889+1153（抽象基类 + 两个测试类，设备端 46/46）、
         <code>CaptureWorkflowInstrumentedTest.kt</code> 1802→837+758+268（同法）。
         门禁本身是"<strong>本次越过硬线才报错</strong>"：基线已超线的存量文件记警告。
-        唯一剩余超线文件是 <code>CaptureScreen.kt</code>（1281 行）——它的四个命令构建器
-        闭包捕获约 30 个 <code>rememberSaveable</code> 状态，直接搬到独立文件会丢掉进程重建后的恢复语义；
-        安全拆法需要先建状态持有类 + 自定义 <code>Saver</code>，属于独立改造，已在
-        <code>docs/known-defects.md</code> KD-6 记录。
+        唯一剩余超线文件是 <code>CaptureScreen.kt</code>（1281 行）——它的命令构建器闭包
+        捕获约 50 个 <code>remember</code>/<code>rememberSaveable</code> 状态。本轮已把状态
+        提为 <code>CaptureScreenState</code> 持有类（独立 213 行文件，<code>mapSaver</code>
+        只往返原 <code>rememberSaveable</code> 字段，模型/工作区字段恢复后重派生，与原两层
+        记忆作用域一致），设备端 23/23 验证，CaptureScreen 降至 1207 行。剩余为命令构建层
+        （约 680 行内联，与 effect 交错）搬移到 <code>CaptureCommandLayer</code> 的机械工作，
+        计划与派生值冻结语义见 <code>docs/known-defects.md</code> KD-6。
       </p>
     </div>
 
@@ -618,10 +621,12 @@
     <div class="sec-head"><span class="idx">§5</span><h2>下一步</h2></div>
     <ul>
       <li><strong>真实 Provider 端到端</strong>：按 <code>scratch/PROVIDER-E2E-CHECKLIST-2026-09-09.md</code> 走一遍采集→分类→重绘→讲题，验证全局同意下的实际出站行为。</li>
-      <li><strong>拆分 <code>CaptureScreen.kt</code>(1281)</strong>：先建 <code>CaptureScreenState</code> 持有类并给它写
-        <code>rememberSaveable</code> 的 <code>Saver</code>，再把四个命令构建器（sourceImport / workflowEvents /
-        resumeCommands / modelTaskCommands）与 UI 树移出，预计可降到 ~600 行；在此之前保持现状
-        （门禁记为存量告警，不阻断）。</li>
+      <li><strong>拆分 <code>CaptureScreen.kt</code>(1207) 至 1000 以下</strong>：<code>CaptureScreenState</code>
+        持有类已建（含 <code>Saver</code>，见 §4）；剩余把命令构建层（draftState / workspaceCommands /
+        sourceImport / returnedImages / acquisition / workflowEvents / resumeCommands / modelTaskCommands
+        及薄包装函数，约 680 行内联、与 effect 交错）搬入 <code>CaptureCommandLayer</code> 单一工厂，
+        需复刻原 keyless-<code>remember</code> 的派生值冻结语义；预计可降到 ~700 行。此前文件为存量
+        超线，门禁记告警不阻断。</li>
       <li><strong>算法延后项的触发条件</strong>：CMRR 待真实数据量；w16 与优化器可辨识性改进随参数持久化加版本号一并处理。</li>
     </ul>
   </section>
