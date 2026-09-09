@@ -1,156 +1,73 @@
 package com.tingyun.smartmistakebook.core.data.study
 
-import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
-import com.tingyun.smartmistakebook.core.database.AttemptWriteCommand
-import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
-import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
-import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
-import com.tingyun.smartmistakebook.core.database.ConsumedLedgerEventReceipt
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
-import com.tingyun.smartmistakebook.core.database.LearningLedgerIntegrityException
-import com.tingyun.smartmistakebook.core.database.LearningLedgerReadStatus
-import com.tingyun.smartmistakebook.core.database.MAX_REVIEW_COMPLETION_HISTORY_DAYS
-import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingSummaryRecord
-import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRecord
-import com.tingyun.smartmistakebook.core.database.PersistedLearnerSnapshot
-import com.tingyun.smartmistakebook.core.database.ProjectionBatchStopReason
-import com.tingyun.smartmistakebook.core.database.ProjectionCasConflictException
-import com.tingyun.smartmistakebook.core.database.ProjectionCommit
-import com.tingyun.smartmistakebook.core.database.ProjectionCommitMode
-import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
-import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
-import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
-import com.tingyun.smartmistakebook.core.database.ReviewPlanRecord
 import com.tingyun.smartmistakebook.core.database.ReviewAttemptWriteCommand
-import com.tingyun.smartmistakebook.core.database.ReviewQueueItemRecord
 import com.tingyun.smartmistakebook.core.database.ReviewSessionRecord
-import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
-import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
 import com.tingyun.smartmistakebook.core.domain.OptimalRetention
-import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.domain.KnowledgeQuizFeedbackResult
-import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewCandidate
-import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewQueueEntry
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
-import com.tingyun.smartmistakebook.core.domain.knowledgeQuizMasteryVerdict
-import com.tingyun.smartmistakebook.core.domain.extractReviewKnowledgeScope
-import com.tingyun.smartmistakebook.core.domain.knowledgeRecallRiskByNode
-import com.tingyun.smartmistakebook.core.domain.selectKnowledgeReviewQueue
-import com.tingyun.smartmistakebook.core.domain.ReviewScopeQuestion
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
-import com.tingyun.smartmistakebook.core.domain.CalibrationInput
 import com.tingyun.smartmistakebook.core.domain.ChatEvidenceGateCalibration
-import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
-import com.tingyun.smartmistakebook.core.domain.AttentionSignal
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurve
 import com.tingyun.smartmistakebook.core.domain.ForgettingCurveAlgorithm
-import com.tingyun.smartmistakebook.core.domain.FsrsEvidenceRatingMapper
 import com.tingyun.smartmistakebook.core.domain.FsrsMemoryUpdateModel
 import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
 import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
 import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
-import com.tingyun.smartmistakebook.core.domain.MasteryEvidencePolicy
-import com.tingyun.smartmistakebook.core.domain.NewIntroductionPolicy
 import com.tingyun.smartmistakebook.core.domain.LogDurationModel
 import com.tingyun.smartmistakebook.core.domain.PredictionAuditSink
-import com.tingyun.smartmistakebook.core.domain.RecallPredictionAudit
-import com.tingyun.smartmistakebook.core.domain.ReviewCandidate
-import com.tingyun.smartmistakebook.core.domain.ReviewCompletionStreak
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
 import com.tingyun.smartmistakebook.core.domain.LegacyExponentialMemoryUpdateModel
 import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
 import com.tingyun.smartmistakebook.core.domain.KnowledgeQuestionLatticeRow
 import com.tingyun.smartmistakebook.core.domain.PlannedReasonCalibration
-import com.tingyun.smartmistakebook.core.domain.ReviewSample
 import com.tingyun.smartmistakebook.core.domain.SourceCalibration
-import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
 import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
 import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
-import com.tingyun.smartmistakebook.core.domain.ReviewPlanningRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
-import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
-import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSummary
-import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeCoverageGap
 import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeCoverageOverview
-import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeSubjectCoverage
-import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
-import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
-import com.tingyun.smartmistakebook.core.model.AssessmentSubmissionContext
 import com.tingyun.smartmistakebook.core.model.CalibrationReport
 import com.tingyun.smartmistakebook.core.model.LearningModelVersion
-import com.tingyun.smartmistakebook.core.model.ReviewPlan
-import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
-import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
-import com.tingyun.smartmistakebook.core.model.Attempt
-import com.tingyun.smartmistakebook.core.model.AttemptCorrection
-import com.tingyun.smartmistakebook.core.model.AttemptSubmittedResponse
-import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
-import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
-import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
-import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
-import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
-import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
-import com.tingyun.smartmistakebook.core.model.LearningEvidence
-import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
-import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
-import com.tingyun.smartmistakebook.core.model.LocalReviewSelfReportContract
-import com.tingyun.smartmistakebook.core.model.MasteryStatus
-import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
-import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
-import com.tingyun.smartmistakebook.core.model.ProjectionStatus
-import com.tingyun.smartmistakebook.core.model.StudyDayContext
-import com.tingyun.smartmistakebook.core.model.SubjectKind
-import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
-import com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import java.time.Clock
-import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  * Application-scoped repository for the curated M1 study loop.
@@ -234,6 +151,11 @@ class RoomBackedStudyExperienceRepository(
             )
         },
     )
+    private val projectionDrainer = StudyProjectionDrainer(
+        database = database,
+        learnerId = learnerId,
+        learningProjector = learningProjector,
+    )
     private val predictionAuditService = HLRPredictionAuditService()
 
     private val reviewLogSink = ReviewLogSink(
@@ -243,86 +165,98 @@ class RoomBackedStudyExperienceRepository(
         studyZoneId = studyZoneId,
     )
     private val predictionAuditSink: PredictionAuditSink = RoomPredictionAuditSink(database)
+    private val writeContext = StudyWriteContext(
+        database = database,
+        learnerId = learnerId,
+        studyZoneId = studyZoneId,
+        fixtureSource = fixtureSource,
+    )
+    private val visualInteractionIngestor = VisualInteractionIngestor(
+        database = database,
+        learnerId = learnerId,
+        reviewLogSink = reviewLogSink,
+        writeContext = writeContext,
+    )
+    private val submissionPreparer = StudySubmissionPreparer(
+        database = database,
+        learnerId = learnerId,
+        fixtureSource = fixtureSource,
+        reviewLogSink = reviewLogSink,
+        writeContext = writeContext,
+    )
+    private val ratingSubmissionService = StudyRatingSubmissionService(
+        database = database,
+        learnerId = learnerId,
+        durationModel = durationModel,
+        reviewLogSink = reviewLogSink,
+        writeContext = writeContext,
+        submissionPreparer = submissionPreparer,
+        learnerSnapshot = { currentLearnerSnapshot() },
+    )
+    private val advisoryStore = StudyAdvisoryStore(
+        database = database,
+        learnerId = learnerId,
+        clock = clock,
+    )
+    private val quizFeedbackWriter = KnowledgeQuizFeedbackWriter(
+        database = database,
+        learnerId = learnerId,
+    )
+    private val calibration = StudySchedulingCalibration(
+        database = database,
+        learnerId = learnerId,
+        reviewLogSink = reviewLogSink,
+        predictionAuditService = predictionAuditService,
+        schedulingSettingsStore = schedulingSettingsStore,
+        clock = clock,
+        learnerSnapshot = { currentLearnerSnapshot() },
+    )
+    private val plannerService = StudyReviewPlannerService(
+        database = database,
+        learnerId = learnerId,
+        studyZoneId = studyZoneId,
+        clock = clock,
+        reviewTimeBudgetSeconds = reviewTimeBudgetSeconds,
+        useReviewPlannerV2 = useReviewPlannerV2,
+        fixtureSource = fixtureSource,
+        reviewPlanner = reviewPlanner,
+        reviewPlannerV2 = reviewPlannerV2,
+        durationModel = durationModel,
+        reviewLogSink = reviewLogSink,
+        schedulingSettingsStore = schedulingSettingsStore,
+        predictionAuditService = predictionAuditService,
+        predictionAuditSink = predictionAuditSink,
+        learnerSnapshot = { currentLearnerSnapshot() },
+    )
     private var initialized = false
     private var latestMistakes: List<MistakeRecord> = emptyList()
     private var latestPendingCorrectionCount: Int = 0
     private var latestKnowledgeCoverage = StudyKnowledgeCoverageOverview()
 
+    private val answerRevealService = StudyAnswerRevealService(
+        database = database,
+        learnerId = learnerId,
+        fixtureSource = fixtureSource,
+        reviewLogSink = reviewLogSink,
+        writeContext = writeContext,
+        learnerSnapshot = { currentLearnerSnapshot() },
+    )
+    private val snapshotBuilder = StudySnapshotBuilder(
+        database = database,
+        learnerId = learnerId,
+        studyZoneId = studyZoneId,
+        fixtureSource = fixtureSource,
+        knowledgeNames = knowledgeNames,
+        curatedProblemIds = curatedProblemIds,
+        forgettingCurve = forgettingCurve,
+        plannerService = plannerService,
+        learnerSnapshot = { currentLearnerSnapshot() },
+    )
     override val snapshot: StateFlow<StudyExperienceSnapshot> = _snapshot.asStateFlow()
 
     init {
         require(learnerId.isNotBlank()) { "Learner id must not be blank" }
         require(reviewTimeBudgetSeconds > 0) { "Review time budget must be positive" }
-    }
-
-    private val observationJob: Job = applicationScope.launch {
-        try {
-            database.observeMistakes().collect { mistakes ->
-                operationMutex.withLock {
-                    latestMistakes = mistakes
-                    if (initialized) {
-                        try {
-                            publishReadySnapshot(mistakes)
-                        } catch (cancelled: CancellationException) {
-                            throw cancelled
-                        } catch (failure: Throwable) {
-                            publishFailure(failure)
-                        }
-                    }
-                }
-            }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            operationMutex.withLock { publishFailure(failure) }
-        }
-    }
-
-    private val pendingDraftObservationJob: Job = applicationScope.launch {
-        try {
-            database.observePendingProblemDraftCount().collect { count ->
-                operationMutex.withLock {
-                    latestPendingCorrectionCount = count
-                    if (initialized) {
-                        try {
-                            publishReadySnapshot(latestMistakes)
-                        } catch (cancelled: CancellationException) {
-                            throw cancelled
-                        } catch (failure: Throwable) {
-                            publishFailure(failure)
-                        }
-                    }
-                }
-            }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            operationMutex.withLock { publishFailure(failure) }
-        }
-    }
-
-    private val learningLedgerObservationJob: Job = applicationScope.launch {
-        try {
-            database.observeLearningLedgerHead(learnerId)
-                .distinctUntilChanged()
-                .collect {
-                    operationMutex.withLock {
-                        if (initialized) {
-                            try {
-                                publishReadySnapshot(latestMistakes)
-                            } catch (cancelled: CancellationException) {
-                                throw cancelled
-                            } catch (failure: Throwable) {
-                                publishFailure(failure)
-                            }
-                        }
-                    }
-                }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            operationMutex.withLock { publishFailure(failure) }
-        }
     }
 
     private fun observeKnowledgeCoverageOverview() = combine(
@@ -332,24 +266,55 @@ class RoomBackedStudyExperienceRepository(
         reviewedCoverage.toKnowledgeCoverageOverview(pendingGaps)
     }.distinctUntilChanged()
 
-    private val knowledgeCoverageObservationJob: Job = applicationScope.launch {
-        try {
-            observeKnowledgeCoverageOverview().collect { coverage ->
-                operationMutex.withLock {
-                    latestKnowledgeCoverage = coverage
-                    if (initialized) {
-                        _snapshot.value = _snapshot.value.copy(
-                            knowledgeCoverage = coverage,
-                        )
-                    }
+    private val observationJobs = StudyExperienceObservationJobs(
+        database = database,
+        learnerId = learnerId,
+        mutex = operationMutex,
+        scope = applicationScope,
+        coverageFlow = observeKnowledgeCoverageOverview(),
+        onMistakes = { mistakes ->
+            latestMistakes = mistakes
+            if (initialized) {
+                try {
+                    publishReadySnapshot(mistakes)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Throwable) {
+                    publishFailure(failure)
                 }
             }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            operationMutex.withLock { publishFailure(failure) }
-        }
-    }
+        },
+        onPendingDraftCount = { count ->
+            latestPendingCorrectionCount = count
+            if (initialized) {
+                try {
+                    publishReadySnapshot(latestMistakes)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Throwable) {
+                    publishFailure(failure)
+                }
+            }
+        },
+        onLedgerChanged = {
+            if (initialized) {
+                try {
+                    publishReadySnapshot(latestMistakes)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Throwable) {
+                    publishFailure(failure)
+                }
+            }
+        },
+        onCoverage = { coverage ->
+            latestKnowledgeCoverage = coverage
+            if (initialized) {
+                _snapshot.value = _snapshot.value.copy(knowledgeCoverage = coverage)
+            }
+        },
+        onFailure = { failure -> publishFailure(failure) },
+    )
 
     override suspend fun initialize() {
         runOperation {
@@ -376,7 +341,7 @@ class RoomBackedStudyExperienceRepository(
             }
             initialized = true
             try {
-                ingestPendingVisualInteractionAttempts(latestMistakes)
+                visualInteractionIngestor.ingestPending(latestMistakes)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: Throwable) {
@@ -473,7 +438,7 @@ class RoomBackedStudyExperienceRepository(
     override suspend fun submitChoice(
         submission: StudyChoiceSubmission,
     ): StudyChoiceSubmissionResult = runOperation {
-        val prepared = prepareChoiceSubmission(submission)
+        val prepared = submissionPreparer.prepareChoiceSubmission(submission)
         val priorMemory = currentLearnerSnapshot().problemMemoryStates
             ?.get(submission.practiceUnitId)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
@@ -544,7 +509,7 @@ class RoomBackedStudyExperienceRepository(
             "Review answer belongs to another planned practice unit"
         }
 
-        val prepared = prepareChoiceSubmission(submission)
+        val prepared = submissionPreparer.prepareChoiceSubmission(submission)
         val priorMemory = currentLearnerSnapshot().problemMemoryStates
             ?.get(submission.practiceUnitId)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
@@ -635,7 +600,7 @@ class RoomBackedStudyExperienceRepository(
         val mistake = requireNotNull(
             currentMistakes.singleOrNull { it.practiceUnitId == submission.practiceUnitId },
         ) { "The planned saved question is no longer active" }
-        val prepared = prepareSelfReportSubmission(submission, mistake)
+        val prepared = submissionPreparer.prepareSelfReportSubmission(submission, mistake)
         val priorMemory = currentLearnerSnapshot().problemMemoryStates
             ?.get(submission.practiceUnitId)
         database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
@@ -692,202 +657,8 @@ class RoomBackedStudyExperienceRepository(
         expectedStateVersion: Long,
         submission: StudyReviewRatingSubmission,
     ): StudyReviewRatingSubmissionResult = runOperation {
-        require(sessionId.isNotBlank()) { "Review session id must not be blank" }
-        require(expectedStateVersion >= 0) { "Expected review-session version must not be negative" }
-        val reviewPlan = requireNotNull(
-            database.observeReviewPlanForSession(sessionId).first(),
-        ) { "No persisted review plan owns session $sessionId" }
-        val activeSession = (reviewPlan.activeSession ?: reviewPlan.latestSession)?.takeIf {
-            it.reviewSessionId == sessionId
-        } ?: error("Review session $sessionId does not belong to its persisted plan")
-        val orderedQueue = reviewPlan.queue.sortedBy { it.ordinal }
-        val queueItem = requireNotNull(
-            orderedQueue.singleOrNull { it.ordinal.toLong() == expectedStateVersion },
-        ) { "Expected review-session version does not identify one planned queue item" }
-        require(queueItem.practiceUnitId == submission.practiceUnitId) {
-            "Review rating belongs to another planned practice unit"
-        }
-        val currentMistakes = database.observeMistakes().first()
-        val mistake = requireNotNull(
-            currentMistakes.singleOrNull { it.practiceUnitId == submission.practiceUnitId },
-        ) { "The planned saved question is no longer active" }
-
-        val priorMemory = currentLearnerSnapshot().problemMemoryStates
-            ?.get(submission.practiceUnitId)
-        val cooldownActive = isWithinCooldown(
-            practiceUnitId = submission.practiceUnitId,
-            sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
-            cooldownMillis = SUBJECTIVE_COOLDOWN_MILLIS,
-            atEpochMillis = submission.occurredAtEpochMillis,
-        )
-
-        if (cooldownActive) {
-            // Spec §2.7: repeated subjective reports inside the cooldown stay
-            // observation-only - they land in review_log, never in the
-            // scheduling ledger, and the session keeps its current position.
-            val evidence = ratingEvidenceFor(submission.rating)
-            reviewLogSink.record(
-                practiceUnitId = submission.practiceUnitId,
-                evidence = evidence,
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                studyDay = studyDayAt(submission.occurredAtEpochMillis),
-                sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
-                sourceId = stableId("rating", submission.requestId),
-                priorMemory = priorMemory,
-                schedulingEligible = false,
-                scrollUpCount = submission.scrollUpCount,
-                interruptionCount = submission.interruptionCount,
-                awayMillis = submission.awayMillis,
-            )
-            val progress = activeSession.toProgress(orderedQueue.size)
-            return@runOperation StudyReviewRatingSubmissionResult(
-                attemptId = stableId("rating", submission.requestId),
-                created = false,
-                rating = submission.rating,
-                evidenceReason = evidence.reason,
-                progress = progress,
-                nextPracticeUnitId = orderedQueue
-                    .getOrNull(progress.currentOrdinal)
-                    ?.practiceUnitId,
-                evidenceSuppressedByCooldown = true,
-            )
-        }
-
-        val prepared = prepareRatingSubmission(submission, mistake)
-        database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
-        val writeResult = database.recordReviewAttempt(
-            ReviewAttemptWriteCommand(
-                attempt = prepared.command,
-                sessionId = sessionId,
-                expectedStateVersion = expectedStateVersion,
-                reviewQueueItemId = queueItem.reviewQueueItemId,
-                practiceUnitId = queueItem.practiceUnitId,
-            ),
-        )
-        if (writeResult.attempt.created) {
-            reviewLogSink.record(
-                practiceUnitId = submission.practiceUnitId,
-                evidence = prepared.command.evidence,
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                studyDay = prepared.command.studyDay,
-                sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
-                sourceId = writeResult.attempt.attempt.attemptId,
-                priorMemory = priorMemory,
-                scrollUpCount = submission.scrollUpCount,
-                interruptionCount = submission.interruptionCount,
-                awayMillis = submission.awayMillis,
-            )
-        }
-        // L1 rollout: feed the observed duration (subject already loaded above).
-        durationModel.record(
-            learnerId = learnerId,
-            subjectId = mistake.subject,
-            itemType = null,
-            difficulty = 5.0, // unused dimension; kept for API stability
-            durationSeconds = submission.durationSeconds.toDouble().coerceAtLeast(1.0),
-        )
-        val progress = writeResult.advance.session.toProgress(orderedQueue.size)
-        StudyReviewRatingSubmissionResult(
-            attemptId = writeResult.attempt.attempt.attemptId,
-            created = writeResult.attempt.created,
-            rating = submission.rating,
-            evidenceReason = writeResult.attempt.attempt.evidence.reason,
-            progress = progress,
-            nextPracticeUnitId = orderedQueue
-                .getOrNull(progress.currentOrdinal)
-                ?.practiceUnitId,
-        )
+        ratingSubmissionService.submit(sessionId, expectedStateVersion, submission)
     }
-
-    override suspend fun recordTeachingFocus(
-        sessionId: String,
-        practiceUnitId: String,
-        labels: List<String>,
-        cycleOrdinal: Int,
-    ) {
-        val usable = labels.map(String::trim).filter(String::isNotBlank)
-        if (usable.isEmpty()) return
-        insertAdvisory(
-            sessionId = sessionId,
-            practiceUnitId = practiceUnitId,
-            advisoryKind = TeachingAdvisoryRecord.KIND_TEACHING_FOCUS,
-            advisoryId = "advisory:$sessionId:$cycleOrdinal:${TeachingAdvisoryRecord.KIND_TEACHING_FOCUS}",
-            payloadMarkdown = usable.joinToString(separator = "、"),
-            cycleOrdinal = cycleOrdinal,
-        )
-    }
-
-    override suspend fun submitKnowledgeQuizFeedback(
-        requestId: String,
-        knowledgeNodeId: String,
-        correctChoiceId: String,
-        selectedChoiceId: String,
-        occurredAtEpochMillis: Long,
-        conversationId: String,
-    ): KnowledgeQuizFeedbackResult {
-        val isCorrect = selectedChoiceId == correctChoiceId
-        val verdict = knowledgeQuizMasteryVerdict(isCorrect)
-        val now = occurredAtEpochMillis
-        // 知识点锚定：节点必须真实存在于知识库，防止写入游离/臆造节点。
-        val anchored = database.readKnowledgeNodesByIds(setOf(knowledgeNodeId)).isNotEmpty()
-        val lastSameKcWrite = database.lastAcceptedChatEvidenceAtForKc(learnerId, knowledgeNodeId)
-        val sameKcLastWriteAgoMillis = lastSameKcWrite?.let { (now - it).coerceAtLeast(0) }
-        val acceptedInWindow = database.countAcceptedChatEvidenceSince(
-            learnerId = learnerId,
-            sinceEpochMillis = now - MasteryWriteGate.LEARNER_WINDOW_MILLIS,
-        )
-        // 知识点复习按"每次复习会话"计数防刷：调用方传入该次会话的 id（见
-        // KnowledgeReviewSessionViewModel），否则固定 id 会把每会话配额变成终身配额，
-        // 累计写满后永久拒写（审计 2026-09-09 P1）。
-        require(conversationId.isNotBlank()) { "Knowledge quiz conversation id must not be blank" }
-        val acceptedInConversation = database.countAcceptedChatEvidenceInConversation(conversationId)
-        val input = MasteryWriteGate.GateInput(
-            intentConfidence = 1.0, // 本地确定的客观作答，非模型意图路由
-            evidenceConfidence = 1.0, // 客观对错，置信满
-            direction = verdict.direction,
-            understanding = verdict.understanding,
-            knowledgeNodeIsAnchored = anchored,
-            hasBehavioralSupport = verdict.hasBehavioralSupport,
-            sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
-            writesThisConversation = acceptedInConversation,
-            writesThisLearnerInWindow = acceptedInWindow,
-            attentionFactor = 1.0,
-        )
-        return when (val result = MasteryWriteGate.evaluate(input)) {
-            is MasteryWriteGate.GateResult.Accepted -> {
-                database.recordChatEvidence(
-                    listOf(
-                        LearnerChatEvidenceEntity(
-                            evidence_id = "knowledge-quiz:$requestId:$knowledgeNodeId",
-                            learner_id = learnerId,
-                            conversation_id = conversationId,
-                            knowledge_node_id = knowledgeNodeId,
-                            direction = verdict.direction.name,
-                            weight = result.weight,
-                            reason_markdown = "知识点复习作答（${if (isCorrect) "答对" else "答错"}）",
-                            confidence = 1.0,
-                            source_kind = "KNOWLEDGE_QUIZ",
-                            created_at_epoch_millis = now,
-                        ),
-                    ),
-                )
-                KnowledgeQuizFeedbackResult(
-                    isCorrect = isCorrect,
-                    evidenceRecorded = true,
-                )
-            }
-            is MasteryWriteGate.GateResult.Rejected -> KnowledgeQuizFeedbackResult(
-                isCorrect = isCorrect,
-                evidenceRecorded = false,
-                rejectedReason = result.reason.name,
-            )
-        }
-    }
-
-    override fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>> =
-        database.observeTeachingAdvisories(learnerId, practiceUnitId)
 
     override fun observeKnowledgeQuestionLattice(): Flow<List<KnowledgeQuestionLatticeRow>> =
         database.observeKnowledgeQuestionLattice(learnerId).map { rows ->
@@ -913,324 +684,87 @@ class RoomBackedStudyExperienceRepository(
             }
         }
 
+    override suspend fun recordTeachingFocus(
+        sessionId: String,
+        practiceUnitId: String,
+        labels: List<String>,
+        cycleOrdinal: Int,
+    ) {
+        advisoryStore.recordTeachingFocus(sessionId, practiceUnitId, labels, cycleOrdinal)
+    }
+
     override suspend fun recordMisconceptionAdvisory(
         sessionId: String,
         practiceUnitId: String,
         payloadMarkdown: String,
         cycleOrdinal: Int,
     ) {
-        insertAdvisory(
+        advisoryStore.recordMisconceptionAdvisory(
             sessionId = sessionId,
             practiceUnitId = practiceUnitId,
-            advisoryKind = TeachingAdvisoryRecord.KIND_MISCONCEPTION,
-            advisoryId = "advisory:$sessionId:$cycleOrdinal:${TeachingAdvisoryRecord.KIND_MISCONCEPTION}",
             payloadMarkdown = payloadMarkdown,
             cycleOrdinal = cycleOrdinal,
         )
     }
 
-    private suspend fun insertAdvisory(
-        sessionId: String,
-        practiceUnitId: String,
-        advisoryKind: String,
-        advisoryId: String,
-        payloadMarkdown: String,
-        cycleOrdinal: Int,
-    ) {
-        database.recordTeachingAdvisories(
-            listOf(
-                TeachingAdvisoryRecord(
-                    advisoryId = advisoryId,
-                    learnerId = learnerId,
-                    practiceUnitId = practiceUnitId,
-                    knowledgeNodeId = null,
-                    advisoryKind = advisoryKind,
-                    payloadMarkdown = payloadMarkdown,
-                    confidence = null,
-                    sourceId = "$sessionId:$cycleOrdinal",
-                    createdAtEpochMillis = clock.millis(),
-                ),
-            ),
-        )
-    }
+    override fun observeTeachingAdvisories(practiceUnitId: String?): Flow<List<TeachingAdvisoryRecord>> =
+        advisoryStore.observeTeachingAdvisories(practiceUnitId)
 
-    override suspend fun declareExam(entry: ExamCalendarEntry) {
-        val store = requireNotNull(schedulingSettingsStore) {
-            "Exam declaration requires a scheduling settings store"
-        }
-        store.addExam(entry)
-    }
+    override suspend fun submitKnowledgeQuizFeedback(
+        requestId: String,
+        knowledgeNodeId: String,
+        correctChoiceId: String,
+        selectedChoiceId: String,
+        occurredAtEpochMillis: Long,
+        conversationId: String,
+    ): KnowledgeQuizFeedbackResult = quizFeedbackWriter.submit(
+        requestId = requestId,
+        knowledgeNodeId = knowledgeNodeId,
+        correctChoiceId = correctChoiceId,
+        selectedChoiceId = selectedChoiceId,
+        occurredAtEpochMillis = occurredAtEpochMillis,
+        conversationId = conversationId,
+    )
 
-    override suspend fun removeExam(entryId: String) {
-        val store = requireNotNull(schedulingSettingsStore) {
-            "Exam declaration requires a scheduling settings store"
-        }
-        store.removeExam(entryId)
-    }
+    override suspend fun declareExam(entry: ExamCalendarEntry) = calibration.declareExam(entry)
 
-    override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? {
-        val samples = reviewLogSink.reviewSamples()
-        if (samples.isEmpty()) return null
-        val eligible = samples.groupBy(ReviewSample::practiceUnitId).values.any { it.size >= 2 }
-        if (!eligible) return null
-        return SchedulingEvaluationHarness.evaluate(samples)
-    }
+    override suspend fun removeExam(entryId: String) = calibration.removeExam(entryId)
+
+    override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? =
+        calibration.evaluateSchedulingModels()
 
     override suspend fun sourceCalibrations(): List<SourceCalibration> =
-        reviewLogSink.sourceCalibrations()
+        calibration.sourceCalibrations()
 
     override suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> =
-        SchedulingEvaluationHarness.calibratePlannedReasons(reviewLogSink.reviewSamples())
+        calibration.plannedReasonCalibrations()
 
-    override suspend fun chatEvidenceGateCalibration(): ChatEvidenceGateCalibration.GateCalibrationReport? {
-        val acceptedTotal = database.countAcceptedChatEvidenceSince(
-            learnerId = learnerId,
-            sinceEpochMillis = 0,
-        )
-        val rejected = database.countRejectedChatEvidenceByReason(learnerId)
-        // 30 天观察窗的每小时分布（校准看近期行为，不看全部历史）。
-        val hourWindowStart = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
-        val perHour = database.countAcceptedChatEvidencePerHour(learnerId, hourWindowStart)
-        val observation = ChatEvidenceGateCalibration.GateObservation(
-            acceptedCount = acceptedTotal,
-            rejectedByReason = rejected.associate { it.reason to it.count },
-            acceptedPerHour = perHour.associate { it.hourBucket to it.count },
-        )
-        if (observation.totalObservations == 0) return null
-        return ChatEvidenceGateCalibration.calibrate(observation)
-    }
+    override suspend fun chatEvidenceGateCalibration():
+        ChatEvidenceGateCalibration.GateCalibrationReport? =
+        calibration.chatEvidenceGateCalibration()
 
-    override suspend fun suggestedReminderMinute(): Int? = reviewLogSink.suggestedReminderMinute()
+    override suspend fun suggestedReminderMinute(): Int? = calibration.suggestedReminderMinute()
 
-    override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? {
-        val store = requireNotNull(schedulingSettingsStore) {
-            "Parameter optimization requires a scheduling settings store"
-        }
-        // Phone-safe bound: numeric-gradient fitting replays the history many
-        // times, so optimization runs on the most recent window only.
-        val samples = reviewLogSink.reviewSamples().takeLast(MAX_OPTIMIZE_SAMPLES)
-        val result = FsrsParameterOptimizer.optimize(samples)
-        if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
-        store.setOptimizedParameters(result.parameters)
-        return result
-    }
+    override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? =
+        calibration.optimizeSchedulingParameters()
 
-    override suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? {
-        val snapshot = currentLearnerSnapshot()
-        val cards = snapshot.problemMemoryStates.values.map { memory ->
-            OptimalRetention.Card(
-                stabilityDays = memory.stabilityDays,
-                difficulty = memory.difficulty,
-            )
-        }
-        val parameters = schedulingSettingsStore
-            ?.optimizedParameters
-            ?.first()
-            ?: FsrsScheduleMath.DEFAULT_PARAMETERS
-        return OptimalRetention.recommend(cards, parameters)
-    }
+    override suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? =
+        calibration.recommendedDesiredRetention()
 
-    private fun ratingEvidenceFor(rating: StudyReviewRating): LearningEvidence = when (rating) {
-        StudyReviewRating.AGAIN -> LearningEvidence(
-            direction = LearningEvidenceDirection.NEGATIVE,
-            weight = 1.0,
-            reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
-        )
-        StudyReviewRating.HARD -> LearningEvidence(
-            direction = LearningEvidenceDirection.POSITIVE,
-            weight = RATING_HARD_WEIGHT,
-            reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
-        )
-        StudyReviewRating.GOOD -> LearningEvidence(
-            direction = LearningEvidenceDirection.POSITIVE,
-            weight = RATING_GOOD_WEIGHT,
-            reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
-        )
-        StudyReviewRating.EASY -> LearningEvidence(
-            direction = LearningEvidenceDirection.POSITIVE,
-            weight = RATING_EASY_WEIGHT,
-            reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
-        )
-    }
+    suspend fun calibrationReport(modelVersion: LearningModelVersion): CalibrationReport =
+        calibration.calibrationReport(modelVersion)
 
-    private suspend fun prepareRatingSubmission(
-        submission: StudyReviewRatingSubmission,
-        mistake: MistakeRecord,
-    ): PreparedSelfReportSubmission {
-        val pseudoAttributions = buildPseudoAttribution(
-            practiceUnitId = mistake.practiceUnitId,
-            problemRevisionId = mistake.problemRevisionId,
-            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
-            subject = mistake.subject,
-            acceptedAtEpochMillis = submission.occurredAtEpochMillis,
-        )
-        val evidenceSnapshot = AssessmentEvidenceSnapshot(
-            snapshotId = stableId("rating-snapshot", submission.requestId),
-            assessmentItemId = LocalReviewSelfReportContract.ASSESSMENT_ITEM_ID_PREFIX +
-                stableId(
-                    namespace = "item",
-                    requestId = "${mistake.practiceUnitId}\n${mistake.problemRevisionId}",
-                ),
-            practiceUnitId = mistake.practiceUnitId,
-            problemRevisionId = mistake.problemRevisionId,
-            answerSpecId = LocalReviewSelfReportContract.ANSWER_SPEC_ID,
-            itemFamilyId = LocalReviewSelfReportContract.ITEM_FAMILY_ID,
-            sourceBundleId = null,
-            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
-            verification = AssessmentSnapshotVerification.VERIFIED,
-            calibration = CalibrationSnapshot.unknown(),
-            attributions = pseudoAttributions,
-            capturedAtEpochMillis = submission.occurredAtEpochMillis,
-        )
-        val ratingBase = ratingEvidenceFor(submission.rating)
-        val evidence = if (ratingBase.direction == LearningEvidenceDirection.NONE) {
-            ratingBase
-        } else {
-            val factor = reviewLogSink.subjectiveSignalFactor(
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                interruptionCount = submission.interruptionCount,
-                awayMillis = submission.awayMillis,
-                isCorrect = submission.rating != StudyReviewRating.AGAIN,
-            )
-            ratingBase.copy(weight = (ratingBase.weight * factor).coerceIn(0.0, 1.0))
-        }
-        val memoryOutcome = if (submission.rating == StudyReviewRating.AGAIN) {
-            ProblemMemoryOutcome.RETRIEVAL_FAILURE
-        } else {
-            ProblemMemoryOutcome.ASSISTED_RECALL
-        }
-        return PreparedSelfReportSubmission(
-            evidenceSnapshot = evidenceSnapshot,
-            command = AttemptWriteCommand(
-                learnerId = learnerId,
-                submissionId = stableId("submission", submission.requestId),
-                attemptId = stableId("attempt", submission.requestId),
-                presentationId = submission.presentationId,
-                assessmentSnapshotId = evidenceSnapshot.snapshotId,
-                submittedResponse = AttemptSubmittedResponse.Choice(
-                    choiceId = "rating:${submission.rating.name}",
-                    choiceMarkdown = when (submission.rating) {
-                        StudyReviewRating.AGAIN -> "没想起来"
-                        StudyReviewRating.HARD -> "很费劲"
-                        StudyReviewRating.GOOD -> "正常"
-                        StudyReviewRating.EASY -> "很轻松"
-                    },
-                    submittedAtEpochMillis = submission.occurredAtEpochMillis,
-                ),
-                evidence = evidence,
-                problemMemoryOutcome = memoryOutcome,
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                studyDay = studyDayAt(submission.occurredAtEpochMillis),
-            ),
-        )
-    }
-
-    /**
-     * Spec 3.4 pseudo-KC fallback: when a saved question carries no accepted
-     * knowledge bindings, its subjective evidence still lands on the
-     * subject-scoped pseudo knowledge node through a deterministic pseudo
-     * binding, so mastery state is never lost for unbound questions.
-     */
-    /**
-     * Subjective evidence factor (spec 2.14 + 2.12): attention switches and
-     * away-time (Craik 1996), the personal time-of-day multiplier (May &
-     * Hasher 1998; >=30 samples per bucket, cold start neutral) and the
-     * response-time guess discount (Meyer 2010 via the RT baseline) all only
-     * ever shrink the weight of a subjective report.
-     */
-    private suspend fun buildPseudoAttribution(
-        practiceUnitId: String,
-        problemRevisionId: String,
-        taxonomyVersion: String,
-        subject: String,
-        acceptedAtEpochMillis: Long,
-    ): List<KnowledgeEvidenceAttribution> {
-        val binding = database.ensurePseudoKnowledgeBinding(
-            practiceUnitId = practiceUnitId,
-            problemRevisionId = problemRevisionId,
-            taxonomyVersion = taxonomyVersion,
-            subject = subject,
-            acceptedAtEpochMillis = acceptedAtEpochMillis,
-        ) ?: return emptyList()
-        return listOf(
-            KnowledgeEvidenceAttribution(
-                bindingId = binding.bindingId,
-                knowledgeNodeId = binding.knowledgeNodeId,
-                weight = 1.0,
-                basisRevisionId = binding.basisRevisionId,
-                taxonomyVersion = binding.taxonomyVersion,
-                role = EvidenceAttributionRole.PRIMARY,
-                certainty = EvidenceAttributionCertainty.DIRECT,
-            ),
-        )
-    }
-
-    private suspend fun isWithinCooldown(
-        practiceUnitId: String,
-        sourceKind: String,
-        cooldownMillis: Long,
-        atEpochMillis: Long,
-    ): Boolean {
-        val last = database.readLastReviewLogAt(
-            learnerId = learnerId,
-            practiceUnitId = practiceUnitId,
-            sourceKind = sourceKind,
-        ) ?: return false
-        return atEpochMillis - last in 0 until cooldownMillis
-    }
+    override suspend fun calibrationReport(): CalibrationReport = calibration.calibrationReport()
 
     override suspend fun revealAnswer(
         request: StudyAnswerRevealRequest,
     ): StudyAnswerRevealResult = runOperation {
-        val artifact = requireTeachingArtifact(request.practiceUnitId)
-        val assessmentItem = artifact.assessmentItems.singleOrNull()
-            ?: error("Curated practice unit ${request.practiceUnitId} must have one assessment")
-        val evidenceSnapshot = requireNotNull(
-            fixtureSource.evidenceSnapshotForAssessment(assessmentItem.id),
-        ) { "No verified evidence snapshot for assessment ${assessmentItem.id}" }
-
-        database.saveAssessmentEvidenceSnapshot(evidenceSnapshot)
-        val priorMemory = currentLearnerSnapshot().problemMemoryStates
-            ?.get(request.practiceUnitId)
-        val writeResult = database.recordAnswerReveal(
-            AnswerRevealWriteCommand(
-                learnerId = learnerId,
-                assessmentEventId = stableId("answer-reveal", request.requestId),
-                presentationId = request.presentationId,
-                assessmentSnapshotId = evidenceSnapshot.snapshotId,
-                contentMarkdown = artifact.explanationMarkdown,
-                occurredAtEpochMillis = request.occurredAtEpochMillis,
-                studyDay = studyDayAt(request.occurredAtEpochMillis),
-            ),
-        )
-        if (writeResult.created) {
-            reviewLogSink.record(
-                practiceUnitId = request.practiceUnitId,
-                evidence = LearningEvidence(
-                    direction = LearningEvidenceDirection.NONE,
-                    weight = 0.0,
-                    reason = LearningEvidenceReason.ANSWER_REVEALED,
-                ),
-                occurredAtEpochMillis = request.occurredAtEpochMillis,
-                durationSeconds = 0,
-                studyDay = studyDayAt(request.occurredAtEpochMillis),
-                sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
-                sourceId = writeResult.outcome.outcomeId,
-                priorMemory = priorMemory,
-            )
-        }
+        val result = answerRevealService.reveal(request)
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
-        StudyAnswerRevealResult(
-            outcomeId = writeResult.outcome.outcomeId,
-            created = writeResult.created,
-            explanationMarkdown = artifact.explanationMarkdown,
-        )
+        result
     }
-
     override suspend fun startOrResumeReviewSession(
         requestId: String,
         occurredAtEpochMillis: Long,
@@ -1241,9 +775,9 @@ class RoomBackedStudyExperienceRepository(
         initialized = true
         publishReadySnapshot(latestMistakes)
 
-        val planningContext = planningContext(currentLearnerSnapshot())
+        val planningContext = plannerService.planningContext(currentLearnerSnapshot())
         val currentPlan = requireNotNull(
-            database.observeActiveReviewPlan(learnerId).first() ?: currentReviewPlan(planningContext),
+            database.observeActiveReviewPlan(learnerId).first() ?: plannerService.currentReviewPlan(planningContext),
         ) {
             "No current review plan is available"
         }
@@ -1254,7 +788,7 @@ class RoomBackedStudyExperienceRepository(
         }?.let { return@runOperation it.toProgress(currentPlan.queue.size) }
 
         val session = ReviewSessionRecord(
-            reviewSessionId = stableId(
+            reviewSessionId = writeContext.stableId(
                 namespace = "review-session",
                 requestId = "${currentPlan.plan.reviewPlanId}\n$requestId",
             ),
@@ -1271,7 +805,7 @@ class RoomBackedStudyExperienceRepository(
         try {
             database.saveReviewSession(session)
         } catch (conflict: ImmutablePayloadConflictException) {
-            val concurrent = currentReviewPlan(planningContext)?.activeSession
+            val concurrent = plannerService.currentReviewPlan(planningContext)?.activeSession
             if (concurrent == null || concurrent.reviewPlanId != currentPlan.plan.reviewPlanId) {
                 throw conflict
             }
@@ -1285,207 +819,30 @@ class RoomBackedStudyExperienceRepository(
         requestId: String,
         occurredAtEpochMillis: Long,
     ): KnowledgeReviewSessionPlan? = runOperation {
-        require(requestId.isNotBlank()) { "Knowledge-review request id must not be blank" }
-        require(occurredAtEpochMillis >= 0) { "Knowledge-review request time must not be negative" }
         latestMistakes = database.observeMistakes().first()
         initialized = true
         publishReadySnapshot(latestMistakes)
-
-        val planningContext = planningContext(currentLearnerSnapshot())
-        val currentPlan = requireNotNull(
-            database.observeActiveReviewPlan(learnerId).first() ?: currentReviewPlan(planningContext),
-        ) {
-            "No current review plan is available"
-        }
-        // 知识点复习不要求错题会话已启动：今日有 current 计划（含已完成）即可据此排知识点。
-        val planQueue = currentPlan.queue
-        if (planQueue.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
-
-        // 范围 = 今天错题复习队列的题绑定知识点并集（T1），只取今天队列实际覆盖的点，
-        // 不把整个知识库拖进来（spec §1.3：范围 = 今天错题里涉及的知识点）。
-        val queueScope = extractReviewKnowledgeScope(
-            planQueue.map { queueItem ->
-                ReviewScopeQuestion(
-                    practiceUnitId = queueItem.practiceUnitId,
-                    knowledgeNodeIds = queueItem.knowledgeNodeIds,
-                )
-            },
-        )
-        if (queueScope.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
-
-        val learnerSnapshot = currentLearnerSnapshot()
-        val resolvedContexts = resolveKnowledgeContexts(queueScope)
-        // 科目权威来源：知识点节点自身的 subject（resolveKnowledgeContexts 解析自 knowledge_node），
-        // 兜底取今天队列中绑定该点的错题的 subject——两者都是知识库真值，不猜前缀。
-        val subjectByNode = resolvedContexts.mapValues { (_, context) -> context.subject } +
-            latestMistakes.asSequence()
-                .flatMap { mistake -> mistake.knowledgeNodeIds.map { it to mistake.subject } }
-                .filter { (knowledgeNodeId, _) -> knowledgeNodeId in queueScope }
-                .associate { (knowledgeNodeId, subject) ->
-                    knowledgeNodeId to runCatching { SubjectKind.valueOf(subject) }
-                        .getOrDefault(SubjectKind.GENERAL)
-                }
-        // 只排可出题的知识点：KNOWLEDGE_QUIZ 以讲解材料 boundary 为防臆造锚（spec §3.3），
-        // 无材料的伪节点（pseudo:*）或未装配材料的真节点无法出题，若进计划会让会话卡死。
-        val materialGroupByNode = quizAbleScopeNodes(queueScope, subjectByNode)
-        if (materialGroupByNode.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
-        val candidateIds = queueScope.filterTo(linkedSetOf()) { it in materialGroupByNode }
-        // 知识点没有自己的记忆痕迹：到期风险由今天队列中承载它的题目的 FSRS 检索概率聚合
-        // （取最小 R），而不是掌握度 EMA + 45 天悬崖（研究 2026-09-09 §1）。
-        val boundUnitsByNode = planQueue
-            .flatMap { item -> item.knowledgeNodeIds.map { nodeId -> nodeId to item.practiceUnitId } }
-            .groupBy({ it.first }, { it.second })
-        val recallRiskByNode = knowledgeRecallRiskByNode(
-            boundPracticeUnitIdsByNode = boundUnitsByNode,
-            memoryStates = learnerSnapshot.problemMemoryStates,
-            nowEpochMillis = planningContext.planningAtEpochMillis,
-        )
-        val selected = selectKnowledgeReviewQueue(
-            planner = reviewPlanner,
-            candidates = candidateIds.map { knowledgeNodeId ->
-                KnowledgeReviewCandidate(
-                    knowledgeNodeId = knowledgeNodeId,
-                    subjectId = subjectByNode[knowledgeNodeId]?.name ?: SubjectKind.GENERAL.name,
-                    materialGroupId = materialGroupByNode[knowledgeNodeId],
-                    state = learnerSnapshot.knowledgeMasteryStates[knowledgeNodeId],
-                    estimatedDurationSeconds = LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS,
-                    recallRisk = recallRiskByNode[knowledgeNodeId],
-                )
-            },
-            now = planningContext.planningAtEpochMillis,
-            timeBudgetSeconds = reviewTimeBudgetSeconds,
-        )
-        if (selected.isEmpty()) return@runOperation KnowledgeReviewSessionPlan()
-        KnowledgeReviewSessionPlan(
-            queue = selected.map { scored ->
-                val context = resolvedContexts[scored.knowledgeNodeId]
-                val state = learnerSnapshot.knowledgeMasteryStates[scored.knowledgeNodeId]
-                KnowledgeReviewQueueEntry(
-                    knowledgeNodeId = scored.knowledgeNodeId,
-                    subject = subjectByNode[scored.knowledgeNodeId]?.name
-                        ?: SubjectKind.GENERAL.name,
-                    displayName = context?.displayName
-                        ?: knowledgeNames[scored.knowledgeNodeId]
-                        ?: scored.knowledgeNodeId,
-                    masteryScore = state?.masteryScore,
-                    lastEvidenceAtEpochMillis = state?.lastEvidenceAtEpochMillis,
-                )
-            },
+        plannerService.currentKnowledgeReviewPlan(
+            requestId = requestId,
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            mistakes = latestMistakes,
+            knowledgeNames = knowledgeNames,
         )
     }
 
+
     override fun close() {
-        observationJob.cancel()
-        pendingDraftObservationJob.cancel()
-        learningLedgerObservationJob.cancel()
-        knowledgeCoverageObservationJob.cancel()
+        observationJobs.cancel()
         if (closeDatabaseOnClose) database.close()
     }
 
     private suspend fun publishReadySnapshot(mistakes: List<MistakeRecord>) {
-        val learnerSnapshot = currentLearnerSnapshot()
-        check(
-            learnerSnapshot.freshness == LearnerSnapshotFreshness.CURRENT &&
-                learnerSnapshot.projectionStatus == ProjectionStatus.CURRENT,
-        ) { "Cannot publish a study snapshot from a stale or incomplete learning projection" }
-
-        val planningContext = planningContext(learnerSnapshot)
-        val activePlan = database.observeActiveReviewPlan(learnerId).first()
-        val retainedPlan = activePlan ?: database.observeCurrentReviewPlan(
-            learnerId = learnerId,
-            localDayEpochDay = planningContext.localDate.toEpochDay(),
-            timeZoneId = studyZoneId.id,
-        ).first()?.takeIf { current ->
-            current.activeSession != null ||
-                current.latestSession?.status == StudyDbValue.ReviewStatus.COMPLETED
-        }
-        val reviewBundle = retainedPlan ?: createReviewPlan(
+        _snapshot.value = snapshotBuilder.build(
             mistakes = mistakes,
-            learnerSnapshot = learnerSnapshot,
-            planningContext = planningContext,
-        ).also { database.saveReviewPlan(it) }
-        val completedReviewDays = database.observeCompletedReviewLocalDays(
-            learnerId = learnerId,
-            limit = MAX_REVIEW_COMPLETION_HISTORY_DAYS,
-        ).first()
-        val orderedMistakes = mistakes.sortedWith(
-            compareByDescending<MistakeRecord>(MistakeRecord::createdAtEpochMillis)
-                .thenBy(MistakeRecord::entryId),
-        )
-        // Intake backlog (spec batch-intake §1): never-attempted questions
-        // (no memory state) that are NOT in today's plan queue — they stay in
-        // the backlog with no learning pressure until introduced.
-        val plannedUnitIds = reviewBundle.queue.mapTo(hashSetOf()) { it.practiceUnitId }
-        val intakeBacklog = orderedMistakes.filter { mistake ->
-            learnerSnapshot.problemMemoryStates[mistake.practiceUnitId] == null &&
-                mistake.practiceUnitId !in plannedUnitIds
-        }
-        val referencedKnowledgeNodeIds = buildSet {
-            addAll(learnerSnapshot.knowledgeMasteryStates.keys)
-            orderedMistakes.forEach { mistake -> addAll(mistake.knowledgeNodeIds) }
-        }
-        val resolvedKnowledgeContexts = resolveKnowledgeContexts(referencedKnowledgeNodeIds)
-        val resolvedKnowledgeNames = knowledgeNames + resolvedKnowledgeContexts.mapValues {
-            it.value.displayName
-        }
-        _snapshot.value = StudyExperienceSnapshot(
-            status = StudyDataStatus.READY,
-            catalog = orderedMistakes.map { mistake ->
-                mistake.toCatalogEntry(
-                    learnerSnapshot = learnerSnapshot,
-                    atEpochMillis = planningContext.planningAtEpochMillis,
-                    resolvedKnowledgeNames = resolvedKnowledgeNames,
-                )
-            },
             pendingCorrectionCount = latestPendingCorrectionCount,
-            review = reviewBundle.toOverview(
-                completedReviewDays = completedReviewDays,
-                currentLocalDay = planningContext.localDate.toEpochDay(),
-                intakeBacklogCount = intakeBacklog.size,
-                intakeMedianEstimateSeconds = intakeBacklog.medianEstimateSeconds(),
-            ),
-            profile = learnerSnapshot.toProfileOverview(
-                resolvedKnowledgeContexts = resolvedKnowledgeContexts,
-                fallbackKnowledgeNames = resolvedKnowledgeNames,
-            ),
             knowledgeCoverage = latestKnowledgeCoverage,
-            tutorExampleSaved = orderedMistakes.any {
-                it.practiceUnitId == fixtureSource.tutorPracticeUnitId
-            },
-            // The tutor root has no current question until the student captures or selects one.
-            tutorPracticeUnitId = null,
-            tutorDecision = null,
         )
     }
-
-    /**
-     * Best-effort shadow-prediction persistence (audit §6.3): planning must
-     * never fail because the audit loop failed.
-     */
-    private suspend fun persistShadowPredictions(
-        request: ReviewPlanningRequest,
-        plan: ReviewPlan,
-    ) {
-        try {
-            val latenciesSeconds = plan.queueItems.associate { item ->
-                val latencyMs = runCatching {
-                    database.findLastPredictionLatencyMs(item.practiceUnitId)
-                }.getOrNull()
-                val seconds = latencyMs?.let { (it / 1000L).toInt().coerceIn(0, 300) }
-                item.practiceUnitId to seconds
-            }
-            predictionAuditService.planPredictions(
-                request = request,
-                scoredPracticeUnitIds = plan.queueItems.map { it.practiceUnitId },
-                lastResponseLatenciesSeconds = latenciesSeconds,
-            ).forEach { audit -> predictionAuditSink.record(audit) }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            // Shadow audit degradation must never surface to the user.
-        }
-    }
-
     /** Best-effort outcome backfill for every pending prediction covering the attempt. */
     private suspend fun backfillPredictionOutcome(
         practiceUnitId: String,
@@ -1509,33 +866,7 @@ class RoomBackedStudyExperienceRepository(
         }
     }
 
-    /**
-     * Calibration report for one model generation, computed over resolved
-     * prediction/outcome pairs persisted by the audit loop (audit §6.3).
-     */
-    suspend fun calibrationReport(modelVersion: LearningModelVersion): CalibrationReport {
-        val resolved = database.readResolvedStudentModelPredictions(
-            modelId = modelVersion.modelId,
-            modelVersion = modelVersion.version,
-        )
-        return CalibrationReportBuilder.build(
-            modelVersion = modelVersion,
-            resolved = resolved.map { row ->
-                CalibrationInput(
-                    predictedScore = row.predictedScore,
-                    conservativeScore = row.conservativeScore,
-                    wasIndependentCorrect = row.wasIndependentCorrect,
-                )
-            },
-            totalPredictions = resolved.size,
-            generatedAtEpochMillis = clock.millis(),
-        )
-    }
-
     /** Calibration for the shadow student-model generation writing predictions today. */
-    override suspend fun calibrationReport(): CalibrationReport =
-        calibrationReport(predictionAuditService.modelVersion)
-
     /**
      * Visual-interaction attempts become ledger attempts exactly once per
      * recorded attemptId (audit §12 / PR-11): the stable submission id makes
@@ -1546,193 +877,11 @@ class RoomBackedStudyExperienceRepository(
         val mistakes = database.observeMistakes().first()
         latestMistakes = mistakes
         initialized = true
-        val created = ingestPendingVisualInteractionAttempts(mistakes)
+        val created = visualInteractionIngestor.ingestPending(mistakes)
         if (created > 0) {
             publishReadySnapshot(latestMistakes)
         }
         created
-    }
-
-    private suspend fun ingestPendingVisualInteractionAttempts(
-        mistakes: List<MistakeRecord>,
-    ): Int {
-        var createdCount = 0
-        mistakes
-            .distinctBy(MistakeRecord::practiceUnitId)
-            .forEach { mistake ->
-                database.readVisualInteractionAttempts(mistake.problemRevisionId)
-                    .forEach { attempt ->
-                        if (ingestVisualInteractionAttempt(attempt, mistake)) {
-                            createdCount += 1
-                        }
-                    }
-            }
-        return createdCount
-    }
-
-    /**
-     * Converts one judged visual interaction into ledger evidence. Stays
-     * conservative on purpose (audit §12): only actions with a decisive
-     * local verdict, anchored to one active saved question that already has
-     * accepted knowledge bindings, may enter the mastery ledger.
-     */
-    private suspend fun ingestVisualInteractionAttempt(
-        attempt: VisualInteractionAttemptRecord,
-        mistake: MistakeRecord,
-    ): Boolean {
-        // Exploratory selects and UNDECIDABLE tool actions (draw/measure/reset)
-        // carry no answer semantics and stay audit-only.
-        if (attempt.actionKind !in DECISIVE_VISUAL_ACTION_KINDS) return false
-        if (attempt.problemRevisionId != mistake.problemRevisionId) return false
-        // Spec 2.7: visual interactions cool down for one hour per unit.
-        if (isWithinCooldown(
-                practiceUnitId = mistake.practiceUnitId,
-                sourceKind = ReviewLogSink.SOURCE_KIND_VISUAL,
-                cooldownMillis = VISUAL_COOLDOWN_MILLIS,
-                atEpochMillis = attempt.attemptedAtEpochMillis,
-            )
-        ) {
-            return false
-        }
-        val bindings = database.readPracticeUnitKnowledgeBindings(mistake.practiceUnitId)
-            .filter { binding -> binding.basisRevisionId == mistake.problemRevisionId }
-            .sortedWith(compareBy({ it.acceptedAtEpochMillis }, { it.bindingId }))
-        if (bindings.isEmpty()) return false
-        val taxonomyVersion = bindings.first().taxonomyVersion
-        val attributed = bindings.filter { it.taxonomyVersion == taxonomyVersion }
-        val secondaryWeight = SECONDARY_VISUAL_ATTRIBUTION_WEIGHT_POOL /
-            (attributed.size - 1).coerceAtLeast(1)
-        val attributions = attributed.mapIndexed { index, binding ->
-            KnowledgeEvidenceAttribution(
-                bindingId = binding.bindingId,
-                knowledgeNodeId = binding.knowledgeNodeId,
-                weight = if (index == 0) {
-                    PRIMARY_VISUAL_ATTRIBUTION_WEIGHT
-                } else {
-                    secondaryWeight
-                },
-                basisRevisionId = mistake.problemRevisionId,
-                taxonomyVersion = taxonomyVersion,
-                role = if (index == 0) {
-                    EvidenceAttributionRole.PRIMARY
-                } else {
-                    EvidenceAttributionRole.SECONDARY
-                },
-                certainty = EvidenceAttributionCertainty.DIRECT,
-            )
-        }
-        val evidence = if (attempt.feasible) {
-            LearningEvidence(
-                direction = LearningEvidenceDirection.POSITIVE,
-                weight = VISUAL_SATISFIED_WEIGHT,
-                reason = LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED,
-            )
-        } else {
-            LearningEvidence(
-                direction = LearningEvidenceDirection.NEGATIVE,
-                weight = VISUAL_VIOLATED_WEIGHT,
-                reason = LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
-            )
-        }
-        val snapshot = AssessmentEvidenceSnapshot(
-            snapshotId = stableId("visual-snapshot", attempt.attemptId),
-            assessmentItemId = VISUAL_ASSESSMENT_ITEM_ID_PREFIX + stableId(
-                namespace = "item",
-                requestId = "${mistake.practiceUnitId}\n${attempt.attemptId}",
-            ),
-            practiceUnitId = mistake.practiceUnitId,
-            problemRevisionId = mistake.problemRevisionId,
-            answerSpecId = VISUAL_ANSWER_SPEC_ID,
-            itemFamilyId = VISUAL_ITEM_FAMILY_ID,
-            sourceBundleId = null,
-            taxonomyVersion = taxonomyVersion,
-            verification = AssessmentSnapshotVerification.VERIFIED,
-            calibration = CalibrationSnapshot.unknown(),
-            attributions = attributions,
-            capturedAtEpochMillis = attempt.attemptedAtEpochMillis,
-        )
-        database.saveAssessmentEvidenceSnapshot(snapshot)
-        val writeResult = database.recordAttempt(
-            AttemptWriteCommand(
-                learnerId = learnerId,
-                submissionId = stableId("submission", "visual-attempt:${attempt.attemptId}"),
-                attemptId = stableId("attempt", "visual-attempt:${attempt.attemptId}"),
-                presentationId = stableId("visual-presentation", attempt.attemptId),
-                assessmentSnapshotId = snapshot.snapshotId,
-                submittedResponse = AttemptSubmittedResponse.Choice(
-                    choiceId = if (attempt.feasible) "visual:SATISFIED" else "visual:VIOLATED",
-                    choiceMarkdown = attempt.feedback.ifBlank {
-                        if (attempt.feasible) {
-                            "操作满足题目条件"
-                        } else {
-                            "操作不满足题目条件"
-                        }
-                    },
-                    submittedAtEpochMillis = attempt.attemptedAtEpochMillis,
-                ),
-                evidence = evidence,
-                problemMemoryOutcome = if (attempt.feasible) {
-                    ProblemMemoryOutcome.ASSISTED_RECALL
-                } else {
-                    ProblemMemoryOutcome.RETRIEVAL_FAILURE
-                },
-                occurredAtEpochMillis = attempt.attemptedAtEpochMillis,
-                durationSeconds = 0,
-                studyDay = studyDayAt(attempt.attemptedAtEpochMillis),
-            ),
-        )
-        if (writeResult.created) {
-            reviewLogSink.record(
-                practiceUnitId = mistake.practiceUnitId,
-                evidence = evidence,
-                occurredAtEpochMillis = attempt.attemptedAtEpochMillis,
-                durationSeconds = 0,
-                studyDay = studyDayAt(attempt.attemptedAtEpochMillis),
-                sourceKind = ReviewLogSink.SOURCE_KIND_VISUAL,
-                sourceId = writeResult.attempt.attemptId,
-                priorMemory = null,
-            )
-            return true
-        }
-        // A replay after the first successful sweep must not claim a new
-        // creation; the ledger already has this attempt exactly once.
-        return false
-    }
-
-    /**
-     * Exam-mode ramp (spec 2.17): during the fourteen days before a declared
-     * exam, matching candidates gain priority so they enter the queue before
-     * their regular due date. The ramp peaks at the exam day and falls back
-     * to zero automatically afterwards.
-     */
-    private suspend fun examPriorityFor(subject: String, localDayEpochDay: Long): Double {
-        val store = schedulingSettingsStore ?: return 0.0
-        val exams = store.exams.first().filter { it.subject == subject }
-        var best = 0.0
-        for (exam in exams) {
-            val daysUntil = exam.examEpochDay - localDayEpochDay
-            if (daysUntil in 0..EXAM_RAMP_DAYS) {
-                best = maxOf(best, 1.0 - daysUntil.toDouble() / EXAM_RAMP_DAYS)
-            }
-        }
-        return best.coerceIn(0.0, 1.0)
-    }
-
-    /**
-     * Days until the nearest declared exam (any subject), or null when no
-     * exam is ahead — the catch-up input of [NewIntroductionPolicy] (spec
-     * `batch-intake-spec.md` §2): near an exam, intake converts by
-     * ceil(remaining backlog / days) instead of the fixed time share.
-     */
-    /**
-     * L2 tier baseline (spec §2): map the FSRS difficulty (1..10) onto the
-     * same EASY/MEDIUM/HARD bands the planner uses (ceilings 4/7) and return
-     * the model-tier baseline seconds for never-attempted questions.
-     */
-    private fun tierBaselineSecondsFor(difficulty: Double): Int = when {
-        difficulty < 4.0 -> LogDurationModel.TIER_BASELINE_EASY_SECONDS
-        difficulty < 7.0 -> LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS
-        else -> LogDurationModel.TIER_BASELINE_HARD_SECONDS
     }
 
     /**
@@ -1763,649 +912,11 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    private suspend fun daysUntilNearestExam(localDayEpochDay: Long): Int? {
-        val store = schedulingSettingsStore ?: return null
-        return store.exams.first()
-            .map { (it.examEpochDay - localDayEpochDay).toInt() }
-            .filter { it >= 0 }
-            .minOrNull()
-    }
-
     private suspend fun currentLearnerSnapshot(): LearnerSnapshot =
-        drainProjection()?.snapshot ?: LearnerSnapshot.empty(
+        projectionDrainer.drain()?.snapshot ?: LearnerSnapshot.empty(
             learnerId = learnerId,
             projectorVersion = LearningProjector.VERSION,
         )
-
-    private suspend fun currentReviewPlan(
-        planningContext: PlanningContext,
-    ): ReviewPlanBundle? = database.observeCurrentReviewPlan(
-        learnerId = learnerId,
-        localDayEpochDay = planningContext.localDate.toEpochDay(),
-        timeZoneId = studyZoneId.id,
-    ).first()
-
-    private suspend fun createReviewPlan(
-        mistakes: List<MistakeRecord>,
-        learnerSnapshot: LearnerSnapshot,
-        planningContext: PlanningContext,
-    ): ReviewPlanBundle {
-        val avoidanceUnits = reviewLogSink.avoidancePracticeUnitIds()
-        // Spec 3.4: the pseudo knowledge node must exist in knowledge_node
-        // BEFORE the plan persists its queue (review_queue_knowledge_node is
-        // FK-restricted), so unbound questions materialize their pseudo KC
-        // here rather than at first submission.
-        val pseudoNodeIds = mutableMapOf<String, String>()
-        mistakes
-            .sortedBy(MistakeRecord::practiceUnitId)
-            .distinctBy(MistakeRecord::practiceUnitId)
-            .filter { it.knowledgeNodeIds.isEmpty() }
-            .forEach { mistake ->
-                val binding = database.ensurePseudoKnowledgeBinding(
-                    practiceUnitId = mistake.practiceUnitId,
-                    problemRevisionId = mistake.problemRevisionId,
-                    taxonomyVersion = "pseudo-plan-v1",
-                    subject = mistake.subject,
-                    acceptedAtEpochMillis = planningContext.planningAtEpochMillis,
-                )
-                if (binding != null) {
-                    pseudoNodeIds[mistake.practiceUnitId] = binding.knowledgeNodeId
-                }
-            }
-        val candidates = mistakes
-            .sortedBy(MistakeRecord::practiceUnitId)
-            .distinctBy(MistakeRecord::practiceUnitId)
-            .map { mistake ->
-                val curatedEvidence = fixtureSource
-                    .teachingArtifactForPracticeUnit(mistake.practiceUnitId)
-                    ?.assessmentItems
-                    ?.singleOrNull()
-                    ?.let { assessment ->
-                        fixtureSource.evidenceSnapshotForAssessment(assessment.id)
-                    }
-                ReviewCandidate(
-                    practiceUnitId = mistake.practiceUnitId,
-                    leech = learnerSnapshot.problemMemoryStates[mistake.practiceUnitId]?.isLeeched == true,
-                    avoidance = mistake.practiceUnitId in avoidanceUnits,
-                    knowledgeNodeIds = mistake.knowledgeNodeIds.ifEmpty {
-                        curatedEvidence?.attributions
-                            ?.mapTo(linkedSetOf()) { it.knowledgeNodeId }
-                            .orEmpty()
-                            .ifEmpty {
-                                // Spec §3.4: unbound questions fall back to the
-                                // subject-scoped pseudo KC (materialized above)
-                                // so their mastery evidence stays visible to
-                                // the planner.
-                                setOf(
-                                    pseudoNodeIds[mistake.practiceUnitId]
-                                        ?: "pseudo:${mistake.subject.uppercase()}",
-                                )
-                            }
-                    },
-                    itemFamilyId = curatedEvidence?.itemFamilyId
-                        ?: "saved-question:${mistake.practiceUnitId}",
-                    sourceBundleId = curatedEvidence?.sourceBundleId,
-                    subjectId = mistake.subject,
-                    // Mistake records do not carry an item-type dimension yet; the
-                    // duration model buckets on (learner, subject, itemType=null,
-                    // difficulty) until the data layer exposes item types.
-                    difficulty = learnerSnapshot.problemMemoryStates[mistake.practiceUnitId]
-                        ?.difficulty ?: DEFAULT_CANDIDATE_DIFFICULTY,
-                    estimatedDurationSeconds = mistake.estimatedSeconds,
-                    repeatMistakePriority = (mistake.captureOccurrenceCount - 1)
-                        .coerceIn(0, MAX_REPEAT_CAPTURE_BONUS_COUNT).toDouble() /
-                        MAX_REPEAT_CAPTURE_BONUS_COUNT,
-                    eligibleSinceEpochMillis = mistake.createdAtEpochMillis,
-                    examPriority = examPriorityFor(
-                        subject = mistake.subject,
-                        localDayEpochDay = planningContext.localDate.toEpochDay(),
-                    ),
-                )
-            }
-
-        // Spec `batch-intake-spec.md` §1-I1/I2/I3: intake only adds inventory.
-        // Zero-evidence NEW questions (no memory state) enter today's plan
-        // only through NewIntroductionPolicy — the time-share slice (with
-        // exam catch-up) decides which of them are introduced today, and the
-        // rest stay in the backlog with NO learning pressure. Introduced
-        // questions accrue waiting from TODAY (eligibleSince = planningAt),
-        // never from their creation date, so an old backlog cannot outrank
-        // due reviews the day it finally gets opened.
-        val finalCandidates = run {
-            val freshIds = candidates
-                .filter { learnerSnapshot.problemMemoryStates[it.practiceUnitId] == null }
-                .mapTo(hashSetOf()) { it.practiceUnitId }
-            if (freshIds.isEmpty()) {
-                candidates
-            } else {
-                val fresh = candidates.filter { it.practiceUnitId in freshIds }
-                val seasoned = candidates.filter { it.practiceUnitId !in freshIds }
-                // Hypercorrection ordering input (spec §4): the multi-source
-                // confidence level of each card's most recent wrong attempt,
-                // judged from signals already stored in review_log.
-                val confidenceAtError = reviewLogSink.confidenceAtErrorByPracticeUnit()
-                val decision = NewIntroductionPolicy.decide(
-                    candidates = fresh.map { candidate ->
-                        NewIntroductionPolicy.IntakeCandidate(
-                            practiceUnitId = candidate.practiceUnitId,
-                            estimatedDurationSeconds = durationModel.expectedSecondsForNew(
-                                learnerId = learnerId,
-                                subjectId = candidate.subjectId,
-                                itemType = candidate.itemType,
-                                difficulty = candidate.difficulty,
-                                tierBaselineSeconds = tierBaselineSecondsFor(candidate.difficulty),
-                            ).toInt().coerceAtLeast(1),
-                            examPriority = candidate.examPriority,
-                            confidenceAtError = confidenceAtError[candidate.practiceUnitId],
-                            createdAtEpochMillis = candidate.eligibleSinceEpochMillis
-                                ?: planningContext.planningAtEpochMillis,
-                        )
-                    },
-                    timeBudgetSeconds = reviewTimeBudgetSeconds,
-                    daysLeftToExam = daysUntilNearestExam(planningContext.localDate.toEpochDay()),
-                )
-                val introducedIds = decision.introduced.mapTo(hashSetOf()) { it.practiceUnitId }
-                // Introduced-today questions start accruing waiting pressure
-                // now; everything else keeps its original eligibility.
-                val adjustedFresh = fresh.map { candidate ->
-                    if (candidate.practiceUnitId in introducedIds) {
-                        candidate.copy(eligibleSinceEpochMillis = planningContext.planningAtEpochMillis)
-                    } else {
-                        candidate
-                    }
-                }
-                seasoned + adjustedFresh.filter { it.practiceUnitId in introducedIds }
-            }
-        }
-        val request = ReviewPlanningRequest(
-            learnerSnapshot = learnerSnapshot,
-            candidates = finalCandidates,
-            localDayEpochDay = planningContext.localDate.toEpochDay(),
-            timeZoneId = studyZoneId.id,
-            timeBudgetSeconds = reviewTimeBudgetSeconds,
-            planningAtEpochMillis = planningContext.planningAtEpochMillis,
-        )
-        val plan = if (useReviewPlannerV2) {
-            reviewPlannerV2.plan(request)
-        } else {
-            // Rollback path (audit §3.4): the audited V1 greedy planner.
-            reviewPlanner.plan(request)
-        }
-        persistShadowPredictions(request = request, plan = plan)
-        return ReviewPlanBundle(
-            plan = ReviewPlanRecord(
-                reviewPlanId = plan.planId,
-                learnerId = learnerId,
-                localDate = planningContext.localDate.toString(),
-                localDayEpochDay = planningContext.localDate.toEpochDay(),
-                timeZoneId = studyZoneId.id,
-                timeBudgetSeconds = plan.timeBudgetSeconds,
-                planningAtEpochMillis = plan.generatedAtEpochMillis,
-                status = StudyDbValue.ReviewStatus.PLANNED,
-                plannerVersion = plan.plannerVersion,
-                projectionCheckpoint = plan.projectionCheckpoint.lastSequence,
-                inputFingerprint = plan.planFingerprint,
-                planFingerprint = plan.planFingerprint,
-                planRevision = 1,
-                createdAtEpochMillis = plan.generatedAtEpochMillis,
-            ),
-            queue = plan.queueItems.map { queueItem ->
-                ReviewQueueItemRecord(
-                    reviewQueueItemId = queueItem.queueItemId,
-                    reviewPlanId = plan.planId,
-                    practiceUnitId = queueItem.practiceUnitId,
-                    knowledgeNodeIds = queueItem.knowledgeNodeIds,
-                    itemFamilyId = queueItem.itemFamilyId,
-                    sourceBundleId = queueItem.sourceBundleId,
-                    reasons = queueItem.reasons.mapTo(linkedSetOf()) { it.name },
-                    ordinal = queueItem.scheduledOrder,
-                    priorityScore = queueItem.priorityScore,
-                    difficultyBand = queueItem.difficultyBand.name,
-                    dueAtEpochMillis = queueItem.dueAtEpochMillis,
-                    estimatedSeconds = queueItem.estimatedDurationSeconds,
-                    reasonSnapshot = queueItem.reasons.map { it.name }.sorted().joinToString(","),
-                )
-            },
-            activeSession = null,
-            isCurrent = true,
-        )
-    }
-
-    private suspend fun drainProjection(): PersistedLearnerSnapshot? {
-        var consecutiveCasConflicts = 0
-        repeat(MAX_PROJECTION_DRAIN_STEPS) {
-            val current = database.readCurrentLearnerSnapshot(PROJECTION_NAME, learnerId)
-            val batch = database.loadProjectionBatch(
-                projectionName = PROJECTION_NAME,
-                learnerId = learnerId,
-                limit = PROJECTION_BATCH_SIZE,
-            )
-            val expectedCheckpoint = current?.snapshot?.checkpoint?.lastSequence ?: 0L
-            if (batch.previousCheckpoint != expectedCheckpoint) {
-                consecutiveCasConflicts++
-                if (consecutiveCasConflicts >= MAX_CAS_RETRIES) {
-                    throw ProjectionCasConflictException("Projection checkpoint changed during drain")
-                }
-                return@repeat
-            }
-            when (batch.stopReason) {
-                ProjectionBatchStopReason.GAP,
-                ProjectionBatchStopReason.CONFLICT,
-                -> throw LearningLedgerIntegrityException(
-                    batch.detail ?: "Learning ledger stopped at ${batch.blockedAtSequence}",
-                )
-
-                ProjectionBatchStopReason.FULL_REPLAY_REQUIRED -> {
-                    try {
-                        commitFullReplay(current)
-                        consecutiveCasConflicts = 0
-                    } catch (conflict: ProjectionCasConflictException) {
-                        consecutiveCasConflicts++
-                        if (consecutiveCasConflicts >= MAX_CAS_RETRIES) throw conflict
-                    }
-                }
-
-                ProjectionBatchStopReason.END_OF_LEDGER,
-                ProjectionBatchStopReason.LIMIT_REACHED,
-                -> {
-                    val previous = current?.snapshot ?: LearnerSnapshot.empty(
-                        learnerId = learnerId,
-                        projectorVersion = LearningProjector.VERSION,
-                    )
-                    val requiresReplay = previous.checkpoint.projectorVersion != LearningProjector.VERSION ||
-                        (
-                            batch.events.isEmpty() &&
-                                (
-                                    previous.freshness != LearnerSnapshotFreshness.CURRENT ||
-                                        previous.projectionStatus != ProjectionStatus.CURRENT
-                                    )
-                            )
-                    if (requiresReplay) {
-                        try {
-                            commitFullReplay(current)
-                            consecutiveCasConflicts = 0
-                        } catch (conflict: ProjectionCasConflictException) {
-                            consecutiveCasConflicts++
-                            if (consecutiveCasConflicts >= MAX_CAS_RETRIES) throw conflict
-                        }
-                    } else if (batch.events.isEmpty()) {
-                        return current
-                    } else {
-                        val result = learningProjector.project(
-                            previous = previous,
-                            events = batch.events.map { it.event },
-                            knownLedgerHeadSequence = batch.ledgerHeadSequence,
-                            authoritativePresentationStates = batch.authoritativePresentationStates,
-                        )
-                        check(
-                            result.missingSequence == null &&
-                            result.conflictedAttemptIds.isEmpty() &&
-                                result.conflictedAnswerRevealOutcomeIds.isEmpty() &&
-                                result.conflictedTutorAnswerExposureOutcomeIds.isEmpty() &&
-                                result.deferredAttemptIds.isEmpty() &&
-                                result.deferredAnswerRevealOutcomeIds.isEmpty() &&
-                                result.deferredTutorAnswerExposureOutcomeIds.isEmpty(),
-                        ) { "Projector rejected a database-validated incremental prefix" }
-                        val commit = ProjectionCommit(
-                            projectionName = PROJECTION_NAME,
-                            learnerId = learnerId,
-                            expectedPreviousCheckpoint = expectedCheckpoint,
-                            expectedPreviousStateVersion = current?.stateVersion ?: 0L,
-                            mode = ProjectionCommitMode.INCREMENTAL,
-                            knownLedgerHeadSequence = batch.ledgerHeadSequence,
-                            consumedLedgerEvents = batch.events.map { persisted ->
-                                ConsumedLedgerEventReceipt(
-                                    eventKind = persisted.outbox.eventKind,
-                                    eventId = persisted.outbox.eventId,
-                                    eventSequence = persisted.outbox.outboxSequence,
-                                    canonicalFingerprint = persisted.canonicalFingerprint,
-                                )
-                            },
-                            presentationProjectionStates = result.presentationProjectionStates,
-                            snapshot = result.snapshot,
-                        )
-                        try {
-                            database.commitProjection(commit)
-                            consecutiveCasConflicts = 0
-                        } catch (conflict: ProjectionCasConflictException) {
-                            consecutiveCasConflicts++
-                            if (consecutiveCasConflicts >= MAX_CAS_RETRIES) throw conflict
-                        }
-                    }
-                }
-            }
-        }
-        throw ProjectionCasConflictException("Projection did not drain within the bounded work limit")
-    }
-
-    private suspend fun commitFullReplay(
-        current: PersistedLearnerSnapshot?,
-    ): PersistedLearnerSnapshot {
-        val ledger = database.loadLearningLedger(learnerId)
-        if (ledger.status != LearningLedgerReadStatus.COMPLETE) {
-            throw LearningLedgerIntegrityException(
-                ledger.detail ?: "Full replay blocked at ${ledger.blockedAtSequence}",
-            )
-        }
-        val result = learningProjector.replay(
-            learnerId = learnerId,
-            ledger = ledger.validPrefix.map { it.event },
-        )
-        val expectedCheckpoint = current?.snapshot?.checkpoint?.lastSequence ?: 0L
-        val consumed = ledger.validPrefix
-            .filter { it.event.eventSequence > expectedCheckpoint }
-            .map { persisted -> persisted.toReceipt() }
-        return database.commitProjection(
-            ProjectionCommit(
-                projectionName = PROJECTION_NAME,
-                learnerId = learnerId,
-                expectedPreviousCheckpoint = expectedCheckpoint,
-                expectedPreviousStateVersion = current?.stateVersion ?: 0L,
-                mode = ProjectionCommitMode.FULL_REPLAY,
-                knownLedgerHeadSequence = result.snapshot.knownLedgerHeadSequence,
-                consumedLedgerEvents = consumed,
-                presentationProjectionStates = result.presentationProjectionStates,
-                snapshot = result.snapshot,
-            ),
-        )
-    }
-
-    private fun com.tingyun.smartmistakebook.core.database.PersistedLearningLedgerEvent.toReceipt() =
-        ConsumedLedgerEventReceipt(
-            eventKind = when (event) {
-                is Attempt -> EVENT_KIND_ATTEMPT
-                is AttemptCorrection -> EVENT_KIND_CORRECTION
-                is com.tingyun.smartmistakebook.core.model.AnswerRevealOutcome -> EVENT_KIND_ANSWER_REVEAL
-                is TutorAnswerExposureOutcome -> EVENT_KIND_TUTOR_ANSWER_EXPOSURE
-                is ChatEvidenceSubmitted -> EVENT_KIND_CHAT_EVIDENCE
-            },
-            eventId = event.ledgerEventId,
-            eventSequence = event.eventSequence,
-            canonicalFingerprint = canonicalFingerprint,
-        )
-
-    private fun MistakeRecord.toCatalogEntry(
-        learnerSnapshot: LearnerSnapshot,
-        atEpochMillis: Long,
-        resolvedKnowledgeNames: Map<String, String>,
-    ): StudyCatalogEntry {
-        val memory = learnerSnapshot.problemMemoryStates[practiceUnitId]
-        val artifact = fixtureSource.teachingArtifactForPracticeUnit(practiceUnitId)
-        val knowledgeNodeIds = this.knowledgeNodeIds.ifEmpty { artifact?.knowledgeNodeIds.orEmpty() }
-        val knowledgeStates = knowledgeNodeIds.mapNotNull(
-            learnerSnapshot.knowledgeMasteryStates::get,
-        )
-        return StudyCatalogEntry(
-            entryId = entryId,
-            problemId = problemId,
-            problemRevisionId = problemRevisionId,
-            practiceUnitId = practiceUnitId,
-            subject = subject,
-            title = title,
-            problemMarkdown = problemMarkdown,
-            sourceKey = sourceKey,
-            isCuratedExample = problemId in curatedProblemIds,
-            chapterLabels = chapterLabels,
-            knowledgeLabels = knowledgeLabels.ifEmpty {
-                knowledgeNodeIds.map { knowledgeNodeId ->
-                    resolvedKnowledgeNames[knowledgeNodeId] ?: knowledgeNodeId
-                }
-            },
-            masteryStatus = knowledgeStates.conservativeMasteryStatus(),
-            nextReviewAtEpochMillis = memory?.nextReviewAtEpochMillis ?: nextReviewAtEpochMillis,
-            retrievability = memory?.let { forgettingCurve.retentionAt(it, atEpochMillis) }
-                ?: retrievability,
-            questionMemory = memory?.let { state ->
-                StudyQuestionMemory(
-                    independentRecallCount = state.independentCorrectCount,
-                    assistedRecallCount = state.assistedCorrectCount,
-                    retrievalFailureCount = state.lapseCount,
-                    answerRevealCount = state.answerRevealCount,
-                    lastReviewedAtEpochMillis = state.lastReviewedAtEpochMillis,
-                    nextReviewAtEpochMillis = state.nextReviewAtEpochMillis,
-                    retrievabilityAtSnapshot = forgettingCurve.retentionAt(state, atEpochMillis),
-                    projectionIsCurrent = learnerSnapshot.freshness == LearnerSnapshotFreshness.CURRENT &&
-                        learnerSnapshot.projectionStatus == ProjectionStatus.CURRENT,
-                )
-            },
-        )
-    }
-
-    private fun List<com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState>
-        .conservativeMasteryStatus(): MasteryStatus = when {
-        isEmpty() -> MasteryStatus.UNKNOWN
-        any { it.status == MasteryStatus.CONFLICTED } -> MasteryStatus.CONFLICTED
-        any { it.status == MasteryStatus.STALE } -> MasteryStatus.STALE
-        any { it.status == MasteryStatus.LEARNING } -> MasteryStatus.LEARNING
-        all { it.status == MasteryStatus.MASTERED } -> MasteryStatus.MASTERED
-        else -> MasteryStatus.UNKNOWN
-    }
-
-    private suspend fun resolveKnowledgeContexts(
-        knowledgeNodeIds: Set<String>,
-    ): Map<String, ResolvedKnowledgeContext> {
-        if (knowledgeNodeIds.isEmpty()) return emptyMap()
-        val nodesById = database.readKnowledgeNodesByIds(knowledgeNodeIds)
-            .associateByTo(linkedMapOf(), KnowledgeNodeSeedRecord::knowledgeNodeId)
-        var pendingParentIds = nodesById.values
-            .mapNotNullTo(linkedSetOf(), KnowledgeNodeSeedRecord::parentKnowledgeNodeId)
-            .filterNotTo(linkedSetOf(), nodesById::containsKey)
-        var remainingDepth = MAX_KNOWLEDGE_TOPIC_DEPTH
-        while (pendingParentIds.isNotEmpty() && remainingDepth > 0) {
-            val parents = database.readKnowledgeNodesByIds(pendingParentIds)
-            parents.forEach { parent -> nodesById[parent.knowledgeNodeId] = parent }
-            pendingParentIds = parents
-                .mapNotNullTo(linkedSetOf(), KnowledgeNodeSeedRecord::parentKnowledgeNodeId)
-                .filterNotTo(linkedSetOf(), nodesById::containsKey)
-            remainingDepth -= 1
-        }
-        return knowledgeNodeIds.mapNotNull { knowledgeNodeId ->
-            val node = nodesById[knowledgeNodeId] ?: return@mapNotNull null
-            val path = ArrayDeque<String>()
-            val visited = hashSetOf<String>()
-            var parentId = node.parentKnowledgeNodeId
-            while (parentId != null && path.size < MAX_KNOWLEDGE_TOPIC_DEPTH) {
-                if (!visited.add(parentId)) break
-                val parent = nodesById[parentId] ?: break
-                path.addFirst(parent.displayName)
-                parentId = parent.parentKnowledgeNodeId
-            }
-            val subject = runCatching { SubjectKind.valueOf(node.subject) }
-                .getOrDefault(SubjectKind.GENERAL)
-            knowledgeNodeId to ResolvedKnowledgeContext(
-                displayName = node.displayName,
-                subject = subject,
-                topicPath = path.toList(),
-            )
-        }.toMap()
-    }
-
-    /**
-     * 只保留可出题的知识点（spec dual-review-entry §3.3）：KNOWLEDGE_QUIZ 把讲解材料的
-     * boundaryMarkdown 当防臆造锚，无材料的伪节点（pseudo:*）/未装配材料节点无法出题。
-     * 逐科目读该组节点可用的讲解材料，再据 material↔node 绑定交集得出真正有材料覆盖的
-     * 节点——与派发时 TutorTeachingReferenceRepository 的解析口径一致，避免计划里出现
-     * "排了却出不了题"的死节点。
-     *
-     * 返回 节点 → 该节点的**讲解材料组**（多份材料时取 materialId 字典序最小者，确定性），
-     * 供队列做"同材料不连续出题"的交错（spec §3.2 多样性）。
-     */
-    private suspend fun quizAbleScopeNodes(
-        scope: Set<String>,
-        subjectByNode: Map<String, SubjectKind>,
-    ): Map<String, String> {
-        if (scope.isEmpty()) return emptyMap()
-        val materialGroupByNode = linkedMapOf<String, String>()
-        scope
-            .mapNotNull { knowledgeNodeId ->
-                subjectByNode[knowledgeNodeId]?.let { subject -> knowledgeNodeId to subject }
-            }
-            .groupBy({ (_, subject) -> subject }, { (knowledgeNodeId, _) -> knowledgeNodeId })
-            .forEach { (subject, nodeIds) ->
-                val materials = database.readKnowledgeTeachingMaterialsForNodes(
-                    subject = subject.name,
-                    knowledgeNodeIds = nodeIds.toSet(),
-                    limit = MAX_KNOWLEDGE_QUIZ_SCOPE_MATERIALS,
-                )
-                if (materials.isEmpty()) return@forEach
-                val materialIds = materials.mapTo(linkedSetOf()) { it.materialId }
-                database.readKnowledgeTeachingMaterialNodeBindings(materialIds).forEach { binding ->
-                    if (binding.knowledgeNodeId !in nodeIds) return@forEach
-                    val existing = materialGroupByNode[binding.knowledgeNodeId]
-                    if (existing == null || binding.materialId < existing) {
-                        materialGroupByNode[binding.knowledgeNodeId] = binding.materialId
-                    }
-                }
-            }
-        return materialGroupByNode
-    }
-
-    private fun LearnerSnapshot.toProfileOverview(
-        resolvedKnowledgeContexts: Map<String, ResolvedKnowledgeContext>,
-        fallbackKnowledgeNames: Map<String, String>,
-    ): StudyProfileOverview {
-        val weaknesses = knowledgeMasteryStates.values
-            .filter { it.status != MasteryStatus.MASTERED }
-            .sortedWith(
-                compareBy<KnowledgeMasteryState> { it.conservativeMasteryScore }
-                    .thenBy { it.knowledgeNodeId },
-            )
-            .map { state ->
-                val context = resolvedKnowledgeContexts[state.knowledgeNodeId]
-                StudyKnowledgeSummary(
-                    knowledgeNodeId = state.knowledgeNodeId,
-                    displayName = context?.displayName
-                        ?: fallbackKnowledgeNames[state.knowledgeNodeId]
-                        ?: state.knowledgeNodeId,
-                    status = state.status,
-                    conservativeMasteryScore = state.conservativeMasteryScore,
-                    evidenceMass = state.evidenceMass,
-                    independentCorrectObservationCount =
-                        state.independentCorrectObservations.size,
-                    lastEvidenceAtEpochMillis = state.lastEvidenceAtEpochMillis,
-                    lastIndependentErrorAtEpochMillis =
-                        state.lastIndependentErrorAtEpochMillis,
-                    subject = context?.subject ?: SubjectKind.GENERAL,
-                    topicPath = context?.topicPath.orEmpty(),
-                )
-            }
-        val strengths = knowledgeMasteryStates.values
-            .filter { it.status == MasteryStatus.MASTERED }
-            .sortedWith(
-                compareByDescending<KnowledgeMasteryState> { it.conservativeMasteryScore }
-                    .thenBy { it.knowledgeNodeId },
-            )
-            .map { state ->
-                val context = resolvedKnowledgeContexts[state.knowledgeNodeId]
-                StudyKnowledgeSummary(
-                    knowledgeNodeId = state.knowledgeNodeId,
-                    displayName = context?.displayName
-                        ?: fallbackKnowledgeNames[state.knowledgeNodeId]
-                        ?: state.knowledgeNodeId,
-                    status = state.status,
-                    conservativeMasteryScore = state.conservativeMasteryScore,
-                    evidenceMass = state.evidenceMass,
-                    independentCorrectObservationCount =
-                        state.independentCorrectObservations.size,
-                    lastEvidenceAtEpochMillis = state.lastEvidenceAtEpochMillis,
-                    lastIndependentErrorAtEpochMillis =
-                        state.lastIndependentErrorAtEpochMillis,
-                    subject = context?.subject ?: SubjectKind.GENERAL,
-                    topicPath = context?.topicPath.orEmpty(),
-                )
-            }
-        return StudyProfileOverview(
-            hasLearningEvidence = appliedAttemptRecords.isNotEmpty(),
-            recordedAttemptCount = appliedAttemptRecords.size,
-            newlyMasteredCount = knowledgeMasteryStates.values.count {
-                it.status == MasteryStatus.MASTERED
-            },
-            weaknesses = weaknesses,
-            strengths = strengths,
-            projectionIsCurrent = freshness == LearnerSnapshotFreshness.CURRENT &&
-                projectionStatus == ProjectionStatus.CURRENT,
-        )
-    }
-
-    private fun ReviewPlanBundle.toOverview(
-        completedReviewDays: List<Long>,
-        currentLocalDay: Long,
-        intakeBacklogCount: Int,
-        intakeMedianEstimateSeconds: Int,
-    ): StudyReviewOverview {
-        val visibleSession = activeSession ?: latestSession
-        val effectiveCompletedDays = if (
-            latestSession?.status == StudyDbValue.ReviewStatus.COMPLETED
-        ) {
-            completedReviewDays + plan.localDayEpochDay
-        } else {
-            completedReviewDays
-        }
-        val totalEstimatedSeconds = queue.fold(0L) { total, item ->
-            Math.addExact(total, item.estimatedSeconds.toLong())
-        }
-        check(totalEstimatedSeconds in 0..Int.MAX_VALUE.toLong()) {
-            "Review plan duration exceeds the supported UI range"
-        }
-        return StudyReviewOverview(
-            planId = plan.reviewPlanId,
-            scheduledCount = queue.size,
-            estimatedSeconds = totalEstimatedSeconds.toInt(),
-            reasons = queue.flatMapTo(linkedSetOf()) { item ->
-                item.reasons.map { com.tingyun.smartmistakebook.core.model.ReviewReason.valueOf(it) }
-            },
-            scheduledPracticeUnitIds = queue.sortedBy { it.ordinal }.map { it.practiceUnitId },
-            activeSessionId = activeSession?.reviewSessionId,
-            currentOrdinal = visibleSession?.currentOrdinal ?: 0,
-            sessionStateVersion = visibleSession?.stateVersion,
-            completedToday = currentLocalDay in effectiveCompletedDays,
-            completionStreakDays = ReviewCompletionStreak.count(
-                completedLocalDays = effectiveCompletedDays,
-                currentLocalDay = currentLocalDay,
-            ),
-            intakeBacklogCount = intakeBacklogCount,
-            intakeMedianEstimateSeconds = intakeMedianEstimateSeconds,
-        )
-    }
-
-    private fun ReviewSessionRecord.toProgress(queueSize: Int) = StudyReviewSessionProgress(        sessionId = reviewSessionId,
-        planId = reviewPlanId,
-        currentOrdinal = currentOrdinal,
-        queueSize = queueSize,
-        stateVersion = stateVersion,
-        status = when (status) {
-            StudyDbValue.ReviewStatus.IN_PROGRESS -> StudyReviewSessionStatus.ACTIVE
-            StudyDbValue.ReviewStatus.COMPLETED -> StudyReviewSessionStatus.COMPLETED
-            else -> error("Review session $reviewSessionId has unsupported status $status")
-        },
-    )
-
-    private fun planningContext(learnerSnapshot: LearnerSnapshot): PlanningContext {
-        val referenceAt = maxOf(clock.millis(), learnerSnapshot.decisionWatermarkEpochMillis)
-        val localDate = Instant.ofEpochMilli(referenceAt).atZone(studyZoneId).toLocalDate()
-        val startOfDay = localDate.atStartOfDay(studyZoneId).toInstant().toEpochMilli()
-        return PlanningContext(
-            localDate = localDate,
-            planningAtEpochMillis = maxOf(startOfDay, learnerSnapshot.decisionWatermarkEpochMillis),
-        )
-    }
-
-    private fun studyDayAt(occurredAtEpochMillis: Long): StudyDayContext {
-        val local = Instant.ofEpochMilli(occurredAtEpochMillis).atZone(studyZoneId)
-        check(local.offset.totalSeconds % 60 == 0) {
-            "Study time-zone offset must be minute-aligned"
-        }
-        return StudyDayContext(
-            epochDay = local.toLocalDate().toEpochDay(),
-            timeZoneId = studyZoneId.id,
-            utcOffsetMinutes = local.offset.totalSeconds / 60,
-        )
-    }
-
-    private fun requireTeachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact =
-        requireNotNull(fixtureSource.teachingArtifactForPracticeUnit(practiceUnitId)) {
-            "Practice unit $practiceUnitId is outside the verified M1 catalog"
-        }
 
     private suspend fun <T> runOperation(block: suspend () -> T): T = operationMutex.withLock {
         try {
@@ -2429,289 +940,21 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    private suspend fun prepareChoiceSubmission(
-        submission: StudyChoiceSubmission,
-    ): PreparedChoiceSubmission {
-        val artifact = requireTeachingArtifact(submission.practiceUnitId)
-        val assessmentItem = artifact.assessmentItems.singleOrNull()
-            ?: error("Curated practice unit ${submission.practiceUnitId} must have one assessment")
-        val evidenceSnapshot = requireNotNull(
-            fixtureSource.evidenceSnapshotForAssessment(assessmentItem.id),
-        ) { "No verified evidence snapshot for assessment ${assessmentItem.id}" }
-        val evaluation = assessmentItem.evaluateChoice(submission.selectedChoiceId)
-        val submittedResponse = AttemptSubmittedResponse.Choice(
-            choiceId = evaluation.choice.id,
-            choiceMarkdown = evaluation.choice.markdown,
-            submittedAtEpochMillis = submission.occurredAtEpochMillis,
-        )
-        val decision = MasteryEvidencePolicy.evaluate(
-            assessmentItem = assessmentItem,
-            context = AssessmentSubmissionContext(
-                assessmentItemId = assessmentItem.id,
-                selectedChoiceId = submission.selectedChoiceId,
-                presentationId = submission.presentationId,
-                responseSequence = submission.responseOrdinal.toLong(),
-                responseOrdinal = submission.responseOrdinal,
-            ),
-        )
-        // Attention + response-time discount (spec 2.14): switches and
-        // away-time fragment encoding (Craik et al. 1996) and a personally
-        // abnormally fast answer is a suspected guess (Meyer 2010), so the
-        // evidence weight shrinks and maps to a lower grade via the mapper.
-        val attentionFactor = AttentionSignal.attentionFactor(
-            submission.interruptionCount,
-            submission.awayMillis,
-        )
-        val rtFactor = reviewLogSink.responseTimeDiscount(
-            isCorrect = evaluation.isCorrect,
-            durationMs = submission.durationSeconds * 1000L,
-        )
-        val discountedEvidence = decision.evidence.let { evidence ->
-            val factor = (attentionFactor * rtFactor).coerceIn(0.0, 1.0)
-            if (factor < 1.0 && evidence.direction != LearningEvidenceDirection.NONE) {
-                evidence.copy(weight = (evidence.weight * factor).coerceIn(0.0, 1.0))
-            } else {
-                evidence
-            }
-        }
-        return PreparedChoiceSubmission(
-            evidenceSnapshot = evidenceSnapshot,
-            command = AttemptWriteCommand(
-                learnerId = learnerId,
-                submissionId = stableId("submission", submission.requestId),
-                attemptId = stableId("attempt", submission.requestId),
-                presentationId = submission.presentationId,
-                assessmentSnapshotId = evidenceSnapshot.snapshotId,
-                submittedResponse = submittedResponse,
-                evidence = discountedEvidence,
-                problemMemoryOutcome = decision.problemMemoryOutcome,
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                studyDay = studyDayAt(submission.occurredAtEpochMillis),
-                hintCount = submission.hintCount,
-                revealedBeforeAnswer = false,
-            ),
-            isCorrect = evaluation.isCorrect,
-        )
-    }
-
-    private suspend fun prepareSelfReportSubmission(
-        submission: StudyReviewSelfReportSubmission,
-        mistake: MistakeRecord,
-    ): PreparedSelfReportSubmission {
-        val pseudoAttributions = buildPseudoAttribution(
-            practiceUnitId = mistake.practiceUnitId,
-            problemRevisionId = mistake.problemRevisionId,
-            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
-            subject = mistake.subject,
-            acceptedAtEpochMillis = submission.occurredAtEpochMillis,
-        )
-        val evidenceSnapshot = AssessmentEvidenceSnapshot(
-            snapshotId = stableId("self-report-snapshot", submission.requestId),
-            assessmentItemId = LocalReviewSelfReportContract.ASSESSMENT_ITEM_ID_PREFIX +
-                stableId(
-                    namespace = "item",
-                    requestId = "${mistake.practiceUnitId}\n${mistake.problemRevisionId}",
-                ),
-            practiceUnitId = mistake.practiceUnitId,
-            problemRevisionId = mistake.problemRevisionId,
-            answerSpecId = LocalReviewSelfReportContract.ANSWER_SPEC_ID,
-            itemFamilyId = LocalReviewSelfReportContract.ITEM_FAMILY_ID,
-            sourceBundleId = null,
-            taxonomyVersion = LocalReviewSelfReportContract.TAXONOMY_VERSION,
-            verification = AssessmentSnapshotVerification.VERIFIED,
-            calibration = CalibrationSnapshot.unknown(),
-            attributions = pseudoAttributions,
-            capturedAtEpochMillis = submission.occurredAtEpochMillis,
-        )
-        val signalFactor = reviewLogSink.subjectiveSignalFactor(
-            occurredAtEpochMillis = submission.occurredAtEpochMillis,
-            durationSeconds = submission.durationSeconds,
-            interruptionCount = submission.interruptionCount,
-            awayMillis = submission.awayMillis,
-            isCorrect = true,
-        )
-        val reportDecision = when (submission.report) {
-            StudyReviewSelfReport.RECALL_COMPLETED -> SelfReportDecision(
-                choiceMarkdown = "我已独立完成",
-                evidence = LearningEvidence(
-                    direction = LearningEvidenceDirection.POSITIVE,
-                    weight = (SELF_REPORTED_RECALL_WEIGHT * signalFactor).coerceIn(0.0, 1.0),
-                    reason = LearningEvidenceReason.SELF_REPORTED_RECALL,
-                ),
-                memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
-            )
-
-            // Middle tier (QA item B2): struggled through unaided. Positive
-            // but weaker than clean recall; feeds the HLR assistedCorrect
-            // feature so three-tier self-reports can calibrate the
-            // independent/assisted/lapse split.
-            StudyReviewSelfReport.RECALLED_WITH_EFFORT -> SelfReportDecision(
-                choiceMarkdown = "勉强做对",
-                evidence = LearningEvidence(
-                    direction = LearningEvidenceDirection.POSITIVE,
-                    weight = (SELF_REPORTED_EFFORT_RECALL_WEIGHT * signalFactor).coerceIn(0.0, 1.0),
-                    reason = LearningEvidenceReason.CORRECT_ON_RETRY,
-                ),
-                memoryOutcome = ProblemMemoryOutcome.ASSISTED_RECALL,
-            )
-
-            StudyReviewSelfReport.NEEDS_HELP -> SelfReportDecision(
-                choiceMarkdown = "这里还卡住",
-                evidence = LearningEvidence(
-                    direction = LearningEvidenceDirection.NEGATIVE,
-                    weight = (SELF_REPORTED_STUCK_WEIGHT * signalFactor).coerceIn(0.0, 1.0),
-                    reason = LearningEvidenceReason.SELF_REPORTED_STUCK,
-                ),
-                memoryOutcome = ProblemMemoryOutcome.RETRIEVAL_FAILURE,
-            )
-        }
-        return PreparedSelfReportSubmission(
-            evidenceSnapshot = evidenceSnapshot,
-            command = AttemptWriteCommand(
-                learnerId = learnerId,
-                submissionId = stableId("submission", submission.requestId),
-                attemptId = stableId("attempt", submission.requestId),
-                presentationId = submission.presentationId,
-                assessmentSnapshotId = evidenceSnapshot.snapshotId,
-                submittedResponse = AttemptSubmittedResponse.Choice(
-                    choiceId = submission.report.name,
-                    choiceMarkdown = reportDecision.choiceMarkdown,
-                    submittedAtEpochMillis = submission.occurredAtEpochMillis,
-                ),
-                evidence = reportDecision.evidence,
-                problemMemoryOutcome = reportDecision.memoryOutcome,
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                studyDay = studyDayAt(submission.occurredAtEpochMillis),
-            ),
-        )
-    }
-
-    private fun stableId(namespace: String, requestId: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256")
-            .digest("$learnerId\n$requestId".toByteArray(StandardCharsets.UTF_8))
-        val digest = bytes.joinToString(separator = "") { byte ->
-            (byte.toInt() and 0xff).toString(16).padStart(2, '0')
-        }
-        return "$namespace-$digest"
-    }
-
-    private data class PlanningContext(
-        val localDate: LocalDate,
-        val planningAtEpochMillis: Long,
-    )
-
-    private data class ResolvedKnowledgeContext(
-        val displayName: String,
-        val subject: SubjectKind,
-        val topicPath: List<String>,
-    )
-
-    private data class PreparedChoiceSubmission(
-        val evidenceSnapshot: AssessmentEvidenceSnapshot,
-        val command: AttemptWriteCommand,
-        val isCorrect: Boolean,
-    )
-
-    private data class PreparedSelfReportSubmission(
-        val evidenceSnapshot: AssessmentEvidenceSnapshot,
-        val command: AttemptWriteCommand,
-    )
-
-    private data class SelfReportDecision(
-        val choiceMarkdown: String,
-        val evidence: LearningEvidence,
-        val memoryOutcome: ProblemMemoryOutcome,
-    )
-
     companion object {
         const val DEFAULT_LEARNER_ID = "learner:local"
         /** 知识点复习会话的固定 conversation id（同一复习会话内计数防刷，非聊天会话）。 */
         private const val KNOWLEDGE_QUIZ_CONVERSATION_ID = "knowledge-quiz-review"
-        private const val PROJECTION_NAME = "study-experience-v1"
         private const val DEFAULT_REVIEW_TIME_BUDGET_SECONDS = 20 * 60
         /** 知识点复习范围材料读取上限（对齐 KnowledgeTeachingMaterialDao 的 1..64 约束）。 */
-        private const val MAX_KNOWLEDGE_QUIZ_SCOPE_MATERIALS = 64
         /** Rollback switch for the V2 review planner; see [useReviewPlannerV2]. */
         private const val DEFAULT_USE_REVIEW_PLANNER_V2 = true
         /** Difficulty mid-point on the FSRS 1..10 domain (spec 3.2). */
-        private const val DEFAULT_CANDIDATE_DIFFICULTY = 5.5
-        private const val MAX_REPEAT_CAPTURE_BONUS_COUNT = 4
-        private const val MAX_KNOWLEDGE_TOPIC_DEPTH = 6
-        private const val SELF_REPORTED_RECALL_WEIGHT = 0.35
-        private const val SELF_REPORTED_EFFORT_RECALL_WEIGHT = 0.25
-        private const val SELF_REPORTED_STUCK_WEIGHT = 0.5
-        private const val VISUAL_SATISFIED_WEIGHT = 0.25
         private const val VISUAL_VIOLATED_WEIGHT = 0.5
         private const val PRIMARY_VISUAL_ATTRIBUTION_WEIGHT = 0.6
         private const val SECONDARY_VISUAL_ATTRIBUTION_WEIGHT_POOL = 0.4
         private const val VISUAL_ASSESSMENT_ITEM_ID_PREFIX = "local-visual-interaction:"
         private const val VISUAL_ANSWER_SPEC_ID = "local-visual-interaction-v1"
         private const val VISUAL_ITEM_FAMILY_ID = "local-visual-interaction"
-        private val DECISIVE_VISUAL_ACTION_KINDS = setOf(
-            "DragPoint",
-            "AdjustParameter",
-            "Connect",
-            "OrderItems",
-            "SubmitHypothesis",
-        )
-        private const val PROJECTION_BATCH_SIZE = 100
         /** Spec 2.7 cooldowns: subjective reports 6h, visual interactions 1h. */
-        private const val SUBJECTIVE_COOLDOWN_MILLIS = 6L * 60 * 60 * 1000
-        private const val VISUAL_COOLDOWN_MILLIS = 1L * 60 * 60 * 1000
-        private const val RATING_HARD_WEIGHT = FsrsEvidenceRatingMapper.RATING_HARD_WEIGHT
-        private const val RATING_GOOD_WEIGHT = FsrsEvidenceRatingMapper.RATING_GOOD_WEIGHT
-        private const val RATING_EASY_WEIGHT = FsrsEvidenceRatingMapper.RATING_EASY_WEIGHT
-        private const val EXAM_RAMP_DAYS = 14
-        private const val MAX_OPTIMIZE_SAMPLES = 20_000
-        private const val MAX_CAS_RETRIES = 4
-        private const val MAX_PROJECTION_DRAIN_STEPS = 64
-        private const val EVENT_KIND_ATTEMPT = "ATTEMPT"
-        private const val EVENT_KIND_CORRECTION = "ATTEMPT_CORRECTION"
-        private const val EVENT_KIND_ANSWER_REVEAL = "ANSWER_REVEAL_OUTCOME"
-        private const val EVENT_KIND_TUTOR_ANSWER_EXPOSURE = "TUTOR_ANSWER_EXPOSURE_OUTCOME"
-        private const val EVENT_KIND_CHAT_EVIDENCE = "CHAT_EVIDENCE_SUBMITTED"
     }
-}
-
-private fun List<ReviewedKnowledgeCoverageRecord>.toKnowledgeCoverageOverview(
-    groundingSummaries: List<KnowledgeGroundingSummaryRecord>,
-): StudyKnowledgeCoverageOverview {
-    val reviewedSubjects = map { summary ->
-        StudyKnowledgeSubjectCoverage(
-            subject = SubjectKind.valueOf(summary.subject),
-            topicCount = summary.topicCount,
-            atomicKnowledgeCount = summary.atomicKnowledgeCount,
-            reviewedSourceCount = summary.reviewedSourceCount,
-            latestReviewedAtEpochMillis = summary.latestReviewedAtEpochMillis,
-        )
-    }.sortedBy { coverage -> coverage.subject.ordinal }
-    val pendingGaps = groundingSummaries.map { summary ->
-        StudyKnowledgeCoverageGap(
-            groundingKey = summary.groundingKey,
-            subject = SubjectKind.valueOf(summary.subject),
-            expectedParentKnowledgeDisplayName = summary.expectedParentKnowledgeDisplayName,
-            query = summary.query,
-            relatedQuestionCount = summary.relatedQuestionCount,
-            firstObservedAtEpochMillis = summary.firstObservedAtEpochMillis,
-            lastObservedAtEpochMillis = summary.lastObservedAtEpochMillis,
-        )
-    }
-    return StudyKnowledgeCoverageOverview(
-        reviewedSubjects = reviewedSubjects,
-        pendingGaps = pendingGaps,
-    )
-}
-
-
-/**
- * Median of the intake backlog's estimated seconds (spec batch-intake §6 P3):
- * the robust typical-item estimate for the coverage preview — a median is not
- * skewed by a few oversized outliers. Empty list → 0.
- */
-private fun List<MistakeRecord>.medianEstimateSeconds(): Int {
-    if (isEmpty()) return 0
-    val sorted = map(MistakeRecord::estimatedSeconds).sorted()
-    return sorted[sorted.size / 2]
 }

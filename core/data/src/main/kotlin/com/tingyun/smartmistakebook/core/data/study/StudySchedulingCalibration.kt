@@ -1,0 +1,155 @@
+package com.tingyun.smartmistakebook.core.data.study
+
+import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.domain.CalibrationInput
+import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
+import com.tingyun.smartmistakebook.core.domain.ChatEvidenceGateCalibration
+import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
+import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
+import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
+import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
+import com.tingyun.smartmistakebook.core.domain.OptimalRetention
+import com.tingyun.smartmistakebook.core.domain.PlannedReasonCalibration
+import com.tingyun.smartmistakebook.core.domain.ReviewSample
+import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
+import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
+import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
+import com.tingyun.smartmistakebook.core.domain.SourceCalibration
+import com.tingyun.smartmistakebook.core.model.CalibrationReport
+import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
+import com.tingyun.smartmistakebook.core.model.LearningModelVersion
+import java.time.Clock
+import kotlinx.coroutines.flow.first
+
+/**
+ * Calibration and scheduling-parameter surfaces of the study repository:
+ * evaluation reports, per-source and per-reason calibration, reminder timing,
+ * FSRS parameter optimisation and the desired-retention recommendation. Kept
+ * apart from the repository's write orchestration; the learner projection is
+ * injected as a provider so this service never owns projection state.
+ */
+internal class StudySchedulingCalibration(
+    private val database: StudyDatabasePort,
+    private val learnerId: String,
+    private val reviewLogSink: ReviewLogSink,
+    private val predictionAuditService: HLRPredictionAuditService,
+    private val schedulingSettingsStore: SchedulingSettingsStore?,
+    private val clock: Clock,
+    private val learnerSnapshot: suspend () -> LearnerSnapshot,
+) {
+
+    suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? {
+        val samples = reviewLogSink.reviewSamples()
+        if (samples.isEmpty()) return null
+        val eligible = samples.groupBy(ReviewSample::practiceUnitId).values.any { it.size >= 2 }
+        if (!eligible) return null
+        return SchedulingEvaluationHarness.evaluate(samples)
+    }
+
+
+    suspend fun sourceCalibrations(): List<SourceCalibration> =
+        reviewLogSink.sourceCalibrations()
+
+
+    suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> =
+        SchedulingEvaluationHarness.calibratePlannedReasons(reviewLogSink.reviewSamples())
+
+
+    suspend fun chatEvidenceGateCalibration(): ChatEvidenceGateCalibration.GateCalibrationReport? {
+        val acceptedTotal = database.countAcceptedChatEvidenceSince(
+            learnerId = learnerId,
+            sinceEpochMillis = 0,
+        )
+        val rejected = database.countRejectedChatEvidenceByReason(learnerId)
+        // 30 天观察窗的每小时分布（校准看近期行为，不看全部历史）。
+        val hourWindowStart = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+        val perHour = database.countAcceptedChatEvidencePerHour(learnerId, hourWindowStart)
+        val observation = ChatEvidenceGateCalibration.GateObservation(
+            acceptedCount = acceptedTotal,
+            rejectedByReason = rejected.associate { it.reason to it.count },
+            acceptedPerHour = perHour.associate { it.hourBucket to it.count },
+        )
+        if (observation.totalObservations == 0) return null
+        return ChatEvidenceGateCalibration.calibrate(observation)
+    }
+
+
+    suspend fun suggestedReminderMinute(): Int? = reviewLogSink.suggestedReminderMinute()
+
+
+    suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Parameter optimization requires a scheduling settings store"
+        }
+        // Phone-safe bound: numeric-gradient fitting replays the history many
+        // times, so optimization runs on the most recent window only.
+        val samples = reviewLogSink.reviewSamples().takeLast(MAX_OPTIMIZE_SAMPLES)
+        val result = FsrsParameterOptimizer.optimize(samples)
+        if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
+        store.setOptimizedParameters(result.parameters)
+        return result
+    }
+
+
+    suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? {
+        val snapshot = learnerSnapshot()
+        val cards = snapshot.problemMemoryStates.values.map { memory ->
+            OptimalRetention.Card(
+                stabilityDays = memory.stabilityDays,
+                difficulty = memory.difficulty,
+            )
+        }
+        val parameters = schedulingSettingsStore
+            ?.optimizedParameters
+            ?.first()
+            ?: FsrsScheduleMath.DEFAULT_PARAMETERS
+        return OptimalRetention.recommend(cards, parameters)
+    }
+
+
+    /**
+     * Calibration report for one model generation, computed over resolved
+     * prediction/outcome pairs persisted by the audit loop (audit §6.3).
+     */
+    suspend fun calibrationReport(modelVersion: LearningModelVersion): CalibrationReport {
+        val resolved = database.readResolvedStudentModelPredictions(
+            modelId = modelVersion.modelId,
+            modelVersion = modelVersion.version,
+        )
+        return CalibrationReportBuilder.build(
+            modelVersion = modelVersion,
+            resolved = resolved.map { row ->
+                CalibrationInput(
+                    predictedScore = row.predictedScore,
+                    conservativeScore = row.conservativeScore,
+                    wasIndependentCorrect = row.wasIndependentCorrect,
+                )
+            },
+            totalPredictions = resolved.size,
+            generatedAtEpochMillis = clock.millis(),
+        )
+    }
+
+
+    suspend fun calibrationReport(): CalibrationReport =
+        calibrationReport(predictionAuditService.modelVersion)
+
+
+    suspend fun declareExam(entry: ExamCalendarEntry) {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Exam declaration requires a scheduling settings store"
+        }
+        store.addExam(entry)
+    }
+
+    suspend fun removeExam(entryId: String) {
+        val store = requireNotNull(schedulingSettingsStore) {
+            "Exam declaration requires a scheduling settings store"
+        }
+        store.removeExam(entryId)
+    }
+
+    private companion object {
+        const val MAX_OPTIMIZE_SAMPLES = 20_000
+    }
+}
