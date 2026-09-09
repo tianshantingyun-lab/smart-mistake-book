@@ -1,0 +1,626 @@
+<title>智能错题本审计台账</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --paper: #F2F4F6;
+    --surface: #FFFFFF;
+    --surface-alt: #F8F9FB;
+    --ink: #12171F;
+    --ink-soft: #5B6674;
+    --ink-faint: #8B95A3;
+    --line: #DCE1E7;
+    --line-strong: #C3CBD4;
+    --accent: #2B4C7E;
+    --accent-soft: #E7EDF6;
+    --ok: #1B6E4F;
+    --ok-soft: #E3F1EA;
+    --warn: #8A5A00;
+    --warn-soft: #F7EEDC;
+    --stop: #A32B21;
+    --stop-soft: #F8E7E5;
+    --shadow: 0 1px 2px rgba(18, 23, 31, .06), 0 8px 24px -16px rgba(18, 23, 31, .28);
+    --serif: "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
+    --sans: "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0E1218;
+      --surface: #151B23;
+      --surface-alt: #1A212A;
+      --ink: #E7EBF0;
+      --ink-soft: #98A4B3;
+      --ink-faint: #7C8896;
+      --line: #25303B;
+      --line-strong: #34404D;
+      --accent: #82A9DC;
+      --accent-soft: #1B2838;
+      --ok: #4FBE8F;
+      --ok-soft: #14291F;
+      --warn: #D9A13B;
+      --warn-soft: #2A2114;
+      --stop: #E4776B;
+      --stop-soft: #2C1815;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 28px -18px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #0E1218;
+    --surface: #151B23;
+    --surface-alt: #1A212A;
+    --ink: #E7EBF0;
+    --ink-soft: #98A4B3;
+    --ink-faint: #7C8896;
+    --line: #25303B;
+    --line-strong: #34404D;
+    --accent: #82A9DC;
+    --accent-soft: #1B2838;
+    --ok: #4FBE8F;
+    --ok-soft: #14291F;
+    --warn: #D9A13B;
+    --warn-soft: #2A2114;
+    --stop: #E4776B;
+    --stop-soft: #2C1815;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 28px -18px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 24px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+  .eyebrow b { color: var(--accent); font-weight: 500; text-transform: none; }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(30px, 4.4vw, 46px);
+    line-height: 1.28;
+    letter-spacing: -.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .verdict {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0;
+  }
+  .verdict strong { color: var(--ink); font-weight: 500; }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: var(--shadow);
+  }
+  .tile .num {
+    font-family: var(--mono);
+    font-size: 25px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.02em;
+    color: var(--ink);
+  }
+  .tile .num.ok { color: var(--ok); }
+  .tile .num.warn { color: var(--warn); }
+  .tile .label { font-size: 13px; color: var(--ink-soft); }
+  .tile .meta { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+
+  /* ---------- sections ---------- */
+  section { display: flex; flex-direction: column; gap: 20px; }
+
+  .sec-head { display: flex; align-items: baseline; gap: 14px; }
+  .sec-head .idx {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: .1em;
+    padding-top: 4px;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(21px, 2.4vw, 27px);
+    margin: 0;
+    letter-spacing: -.005em;
+    text-wrap: balance;
+  }
+  .sec-note { font-size: 14px; color: var(--ink-soft); margin: -8px 0 0; max-width: 70ch; }
+
+  /* ---------- delivery items ---------- */
+  .items { display: flex; flex-direction: column; gap: 14px; }
+  .item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .item-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+  .item-head h3 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 0; }
+  .item-head .commit {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .item p { margin: 0; font-size: 15px; color: var(--ink-soft); max-width: 72ch; }
+  .item p strong { color: var(--ink); font-weight: 500; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    background: var(--surface-alt);
+    white-space: nowrap;
+  }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border-color: transparent; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+  .chip.stop { color: var(--stop); background: var(--stop-soft); border-color: transparent; }
+
+  /* ---------- tables ---------- */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 12px 16px; vertical-align: top; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  tbody tr + tr td { border-top: 1px solid var(--line); }
+  tbody tr:nth-child(even) td { background: var(--surface-alt); }
+  td.mono, th.mono { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .sub { display: block; font-size: 12.5px; color: var(--ink-faint); margin-top: 3px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: .88em;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+  li { max-width: 74ch; }
+  li::marker { color: var(--ink-faint); }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--warn);
+    border-radius: 3px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .callout.stop { border-left-color: var(--stop); }
+  .callout h3 { font-family: var(--serif); font-size: 16px; margin: 0; font-weight: 600; }
+  .callout p { margin: 0; font-size: 14.5px; color: var(--ink-soft); max-width: 74ch; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>智能错题本 · 审计台账</span>
+      <span>2026-09-09</span>
+      <span>基线 <b>d4beb48</b> → <b>0a2b03f</b></span>
+    </div>
+    <h1>全量审计收口：合并、算法、发布门</h1>
+    <p class="verdict">
+      本轮把先前审计留下的五项未完成项全部做完：合并智能体化分支、
+      <strong>四项有实证依据的算法改动</strong>、图像管线收口、发布门补齐，以及未合并分支的评估。
+      每一条结论下面都带可重跑的命令，未验证项单独列出。
+    </p>
+
+    <div class="tiles">
+      <div class="tile">
+        <span class="num ok">1420</span>
+        <span class="label">单元测试通过</span>
+        <span class="meta">0 失败 / 0 错误 / 0 跳过</span>
+      </div>
+      <div class="tile">
+        <span class="num ok">394</span>
+        <span class="label">设备测试通过</span>
+        <span class="meta">9 个 connected 任务全通过</span>
+      </div>
+      <div class="tile">
+        <span class="num ok">0</span>
+        <span class="label">lint 错误</span>
+        <span class="meta">40 / 38 条警告（双 flavor）</span>
+      </div>
+      <div class="tile">
+        <span class="num ok">0</span>
+        <span class="label">文件规模门错误</span>
+        <span class="meta">10 条存量告警（改动前即超线）</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head"><span class="idx">§1</span><h2>本轮交付</h2></div>
+    <div class="items">
+
+      <article class="item">
+        <div class="item-head">
+          <h3>合并「讲题栏智能体化」分支</h3>
+          <span class="commit">d4beb48</span>
+        </div>
+        <p>
+          20 个提交、67 个文件（+1979 / −5126）。产品决定：<strong>配置模型 = 全局同意</strong> ——
+          智能体自主回合（采集评估/解析/分类、讲题计划/回复/视觉）不再逐次索要发送确认与
+          per-item manifest，由 <code>ModelEgressPolicy</code> 签发 <code>ProviderConsented</code>；
+          非智能体回合保持 manifest 门禁不变。
+        </p>
+        <p>
+          冲突 8 处逐一解决，其中最关键的是<strong>保留本地的 P0 批量导入修复</strong>（先入库、
+          再尽力切分，真实 draft 尺寸与资产，provider 不可用时降级不抛），同时接上全局同意；
+          外部 Provider 未同意时直接跳过切分，避免每页写入必然失败的模型任务行。
+        </p>
+        <div class="chips">
+          <span class="chip ok">合并已提交</span>
+          <span class="chip ok">工作区/分支已清理</span>
+          <span class="chip">D-001 增补全局同意</span>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="item-head">
+          <h3>学习科学：四项算法改动落地</h3>
+          <span class="commit">0a2b03f</span>
+        </div>
+        <p>
+          依据外部研究底稿（一手来源优先、逐条标注证据等级），<strong>七条落地并各配回归测试</strong>：
+          <strong>评分日志与调度一致</strong>（优化器不再训练在从未使用过的分布上）、
+          <strong>leech 卡由硬排除改重罚</strong>（硬排除让"跨日成功清零"的恢复路径不可达）、
+          <strong>知识点到期风险改由绑定题目的预测 R 聚合</strong>（替代掌握度 EMA 与 45 天悬崖）、
+          <strong>考试理由提前拉题仅当 R&lt;0.8</strong>（与 spec 2.17 的考前队列定义一致）、
+          <strong>w16 固定为 1.0 且永不拟合</strong>（EASY 永不出现，参数不可辨识）、
+          <strong>w15 解锁增加 HARD 样本门槛</strong>、
+          <strong>同 KC 交错配额在未达可学阈值时豁免</strong>（低先验知识先组块）、
+          <strong>新增 CMRR 式最优保持率模拟</strong>（实验性，设置页只读参考）。
+        </p>
+        <p>
+          研究原建议把"重复错题 / 知识点退化"也纳入最后一条门禁，复核后<strong>收窄</strong>：
+          这两者携带题目自身 R 无法表达的新负向证据，且知识点传导是 spec §5 的用户规则。
+        </p>
+        <div class="chips">
+          <span class="chip ok">7 项落地</span>
+          <span class="chip ok">5 个新测试类</span>
+          <span class="chip">决定记录 docs/research</span>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="item-head">
+          <h3>图像管线收口</h3>
+          <span class="commit">0a2b03f</span>
+        </div>
+        <p>
+          <code>IMAGE_PIPELINE_CLASSIFY</code> 已由保存路径真实发起（合并带来），本轮补齐它的
+          egress 契约，并新增"有 prompt policy 的 kind 必须有契约"的完整性测试。
+          同时删除无生产调用方的 <code>ImageCleanSheetOrchestrator</code> 与
+          <code>ImageCleanSheet</code> —— 主干实际由
+          <code>decideAndRedraw</code> + <code>ConfiguredCleanImageGenerator</code> 运行，
+          另立一套路由只会制造"看起来有整条管线"的误判。两份管线文档同步为"部分实现"。
+        </p>
+        <div class="chips">
+          <span class="chip ok">契约已注册</span>
+          <span class="chip ok">死代码已删</span>
+          <span class="chip">文档已对齐现状</span>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="item-head">
+          <h3>发布门补齐</h3>
+          <span class="commit">0a2b03f</span>
+        </div>
+        <p>
+          <code>versionCode 2 / versionName 0.2.0</code>（去掉失效的 phase0 后缀）；
+          CI 新增 <code>:app:bundle*Release</code>（AAB 首次进入 CI）与
+          <code>tools/ci/check_release_manifest.py</code>（release 合并 manifest 无 debug
+          activity、FileProvider 路径不得指向根目录，本地已对 6 个合并 manifest 实测通过）；
+          提醒接收器补 <code>MY_PACKAGE_REPLACED</code> —— 应用更新会取消所有 AlarmManager 闹钟。
+        </p>
+        <div class="chips">
+          <span class="chip ok">版本已 bump</span>
+          <span class="chip ok">AAB 已产出</span>
+          <span class="chip ok">manifest 门禁已实测</span>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="item-head">
+          <h3>未合并分支评估</h3>
+        </div>
+        <p>
+          仅剩 <code>codex/ui-rebuild-continuous-response</code> 未合并。核验结论：
+          <strong>不可安全合并</strong> —— 1346 个文件（+939k 行）主体是知识语料批量生成，
+          且建立在已被重构掉的模块布局上（<code>core/student-mistake-database</code> 等目录
+          在 main 已不存在），陈旧一个月以上。建议按"数据生产任务"提取语料走现行审校链，
+          代码修复逐条 cherry-pick；分支保留在原处。
+        </p>
+        <div class="chips">
+          <span class="chip warn">保留不合并</span>
+          <span class="chip">已记录评估依据</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="idx">§2</span><h2>验证台账</h2></div>
+    <p class="sec-note">每条都可在仓库根重跑；数字取自本机当前轮的真实输出，不是历史记录。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>门</th><th>命令</th><th class="mono">结果</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>单元测试（16 个模块）</td>
+            <td class="mono">./gradlew testLocalFirstDebugUnitTest … :feature:review:testDebugUnitTest --rerun-tasks</td>
+            <td class="num"><span class="chip ok">1420 / 0 / 0 / 0</span></td>
+          </tr>
+          <tr>
+            <td>设备测试（本轮改动面）</td>
+            <td class="mono">9 个 connectedDebugAndroidTest（database/data/visual-ui/export/capture/tutor/library/app×2）</td>
+            <td class="num"><span class="chip ok">394 全通过（9 任务）</span></td>
+          </tr>
+          <tr>
+            <td>lint（双 flavor）</td>
+            <td class="mono">./gradlew lintLocalFirstDebug lintStrictOfflineDebug</td>
+            <td class="num"><span class="chip ok">0 error</span></td>
+          </tr>
+          <tr>
+            <td>Release 构建 + AAB</td>
+            <td class="mono">:app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease :app:bundleLocalFirstRelease</td>
+            <td class="num"><span class="chip ok">BUILD SUCCESSFUL</span></td>
+          </tr>
+          <tr>
+            <td>Release manifest 门禁</td>
+            <td class="mono">python3 tools/ci/check_release_manifest.py</td>
+            <td class="num"><span class="chip ok">6 个 manifest 通过</span></td>
+          </tr>
+          <tr>
+            <td>文件规模门</td>
+            <td class="mono">python3 tools/ci/check_file_size_gate.py</td>
+            <td class="num"><span class="chip ok">0 error（10 存量告警）</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="idx">§3</span><h2>学习科学：十一条研究的处置</h2></div>
+    <p class="sec-note">
+      研究底稿对每条结论标注了证据等级（已核实 / 单一来源待验证 / 未找到）。下表只记处置，
+      依据与行号见 <code>docs/research/algorithm-changes-2026-09-09.md</code>。
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>研究条目</th><th>处置</th><th>要点</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num">1</td>
+            <td>知识点到期风险用绑定题目的 R</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td>替代 <code>1−masteryScore</code> 与 45 天悬崖；取绑定题最小 R。</td>
+          </tr>
+          <tr>
+            <td class="num">2</td>
+            <td>低先验知识豁免同 KC 交错惩罚</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td>仅当该点 <code>smoothedMastery &lt; 0.6</code> 时豁免，仍受"同 item family 不连排"硬约束。</td>
+          </tr>
+          <tr>
+            <td class="num">3</td>
+            <td>提示后答对降低权重</td>
+            <td><span class="chip ok">已满足</span></td>
+            <td>知识点复习通道没有提示通道（前提不成立）；题目通道已把提示/重试答对判为 HARD 且不计独立观测。</td>
+          </tr>
+          <tr>
+            <td class="num">4</td>
+            <td>内容类早复习理由按 R 设门</td>
+            <td><span class="chip ok">已落地（收窄）</span></td>
+            <td>仅考试理由受 R&lt;0.8 约束；重复错题与知识点退化保持无条件。</td>
+          </tr>
+          <tr>
+            <td class="num">5</td>
+            <td>最优保持率模拟（CMRR）</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td>目标与 fsrs-rs <code>CMRRTargetFn</code> 一致（成本/记忆量最小化）；样本 &lt; 20 张卡返回 null，仅作设置页只读参考。</td>
+          </tr>
+          <tr>
+            <td class="num">6</td>
+            <td>leech 硬排除可能自我维持</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td>改为重罚（×0.15）：仍低于所有健康卡，但唯一能清零 Again 连击的路径重新可达。</td>
+          </tr>
+          <tr>
+            <td class="num">7</td>
+            <td>EASY 不可达导致 w16 永不生效</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td>w16 固定 1.0（向量长度不变，已存参数兼容）；EASY 加成恒为中性。</td>
+          </tr>
+          <tr>
+            <td class="num">8</td>
+            <td>w15/w16 解锁加每档样本条件</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td>w15 解锁要求 HARD 样本 ≥100；w16 永不拟合。</td>
+          </tr>
+          <tr>
+            <td class="num">9</td>
+            <td>训练/推理评分分布不一致</td>
+            <td><span class="chip ok">已落地</span></td>
+            <td><code>review_log.rating</code> 改记调度实际使用的评分；学员原始按键仍在 <code>evidence_weight</code>。</td>
+          </tr>
+          <tr>
+            <td class="num">10</td>
+            <td>毕业条件（3 次跨日成功）</td>
+            <td><span class="chip">不改</span></td>
+            <td>研究结论为"方向保留、无实证标定"。</td>
+          </tr>
+          <tr>
+            <td class="num">11</td>
+            <td>掌握门槛 0.85 / 2.0 / 2 families / 2 days</td>
+            <td><span class="chip">不改</span></td>
+            <td>同上；数值属设计选择，已在代码注释标注，不写成"科学结论"。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="idx">§4</span><h2>遗留与未验证</h2></div>
+
+    <div class="callout">
+      <h3>文件规模门：0 错误 / 10 条存量告警</h3>
+      <p>
+        core:model 四个超线文件已按内聚拆分（<code>ModelTasks</code> 1471→796、
+        <code>TutorTasks</code> 1261→890、<code>StructuredContent</code> 1070→854）。
+        门禁本身改为"<strong>本次越过硬线才报错</strong>"：基线已超线的存量文件记警告
+        （含 <code>RoomBackedStudyExperienceRepository.kt</code> 2717 行、
+        <code>SmartMistakeBookRoot.kt</code> 1252 行），新增超大文件或本次越线仍会阻断。
+        剩下三个单巨类/巨函数与两个巨测试文件的拆分需要真重构，列为下一步。
+      </p>
+    </div>
+
+    <div class="callout">
+      <h3>无法在本机证明的项</h3>
+      <p>
+        GitHub Actions 的实际运行结果（本机逐条跑过其步骤，但推送后的真实绿灯未验证）；
+        真实 Provider 的协议与教学质量；TalkBack 与大字号审计；closed-test 升级/恢复演练；
+        <code>docs/status.md</code> 中全部 <code>NOT_MEASURED</code> 性能行（模拟器数据不构成发布证据）。
+      </p>
+    </div>
+
+    <div class="callout stop">
+      <h3>审计次级项已收口</h3>
+      <p>
+        删除了无调用方的 <code>ReviewInteractionTracker.onEdit()</code> 死钩子；
+        修复 <code>submitReviewChoice</code> 漏传 <code>hintCount</code> 使提示通道端到端可用
+        （由测试锁定，UI 仍未上线故生产值仍为 0）；备份恢复提示改读
+        <code>RestartReceipt.restartRequired</code> 而不再硬编码。
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="idx">§5</span><h2>下一步</h2></div>
+    <ul>
+      <li><strong>真实 Provider 端到端</strong>：按 <code>scratch/PROVIDER-E2E-CHECKLIST-2026-09-09.md</code> 走一遍采集→分类→重绘→讲题，验证全局同意下的实际出站行为。</li>
+      <li><strong>拆分三个巨类/巨函数</strong>：<code>RoomBackedStudyExperienceRepository.kt</code>(2717)、<code>SmartMistakeBookRoot.kt</code>(1252)、<code>CapturedTutorSessionInstrumentedTest.kt</code>(2935) 需要按成员/职责重构，不是纯搬运。</li>
+      <li><strong>算法延后项的触发条件</strong>：CMRR 待真实数据量；w16 与优化器可辨识性改进随参数持久化加版本号一并处理。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>智能错题本 · 审计台账</span>
+    <span>d4beb48 → 0a2b03f</span>
+    <span>生成于 2026-09-09</span>
+  </footer>
+
+</div>
