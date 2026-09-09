@@ -1,37 +1,13 @@
 package com.tingyun.smartmistakebook.feature.capture
 
-import android.net.Uri
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.PhotoCamera
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -41,32 +17,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tingyun.smartmistakebook.core.ui.ErrorWarm
-import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkMuted
-import com.tingyun.smartmistakebook.core.ui.InkSecondary
-import com.tingyun.smartmistakebook.core.ui.JadeActive
-import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.LocalModeLine
-import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
-import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
 import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
-import com.tingyun.smartmistakebook.core.domain.CaptureSourcePage
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
@@ -76,16 +44,10 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
-import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
-import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
-import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
-import java.util.UUID
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.Lifecycle
@@ -285,7 +247,7 @@ fun CaptureScreen(
         onPendingCameraUriChange = { state.pendingCameraUri = it },
         onPhotoImportInProgressChange = { state.photoImportInProgress = it },
         applyReturnedImagePlan = { plan, source, purpose ->
-            applyReturnedImagePlan(plan, source, purpose)
+            returnedImages.apply(plan, source, purpose)
         },
     )
     val acquisition = remember(acquisitionLaunchers) {
@@ -293,31 +255,10 @@ fun CaptureScreen(
             context = context,
             scope = coroutineScope,
             launchers = acquisitionLaunchers,
-            sink = CaptureAcquisitionSink(
-                hasWorkspace = { state.workspaceState != null },
-                cameraLaunchInProgress = { state.cameraLaunchInProgress },
-                photoImportInProgress = { state.photoImportInProgress },
-                workflowInProgress = { state.workflowInProgress },
-                setPurpose = { state.acquisitionPurposeName = it.name },
-                applyReplacementPrep = { prep ->
-                    if (prep.requestId != null) {
-                        state.replacementRequestId = prep.requestId
-                        state.replacementOccurredAtEpochMillis = prep.occurredAtEpochMillis
-                    }
-                    if (prep.clearReplacementError) {
-                        state.replacementError = null
-                    }
-                },
-                setCameraLaunchInProgress = { state.cameraLaunchInProgress = it },
-                setPhotoImportInProgress = { state.photoImportInProgress = it },
-                setPendingCameraUri = { state.pendingCameraUri = it },
-                clearCaptureError = { state.captureError = null },
-                applyReturnedImagePlan = { plan, source, purpose ->
-                    applyReturnedImagePlan(plan, source, purpose)
-                },
-                afterWorkspaceFlush = ::afterWorkspaceFlush,
-                waitForCachePrune = { initialCachePrune.await() },
-            ),
+            state = state,
+            workspaceCommands = workspaceCommands,
+            returnedImages = returnedImages,
+            onWaitForCachePrune = { initialCachePrune.await() },
         )
     }
     fun launchCamera(
@@ -411,67 +352,10 @@ fun CaptureScreen(
         CaptureResumeCommands(
             context = context,
             repository = repository,
-            sink = CaptureResumeSink(
-                pendingCameraUri = { state.pendingCameraUri },
-                receivedImageUri = { state.receivedImageUri },
-                replacementCandidateUri = { state.replacementCandidateUri },
-                pendingAppendOwnedUri = { state.pendingAppendOwnedUri },
-                draftId = { state.draftId },
-                workspaceHydratedDraftId = { state.workspaceHydratedDraftId },
-                applyOwnedUriRecovery = { recovery ->
-                    if (recovery.clearPendingCamera) state.pendingCameraUri = null
-                    if (recovery.clearReceived) {
-                        state.receivedImageUri = null
-                        state.receivedInputSource = null
-                    }
-                    if (recovery.clearReplacement) {
-                        state.replacementCandidateUri = null
-                        state.replacementInputSourceName = null
-                        state.replacementRequestId = null
-                        state.replacementOccurredAtEpochMillis = null
-                    }
-                    if (recovery.clearPendingAppend) state.pendingAppendOwnedUri = null
-                    recovery.error?.let { state.captureError = it }
-                },
-                completeCachePrune = { initialCachePrune.complete(Unit) },
-                setResumeState = { state.resumeLoadStateName = it.name },
-                redirectTutor = { onTutorSessionReady(it) },
-                applyResumeDraft = { applied ->
-                    state.activeEntryOriginName = applied.originName
-                    state.receivedImageUri = applied.receivedImageUri
-                    state.receivedInputSource = null
-                    state.importRequestId = null
-                    state.importOccurredAtEpochMillis = applied.importOccurredAtEpochMillis
-                    state.commitOutcomeUnknown = false
-                    state.draftId = applied.draftId
-                    state.draftRevisionNumber = applied.draftRevisionNumber
-                    state.canonicalSha256 = applied.canonicalSha256
-                    state.sourcePages = applied.sourcePages
-                    state.sourcePageAssessmentSnapshots = applied.sourcePageAssessmentSnapshots
-                    state.selectedSourcePageIndex = 0
-                    state.committedEntryId = null
-                    state.selectedSubject = applied.selectedSubject
-                    state.correctedTitle = applied.correctedTitle
-                    state.titleEditedByUser = false
-                    state.correctedTranscription = applied.correctedTranscription
-                    state.writingLayerName = applied.writingLayerName
-                    state.recognitionStateName = applied.recognitionStateName
-                    state.recognitionConfidence = applied.recognitionConfidence
-                    state.recognitionBlockCount = applied.recognitionBlockCount
-                    state.assessmentSnapshot = applied.tasks.assessmentSnapshot
-                    state.assessmentRequestId = applied.tasks.assessmentRequestId
-                    state.assessmentSourceAssetId = applied.tasks.assessmentSourceAssetId
-                    state.assessmentOccurredAtEpochMillis = applied.tasks.assessmentOccurredAtEpochMillis
-                    state.assessmentRetryNonce = 0
-                    state.parseSnapshot = applied.tasks.parseSnapshot
-                    state.parseRequestId = applied.tasks.parseRequestId
-                    state.parseRetryNonce = 0
-                    state.transcriptionEditedByUser = false
-                    state.captureError = null
-                    applyWorkspace(applied.workspace)
-                },
-                applyWorkspace = { applyWorkspace(it) },
-            ),
+            state = state,
+            draftState = draftState,
+            onCompleteCachePrune = { initialCachePrune.complete(Unit) },
+            onRedirectTutor = onTutorSessionReady,
         )
     }
 
@@ -536,70 +420,38 @@ fun CaptureScreen(
             repository = repository,
             modelTasks = modelTasks,
             coordinator = modelExecutionCoordinator,
-            sink = CaptureModelTaskSink(
-                sourcePages = { state.sourcePages },
-                pageAssessmentSnapshots = { state.sourcePageAssessmentSnapshots },
-                assessmentSnapshot = { state.assessmentSnapshot },
-                parseSnapshot = { state.parseSnapshot },
-                draftId = { state.draftId },
-                revisionNumber = { state.draftRevisionNumber },
-                workspace = { state.workspaceState },
-                pendingAssessmentRecoveryRequest = { state.pendingAssessmentRecoveryRequest },
-                pendingParseRecoveryRequest = { state.pendingParseRecoveryRequest },
-                transcriptionEditedByUser = { state.transcriptionEditedByUser },
-                titleEditedByUser = { state.titleEditedByUser },
-                structuredProjection = { structuredProjection },
-                setAssessmentSnapshot = { state.assessmentSnapshot = it },
-                setParseSnapshot = { state.parseSnapshot = it },
-                setPageAssessmentSnapshots = { state.sourcePageAssessmentSnapshots = it },
-                setSplitError = { state.splitError = it },
-                setWorkflowInProgress = { state.workflowInProgress = it },
-                resetDraft = { resetDraftState() },
-                onSplitReady = onSplitReady,
-                clearPendingAssessmentRecovery = { state.pendingAssessmentRecoveryRequest = null },
-                clearPendingParseRecovery = { state.pendingParseRecoveryRequest = null },
-                replaceWorkspace = { adopted ->
-                    state.workspaceState = adopted
-                    state.workspaceChangeVersion += 1
-                    state.correctedTranscription = adopted.transcription
-                    state.correctedTitle = adopted.title.ifBlank {
-                        suggestCaptureTitle(adopted.transcription)
-                    }
-                },
-                applyAdoptedText = { adoptedText ->
-                    state.correctedTranscription = adoptedText.transcription
-                    adoptedText.title?.let { state.correctedTitle = it }
-                },
-                buildAssessmentRequest = {
-                    requestId, currentDraftId, sourceAssetId, width, height, occurredAt, consent ->
-                    captureAssessmentRequest(
-                        requestId = requestId,
-                        draftId = currentDraftId,
-                        sourceAssetId = sourceAssetId,
-                        origin = activeEntryOrigin.toAssessmentOrigin(),
-                        imageWidth = width,
-                        imageHeight = height,
-                        occurredAtEpochMillis = occurredAt,
-                        agentConsentGranted = consent,
-                    )
-                },
-                buildParseRequest = {
-                    requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, consent ->
-                    captureParseRequest(
-                        requestId = requestId,
-                        draftId = currentDraftId,
-                        origin = activeEntryOrigin.toAssessmentOrigin(),
-                        basisRevisionNumber = basisRevision,
-                        sourcePages = pages,
-                        assessmentRequestIds = assessmentIds,
-                        occurredAtEpochMillis = occurredAt,
-                        agentConsentGranted = consent,
-                    )
-                },
-            ),
+            state = state,
+            draftState = draftState,
+            onSplitReady = onSplitReady,
+            structuredProjection = { structuredProjection },
+            buildAssessmentRequest = {
+                requestId, currentDraftId, sourceAssetId, width, height, occurredAt, consent ->
+                captureAssessmentRequest(
+                    requestId = requestId,
+                    draftId = currentDraftId,
+                    sourceAssetId = sourceAssetId,
+                    origin = activeEntryOrigin.toAssessmentOrigin(),
+                    imageWidth = width,
+                    imageHeight = height,
+                    occurredAtEpochMillis = occurredAt,
+                    agentConsentGranted = consent,
+                )
+            },
+            buildParseRequest = {
+                requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, consent ->
+                captureParseRequest(
+                    requestId = requestId,
+                    draftId = currentDraftId,
+                    origin = activeEntryOrigin.toAssessmentOrigin(),
+                    basisRevisionNumber = basisRevision,
+                    sourcePages = pages,
+                    assessmentRequestIds = assessmentIds,
+                    occurredAtEpochMillis = occurredAt,
+                    agentConsentGranted = consent,
+                )
+            },
         )
     }
-
     LaunchedEffect(state.assessmentRequestId) {
         val requestId = state.assessmentRequestId ?: return@LaunchedEffect
         modelTaskCommands.observeAssessment(requestId)

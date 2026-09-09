@@ -13,11 +13,20 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Camera/photo-picker acquisition flow. Keeps its Android launchers and
+ * owned-URI lifecycle; screen state is written directly, cross-command steps
+ * (workspace flush, returned-image application) delegate to their commands,
+ * and the cache-prune latch is injected.
+ */
 internal class CaptureAcquisitionCommands(
     private val context: Context,
     private val scope: CoroutineScope,
     private val launchers: CaptureAcquisitionLaunchers,
-    private val sink: CaptureAcquisitionSink,
+    private val state: CaptureScreenState,
+    private val workspaceCommands: CaptureWorkspaceCommands,
+    private val returnedImages: CaptureReturnedImageCommands,
+    private val onWaitForCachePrune: suspend () -> Unit,
 ) {
     fun launchCamera(
         purpose: CaptureAcquisitionPurpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
@@ -25,15 +34,15 @@ internal class CaptureAcquisitionCommands(
     ) {
         when (
             captureAcquisitionLaunchDecision(
-                hasWorkspace = sink.hasWorkspace(),
+                hasWorkspace = state.workspaceState != null,
                 workspaceAlreadyFlushed = workspaceAlreadyFlushed,
-                cameraLaunchInProgress = sink.cameraLaunchInProgress(),
-                photoImportInProgress = sink.photoImportInProgress(),
-                workflowInProgress = sink.workflowInProgress(),
+                cameraLaunchInProgress = state.cameraLaunchInProgress,
+                photoImportInProgress = state.photoImportInProgress,
+                workflowInProgress = state.workflowInProgress,
             )
         ) {
             CaptureAcquisitionLaunchDecision.FLUSH_WORKSPACE_FIRST -> {
-                sink.afterWorkspaceFlush {
+                workspaceCommands.afterFlush {
                     launchCamera(purpose, workspaceAlreadyFlushed = true)
                 }
                 return
@@ -41,20 +50,20 @@ internal class CaptureAcquisitionCommands(
             CaptureAcquisitionLaunchDecision.BUSY -> return
             CaptureAcquisitionLaunchDecision.LAUNCH -> Unit
         }
-        sink.setPurpose(purpose)
+        state.acquisitionPurposeName = purpose.name
         val replacementPrep = captureReplacementLaunchPrep(
             purpose = purpose,
             nowEpochMillis = System.currentTimeMillis(),
             newRequestId = { UUID.randomUUID().toString() },
         )
-        sink.applyReplacementPrep(replacementPrep)
-        sink.setCameraLaunchInProgress(true)
+        applyReplacementPrep(replacementPrep)
+        state.cameraLaunchInProgress = true
         scope.launch {
             var createdUri: Uri? = null
             try {
-                sink.waitForCachePrune()
+                onWaitForCachePrune()
                 val result = withContext(Dispatchers.IO) { createCaptureUri(context) }
-                sink.setCameraLaunchInProgress(false)
+                state.cameraLaunchInProgress = false
                 val created = result.getOrNull()
                 createdUri = created
                 when (
@@ -65,20 +74,20 @@ internal class CaptureAcquisitionCommands(
                     )
                 ) {
                     is CaptureCameraCreateOutcome.Ready -> {
-                        sink.setPendingCameraUri(outcome.uriString)
-                        sink.clearCaptureError()
+                        state.pendingCameraUri = outcome.uriString
+                        state.captureError = null
                     }
                     is CaptureCameraCreateOutcome.LaunchFailed -> {
                         revokeCaptureGrant(context, outcome.uriString)
-                        sink.applyReturnedImagePlan(
+                        returnedImages.apply(
                             captureCameraUnavailablePlan(outcome.uriString),
                             CaptureInputSource.CAMERA,
                             purpose,
                         )
-                        sink.setPendingCameraUri(null)
+                        state.pendingCameraUri = null
                     }
                     CaptureCameraCreateOutcome.CreateFailed -> {
-                        sink.applyReturnedImagePlan(
+                        returnedImages.apply(
                             captureCreatePhotoFileFailedPlan(),
                             CaptureInputSource.CAMERA,
                             purpose,
@@ -101,15 +110,15 @@ internal class CaptureAcquisitionCommands(
     ) {
         when (
             captureAcquisitionLaunchDecision(
-                hasWorkspace = sink.hasWorkspace(),
+                hasWorkspace = state.workspaceState != null,
                 workspaceAlreadyFlushed = workspaceAlreadyFlushed,
-                cameraLaunchInProgress = sink.cameraLaunchInProgress(),
-                photoImportInProgress = sink.photoImportInProgress(),
-                workflowInProgress = sink.workflowInProgress(),
+                cameraLaunchInProgress = state.cameraLaunchInProgress,
+                photoImportInProgress = state.photoImportInProgress,
+                workflowInProgress = state.workflowInProgress,
             )
         ) {
             CaptureAcquisitionLaunchDecision.FLUSH_WORKSPACE_FIRST -> {
-                sink.afterWorkspaceFlush {
+                workspaceCommands.afterFlush {
                     launchPhotoPicker(purpose, workspaceAlreadyFlushed = true)
                 }
                 return
@@ -117,8 +126,8 @@ internal class CaptureAcquisitionCommands(
             CaptureAcquisitionLaunchDecision.BUSY -> return
             CaptureAcquisitionLaunchDecision.LAUNCH -> Unit
         }
-        sink.setPurpose(purpose)
-        sink.setPhotoImportInProgress(true)
+        state.acquisitionPurposeName = purpose.name
+        state.photoImportInProgress = true
         when (
             capturePickerLaunchOutcome(
                 launchSucceeded = runCatching {
@@ -130,12 +139,12 @@ internal class CaptureAcquisitionCommands(
         ) {
             CapturePickerLaunchOutcome.Launched -> Unit
             CapturePickerLaunchOutcome.Unavailable -> {
-                sink.applyReturnedImagePlan(
+                returnedImages.apply(
                     capturePhotoPickerUnavailablePlan(),
                     CaptureInputSource.PHOTO_PICKER,
                     purpose,
                 )
-                sink.setPhotoImportInProgress(false)
+                state.photoImportInProgress = false
             }
         }
     }
@@ -143,24 +152,14 @@ internal class CaptureAcquisitionCommands(
     fun requestRetake(hasDraft: Boolean) {
         launchCamera(retakeAcquisitionPurpose(hasDraft = hasDraft))
     }
-}
 
-internal class CaptureAcquisitionSink(
-    val hasWorkspace: () -> Boolean,
-    val cameraLaunchInProgress: () -> Boolean,
-    val photoImportInProgress: () -> Boolean,
-    val workflowInProgress: () -> Boolean,
-    val setPurpose: (CaptureAcquisitionPurpose) -> Unit,
-    val applyReplacementPrep: (CaptureReplacementLaunchPrep) -> Unit,
-    val setCameraLaunchInProgress: (Boolean) -> Unit,
-    val setPhotoImportInProgress: (Boolean) -> Unit,
-    val setPendingCameraUri: (String?) -> Unit,
-    val clearCaptureError: () -> Unit,
-    val applyReturnedImagePlan: (
-        CaptureReturnedImagePlan,
-        CaptureInputSource,
-        CaptureAcquisitionPurpose,
-    ) -> Unit,
-    val afterWorkspaceFlush: (() -> Unit) -> Unit,
-    val waitForCachePrune: suspend () -> Unit,
-)
+    private fun applyReplacementPrep(prep: CaptureReplacementLaunchPrep) {
+        if (prep.requestId != null) {
+            state.replacementRequestId = prep.requestId
+            state.replacementOccurredAtEpochMillis = prep.occurredAtEpochMillis
+        }
+        if (prep.clearReplacementError) {
+            state.replacementError = null
+        }
+    }
+}

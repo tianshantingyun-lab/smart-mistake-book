@@ -87,10 +87,19 @@ internal fun captureResumeDraftApplication(
     )
 }
 
+/**
+ * Resume/recovery of a pending draft onto screen state. Owned-uri cache
+ * pruning stays Android-side (context); the workspace application delegates to
+ * [CaptureDraftStateCommands]; the cache-prune latch and tutor hand-off are
+ * injected.
+ */
 internal class CaptureResumeCommands(
     private val context: Context,
     private val repository: CaptureWorkflowRepository,
-    private val sink: CaptureResumeSink,
+    private val state: CaptureScreenState,
+    private val draftState: CaptureDraftStateCommands,
+    private val onCompleteCachePrune: () -> Unit,
+    private val onRedirectTutor: (String) -> Unit,
 ) {
     suspend fun pruneAndRecoverOwnedUris() {
         try {
@@ -98,10 +107,10 @@ internal class CaptureResumeCommands(
                 pruneOwnedCaptureCache(
                     context = context,
                     retainedUris = listOfNotNull(
-                        sink.pendingCameraUri(),
-                        sink.receivedImageUri(),
-                        sink.replacementCandidateUri(),
-                        sink.pendingAppendOwnedUri(),
+                        state.pendingCameraUri,
+                        state.receivedImageUri,
+                        state.replacementCandidateUri,
+                        state.pendingAppendOwnedUri,
                     ),
                 )
             }
@@ -111,31 +120,31 @@ internal class CaptureResumeCommands(
                     isOwnedCapture = isOwnedCaptureUri(uri),
                     fileExists = ownedCaptureExists(context, uri),
                 )
-            sink.applyOwnedUriRecovery(
+            applyOwnedUriRecovery(
                 captureOwnedUriRecovery(
-                    pendingCamera = recover(sink.pendingCameraUri()),
-                    received = recover(sink.receivedImageUri()),
-                    replacement = recover(sink.replacementCandidateUri()),
-                    pendingAppend = recover(sink.pendingAppendOwnedUri()),
+                    pendingCamera = recover(state.pendingCameraUri),
+                    received = recover(state.receivedImageUri),
+                    replacement = recover(state.replacementCandidateUri),
+                    pendingAppend = recover(state.pendingAppendOwnedUri),
                 ),
             )
         } finally {
-            sink.completeCachePrune()
+            onCompleteCachePrune()
         }
     }
 
     suspend fun loadResume(requestedDraftId: String) {
-        if (captureResumeShouldSkipLoad(requestedDraftId, sink.draftId(), sink.receivedImageUri())) {
-            sink.setResumeState(CaptureResumeLoadState.READY)
+        if (captureResumeShouldSkipLoad(requestedDraftId, state.draftId, state.receivedImageUri)) {
+            state.resumeLoadStateName = CaptureResumeLoadState.READY.name
             return
         }
-        sink.setResumeState(CaptureResumeLoadState.LOADING)
+        state.resumeLoadStateName = CaptureResumeLoadState.LOADING.name
         val resumable = try {
             withContext(Dispatchers.IO) { repository.readPendingCapture(requestedDraftId) }
         } catch (cancelled: kotlinx.coroutines.CancellationException) {
             throw cancelled
         } catch (_: Exception) {
-            sink.setResumeState(CaptureResumeLoadState.SOURCE_UNAVAILABLE)
+            state.resumeLoadStateName = CaptureResumeLoadState.SOURCE_UNAVAILABLE.name
             return
         }
         when (
@@ -146,44 +155,80 @@ internal class CaptureResumeCommands(
             )
         ) {
             CaptureResumeLoadedDecision.SourceUnavailable -> {
-                sink.setResumeState(CaptureResumeLoadState.SOURCE_UNAVAILABLE)
+                state.resumeLoadStateName = CaptureResumeLoadState.SOURCE_UNAVAILABLE.name
                 return
             }
             CaptureResumeLoadedDecision.Missing -> {
-                sink.setResumeState(CaptureResumeLoadState.MISSING)
+                state.resumeLoadStateName = CaptureResumeLoadState.MISSING.name
                 return
             }
             is CaptureResumeLoadedDecision.RedirectTutor -> {
-                sink.setResumeState(CaptureResumeLoadState.REDIRECTING)
-                sink.redirectTutor(decision.sessionId)
+                state.resumeLoadStateName = CaptureResumeLoadState.REDIRECTING.name
+                onRedirectTutor(decision.sessionId)
                 return
             }
             CaptureResumeLoadedDecision.Apply -> Unit
         }
-        sink.applyResumeDraft(captureResumeDraftApplication(requireNotNull(resumable)))
-        sink.setResumeState(CaptureResumeLoadState.READY)
+        applyResumeDraft(captureResumeDraftApplication(requireNotNull(resumable)))
+        state.resumeLoadStateName = CaptureResumeLoadState.READY.name
     }
 
     suspend fun hydrateWorkspace(currentDraftId: String) {
-        if (sink.workspaceHydratedDraftId() == currentDraftId) return
+        if (state.workspaceHydratedDraftId == currentDraftId) return
         val resumable = runCatching {
             withContext(Dispatchers.IO) { repository.readPendingCapture(currentDraftId) }
         }.getOrNull() ?: return
-        sink.applyWorkspace(restoreCaptureWorkspace(resumable))
+        draftState.applyWorkspace(restoreCaptureWorkspace(resumable))
+    }
+
+    private fun applyOwnedUriRecovery(recovery: CaptureOwnedUriRecovery) {
+        if (recovery.clearPendingCamera) state.pendingCameraUri = null
+        if (recovery.clearReceived) {
+            state.receivedImageUri = null
+            state.receivedInputSource = null
+        }
+        if (recovery.clearReplacement) {
+            state.replacementCandidateUri = null
+            state.replacementInputSourceName = null
+            state.replacementRequestId = null
+            state.replacementOccurredAtEpochMillis = null
+        }
+        if (recovery.clearPendingAppend) state.pendingAppendOwnedUri = null
+        recovery.error?.let { state.captureError = it }
+    }
+
+    private fun applyResumeDraft(applied: CaptureResumeDraftApplication) {
+        state.activeEntryOriginName = applied.originName
+        state.receivedImageUri = applied.receivedImageUri
+        state.receivedInputSource = null
+        state.importRequestId = null
+        state.importOccurredAtEpochMillis = applied.importOccurredAtEpochMillis
+        state.commitOutcomeUnknown = false
+        state.draftId = applied.draftId
+        state.draftRevisionNumber = applied.draftRevisionNumber
+        state.canonicalSha256 = applied.canonicalSha256
+        state.sourcePages = applied.sourcePages
+        state.sourcePageAssessmentSnapshots = applied.sourcePageAssessmentSnapshots
+        state.selectedSourcePageIndex = 0
+        state.committedEntryId = null
+        state.selectedSubject = applied.selectedSubject
+        state.correctedTitle = applied.correctedTitle
+        state.titleEditedByUser = false
+        state.correctedTranscription = applied.correctedTranscription
+        state.writingLayerName = applied.writingLayerName
+        state.recognitionStateName = applied.recognitionStateName
+        state.recognitionConfidence = applied.recognitionConfidence
+        state.recognitionBlockCount = applied.recognitionBlockCount
+        state.assessmentSnapshot = applied.tasks.assessmentSnapshot
+        state.assessmentRequestId = applied.tasks.assessmentRequestId
+        state.assessmentSourceAssetId = applied.tasks.assessmentSourceAssetId
+        state.assessmentOccurredAtEpochMillis = applied.tasks.assessmentOccurredAtEpochMillis
+        state.assessmentRetryNonce = 0
+        state.parseSnapshot = applied.tasks.parseSnapshot
+        state.parseRequestId = applied.tasks.parseRequestId
+        state.parseRetryNonce = 0
+        state.transcriptionEditedByUser = false
+        state.captureError = null
+        draftState.applyWorkspace(applied.workspace)
     }
 }
-
-internal class CaptureResumeSink(
-    val pendingCameraUri: () -> String?,
-    val receivedImageUri: () -> String?,
-    val replacementCandidateUri: () -> String?,
-    val pendingAppendOwnedUri: () -> String?,
-    val draftId: () -> String?,
-    val workspaceHydratedDraftId: () -> String?,
-    val applyOwnedUriRecovery: (CaptureOwnedUriRecovery) -> Unit,
-    val completeCachePrune: () -> Unit,
-    val setResumeState: (CaptureResumeLoadState) -> Unit,
-    val redirectTutor: (String) -> Unit,
-    val applyResumeDraft: (CaptureResumeDraftApplication) -> Unit,
-    val applyWorkspace: (CaptureWorkspaceLocalSnapshot) -> Unit,
-)
