@@ -30,55 +30,51 @@ internal fun applyWorkspaceWriteResult(
 internal class CaptureWorkspaceCommands(
     private val writer: CaptureWorkspaceWriter,
     private val scope: CoroutineScope,
-    private val sink: CaptureWorkspaceSink,
+    private val state: CaptureScreenState,
 ) {
     suspend fun saveNow(
-        state: CaptureWorkspaceUiState,
+        workspace: CaptureWorkspaceUiState,
         occurredAtEpochMillis: Long = System.currentTimeMillis(),
     ): CaptureDraftWorkspaceIdentity? {
-        sink.setSaving(true)
+        state.workspaceSaving = true
         return try {
             withContext(NonCancellable) {
                 val applied = applyWorkspaceWriteResult(
                     writer.save(
-                        state = state,
-                        currentIdentity = sink.currentIdentity,
+                        state = workspace,
+                        currentIdentity = { state.workspaceIdentity },
                         occurredAtEpochMillis = occurredAtEpochMillis,
                     ),
                 )
-                sink.applySave(applied)
+                if (applied.identity != null) {
+                    state.workspaceIdentity = applied.identity
+                    state.workspaceUpdatedAtEpochMillis =
+                        applied.updatedAtEpochMillis ?: state.workspaceUpdatedAtEpochMillis
+                }
+                state.workspaceSaveError = applied.error
                 applied.identity
             }
         } finally {
-            sink.setSaving(false)
+            state.workspaceSaving = false
         }
     }
 
     suspend fun flushNow(): Boolean {
-        val current = sink.currentWorkspace() ?: return true
+        val current = state.workspaceState ?: return true
         return saveNow(current) != null
     }
 
     fun afterFlush(action: () -> Unit) {
-        if (!captureWorkspaceFlushCanStart(sink.saving(), sink.workflowInProgress())) return
+        if (!captureWorkspaceFlushCanStart(state.workspaceSaving, state.workflowInProgress)) return
         scope.launch {
             if (flushNow()) action()
         }
     }
 
     fun requestBack(onBack: () -> Unit) {
-        when (captureWorkspaceLeaveDecision(hasWorkspace = sink.currentWorkspace() != null)) {
+        when (captureWorkspaceLeaveDecision(hasWorkspace = state.workspaceState != null)) {
             CaptureWorkspaceLeaveDecision.LEAVE_NOW -> onBack()
             CaptureWorkspaceLeaveDecision.FLUSH_THEN_LEAVE -> afterFlush(onBack)
         }
     }
 }
-
-internal class CaptureWorkspaceSink(
-    val currentWorkspace: () -> CaptureWorkspaceUiState?,
-    val currentIdentity: () -> CaptureDraftWorkspaceIdentity?,
-    val saving: () -> Boolean,
-    val workflowInProgress: () -> Boolean,
-    val setSaving: (Boolean) -> Unit,
-    val applySave: (CaptureWorkspaceSaveApplication) -> Unit,
-)

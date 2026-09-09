@@ -176,129 +176,7 @@ fun CaptureScreen(
         ) && (!assessmentBlocksEntry || finalConfirmationPending)
     val entryGateOpen = candidateUsable
 
-    val draftState = remember {
-        CaptureDraftStateCommands(
-            sink = CaptureDraftStateSink(
-                draftId = { state.draftId },
-                sourcePages = { state.sourcePages },
-                assessmentSnapshot = { state.assessmentSnapshot },
-                parseSnapshot = { state.parseSnapshot },
-                parseOutput = { realParseOutput },
-                workspace = { state.workspaceState },
-                clearPendingAssessmentRecovery = { state.pendingAssessmentRecoveryRequest = null },
-                replaceAssessmentRequestId = { requestId ->
-                    state.assessmentRequestId = requestId
-                    state.assessmentOccurredAtEpochMillis = System.currentTimeMillis()
-                },
-                clearAssessmentSnapshotForActivePage = {
-                    state.assessmentSnapshot = null
-                    val activeAssetId = state.assessmentSourceAssetId
-                    state.sourcePageAssessmentSnapshots = state.sourcePageAssessmentSnapshots.mapIndexed {
-                            index,
-                            existing,
-                        ->
-                        if (state.sourcePages.getOrNull(index)?.sourceAssetId == activeAssetId) {
-                            null
-                        } else {
-                            existing
-                        }
-                    }
-                },
-                incrementAssessmentRetryNonce = { state.assessmentRetryNonce += 1 },
-                clearPendingParseRecovery = { state.pendingParseRecoveryRequest = null },
-                replaceParseRequestId = { state.parseRequestId = it },
-                clearParseSnapshot = { state.parseSnapshot = null },
-                incrementParseRetryNonce = { state.parseRetryNonce += 1 },
-                resetDraftFields = {
-                    state.importRequestId = UUID.randomUUID().toString()
-                    state.importOccurredAtEpochMillis = System.currentTimeMillis()
-                    state.commitOutcomeUnknown = false
-                    state.draftId = null
-                    state.draftRevisionNumber = null
-                    state.canonicalSha256 = null
-                    state.committedEntryId = null
-                    state.selectedSubject = ""
-                    state.correctedTitle = ""
-                    state.titleEditedByUser = false
-                    state.correctedTranscription = ""
-                    state.writingLayerName = CaptureWritingLayer.UNKNOWN.name
-                    state.recognitionStateName = CaptureRecognitionState.NOT_ATTEMPTED.name
-                    state.recognitionConfidence = null
-                    state.recognitionBlockCount = 0
-                    state.assessmentRequestId = null
-                    state.assessmentSourceAssetId = null
-                    state.assessmentOccurredAtEpochMillis = null
-                    state.assessmentRetryNonce = 0
-                    state.splitRetryNonce = 0
-                    state.splitError = null
-                    state.assessmentSnapshot = null
-                    state.pendingAssessmentRecoveryRequest = null
-                    state.sourcePages = emptyList()
-                    state.sourcePageAssessmentSnapshots = emptyList()
-                    state.selectedSourcePageIndex = 0
-                    state.parseRequestId = null
-                    state.parseRetryNonce = 0
-                    state.parseSnapshot = null
-                    state.pendingParseRecoveryRequest = null
-                    state.transcriptionEditedByUser = false
-                },
-                clearWorkspace = {
-                    state.workspaceState = null
-                    state.workspaceIdentity = null
-                    state.workspaceUpdatedAtEpochMillis = 0
-                    state.workspaceHydratedDraftId = null
-                    state.workspaceChangeVersion = 0
-                    state.workspaceSaveError = null
-                    state.workspaceSaving = false
-                },
-                applyWorkspaceSnapshot = { restored ->
-                    state.workspaceState = restored.state
-                    state.workspaceIdentity = restored.identity
-                    state.workspaceUpdatedAtEpochMillis = restored.updatedAtEpochMillis
-                    state.workspaceHydratedDraftId = restored.state.draftId
-                    state.selectedSubject = restored.state.subject
-                    state.correctedTitle = restored.state.title
-                    state.correctedTranscription = restored.state.transcription
-                    state.writingLayerName = restored.state.captureWritingLayer().name
-                    state.titleEditedByUser =
-                        com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.TITLE in
-                            restored.state.userEditedFields
-                    state.transcriptionEditedByUser = restored.state.userEditedFields.any {
-                        it == com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.TRANSCRIPTION ||
-                            it == com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField.STRUCTURE
-                    }
-                    state.workspaceSaveError = null
-                },
-                replaceWorkspace = { updated ->
-                    state.workspaceState = updated
-                    state.workspaceChangeVersion += 1
-                    state.workspaceSaveError = null
-                    state.selectedSubject = updated.subject
-                    state.correctedTitle = updated.title
-                    state.correctedTranscription = updated.transcription
-                    state.writingLayerName = updated.captureWritingLayer().name
-                },
-                applyImportedSummary = { draft, imported, occurredAt ->
-                    state.draftId = draft.draftId
-                    state.draftRevisionNumber = draft.revisionNumber
-                    state.canonicalSha256 = draft.sourceAssetSha256
-                    state.sourcePages = draft.sourcePages
-                    state.sourcePageAssessmentSnapshots = imported.pageSnapshots
-                    state.selectedSourcePageIndex = 0
-                    state.recognitionStateName = draft.recognition.state.name
-                    state.recognitionConfidence = draft.recognition.confidence
-                    state.recognitionBlockCount = draft.recognition.candidateBlockCount
-                    state.correctedTranscription = draft.recognition.candidateText
-                    state.correctedTitle = suggestCaptureTitle(draft.recognition.candidateText)
-                    state.titleEditedByUser = false
-                    state.assessmentRequestId = imported.assessmentRequestId
-                    state.assessmentSourceAssetId = imported.assessmentSourceAssetId
-                    state.assessmentOccurredAtEpochMillis = occurredAt
-                    state.parseRequestId = imported.parseRequestId
-                },
-            ),
-        )
-    }
+    val draftState = remember { CaptureDraftStateCommands(state) }
 
     fun retryAssessmentProcessing() {
         draftState.retryAssessment()
@@ -329,24 +207,7 @@ fun CaptureScreen(
     }
 
     val workspaceCommands = remember(workspaceWriter) {
-        CaptureWorkspaceCommands(
-            writer = workspaceWriter,
-            scope = coroutineScope,
-            sink = CaptureWorkspaceSink(
-                currentWorkspace = { state.workspaceState },
-                currentIdentity = { state.workspaceIdentity },
-                saving = { state.workspaceSaving },
-                workflowInProgress = { state.workflowInProgress },
-                setSaving = { state.workspaceSaving = it },
-                applySave = { applied ->
-                    if (applied.identity != null) {
-                        state.workspaceIdentity = applied.identity
-                        state.workspaceUpdatedAtEpochMillis = applied.updatedAtEpochMillis ?: state.workspaceUpdatedAtEpochMillis
-                    }
-                    state.workspaceSaveError = applied.error
-                },
-            ),
-        )
+        CaptureWorkspaceCommands(workspaceWriter, coroutineScope, state)
     }
     suspend fun saveWorkspaceNow(
         state: CaptureWorkspaceUiState,
@@ -363,72 +224,27 @@ fun CaptureScreen(
         workspaceCommands.requestBack(onBack)
     }
 
-    val sourceImport = remember(workspaceCommands) {
+    val sourceImport = remember(workspaceCommands, activeEntryOrigin, entryGateOpen) {
         CaptureSourceImportCommands(
             scope = coroutineScope,
-            sink = CaptureSourceImportSink(
-                receivedImageUri = { state.receivedImageUri },
-                receivedInputSource = {
-                    state.receivedInputSource?.let(CaptureInputSource::valueOf)
-                },
-                importRequestId = { state.importRequestId },
-                importOccurredAtEpochMillis = { state.importOccurredAtEpochMillis },
-                rememberImportIdentity = { identity ->
-                    if (identity.persistRequestId) state.importRequestId = identity.requestId
-                    if (identity.persistOccurredAt) {
-                        state.importOccurredAtEpochMillis = identity.occurredAtEpochMillis
-                    }
-                },
-                draftId = { state.draftId },
-                revisionNumber = { state.draftRevisionNumber },
-                pageCount = { state.sourcePages.size },
-                workflowInProgress = { state.workflowInProgress },
-                setWorkflowInProgress = { state.workflowInProgress = it },
-                setCaptureError = { state.captureError = it },
-                deleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
-                setPendingAppendOwnedUri = { state.pendingAppendOwnedUri = it },
-                replacementCandidateUri = { state.replacementCandidateUri },
-                replacementInputSource = {
-                    state.replacementInputSourceName?.let(CaptureInputSource::valueOf)
-                },
-                replacementRequestId = { state.replacementRequestId },
-                replacementOccurredAtEpochMillis = { state.replacementOccurredAtEpochMillis },
-                clearReplacementError = { state.replacementError = null },
-                clearReplacementState = {
-                    state.replacementCandidateUri = null
-                    state.replacementInputSourceName = null
-                    state.replacementRequestId = null
-                    state.replacementOccurredAtEpochMillis = null
-                    state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                    state.replacementError = null
-                },
-                entryGateOpen = { entryGateOpen },
-                workspace = { state.workspaceState },
-                workspaceUpdatedAtEpochMillis = { state.workspaceUpdatedAtEpochMillis },
-                workspaceIdentity = { state.workspaceIdentity },
-                setWorkspaceSaveError = { state.workspaceSaveError = it },
-                replaceWorkspace = { updated ->
-                    state.workspaceState = updated
-                    state.workspaceChangeVersion += 1
-                },
-                saveWorkspaceNow = { state, occurredAt ->
-                    saveWorkspaceNow(state, occurredAt)
-                },
-                confirmWorkspace = { identity ->
-                    workflowViewModel.confirm(identity, activeEntryOrigin)
-                },
-                acceptSource = { uri, source, purpose, requestId, occurredAt, expectedPageCount ->
-                    workflowViewModel.acceptSource(
-                        uri = uri,
-                        source = source,
-                        origin = activeEntryOrigin,
-                        purpose = purpose,
-                        requestId = requestId,
-                        occurredAtEpochMillis = occurredAt,
-                        expectedPageCount = expectedPageCount,
-                    )
-                },
-            ),
+            state = state,
+            workspaceCommands = workspaceCommands,
+            entryGateOpen = { entryGateOpen },
+            onDeleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
+            onConfirmWorkspace = { identity ->
+                workflowViewModel.confirm(identity, activeEntryOrigin)
+            },
+            onAcceptSource = { uri, source, purpose, requestId, occurredAt, expectedPageCount ->
+                workflowViewModel.acceptSource(
+                    uri = uri,
+                    source = source,
+                    origin = activeEntryOrigin,
+                    purpose = purpose,
+                    requestId = requestId,
+                    occurredAtEpochMillis = occurredAt,
+                    expectedPageCount = expectedPageCount,
+                )
+            },
         )
     }
 
@@ -443,30 +259,10 @@ fun CaptureScreen(
 
     val returnedImages = remember {
         CaptureReturnedImageCommands(
-            sink = CaptureReturnedImageSink(
-                deleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
-                clearPendingCamera = { state.pendingCameraUri = null },
-                setReceivedImage = { uri, source ->
-                    state.receivedImageUri = uri
-                    state.receivedInputSource = source.name
-                },
-                resetDraft = { resetDraftState() },
-                clearCaptureError = { state.captureError = null },
-                setReplacement = { uri, source ->
-                    state.replacementCandidateUri = uri
-                    state.replacementInputSourceName = source.name
-                },
-                clearReplacementError = { state.replacementError = null },
-                persistAdditionalPage = { uri, source -> persistAdditionalPage(uri, source) },
-                resetPurpose = {
-                    state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                },
-                clearReplacementRequest = {
-                    state.replacementRequestId = null
-                    state.replacementOccurredAtEpochMillis = null
-                },
-                setCaptureError = { state.captureError = it },
-            ),
+            state = state,
+            draftState = draftState,
+            sourceImport = sourceImport,
+            onDeleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
         )
     }
 
@@ -558,63 +354,12 @@ fun CaptureScreen(
 
     val workflowEvents = remember {
         CaptureWorkflowEventCommands(
-            sink = CaptureWorkflowEventSink(
-                applyDraftSummary = { draft, requestId, occurredAt ->
-                    applyDraftSummary(draft, requestId, occurredAt)
-                },
-                clearCaptureError = { state.captureError = null },
-                pageAssessmentSnapshots = { state.sourcePageAssessmentSnapshots },
-                applyAppendedPages = {
-                    pages, snapshots, selectedPageIndex, assessmentId, assetId, occurredAt, parseId ->
-                    state.sourcePages = pages
-                    state.sourcePageAssessmentSnapshots = snapshots
-                    state.selectedSourcePageIndex = selectedPageIndex
-                    state.assessmentSnapshot = null
-                    state.assessmentRequestId = assessmentId
-                    state.assessmentSourceAssetId = assetId
-                    state.assessmentOccurredAtEpochMillis = occurredAt
-                    state.assessmentRetryNonce = 0
-                    state.parseSnapshot = null
-                    state.parseRequestId = parseId
-                    state.parseRetryNonce = 0
-                },
-                resetAcquisitionPurpose = {
-                    state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                },
-                deleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
-                clearPendingAppend = { state.pendingAppendOwnedUri = null },
-                receivedImageUri = { state.receivedImageUri },
-                setReceivedImage = { uri ->
-                    state.receivedImageUri = uri
-                    state.receivedInputSource = null
-                },
-                resetDraft = { resetDraftState() },
-                clearReplacementState = {
-                    state.replacementCandidateUri = null
-                    state.replacementInputSourceName = null
-                    state.replacementRequestId = null
-                    state.replacementOccurredAtEpochMillis = null
-                    state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
-                    state.replacementError = null
-                },
-                setWorkflowInProgress = { state.workflowInProgress = it },
-                consumeDraftImported = { workflowViewModel.consumeDraftImported(it) },
-                commitLibraryEntry = { entryId, nextRevision ->
-                    state.committedEntryId = entryId
-                    state.draftRevisionNumber = nextRevision
-                },
-                clearReceivedImage = { state.receivedImageUri = null },
-                clearWorkspace = {
-                    state.workspaceState = null
-                    state.workspaceIdentity = null
-                    state.workspaceUpdatedAtEpochMillis = 0
-                    state.workspaceHydratedDraftId = null
-                },
-                markCommitKnown = { state.commitOutcomeUnknown = false },
-                markCommitUnknown = { state.commitOutcomeUnknown = true },
-                onTutorSessionReady = onTutorSessionReady,
-                consumeTutorSession = { workflowViewModel.onTutorSessionConsumed(it) },
-            ),
+            state = state,
+            draftState = draftState,
+            onDeleteOwnedUri = { uri -> deleteOwnedCaptureAsync(context, uri) },
+            onConsumeDraftImported = { workflowViewModel.consumeDraftImported(it) },
+            onConsumeTutorSession = { workflowViewModel.onTutorSessionConsumed(it) },
+            onTutorSessionReady = onTutorSessionReady,
         )
     }
 

@@ -5,52 +5,74 @@ import com.tingyun.smartmistakebook.core.domain.CaptureRecognitionState
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
 import com.tingyun.smartmistakebook.core.model.CaptureDraftEditedField
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
-import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
-import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import java.util.UUID
 
+/**
+ * Draft-state orchestration for the capture screen. Operates directly on
+ * [CaptureScreenState] (no sink indirection): every transition the state
+ * holder cannot express as a single field assignment lives here as a method.
+ */
 internal class CaptureDraftStateCommands(
-    private val sink: CaptureDraftStateSink,
+    private val state: CaptureScreenState,
 ) {
     fun retryAssessment() {
-        sink.clearPendingAssessmentRecovery()
-        val retry = nextCaptureTaskRetry(sink.assessmentSnapshot()?.status)
+        state.pendingAssessmentRecoveryRequest = null
+        val retry = nextCaptureTaskRetry(state.assessmentSnapshot?.status)
         if (retry.replaceRequestId) {
-            sink.replaceAssessmentRequestId("capture-assess:${UUID.randomUUID()}")
+            state.assessmentRequestId = "capture-assess:${UUID.randomUUID()}"
+            state.assessmentOccurredAtEpochMillis = System.currentTimeMillis()
         }
-        if (retry.clearSnapshot) {
-            sink.clearAssessmentSnapshotForActivePage()
-        }
-        if (retry.incrementNonce) sink.incrementAssessmentRetryNonce()
+        if (retry.clearSnapshot) clearAssessmentSnapshotForActivePage()
+        if (retry.incrementNonce) state.assessmentRetryNonce += 1
     }
 
     fun retryParse() {
-        sink.clearPendingParseRecovery()
-        val retry = nextCaptureTaskRetry(sink.parseSnapshot()?.status)
+        state.pendingParseRecoveryRequest = null
+        val retry = nextCaptureTaskRetry(state.parseSnapshot?.status)
         if (retry.replaceRequestId) {
-            sink.replaceParseRequestId("capture-parse:${UUID.randomUUID()}")
+            state.parseRequestId = "capture-parse:${UUID.randomUUID()}"
         }
-        if (retry.clearSnapshot) sink.clearParseSnapshot()
-        if (retry.incrementNonce) sink.incrementParseRetryNonce()
+        if (retry.clearSnapshot) state.parseSnapshot = null
+        if (retry.incrementNonce) state.parseRetryNonce += 1
     }
 
     fun resetDraft() {
-        sink.resetDraftFields()
-        sink.clearWorkspace()
+        resetDraftFields()
+        clearWorkspace()
     }
 
     fun applyWorkspace(restored: CaptureWorkspaceLocalSnapshot) {
-        val effectiveState = sink.parseOutput()?.capturedDocument?.let {
+        val effectiveState = parseOutput()?.capturedDocument?.let {
             restored.state.adoptModelCandidateIfPristine(it)
         } ?: restored.state
-        sink.applyWorkspaceSnapshot(restored.copy(state = effectiveState))
+        state.workspaceState = effectiveState
+        state.workspaceIdentity = restored.identity
+        state.workspaceUpdatedAtEpochMillis = restored.updatedAtEpochMillis
+        state.workspaceHydratedDraftId = effectiveState.draftId
+        state.selectedSubject = effectiveState.subject
+        state.correctedTitle = effectiveState.title
+        state.correctedTranscription = effectiveState.transcription
+        state.writingLayerName = effectiveState.captureWritingLayer().name
+        state.titleEditedByUser =
+            CaptureDraftEditedField.TITLE in effectiveState.userEditedFields
+        state.transcriptionEditedByUser = effectiveState.userEditedFields.any {
+            it == CaptureDraftEditedField.TRANSCRIPTION ||
+                it == CaptureDraftEditedField.STRUCTURE
+        }
+        state.workspaceSaveError = null
     }
 
     fun updateWorkspace(transform: (CaptureWorkspaceUiState) -> CaptureWorkspaceUiState) {
-        val current = sink.workspace() ?: return
+        val current = state.workspaceState ?: return
         val updated = transform(current)
         if (updated == current) return
-        sink.replaceWorkspace(updated)
+        state.workspaceState = updated
+        state.workspaceChangeVersion += 1
+        state.workspaceSaveError = null
+        state.selectedSubject = updated.subject
+        state.correctedTitle = updated.title
+        state.correctedTranscription = updated.transcription
+        state.writingLayerName = updated.captureWritingLayer().name
     }
 
     fun applyDraftSummary(
@@ -63,32 +85,85 @@ internal class CaptureDraftStateCommands(
             sourceAssetId = draft.sourceAssetId,
             pageCount = draft.sourcePages.size,
         )
-        sink.applyImportedSummary(draft, imported, occurredAtEpochMillis)
+        state.draftId = draft.draftId
+        state.draftRevisionNumber = draft.revisionNumber
+        state.canonicalSha256 = draft.sourceAssetSha256
+        state.sourcePages = draft.sourcePages
+        state.sourcePageAssessmentSnapshots = imported.pageSnapshots
+        state.selectedSourcePageIndex = 0
+        state.recognitionStateName = draft.recognition.state.name
+        state.recognitionConfidence = draft.recognition.confidence
+        state.recognitionBlockCount = draft.recognition.candidateBlockCount
+        state.correctedTranscription = draft.recognition.candidateText
+        state.correctedTitle = suggestCaptureTitle(draft.recognition.candidateText)
+        state.titleEditedByUser = false
+        state.assessmentRequestId = imported.assessmentRequestId
+        state.assessmentSourceAssetId = imported.assessmentSourceAssetId
+        state.assessmentOccurredAtEpochMillis = occurredAtEpochMillis
+        state.parseRequestId = imported.parseRequestId
+    }
+
+    /** Same filtering the rest of the screen applies: demo parses never adopt. */
+    private fun parseOutput(): CaptureParseOutput? =
+        (state.parseSnapshot?.output as? CaptureParseOutput)
+            ?.takeIf { state.parseSnapshot?.provider?.isDemo == false }
+
+    private fun clearAssessmentSnapshotForActivePage() {
+        state.assessmentSnapshot = null
+        val activeAssetId = state.assessmentSourceAssetId
+        state.sourcePageAssessmentSnapshots = state.sourcePageAssessmentSnapshots.mapIndexed {
+                index,
+                existing,
+            ->
+            if (state.sourcePages.getOrNull(index)?.sourceAssetId == activeAssetId) {
+                null
+            } else {
+                existing
+            }
+        }
+    }
+
+    private fun resetDraftFields() {
+        state.importRequestId = UUID.randomUUID().toString()
+        state.importOccurredAtEpochMillis = System.currentTimeMillis()
+        state.commitOutcomeUnknown = false
+        state.draftId = null
+        state.draftRevisionNumber = null
+        state.canonicalSha256 = null
+        state.committedEntryId = null
+        state.selectedSubject = ""
+        state.correctedTitle = ""
+        state.titleEditedByUser = false
+        state.correctedTranscription = ""
+        state.writingLayerName = CaptureWritingLayer.UNKNOWN.name
+        state.recognitionStateName = CaptureRecognitionState.NOT_ATTEMPTED.name
+        state.recognitionConfidence = null
+        state.recognitionBlockCount = 0
+        state.assessmentRequestId = null
+        state.assessmentSourceAssetId = null
+        state.assessmentOccurredAtEpochMillis = null
+        state.assessmentRetryNonce = 0
+        state.splitRetryNonce = 0
+        state.splitError = null
+        state.assessmentSnapshot = null
+        state.pendingAssessmentRecoveryRequest = null
+        state.sourcePages = emptyList()
+        state.sourcePageAssessmentSnapshots = emptyList()
+        state.selectedSourcePageIndex = 0
+        state.parseRequestId = null
+        state.parseRetryNonce = 0
+        state.parseSnapshot = null
+        state.pendingParseRecoveryRequest = null
+        state.transcriptionEditedByUser = false
+    }
+
+    private fun clearWorkspace() {
+        state.workspaceState = null
+        state.workspaceIdentity = null
+        state.workspaceUpdatedAtEpochMillis = 0
+        state.workspaceHydratedDraftId = null
+        state.workspaceChangeVersion = 0
+        state.workspaceSaveError = null
+        state.workspaceSaving = false
     }
 }
-
-internal class CaptureDraftStateSink(
-    val draftId: () -> String?,
-    val sourcePages: () -> List<com.tingyun.smartmistakebook.core.domain.CaptureSourcePage>,
-    val assessmentSnapshot: () -> ModelTaskSnapshot?,
-    val parseSnapshot: () -> ModelTaskSnapshot?,
-    val parseOutput: () -> CaptureParseOutput?,
-    val workspace: () -> CaptureWorkspaceUiState?,
-    val clearPendingAssessmentRecovery: () -> Unit,
-    val replaceAssessmentRequestId: (String) -> Unit,
-    val clearAssessmentSnapshotForActivePage: () -> Unit,
-    val incrementAssessmentRetryNonce: () -> Unit,
-    val clearPendingParseRecovery: () -> Unit,
-    val replaceParseRequestId: (String) -> Unit,
-    val clearParseSnapshot: () -> Unit,
-    val incrementParseRetryNonce: () -> Unit,
-    val resetDraftFields: () -> Unit,
-    val clearWorkspace: () -> Unit,
-    val applyWorkspaceSnapshot: (CaptureWorkspaceLocalSnapshot) -> Unit,
-    val replaceWorkspace: (CaptureWorkspaceUiState) -> Unit,
-    val applyImportedSummary: (
-        CaptureDraftSummary,
-        CaptureImportedNewModelTasks,
-        Long,
-    ) -> Unit,
-)

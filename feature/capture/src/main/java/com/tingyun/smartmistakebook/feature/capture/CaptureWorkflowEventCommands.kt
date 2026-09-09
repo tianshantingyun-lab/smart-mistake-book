@@ -8,26 +8,36 @@ import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 
+/**
+ * Maps ViewModel workflow events onto screen state. Draft-summary and
+ * reset steps delegate to [CaptureDraftStateCommands]; ViewModel consumption
+ * and owned-uri deletion are injected.
+ */
 internal class CaptureWorkflowEventCommands(
-    private val sink: CaptureWorkflowEventSink,
+    private val state: CaptureScreenState,
+    private val draftState: CaptureDraftStateCommands,
+    private val onDeleteOwnedUri: (String?) -> Unit,
+    private val onConsumeDraftImported: (String) -> Unit,
+    private val onConsumeTutorSession: (String) -> Unit,
+    private val onTutorSessionReady: (String) -> Unit,
 ) {
     fun applyImported(event: CaptureDraftImportedEvent) {
         when (event.purpose) {
             CaptureAcquisitionPurpose.NEW_CAPTURE -> {
-                sink.applyDraftSummary(
+                draftState.applyDraftSummary(
                     event.summary,
                     event.requestId,
                     event.occurredAtEpochMillis,
                 )
-                sink.clearCaptureError()
+                state.captureError = null
             }
             CaptureAcquisitionPurpose.APPEND_DRAFT -> {
                 val appended = captureImportedAppendModelTasks(
                     requestId = event.requestId,
                     sourcePages = event.summary.sourcePages,
-                    existingSnapshots = sink.pageAssessmentSnapshots(),
+                    existingSnapshots = state.sourcePageAssessmentSnapshots,
                 )
-                sink.applyAppendedPages(
+                applyAppendedPages(
                     event.summary.sourcePages,
                     appended.pageSnapshots,
                     appended.selectedPageIndex,
@@ -36,26 +46,27 @@ internal class CaptureWorkflowEventCommands(
                     event.occurredAtEpochMillis,
                     appended.parseRequestId,
                 )
-                sink.resetAcquisitionPurpose()
-                sink.deleteOwnedUri(event.sourceUri)
-                sink.clearPendingAppend()
-                sink.clearCaptureError()
+                state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+                onDeleteOwnedUri(event.sourceUri)
+                state.pendingAppendOwnedUri = null
+                state.captureError = null
             }
             CaptureAcquisitionPurpose.REPLACE_DRAFT -> {
-                sink.deleteOwnedUri(sink.receivedImageUri())
-                sink.setReceivedImage(event.sourceUri)
-                sink.resetDraft()
-                sink.applyDraftSummary(
+                onDeleteOwnedUri(state.receivedImageUri)
+                state.receivedImageUri = event.sourceUri
+                state.receivedInputSource = null
+                draftState.resetDraft()
+                draftState.applyDraftSummary(
                     event.summary,
                     event.requestId,
                     event.occurredAtEpochMillis,
                 )
-                sink.clearReplacementState()
-                sink.clearCaptureError()
+                clearReplacementState()
+                state.captureError = null
             }
         }
-        sink.setWorkflowInProgress(false)
-        sink.consumeDraftImported(event.requestId)
+        state.workflowInProgress = false
+        onConsumeDraftImported(event.requestId)
     }
 
     fun applySaved(
@@ -70,43 +81,35 @@ internal class CaptureWorkflowEventCommands(
             currentRevisionNumber = currentRevisionNumber,
         ) ?: return
         if (saved.commitLibraryEntry) {
-            sink.commitLibraryEntry(savedEntryId, saved.nextRevisionNumber)
+            state.committedEntryId = savedEntryId
+            state.draftRevisionNumber = saved.nextRevisionNumber
         }
-        sink.deleteOwnedUri(sink.receivedImageUri())
-        sink.clearReceivedImage()
-        sink.clearWorkspace()
-        sink.markCommitKnown()
-        sink.clearCaptureError()
-        sink.setWorkflowInProgress(false)
+        onDeleteOwnedUri(state.receivedImageUri)
+        state.receivedImageUri = null
+        clearWorkspace()
+        state.commitOutcomeUnknown = false
+        state.captureError = null
+        state.workflowInProgress = false
     }
 
     fun applyFailed(phase: CaptureWorkflowPhase, failureCode: CaptureFailureCode?) {
         if (captureFailedWorkflowMarksUnknownOutcome(phase, failureCode)) {
-            sink.setWorkflowInProgress(false)
-            sink.markCommitUnknown()
+            state.workflowInProgress = false
+            state.commitOutcomeUnknown = true
         } else if (phase == CaptureWorkflowPhase.FAILED) {
-            sink.setWorkflowInProgress(false)
+            state.workflowInProgress = false
         }
     }
 
     fun consumeTutorSession(session: ConfirmedTutorSession) {
         // First tutor plan runs under the global agent consent; navigation hands off
         // with no capture-side authorization state.
-        sink.onTutorSessionReady(session.sessionId)
-        sink.setWorkflowInProgress(false)
-        sink.consumeTutorSession(session.sessionId)
+        onTutorSessionReady(session.sessionId)
+        state.workflowInProgress = false
+        onConsumeTutorSession(session.sessionId)
     }
-}
 
-internal class CaptureWorkflowEventSink(
-    val applyDraftSummary: (
-        CaptureDraftSummary,
-        String,
-        Long,
-    ) -> Unit,
-    val clearCaptureError: () -> Unit,
-    val pageAssessmentSnapshots: () -> List<ModelTaskSnapshot?>,
-    val applyAppendedPages: (
+    private fun applyAppendedPages(
         pages: List<CaptureSourcePage>,
         snapshots: List<ModelTaskSnapshot?>,
         selectedPageIndex: Int,
@@ -114,21 +117,33 @@ internal class CaptureWorkflowEventSink(
         assessmentSourceAssetId: String,
         assessmentOccurredAtEpochMillis: Long,
         parseRequestId: String,
-    ) -> Unit,
-    val resetAcquisitionPurpose: () -> Unit,
-    val deleteOwnedUri: (String?) -> Unit,
-    val clearPendingAppend: () -> Unit,
-    val receivedImageUri: () -> String?,
-    val setReceivedImage: (String) -> Unit,
-    val resetDraft: () -> Unit,
-    val clearReplacementState: () -> Unit,
-    val setWorkflowInProgress: (Boolean) -> Unit,
-    val consumeDraftImported: (String) -> Unit,
-    val commitLibraryEntry: (String?, Int?) -> Unit,
-    val clearReceivedImage: () -> Unit,
-    val clearWorkspace: () -> Unit,
-    val markCommitKnown: () -> Unit,
-    val markCommitUnknown: () -> Unit,
-    val onTutorSessionReady: (String) -> Unit,
-    val consumeTutorSession: (String) -> Unit,
-)
+    ) {
+        state.sourcePages = pages
+        state.sourcePageAssessmentSnapshots = snapshots
+        state.selectedSourcePageIndex = selectedPageIndex
+        state.assessmentSnapshot = null
+        state.assessmentRequestId = assessmentRequestId
+        state.assessmentSourceAssetId = assessmentSourceAssetId
+        state.assessmentOccurredAtEpochMillis = assessmentOccurredAtEpochMillis
+        state.assessmentRetryNonce = 0
+        state.parseSnapshot = null
+        state.parseRequestId = parseRequestId
+        state.parseRetryNonce = 0
+    }
+
+    private fun clearReplacementState() {
+        state.replacementCandidateUri = null
+        state.replacementInputSourceName = null
+        state.replacementRequestId = null
+        state.replacementOccurredAtEpochMillis = null
+        state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+        state.replacementError = null
+    }
+
+    private fun clearWorkspace() {
+        state.workspaceState = null
+        state.workspaceIdentity = null
+        state.workspaceUpdatedAtEpochMillis = 0
+        state.workspaceHydratedDraftId = null
+    }
+}

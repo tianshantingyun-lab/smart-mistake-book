@@ -51,8 +51,16 @@ internal fun captureReturnedImageApplication(
     )
 }
 
+/**
+ * Applies a returned-image plan onto screen state. Cross-command steps (draft
+ * reset, additional-page persistence) delegate to the owning commands; only
+ * owned-uri deletion is injected as an external effect.
+ */
 internal class CaptureReturnedImageCommands(
-    private val sink: CaptureReturnedImageSink,
+    private val state: CaptureScreenState,
+    private val draftState: CaptureDraftStateCommands,
+    private val sourceImport: CaptureSourceImportCommands,
+    private val onDeleteOwnedUri: (String) -> Unit,
 ) {
     fun apply(
         plan: CaptureReturnedImagePlan,
@@ -60,36 +68,29 @@ internal class CaptureReturnedImageCommands(
         purpose: CaptureAcquisitionPurpose,
     ) {
         val application = captureReturnedImageApplication(plan, source, purpose)
-        application.deleteUris.forEach(sink.deleteOwnedUri)
-        if (application.clearPendingCamera) sink.clearPendingCamera()
+        application.deleteUris.forEach(onDeleteOwnedUri)
+        if (application.clearPendingCamera) state.pendingCameraUri = null
         application.receivedUri?.let { uri ->
-            sink.setReceivedImage(uri, requireNotNull(application.receivedSource))
+            state.receivedImageUri = uri
+            state.receivedInputSource = requireNotNull(application.receivedSource).name
         }
-        if (application.resetDraft) sink.resetDraft()
-        if (application.clearCaptureError) sink.clearCaptureError()
+        if (application.resetDraft) draftState.resetDraft()
+        if (application.clearCaptureError) state.captureError = null
         application.replacementUri?.let { uri ->
-            sink.setReplacement(uri, requireNotNull(application.replacementSource))
+            state.replacementCandidateUri = uri
+            state.replacementInputSourceName = requireNotNull(application.replacementSource).name
         }
-        if (application.clearReplacementError) sink.clearReplacementError()
+        if (application.clearReplacementError) state.replacementError = null
         application.appendUri?.let { uri ->
-            sink.persistAdditionalPage(uri, requireNotNull(application.appendSource))
+            sourceImport.persistAdditionalPage(uri, requireNotNull(application.appendSource))
         }
-        if (application.resetPurpose) sink.resetPurpose()
-        if (application.clearReplacementRequest) sink.clearReplacementRequest()
-        application.captureError?.let(sink.setCaptureError)
+        if (application.resetPurpose) {
+            state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+        }
+        if (application.clearReplacementRequest) {
+            state.replacementRequestId = null
+            state.replacementOccurredAtEpochMillis = null
+        }
+        application.captureError?.let { state.captureError = it }
     }
 }
-
-internal class CaptureReturnedImageSink(
-    val deleteOwnedUri: (String) -> Unit,
-    val clearPendingCamera: () -> Unit,
-    val setReceivedImage: (String, CaptureInputSource) -> Unit,
-    val resetDraft: () -> Unit,
-    val clearCaptureError: () -> Unit,
-    val setReplacement: (String, CaptureInputSource) -> Unit,
-    val clearReplacementError: () -> Unit,
-    val persistAdditionalPage: (String, CaptureInputSource) -> Unit,
-    val resetPurpose: () -> Unit,
-    val clearReplacementRequest: () -> Unit,
-    val setCaptureError: (String) -> Unit,
-)

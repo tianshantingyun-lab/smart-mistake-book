@@ -1,7 +1,6 @@
 package com.tingyun.smartmistakebook.feature.capture
 
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftWorkspaceIdentity
-import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
@@ -54,23 +53,42 @@ internal fun captureCommitDecision(
     return CaptureCommitDecision.Prepare(workspace)
 }
 
+/**
+ * New-source ingestion and commit orchestration. Reads and writes
+ * [CaptureScreenState] directly; the workspace flush, confirmation and the
+ * ViewModel's acceptSource are injected so this class stays free of Android
+ * and ViewModel types. Derived screen signals (entryGateOpen) are injected as
+ * getters bound by the caller, preserving the original capture semantics.
+ */
 internal class CaptureSourceImportCommands(
     private val scope: CoroutineScope,
-    private val sink: CaptureSourceImportSink,
+    private val state: CaptureScreenState,
+    private val workspaceCommands: CaptureWorkspaceCommands,
+    private val entryGateOpen: () -> Boolean,
+    private val onDeleteOwnedUri: (String?) -> Unit,
+    private val onConfirmWorkspace: (CaptureDraftWorkspaceIdentity) -> Unit,
+    private val onAcceptSource: (
+        uri: String,
+        source: CaptureInputSource,
+        purpose: CaptureAcquisitionPurpose,
+        requestId: String,
+        occurredAtEpochMillis: Long,
+        expectedPageCount: Int?,
+    ) -> Unit,
 ) {
     fun persistNewSource() {
-        val uri = sink.receivedImageUri() ?: return
-        val source = sink.receivedInputSource() ?: return
-        if (!captureWorkflowCanStart(sink.workflowInProgress())) return
+        val uri = state.receivedImageUri ?: return
+        val source = state.receivedInputSource?.let(CaptureInputSource::valueOf) ?: return
+        if (!captureWorkflowCanStart(state.workflowInProgress)) return
         val identity = captureImportRequestIdentity(
-            existingRequestId = sink.importRequestId(),
-            existingOccurredAtEpochMillis = sink.importOccurredAtEpochMillis(),
+            existingRequestId = state.importRequestId,
+            existingOccurredAtEpochMillis = state.importOccurredAtEpochMillis,
             nowEpochMillis = System.currentTimeMillis(),
             newRequestId = { UUID.randomUUID().toString() },
         )
-        sink.rememberImportIdentity(identity)
-        sink.setWorkflowInProgress(true)
-        sink.acceptSource(
+        rememberImportIdentity(identity)
+        state.workflowInProgress = true
+        onAcceptSource(
             uri,
             source,
             CaptureAcquisitionPurpose.NEW_CAPTURE,
@@ -83,42 +101,42 @@ internal class CaptureSourceImportCommands(
     fun persistAdditionalPage(localUri: String, source: CaptureInputSource) {
         when (
             captureAppendPageDecision(
-                draftId = sink.draftId(),
-                revisionNumber = sink.revisionNumber(),
-                pageCount = sink.pageCount(),
-                workflowInProgress = sink.workflowInProgress(),
+                draftId = state.draftId,
+                revisionNumber = state.draftRevisionNumber,
+                pageCount = state.sourcePages.size,
+                workflowInProgress = state.workflowInProgress,
             )
         ) {
             CaptureAppendPageDecision.MissingDraft -> return
             CaptureAppendPageDecision.TooManyPages -> {
-                sink.setCaptureError(CAPTURE_TOO_MANY_PAGES_ERROR)
-                sink.deleteOwnedUri(localUri)
+                state.captureError = CAPTURE_TOO_MANY_PAGES_ERROR
+                onDeleteOwnedUri(localUri)
                 return
             }
             CaptureAppendPageDecision.Busy -> return
             CaptureAppendPageDecision.Append -> Unit
         }
-        sink.setPendingAppendOwnedUri(localUri)
-        sink.setWorkflowInProgress(true)
-        sink.acceptSource(
+        state.pendingAppendOwnedUri = localUri
+        state.workflowInProgress = true
+        onAcceptSource(
             localUri,
             source,
             CaptureAcquisitionPurpose.APPEND_DRAFT,
             UUID.randomUUID().toString(),
             System.currentTimeMillis(),
-            sink.pageCount(),
+            state.sourcePages.size,
         )
     }
 
     fun replaceDraftWithCandidate() {
-        val candidateUri = sink.replacementCandidateUri() ?: return
-        val source = sink.replacementInputSource() ?: return
-        val requestId = sink.replacementRequestId() ?: return
-        val occurredAt = sink.replacementOccurredAtEpochMillis() ?: return
-        if (!captureWorkflowCanStart(sink.workflowInProgress())) return
-        sink.setWorkflowInProgress(true)
-        sink.clearReplacementError()
-        sink.acceptSource(
+        val candidateUri = state.replacementCandidateUri ?: return
+        val source = state.replacementInputSourceName?.let(CaptureInputSource::valueOf) ?: return
+        val requestId = state.replacementRequestId ?: return
+        val occurredAt = state.replacementOccurredAtEpochMillis ?: return
+        if (!captureWorkflowCanStart(state.workflowInProgress)) return
+        state.workflowInProgress = true
+        state.replacementError = null
+        onAcceptSource(
             candidateUri,
             source,
             CaptureAcquisitionPurpose.REPLACE_DRAFT,
@@ -129,28 +147,28 @@ internal class CaptureSourceImportCommands(
     }
 
     fun keepCurrentDraftAfterReplacementFailure() {
-        sink.deleteOwnedUri(sink.replacementCandidateUri())
-        sink.clearReplacementState()
+        onDeleteOwnedUri(state.replacementCandidateUri)
+        clearReplacementState()
     }
 
     fun commitCorrection() {
         when (
             val decision = captureCommitDecision(
-                entryGateOpen = sink.entryGateOpen(),
-                draftId = sink.draftId(),
-                workspace = sink.workspace(),
-                workflowInProgress = sink.workflowInProgress(),
+                entryGateOpen = entryGateOpen(),
+                draftId = state.draftId,
+                workspace = state.workspaceState,
+                workflowInProgress = state.workflowInProgress,
             )
         ) {
             CaptureCommitDecision.Blocked -> return
             CaptureCommitDecision.WorkspaceNotReady -> {
-                sink.setWorkspaceSaveError(CAPTURE_WORKSPACE_NOT_READY_ERROR)
+                state.workspaceSaveError = CAPTURE_WORKSPACE_NOT_READY_ERROR
                 return
             }
             is CaptureCommitDecision.Prepare -> {
                 val finalizedWorkspace = prepareCaptureCommitAttempt(
                     workspace = decision.workspace,
-                    workspaceUpdatedAtEpochMillis = sink.workspaceUpdatedAtEpochMillis(),
+                    workspaceUpdatedAtEpochMillis = state.workspaceUpdatedAtEpochMillis,
                     requestIdFactory = { UUID.randomUUID().toString() },
                     nowEpochMillis = System::currentTimeMillis,
                 )
@@ -158,62 +176,45 @@ internal class CaptureSourceImportCommands(
                     finalizedWorkspace.finalConfirmationRequest,
                 ).occurredAtEpochMillis
                 if (finalizedWorkspace != decision.workspace) {
-                    sink.replaceWorkspace(finalizedWorkspace)
+                    replaceWorkspace(finalizedWorkspace)
                 }
-                sink.setWorkflowInProgress(true)
+                state.workflowInProgress = true
                 scope.launch {
-                    val persistedFinalIdentity = sink.workspaceIdentity()
+                    val persistedFinalIdentity = state.workspaceIdentity
                         ?.takeIf { it.matchesPersistedFinalState(finalizedWorkspace) }
                     val exactWorkspaceIdentity = persistedFinalIdentity
-                        ?: sink.saveWorkspaceNow(
+                        ?: workspaceCommands.saveNow(
                             finalizedWorkspace,
                             finalOccurredAtEpochMillis,
                         )
                     if (exactWorkspaceIdentity == null) {
-                        sink.setWorkflowInProgress(false)
+                        state.workflowInProgress = false
                         return@launch
                     }
-                    sink.confirmWorkspace(exactWorkspaceIdentity)
+                    onConfirmWorkspace(exactWorkspaceIdentity)
                 }
             }
         }
     }
-}
 
-internal class CaptureSourceImportSink(
-    val receivedImageUri: () -> String?,
-    val receivedInputSource: () -> CaptureInputSource?,
-    val importRequestId: () -> String?,
-    val importOccurredAtEpochMillis: () -> Long?,
-    val rememberImportIdentity: (CaptureImportRequestIdentity) -> Unit,
-    val draftId: () -> String?,
-    val revisionNumber: () -> Int?,
-    val pageCount: () -> Int,
-    val workflowInProgress: () -> Boolean,
-    val setWorkflowInProgress: (Boolean) -> Unit,
-    val setCaptureError: (String) -> Unit,
-    val deleteOwnedUri: (String?) -> Unit,
-    val setPendingAppendOwnedUri: (String?) -> Unit,
-    val replacementCandidateUri: () -> String?,
-    val replacementInputSource: () -> CaptureInputSource?,
-    val replacementRequestId: () -> String?,
-    val replacementOccurredAtEpochMillis: () -> Long?,
-    val clearReplacementError: () -> Unit,
-    val clearReplacementState: () -> Unit,
-    val entryGateOpen: () -> Boolean,
-    val workspace: () -> CaptureWorkspaceUiState?,
-    val workspaceUpdatedAtEpochMillis: () -> Long,
-    val workspaceIdentity: () -> CaptureDraftWorkspaceIdentity?,
-    val setWorkspaceSaveError: (String) -> Unit,
-    val replaceWorkspace: (CaptureWorkspaceUiState) -> Unit,
-    val saveWorkspaceNow: suspend (state: CaptureWorkspaceUiState, occurredAtEpochMillis: Long) -> CaptureDraftWorkspaceIdentity?,
-    val confirmWorkspace: (CaptureDraftWorkspaceIdentity) -> Unit,
-    val acceptSource: (
-        uri: String,
-        source: CaptureInputSource,
-        purpose: CaptureAcquisitionPurpose,
-        requestId: String,
-        occurredAtEpochMillis: Long,
-        expectedPageCount: Int?,
-    ) -> Unit,
-)
+    private fun rememberImportIdentity(identity: CaptureImportRequestIdentity) {
+        if (identity.persistRequestId) state.importRequestId = identity.requestId
+        if (identity.persistOccurredAt) {
+            state.importOccurredAtEpochMillis = identity.occurredAtEpochMillis
+        }
+    }
+
+    private fun clearReplacementState() {
+        state.replacementCandidateUri = null
+        state.replacementInputSourceName = null
+        state.replacementRequestId = null
+        state.replacementOccurredAtEpochMillis = null
+        state.acquisitionPurposeName = CaptureAcquisitionPurpose.NEW_CAPTURE.name
+        state.replacementError = null
+    }
+
+    private fun replaceWorkspace(updated: CaptureWorkspaceUiState) {
+        state.workspaceState = updated
+        state.workspaceChangeVersion += 1
+    }
+}
