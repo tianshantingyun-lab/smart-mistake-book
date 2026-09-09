@@ -486,11 +486,6 @@ interface StudyExperienceRepository : AutoCloseable {
         cycleOrdinal: Int = 1,
     )
 
-    /** Declares one exam (spec §2.17): subject plus the local exam day. */
-    suspend fun declareExam(entry: ExamCalendarEntry)
-
-    suspend fun removeExam(entryId: String)
-
     /**
      * Replays the collected review_log under FSRS-6 and the legacy
      * exponential baseline (spec §2.20). Null before the harness sample

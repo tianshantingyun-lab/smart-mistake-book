@@ -4,7 +4,6 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.CalibrationInput
 import com.tingyun.smartmistakebook.core.domain.CalibrationReportBuilder
 import com.tingyun.smartmistakebook.core.domain.ChatEvidenceGateCalibration
-import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
 import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
 import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
@@ -134,20 +133,6 @@ internal class StudySchedulingCalibration(
     suspend fun calibrationReport(): CalibrationReport =
         calibrationReport(predictionAuditService.modelVersion)
 
-
-    suspend fun declareExam(entry: ExamCalendarEntry) {
-        val store = requireNotNull(schedulingSettingsStore) {
-            "Exam declaration requires a scheduling settings store"
-        }
-        store.addExam(entry)
-    }
-
-    suspend fun removeExam(entryId: String) {
-        val store = requireNotNull(schedulingSettingsStore) {
-            "Exam declaration requires a scheduling settings store"
-        }
-        store.removeExam(entryId)
-    }
 
     private companion object {
         const val MAX_OPTIMIZE_SAMPLES = 20_000

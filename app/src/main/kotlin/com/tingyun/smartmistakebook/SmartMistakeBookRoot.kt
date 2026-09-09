@@ -873,12 +873,12 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     },
                     onAddExam = { entry ->
                         schedulingScope.launch {
-                            application.studyRepository.declareExam(entry)
+                            application.schedulingSettingsStore.addExam(entry)
                         }
                     },
                     onRemoveExam = { entryId ->
                         schedulingScope.launch {
-                            application.studyRepository.removeExam(entryId)
+                            application.schedulingSettingsStore.removeExam(entryId)
                         }
                     },
                     onBack = navController::popBackStack,

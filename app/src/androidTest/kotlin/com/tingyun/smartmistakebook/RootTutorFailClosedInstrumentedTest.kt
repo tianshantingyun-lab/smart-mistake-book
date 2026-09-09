@@ -439,10 +439,6 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         cycleOrdinal: Int,
     ) = Unit
 
-    override suspend fun declareExam(entry: ExamCalendarEntry) = Unit
-
-    override suspend fun removeExam(entryId: String) = Unit
-
     override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? = null
 
     override suspend fun optimizeSchedulingParameters(): FsrsParameterOptimizer.Result? = null

@@ -726,10 +726,6 @@ class RoomBackedStudyExperienceRepository(
         conversationId = conversationId,
     )
 
-    override suspend fun declareExam(entry: ExamCalendarEntry) = calibration.declareExam(entry)
-
-    override suspend fun removeExam(entryId: String) = calibration.removeExam(entryId)
-
     override suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? =
         calibration.evaluateSchedulingModels()
 
