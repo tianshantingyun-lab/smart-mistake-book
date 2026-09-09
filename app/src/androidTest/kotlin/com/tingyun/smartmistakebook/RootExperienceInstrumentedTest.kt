@@ -86,7 +86,9 @@ class RootExperienceInstrumentedTest {
         waitForText("智能服务")
         // The privacy copy differs by flavor's NetworkMode; assert the one
         // this build actually shows instead of the localFirst wording.
-        val localFirstCopy = "只有你主动发起识题、讲题或整理时"
+        // 2026-09-09: the localFirst copy now states the global-consent model
+        // (发起即交给已配置模型，不再逐次询问), so the expectation follows it.
+        val localFirstCopy = "拍照、讲题或整理是你主动发起时才会进行"
         val strictOfflineCopy = "当前版本不使用联网智能服务"
         val expectedPrivacyCopy = if (
             com.tingyun.smartmistakebook.BuildConfig.FLAVOR == "strictOffline"
