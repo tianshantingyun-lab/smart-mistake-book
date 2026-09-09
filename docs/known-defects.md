@@ -169,46 +169,34 @@ methods that need a real database; those are covered by instrumented tests,
 which neither Kover nor this Jacoco path can measure — the low number is real
 for *unit*-test coverage, not a measurement failure.
 
-## KD-6 (open, partial) · `CaptureScreen.kt` exceeds the 1000-line main-file limit
+## KD-6 (resolved 2026-09-10) · `CaptureScreen.kt` exceeded the 1000-line main-file limit
 
-**Symptom.** `feature/capture/.../CaptureScreen.kt` was 1281 lines; the file-size
-gate reports it as a pre-existing over-limit warning (it was over the hard line
-already at `origin/main`, so it does not block a merge).
+**Symptom.** `feature/capture/.../CaptureScreen.kt` was 1281 lines — one composable
+whose command builders (8 `Capture*Commands`, each taking a `*Sink` of
+getter/setter lambdas over ~50 `remember`/`rememberSaveable` locals) were
+constructed inline.
 
-**Cause.** The whole screen is one composable whose command builders
-(`CaptureSourceImportCommands`, `CaptureWorkflowEventCommands`,
-`CaptureResumeCommands`, `CaptureModelTaskCommands`, `CaptureDraftStateCommands`,
-`CaptureAcquisitionCommands`, `CaptureReturnedImageCommands`,
-`CaptureWorkspaceCommands`) are constructed inline and their sink lambdas close
-over ~50 locals declared with `remember`/`rememberSaveable`. The rest is a
-single UI tree reading most of those locals.
+**Cause.** The builders and their sink lambdas closed over per-field
+`remember`/`rememberSaveable` state, so any move risked process-death
+restoration semantics.
 
-**Progress (2026-09-09, commit c956c6c).** The state was hoisted into
-`CaptureScreenState` (213 lines, own file): every field is a `mutableStateOf`
-delegate, and a `mapSaver` round-trips exactly the fields that were originally
-`rememberSaveable`. Model-task snapshots, the source-page list and the
-workspace (which were plain `remember`) are deliberately absent from the Saver,
-so on restore they reset and the resume/workspace effects re-derive them — the
-same two memory scopes as before. CaptureScreen is now 1207 lines.
+**Resolution (2026-09-09/10).** Two-step:
+1. Commit `c956c6c`: state hoisted into `CaptureScreenState` (own file; every
+   field a `mutableStateOf` delegate; a `mapSaver` round-trips exactly the
+   fields that were `rememberSaveable`). Screen 1281→1207.
+2. Commits `09017e2` + `01cc4ff`: all 8 `Capture*Commands` now take
+   `CaptureScreenState` directly. Pure state getters/setters inlined as field
+   reads/writes; composite logic (`applyResumeDraft`, `applyAppendedPages`,
+   `resetDraftFields`, …) moved into private command methods; cross-command
+   steps (`resetDraft`, `persistAdditionalPage`, `afterWorkspaceFlush`,
+   `applyReturnedImagePlan`) delegate to the owning command objects; Android/
+   ViewModel effects and screen-derived values (`entryGateOpen`,
+   `structuredProjection`, request builders) are injected constructor
+   functions, so the commands stay free of Android/ViewModel types. The 8
+   `*Sink` classes were deleted. Screen 1207→804 (< 1000); 45 stale imports
+   removed.
 
-**Why the file is not under 1000 yet.** The remaining ~680 lines are the
-command-builder constructions and their thin wrapper functions, interleaved
-between the derived state and the effects. They reference non-state locals
-(`context`, `workflowViewModel`, `workflowUiState`, `repository`, `modelTasks`,
-`modelExecutionCoordinator`, `initialCachePrune`, callbacks) plus ~15 derived
-values (`activeEntryOrigin`, `realParseOutput`, `entryGateOpen`, …). A faithful
-move must preserve the keyless-`remember` capture semantics of the original
-builders, so the derived values are frozen at first composition — identical to
-today's behaviour, but it means the extraction is a single coherent class/factory
-(`CaptureCommandLayer`) rather than a few free functions.
-
-**Remaining plan.** 1) create `CaptureScreenCommandLayer.kt` — a `@Composable`
-factory that builds the acquisition launchers + the command objects in
-dependency order and returns a class exposing the thin wrappers
-(`commitCorrection`, `launchCamera`, `requestBackWithFlush`, …); 2) replace the
-inline constructions in `CaptureScreen` with one factory call; 3) re-run
-`:feature:capture:connectedDebugAndroidTest` (23 tests incl.
-`CaptureScreenStateRestorationTest`) and the capture unit tests.
-
-**Verification that would close it.** `python3 tools/ci/check_file_size_gate.py`
-reporting no warning for this path, plus the connected suite green.
+**Verification that closed it.** `python3 tools/ci/check_file_size_gate.py`
+no longer lists the path; `:feature:capture:testDebugUnitTest` 99/0;
+`:feature:capture:connectedDebugAndroidTest` 23/23 (incl.
+`CaptureScreenStateRestorationTest`); `:feature:capture:lintDebug` clean.
