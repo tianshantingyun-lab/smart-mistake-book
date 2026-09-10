@@ -60,7 +60,18 @@ internal class ReviewLogSink(
             } else {
                 // Calendar-day delta (learner-local), matching FSRS delta_t semantics: a review
                 // crossing local midnight is a new study day even under 24 wall-clock hours.
-                (studyDay.epochDay - priorMemory.lastReviewedEpochDay)
+                //
+                // 上一复习的本地日**从它的时间戳按学习时区现算**，不读 `priorMemory.lastReviewedEpochDay`：
+                // 该字段是派生态，任何没显式写它的通道都会把默认的 UTC 日序留在状态里
+                // （`projectTutorAnswerExposure` 曾如此，审计 AUDIT-ALGORITHM §3.7）。review_log
+                // 正是 FSRS 参数优化器的训练数据，被污染的 delta_t 会直接进入离线拟合，
+                // 所以这里必须与投影口径同源且不受写入方影响。
+                val previousEpochDay = java.time.Instant
+                    .ofEpochMilli(priorMemory.lastReviewedAtEpochMillis)
+                    .atZone(studyZoneId)
+                    .toLocalDate()
+                    .toEpochDay()
+                (studyDay.epochDay - previousEpochDay)
                     .coerceAtLeast(0)
                     .toDouble()
             }

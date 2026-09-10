@@ -26,6 +26,7 @@ import org.junit.Test
 
 class LearningProjectorTest {
     private val projector = LearningProjector()
+    private val DAY_MILLIS = 86_400_000L
 
     @Test
     fun `attempt ids are idempotent and weighted bindings update every knowledge node`() {
@@ -280,6 +281,101 @@ class LearningProjectorTest {
             replayed.knowledgeMasteryStates.getValue("kc-a").lastEvidenceDirection,
         )
         assertEquals(2_000L, replayed.knowledgeMasteryStates.getValue("kc-a").lastEvidenceAtEpochMillis)
+    }
+
+    @Test
+    fun `a review after an answer exposure stays on its own learner-local day`() {
+        // 消灭的失败（审计 AUDIT-ALGORITHM-2026-09-09 §3.7）：`TutorAnswerExposureOutcome`
+        // 不带 studyDay，`projectTutorAnswerExposure` 也从未显式写 `lastReviewedEpochDay`，
+        // 于是该字段的默认值 `lastReviewedAtEpochMillis / 86_400_000`（**UTC** 日序）被写进状态。
+        // UTC+8 学员本地 D+1 07:00 看到答案时（UTC 仍在 D），当天 20:00 复习得到的
+        // `eventEpochDay` 是 D+1，与状态里的 D 相减得 1 → 被当成跨日：走 long_term 分支
+        // 拿到本不该有的稳定性增益，并让 §2.10 的毕业连胜多计一次。
+        val localDay = 20_000L
+        val utcOffset = 480
+        // 本地 D 日 20:00（= UTC 同日 12:00）。
+        val firstAttemptAt = localDay * DAY_MILLIS + 12 * 3_600_000L
+        // 本地 D+1 日 07:00 —— UTC 日序仍是 D，与本地日序差 1。
+        val exposureAt = (localDay + 1) * DAY_MILLIS - 3_600_000L
+        // 本地 D+1 日 20:00，与曝光同一个本地日。
+        val secondAttemptAt = (localDay + 1) * DAY_MILLIS + 12 * 3_600_000L
+
+        val first = attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence()).copy(
+            occurredAtEpochMillis = firstAttemptAt,
+            studyDay = StudyDayContext(localDay, "Asia/Shanghai", utcOffset),
+        )
+        val exposure = TutorAnswerExposureOutcome(
+            outcomeId = "tutor-exposure-outcome-1",
+            exposureId = "tutor-exposure-1",
+            sessionId = "tutor-session-1",
+            questionDocumentId = "question-document-1",
+            questionRevisionNumber = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            problemRevisionId = "revision-1",
+            practiceUnitId = "unit-1",
+            occurredAtEpochMillis = exposureAt,
+            eventSequence = 2,
+        )
+        val second = attempt("attempt-2", 3, setOf("kc-a"), positiveEvidence()).copy(
+            occurredAtEpochMillis = secondAttemptAt,
+            studyDay = StudyDayContext(localDay + 1, "Asia/Shanghai", utcOffset),
+        )
+
+        // 先走曝光，确认它确实把时钟推到曝光时刻，再走同一本地日的复习。
+        val exposed = projector.project(
+            projector.project(LearnerSnapshot.empty("learner-1"), listOf(first), 1).snapshot,
+            listOf(exposure),
+            2,
+        ).snapshot
+        assertEquals(exposureAt, exposed.problemMemoryStates.getValue("unit-1").lastReviewedAtEpochMillis)
+
+        val projected = projector.project(exposed, listOf(second), 3).snapshot
+        val memory = projected.problemMemoryStates.getValue("unit-1")
+
+        // 曝光与本次复习落在同一个本地日 → 同日分支，不是跨日。
+        assertEquals(1, memory.consecutiveCrossDaySuccess)
+        assertEquals(0, memory.consecutiveCrossDayAgain)
+    }
+
+    @Test
+    fun `a review on the local day after an exposure is still a cross day`() {
+        // 上一条的边界：跨日本身必须照常识别。曝光在本地 D+1，复习在本地 D+2
+        // → 仍是一次跨日复习，不能因为"曝光不带 studyDay"就把所有曝光后的复习
+        // 都吞成同日。
+        val localDay = 20_000L
+        val utcOffset = 480
+        val first = attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence()).copy(
+            occurredAtEpochMillis = localDay * DAY_MILLIS + 12 * 3_600_000L,
+            studyDay = StudyDayContext(localDay, "Asia/Shanghai", utcOffset),
+        )
+        val exposure = TutorAnswerExposureOutcome(
+            outcomeId = "tutor-exposure-outcome-1",
+            exposureId = "tutor-exposure-1",
+            sessionId = "tutor-session-1",
+            questionDocumentId = "question-document-1",
+            questionRevisionNumber = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            problemRevisionId = "revision-1",
+            practiceUnitId = "unit-1",
+            occurredAtEpochMillis = (localDay + 1) * DAY_MILLIS - 3_600_000L,
+            eventSequence = 2,
+        )
+        val second = attempt("attempt-2", 3, setOf("kc-a"), positiveEvidence()).copy(
+            occurredAtEpochMillis = (localDay + 2) * DAY_MILLIS + 12 * 3_600_000L,
+            studyDay = StudyDayContext(localDay + 2, "Asia/Shanghai", utcOffset),
+        )
+
+        val exposed = projector.project(
+            projector.project(LearnerSnapshot.empty("learner-1"), listOf(first), 1).snapshot,
+            listOf(exposure),
+            2,
+        ).snapshot
+        val memory = projector.project(exposed, listOf(second), 3)
+            .snapshot.problemMemoryStates.getValue("unit-1")
+
+        assertEquals(2, memory.consecutiveCrossDaySuccess)
     }
 
     private fun chatEvidence(

@@ -31,6 +31,7 @@
 | 9 | 模型判的难度档喂入新题冷启动估时（方向 1） | `TutorDifficultyTier` 在协议层解析后全库无消费方——新题没有记忆状态，占位难度使每道新题都按中档 180s 估时，当日引入配额按错误时长计算 | `IntakeDurationBaseline`（domain 纯策略，档→秒）；`ProblemOrganizationPlan.difficultyTier`；`KIND_DIFFICULTY_TIER` 咨询行；`StudyReviewPlannerService` 读取 | `IntakeDurationBaselineTest` 3/3、`OpenAiProblemOrganizationProtocolTest` 6/6、`RoomMistakeOrganizationRepositoryTest` 17/17 |
 | 10 | 客观作答交叉核对：学生答错检查题时拒写 POSITIVE（§1.2） | 研究 `tutor-evidence-gate-research.md` §3.2——冲突时行为证据胜出，口头声明降级为观察记录（Koriat & Bjork 2005；Nelson & Dunlosky）；§4 参数表已列此门 | `TutorSessionObjectiveEvidence`（domain 纯策略）；`MasteryWriteGate.GateInput.objectiveAnswersContradictPositive` ＋ 新拒因；`RoomTutorToolRunner` 回读本会话本轮作答；prompt 规范第 5 条 | `TutorSessionObjectiveEvidenceTest` 4/4、`MasteryWriteGateTest` 19/19、`RoomTutorToolRunnerTest` 11/11；变异验证见 spec §1.2 |
 | 11 | chat 证据写 `lastEvidenceAt` / `lastEvidenceDirection`；`PROJECTOR` v5→v6 | 审计 `AUDIT-ALGORITHM-2026-09-09` §3.5：`projectChatEvidence` 从不写这两个字段，而它们默认只从 attempt 通道的 `independentCorrectObservations` 推导 | `LearningProjector.projectChatEvidence`；`LearningCoreVersions.PROJECTOR` / 三个 composite 升 v6（触发已有库全量重放，否则修复对已投影事件静默无效） | `LearningProjectorTest` 11/11（新增 4 例，含 replay 等价性） |
+| 12 | 日历日 delta_t 改由**时间戳 + 事件 UTC 偏移现算**；`PROJECTOR` v6→v7 | 审计 §3.7：`projectTutorAnswerExposure` 不带 studyDay，`ProblemMemoryState.lastReviewedEpochDay` 落入默认值（UTC 日序），使同一本地日的复习被判成跨日 → 走 long_term 分支拿到本不该有的稳定性增益 + 毕业连胜多计一次；`review_log.delta_t_days` 同源错配，污染 FSRS 参数优化器的训练数据（`docs/research/deltat-convention-research.md` §8.2） | `LearningProjector.projectMemory`（新增 `eventUtcOffsetMinutes` + `localEpochDayOf`）；`ReviewLogSink.record`；`ProblemMemoryState.lastReviewedEpochDay` 降级为审计字段；spec §2.1 过时表述与 §2.15 数字溯源一并修正 | `LearningProjectorTest` 13/13（新增 2 例：`a review after an answer exposure stays on its own learner-local day`、`a review on the local day after an exposure is still a cross day`）；变异验证：把推导改回常量使第 2 例失败（`expected:<2> but was:<1>`） |
 
 **有意不做（记录理由）**：改动 10 没有把检查题作答**写成**掌握度证据。研究
 `tutor-evidence-gate-research.md` §3.4 的独立性是硬前提——"同对话/同题变式/提示后作答
@@ -86,7 +87,7 @@ retention 最优值、"80% 掌握标准"的一手出处——均无一手证据�
 | §3.4 知识点队列无遗忘曲线 | **已修** | 由绑定题目的预测 R 取最小聚合（本文件改动 3） |
 | §3.5 模型/quiz 证据不刷新排程时钟 | **本轮修复** | 本文件改动 11 |
 | §3.6 知识点复习答对无法单独达成 MASTERED | **不改，且与 §1.2 同源** | `projectChatEvidence` 调 `clearlyMastered(…, emptyList(), …)` —— chat 证据不产生 `IndependentCorrectObservation`，故 breadth 永远不满足。这不是遗漏：研究 §3.4 的独立性硬前提使然，与改动 10"有意不做"是同一条理由 |
-| §3.7 日历日 delta_t 与两套官方实现都不同 | **待裁定，非待办** | 本地日历日是 spec §2.1/§2.15 与行为映射 B8（跨午夜）的显式语义；改成 wall-clock 会推翻那两条，属产品语义决定。裁定前不得单方面改动 |
+| §3.7 日历日 delta_t 与两套官方实现都不同 | **已修（口径收敛，2026-09-11）**＋审计的对照结论需修正 | 审计称"与两套官方实现都不同"——对 Anki 一侧不成立：Anki `elapsed_days_since`（`rslib/src/timestamp.rs:31-33`）以 rollover 为锚做日界计数，rollover=0 时与本地日历日差**数学恒等**（`docs/research/deltat-convention-research.md` §5，一手源码已复核）。真正不同的是 py-fsrs 的 UTC 24h 截断（`fsrs/scheduler.py:232`、`:269-270`，强制 UTC-aware）。缺陷不在口径选择，而在**派生字段的双定义**：`projectTutorAnswerExposure` 按 UTC 写、其余按本地读。已改为计算时从时间戳推导（本文件改动 12） |
 | §3.8 排程永远拿不到 EASY | **已修** | w16 钉为 1.0 且永不参与拟合（本文件改动 4） |
 | §3.9 leech 只在 V2 生效 | **部分：V1 仍未排除** | `ReviewPlanner`（V1）无 `candidate.leech` 检查，只有 `ReviewPlannerV2` 有。V1 是 kill-switch 回退路径，默认不走；改动它需先决定 V1 的存废 |
 | §3.10 早复习通道可能压缩间隔 | **待裁定，非待办** | DASH/Rocket 式产品取舍；spec §5 明确要求"非机械闸门"。`EXAM_PRIORITY` 已收窄（本文件改动 7） |

@@ -495,9 +495,12 @@ data class ProblemMemoryState(
     val difficulty: Double,
     val lastReviewedAtEpochMillis: Long,
     /**
-     * The learner-local calendar day (epoch day) of [lastReviewedAtEpochMillis], used by FSRS to
-     * compute the calendar-day delta_t between reviews instead of a 24-hour wall-clock floor. A
-     * review 30 minutes after the previous one that crosses local midnight is a new study day.
+     * Learner-local calendar day (epoch day) of [lastReviewedAtEpochMillis], **审计/诊断用途**。
+     *
+     * 它**不是** FSRS delta_t 的输入：delta_t 由消费方从 [lastReviewedAtEpochMillis] + 当前事件的
+     * UTC 偏移现算（`LearningProjector.projectMemory`、`ReviewLogSink`）。这条约束是刻意的——
+     * 该字段是派生态，一旦某条通道按别的口径（例如 UTC 日序）写它，所有读它的地方都会跟着错，
+     * 而错误只在那条通道被使用时才显形（审计 AUDIT-ALGORITHM §3.7）。**不要据此计算跨日。**
      */
     val lastReviewedEpochDay: Long = lastReviewedAtEpochMillis / 86_400_000L,
     val nextReviewAtEpochMillis: Long,

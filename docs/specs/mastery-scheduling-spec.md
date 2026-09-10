@@ -23,7 +23,7 @@
 ## 2. 数学模型（自包含，全部公式）
 
 ### 2.1 符号与不变量
-`t`=距上次复习天数（UTC 日历日差分）；`R∈[0,1]` 回忆概率；`S` 稳定性=R 从 1 降至 0.9 的天数；`D∈[1,10]` 难度（现库 0..1 经 `D=1+9·d` 映射）；`G∈{1,2,3,4}`=Again/Hard/Good/Easy；`w[0..20]` FSRS-6 参数（默认抄 py-fsrs DEFAULT_PARAMETERS）；`r*` 目标保留率（默认 0.9，可设 0.7–0.97）。
+`t`=距上次复习天数（**learner 本地日历日差**，2026-08-30 起；见下方「日历日 delta_t」修复记录——此前文档误写为 UTC 日历日差分）；`R∈[0,1]` 回忆概率；`S` 稳定性=R 从 1 降至 0.9 的天数；`D∈[1,10]` 难度（现库 0..1 经 `D=1+9·d` 映射）；`G∈{1,2,3,4}`=Again/Hard/Good/Easy；`w[0..20]` FSRS-6 参数（默认抄 py-fsrs DEFAULT_PARAMETERS）；`r*` 目标保留率（默认 0.9，可设 0.7–0.97）。
 不变量：`R(0)=1`、`R 单调减`、`R(S,S)=0.9`、成功 `S'≥S`、失败 `S_min≤S'<S`、`D∈[1,10]`、事件重放幂等。
 
 ### 2.2 遗忘曲线（幂律，替换指数）
@@ -105,15 +105,18 @@ w = [0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
 
 **2.11b 实现细化（2026-08-29）**：优化器采用 srs-benchmark 同口径时间序 hold-out（80/20 全局分位），目标=验证 log-loss，早停 patience=5，返回 train/valid 双损失。学习面分阶段：<8 默认；8–63 仅 w0–w5；≥64 加 w0–w14+w20（现行实现）；**解锁 w15/w16 的规则**：≥5k 样本且验证增益 >2%（规则已写，实现待数据）。BKT 学习率与 EMA 半衰不进可学习面。
 
-### 2.15 同日复习规则【P0，srs-benchmark 实证】
+### 2.15 同日复习规则【P0，srs-benchmark 证据】
 含同日复习评估时 FSRS-6 log-loss 0.346→0.3813（低于均值基线）、HLR 0.469→0.705——**同日语义是一等风险**。规则：
+
+> **溯源状态（2026-09-11，`docs/research/deltat-convention-research.md` §10.4）**：上面两个数字**未在 srs-benchmark 公开材料中定位到原始出处**，标 `[单一来源待验证]`——不得作为决策依据引用，也不得写成"实证表明"。已核实的是**定性结论**：srs-benchmark `README.md:44-46` 载明 FSRS-5 的同日复习数据仅用于训练不用于评估、FSRS-6 改进同日公式、FSRS-7 才给出同日分数的可信预测；其 `features/base.py:120-133` 默认以整数 `elapsed_days` 作 delta_t，`--secs` 才切到分数天。"同日语义是一等风险"这一判断由上述定性事实支持，与那两个具体数值无关。
 - 每卡每日**至多一次长程更新**：同卡同日多条证据聚合成一条当日评级（G_agg = min(G_raw)，保守；记录 G_max 备查），日终/次日首开时落 FSRS 更新；
 - 当日首学（Learning 态）与同日重复走 short_term 分支（py-fsrs 源码同构）；
 - review_log 保留全部原始证据（含被聚合的），**采集与调度解耦**；
 - learning_steps/relearning_steps 全禁用（产品为日粒度会话，无分钟级排期），当日内只有 short_term 分支。
 
 ### 2.16 Leech 处理
-`leech := lapse_count ≥ 6 且最近 2 次跨日复习均 Again` → 标记 LEECHED：暂停常规排期、difficulty 钳制不再上调、强制注入 teaching_material 重教（与 §7 错因通道衔接，leech 多为概念错）、重教后用户手动恢复。
+`leech := lapse_count ≥ 6 且最近 2 次跨日复习均 Again` → 标记 LEECHED：暂停常规排期、difficulty 钳制不再上调、强制注入 teaching_material 重教（与 §7 错因通道衔接，leech 多为概念错）；恢复=跨日成功自动清零（见「核心状态机」，2026-09-11 取代原「重教后用户手动恢复」表述——手动恢复需新增账本事件类型，破坏投影可重放性）。
+阈值 6/2 为**工程先验**：Anki 的 8 同样未经标定，其官方手册只陈述机制而不推荐取值、社区权威文本自述从未就此做过实验，文献中亦无 leech 处理的对照实验（`docs/research/leech-remediation-research.md` §1.3、§2.1）。禁止在代码注释或产品文案里写成「科学研究表明」。
 
 ### 2.17 考前模式
 申报考试日 → 前 14 天 `r*_exam = min(0.97, r* + (0.97−r*)·(1 − d/14))` 线性爬升；考前队列把 `R < r*_exam` 的题纳入候选（限会话预算）；考卷成绩/考后自评回灌 prediction_outcome（校准影 HLR）；考后 r* 由日历自动回落。
@@ -309,6 +312,16 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **w15/w16 增益解锁（§2.11b）**：spec 承诺「≥5k 样本且验证增益 >2% 解锁 w15/w16」，原实现 fittedIndices 永不包含这两项。已补两阶段拟合：样本量 ≥5000 时用含 w15/w16 的扩展集再拟合，仅当验证 loss 相对下降 >2% 才采用（防小样本过拟合）。
 - **讲题侧重点 CONFLICTED（§2.5/§5）**：`KnowledgeMasteryState.CONFLICTED`（曾掌握 + 近期独立错误 = 假掌握）是最该讲题纠错的切入，但 tutorPlanPrompt/tutorRespondPrompt 只写了 MASTERED 与题级 STALE 的处理。已补指令：CONFLICTED 必须针对错误认知重讲清楚，不得当普通薄弱点一笔带过。
 - **LogDurationModel fallback**：`estimateSeconds` 的 `logEma ?: GLOBAL_PRIOR_SECONDS` 应取 `ln(先验)`，原 `exp(60)` 是天文数字（当前结构下不可达，属防御性修复）。
+
+**2026-09-11 日历日 delta_t 口径收敛（审计 AUDIT-ALGORITHM §3.7）**：
+
+上一条"从事件的 `studyDay.epochDay` 算差"隐含一个前提——`ProblemMemoryState.lastReviewedEpochDay` 必须由每条通道按同一口径写入。`projectTutorAnswerExposure` 没有这个能力（曝光事件不带 studyDay），于是该字段的默认值 `millis / 86_400_000`（**UTC** 日序）被留在状态里：UTC+8 学员本地 D+1 07:00 看答案（UTC 仍是 D），当天 20:00 复习时 `eventEpochDay − lastReviewedEpochDay = 1` → 同一本地日的复习被判成跨日，走 long_term 分支拿到本不该有的稳定性增益，并让 §2.10 的毕业连胜多计一次。
+
+修正方向是**取消该字段在计算中的地位**，而不是给某个写入方打补丁：`LearningProjector.projectMemory` 与 `ReviewLogSink` 改为从 `lastReviewedAtEpochMillis` + 事件的 UTC 偏移现算上一复习的本地日（`localEpochDayOf`）。这样任何写入方漏盖日序都不会再污染 delta_t，且重放读同一事件得到逐位相同的结果。`lastReviewedEpochDay` 保留为审计/诊断字段，**不再是 delta_t 输入**（见其 KDoc）。
+
+`PROJECTOR` v6→v7：这是数值口径变更，受影响的卡（曝光态之后的复习、以及 v42 迁移按 UTC 回填过日序的存量行）必须经全量重放重算，否则新旧混用。
+
+对照官方实现的结论（`docs/research/deltat-convention-research.md`）：本仓库的本地日历日差**不是**"第三种异类"——Anki 的 `elapsed_days_since`（`rslib/src/timestamp.rs:31-33`，`(next_day_at − last_review)/86400`，以 rollover 为锚）在 rollover=0 时与它数学恒等；真正不同的是 py-fsrs 的 UTC 24h 截断（`fsrs/scheduler.py:232`、`:269-270`，且强制 UTC-aware）。分支判据（`elapsedDays < 1`）与两套官方实现同构，问题只在喂给它的值可能被污染。
 
 **2026-08-30 验证**：`:core:model` 252、`:core:domain` 254（含新增 off-by-one 官方值、日历日跨午夜回归、参数边界、w15/w16 契约断言）、`:core:data` 218、`:core:database` 59、`:feature:tutor` 88、`:feature:capture` 117、`:feature:library` 31——合计 1019 测试全绿；`assembleLocalFirstDebug/assembleStrictOfflineDebug` 双 flavor 构建通过；`ExportedSchemaContractTest` 通过（v41 identityHash 与 v40 一致，v42 因加列而变）。**未验证**：v42 迁移的 device 级全量矩阵（`FullMigrationMatrixInstrumentedTest`）需模拟器，本机未跑，标 UNVERIFIED。
 

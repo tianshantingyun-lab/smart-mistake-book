@@ -739,6 +739,7 @@ class LearningProjector(
                 effectiveAtEpochMillis = effectiveAtEpochMillis,
                 eventSequence = attempt.eventSequence,
                 eventEpochDay = attempt.studyDay.epochDay,
+                eventUtcOffsetMinutes = attempt.studyDay.utcOffsetMinutes,
                 outcome = attempt.problemMemoryOutcome,
                 weight = attempt.evidence.weight,
                 evidenceReason = attempt.evidence.reason,
@@ -777,6 +778,7 @@ class LearningProjector(
         effectiveAtEpochMillis = effectiveAtEpochMillis,
         eventSequence = outcome.eventSequence,
         eventEpochDay = outcome.studyDay.epochDay,
+        eventUtcOffsetMinutes = outcome.studyDay.utcOffsetMinutes,
         outcome = ProblemMemoryOutcome.ANSWER_REVEALED,
         weight = 0.0,
         evidenceReason = LearningEvidenceReason.ANSWER_REVEALED,
@@ -792,6 +794,12 @@ class LearningProjector(
         // second time. It only refreshes the clock (spec "S'=S 仅刷新时钟"),
         // so an attempt that follows the exposure is measured from the
         // exposure and lands on the conservative same-day branch.
+        //
+        // 本路径不传 `lastReviewedEpochDay`：`TutorAnswerExposureOutcome` 不带 studyDay
+        // （它没有时区信息），该字段对曝光态只是占位，**不参与任何计算**——后续复习的
+        // 本地日由 [projectMemory] 从 `lastReviewedAtEpochMillis` + 该事件的 UTC 偏移现算。
+        // 见 `LearningProjectorTest.a review after an answer exposure stays on its own
+        // learner-local day`（审计 AUDIT-ALGORITHM §3.7）。
         val refreshedAt = maxOf(previous?.lastReviewedAtEpochMillis ?: 0, effectiveAtEpochMillis)
         val stability = previous?.stabilityDays
             ?: FsrsScheduleMath.initialStability(FsrsRating.AGAIN)
@@ -829,6 +837,8 @@ class LearningProjector(
         eventSequence: Long,
         /** Learner-local calendar day (epoch day) of this review event. */
         eventEpochDay: Long,
+        /** UTC offset (minutes) of this event's learner-local study day. */
+        eventUtcOffsetMinutes: Int,
         outcome: ProblemMemoryOutcome,
         weight: Double,
         evidenceReason: LearningEvidenceReason,
@@ -842,9 +852,18 @@ class LearningProjector(
         val rating = FsrsEvidenceRatingMapper.schedulingRatingFor(evidenceReason, weight)
         // Calendar-day delta (spec §2.1/§2.15): a review crossing the learner-local midnight is a
         // new study day even when it is under 24 wall-clock hours from the previous review.
-        val elapsedCalendarDays = (
-            eventEpochDay - (previous?.lastReviewedEpochDay ?: eventEpochDay)
-            ).toDouble().coerceAtLeast(0.0)
+        //
+        // 上一复习的本地日**由它的时间戳现算**，不读 `previous.lastReviewedEpochDay`：那是派生态，
+        // 任何一条没有显式写它的通道都会把该字段的默认值（UTC 日序）留在状态里，从而污染
+        // 跨日判定——`projectTutorAnswerExposure` 正是如此（审计 AUDIT-ALGORITHM §3.7，
+        // `LearningProjectorTest.a review after an answer exposure stays on its own learner-local day`
+        // 锁定该失败）。本事件自带 studyDay（含 utcOffsetMinutes），据此换算得到的是确定值：
+        // 重放读同一事件，结果逐位相同，不依赖任何写入方是否记得盖章。
+        val previousEpochDay = previous?.let {
+            localEpochDayOf(it.lastReviewedAtEpochMillis, eventUtcOffsetMinutes)
+        } ?: eventEpochDay
+        val elapsedCalendarDays = (eventEpochDay - previousEpochDay)
+            .toDouble().coerceAtLeast(0.0)
         val update = memoryUpdateModel.updateMemory(
             previous = previous,
             rating = rating,
@@ -1170,6 +1189,17 @@ class LearningProjector(
             append(";family=${attempt.itemFamilyId}")
         }
     }
+
+    /**
+     * Learner-local calendar day (epoch day) of [epochMillis] under [utcOffsetMinutes].
+     *
+     * 把"日期"从时间戳现算，而不是持久化一个可由不同写入方按不同口径覆盖的派生字段。
+     * 这正是审计 §3.7 的失败类别：`lastReviewedEpochDay` 一旦被某条通道按 UTC 写入，
+     * 所有读它的地方都会跟着错，而错误只在那条通道被使用时才显形。这里时间戳与 UTC 偏移
+     * 都来自**当前事件自身**（事件溯源的确定性输入），因此重放结果稳定。
+     */
+    private fun localEpochDayOf(epochMillis: Long, utcOffsetMinutes: Int): Long =
+        Math.floorDiv(epochMillis + utcOffsetMinutes.toLong() * 60_000L, DAY_MILLIS)
 
     companion object {
         const val VERSION = LearningCoreVersions.PROJECTION_COMPOSITE
