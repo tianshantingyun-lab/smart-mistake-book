@@ -606,6 +606,19 @@ class LearningProjector(
             calibrationSupport = previous?.calibrationSupport ?: CalibrationSupport.UNKNOWN,
             projectorVersion = VERSION,
             checkpointSequence = event.eventSequence,
+            // 证据时钟（审计 AUDIT-ALGORITHM-2026-09-09 §3.5）：模型判断与知识点
+            // 复习也是这个 KC 的真实证据，必须刷新 lastEvidenceAt，否则
+            // KnowledgeMasteryState 的该字段退化为"最后一次 attempt 通道作答时间"
+            // （默认值只从 independentCorrectObservations 推导）——只走 chat 通道的
+            // KC 恒为 null，被 ReviewPlanner 判 stale，永远留在复习队列。
+            // 方向同理：kcMasteryDropPressure 只在 lastEvidenceDirection 为 NEGATIVE
+            // 时传导，不写它则 spec §5 的 KC→错题联动律对模型通道完全失效。
+            lastEvidenceAtEpochMillis = maxOf(
+                previous?.lastEvidenceAtEpochMillis ?: 0L,
+                effectiveAtEpochMillis,
+            ),
+            lastEvidenceReason = CHAT_EVIDENCE_REASON,
+            lastEvidenceDirection = event.direction.name,
         )
     }
 
@@ -1170,6 +1183,15 @@ class LearningProjector(
         private const val GRADUATION_MIN_INTERVAL_DAYS = 90
         const val GRADUATION_TARGET_RETENTION = 0.8
         const val TUTOR_EXPOSURE_REASON = "TUTOR_EXPOSURE"
+
+        /**
+         * `last_evidence_reason` 落库值，用于 chat 证据（模型判断 / 知识点复习）。
+         *
+         * 保持粗粒度是刻意的：精确来源（MODEL_CHAT vs KNOWLEDGE_QUIZ、哪次会话）
+         * 由账本行自己的 `source_kind` 与 `conversation_id` 承载，投影层不再复制
+         * 一份可能漂移的副本——这里只需要回答"最近一条证据是不是讲题/复习判断"。
+         */
+        const val CHAT_EVIDENCE_REASON = "CHAT_EVIDENCE"
         const val DEFAULT_DESIRED_RETENTION = FsrsMemoryUpdateModel.DEFAULT_DESIRED_RETENTION
     }
 }

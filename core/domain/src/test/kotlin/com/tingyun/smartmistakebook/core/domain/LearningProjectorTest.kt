@@ -5,6 +5,7 @@ import com.tingyun.smartmistakebook.core.model.AssessmentSnapshotVerification
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.CalibrationSnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.ChatEvidenceSubmitted
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.KnowledgeEvidenceAttribution
@@ -197,6 +198,107 @@ class LearningProjectorTest {
         assertEquals(projected.snapshot, retried.snapshot)
     }
 
+    @Test
+    fun `chat evidence refreshes the mastery clock like any other evidence`() {
+        // 消灭的失败（审计 AUDIT-ALGORITHM-2026-09-09 §3.5）：projectChatEvidence
+        // 从不写 lastEvidenceAtEpochMillis，而该字段默认只从
+        // independentCorrectObservations 推导（attempt 通道）——只经模型判断或
+        // 知识点复习获得证据的 KC，lastEvidenceAt 恒为 null，被 ReviewPlanner
+        // 判为 stale，于是**永远留在复习队列**，无论答对多少次。
+        val projected = projector.project(
+            LearnerSnapshot.empty("learner-1"),
+            listOf(chatEvidence("chat-ev-1", 1, LearningEvidenceDirection.POSITIVE, 0.15)),
+            1,
+        )
+
+        val state = projected.snapshot.knowledgeMasteryStates.getValue("kc-a")
+        assertEquals(1_000L, state.lastEvidenceAtEpochMillis)
+        assertEquals(LearningEvidenceDirection.POSITIVE.name, state.lastEvidenceDirection)
+    }
+
+    @Test
+    fun `a negative chat judgment carries its direction into the mastery state`() {
+        // 后果 B（同审计条目）：kcMasteryDropPressure 要求
+        // lastEvidenceDirection == NEGATIVE 才传导；该字段此前对 chat 通道恒为
+        // null，模型写入的负向证据因此不产生任何 KC 传导压力——spec §5 的
+        // "KC→错题权重联动律"在模型通道上是死的。
+        val learned = projector.project(
+            LearnerSnapshot.empty("learner-1"),
+            listOf(attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence())),
+            1,
+        )
+
+        val projected = projector.project(
+            learned.snapshot,
+            listOf(chatEvidence("chat-ev-1", 2, LearningEvidenceDirection.NEGATIVE, 0.35)),
+            2,
+        )
+
+        val state = projected.snapshot.knowledgeMasteryStates.getValue("kc-a")
+        assertEquals(LearningEvidenceDirection.NEGATIVE.name, state.lastEvidenceDirection)
+        assertEquals(2_000L, state.lastEvidenceAtEpochMillis)
+    }
+
+    @Test
+    fun `a later chat judgment supersedes an earlier attempt clock`() {
+        // 时钟取"最近一次证据"，不是"最近一次作答"：模型在作答之后又判了一次，
+        // 该 KC 的陈旧判定应以较晚的那条为准。
+        val learned = projector.project(
+            LearnerSnapshot.empty("learner-1"),
+            listOf(attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence())),
+            1,
+        )
+
+        val projected = projector.project(
+            learned.snapshot,
+            listOf(chatEvidence("chat-ev-1", 2, LearningEvidenceDirection.POSITIVE, 0.15)),
+            2,
+        )
+
+        assertEquals(
+            2_000L,
+            projected.snapshot.knowledgeMasteryStates.getValue("kc-a").lastEvidenceAtEpochMillis,
+        )
+    }
+
+    @Test
+    fun `full replay produces the same chat-evidence clock as incremental projection`() {
+        // 升级路径依赖这条等价性：projector 版本 bump 会让已有库走
+        // StudyProjectionDrainer 的全量重放（`replay`）而不是增量投影。若两条路
+        // 对 chat 证据算出不同的状态，老用户升级后拿到的就仍是修复前的旧值。
+        val events = listOf(
+            attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence()),
+            chatEvidence("chat-ev-1", 2, LearningEvidenceDirection.NEGATIVE, 0.35),
+        )
+
+        val incremental = projector.project(LearnerSnapshot.empty("learner-1"), events, 2).snapshot
+        val replayed = projector.replay("learner-1", events).snapshot
+
+        assertEquals(incremental.knowledgeMasteryStates, replayed.knowledgeMasteryStates)
+        assertEquals(
+            LearningEvidenceDirection.NEGATIVE.name,
+            replayed.knowledgeMasteryStates.getValue("kc-a").lastEvidenceDirection,
+        )
+        assertEquals(2_000L, replayed.knowledgeMasteryStates.getValue("kc-a").lastEvidenceAtEpochMillis)
+    }
+
+    private fun chatEvidence(
+        evidenceId: String,
+        sequence: Int,
+        direction: LearningEvidenceDirection,
+        weight: Double,
+    ) = ChatEvidenceSubmitted(
+        evidenceId = evidenceId,
+        conversationId = "tutor-conv-1",
+        knowledgeNodeId = "kc-a",
+        direction = direction,
+        weight = weight,
+        reasonMarkdown = "模型判断。",
+        confidence = 0.9,
+        occurredAtEpochMillis = sequence * 1_000L,
+        eventSequence = sequence.toLong(),
+    )
+
     private fun attempt(
         id: String,
         sequence: Long,
@@ -256,7 +358,6 @@ class LearningProjectorTest {
         1.0,
         LearningEvidenceReason.INDEPENDENT_CORRECT,
     )
-
     private fun negativeEvidence() = LearningEvidence(
         LearningEvidenceDirection.NEGATIVE,
         1.0,
