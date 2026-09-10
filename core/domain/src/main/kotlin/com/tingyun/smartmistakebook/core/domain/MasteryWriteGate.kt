@@ -77,13 +77,40 @@ object MasteryWriteGate {
     const val MIN_ATTENTION_FACTOR = ATTENTION_REJECT_FLOOR
 
     /**
-     * A MASTERED (or POSITIVE high-tier) judgment requires behavioral
-     * support — a correct objective answer in the same session — before it
-     * may write at the high tier (Koriat & Bjork 2005 illusions of
-     * competence; Nelson & Dunlosky 1991 delayed-JOL). Without support the
-     * write is either rejected or downgraded to CONFIDENT by the caller.
+     * A POSITIVE MASTERED judgment must be **verifiable** before it may write
+     * at the high tier (Koriat & Bjork 2005 illusions of competence).
+     *
+     * 档2（spec `2026-09-06-mastery-judgment-gate-evolution.md` §1）：本地的
+     * 行为佐证（[GateInput.hasObjectiveSupport]）只对客观作答通道可用；讲题
+     * 对话通道本地拿不到可靠语义信号，改判为校验**模型自己的判断是否带出
+     * 可核查的证据锚**（[GateInput.evidenceAnchorCount] ≥ 本条）。判断可信度
+     * 由档1 的 prompt 规范承担，本门只做机械校验（条数/有无），不查真伪。
+     * 门槛值与档1 规范第 1 条（"逐字引用≥2条"）同值。
      */
-    const val REQUIRES_BEHAVIORAL_SUPPORT_FOR_MASTERED = true
+    const val REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED = 2
+
+    /**
+     * 一条引用短于此长度不算证据锚。消灭的失败：学生一句空话（"懂了"/"会了"）
+     * 被引号包住就凑够条数，使证据锚门形同虚设（档1 规范第 2 条正是禁止把
+     * 口头声称当事实）。[I] 待产品数据校准。
+     */
+    const val MIN_EVIDENCE_ANCHOR_CHARS = 4
+
+    /**
+     * 逐字引用的机械形态：成对引号包住的片段（中英文双引号、直角/双直角引号）。
+     * 非引号叙述不算锚——gate 只数锚，不判语义。
+     */
+    private val EVIDENCE_ANCHOR_REGEX = Regex(
+        "[\"“][^\"“”]{${MIN_EVIDENCE_ANCHOR_CHARS},}[\"”]" +
+            "|「[^「」]{${MIN_EVIDENCE_ANCHOR_CHARS},}」" +
+            "|『[^『』]{${MIN_EVIDENCE_ANCHOR_CHARS},}』",
+    )
+
+    /**
+     * 数出 rationale 里逐字引用的证据锚条数（[EVIDENCE_ANCHOR_REGEX]）。
+     * 纯函数，讲题通道的执行器用它填 [GateInput.evidenceAnchorCount]。
+     */
+    fun evidenceAnchorCount(rationale: String): Int = EVIDENCE_ANCHOR_REGEX.findAll(rationale).count()
 
     // ---- Evidence weight table (research §1.3, FSRS-grade analogy) ----
     // FSRS stability-gain ratios: Hard≈0.29 / Good≈1.0 / Easy≈2.61 (defaults).
@@ -95,7 +122,7 @@ object MasteryWriteGate {
     const val WEIGHT_STRUGGLING = 0.35 // NEGATIVE standard lapse tier
     const val WEIGHT_UNCERTAIN_POSITIVE = 0.10 // low-confidence correct ≈ Hard, memory weak (Benjamin 1998)
     const val WEIGHT_CONFIDENT_POSITIVE = 0.15 // dialogue self-report, discounted (Deslauriers)
-    const val WEIGHT_MASTERED_POSITIVE = 0.18 // requires behavioral support; Easy ceiling, never above cap
+    const val WEIGHT_MASTERED_POSITIVE = 0.18 // requires verifiable support; Easy ceiling, never above cap
 
     const val MAX_EVIDENCE_WEIGHT = 0.35 // aligned with ChatEvidenceSubmitted.MAX_CHAT_EVIDENCE_WEIGHT
 
@@ -123,8 +150,8 @@ object MasteryWriteGate {
         EVIDENCE_BELOW_CONFIDENCE,
         /** knowledgeNodeId is not a real bound knowledge node of the current problem. */
         KNOWLEDGE_NODE_NOT_ANCHORED,
-        /** claimed MASTERED/POSITIVE without a correct objective answer in the session. */
-        MASTERED_WITHOUT_BEHAVIORAL_SUPPORT,
+        /** claimed MASTERED/POSITIVE with no verifiable support on either route. */
+        MASTERED_WITHOUT_EVIDENCE_ANCHOR,
         /** same KC already written within the cooldown window. */
         SAME_KC_IN_COOLDOWN,
         /** per-conversation write quota exhausted. */
@@ -143,8 +170,17 @@ object MasteryWriteGate {
         val direction: TutorEvidenceDirection,
         val understanding: TutorUnderstandingTier,
         val knowledgeNodeIsAnchored: Boolean,
-        /** True when a correct objective answer exists in the same session (behavioral support). */
-        val hasBehavioralSupport: Boolean,
+        /**
+         * 本地可核查的客观佐证：同一会话内该知识点上有客观答对（知识点测验
+         * 通道）。讲题通道恒 false——本地无法在语义上佐证"学生懂了"（研究
+         * llm-mastery-judgment-regulation §1），它走 [evidenceAnchorCount]。
+         */
+        val hasObjectiveSupport: Boolean,
+        /**
+         * 模型 rationale 里的逐字证据锚条数（[evidenceAnchorCount]）。讲题
+         * 通道通往 MASTERED 的唯一可核查路径；客观作答通道恒 0。
+         */
+        val evidenceAnchorCount: Int,
         /** Age of the learner's most recent accepted write to the SAME KC (across all conversations). */
         val sameKcLastWriteAgoMillis: Long?,
         /** Accepted writes in the current conversation. */
@@ -157,6 +193,7 @@ object MasteryWriteGate {
             require(intentConfidence in 0.0..1.0) { "Intent confidence must be in 0..1" }
             require(evidenceConfidence in 0.0..1.0) { "Evidence confidence must be in 0..1" }
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
+            require(evidenceAnchorCount >= 0) { "Evidence anchor count must not be negative" }
             require(writesThisConversation >= 0) { "Write count must not be negative" }
             require(writesThisLearnerInWindow >= 0) { "Learner window write count must not be negative" }
             require(sameKcLastWriteAgoMillis == null || sameKcLastWriteAgoMillis >= 0) {
@@ -190,14 +227,14 @@ object MasteryWriteGate {
         }
         if (input.direction == TutorEvidenceDirection.POSITIVE &&
             input.understanding == TutorUnderstandingTier.MASTERED &&
-            REQUIRES_BEHAVIORAL_SUPPORT_FOR_MASTERED &&
-            !input.hasBehavioralSupport
+            !input.hasObjectiveSupport &&
+            input.evidenceAnchorCount < REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED
         ) {
-            // 研究底稿 §1.3 措辞为"无行为佐证则按 CONFIDENT 降级"；此处有意选
-            // "拒 + 观察通道"而非降级：MASTERED 无行为佐证时模型的"掌握"判断
-            // 与 CONFIDENT 无法区分（都落 0.15 会让档位边界失效），且宁漏记比
-            // 误记安全——被拒证据落 rejected 观察行，后续有真实作答佐证时可补救。
-            return GateResult.Rejected(RejectReason.MASTERED_WITHOUT_BEHAVIORAL_SUPPORT)
+            // 档2 前此处是"无本地行为佐证即拒"，而本地行为佐证在讲题通道恒
+            // 不可得（runner 恒传 false）→ MASTERED 永远被拒，0.18 档位成死常数。
+            // 现改为双路可核查：本地客观作答（测验通道）或模型逐字证据锚（讲题
+            // 通道）。两路都缺才拒——被拒证据落 rejected 观察行，不静默丢弃。
+            return GateResult.Rejected(RejectReason.MASTERED_WITHOUT_EVIDENCE_ANCHOR)
         }
         val lastWrite = input.sameKcLastWriteAgoMillis
         if (lastWrite != null && lastWrite < SAME_KC_COOLDOWN_MILLIS) {

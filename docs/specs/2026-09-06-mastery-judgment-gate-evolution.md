@@ -1,7 +1,7 @@
-# 掌握证据判断门控演进（档2/档3）：从"本地行为佐证"到"规范判断 + 延迟复核"待办 spec
+# 掌握证据判断门控演进（档2/档3）：从"本地行为佐证"到"规范判断 + 延迟复核"
 
-状态：待办 spec（未实现，供后续排期）
-日期：2026-09-06
+状态：**档2 已实现（2026-09-10）**；档3 待办 spec（未实现，供后续排期）
+日期：2026-09-06（§1 落地与实现注记 2026-09-10）
 关联：`docs/research/llm-mastery-judgment-regulation.md`（实证底稿）；`docs/research/tutor-evidence-gate-research.md`（写侧门控参数）；`docs/specs/2026-09-02-tool-loop-wiring-design.md` §3.5（T6 已落地形态）
 
 ## 0. 背景与已落地基线
@@ -15,7 +15,7 @@
 
 **已落地（档1，本 spec 的基线）**：重写 MASTERY_UPDATE 的 prompt 判断规范（证据先行/防谄媚/可观察 rubric）。零 gate/runner 改动。见 `OpenAiModelTaskAdapters.kt` T6 声明块 + `ModelEgress.kt` TUTOR_RESPOND v7。
 
-**现状缺口**：gate 的 `MASTERED_WITHOUT_BEHAVIORAL_SUPPORT` 门（`hasBehavioralSupport` 恒 false → 模型判 MASTERED 必拒）仍建立在"找本地行为信号佐证"的伪路径上——与档1"规范判断"方向冲突。档2/档3 解决这个冲突。
+**现状缺口（2026-09-10 已修）**：gate 的 `MASTERED_WITHOUT_BEHAVIORAL_SUPPORT` 门（`hasBehavioralSupport` 恒 false → 模型判 MASTERED 必拒）曾建立在"找本地行为信号佐证"的伪路径上——与档1"规范判断"方向冲突。**档2 已按 §1 落地**，下面的设计草案保留为决策记录，实测落点见 §1.1。
 
 ## 1. 档2：MASTERED 证据校验从"本地信号"改为"模型证据锚"
 
@@ -35,6 +35,29 @@
 ### 风险与边界
 - 模型输出的"证据"仍是模型自报，可能编造引用——机械校验只能查"有没有、够不够条数"，不能查真伪。这是模型判断的固有边界，档3 的延迟复核才是真校验。
 - 不能因"规范更好"就放开单次权重（研究 Q6：规范提升的是少触发冷却/配额，非单次大步）。
+
+### §1.1 落地形态（2026-09-10 实现，已实证）
+
+按 §1 设计草案第 1 条的**第二个选项**落地：**复用现有 `rationale`**，不新增 wire 字段——因此没有 schema 版本 bump、没有 Route A strict schema 变更、也没有旧持久化 tutor 行读回指纹风险。
+
+| 层 | 落点 |
+|---|---|
+| domain `MasteryWriteGate` | `REQUIRES_BEHAVIORAL_SUPPORT_FOR_MASTERED` → **`REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED = 2`**（与档1 规范第 1 条"逐字引用≥2条"同值）+ `MIN_EVIDENCE_ANCHOR_CHARS = 4`（挡"懂了/会了"这类空话凑条数） |
+| domain `MasteryWriteGate` | 新增纯函数 `evidenceAnchorCount(rationale): Int`——数引号包住的片段（`"…"` / `“…”` / `「…」` / `『…』`），即"逐字引用"的机械形态 |
+| domain `MasteryWriteGate.GateInput` | `hasBehavioralSupport: Boolean` → **双路字段**：`hasObjectiveSupport: Boolean`（本地客观作答，测验通道）+ `evidenceAnchorCount: Int`（模型逐字证据锚，讲题通道）。MASTERED 需两者之一；`RejectReason.MASTERED_WITHOUT_BEHAVIORAL_SUPPORT` → `MASTERED_WITHOUT_EVIDENCE_ANCHOR` |
+| data `RoomTutorToolRunner.masteryUpdate` | `hasBehavioralSupport = false` 硬编码 → `hasObjectiveSupport = false, evidenceAnchorCount = MasteryWriteGate.evidenceAnchorCount(call.rationale)`（拉通"模型 rationale → 证据锚 → 门"这条链） |
+| data `KnowledgeQuizFeedbackWriter` | `hasObjectiveSupport = verdict.hasBehavioralSupport, evidenceAnchorCount = 0`——客观作答通道本来就有一份本地可核查的证据，语义未变 |
+| data `OpenAiModelTaskAdapters`（档1 prompt） | 判断规范第 1/2 条补明"用引号逐字引用"这一机械形态（否则模型按旧措辞写非引号叙述会被误拒）；`toolPurposeDescription(MASTERY_UPDATE)` 同步 |
+| model `ModelPromptPolicyVersions` | `TUTOR_RESPOND` v7-mastery-judgment-norms → **v8-evidence-anchor-gate** |
+
+**有意不做**：单次权重未放开（`WEIGHT_MASTERED_POSITIVE` 仍 0.18）——§1 风险与边界已裁定"规范提升的是少触发冷却/配额，非单次大步"，本实现遵守。
+
+**边界（与 §1 风险与边界一致）**：机械校验只查"有没有、够不够条数"，查不出模型是否编造引用。真伪由档3 的延迟复核承担，本层不假装能查。
+
+**验收证据**：
+- `MasteryWriteGateTest` 15/15（`:core:domain:test`）——含"两路之一即可判定/两路都缺即拒""引号片段计数""空话不算锚"。
+- `RoomTutorToolRunnerTest` 5/5（`:core:data:testDebugUnitTest`，新增）——锁定 runner 侧接线：MASTERED + 2 条引号锚 → 落 0.18 档；无锚/仅"懂了" → `rejected:MASTERED_WITHOUT_EVIDENCE_ANCHOR` 且落观察行；CONFIDENT 与 NEGATIVE 不受该门影响。
+- `:core:data:testDebugUnitTest` 354/354、`:core:data:compileDebugAndroidTestKotlin` 通过。
 
 ## 2. 档3：MASTERED 永不单次判定——延迟复核通道
 

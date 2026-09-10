@@ -328,7 +328,11 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             direction = direction,
             understanding = understanding,
             knowledgeNodeIsAnchored = anchored,
-            hasBehavioralSupport = false,
+            // 讲题通道本地拿不到"学生懂了"的客观佐证（研究 §1：本地无可靠语义
+            // 信号），故 MASTERED 的可核查性改为数模型 rationale 里逐字引用的
+            // 证据锚条数（档2，spec 2026-09-06 §1；档1 prompt 规范同源）。
+            hasObjectiveSupport = false,
+            evidenceAnchorCount = MasteryWriteGate.evidenceAnchorCount(call.rationale),
             sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
             writesThisConversation = acceptedInConversation,
             writesThisLearnerInWindow = acceptedInWindow,

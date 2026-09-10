@@ -161,7 +161,7 @@ class ChatEvidenceLedgerIntegrationTest {
             db.recordChatEvidence(
                 listOf(
                     entry("node-algebra", "POSITIVE", 0.18, 1),
-                    entry("node-algebra", "POSITIVE", 0.0, 2, rejectedReason = "MASTERED_WITHOUT_BEHAVIORAL_SUPPORT"),
+                    entry("node-algebra", "POSITIVE", 0.0, 2, rejectedReason = "MASTERED_WITHOUT_EVIDENCE_ANCHOR"),
                 ),
             )
 
@@ -170,7 +170,7 @@ class ChatEvidenceLedgerIntegrationTest {
             assertEquals(2, all.size)
             assertEquals(1, all.count { it.isRejected })
             assertEquals(
-                "MASTERED_WITHOUT_BEHAVIORAL_SUPPORT",
+                "MASTERED_WITHOUT_EVIDENCE_ANCHOR",
                 all.single { it.isRejected }.rejected_reason,
             )
 

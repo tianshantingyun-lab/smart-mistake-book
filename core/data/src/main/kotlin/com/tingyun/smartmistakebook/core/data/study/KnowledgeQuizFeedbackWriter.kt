@@ -46,7 +46,9 @@ internal class KnowledgeQuizFeedbackWriter(
             direction = verdict.direction,
             understanding = verdict.understanding,
             knowledgeNodeIsAnchored = anchored,
-            hasBehavioralSupport = verdict.hasBehavioralSupport,
+            hasObjectiveSupport = verdict.hasBehavioralSupport,
+            // 客观作答通道本来就有一份本地可核查的证据（答对），无需模型引用锚。
+            evidenceAnchorCount = 0,
             sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
             writesThisConversation = acceptedInConversation,
             writesThisLearnerInWindow = acceptedInWindow,

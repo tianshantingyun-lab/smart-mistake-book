@@ -16,7 +16,8 @@ class MasteryWriteGateTest {
         understanding: TutorUnderstandingTier = TutorUnderstandingTier.CONFIDENT,
         evidenceConfidence: Double = 0.9,
         knowledgeNodeIsAnchored: Boolean = true,
-        hasBehavioralSupport: Boolean = true,
+        hasObjectiveSupport: Boolean = false,
+        evidenceAnchorCount: Int = ENOUGH_ANCHORS,
         sameKcLastWriteAgoMillis: Long? = null,
         writesThisConversation: Int = 0,
         writesThisLearnerInWindow: Int = 0,
@@ -27,7 +28,8 @@ class MasteryWriteGateTest {
         direction = direction,
         understanding = understanding,
         knowledgeNodeIsAnchored = knowledgeNodeIsAnchored,
-        hasBehavioralSupport = hasBehavioralSupport,
+        hasObjectiveSupport = hasObjectiveSupport,
+        evidenceAnchorCount = evidenceAnchorCount,
         sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
         writesThisConversation = writesThisConversation,
         writesThisLearnerInWindow = writesThisLearnerInWindow,
@@ -46,29 +48,73 @@ class MasteryWriteGateTest {
     }
 
     @Test
-    fun `confident positive without behavior support is accepted at the discounted tier`() {
+    fun `confident positive needs no verifiable support`() {
         // CONFIDENT is a dialogue self-report that is already discounted to
-        // 0.15, so it does not require behavioral support; only the MASTERED
-        // tier claims enough to need an in-session correct answer.
+        // 0.15, so it does not require verifiable support; only the MASTERED
+        // tier claims enough to need one.
         val weight = assertAccepted(
-            acceptedInput(understanding = TutorUnderstandingTier.CONFIDENT, hasBehavioralSupport = false),
+            acceptedInput(
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = 0,
+            ),
         )
         assertEquals(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE, weight, 1e-9)
     }
 
     @Test
-    fun `mastered positive requires behavioral support`() {
-        // MASTERED without support is rejected (Koriat & Bjork illusions of competence).
+    fun `mastered positive requires verifiable support by either route`() {
+        // 档2（spec 2026-09-06 §1）：MASTERED 的可核查性有两条路——本地客观作答
+        // （知识点测验通道）或模型 rationale 里的逐字证据锚（讲题通道）。
+        // 两条都缺 = 无法核查 → 拒写并落观察行。
         assertRejected(
-            acceptedInput(understanding = TutorUnderstandingTier.MASTERED, hasBehavioralSupport = false),
-            RejectReason.MASTERED_WITHOUT_BEHAVIORAL_SUPPORT,
+            acceptedInput(
+                understanding = TutorUnderstandingTier.MASTERED,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = ENOUGH_ANCHORS - 1,
+            ),
+            RejectReason.MASTERED_WITHOUT_EVIDENCE_ANCHOR,
         )
-        // MASTERED with a correct objective answer in-session is accepted.
-        assertTrue(
-            MasteryWriteGate.evaluate(
-                acceptedInput(understanding = TutorUnderstandingTier.MASTERED, hasBehavioralSupport = true),
-            ) is GateResult.Accepted,
+        assertAccepted(
+            acceptedInput(
+                understanding = TutorUnderstandingTier.MASTERED,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = ENOUGH_ANCHORS,
+            ),
         )
+        assertAccepted(
+            acceptedInput(
+                understanding = TutorUnderstandingTier.MASTERED,
+                hasObjectiveSupport = true,
+                evidenceAnchorCount = 0,
+            ),
+        )
+    }
+
+    @Test
+    fun `evidence anchors are the quoted spans of a rationale`() {
+        // 「逐字引用」在机械上就是引号包住的片段；非引号叙述不算证据锚——
+        // 这正是 gate 能查的部分（条数/有无），真伪由档1规范与观察行承担。
+        assertEquals(
+            2,
+            MasteryWriteGate.evidenceAnchorCount(
+                "学生说\"我把两边都乘以了 2\"，随后独立写出\"因为斜率相等所以平行\"。",
+            ),
+        )
+        assertEquals(
+            2,
+            MasteryWriteGate.evidenceAnchorCount("第一次「先配方再求根」，第二次『移项后直接开方』。"),
+        )
+        assertEquals(0, MasteryWriteGate.evidenceAnchorCount("看起来掌握得不错，应该没问题。"))
+        assertEquals(0, MasteryWriteGate.evidenceAnchorCount(""))
+    }
+
+    @Test
+    fun `a bare claim of understanding is not an evidence anchor`() {
+        // 档1 规范第 2 条：学生口头说"懂了"只是线索不是事实。过短的引用
+        // （含"懂了/会了"这类空话）不算锚，否则证据锚门形同虚设。
+        assertEquals(0, MasteryWriteGate.evidenceAnchorCount("学生说\"懂了\"。"))
+        assertEquals(1, MasteryWriteGate.evidenceAnchorCount("学生说\"我把负号漏掉了\"。"))
     }
 
     @Test
@@ -197,5 +243,12 @@ class MasteryWriteGateTest {
         assertEquals(100, MasteryWriteGate.MAX_WRITES_PER_LEARNER_WINDOW)
         assertEquals(1L * 60 * 60 * 1000, MasteryWriteGate.LEARNER_WINDOW_MILLIS)
         assertEquals(0.4, MasteryWriteGate.MIN_ATTENTION_FACTOR, 1e-9)
+        // 档2：MASTERED 的证据锚门槛与档1 prompt 规范第 1 条（"逐字引用≥2条"）同值。
+        assertEquals(2, MasteryWriteGate.REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED)
+    }
+
+    private companion object {
+        /** 满足 [MasteryWriteGate.REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED] 的条数。 */
+        const val ENOUGH_ANCHORS = MasteryWriteGate.REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED
     }
 }
