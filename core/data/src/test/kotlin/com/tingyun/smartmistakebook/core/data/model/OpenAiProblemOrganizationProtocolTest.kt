@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -54,6 +55,53 @@ class OpenAiProblemOrganizationProtocolTest {
                 )
             }.isFailure
         })
+    }
+
+    @Test
+    fun modelJudgedDifficultyTierIsReadOffTheWire() {
+        // spec batch-intake-spec §2 L2：模型的难度判断是排程冷启动估时的输入，
+        // 必须在协议层被真的读出来——此前 TutorDifficultyTier 全库无消费方。
+        val payload = Json.parseToJsonElement(
+            validGroundedPayload().replace(
+                "\"summaryMarkdown\":",
+                "\"difficultyTier\":\"HARD\",\"summaryMarkdown\":",
+            ),
+        ).jsonObject
+
+        val output = OpenAiProblemOrganizationProtocol.parse(payload, input(), "test-model")
+
+        assertEquals(
+            com.tingyun.smartmistakebook.core.model.TutorDifficultyTier.HARD,
+            output.plan.difficultyTier,
+        )
+    }
+
+    @Test
+    fun aDifficultyTierThatWasNotJudgedStaysNull() {
+        // 未输出（旧行/本次没判）必须是 null，不得默认成中档——默认中档正是
+        // 本次要消灭的失败（每道新题都被估成 180s）。
+        val payload = Json.parseToJsonElement(validGroundedPayload()).jsonObject
+
+        val output = OpenAiProblemOrganizationProtocol.parse(payload, input(), "test-model")
+
+        assertEquals(null, output.plan.difficultyTier)
+    }
+
+    @Test
+    fun anUnrecognizedDifficultyTierDoesNotSinkTheOrganization() {
+        // 难度是 advisory：档位名无法识别时退回"未判"，不让一个边缘字段
+        // 把整份整理结果（分类/关系/原子能力）一起掀掉。
+        val payload = Json.parseToJsonElement(
+            validGroundedPayload().replace(
+                "\"summaryMarkdown\":",
+                "\"difficultyTier\":\"VERY_HARD\",\"summaryMarkdown\":",
+            ),
+        ).jsonObject
+
+        val output = OpenAiProblemOrganizationProtocol.parse(payload, input(), "test-model")
+
+        assertEquals(null, output.plan.difficultyTier)
+        assertEquals(2, output.plan.classifications.size)
     }
 
     private fun validGroundedPayload() =

@@ -15,6 +15,7 @@ import com.tingyun.smartmistakebook.core.domain.knowledgeRecallRiskByNode
 import com.tingyun.smartmistakebook.core.domain.selectKnowledgeReviewQueue
 import com.tingyun.smartmistakebook.core.domain.ReviewScopeQuestion
 import com.tingyun.smartmistakebook.core.domain.HLRPredictionAuditService
+import com.tingyun.smartmistakebook.core.domain.IntakeDurationBaseline
 import com.tingyun.smartmistakebook.core.domain.LogDurationModel
 import com.tingyun.smartmistakebook.core.domain.NewIntroductionPolicy
 import com.tingyun.smartmistakebook.core.domain.PredictionAuditSink
@@ -26,6 +27,8 @@ import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
 import com.tingyun.smartmistakebook.core.model.ReviewPlan
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
+import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -118,11 +121,23 @@ internal class StudyReviewPlannerService(
      * same EASY/MEDIUM/HARD bands the planner uses (ceilings 4/7) and return
      * the model-tier baseline seconds for never-attempted questions.
      */
-    fun tierBaselineSecondsFor(difficulty: Double): Int = when {
-        difficulty < 4.0 -> LogDurationModel.TIER_BASELINE_EASY_SECONDS
-        difficulty < 7.0 -> LogDurationModel.TIER_BASELINE_MEDIUM_SECONDS
-        else -> LogDurationModel.TIER_BASELINE_HARD_SECONDS
-    }
+    fun tierBaselineSecondsFor(difficulty: Double): Int =
+        IntakeDurationBaseline.secondsFor(modelTier = null, fsrsDifficulty = difficulty)
+
+    /**
+     * 这道新题有没有模型判过的难度档（整理任务写入的 DIFFICULTY_TIER 咨询行）。
+     * 有 → L2 语义基线；没有 → 数值难度代理（[IntakeDurationBaseline] 的兜底口径）。
+     *
+     * 消灭的失败：新题没有记忆状态，[ReviewCandidate.difficulty] 恒为占位值 →
+     * 每道新题都被估成中档 180s；模型在整理时早已给出的难度判断没有任何消费方，
+     * 当日引入配额因此按错误的时长计算。
+     */
+    private suspend fun modelDifficultyTier(practiceUnitId: String): TutorDifficultyTier? =
+        database.observeTeachingAdvisories(learnerId, practiceUnitId)
+            .first()
+            .firstOrNull { it.advisoryKind == TeachingAdvisoryRecord.KIND_DIFFICULTY_TIER }
+            ?.payloadMarkdown
+            ?.let { stored -> runCatching { TutorDifficultyTier.valueOf(stored) }.getOrNull() }
 
 
     suspend fun daysUntilNearestExam(localDayEpochDay: Long): Int? {
@@ -242,6 +257,11 @@ internal class StudyReviewPlannerService(
                 // confidence level of each card's most recent wrong attempt,
                 // judged from signals already stored in review_log.
                 val confidenceAtError = reviewLogSink.confidenceAtErrorByPracticeUnit()
+                // 冷启动估时优先用模型判过的难度档（L2 语义基线）；模型没判过才退回
+                // 数值难度代理。每道新题一次按题索引的咨询行读取。
+                val tierByUnit = fresh.associate { candidate ->
+                    candidate.practiceUnitId to modelDifficultyTier(candidate.practiceUnitId)
+                }
                 val decision = NewIntroductionPolicy.decide(
                     candidates = fresh.map { candidate ->
                         NewIntroductionPolicy.IntakeCandidate(
@@ -251,7 +271,10 @@ internal class StudyReviewPlannerService(
                                 subjectId = candidate.subjectId,
                                 itemType = candidate.itemType,
                                 difficulty = candidate.difficulty,
-                                tierBaselineSeconds = tierBaselineSecondsFor(candidate.difficulty),
+                                tierBaselineSeconds = IntakeDurationBaseline.secondsFor(
+                                    modelTier = tierByUnit[candidate.practiceUnitId],
+                                    fsrsDifficulty = candidate.difficulty,
+                                ),
                             ).toInt().coerceAtLeast(1),
                             examPriority = candidate.examPriority,
                             confidenceAtError = confidenceAtError[candidate.practiceUnitId],

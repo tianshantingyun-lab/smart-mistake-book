@@ -22,12 +22,67 @@ import com.tingyun.smartmistakebook.core.model.ProblemStepKnowledgeAttribution
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
+import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RoomMistakeOrganizationRepositoryTest {
+    @Test
+    fun modelJudgedDifficultyTierBecomesAPerQuestionAdvisoryRow() {
+        // spec batch-intake-spec §2 L2：模型判的难度档要能被排程按题读回。
+        val advisory = requireNotNull(
+            buildDifficultyTierAdvisory(
+                organizationRequestId = "organization-request-1",
+                practiceUnitId = "practice-1",
+                learnerId = "learner:local",
+                tier = TutorDifficultyTier.HARD,
+                acceptedAtEpochMillis = 2_000,
+            ),
+        )
+
+        assertEquals("learner:local", advisory.learnerId)
+        assertEquals("practice-1", advisory.practiceUnitId)
+        assertEquals(null, advisory.knowledgeNodeId)
+        assertEquals(TeachingAdvisoryRecord.KIND_DIFFICULTY_TIER, advisory.advisoryKind)
+        // 只存语义档名，不存秒数——秒数由本地常数表出。
+        assertEquals(TutorDifficultyTier.HARD.name, advisory.payloadMarkdown)
+        assertEquals(2_000L, advisory.createdAtEpochMillis)
+    }
+
+    @Test
+    fun theAdvisoryKeyIsStableAcrossRetriesOfTheSameOrganization() {
+        // UNIQUE(learner, source_id, kind) 靠 source_id 去重：同一次整理重放
+        // （重试/恢复）不得产生第二条难度声明。
+        val first = requireNotNull(
+            buildDifficultyTierAdvisory("request-x", "practice-1", "learner:local", TutorDifficultyTier.EASY, 1_000),
+        )
+        val replay = requireNotNull(
+            buildDifficultyTierAdvisory("request-x", "practice-1", "learner:local", TutorDifficultyTier.EASY, 9_999),
+        )
+
+        assertEquals(first.advisoryId, replay.advisoryId)
+        assertEquals(first.sourceId, replay.sourceId)
+    }
+
+    @Test
+    fun anUnjudgedDifficultyWritesNoRowAtAll() {
+        // 没判过难度就不写行（排程退回数值代理）——绝不写一条"默认中档"，
+        // 那正是本次要消灭的失败。
+        assertEquals(
+            null,
+            buildDifficultyTierAdvisory(
+                organizationRequestId = "organization-request-1",
+                practiceUnitId = "practice-1",
+                learnerId = "learner:local",
+                tier = null,
+                acceptedAtEpochMillis = 2_000,
+            ),
+        )
+    }
+
     @Test
     fun repeatedOntologyGapKeepsOccurrencesButSharesOneGroundingKey() {
         val first = buildKnowledgeGroundingRecords(

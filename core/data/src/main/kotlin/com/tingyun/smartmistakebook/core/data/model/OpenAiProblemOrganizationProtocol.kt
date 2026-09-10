@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.model.ProblemClassificationSuggestion
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationOutput
 import com.tingyun.smartmistakebook.core.model.ProblemOrganizationPlan
+import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
 import com.tingyun.smartmistakebook.core.model.ProblemRelationKind
 import com.tingyun.smartmistakebook.core.model.ProblemRelationSuggestion
 import com.tingyun.smartmistakebook.core.model.ProblemStepKnowledgeAttribution
@@ -116,8 +117,14 @@ internal object OpenAiProblemOrganizationProtocol {
             9. 如果现有知识储备不足以可靠细分，atomicKnowledge和stepAttributions都返回空数组，
                groundingRequests返回1到4个仅用于查找课程标准、教材结构或权威教培知识体系的检索请求；
                不得用宽泛标签假装已经完成细分。否则groundingRequests必须为空数组。
+            10. difficultyTier按题面本身判断解题难度，只能是EASY/MEDIUM/HARD，不估秒数。
+               依据四条线索：解题步骤数（1-2步=EASY；3-5步=MEDIUM；6步以上或需分情况讨论=HARD）、
+               计算量（口算或简单代入=EASY；多步代数运算=MEDIUM；复杂计算或多次转化=HARD）、
+               知识点数量（单点=EASY；两点综合=MEDIUM；多点综合或跨章节=HARD）、
+               是否多问（单问可降一档；多问链式升一档）。
+               只依据题面，不得依据学生水平、掌握度或错因。
             返回JSON：schemaVersion、summaryMarkdown、reviewPriorityMarkdown、targetedEvidenceLabels、
-            classifications[{dimension,displayName,rationaleMarkdown,confidence}]、
+            difficultyTier、classifications[{dimension,displayName,rationaleMarkdown,confidence}]、
             atomicKnowledge[{referenceId,canonicalName,aliases,kind,parentKnowledgeDisplayName,
             existingAlias,prerequisiteReferenceIds,observableOutcomeMarkdown,boundaryMarkdown,confidence}]、
             stepAttributions[{stepOrdinal,stepSummaryMarkdown,atomicReferenceIds}]、
@@ -248,6 +255,10 @@ internal object OpenAiProblemOrganizationProtocol {
                 atomicKnowledge = atomicKnowledge,
                 stepAttributions = stepAttributions,
                 groundingRequests = groundingRequests,
+                // 难度档是 advisory：模型给了无法识别的档位名时退回"未判"
+                // （下游用数值难度代理），不让一个边缘字段掀掉整份整理结果。
+                difficultyTier = payload.optionalString("difficultyTier")
+                    ?.let { raw -> runCatching { enumValue<TutorDifficultyTier>(raw) }.getOrNull() },
             ),
             modelVersion = modelVersion,
         )

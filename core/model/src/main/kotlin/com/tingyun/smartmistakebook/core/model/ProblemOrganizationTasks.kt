@@ -335,6 +335,13 @@ data class ProblemOrganizationPlan(
     val atomicKnowledge: List<AtomicKnowledgeSuggestion> = emptyList(),
     val stepAttributions: List<ProblemStepKnowledgeAttribution> = emptyList(),
     val groundingRequests: List<KnowledgeGroundingRequest> = emptyList(),
+    /**
+     * 模型对这道题解题难度的语义判断（EASY/MEDIUM/HARD）。模型不估秒数——
+     * 秒数由本地表（90/180/300s）或该学员的个人化数据给出（spec
+     * `batch-intake-spec.md` §2 L2）。null = 模型未判（旧行 / 本次未输出），
+     * 调用方退回数值难度代理，不得默认成中档。
+     */
+    val difficultyTier: TutorDifficultyTier? = null,
 ) {
     init {
         summaryMarkdown.requireOrganizationMarkdown("Organization summary", MAX_SUMMARY_CHARS)

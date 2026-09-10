@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.mistake
 
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
 import com.tingyun.smartmistakebook.core.data.knowledge.KnowledgeContextRetriever
+import com.tingyun.smartmistakebook.core.data.study.RoomBackedStudyExperienceRepository
 import com.tingyun.smartmistakebook.core.database.ConfirmProblemOrganizationCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeBindingSeedRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingRequestRecord
@@ -16,6 +17,8 @@ import com.tingyun.smartmistakebook.core.database.ProblemOrganizationAuthorityCo
 import com.tingyun.smartmistakebook.core.database.ProblemRelationSeedRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
+import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
+import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
 import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.ConfirmedProblemClassification
 import com.tingyun.smartmistakebook.core.domain.ConfirmedProblemRelation
@@ -85,6 +88,34 @@ internal const val RELATION_ACCEPTANCE_CONFIDENCE = 0.90
 private const val MAX_ACCEPTED_CHAPTERS = 3
 private const val MAX_ACCEPTED_KNOWLEDGE = 8
 private const val MAX_ACCEPTED_RELATIONS = 4
+/**
+ * 模型难度判断的咨询行（spec `batch-intake-spec.md` §2 L2）。
+ *
+ * 返回 null = 模型没判过难度，不写行——排程退回数值难度代理。绝不写一条
+ * "默认中档"：那正是本次要消灭的失败（每道新题都被静默估成 180s）。
+ * source_id 取整理请求 id，配合 UNIQUE(learner, source_id, kind) 让重放幂等；
+ * 秒数不入本行——本地按档位查表，模型只给语义档。
+ */
+internal fun buildDifficultyTierAdvisory(
+    organizationRequestId: String,
+    practiceUnitId: String,
+    learnerId: String,
+    tier: TutorDifficultyTier?,
+    acceptedAtEpochMillis: Long,
+): TeachingAdvisoryRecord? = tier?.let {
+    TeachingAdvisoryRecord(
+        advisoryId = "difficulty-tier:$organizationRequestId",
+        learnerId = learnerId,
+        practiceUnitId = practiceUnitId,
+        knowledgeNodeId = null,
+        advisoryKind = TeachingAdvisoryRecord.KIND_DIFFICULTY_TIER,
+        payloadMarkdown = it.name,
+        confidence = null,
+        sourceId = organizationRequestId,
+        createdAtEpochMillis = acceptedAtEpochMillis,
+    )
+}
+
 internal class RoomMistakeOrganizationRepository(
     private val database: StudyDatabasePort,
 ) : MistakeOrganizationRepository {
@@ -320,6 +351,16 @@ internal class RoomMistakeOrganizationRepository(
         require(acceptedAtEpochMillis > 0) {
             "Successful organization task has no durable completion time"
         }
+        // 模型的难度判断落咨询层（llm_teaching_advisory，模型自有表），按题存档——
+        // 排程在冷启动估时时按 practiceUnit 读回（spec `batch-intake-spec.md` §2 L2）。
+        // 只在此处、整理被接受之后写入：被拒/待补证的整理不产生难度声明。
+        buildDifficultyTierAdvisory(
+            organizationRequestId = requestId,
+            practiceUnitId = persisted.input.practiceUnitId,
+            learnerId = RoomBackedStudyExperienceRepository.DEFAULT_LEARNER_ID,
+            tier = persisted.output.plan.difficultyTier,
+            acceptedAtEpochMillis = acceptedAtEpochMillis,
+        )?.let { advisory -> database.recordTeachingAdvisories(listOf(advisory)) }
         val command = buildConfirmationCommand(
             requestId = requestId,
             input = persisted.input,

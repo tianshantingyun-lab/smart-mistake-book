@@ -856,6 +856,13 @@ data class TeachingAdvisoryRecord(
     companion object {
         const val KIND_TEACHING_FOCUS = "TEACHING_FOCUS"
         const val KIND_MISCONCEPTION = "MISCONCEPTION"
+        /**
+         * 模型对"这道题有多难"的语义判断（EASY/MEDIUM/HARD），payloadMarkdown 存档位名。
+         * 消灭的失败：`TutorDifficultyTier` 早已在协议层定义并解析，却没有任何消费方，
+         * 新题的冷启动估时永远落中档占位（spec `batch-intake-spec.md` §2 L2 的接口悬空）。
+         * 数值（秒数）不在本行——本地按档位查表，模型只给语义档。
+         */
+        const val KIND_DIFFICULTY_TIER = "DIFFICULTY_TIER"
     }
 }
 
