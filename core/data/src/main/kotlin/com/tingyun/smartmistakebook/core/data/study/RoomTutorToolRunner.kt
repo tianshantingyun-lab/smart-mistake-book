@@ -4,8 +4,10 @@ import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
+import com.tingyun.smartmistakebook.core.domain.tutorSessionObjectiveRecord
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
@@ -54,6 +56,12 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
          */
         val tutorSessionId: String? = null,
         /**
+         * 当前教学轮次（`TutorRespondInput.cycleOrdinal`）。MASTERY_UPDATE 的
+         * 客观交叉核对只数**本轮**的检查题作答：`restartCycle` 会在同一题上开新一轮
+         * 重教，上一轮的答错正是重教的理由，永久计入会让门不可达。
+         */
+        val cycleOrdinal: Int = 1,
+        /**
          * Namespace for deterministic evidence ids (the model-task requestId).
          * Null keeps the legacy nanoTime fallback for direct/test callers;
          * the tool loop always supplies it so a retried MASTERY_UPDATE is
@@ -70,6 +78,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
     ) {
         init {
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
+            require(cycleOrdinal > 0) { "Tutor cycle ordinal must be positive" }
         }
     }
 
@@ -333,6 +342,13 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             // 证据锚条数（档2，spec 2026-09-06 §1；档1 prompt 规范同源）。
             hasObjectiveSupport = false,
             evidenceAnchorCount = MasteryWriteGate.evidenceAnchorCount(call.rationale),
+            // 反向的客观核对（研究 tutor-evidence-gate §3.2）：学生在本轮答错过
+            // 模型自己出的检查题时，模型再判 POSITIVE 就是口头声明压过行为证据。
+            // 这与"有没有佐证"是两个方向——此处查的是"有没有反驳"。门只对
+            // POSITIVE 消费它，故只在正向判断时才付这次回读的成本。
+            objectiveAnswersContradictPositive =
+                direction == TutorEvidenceDirection.POSITIVE &&
+                    objectiveAnswersContradictPositive(context),
             sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
             writesThisConversation = acceptedInConversation,
             writesThisLearnerInWindow = acceptedInWindow,
@@ -384,5 +400,25 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                 )
             }
         }
+    }
+
+    /**
+     * 本轮学生客观作答有没有推翻正向判断（研究 `tutor-evidence-gate-research.md` §3.2）。
+     *
+     * 只数**当前轮**：`restartCycle` 会在同一题上开新一轮重教，上一轮的答错正是
+     * 重教的理由；把历史轮次的答错永久计入，学生重教后答对也洗不掉，门就成了
+     * 不可达的死门（与档2 修的 0.18 死常数同类）。
+     *
+     * 无会话上下文（Lobby 派遣 / 测试直调）时不强加核对——没有会话就没有客观作答
+     * 可言。读失败会冒泡到 [run] 的 catch 变成 failed outcome，即写不进去，
+     * 不会因此误放行。
+     */
+    private suspend fun objectiveAnswersContradictPositive(context: Context): Boolean {
+        val sessionId = context.tutorSessionId?.takeIf(String::isNotBlank) ?: return false
+        val correctness = port.observeTutorTurnResponses(sessionId)
+            .first()
+            .filter { it.cycleOrdinal == context.cycleOrdinal }
+            .mapNotNull(TutorTurnResponseRecord::selectionWasCorrect)
+        return tutorSessionObjectiveRecord(correctness).contradictsPositiveClaim
     }
 }

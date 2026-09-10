@@ -1067,6 +1067,13 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val pseudoBindingCalls = mutableListOf<String>()
     var pseudoKnowledgeBindingEnabled = true
 
+    /**
+     * 讲题会话的检查题作答行。MASTERY_UPDATE 的客观交叉核对（研究
+     * tutor-evidence-gate §3.2）按 sessionId 回读它，故此处必须按会话过滤，
+     * 不能一律返回空——否则"学生答错了还判正向"这条路径在测试里不可达。
+     */
+    val tutorTurnResponses = mutableListOf<TutorTurnResponseRecord>()
+
     override suspend fun recordStudentModelPredictions(
         predictions: List<StudentModelPredictionRecord>,
     ) {
@@ -1414,7 +1421,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override fun observeTutorTurnResponses(
         sessionId: String,
-    ): Flow<List<TutorTurnResponseRecord>> = MutableStateFlow(emptyList())
+    ): Flow<List<TutorTurnResponseRecord>> = MutableStateFlow(
+        tutorTurnResponses.filter { it.sessionId == sessionId },
+    )
 
     override fun observeRecentTutorConversations(
         limit: Int,

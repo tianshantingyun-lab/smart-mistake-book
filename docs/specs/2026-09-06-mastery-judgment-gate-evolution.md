@@ -1,7 +1,7 @@
 # 掌握证据判断门控演进（档2/档3）：从"本地行为佐证"到"规范判断 + 延迟复核"
 
-状态：**档2 已实现（2026-09-10）**；档3 待办 spec（未实现，供后续排期）
-日期：2026-09-06（§1 落地与实现注记 2026-09-10）
+状态：**档2 已实现（2026-09-10）**；**§1.2 客观作答交叉核对已实现（2026-09-11）**；档3 待办 spec（未实现，供后续排期）
+日期：2026-09-06（§1 落地与实现注记 2026-09-10；§1.2 2026-09-11）
 关联：`docs/research/llm-mastery-judgment-regulation.md`（实证底稿）；`docs/research/tutor-evidence-gate-research.md`（写侧门控参数）；`docs/specs/2026-09-02-tool-loop-wiring-design.md` §3.5（T6 已落地形态）
 
 ## 0. 背景与已落地基线
@@ -48,7 +48,7 @@
 | data `RoomTutorToolRunner.masteryUpdate` | `hasBehavioralSupport = false` 硬编码 → `hasObjectiveSupport = false, evidenceAnchorCount = MasteryWriteGate.evidenceAnchorCount(call.rationale)`（拉通"模型 rationale → 证据锚 → 门"这条链） |
 | data `KnowledgeQuizFeedbackWriter` | `hasObjectiveSupport = verdict.hasBehavioralSupport, evidenceAnchorCount = 0`——客观作答通道本来就有一份本地可核查的证据，语义未变 |
 | data `OpenAiModelTaskAdapters`（档1 prompt） | 判断规范第 1/2 条补明"用引号逐字引用"这一机械形态（否则模型按旧措辞写非引号叙述会被误拒）；`toolPurposeDescription(MASTERY_UPDATE)` 同步 |
-| model `ModelPromptPolicyVersions` | `TUTOR_RESPOND` v7-mastery-judgment-norms → **v8-evidence-anchor-gate** |
+| model `ModelPromptPolicyVersions` | `TUTOR_RESPOND` v7-mastery-judgment-norms → **v8-evidence-anchor-gate**（§1.2 再升至 v9-objective-cross-check） |
 
 **有意不做**：单次权重未放开（`WEIGHT_MASTERED_POSITIVE` 仍 0.18）——§1 风险与边界已裁定"规范提升的是少触发冷却/配额，非单次大步"，本实现遵守。
 
@@ -58,6 +58,67 @@
 - `MasteryWriteGateTest` 15/15（`:core:domain:test`）——含"两路之一即可判定/两路都缺即拒""引号片段计数""空话不算锚"。
 - `RoomTutorToolRunnerTest` 5/5（`:core:data:testDebugUnitTest`，新增）——锁定 runner 侧接线：MASTERED + 2 条引号锚 → 落 0.18 档；无锚/仅"懂了" → `rejected:MASTERED_WITHOUT_EVIDENCE_ANCHOR` 且落观察行；CONFIDENT 与 NEGATIVE 不受该门影响。
 - `:core:data:testDebugUnitTest` 354/354、`:core:data:compileDebugAndroidTestKotlin` 通过。
+
+### §1.2 客观作答交叉核对（2026-09-11 实现，已实证）
+
+档2 解决了"判定**有没有**佐证"，但留下一个反向缺口：**判定与本地客观记录相矛盾时怎么办**。
+
+**问题**。学生在讲题会话里答错了模型自己出的检查题——这个对错由本地
+`TutorAssessmentItem.evaluateChoice` 判定（学生所选 id == 模型声明的 `correctChoiceId`），
+落 `tutor_turn_response.selection_was_correct`，是**行为证据**（不是模型自报）。但此前
+`RoomTutorToolRunner` 从不回读它，模型可以在"学生刚答错"的对话上下文里判 POSITIVE 并
+写进掌握度，口头声明就这样压过行为证据。研究 `tutor-evidence-gate-research.md` §3.2
+的结论恰好相反：**冲突时行为证据胜出，口头声明降级为观察记录**（Koriat & Bjork 2005；
+Nelson & Dunlosky）；§4 参数表也早已列出这一行（"交叉核对：MASTERED/POSITIVE 需同会话
+客观作答佐证，否则降级/拒"）。
+
+| 层 | 落点 |
+|---|---|
+| domain（新文件） | `TutorSessionObjectiveEvidence.kt`：`TutorSessionObjectiveRecord(answeredCount, correctCount)` + `contradictsPositiveClaim` 判定 + 纯函数 `tutorSessionObjectiveRecord(correctness)`。保证 `correctCount ∈ 0..answeredCount`，杜绝调用方各算各的 |
+| domain `MasteryWriteGate` | `GateInput` 增 `objectiveAnswersContradictPositive: Boolean`；新增 `RejectReason.OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE`。门的次序：语义矛盾 → **客观反驳** → 置信 → 锚定 → 证据锚 → 冷却 → 配额 → 注意力 |
+| data `RoomTutorToolRunner` | 新增 `objectiveAnswersContradictPositive(context)`：经 `observeTutorTurnResponses(sessionId)` 回读本会话作答行，按 `cycleOrdinal` 收窄到**本轮**，交域层纯函数判定；`Context` 增 `cycleOrdinal`（来自 `TutorRespondInput.cycleOrdinal`） |
+| data `RoomKnowledge…`→`RoomModelTaskRepository` | `toolContext` 传 `cycleOrdinal` |
+| data `KnowledgeQuizFeedbackWriter` | 恒 `false`——该通道的语义**就是**客观作答，答错时 `direction` 已是 NEGATIVE，不存在"作答否定判断"这一冲突 |
+| data `OpenAiModelTaskAdapters`（档1 prompt） | 增判断规范第 5 条：本会话学生答错过检查题时，本地会推翻 POSITIVE 判断，应判 NEGATIVE 或先重教 |
+| model `ModelPromptPolicyVersions` | `TUTOR_RESPOND` v8-evidence-anchor-gate → **v9-objective-cross-check** |
+
+**只挡 POSITIVE**：NEGATIVE 与"学生答错"方向一致，不是冲突；此时拒写会把真实的下滑信号
+一起丢掉。
+
+**只数本轮**：`restartCycle` 会在同一题上开新一轮重教，上一轮的答错正是重教的理由。把
+历史轮次的答错永久计入，学生重教后答对也洗不掉，门就成了不可达的死门——与档2 修的
+0.18 死常数同类。
+
+**门优先于证据锚**：被行为证据推翻的判断不能靠"rationale 里多引用两个片段"复活，否则
+证据锚路会变成绕过客观事实的后门（`theCrossCheckOutranksTheEvidenceAnchorRoute` 锁定）。
+
+**有意不做（记录理由，非遗漏）**：没有把学生的检查题作答**写成**掌握度证据（方向 2 的
+另一读法）。研究 §3.4 的独立性是硬前提——"同对话/同题变式/提示后作答不独立，不计入
+多次门槛"。单次讲题会话内围绕同一道题的多个检查题作答彼此不独立，逐条写 POSITIVE 会让
+掌握度质量被非独立证据灌水。客观作答**落成证据**的通道仍是知识点复习
+（`KnowledgeQuizFeedbackWriter`）：那是一次独立的、间隔开的复习活动，其作答满足独立性。
+本轮的落点是可本地判定、且**无法被刷**的那一半——证伪。
+
+**验收证据**：
+- `MasteryWriteGateTest` 19/19（`:core:domain:test`）——新增 4 例：被反驳的 POSITIVE 被拒、
+  证据锚路不能复活它、NEGATIVE 不受影响、无客观作答时不算冲突。
+- `TutorSessionObjectiveEvidenceTest` 4/4（`:core:domain:test`，新增）。
+- `RoomTutorToolRunnerTest` 11/11（`:core:data:testDebugUnitTest`）——新增 6 例：答错即拒且
+  落观察行、优先级高于证据锚、答对不拦、上一轮的错不拦本轮、NEGATIVE 不拦、无会话不核对。
+- **变异验证**：把门里的该判断临时置为 `false &&`，`:core:domain:test` 与
+  `:core:data:testDebugUnitTest` 各恰好 2 例转红（`positive is rejected when the session's
+  objective answers contradict it`、`a contradicted positive is rejected even when the
+  rationale carries enough anchors`；`aPositiveClaimIsRejectedWhenTheStudentJustMissedTheCheckQuestion`、
+  `theCrossCheckOutranksTheEvidenceAnchorRoute`），其余用例保持绿——证明新测试承重，
+  不是同义反复。
+- 回归：`:core:domain:test` 366/366、`:core:data:testDebugUnitTest` 366/366、
+  `:core:data:compileDebugAndroidTestKotlin` / `:feature:tutor:compileDebugKotlin` /
+  `:feature:review:compileDebugKotlin` 全部 BUILD SUCCESSFUL。
+
+**未验证**：本会话作答回读在真机 Room 上的整链端到端（需 instrumented/AVD）——单测用
+`FakeStudyDatabasePort` 覆盖了"读到的行 → 门"这一段，未覆盖"Room 的
+`observeTutorTurnResponses` 在同一事务视图下确实返回刚落的行"。**仍未实现**：档3
+（延迟复核）——机械校验查不出模型是否编造引用，这一边界未变。
 
 ## 2. 档3：MASTERED 永不单次判定——延迟复核通道
 

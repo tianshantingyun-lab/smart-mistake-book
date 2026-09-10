@@ -162,6 +162,11 @@ object MasteryWriteGate {
         ATTENTION_BELOW_FLOOR,
         /** contradictory semantics (POSITIVE + STRUGGLING). */
         CONTRADICTORY_SEMANTICS,
+        /**
+         * 会话内学生刚答错过检查题，模型仍判 POSITIVE——行为证据推翻口头声明
+         * （研究 tutor-evidence-gate §3.2）。
+         */
+        OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE,
     }
 
     data class GateInput(
@@ -181,6 +186,17 @@ object MasteryWriteGate {
          * 通道通往 MASTERED 的唯一可核查路径；客观作答通道恒 0。
          */
         val evidenceAnchorCount: Int,
+        /**
+         * 会话内学生的**客观作答**是否推翻了这条正向判断（
+         * [TutorSessionObjectiveRecord.contradictsPositiveClaim]）。
+         *
+         * 与 [hasObjectiveSupport] 是两个不同的轴：那个是"本地有正确作答可佐证"
+         * （按知识点锚定，只有客观作答通道给得出），这个是"本地有错误作答在
+         * 反驳"（按会话成立，讲题通道才拿得到）。学生答错自己的检查题，
+         * 模型却宣称懂了——研究 §3.2 要求冲突时行为证据胜出，此判断降级为
+         * 观察记录（被拒 ≠ 删除，见 runner 的 rejected 行）。
+         */
+        val objectiveAnswersContradictPositive: Boolean,
         /** Age of the learner's most recent accepted write to the SAME KC (across all conversations). */
         val sameKcLastWriteAgoMillis: Long?,
         /** Accepted writes in the current conversation. */
@@ -218,6 +234,14 @@ object MasteryWriteGate {
             input.understanding == TutorUnderstandingTier.STRUGGLING
         ) {
             return GateResult.Rejected(RejectReason.CONTRADICTORY_SEMANTICS)
+        }
+        if (input.direction == TutorEvidenceDirection.POSITIVE &&
+            input.objectiveAnswersContradictPositive
+        ) {
+            // 客观作答是本地的行为证据，模型的正向判断是口头声明。研究 §3.2：
+            // 冲突时行为证据胜出，口头声明降级为观察记录。这里只挡 POSITIVE——
+            // NEGATIVE 与"学生答错"方向一致，不构成冲突。
+            return GateResult.Rejected(RejectReason.OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE)
         }
         if (input.evidenceConfidence < EVIDENCE_CONFIDENCE_THRESHOLD) {
             return GateResult.Rejected(RejectReason.EVIDENCE_BELOW_CONFIDENCE)

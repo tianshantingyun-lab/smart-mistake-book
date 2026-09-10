@@ -682,7 +682,10 @@ class RoomModelTaskRepository internal constructor(
             // 裸 sessionId：NOTEBOOK_WRITE 用它 resolve 对应的 capture draft。
             // sessionId（"tutor-session-..."）≠ draftId（"draft-..."），写路径需
             // readTutorSession(sessionId) 拿 draftId 再 readProblemDraft(draftId)。
+            // MASTERY_UPDATE 的客观交叉核对也用它回读本轮检查题作答。
             tutorSessionId = (input as? TutorRespondInput)?.sessionId,
+            // 客观交叉核对只数当前轮：新一轮重教时上一轮的答错不该永久作废正向判断。
+            cycleOrdinal = (input as? TutorRespondInput)?.cycleOrdinal ?: 1,
             // 幂等命名空间：同一 model-task request 的重试/多轮共享同一 evidenceId 命名空间，
             // 让 MASTERY_UPDATE 的 evidence_id 确定性派生（重试不重复落库）。
             evidenceIdNamespace = requestId,

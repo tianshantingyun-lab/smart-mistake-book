@@ -20,6 +20,30 @@
 
 **研究 §5 的原始建议把 `REPEATED_MISTAKE` / `KC_MASTERY_DROP` 也纳入该门，本轮经复核后收窄到只对 `EXAM_PRIORITY` 生效**：`KC_MASTERY_DROP` 是 spec §5 的**用户规则**（"绑定知识点出现负向更新时，所有绑定题目的调度权重上升——连续传导，不是机械闸门"，`KnowledgeMasteryDropPropagationTest` 锁定），它携带的是题目自身 R 无法表达的新负向证据；`REPEATED_MISTAKE` 来自"同一题被重复拍入"的持久信号（`captureOccurrenceCount`），同理。把这两者按 R 关掉会让"知识点刚退化/反复出错但该题本身还新鲜"的题不再被提前复习——属产品回退。`CLOCK_ANOMALY` / `CALIBRATION_CHECK` 保持无条件（完整性检查）。
 
+## 1b. 已实现（2026-09-10 / 09-11 续轮）
+
+审计 `scratch/AUDIT-ALGORITHM-2026-09-09.md` §3.6 指出的"产品方向与实现相反"一条，
+本轮接通。三条改动的共同点：**模型只给语义判断，一切数值与判定门槛留在本地**。
+
+| # | 改动 | 依据 | 落点 | 验证 |
+|---|---|---|---|---|
+| 8 | MASTERED 门从"本地行为佐证"改为"模型逐字证据锚"（档2） | 本地在讲题通道拿不到可靠语义佐证（研究 `llm-mastery-judgment-regulation.md` §1）；判 MASTERED 必拒使 `WEIGHT_MASTERED_POSITIVE = 0.18` 成为死常数 | `MasteryWriteGate`（`REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED = 2` ＋ `evidenceAnchorCount(rationale)`）；`RoomTutorToolRunner` 填 `evidenceAnchorCount`；档1 prompt 规范补"用引号逐字引用"的机械形态 | `MasteryWriteGateTest` 15/15、`RoomTutorToolRunnerTest` 5/5；spec `2026-09-06-…` §1.1 |
+| 9 | 模型判的难度档喂入新题冷启动估时（方向 1） | `TutorDifficultyTier` 在协议层解析后全库无消费方——新题没有记忆状态，占位难度使每道新题都按中档 180s 估时，当日引入配额按错误时长计算 | `IntakeDurationBaseline`（domain 纯策略，档→秒）；`ProblemOrganizationPlan.difficultyTier`；`KIND_DIFFICULTY_TIER` 咨询行；`StudyReviewPlannerService` 读取 | `IntakeDurationBaselineTest` 3/3、`OpenAiProblemOrganizationProtocolTest` 6/6、`RoomMistakeOrganizationRepositoryTest` 17/17 |
+| 10 | 客观作答交叉核对：学生答错检查题时拒写 POSITIVE（§1.2） | 研究 `tutor-evidence-gate-research.md` §3.2——冲突时行为证据胜出，口头声明降级为观察记录（Koriat & Bjork 2005；Nelson & Dunlosky）；§4 参数表已列此门 | `TutorSessionObjectiveEvidence`（domain 纯策略）；`MasteryWriteGate.GateInput.objectiveAnswersContradictPositive` ＋ 新拒因；`RoomTutorToolRunner` 回读本会话本轮作答；prompt 规范第 5 条 | `TutorSessionObjectiveEvidenceTest` 4/4、`MasteryWriteGateTest` 19/19、`RoomTutorToolRunnerTest` 11/11；变异验证见 spec §1.2 |
+| 11 | chat 证据写 `lastEvidenceAt` / `lastEvidenceDirection`；`PROJECTOR` v5→v6 | 审计 `AUDIT-ALGORITHM-2026-09-09` §3.5：`projectChatEvidence` 从不写这两个字段，而它们默认只从 attempt 通道的 `independentCorrectObservations` 推导 | `LearningProjector.projectChatEvidence`；`LearningCoreVersions.PROJECTOR` / 三个 composite 升 v6（触发已有库全量重放，否则修复对已投影事件静默无效） | `LearningProjectorTest` 11/11（新增 4 例，含 replay 等价性） |
+
+**有意不做（记录理由）**：改动 10 没有把检查题作答**写成**掌握度证据。研究
+`tutor-evidence-gate-research.md` §3.4 的独立性是硬前提——"同对话/同题变式/提示后作答
+不独立，不计入多次门槛"。单次讲题会话内围绕同一道题的多个检查题作答彼此不相关度不足，
+逐条写 POSITIVE 会让掌握度被非独立证据灌水。客观作答**落成证据**的通道仍是知识点复习
+（`KnowledgeQuizFeedbackWriter`）：那是一次独立的、间隔开的复习活动，满足独立性前提。
+
+**改动 11 修掉的两个后果**（§3.5 原文）：
+- 后果 A：只经模型判断或知识点复习获得证据的 KC，`lastEvidenceAt` 恒为 null → `ReviewPlanner`
+  判 stale → 该 KC **永远留在复习队列**，无论答对多少次。
+- 后果 B：`kcMasteryDropPressure` 要求 `lastEvidenceDirection == NEGATIVE` 才传导 →
+  spec §5 的"KC→错题权重联动律"在模型通道上完全失效（模型写入的负向证据不产生任何传导压力）。
+
 ## 2. 复核后**不成立**的条目
 
 - **研究 §3"答对统一权重 0.15，未区分是否用提示"**：前提不成立。知识点复习通道
@@ -49,14 +73,34 @@ leech 阈值/处理策略、掌握阈值具体数值、w15/w16 的受控实验�
 retention 最优值、"80% 掌握标准"的一手出处——均无一手证据，禁止在代码注释或产品文案里
 写成"科学研究表明"。
 
----
+## 4b. 审计余项状态（逐条核实于 2026-09-11）
+
+审计 `scratch/AUDIT-ALGORITHM-2026-09-09.md` §3 共 11 条。**本轮逐条回读源码核实**后的状态
+（不采信"应该已修"的印象）：
+
+| 条 | 状态 | 核实落点 |
+|---|---|---|
+| §3.1 提示后答对在排程侧等同独立答对 | **已修** | `FsrsScheduleMath.schedulingRatingFor`：`CORRECT_AFTER_HINT` / `CORRECT_ON_RETRY`(weight≤0.25) → `HARD`。注意 `reportedRatingFor` 里 `CORRECT_AFTER_HINT` 仍 → `GOOD`，那是**只用于 review_log 记账**的路径，不影响调度 |
+| §3.2 "很费劲"被当成"正常" | **已修** | `SELF_REPORTED_RECALL` 按 weight 分档（0.7 → `HARD`） |
+| §3.3 `MasterySmoothing` 年龄项抵消 | **已修** | 见 `known-defects.md`（544b575） |
+| §3.4 知识点队列无遗忘曲线 | **已修** | 由绑定题目的预测 R 取最小聚合（本文件改动 3） |
+| §3.5 模型/quiz 证据不刷新排程时钟 | **本轮修复** | 本文件改动 11 |
+| §3.6 知识点复习答对无法单独达成 MASTERED | **不改，且与 §1.2 同源** | `projectChatEvidence` 调 `clearlyMastered(…, emptyList(), …)` —— chat 证据不产生 `IndependentCorrectObservation`，故 breadth 永远不满足。这不是遗漏：研究 §3.4 的独立性硬前提使然，与改动 10"有意不做"是同一条理由 |
+| §3.7 日历日 delta_t 与两套官方实现都不同 | **待裁定，非待办** | 本地日历日是 spec §2.1/§2.15 与行为映射 B8（跨午夜）的显式语义；改成 wall-clock 会推翻那两条，属产品语义决定。裁定前不得单方面改动 |
+| §3.8 排程永远拿不到 EASY | **已修** | w16 钉为 1.0 且永不参与拟合（本文件改动 4） |
+| §3.9 leech 只在 V2 生效 | **部分：V1 仍未排除** | `ReviewPlanner`（V1）无 `candidate.leech` 检查，只有 `ReviewPlannerV2` 有。V1 是 kill-switch 回退路径，默认不走；改动它需先决定 V1 的存废 |
+| §3.10 早复习通道可能压缩间隔 | **待裁定，非待办** | DASH/Rocket 式产品取舍；spec §5 明确要求"非机械闸门"。`EXAM_PRIORITY` 已收窄（本文件改动 7） |
+| §3.11 其余偏差 | **记录在案** | `initialStability` 上界 100、`round` 半值方向、优先分权重为工程先验（标 UNVERIFIED）、`MasteryEvidencePolicy` 提示分支因 `persistedAssistance` 恒空而休眠 |
 
 ## 5. 复核方式（可重跑）
 
 ```
-./gradlew :core:domain:testDebugUnitTest :core:data:testDebugUnitTest --rerun-tasks
+./gradlew :core:domain:test :core:data:testDebugUnitTest --rerun-tasks
 ```
 
 覆盖本文件所有"已实现"项的测试类：
 `ReviewPlannerV2Test`、`KnowledgeReviewQueueTest`、`RoomBackedReviewRatingTest`、
-`FsrsScheduleMathTest`、`ModelTaskContractRegistryTest`。
+`FsrsScheduleMathTest`、`ModelTaskContractRegistryTest`、`MasteryWriteGateTest`、
+`TutorSessionObjectiveEvidenceTest`、`RoomTutorToolRunnerTest`、`IntakeDurationBaselineTest`、
+`OpenAiProblemOrganizationProtocolTest`、`RoomMistakeOrganizationRepositoryTest`、
+`LearningProjectorTest`。

@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
@@ -145,5 +146,132 @@ class RoomTutorToolRunnerTest {
 
         assertTrue("expected accepted outcome but was $outcome", outcome.ok)
         assertNull(port.recordedChatEvidence.single().rejected_reason)
+    }
+
+    // ---- 客观作答交叉核对（研究 tutor-evidence-gate §3.2）----
+
+    @Test
+    fun aPositiveClaimIsRejectedWhenTheStudentJustMissedTheCheckQuestion() = runBlocking {
+        // 消灭的失败：模型对着学生刚答错的检查题判 POSITIVE，口头声明压过
+        // 本地行为证据写进掌握度——runner 此前恒传 false，从不做这个核对。
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = false)
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(rationale = "学生独立完成了这一步。", understanding = TutorUnderstandingTier.CONFIDENT),
+            sessionContext(),
+        )
+
+        assertEquals(false, outcome.ok)
+        assertEquals("rejected:OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE", outcome.errorKind)
+        // 被拒 ≠ 删除：降级为观察记录，保留拒因与时刻。
+        val rejected = port.recordedChatEvidence.single()
+        assertEquals(0.0, rejected.weight, 1e-9)
+        assertEquals("OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE", rejected.rejected_reason)
+    }
+
+    @Test
+    fun theCrossCheckOutranksTheEvidenceAnchorRoute() = runBlocking {
+        // 锁死优先级：模型不能靠多引用两个片段绕开学生的错误作答。
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = false)
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把两边都乘以了2\"，随后独立写出\"因为斜率相等所以平行\"。",
+                understanding = TutorUnderstandingTier.MASTERED,
+            ),
+            sessionContext(),
+        )
+
+        assertEquals("rejected:OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE", outcome.errorKind)
+    }
+
+    @Test
+    fun aCorrectCheckAnswerDoesNotBlockAPositiveClaim() = runBlocking {
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = true)
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(rationale = "学生独立完成了这一步。", understanding = TutorUnderstandingTier.CONFIDENT),
+            sessionContext(),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+    }
+
+    @Test
+    fun lastCyclesMistakeDoesNotBlockThisCyclesPositiveClaim() = runBlocking {
+        // 上一轮的答错正是重教的理由。永久计入会让重教后答对也洗不掉，
+        // 门成为不可达的死门（与档2 修的 0.18 死常数同类）。
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = false)
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 2, selectionWasCorrect = true)
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(rationale = "学生独立完成了这一步。", understanding = TutorUnderstandingTier.CONFIDENT),
+            sessionContext(cycleOrdinal = 2),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+    }
+
+    @Test
+    fun aNegativeClaimIsNotBlockedByTheStudentsWrongAnswer() = runBlocking {
+        // 方向一致不构成冲突：此时拒写会把真实的下滑信号一起丢掉。
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = false)
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生把符号搞反了。",
+                understanding = TutorUnderstandingTier.STRUGGLING,
+                direction = TutorEvidenceDirection.NEGATIVE,
+            ),
+            sessionContext(),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+    }
+
+    @Test
+    fun withoutASessionThereIsNothingToCrossCheck() = runBlocking {
+        // 无会话上下文（Lobby 派遣）时没有客观作答可言，不引入新拒因。
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = false)
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(rationale = "学生独立完成了这一步。", understanding = TutorUnderstandingTier.CONFIDENT),
+            context(),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+    }
+
+    private fun sessionContext(cycleOrdinal: Int = 1) = context().copy(
+        tutorSessionId = TUTOR_SESSION_ID,
+        cycleOrdinal = cycleOrdinal,
+    )
+
+    private fun turnResponse(cycleOrdinal: Int, selectionWasCorrect: Boolean) = TutorTurnResponseRecord(
+        sessionId = TUTOR_SESSION_ID,
+        questionDocumentId = "question-1",
+        revisionNumber = 1,
+        cycleOrdinal = cycleOrdinal,
+        turnOrdinal = 1,
+        diagnosticStemMarkdown = "下列哪个选项正确？",
+        selectedChoiceId = "choice-a",
+        selectedChoiceMarkdown = "选项 A",
+        selectionWasCorrect = selectionWasCorrect,
+        feedbackMarkdown = "解析。",
+        requestedMove = null,
+        solutionRevealed = false,
+        choiceSubmittedAtEpochMillis = 2_000,
+        submittedAtEpochMillis = 2_000,
+        updatedAtEpochMillis = 2_000,
+    )
+
+    private companion object {
+        const val TUTOR_SESSION_ID = "tutor-session-1"
     }
 }

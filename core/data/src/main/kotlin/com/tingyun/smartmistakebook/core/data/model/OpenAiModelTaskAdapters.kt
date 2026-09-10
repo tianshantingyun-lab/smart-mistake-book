@@ -473,6 +473,8 @@ internal object OpenAiModelTaskAdapters {
                     append("\n4. 档位按可观察行为判：CONFIDENT 需学生无提示独立做对过（能迁移）；" +
                         "MASTERED 需更进一步——学生独立做对且能用自己的话解释原理、并经间隔回顾仍能答对，" +
                         "仅一次答对或仅\"跟着做对\"不足以判 MASTERED。")
+                    append("\n5. 本会话中学生答错过你出的检查题时，本地的客观对错记录会推翻你的 POSITIVE 判断" +
+                        "（行为证据优先于口头声明）——此时应判 NEGATIVE，或先重教再谈掌握，不要申请 POSITIVE。")
                     append("\n调用形如 {\"tool\":\"MASTERY_UPDATE\",\"terms\":[\"<知识点id>\"]," +
                         "\"rationale\":\"学生说\\\"<逐字原话>\\\"，随后\\\"<逐字原话>\\\"\"," +
                         "\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\",\"confidence\":0.8}。")

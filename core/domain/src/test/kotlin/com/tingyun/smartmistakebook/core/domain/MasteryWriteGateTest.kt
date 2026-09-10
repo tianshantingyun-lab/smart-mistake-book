@@ -18,6 +18,7 @@ class MasteryWriteGateTest {
         knowledgeNodeIsAnchored: Boolean = true,
         hasObjectiveSupport: Boolean = false,
         evidenceAnchorCount: Int = ENOUGH_ANCHORS,
+        objectiveAnswersContradictPositive: Boolean = false,
         sameKcLastWriteAgoMillis: Long? = null,
         writesThisConversation: Int = 0,
         writesThisLearnerInWindow: Int = 0,
@@ -30,6 +31,7 @@ class MasteryWriteGateTest {
         knowledgeNodeIsAnchored = knowledgeNodeIsAnchored,
         hasObjectiveSupport = hasObjectiveSupport,
         evidenceAnchorCount = evidenceAnchorCount,
+        objectiveAnswersContradictPositive = objectiveAnswersContradictPositive,
         sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
         writesThisConversation = writesThisConversation,
         writesThisLearnerInWindow = writesThisLearnerInWindow,
@@ -233,6 +235,69 @@ class MasteryWriteGateTest {
             acceptedInput(direction = TutorEvidenceDirection.NEGATIVE, understanding = TutorUnderstandingTier.STRUGGLING),
         )
         assertEquals(MasteryWriteGate.negativeWeight(), weight, 1e-9)
+    }
+
+    @Test
+    fun `positive is rejected when the session's objective answers contradict it`() {
+        // 研究 §3.2：冲突时行为证据胜出。学生答错了自己面前的检查题，模型仍判
+        // 正向 → 该判断降级为观察记录（被拒 ≠ 删除，落 rejected 行）。
+        val result = MasteryWriteGate.evaluate(
+            acceptedInput(
+                direction = TutorEvidenceDirection.POSITIVE,
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                objectiveAnswersContradictPositive = true,
+            ),
+        )
+        assertEquals(
+            GateResult.Rejected(RejectReason.OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE),
+            result,
+        )
+    }
+
+    @Test
+    fun `a contradicted positive is rejected even when the rationale carries enough anchors`() {
+        // 刻意锁死优先级：证据锚路不能把被行为证据推翻的判断再放进来。
+        // 否则模型只要在 rationale 里多引用两个片段就能压过学生答错的事实。
+        val result = MasteryWriteGate.evaluate(
+            acceptedInput(
+                understanding = TutorUnderstandingTier.MASTERED,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = ENOUGH_ANCHORS,
+                objectiveAnswersContradictPositive = true,
+            ),
+        )
+        assertEquals(
+            GateResult.Rejected(RejectReason.OBJECTIVE_ANSWER_CONTRADICTS_POSITIVE),
+            result,
+        )
+    }
+
+    @Test
+    fun `negative evidence is unaffected by a contradicted positive claim`() {
+        // 学生答错与"负向判断"方向一致，不构成冲突：此时拒写会把真实的下滑
+        // 信号一起丢掉。
+        val weight = assertAccepted(
+            acceptedInput(
+                direction = TutorEvidenceDirection.NEGATIVE,
+                understanding = TutorUnderstandingTier.STRUGGLING,
+                objectiveAnswersContradictPositive = true,
+            ),
+        )
+        assertEquals(MasteryWriteGate.negativeWeight(), weight, 1e-9)
+    }
+
+    @Test
+    fun `a session with no objective answers cannot contradict a positive claim`() {
+        // 佐证缺位 ≠ 冲突：学生没答过检查题时，正向路仍然按原有门槛走
+        // （MASTERED 要证据锚，CONFIDENT 不要）。
+        val weight = assertAccepted(
+            acceptedInput(
+                direction = TutorEvidenceDirection.POSITIVE,
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                objectiveAnswersContradictPositive = false,
+            ),
+        )
+        assertEquals(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE, weight, 1e-9)
     }
 
     @Test

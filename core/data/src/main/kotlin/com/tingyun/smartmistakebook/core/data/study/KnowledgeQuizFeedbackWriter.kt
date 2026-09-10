@@ -49,6 +49,9 @@ internal class KnowledgeQuizFeedbackWriter(
             hasObjectiveSupport = verdict.hasBehavioralSupport,
             // 客观作答通道本来就有一份本地可核查的证据（答对），无需模型引用锚。
             evidenceAnchorCount = 0,
+            // 本通道的语义**就是**学生的客观作答，不存在"作答否定判断"这一冲突：
+            // 答错时 direction 已经是 NEGATIVE，与作答方向一致。
+            objectiveAnswersContradictPositive = false,
             sameKcLastWriteAgoMillis = sameKcLastWriteAgoMillis,
             writesThisConversation = acceptedInConversation,
             writesThisLearnerInWindow = acceptedInWindow,
