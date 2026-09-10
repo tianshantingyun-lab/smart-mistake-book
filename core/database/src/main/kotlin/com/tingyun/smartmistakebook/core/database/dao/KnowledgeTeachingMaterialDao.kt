@@ -11,6 +11,15 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMateri
 
 @Dao
 internal interface KnowledgeTeachingMaterialDao {
+    /**
+     * 按（绑定角色 → 重教类型优先级 → title → material_id）取该科目下命中指定知识点的讲解材料。
+     *
+     * **类型 CASE 必须与 `TutorTeachingReferenceSelector.reTeachPriority` 逐值一致。**
+     * 这里的顺序决定哪些行进入 `LIMIT`（因而进入调用方的字符预算），所以它不只是"提示"；
+     * 而可测的权威表达在那个纯函数里，两处若漂移会让"预算先给了哪类材料"重新变成未定义行为。
+     * 语义依据（misconception-guide / worked-example 优先、complete-solution 最后）见
+     * `docs/research/leech-remediation-research.md` R5/R6。
+     */
     @Query(
         """
         SELECT material.*
@@ -34,13 +43,13 @@ internal interface KnowledgeTeachingMaterialDao {
         ORDER BY
           matched.best_role_rank ASC,
           CASE material.material_type
-            WHEN 'METHOD_MODEL' THEN 0
-            WHEN 'CONCEPT_EXPLANATION' THEN 1
-            WHEN 'DERIVATION' THEN 2
-            WHEN 'REPRESENTATION_GUIDE' THEN 3
-            WHEN 'WORKED_EXAMPLE' THEN 4
-            WHEN 'COMPLETE_SOLUTION' THEN 5
-            WHEN 'MISCONCEPTION_GUIDE' THEN 6
+            WHEN 'MISCONCEPTION_GUIDE' THEN 0
+            WHEN 'WORKED_EXAMPLE' THEN 1
+            WHEN 'METHOD_MODEL' THEN 2
+            WHEN 'DERIVATION' THEN 3
+            WHEN 'CONCEPT_EXPLANATION' THEN 4
+            WHEN 'REPRESENTATION_GUIDE' THEN 5
+            WHEN 'COMPLETE_SOLUTION' THEN 6
             ELSE 7
           END,
           material.title ASC,
