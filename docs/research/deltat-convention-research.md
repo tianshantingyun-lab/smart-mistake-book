@@ -300,3 +300,40 @@ assert_eq!(elap(crt, now, mdt_offset, mdt_offset, 4), 507);
 - `core/database/src/main/kotlin/com/tingyun/smartmistakebook/core/database/CalendarDayMigration.kt`：L8、L22、L26（v42 迁移 UTC 近似回填）
 - `core/database/src/main/kotlin/com/tingyun/smartmistakebook/core/database/entity/LearningEntities.kt`：L705-706（last_reviewed_epoch_day 列）
 - `docs/specs/mastery-scheduling-spec.md`：L25-27（§2.1，含未同步的 UTC 表述）、L108-114（§2.15 同日复习规则）、L307（2026-08-30 修复轮记录的本地日历日口径）
+
+---
+
+## 12. 修复落地记录（2026-09-11，提交 `4cfc607`）
+
+本节记录 §8/§9 所述缺陷的**最终落地形态**，以免读者把 §8.1/§8.2 的现在时表述当成当前代码状态（见 §12.4）。
+
+### 12.1 实际采用：方案 B 的"结构性一半"，不含 rollover 锚点重构
+
+§9 推荐方案 B（改存时间戳 + `floor((next_rollover − last_review)/86400)`）。落地时只取了它**消除失败类别**的那一半：
+
+- `LearningProjector.projectMemory` 不再读 `previous.lastReviewedEpochDay`，改为**由上一复习的时间戳现算本地日**：`localEpochDayOf(previous.lastReviewedAtEpochMillis, eventUtcOffsetMinutes)`；
+- 时间戳与 UTC 偏移**都取自当前事件自身**（事件溯源的确定性输入），故重放读同一事件逐位相同，不依赖任何写入方是否记得盖章；
+- `TutorAnswerExposureOutcome` **未加** `studyDay` 字段（即未采用方案 A 的领域模型改动）。
+
+**未做 rollover 锚点重构**：`rollover = 0` 时 `floor((next_rollover − last_review)/86400)` 与本地日历日差**数学恒等**（§5 已证）。因此换锚点不改变任何数值，只增加一次跨 model/domain/data 的重构和一版 Room 迁移；其收益是"与 Anki 一手实现形式同构"，属可读性而非正确性。按项目「新增必先指认它消灭哪个具体失败」的门（全局规则 12.2），这一项**没有可指认的失败**，故不做，记为 §12.3 的可选后续。
+
+### 12.2 方案 A 被**可证地**排除，而非权衡取舍
+
+方案 A 要给 `TutorAnswerExposureOutcome` 补 `studyDay`。核实 `ProjectionTransactionDao.kt:1103-1114` 后排除：该事件行的**规范指纹（SHA-256）随行存储，并在读取时重算比对**做冲突检测。SQL 无法重算 SHA-256，故给该事件类型加字段会让**所有存量曝光行在升级后读不出来**（`readTutorAnswerExposure` 返回 null）。这不是"代价较大"，是"既有数据不可读"。
+
+### 12.3 仍未做（有意）与残留
+
+- **`ProblemMemoryState.lastReviewedEpochDay` 列未删**。它现在对 delta_t **完全惰性**（无读取方），KDoc 已降级为"审计/诊断用途，不要据此计算跨日"。彻底删列需一版迁移 + 仪器化测试，超出本轮可验证范围。
+- **曝光路径仍按默认值写该字段**（`millis / 86_400_000`，UTC 日序）。因已无读取方，当前不构成缺陷；但若将来有人重新读它，本类缺陷会复活——故保留 KDoc 警告，这是"惰性但仍在的陷阱"。
+- **rollover 锚点重构**（§12.1）未做。
+
+### 12.4 §8 / §9 的时态说明
+
+§8.1 表中 `elapsedCalendarDays = eventEpochDay − previous.lastReviewedEpochDay`（`LearningProjector.kt:845-847`）与 §8.2 全节的现在时描述，**描述的是修复前的代码**。修复后该表达式已不存在；`lastReviewedEpochDay` 的默认值仍在（`LearningState.kt:502`）但不再进入 delta_t 计算。§8.3 中"口径 A 下缺陷必然存在"对**修复前**成立；修复后 A 与 B 数值等价，且两者都不再带该缺陷。
+
+### 12.5 验证
+
+- `:core:domain:test` 372/372、`:core:data:testDebugUnitTest` 370/370、`:feature:tutor:testDebugUnitTest` 89/89，全绿
+- 新增 2 例回归：`LearningProjectorTest.a review after an answer exposure stays on its own learner-local day`、`a review on the local day after an exposure is still a cross day`
+- **变异验证**：把 delta_t 推导改回常量后第 2 例失败（`expected:<2> but was:<1>`），确认测试确在测该行为
+- 同轮修掉的文档债：spec §2.1 的"UTC 日历日差分"表述、spec §2.15 未溯源的 log-loss 数字标注

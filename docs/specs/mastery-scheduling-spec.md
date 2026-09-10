@@ -296,7 +296,7 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **难度域迁移（§3.2）**：v36 一次性 `d→1+9d`；模型/计划器/时长模型输入全部迁到 1..10（difficultyBand 阈值 4/7；HLR 影子特征内归一化 /10）。
 - **A3**：`StudyChoiceSubmission.hintCount` → `AttemptWriteCommand.hintCount/revealedBeforeAnswer` → attempt_event 列 → `resolveOutcome(hintCount)`。2026-09-09：复习路径此前在 `submitReviewChoice` 里漏传该值（链路虽就绪但恒为 0），已修并由 `RoomBackedStudyExperienceRepositoryTest.hint count reaches the prediction audit outcome` 锁定；hint UI 仍未上线，故生产值仍为 0，但通道本身已端到端验证。
 - **考试模式（§2.17）**：考试日历存 DataStore；考前 14 天 ramp 进 `examPriority`（选题侧提前纳入，早复习理由已存在）；r*_exam 不进投影公式——投影必须事件确定性可重放，日历属可变外部状态，此为对 §2.17 的有意收窄。
-- **leech（§2.16）**：`lapseCount≥6 && consecutiveCrossDayAgain≥2` 派生态；planner 剔除常规排期；难度冻结；恢复=跨日成功自动清零（替代"手动恢复"，避免新增账本事件类型，重放安全）。
+- **leech（§2.16）**：`lapseCount≥6 && consecutiveCrossDayAgain≥2` 派生态；planner 降权而非剔除（×0.15 重罚；硬排除会让「跨日成功清零」这条唯一恢复路径不可达，自锁——与 §2.16 一致，见 `ReviewPlannerV2.LEECH_RANK_FACTOR`）；难度冻结；恢复=跨日成功自动清零（替代"手动恢复"，避免新增账本事件类型，重放安全）。
 - **反振荡（§2.18）**：同 KC 每会话 ≤2（硬配额， starving 安全）+ 最弱项占比 >25% 罚分；**EMA 平滑（已闭合）**：`MasterySmoothing.smoothedMasteryScore` 以 7 天半衰衰减独立答对观测、按校准支持仍在期占比产出 EMA，与保守分 50/50 混合后作为 weakness 输入（双计划器接线），单日好坏不再直接冲击队列；先修门槛 τ_ready 仍读原始保守分（保守口径不被平滑放大）。
 - **毕业（§2.10）**：跨日成功 3 连 + I(r*,S)≥90 天 → next=I(0.8,S)，投影内确定性实现。
 - **C1（§2.13 修订版）**：全 KC 各记完整证据（投影不再乘 attribution.weight；binding 语义降级为排序/展示）。

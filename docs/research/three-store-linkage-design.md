@@ -117,7 +117,8 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 ### 3.6 重教通道（修 L6/L7）
 
 - 触发：① 前置 gap（3.3）；② error_type=concept（错因分类落地后）；③ 用户在详情页主动点「重新学这个知识点」。
-- 检索：`knowledge_teaching_material` join `material_node_binding` where knowledge_node_id ∈ {目标 KC ∪ 其前置}，role 权重排序，取 1-2 份注入会话（现有 TutorTeachingReferenceRepository 已具备注入机制）。
+- 检索：`knowledge_teaching_material` join `material_node_binding`，检索**调用方传入的** `knowledgeNodeIds`，按（binding 角色，材料类型优先级，materialId）排序，取 1-2 份注入会话（现有 TutorTeachingReferenceRepository 已具备注入机制）。
+- **本条的三处 2026-09-11 核实修正**（原表述与该实现不符）：① `material_node_binding.role` 是**角色标签**（`KnowledgeMaterialNodeRole`：PRIMARY / SUPPORTING / PREREQUISITE），**不存在数值权重**——原文"role 权重排序"有误，排序用的是角色的**序**（PRIMARY → SUPPORTING → 其他），不是加权；② "∪ 其前置"**未实现**：`referencesFor` 只检索调用方给的节点集合，前置节点是否并入由调用方决定（§2.9 前置补救尚未接线）；③ 材料类型优先级的权威表达在 `TutorTeachingReferenceSelector.reTeachPriority`（依据 Metcalfe 2017/2025，见 `docs/research/leech-remediation-research.md` R5/R6），DAO 的 `ORDER BY` CASE 必须与它逐值一致，否则"预算先给了哪类材料"变回未定义行为。
 - 前置条件：answer_spec/error_type 两根柱子落地前，此通道只能由 ①③ 触发——不阻塞，按阶段 C 渐进。
 
 ---
