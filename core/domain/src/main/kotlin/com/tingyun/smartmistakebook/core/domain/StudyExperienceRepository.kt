@@ -531,6 +531,19 @@ interface StudyExperienceRepository : AutoCloseable {
      */
     suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? = null
 
+    /**
+     * 开场重教材料（spec §2.16）：该题已是 leech 卡时，返回进入复习会话时**先于作答**
+     * 呈现的讲解材料；否则返回 null。
+     *
+     * 与 [teachingArtifact] 的区别：那一道返回题目的教学工件（题目+选项），这一道返回的是
+     * **针对该题所绑定知识点的讲解材料**，用于"先重教、再练"的顺序。它只读、不写事件，
+     * 因此重复呈现是安全的——这一点是刻意的：若改用 `revealAnswer`（会记一条"看了答案"
+     * 事件）来充当重教开场，学员随后的独立作答会被污染成"看答案后作答"。
+     *
+     * 默认 null = 该实现不提供重教。与"无材料"是同一结果，调用方无需区分。
+     */
+    suspend fun reTeachOpening(practiceUnitId: String): ReTeachOpening? = null
+
     suspend fun revealAnswer(request: StudyAnswerRevealRequest): StudyAnswerRevealResult
 
     suspend fun startOrResumeReviewSession(

@@ -40,6 +40,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
+import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityBlockReason
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityDecision
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityGate
@@ -69,6 +70,12 @@ fun ReviewSessionScreen(
     presentationId: String,
     teachingArtifact: VerifiedTeachingArtifact?,
     profile: StudyProfileOverview,
+    /**
+     * Spec §2.16 re-teach opening: non-null only for a leeched card whose knowledge
+     * point has reviewed material. The session then presents this material before
+     * the question. Null (the default) keeps every existing caller's behaviour.
+     */
+    reTeachOpening: ReTeachOpening? = null,
     queuePosition: Int,
     queueSize: Int,
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyReviewChoiceSubmissionResult,
@@ -112,6 +119,7 @@ fun ReviewSessionScreen(
                     practiceUnitId = practiceUnitId,
                     presentationId = presentationId,
                     profile = profile,
+                    reTeachOpening = reTeachOpening,
                     queuePosition = queuePosition,
                     queueSize = queueSize,
                     onSubmitChoice = onSubmitChoice,
@@ -139,6 +147,7 @@ private fun ReviewSessionContent(
     practiceUnitId: String,
     presentationId: String,
     profile: StudyProfileOverview,
+    reTeachOpening: ReTeachOpening?,
     queuePosition: Int,
     queueSize: Int,
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyReviewChoiceSubmissionResult,
@@ -173,6 +182,17 @@ private fun ReviewSessionContent(
             color = SmartColors.InkSecondary,
             style = MaterialTheme.typography.labelMedium,
         )
+        // 先重教、再练（spec §2.16）：leech 卡在这里停住，不露出题干。学员确认后才继续，
+        // 于是"重教"不是一段可以划过去的说明，而是进入本次作答的必经步骤。
+        val opening = reTeachOpening
+        if (opening != null && !sessionViewModel.reTeachAcknowledged) {
+            PaperDivider(Modifier.padding(vertical = 18.dp))
+            ReTeachOpeningCard(
+                opening = opening,
+                onAcknowledge = sessionViewModel::acknowledgeReTeach,
+            )
+            return@RootPageColumn
+        }
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader(title = artifact.title)
         Spacer(Modifier.height(12.dp))
@@ -423,6 +443,58 @@ private fun RecordedAttemptFeedback(
     }
 }
 
+/**
+ * 开场重教卡（spec §2.16）：leech 卡进入会话时先呈现的讲解材料。
+ *
+ * 材料是**只读**教学材料（[ReTeachOpening]），不带答案键、不产生学习证据——这一点与
+ * "查看完整讲解"刻意区分：后者走 `revealAnswer`，会记一条"看了答案"的事件。若用
+ * reveal 充当重教开场，学员随后的独立作答会被污染成"看答案后作答"，重教反而毁掉证据。
+ */
+@Composable
+private fun ReTeachOpeningCard(
+    opening: ReTeachOpening,
+    onAcknowledge: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("review_reteach_opening"),
+        color = SmartColors.JadeSoft,
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Jade),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = "先看这段讲解，再作答",
+                color = SmartColors.JadeDark,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = opening.title,
+                color = SmartColors.InkSecondary,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.testTag("review_reteach_material_title"),
+            )
+            Spacer(Modifier.height(10.dp))
+            SafeMarkdownText(
+                markdown = opening.markdown,
+                color = SmartColors.Ink,
+                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 27.sp),
+            )
+        }
+    }
+    Spacer(Modifier.height(14.dp))
+    PrimaryActionButton(
+        text = "开始作答",
+        onClick = onAcknowledge,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("review_reteach_acknowledge"),
+    )
+}
+
 @Composable
 private fun AnswerExplanation(explanation: String) {
     Surface(
@@ -488,6 +560,22 @@ internal class ReviewSessionViewModel(
 
     var revealedExplanation: String? by mutableStateOf(savedStateHandle[REVEALED_EXPLANATION_KEY])
         private set
+
+    /**
+     * Spec §2.16 的"先重教再练"：leech 卡先展示针对错误认知的材料，学员确认后才露出题目。
+     * 状态放在 ViewModel 而不是 Composable 里，是为了与提交/揭示状态同样穿过进程死亡
+     * （SavedStateHandle）——否则重建后学员会被重新按回材料页，或反之绕过重教直接看题。
+     */
+    internal var reTeachAcknowledged by mutableStateOf(
+        savedStateHandle.get<Boolean>(RE_TEACH_ACKNOWLEDGED_KEY) ?: false,
+    )
+        private set
+
+    fun acknowledgeReTeach() {
+        if (reTeachAcknowledged) return
+        reTeachAcknowledged = true
+        savedStateHandle[RE_TEACH_ACKNOWLEDGED_KEY] = true
+    }
 
     private val presentationStartedAtEpochMillis: Long =
         savedStateHandle.get<Long>(PRESENTATION_STARTED_AT_KEY)
@@ -781,6 +869,7 @@ internal class ReviewSessionViewModel(
         const val SUBMISSION_STATUS_KEY = "review_submission_status"
         const val REVEAL_STATUS_KEY = "review_reveal_status"
         const val REVEALED_EXPLANATION_KEY = "review_revealed_explanation"
+        const val RE_TEACH_ACKNOWLEDGED_KEY = "review_reteach_acknowledged"
         const val PRESENTATION_STARTED_AT_KEY = "review_presentation_started_at"
         const val ATTEMPT_ID_KEY = "review_attempt_id"
         const val RESULT_CREATED_KEY = "review_result_created"

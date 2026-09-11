@@ -129,10 +129,14 @@ import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
+import com.tingyun.smartmistakebook.core.model.KnowledgeTeachingMaterialType
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
+import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
+import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
+import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
 import java.io.File
 import java.time.Clock
 import java.time.Instant
@@ -148,6 +152,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -936,6 +941,105 @@ class RoomBackedStudyExperienceRepositoryTest {
         }
     }
 
+    @Test
+    fun leechedProblemOffersItsMisconceptionMaterialBeforeTheNextAttempt() = runBlocking {
+        // spec §2.16 的"先重教再练"这一半：leech 卡进入复习会话前必须先看到针对错误认知的
+        // 材料。此前只有"降权 + 难度冻结"，学员第 7 次打开的还是那道已经连续失败 6 次的题，
+        // 没有任何重教发生（审计 §3.9 的实体缺口）。
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            publishLeechedMemory(unitId)
+            addBoundTeachingMaterial(
+                materialId = "material:m1:explanation",
+                knowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                type = "CONCEPT_EXPLANATION",
+                content = "单调性的一般讲解。",
+            )
+            addBoundTeachingMaterial(
+                materialId = "material:m1:misconception",
+                knowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只比较驻点而漏掉端点，是闭区间最值最常见的错误。",
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            val opening = repository.reTeachOpening(unitId)
+
+            // 生效的不只是"有材料"：选中必须是重教优先级最高的 misconception-guide，
+            // 而不是先入库的泛泛讲解——顺序由生产选择器给出，不是行序。
+            assertEquals("material:m1:misconception", opening?.materialId)
+            assertEquals(
+                KnowledgeTeachingMaterialType.MISCONCEPTION_GUIDE,
+                opening?.materialType,
+            )
+            assertTrue(
+                requireNotNull(opening).markdown
+                    .contains("只比较驻点而漏掉端点"),
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun aHealthyProblemIsNotForcedIntoReTeaching() = runBlocking {
+        // 反例：没有 leech 的题不该被强制重教——否则重教会退化成每次复习都开场的常规动作，
+        // 把"重教材料"这个信号的稀缺性和可信度一并耗光。
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            addBoundTeachingMaterial(
+                materialId = "material:m1:misconception",
+                knowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只比较驻点而漏掉端点。",
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            assertNull(repository.reTeachOpening(unitId))
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    private fun FakeStudyDatabasePort.addBoundTeachingMaterial(
+        materialId: String,
+        knowledgeNodeId: String,
+        type: String,
+        content: String,
+    ) {
+        teachingMaterials += KnowledgeTeachingMaterialRecord(
+            materialId = materialId,
+            stableCode = materialId,
+            subject = "MATH",
+            materialType = type,
+            title = "材料 $materialId",
+            summaryMarkdown = "摘要",
+            applicabilityMarkdown = "适用于该知识点。",
+            contentMarkdown = content,
+            boundaryMarkdown = "只在题意满足时使用。",
+            derivationKind = "REVIEWED",
+            sourceId = "source:$materialId",
+            sourceLocator = "m1",
+            contentFingerprint = "fp-$materialId",
+            reviewedAtEpochMillis = 1_000,
+        )
+        materialNodeBindings += KnowledgeTeachingMaterialNodeBindingRecord(
+            materialId = materialId,
+            knowledgeNodeId = knowledgeNodeId,
+            role = "PRIMARY",
+        )
+    }
+
     private fun repository(
         database: StudyDatabasePort,
         applicationScope: CoroutineScope,
@@ -1000,6 +1104,14 @@ class RoomBackedStudyExperienceRepositoryTest {
         feedback = feedback,
         attemptedAtEpochMillis = 1_500,
     )
+
+    private companion object {
+        /** Curated M1 unit whose artifact carries a knowledge-node scope (spec §2.16 fixtures). */
+        const val M1_LEECH_PRACTICE_UNIT_ID = "practice:m1:closed-interval-extrema:whole"
+
+        /** The node the M1 artifact declares, and the node teaching material binds to. */
+        const val M1_LEECH_KNOWLEDGE_NODE_ID = "knowledge:m1:math.derivative.closed_interval_extrema"
+    }
 }
 
 private class MutableClock(
@@ -1164,6 +1276,42 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
             stateVersion = 1,
             knownLedgerHeadSequence = 1,
             snapshot = snapshot,
+        )
+        learningLedgerHead.value = 1
+    }
+
+    /**
+     * Seeds a leeched problem-memory state (spec §2.16: six lapses plus two
+     * cross-day Again) as the fake's current projection, so the re-teach path can
+     * be exercised without driving six real lapses through the ledger.
+     */
+    fun publishLeechedMemory(practiceUnitId: String) {
+        val leeched = ProblemMemoryState(
+            practiceUnitId = practiceUnitId,
+            stabilityDays = 2.0,
+            difficulty = 9.0,
+            lastReviewedAtEpochMillis = 10L * 86_400_000L,
+            nextReviewAtEpochMillis = 12L * 86_400_000L,
+            lapseCount = ProblemMemoryState.LEECH_LAPSE_THRESHOLD,
+            consecutiveCrossDayAgain = ProblemMemoryState.LEECH_AGAIN_STREAK,
+            lastAttemptId = "attempt:leeched",
+            projectorVersion = LearningProjector.VERSION,
+            checkpointSequence = 1,
+        )
+        persistedLearnerSnapshot = PersistedLearnerSnapshot(
+            projectionName = "study-experience-v1",
+            stateVersion = 1,
+            knownLedgerHeadSequence = 1,
+            snapshot = LearnerSnapshot(
+                learnerId = "learner:local",
+                problemMemoryStates = mapOf(practiceUnitId to leeched),
+                checkpoint = ProjectionCheckpoint(
+                    lastSequence = 1,
+                    projectorVersion = LearningProjector.VERSION,
+                    projectedAtEpochMillis = 10L * 86_400_000L,
+                ),
+                generatedAtEpochMillis = 10L * 86_400_000L,
+            ),
         )
         learningLedgerHead.value = 1
     }

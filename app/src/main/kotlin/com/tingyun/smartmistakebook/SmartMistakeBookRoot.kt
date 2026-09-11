@@ -60,6 +60,7 @@ import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
+import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -176,6 +177,8 @@ private data class RootDestination(
 internal data class TeachingArtifactLoad(
     val practiceUnitId: String? = null,
     val artifact: VerifiedTeachingArtifact? = null,
+    /** Spec §2.16: non-null only when this card is a leech with reviewed material. */
+    val reTeachOpening: ReTeachOpening? = null,
     val isLoaded: Boolean = false,
 )
 

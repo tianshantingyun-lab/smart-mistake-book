@@ -118,7 +118,9 @@ w = [0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
 `leech := lapse_count ≥ 6 且最近 2 次跨日复习均 Again` → 标记 LEECHED：暂停常规排期、difficulty 钳制不再上调、强制注入 teaching_material 重教（与 §7 错因通道衔接，leech 多为概念错）；恢复=跨日成功自动清零（见「核心状态机」，2026-09-11 取代原「重教后用户手动恢复」表述——手动恢复需新增账本事件类型，破坏投影可重放性）。
 阈值 6/2 为**工程先验**：Anki 的 8 同样未经标定，其官方手册只陈述机制而不推荐取值、社区权威文本自述从未就此做过实验，文献中亦无 leech 处理的对照实验（`docs/research/leech-remediation-research.md` §1.3、§2.1）。禁止在代码注释或产品文案里写成「科学研究表明」。
 
-**逐条实现状态（2026-09-11 核实）**：判定（`ProblemMemoryState.isLeeched`）与 difficulty 冻结（`LearningProjector`）已实现；"暂停常规排期"实现为 ×0.15 重罚而非硬排除（硬排除会让"跨日成功清零"这条恢复路径不可达，自锁）；**"强制注入 teaching_material 重教"** 目前的落点是讲题通道既有的材料注入，其**选材顺序**已于本日修订为显式优先级（针对错误认知的 `MISCONCEPTION_GUIDE`、`WORKED_EXAMPLE` 先于泛泛讲解，`COMPLETE_SOLUTION` 最后——依据 Metcalfe 2017/2025，见 `TutorTeachingReferenceSelector.reTeachPriority`）；仍**未实现**的是"leech 卡在错题复习队列里先重教再练"这一**排期/界面形态**，它与 §2.9 的前置补救共享同一注入环节，见 §2.9。
+**逐条实现状态（2026-09-11 核实）**：判定（`ProblemMemoryState.isLeeched`）与 difficulty 冻结（`LearningProjector`）已实现；"暂停常规排期"实现为 ×0.15 重罚而非硬排除（硬排除会让"跨日成功清零"这条恢复路径不可达，自锁）；**"强制注入 teaching_material 重教"已实现为错题复习会话的开场**——`StudyExperienceRepository.reTeachOpening` 判定并取材料（判定与选材是 core:domain 的纯策略 `ReTeachInjection`），`ReviewSessionScreen` 在题干出现**之前**呈现材料，学员确认后才露出题目与选项（`ReviewSessionViewModel.reTeachAcknowledged`，经 `SavedStateHandle` 穿过进程死亡）。材料顺序的权威仍是 `TutorTeachingReferenceSelector.reTeachPriority`（针对错误认知的 `MISCONCEPTION_GUIDE`、`WORKED_EXAMPLE` 先于泛泛讲解，`COMPLETE_SOLUTION` 最后——依据 Metcalfe 2017/2025）；材料以**只读**方式呈现，**刻意不走 `revealAnswer`**——后者会记一条"看了答案"事件，用它做重教会把学员随后的独立作答污染成"看答案后作答"。
+
+**本条的已知边界（三条，勿当作已闭合）**：① 开场接在**有已校验教学工件**的复习项上（工件自带 `knowledgeNodeIds` 作为检索范围）；② **无工件**的自述/评级项（`CapturedReviewSessionScreen`）**未接**——那条路径拿不到知识点范围，要接需先解决"会话内从哪里取得知识点 id"（`MistakeOrganizationRepository` 的确认绑定是候选，未验证）；③ §2.9 的**前置补救**仍未接线，它需要在前置 KC 上取材料（与本题 KC 不同），复用同一注入环节但需另一次范围解析。
 
 ### 2.17 考前模式
 申报考试日 → 前 14 天 `r*_exam = min(0.97, r* + (0.97−r*)·(1 − d/14))` 线性爬升；考前队列把 `R < r*_exam` 的题纳入候选（限会话预算）；考卷成绩/考后自评回灌 prediction_outcome（校准影 HLR）；考后 r* 由日历自动回落。

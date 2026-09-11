@@ -106,9 +106,20 @@ internal fun ReviewSessionDestination(
             ?.takeIf { experience.status == StudyDataStatus.READY }
             ?.let { repository.teachingArtifact(it) }
         currentCoroutineContext().ensureActive()
+        // Spec §2.16 re-teach opening, loaded in the same round trip as the
+        // artifact: only a leeched card yields one, so this stays a null lookup
+        // for ordinary review. It is deliberately *not* fetched through
+        // revealAnswer — that path records a "saw the answer" event, which would
+        // turn the student's next attempt into a post-reveal attempt.
+        val reTeachOpening = if (loadedArtifact != null) {
+            repository.reTeachOpening(requireNotNull(requestedId))
+        } else {
+            null
+        }
         value = TeachingArtifactLoad(
             practiceUnitId = requestedId,
             artifact = loadedArtifact,
+            reTeachOpening = reTeachOpening,
             isLoaded = true,
         )
     }
@@ -164,6 +175,7 @@ internal fun ReviewSessionDestination(
             presentationId = "presentation:review:$sessionId:$sessionVersion:$practiceUnitId",
             teachingArtifact = artifactLoad.artifact,
             profile = experience.profile,
+            reTeachOpening = artifactLoad.reTeachOpening,
             queuePosition = ordinal + 1,
             queueSize = queueSize,
             onSubmitChoice = { submission ->

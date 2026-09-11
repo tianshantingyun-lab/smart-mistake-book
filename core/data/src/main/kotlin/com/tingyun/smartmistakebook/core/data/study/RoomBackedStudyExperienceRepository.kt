@@ -48,6 +48,10 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResul
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
+import com.tingyun.smartmistakebook.core.data.knowledge.RoomTutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.domain.ReTeachInjection
+import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
+import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.CalibrationReport
 import com.tingyun.smartmistakebook.core.model.LearningModelVersion
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
@@ -157,6 +161,14 @@ class RoomBackedStudyExperienceRepository(
         learningProjector = learningProjector,
     )
     private val predictionAuditService = HLRPredictionAuditService()
+
+    /**
+     * Read-only reviewed teaching material for the re-teach opening (spec §2.16).
+     * Reuses the production selector so the material it hands back is the same
+     * one the tutor channel would see, already ordered by re-teach priority.
+     */
+    private val teachingReferences: TutorTeachingReferenceRepository =
+        RoomTutorTeachingReferenceRepository(database)
 
     private val reviewLogSink = ReviewLogSink(
         database = database,
@@ -434,6 +446,29 @@ class RoomBackedStudyExperienceRepository(
 
     override suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact? =
         fixtureSource.teachingArtifactForPracticeUnit(practiceUnitId)
+
+    /**
+     * Spec §2.16 re-teach opening. The early return repeats the predicate
+     * [ReTeachInjection] applies on purpose: it skips the teaching-material query
+     * on the overwhelming majority of cards that are not leeches. Both read the
+     * same `isLeeched`, and the policy remains the tested authority on the gate.
+     *
+     * Scope comes from the artifact's own `knowledgeNodeIds`, so the material can
+     * only ever belong to knowledge points this question is actually bound to. An
+     * artifact with no recorded scope yields no opening rather than a guessed one.
+     */
+    override suspend fun reTeachOpening(practiceUnitId: String): ReTeachOpening? {
+        val memory = currentLearnerSnapshot().problemMemoryStates[practiceUnitId] ?: return null
+        if (!memory.isLeeched) return null
+        val artifact = teachingArtifact(practiceUnitId) ?: return null
+        if (artifact.knowledgeNodeIds.isEmpty()) return null
+        val references = teachingReferences.referencesFor(
+            subject = artifact.subject,
+            knowledgeNodeIds = artifact.knowledgeNodeIds,
+            limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
+        )
+        return ReTeachInjection.openingFor(memory, references)
+    }
 
     override suspend fun submitChoice(
         submission: StudyChoiceSubmission,
