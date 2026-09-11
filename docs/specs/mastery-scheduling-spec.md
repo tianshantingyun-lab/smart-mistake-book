@@ -99,6 +99,8 @@ KC 为权威层；practice_unit 级 memory 为其确定性缓存。视觉通道 
 
 **仍开放**：知识点复习队列本身（`currentKnowledgeReviewPlan` → `selectKnowledgeReviewQueue`）**未**纳入前置判定——它按"绑定题目的预测 R 取最小"排序，`KnowledgeReviewCandidate` 没有前置维度。是否要以及如何把 ready 门扩到**出题**对象（而不只是错题排程与补救材料），spec 未规定，属另一次设计决定，不在本次接线范围。
 
+**在哪能看到它（可观测性，2026-09-12 核实）**：KC–KC 前置只来自**审校知识包**（`moe-2025-four-subjects-v1.json` 共 1489 条），因为 `KnowledgeNodeRelationContract` 只接受 `SOURCE_GROUNDED` 的原子知识点。M1 内置演示种子的"前置"是**题→题**的 `StudyDbValue.RelationType.PREREQUISITE_OF`（`ProblemRelationSeedRecord`），记在另一张表、也不带掌握度，因此**不驱动本通道**——这不是缺陷（题级前置与 KC 级前置是两回事），但意味着在 M1 演示数据上看不到补救卡；要观察它需要一道绑定到审校知识包节点、且该节点有前置的题。
+
 ### 2.10 毕业
 连续 3 次跨日成功（G≥2）且 `I(r*,S)≥90 天` → Graduated：进 maintenance 队列，`next = I(0.8, S)`；maintenance 中 Again → 回常规队列。毕业≠删除（Karpicke 2008 证伪「答对即移除」）。
 
