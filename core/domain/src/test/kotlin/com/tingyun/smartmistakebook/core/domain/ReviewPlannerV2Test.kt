@@ -460,6 +460,72 @@ class ReviewPlannerV2Test {
         assertTrue("ready KC should be capped below the blocked-first run", interleaved < 3)
     }
 
+    @Test
+    fun `a candidate whose prerequisite is missing is demoted and explained as such`() {
+        // spec §2.9 / §6-L4. 这条断言的存在理由是它曾经**从来不可能通过**：生产调用点
+        // 从不填 `knowledgePrerequisites`，于是 prereqGap 恒为 0、PREREQ_GAP 理由从不出现。
+        // 因此本测试同时锁两件事——喂入图之后闸门确实起作用，以及缺前置的题会被降权。
+        val snapshot = snapshotWith(
+            masteryState("kc-needs-prereq", mastery = 0.9, conservative = 0.9),
+            masteryState("kc-ready", mastery = 0.9, conservative = 0.9),
+            masteryState("kc-prereq-weak", mastery = 0.2, conservative = 0.15),
+            masteryState("kc-prereq-ready", mastery = 0.95, conservative = 0.9),
+        )
+        val prerequisites = mapOf(
+            "kc-needs-prereq" to setOf("kc-prereq-weak"),
+            "kc-ready" to setOf("kc-prereq-ready"),
+        )
+        val blocked = candidate("unit-blocked", "family-blocked", null, 5.5, 60, kc = "kc-needs-prereq")
+        val ready = candidate("unit-ready", "family-ready", null, 5.5, 60, kc = "kc-ready")
+
+        // 预算只够一题：两题的 KC 掌握度、难度、时长、等待时间全都相同，唯一的差别是
+        // 前置——缺前置的那题必须排后面。
+        val contested = planner.plan(
+            request(listOf(blocked, ready), 60, snapshot, prerequisites),
+        )
+        assertEquals(listOf("unit-ready"), contested.queueItems.map { it.practiceUnitId })
+
+        // 池子够大时它不是被剔除，而是带着可解释的理由进来（spec §2.9 要求降权而非排除）。
+        val both = planner.plan(request(listOf(blocked, ready), 120, snapshot, prerequisites))
+        val blockedItem = both.queueItems.single { it.practiceUnitId == "unit-blocked" }
+        assertTrue(
+            "缺前置的题必须能说明自己为什么被降权",
+            ReviewReason.PREREQ_GAP in blockedItem.reasons,
+        )
+        val readyItem = both.queueItems.single { it.practiceUnitId == "unit-ready" }
+        assertTrue(
+            "前置已具备的题不该带前置缺口理由",
+            ReviewReason.PREREQ_GAP !in readyItem.reasons,
+        )
+    }
+
+    @Test
+    fun `without a prerequisite graph no candidate is gated`() {
+        // 反例，也是这次接线前的生产实况：图是空的（或没被喂进来）时，任何题都不该被
+        // 判成缺前置——不知道前置不等于没有前置。
+        val snapshot = snapshotWith(
+            masteryState("kc-needs-prereq", mastery = 0.9, conservative = 0.9),
+            masteryState("kc-ready", mastery = 0.9, conservative = 0.9),
+        )
+        val blocked = candidate("unit-blocked", "family-blocked", null, 5.5, 60, kc = "kc-needs-prereq")
+        val ready = candidate("unit-ready", "family-ready", null, 5.5, 60, kc = "kc-ready")
+
+        val plan = planner.plan(request(listOf(blocked, ready), 120, snapshot))
+
+        assertEquals(2, plan.queueItems.size)
+        assertTrue(
+            plan.queueItems.none { ReviewReason.PREREQ_GAP in it.reasons },
+        )
+    }
+
+    private fun snapshotWith(vararg states: KnowledgeMasteryState) = LearnerSnapshot(
+        learnerId = "learner-1",
+        problemMemoryStates = emptyMap(),
+        knowledgeMasteryStates = states.associateBy(KnowledgeMasteryState::knowledgeNodeId),
+        checkpoint = ProjectionCheckpoint(4, LearningProjector.VERSION, now),
+        generatedAtEpochMillis = now,
+    )
+
     private fun masteryState(
         id: String,
         mastery: Double,
@@ -568,6 +634,7 @@ class ReviewPlannerV2Test {
         candidates: List<ReviewCandidate>,
         budget: Int,
         learnerSnapshot: LearnerSnapshot = snapshot(),
+        knowledgePrerequisites: Map<String, Set<String>> = emptyMap(),
     ) = ReviewPlanningRequest(
         learnerSnapshot = learnerSnapshot,
         candidates = candidates,
@@ -575,6 +642,7 @@ class ReviewPlannerV2Test {
         timeZoneId = "Asia/Shanghai",
         timeBudgetSeconds = budget,
         planningAtEpochMillis = now,
+        knowledgePrerequisites = knowledgePrerequisites,
     )
 
     private fun snapshot(): LearnerSnapshot {

@@ -60,6 +60,7 @@ import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
+import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediation
 import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
@@ -179,6 +180,8 @@ internal data class TeachingArtifactLoad(
     val artifact: VerifiedTeachingArtifact? = null,
     /** Spec §2.16: non-null only when this card is a leech with reviewed material. */
     val reTeachOpening: ReTeachOpening? = null,
+    /** Spec §2.9: non-null when a prerequisite of this card is below ready. */
+    val prerequisiteRemediation: PrerequisiteRemediation? = null,
     val isLoaded: Boolean = false,
 )
 

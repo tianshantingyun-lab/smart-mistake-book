@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.data.study
 
+import com.tingyun.smartmistakebook.core.data.knowledge.KnowledgePrerequisiteReader
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRecord
 import com.tingyun.smartmistakebook.core.database.ReviewPlanBundle
@@ -58,6 +59,7 @@ internal class StudyReviewPlannerService(
     private val schedulingSettingsStore: SchedulingSettingsStore?,
     private val predictionAuditService: HLRPredictionAuditService,
     private val predictionAuditSink: PredictionAuditSink,
+    private val knowledgePrerequisites: KnowledgePrerequisiteReader,
     private val learnerSnapshot: suspend () -> LearnerSnapshot,
 ) {
 
@@ -305,6 +307,17 @@ internal class StudyReviewPlannerService(
             timeZoneId = studyZoneId.id,
             timeBudgetSeconds = reviewTimeBudgetSeconds,
             planningAtEpochMillis = planningContext.planningAtEpochMillis,
+            // Spec §2.9 / §6-L4: the KC prerequisite graph. Feeding it here is what
+            // makes the prerequisite gate live at all — without it `prereqGap` is
+            // structurally zero, `ReviewReason.PREREQ_GAP` can never be produced and
+            // `PREREQ_GAP_WEIGHT * gap` is dead arithmetic. The same graph also
+            // drives §6/C3 confusable pairs, so both channels were dark until now.
+            // Only KCs bound to today's candidates are resolved; the pool of
+            // questions whose prerequisites are unknown is not the same as the pool
+            // whose prerequisites are missing.
+            knowledgePrerequisites = knowledgePrerequisites.graphFor(
+                finalCandidates.flatMapTo(linkedSetOf()) { it.knowledgeNodeIds },
+            ).prerequisitesByDependent,
         )
         val plan = if (useReviewPlannerV2) {
             reviewPlannerV2.plan(request)

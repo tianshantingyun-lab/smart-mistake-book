@@ -203,7 +203,7 @@ priority(question) = W1·urgency(question) + W2·weakness(KC) + W3·prereqGap(KC
 prereqGap(KC) = max(0, τ_ready − min_{p∈prereq} masteryScore_p)
 若 prereqGap > 0：本题降权，改为排入「前置补救材料」（knowledge_teaching_material 按 node binding 检索）
 ```
-现差距：`knowledge_node_relation`（PREREQUISITE_OF 已审校）与 `ReviewPlannerV2.scoreCandidate`（ReviewPlannerV2.kt:372-446）完全未接线。
+**接线状态（2026-09-12 更新）**：原先的差距是 `knowledge_node_relation`（PREREQUISITE_OF 已审校）与 `ReviewPlannerV2.scoreCandidate` **完全未接线**——判定代码在，但生产调用点从不给 `ReviewPlanningRequest.knowledgePrerequisites` 赋值，`prereqGap` 结构性恒为 0。现已接通：`KnowledgeReadiness`（core:domain）是判定的唯一权威，`KnowledgePrerequisiteReader`（core:data）按 KC 自己的科目分区并分块解析关系图，`StudyReviewPlannerService` 喂入当日候选的图，会话侧由 `StudyExperienceRepository.prerequisiteRemediation` 呈现**前置 KC** 的材料。上面伪码里"改为排入前置补救材料"落地为**非阻塞**的并列卡片（见 `three-store-linkage-design.md` §3.3 实现状态）。
 
 ### 11. 毕业机制（阶段 C4）
 

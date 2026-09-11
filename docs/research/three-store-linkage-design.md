@@ -59,9 +59,9 @@ learner_knowledge_mastery_state(learner_id, knowledge_node_id, mastery_score,
 | L1 | **library_catalog 视图读旧表 + 硬编码 learner:local** | LibraryCatalogView.kt:40-41,65-66；LibraryCatalogMigration.kt:44 | 目录的 next_review/retrievability 永不随投影刷新（读 fixture 静态表）；LEAST_MASTERED 排序失真；非 local learner 全空 |
 | L2 | **真实作答证据未按 binding 分摊到 KC** | 视觉通道有 PRIMARY/SECONDARY 分摊（RoomBackedStudyExperienceRepository.kt:786-805），作答通道直落 practice_unit | KC mastery 只吃视觉+自评，吃不到最重要的真实作答 |
 | L3 | **binding.strength 未参与任何聚合** | StudyDatabasePort.kt:384-393 定义后仅视觉分摊间接用 | 多 KC 题的证据平均主义 |
-| L4 | **prerequisite 关系未进调度** | ReviewPlannerV2.scoreCandidate 无 KC 图谱输入 | 前置缺失时复习本题收益递减（DAS3H/KST 依据） |
+| L4 | **prerequisite 关系未进调度**（**2026-09-12 已修**） | 原：`ReviewPlannerV2.scoreCandidate` 无 KC 图谱输入；生产调用点从不填 `ReviewPlanningRequest.knowledgePrerequisites` | 前置缺失时复习本题收益递减（DAS3H/KST 依据）。修复见 §3.3 实现状态 |
 | L5 | **KC 标签随 revision 变化时旧掌握不迁移** | binding 带 basis_revision_id + taxonomy_version，但无迁移逻辑 | 改绑后旧 KC 的 evidence_mass 悬空 |
-| L6 | **teaching material 未接弱点通道** | material_node_binding 存在，无「弱点→材料」检索路径 | 前置补救/概念错重教无落点 |
+| L6 | **teaching material 未接弱点通道**（**2026-09-12 部分已修**） | 原：`material_node_binding` 存在，无「弱点→材料」检索路径。现：§2.9 前置补救与 §2.16 重教都已落到会话界面；**知识点复习出题侧**（`selectKnowledgeReviewQueue`）仍未纳入前置判定 | 前置补救/概念错重教无落点 |
 | L7 | **重教链路空转**（答案/解析缺失 + 概念错因缺失） | answer_spec null + 无 error_type | 分通道调度（概念→重教）缺两根柱子 |
 
 ---
@@ -99,6 +99,7 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 - 选题打分新增两项（ReviewPlannerV2.scoreCandidate 扩展）：
   - `prereqGap(k) = max(0, τ_ready − min_p masteryScore_p)` → 权重 W3，gap>0 时本题候选降权；
   - `remediation(k) = argmin_p masteryScore_p` → 对该前置 KC 检索 `knowledge_teaching_material`（material_node_binding.role）注入「先读材料再做题」的会话项。
+- **实现状态（2026-09-12）**：两项均已接线。判定的唯一权威是 `KnowledgeReadiness`（core:domain）；前置图由 `KnowledgePrerequisiteReader` 解析（按 KC 自己的科目分区、256 分块）并在 `StudyReviewPlannerService` 喂入 `ReviewPlanningRequest`。降权侧产出 `ReviewReason.PREREQ_GAP`；会话侧由 `StudyExperienceRepository.prerequisiteRemediation` 把**前置 KC** 的材料作为 `ReviewSessionScreen` 上的一张卡呈现。**注入是非阻塞的**：材料与题干并存，不设"先确认"门——本条原文的"先读材料再做题"读起来像前置闸门，但 R9 与外部范式（Khan Readiness Check / ALEKS）都要求与常规排期**并行**，且"先补前置 vs 继续做题"没有正面比较实验支持（`leech-remediation-research.md` §6.5）。措辞以 R9 为准。
 - 多 KC 题：取各 KC 的 min(masteryScore) 作为该题 weakness 输入（保守口径，与 conservativeMasteryScore 一致）。
 
 ### 3.4 KC 结构变更与版本迁移（修 L5）
@@ -118,7 +119,7 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 
 - 触发：① 前置 gap（3.3）；② error_type=concept（错因分类落地后）；③ 用户在详情页主动点「重新学这个知识点」。
 - 检索：`knowledge_teaching_material` join `material_node_binding`，检索**调用方传入的** `knowledgeNodeIds`，按（binding 角色，材料类型优先级，materialId）排序，取 1-2 份注入会话（现有 TutorTeachingReferenceRepository 已具备注入机制）。
-- **本条的三处 2026-09-11 核实修正**（原表述与该实现不符）：① `material_node_binding.role` 是**角色标签**（`KnowledgeMaterialNodeRole`：PRIMARY / SUPPORTING / PREREQUISITE），**不存在数值权重**——原文"role 权重排序"有误，排序用的是角色的**序**（PRIMARY → SUPPORTING → 其他），不是加权；② "∪ 其前置"**未实现**：`referencesFor` 只检索调用方给的节点集合，前置节点是否并入由调用方决定（§2.9 前置补救尚未接线）；③ 材料类型优先级的权威表达在 `TutorTeachingReferenceSelector.reTeachPriority`（依据 Metcalfe 2017/2025，见 `docs/research/leech-remediation-research.md` R5/R6），DAO 的 `ORDER BY` CASE 必须与它逐值一致，否则"预算先给了哪类材料"变回未定义行为。
+- **本条的三处 2026-09-11 核实修正**（原表述与该实现不符）：① `material_node_binding.role` 是**角色标签**（`KnowledgeMaterialNodeRole`：PRIMARY / SUPPORTING / PREREQUISITE），**不存在数值权重**——原文"role 权重排序"有误，排序用的是角色的**序**（PRIMARY → SUPPORTING → 其他），不是加权；② "∪ 其前置"由**调用方**决定（`referencesFor` 只检索传入的节点集合）——**2026-09-12 起两条通道都显式并入了前置节点**：§2.9 前置补救在**前置 KC** 自己的范围内取材料，§2.16 重教在题目绑定 KC 的范围内取；③ 材料类型优先级的权威表达在 `TutorTeachingReferenceSelector.reTeachPriority`（依据 Metcalfe 2017/2025，见 `docs/research/leech-remediation-research.md` R5/R6），DAO 的 `ORDER BY` CASE 必须与它逐值一致，否则"预算先给了哪类材料"变回未定义行为。
 - 前置条件：answer_spec/error_type 两根柱子落地前，此通道只能由 ①③ 触发——不阻塞，按阶段 C 渐进。
 
 ---

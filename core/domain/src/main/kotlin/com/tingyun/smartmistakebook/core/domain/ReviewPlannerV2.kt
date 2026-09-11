@@ -630,27 +630,21 @@ class ReviewPlannerV2(
     }
 
     /**
-     * Weakest-prerequisite gap (spec 2.9): max(0, tau_ready - min prereq
-     * mastery) over every KC of the candidate. Zero when no prerequisite data
-     * exists or every prerequisite is ready.
+     * Weakest-prerequisite gap (spec 2.9). The rule itself lives in
+     * [KnowledgeReadiness] because the session surface needs the same answer to
+     * decide which remediation to offer; only the numeric projection is used here.
      */
     private fun prerequisiteGap(
         candidate: ReviewCandidate,
         snapshot: LearnerSnapshot,
         knowledgePrerequisites: Map<String, Set<String>>,
-    ): Double {
-        var gap = 0.0
-        candidate.knowledgeNodeIds.forEach { knowledgeNodeId ->
-            val prerequisites = knowledgePrerequisites[knowledgeNodeId].orEmpty()
-            val weakest = prerequisites
-                .mapNotNull { prerequisiteId ->
-                    snapshot.knowledgeMasteryStates[prerequisiteId]?.conservativeMasteryScore
-                }
-                .minOrNull() ?: return@forEach
-            gap = maxOf(gap, (READY_TO_LEARN_THRESHOLD - weakest).coerceAtLeast(0.0))
-        }
-        return gap.coerceIn(0.0, 1.0)
-    }
+    ): Double = KnowledgeReadiness.gapOf(
+        knowledgeNodeIds = candidate.knowledgeNodeIds,
+        prerequisitesByNode = knowledgePrerequisites,
+        masteryScoreOf = { knowledgeNodeId ->
+            snapshot.knowledgeMasteryStates[knowledgeNodeId]?.conservativeMasteryScore
+        },
+    )
 
     /** Confusable partner map: shared prerequisite and mastery gap below 0.2. */
     private fun computeConfusablePartners(
@@ -731,7 +725,8 @@ class ReviewPlannerV2(
         // helps (low prior knowledge is an "undesirable difficulty" moderator),
         // so the quota only binds once the KC is at least ready-to-learn.
         val weakestMastery = candidate.weakestKnowledgeMastery
-        val blockedFirst = weakestMastery != null && weakestMastery < READY_TO_LEARN_THRESHOLD
+        val blockedFirst = weakestMastery != null &&
+            weakestMastery < KnowledgeReadiness.READY_THRESHOLD
         if (
             sameKcCount >= MAX_PER_KNOWLEDGE_NODE_PER_SESSION &&
             diverseAlternatives &&
@@ -830,8 +825,8 @@ class ReviewPlannerV2(
         /**
          * Smoothed mastery of the candidate's weakest bound knowledge node, or
          * null when no bound node has a mastery state. The same-KC interleaving
-         * quota is waived below [READY_TO_LEARN_THRESHOLD] so a not-yet-learned
-         * KC can be blocked first (研究 2026-09-09 §2).
+         * quota is waived below [KnowledgeReadiness.READY_THRESHOLD] so a
+         * not-yet-learned KC can be blocked first (研究 2026-09-09 §2).
          */
         val weakestKnowledgeMastery: Double? = null,
     ) {
@@ -878,7 +873,6 @@ class ReviewPlannerV2(
         private const val EASY_DIFFICULTY_CEILING = 4.0
         private const val MEDIUM_DIFFICULTY_CEILING = 7.0
         private const val WEAKNESS_THRESHOLD = 0.35
-        private const val READY_TO_LEARN_THRESHOLD = 0.6
         private const val CONFUSABLE_MASTERY_GAP = 0.2
         private const val PREREQ_GAP_WEIGHT = 2.0
         private const val CONFUSABLE_BONUS = 1.5

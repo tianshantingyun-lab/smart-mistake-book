@@ -116,10 +116,18 @@ internal fun ReviewSessionDestination(
         } else {
             null
         }
+        // Spec §2.9 prerequisite remediation, same round trip. Independent of the
+        // leech opening: a card can be both, and neither implies the other.
+        val prerequisiteRemediation = if (loadedArtifact != null) {
+            repository.prerequisiteRemediation(requireNotNull(requestedId))
+        } else {
+            null
+        }
         value = TeachingArtifactLoad(
             practiceUnitId = requestedId,
             artifact = loadedArtifact,
             reTeachOpening = reTeachOpening,
+            prerequisiteRemediation = prerequisiteRemediation,
             isLoaded = true,
         )
     }
@@ -176,6 +184,7 @@ internal fun ReviewSessionDestination(
             teachingArtifact = artifactLoad.artifact,
             profile = experience.profile,
             reTeachOpening = artifactLoad.reTeachOpening,
+            prerequisiteRemediation = artifactLoad.prerequisiteRemediation,
             queuePosition = ordinal + 1,
             queueSize = queueSize,
             onSubmitChoice = { submission ->

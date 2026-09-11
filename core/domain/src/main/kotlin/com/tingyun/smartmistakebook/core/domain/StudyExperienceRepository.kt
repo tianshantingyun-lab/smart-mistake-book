@@ -544,6 +544,18 @@ interface StudyExperienceRepository : AutoCloseable {
      */
     suspend fun reTeachOpening(practiceUnitId: String): ReTeachOpening? = null
 
+    /**
+     * 前置补救材料（spec §2.9）：该题有一个前置知识点未达可学门槛时，返回**那个前置
+     * 知识点**的讲解材料；否则返回 null。
+     *
+     * 与 [reTeachOpening] 的区别是**不阻塞**：补救材料与题干并列呈现，学员可以直接作答。
+     * 判定用的是排程侧给该题降权时同一条规则（[KnowledgeReadiness]），所以"计划里排在前面的
+     * 题"与"会话里给补救的题"不会各说各话。同样只读、不写事件。
+     *
+     * 默认 null = 该实现不提供前置补救。与"无缺失前置"或"前置无材料"是同一结果。
+     */
+    suspend fun prerequisiteRemediation(practiceUnitId: String): PrerequisiteRemediation? = null
+
     suspend fun revealAnswer(request: StudyAnswerRevealRequest): StudyAnswerRevealResult
 
     suspend fun startOrResumeReviewSession(

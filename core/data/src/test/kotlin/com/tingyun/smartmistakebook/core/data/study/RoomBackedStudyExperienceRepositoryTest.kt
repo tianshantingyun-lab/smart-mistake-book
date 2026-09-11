@@ -128,6 +128,8 @@ import com.tingyun.smartmistakebook.core.model.EvidenceAttributionCertainty
 import com.tingyun.smartmistakebook.core.model.EvidenceAttributionRole
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
+import com.tingyun.smartmistakebook.core.model.CalibrationSupport
+import com.tingyun.smartmistakebook.core.model.KnowledgeMasteryState
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.KnowledgeTeachingMaterialType
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
@@ -152,6 +154,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -1011,16 +1014,281 @@ class RoomBackedStudyExperienceRepositoryTest {
         }
     }
 
+    @Test
+    fun theDailyPlanDemotesAndLabelsAQuestionWhosePrerequisiteIsMissing() = runBlocking {
+        // 端到端接线证明（spec §2.9）。这条断言此前**不可能通过**：生产调用点从不给
+        // `ReviewPlanningRequest.knowledgePrerequisites` 赋值，前置门恒等于"无前置"。
+        // 上面那些测试验的是规则本身，这一条验的是"规则真的被喂到了数据"。
+        val database = prerequisitePlannedDatabase(prerequisiteMastery = 0.2)
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+
+            val item = database.savedPlans.single().queue.single()
+            assertEquals(PREREQ_DEPENDENT_UNIT_ID, item.practiceUnitId)
+            assertTrue(
+                "缺前置的题必须带着可解释的理由进计划，实际理由：${item.reasons}",
+                "PREREQ_GAP" in item.reasons,
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun theDailyPlanLeavesAQuestionAloneWhenItsPrerequisitesAreReady() = runBlocking {
+        // 反例：前置达标时不该出现前置缺口理由——否则"前置缺失"会退化成所有题的常态标签。
+        val database = prerequisitePlannedDatabase(prerequisiteMastery = 0.75)
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+
+            val item = database.savedPlans.single().queue.single()
+            assertTrue(
+                "前置已具备的题不该带前置缺口理由，实际理由：${item.reasons}",
+                "PREREQ_GAP" !in item.reasons,
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    private fun prerequisitePlannedDatabase(prerequisiteMastery: Double) =
+        FakeStudyDatabasePort().apply {
+            addMistake(
+                MistakeRecord(
+                    entryId = "entry-prereq",
+                    problemId = "problem-prereq",
+                    problemRevisionId = "revision-prereq",
+                    practiceUnitId = PREREQ_DEPENDENT_UNIT_ID,
+                    sourceKey = "capture:prereq",
+                    subject = "MATH",
+                    title = "需要前置的题",
+                    problemMarkdown = "判断并证明该函数在闭区间上的单调性。",
+                    status = "ACTIVE",
+                    createdAtEpochMillis = 1_000,
+                    nextReviewAtEpochMillis = null,
+                    retrievability = null,
+                    knowledgeNodeIds = setOf(PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID),
+                ),
+            )
+            addPrerequisiteRelation(
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                dependentKnowledgeNodeId = PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID,
+            )
+            addKnowledgeNode(PREREQ_NODE_ID, displayName = "从图像读取单调性")
+            publishMastery(
+                dependentKnowledgeNodeId = PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = prerequisiteMastery,
+            )
+        }
+
+    @Test
+    fun aMissingPrerequisiteOffersThatPrerequisitesMaterialBesideTheQuestion() = runBlocking {
+        // spec §2.9：目标题绑定的 KC 有一个前置未达可学门槛时，注入**那个前置**的材料。
+        // 此前这条通道从未接线——`ReviewPlanningRequest.knowledgePrerequisites` 在生产调用点
+        // 没被填过，闸门恒等于"无前置"。
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            addPrerequisiteRelation(
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+            )
+            addKnowledgeNode(PREREQ_NODE_ID, displayName = "从图像读取单调性")
+            addBoundTeachingMaterial(
+                materialId = "material:prereq:explanation",
+                knowledgeNodeId = PREREQ_NODE_ID,
+                type = "CONCEPT_EXPLANATION",
+                content = "单调性的一般讲解。",
+            )
+            addBoundTeachingMaterial(
+                materialId = "material:prereq:misconception",
+                knowledgeNodeId = PREREQ_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只按局部形状下结论，是读图判断单调性最常见的错误。",
+            )
+            publishMastery(
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = 0.2,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            val remediation = repository.prerequisiteRemediation(unitId)
+
+            // 生效的不只是"有材料"：必须是重教优先级最高的 misconception-guide，而不是先
+            // 入库的泛泛讲解——顺序由生产选择器给出，不是行序。
+            assertEquals("材料 material:prereq:misconception", remediation?.title)
+            assertTrue(requireNotNull(remediation).markdown.contains("只按局部形状下结论"))
+            // 适用边界必须一并呈现，否则学员会把它外推到不成立的题目上。
+            assertTrue(requireNotNull(remediation).markdown.contains("只在题意满足时使用"))
+            // 卡片要说出补的是哪一个前置，否则学员看到一段无来由的材料。
+            assertEquals("从图像读取单调性", requireNotNull(remediation).prerequisiteName)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun aProblemWhosePrerequisitesAreReadyOffersNoRemediation() = runBlocking {
+        // 反例：前置已具备时不该弹补救卡。否则每一个有前置关系的题都会变成关卡，
+        // "前置缺失"这个信号会退化成常态噪声。
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            addPrerequisiteRelation(
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+            )
+            addKnowledgeNode(PREREQ_NODE_ID, displayName = "从图像读取单调性")
+            addBoundTeachingMaterial(
+                materialId = "material:prereq:misconception",
+                knowledgeNodeId = PREREQ_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只按局部形状下结论。",
+            )
+            publishMastery(
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = 0.75,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            assertNull(repository.prerequisiteRemediation(unitId))
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun aWeakPrerequisiteWithNoReviewedMaterialOffersNoRemediation() = runBlocking {
+        // 前置确实缺失、但材料库里没有它的内容：不能编造补救内容，也不能假装补救发生过。
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            addPrerequisiteRelation(
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+            )
+            addKnowledgeNode(PREREQ_NODE_ID, displayName = "从图像读取单调性")
+            publishMastery(
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = 0.1,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            assertNull(repository.prerequisiteRemediation(unitId))
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun aQuestionWithNoRecordedPrerequisiteOffersNoRemediation() = runBlocking {
+        // 没有前置关系 ≠ 前置缺失。若把两者混为一谈，任何一道新绑定的题都会被判成缺前置。
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            addBoundTeachingMaterial(
+                materialId = "material:prereq:misconception",
+                knowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只按局部形状下结论。",
+            )
+            publishMastery(
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = 0.1,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            assertNull(repository.prerequisiteRemediation(unitId))
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
+     * 前置材料的检索必须用**前置 KC 自己的科目**：`TutorTeachingReferenceSelector` 会按
+     * subject 过滤，用题目的科目去查在两者不一致时会静默拿到空集——前置关系看起来"不存在"，
+     * 而不是查询出错了。这里让前置节点的科目与题目科目不同，锁定的是"以节点为准"。
+     */
+    @Test
+    fun thePrerequisiteMaterialIsLookedUpUnderThePrerequisiteNodeSubject() = runBlocking {
+        val unitId = M1_LEECH_PRACTICE_UNIT_ID
+        val database = FakeStudyDatabasePort().apply {
+            addPrerequisiteRelation(
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+            )
+            addKnowledgeNode(PREREQ_NODE_ID, displayName = "从图像读取单调性", subject = "PHYSICS")
+            addBoundTeachingMaterial(
+                materialId = "material:prereq:misconception",
+                knowledgeNodeId = PREREQ_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只按局部形状下结论。",
+                subject = "PHYSICS",
+            )
+            publishMastery(
+                dependentKnowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = 0.2,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope)
+
+        try {
+            repository.initialize()
+            assertNotNull(repository.prerequisiteRemediation(unitId))
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
     private fun FakeStudyDatabasePort.addBoundTeachingMaterial(
         materialId: String,
         knowledgeNodeId: String,
         type: String,
         content: String,
+        subject: String = "MATH",
     ) {
         teachingMaterials += KnowledgeTeachingMaterialRecord(
             materialId = materialId,
             stableCode = materialId,
-            subject = "MATH",
+            subject = subject,
             materialType = type,
             title = "材料 $materialId",
             summaryMarkdown = "摘要",
@@ -1040,6 +1308,46 @@ class RoomBackedStudyExperienceRepositoryTest {
         )
     }
 
+    private fun FakeStudyDatabasePort.addKnowledgeNode(
+        knowledgeNodeId: String,
+        displayName: String,
+        subject: String = "MATH",
+    ) {
+        if (knowledgeNodes.any { it.knowledgeNodeId == knowledgeNodeId }) return
+        knowledgeNodes += KnowledgeNodeSeedRecord(
+            knowledgeNodeId = knowledgeNodeId,
+            stableCode = knowledgeNodeId,
+            subject = subject,
+            displayName = displayName,
+            parentKnowledgeNodeId = null,
+            taxonomyVersion = "taxonomy-m1",
+            createdAtEpochMillis = 1_000,
+        )
+    }
+
+    private fun FakeStudyDatabasePort.addPrerequisiteRelation(
+        prerequisiteKnowledgeNodeId: String,
+        dependentKnowledgeNodeId: String,
+        subject: String = "MATH",
+    ) {
+        // 被查询的 KC 必须在知识库里存在：它的科目决定关系表的分区查询用哪个 subject。
+        addKnowledgeNode(dependentKnowledgeNodeId, displayName = "闭区间上的函数最值")
+        knowledgeNodeRelations += KnowledgeNodeRelationRecord(
+            relationId = "relation:$prerequisiteKnowledgeNodeId->$dependentKnowledgeNodeId",
+            subject = subject,
+            prerequisiteKnowledgeNodeId = prerequisiteKnowledgeNodeId,
+            dependentKnowledgeNodeId = dependentKnowledgeNodeId,
+            relationType = StudyDbValue.KnowledgeRelationType.PREREQUISITE_OF,
+            sourceId = "source:m1",
+            sourceLocator = "m1",
+            reviewedAtEpochMillis = 1_000,
+        )
+    }
+
+    /**
+     * 把两个 KC 的掌握度写进当前投影（实现在 [FakeStudyDatabasePort.publishMastery]，
+     * 那里才能碰到私有的投影字段）。
+     */
     private fun repository(
         database: StudyDatabasePort,
         applicationScope: CoroutineScope,
@@ -1111,6 +1419,13 @@ class RoomBackedStudyExperienceRepositoryTest {
 
         /** The node the M1 artifact declares, and the node teaching material binds to. */
         const val M1_LEECH_KNOWLEDGE_NODE_ID = "knowledge:m1:math.derivative.closed_interval_extrema"
+
+        /** A prerequisite of the M1 node (spec §2.9 fixtures). */
+        const val PREREQ_NODE_ID = "knowledge:m1:math.read-monotonicity-from-graph"
+
+        /** A captured question bound to a node that has a prerequisite. */
+        const val PREREQ_DEPENDENT_UNIT_ID = "unit-prereq"
+        const val PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID = "knowledge:math.monotonicity-symbolic"
     }
 }
 
@@ -1136,6 +1451,9 @@ internal data class ResolvedPredictionOutcomeCall(
     val observedAtEpochMillis: Long,
     val hintCount: Int = 0,
 )
+
+/** 对齐 `RoomKnowledgeBaseStore.readKnowledgeNodeRelationsForDependents` 的 256 上限。 */
+private const val MAX_DEPENDENT_NODES_PER_QUERY = 256
 
 internal class FakeStudyDatabasePort : StudyDatabasePort {
     private val mistakes = MutableStateFlow<List<MistakeRecord>>(emptyList())
@@ -1168,6 +1486,7 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val visualAttempts = mutableListOf<VisualInteractionAttemptRecord>()
     val practiceUnitBindings = mutableListOf<PracticeUnitKnowledgeBindingRecord>()
     val knowledgeNodes = mutableListOf<KnowledgeNodeSeedRecord>()
+    val knowledgeNodeRelations = mutableListOf<KnowledgeNodeRelationRecord>()
     val teachingMaterials = mutableListOf<KnowledgeTeachingMaterialRecord>()
     val materialNodeBindings = mutableListOf<KnowledgeTeachingMaterialNodeBindingRecord>()
     val recordedChatEvidence =
@@ -1185,6 +1504,13 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
      * 不能一律返回空——否则"学生答错了还判正向"这条路径在测试里不可达。
      */
     val tutorTurnResponses = mutableListOf<TutorTurnResponseRecord>()
+
+    /**
+     * Tutor conversation messages of the fake, used to give the MASTERY_UPDATE
+     * evidence-anchor verification a real session corpus. Empty by default:
+     * a blank corpus verifies zero anchors, which is the fail-closed posture.
+     */
+    val tutorMessages = mutableListOf<TutorMessageRecord>()
 
     override suspend fun recordStudentModelPredictions(
         predictions: List<StudentModelPredictionRecord>,
@@ -1315,6 +1641,62 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         )
         learningLedgerHead.value = 1
     }
+
+    /**
+     * Seeds mastery for two knowledge nodes (spec §2.9) as the fake's current
+     * projection, so the prerequisite gate can be exercised without driving real
+     * evidence through the ledger.
+     *
+     * The decision value is `conservativeMasteryScore` — §2.9 reads the
+     * conservative lower bound, not the point estimate.
+     */
+    fun publishMastery(
+        dependentKnowledgeNodeId: String,
+        dependentMastery: Double,
+        prerequisiteKnowledgeNodeId: String,
+        prerequisiteMastery: Double,
+    ) {
+        persistedLearnerSnapshot = PersistedLearnerSnapshot(
+            projectionName = "study-experience-v1",
+            stateVersion = 1,
+            knownLedgerHeadSequence = 1,
+            snapshot = LearnerSnapshot(
+                learnerId = "learner:local",
+                problemMemoryStates = emptyMap(),
+                knowledgeMasteryStates = mapOf(
+                    dependentKnowledgeNodeId to masteryStateFor(
+                        dependentKnowledgeNodeId,
+                        dependentMastery,
+                    ),
+                    prerequisiteKnowledgeNodeId to masteryStateFor(
+                        prerequisiteKnowledgeNodeId,
+                        prerequisiteMastery,
+                    ),
+                ),
+                checkpoint = ProjectionCheckpoint(
+                    lastSequence = 1,
+                    projectorVersion = LearningProjector.VERSION,
+                    projectedAtEpochMillis = 1_000,
+                ),
+                generatedAtEpochMillis = 1_000,
+            ),
+        )
+        learningLedgerHead.value = 1
+    }
+
+    private fun masteryStateFor(
+        knowledgeNodeId: String,
+        conservativeMastery: Double,
+    ) = KnowledgeMasteryState(
+        knowledgeNodeId = knowledgeNodeId,
+        masteryScore = conservativeMastery,
+        conservativeMasteryScore = conservativeMastery,
+        evidenceMass = 2.0,
+        status = MasteryStatus.LEARNING,
+        calibrationSupport = CalibrationSupport.SUPPORTED,
+        projectorVersion = LearningProjector.VERSION,
+        checkpointSequence = 1,
+    )
 
     override fun observeMistakes(): Flow<List<MistakeRecord>> = mistakes
 
@@ -1579,7 +1961,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override fun observeTutorMessages(
         conversationId: String,
-    ): Flow<List<TutorMessageRecord>> = MutableStateFlow(emptyList())
+    ): Flow<List<TutorMessageRecord>> = MutableStateFlow(
+        tutorMessages.filter { it.conversationId == conversationId },
+    )
 
     override fun observeTutorConversation(
         conversationId: String,
@@ -1666,7 +2050,14 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun readKnowledgeNodeRelationsForDependents(
         subject: String,
         dependentKnowledgeNodeIds: Set<String>,
-    ): List<KnowledgeNodeRelationRecord> = emptyList()
+    ): List<KnowledgeNodeRelationRecord> {
+        // 与 RoomKnowledgeBaseStore 同一条硬约束：分块不是优化，是正确性前提。把它复制到
+        // 假实现里，才能让"调用方是否分块"在测试中真的可判定。
+        require(dependentKnowledgeNodeIds.size <= MAX_DEPENDENT_NODES_PER_QUERY)
+        return knowledgeNodeRelations.filter { relation ->
+            relation.subject == subject && relation.dependentKnowledgeNodeId in dependentKnowledgeNodeIds
+        }
+    }
 
     override suspend fun readKnowledgeTeachingMaterialsForNodes(
         subject: String,

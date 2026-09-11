@@ -40,6 +40,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
+import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediation
 import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityBlockReason
 import com.tingyun.smartmistakebook.core.domain.TutorCapabilityDecision
@@ -76,6 +77,15 @@ fun ReviewSessionScreen(
      * the question. Null (the default) keeps every existing caller's behaviour.
      */
     reTeachOpening: ReTeachOpening? = null,
+    /**
+     * Spec §2.9 prerequisite remediation: non-null only when one of this question's
+     * prerequisite knowledge points is below the ready threshold and has reviewed
+     * material. Unlike [reTeachOpening] it does **not** withhold the question — the
+     * material is context beside the question, because the evidence for blocking on
+     * a missing prerequisite is only indirect and the external paradigms run
+     * remediation in parallel with the main work. Null keeps existing callers.
+     */
+    prerequisiteRemediation: PrerequisiteRemediation? = null,
     queuePosition: Int,
     queueSize: Int,
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyReviewChoiceSubmissionResult,
@@ -120,6 +130,7 @@ fun ReviewSessionScreen(
                     presentationId = presentationId,
                     profile = profile,
                     reTeachOpening = reTeachOpening,
+                    prerequisiteRemediation = prerequisiteRemediation,
                     queuePosition = queuePosition,
                     queueSize = queueSize,
                     onSubmitChoice = onSubmitChoice,
@@ -148,6 +159,7 @@ private fun ReviewSessionContent(
     presentationId: String,
     profile: StudyProfileOverview,
     reTeachOpening: ReTeachOpening?,
+    prerequisiteRemediation: PrerequisiteRemediation?,
     queuePosition: Int,
     queueSize: Int,
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyReviewChoiceSubmissionResult,
@@ -201,6 +213,12 @@ private fun ReviewSessionContent(
             style = MaterialTheme.typography.bodyMedium,
             color = SmartColors.InkSecondary,
         )
+        // 前置补救（spec §2.9）：紧邻题干呈现，但**不拦作答**——题干、选项、提交按钮照常可用。
+        val remediation = prerequisiteRemediation
+        if (remediation != null) {
+            Spacer(Modifier.height(12.dp))
+            PrerequisiteRemediationCard(remediation = remediation)
+        }
         Spacer(Modifier.height(16.dp))
         SafeMarkdownText(
             markdown = assessmentItem.stemMarkdown,
@@ -493,6 +511,54 @@ private fun ReTeachOpeningCard(
             .fillMaxWidth()
             .testTag("review_reteach_acknowledge"),
     )
+}
+
+/**
+ * 前置补救卡（spec §2.9）：目标题的某个前置知识点未达可学门槛时，把**那个前置**的讲解材料
+ * 摆在题干旁。
+ *
+ * 这里刻意**没有** [ReTeachOpeningCard] 那样的确认按钮：补救不阻塞作答，学员可以直接答题。
+ * 用低调的填充色也有意义——它是可选上下文，不是"必须先做的事"，视觉上不该与开场重教
+ * 同等醒目，否则每个有前置缺口的题都会看起来像一道关卡。
+ */
+@Composable
+private fun PrerequisiteRemediationCard(remediation: PrerequisiteRemediation) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("review_prereq_remediation"),
+        color = SmartColors.JadeSoft.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Outline),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = "先补前置：${remediation.prerequisiteName}",
+                color = SmartColors.Ink,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.testTag("review_prereq_name"),
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "这道题用得上它。看完再作答也行，直接作答也行。",
+                color = SmartColors.InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = remediation.title,
+                color = SmartColors.InkSecondary,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.testTag("review_prereq_material_title"),
+            )
+            Spacer(Modifier.height(10.dp))
+            SafeMarkdownText(
+                markdown = remediation.markdown,
+                color = SmartColors.Ink,
+                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 27.sp),
+            )
+        }
+    }
 }
 
 @Composable

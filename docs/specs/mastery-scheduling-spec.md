@@ -88,6 +88,17 @@ KC 为权威层；practice_unit 级 memory 为其确定性缓存。视觉通道 
 `prereqGap(k) = max(0, τ_ready − min_p masteryScore_p)`。
 选题打分：`score = W1·urgency + W2·weakness + W3·(−prereqGap) + W4·confusable + …`（W 初值 5.0/3.0/2.0/1.5，对齐现 planner 权重结构）；gap>0 时对该 KC 检索 teaching_material 注入补救项。
 
+**逐条实现状态（2026-09-12 核实）**：判定、降权与会话注入三处均已接线。
+
+- **判定权威**：`KnowledgeReadiness`（core:domain）——`READY_THRESHOLD = 0.6`、`weakestBlockingPrerequisite`、`gapOf`。排程侧（降权 + `ReviewReason.PREREQ_GAP`）与会话侧（注入补救材料）读**同一条**判定；此前阈值以两份同值常量存在，改一处不会让另一处变红。
+- **接线前实况（这次修掉的失败）**：`ReviewPlanningRequest.knowledgePrerequisites` 自声明"取自 PREREQUISITE_OF 关系表"，但**生产调用点从未赋值**。于是 `prereqGap` 结构性恒为 `0.0`、`ReviewReason.PREREQ_GAP` 从不出现、`PREREQ_GAP_WEIGHT × prereqGap` 是一段死算术；同一张图还供养 §6/C3 的"共享前置的易混对"，那条通道也一并失效。现在由 `KnowledgePrerequisiteReader`（core:data）解析：按 **KC 自己的科目**分区（关系表按 subject 分区，用题目的科目去查会静默返回空集）、按 256 分块（`RoomKnowledgeBaseStore` 的硬上限，超限抛异常）、并把**前置节点自己的行**一并取回（前置通常不在被查询集合里）；`StudyReviewPlannerService` 喂入当日候选所绑 KC 的图。
+- **会话侧注入**：`StudyExperienceRepository.prerequisiteRemediation` + `PrerequisiteRemediationPolicy`（core:domain）+ `ReviewSessionScreen` 的 `review_prereq_remediation` 卡。**非阻塞**——材料与题干并列，选项与提交按钮同时可用（与 §2.16 的必经开场相反）。依据：leech 卡已连续失败 6 次，"不重教就再出同一道题"是重复一个已被证明无效的动作；而"先补前置 vs 继续做题"的正面比较实验**未找到**（`docs/research/leech-remediation-research.md` §6.5，只有 productive failure 的间接约束），外部范式（Khan Readiness Check / ALEKS）也是与主课程**并行**运行、不阻塞。把间接推断当成阻塞门，代价是学员可能答得出来的题被一道材料挡住。
+- **原文歧义与取舍（记录在案）**：本条原文"对该 KC 检索 teaching_material 注入补救项"可读作"检索**目标** KC 的材料"；落地方案 R9 写的是"注入**前置 KC** 的题/材料"。两者只能取一：gap 度量的是"缺的那个前置"，目标 KC 自己的讲解与它并不对应（那正是 §2.16 的场景）。**实现按 R9 取前置 KC 的材料**。
+- **未知 ≠ 不会**：没有掌握度证据的前置不计为缺失。否则任何一次新绑定的前置关系都会立刻把题判成"前置缺失"，通道被噪声淹没而不是被信号驱动。
+- 数值等级：τ_ready = 0.6 与权重 2.0 均为**工程先验**；ALEKS 公开材料未给出该阈值（研究 §4 `[未找到]`）。禁止写成"科学研究表明"。
+
+**仍开放**：知识点复习队列本身（`currentKnowledgeReviewPlan` → `selectKnowledgeReviewQueue`）**未**纳入前置判定——它按"绑定题目的预测 R 取最小"排序，`KnowledgeReviewCandidate` 没有前置维度。是否要以及如何把 ready 门扩到**出题**对象（而不只是错题排程与补救材料），spec 未规定，属另一次设计决定，不在本次接线范围。
+
 ### 2.10 毕业
 连续 3 次跨日成功（G≥2）且 `I(r*,S)≥90 天` → Graduated：进 maintenance 队列，`next = I(0.8, S)`；maintenance 中 Again → 回常规队列。毕业≠删除（Karpicke 2008 证伪「答对即移除」）。
 
@@ -120,7 +131,7 @@ w = [0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
 
 **逐条实现状态（2026-09-11 核实）**：判定（`ProblemMemoryState.isLeeched`）与 difficulty 冻结（`LearningProjector`）已实现；"暂停常规排期"实现为 ×0.15 重罚而非硬排除（硬排除会让"跨日成功清零"这条恢复路径不可达，自锁）；**"强制注入 teaching_material 重教"已实现为错题复习会话的开场**——`StudyExperienceRepository.reTeachOpening` 判定并取材料（判定与选材是 core:domain 的纯策略 `ReTeachInjection`），`ReviewSessionScreen` 在题干出现**之前**呈现材料，学员确认后才露出题目与选项（`ReviewSessionViewModel.reTeachAcknowledged`，经 `SavedStateHandle` 穿过进程死亡）。材料顺序的权威仍是 `TutorTeachingReferenceSelector.reTeachPriority`（针对错误认知的 `MISCONCEPTION_GUIDE`、`WORKED_EXAMPLE` 先于泛泛讲解，`COMPLETE_SOLUTION` 最后——依据 Metcalfe 2017/2025）；材料以**只读**方式呈现，**刻意不走 `revealAnswer`**——后者会记一条"看了答案"事件，用它做重教会把学员随后的独立作答污染成"看答案后作答"。
 
-**本条的已知边界（三条，勿当作已闭合）**：① 开场接在**有已校验教学工件**的复习项上（工件自带 `knowledgeNodeIds` 作为检索范围）；② **无工件**的自述/评级项（`CapturedReviewSessionScreen`）**未接**——那条路径拿不到知识点范围，要接需先解决"会话内从哪里取得知识点 id"（`MistakeOrganizationRepository` 的确认绑定是候选，未验证）；③ §2.9 的**前置补救**仍未接线，它需要在前置 KC 上取材料（与本题 KC 不同），复用同一注入环节但需另一次范围解析。
+**本条的已知边界（三条，勿当作已闭合）**：① 开场接在**有已校验教学工件**的复习项上（工件自带 `knowledgeNodeIds` 作为检索范围）；② **无工件**的自述/评级项（`CapturedReviewSessionScreen`）**未接**——那条路径拿不到知识点范围，要接需先解决"会话内从哪里取得知识点 id"（`MistakeOrganizationRepository` 的确认绑定是候选，未验证）；③ §2.9 的**前置补救**已接线（2026-09-12，见 §2.9 实现状态）——同一注入环节的第二次范围解析，但走**前置** KC 且**不阻塞**。
 
 ### 2.17 考前模式
 申报考试日 → 前 14 天 `r*_exam = min(0.97, r* + (0.97−r*)·(1 − d/14))` 线性爬升；考前队列把 `R < r*_exam` 的题纳入候选（限会话预算）；考卷成绩/考后自评回灌 prediction_outcome（校准影 HLR）；考后 r* 由日历自动回落。

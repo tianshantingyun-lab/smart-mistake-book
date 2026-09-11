@@ -48,7 +48,11 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResul
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
+import com.tingyun.smartmistakebook.core.data.knowledge.KnowledgePrerequisiteReader
 import com.tingyun.smartmistakebook.core.data.knowledge.RoomTutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.domain.KnowledgeReadiness
+import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediation
+import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediationPolicy
 import com.tingyun.smartmistakebook.core.domain.ReTeachInjection
 import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
@@ -170,6 +174,14 @@ class RoomBackedStudyExperienceRepository(
     private val teachingReferences: TutorTeachingReferenceRepository =
         RoomTutorTeachingReferenceRepository(database)
 
+    /**
+     * The KC prerequisite graph (spec §2.9), resolved from the reviewed
+     * PREREQUISITE_OF relations. One instance serves both consumers: the planner
+     * (which demotes candidates whose prerequisites are missing) and the session
+     * surface (which offers the missing prerequisite's material).
+     */
+    private val knowledgePrerequisites = KnowledgePrerequisiteReader(database)
+
     private val reviewLogSink = ReviewLogSink(
         database = database,
         learnerId = learnerId,
@@ -238,6 +250,7 @@ class RoomBackedStudyExperienceRepository(
         schedulingSettingsStore = schedulingSettingsStore,
         predictionAuditService = predictionAuditService,
         predictionAuditSink = predictionAuditSink,
+        knowledgePrerequisites = knowledgePrerequisites,
         learnerSnapshot = { currentLearnerSnapshot() },
     )
     private var initialized = false
@@ -468,6 +481,43 @@ class RoomBackedStudyExperienceRepository(
             limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
         )
         return ReTeachInjection.openingFor(memory, references)
+    }
+
+    /**
+     * 前置补救（spec §2.9）：本题的某个前置 KC 未达可学门槛时，返回**那个前置 KC** 的讲解
+     * 材料，供会话在题干旁并列呈现。
+     *
+     * 判定用 [KnowledgeReadiness]——与排程侧给该题降权、打 `PREREQ_GAP` 理由用的是同一条
+     * 规则。两处各写一遍阈值会让"排程认为缺前置、会话却不给补救"成为可能。
+     *
+     * 材料按**前置 KC 自己的科目**检索：`TutorTeachingReferenceSelector` 会按 subject 过滤，
+     * 用题目的科目去查在两者不一致时会静默拿到空集。顺序仍由生产选择器给出。
+     */
+    override suspend fun prerequisiteRemediation(
+        practiceUnitId: String,
+    ): PrerequisiteRemediation? {
+        val artifact = teachingArtifact(practiceUnitId) ?: return null
+        if (artifact.knowledgeNodeIds.isEmpty()) return null
+        val snapshot = currentLearnerSnapshot()
+        val graph = knowledgePrerequisites.graphFor(artifact.knowledgeNodeIds)
+        val blocking = KnowledgeReadiness.weakestBlockingPrerequisite(
+            knowledgeNodeIds = artifact.knowledgeNodeIds,
+            prerequisitesByNode = graph.prerequisitesByDependent,
+            masteryScoreOf = { knowledgeNodeId ->
+                snapshot.knowledgeMasteryStates[knowledgeNodeId]?.conservativeMasteryScore
+            },
+        ) ?: return null
+        val prerequisiteNode = graph.nodesById[blocking.prerequisiteKnowledgeNodeId]
+            ?: return null
+        val references = teachingReferences.referencesFor(
+            subject = prerequisiteNode.subject,
+            knowledgeNodeIds = setOf(blocking.prerequisiteKnowledgeNodeId),
+            limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
+        )
+        return PrerequisiteRemediationPolicy.offer(
+            prerequisiteName = prerequisiteNode.displayName,
+            references = references,
+        )
     }
 
     override suspend fun submitChoice(

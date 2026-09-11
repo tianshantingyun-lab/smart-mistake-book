@@ -55,16 +55,7 @@ object ReTeachInjection {
             materialId = reference.materialId,
             title = reference.title,
             materialType = reference.materialType,
-            markdown = teachableMarkdown(reference),
+            markdown = reference.asReadOnlyTeachingBlock(),
         )
     }
-
-    /**
-     * 正文 + 适用范围。边界（`boundaryMarkdown`）必须一并呈现：重教材料是"针对这类错误
-     * 认知"的，不写出它的适用条件就等于让学员把它外推到不成立的题目上——而
-     * `MISCONCEPTION_GUIDE` / `WORKED_EXAMPLE` 正是最容易被过度外推的两类。
-     * 该字段由 [TutorTeachingReference] 的构造约束保证非空，故这里没有空值分支。
-     */
-    private fun teachableMarkdown(reference: TutorTeachingReference): String =
-        reference.contentMarkdown.trim() + "\n\n**适用范围**：" + reference.boundaryMarkdown.trim()
 }
