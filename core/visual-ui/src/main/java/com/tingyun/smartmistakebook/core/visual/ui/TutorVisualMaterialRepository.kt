@@ -4,7 +4,6 @@ import android.content.Context
 import com.google.android.filament.filamat.MaterialBuilder
 import java.io.File
 import java.nio.ByteBuffer
-import java.nio.file.StandardCopyOption
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -25,19 +24,13 @@ internal object TutorVisualMaterialRepository {
             cacheFile.parentFile?.mkdirs()
             val staging = File(cacheFile.parentFile, "${cacheFile.name}.staging")
             staging.outputStream().use { it.write(bytes) }
-            runCatching {
-                java.nio.file.Files.move(
-                    staging.toPath(),
-                    cacheFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.ATOMIC_MOVE,
-                )
-            }.getOrElse {
-                java.nio.file.Files.move(
-                    staging.toPath(),
-                    cacheFile.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING,
-                )
+            // java.io, not java.nio.file.Files.move: the latter is API 26 while
+            // minSdk is 23. The staging file is a sibling of the target, so the
+            // rename is the same-directory atomic swap the ATOMIC_MOVE path
+            // asked for; the copy is the same fallback the old code had.
+            if (!staging.renameTo(cacheFile)) {
+                staging.copyTo(cacheFile, overwrite = true)
+                staging.delete()
             }
         }
         ByteBuffer.wrap(bytes)
