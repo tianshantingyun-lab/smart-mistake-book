@@ -121,7 +121,6 @@ internal fun TutorModelPanel(
     onOpenVisualOriginal: () -> Unit = {},
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     onOpenModelSettings: () -> Unit,
-    consentEnabled: Boolean = false,
     conversationEnabled: Boolean = true,
     headerContent: @Composable () -> Unit = {},
     leadingContent: @Composable ColumnScope.() -> Unit = {},
@@ -150,7 +149,6 @@ internal fun TutorModelPanel(
         }
         return
     }
-    val consentOn = consentEnabled
     var provider by remember(question.sessionId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var providerLoadFailed by remember(question.sessionId) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -296,7 +294,6 @@ internal fun TutorModelPanel(
                             candidate.supports(ModelTaskKind.TUTOR_PLAN)
                     }
                 },
-                consentEnabled = { consentOn },
                 question = { question },
                 profile = { profile },
                 clock = clock,
@@ -334,13 +331,12 @@ internal fun TutorModelPanel(
     }
     LaunchedEffect(
         executablePlanProvider?.providerId,
-        consentEnabled,
         observedTask,
     ) {
         if (
             observedTask == null &&
             executablePlanProvider != null &&
-            tutorAgentChatEnabled(executablePlanProvider, consentEnabled, ModelTaskKind.TUTOR_PLAN)
+            tutorAgentChatEnabled(executablePlanProvider, ModelTaskKind.TUTOR_PLAN)
         ) {
             executeTurn(1, null, emptyList(), emptyList())
         }
@@ -383,15 +379,6 @@ internal fun TutorModelPanel(
                         onAction = onOpenModelSettings,
                     )
 
-                    executablePlanProvider.executionLocation ==
-                        ModelExecutionLocation.EXTERNAL_PROVIDER && !consentEnabled ->
-                        TutorModelStatusCard(
-                            title = "需在设置中开启模型智能体",
-                            detail = "拍照与讲题需先在大模型设置里开启『模型智能体』。",
-                            actionLabel = "去设置",
-                            onAction = onOpenModelSettings,
-                        )
-
                     else -> TutorModelStatusCard(
                         title = "正在准备这道题",
                         detail = "正在整理讲解，请稍候。",
@@ -423,7 +410,7 @@ internal fun TutorModelPanel(
     } == true
     val latestRespondTasks = conversationProjection.latestRespondTasks
     val respondAgentAuthorized =
-        tutorAgentChatEnabled(currentProvider, consentOn, ModelTaskKind.TUTOR_RESPOND)
+        tutorAgentChatEnabled(currentProvider, ModelTaskKind.TUTOR_RESPOND)
     val chatSending = chatSubmitPending || latestRespondTasks.any { task ->
         currentProvider?.let(task::matchesTutorProvider) == true &&
             task.status.isTutorExecutionPending()
@@ -502,7 +489,6 @@ internal fun TutorModelPanel(
         TutorVisualWorkCommands(
             sink = TutorVisualWorkSink(
                 currentProvider = { currentProvider },
-                consentEnabled = { consentOn },
                 question = { question },
                 clock = clock,
                 sourceAssets = { visualSourceAssets },
@@ -522,7 +508,6 @@ internal fun TutorModelPanel(
         currentProvider?.providerId,
         currentProvider?.modelId,
         currentProvider?.providerConfigurationVersion,
-        consentEnabled,
         persistedVisualGenerationTasks,
     ) {
         visualWork.dispatchGenerate()
@@ -534,7 +519,6 @@ internal fun TutorModelPanel(
         currentProvider?.providerId,
         currentProvider?.modelId,
         currentProvider?.providerConfigurationVersion,
-        consentEnabled,
         persistedVisualGenerationTasks,
         persistedVisualReviewTasks,
     ) {
@@ -546,7 +530,6 @@ internal fun TutorModelPanel(
             scope = scope,
             sink = TutorRespondSink(
                 currentProvider = { currentProvider },
-                consentEnabled = { consentOn },
                 question = { question },
                 profile = { profile },
                 clock = clock,
@@ -632,7 +615,6 @@ internal fun TutorModelPanel(
         currentInput.priorCycleStudentMessages,
         nextTurnExists,
         executablePlanProvider?.providerConfigurationVersion,
-        consentEnabled,
     ) {
         if (
             currentHistory.isNotEmpty() &&

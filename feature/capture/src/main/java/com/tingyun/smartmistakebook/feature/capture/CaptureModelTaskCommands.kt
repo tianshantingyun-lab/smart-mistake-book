@@ -84,7 +84,7 @@ internal class CaptureModelTaskCommands(
         sourceAssetId: String?,
         draftId: String?,
         occurredAt: Long?,
-        agentConsentGranted: Boolean,
+        egressAllowed: Boolean,
     ) {
         val currentProvider = provider ?: return
         val currentRequestId = requestId ?: return
@@ -94,7 +94,7 @@ internal class CaptureModelTaskCommands(
             ?: return
         val currentOccurredAt = occurredAt ?: return
         if (currentProvider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-            !agentConsentGranted
+            !egressAllowed
         ) {
             return
         }
@@ -110,7 +110,7 @@ internal class CaptureModelTaskCommands(
                 assessedPage.width,
                 assessedPage.height,
                 currentOccurredAt,
-                agentConsentGranted,
+                egressAllowed,
             )
         }
         coordinator.executeAssessment(request) { snapshot ->
@@ -130,7 +130,7 @@ internal class CaptureModelTaskCommands(
         requestId: String?,
         draftId: String?,
         basisRevision: Int?,
-        agentConsentGranted: Boolean,
+        egressAllowed: Boolean,
     ) {
         val currentProvider = provider ?: return
         val currentRequestId = requestId ?: return
@@ -139,7 +139,7 @@ internal class CaptureModelTaskCommands(
         val readiness = captureParseReadiness(state.sourcePages, state.sourcePageAssessmentSnapshots)
             ?: return
         if (currentProvider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-            !agentConsentGranted
+            !egressAllowed
         ) {
             return
         }
@@ -155,7 +155,7 @@ internal class CaptureModelTaskCommands(
                 state.sourcePages,
                 readiness.assessmentRequestIds,
                 readiness.occurredAtEpochMillis,
-                agentConsentGranted,
+                egressAllowed,
             )
         }
         coordinator.executeParse(request) { snapshot ->

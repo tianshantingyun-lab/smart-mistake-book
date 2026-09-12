@@ -119,7 +119,7 @@ class TutorVisualModelTaskPolicyTest {
     }
 
     @Test
-    fun visualAgentGateRequiresConsentAndImageCapabilityForExternalProviders() {
+    fun visualAgentGateRequiresImageCapabilityForExternalProviders() {
         val imageCapable = provider
         val structuredOnly = provider.copy(
             supportsImageInput = false,
@@ -131,56 +131,42 @@ class TutorVisualModelTaskPolicyTest {
         assertTrue(
             tutorAgentChatEnabled(
                 provider = imageCapable,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = imageCapable,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
             ),
         )
         assertFalse(
             tutorAgentChatEnabled(
-                provider = imageCapable,
-                consentEnabled = false,
+                provider = structuredOnly,
                 kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ),
         )
         assertFalse(
             tutorAgentChatEnabled(
                 provider = structuredOnly,
-                consentEnabled = true,
-                kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
-            ),
-        )
-        assertFalse(
-            tutorAgentChatEnabled(
-                provider = structuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = structuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = structuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_RESPOND,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = local,
-                consentEnabled = false,
                 kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ),
         )

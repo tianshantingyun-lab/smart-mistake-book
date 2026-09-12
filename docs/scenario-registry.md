@@ -12,7 +12,7 @@
 
 > **2026-07-23 原子记忆补充：** 题目步骤必须归因到同科原子知识/技能，原子掌握在单科内跨题共享、跨科隔离；可见三级目录不变。知识库没有可靠节点时先形成受控检索请求，不自动写入模型猜测。
 
-> **2026-09-13 逐次发送授权的取代（对齐 2026-09-09 全局同意决定）：** 上一段里「**首次讲题与续聊按当前 Provider、配置/策略版本和披露范围授权；授权不匹配时重新询问**」这句已不再描述现行行为。2026-09-09 的产品裁定把「配置模型 = 全局同意」定死：智能体自主回合（`ModelTaskInput.isAgentConsentEligible`）**发起即外发、不再逐次索要授权**，`ModelEgressPolicy` 直接签发 `ModelExecutionPermit.ProviderConsented`；未列入该集合的请求（TutorLobby、TutorDebrief、ProblemOrganization 等）**仍保持 manifest 门禁与逐次授权不变**。该句所属段落的其余内容（含"三次 dispatch 预算"）同样以增补为准。权威出处：`docs/model-first-product-boundaries.md` 的 2026-09-09 两条 D-001 增补与 `docs/design/tutor-agent-consent-design.md`。实现侧留有的一处残骸（Lobby 的"同意并发送"卡 `TutorLobbyDisclosureCard`）已同期删除。
+> **2026-09-13 逐次发送授权的取代（对齐 2026-09-09 全局同意决定）：** 上一段里「**首次讲题与续聊按当前 Provider、配置/策略版本和披露范围授权；授权不匹配时重新询问**」这句已不再描述现行行为。2026-09-09 的产品裁定把「配置模型 = 全局同意」定死：智能体自主回合（`ModelTaskInput.isAgentConsentEligible`）**发起即外发、不再逐次索要授权**，`ModelEgressPolicy` 直接签发 `ModelExecutionPermit.ProviderConsented`；未列入该集合的请求（TutorLobby、TutorDebrief、ProblemOrganization 等）**仍保持 manifest 门禁与逐次授权不变**。该句所属段落的其余内容（含"三次 dispatch 预算"）同样以增补为准。权威出处：`docs/model-first-product-boundaries.md` 的 2026-09-09 两条 D-001 增补与 `docs/design/tutor-agent-consent-design.md`。实现侧留有的一处残骸（Lobby 的"同意并发送"卡 `TutorLobbyDisclosureCard`）已同期删除。**（2026-09-13 追加：全局同意开关本身也已删除，`ModelAgentConsentStore`、设置页开关与 `tutorAgentChatEnabled(provider, consentEnabled, kind)` 的 `consentEnabled` 形参一并移除，配置好 provider 即唯一条件；请求信封字段 `agentConsentGranted` 保留且调用点恒置 `true`。）**
 
 ## 1. 权威边界
 

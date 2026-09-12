@@ -73,7 +73,6 @@ internal class TutorRespondCommands(
         if (
             !tutorRespondCollectCanStart(
                 provider = provider,
-                consentEnabled = sink.consentEnabled(),
                 requestHasEgressManifest = request.egressManifest != null,
                 allowExternalEnvelopeForLocalRecovery = allowExternalEnvelopeForLocalRecovery,
                 chatSubmitPending = sink.chatSubmitPending(),
@@ -259,7 +258,6 @@ internal class TutorRespondCommands(
 
 internal class TutorRespondSink(
     val currentProvider: () -> ProviderCapabilitySnapshot?,
-    val consentEnabled: () -> Boolean,
     val question: () -> TutorQuestionContext,
     val profile: () -> StudyProfileOverview,
     val clock: () -> Long,

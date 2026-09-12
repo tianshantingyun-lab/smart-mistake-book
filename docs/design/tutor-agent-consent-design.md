@@ -16,6 +16,23 @@ Scope: tutor conversation becomes a WeChat-style agent — no per-message/per-mo
 > self-calls tools, and answers. Tutor **visual region-crops are a supported runtime input** (NOT
 > crop-blocked) and egress under the same global consent.
 
+> **2026-09-13 增补：同意开关本身已删除（产品裁定「配置模型 = 全局同意」的字面落地）。**
+> 曾短暂存在的 `ModelAgentConsentStore` / `DataStoreModelAgentConsentStore` 及其
+> `CapabilityScreen` 开关、以及 `tutorAgentChatEnabled` 的 `consentEnabled` 形参**全部删除**：
+> 配置好 provider 就是唯一条件，再没有「已配置但已关闭」这一状态。因此：
+> - **§1.7 与 §2.2 被取代的部分**：§1.7 描述的 store 接口与开关（"Introduce the store interface
+>   exactly where that supplier sits"）**从未保留**，已随本次删除移除；§2.2 的闸门公式去掉
+>   `consentEnabled` 一项，现行形式为 `tutorAgentChatEnabled(provider, kind)`。两节的其余内容
+>   （eligible kind 集合、manifest 豁免、视觉裁切支持、LOCAL/UNAVAILABLE 的 fail-closed 规则）**继续有效**。
+> - **请求信封不变**：`ModelTaskInput.agentConsentGranted` 字段与 schema/fingerprint 处理一律不动，
+>   所有 agent-eligible 调用点照常置 `true`（本条只删「谁来决定这个布尔」，不删布尔本身）。
+> - **唯一零出网形态**：去掉开关后，能保证「装了就不出网」的只有 `strictOffline` flavor
+>   （无 INTERNET 权限）。`localFirst` 下若学生要停掉图片出网，可行手段是删除模型配置，而不是关一个开关。
+> - 附带订正：`BatchOrganizationConsentException` → `BatchOrganizationUnavailableException`
+>   （触发条件从来是「没有可用模型」而非「未同意」），设置 CTA 文案同步去掉「开启模型智能体」。
+> - 相关出处：`docs/model-first-product-boundaries.md` 第 13 行增补的 2026-09-13 附注、
+>   `docs/scenario-registry.md` 第 15 行。
+
 ---
 
 ## 0. Reader map — where the file leads
@@ -177,6 +194,9 @@ failure — never a silent whole-image egress.
 
 ### 1.7 App consent-store interface — where the supplier sits
 
+> **2026-09-13：本节描述的 store 与设置开关最终被删除，不再是现状。** 保留本节以记录当时的接线位置；
+> 现行形态见文首增补。
+
 `app/.../SmartMistakeBookApplication.kt` wires today:
 `captureConsentGranted = { modelConfigurationStore != null }` at the `CaptureWorkflowRepositoryFactory.create`
 call (~line 231). There is **no real consent store yet** (comment at ~228: "a Settings toggle will
@@ -221,7 +241,8 @@ consent none of this is needed for agent-eligible kinds, because the request car
 Goal: sending/next-move/drawing dispatches immediately when a **compatible model is configured AND
 consented**, and fails closed to a "需在设置中配置/开启模型" state (NOT a silent drop) otherwise.
 
-Per send surface the gate collapses to **one boolean** — `tutorAgentChatEnabled(provider, consentEnabled, kind)`:
+Per send surface the gate collapses to **one boolean** — `tutorAgentChatEnabled(provider, kind)`
+（2026-09-13 起不再有 `consentEnabled` 形参；下方代码块保留当时的公式）：
 
 ```
 tutorAgentChatEnabled(provider, consentEnabled, kind) =

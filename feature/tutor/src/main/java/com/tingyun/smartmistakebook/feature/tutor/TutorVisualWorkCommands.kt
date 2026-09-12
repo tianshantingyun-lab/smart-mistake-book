@@ -43,7 +43,7 @@ internal class TutorVisualWorkCommands(
         val assets = sink.sourceAssets()
         if (
             provider == null ||
-            !tutorAgentChatEnabled(provider, sink.consentEnabled(), ModelTaskKind.TUTOR_VISUAL_GENERATE) ||
+            !tutorAgentChatEnabled(provider, ModelTaskKind.TUTOR_VISUAL_GENERATE) ||
             assets.isEmpty()
         ) {
             sink.setGenerateBuildFailures(emptySet())
@@ -90,7 +90,7 @@ internal class TutorVisualWorkCommands(
         val assets = sink.sourceAssets()
         if (
             provider == null ||
-            !tutorAgentChatEnabled(provider, sink.consentEnabled(), ModelTaskKind.TUTOR_VISUAL_REVIEW) ||
+            !tutorAgentChatEnabled(provider, ModelTaskKind.TUTOR_VISUAL_REVIEW) ||
             assets.isEmpty()
         ) {
             sink.setReviewBuildFailures(emptySet())
@@ -139,7 +139,6 @@ internal class TutorVisualWorkCommands(
 
 internal class TutorVisualWorkSink(
     val currentProvider: () -> ProviderCapabilitySnapshot?,
-    val consentEnabled: () -> Boolean,
     val question: () -> TutorQuestionContext,
     val clock: () -> Long,
     val sourceAssets: () -> List<TutorVisualSourceAssetScope>,

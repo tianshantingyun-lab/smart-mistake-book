@@ -72,23 +72,13 @@ class TutorSessionInteractionPolicyTest {
     }
 
     @Test
-    fun respondCollectRequiresAnExecutableProviderAndConsentForExternalDispatch() {
+    fun respondCollectRequiresAnExecutableProviderAndGuardsLocalRecovery() {
         val external = provider()
         val local = provider(executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS)
 
         assertFalse(
             tutorRespondCollectCanStart(
                 provider = null,
-                consentEnabled = true,
-                requestHasEgressManifest = false,
-                allowExternalEnvelopeForLocalRecovery = false,
-                chatSubmitPending = false,
-            ),
-        )
-        assertFalse(
-            tutorRespondCollectCanStart(
-                provider = external,
-                consentEnabled = false,
                 requestHasEgressManifest = false,
                 allowExternalEnvelopeForLocalRecovery = false,
                 chatSubmitPending = false,
@@ -97,7 +87,6 @@ class TutorSessionInteractionPolicyTest {
         assertTrue(
             tutorRespondCollectCanStart(
                 provider = external,
-                consentEnabled = true,
                 requestHasEgressManifest = false,
                 allowExternalEnvelopeForLocalRecovery = false,
                 chatSubmitPending = false,
@@ -106,7 +95,6 @@ class TutorSessionInteractionPolicyTest {
         assertFalse(
             tutorRespondCollectCanStart(
                 provider = external,
-                consentEnabled = true,
                 requestHasEgressManifest = false,
                 allowExternalEnvelopeForLocalRecovery = false,
                 chatSubmitPending = true,
@@ -115,7 +103,6 @@ class TutorSessionInteractionPolicyTest {
         assertTrue(
             tutorRespondCollectCanStart(
                 provider = local,
-                consentEnabled = false,
                 requestHasEgressManifest = false,
                 allowExternalEnvelopeForLocalRecovery = false,
                 chatSubmitPending = false,
@@ -192,35 +179,24 @@ class TutorSessionInteractionPolicyTest {
         assertFalse(
             tutorAgentChatEnabled(
                 provider = null,
-                consentEnabled = true,
-                kind = ModelTaskKind.TUTOR_PLAN,
-            ),
-        )
-        assertFalse(
-            tutorAgentChatEnabled(
-                provider = external,
-                consentEnabled = false,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = external,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = local,
-                consentEnabled = false,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertFalse(
             tutorAgentChatEnabled(
                 provider = provider(supportsPlan = false),
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
@@ -236,7 +212,7 @@ class TutorSessionInteractionPolicyTest {
     }
 
     @Test
-    fun agentChatIsTheSingleLiveGateAcrossPlanRespondAndVisual() {
+    fun configuredProviderIsTheSingleLiveGateAcrossPlanRespondAndVisual() {
         val externalImage = provider()
         val externalStructuredOnly = provider(supportsImageInput = false)
         val local = provider(executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS)
@@ -247,76 +223,63 @@ class TutorSessionInteractionPolicyTest {
             ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ModelTaskKind.TUTOR_VISUAL_REVIEW,
         ).forEach { kind ->
-            assertFalse(tutorAgentChatEnabled(provider = null, consentEnabled = true, kind = kind))
+            assertFalse(tutorAgentChatEnabled(provider = null, kind = kind))
+            // A provider the app cannot currently execute against fails closed even though
+            // it is configured: unavailability outranks the configured-model admission.
             assertFalse(
                 tutorAgentChatEnabled(
-                    provider = externalImage,
-                    consentEnabled = false,
+                    provider = provider(executionLocation = ModelExecutionLocation.UNAVAILABLE),
                     kind = kind,
                 ),
             )
             // A local provider never egresses, so the single gate always admits it.
-            assertTrue(
-                tutorAgentChatEnabled(
-                    provider = local,
-                    consentEnabled = false,
-                    kind = kind,
-                ),
-            )
+            assertTrue(tutorAgentChatEnabled(provider = local, kind = kind))
         }
         assertTrue(
             tutorAgentChatEnabled(
                 provider = externalImage,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = externalImage,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_RESPOND,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = externalImage,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = externalImage,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = externalStructuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_PLAN,
             ),
         )
         assertTrue(
             tutorAgentChatEnabled(
                 provider = externalStructuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_RESPOND,
             ),
         )
         assertFalse(
             tutorAgentChatEnabled(
                 provider = externalStructuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_GENERATE,
             ),
         )
         assertFalse(
             tutorAgentChatEnabled(
                 provider = externalStructuredOnly,
-                consentEnabled = true,
                 kind = ModelTaskKind.TUTOR_VISUAL_REVIEW,
             ),
         )

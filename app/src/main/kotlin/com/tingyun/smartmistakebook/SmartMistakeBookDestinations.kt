@@ -261,7 +261,6 @@ internal fun SavedMistakeTutorDestination(
     entry: NavBackStackEntry,
     experience: StudyExperienceSnapshot,
     application: SmartMistakeBookApplication,
-    agentConsentEnabled: Boolean,
     navController: NavHostController,
 ) {
     val key = Routes.decodeMistakeExportKey(
@@ -347,7 +346,6 @@ internal fun SavedMistakeTutorDestination(
             }?.questionMemory,
             onOpenModelSettings = { navController.navigate(Routes.Capability) },
             onBack = navController::popBackStack,
-            agentConsentEnabled = agentConsentEnabled,
         )
     }
 }

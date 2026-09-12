@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Owns capture model-task execution. A request may be dispatched only once per composition
- * process; dispatch itself is guarded by the caller's fail-closed consent check so a restored
+ * process; dispatch itself is guarded by the caller's fail-closed egress check so a restored
  * UI cannot silently re-enqueue egress work after recreation.
  */
 internal class CaptureModelTaskCoordinator(

@@ -88,11 +88,10 @@ class RoomCaptureWorkflowRepository internal constructor(
     private val cleanRedrawScope: CoroutineScope? = null,
     private val modelTasks: ModelTaskRepository? = null,
     /**
-     * Reads the user's current global model-image consent (Settings). A save path
-     * only runs the model-decided redraw round when this returns true; the round
-     * never runs on a user who disabled it.
+     * Whether this build may send model rounds at all (flavour capability). A save path
+     * only runs the model-decided redraw round when this returns true.
      */
-    private val captureConsentGranted: () -> Boolean = { false },
+    private val captureEgressAllowed: () -> Boolean = { false },
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<PendingCaptureItem>> =
         database.observePendingCaptureDrafts().map { records ->
@@ -402,7 +401,7 @@ class RoomCaptureWorkflowRepository internal constructor(
         subjectId: String,
     ) {
         val tasks = modelTasks ?: return
-        if (!captureConsentGranted()) return
+        if (!captureEgressAllowed()) return
         val shouldRedraw = try {
             val classifyRequest = ModelTaskRequest(
                 requestId = "save-decision:$revisionId",
@@ -865,7 +864,7 @@ object CaptureWorkflowRepositoryFactory {
         cleanRedraw: CleanImageGenerator? = null,
         cleanRedrawScope: CoroutineScope? = null,
         modelTasks: ModelTaskRepository? = null,
-        captureConsentGranted: () -> Boolean = { false },
+        captureEgressAllowed: () -> Boolean = { false },
     ): CaptureWorkflowRepository =
         RoomCaptureWorkflowRepository(
             database = database,
@@ -874,6 +873,6 @@ object CaptureWorkflowRepositoryFactory {
             cleanRedraw = cleanRedraw,
             cleanRedrawScope = cleanRedrawScope,
             modelTasks = modelTasks,
-            captureConsentGranted = captureConsentGranted,
+            captureEgressAllowed = captureEgressAllowed,
         )
 }

@@ -26,7 +26,6 @@ import com.tingyun.smartmistakebook.core.data.study.StudyExperienceRepositoryFac
 import com.tingyun.smartmistakebook.core.data.study.VisualInteractionEventSinkFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorInteractionRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorConversationRepositoryFactory
-import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRepository
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreSleepJournalStore
@@ -39,7 +38,6 @@ import com.tingyun.smartmistakebook.core.domain.BackupRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
-import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityTester
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
@@ -242,14 +240,12 @@ class SmartMistakeBookApplication : Application() {
                     )
                 },
                 cleanRedrawScope = applicationScope,
-                // Save path runs a model classify round to decide redraw. Consent =
-                // the global "model agent" toggle AND a configured model; no consent or
-                // no model → no round, original photo kept.
+                // Save path runs a model classify round to decide redraw. Egress needs only a
+                // configured model: the global "model agent" consent toggle was removed
+                // (2026-09-13), so a configured provider is the single condition. No model →
+                // no round, original photo kept.
                 modelTasks = modelTaskRepository,
-                captureConsentGranted = {
-                    modelConfigurationStore != null &&
-                        runBlocking { modelAgentConsentStore?.current() ?: false }
-                },
+                captureEgressAllowed = { modelConfigurationStore != null },
             )
             batchImportRepository = BatchImportRepositoryFactory.create(
                 context = this,
@@ -258,12 +254,9 @@ class SmartMistakeBookApplication : Application() {
                 processingScope = applicationScope,
                 modelTasks = modelTaskRepository,
                 splitImports = SplitImportRepositoryFactory.createConcrete(database),
-                // Batch page organization egresses page images; it runs only under the global
-                // "model agent" consent AND a configured model, mirroring the capture save path.
-                consentEnabled = {
-                    modelConfigurationStore != null &&
-                        runBlocking { modelAgentConsentStore?.current() ?: false }
-                },
+                // Batch page organization egresses page images; same single condition as the
+                // capture save path above (configured model).
+                modelEgressAllowed = { modelConfigurationStore != null },
             )
             backupRepository = BackupRepositoryFactory.create(this, database)
             OrphanAssetGc.enqueue(this)
@@ -363,13 +356,6 @@ class SmartMistakeBookApplication : Application() {
 
     /** Debug-only model-config seed harness (never present in release). */
     private val testSeedReceiver = TestSeedModelConfigReceiver()
-    val modelAgentConsentStore: ModelAgentConsentStore? by lazy {
-        if (capabilities.networkRequestsAllowed) {
-            DataStoreModelAgentConsentStore(this, applicationScope)
-        } else {
-            null
-        }
-    }
 
     val modelCapabilityTester: ModelCapabilityTester? by lazy {
         modelConfigurationStore?.let(ConfiguredModelCapabilityTesterFactory::create)
