@@ -18,6 +18,8 @@ import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredi
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeQuestionLatticeRecord
+import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 
 internal class RoomStudyDatabase(
@@ -28,6 +30,7 @@ internal class RoomStudyDatabase(
     private val problemOrganization = RoomProblemOrganizationStore(database)
     private val batchImports = RoomBatchImportStore(database)
     private val splitImports = RoomSplitImportStore(database)
+    private val masteryOverview = RoomMasteryOverviewStore(database)
     private val librarySearch = RoomLibrarySearchStore(database)
     private val knowledgeBase = RoomKnowledgeBaseStore(database, knowledgeResearchReviewStore)
     private val backupSupport = RoomBackupSupportStore(database)
@@ -379,6 +382,19 @@ internal class RoomStudyDatabase(
     ): Flow<List<KnowledgeQuestionLatticeRecord>> =
         database.problemDao().observeKnowledgeQuestionLattice(learnerId)
             .map { rows -> rows.map(KnowledgeQuestionLatticeView::toRecord) }
+
+    override suspend fun readSubjectMastery(
+        learnerId: String,
+        subject: String,
+    ): List<SubjectMasteryRecord> = masteryOverview.readSubjectMastery(learnerId, subject)
+
+    override suspend fun readMasteryAggregates(
+        learnerId: String,
+        knowledgeNodeIds: Set<String>,
+    ): List<MasteryAggregateRecord> = masteryOverview.readMasteryAggregates(learnerId, knowledgeNodeIds)
+
+    override suspend fun countReviewableKnowledgeNodes(subject: String): Int =
+        masteryOverview.countReviewableKnowledgeNodes(subject)
 
     override suspend fun readDatabaseVersion(): Int {
         var version = 0

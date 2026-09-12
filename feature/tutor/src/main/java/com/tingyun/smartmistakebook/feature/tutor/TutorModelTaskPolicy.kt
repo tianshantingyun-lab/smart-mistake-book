@@ -659,10 +659,14 @@ private fun StudyProfileOverview.toTutorKnowledgeEvidence(
                 .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_EVIDENCE_MASS),
             independentCorrectObservationCount = summary.independentCorrectObservationCount
                 .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_OBSERVATIONS),
-            latestEvidenceRecency = summary.lastEvidenceAtEpochMillis
-                .toTutorEvidenceRecency(atEpochMillis),
-            latestIndependentErrorRecency = summary.lastIndependentErrorAtEpochMillis
-                .toTutorEvidenceRecency(atEpochMillis),
+            latestEvidenceRecency = TutorEvidenceRecency.of(
+                summary.lastEvidenceAtEpochMillis,
+                atEpochMillis,
+            ),
+            latestIndependentErrorRecency = TutorEvidenceRecency.of(
+                summary.lastIndependentErrorAtEpochMillis,
+                atEpochMillis,
+            ),
         )
     }
 }
@@ -675,18 +679,6 @@ private fun weaknessPriority(
     MasteryStatus.STALE -> 2
     MasteryStatus.UNKNOWN -> 3
     MasteryStatus.MASTERED -> 4
-}
-
-private fun Long?.toTutorEvidenceRecency(atEpochMillis: Long): TutorEvidenceRecency {
-    val eventAt = this ?: return TutorEvidenceRecency.UNKNOWN
-    if (eventAt > atEpochMillis) return TutorEvidenceRecency.UNKNOWN
-    val ageMillis = atEpochMillis - eventAt
-    return when {
-        ageMillis <= 7L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_7_DAYS
-        ageMillis <= 30L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_30_DAYS
-        ageMillis <= 90L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_90_DAYS
-        else -> TutorEvidenceRecency.OLDER
-    }
 }
 
 private fun StringBuilder.appendLengthPrefixed(value: String?) {
@@ -704,7 +696,6 @@ private fun sha256Hex(value: String): String = MessageDigest.getInstance("SHA-25
 
 private const val MAX_WEAKNESS_EVIDENCE = 8
 private const val MAX_STRENGTH_EVIDENCE = 4
-private const val MILLIS_PER_DAY = 86_400_000L
 
 private fun StudyQuestionMemory.toTutorEvidence(atEpochMillis: Long): TutorQuestionLearningEvidence =
     TutorQuestionLearningEvidence(

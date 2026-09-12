@@ -3,10 +3,13 @@ package com.tingyun.smartmistakebook.core.data.study
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
+import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
+import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
 import com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -358,6 +361,246 @@ class RoomTutorToolRunnerTest {
 
         assertTrue("expected accepted outcome but was $outcome", outcome.ok)
     }
+
+    // ---- 掌握情况深挖：清单 / 聚焦 / 截断 / 扩展预算 ----
+
+    @Test
+    fun masteryReadListsKnowledgeNodesWeakestFirstWithNames() = runBlocking {
+        // 消灭的失败：旧实现按 practice_unit 字典序取前 24 个 binding 行，
+        // 输出的还是 practiceUnitId——模型既看不到知识点名，也看不到真正的薄弱项。
+        val port = anchoredPort()
+        port.publishSubjectMastery(
+            "MATH",
+            listOf(
+                masteryRow(nodeId = "kc-strong", name = "函数奇偶性", lowerBound = 0.82, status = "MASTERED"),
+                masteryRow(nodeId = "kc-weak", name = "函数单调性", lowerBound = 0.21, status = "LEARNING"),
+            ),
+        )
+
+        val outcome = RoomTutorToolRunner(port).run(masteryReadCall(), context())
+
+        assertTrue("expected ok outcome but was $outcome", outcome.ok)
+        val text = outcome.summaryMarkdown
+        assertTrue("expected knowledge-node names, got: $text", text.contains("函数单调性"))
+        assertTrue("expected the other node too, got: $text", text.contains("函数奇偶性"))
+        assertTrue(
+            "weakest node must come first, got: $text",
+            text.indexOf("函数单调性") < text.indexOf("函数奇偶性"),
+        )
+    }
+
+    @Test
+    fun masteryReadReportsNodesWithoutEvidenceAsARemainder() = runBlocking {
+        // 只有有证据的节点会成行，所以必须给出"还有多少没证据"，否则模型会把
+        // 短清单当成整个科目的全貌。
+        val port = anchoredPort()
+        port.publishSubjectMastery("MATH", listOf(masteryRow(nodeId = "kc-1", name = "函数单调性")))
+        port.reviewableKnowledgeNodeCount = 97
+
+        val outcome = RoomTutorToolRunner(port).run(masteryReadCall(), context())
+
+        assertTrue(outcome.summaryMarkdown, outcome.summaryMarkdown.contains("另有 96 个"))
+    }
+
+    @Test
+    fun masteryReadFocusesOnResolvedNodesAndAddsHistoryAggregates() = runBlocking {
+        val port = anchoredPort()
+        port.publishSubjectMastery(
+            "MATH",
+            listOf(
+                masteryRow(nodeId = "kc-weak", name = "函数单调性", lowerBound = 0.21),
+                masteryRow(nodeId = "kc-other", name = "函数奇偶性", lowerBound = 0.33),
+            ),
+        )
+        port.recallCandidates += knowledgeNode("kc-weak", "函数单调性", "MATH")
+        port.masteryAggregates += MasteryAggregateRecord(
+            knowledgeNodeId = "kc-weak",
+            independentCorrectCount = 5,
+            independentCorrectItemFamilyCount = 3,
+            independentCorrectStudyDayCount = 4,
+            lastIndependentCorrectAtEpochMillis = null,
+            independentErrorCount = 2,
+            lastIndependentErrorAtEpochMillis = null,
+            acceptedModelEvidenceCount = 3,
+            rejectedModelEvidenceCount = 1,
+            lastAcceptedModelEvidenceAtEpochMillis = null,
+        )
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryReadCall(terms = listOf("函数单调性")),
+            context(),
+        )
+
+        val text = outcome.summaryMarkdown
+        assertTrue("focused node missing: $text", text.contains("函数单调性"))
+        assertTrue("non-focused node leaked in: $text", !text.contains("函数奇偶性"))
+        assertTrue("independent-correct aggregate missing: $text", text.contains("独立答对 5 次"))
+        assertTrue("item-family breadth missing: $text", text.contains("3 个题目族"))
+        assertTrue("independent-error aggregate missing: $text", text.contains("独立错误 2 次"))
+        assertTrue("model-evidence split missing: $text", text.contains("接受 3 条、被拒 1 条"))
+    }
+
+    @Test
+    fun masteryReadFocusReportsResolvedNodesThatHaveNoEvidenceYet() = runBlocking {
+        // 学生问的知识点确实存在、但本地还没有任何证据——这必须说出来，
+        // 而不是返回一个空清单让模型以为"没有这个东西"。
+        val port = anchoredPort()
+        port.publishSubjectMastery("MATH", listOf(masteryRow(nodeId = "kc-other", name = "函数奇偶性")))
+        port.recallCandidates += knowledgeNode("kc-unmeasured", "导数与切线", "MATH")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryReadCall(terms = listOf("导数与切线")),
+            context(),
+        )
+
+        assertTrue(outcome.summaryMarkdown, outcome.summaryMarkdown.contains("导数与切线"))
+        assertTrue(outcome.summaryMarkdown, outcome.summaryMarkdown.contains("尚无学习证据"))
+    }
+
+    @Test
+    fun masteryReadNeverLeaksAnotherSubject() = runBlocking {
+        // 科目是披露边界：物理的掌握情况绝不能出现在数学会话里。
+        val port = anchoredPort()
+        port.publishSubjectMastery("MATH", listOf(masteryRow(nodeId = "kc-math", name = "函数单调性")))
+        port.publishSubjectMastery("PHYSICS", listOf(masteryRow(nodeId = "kc-physics", name = "动量守恒")))
+
+        val outcome = RoomTutorToolRunner(port).run(masteryReadCall(), context())
+
+        assertTrue(outcome.summaryMarkdown, outcome.summaryMarkdown.contains("函数单调性"))
+        assertTrue(
+            "another subject's mastery leaked: ${outcome.summaryMarkdown}",
+            !outcome.summaryMarkdown.contains("动量守恒"),
+        )
+    }
+
+    @Test
+    fun masteryReadWithoutASubjectFailsClosed() = runBlocking {
+        val port = anchoredPort()
+        port.publishSubjectMastery("MATH", listOf(masteryRow(nodeId = "kc-math", name = "函数单调性")))
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryReadCall(),
+            context().copy(subject = null),
+        )
+
+        assertEquals(false, outcome.ok)
+        assertEquals("no_subject", outcome.errorKind)
+    }
+
+    @Test
+    fun anOversizedListIsTruncatedWithANote() = runBlocking {
+        // 不限条数，所以字符预算就是真边界；但截断必须说出来，否则模型会把
+        // 被砍掉的清单当成整个科目。
+        val port = anchoredPort()
+        port.publishSubjectMastery(
+            "MATH",
+            (1..400).map { index ->
+                masteryRow(nodeId = "kc-$index", name = "知识点${"%03d".format(index)}")
+            },
+        )
+
+        val outcome = RoomTutorToolRunner(port).run(masteryReadCall(), context())
+
+        assertTrue("expected ok outcome but was $outcome", outcome.ok)
+        assertTrue(
+            "truncation must be announced: ${outcome.summaryMarkdown.takeLast(200)}",
+            outcome.summaryMarkdown.contains("已截断"),
+        )
+        assertTrue(
+            "truncated result must stay inside the default budget",
+            outcome.summaryMarkdown.length <= TutorToolOutcome.MAX_TOOL_RESULT_CHARS,
+        )
+    }
+
+    @Test
+    fun theExtendedBudgetCarriesMoreRowsThanTheDefaultOne() = runBlocking {
+        val port = anchoredPort()
+        port.publishSubjectMastery(
+            "MATH",
+            (1..400).map { index ->
+                masteryRow(nodeId = "kc-$index", name = "知识点${"%03d".format(index)}")
+            },
+        )
+
+        val plain = RoomTutorToolRunner(port).run(masteryReadCall(), context())
+        val extended = RoomTutorToolRunner(port).run(
+            masteryReadCall(extendedResult = true),
+            context(),
+        )
+
+        assertTrue(
+            "extended result should carry more: ${plain.summaryMarkdown.length} vs " +
+                "${extended.summaryMarkdown.length}",
+            extended.summaryMarkdown.length > plain.summaryMarkdown.length,
+        )
+        assertTrue(
+            "extended result must still respect the ceiling",
+            extended.summaryMarkdown.length <= TutorToolOutcome.MAX_TOOL_RESULT_CHARS_EXTENDED,
+        )
+    }
+
+    @Test
+    fun aRoundThatAlreadyUsedTheExtendedBudgetFallsBackToTheDefaultOne() = runBlocking {
+        // 轮内只放一次：三个并发扩展请求会在下一轮 prompt 里堆到 18k。
+        val port = anchoredPort()
+        port.publishSubjectMastery(
+            "MATH",
+            (1..400).map { index ->
+                masteryRow(nodeId = "kc-$index", name = "知识点${"%03d".format(index)}")
+            },
+        )
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryReadCall(extendedResult = true),
+            context().copy(allowsExtendedResult = false),
+        )
+
+        assertTrue(
+            "denied extended budget must fall back to the default ceiling",
+            outcome.summaryMarkdown.length <= TutorToolOutcome.MAX_TOOL_RESULT_CHARS,
+        )
+    }
+
+    private fun masteryReadCall(
+        terms: List<String> = emptyList(),
+        extendedResult: Boolean = false,
+    ) = TutorToolCall(
+        tool = TutorToolName.MASTERY_READ,
+        rationale = "需要看这个知识点的掌握情况",
+        terms = terms,
+        extendedResult = extendedResult,
+    )
+
+    private fun masteryRow(
+        nodeId: String,
+        name: String,
+        lowerBound: Double = 0.30,
+        status: String = "LEARNING",
+    ) = SubjectMasteryRecord(
+        knowledgeNodeId = nodeId,
+        displayName = name,
+        granularity = "ATOMIC",
+        nodeKind = "CONCEPT",
+        probabilityIndependentCorrect = lowerBound,
+        lowerBoundIndependentCorrect = lowerBound,
+        evidenceMass = 1.0,
+        status = status,
+        lastEvidenceAtEpochMillis = null,
+        lastEvidenceDirection = null,
+        lastIndependentErrorAtEpochMillis = null,
+        boundQuestionCount = 1,
+    )
+
+    private fun knowledgeNode(nodeId: String, name: String, subject: String) = KnowledgeNodeSeedRecord(
+        knowledgeNodeId = nodeId,
+        stableCode = nodeId,
+        subject = subject,
+        displayName = name,
+        parentKnowledgeNodeId = null,
+        taxonomyVersion = "taxonomy-v1",
+        createdAtEpochMillis = 1_000,
+        canonicalName = name,
+    )
 
     private fun studentMessage(body: String, role: String = "STUDENT") = TutorMessageRecord(
         messageId = "message-${body.hashCode()}-$role",

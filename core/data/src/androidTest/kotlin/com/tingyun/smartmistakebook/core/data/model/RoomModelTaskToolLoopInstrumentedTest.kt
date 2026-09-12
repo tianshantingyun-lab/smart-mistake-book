@@ -3,7 +3,13 @@ package com.tingyun.smartmistakebook.core.data.model
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.database.ErrorBookEntrySeedRecord
+import com.tingyun.smartmistakebook.core.database.PracticeUnitSeedRecord
+import com.tingyun.smartmistakebook.core.database.ProblemRevisionSeedRecord
+import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
+import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
@@ -26,6 +32,8 @@ import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
+import com.tingyun.smartmistakebook.core.model.TutorToolRoundResult
+import com.tingyun.smartmistakebook.core.model.TRUNCATED_OUTCOME_NOTE
 import com.tingyun.smartmistakebook.core.data.study.RoomTutorToolRunner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
@@ -138,6 +146,97 @@ class RoomModelTaskToolLoopInstrumentedTest {
         ),
         modelVersion = "tool-loop-model-v1",
     )
+
+    /**
+     * 轮内总预算的**接线**证明（spec model-intent-routing §3.1）。
+     *
+     * 单工具上限管不到"一轮加起来"，所以这条测试让一个工具产出超过轮预算的结果：
+     * 三条长标题的错题让 `NOTEBOOK_READ` 的摘要超过 4k。若仓库层不再走
+     * `tutorToolRoundResult`（即再原样塞回 outcomes），这条测试会因为第二轮的
+     * 结果超预算且没有截断说明而变红——纯函数单测抓不到这个缺口。
+     */
+    @Test
+    fun aRoundWhoseResultsExceedTheBudgetIsTrimmedBeforeItIsCarriedForward() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "tool-loop-round-budget-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            database.seedFixture(longTitledSeed())
+            val gateway = ScriptedGateway(provider, listOf(toolRequestOutput(), finalAnswerOutput()))
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            repository.execute(request()).toList()
+
+            val second = gateway.dispatchLog[1].input as TutorLobbyInput
+            val outcomes = second.toolRoundResults.single().outcomes
+            val total = outcomes.sumOf { it.summaryMarkdown.length } + outcomes.size - 1
+            assertTrue(
+                "携带给下一轮的结果超预算：$total",
+                total <= TutorToolRoundResult.MAX_TOOL_ROUND_RESULT_CHARS,
+            )
+            assertTrue(
+                "超预算的部分必须说明自己被截断了，否则模型会当成完整结果读",
+                outcomes.any { it.summaryMarkdown.contains(TRUNCATED_OUTCOME_NOTE) },
+            )
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    /** 三条长标题错题：足以让 `NOTEBOOK_READ`（单次最多 6 条）的摘要超过轮预算。 */
+    private fun longTitledSeed(): StudySeedBundle {
+        val longTitle = "二次函数综合题".repeat(200)
+        return StudySeedBundle(
+            problems = (1..3).map { index ->
+                ProblemSeedRecord("budget-problem-$index", "budget-fingerprint-$index", "MATH", 1_000)
+            },
+            revisions = (1..3).map { index ->
+                ProblemRevisionSeedRecord(
+                    revisionId = "budget-revision-$index",
+                    problemId = "budget-problem-$index",
+                    revisionNumber = 1,
+                    title = longTitle,
+                    problemMarkdown = "求函数的最值。",
+                    answerSpecId = "budget-answer-$index",
+                    answerSpecSnapshot = "最值",
+                    answerVerificationStatus = StudyDbValue.VerificationStatus.VERIFIED,
+                    sourceType = "IMPORT",
+                    sourceReference = null,
+                    contentFingerprint = "budget-revision-fingerprint-$index",
+                    createdAtEpochMillis = 2_000,
+                )
+            },
+            practiceUnits = (1..3).map { index ->
+                PracticeUnitSeedRecord(
+                    practiceUnitId = "budget-unit-$index",
+                    problemId = "budget-problem-$index",
+                    problemRevisionId = "budget-revision-$index",
+                    unitKey = "whole",
+                    unitKind = "WHOLE",
+                    title = longTitle,
+                    promptMarkdown = "求最值。",
+                    estimatedSeconds = 120,
+                    createdAtEpochMillis = 3_000,
+                )
+            },
+            errorBookEntries = (1..3).map { index ->
+                ErrorBookEntrySeedRecord(
+                    entryId = "budget-entry-$index",
+                    practiceUnitId = "budget-unit-$index",
+                    problemId = "budget-problem-$index",
+                    currentRevisionId = "budget-revision-$index",
+                    sourceKey = "budget-source-$index",
+                    acceptedAtEpochMillis = 4_000,
+                    updatedAtEpochMillis = 4_000,
+                )
+            },
+        )
+    }
 
     @Test
     fun toolRequestRoundExecutesLocalToolsThenAnswers() = runBlocking {

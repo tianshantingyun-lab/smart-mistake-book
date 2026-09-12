@@ -4,6 +4,8 @@ import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
@@ -11,6 +13,7 @@ import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.domain.tutorSessionObjectiveRecord
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
+import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
@@ -40,6 +43,21 @@ internal fun masteryUpdateEvidenceId(
  * corroborate its own claims.
  */
 private const val STUDENT_MESSAGE_ROLE = "STUDENT"
+
+/**
+ * How many knowledge nodes the keyword search may resolve in one focused
+ * `MASTERY_READ`. This bounds *resolution*, not the answer: a wider net only
+ * wastes budget on looser matches, since every resolved node has to fit the
+ * result budget anyway.
+ */
+private const val MASTERY_FOCUS_RESOLUTION_LIMIT = 24
+
+/**
+ * Characters held back from the result budget so the truncation note itself
+ * always fits. A note that got cut off would leave the model reading a partial
+ * list as if it were complete — the failure the note exists to prevent.
+ */
+private const val TRUNCATION_NOTE_RESERVE_CHARS = 240
 
 /**
  * Executes locally authorized read tools for the tutor tool loop
@@ -84,6 +102,17 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
          * collection channel is not wired.
          */
         val attentionFactor: Double = 1.0,
+        /**
+         * Whether this call may use the extended result budget.
+         *
+         * The round-level rule ("at most one extended result per round") lives in
+         * the repository, because that is the only place that can see a round's
+         * sibling calls; it passes the verdict down here. Defaults to allowed so
+         * a direct caller asking for the larger budget gets it — the guard exists
+         * to stop three oversized results stacking into one prompt, not to make
+         * the request silently do nothing.
+         */
+        val allowsExtendedResult: Boolean = true,
     ) {
         init {
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
@@ -109,7 +138,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                 }
             }
             TutorToolName.NOTEBOOK_READ -> notebookRead(call.terms)
-            TutorToolName.MASTERY_READ -> masteryRead(context.learnerId)
+            TutorToolName.MASTERY_READ -> masteryRead(call, context, context.allowsExtendedResult)
             TutorToolName.MASTERY_UPDATE -> masteryUpdate(call, context)
             TutorToolName.NOTEBOOK_WRITE -> notebookWrite(context)
         }
@@ -255,35 +284,217 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         }
     }
 
-    private suspend fun masteryRead(learnerId: String): TutorToolOutcome {
-        val lattice = port.observeKnowledgeQuestionLattice(learnerId).first().take(24)
-        if (lattice.isEmpty()) {
+    /**
+     * Reads the learner's mastery of the current subject, knowledge-node grained.
+     *
+     * Two modes, chosen by whether the model named anything:
+     * - **list** (`terms` empty): the whole subject's nodes that have evidence,
+     *   weakest first — this is what closes the old `take(24)` blind slice,
+     *   which was ordered by practice-unit id and therefore showed an arbitrary
+     *   24 bindings regardless of how weak or relevant they were.
+     * - **focus** (`terms` given): the nodes those words resolve to, each with
+     *   its structured history aggregates.
+     *
+     * The subject is a **disclosure boundary**, not a filter of convenience:
+     * the tool may only ever return the subject this session is already working
+     * in, which is why the query is scoped by it rather than filtered after the
+     * fact. That is also what keeps the result inside the already-disclosed
+     * "bounded learning evidence" class (see the tool-loop wiring design §3.6).
+     *
+     * There is no row cap — the character budget is the real bound — so an
+     * oversized result is truncated with a visible note telling the model how to
+     * narrow (more specific terms) or to ask for the larger budget.
+     */
+    private suspend fun masteryRead(
+        call: TutorToolCall,
+        context: Context,
+        allowsExtendedResult: Boolean,
+    ): TutorToolOutcome {
+        val subject = context.subject?.takeIf(String::isNotBlank)
+        if (subject == null) {
+            return TutorToolOutcome(
+                tool = TutorToolName.MASTERY_READ,
+                ok = false,
+                summaryMarkdown = "当前会话没有科目上下文，无法读取掌握情况。",
+                errorKind = "no_subject",
+            )
+        }
+        val rows = port.readSubjectMastery(context.learnerId, subject)
+        if (rows.isEmpty()) {
             return TutorToolOutcome(
                 tool = TutorToolName.MASTERY_READ,
                 ok = true,
                 summaryMarkdown = "还没有足够的学习记录来评估掌握情况。",
             )
         }
-        val mastered = lattice.count { it.kcStatus == "MASTERED" }
-        val learning = lattice.count { it.kcStatus == "LEARNING" }
-        val conflicted = lattice.count { it.kcStatus == "CONFLICTED" }
-        val weakest = lattice
-            .filter { it.kcConservativeMastery != null }
-            .sortedBy { it.kcConservativeMastery ?: 1.0 }
-            .take(5)
-            .mapIndexed { index, row ->
-                "${index + 1}. 掌握度 ${"%.2f".format(row.kcConservativeMastery)}：${row.practiceUnitId}"
-            }
+        val budget = if (call.extendedResult && allowsExtendedResult) {
+            TutorToolOutcome.MAX_TOOL_RESULT_CHARS_EXTENDED
+        } else {
+            TutorToolOutcome.MAX_TOOL_RESULT_CHARS
+        }
+        val now = System.currentTimeMillis()
+        val focusNodes = if (call.terms.isEmpty()) {
+            null
+        } else {
+            resolveFocusNodes(subject, call.terms)
+        }
+        if (focusNodes != null && focusNodes.isEmpty()) {
+            return TutorToolOutcome(
+                tool = TutorToolName.MASTERY_READ,
+                ok = true,
+                summaryMarkdown = "没有找到与${call.terms.joinToString("、")}匹配的知识点，" +
+                    "可以换用材料或题面里的原词再试。",
+            )
+        }
+        val selected = (if (focusNodes == null) rows else rows.filter { it.knowledgeNodeId in focusNodes })
+            // Sorted here rather than relying on the query's ORDER BY: the query
+            // has no LIMIT, so what matters is the order in force when the result
+            // budget truncates — the rows dropped have to be the *least* urgent
+            // ones, and a weaker node is always more urgent than a stronger one.
+            .sortedWith(
+                compareBy(
+                    SubjectMasteryRecord::lowerBoundIndependentCorrect,
+                    SubjectMasteryRecord::displayName,
+                    SubjectMasteryRecord::knowledgeNodeId,
+                ),
+            )
+        val aggregates = if (focusNodes == null || selected.isEmpty()) {
+            emptyMap()
+        } else {
+            port.readMasteryAggregates(context.learnerId, selected.mapTo(linkedSetOf()) { it.knowledgeNodeId })
+                .associateBy(MasteryAggregateRecord::knowledgeNodeId)
+        }
+        val unmeasured = focusNodes.orEmpty()
+            .filterKeys { nodeId -> selected.none { it.knowledgeNodeId == nodeId } }
         return TutorToolOutcome(
             tool = TutorToolName.MASTERY_READ,
             ok = true,
-            summaryMarkdown = buildString {
-                append("学习记录覆盖 ${lattice.size} 条，其中已掌握 $mastered、学习中 $learning、冲突 $conflicted。")
-                if (weakest.isNotEmpty()) {
-                    append("\n最薄弱：\n${weakest.joinToString("\n")}")
-                }
-            },
+            summaryMarkdown = renderMasteryRead(
+                subject = subject,
+                rows = selected,
+                aggregates = aggregates,
+                unmeasuredNodes = unmeasured,
+                subjectNodeCount = port.countReviewableKnowledgeNodes(subject),
+                focused = focusNodes != null,
+                atEpochMillis = now,
+                budgetChars = budget,
+            ),
         )
+    }
+
+    /**
+     * Resolves the model's words to knowledge nodes of the current subject via
+     * the reviewed search index, keeping the display names so a node that has no
+     * evidence yet can still be reported by name rather than as an opaque id.
+     */
+    private suspend fun resolveFocusNodes(subject: String, terms: List<String>): Map<String, String> {
+        val features = KnowledgeSearchFeatureExtractor.fromQuestion(terms.joinToString(" "))
+        if (features.isEmpty()) return emptyMap()
+        return port.readSubjectKnowledgeRecallCandidates(
+            subject = subject,
+            searchFeatures = features,
+            limit = MASTERY_FOCUS_RESOLUTION_LIMIT,
+        ).associate { node -> node.knowledgeNodeId to node.displayName }
+    }
+
+    private fun renderMasteryRead(
+        subject: String,
+        rows: List<SubjectMasteryRecord>,
+        aggregates: Map<String, MasteryAggregateRecord>,
+        unmeasuredNodes: Map<String, String>,
+        subjectNodeCount: Int,
+        focused: Boolean,
+        atEpochMillis: Long,
+        budgetChars: Int,
+    ): String {
+        val body = BudgetedLines(budgetChars - TRUNCATION_NOTE_RESERVE_CHARS)
+        val header = buildString {
+            append("掌握情况（科目 $subject")
+            if (focused) append("，聚焦查询") else append("，按最弱优先")
+            append("）：")
+            if (focused) {
+                append("命中 ${rows.size} 个已有证据的知识点")
+                if (unmeasuredNodes.isNotEmpty()) append("，另有 ${unmeasuredNodes.size} 个尚无学习证据")
+            } else {
+                append("${rows.size} 个知识点已有学习证据")
+                val remaining = subjectNodeCount - rows.size
+                if (remaining > 0) append("，该科另有 $remaining 个尚无学习证据")
+            }
+            append('。')
+        }
+        body.add(header)
+        body.add("列：序号. 名称|粒度|保守掌握度|证据量|状态|最近证据|最近独立错误|绑定错题数")
+        rows.forEachIndexed { index, row ->
+            body.add(
+                "${index + 1}. ${row.displayName}|${row.granularity}|" +
+                    "${"%.2f".format(row.lowerBoundIndependentCorrect)}|" +
+                    "${"%.2f".format(row.evidenceMass)}|${row.status}|" +
+                    "${TutorEvidenceRecency.of(row.lastEvidenceAtEpochMillis, atEpochMillis)}|" +
+                    "${TutorEvidenceRecency.of(row.lastIndependentErrorAtEpochMillis, atEpochMillis)}|" +
+                    "${row.boundQuestionCount}",
+            )
+            aggregates[row.knowledgeNodeId]?.let { detail -> appendAggregateDetail(body, detail, atEpochMillis) }
+        }
+        unmeasuredNodes.entries.sortedBy { it.value }.forEach { (_, name) ->
+            body.add("$name|尚无学习证据")
+        }
+        return body.render(
+            truncationNote = "已截断：还有 ${body.droppedCount} 项未显示。" +
+                "可用更具体的 terms 收窄查询，或对单次查询申请扩展预算（extendedResult=true）。",
+        )
+    }
+
+    private fun appendAggregateDetail(
+        body: BudgetedLines,
+        detail: MasteryAggregateRecord,
+        atEpochMillis: Long,
+    ) {
+        body.add(
+            "   独立答对 ${detail.independentCorrectCount} 次（跨 " +
+                "${detail.independentCorrectItemFamilyCount} 个题目族、" +
+                "${detail.independentCorrectStudyDayCount} 个学习日），最近 " +
+                "${TutorEvidenceRecency.of(detail.lastIndependentCorrectAtEpochMillis, atEpochMillis)}",
+        )
+        body.add(
+            "   独立错误 ${detail.independentErrorCount} 次，最近 " +
+                "${TutorEvidenceRecency.of(detail.lastIndependentErrorAtEpochMillis, atEpochMillis)}",
+        )
+        body.add(
+            "   讲题/测验证据 接受 ${detail.acceptedModelEvidenceCount} 条、" +
+                "被拒 ${detail.rejectedModelEvidenceCount} 条，最近接受 " +
+                "${TutorEvidenceRecency.of(detail.lastAcceptedModelEvidenceAtEpochMillis, atEpochMillis)}",
+        )
+    }
+
+    /**
+     * Collects lines up to a character budget and counts what did not fit.
+     *
+     * The count is the point: a silently shortened list would read as the whole
+     * subject, and the model would conclude there is nothing more to look at.
+     */
+    private class BudgetedLines(private val budgetChars: Int) {
+        private val lines = mutableListOf<String>()
+        private var usedChars = 0
+        var droppedCount = 0
+            private set
+
+        fun add(line: String) {
+            val cost = line.length + 1
+            if (usedChars + cost > budgetChars) {
+                droppedCount += 1
+                return
+            }
+            lines += line
+            usedChars += cost
+        }
+
+        fun render(truncationNote: String): String = buildString {
+            append(lines.joinToString("\n"))
+            if (droppedCount > 0) {
+                append('\n')
+                append(truncationNote)
+            }
+        }
     }
 
 

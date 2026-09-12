@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.database
 
 import com.tingyun.smartmistakebook.core.database.dao.CanonicalSourceAssetRow
 import com.tingyun.smartmistakebook.core.database.dao.MistakeRow
+import com.tingyun.smartmistakebook.core.database.dao.SubjectMasteryRow
 import com.tingyun.smartmistakebook.core.database.dao.ReviewLogSampleProjection
 import com.tingyun.smartmistakebook.core.database.dao.ReviewPlanAggregate
 import com.tingyun.smartmistakebook.core.database.dao.activeSessionHead
@@ -26,6 +27,7 @@ import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionAdvanceRec
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionEntity
 import com.tingyun.smartmistakebook.core.database.entity.ReviewSessionRevisionEntity
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeQuestionLatticeRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentFingerprint
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
@@ -458,6 +460,21 @@ internal fun KnowledgeQuestionLatticeView.toRecord() = KnowledgeQuestionLatticeR
     questionNextReviewAt = questionNextReviewAt,
     questionLapseCount = questionLapseCount,
     questionCrossDayAgain = questionCrossDayAgain,
+)
+
+internal fun SubjectMasteryRow.toRecord() = SubjectMasteryRecord(
+    knowledgeNodeId = knowledgeNodeId,
+    displayName = displayName,
+    granularity = granularity,
+    nodeKind = nodeKind,
+    probabilityIndependentCorrect = probabilityIndependentCorrect,
+    lowerBoundIndependentCorrect = lowerBoundIndependentCorrect,
+    evidenceMass = evidenceMass,
+    status = status,
+    lastEvidenceAtEpochMillis = lastEvidenceAtEpochMillis,
+    lastEvidenceDirection = lastEvidenceDirection,
+    lastIndependentErrorAtEpochMillis = lastIndependentErrorAtEpochMillis,
+    boundQuestionCount = boundQuestionCount,
 )
 
 internal fun ReviewLogEntry.toEntity() = ReviewLogEntity(

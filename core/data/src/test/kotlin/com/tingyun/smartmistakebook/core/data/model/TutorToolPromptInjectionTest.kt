@@ -69,6 +69,14 @@ class TutorToolPromptInjectionTest {
         assertTrue(prompt.contains("读取这道题相关知识点讲解材料"))
         assertTrue(prompt.contains("检索错题本中匹配的错题"))
         assertTrue(prompt.contains("读取学生对相关知识的掌握情况"))
+        // 深挖能力的说明必须留在工具描述里：模型是靠这几句知道可以按知识点聚焦、
+        // 会拿到历史聚合、以及结果可能被截断的。少任何一句，工具就退回成"只会给
+        // 一份固定摘要"——而没有别的测试会因此变红。
+        assertTrue(prompt.contains("terms 留空＝返回本科目全部"))
+        assertTrue(prompt.contains("聚焦解析到的知识点"))
+        assertTrue(prompt.contains("结构化历史聚合"))
+        assertTrue(prompt.contains("会被截断并注明"))
+        assertTrue(prompt.contains("extendedResult 置 true"))
         assertTrue(prompt.contains("单轮最多申请 3 个互不相同工具"))
         assertTrue(prompt.contains("未在上方列出的工具不可申请"))
     }

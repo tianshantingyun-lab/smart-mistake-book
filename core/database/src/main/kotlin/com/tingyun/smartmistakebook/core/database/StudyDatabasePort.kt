@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.database.port.MasteryAdvisoryPort
 import com.tingyun.smartmistakebook.core.database.port.MistakeReadPort
 import com.tingyun.smartmistakebook.core.database.port.OrganizationReadPort
 import com.tingyun.smartmistakebook.core.database.port.OrganizationWritePort
+import com.tingyun.smartmistakebook.core.database.port.TutorMasteryOverviewPort
 import com.tingyun.smartmistakebook.core.database.port.PredictionAuditPort
 import com.tingyun.smartmistakebook.core.database.port.ReviewReadPort
 import com.tingyun.smartmistakebook.core.database.port.ReviewWritePort
@@ -65,7 +66,7 @@ interface StudyDatabasePort : AutoCloseable, ModelTaskDatabasePort,
     ReviewReadPort, MistakeReadPort, BackupPort, BatchImportReadPort, BatchImportWritePort,
     DraftReadPort, OrganizationReadPort,
     LearningLedgerPort, PredictionAuditPort, VisualInteractionPort, MasteryAdvisoryPort,
-    KnowledgeQuestionLatticePort,
+    KnowledgeQuestionLatticePort, TutorMasteryOverviewPort,
     DraftWritePort, TutorSessionPort, TutorAnswerExposurePort,
     SeedAssessmentPort, AttemptWritePort, OrganizationWritePort,
     LearningProjectionPort, ReviewWritePort, SplitImportPort {

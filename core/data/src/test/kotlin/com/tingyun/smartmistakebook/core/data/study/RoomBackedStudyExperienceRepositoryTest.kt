@@ -106,9 +106,11 @@ import com.tingyun.smartmistakebook.core.database.ReviewSessionRecord
 import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecord
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.SeedResult
+import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 
@@ -1512,6 +1514,44 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
      */
     val tutorMessages = mutableListOf<TutorMessageRecord>()
 
+    /**
+     * Subject-scoped mastery rows the `MASTERY_READ` tool reads, keyed by the
+     * subject the fake was told to serve. Empty by default: a fake that served
+     * rows without being told to would let a test pass while asserting nothing
+     * about what the tool actually read.
+     */
+    private val masteryBySubject = mutableMapOf<String, List<SubjectMasteryRecord>>()
+
+    /** Structured history aggregates the focused `MASTERY_READ` appends per node. */
+    val masteryAggregates = mutableListOf<MasteryAggregateRecord>()
+
+    /** How many reviewable knowledge nodes the fake's subject has in total. */
+    var reviewableKnowledgeNodeCount = 0
+
+    /**
+     * Knowledge nodes the keyword search may resolve, filtered by subject the
+     * way the real query is. Empty by default, so focus mode reports "nothing
+     * matched" unless a test says what the words should resolve to.
+     */
+    val recallCandidates = mutableListOf<KnowledgeNodeSeedRecord>()
+
+    fun publishSubjectMastery(subject: String, rows: List<SubjectMasteryRecord>) {
+        masteryBySubject[subject] = rows
+    }
+
+    override suspend fun readSubjectMastery(
+        learnerId: String,
+        subject: String,
+    ): List<SubjectMasteryRecord> = masteryBySubject[subject].orEmpty()
+
+    override suspend fun readMasteryAggregates(
+        learnerId: String,
+        knowledgeNodeIds: Set<String>,
+    ): List<MasteryAggregateRecord> =
+        masteryAggregates.filter { it.knowledgeNodeId in knowledgeNodeIds }
+
+    override suspend fun countReviewableKnowledgeNodes(subject: String): Int = reviewableKnowledgeNodeCount
+
     override suspend fun recordStudentModelPredictions(
         predictions: List<StudentModelPredictionRecord>,
     ) {
@@ -2032,7 +2072,12 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
-    ): List<KnowledgeNodeSeedRecord> = emptyList()
+    ): List<KnowledgeNodeSeedRecord> =
+        // Filtered by subject and truncated, but deliberately not matched against
+        // searchFeatures: resolution quality belongs to the real index and is
+        // covered by the instrumented test against Room. What these tests need is
+        // a deterministic "the words resolved to these nodes" answer.
+        recallCandidates.filter { it.subject == subject }.take(limit)
 
     override suspend fun readKnowledgeNodesByIds(ids: Set<String>):
         List<KnowledgeNodeSeedRecord> = knowledgeNodes.filter { it.knowledgeNodeId in ids }

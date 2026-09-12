@@ -21,6 +21,36 @@ enum class TutorEvidenceRecency {
     WITHIN_90_DAYS,
     OLDER,
     UNKNOWN,
+    ;
+
+    companion object {
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
+
+        /**
+         * Buckets one event timestamp against the moment of disclosure.
+         *
+         * Lives here rather than next to a caller because two producers render
+         * this vocabulary into the same prompt: the tutor request builder (the
+         * `relevantLearningEvidence` block) and the `MASTERY_READ` tool result.
+         * Two copies of the bucket boundaries would let the same fact read
+         * "WITHIN_7_DAYS" in one block and "WITHIN_30_DAYS" in the other, and
+         * nothing would catch it.
+         *
+         * A missing timestamp, or one in the future (clock rollback), is
+         * UNKNOWN rather than a guess.
+         */
+        fun of(eventAtEpochMillis: Long?, atEpochMillis: Long): TutorEvidenceRecency {
+            val eventAt = eventAtEpochMillis ?: return UNKNOWN
+            if (eventAt > atEpochMillis) return UNKNOWN
+            val ageMillis = atEpochMillis - eventAt
+            return when {
+                ageMillis <= 7L * MILLIS_PER_DAY -> WITHIN_7_DAYS
+                ageMillis <= 30L * MILLIS_PER_DAY -> WITHIN_30_DAYS
+                ageMillis <= 90L * MILLIS_PER_DAY -> WITHIN_90_DAYS
+                else -> OLDER
+            }
+        }
+    }
 }
 
 @Serializable

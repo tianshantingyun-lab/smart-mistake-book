@@ -164,3 +164,65 @@ data class KnowledgeQuestionLatticeRecord(
     val questionLapseCount: Int?,
     val questionCrossDayAgain: Int?,
 )
+
+/**
+ * Knowledge-node-grained mastery reads for the tutor's `MASTERY_READ` tool.
+ *
+ * Why a second surface next to [KnowledgeQuestionLatticePort]: the lattice is
+ * **question-grained**, so one node appears once per bound question and its row
+ * count is a binding count. The tool needs one row per node, weakest first.
+ *
+ * [subject] is a disclosure boundary rather than a filter of convenience: the
+ * tool may only ever return the subject the session is already working in, so
+ * the query is scoped by it rather than filtered after the fact.
+ */
+interface TutorMasteryOverviewPort {
+    suspend fun readSubjectMastery(
+        learnerId: String,
+        subject: String,
+    ): List<SubjectMasteryRecord> = emptyList()
+
+    suspend fun readMasteryAggregates(
+        learnerId: String,
+        knowledgeNodeIds: Set<String>,
+    ): List<MasteryAggregateRecord> = emptyList()
+
+    suspend fun countReviewableKnowledgeNodes(subject: String): Int = 0
+}
+
+/**
+ * One knowledge node that has projected mastery. Nodes with no evidence have no
+ * record at all — the caller reports them as a remainder count instead.
+ */
+data class SubjectMasteryRecord(
+    val knowledgeNodeId: String,
+    val displayName: String,
+    val granularity: String,
+    val nodeKind: String,
+    val probabilityIndependentCorrect: Double,
+    val lowerBoundIndependentCorrect: Double,
+    val evidenceMass: Double,
+    val status: String,
+    val lastEvidenceAtEpochMillis: Long?,
+    val lastEvidenceDirection: String?,
+    val lastIndependentErrorAtEpochMillis: Long?,
+    val boundQuestionCount: Int,
+)
+
+/**
+ * Structured history aggregates behind one knowledge node: counts and
+ * timestamps only, never event rows and never free text. That is what keeps the
+ * read inside the disclosed "bounded learning evidence" class.
+ */
+data class MasteryAggregateRecord(
+    val knowledgeNodeId: String,
+    val independentCorrectCount: Int,
+    val independentCorrectItemFamilyCount: Int,
+    val independentCorrectStudyDayCount: Int,
+    val lastIndependentCorrectAtEpochMillis: Long?,
+    val independentErrorCount: Int,
+    val lastIndependentErrorAtEpochMillis: Long?,
+    val acceptedModelEvidenceCount: Int,
+    val rejectedModelEvidenceCount: Int,
+    val lastAcceptedModelEvidenceAtEpochMillis: Long?,
+)
