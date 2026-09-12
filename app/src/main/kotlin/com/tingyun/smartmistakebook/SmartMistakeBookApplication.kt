@@ -9,6 +9,9 @@ import com.tingyun.smartmistakebook.core.data.capture.ConfiguredCleanImageGenera
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecovery
+import com.tingyun.smartmistakebook.core.data.backup.RestoreRecoveryAttention
+import com.tingyun.smartmistakebook.core.data.backup.RestoreStartupOutcome
+import com.tingyun.smartmistakebook.core.data.backup.attentionRequired
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.library.LibraryCatalogRepositoryFactory
@@ -150,8 +153,11 @@ class SmartMistakeBookApplication : Application() {
         CaptureCacheMaintenance.pruneExpiredFiles(this)
         try {
             // Repair any interrupted restore BEFORE the database is opened so
-            // a half-swapped generation can never become visible to Room.
-            BackupRestoreStartupRecovery.recoverOnStartup(this)
+            // a half-swapped generation can never become visible to Room. The
+            // outcome is kept: a rolled-back or quarantined restore means the
+            // book is not what the student left, and staying silent about that
+            // is indistinguishable from lying about their data.
+            val restoreRecovery = BackupRestoreStartupRecovery.recoverOnStartup(this)
             database = StudyDatabaseFactory.open(this)
             schedulingSettingsStore = DataStoreSchedulingSettingsStore(this, applicationScope)
             // Settings are read synchronously to mirror the synchronous database
@@ -263,6 +269,12 @@ class SmartMistakeBookApplication : Application() {
             OrphanAssetGc.enqueue(this)
             registerDebugHarness()
             startupState.value = StartupState.Ready
+            // Applied after Ready so a successful open is still reported as
+            // usable: the book works, the student just has to know that a
+            // restore did not land.
+            restoreRecoveryFailure(restoreRecovery)?.let { failure ->
+                startupState.value = failure
+            }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (failure: Throwable) {
@@ -385,4 +397,42 @@ class SmartMistakeBookApplication : Application() {
             ContextCompat.RECEIVER_EXPORTED,
         )
     }
+}
+
+/**
+ * The startup state a recovery outcome warrants, or null when the student does
+ * not need to hear about it.
+ *
+ * The book is usable in both reported cases — the record just is not what the
+ * student last saw, so each message leads with what happened to their data and
+ * avoids implying loss that did not occur. A clean start and a pre-swap cleanup
+ * leave the live generation untouched and stay silent.
+ */
+private fun restoreRecoveryFailure(
+    outcome: RestoreStartupOutcome,
+): StartupState.RecoverableFailure? = when (outcome.attentionRequired()) {
+    RestoreRecoveryAttention.NONE -> null
+
+    RestoreRecoveryAttention.RESTORE_REVERTED -> StartupState.RecoverableFailure(
+        title = "备份恢复没有完成",
+        message = "已回到恢复之前的数据，错题记录仍然完整。需要的话可以重新恢复一次。",
+        diagnosticId = "startup:restore-reverted:${outcome.diagnosticTag()}",
+        errorCategory = StartupErrorCategory.DATABASE,
+    )
+
+    RestoreRecoveryAttention.DATA_QUARANTINED -> StartupState.RecoverableFailure(
+        title = "恢复未完成，部分数据已隔离",
+        message = "为避免读到损坏的数据，相关文件已单独隔离，当前记录可能不完整。",
+        diagnosticId = "startup:restore-quarantined:${outcome.diagnosticTag()}",
+        errorCategory = StartupErrorCategory.DATABASE,
+    )
+}
+
+/** Stable per-incident identifier for support, never student-visible text. */
+private fun RestoreStartupOutcome.diagnosticTag(): String = when (this) {
+    RestoreStartupOutcome.NothingToRecover -> "none"
+    is RestoreStartupOutcome.Cleaned -> restoreId
+    is RestoreStartupOutcome.RolledBack -> restoreId
+    is RestoreStartupOutcome.Quarantined -> restoreId
+    is RestoreStartupOutcome.Unreadable -> reason.hashCode().toUInt().toString()
 }

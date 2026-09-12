@@ -11,6 +11,9 @@ import com.tingyun.smartmistakebook.core.database.ProblemRevisionSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
+import com.tingyun.smartmistakebook.core.data.settings.AndroidKeystoreModelSecretVault
+import com.tingyun.smartmistakebook.core.data.settings.MODEL_SECRET_KEY_ALIAS
+import com.tingyun.smartmistakebook.core.data.settings.ModelSecretBinding
 import com.tingyun.smartmistakebook.core.domain.BackupValidation
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -29,6 +32,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.security.KeyStore
 import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -48,6 +52,43 @@ import java.util.zip.ZipOutputStream
  */
 @RunWith(AndroidJUnit4::class)
 class BackupRestoreInstrumentedTest {
+    @Test
+    fun deleteAllDataRemovesTheModelApiKeyKeystoreAlias() = runBlocking {
+        // Regression: the sweep used to match a hard-coded "smartmistakebook_"
+        // prefix, which never matched the alias the vault actually writes, so
+        // "delete all data" left the API-key Keystore entry behind.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.deleteDatabase(StudyDatabaseFactory.DEFAULT_DATABASE_NAME)
+        val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+        val vault = AndroidKeystoreModelSecretVault(context)
+        try {
+            vault.write(
+                TEST_API_KEY_CHARS.copyOf(),
+                ModelSecretBinding(
+                    generationId = "generation-delete-all",
+                    provider = "test-provider",
+                    baseUrl = "https://provider.invalid",
+                    modelId = "test-model",
+                ),
+            )
+            assertTrue(
+                "fixture must create the alias production actually uses",
+                keyStore.containsAlias(MODEL_SECRET_KEY_ALIAS),
+            )
+
+            val database = StudyDatabaseFactory.open(context)
+            AndroidBackupRepository(context, database).deleteAllData()
+
+            assertFalse(
+                "delete-all-data must remove the app's model API key alias",
+                keyStore.containsAlias(MODEL_SECRET_KEY_ALIAS),
+            )
+        } finally {
+            context.deleteDatabase(StudyDatabaseFactory.DEFAULT_DATABASE_NAME)
+            runCatching { vault.clear() }
+        }
+    }
+
     @Test
     fun backupDeleteAndRestoreRoundTripPreservesCatalog() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -758,4 +799,14 @@ class BackupRestoreInstrumentedTest {
             ),
         ),
     )
+
+    private companion object {
+        const val ANDROID_KEYSTORE = "AndroidKeyStore"
+
+        /**
+         * Deliberately not a credential: the vault only needs *some* plaintext
+         * to seal, and a test fixture must never look like a usable key.
+         */
+        val TEST_API_KEY_CHARS = "not-a-real-api-key-test-fixture".toCharArray()
+    }
 }
