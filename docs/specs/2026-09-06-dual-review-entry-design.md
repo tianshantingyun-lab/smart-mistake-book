@@ -1,7 +1,7 @@
 # 双复习入口设计：知识点复习 + 错题复习
 
-状态：设计稿（待审查）
-日期：2026-09-06
+状态：P1（选择题闭环）已实现并接入导航与仪器测试；P2（口述判答）与 P3（范围扩展）未实现。
+日期：2026-09-06（状态行更新于 2026-09-12）
 关联：`docs/specs/mastery-scheduling-spec.md`（复习排程）；`docs/research/llm-mastery-judgment-regulation.md`（模型判断规范）；`docs/specs/2026-09-02-tool-loop-wiring-design.md`（讲题智能体工具环）
 
 ## 0. 目标

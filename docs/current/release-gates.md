@@ -8,7 +8,9 @@
 - no vision support means fail before network
 - models cannot auto-save or write mastery
 - process recreation never auto-sends
-- each logical operation has at most 3 dispatches
+- each logical operation has at most `ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES`
+  provider dispatches (currently 6: five tool rounds plus one final answer),
+  and local execution consumes none of them
 - capture draft, retake, failure, and kill recovery work
 - library uses database queries/paging and no silent facet truncation
 - full Room migration matrix passes

@@ -12,6 +12,8 @@
 
 > **2026-07-23 本体基线：** 应用首次使用与每次归类前幂等安装 `moe-2020-foundation-v1`，九科代表性原子节点均绑定教育部 2020 修订课程标准的独立 PDF 指纹与页码。该包只验证来源、层级和记忆链路，不冒充全量知识覆盖；没有可靠节点时继续走受控补全，而不是让模型临时发明分类。
 
+> **2026-09-12 状态同步：** 上文两处表述已被实现超越，按日期增补覆盖。(1) **dispatch 预算**：不是 3 次而是 `ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES = 6`（5 轮工具 + 1 轮终答），由 commit `a4109e1` 经用户授权从 3 提高；权威说明见 [`model-first-product-boundaries.md`](model-first-product-boundaries.md) 的 2026-09-09 增补。(2) **PDF / 整卷导入**：不再是"待后续"——批量导入已支持 2–30 页（`MAX_BATCH_IMPORT_PAGES = 30`），`PdfBatchImportPageRenderer` 与 `RoomBatchImportStore` 均按此区间校验，逐页落盘、失败页可重试或跳过；仍未实现的是页级故障恢复矩阵与"自动拆题"在复杂版面下的质量验收。本增补不改变第 9 行其余任何条款。
+
 ## 1. 产品主线
 
 产品只围绕一条长期价值链组织：

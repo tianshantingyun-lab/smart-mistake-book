@@ -193,4 +193,4 @@ Route A 全链路验证需"凭证可达的真实 OpenAI 兼容 tools 端点"，�
 | 本地 cc-switch 代理 :15721 | 握手为 **Claude/Codex 协议**（`anthropic` 版本协商），非 OpenAI `tools`/`chat/completions` 端点 | 协议不兼容 → 不能充当 OpenAI tools 探测靶 |
 | 本地仿真（MockWebServer 假网关） | 已验证工具广告 + `tool_calls` 解析 + Route B 回落（§3.7 测试） | 只能证明协议层往返，不能证明 provider 兼容性 |
 
-**推迟含义：** 协议层（§3.7）已就绪且默认关——当前产物即 Route B（既有 JSON 信封链路），Route A 仅差上层开关置真。待任一真实 OpenAI 兼容 tools 端点可用（用户配置 BYOK/网关提供 OpenAI `chat/completions`+`tools` 端点）后，做一次真机对话验证模型是否回 `tool_calls`、结构是否符合 strict schema，即可放行 Route A。此假设与本设计已交付的 P1/P2 无耦合。
+**推迟含义：** 协议层（§3.7）已就绪。**状态修正（2026-09-12）**：上层开关不再是待办——`OpenAiCompatibleModelGateway` 现按能力位计算 `enableNativeTools = provider.supportsFunctionCalling && protocol.supportsNativeTools`，而 `supportsFunctionCalling` 由 `ModelCapabilityTester` 的 TOOLS 探测（仅在端点已证明结构化输出后运行）置位。因此 Route A 会在用户端点**通过工具探测时自动启用**，无需再改代码；没有工具声明或探测未通过时回落 Route B 信封。**仍然成立的推迟**：从未对真实端点做过端到端验证（模型是否真回 `tool_calls`、结构是否符合 strict schema），故本轮的"真实 provider 验证"推迟结论不变。待任一真实 OpenAI 兼容 tools 端点可用后，做一次真机对话验证即可。
