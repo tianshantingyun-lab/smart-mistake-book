@@ -382,7 +382,7 @@ internal class RoomStudyDatabase(
 
     override suspend fun readDatabaseVersion(): Int {
         var version = 0
-        database.useConnection(isReadOnly = true) { connection ->
+        database.withRawConnection(isReadOnly = true) { connection ->
             connection.usePrepared("PRAGMA user_version") { statement ->
                 if (statement.step()) {
                     version = statement.getLong(0).toInt()
@@ -650,7 +650,7 @@ internal class RoomStudyDatabase(
         database.pendingCaptureDao().deleteUnreferencedCanonicalAssets()
 
     override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) {
-        database.useConnection(isReadOnly = false) { connection ->
+        database.withRawConnection(isReadOnly = false) { connection ->
             connection.usePrepared(
                 "INSERT OR IGNORE INTO canonical_source_asset (" +
                     "source_asset_id, content_sha256, relative_path, mime_type, byte_size, " +

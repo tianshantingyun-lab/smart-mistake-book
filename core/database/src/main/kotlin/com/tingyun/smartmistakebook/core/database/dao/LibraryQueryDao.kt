@@ -7,6 +7,30 @@ import androidx.room3.Query
 import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
 import com.tingyun.smartmistakebook.core.database.entity.LibraryCatalogView
 
+/**
+ * Numeric mastery for a catalog row — the weakest conservative mastery among the
+ * row's bound knowledge points. This is the copy for this file's two `@Query`
+ * annotations; `LEAST_MASTERED_MASTERY_SQL` in `LibraryCatalogSorts.kt` holds the
+ * full reasoning and the copy used by the FTS store's runtime-built query.
+ *
+ * The duplication is forced: Room accepts a same-file constant but rejects a
+ * query assembled from a cross-file one (both positional and `value =`
+ * concatenation fail KSP with "No property named value was found in annotation
+ * Query"). The three sort sites are therefore kept honest by behavior —
+ * `LibraryLeastMasteredSortInstrumentedTest` covers this query and the FTS path.
+ */
+private const val LEAST_MASTERED_MASTERY_SQL: String =
+    "(" +
+        "SELECT MIN(mastery.lower_bound_independent_correct) " +
+        "FROM learner_knowledge_mastery_state AS mastery " +
+        "INNER JOIN practice_unit_knowledge_binding AS binding " +
+        "ON binding.knowledge_node_id = mastery.knowledge_node_id " +
+        "AND binding.practice_unit_id = catalog.practice_unit_id " +
+        "AND binding.basis_revision_id = catalog.problem_revision_id " +
+        "WHERE mastery.projection_name = 'study-experience-v1' " +
+        "AND mastery.learner_id = catalog.memory_learner_id" +
+        ")"
+
 @DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 @Dao
 internal interface LibraryQueryDao {
@@ -47,7 +71,7 @@ internal interface LibraryQueryDao {
         ORDER BY
             CASE :sort WHEN 'RECENTLY_CREATED' THEN catalog.created_at_epoch_millis END DESC,
             CASE :sort WHEN 'NEXT_REVIEW' THEN catalog.next_review_at_epoch_millis END ASC,
-            CASE :sort WHEN 'LEAST_MASTERED' THEN catalog.retrievability END ASC,
+            CASE :sort WHEN 'LEAST_MASTERED' THEN """ + LEAST_MASTERED_MASTERY_SQL + """ END ASC,
             catalog.updated_at_epoch_millis DESC,
             catalog.entry_id ASC
         """,
@@ -98,7 +122,7 @@ internal interface LibraryQueryDao {
         ORDER BY
             CASE :sort WHEN 'RECENTLY_CREATED' THEN catalog.created_at_epoch_millis END DESC,
             CASE :sort WHEN 'NEXT_REVIEW' THEN catalog.next_review_at_epoch_millis END ASC,
-            CASE :sort WHEN 'LEAST_MASTERED' THEN catalog.retrievability END ASC,
+            CASE :sort WHEN 'LEAST_MASTERED' THEN """ + LEAST_MASTERED_MASTERY_SQL + """ END ASC,
             catalog.updated_at_epoch_millis DESC,
             catalog.entry_id ASC
         LIMIT :limit OFFSET :offset

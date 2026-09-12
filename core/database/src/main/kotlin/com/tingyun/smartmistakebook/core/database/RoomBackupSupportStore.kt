@@ -11,7 +11,7 @@ internal class RoomBackupSupportStore(
         // database file is packaged. This stays the cheap flush; the archive
         // flow itself uses snapshotForBackup below for the consistency
         // snapshot.
-        database.useConnection(isReadOnly = false) { connection ->
+        database.withRawConnection(isReadOnly = false) { connection ->
             connection.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { statement ->
                 while (statement.step()) {
                     // Checkpoint result row is intentionally consumed and ignored.
@@ -42,7 +42,7 @@ internal class RoomBackupSupportStore(
         if (sqliteVersion != null && isAtLeast(sqliteVersion, 3, 27, 0)) {
             val escapedPath = snapshotTarget.absolutePath.replace("'", "''")
             val succeeded = try {
-                database.useConnection(isReadOnly = false) { connection ->
+                database.withRawConnection(isReadOnly = false) { connection ->
                     connection.usePrepared("VACUUM INTO '$escapedPath'") { statement ->
                         while (statement.step()) {
                             // VACUUM INTO produces no result rows.
@@ -74,7 +74,7 @@ internal class RoomBackupSupportStore(
 
     private suspend fun readSqliteVersion(): String? {
         val holder = arrayOfNulls<String>(1)
-        database.useConnection(isReadOnly = true) { connection ->
+        database.withRawConnection(isReadOnly = true) { connection ->
             connection.usePrepared("SELECT sqlite_version()") { statement ->
                 if (statement.step()) {
                     holder[0] = statement.getText(0)
@@ -105,7 +105,7 @@ internal class RoomBackupSupportStore(
     }
 
     suspend fun clearAllData() {
-        database.useConnection(isReadOnly = false) { connection ->
+        database.withRawConnection(isReadOnly = false) { connection ->
             connection.usePrepared("PRAGMA foreign_keys = OFF") { statement ->
                 while (statement.step()) {
                     // PRAGMA result row is intentionally ignored.
