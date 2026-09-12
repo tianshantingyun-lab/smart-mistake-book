@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
@@ -64,11 +63,9 @@ import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
-import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
-import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
@@ -618,47 +615,6 @@ private fun TutorLobbyMessageItem(
             text = message.bodyMarkdown,
             modifier = modifier.testTag("tutor_lobby_task_progress"),
         )
-    }
-}
-
-@Composable
-private fun TutorLobbyDisclosureCard(
-    providerName: String,
-    onApprove: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("tutor_lobby_disclosure"),
-        color = JadeSoft.copy(alpha = 0.4f),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, Outline),
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = "发送这条消息",
-                color = Ink,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = "会把这条消息和最近几轮对话发给 $providerName；不包含题图、错题内容或学习记录。",
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            PrimaryActionButton(
-                text = "同意并发送",
-                onClick = onApprove,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("tutor_lobby_disclosure_approve"),
-                contentDescription = "允许向当前模型发送这条消息和最近对话",
-            )
-        }
     }
 }
 

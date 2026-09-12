@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.provider.MediaStore
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
@@ -32,6 +33,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
 
@@ -141,6 +143,8 @@ class CapabilityScreenInstrumentedTest {
         setCapabilityContent(store = store)
 
         composeRule.onNodeWithTag("capability_clear").performScrollTo().performClick()
+        // 清除不可撤销，先过确认框；这一步本身就是"按钮不再直清"的守卫证据。
+        composeRule.onNodeWithTag("capability_clear_confirm").performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) { store.clearStarted.isCompleted }
 
         assertFormIsLocked()
@@ -153,6 +157,22 @@ class CapabilityScreenInstrumentedTest {
         composeRule.onNodeWithText("本机配置与密钥已清除。")
             .performScrollTo()
             .assertExists()
+    }
+
+    @Test
+    fun cancellingTheClearConfirmationKeepsTheConfiguration() {
+        // 这条是确认框**非空洞**的那一半：若有人把守卫去掉改回"点击即清"，点完
+        // `capability_clear` 就会立刻开始清除，这里对"未开始清除"的断言会立刻变红。
+        val store = AsyncFakeStore(configuration())
+        setCapabilityContent(store = store)
+
+        composeRule.onNodeWithTag("capability_clear").performScrollTo().performClick()
+        composeRule.onNodeWithTag("capability_clear_cancel").performClick()
+
+        composeRule.onNodeWithText("取消").assertDoesNotExist()
+        assertFalse("取消后不得开始清除", store.clearStarted.isCompleted)
+        // 表单没被锁住，说明没有进入 CLEARING。
+        composeRule.onNodeWithTag("capability_provider").performScrollTo().assertIsEnabled()
     }
 
     @Test
