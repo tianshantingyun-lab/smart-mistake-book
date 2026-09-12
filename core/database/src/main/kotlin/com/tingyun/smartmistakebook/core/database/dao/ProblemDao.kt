@@ -98,7 +98,7 @@ internal interface ProblemDao {
             entry.updated_at_epoch_millis AS updated_at_epoch_millis,
             unit.estimated_seconds,
             memory.next_review_at_epoch_millis,
-            memory.retrievability,
+            NULL AS retrievability,
             (
                 SELECT COUNT(*)
                 FROM problem_draft_commit_receipt AS receipt
@@ -188,12 +188,20 @@ internal interface ProblemDao {
             ON problem.problem_id = unit.problem_id
         JOIN problem_revision AS revision
             ON revision.revision_id = entry.current_revision_id
-        LEFT JOIN problem_memory_state AS memory
+        LEFT JOIN learner_problem_memory_state AS memory
             ON memory.practice_unit_id = unit.practice_unit_id
+           AND memory.projection_name = 'study-experience-v1'
         WHERE entry.status = 'ACTIVE'
         ORDER BY entry.updated_at_epoch_millis DESC, entry.entry_id ASC
         """,
     )
+    /**
+     * Memory facts come from the learner projection, the only table the
+     * projector writes. Joining the pre-projection `problem_memory_state`
+     * returned NULL for every production row — only fixture seeding wrote it,
+     * so the gap stayed invisible on device. `retrievability` is derived from
+     * stability plus "now" and is computed by the reader instead.
+     */
     fun observeActiveMistakes(): Flow<List<MistakeRow>>
 
     @Query(
@@ -212,7 +220,7 @@ internal interface ProblemDao {
             entry.updated_at_epoch_millis AS updated_at_epoch_millis,
             unit.estimated_seconds,
             memory.next_review_at_epoch_millis,
-            memory.retrievability,
+            NULL AS retrievability,
             (
                 SELECT COUNT(*)
                 FROM problem_draft_commit_receipt AS receipt
@@ -262,12 +270,14 @@ internal interface ProblemDao {
             ON problem.problem_id = unit.problem_id
         JOIN problem_revision AS revision
             ON revision.revision_id = entry.current_revision_id
-        LEFT JOIN problem_memory_state AS memory
+        LEFT JOIN learner_problem_memory_state AS memory
             ON memory.practice_unit_id = unit.practice_unit_id
+           AND memory.projection_name = 'study-experience-v1'
         WHERE entry.source_key = :sourceKey
         LIMIT 1
         """,
     )
+    /** Same projection-backed memory source as [observeActiveMistakes]. */
     suspend fun findMistakeBySourceKey(sourceKey: String): MistakeRow?
 
     @Query("SELECT COUNT(*) FROM error_book_entry WHERE status = 'ACTIVE'")
