@@ -66,7 +66,7 @@ described in KD-5: status.md now reports `:core:data` 53.9% / 39.1% and
 `:core:database` 5.2% / 6.9%.
 
 
-## KD-1 · Tutor external-authorization flow regression (instrumented) — NOT REPRODUCING ON CURRENT TREE (2026-09-06), CI green anchor still pending
+## KD-1 (resolved 2026-09-12) · Tutor external-authorization flow regression (instrumented)
 
 **Symptom.** 4 of 57 tests in `CapturedTutorSessionInstrumentedTest`
 (feature:tutor connected) fail deterministically on a fresh API-34 emulator:
@@ -116,12 +116,27 @@ run). All four previously-deterministic failures pass. Suspected fix carriers
 are the tool-loop hardening commits landed 2026-09-05/06 (`7cb373e` Lobby
 disclosure boundary + T6 write-tool anchoring, `9f267f0` T6 mastery_update
 chain, `5a940a1` deterministic evidence ids, `c19b330` indexed gate queries).
-Status: keep this entry open until CI posts one green `connected` run for
-:feature:tutor (the historical failures were CI-run-specific; local green
-twice + fresh install is strong but not a CI anchor). Bisection against
-25fb15a is no longer needed unless CI still fails.
 
-## KD-4 (open) · Visual-ui device-acceptance test times out on CI software rendering
+**Closed 2026-09-12 — the CI anchor arrived.** Run
+[34693827527](https://github.com/tianshantingyun-lab/smart-mistake-book/actions/runs/34693827527)
+(commit `5e2c3a9`, push to main) posted a **fully green `instrumented` job**:
+`BUILD SUCCESSFUL` once, **0 `FAILED`** in the job log, and
+`:feature:tutor:connectedDebugAndroidTest` executed **46 tests with 0 failures**.
+That is exactly the closing condition this entry was holding for. `check` was
+green in the same run.
+
+One correction to the scope notes above: the entry says the suite "has not
+executed on CI" for 15+ runs because the job aborted at the first failing
+connected task. That was true before 2026-08-30, when the step gained
+`--continue` — after that the suites do run even when an earlier one fails, so
+the absence of a tutor anchor was about the run's overall redness, not about
+the suite being skipped.
+
+**Reopen condition.** Any recurrence of the four named waitUntil/assertion
+failures on CI. They no longer reproduce on the current tree (local twice on
+2026-09-06, CI green on 2026-09-12), so a recurrence means a new cause.
+
+## KD-4 (resolved 2026-09-12) · Visual-ui device-acceptance test timed out on CI software rendering
 
 **Symptom.** `TutorVisualComplexCircuitInstrumentedTest#complexCircuitSemanticRedrawPassesDeviceAcceptanceAndSavesStepScreenshots`
 fails on CI with `ComposeTimeoutException after 2000 ms` (idle-sync wait).
@@ -164,6 +179,27 @@ validated from here: the failure is only observable on the CI runner, so a local
 pass would prove nothing and a local green would not close this entry. Apply (b)
 in a session that can watch a CI run, and record the CI outcome — do not close it
 on local evidence.
+
+**Outcome 2026-09-12 — the suite passed on CI, so the failure has no reproducing
+case.** Run
+[34693827527](https://github.com/tianshantingyun-lab/smart-mistake-book/actions/runs/34693827527)
+(commit `5e2c3a9`) ran `:core:visual-ui:connectedDebugAndroidTest` with
+**6 tests, 0 failures**, inside a fully green `instrumented` job (0 `FAILED`
+lines, one `BUILD SUCCESSFUL` for all nine suites). The test named in this entry
+was among them. This is the same bar that closed KD-1 — one green connected run
+on the runner where the failure lived.
+
+**No code change was made for this entry, and that is stated deliberately.** The
+green run does not prove an intermittent timing failure is permanently gone; it
+proves there is no longer a reproducing case, and the recorded disposition
+(options a/b/c) is not worth a blind change to a test that currently passes.
+Treat any recurrence as new evidence.
+
+**Reopen condition.** `ComposeTimeoutException after 2000 ms` on the
+complex-circuit acceptance test on CI. If it recurs, apply option (b) — explicit
+`waitUntil` on the specific condition instead of relying on implicit idle — and
+validate it against the run that reproduces it, since local runs (software GL,
+2 cores, and even 1 core under host load) do not.
 
 ## KD-5 (resolved 2026-09-09) · Android-library coverage was not collectible with Kover 0.9.1 + AGP 9
 
@@ -481,6 +517,16 @@ advisory: 7/0/3/1/0/5/6/0/3/16, and lint fails the build on errors, so the green
 run is itself evidence). The exact command the step will run was then executed
 locally as one invocation: `BUILD SUCCESSFUL`. The workflow still parses
 (19 steps in the `check` job, Lint step present).
+
+**CI confirmation (2026-09-12).** The step has now actually run on a runner: in
+run
+[34693827527](https://github.com/tianshantingyun-lab/smart-mistake-book/actions/runs/34693827527)
+the `check` job concluded **success** with the Lint step itself reported
+`success`, so the ten library modules are linted in CI from this commit on.
+Noted gap: `docs/status.md` (generated) still reports only the two app lint
+variants — `tools/ci/generate_status.py` reads the app lint XML paths, so the
+library results gate the build without appearing in the report. Extending the
+generator to include them is optional follow-up, not required for the gate.
 
 **Reopen condition.** A new `core`/`feature` module must be added to that task
 list. The step lists modules explicitly rather than using an umbrella task,
