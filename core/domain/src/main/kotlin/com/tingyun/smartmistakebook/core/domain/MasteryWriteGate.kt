@@ -109,8 +109,42 @@ object MasteryWriteGate {
     /**
      * 数出 rationale 里逐字引用的证据锚条数（[EVIDENCE_ANCHOR_REGEX]）。
      * 纯函数，讲题通道的执行器用它填 [GateInput.evidenceAnchorCount]。
+     *
+     * 只做机械计数，**不核对引文真伪**——需要核对时用
+     * [verifiedEvidenceAnchorCount]，它要求每条形如引号的片段真的出现在
+     * 会话文本里。
      */
     fun evidenceAnchorCount(rationale: String): Int = EVIDENCE_ANCHOR_REGEX.findAll(rationale).count()
+
+    /**
+     * 只数**引文真的出现在 [verifiableText] 里**的证据锚。
+     *
+     * 消灭的失败：档2 的门把"rationale 里有 ≥2 对引号"当成可核查性证明，而引号
+     * 内容从不与会话原文比对。模型（或其被题面注入的内容）只要写
+     * `学生说"因为""所以"` 就凑够 2 条锚，从而以 MASTERED 档写入掌握度——
+     * 档1 规范第 1 条要求的是"逐字引用学生原话或可观察行为"，本函数是这条
+     * 规范在本地唯一可机械执行的部分：引文必须是会话文本的真实子串。
+     *
+     * 比对前折叠大小写与全部空白：中文正文在 Markdown 里常被换行/缩进切断，
+     * 逐字节相等会把合法引文误判为伪造。不折叠标点——标点差异是引文不忠实的
+     * 真实信号。
+     *
+     * @param verifiableText 本会话学生确实产出过的文本（原话 + 可观察作答）。
+     *   空串表示本地没有可核查文本，此时任何锚都得不到证实（返回 0），
+     *   与"缺佐证即不写高置信档"的既有姿态一致。
+     */
+    fun verifiedEvidenceAnchorCount(rationale: String, verifiableText: String): Int {
+        if (verifiableText.isBlank()) return 0
+        val corpus = foldForAnchorComparison(verifiableText)
+        if (corpus.isEmpty()) return 0
+        return EVIDENCE_ANCHOR_REGEX.findAll(rationale).count { match ->
+            val anchor = foldForAnchorComparison(match.value.trim('"', '“', '”', '「', '」', '『', '』'))
+            anchor.isNotEmpty() && corpus.contains(anchor)
+        }
+    }
+
+    private fun foldForAnchorComparison(value: String): String =
+        value.lowercase().filterNot(Char::isWhitespace)
 
     // ---- Evidence weight table (research §1.3, FSRS-grade analogy) ----
     // FSRS stability-gain ratios: Hard≈0.29 / Good≈1.0 / Easy≈2.61 (defaults).

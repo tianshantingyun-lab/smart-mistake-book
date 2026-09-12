@@ -120,6 +120,63 @@ class MasteryWriteGateTest {
     }
 
     @Test
+    fun `verified anchors must actually appear in the session text`() {
+        // 消灭的失败：只数引号时，模型写 `"因为""所以"` 就能凑够 2 条锚并以
+        // MASTERED 档写入。核对后，只有真出现在学生文本里的引文才计数。
+        val session = "学生说：我把负号漏掉了。 随后独立写出：因为斜率相等所以平行。"
+        assertEquals(
+            2,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"我把负号漏掉了\"，随后\"因为斜率相等所以平行\"。",
+                verifiableText = session,
+            ),
+        )
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"我把正负号搞反了\"，随后\"因为截距相等所以平行\"。",
+                verifiableText = session,
+            ),
+        )
+    }
+
+    @Test
+    fun `verified anchors need a session corpus and fold whitespace and case`() {
+        // 没有可核查文本时，任何锚都得不到证实——与"缺佐证不写高置信档"同姿态。
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount("\"我把负号漏掉了\"", verifiableText = ""),
+        )
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount("\"我把负号漏掉了\"", verifiableText = "   "),
+        )
+        // Markdown 换行/缩进会把引文切断，逐字节比对会误杀合法引文；标点不折叠。
+        assertEquals(
+            1,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"因为斜率相等所以平行\"。",
+                verifiableText = "因为斜率相等\n    所以平行",
+            ),
+        )
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"因为斜率相等所以平行\"。",
+                verifiableText = "因为斜率相等，所以平行",
+            ),
+        )
+    }
+
+    @Test
+    fun `verified count never exceeds the mechanical count`() {
+        val rationale = "学生说\"我把负号漏掉了\"，随后\"因为斜率相等所以平行\"。"
+        val session = "我把负号漏掉了"
+        assertEquals(2, MasteryWriteGate.evidenceAnchorCount(rationale))
+        assertEquals(1, MasteryWriteGate.verifiedEvidenceAnchorCount(rationale, session))
+    }
+
+    @Test
     fun `positive struggling is a semantic contradiction`() {
         assertRejected(
             acceptedInput(direction = TutorEvidenceDirection.POSITIVE, understanding = TutorUnderstandingTier.STRUGGLING),

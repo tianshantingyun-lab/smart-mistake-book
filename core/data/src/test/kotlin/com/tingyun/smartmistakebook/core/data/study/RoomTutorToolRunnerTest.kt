@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
@@ -62,13 +63,17 @@ class RoomTutorToolRunnerTest {
 
     @Test
     fun masteredWithTwoQuotedAnchorsIsAcceptedAtTheMasterTier() = runBlocking {
+        // 两条锚都必须真出现在会话语料里——校核函数的引入没有取消这条路径，
+        // 只是把"引号对上"升级为"引文确有其事"。
         val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把两边都乘以了2")
+        port.tutorMessages += studentMessage("因为斜率相等所以平行")
 
         val outcome = RoomTutorToolRunner(port).run(
             masteryCall(
                 rationale = "学生说\"我把两边都乘以了2\"，随后独立写出\"因为斜率相等所以平行\"。",
             ),
-            context(),
+            sessionContext(),
         )
 
         assertTrue("expected accepted outcome but was $outcome", outcome.ok)
@@ -248,12 +253,137 @@ class RoomTutorToolRunnerTest {
         assertTrue("expected accepted outcome but was $outcome", outcome.ok)
     }
 
+    // ---- 证据锚真实性核对（方向A）----
+
+    @Test
+    fun masteredIsRejectedWhenTheQuotedAnchorsAreFabricated() = runBlocking {
+        // 消灭的失败：档2 只数引号，模型写 `"因为""所以"` 就凑够 2 条锚并以
+        // MASTERED 写入。核对后，引文必须是本会话里学生真产出过的文本。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把负号漏掉了")
+        port.tutorMessages += studentMessage("因为斜率相等所以平行")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把正号写错了\"，随后\"因为截距相等所以平行\"。",
+                understanding = TutorUnderstandingTier.MASTERED,
+            ),
+            sessionContext(),
+        )
+
+        assertEquals(false, outcome.ok)
+        assertEquals("rejected:MASTERED_WITHOUT_EVIDENCE_ANCHOR", outcome.errorKind)
+        // 被拒 ≠ 删除：落观察行供审计。
+        assertEquals(
+            "MASTERED_WITHOUT_EVIDENCE_ANCHOR",
+            port.recordedChatEvidence.single().rejected_reason,
+        )
+    }
+
+    @Test
+    fun masteredIsAcceptedWhenTheQuotedAnchorsAreVerbatim() = runBlocking {
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把负号漏掉了")
+        port.tutorMessages += studentMessage("因为斜率相等所以平行")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把负号漏掉了\"，随后\"因为斜率相等所以平行\"。",
+                understanding = TutorUnderstandingTier.MASTERED,
+            ),
+            sessionContext(),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+        assertEquals(
+            MasteryWriteGate.WEIGHT_MASTERED_POSITIVE,
+            port.recordedChatEvidence.single().weight,
+            1e-9,
+        )
+    }
+
+    @Test
+    fun aVerbatimStudentChoiceCountsAsAnAnchorWithoutAnyMessage() = runBlocking {
+        // 学生的客观作答属于档1 规范里的"可观察行为"，与消息原文同为可核查语料。
+        val port = anchoredPort()
+        port.tutorTurnResponses += turnResponse(
+            cycleOrdinal = 1,
+            selectionWasCorrect = true,
+            selectedChoiceMarkdown = "因为斜率相等所以平行",
+        )
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生选了\"因为斜率相等所以平行\"，随后\"我把负号漏掉了\"。",
+                understanding = TutorUnderstandingTier.MASTERED,
+            ),
+            sessionContext(),
+        )
+
+        // 两条锚里只有一条能在作答语料中找到，仍不足门槛。
+        assertEquals("rejected:MASTERED_WITHOUT_EVIDENCE_ANCHOR", outcome.errorKind)
+    }
+
+    @Test
+    fun assistantMessagesCannotCorroborateTheModelsOwnClaim() = runBlocking {
+        // 模型不能拿自己说过的话当证据：ASSISTANT 行不进入可核查语料。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把负号漏掉了", role = "ASSISTANT")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把负号漏掉了\"，随后\"因为斜率相等所以平行\"。",
+                understanding = TutorUnderstandingTier.MASTERED,
+            ),
+            sessionContext(),
+        )
+
+        assertEquals("rejected:MASTERED_WITHOUT_EVIDENCE_ANCHOR", outcome.errorKind)
+    }
+
+    @Test
+    fun theAnchorCheckDoesNotDowngradeLowerTiers() = runBlocking {
+        // 核对只加在 MASTERED 档：CONFIDENT 按对话自报折价 0.15，本就不要求锚。
+        // 若把核对推广到所有正向档，日常讲题会因引文改写而全部写不进掌握度。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把负号漏掉了")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把符号问题处理好了\"。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
+            sessionContext(),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+    }
+
+    private fun studentMessage(body: String, role: String = "STUDENT") = TutorMessageRecord(
+        messageId = "message-${body.hashCode()}-$role",
+        conversationId = CONVERSATION_ID,
+        ordinal = 1,
+        role = role,
+        bodyMarkdown = body,
+        status = "COMPLETED",
+        logicalOperationId = null,
+        replyToMessageId = null,
+        createdAtEpochMillis = 2_000,
+        completedAtEpochMillis = 2_000,
+        errorCode = null,
+    )
+
     private fun sessionContext(cycleOrdinal: Int = 1) = context().copy(
         tutorSessionId = TUTOR_SESSION_ID,
+        conversationId = CONVERSATION_ID,
         cycleOrdinal = cycleOrdinal,
     )
 
-    private fun turnResponse(cycleOrdinal: Int, selectionWasCorrect: Boolean) = TutorTurnResponseRecord(
+    private fun turnResponse(
+        cycleOrdinal: Int,
+        selectionWasCorrect: Boolean,
+        selectedChoiceMarkdown: String = "选项 A",
+    ) = TutorTurnResponseRecord(
         sessionId = TUTOR_SESSION_ID,
         questionDocumentId = "question-1",
         revisionNumber = 1,
@@ -261,7 +391,7 @@ class RoomTutorToolRunnerTest {
         turnOrdinal = 1,
         diagnosticStemMarkdown = "下列哪个选项正确？",
         selectedChoiceId = "choice-a",
-        selectedChoiceMarkdown = "选项 A",
+        selectedChoiceMarkdown = selectedChoiceMarkdown,
         selectionWasCorrect = selectionWasCorrect,
         feedbackMarkdown = "解析。",
         requestedMove = null,
@@ -273,5 +403,6 @@ class RoomTutorToolRunnerTest {
 
     private companion object {
         const val TUTOR_SESSION_ID = "tutor-session-1"
+        const val CONVERSATION_ID = "tutor-conv-1"
     }
 }

@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
@@ -31,6 +32,14 @@ internal fun masteryUpdateEvidenceId(
 ): String = namespace
     ?.let { "chat-ev:$it:${tool.name}:$knowledgeNodeId" }
     ?: "chat-ev-${System.nanoTime()}"
+
+/**
+ * `tutor_message.role` value produced by `TutorConversationDao` for the
+ * student's own turn. Only these rows count as "学生原话" when verifying
+ * evidence anchors — assistant text is the model's own output and cannot
+ * corroborate its own claims.
+ */
+private const val STUDENT_MESSAGE_ROLE = "STUDENT"
 
 /**
  * Executes locally authorized read tools for the tutor tool loop
@@ -341,7 +350,22 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             // 信号），故 MASTERED 的可核查性改为数模型 rationale 里逐字引用的
             // 证据锚条数（档2，spec 2026-09-06 §1；档1 prompt 规范同源）。
             hasObjectiveSupport = false,
-            evidenceAnchorCount = MasteryWriteGate.evidenceAnchorCount(call.rationale),
+            // 只数**引文真出现在本会话文本里**的锚：档1 规范要求"逐字引用学生
+            // 原话"，仅数引号会让 `"因为""所以"` 这类编造凑够门槛。核对成本只在
+            // POSITIVE+MASTERED 时付——门的其他分支不消费这个值。
+            // 只数**引文真出现在本会话文本里**的锚：档1 规范要求"逐字引用学生
+            // 原话"，仅数引号会让 `"因为""所以"` 这类编造凑够门槛。核对成本只在
+            // 需要证据锚的档位才付——门的其他分支不消费这个值。
+            evidenceAnchorCount = if (direction == TutorEvidenceDirection.POSITIVE &&
+                understanding == TutorUnderstandingTier.MASTERED
+            ) {
+                MasteryWriteGate.verifiedEvidenceAnchorCount(
+                    rationale = call.rationale,
+                    verifiableText = verifiableSessionText(context),
+                )
+            } else {
+                MasteryWriteGate.evidenceAnchorCount(call.rationale)
+            },
             // 反向的客观核对（研究 tutor-evidence-gate §3.2）：学生在本轮答错过
             // 模型自己出的检查题时，模型再判 POSITIVE 就是口头声明压过行为证据。
             // 这与"有没有佐证"是两个方向——此处查的是"有没有反驳"。门只对
@@ -420,5 +444,37 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             .filter { it.cycleOrdinal == context.cycleOrdinal }
             .mapNotNull(TutorTurnResponseRecord::selectionWasCorrect)
         return tutorSessionObjectiveRecord(correctness).contradictsPositiveClaim
+    }
+
+    /**
+     * 本会话里学生**确实产出过**的文本，供证据锚核对（[MasteryWriteGate.verifiedEvidenceAnchorCount]）。
+     *
+     * 两个来源，都是本地事实而非模型自报：
+     * - 学生消息原文（`tutor_message` 的 STUDENT 行）；
+     * - 学生的客观作答（本轮检查题所选选项文本），属于档1 规范里的"可观察行为"。
+     *
+     * 读失败或没有会话上下文时返回空串：核对函数对空语料返回 0 锚，于是
+     * MASTERED 判断被拒——写不进去，不会因读失败而误放行。
+     */
+    private suspend fun verifiableSessionText(context: Context): String {
+        val sessionId = context.tutorSessionId?.takeIf(String::isNotBlank)
+        val conversationId = context.conversationId?.takeIf(String::isNotBlank)
+        val studentMessages = conversationId
+            ?.let { id ->
+                port.observeTutorMessages(id)
+                    .first()
+                    .filter { it.role == STUDENT_MESSAGE_ROLE }
+                    .map(TutorMessageRecord::bodyMarkdown)
+            }
+            .orEmpty()
+        val objectiveAnswers = sessionId
+            ?.let { id ->
+                port.observeTutorTurnResponses(id)
+                    .first()
+                    .filter { it.cycleOrdinal == context.cycleOrdinal }
+                    .mapNotNull(TutorTurnResponseRecord::selectedChoiceMarkdown)
+            }
+            .orEmpty()
+        return (studentMessages + objectiveAnswers).joinToString("\n")
     }
 }
