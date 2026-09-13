@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.FsrsParameterOptimizer
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
+import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediation
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
@@ -208,6 +209,47 @@ class RootTutorFailClosedInstrumentedTest {
         assertEquals(StudyReviewSelfReport.RECALL_COMPLETED, repository.selfReports.single().report)
     }
 
+    /**
+     * 生产接线上的前置补救：`ReviewSessionDestination` 必须**真的把**
+     * `artifactLoad.prerequisiteRemediation` 交给实拍屏，而不只是在数据层查出来。
+     *
+     * 消灭的失败（审查发现 2）：`CapturedReviewPrerequisiteRemediationInstrumentedTest`
+     * 是直接调 `CapturedReviewSessionScreen(prerequisiteRemediation = …)` 的，它只证明
+     * "这张卡渲染得出来"，证明不了"生产会把它递进去"。把装配侧那一行参数删掉、或把门退回
+     * `artifact != null`，那条用例照样绿——而学生又看不到这张卡了，正是本批要修的那个缺陷
+     * 原样复发。所以这一条走**真实的根导航**：点"开始复习"→ 实拍复习屏 → 断言卡在。
+     *
+     * 与 `savedCapturedQuestionReviewsTheExactOriginalWithoutInventingAnAnswer` 同一个夹具，
+     * 补的是"这张卡有没有被递进来"这一环；那条钉的是"题干是原题、不自造答案"。
+     */
+    @Test
+    fun theCapturedReviewScreenReceivesTheRemediationThroughTheProductionWiring() {
+        repository.publishCapturedReviewReady()
+        repository.remediations[CAPTURED_PRACTICE_UNIT_ID] = PrerequisiteRemediation(
+            prerequisiteName = CAPTURED_PREREQUISITE_NAME,
+            title = "读图判断单调性常见错误",
+            markdown = "单调区间要按定义域分段读。",
+        )
+
+        waitForText("1")
+        waitForText("道计划复习")
+        composeRule.onNodeWithTag("review_start_button").performClick()
+        waitForTag("captured_review_session_root")
+
+        // 卡在，且说的是那一条前置——不是"某张卡出现了"。
+        waitForTag("review_prereq_remediation")
+        waitForText(CAPTURED_PREREQUISITE_NAME)
+        // 题干同时还在：补救是**题干旁的上下文**，不是替代品（§2.9）。
+        waitForText(CAPTURED_QUESTION_MARKDOWN)
+        // 并且**不拦作答**：§2.16 的开场重教是必经步骤，§2.9 的补救不是。
+        composeRule.onNodeWithTag("review_self_report_recalled").performClick()
+        waitUntil { repository.selfReports.size == 1 }
+        assertEquals(
+            CAPTURED_PRACTICE_UNIT_ID,
+            repository.selfReports.single().practiceUnitId,
+        )
+    }
+
     private fun navigateToTutor() {
         waitForTag("nav_tutor")
         composeRule.onNodeWithTag("nav_tutor").performClick()
@@ -215,8 +257,19 @@ class RootTutorFailClosedInstrumentedTest {
     }
 
     private fun waitForTag(tag: String) {
-        waitUntil {
-            composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        // 超时信息必须带上当前语义树：只报 "Condition still not satisfied" 的话，
+        // "没到那一屏"与"到了那一屏但少了这个节点"长得一模一样——而这两件事要改的地方
+        // 完全不同。`waitForText` 早就是这么做的，这里对齐。
+        try {
+            waitUntil {
+                composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (failure: Throwable) {
+            throw AssertionError(
+                "Timed out waiting for tag '$tag'. Current semantics:\n" +
+                    composeRule.onRoot(useUnmergedTree = true).printToString(),
+                failure,
+            )
         }
     }
 
@@ -259,6 +312,9 @@ class RootTutorFailClosedInstrumentedTest {
         const val SECOND_PRACTICE_UNIT_ID = "practice:m1:closed-interval-extrema:whole"
         const val CAPTURED_PRACTICE_UNIT_ID = "practice:captured:exact-original"
         const val CAPTURED_QUESTION_MARKDOWN = "已保存原题：若 x + 3 = 7，求 x。"
+
+        /** 前置补救的假数据里的那条前置名（生产接线的用例靠它断言"说的是这一条"）。 */
+        const val CAPTURED_PREREQUISITE_NAME = "读图判断单调性"
         const val TUTOR_TITLE = "由导数符号判断单调区间"
         const val SECOND_TITLE = "闭区间上的函数最值"
     }
@@ -362,6 +418,16 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         SaveTutorProblemReceipt.ReferenceNotFound(
             reason = "This fail-closed test repository holds no problem object for ${command.conversationId}",
         )
+
+    /**
+     * 前置补救的假数据（审查发现 2 的生产接线用例用）：按卡给，没给就是"这条通道没有牌"。
+     * 接口默认是 null，所以这个 map 为空时与生产里"查不到材料"同形。
+     */
+    val remediations = ConcurrentHashMap<String, PrerequisiteRemediation>()
+
+    override suspend fun prerequisiteRemediation(
+        practiceUnitId: String,
+    ): PrerequisiteRemediation? = remediations[practiceUnitId]
 
     override suspend fun teachingArtifact(practiceUnitId: String): VerifiedTeachingArtifact? {
         artifactRequests += practiceUnitId
