@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.domain.OptimalRetention
 import com.tingyun.smartmistakebook.core.domain.PlannedReasonCalibration
 import com.tingyun.smartmistakebook.core.domain.ReviewSample
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
+import com.tingyun.smartmistakebook.core.domain.fittableReviewSamples
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationReport
 import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.SourceCalibration
@@ -38,7 +39,9 @@ internal class StudySchedulingCalibration(
 ) {
 
     suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport? {
-        val samples = reviewLogSink.reviewSamples()
+        // 与 harness 同一口径：讲题判定行不计入可评估样本，因此只做过讲题判定复习的
+        // 学习者走"没有数据"的返回，而不是撞进 evaluate 的空集要求。
+        val samples = fittableReviewSamples(reviewLogSink.reviewSamples())
         if (samples.isEmpty()) return null
         val eligible = samples.groupBy(ReviewSample::practiceUnitId).values.any { it.size >= 2 }
         if (!eligible) return null

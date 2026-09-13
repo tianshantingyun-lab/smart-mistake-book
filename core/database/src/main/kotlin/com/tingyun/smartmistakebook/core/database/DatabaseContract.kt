@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureDraftWorkspaceCodec
 import com.tingyun.smartmistakebook.core.model.CaptureDraftWorkspaceFingerprint
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshotFreshness
 import com.tingyun.smartmistakebook.core.model.LearningLedgerFingerprint
+import com.tingyun.smartmistakebook.core.model.LocalModelJudgedContract
 import com.tingyun.smartmistakebook.core.model.LocalReviewSelfReportContract
 import com.tingyun.smartmistakebook.core.model.ProjectionStatus
 import com.tingyun.smartmistakebook.core.model.ReviewDifficultyBand
@@ -455,9 +456,11 @@ internal object DatabaseContractValidator {
         id(snapshot.calibration.sourceId, "calibration.sourceId")
         id(snapshot.calibration.version, "calibration.version")
         requireContract(
-            snapshot.attributions.isNotEmpty() || LocalReviewSelfReportContract.matches(snapshot),
+            snapshot.attributions.isNotEmpty() ||
+                LocalReviewSelfReportContract.matches(snapshot) ||
+                LocalModelJudgedContract.matches(snapshot),
         ) {
-            "A persisted assessment evidence snapshot needs attributions or the local review self-report contract"
+            "A persisted assessment evidence snapshot needs attributions or a local review contract"
         }
         snapshot.attributions.forEach { attribution ->
             id(attribution.bindingId, "attribution.bindingId")

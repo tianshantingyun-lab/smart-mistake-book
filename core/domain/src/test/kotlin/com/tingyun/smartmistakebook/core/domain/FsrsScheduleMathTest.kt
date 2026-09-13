@@ -271,6 +271,10 @@ class FsrsScheduleMathTest {
             FsrsRating.HARD,
             FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED, 0.25),
         )
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.reportedRatingFor(LearningEvidenceReason.MODEL_JUDGED_CORRECT, 0.5),
+        )
         for (negative in listOf(
             LearningEvidenceReason.INDEPENDENT_INCORRECT,
             LearningEvidenceReason.INCORRECT_AFTER_HINT,
@@ -279,9 +283,29 @@ class FsrsScheduleMathTest {
             LearningEvidenceReason.SELF_REPORTED_STUCK,
             LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
             LearningEvidenceReason.ANSWER_REVEALED,
+            LearningEvidenceReason.MODEL_JUDGED_INCORRECT,
         )) {
             assertEquals(FsrsRating.AGAIN, FsrsEvidenceRatingMapper.reportedRatingFor(negative, 0.5))
         }
+    }
+
+    @Test
+    fun `model judged verdicts never earn more than the hard tier`() {
+        // docs/research/model-judged-verdict-pricing.md §4(i): 判分者误差 + 探针协助
+        // ⇒ 判对也不得进入 Good/Easy；判错固定 Again。权重取 0.5（区间 0.5-0.6 的保守端）。
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(LearningEvidenceReason.MODEL_JUDGED_CORRECT, 0.5),
+        )
+        assertEquals(
+            FsrsRating.AGAIN,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(LearningEvidenceReason.MODEL_JUDGED_INCORRECT, 0.5),
+        )
+        // 即便未来给到更高权重，档位也不得漂移：显式钉死在 when 分支里，不靠 else 继承。
+        assertEquals(
+            FsrsRating.HARD,
+            FsrsEvidenceRatingMapper.schedulingRatingFor(LearningEvidenceReason.MODEL_JUDGED_CORRECT, 1.0),
+        )
     }
 
     @Test

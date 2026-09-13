@@ -284,6 +284,13 @@ internal class ReviewLogSink(
         const val SOURCE_KIND_SELF_REPORT = "SELF_REPORT"
         const val SOURCE_KIND_VISUAL = "VISUAL"
 
+        /**
+         * 讲题判定结算的复习行（模型探针 + 本地核对 + 语义判词）。必须与
+         * [SOURCE_KIND_ATTEMPT] 分开：FSRS 参数拟合在校准达标前排除这一档
+         * （见 `SchedulingEvaluationHarness`），校准走 `calibrateSources` 单列一源。
+         */
+        const val SOURCE_KIND_MODEL_JUDGED = "MODEL_JUDGED"
+
         private const val AVOIDANCE_LOOKBACK_MILLIS = 30L * 24 * 60 * 60 * 1000
         private const val AVOIDANCE_MIN_OCCURRENCES = 2
 

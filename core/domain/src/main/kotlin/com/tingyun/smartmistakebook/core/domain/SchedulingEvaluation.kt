@@ -42,6 +42,14 @@ data class ReviewSample(
 
     companion object {
         const val ATTEMPT_KIND = "ATTEMPT"
+
+        /**
+         * 讲题判定通道的 source kind。与 ATTEMPT 分开落库，且在校准达标前**不参与**
+         * FSRS 参数拟合（[SchedulingEvaluationHarness.evaluate] / [FsrsParameterOptimizer.optimize]
+         * 显式排除）——Anki 官方口径：四键评分即拟合信号，把一种新评分混进去会让所有间隔
+         * 被系统性拉偏。校准走 [SchedulingEvaluationHarness.calibrateSources] 单独一档。
+         */
+        const val MODEL_JUDGED_KIND = "MODEL_JUDGED"
         private const val DAY_MILLIS = 86_400_000.0
     }
 }
@@ -169,6 +177,14 @@ object SchedulingReplay {
 }
 
 /**
+ * 可参与评估/拟合的复习样本：排除讲题判定行，直到 `calibrateSources` 的配对结果证明
+ * 它可以进（见 [ReviewSample.MODEL_JUDGED_KIND] 的说明）。调用方的"有没有数据"判断
+ * 必须用同一口径，否则只做过讲题判定复习的学习者会在报告路径上被空集绊倒。
+ */
+fun fittableReviewSamples(samples: List<ReviewSample>): List<ReviewSample> =
+    samples.filterNot { it.sourceKind == ReviewSample.MODEL_JUDGED_KIND }
+
+/**
  * Backtest harness (spec §2.20): replays the real review ledger under FSRS-6
  * and under the audited exponential baseline with a chronological
  * time-series split, and reports both log-losses plus the go/no-go gate.
@@ -249,15 +265,16 @@ object SchedulingEvaluationHarness {
         parameters: DoubleArray = FsrsScheduleMath.DEFAULT_PARAMETERS,
         trainFraction: Double = 0.7,
     ): SchedulingEvaluationReport {
-        require(samples.isNotEmpty()) { "Evaluation requires review samples" }
+        val fittable = fittableReviewSamples(samples)
+        require(fittable.isNotEmpty()) { "Evaluation requires review samples" }
         require(trainFraction in 0.1..0.9) { "Train fraction must be within 0.1..0.9" }
-        val perCard = samples.groupBy(ReviewSample::practiceUnitId)
+        val perCard = fittable.groupBy(ReviewSample::practiceUnitId)
             .map { (_, history) -> history.sortedBy(ReviewSample::reviewedAtEpochMillis) }
             .filter { it.size >= 2 }
         require(perCard.isNotEmpty()) { "Evaluation requires at least one card with two reviews" }
 
         val cutoff = quantile(
-            samples.map(ReviewSample::reviewedAtEpochMillis).sorted(),
+            fittable.map(ReviewSample::reviewedAtEpochMillis).sorted(),
             trainFraction,
         )
         val fsrsTrain = mutableListOf<Pair<Double, Boolean>>()
@@ -388,13 +405,18 @@ object FsrsParameterOptimizer {
         samples: List<ReviewSample>,
         iterations: Int = DEFAULT_ITERATIONS,
     ): Result {
+        // 讲题判定行是新的评分来源，校准达标前不进拟合器（口径见
+        // ReviewSample.MODEL_JUDGED_KIND）：拟合参数会被一种偏离标尺的评分整体拉偏。
+        // 过滤后为空不是调用错误——只做过讲题判定复习的学习者就该拿到"数据不足"，
+        // 而不是异常；下面 predictableSampleCount=0 会走 INSUFFICIENT_DATA 分支。
+        val fittingSamples = fittableReviewSamples(samples)
         require(samples.isNotEmpty()) { "Optimization requires review samples" }
         // The data-volume thresholds (fsrs-rs 8/64; spec §2.11b unlock floor)
         // exist to keep the fit honest relative to how many outcomes the
         // replay can actually score. First samples and same-day repeats never
         // produce a prediction pair, so raw row counts over-state the learnable
         // data; count the predictable (long-run) samples instead.
-        val predictableSampleCount = predictableSampleCount(samples)
+        val predictableSampleCount = predictableSampleCount(fittingSamples)
         if (predictableSampleCount < MIN_SAMPLES_FOR_FITTING) {
             return Result(
                 FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf(),
@@ -418,10 +440,10 @@ object FsrsParameterOptimizer {
         // targets the validation tail so a winning parameter set generalizes
         // forward instead of memorizing the past.
         val cutoff = quantile(
-            samples.map(ReviewSample::reviewedAtEpochMillis).sorted(),
+            fittingSamples.map(ReviewSample::reviewedAtEpochMillis).sorted(),
             TRAIN_FRACTION,
         )
-        val cards = samples.groupBy(ReviewSample::practiceUnitId)
+        val cards = fittingSamples.groupBy(ReviewSample::practiceUnitId)
             .values
             .filter { it.size >= 2 }
             .map { history -> history.sortedBy(ReviewSample::reviewedAtEpochMillis) }
@@ -440,7 +462,7 @@ object FsrsParameterOptimizer {
         // (研究 2026-09-09 §7/§8). It stays pinned at 1.0.
         if (
             predictableSampleCount >= UNLOCK_W15_W16_MIN_SAMPLES &&
-            samples.count { it.rating == FsrsRating.HARD } >= MIN_HARD_SAMPLES_FOR_W15
+            fittingSamples.count { it.rating == FsrsRating.HARD } >= MIN_HARD_SAMPLES_FOR_W15
         ) {
             val extendedIndices = (baseIndices + 15).distinct()
             val (extendedParams, extendedValidationLoss) = fit(cards, cutoff, extendedIndices, iterations)
@@ -475,8 +497,11 @@ object FsrsParameterOptimizer {
      * review at least one calendar day earlier.
      */
     internal fun predictableSampleCount(samples: List<ReviewSample>): Int {
+        // 与 evaluate/optimize 同一口径：讲题判定行不算"可预测样本"，避免它们
+        // 抬高解锁拟合的样本量门槛。
+        val fittable = fittableReviewSamples(samples)
         var count = 0
-        samples.groupBy(ReviewSample::practiceUnitId)
+        fittable.groupBy(ReviewSample::practiceUnitId)
             .values
             .forEach { history ->
                 val ordered = history.sortedBy(ReviewSample::reviewedAtEpochMillis)

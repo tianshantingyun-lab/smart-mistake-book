@@ -19,6 +19,14 @@ enum class LearningEvidenceReason {
     SELF_REPORTED_STUCK,
     VISUAL_INTERACTION_SATISFIED,
     VISUAL_INTERACTION_VIOLATED,
+
+    /**
+     * 讲题判定的题目级结论（模型出探针、本地核对客观作答、模型给语义判词）。
+     * 非独立：判分者本身有误差（LLM 判分与人类判分 κ≈0.70），且探针构成协助——
+     * 定价与依据见 `docs/research/model-judged-verdict-pricing.md`。
+     */
+    MODEL_JUDGED_CORRECT,
+    MODEL_JUDGED_INCORRECT,
 }
 
 /** Signed evidence whose independence is derived from its reason, never supplied by a caller. */
@@ -41,6 +49,7 @@ data class LearningEvidence(
                 LearningEvidenceReason.CORRECT_ON_RETRY,
                 LearningEvidenceReason.SELF_REPORTED_RECALL,
                 LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED,
+                LearningEvidenceReason.MODEL_JUDGED_CORRECT,
                 -> direction == LearningEvidenceDirection.POSITIVE
 
                 LearningEvidenceReason.INDEPENDENT_INCORRECT,
@@ -49,6 +58,7 @@ data class LearningEvidence(
                 LearningEvidenceReason.INCORRECT_AFTER_REVEAL,
                 LearningEvidenceReason.SELF_REPORTED_STUCK,
                 LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
+                LearningEvidenceReason.MODEL_JUDGED_INCORRECT,
                 -> direction == LearningEvidenceDirection.NEGATIVE
 
                 LearningEvidenceReason.ANSWER_REVEALED ->
@@ -79,6 +89,30 @@ object LocalReviewSelfReportContract {
     const val ANSWER_SPEC_ID = "local-review-self-report-v1"
     const val ITEM_FAMILY_ID = "local-review-self-report"
     const val TAXONOMY_VERSION = "local-review-self-report-v1"
+
+    fun matches(snapshot: AssessmentEvidenceSnapshot): Boolean =
+        snapshot.assessmentItemId.startsWith(ASSESSMENT_ITEM_ID_PREFIX) &&
+            snapshot.assessmentItemId.length > ASSESSMENT_ITEM_ID_PREFIX.length &&
+            snapshot.answerSpecId == ANSWER_SPEC_ID &&
+            snapshot.itemFamilyId == ITEM_FAMILY_ID &&
+            snapshot.sourceBundleId == null &&
+            snapshot.taxonomyVersion == TAXONOMY_VERSION &&
+            snapshot.calibration.support == CalibrationSupport.UNKNOWN &&
+            snapshot.attributions.isEmpty()
+}
+
+/**
+ * 讲题判定的题目级结算：模型出探针、本地核对客观作答、模型给语义判词，最终落成一次复习
+ * attempt。快照**故意不带知识归属**——这条通道只驱动题目级排期（FSRS/记忆状态），
+ * 知识点掌握度一律走模型判断的 chat-evidence 通道（`MasteryWriteGate`，≤0.15），
+ * 避免一次讲题会话对同一 KC 双写。依据见
+ * `docs/research/model-judged-verdict-pricing.md`。
+ */
+object LocalModelJudgedContract {
+    const val ASSESSMENT_ITEM_ID_PREFIX = "local-model-judged:"
+    const val ANSWER_SPEC_ID = "local-model-judged-v1"
+    const val ITEM_FAMILY_ID = "local-model-judged"
+    const val TAXONOMY_VERSION = "local-model-judged-v1"
 
     fun matches(snapshot: AssessmentEvidenceSnapshot): Boolean =
         snapshot.assessmentItemId.startsWith(ASSESSMENT_ITEM_ID_PREFIX) &&

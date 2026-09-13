@@ -23,6 +23,7 @@ import com.tingyun.smartmistakebook.core.model.LearningEvidence
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.LearningLedgerEvent
+import com.tingyun.smartmistakebook.core.model.LocalModelJudgedContract
 import com.tingyun.smartmistakebook.core.model.LocalReviewSelfReportContract
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ProblemMemoryOutcome
@@ -1212,6 +1213,45 @@ class StudyDatabaseInstrumentedTest {
     }
 
     @Test
+    fun localModelJudgedContractMayPersistWithoutAttributionsAndNearMatchesAreRejected() = runBlocking {
+        // 讲题判定结算：快照故意不带知识归属（题目级排期 ≠ 知识掌握证据），
+        // 因此它必须有自己的合同身份，而不是蹭自评合同。
+        val modelJudged = localModelJudgedSnapshot()
+
+        store.saveAssessmentEvidenceSnapshot(modelJudged)
+        val recorded = store.recordAttempt(
+            attemptCommand(
+                submissionId = "local-model-judged-submission",
+                attemptId = "local-model-judged-attempt",
+                presentationId = "local-model-judged-presentation",
+                evidence = LearningEvidence(
+                    direction = LearningEvidenceDirection.POSITIVE,
+                    weight = 0.5,
+                    reason = LearningEvidenceReason.MODEL_JUDGED_CORRECT,
+                ),
+                outcome = ProblemMemoryOutcome.ASSISTED_RECALL,
+            ).copy(assessmentSnapshotId = modelJudged.snapshotId),
+        )
+
+        assertEquals(modelJudged, recorded.attempt.assessmentSnapshot)
+        assertTrue(recorded.attempt.knowledgeNodeIds.isEmpty())
+        assertEquals(
+            LearningEvidenceReason.MODEL_JUDGED_CORRECT,
+            recorded.attempt.evidence.reason,
+        )
+
+        val nearMatch = modelJudged.copy(
+            snapshotId = "local-model-judged-near-match",
+            answerSpecId = "not-the-model-judged-contract",
+        )
+        val failure = runCatching {
+            store.saveAssessmentEvidenceSnapshot(nearMatch)
+        }.exceptionOrNull()
+
+        assertTrue(failure is DatabaseContractViolationException)
+    }
+
+    @Test
     fun persistentDatabaseReopensWithLosslessLedgerSnapshotAndCompletedSession() = runBlocking {
         store.close()
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -1370,6 +1410,21 @@ class StudyDatabaseInstrumentedTest {
                 certainty = EvidenceAttributionCertainty.DIRECT,
             ),
         ),
+        capturedAtEpochMillis = OCCURRED_AT - 1_000,
+    )
+
+    private fun localModelJudgedSnapshot() = AssessmentEvidenceSnapshot(
+        snapshotId = "local-model-judged-snapshot",
+        assessmentItemId = LocalModelJudgedContract.ASSESSMENT_ITEM_ID_PREFIX + UNIT_ID,
+        practiceUnitId = UNIT_ID,
+        problemRevisionId = REVISION_ID,
+        answerSpecId = LocalModelJudgedContract.ANSWER_SPEC_ID,
+        itemFamilyId = LocalModelJudgedContract.ITEM_FAMILY_ID,
+        sourceBundleId = null,
+        taxonomyVersion = LocalModelJudgedContract.TAXONOMY_VERSION,
+        verification = AssessmentSnapshotVerification.VERIFIED,
+        calibration = CalibrationSnapshot.unknown(),
+        attributions = emptyList(),
         capturedAtEpochMillis = OCCURRED_AT - 1_000,
     )
 
