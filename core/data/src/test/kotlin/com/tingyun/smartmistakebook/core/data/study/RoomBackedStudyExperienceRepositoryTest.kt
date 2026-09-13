@@ -1670,7 +1670,16 @@ class RoomBackedStudyExperienceRepositoryTest {
 
         try {
             repository.initialize()
+            // 目录读会在 initialize() 里发生（快照就是这么建的），所以这里量的是**增量**：
+            // 补救取一道题的范围，不得再整读一次目录——那个调用在会话里是每张卡一次，
+            // 而目录每行带 5 个相关子查询（审计 N-19 的 O(N²)）。
+            val readsBeforeRemediation = database.catalogueReads
             assertNotNull(repository.prerequisiteRemediation(unitId))
+            assertEquals(
+                "补救取范围必须走定向查询，不得整读目录",
+                readsBeforeRemediation,
+                database.catalogueReads,
+            )
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -2314,7 +2323,20 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         checkpointSequence = 1,
     )
 
-    override fun observeMistakes(): Flow<List<MistakeRecord>> = mistakes
+    /**
+     * 目录读被调用了几次。存在的唯一理由是钉住 N-19：会话里"这道题绑在哪些 KC 上"
+     * 曾经整读一次目录（每行 5 个相关子查询），改成定向查询之后，从会话侧看这个计数必须是 0。
+     */
+    var catalogueReads = 0
+        private set
+
+    override fun observeMistakes(): Flow<List<MistakeRecord>> {
+        catalogueReads += 1
+        return mistakes
+    }
+
+    override suspend fun knowledgeNodeIdsForPracticeUnit(practiceUnitId: String): Set<String>? =
+        mistakes.value.firstOrNull { it.practiceUnitId == practiceUnitId }?.knowledgeNodeIds
 
     override suspend fun updateErrorBookEntryNote(
         entryId: String,

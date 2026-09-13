@@ -36,6 +36,13 @@ internal class RoomStudyDatabase(
     override fun observeMistakes(): Flow<List<MistakeRecord>> =
         database.problemDao().observeActiveMistakes().map { rows -> rows.map(MistakeRow::toRecord) }
 
+    override suspend fun knowledgeNodeIdsForPracticeUnit(practiceUnitId: String): Set<String>? =
+        // Same parse as MistakeRow::toRecord, on the same SQL — an empty set and a missing
+        // row both mean "no scope" to the caller (see the port's contract).
+        database.problemDao().knowledgeNodeIdsForPracticeUnit(practiceUnitId)
+            .toCatalogLabels()
+            .toCollection(linkedSetOf())
+
     override fun libraryPagingSource(
         searchText: String,
         subjectId: String?,

@@ -550,17 +550,15 @@ class RoomBackedStudyExperienceRepository(
      * 演示内容——实拍题永远返回 null，且**没有任何测试会发现**，因为既有用例全都显式
      * 注入 `M1CuratedFixtureSource`（审计 S-5）。
      *
-     * **取数的代价，写在这里以便将来评估**：这一步会**整读一次错题目录**（`observeMistakes`
-     * 的目录视图带 per-row 子查询），而它在会话里是**每张卡加载时一次**。选它而不选
-     * `latestMistakes` 那个缓存，是因为那个缓存只在写路径上刷新——用户重新归类一道题之后
-     * 它仍留着旧范围，而补救正是按范围取材料的（陈旧范围＝给错的前置讲错的内容）。
-     * 库到数千题、或这个调用点变成每卡多次时，正确的做法是加一个**只按
-     * `practice_unit_id` 取 KC 范围**的定向查询，而不是退回缓存。
+     * **取数**：定向查询 `knowledgeNodeIdsForPracticeUnit`——它与目录列表**共用同一份 SQL**
+     * （`ProblemDao.MISTAKE_CATALOG_SQL`），只是把"哪一个 practice_unit"交给外层，
+     * 所以范围不可能与目录读分叉。原先这里整读一次错题目录（每行 5 个相关子查询），
+     * 而它在会话里是**每张卡加载时一次** ⇒ `O(N²)`（审计 N-19）。
+     * 不选 `latestMistakes` 那个缓存的理由不变：那个缓存只在写路径上刷新，
+     * 用户重新归类一道题之后它仍留着旧范围，而补救正是按范围取材料的（陈旧范围＝给错的前置讲错的内容）。
      */
     private suspend fun currentKnowledgeScopeOf(practiceUnitId: String): Set<String>? =
-        database.observeMistakes().first()
-            .firstOrNull { mistake -> mistake.practiceUnitId == practiceUnitId }
-            ?.knowledgeNodeIds
+        database.knowledgeNodeIdsForPracticeUnit(practiceUnitId)
             ?.takeIf { nodeIds -> nodeIds.isNotEmpty() }
 
     override suspend fun submitChoice(
