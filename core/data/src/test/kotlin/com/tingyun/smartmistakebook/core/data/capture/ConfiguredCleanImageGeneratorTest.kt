@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.capture
 
 import com.tingyun.smartmistakebook.core.data.model.FakeModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.data.model.FakeModelConfigurationStore
+import com.tingyun.smartmistakebook.core.data.model.ImageChannelFactory
 import com.tingyun.smartmistakebook.core.data.model.ImageGenerationChannel
 import com.tingyun.smartmistakebook.core.data.model.ImageGenerationRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawRequest
@@ -114,7 +115,7 @@ class ConfiguredCleanImageGeneratorTest {
         capability: ModelCapabilityVerification? = FakeModelConfigurationStore.configuredCapability(),
         consentGranted: Boolean = true,
         consentStore: FakeModelAgentConsentStore? = FakeModelAgentConsentStore(granted = consentGranted),
-        channelFactory: ChannelFactory = ChannelFactory { _, _ ->
+        channelFactory: ImageChannelFactory = ImageChannelFactory { _, _ ->
             FakeRedrawChannel("default", "image/png")
         },
     ) = ConfiguredCleanImageGenerator(
@@ -142,7 +143,7 @@ class ConfiguredCleanImageGeneratorTest {
 
     private class ChannelFactory(
         private val factory: (String, String) -> ImageGenerationChannel,
-    ) : ConfiguredCleanImageGenerator.ChannelFactory {
+    ) : ImageChannelFactory {
         override suspend fun create(
             baseUrl: String,
             authorization: String,

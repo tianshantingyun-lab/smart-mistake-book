@@ -17,9 +17,11 @@ import com.tingyun.smartmistakebook.core.model.AttachedImage
  * question's problem-sheet bytes for a REDRAW_PROBLEM (never model-supplied).
  * No global model-agent consent (or no credential / no image capability) →
  * returns a resolver that always yields null (so no figure shows), mirroring the
- * clean-redraw gate. Consent is read through [resolveImageCredential], which is
- * the shared gate for both figure paths (audit S-2: it used to read a build-flavor
- * capability bit, so revoking consent did not stop the upload).
+ * clean-redraw gate. Both halves of this egress path are shared with that
+ * generator — the credential gate [resolveImageCredential] and the channel
+ * construction [ImageChannelFactory] — so the two figure paths cannot decide
+ * differently (audit S-2: the gate used to read a build-flavor capability bit,
+ * so revoking consent did not stop the upload).
  */
 object AttachedImageGeneratorFactory {
     fun create(
@@ -27,6 +29,27 @@ object AttachedImageGeneratorFactory {
         configurationStore: ModelConfigurationStore?,
         modelAgentConsentStore: ModelAgentConsentStore?,
         resolveCurrentSheetBytes: suspend () -> ByteArray?,
+    ): suspend (AttachedImage) -> String? = create(
+        context = context,
+        configurationStore = configurationStore,
+        modelAgentConsentStore = modelAgentConsentStore,
+        resolveCurrentSheetBytes = resolveCurrentSheetBytes,
+        channelFactory = GuardedEditsChannelFactory,
+    )
+
+    /**
+     * The same assembly with the network seam opened, so a test can observe whether
+     * the gate let this path reach the point where a channel — and with it an upload
+     * — gets built. Audit N-28: this is the one image egress route with no such
+     * evidence, and through [AttachedImageGenerator] "declined" is indistinguishable
+     * from "tried and failed" (both degrade to a missing figure).
+     */
+    internal fun create(
+        context: Context,
+        configurationStore: ModelConfigurationStore?,
+        modelAgentConsentStore: ModelAgentConsentStore?,
+        resolveCurrentSheetBytes: suspend () -> ByteArray?,
+        channelFactory: ImageChannelFactory,
     ): suspend (AttachedImage) -> String? {
         if (configurationStore == null) return { null }
         val vault = AndroidCanonicalAssetVault(context.applicationContext)
@@ -37,10 +60,8 @@ object AttachedImageGeneratorFactory {
                 credential.apiKey.use { apiKey ->
                     val keyChars = apiKey.copyChars()
                     try {
-                        val endpoint = resolveGuardedEdits(credential.configuration.baseUrl)
-                        val channel = OpenAiImageGenerationChannel(
-                            baseUrl = endpoint.baseUrl,
-                            client = endpoint.client,
+                        val channel = channelFactory.create(
+                            baseUrl = credential.configuration.baseUrl,
                             authorization = "Bearer ${String(keyChars)}",
                         )
                         channel.generate(request)

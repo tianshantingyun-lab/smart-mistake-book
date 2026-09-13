@@ -1,10 +1,9 @@
 package com.tingyun.smartmistakebook.core.data.capture
 
-import com.tingyun.smartmistakebook.core.data.model.ImageGenerationChannel
+import com.tingyun.smartmistakebook.core.data.model.GuardedEditsChannelFactory
+import com.tingyun.smartmistakebook.core.data.model.ImageChannelFactory
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawResult
-import com.tingyun.smartmistakebook.core.data.model.OpenAiImageGenerationChannel
-import com.tingyun.smartmistakebook.core.data.model.resolveGuardedEdits
 import com.tingyun.smartmistakebook.core.data.model.resolveImageCredential
 import com.tingyun.smartmistakebook.core.domain.CleanImageGenerator
 import com.tingyun.smartmistakebook.core.domain.CleanImageResult
@@ -21,7 +20,7 @@ import kotlinx.coroutines.CancellationException
  * attached as a CLEAN_IMAGE-role asset by the repository.
  *
  * The edits POST travels over the same SSRF-guarded client as the chat gateway
- * ([resolveGuardedEdits]), so a redraw can never be redirected to a private
+ * ([GuardedEditsChannelFactory]), so a redraw can never be redirected to a private
  * address.
  *
  * Gating (a redraw is only attempted when adding to the mistake book), all three
@@ -38,7 +37,7 @@ import kotlinx.coroutines.CancellationException
 internal class ConfiguredCleanImageGenerator(
     private val configurationStore: ModelConfigurationStore,
     private val modelAgentConsentStore: ModelAgentConsentStore?,
-    private val channelFactory: ChannelFactory = GuardedEditsChannelFactory,
+    private val channelFactory: ImageChannelFactory = GuardedEditsChannelFactory,
 ) : CleanImageGenerator {
 
     override suspend fun generateClean(
@@ -85,31 +84,11 @@ internal class ConfiguredCleanImageGenerator(
         }
     }
 
-    /** Small seam so unit tests substitute a fake channel without DNS or network. */
-    internal fun interface ChannelFactory {
-        suspend fun create(baseUrl: String, authorization: String): ImageGenerationChannel
-    }
-
     private companion object {
         const val CLEAN_REDRAW_INSTRUCTION =
             "这是一道被学生拍摄的题目照片。请保留印刷题面的所有文字与图形内容不变，" +
                 "仅去除照片中的手写笔迹、涂改、无关阴影与折痕，重绘成一张干净的题面图。" +
                 "不要改写、增删或重新排版任何印刷内容。"
-    }
-}
-
-/** Builds the authenticated redraw channel over the SSRF-guarded edits endpoint. */
-private object GuardedEditsChannelFactory : ConfiguredCleanImageGenerator.ChannelFactory {
-    override suspend fun create(
-        baseUrl: String,
-        authorization: String,
-    ): ImageGenerationChannel {
-        val endpoint = resolveGuardedEdits(baseUrl)
-        return OpenAiImageGenerationChannel(
-            baseUrl = endpoint.baseUrl,
-            client = endpoint.client,
-            authorization = authorization,
-        )
     }
 }
 
