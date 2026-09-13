@@ -193,6 +193,20 @@ C(K)：自评=6h；视觉=1h；真实作答不冷却（真实提取不刷分，�
   对每个绑定 KC_k：contribution_k = s · w_e · (strength_k / Σ_j strength_j)
 KC 级 evidenceMass_k += |contribution_k|；masteryScore_k 按 LearningProjector 现有正负学习率更新
 ```
+
+> **⚠ 2026-09-12 订正：上面这条 `strength` 分摊公式已被
+> `docs/specs/mastery-scheduling-spec.md` §2.13 修订，并且它不是当前实现。**
+>
+> - 现行口径是「**全 KC 各记一次完整证据**」，`strength` 只作排序／展示用途；
+>   仅在「KC 学习曲线证明过度共现噪声大」时才切到 strength 归一分摊，**当前不启用**。
+>   研究依据见 `docs/research/behavior-signals-and-context-addendum.md` §5.2（该修订本身带 UNVERIFIED 标注）。
+> - 另有一条**不变式**约束本节：归因（attribution）是**写入时**烘焙进不可变快照的事实，
+>   其逐字段哈希进入 `LearningLedgerFingerprint`。因此**投影期不得读活的绑定表**来解析归因，
+>   历史归因也不可事后重映射——否则同一份事件日志在不同时刻重放出不同结果、并让投影 `CONFLICT` 停摆。
+>   完整论证：`docs/audit-2026-09-12-kernel-readiness.md` §3 **S-3**，规范表述见 spec §2.8.1。
+>
+> **照上面的公式去"修正"实现，会把对的改错。**
+
 现状差距：视觉通道已按 PRIMARY 0.6/SECONDARY 0.4 pool 分摊（RoomBackedStudyExperienceRepository.kt:786-805），但**真实作答通道没有走 KC 分摊**（直接落 practice_unit 级 memory；KC mastery 由投影内 attribution 更新）——阶段 C 统一为「所有证据经 binding 分摊到 KC」。
 
 ### 10. 前置驱动的选题决策（阶段 C2，详见 linkage 文档）

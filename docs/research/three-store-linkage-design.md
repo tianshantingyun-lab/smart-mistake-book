@@ -75,7 +75,7 @@ learner_knowledge_mastery_state(learner_id, knowledge_node_id, mastery_score,
         │ attempt_event(practice_unit_id, evidence)              ← 行为层（见 math-modeling 第二部分）
         ▼
 practice_unit_knowledge_binding (practice_unit_id, knowledge_node_id, strength, basis_revision_id, taxonomy_version)
-        │ 证据分摊：contribution_k = ±w_e · strength_k/Σstrength_j     ← §math-9
+        │ 证据分摊：contribution_k = ±w_e · strength_k/Σstrength_j     ← §math-9（⚠ 该口径已修订，见 §3.2）
         ▼
 learner_knowledge_mastery_state (knowledge_node_id, mastery_score, evidence_mass, …)
         │                                      │
@@ -91,6 +91,16 @@ ReviewPlannerV2 候选打分 ──────────────► 前�
 
 - **所有**调度证据（真实作答、提示作答、自评、视觉、暴露）统一走 binding 分摊；practice_unit 级 memory 保留为「题级缓存」（= 其 KC 分摊结果的确定性函数），KC 为权威层。
 - 分摊权重：`strength_k / Σ_j strength_j`；同 binding 多 revision（basis_revision_id 不同）取 accepted_at 最新的 taxonomy_version 组。
+  > **⚠ 2026-09-12 订正**：分摊**口径**已被 `docs/specs/mastery-scheduling-spec.md` §2.13 改为
+  > 「**全 KC 各记一次完整证据**」，`strength` 降级为排序／展示用途（依据见
+  > `docs/research/behavior-signals-and-context-addendum.md` §5.2）；`strength_k / Σ strength_j`
+  > 只在"过度共现噪声大"时才启用，**当前不启用**。
+  >
+  > 更要紧的是**归因（attribution）在写入时就被烘焙进不可变快照**，其逐字段哈希进入账本指纹
+  > （`LearningLedgerFingerprint`）。所以本节"统一走分摊"这件事**只能发生在写入时**：
+  > 投影期读活的绑定表解析归因，会让同一份事件日志在不同时刻重放出不同结果（重放不再是真相的重建），
+  > 并且改写历史归因会直接触发 `CONFLICT` 停摆。完整论证：`docs/audit-2026-09-12-kernel-readiness.md`
+  > §3 **S-3**，规范表述见 spec §2.8.1。
 - 视觉通道现行 PRIMARY 0.6 / SECONDARY 0.4 pool 与统一规则冲突——改为「PRIMARY = 最大 strength 的绑定」，其余按 strength 归一，常数删除。
 
 ### 3.3 前置驱动调度（修 L4）
