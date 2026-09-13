@@ -7,229 +7,7 @@ import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
 /** Immutable presentation content. This is intentionally separate from accepted learning evidence. */
-@Entity(
-    tableName = "assessment_item_snapshot",
-    foreignKeys = [
-        ForeignKey(
-            entity = PracticeUnitEntity::class,
-            parentColumns = ["practice_unit_id", "problem_revision_id"],
-            childColumns = ["practice_unit_id", "problem_revision_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
-    ],
-    indices = [
-        Index(value = ["practice_unit_id"]),
-        Index(value = ["problem_revision_id"]),
-        Index(value = ["practice_unit_id", "problem_revision_id"]),
-        Index(value = ["tutor_content_snapshot_id", "item_revision"], unique = true),
-    ],
-)
-internal data class AssessmentItemSnapshotEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "assessment_item_snapshot_id")
-    val assessmentItemSnapshotId: String,
-    @ColumnInfo(name = "item_revision")
-    val itemRevision: Int,
-    @ColumnInfo(name = "practice_unit_id")
-    val practiceUnitId: String?,
-    @ColumnInfo(name = "problem_revision_id")
-    val problemRevisionId: String?,
-    @ColumnInfo(name = "tutor_content_snapshot_id")
-    val tutorContentSnapshotId: String?,
-    @ColumnInfo(name = "prompt_markdown")
-    val promptMarkdown: String,
-    @ColumnInfo(name = "options_snapshot")
-    val optionsSnapshot: String,
-    @ColumnInfo(name = "answer_spec_snapshot")
-    val answerSpecSnapshot: String,
-    @ColumnInfo(name = "verification_status")
-    val verificationStatus: String,
-    @ColumnInfo(name = "assessment_eligibility")
-    val assessmentEligibility: String,
-    @ColumnInfo(name = "scoring_mode")
-    val scoringMode: String,
-    @ColumnInfo(name = "learner_snapshot_version")
-    val learnerSnapshotVersion: String,
-    @ColumnInfo(name = "projection_checkpoint")
-    val projectionCheckpoint: Long,
-    @ColumnInfo(name = "hint_level_at_presentation")
-    val hintLevelAtPresentation: Int,
-    @ColumnInfo(name = "answer_reveal_state")
-    val answerRevealState: String,
-    @ColumnInfo(name = "created_at_epoch_millis")
-    val createdAtEpochMillis: Long,
-)
-
-@Entity(
-    tableName = "assessment_event",
-    foreignKeys = [
-        ForeignKey(
-            entity = AssessmentItemSnapshotEntity::class,
-            parentColumns = ["assessment_item_snapshot_id"],
-            childColumns = ["assessment_item_snapshot_id"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-    ],
-    indices = [
-        Index(value = ["assessment_item_snapshot_id"]),
-        Index(value = ["assessment_item_snapshot_id", "event_sequence"], unique = true),
-    ],
-)
-internal data class AssessmentEventEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "assessment_event_id")
-    val assessmentEventId: String,
-    @ColumnInfo(name = "assessment_item_snapshot_id")
-    val assessmentItemSnapshotId: String,
-    @ColumnInfo(name = "event_sequence")
-    val eventSequence: Long,
-    @ColumnInfo(name = "event_type")
-    val eventType: String,
-    @ColumnInfo(name = "hint_level")
-    val hintLevel: Int?,
-    @ColumnInfo(name = "submitted_response")
-    val submittedResponse: String?,
-    @ColumnInfo(name = "occurred_at_epoch_millis")
-    val occurredAtEpochMillis: Long,
-)
-
 /** Immutable, verified evidence snapshot accepted by learning-core-v2. */
-@Entity(
-    tableName = "assessment_evidence_snapshot",
-    foreignKeys = [
-        ForeignKey(
-            entity = PracticeUnitEntity::class,
-            parentColumns = ["practice_unit_id", "problem_revision_id"],
-            childColumns = ["practice_unit_id", "problem_revision_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
-    ],
-    indices = [
-        Index(value = ["assessment_item_id"]),
-        Index(value = ["practice_unit_id", "problem_revision_id"]),
-        Index(
-            value = [
-                "snapshot_id",
-                "practice_unit_id",
-                "problem_revision_id",
-                "taxonomy_version",
-            ],
-            unique = true,
-        ),
-    ],
-)
-internal data class AssessmentEvidenceSnapshotEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "snapshot_id")
-    val snapshotId: String,
-    @ColumnInfo(name = "assessment_item_id")
-    val assessmentItemId: String,
-    @ColumnInfo(name = "practice_unit_id")
-    val practiceUnitId: String,
-    @ColumnInfo(name = "problem_revision_id")
-    val problemRevisionId: String,
-    @ColumnInfo(name = "answer_spec_id")
-    val answerSpecId: String,
-    @ColumnInfo(name = "item_family_id")
-    val itemFamilyId: String,
-    @ColumnInfo(name = "source_bundle_id")
-    val sourceBundleId: String?,
-    @ColumnInfo(name = "taxonomy_version")
-    val taxonomyVersion: String,
-    val verification: String,
-    @ColumnInfo(name = "calibration_support")
-    val calibrationSupport: String,
-    @ColumnInfo(name = "calibration_source_id")
-    val calibrationSourceId: String,
-    @ColumnInfo(name = "calibration_version")
-    val calibrationVersion: String,
-    @ColumnInfo(name = "calibration_valid_from_epoch_millis")
-    val calibrationValidFromEpochMillis: Long,
-    @ColumnInfo(name = "calibration_valid_until_epoch_millis")
-    val calibrationValidUntilEpochMillis: Long,
-    @ColumnInfo(name = "captured_at_epoch_millis")
-    val capturedAtEpochMillis: Long,
-)
-
-@Entity(
-    tableName = "assessment_evidence_attribution",
-    primaryKeys = ["snapshot_id", "binding_id"],
-    foreignKeys = [
-        ForeignKey(
-            entity = AssessmentEvidenceSnapshotEntity::class,
-            parentColumns = [
-                "snapshot_id",
-                "practice_unit_id",
-                "problem_revision_id",
-                "taxonomy_version",
-            ],
-            childColumns = [
-                "snapshot_id",
-                "practice_unit_id",
-                "basis_revision_id",
-                "taxonomy_version",
-            ],
-            onDelete = ForeignKey.CASCADE,
-        ),
-        ForeignKey(
-            entity = PracticeUnitKnowledgeBindingEntity::class,
-            parentColumns = [
-                "binding_id",
-                "practice_unit_id",
-                "knowledge_node_id",
-                "basis_revision_id",
-                "taxonomy_version",
-            ],
-            childColumns = [
-                "binding_id",
-                "practice_unit_id",
-                "knowledge_node_id",
-                "basis_revision_id",
-                "taxonomy_version",
-            ],
-            onDelete = ForeignKey.RESTRICT,
-        ),
-    ],
-    indices = [
-        Index(value = ["snapshot_id"]),
-        Index(value = ["knowledge_node_id"]),
-        Index(
-            value = [
-                "snapshot_id",
-                "practice_unit_id",
-                "basis_revision_id",
-                "taxonomy_version",
-            ],
-        ),
-        Index(
-            value = [
-                "binding_id",
-                "practice_unit_id",
-                "knowledge_node_id",
-                "basis_revision_id",
-                "taxonomy_version",
-            ],
-        ),
-    ],
-)
-internal data class AssessmentEvidenceAttributionEntity(
-    @ColumnInfo(name = "snapshot_id")
-    val snapshotId: String,
-    @ColumnInfo(name = "binding_id")
-    val bindingId: String,
-    @ColumnInfo(name = "practice_unit_id")
-    val practiceUnitId: String,
-    @ColumnInfo(name = "knowledge_node_id")
-    val knowledgeNodeId: String,
-    val weight: Double,
-    @ColumnInfo(name = "basis_revision_id")
-    val basisRevisionId: String,
-    @ColumnInfo(name = "taxonomy_version")
-    val taxonomyVersion: String,
-    val role: String,
-    val certainty: String,
-)
-
 @Entity(
     tableName = "attempt_submission",
     indices = [
@@ -246,39 +24,6 @@ internal data class AttemptSubmissionEntity(
     @ColumnInfo(name = "payload_fingerprint")
     val payloadFingerprint: String,
 )
-
-@Entity(
-    tableName = "assessment_presentation",
-    primaryKeys = ["learner_id", "presentation_id"],
-    foreignKeys = [
-        ForeignKey(
-            entity = AssessmentEvidenceSnapshotEntity::class,
-            parentColumns = ["snapshot_id"],
-            childColumns = ["assessment_snapshot_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
-    ],
-    indices = [
-        Index(value = ["assessment_snapshot_id"]),
-        Index(value = ["learner_id", "terminal"]),
-    ],
-)
-internal data class AssessmentPresentationEntity(
-    @ColumnInfo(name = "learner_id")
-    val learnerId: String,
-    @ColumnInfo(name = "presentation_id")
-    val presentationId: String,
-    @ColumnInfo(name = "assessment_snapshot_id")
-    val assessmentSnapshotId: String,
-    @ColumnInfo(name = "last_response_ordinal")
-    val lastResponseOrdinal: Int,
-    val terminal: Boolean,
-    @ColumnInfo(name = "state_version")
-    val stateVersion: Long,
-    @ColumnInfo(name = "updated_at_epoch_millis")
-    val updatedAtEpochMillis: Long,
-)
-
 @Entity(
     tableName = "attempt_event",
     foreignKeys = [
@@ -372,7 +117,6 @@ internal data class AttemptEventEntity(
     @ColumnInfo(name = "low_confidence_correct", defaultValue = "0")
     val lowConfidenceCorrect: Int = 0,
 )
-
 @Entity(
     tableName = "attempt_correction",
     foreignKeys = [
@@ -417,47 +161,6 @@ internal data class AttemptCorrectionEntity(
     @ColumnInfo(name = "occurred_at_epoch_millis")
     val occurredAtEpochMillis: Long,
 )
-
-@Entity(
-    tableName = "assessment_answer_reveal_event",
-    foreignKeys = [
-        ForeignKey(
-            entity = AssessmentEvidenceSnapshotEntity::class,
-            parentColumns = ["snapshot_id"],
-            childColumns = ["assessment_snapshot_id"],
-            onDelete = ForeignKey.RESTRICT,
-        ),
-    ],
-    indices = [
-        Index(value = ["outcome_id"], unique = true),
-        Index(value = ["assessment_snapshot_id"]),
-        Index(value = ["learner_id", "presentation_id"], unique = true),
-    ],
-)
-internal data class AssessmentAnswerRevealEventEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "assessment_event_id")
-    val assessmentEventId: String,
-    @ColumnInfo(name = "learner_id")
-    val learnerId: String,
-    @ColumnInfo(name = "outcome_id")
-    val outcomeId: String,
-    @ColumnInfo(name = "presentation_id")
-    val presentationId: String,
-    @ColumnInfo(name = "assessment_snapshot_id")
-    val assessmentSnapshotId: String,
-    @ColumnInfo(name = "content_markdown")
-    val contentMarkdown: String,
-    @ColumnInfo(name = "occurred_at_epoch_millis")
-    val occurredAtEpochMillis: Long,
-    @ColumnInfo(name = "study_day_epoch_day")
-    val studyDayEpochDay: Long,
-    @ColumnInfo(name = "study_day_time_zone_id")
-    val studyDayTimeZoneId: String,
-    @ColumnInfo(name = "study_day_utc_offset_minutes")
-    val studyDayUtcOffsetMinutes: Int,
-)
-
 @Entity(
     tableName = "answer_reveal_outcome",
     foreignKeys = [
@@ -507,7 +210,6 @@ internal data class AnswerRevealOutcomeEntity(
     @ColumnInfo(name = "study_day_utc_offset_minutes")
     val studyDayUtcOffsetMinutes: Int,
 )
-
 @Entity(tableName = "learning_sequence")
 internal data class LearningSequenceEntity(
     @PrimaryKey
@@ -516,7 +218,6 @@ internal data class LearningSequenceEntity(
     @ColumnInfo(name = "last_allocated_sequence")
     val lastAllocatedSequence: Long,
 )
-
 @Entity(
     tableName = "projection_outbox",
     indices = [
@@ -543,7 +244,6 @@ internal data class ProjectionOutboxEntity(
     @ColumnInfo(name = "created_at_epoch_millis")
     val createdAtEpochMillis: Long,
 )
-
 @Entity(
     tableName = "projection_consumption",
     primaryKeys = ["projection_name", "learner_id", "outbox_id"],
@@ -577,7 +277,6 @@ internal data class ProjectionConsumptionEntity(
     @ColumnInfo(name = "consumed_at_epoch_millis")
     val consumedAtEpochMillis: Long,
 )
-
 /** Legacy denormalized projection retained for mistake-list fixture previews. */
 @Entity(
     tableName = "problem_memory_state",
@@ -614,7 +313,6 @@ internal data class ProblemMemoryStateEntity(
     @ColumnInfo(name = "updated_at_epoch_millis")
     val updatedAtEpochMillis: Long,
 )
-
 /** Legacy denormalized projection retained for fixture compatibility. */
 @Entity(
     tableName = "knowledge_mastery_state",
@@ -651,7 +349,6 @@ internal data class KnowledgeMasteryStateEntity(
     @ColumnInfo(name = "updated_at_epoch_millis")
     val updatedAtEpochMillis: Long,
 )
-
 @Entity(
     tableName = "learner_projection_snapshot",
     primaryKeys = ["projection_name", "learner_id"],
@@ -680,7 +377,6 @@ internal data class LearnerProjectionSnapshotEntity(
     @ColumnInfo(name = "projection_status")
     val projectionStatus: String,
 )
-
 @Entity(
     tableName = "learner_problem_memory_state",
     primaryKeys = ["projection_name", "learner_id", "practice_unit_id"],
@@ -748,7 +444,6 @@ internal data class LearnerProblemMemoryStateEntity(
     @ColumnInfo(name = "consecutive_cross_day_again", defaultValue = "0")
     val consecutiveCrossDayAgain: Int = 0,
 )
-
 @Entity(
     tableName = "learner_knowledge_mastery_state",
     primaryKeys = ["projection_name", "learner_id", "knowledge_node_id"],
@@ -804,7 +499,6 @@ internal data class LearnerKnowledgeMasteryStateEntity(
     @ColumnInfo(name = "last_evidence_direction")
     val lastEvidenceDirection: String? = null,
 )
-
 @Entity(
     tableName = "independent_correct_observation",
     primaryKeys = ["projection_name", "learner_id", "knowledge_node_id", "ordinal"],
@@ -856,7 +550,6 @@ internal data class IndependentCorrectObservationEntity(
     @ColumnInfo(name = "calibration_valid_until_epoch_millis")
     val calibrationValidUntilEpochMillis: Long,
 )
-
 @Entity(
     tableName = "applied_attempt_record",
     primaryKeys = ["projection_name", "learner_id", "attempt_id"],
@@ -896,7 +589,6 @@ internal data class AppliedAttemptRecordEntity(
     @ColumnInfo(name = "response_ordinal")
     val responseOrdinal: Int,
 )
-
 @Entity(
     tableName = "applied_correction_record",
     primaryKeys = ["projection_name", "learner_id", "correction_id"],
@@ -934,7 +626,6 @@ internal data class AppliedCorrectionRecordEntity(
     @ColumnInfo(name = "event_sequence")
     val eventSequence: Long,
 )
-
 @Entity(
     tableName = "applied_answer_reveal_record",
     primaryKeys = ["projection_name", "learner_id", "outcome_id"],
@@ -972,7 +663,6 @@ internal data class AppliedAnswerRevealRecordEntity(
     @ColumnInfo(name = "event_sequence")
     val eventSequence: Long,
 )
-
 /**
  * Unbounded projector authority for one presentation. Applied-event records are a bounded audit
  * window and must never be used to decide whether an older presentation already projected memory.
@@ -1023,7 +713,6 @@ internal data class PresentationProjectionStateEntity(
     @ColumnInfo(name = "state_version")
     val stateVersion: Long,
 )
-
 /**
  * Raw collected review evidence (spec mastery-scheduling 3.1). Collection is
  * decoupled from scheduling: every graded interaction lands here exactly
@@ -1088,7 +777,6 @@ internal data class ReviewLogEntity(
     @ColumnInfo(name = "recorded_at")
     val recordedAt: Long,
 )
-
 /**
  * LLM-authored teaching advisory (three-store closed loop): the model owns
  * these rows inside the mastery database. Projection-owned state
