@@ -138,6 +138,14 @@ class SchedulingEvaluationHarnessTest {
         val samples = biasedHistory(correctStabilityGrowth = true, cardCount = 30)
         val fitted = FsrsParameterOptimizer.optimize(samples, iterations = 12)
         assertEquals(FsrsParameterOptimizer.Mode.FULL_FIT, fitted.mode)
+        // **夹具的判别力前置**（四路审查 review-tests 带出）：这条用例的全部内容是"第二次不该被采纳"，
+        // 而"永不被采纳"的实现（把比较反向、或成功路径硬写 adopted = false）同样能让它变绿
+        // ——那时它证明的是"参数永久冻结"被当成正确行为。所以先要求夹具**真的产生过一次采纳**：
+        // 这一条红了，说明下面那条拒绝断言问的不是同一个问题。
+        assertTrue(
+            "夹具必须真的产生过一次采纳，否则下面的拒绝断言是空的",
+            fitted.adopted,
+        )
 
         val second = FsrsParameterOptimizer.optimize(
             samples = samples,
