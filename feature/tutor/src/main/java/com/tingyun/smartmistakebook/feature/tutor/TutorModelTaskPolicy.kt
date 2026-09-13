@@ -588,6 +588,13 @@ internal fun visibleTutorContextMarkdown(
     response?.takeIf(TutorTurnResponse::hasChoicePayload)?.let { choice ->
         append("\n\n学生选择：").append(choice.selectedChoiceMarkdown)
         append("\n\n已显示反馈：").append(choice.feedbackMarkdown)
+        // 本地核对结果必须回灌给模型：对错是本地按 correctChoiceId 算出来的，
+        // 模型看不到它就会把自己事先写的反馈（可能写反）当事实，而写侧门控已经
+        // 按本地判定否决了它的 POSITIVE 声明——两边口径必须一致。
+        choice.selectionWasCorrect?.let { correct ->
+            append("\n\n系统核对：这道检查题学生")
+            append(if (correct) "答对了" else "答错了")
+        }
     }
     val sceneWasVisible = output.plan.diagnosticItem == null || response?.hasChoicePayload == true
     if (sceneWasVisible) {

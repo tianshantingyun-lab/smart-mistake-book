@@ -72,10 +72,17 @@ internal class TutorJudgedReviewSettler(
             practiceUnitId = settlement.practiceUnitId,
             learnerId = learnerId,
         )
-        val isCorrect = tutorAnchor?.let { anchor ->
+        val isHeadItem = session.currentOrdinal.toLong() == settlement.expectedStateVersion
+        val verdict = tutorAnchor?.let { anchor ->
             resolveVerdict(anchor.sessionId)
+        }?.takeIf { candidate ->
+            // 只认**本次复习这一项**期间的讲题：上次推进之前的判词早已被上一次结算消费
+            // （或本就不属于这次复习），否则一进复习页就会被旧判词直接判定通过。
+            // 只对"当前队首项"要求新鲜度——已结算项的重复结算交给写入幂等处理，
+            // 而完成态的 lastActiveAt 必然晚于当初那条判词，拿它当门槛会把回放误判成无判词。
+            !isHeadItem || candidate.atEpochMillis >= session.lastActiveAtEpochMillis
         }
-        if (isCorrect == null) {
+        if (verdict == null) {
             // 没有任何可核查的判定：不写、不推进。队列项保持到期，下次进入复习还会出现。
             return TutorJudgedReviewSettlementResult(
                 status = TutorJudgedReviewSettlementStatus.NO_VERDICT,
@@ -86,6 +93,7 @@ internal class TutorJudgedReviewSettler(
             )
         }
 
+        val isCorrect = verdict.isCorrect
         val evidence = LearningEvidence(
             direction = if (isCorrect) {
                 LearningEvidenceDirection.POSITIVE
@@ -121,7 +129,16 @@ internal class TutorJudgedReviewSettler(
             attributions = emptyList(),
             capturedAtEpochMillis = settlement.occurredAtEpochMillis,
         )
-        val priorMemory = learnerSnapshot().problemMemoryStates?.get(settlement.practiceUnitId)
+        // 0 表示由结算自己推导（避免调用方凭空给一个时长）：本轮判词发生时间 − 上次推进时间。
+        val durationSeconds = if (settlement.durationSeconds > 0) {
+            settlement.durationSeconds
+        } else {
+            ((verdict.atEpochMillis - session.lastActiveAtEpochMillis) / 1_000L)
+                .coerceAtLeast(1L)
+                .coerceAtMost(Int.MAX_VALUE.toLong())
+                .toInt()
+        }
+        val priorMemory = learnerSnapshot().problemMemoryStates[settlement.practiceUnitId]
         database.saveAssessmentEvidenceSnapshot(snapshot)
         val writeResult = database.recordReviewAttempt(
             ReviewAttemptWriteCommand(
@@ -149,7 +166,7 @@ internal class TutorJudgedReviewSettler(
                     evidence = evidence,
                     problemMemoryOutcome = outcome,
                     occurredAtEpochMillis = settlement.occurredAtEpochMillis,
-                    durationSeconds = settlement.durationSeconds,
+                    durationSeconds = durationSeconds,
                     studyDay = writeContext.studyDayAt(settlement.occurredAtEpochMillis),
                 ),
                 sessionId = settlement.sessionId,
@@ -163,7 +180,7 @@ internal class TutorJudgedReviewSettler(
                 practiceUnitId = settlement.practiceUnitId,
                 evidence = evidence,
                 occurredAtEpochMillis = settlement.occurredAtEpochMillis,
-                durationSeconds = settlement.durationSeconds,
+                durationSeconds = durationSeconds,
                 studyDay = writeContext.studyDayAt(settlement.occurredAtEpochMillis),
                 sourceKind = ReviewLogSink.SOURCE_KIND_MODEL_JUDGED,
                 sourceId = writeResult.attempt.attempt.attemptId,
@@ -171,13 +188,15 @@ internal class TutorJudgedReviewSettler(
                 plannedReason = queueItem.reasonSnapshot.takeIf(String::isNotBlank),
             )
         }
-        durationModel.record(
-            learnerId = learnerId,
-            subjectId = mistake.subject,
-            itemType = null,
-            difficulty = 5.0, // unused dimension; kept for API stability
-            durationSeconds = settlement.durationSeconds.toDouble().coerceAtLeast(1.0),
-        )
+        if (writeResult.attempt.created) {
+            durationModel.record(
+                learnerId = learnerId,
+                subjectId = mistake.subject,
+                itemType = null,
+                difficulty = 5.0, // unused dimension; kept for API stability
+                durationSeconds = durationSeconds.toDouble(),
+            )
+        }
         val progress = writeResult.advance.session.toProgress(orderedQueue.size)
         return TutorJudgedReviewSettlementResult(
             status = TutorJudgedReviewSettlementStatus.RECORDED,
@@ -196,29 +215,38 @@ internal class TutorJudgedReviewSettler(
      * 只统计**最新一轮**（cycle）的检查题：`restartCycle` 重教之后，上一轮的答错
      * 正是重教的理由，不该把它永久算在头上（与 `tutorSessionObjectiveRecord` 同一原因）。
      */
-    private suspend fun resolveVerdict(tutorSessionId: String): Boolean? {
+    private suspend fun resolveVerdict(tutorSessionId: String): Verdict? {
         val responses = database.observeTutorTurnResponses(tutorSessionId).first()
         val latestCycle = responses.maxOfOrNull(TutorTurnResponseRecord::cycleOrdinal)
         if (latestCycle != null) {
-            val objective = responses
-                .filter { it.cycleOrdinal == latestCycle }
-                .mapNotNull(TutorTurnResponseRecord::selectionWasCorrect)
-            val record = tutorSessionObjectiveRecord(objective)
+            val currentCycle = responses.filter { it.cycleOrdinal == latestCycle }
+            val record = tutorSessionObjectiveRecord(
+                currentCycle.mapNotNull(TutorTurnResponseRecord::selectionWasCorrect),
+            )
             if (record.answeredCount > 0) {
-                return !record.contradictsPositiveClaim
+                val judgedAt = currentCycle.mapNotNull(TutorTurnResponseRecord::choiceSubmittedAtEpochMillis)
+                    .maxOrNull()
+                    ?: currentCycle.maxOf(TutorTurnResponseRecord::updatedAtEpochMillis)
+                return Verdict(
+                    isCorrect = !record.contradictsPositiveClaim,
+                    atEpochMillis = judgedAt,
+                )
             }
         }
-        val verdict = database
+        val evidence = database
             .readChatEvidenceByConversation(TutorConversationIds.captured(tutorSessionId))
             .filter { it.rejected_reason == null && it.weight > 0.0 }
             .maxByOrNull { it.created_at_epoch_millis }
             ?: return null
-        return when (verdict.direction) {
+        val isCorrect = when (evidence.direction) {
             LearningEvidenceDirection.POSITIVE.name -> true
             LearningEvidenceDirection.NEGATIVE.name -> false
-            else -> null
+            else -> return null
         }
+        return Verdict(isCorrect = isCorrect, atEpochMillis = evidence.created_at_epoch_millis)
     }
+
+    private data class Verdict(val isCorrect: Boolean, val atEpochMillis: Long)
 
     internal companion object {
         /**

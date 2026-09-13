@@ -111,6 +111,22 @@ class TutorJudgedReviewSettlerTest {
     }
 
     @Test
+    fun aVerdictFromBeforeThisReviewItemDoesNotSettleIt() = runBlocking {
+        // 上一次推进（或本次复习开始）之前留下的判词，早该被上一项消费掉；若拿它结算，
+        // 学生一进复习页就会被旧判词直接判定通过。检查题作答时间早于复习会话开始。
+        val database = seededDatabase()
+        database.tutorTurnResponses += choiceResponse(
+            correct = true,
+            submittedAtEpochMillis = 1_500,
+        )
+
+        val result = settle(database)
+
+        assertEquals(TutorJudgedReviewSettlementStatus.NO_VERDICT, result.status)
+        assertEquals(0, database.attemptCount)
+    }
+
+    @Test
     fun rejectedModelVerdictIsNotEvidence() = runBlocking {
         // 被门控拒写的行（rejected_reason 非空，weight 0）只作观察，不能当判定依据。
         val database = seededDatabase()
@@ -247,6 +263,7 @@ class TutorJudgedReviewSettlerTest {
         correct: Boolean,
         cycleOrdinal: Int = 1,
         turnOrdinal: Int = 1,
+        submittedAtEpochMillis: Long = 2_600,
     ) = TutorTurnResponseRecord(
         sessionId = TUTOR_SESSION_ID,
         questionDocumentId = "document-1",
@@ -260,9 +277,9 @@ class TutorJudgedReviewSettlerTest {
         feedbackMarkdown = "已显示反馈",
         requestedMove = null,
         solutionRevealed = false,
-        choiceSubmittedAtEpochMillis = 2_600,
-        submittedAtEpochMillis = 2_600,
-        updatedAtEpochMillis = 2_600,
+        choiceSubmittedAtEpochMillis = submittedAtEpochMillis,
+        submittedAtEpochMillis = submittedAtEpochMillis,
+        updatedAtEpochMillis = submittedAtEpochMillis,
     )
 
     private fun modelVerdict(
