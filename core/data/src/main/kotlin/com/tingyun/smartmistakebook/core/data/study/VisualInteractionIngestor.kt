@@ -211,11 +211,15 @@ internal class VisualInteractionIngestor(
             )
             // 这一条刚刚成为该单元"最近的一次复习"：同一次排空里排在它后面的视觉证据
             // 必须以它为界算 `delta_t`（否则会跨过它、读到上一次投影去，见 ingestPending 的注释）。
-            // 只在**本来就有**上一次复习时推进——没有它意味着这个单元在账本里还没有被投影过，
-            // 那是 FSRS 的"首次复习"情形，`delta_t = 0` 正是它的约定。
-            if (previousReviewedAtByUnit.containsKey(mistake.practiceUnitId)) {
-                previousReviewedAtByUnit[mistake.practiceUnitId] = attempt.attemptedAtEpochMillis
-            }
+            //
+            // **无条件推进**（2026-09-13 修正）：此前这里带一个 `containsKey` 守卫，理由是
+            // "map 里没有它 ⇒ 这个单元还没被投影过 ⇒ `delta_t = 0` 是首次复习的约定"。
+            // 那个理由对**第一条**成立，对**第二条**不成立——第一条刚刚创建了账本行，
+            // 此时它就已经是该单元最近的一次复习了；守卫让第二条也读到 null，
+            // 于是同日/跨日的第二条视觉证据被当成"首次复习"喂给 FSRS，
+            // **把跨天间隔写成 0 送进优化器的训练数据**（与 F-01 同一类）。
+            // 顺序保证了第一条仍然拿到 null：`record` 在上面读 map，这一行才写。
+            previousReviewedAtByUnit[mistake.practiceUnitId] = attempt.attemptedAtEpochMillis
             return true
         }
         // A replay after the first successful sweep must not claim a new

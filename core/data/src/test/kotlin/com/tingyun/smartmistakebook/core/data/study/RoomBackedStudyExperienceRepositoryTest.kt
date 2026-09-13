@@ -625,6 +625,71 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     /**
+     * 上一条的**未覆盖变体**：这个单元在排空开始前**还没有任何投影**（没有 prior memory），
+     * 一次排空里补录两条视觉证据。
+     *
+     * 为什么上一条盖不住它：上一条夹具调了 `seedPriorMemoryForVisualIngest`，
+     * 于是"上次复习"的 map 里**本来就有**这个单元——那条路径在修复前后都走同一个分支，
+     * 两种情况恰好给出同一个值。而这里 map 里一开始没有它：
+     *
+     * - 第一条：`delta_t = 0.0`——FSRS 的首次复习约定，**必须**保持；
+     * - 第二条：必须按**紧邻的前一条**算（第 5 天 − 第 3 天 = 2 天）。
+     *   修复前第二条也读到 null（守卫拦掉了 map 推进），于是它被当成"又是首次复习"，
+     *   把跨两天的间隔写成 0 —— **同一类错误数据进同一个训练集**（四路审查 review-data 带出）。
+     *
+     * 这条用例同时钉住两侧：`0.0` 那一格保证我没有把首次复习的约定一起改掉。
+     */
+    @Test
+    fun aSweepOnANeverProjectedUnitMeasuresTheSecondRowFromTheFirst() = runBlocking {
+        val firstAt = 3 * DAY_MILLIS + 1_500
+        val secondAt = 5 * DAY_MILLIS + 1_500
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(visualIngestMistake())
+            addPracticeUnitKnowledgeBinding(visualIngestBinding())
+            addVisualInteractionAttempt(
+                visualAttemptRecord(
+                    attemptId = "visual-a",
+                    feasible = true,
+                    attemptedAtEpochMillis = firstAt,
+                ),
+            )
+            addVisualInteractionAttempt(
+                visualAttemptRecord(
+                    attemptId = "visual-b",
+                    feasible = true,
+                    attemptedAtEpochMillis = secondAt,
+                ),
+            )
+            // 刻意**不**播种 prior memory：这一条要的正是"排空前没有任何投影"。
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.ingestVisualInteractionAttempts()
+
+            val visualEntries = database.reviewLogEntries
+                .filter { it.sourceKind == ReviewLogSink.SOURCE_KIND_VISUAL }
+                .sortedBy { it.reviewedAtEpochMillis }
+            assertEquals(
+                "两条视觉交互都必须进账本，否则下面的 delta_t 断言问的不是同一个问题：" +
+                    "已入账 ${database.recordedAttemptCount} 次，" +
+                    "review_log 行 ${visualEntries.map { "${it.sourceId}@${it.reviewedAtEpochMillis}/${it.deltaTDays}" }}",
+                2,
+                visualEntries.size,
+            )
+            assertEquals(
+                "第一条是首次复习（0 天），第二条按紧邻的前一条算（第 5 天 − 第 3 天 = 2 天）",
+                listOf(0.0, 2.0),
+                visualEntries.map { it.deltaTDays },
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
      * 下面这条用 [visualIngestMistake] 的默认时间戳（1_500），保持既有语义。
      */
     @Test
