@@ -4,7 +4,6 @@ import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -44,11 +43,6 @@ class ReviewCalendarTest {
             1.0,
             ReviewCalendar.elapsedCalendarDays(lastReviewedAt, now, shanghai),
             0.0,
-        )
-        assertNotEquals(
-            "这一格必须与「墙钟整日地板」分开，否则这条用例证明不了口径",
-            0.0,
-            ReviewCalendar.elapsedCalendarDays(lastReviewedAt, now, shanghai),
         )
     }
 

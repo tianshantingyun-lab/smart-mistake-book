@@ -376,8 +376,7 @@ class RoomBackedStudyExperienceRepository(
                 // `delta_t`，而它只能从当前投影里取（审计 §8：这一处曾经恒传 null ⇒ delta_t 恒 0）。
                 visualInteractionIngestor.ingestPending(
                     mistakes = latestMistakes,
-                    previousReviewedAtByUnit = currentLearnerSnapshot().problemMemoryStates
-                        .mapValues { (_, memory) -> memory.lastReviewedAtEpochMillis },
+                    previousReviewedAtByUnit = previousReviewedAtByUnit(),
                 )
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -560,6 +559,15 @@ class RoomBackedStudyExperienceRepository(
     private suspend fun currentKnowledgeScopeOf(practiceUnitId: String): Set<String>? =
         database.knowledgeNodeIdsForPracticeUnit(practiceUnitId)
             ?.takeIf { nodeIds -> nodeIds.isNotEmpty() }
+
+    /**
+     * 上一次复习的时间戳，按 practice unit 索引——**两条**视觉入账路径共用（启动期那一轮与
+     * `ingestVisualInteractionAttempts`）。写成两份就是让两条路有机会喂给入账器不同的
+     * `delta_t` 来源，而那种不一致只在 `review_log` 的行上显形（§8：这一处曾经恒传 null ⇒ delta_t 恒 0）。
+     */
+    private suspend fun previousReviewedAtByUnit(): Map<String, Long> =
+        currentLearnerSnapshot().problemMemoryStates
+            .mapValues { (_, memory) -> memory.lastReviewedAtEpochMillis }
 
     override suspend fun submitChoice(
         submission: StudyChoiceSubmission,
@@ -1001,8 +1009,7 @@ class RoomBackedStudyExperienceRepository(
         initialized = true
         val created = visualInteractionIngestor.ingestPending(
             mistakes = mistakes,
-            previousReviewedAtByUnit = currentLearnerSnapshot().problemMemoryStates
-                .mapValues { (_, memory) -> memory.lastReviewedAtEpochMillis },
+            previousReviewedAtByUnit = previousReviewedAtByUnit(),
         )
         if (created > 0) {
             publishReadySnapshot(latestMistakes)

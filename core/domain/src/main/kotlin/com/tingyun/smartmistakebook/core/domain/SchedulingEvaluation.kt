@@ -583,7 +583,7 @@ object FsrsParameterOptimizer {
                 parameters[index] = parameters[index].coerceIn(LOWER_BOUNDS[index], UPPER_BOUNDS[index])
             }
             val currentLoss = lossFor(cards, cutoff, parameters, wantValidation = true)
-            if (currentLoss < bestLoss - 1e-9) {
+            if (currentLoss < bestLoss - ADOPTION_MARGIN) {
                 bestLoss = currentLoss
                 best = parameters.copyOf()
                 stepsSinceImprovement = 0
