@@ -192,31 +192,6 @@ internal class ReviewLogSink(
             }
     }
 
-    /**
-     * Subjective evidence factor (spec §2.14 + §2.12): attention switches and
-     * away-time (Craik 1996), the personal time-of-day multiplier (May &
-     * Hasher 1998; >=30 samples per bucket, cold start neutral) and the
-     * response-time guess discount (Meyer 2010 via the RT baseline) all only
-     * ever shrink the weight of a subjective report.
-     */
-    suspend fun subjectiveSignalFactor(
-        occurredAtEpochMillis: Long,
-        durationSeconds: Int,
-        interruptionCount: Int,
-        awayMillis: Long,
-        isCorrect: Boolean,
-    ): Double {
-        val attention = AttentionSignal.attentionFactor(interruptionCount, awayMillis)
-        val profile = timeOfDayProfile()
-        val timeOfDay = profile
-            ?.multiplierFor(bucketSplit.bucketFor(localHourAt(occurredAtEpochMillis)))
-            ?: 1.0
-        val rtDiscount = profile
-            ?.let { TimeOfDayCalibrator.correctedWeight(1.0, isCorrect, durationSeconds * 1000L, it) }
-            ?: 1.0
-        return (attention * timeOfDay * rtDiscount).coerceIn(0.0, 1.0)
-    }
-
     /** RT guess discount alone, for real-attempt evidence (no time-of-day term). */
     suspend fun responseTimeDiscount(isCorrect: Boolean, durationMs: Long): Double =
         timeOfDayProfile()

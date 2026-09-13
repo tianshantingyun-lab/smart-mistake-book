@@ -29,11 +29,6 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
 import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlement
 import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementResult
@@ -413,11 +408,24 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         )
     }
 
-    override suspend fun submitReviewRating(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewRatingSubmission,
-    ): StudyReviewRatingSubmissionResult = error("Review is outside this root Tutor test")
+    override suspend fun settleTutorJudgedReview(
+        settlement: TutorJudgedReviewSettlement,
+    ): TutorJudgedReviewSettlementResult {
+        settleCalls += settlement
+        val review = mutableSnapshot.value.review
+        return TutorJudgedReviewSettlementResult(
+            status = TutorJudgedReviewSettlementStatus.NO_VERDICT,
+            progress = StudyReviewSessionProgress(
+                sessionId = settlement.sessionId,
+                planId = CAPTURED_REVIEW_PLAN_ID,
+                currentOrdinal = review.currentOrdinal,
+                queueSize = 1,
+                stateVersion = review.sessionStateVersion ?: 0,
+                status = com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus.ACTIVE,
+            ),
+            nextPracticeUnitId = settlement.practiceUnitId,
+        )
+    }
 
     override suspend fun recordTeachingFocus(
         sessionId: String,
@@ -458,36 +466,6 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         expectedStateVersion: Long,
         submission: StudyChoiceSubmission,
     ): StudyReviewChoiceSubmissionResult = error("Review is outside this root Tutor test")
-
-    override suspend fun submitReviewSelfReport(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewSelfReportSubmission,
-    ): StudyReviewSelfReportSubmissionResult =
-        error("Self-report was removed from the review UI (tutor-judged channel only)")
-
-    /**
-     * 这道题没有讲题判定可结算：返回 NO_VERDICT，队列保持原样（真实实现同样不写不推进）。
-     * 只记录调用，供用例断言"进入复习页确实尝试过结算"。
-     */
-    override suspend fun settleTutorJudgedReview(
-        settlement: TutorJudgedReviewSettlement,
-    ): TutorJudgedReviewSettlementResult {
-        settleCalls += settlement
-        val review = mutableSnapshot.value.review
-        return TutorJudgedReviewSettlementResult(
-            status = TutorJudgedReviewSettlementStatus.NO_VERDICT,
-            progress = StudyReviewSessionProgress(
-                sessionId = settlement.sessionId,
-                planId = CAPTURED_REVIEW_PLAN_ID,
-                currentOrdinal = review.currentOrdinal,
-                queueSize = 1,
-                stateVersion = review.sessionStateVersion ?: 0,
-                status = com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus.ACTIVE,
-            ),
-            nextPracticeUnitId = settlement.practiceUnitId,
-        )
-    }
 
     override suspend fun revealAnswer(
         request: StudyAnswerRevealRequest,

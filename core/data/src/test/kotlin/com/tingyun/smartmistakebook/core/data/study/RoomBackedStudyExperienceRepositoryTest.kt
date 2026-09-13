@@ -120,8 +120,6 @@ import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -358,77 +356,6 @@ class RoomBackedStudyExperienceRepositoryTest {
                 listOf("unit-z", "unit-a"),
                 repository.snapshot.value.review.scheduledPracticeUnitIds,
             )
-        } finally {
-            repository.close()
-            applicationScope.cancel()
-        }
-    }
-
-    @Test
-    fun capturedReviewSelfReportAttributesToPseudoKnowledgeNode() = runBlocking {
-        val database = FakeStudyDatabasePort().apply {
-            addMistake(
-                MistakeRecord(
-                    entryId = "captured-entry",
-                    problemId = "captured-problem",
-                    problemRevisionId = "captured-revision",
-                    practiceUnitId = "captured-practice-unit",
-                    sourceKey = "capture:photo-1",
-                    subject = "MATH",
-                    title = "函数原题",
-                    problemMarkdown = "求函数的单调区间。",
-                    status = "ACTIVE",
-                    createdAtEpochMillis = 1_000,
-                    nextReviewAtEpochMillis = null,
-                    retrievability = null,
-                    knowledgeNodeIds = setOf("knowledge:function-monotonicity"),
-                ),
-            )
-        }
-        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
-        val repository = repository(database, applicationScope, initialFixture = null)
-
-        try {
-            repository.initialize()
-            assertEquals(
-                setOf("knowledge:function-monotonicity"),
-                database.savedPlans.single().queue.single().knowledgeNodeIds,
-            )
-            val started = requireNotNull(
-                repository.startOrResumeReviewSession("captured-start", 2_000),
-            )
-            val submission = StudyReviewSelfReportSubmission(
-                requestId = "captured-self-report",
-                presentationId = "captured-presentation",
-                practiceUnitId = "captured-practice-unit",
-                report = StudyReviewSelfReport.RECALL_COMPLETED,
-                durationSeconds = 15,
-                occurredAtEpochMillis = 3_000,
-            )
-
-            val first = repository.submitReviewSelfReport(
-                sessionId = started.sessionId,
-                expectedStateVersion = started.stateVersion,
-                submission = submission,
-            )
-            val replay = repository.submitReviewSelfReport(
-                sessionId = started.sessionId,
-                expectedStateVersion = started.stateVersion,
-                submission = submission,
-            )
-
-            assertEquals(LearningEvidenceReason.SELF_REPORTED_RECALL, first.evidenceReason)
-            assertEquals(StudyReviewSessionStatus.COMPLETED, first.progress.status)
-            assertTrue(first.created)
-            assertFalse(replay.created)
-            assertEquals(first.progress, replay.progress)
-            assertEquals(0.35, database.lastAttemptCommand?.evidence?.weight ?: -1.0, 0.0)
-            // Spec 3.4: the unbound question attributes its evidence to the
-            // subject-scoped pseudo KC through the pseudo binding.
-            val pseudoAttribution = database.lastEvidenceSnapshot?.attributions?.singleOrNull()
-            assertEquals("pseudo:MATH", pseudoAttribution?.knowledgeNodeId)
-            assertEquals(1.0, pseudoAttribution?.weight ?: -1.0, 0.0)
-            assertTrue(database.pseudoBindingCalls.all { it == "pseudo:MATH" })
         } finally {
             repository.close()
             applicationScope.cancel()

@@ -29,21 +29,21 @@ class PretestRoutingTest {
     }
 
     @Test
-    fun `free response without answer spec falls back to self report`() {
+    fun `free response without answer spec stays unavailable`() {
         val route = PretestRouting.routeForNewItem(
             ItemCapabilities(hasOptions = false, hasAnswerSpec = false, tutorAvailable = true),
         )
-        assertEquals(PretestSurface.SELF_REPORT_FALLBACK, route)
-        // A self-report is a metacognitive observation — never a real attempt.
+        // 2026-09-13：自评兜底已拆。判定不了就如实停下——不写任何"学生自报"的对错证据。
+        assertEquals(PretestSurface.UNAVAILABLE, route)
         assertFalse(PretestRouting.producesRealAttempt(route))
     }
 
     @Test
-    fun `no tutor available routes free response to self report`() {
+    fun `no tutor available routes free response to unavailable`() {
         val route = PretestRouting.routeForNewItem(
             ItemCapabilities(hasOptions = false, hasAnswerSpec = true, tutorAvailable = false),
         )
-        assertEquals(PretestSurface.SELF_REPORT_FALLBACK, route)
+        assertEquals(PretestSurface.UNAVAILABLE, route)
     }
 
     @Test
@@ -84,16 +84,17 @@ class PretestScoringModeAssemblyTest {
     }
 
     @Test
-    fun `user self report mode always falls back regardless of structural signals`() {
+    fun `user self report mode stays unavailable regardless of structural signals`() {
         // A self-report item is metacognitive only — even if the row carries
-        // an answer spec, it must never route to a machine-scored surface.
+        // an answer spec, it must never route to a machine-scored surface,
+        // and since 2026-09-13 there is no self-report fallback to fall into.
         val caps = PretestRouting.ItemCapabilities.fromScoringMode(
             scoringMode = "USER_SELF_REPORT",
             hasOptions = true,
             hasAnswerSpec = true,
         )
-        assertEquals(PretestSurface.SELF_REPORT_FALLBACK, PretestRouting.routeForNewItem(caps))
-        assertFalse(PretestRouting.producesRealAttempt(PretestSurface.SELF_REPORT_FALLBACK))
+        assertEquals(PretestSurface.UNAVAILABLE, PretestRouting.routeForNewItem(caps))
+        assertFalse(PretestRouting.producesRealAttempt(PretestSurface.UNAVAILABLE))
     }
 
     @Test

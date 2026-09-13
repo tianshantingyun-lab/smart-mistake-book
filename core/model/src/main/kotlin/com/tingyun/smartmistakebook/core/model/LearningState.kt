@@ -80,9 +80,11 @@ data class LearningEvidence(
 }
 
 /**
- * A locally fixed review control, not a mathematical answer key. Its snapshot deliberately carries
- * no knowledge attribution, so a student's one-tap report can adjust only this question's revisit
- * cadence and can never become knowledge-mastery evidence.
+ * 自评通道的合同（**已废止的写入方**，2026-09-13 起不再有新快照产生）。
+ *
+ * 保留对象与 `DatabaseContractValidator` 里的这一支，是因为**旧备份/旧库里的历史快照**
+ * 在恢复或重放时仍要能通过校验；删掉它会让老数据无法恢复，属于数据安全风险。
+ * 新写入路径一律走 `LocalModelJudgedContract`（见其 KDoc）。
  */
 object LocalReviewSelfReportContract {
     const val ASSESSMENT_ITEM_ID_PREFIX = "local-review-self-report:"

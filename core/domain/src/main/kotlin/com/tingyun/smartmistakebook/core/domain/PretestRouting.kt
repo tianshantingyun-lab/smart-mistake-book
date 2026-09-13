@@ -13,8 +13,8 @@ package com.tingyun.smartmistakebook.core.domain
  * - TUTOR_JUDGED_FLOW: free-response / diagram items without options — the
  *   tutor session judges the student's submission (existing visual/text
  *   verdict chain) and the verdict lands as the attempt.
- * - SELF_REPORT_FALLBACK: neither is available (e.g. no answer spec yet) —
- *   a low-weight metacognitive self-report, never a fake score.
+ * - UNAVAILABLE: neither is available (e.g. no model configured) — the item
+ *   stays blocked with an honest notice; no self-report, no fake score.
  *
  * Pure function over booleans; the persistence layer supplies whether the
  * item has options and whether an answer spec exists.
@@ -26,8 +26,12 @@ object PretestRouting {
         CHOICE_FLOW,
         /** Tutor-judged free-response path (existing tutor verdict chain). */
         TUTOR_JUDGED_FLOW,
-        /** No reliable scoring surface — metacognitive self-report only. */
-        SELF_REPORT_FALLBACK,
+        /**
+         * 既没有机判选项、也没有可用的讲题判定（无模型 / 无 answer spec 且判定不可用）。
+         * 2026-09-13 起不再有"低权重自评"兜底：这类题保持阻塞并如实提示，
+         * 绝不把学生的自报当成对错证据（产品裁定 + `docs/research/model-judged-verdict-pricing.md`）。
+         */
+        UNAVAILABLE,
     }
 
     data class ItemCapabilities(
@@ -93,21 +97,21 @@ object PretestRouting {
      * CHOICE wins when options exist — an exact machine score is the most
      * reliable first attempt (no tutor variance, instant feedback). A
      * free-response item routes to the tutor judge when one is available and
-     * the answer spec allows judging. Everything else falls back to the
-     * self-report surface (low weight, no fake score).
+     * the answer spec allows judging. Without either surface the item stays
+     * blocked ([UNAVAILABLE]) — there is no self-report fallback any more.
      */
     fun routeForNewItem(capabilities: ItemCapabilities): PretestSurface = when {
         capabilities.hasOptions -> PretestSurface.CHOICE_FLOW
         capabilities.tutorAvailable && capabilities.hasAnswerSpec ->
             PretestSurface.TUTOR_JUDGED_FLOW
-        else -> PretestSurface.SELF_REPORT_FALLBACK
+        else -> PretestSurface.UNAVAILABLE
     }
 
     /**
      * Whether an outcome on [surface] counts as a REAL first attempt for the
      * mastery ledger (spec §3: the pretest answer is the first genuine
-     * extraction). Self-reports do not — they are metacognitive observations
-     * only and must never masquerade as an independent recall.
+     * extraction). [UNAVAILABLE] produces nothing at all — the item stays
+     * blocked instead of recording a metacognitive self-report.
      */
     fun producesRealAttempt(surface: PretestSurface): Boolean =
         surface == PretestSurface.CHOICE_FLOW || surface == PretestSurface.TUTOR_JUDGED_FLOW

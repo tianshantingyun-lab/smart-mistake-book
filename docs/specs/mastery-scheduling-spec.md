@@ -66,7 +66,7 @@ S'f = w11·D^{−w12}·((S+1)^{w13}−1)·e^{w14(1−R)}；clamp S'f ≤ S·e^{�
 | 视觉满足/违反（:807-818, w=0.25/0.5） | 0.25/0.5 | 2/1 |
 | 讲解暴露（LearningProjector.kt:700-713, w=0.0+0.45） | — | 特例：`S'=S` 仅刷新时钟，reason=TUTOR_EXPOSURE |
 
-产品升级：复习界面四键自评合一（Again/Hard/Good/Easy），三档自评降级为详情页元认知标注。
+产品升级：复习界面四键自评合一（Again/Hard/Good/Easy），三档自评降级为详情页元认知标注。**2026-09-13 已废止**：四键与三档一并拆除，无工件题改由讲题判定结算（`MODEL_JUDGED_CORRECT/INCORRECT`，非独立、HARD/AGAIN）。
 
 **2.5a 实现细化（2026-08-29，证据见 weighting-refinement-research.md）**：mapper 拆双函数——`schedulingRatingFor`（喂 FSRS）把主观 `SELF_REPORTED_RECALL` 封顶 **Good**（Dunlosky & Rawson 2012：86% 自评过自信；Easy 稳定性奖励不给予主观报告），`reportedRatingFor`（review_log 记账）忠实记录用户键（4=很轻松）；`INDEPENDENT_CORRECT` weight<0.85 → **Hard**（注意力/RT 折价后的"低置信答对"镜像"高置信→4"）。来源校准表（`SourceCalibration`）：主观正性报告→同卡下次真实作答实际回忆率，≥30 对且低于基线 0.15 时**建议**降档（人工审批，不自动改映射）。
 
@@ -74,7 +74,7 @@ S'f = w11·D^{−w12}·((S+1)^{w13}−1)·e^{w14(1−R)}；clamp S'f ≤ S·e^{�
 `applyRevealCausality` 打标 `revealDecayAbsorbedByAttempt`；`projectMemory` 见标跳过 0.45 分支。reveal 后无 attempt 时保留 `S×0.45` 单次衰减。
 
 ### 2.7 防刷冷却
-同 practiceUnitId+同 evidenceKind 间隔不足则证据降级为 observation-only（不进调度，仍进 review_log）：自评 C=6h、视觉 C=1h、真实作答不冷却。落点：submitReviewSelfReport / ingestVisualInteractionAttempt。
+同 practiceUnitId+同 evidenceKind 间隔不足则证据降级为 observation-only（不进调度，仍进 review_log）：视觉 C=1h、真实作答不冷却；自评 6h 冷随之废止（2026-09-13 自评通道拆除）。现行落点：ingestVisualInteractionAttempt、讲题判定结算（同 KC 冷却仍由 `MasteryWriteGate` 承担）。
 
 ### 2.8 题目→KC 证据分摊
 ```
@@ -265,7 +265,7 @@ review_log(id PK, learner_id, card_id /*practice_unit_id*/, rating INT 1..4,
 - B2 稳定性更新依赖 R + 评级映射表（math §2.4/2.5）
 - B3 难度均值回归 + 1..10 域迁移（math §2.4，v36）
 - B4 desiredRetention 设置项
-- B5 review_log 表 + 四键自评 UI（math §2.5；v36）
+- B5 review_log 表 + 四键自评 UI（math §2.5；v36）——**四键 UI 于 2026-09-13 拆除**，review_log 新增 `MODEL_JUDGED` 来源（校准期不进 FSRS 参数拟合）
 - B6 优化器（远期，fsrs-rs 阈值口径 8/64；跟进 FSRS-7 公式）
 - B7 leech 状态机（§2.16）+ 考前模式（§2.17）+ 反振荡配额（§2.18）
 
@@ -319,7 +319,7 @@ van der Linden 层级 RT 模型（Psychometrika 2007）；Meyer 2010 随机效�
 - **时段/RT 信号（§2.12/2.14）**：review_log 记 time_bucket；`TimeOfDayCalibrator` 产出收缩乘数（桶样本 <30 恒为 1）与 log-normal RT 基线；猜疑低 RT 答对打 0.8 折，仅作用于证据权重、不进曲线。
 - **§2.14 静默交互采集（已闭合）**：全部无 UI 提示、后端默默采集——① v37 迁移为 review_log 增 `scroll_up_count/edit_count/interruption_count` 三列，随提交链路（选择/自评/评级）入账；② 复习界面 `ReviewInteractionTracker` 静默统计上滑次数（滚动 delta<0）与中断次数（ON_PAUSE），随提交传参，不打扰用户；③ 答案修改次数=重试序数-1（选择流在仓储落账时推导）；④ 睡眠窗：`SleepWindowInference`（纯逻辑，≥3h 使用间隔=一晚）+ `DataStoreSleepJournalStore`（30 天活动戳日志+推断窗口）+ Application `ActivityLifecycleCallbacks.onActivityStarted` 静默记录，零 UI 呈现；⑤ 假期重估由幂律曲线天然吸收（R 随时间衰减），无需额外机制。
 - **B6（§2.11）**：`SchedulingEvaluationHarness`（双模型 BCE log-loss + 时间序切分 + 上线门 `fsrsBeatsBaseline`）与 `FsrsParameterOptimizer`（Adam+中心差分，8/64 阈值，<64 仅拟合 w0..w5）；优化参数经 `SchedulingSettingsStore` 存储、下次启动生效（灰度=不动既有 due）。
-- **四键自评（§2.21/§9.3）**：捕获题复习界面四键（没想起来/很费劲/正常/很轻松）经 `submitReviewRating` 入账（Again=卡住键，权重 1.0/0.7/0.8/0.9 映射 G=1/2/3/4）；原三档自评 API 保留为详情页元认知通道；冷却拦截重复提交并返回 `evidenceSuppressedByCooldown`。
+- **四键自评（§2.21/§9.3）——2026-09-13 已废止（历史记录，勿据此实现）**：捕获题复习界面四键（没想起来/很费劲/正常/很轻松）经 `submitReviewRating` 入账（Again=卡住键，权重 1.0/0.7/0.8/0.9 映射 G=1/2/3/4）；原三档自评 API 保留为详情页元认知通道；冷却拦截重复提交并返回 `evidenceSuppressedByCooldown`。
 
 **2026-08-30 深度修复轮（缺口清零）**：对照 py-fsrs `fsrs/scheduler.py` 与 fsrs-rs `src/model.rs` 逐项核验后发现并修复下列正确性缺陷；权威依据见《docs/research/fsrs-algorithm-gap-analysis.md》。
 
