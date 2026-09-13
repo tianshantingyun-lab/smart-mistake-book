@@ -52,8 +52,12 @@ fun retentionAt(stabilityDays: Double, elapsedDays: Double, w20: Double = 0.1542
 
 **反解间隔**（next review）：
 ```
-I(r*, S) = (S / FACTOR) · (r*^(1/w20) − 1)
+I(r*, S) = (S / FACTOR) · (r*^(−1/w20) − 1)
 ```
+**指数是 `−1/w20`**（与 spec §2.3 同步订正于 2026-09-13，审计 R-13）：它与上面那段代码里的
+`pow(-w20)` 互为反函数，`I(0.9,S)=S` 逐位成立；写成 `1/w20` 会反解出**负间隔**
+（`r*=0.8` 时 `−0.78·S`），而符号一错、下游 `coerceIn` 只会把它兜成 1 天，
+不会报错——这正是"文档漂移指导后来者把对的改错"的典型。
 现钩子：`ForgettingCurve.reviewAtTargetRetention`（LearningProjector.kt:747 调用）——只换内部公式，签名不变。
 
 ---
