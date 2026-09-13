@@ -36,7 +36,7 @@ internal suspend fun recognizeAndSplitBatchPage(
     modelTasks: ModelTaskRepository,
     splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository,
     occurrenceTime: Long,
-    consentEnabled: () -> Boolean,
+    modelEgressAllowed: () -> Boolean,
 ): BatchSplitOutcome {
     val provider = modelTasks.capabilities()
     if (provider.executionLocation == ModelExecutionLocation.UNAVAILABLE) {
@@ -46,11 +46,11 @@ internal suspend fun recognizeAndSplitBatchPage(
     }
     if (
         provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
-        !consentEnabled()
+        !modelEgressAllowed()
     ) {
-        // Without global agent consent an external round would be denied by the
-        // egress policy anyway; skipping it keeps the page import clean instead of
-        // writing a guaranteed PERMANENT_FAILURE row per batch page.
+        // When this build may not send model rounds at all, an external round could not
+        // dispatch anyway; skipping it keeps the page import clean instead of writing a
+        // guaranteed PERMANENT_FAILURE row per batch page.
         return BatchSplitOutcome.NotASplit
     }
 
@@ -64,9 +64,8 @@ internal suspend fun recognizeAndSplitBatchPage(
             imageHeight = draft.height,
         ),
         occurredAtEpochMillis = occurrenceTime,
-        // Batch page organization runs under the global agent consent; the page
-        // import that produced this draft is the same user action that consented.
-        agentConsentGranted = consentEnabled(),
+        // The page import that produced this draft ran under the same egress allowance.
+        agentConsentGranted = modelEgressAllowed(),
     )
     val snapshot = modelTasks.execute(request).collectLast()
     if (snapshot.status != ModelTaskStatus.SUCCEEDED) {

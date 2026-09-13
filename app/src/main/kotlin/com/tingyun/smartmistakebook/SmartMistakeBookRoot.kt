@@ -214,10 +214,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
     val repository = application.studyRepository
     val baseCapabilities = application.capabilities
     val startupState by application.startupState.collectAsStateWithLifecycle()
-    val consentStore = application.modelAgentConsentStore
-    val agentConsentEnabled = consentStore?.consentEnabled
-        ?.collectAsStateWithLifecycle(initialValue = true)
-        ?.value ?: true
     val configurationStore = application.modelConfigurationStore
     val modelConfiguration = if (configurationStore != null) {
         configurationStore.configuration
@@ -631,6 +627,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     entryOrigin = CaptureEntryOrigin.TUTOR,
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
+                    modelEgressAllowed = baseCapabilities.networkRequestsAllowed,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
@@ -658,6 +655,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     entryOrigin = CaptureEntryOrigin.LIBRARY,
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
+                    modelEgressAllowed = baseCapabilities.networkRequestsAllowed,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
@@ -724,6 +722,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     resumeDraftId = entry.arguments?.getString("draftId").orEmpty(),
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
+                    modelEgressAllowed = baseCapabilities.networkRequestsAllowed,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
@@ -759,10 +758,9 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     attachedImageResolver = AttachedImageGeneratorFactory.create(
                         context = application,
                         configurationStore = configurationStore,
-                        // 用户同意，不是变体位：见审计 S-2。原来这里传
-                        // `application.capabilities.networkRequestsAllowed`，
-                        // 于是关掉「模型智能体同意」也照样把原图发出去。
-                        modelAgentConsentStore = application.modelAgentConsentStore,
+                        // 本构建可出网；"用户配过模型"由凭据读取处保证——没有配置就没有凭据，
+                        // 原图发不出去。「配置模型即同意」之下没有单独的同意形参可传（审计 S-2 的对齐）。
+                        networkRequestsAllowed = application.capabilities.networkRequestsAllowed,
                         resolveCurrentSheetBytes = {
                             application.captureRepository.readTutorSessionSheetBytes(sessionId)
                         },
@@ -776,7 +774,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     },
                     onBack = navController::popBackStack,
                     onEndedWithoutSave = { navController.popBackStack() },
-                    agentConsentEnabled = agentConsentEnabled,
                 )
             }
             composable(Routes.MistakeDetail) { entry ->
@@ -809,7 +806,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     entry = entry,
                     experience = experience,
                     application = application,
-                    agentConsentEnabled = agentConsentEnabled,
                     navController = navController,
                 )
             }
@@ -834,7 +830,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     capabilities = capabilities,
                     configurationStore = application.modelConfigurationStore,
                     capabilityTester = application.modelCapabilityTester,
-                    modelAgentConsentStore = application.modelAgentConsentStore,
                     calibrationReportProvider = { application.studyRepository.calibrationReport() },
                     onBack = navController::popBackStack,
                 )

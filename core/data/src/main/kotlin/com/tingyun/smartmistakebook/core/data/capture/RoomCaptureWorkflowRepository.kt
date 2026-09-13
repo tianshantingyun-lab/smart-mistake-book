@@ -88,11 +88,10 @@ class RoomCaptureWorkflowRepository internal constructor(
     private val cleanRedrawScope: CoroutineScope? = null,
     private val modelTasks: ModelTaskRepository? = null,
     /**
-     * Reads the user's current global model-image consent (Settings). A save path
-     * only runs the model-decided redraw round when this returns true; the round
-     * never runs on a user who disabled it.
+     * Whether this build may send model rounds at all (flavour capability). A save path
+     * only runs the model-decided redraw round when this returns true.
      */
-    private val captureConsentGranted: () -> Boolean = { false },
+    private val captureEgressAllowed: () -> Boolean = { false },
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<PendingCaptureItem>> =
         database.observePendingCaptureDrafts().map { records ->
@@ -402,7 +401,7 @@ class RoomCaptureWorkflowRepository internal constructor(
         subjectId: String,
     ) {
         val tasks = modelTasks ?: return
-        if (!captureConsentGranted()) return
+        if (!captureEgressAllowed()) return
         val shouldRedraw = try {
             val classifyRequest = ModelTaskRequest(
                 requestId = "save-decision:$revisionId",
@@ -413,11 +412,12 @@ class RoomCaptureWorkflowRepository internal constructor(
                     subjectIdOverride = subjectId,
                 ),
                 occurredAtEpochMillis = System.currentTimeMillis(),
-                // 传用户同意的**真值**，不是硬编码 true（审计 S-2 附带发现）：
-                // 网关在 `OpenAiCompatibleModelGateway.kt:601` 用 `check(...)` 做二次校验，
-                // 硬编码 true 会让那道闸门形同虚设——今天靠上面 `captureConsentGranted()`
-                // 的提前返回兜住，但任何绕过调用点直接构造请求的路径都不会被拦住。
-                agentConsentGranted = captureConsentGranted(),
+                // 信封字段恒置 true：本构建先过 `captureEgressAllowed()`（第 404 行的提前返回），
+                // 走到这里就已经是"本构建可出网"，而"用户配过模型"由凭据读取处保证——没有配置
+                // 就没有凭据，请求发不出去。「配置模型即同意」之下没有第二个同意状态可传。
+                // 网关在 `OpenAiCompatibleModelGateway.kt:601` 仍用 `check(...)` 二次校验这个字段，
+                // 所以它必须与"确实允许出网"一致，而不是表达一个运行时可能被撤回的开关（审计 S-2）。
+                agentConsentGranted = true,
             )
             val terminal = tasks.execute(classifyRequest).last()
             terminal.status == ModelTaskStatus.SUCCEEDED &&
@@ -869,7 +869,7 @@ object CaptureWorkflowRepositoryFactory {
         cleanRedraw: CleanImageGenerator? = null,
         cleanRedrawScope: CoroutineScope? = null,
         modelTasks: ModelTaskRepository? = null,
-        captureConsentGranted: () -> Boolean = { false },
+        captureEgressAllowed: () -> Boolean = { false },
     ): CaptureWorkflowRepository =
         RoomCaptureWorkflowRepository(
             database = database,
@@ -878,6 +878,6 @@ object CaptureWorkflowRepositoryFactory {
             cleanRedraw = cleanRedraw,
             cleanRedrawScope = cleanRedrawScope,
             modelTasks = modelTasks,
-            captureConsentGranted = captureConsentGranted,
+            captureEgressAllowed = captureEgressAllowed,
         )
 }

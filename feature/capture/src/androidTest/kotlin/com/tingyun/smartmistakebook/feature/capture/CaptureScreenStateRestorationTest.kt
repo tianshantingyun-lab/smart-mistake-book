@@ -38,7 +38,7 @@ class CaptureScreenStateRestorationTest {
     @Test
     fun resumedDraftStateSurvivesConfigurationChange() {
         val restorationTester = StateRestorationTester(composeRule)
-        val draft = resumableDraft()
+        val draft = CaptureScreenTestFixtures.resumableDraft()
 
         restorationTester.setContent {
             MaterialTheme {
@@ -71,47 +71,9 @@ class CaptureScreenStateRestorationTest {
         }
         composeRule.onNodeWithTag("capture_screen").assertExists()
     }
-
-    private fun resumableDraft(): ResumableCaptureDraft {
-        val page = CaptureSourcePage(
-            pageIndex = 0,
-            imageUri = "file:///draft-resume.png",
-            sourceAssetId = "asset-resume",
-            sourceAssetSha256 = "a".repeat(64),
-            width = 10,
-            height = 10,
-            byteSize = 100,
-            createdAtEpochMillis = 1,
-        )
-        return ResumableCaptureDraft(
-            draftId = "draft-resume",
-            origin = CaptureEntryOrigin.LIBRARY,
-            sourceImageUri = page.imageUri,
-            sourceAssetId = page.sourceAssetId,
-            sourceAssetSha256 = page.sourceAssetSha256,
-            sourceWidth = page.width,
-            sourceHeight = page.height,
-            sourceByteSize = page.byteSize,
-            draftCreatedAtEpochMillis = page.createdAtEpochMillis,
-            currentRevisionNumber = 1,
-            currentRevisionDocumentFingerprint = "a".repeat(64),
-            currentRevisionCreatedAtEpochMillis = 1,
-            subject = null,
-            title = "题目",
-            questionDocument = CaptureScreenTestFixtures.blankDocument(),
-            transcription = "",
-            writingLayer = com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer.UNKNOWN,
-            latestAssessmentTask = null,
-            sourcePageAssessmentTasks = listOf<ModelTaskSnapshot?>(null),
-            latestParseTask = null,
-            tutorSessionId = null,
-            workspace = null,
-            updatedAtEpochMillis = 1,
-        )
-    }
 }
 
-private class RestorationFakeResumeRepository(
+internal class RestorationFakeResumeRepository(
     private val draft: ResumableCaptureDraft,
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<com.tingyun.smartmistakebook.core.domain.PendingCaptureItem>> =
@@ -190,6 +152,44 @@ private class RestorationFakeModelTasks : ModelTaskRepository {
 
 /** Shared minimal fixtures for capture screen tests. */
 internal object CaptureScreenTestFixtures {
+    fun resumableDraft(): ResumableCaptureDraft {
+        val page = CaptureSourcePage(
+            pageIndex = 0,
+            imageUri = "file:///draft-resume.png",
+            sourceAssetId = "asset-resume",
+            sourceAssetSha256 = "a".repeat(64),
+            width = 10,
+            height = 10,
+            byteSize = 100,
+            createdAtEpochMillis = 1,
+        )
+        return ResumableCaptureDraft(
+            draftId = "draft-resume",
+            origin = CaptureEntryOrigin.LIBRARY,
+            sourceImageUri = page.imageUri,
+            sourceAssetId = page.sourceAssetId,
+            sourceAssetSha256 = page.sourceAssetSha256,
+            sourceWidth = page.width,
+            sourceHeight = page.height,
+            sourceByteSize = page.byteSize,
+            draftCreatedAtEpochMillis = page.createdAtEpochMillis,
+            currentRevisionNumber = 1,
+            currentRevisionDocumentFingerprint = "a".repeat(64),
+            currentRevisionCreatedAtEpochMillis = 1,
+            subject = null,
+            title = "题目",
+            questionDocument = blankDocument(),
+            transcription = "",
+            writingLayer = com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer.UNKNOWN,
+            latestAssessmentTask = null,
+            sourcePageAssessmentTasks = listOf<ModelTaskSnapshot?>(null),
+            latestParseTask = null,
+            tutorSessionId = null,
+            workspace = null,
+            updatedAtEpochMillis = 1,
+        )
+    }
+
     fun blankDocument() = com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument(
         document = com.tingyun.smartmistakebook.core.model.QuestionDocument(
             id = "document-1",

@@ -29,7 +29,7 @@ internal class TutorPlanCommands(
         priorTurns: List<TutorTurnHistoryEntry>,
     ) {
         val provider = sink.provider() ?: return
-        if (!tutorAgentChatEnabled(provider, sink.consentEnabled(), ModelTaskKind.TUTOR_PLAN)) return
+        if (!tutorAgentChatEnabled(provider, ModelTaskKind.TUTOR_PLAN)) return
         val question = sink.question()
         val attempt = tutorPlanAttemptCount(
             sink.planTasks().count { task ->
@@ -67,7 +67,6 @@ internal class TutorPlanCommands(
 
 internal class TutorPlanSink(
     val provider: () -> ProviderCapabilitySnapshot?,
-    val consentEnabled: () -> Boolean,
     val question: () -> TutorQuestionContext,
     val profile: () -> StudyProfileOverview,
     val clock: () -> Long,

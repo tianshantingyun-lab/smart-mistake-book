@@ -34,22 +34,22 @@ internal fun tutorPlanAttemptCount(
 
 /**
  * The single live agent gate for a tutor send surface. One place decides whether a send
- * may reach the provider right now: a local provider always dispatches (it never egresses,
- * so global consent is irrelevant), while an external provider dispatches only under global
- * consent when it supports the kind and, for image-bearing visual kinds, accepts images.
- * A null or UNAVAILABLE provider fails closed. PLAN/RESPOND are image-optional, so a
- * structured-only provider still runs them; visual kinds require image input.
+ * may reach the provider right now: a local provider always dispatches (it never egresses),
+ * while an external provider dispatches when it supports the kind and, for image-bearing
+ * visual kinds, accepts images. A null or UNAVAILABLE provider fails closed.
+ *
+ * The global "model agent" consent toggle used to sit here as an extra condition; it was
+ * removed on 2026-09-13 — a configured provider is the single condition, and the only way
+ * to have a build that never egresses is the `strictOffline` flavour (no INTERNET permission).
  */
 internal fun tutorAgentChatEnabled(
     provider: ProviderCapabilitySnapshot?,
-    consentEnabled: Boolean,
     kind: ModelTaskKind,
 ): Boolean {
     val candidate = provider ?: return false
     if (candidate.executionLocation == ModelExecutionLocation.UNAVAILABLE) return false
     if (!candidate.supports(kind)) return false
     if (candidate.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS) return true
-    if (!consentEnabled) return false
     val kindNeedsImage = kind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
         kind == ModelTaskKind.TUTOR_VISUAL_REVIEW
     return !kindNeedsImage || candidate.supportsImageInput
@@ -72,12 +72,11 @@ internal fun tutorRespondProviderCanExecute(
 
 internal fun tutorRespondCollectCanStart(
     provider: ProviderCapabilitySnapshot?,
-    consentEnabled: Boolean,
     requestHasEgressManifest: Boolean,
     allowExternalEnvelopeForLocalRecovery: Boolean,
     chatSubmitPending: Boolean,
 ): Boolean {
-    if (!tutorAgentChatEnabled(provider, consentEnabled, ModelTaskKind.TUTOR_RESPOND)) return false
+    if (!tutorAgentChatEnabled(provider, ModelTaskKind.TUTOR_RESPOND)) return false
     // Respond-specific recovery: dispatch an external-enveloped persisted task under a
     // local provider only when explicitly allowed.
     if (provider!!.executionLocation == ModelExecutionLocation.LOCAL_NO_EGRESS &&

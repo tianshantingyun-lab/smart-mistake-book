@@ -46,7 +46,7 @@ import com.tingyun.smartmistakebook.core.domain.BatchImportPage
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportRepository
 import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
-import com.tingyun.smartmistakebook.core.domain.BatchOrganizationConsentException
+import com.tingyun.smartmistakebook.core.domain.BatchOrganizationUnavailableException
 import com.tingyun.smartmistakebook.core.domain.CreateBatchImportRequest
 import com.tingyun.smartmistakebook.core.domain.CreatePdfImportRequest
 import com.tingyun.smartmistakebook.core.domain.MAX_BATCH_IMPORT_PAGES
@@ -153,8 +153,8 @@ fun BatchImportRoute(
                     message = null
                 } catch (cancelled: CancellationException) {
                     throw cancelled
-                } catch (_: BatchOrganizationConsentException) {
-                    message = "请先在“我的”里开启『模型智能体』，再整理相邻页面。"
+                } catch (_: BatchOrganizationUnavailableException) {
+                    message = "请先在“我的”里配置模型服务，再整理相邻页面。"
                 } catch (_: Exception) {
                     message = "这次还没有全部分好，页面都已保留，可以稍后继续。"
                 } finally {
@@ -306,7 +306,7 @@ private fun BatchOrganizationCard(
                     isOrganizing -> "正在按页面顺序整理，可以离开本页，原页面不会丢失。"
                     else ->
                         "自动识别跨页题目，之后会按一道道题显示，不需要手工合并。" +
-                            "开启『模型智能体』后整理会直接交给已配置模型。"
+                            "整理会直接交给已配置模型，不再逐次询问。"
                 },
                 color = SmartColors.InkSecondary,
                 style = MaterialTheme.typography.bodySmall,

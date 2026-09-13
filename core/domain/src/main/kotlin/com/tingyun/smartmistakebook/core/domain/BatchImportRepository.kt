@@ -148,17 +148,17 @@ interface BatchImportRepository {
     suspend fun skipBatchImportPage(jobId: String, pageIndex: Int)
 
     /**
-     * Organizes adjacent saved page boundaries under global agent consent. A configured,
-     * image-capable, structured-output external provider with consent ON may dispatch immediately;
-     * otherwise it fails closed (the caller surfaces a settings CTA). No per-job approval is
-     * required because configuring the model is itself the global consent.
+     * Organizes adjacent saved page boundaries with the configured model. A configured,
+     * image-capable, structured-output external provider dispatches immediately; with no model
+     * configured it fails closed (the caller surfaces a settings CTA). There is no separate
+     * approval step: configuring the model is itself the grant.
      */
     suspend fun organizeBatch(jobId: String)
 }
 
-/** Thrown when batch organization would egress but the global model-agent consent is OFF. */
-class BatchOrganizationConsentException : IllegalStateException(
-    "Batch page organization requires the model-agent consent to be enabled",
+/** Thrown when batch organization needs a model and none is configured. */
+class BatchOrganizationUnavailableException : IllegalStateException(
+    "Batch page organization requires a configured model provider",
 )
 
 const val MAX_BATCH_IMPORT_PAGES = 30

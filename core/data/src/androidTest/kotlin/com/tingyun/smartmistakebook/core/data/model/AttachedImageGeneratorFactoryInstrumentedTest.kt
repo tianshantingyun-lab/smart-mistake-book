@@ -21,8 +21,11 @@ import org.junit.Test
  *
  * 用仪器化而不是 JVM：工厂第一步就要 `AndroidCanonicalAssetVault(context)`，需要真的
  * Context（这也正是这条通道此前只有"直接构造 generator"那半个测试的原因）。
- * 最后一条（同意与凭据齐备时 channel **必须**被构造）是这套断言的地基——
+ * 最后一条（凭据齐备且可出网时 channel **必须**被构造）是这套断言的地基——
  * 没有它，"没有 channel"与"代码根本不构造 channel"就分不开。
+ *
+ * 2026-09-14 随口径对齐订正（`main` 的 `e462f1ea`）：「配置模型即同意」，撤回出网＝**删除配置**。
+ * 原先按"撤销同意"写的那条改成按凭据撤销来钉，条件本身没有放松。
  */
 class AttachedImageGeneratorFactoryInstrumentedTest {
 
@@ -33,29 +36,31 @@ class AttachedImageGeneratorFactoryInstrumentedTest {
     )
 
     @Test
-    fun revokingConsentStopsTheUploadBeforeAChannelExists() = runBlocking {
+    fun anOfflineBuildStopsTheUploadBeforeAChannelExists() = runBlocking {
         val channels = mutableListOf<String>()
 
-        val resolve = resolver(
-            consent = FakeModelAgentConsentStore(granted = false),
-            channels = channels,
-        )
+        val resolve = resolver(networkRequestsAllowed = false, channels = channels)
 
         assertNull(resolve(processImage))
         assertEquals(
-            "撤销同意后不得再构造 channel——channel 一建就是要出网的",
+            "本构建不可出网时不得再构造 channel——channel 一建就是要出网的",
             emptyList<String>(),
             channels,
         )
     }
 
     @Test
-    fun noConsentChannelAtAllStopsTheUpload() = runBlocking {
+    fun aRemovedConfigurationStopsTheUploadBeforeAChannelExists() = runBlocking {
+        // 与下面"从没配过"那条不是同一件事：这条钉的是**同一进程内**删除配置后立刻生效，
+        // 不能等重启——凭据在每次出网时现读。
         val channels = mutableListOf<String>()
+        val store = FakeModelConfigurationStore()
+        val resolve = resolver(configurationStore = store, channels = channels)
 
-        assertNull(resolver(consent = null, channels = channels)(processImage))
+        store.credentialAvailable = false
 
-        assertEquals(emptyList<String>(), channels)
+        assertNull(resolve(processImage))
+        assertEquals("配置删了之后不得再构造 channel", emptyList<String>(), channels)
     }
 
     @Test
@@ -99,7 +104,7 @@ class AttachedImageGeneratorFactoryInstrumentedTest {
     }
 
     @Test
-    fun consentAndCredentialTogetherDoOpenTheChannel() = runBlocking {
+    fun aConfiguredCredentialDoesOpenTheChannel() = runBlocking {
         val channels = mutableListOf<String>()
 
         val resolve = resolver(channels = channels)
@@ -107,7 +112,7 @@ class AttachedImageGeneratorFactoryInstrumentedTest {
         // 假 channel 的 generate 抛异常 ⇒ 这张图拿不到 URI；本条断言的是**放行**，不是成功。
         assertNull(resolve(processImage))
         assertEquals(
-            "同意与凭据齐备时必须走到构造 channel 那一步，否则上面那批「没有 channel」是空的",
+            "凭据齐备且可出网时必须走到构造 channel 那一步，否则上面那批「没有 channel」是空的",
             listOf(FakeModelConfigurationStore.BASE_URL),
             channels,
         )
@@ -116,7 +121,7 @@ class AttachedImageGeneratorFactoryInstrumentedTest {
     // -----------------------------------------------------------------
 
     private fun resolver(
-        consent: FakeModelAgentConsentStore? = FakeModelAgentConsentStore(),
+        networkRequestsAllowed: Boolean = true,
         credentialAvailable: Boolean = true,
         capability: ModelCapabilityVerification? = FakeModelConfigurationStore.configuredCapability(),
         configurationStore: ModelConfigurationStore? = FakeModelConfigurationStore(
@@ -127,7 +132,7 @@ class AttachedImageGeneratorFactoryInstrumentedTest {
     ): suspend (AttachedImage) -> String? = AttachedImageGeneratorFactory.create(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
         configurationStore = configurationStore,
-        modelAgentConsentStore = consent,
+        networkRequestsAllowed = networkRequestsAllowed,
         resolveCurrentSheetBytes = { null },
         channelFactory = ImageChannelFactory { baseUrl, _ ->
             channels += baseUrl

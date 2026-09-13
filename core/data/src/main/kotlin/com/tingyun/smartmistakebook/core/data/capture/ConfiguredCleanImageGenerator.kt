@@ -7,7 +7,6 @@ import com.tingyun.smartmistakebook.core.data.model.ImageRedrawResult
 import com.tingyun.smartmistakebook.core.data.model.resolveImageCredential
 import com.tingyun.smartmistakebook.core.domain.CleanImageGenerator
 import com.tingyun.smartmistakebook.core.domain.CleanImageResult
-import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import java.util.Arrays
 import kotlinx.coroutines.CancellationException
@@ -36,15 +35,16 @@ import kotlinx.coroutines.CancellationException
  */
 internal class ConfiguredCleanImageGenerator(
     private val configurationStore: ModelConfigurationStore,
-    private val modelAgentConsentStore: ModelAgentConsentStore?,
     private val channelFactory: ImageChannelFactory = GuardedEditsChannelFactory,
+    private val networkRequestsAllowed: Boolean = true,
 ) : CleanImageGenerator {
 
     override suspend fun generateClean(
         originalBytes: ByteArray,
         mimeType: String,
     ): CleanImageResult? {
-        val credential = resolveImageCredential(configurationStore, modelAgentConsentStore)
+        if (!networkRequestsAllowed) return null
+        val credential = resolveImageCredential(configurationStore, networkRequestsAllowed)
             ?: return null
         return credential.apiKey.use { apiKey ->
             val keyChars = apiKey.copyChars()
@@ -94,16 +94,18 @@ internal class ConfiguredCleanImageGenerator(
 
 /**
  * Public app-layer entry point. Returns a production clean-redraw generator over
- * the user's configured model credential, or a generator that always declines
- * when the user has not granted the global model-agent consent.
+ * the user's configured model credential, or one that always declines when this
+ * build cannot egress or no credential is configured. 「配置模型即同意」之下
+ * 没有单独的同意形参：凭据不存在 ⇒ 本对象造得出来也发不出去（审计 S-2 的对齐，
+ * 见 `ImageCredentialGate` 的类注释）。
  */
 object ConfiguredCleanImageGeneratorFactory {
     fun create(
         configurationStore: ModelConfigurationStore,
-        modelAgentConsentStore: ModelAgentConsentStore?,
+        networkRequestsAllowed: Boolean,
     ): CleanImageGenerator = ConfiguredCleanImageGenerator(
         configurationStore = configurationStore,
-        modelAgentConsentStore = modelAgentConsentStore,
         channelFactory = GuardedEditsChannelFactory,
+        networkRequestsAllowed = networkRequestsAllowed,
     )
 }

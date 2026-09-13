@@ -102,7 +102,7 @@ class CaptureWorkflowInstrumentedTest : CaptureWorkflowTestBase() {
                 )
             },
             modelTasks = withFigureClassifyModelTasks(),
-            captureConsentGranted = { true },
+            captureEgressAllowed = { true },
         )
         val source = createPng(48, 48)
         val imported = generatingRepository.importDraft(
@@ -612,7 +612,7 @@ class CaptureWorkflowInstrumentedTest : CaptureWorkflowTestBase() {
             },
             cleanRedrawScope = saveScope,
             modelTasks = withFigureClassifyModelTasks(),
-            captureConsentGranted = { true },
+            captureEgressAllowed = { true },
         )
         try {
             val source = createPng(width = 96, height = 128)
@@ -676,7 +676,7 @@ class CaptureWorkflowInstrumentedTest : CaptureWorkflowTestBase() {
             },
             cleanRedrawScope = saveScope,
             modelTasks = withFigureClassifyModelTasks(),
-            captureConsentGranted = { true },
+            captureEgressAllowed = { true },
         )
         try {
             val source = createPng(width = 96, height = 128)

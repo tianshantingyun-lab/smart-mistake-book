@@ -102,7 +102,7 @@ internal class CaptureWorkflowEventCommands(
     }
 
     fun consumeTutorSession(session: ConfirmedTutorSession) {
-        // First tutor plan runs under the global agent consent; navigation hands off
+        // First tutor plan runs under a configured model; navigation hands off
         // with no capture-side authorization state.
         onTutorSessionReady(session.sessionId)
         state.workflowInProgress = false

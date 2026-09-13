@@ -1,6 +1,5 @@
 package com.tingyun.smartmistakebook.core.data.capture
 
-import com.tingyun.smartmistakebook.core.data.model.FakeModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.data.model.FakeModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.model.ImageChannelFactory
 import com.tingyun.smartmistakebook.core.data.model.ImageGenerationChannel
@@ -22,15 +21,16 @@ import org.junit.Test
  *
  * 闸门本身的三条件由 `ImageCredentialGateTest` 覆盖（去手写与配图共用同一个
  * `resolveImageCredential`）。这里补的是**这条通道确实走那个闸门**——
- * 尤其是同意被撤销时它**不能**再去构造 channel（那一步就会出网）。
+ * 尤其是撤回出网（「配置模型即同意」之下＝删除配置）时它**不能**再去构造 channel
+ * （那一步就会出网）。
  */
 class ConfiguredCleanImageGeneratorTest {
 
     @Test
-    fun declinesWhenTheUserHasNotGrantedConsentAndNeverTouchesTheNetwork() = runBlocking {
+    fun declinesWhenTheBuildCannotEgressAndNeverTouchesTheNetwork() = runBlocking {
         var channelCalled = false
         val generator = generator(
-            consentGranted = false,
+            networkRequestsAllowed = false,
             channelFactory = ChannelFactory { _, _ ->
                 channelCalled = true
                 FakeRedrawChannel("cleaned-bytes", "image/png")
@@ -45,10 +45,20 @@ class ConfiguredCleanImageGeneratorTest {
     }
 
     @Test
-    fun declinesWhenThereIsNoConsentChannelAtAll() = runBlocking {
-        val generator = generator(consentStore = null)
+    fun declinesOnceTheConfigurationIsGoneAndNeverTouchesTheNetwork() = runBlocking {
+        // 撤回出网 = 删除配置（审计 S-2 在新口径下的载体）。比下面那条"没配凭据"更强：
+        // 它同时钉住**拒绝发生在构造 channel 之前**——channel 一建就是要出网的。
+        var channelCalled = false
+        val generator = generator(
+            credentialAvailable = false,
+            channelFactory = ChannelFactory { _, _ ->
+                channelCalled = true
+                FakeRedrawChannel("cleaned-bytes", "image/png")
+            },
+        )
 
         assertNull(generator.generateClean(bytes("a"), "image/jpeg"))
+        assertTrue("配置删了就必须拒绝，且不能碰网络", !channelCalled)
     }
 
     @Test
@@ -113,8 +123,7 @@ class ConfiguredCleanImageGeneratorTest {
     private fun generator(
         credentialAvailable: Boolean = true,
         capability: ModelCapabilityVerification? = FakeModelConfigurationStore.configuredCapability(),
-        consentGranted: Boolean = true,
-        consentStore: FakeModelAgentConsentStore? = FakeModelAgentConsentStore(granted = consentGranted),
+        networkRequestsAllowed: Boolean = true,
         channelFactory: ImageChannelFactory = ImageChannelFactory { _, _ ->
             FakeRedrawChannel("default", "image/png")
         },
@@ -123,8 +132,8 @@ class ConfiguredCleanImageGeneratorTest {
             snapshot = FakeModelConfigurationStore.configuration(capability = capability),
             credentialAvailable = credentialAvailable,
         ),
-        modelAgentConsentStore = consentStore,
         channelFactory = channelFactory,
+        networkRequestsAllowed = networkRequestsAllowed,
     )
 
     private class FakeRedrawChannel(

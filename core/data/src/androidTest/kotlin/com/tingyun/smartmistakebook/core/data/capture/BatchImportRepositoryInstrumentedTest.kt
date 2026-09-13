@@ -352,7 +352,7 @@ class BatchImportRepositoryInstrumentedTest {
                 capture = captureRepository(database),
                 processingScope = processingScope,
                 modelTasks = modelTasks,
-                consentEnabled = { true },
+                modelEgressAllowed = { true },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
@@ -414,7 +414,7 @@ class BatchImportRepositoryInstrumentedTest {
                 capture = captureRepository(database),
                 processingScope = processingScope,
                 modelTasks = modelTasks,
-                consentEnabled = { true },
+                modelEgressAllowed = { true },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
@@ -652,12 +652,12 @@ class BatchImportRepositoryInstrumentedTest {
     }
 
     /**
-     * Global consent is the single egress gate for agent rounds: with it off, an
+     * A configured model is the single gate for agent rounds: with none configured, an
      * external split round is never attempted, so the page import stays clean and
      * no guaranteed-failure model task is written per page.
      */
     @Test
-    fun splitRecognitionSkipsExternalEgressWithoutGlobalConsentAndImportsEveryPage() = runBlocking {
+    fun splitRecognitionSkipsExternalEgressWithoutAConfiguredModelAndImportsEveryPage() = runBlocking {
         val selected = listOf(insertImage(), insertImage())
         val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
@@ -672,11 +672,11 @@ class BatchImportRepositoryInstrumentedTest {
                     gateway = gateway,
                 ),
                 splitImports = SplitImportRepositoryFactory.createConcrete(database),
-                consentEnabled = { false },
+                modelEgressAllowed = { false },
             )
             val created = repository.createBatchImport(
                 CreateBatchImportRequest(
-                    requestId = "split-consent-off",
+                    requestId = "split-no-model",
                     localUris = selected.map(Uri::toString),
                     occurredAtEpochMillis = 9_000,
                 ),
@@ -699,7 +699,7 @@ class BatchImportRepositoryInstrumentedTest {
             )
             assertEquals(0, gateway.executionCount)
             assertNull(
-                "A consent-off external split must not persist a model task",
+                "An unconfigured-model external split must not persist a model task",
                 database.readModelTask("batch-split:${created.jobId}:0"),
             )
         } finally {

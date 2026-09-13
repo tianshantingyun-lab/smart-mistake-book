@@ -252,7 +252,7 @@ internal fun CaptureActions(
 }
 
 @Composable
-internal fun CaptureModelAgentConsentBlock(
+internal fun CaptureModelSetupBlock(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -262,18 +262,18 @@ internal fun CaptureModelAgentConsentBlock(
             .border(1.dp, Outline, RoundedCornerShape(8.dp))
             .background(JadeSoft.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
             .padding(14.dp)
-            .testTag("capture_model_agent_consent_block"),
+            .testTag("capture_model_setup_block"),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "需在设置中开启『模型智能体』后，拍照题图才会交给模型整理",
+            text = "配置好模型后，拍照题图才会交给模型整理",
             color = Ink,
             style = MaterialTheme.typography.bodyMedium,
         )
         OutlineActionChip(
             text = "去设置",
             onClick = onOpenSettings,
-            modifier = Modifier.testTag("capture_model_agent_consent_settings"),
+            modifier = Modifier.testTag("capture_model_setup_settings"),
         )
     }
 }

@@ -3,7 +3,6 @@ package com.tingyun.smartmistakebook.core.data.model
 import android.content.Context
 import android.net.Uri
 import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
-import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.model.AttachedImage
 
@@ -15,24 +14,27 @@ import com.tingyun.smartmistakebook.core.model.AttachedImage
  *
  * [resolveCurrentSheetBytes] must come from the caller — it supplies the current
  * question's problem-sheet bytes for a REDRAW_PROBLEM (never model-supplied).
- * No global model-agent consent (or no credential / no image capability) →
- * returns a resolver that always yields null (so no figure shows), mirroring the
- * clean-redraw gate. Both halves of this egress path are shared with that
- * generator — the credential gate [resolveImageCredential] and the channel
- * construction [ImageChannelFactory] — so the two figure paths cannot decide
- * differently (audit S-2: the gate used to read a build-flavor capability bit,
- * so revoking consent did not stop the upload).
+ * Not network-capable / no credential / no image capability → returns a resolver
+ * that always yields null (so no figure shows), mirroring the clean-redraw gate.
+ * Both halves of this egress path are shared with that generator — the credential
+ * gate [resolveImageCredential] and the channel construction [ImageChannelFactory]
+ * — so the two figure paths cannot decide differently.
+ *
+ * 审计 S-2 的对齐：这道闸门曾经收「全局模型同意存储」而不是能力位，因为当时的口径里
+ * 同意是可以单独撤回的开关；`main` 的 `e462f1ea` 删除该开关后，「配置模型即同意」，
+ * **凭据本身就是同意**（没有配置 ⇒ 没有凭据 ⇒ 一个字节都发不出去）。详见
+ * `ImageCredentialGate` 的类注释。
  */
 object AttachedImageGeneratorFactory {
     fun create(
         context: Context,
         configurationStore: ModelConfigurationStore?,
-        modelAgentConsentStore: ModelAgentConsentStore?,
+        networkRequestsAllowed: Boolean,
         resolveCurrentSheetBytes: suspend () -> ByteArray?,
     ): suspend (AttachedImage) -> String? = create(
         context = context,
         configurationStore = configurationStore,
-        modelAgentConsentStore = modelAgentConsentStore,
+        networkRequestsAllowed = networkRequestsAllowed,
         resolveCurrentSheetBytes = resolveCurrentSheetBytes,
         channelFactory = GuardedEditsChannelFactory,
     )
@@ -47,7 +49,7 @@ object AttachedImageGeneratorFactory {
     internal fun create(
         context: Context,
         configurationStore: ModelConfigurationStore?,
-        modelAgentConsentStore: ModelAgentConsentStore?,
+        networkRequestsAllowed: Boolean,
         resolveCurrentSheetBytes: suspend () -> ByteArray?,
         channelFactory: ImageChannelFactory,
     ): suspend (AttachedImage) -> String? {
@@ -55,7 +57,7 @@ object AttachedImageGeneratorFactory {
         val vault = AndroidCanonicalAssetVault(context.applicationContext)
         val generator = AttachedImageGenerator(
             generate = { request ->
-                val credential = resolveImageCredential(configurationStore, modelAgentConsentStore)
+                val credential = resolveImageCredential(configurationStore, networkRequestsAllowed)
                     ?: throw ImageGenerationException("no usable model credential")
                 credential.apiKey.use { apiKey ->
                     val keyChars = apiKey.copyChars()

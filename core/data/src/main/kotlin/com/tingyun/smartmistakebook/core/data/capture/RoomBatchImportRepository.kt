@@ -11,7 +11,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.domain.BatchImportBoundaryStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
-import com.tingyun.smartmistakebook.core.domain.BatchOrganizationConsentException
+import com.tingyun.smartmistakebook.core.domain.BatchOrganizationUnavailableException
 import com.tingyun.smartmistakebook.core.domain.BatchImportPage
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportRepository
@@ -61,7 +61,7 @@ internal class RoomBatchImportRepository(
     private val sourceStaging: BatchImportSourceStaging,
     private val modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
     private val splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
-    private val consentEnabled: () -> Boolean = { false },
+    private val modelEgressAllowed: () -> Boolean = { false },
 ) : BatchImportRepository {
     private val processingMutex = Mutex()
     private val organizationMutex = Mutex()
@@ -203,8 +203,8 @@ internal class RoomBatchImportRepository(
         organizationMutex.withLock {
             withContext(Dispatchers.IO) {
                 require(jobId.isNotBlank())
-                if (!consentEnabled()) {
-                    throw BatchOrganizationConsentException()
+                if (!modelEgressAllowed()) {
+                    throw BatchOrganizationUnavailableException()
                 }
                 val provider = modelTasks.capabilities()
                 require(provider.canOrganizeBatchPages()) {
@@ -357,7 +357,7 @@ internal class RoomBatchImportRepository(
                             modelTasks = modelTasks,
                             splitImports = splitProvider,
                             occurrenceTime = page.createdAtEpochMillis,
-                            consentEnabled = consentEnabled,
+                            modelEgressAllowed = modelEgressAllowed,
                         )
                         if (splitDir is BatchSplitOutcome.SplitReady) {
                             splitReadyJobId = splitDir.jobId
@@ -493,11 +493,14 @@ internal class RoomBatchImportRepository(
                 pageIndex = index + 1,
             )
         }
-        // Under global agent consent an external, image-capable, structured-output provider runs
-        // the boundary comparison without a per-job egress manifest; configure the model itself is
-        // the consent. The request id is deterministic so a retried window reuses the same task.
-        // 传用户同意的**真值**而不是硬编码 true（审计 S-2 附带发现）：网关的二次校验
-        // （`OpenAiCompatibleModelGateway.kt:601`）读的正是这个字段，硬编码会让它形同虚设。
+        // An external, image-capable, structured-output provider runs the boundary comparison
+        // without a per-job egress manifest whenever this build allows model egress. The request
+        // id is deterministic so a retried window reuses the same task.
+        //
+        // 信封里的 `agentConsentGranted` 在 agent-eligible 调用点恒置 true（审计 S-2 看过这一处）：
+        // 这条路先过 `modelEgressAllowed()`，走到这里就已经是"本构建可出网"；而"用户配过模型"
+        // 由凭据读取处保证——没有配置就没有凭据，请求根本发不出去。「配置模型即同意」之下
+        // 没有第二个同意状态可传，该字段仍留在信封与指纹里，不动。
         return ModelTaskRequest(
             requestId = stableId("batch-page", "$jobId:$windowKey"),
             input = CaptureAssessmentInput(
@@ -509,7 +512,7 @@ internal class RoomBatchImportRepository(
                 followingSourceAssets = followingRefs,
             ),
             occurredAtEpochMillis = occurredAtEpochMillis,
-            agentConsentGranted = consentEnabled(),
+                agentConsentGranted = true,
         )
     }
 
@@ -526,7 +529,7 @@ object BatchImportRepositoryFactory {
         processingScope: CoroutineScope,
         modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
         splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
-        consentEnabled: () -> Boolean = { false },
+        modelEgressAllowed: () -> Boolean = { false },
     ): BatchImportRepository = RoomBatchImportRepository(
         database = database,
         capture = capture,
@@ -534,7 +537,7 @@ object BatchImportRepositoryFactory {
         sourceStaging = AndroidBatchImportSourceStaging(context),
         modelTasks = modelTasks,
         splitImports = splitImports,
-        consentEnabled = consentEnabled,
+        modelEgressAllowed = modelEgressAllowed,
     )
 }
 

@@ -127,8 +127,6 @@ fun CapturedTutorSessionRoute(
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit,
     onEndedWithoutSave: () -> Unit = onBack,
-    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
-    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     var showEndConfirmation by rememberSaveable(sessionId) { mutableStateOf(false) }
@@ -176,7 +174,6 @@ fun CapturedTutorSessionRoute(
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
         onBack = onBack,
-        agentConsentEnabled = agentConsentEnabled,
         modifier = modifier,
     )
 
@@ -235,8 +232,6 @@ private fun CapturedTutorSessionContent(
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
     onBack: () -> Unit,
-    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
-    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -262,7 +257,6 @@ private fun CapturedTutorSessionContent(
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
                 onBack = onBack,
-                agentConsentEnabled = agentConsentEnabled,
                 modifier = modifier.testTag("captured_tutor_session_screen"),
             )
 
@@ -365,8 +359,6 @@ internal fun ReadyCapturedSession(
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit = {},
     clock: () -> Long = System::currentTimeMillis,
-    /** Global "model agent" consent; when OFF external plan/respond/visual egress fails closed. */
-    agentConsentEnabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     var sourceExpanded by rememberSaveable(session.sessionId) { mutableStateOf(false) }
@@ -385,7 +377,6 @@ internal fun ReadyCapturedSession(
         onOpenProfile = onOpenProfile,
         onOpenVisualOriginal = { sourceExpanded = true },
         onOpenModelSettings = onOpenModelSettings,
-        consentEnabled = agentConsentEnabled,
         clock = clock,
         conversationEnabled = !session.isEndedWithoutSave,
         headerContent = {

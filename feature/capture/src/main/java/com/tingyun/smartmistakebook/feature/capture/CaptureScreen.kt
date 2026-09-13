@@ -70,7 +70,10 @@ fun CaptureScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     resumeDraftId: String? = null,
-    agentConsentGranted: Boolean = false,
+    // This build may reach a model provider at all; the global "model agent" consent toggle
+    // that used to gate it was removed on 2026-09-13. Whether a round actually runs is
+    // decided per-provider by captureModelReady below.
+    modelEgressAllowed: Boolean = false,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -117,7 +120,7 @@ fun CaptureScreen(
         ?.assessment?.decision
     val assessmentBlocksEntry = assessmentDecision != null &&
         assessmentDecision != CaptureAssessmentDecision.PASS
-    val captureModelConsentGranted = agentConsentGranted &&
+    val captureModelReady = modelEgressAllowed &&
         state.providerCapabilities?.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER &&
         state.providerCapabilities?.supportsImageInput == true
     val candidateKind = if (structuredCandidate != null) {
@@ -425,7 +428,7 @@ fun CaptureScreen(
             onSplitReady = onSplitReady,
             structuredProjection = { structuredProjection },
             buildAssessmentRequest = {
-                requestId, currentDraftId, sourceAssetId, width, height, occurredAt, consent ->
+                requestId, currentDraftId, sourceAssetId, width, height, occurredAt, egressAllowed ->
                 captureAssessmentRequest(
                     requestId = requestId,
                     draftId = currentDraftId,
@@ -434,11 +437,11 @@ fun CaptureScreen(
                     imageWidth = width,
                     imageHeight = height,
                     occurredAtEpochMillis = occurredAt,
-                    agentConsentGranted = consent,
+                    agentConsentGranted = egressAllowed,
                 )
             },
             buildParseRequest = {
-                requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, consent ->
+                requestId, currentDraftId, basisRevision, pages, assessmentIds, occurredAt, egressAllowed ->
                 captureParseRequest(
                     requestId = requestId,
                     draftId = currentDraftId,
@@ -447,7 +450,7 @@ fun CaptureScreen(
                     sourcePages = pages,
                     assessmentRequestIds = assessmentIds,
                     occurredAtEpochMillis = occurredAt,
-                    agentConsentGranted = consent,
+                    agentConsentGranted = egressAllowed,
                 )
             },
         )
@@ -477,7 +480,7 @@ fun CaptureScreen(
         state.assessmentOccurredAtEpochMillis,
         state.assessmentRetryNonce,
         state.providerCapabilities,
-        agentConsentGranted,
+        modelEgressAllowed,
     ) {
         modelTaskCommands.dispatchAssessment(
             provider = state.providerCapabilities,
@@ -485,7 +488,8 @@ fun CaptureScreen(
             sourceAssetId = state.assessmentSourceAssetId,
             draftId = state.draftId,
             occurredAt = state.assessmentOccurredAtEpochMillis,
-            agentConsentGranted = agentConsentGranted,
+            // The gate value doubles as the request envelope's attested grant.
+            egressAllowed = modelEgressAllowed,
         )
     }
 
@@ -500,14 +504,14 @@ fun CaptureScreen(
         state.sourcePages,
         state.parseRetryNonce,
         state.providerCapabilities,
-        agentConsentGranted,
+        modelEgressAllowed,
     ) {
         modelTaskCommands.dispatchParse(
             provider = state.providerCapabilities,
             requestId = state.parseRequestId,
             draftId = state.draftId,
             basisRevision = state.draftRevisionNumber,
-            agentConsentGranted = agentConsentGranted,
+            egressAllowed = modelEgressAllowed,
         )
     }
 
@@ -633,8 +637,8 @@ fun CaptureScreen(
                 )
             }
             if (!candidateUsable) {
-                if (!captureModelConsentGranted) {
-                    CaptureModelAgentConsentBlock(
+                if (!captureModelReady) {
+                    CaptureModelSetupBlock(
                         onOpenSettings = { afterWorkspaceFlush(onOpenModelSettings) },
                         modifier = Modifier.padding(top = 14.dp),
                     )
