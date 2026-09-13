@@ -48,238 +48,6 @@ data class TutorVisualDocumentScene(
         const val MAX_LATTICE_BASIS_SITES = 64
     }
 }
-
-@Serializable
-enum class TutorVisualPanelKind {
-    DIAGRAM_2D,
-    SCENE_3D,
-    SCIENTIFIC_CHART,
-}
-
-@Serializable
-enum class TutorVisualProjection {
-    ORTHOGRAPHIC,
-    PERSPECTIVE,
-}
-
-@Serializable
-data class TutorVisualPanel(
-    val panelId: String,
-    val kind: TutorVisualPanelKind,
-    val title: String? = null,
-    val weight: Double = 1.0,
-    val camera: TutorVisualCamera? = null,
-    val chart: TutorVisualChartConfiguration? = null,
-) {
-    init {
-        panelId.requireTutorSceneId("Tutor visual panel id")
-        title?.requireTutorDocumentText("Tutor visual panel title", TutorVisualDocumentScene.MAX_LABEL_CHARS)
-        weight.requireDocumentNumber("Tutor visual panel weight", 0.1..10.0)
-        when (kind) {
-            TutorVisualPanelKind.DIAGRAM_2D -> require(camera == null && chart == null)
-            TutorVisualPanelKind.SCENE_3D -> require(camera != null && chart == null)
-            TutorVisualPanelKind.SCIENTIFIC_CHART -> require(camera == null && chart != null)
-        }
-    }
-}
-
-@Serializable
-data class TutorVisualCamera(
-    val projection: TutorVisualProjection = TutorVisualProjection.ORTHOGRAPHIC,
-    val target: TutorVisualVector3 = TutorVisualVector3.ZERO,
-    val azimuthDegrees: Double = 35.0,
-    val elevationDegrees: Double = 25.0,
-    val distance: Double = 8.0,
-    val minimumDistance: Double = 2.0,
-    val maximumDistance: Double = 24.0,
-    val allowOrbit: Boolean = true,
-) {
-    init {
-        azimuthDegrees.requireDocumentNumber("Tutor visual camera azimuth", -720.0..720.0)
-        elevationDegrees.requireDocumentNumber("Tutor visual camera elevation", -85.0..85.0)
-        distance.requireDocumentNumber("Tutor visual camera distance", 0.01..10_000.0)
-        minimumDistance.requireDocumentNumber("Tutor visual camera minimum distance", 0.01..10_000.0)
-        maximumDistance.requireDocumentNumber("Tutor visual camera maximum distance", 0.01..10_000.0)
-        require(minimumDistance <= distance && distance <= maximumDistance) {
-            "Tutor visual camera distance is outside its interaction range"
-        }
-    }
-}
-
-@Serializable
-data class TutorVisualChartConfiguration(
-    val xAxisLabel: String,
-    val leftAxisLabel: String,
-    val rightAxisLabel: String? = null,
-    val showLegend: Boolean = true,
-    val allowTouchReadout: Boolean = true,
-    val allowZoom: Boolean = true,
-) {
-    init {
-        xAxisLabel.requireTutorDocumentText("Tutor chart x axis label", TutorVisualDocumentScene.MAX_LABEL_CHARS)
-        leftAxisLabel.requireTutorDocumentText(
-            "Tutor chart left axis label",
-            TutorVisualDocumentScene.MAX_LABEL_CHARS,
-        )
-        rightAxisLabel?.requireTutorDocumentText(
-            "Tutor chart right axis label",
-            TutorVisualDocumentScene.MAX_LABEL_CHARS,
-        )
-    }
-}
-
-@Serializable
-enum class TutorVisualValueSource {
-    GIVEN,
-    DERIVED,
-    ILLUSTRATIVE,
-}
-
-@Serializable
-enum class TutorVisualDimension {
-    DIMENSIONLESS,
-    LENGTH,
-    TIME,
-    MASS,
-    ELECTRIC_CURRENT,
-    TEMPERATURE,
-    AMOUNT_OF_SUBSTANCE,
-    ANGLE,
-    AREA,
-    VOLUME,
-    SPEED,
-    ACCELERATION,
-    FORCE,
-    ENERGY,
-    POWER,
-    PRESSURE,
-    VOLTAGE,
-    RESISTANCE,
-    CHARGE,
-    CONCENTRATION,
-    FREQUENCY,
-    OTHER,
-}
-
-@Serializable
-data class TutorVisualVariable(
-    val variableId: String,
-    val label: String,
-    val value: Double,
-    val unit: String? = null,
-    val dimension: TutorVisualDimension = TutorVisualDimension.DIMENSIONLESS,
-    val source: TutorVisualValueSource,
-    val derivationMarkdown: String? = null,
-    val display: Boolean = source != TutorVisualValueSource.ILLUSTRATIVE,
-) {
-    init {
-        variableId.requireTutorSceneId("Tutor visual variable id")
-        label.requireTutorDocumentText("Tutor visual variable label", TutorVisualDocumentScene.MAX_LABEL_CHARS)
-        value.requireDocumentNumber("Tutor visual variable value", -MAX_ABS_VALUE..MAX_ABS_VALUE)
-        unit?.requireTutorDocumentText("Tutor visual variable unit", MAX_UNIT_CHARS)
-        derivationMarkdown?.requireTutorDocumentText(
-            "Tutor visual variable derivation",
-            MAX_DERIVATION_CHARS,
-            allowLineBreaks = true,
-        )
-        require(source != TutorVisualValueSource.DERIVED || derivationMarkdown != null) {
-            "A derived tutor visual variable must explain its derivation"
-        }
-        require(source != TutorVisualValueSource.GIVEN || derivationMarkdown == null) {
-            "A given tutor visual variable cannot claim a derivation"
-        }
-        require(source != TutorVisualValueSource.ILLUSTRATIVE || !display) {
-            "Illustrative tutor visual variables must never be displayed"
-        }
-    }
-
-    companion object {
-        const val MAX_UNIT_CHARS = 24
-        const val MAX_DERIVATION_CHARS = 300
-        const val MAX_ABS_VALUE = 1_000_000_000_000.0
-    }
-}
-
-@Serializable
-enum class TutorVisualLayer {
-    BACKGROUND,
-    CONTENT,
-    ANNOTATION,
-    FOCUS,
-}
-
-@Serializable
-enum class TutorVisualAnchor {
-    AUTO,
-    TOP,
-    TOP_END,
-    END,
-    BOTTOM_END,
-    BOTTOM,
-    BOTTOM_START,
-    START,
-    TOP_START,
-    CENTER,
-}
-
-@Serializable
-enum class TutorVisualSizeClass {
-    TINY,
-    SMALL,
-    MEDIUM,
-    LARGE,
-    WIDE,
-    TALL,
-}
-
-@Serializable
-data class TutorVisualLayoutHint(
-    val anchor: TutorVisualAnchor = TutorVisualAnchor.AUTO,
-    val preferredX: Double? = null,
-    val preferredY: Double? = null,
-    val order: Int = 0,
-) {
-    init {
-        preferredX?.requireDocumentNumber("Tutor visual preferred x", 0.0..1.0)
-        preferredY?.requireDocumentNumber("Tutor visual preferred y", 0.0..1.0)
-        require(order in -1_000..1_000)
-    }
-}
-
-@Serializable
-data class TutorVisualVector2(
-    val x: Double,
-    val y: Double,
-) {
-    init {
-        x.requireDocumentNumber("Tutor visual x", -MAX_COORDINATE..MAX_COORDINATE)
-        y.requireDocumentNumber("Tutor visual y", -MAX_COORDINATE..MAX_COORDINATE)
-    }
-
-    companion object {
-        const val MAX_COORDINATE = 100_000.0
-        val ZERO = TutorVisualVector2(0.0, 0.0)
-    }
-}
-
-@Serializable
-data class TutorVisualVector3(
-    val x: Double,
-    val y: Double,
-    val z: Double,
-) {
-    init {
-        x.requireDocumentNumber("Tutor visual x", -TutorVisualVector2.MAX_COORDINATE..TutorVisualVector2.MAX_COORDINATE)
-        y.requireDocumentNumber("Tutor visual y", -TutorVisualVector2.MAX_COORDINATE..TutorVisualVector2.MAX_COORDINATE)
-        z.requireDocumentNumber("Tutor visual z", -TutorVisualVector2.MAX_COORDINATE..TutorVisualVector2.MAX_COORDINATE)
-    }
-
-    companion object {
-        val ZERO = TutorVisualVector3(0.0, 0.0, 0.0)
-        val ONE = TutorVisualVector3(1.0, 1.0, 1.0)
-    }
-}
-
 @Serializable
 enum class TutorVisual2DNodeKind {
     POINT,
@@ -310,7 +78,6 @@ enum class TutorVisual2DNodeKind {
     GEOGRAPHIC_LAYER,
     MATERIAL_NODE,
 }
-
 @Serializable
 sealed interface TutorVisualDocumentElement {
     val elementId: String
@@ -319,7 +86,6 @@ sealed interface TutorVisualDocumentElement {
     val initiallyVisible: Boolean
     val accessibilityLabel: String?
 }
-
 @Serializable
 @SerialName("node_2d")
 data class TutorVisual2DNodeElement(
@@ -342,7 +108,6 @@ data class TutorVisual2DNodeElement(
         valueVariableId?.requireTutorSceneId("Tutor visual node value variable id")
     }
 }
-
 @Serializable
 data class TutorVisualConnectionAnchor(
     val elementId: String,
@@ -354,7 +119,6 @@ data class TutorVisualConnectionAnchor(
         portName?.requireTutorDocumentText("Tutor visual port name", 24)
     }
 }
-
 @Serializable
 enum class TutorVisualConnectorKind {
     LINE,
@@ -369,7 +133,6 @@ enum class TutorVisualConnectorKind {
     RAY,
     FORCE,
 }
-
 @Serializable
 enum class TutorVisualRouteKind {
     AUTO_ORTHOGONAL,
@@ -377,7 +140,6 @@ enum class TutorVisualRouteKind {
     POLYLINE,
     BEZIER,
 }
-
 @Serializable
 @SerialName("connector_2d")
 data class TutorVisual2DConnectorElement(
@@ -417,14 +179,12 @@ data class TutorVisual2DConnectorElement(
         )
     }
 }
-
 @Serializable
 enum class TutorVisualParticleMotion {
     STATIC,
     RANDOM_DRIFT,
     FOLLOW_PATH,
 }
-
 @Serializable
 @SerialName("particle_group_2d")
 data class TutorVisualParticleGroupElement(
@@ -450,7 +210,6 @@ data class TutorVisualParticleGroupElement(
         require(motion != TutorVisualParticleMotion.FOLLOW_PATH || pathElementId != null)
     }
 }
-
 @Serializable
 enum class TutorVisualGeometry3DKind {
     SPHERE,
@@ -463,7 +222,6 @@ enum class TutorVisualGeometry3DKind {
     GROUP,
     AXES,
 }
-
 @Serializable
 data class TutorVisualTransform3D(
     val translation: TutorVisualVector3 = TutorVisualVector3.ZERO,
@@ -476,7 +234,6 @@ data class TutorVisualTransform3D(
         }
     }
 }
-
 @Serializable
 @SerialName("geometry_3d")
 data class TutorVisualGeometry3DElement(
@@ -503,7 +260,6 @@ data class TutorVisualGeometry3DElement(
         }
     }
 }
-
 @Serializable
 data class TutorVisualLatticeBasisSite(
     val fractionalCoordinate: TutorVisualVector3,
@@ -520,7 +276,6 @@ data class TutorVisualLatticeBasisSite(
         ) { "Tutor lattice fractional coordinates are outside the supported boundary range" }
     }
 }
-
 @Serializable
 data class TutorVisualRepeat3D(
     val x: Int = 1,
@@ -533,7 +288,6 @@ data class TutorVisualRepeat3D(
 
     val count: Int get() = x * y * z
 }
-
 @Serializable
 @SerialName("lattice_3d")
 data class TutorVisualLatticeElement(
@@ -560,101 +314,11 @@ data class TutorVisualLatticeElement(
         label?.requireTutorDocumentText("Tutor lattice label", TutorVisualDocumentScene.MAX_LABEL_CHARS)
     }
 }
-
-@Serializable
-enum class TutorVisualChartSeriesKind {
-    LINE,
-    SCATTER,
-    BAR,
-}
-
-@Serializable
-enum class TutorVisualChartAxis {
-    LEFT,
-    RIGHT,
-}
-
-@Serializable
-data class TutorVisualChartPoint(
-    val x: Double,
-    val y: Double,
-) {
-    init {
-        x.requireDocumentNumber("Tutor chart x", -TutorVisualVariable.MAX_ABS_VALUE..TutorVisualVariable.MAX_ABS_VALUE)
-        y.requireDocumentNumber("Tutor chart y", -TutorVisualVariable.MAX_ABS_VALUE..TutorVisualVariable.MAX_ABS_VALUE)
-    }
-}
-
-@Serializable
-@SerialName("chart_series")
-data class TutorVisualChartSeriesElement(
-    override val elementId: String,
-    override val panelId: String,
-    val label: String,
-    val kind: TutorVisualChartSeriesKind,
-    val axis: TutorVisualChartAxis = TutorVisualChartAxis.LEFT,
-    val points: List<TutorVisualChartPoint>,
-    val source: TutorVisualValueSource,
-    override val layer: TutorVisualLayer = TutorVisualLayer.CONTENT,
-    override val initiallyVisible: Boolean = true,
-    override val accessibilityLabel: String? = label,
-) : TutorVisualDocumentElement {
-    init {
-        requireDocumentElementHeader(elementId, panelId, accessibilityLabel)
-        label.requireTutorDocumentText("Tutor chart series label", TutorVisualDocumentScene.MAX_LABEL_CHARS)
-        require(points.isNotEmpty() && points.size <= TutorVisualDocumentScene.MAX_CHART_POINTS_PER_SERIES)
-        require(source != TutorVisualValueSource.ILLUSTRATIVE) {
-            "Illustrative values cannot be plotted on a student-visible chart"
-        }
-        require(points.zipWithNext().all { (left, right) -> left.x <= right.x }) {
-            "Tutor chart points must be ordered by x"
-        }
-    }
-}
-
-@Serializable
-enum class TutorVisualChartAnnotationKind {
-    MARKER,
-    VERTICAL_GUIDE,
-    HORIZONTAL_GUIDE,
-    INTERVAL,
-}
-
-@Serializable
-@SerialName("chart_annotation")
-data class TutorVisualChartAnnotationElement(
-    override val elementId: String,
-    override val panelId: String,
-    val kind: TutorVisualChartAnnotationKind,
-    val label: String? = null,
-    val xVariableId: String? = null,
-    val yVariableId: String? = null,
-    val endXVariableId: String? = null,
-    override val layer: TutorVisualLayer = TutorVisualLayer.ANNOTATION,
-    override val initiallyVisible: Boolean = true,
-    override val accessibilityLabel: String? = label,
-) : TutorVisualDocumentElement {
-    init {
-        requireDocumentElementHeader(elementId, panelId, accessibilityLabel)
-        label?.requireTutorDocumentText("Tutor chart annotation label", TutorVisualDocumentScene.MAX_LABEL_CHARS)
-        listOfNotNull(xVariableId, yVariableId, endXVariableId).forEach {
-            it.requireTutorSceneId("Tutor chart annotation variable id")
-        }
-        when (kind) {
-            TutorVisualChartAnnotationKind.MARKER -> require(xVariableId != null && yVariableId != null)
-            TutorVisualChartAnnotationKind.VERTICAL_GUIDE -> require(xVariableId != null)
-            TutorVisualChartAnnotationKind.HORIZONTAL_GUIDE -> require(yVariableId != null)
-            TutorVisualChartAnnotationKind.INTERVAL -> require(xVariableId != null && endXVariableId != null)
-        }
-    }
-}
-
 @Serializable
 enum class TutorVisualBindingTarget {
     ELEMENT,
     PANEL,
 }
-
 @Serializable
 enum class TutorVisualBindingProperty {
     X,
@@ -676,7 +340,6 @@ enum class TutorVisualBindingProperty {
     CAMERA_ELEVATION_DEGREES,
     CAMERA_DISTANCE,
 }
-
 @Serializable
 data class TutorVisualBinding(
     val bindingId: String,
@@ -690,7 +353,6 @@ data class TutorVisualBinding(
         targetId.requireTutorSceneId("Tutor visual binding target id")
     }
 }
-
 @Serializable
 enum class TutorVisualDocumentExpressionOperation {
     CONSTANT,
@@ -711,7 +373,6 @@ enum class TutorVisualDocumentExpressionOperation {
     CLAMP,
     LERP,
 }
-
 @Serializable
 data class TutorVisualDocumentExpression(
     val operation: TutorVisualDocumentExpressionOperation,
@@ -791,17 +452,6 @@ data class TutorVisualDocumentExpression(
         )
     }
 }
-
-@Serializable
-data class TutorVisualCameraStep(
-    val panelId: String,
-    val camera: TutorVisualCamera,
-) {
-    init {
-        panelId.requireTutorSceneId("Tutor visual step camera panel id")
-    }
-}
-
 @Serializable
 data class TutorVisualStep(
     val stepId: String,
@@ -981,7 +631,7 @@ private object TutorVisualDocumentValidator {
     }
 }
 
-private fun TutorVisualDocumentElement.supportedPanelKind(): TutorVisualPanelKind = when (this) {
+internal fun TutorVisualDocumentElement.supportedPanelKind(): TutorVisualPanelKind = when (this) {
     is TutorVisual2DNodeElement,
     is TutorVisual2DConnectorElement,
     is TutorVisualParticleGroupElement,
@@ -994,7 +644,7 @@ private fun TutorVisualDocumentElement.supportedPanelKind(): TutorVisualPanelKin
     -> TutorVisualPanelKind.SCIENTIFIC_CHART
 }
 
-private fun TutorVisualDocumentElement.referencedElementIds(): List<String> = when (this) {
+internal fun TutorVisualDocumentElement.referencedElementIds(): List<String> = when (this) {
     is TutorVisual2DNodeElement,
     is TutorVisualLatticeElement,
     is TutorVisualChartSeriesElement,
@@ -1005,7 +655,7 @@ private fun TutorVisualDocumentElement.referencedElementIds(): List<String> = wh
     is TutorVisualGeometry3DElement -> listOfNotNull(parentElementId)
 }
 
-private fun TutorVisualDocumentElement.referencedVariableIds(): List<String> = when (this) {
+internal fun TutorVisualDocumentElement.referencedVariableIds(): List<String> = when (this) {
     is TutorVisual2DNodeElement -> listOfNotNull(valueVariableId)
     is TutorVisual2DConnectorElement -> listOfNotNull(valueVariableId)
     is TutorVisualChartAnnotationElement -> listOfNotNull(xVariableId, yVariableId, endXVariableId)
@@ -1016,14 +666,14 @@ private fun TutorVisualDocumentElement.referencedVariableIds(): List<String> = w
     -> emptyList()
 }
 
-private fun TutorVisualDocumentElement.runtimeInstanceCount(): Int = when (this) {
+internal fun TutorVisualDocumentElement.runtimeInstanceCount(): Int = when (this) {
     is TutorVisualParticleGroupElement -> instanceCount
     is TutorVisualGeometry3DElement -> maxOf(1, instanceTransforms.size)
     is TutorVisualLatticeElement -> basis.size * repeat.count
     else -> 1
 }
 
-private fun TutorVisualDocumentElement.textParts(): List<String> = when (this) {
+internal fun TutorVisualDocumentElement.textParts(): List<String> = when (this) {
     is TutorVisual2DNodeElement -> listOfNotNull(label, accessibilityLabel)
     is TutorVisual2DConnectorElement -> listOfNotNull(label, accessibilityLabel)
     is TutorVisualParticleGroupElement -> listOfNotNull(label, accessibilityLabel)
@@ -1033,7 +683,7 @@ private fun TutorVisualDocumentElement.textParts(): List<String> = when (this) {
     is TutorVisualChartAnnotationElement -> listOfNotNull(label, accessibilityLabel)
 }
 
-private fun TutorVisualBindingTarget.accepts(property: TutorVisualBindingProperty): Boolean = when (this) {
+internal fun TutorVisualBindingTarget.accepts(property: TutorVisualBindingProperty): Boolean = when (this) {
     TutorVisualBindingTarget.ELEMENT -> property !in setOf(
         TutorVisualBindingProperty.CAMERA_AZIMUTH_DEGREES,
         TutorVisualBindingProperty.CAMERA_ELEVATION_DEGREES,
@@ -1046,7 +696,7 @@ private fun TutorVisualBindingTarget.accepts(property: TutorVisualBindingPropert
     )
 }
 
-private fun requireDocumentElementHeader(
+internal fun requireDocumentElementHeader(
     elementId: String,
     panelId: String,
     accessibilityLabel: String?,
@@ -1059,7 +709,7 @@ private fun requireDocumentElementHeader(
     )
 }
 
-private fun String.requireTutorDocumentText(
+internal fun String.requireTutorDocumentText(
     label: String,
     maxChars: Int,
     allowLineBreaks: Boolean = false,
@@ -1067,7 +717,7 @@ private fun String.requireTutorDocumentText(
     requireTutorSceneText(label, maxChars, allowLineBreaks)
 }
 
-private fun Double.requireDocumentNumber(
+internal fun Double.requireDocumentNumber(
     label: String,
     range: ClosedFloatingPointRange<Double>,
 ) {
