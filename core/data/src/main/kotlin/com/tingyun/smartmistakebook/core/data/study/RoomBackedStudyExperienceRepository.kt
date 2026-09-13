@@ -238,6 +238,9 @@ class RoomBackedStudyExperienceRepository(
         reviewLogSink = reviewLogSink,
         predictionAuditService = predictionAuditService,
         schedulingSettingsStore = schedulingSettingsStore,
+        // 排期与曲线正在用的那一组（审计 N-30）：保持率建议读它，不读设置存储，
+        // 这样"同一进程里建议说一个数、排期说另一个数"在装配上不可表达。
+        fsrsParameters = fsrsParameters,
         clock = clock,
         learnerSnapshot = { currentLearnerSnapshot() },
     )

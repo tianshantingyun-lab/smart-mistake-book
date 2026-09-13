@@ -33,6 +33,12 @@ internal class StudySchedulingCalibration(
     private val reviewLogSink: ReviewLogSink,
     private val predictionAuditService: HLRPredictionAuditService,
     private val schedulingSettingsStore: SchedulingSettingsStore?,
+    /**
+     * 排期与曲线**正在用**的那一组（审计 N-30）。与 `RoomBackedStudyExperienceRepository`
+     * 的 `fsrsParameters` 是同一个实例：保持率建议必须与排期说同一件事，否则同一进程里
+     * 会出现两个数字。这里收一个值而不是去读设置存储，正是为了让它**不可能**再分叉。
+     */
+    private val fsrsParameters: DoubleArray,
     private val clock: Clock,
     private val learnerSnapshot: suspend () -> LearnerSnapshot,
 ) {
@@ -98,6 +104,22 @@ internal class StudySchedulingCalibration(
     }
 
 
+    /**
+     * Experimental CMRR-style desired-retention recommendation over the learner's current
+     * memory states (研究 2026-09-09 §5). Null when too few cards carry memory to simulate
+     * anything meaningful.
+     *
+     * **用哪一组参数：与排期/曲线同一组（审计 N-30）。** 原先这里读
+     * `schedulingSettingsStore.optimizedParameters.first()`——那是这族参数的**第三个来源**：
+     * repository 构造得更早，把当时的值解析进 `fsrsParameters`，而启动期那次
+     * `optimizeSchedulingParameters()` 会往设置存储里写回新的一组。于是从"拟合写回"到
+     * "下次启动"这段窗口里，**排期用旧那组、这条建议用新那组**，同一进程内两个数字。
+     *
+     * 收成"读排期实际在用的那一组"，而不是"读最新的那一组"：后者要让排期也跟着换，
+     * 那与 spec §2.20「读在构造时、一次会话内模型稳定」直接冲突——而这里给出的只是**建议**
+     * （用户据此设目标保持率），滞后一次拟合的代价远小于会话中途换模型。两组参数在下次启动
+     * 自动对齐。`recommendedDesiredRetentionFollowsTheParametersSchedulingUses` 钉住这条。
+     */
     suspend fun recommendedDesiredRetention(): OptimalRetention.Recommendation? {
         val snapshot = learnerSnapshot()
         val cards = snapshot.problemMemoryStates.values.map { memory ->
@@ -106,11 +128,7 @@ internal class StudySchedulingCalibration(
                 difficulty = memory.difficulty,
             )
         }
-        val parameters = schedulingSettingsStore
-            ?.optimizedParameters
-            ?.first()
-            ?: FsrsScheduleMath.DEFAULT_PARAMETERS
-        return OptimalRetention.recommend(cards, parameters)
+        return OptimalRetention.recommend(cards, fsrsParameters)
     }
 
 

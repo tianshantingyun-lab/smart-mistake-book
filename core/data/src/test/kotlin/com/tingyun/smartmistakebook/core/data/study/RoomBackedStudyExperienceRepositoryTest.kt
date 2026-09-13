@@ -117,6 +117,7 @@ import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
 import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
+import com.tingyun.smartmistakebook.core.domain.OptimalRetention
 import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
 import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
@@ -158,6 +159,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -1384,6 +1386,68 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     @Test
+    fun recommendedDesiredRetentionFollowsTheParametersSchedulingUses() = runBlocking {
+        // 审计 N-30：这族参数在生产里曾有**第三个来源**——保持率建议读设置存储里"最新拟合"
+        // 的那一组，而排期与曲线用 repository 构造时解析的那一组。启动期那次
+        // optimizeSchedulingParameters() 把新值写回存储之后、到下次启动之前，同一进程内
+        // 排期说一个数、建议说另一个数（`SmartMistakeBookRoot` 正是在那个窗口里取这条建议的）。
+        //
+        // 收口的方向是"建议读**排期实际在用的那一组**"，而不是"读最新的那一组"：后者要让排期
+        // 也跟着换，那与 spec §2.20「读在构造时、一次会话内模型稳定」直接冲突；而这里给出的
+        // 只是**建议**（用户据此设目标保持率），滞后一次拟合远好过会话中途换模型。
+        //
+        // 判别格是**存储里那一组 ≠ 排期那一组**：若改回读存储，本条立刻变红。
+        val schedulingParameters = FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf().also {
+            it[DECAY_PARAMETER_INDEX] = -0.5
+        }
+        val storeParameters = FsrsScheduleMath.DEFAULT_PARAMETERS
+        val database = FakeStudyDatabasePort().apply {
+            publishUniformMemoryStates(count = RETENTION_FIXTURE_CARDS)
+        }
+        val store = RecordingSchedulingSettingsStore().apply {
+            setOptimizedParameters(storeParameters)
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(
+            database = database,
+            applicationScope = applicationScope,
+            schedulingSettingsStore = store,
+            optimizedFsrsParameters = schedulingParameters,
+        )
+
+        try {
+            repository.initialize()
+            val actual = repository.recommendedDesiredRetention()
+
+            val cards = List(RETENTION_FIXTURE_CARDS) {
+                OptimalRetention.Card(stabilityDays = UNIFORM_STABILITY_DAYS, difficulty = UNIFORM_DIFFICULTY)
+            }
+            val asSchedulingSees = OptimalRetention.recommend(cards, schedulingParameters)
+            val ifItReadTheStore = OptimalRetention.recommend(cards, storeParameters)
+
+            assertNotNull(
+                "前置：卡数要够 MIN_CARDS，否则两个候选都是 null，判别力为零",
+                asSchedulingSees,
+            )
+            assertNotEquals(
+                "夹具本身要成立：这两组参数必须给出**不同**的建议，否则本条分不出读的是哪一边",
+                requireNotNull(asSchedulingSees).desiredRetention,
+                requireNotNull(ifItReadTheStore).desiredRetention,
+                1e-12,
+            )
+            assertEquals(
+                "建议必须与排期/曲线同一组参数（审计 N-30）",
+                requireNotNull(asSchedulingSees).desiredRetention,
+                requireNotNull(actual).desiredRetention,
+                0.0,
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
     fun aHealthyProblemIsNotForcedIntoReTeaching() = runBlocking {
         // 反例：没有 leech 的题不该被强制重教——否则重教会退化成每次复习都开场的常规动作，
         // 把"重教材料"这个信号的稀缺性和可信度一并耗光。
@@ -2025,6 +2089,12 @@ class RoomBackedStudyExperienceRepositoryTest {
         const val DAY_MILLIS = 86_400_000L
 
         /** Curated M1 unit whose artifact carries a knowledge-node scope (spec §2.16 fixtures). */
+        /** `FsrsScheduleMath` 里衰减那一位（F-01）：`decay = -w20`。 */
+        const val DECAY_PARAMETER_INDEX = 20
+        const val RETENTION_FIXTURE_CARDS = 24
+        const val UNIFORM_STABILITY_DAYS = 4.0
+        const val UNIFORM_DIFFICULTY = 5.0
+
         const val M1_LEECH_PRACTICE_UNIT_ID = "practice:m1:closed-interval-extrema:whole"
 
         /** The node the M1 artifact declares, and the node teaching material binds to. */
@@ -2281,6 +2351,41 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
             snapshot = LearnerSnapshot(
                 learnerId = "learner:local",
                 problemMemoryStates = mapOf(practiceUnitId to leeched),
+                checkpoint = ProjectionCheckpoint(
+                    lastSequence = 1,
+                    projectorVersion = LearningProjector.VERSION,
+                    projectedAtEpochMillis = 10L * 86_400_000L,
+                ),
+                generatedAtEpochMillis = 10L * 86_400_000L,
+            ),
+        )
+        learningLedgerHead.value = 1
+    }
+
+    /**
+     * 发布 [count] 张**参数相同**的记忆卡。相同是刻意的：`OptimalRetention.recommend` 对同一组
+     * 参数 × 同一组卡给出同一结果，测试因此能**独立复算期望值**，而不必去读私有投影。
+     */
+    fun publishUniformMemoryStates(count: Int, stabilityDays: Double = 4.0, difficulty: Double = 5.0) {
+        val states = (1..count).associate { index ->
+            "unit-retention-$index" to ProblemMemoryState(
+                practiceUnitId = "unit-retention-$index",
+                stabilityDays = stabilityDays,
+                difficulty = difficulty,
+                lastReviewedAtEpochMillis = 10L * 86_400_000L,
+                nextReviewAtEpochMillis = 12L * 86_400_000L,
+                lastAttemptId = "attempt:retention-$index",
+                projectorVersion = LearningProjector.VERSION,
+                checkpointSequence = 1,
+            )
+        }
+        persistedLearnerSnapshot = PersistedLearnerSnapshot(
+            projectionName = "study-experience-v1",
+            stateVersion = 1,
+            knownLedgerHeadSequence = 1,
+            snapshot = LearnerSnapshot(
+                learnerId = "learner:local",
+                problemMemoryStates = states,
                 checkpoint = ProjectionCheckpoint(
                     lastSequence = 1,
                     projectorVersion = LearningProjector.VERSION,
