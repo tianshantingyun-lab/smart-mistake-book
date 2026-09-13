@@ -26,6 +26,7 @@ import com.tingyun.smartmistakebook.feature.review.CapturedReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.tutor.SavedMistakeTutorRoute
 import com.tingyun.smartmistakebook.feature.tutor.buildTutorDebriefRequestForApp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -102,9 +103,21 @@ internal fun ReviewSessionDestination(
     ) {
         val requestedId = displayedPracticeUnitId
         value = TeachingArtifactLoad(practiceUnitId = requestedId)
-        val loadedArtifact = requestedId
-            ?.takeIf { experience.status == StudyDataStatus.READY }
-            ?.let { repository.teachingArtifact(it) }
+        val readyToRead = requestedId != null && experience.status == StudyDataStatus.READY
+        // 题干读取是**必需**的，所以它不像下面两张可选卡那样降级成 null：读失败要说出来
+        // （审计 N-12），而不是让 `isLoaded` 永远停在 false、界面永远停在「正在读取题目…」。
+        val loadedArtifact = try {
+            if (readyToRead) repository.teachingArtifact(requireNotNull(requestedId)) else null
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Throwable) {
+            value = TeachingArtifactLoad(
+                practiceUnitId = requestedId,
+                isLoaded = true,
+                loadFailureDiagnosticId = teachingArtifactFailureDiagnosticId(failure),
+            )
+            return@produceState
+        }
         currentCoroutineContext().ensureActive()
         // Spec §2.16 re-teach opening, loaded in the same round trip as the
         // artifact: only a leeched card yields one, so this stays a null lookup
@@ -112,9 +125,9 @@ internal fun ReviewSessionDestination(
         // revealAnswer — that path records a "saw the answer" event, which would
         // turn the student's next attempt into a post-reveal attempt.
         //
-        // Both optional cards below load through loadOptionalSessionCard: a
-        // failure in this produceState block would otherwise escape into the
-        // composition's coroutine and take the session down (audit N-03).
+        // 它仍然以 `artifact != null` 为门：这条通道的 KC 范围目前**仍取自策展件**
+        // （`RoomBackedStudyExperienceRepository.reTeachOpening`），实拍题拿不到范围，
+        // 放开这道门只会多一次必然返回 null 的查询。同一类问题登记在案，未在本批改动内。
         val reTeachOpening = if (loadedArtifact != null) {
             loadOptionalSessionCard { repository.reTeachOpening(requireNotNull(requestedId)) }
         } else {
@@ -122,7 +135,12 @@ internal fun ReviewSessionDestination(
         }
         // Spec §2.9 prerequisite remediation, same round trip. Independent of the
         // leech opening: a card can be both, and neither implies the other.
-        val prerequisiteRemediation = if (loadedArtifact != null) {
+        //
+        // 它的门是 `readyToRead` 而**不是** `artifact != null`（审计批 2 第 3 项／S-5）：
+        // 实拍题没有策展件是**正常**的，而补救要的是题库里的 KC 范围与讲解材料——以策展件
+        // 为门等于把这条通道整个锁在 debug 的演示内容里，生产里一张卡都拿不到补救。
+        // 两张卡都走 loadOptionalSessionCard：这里抛出去会顺着组合的协程把会话带走（N-03）。
+        val prerequisiteRemediation = if (readyToRead) {
             loadOptionalSessionCard { repository.prerequisiteRemediation(requireNotNull(requestedId)) }
         } else {
             null
@@ -178,6 +196,13 @@ internal fun ReviewSessionDestination(
             ordinal == null || queueSize == null -> ReviewSessionGateMessage(
                 "正在确认本机复习会话…",
             )
+        // 读失败必须在「还在读」之前判掉（审计 N-12）：两者都可能让 `isLoaded` 为 false，
+        // 但只有这条说得出发生了什么、以及下一步做什么。
+        artifactLoad.loadFailureDiagnosticId != null -> ReviewSessionGateMessage(
+            teachingArtifactFailureMessage(
+                requireNotNull(artifactLoad.loadFailureDiagnosticId),
+            ),
+        )
         !artifactLoad.isLoaded || artifactLoad.practiceUnitId != practiceUnitId ->
             ReviewSessionGateMessage("正在读取题目…")
         artifactLoad.artifact != null -> ReviewSessionScreen(
@@ -224,6 +249,9 @@ internal fun ReviewSessionDestination(
             presentationId = "presentation:review:$sessionId:$sessionVersion:$practiceUnitId",
             queuePosition = ordinal + 1,
             queueSize = queueSize,
+            // Spec §2.9：实拍题也要拿得到前置补救。这条参数是本批（批 2 第 3 项）新加的——
+            // 在它之前，补救只在策展屏上渲染，而实拍题走的是本屏，于是生产里从不出现。
+            prerequisiteRemediation = artifactLoad.prerequisiteRemediation,
             onSubmit = { submission ->
                 repository.submitReviewSelfReport(
                     sessionId = sessionId,

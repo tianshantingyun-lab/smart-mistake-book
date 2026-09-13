@@ -37,6 +37,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediation
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
@@ -74,6 +75,18 @@ fun CapturedReviewSessionScreen(
     onSubmitRating: suspend (StudyReviewRatingSubmission) -> StudyReviewRatingSubmissionResult,
     onContinue: (StudyReviewAdvanceResult) -> Unit,
     onNeedsTutor: (StudyReviewSelfReportSubmissionResult) -> Unit,
+    /**
+     * 前置补救（spec §2.9）：本题的某个前置 KC 未达可学门槛时，把**那个前置**的讲解材料
+     * 摆在题干旁。
+     *
+     * 为什么这个参数长在这里（审计批 2 第 3 项）：补救原先只在策展屏
+     * （[ReviewSessionScreen]）上渲染，而实拍题走的是**本屏**——于是它在生产里从来没有
+     * 出现过，即使数据层已经把材料查了出来。§2.9 要求的是"gap>0 时注入补救项"，
+     * 不区分题的来源。
+     *
+     * 与 [ReviewSessionScreen] 同一处摆放、同一条规则：**不拦作答**，没有确认按钮。
+     */
+    prerequisiteRemediation: PrerequisiteRemediation? = null,
     modifier: Modifier = Modifier,
 ) {
     val state: CapturedReviewSessionViewModel = viewModel(key = presentationId)
@@ -160,6 +173,13 @@ fun CapturedReviewSessionScreen(
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader(title = entry.title)
         Spacer(Modifier.height(12.dp))
+        // 前置补救（spec §2.9）：与策展屏同一处摆放——题干正上方、不进滚动区之外，
+        // 且**不拦作答**（本屏没有确认门）。
+        val remediation = prerequisiteRemediation
+        if (remediation != null) {
+            PrerequisiteRemediationCard(remediation = remediation)
+            Spacer(Modifier.height(12.dp))
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()

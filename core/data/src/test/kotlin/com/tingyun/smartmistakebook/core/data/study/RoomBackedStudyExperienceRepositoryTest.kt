@@ -1402,6 +1402,78 @@ class RoomBackedStudyExperienceRepositoryTest {
     }
 
     @Test
+    fun aCapturedQuestionGetsRemediationFromTheLibraryAloneWithNoFixtureSource() = runBlocking {
+        // 审计 §3 S-5：这条通道原先以 `teachingArtifact(practiceUnitId) ?: return null` 起手，
+        // 而 teachingArtifact 在 release 里恒为 null（EmptyStudyFixtureSource）——于是**只有**
+        // debug 的策展内容拿得到补救，学生真正拍下来的题一道都拿不到。
+        //
+        // 这条用例把夹具**整个撤掉**（空夹具源 ＋ 不播种策展包），只留题库里真实存在的行：
+        // 错题行（带它的 KC 范围）、前置关系、前置节点、绑定的讲解材料、掌握度。
+        // 这正是 release 的形状。它红过——修好之前 `prerequisiteRemediation` 返回 null。
+        val unitId = "unit-captured-prereq"
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(
+                MistakeRecord(
+                    entryId = "entry-captured-prereq",
+                    problemId = "problem-captured-prereq",
+                    problemRevisionId = "revision-captured-prereq",
+                    practiceUnitId = unitId,
+                    sourceKey = "capture:captured-prereq",
+                    subject = "MATH",
+                    title = "拍下来的一道题",
+                    problemMarkdown = "判断该函数在闭区间上的单调性。",
+                    status = "ACTIVE",
+                    createdAtEpochMillis = 1_000,
+                    nextReviewAtEpochMillis = null,
+                    retrievability = null,
+                    knowledgeNodeIds = setOf(PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID),
+                ),
+            )
+            addPrerequisiteRelation(
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                dependentKnowledgeNodeId = PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID,
+            )
+            addKnowledgeNode(PREREQ_NODE_ID, displayName = "从图像读取单调性")
+            addBoundTeachingMaterial(
+                materialId = "material:prereq:misconception",
+                knowledgeNodeId = PREREQ_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只按局部形状下结论，是读图判断单调性最常见的错误。",
+            )
+            publishMastery(
+                dependentKnowledgeNodeId = PREREQ_DEPENDENT_KNOWLEDGE_NODE_ID,
+                dependentMastery = 0.9,
+                prerequisiteKnowledgeNodeId = PREREQ_NODE_ID,
+                prerequisiteMastery = 0.2,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(
+            database = database,
+            applicationScope = applicationScope,
+            initialFixture = null,
+            fixtureSource = EmptyStudyFixtureSource,
+        )
+
+        try {
+            repository.initialize()
+            val remediation = repository.prerequisiteRemediation(unitId)
+
+            assertNotNull(
+                "空夹具下，实拍题也必须拿得到补救：范围来自题库，不是策展内容",
+                remediation,
+            )
+            assertEquals("从图像读取单调性", requireNotNull(remediation).prerequisiteName)
+            assertTrue(
+                requireNotNull(remediation).markdown.contains("只按局部形状下结论"),
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
     fun aProblemWhosePrerequisitesAreReadyOffersNoRemediation() = runBlocking {
         // 反例：前置已具备时不该弹补救卡。否则每一个有前置关系的题都会变成关卡，
         // "前置缺失"这个信号会退化成常态噪声。
@@ -1614,13 +1686,14 @@ class RoomBackedStudyExperienceRepositoryTest {
             ZoneId.of("Asia/Shanghai"),
         ),
         initialFixture: StudySeedBundle? = M1CuratedStudySeed.bundle(includeTutorMistake = false),
+        fixtureSource: StudyFixtureSource = M1CuratedFixtureSource,
     ) = RoomBackedStudyExperienceRepository(
         database = database,
         applicationScope = applicationScope,
         clock = clock,
         studyZoneId = ZoneId.of("Asia/Shanghai"),
         initialFixture = initialFixture,
-        fixtureSource = M1CuratedFixtureSource,
+        fixtureSource = fixtureSource,
     )
 
     private fun visualIngestMistake(
@@ -2627,6 +2700,16 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
                     createdAtEpochMillis = entry.acceptedAtEpochMillis,
                     nextReviewAtEpochMillis = null,
                     retrievability = null,
+                    // 生产里这一列由 `ProblemDao.observeActiveMistakes` 的子查询从
+                    // `practice_unit_knowledge_binding` 现算（当前修订）；夹具必须一样地算，
+                    // 否则"这道题绑在哪些 KC 上"在测试里恒为空——而前置补救（spec §2.9）
+                    // 正是按它判定范围的（审计 §3 S-5）。这里同样按当前修订过滤。
+                    knowledgeNodeIds = bundle.knowledgeBindings
+                        .filter { binding ->
+                            binding.practiceUnitId == entry.practiceUnitId &&
+                                binding.basisRevisionId == entry.currentRevisionId
+                        }
+                        .mapTo(linkedSetOf()) { binding -> binding.knowledgeNodeId },
                 )
                 insertedEntries++
             }

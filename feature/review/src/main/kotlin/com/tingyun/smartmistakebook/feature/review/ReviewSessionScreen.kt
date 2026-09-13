@@ -522,7 +522,7 @@ private fun ReTeachOpeningCard(
  * 同等醒目，否则每个有前置缺口的题都会看起来像一道关卡。
  */
 @Composable
-private fun PrerequisiteRemediationCard(remediation: PrerequisiteRemediation) {
+internal fun PrerequisiteRemediationCard(remediation: PrerequisiteRemediation) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()

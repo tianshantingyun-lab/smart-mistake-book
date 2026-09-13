@@ -508,16 +508,21 @@ class RoomBackedStudyExperienceRepository(
      *
      * 材料按**前置 KC 自己的科目**检索：`TutorTeachingReferenceSelector` 会按 subject 过滤，
      * 用题目的科目去查在两者不一致时会静默拿到空集。顺序仍由生产选择器给出。
+     *
+     * **本题的 KC 范围取自题库自身，不取自策展夹具**（审计 §3 **S-5**／`remediation-gated-on-debug-fixture`）。
+     * 原实现以 `teachingArtifact(practiceUnitId) ?: return null` 起手，而 `teachingArtifact` 在
+     * release 里恒为 null（[EmptyStudyFixtureSource]），于是这条通道**只在 debug 的策展内容上存在**：
+     * 学生真正拍下来的题一道都拿不到补救。改成读 [currentKnowledgeScopeOf] 之后，策展题与
+     * 实拍题走同一条路——因为两者的绑定关系本来就都在同一个库里。
      */
     override suspend fun prerequisiteRemediation(
         practiceUnitId: String,
     ): PrerequisiteRemediation? {
-        val artifact = teachingArtifact(practiceUnitId) ?: return null
-        if (artifact.knowledgeNodeIds.isEmpty()) return null
+        val knowledgeNodeIds = currentKnowledgeScopeOf(practiceUnitId) ?: return null
         val snapshot = currentLearnerSnapshot()
-        val graph = knowledgePrerequisites.graphFor(artifact.knowledgeNodeIds)
+        val graph = knowledgePrerequisites.graphFor(knowledgeNodeIds)
         val blocking = KnowledgeReadiness.weakestBlockingPrerequisite(
-            knowledgeNodeIds = artifact.knowledgeNodeIds,
+            knowledgeNodeIds = knowledgeNodeIds,
             prerequisitesByNode = graph.prerequisitesByDependent,
             masteryScoreOf = { knowledgeNodeId ->
                 snapshot.knowledgeMasteryStates[knowledgeNodeId]?.conservativeMasteryScore
@@ -535,6 +540,32 @@ class RoomBackedStudyExperienceRepository(
             references = references,
         )
     }
+
+    /**
+     * 这道题**当前**绑定在哪些 KC 上——取自错题读侧（`knowledge_node_ids`），那里已经是
+     * 「当前修订 ＋ 最近一次组织轮」的语义（见 `ProblemDao.observeActiveMistakes`），
+     * 与排程、视觉归因读的是同一份结论。
+     *
+     * 空集合一律返回 null（＝不提供补救），而不是拿一个猜的范围去查：一道尚未归类、
+     * 或只挂着伪归因占位的题，**没有**可言的 KC 范围，[ReTeachInjection] 那条通道对
+     * "没有记录范围"的取舍与此相同。
+     *
+     * 消灭的失败：补救通道原先依赖策展夹具给出的 `knowledgeNodeIds`，而那张表只覆盖
+     * 演示内容——实拍题永远返回 null，且**没有任何测试会发现**，因为既有用例全都显式
+     * 注入 `M1CuratedFixtureSource`（审计 S-5）。
+     *
+     * **取数的代价，写在这里以便将来评估**：这一步会**整读一次错题目录**（`observeMistakes`
+     * 的目录视图带 per-row 子查询），而它在会话里是**每张卡加载时一次**。选它而不选
+     * `latestMistakes` 那个缓存，是因为那个缓存只在写路径上刷新——用户重新归类一道题之后
+     * 它仍留着旧范围，而补救正是按范围取材料的（陈旧范围＝给错的前置讲错的内容）。
+     * 库到数千题、或这个调用点变成每卡多次时，正确的做法是加一个**只按
+     * `practice_unit_id` 取 KC 范围**的定向查询，而不是退回缓存。
+     */
+    private suspend fun currentKnowledgeScopeOf(practiceUnitId: String): Set<String>? =
+        database.observeMistakes().first()
+            .firstOrNull { mistake -> mistake.practiceUnitId == practiceUnitId }
+            ?.knowledgeNodeIds
+            ?.takeIf { nodeIds -> nodeIds.isNotEmpty() }
 
     override suspend fun submitChoice(
         submission: StudyChoiceSubmission,
