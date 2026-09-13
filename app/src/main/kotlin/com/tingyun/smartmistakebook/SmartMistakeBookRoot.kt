@@ -532,6 +532,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 LibraryRoute(
                     entries = experience.catalog,
                     catalogRepository = application.libraryCatalogRepository,
+                    catalogPagingSource = application.libraryPagingSources::pagingSource,
                     onCapture = { navController.navigate(Routes.CaptureLibrary) },
                     onBatchImport = { navController.navigate(Routes.BatchImport) },
                     onExportVisible = { entryIds ->

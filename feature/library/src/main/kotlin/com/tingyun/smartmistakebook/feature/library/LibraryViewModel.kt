@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogItem
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
@@ -29,6 +30,8 @@ internal class LibraryViewModel(
     private var catalog = LibraryCatalog(emptyList())
     private var catalogRepository: LibraryCatalogRepository? = null
     private val repositoryFlow = MutableStateFlow<LibraryCatalogRepository?>(null)
+    /** 分页源由装配点交进来（审计 R-02）：域接口不再提到 Paging。 */
+    private var pagingSourceFor: ((LibraryQuery) -> PagingSource<Int, LibraryCatalogItem>)? = null
 
     private val initialActiveFacet = LibraryFacet.fromId(savedStateHandle[ACTIVE_FACET_KEY])
     private val initialSelections = LibrarySelections(
@@ -53,7 +56,8 @@ internal class LibraryViewModel(
         queryFlow,
     ) { repository, query -> repository to query }
         .flatMapLatest { (repository, query) ->
-            if (repository == null) {
+            val pagingSourceFor = pagingSourceFor
+            if (repository == null || pagingSourceFor == null) {
                 flowOf(PagingData.empty())
             } else {
                 Pager(
@@ -62,7 +66,7 @@ internal class LibraryViewModel(
                         prefetchDistance = 10,
                         initialLoadSize = 60,
                     ),
-                    pagingSourceFactory = { repository.pagingSource(query) },
+                    pagingSourceFactory = { pagingSourceFor(query) },
                 ).flow
             }
         }
@@ -98,9 +102,13 @@ internal class LibraryViewModel(
         )
     }
 
-    fun bindRepository(repository: LibraryCatalogRepository) {
-        if (catalogRepository === repository) return
+    fun bindRepository(
+        repository: LibraryCatalogRepository,
+        pagingSourceFor: ((LibraryQuery) -> PagingSource<Int, LibraryCatalogItem>)? = null,
+    ) {
+        if (catalogRepository === repository && this.pagingSourceFor === pagingSourceFor) return
         catalogRepository = repository
+        this.pagingSourceFor = pagingSourceFor
         repositoryFlow.value = repository
         refreshFromRepository()
     }

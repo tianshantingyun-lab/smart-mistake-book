@@ -55,6 +55,9 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
+import androidx.paging.PagingSource
+import com.tingyun.smartmistakebook.core.domain.LibraryCatalogItem
+import com.tingyun.smartmistakebook.core.domain.LibraryQuery
 import com.tingyun.smartmistakebook.core.ui.SmartColors
 import com.tingyun.smartmistakebook.core.ui.SubjectIcon
 
@@ -62,6 +65,8 @@ import com.tingyun.smartmistakebook.core.ui.SubjectIcon
 fun LibraryRoute(
     entries: List<StudyCatalogEntry>,
     catalogRepository: LibraryCatalogRepository? = null,
+    /** 分页源（审计 R-02）：由装配点交进来，feature 因此不必依赖 core:data。 */
+    catalogPagingSource: ((LibraryQuery) -> PagingSource<Int, LibraryCatalogItem>)? = null,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
     onExportVisible: (List<String>) -> Unit,
@@ -69,9 +74,9 @@ fun LibraryRoute(
     modifier: Modifier = Modifier,
 ) {
     val libraryViewModel: LibraryViewModel = viewModel()
-    LaunchedEffect(catalogRepository) {
+    LaunchedEffect(catalogRepository, catalogPagingSource) {
         if (catalogRepository != null) {
-            libraryViewModel.bindRepository(catalogRepository)
+            libraryViewModel.bindRepository(catalogRepository, catalogPagingSource)
         } else {
             libraryViewModel.updateCatalog(entries.map(StudyCatalogEntry::toLibraryMistake))
         }

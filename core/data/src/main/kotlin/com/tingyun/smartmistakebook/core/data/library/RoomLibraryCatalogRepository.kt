@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 class RoomLibraryCatalogRepository(
     private val database: StudyDatabasePort,
-) : LibraryCatalogRepository {
+) : LibraryCatalogRepository, LibraryPagingSourceProvider {
     override fun pagingSource(query: LibraryQuery): PagingSource<Int, LibraryCatalogItem> {
         val searchText = query.searchText.trim()
         val tokens = CjkTextTokenizer.tokens(searchText)
@@ -151,7 +151,11 @@ class RoomLibraryCatalogRepository(
 }
 
 object LibraryCatalogRepositoryFactory {
-    fun create(database: StudyDatabasePort): LibraryCatalogRepository =
+    /**
+     * 返回**具体类型**：装配点要同时把它当成域接口与 [LibraryPagingSourceProvider]
+     * 交给不同的消费方，用接口返回再向下转型会在装配点写一个没必要的 cast。
+     */
+    fun create(database: StudyDatabasePort): RoomLibraryCatalogRepository =
         RoomLibraryCatalogRepository(database)
 }
 

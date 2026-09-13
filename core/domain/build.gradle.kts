@@ -20,7 +20,6 @@ java {
 
 dependencies {
     implementation(project(":core:model"))
-    implementation(libs.androidx.paging.common)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)

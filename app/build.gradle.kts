@@ -136,6 +136,9 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
+    // 装配点要把 Room 那条分页源交给 feature 的 Pager（审计 R-02），所以这里要能**指认**
+    // `PagingSource` 这个类型。它本来就随 core:data 进包，编译期依赖不改变任何运行时构成。
+    implementation(libs.androidx.paging.runtime)
     implementation(project(":core:database"))
     implementation(project(":core:ui"))
 implementation(project(":core:visual-ui"))

@@ -12,6 +12,7 @@ import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecover
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.library.LibraryCatalogRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.library.LibraryPagingSourceProvider
 import com.tingyun.smartmistakebook.core.data.mistake.MistakeDetailRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.mistake.MistakeOrganizationRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.model.ConfiguredModelGatewayFactory
@@ -120,6 +121,8 @@ class SmartMistakeBookApplication : Application() {
         private set
 
     lateinit var libraryCatalogRepository: LibraryCatalogRepository
+    /** 分页源端口（审计 R-02）：feature 的 `Pager` 要它，而域接口不再提 Paging。 */
+    lateinit var libraryPagingSources: LibraryPagingSourceProvider
         private set
 
     lateinit var reviewReminderRepository: ReviewReminderRepository
@@ -172,7 +175,10 @@ class SmartMistakeBookApplication : Application() {
             tutorConversationRepository = TutorConversationRepositoryFactory.create(database)
             tutorTeachingReferenceRepository =
                 TutorTeachingReferenceRepositoryFactory.create(database)
-            libraryCatalogRepository = LibraryCatalogRepositoryFactory.create(database)
+            LibraryCatalogRepositoryFactory.create(database).also { libraryCatalog ->
+                libraryCatalogRepository = libraryCatalog
+                libraryPagingSources = libraryCatalog
+            }
             splitImportRepository = SplitImportRepositoryFactory.create(database)
             reviewReminderRepository = DataStoreReviewReminderRepository(this, applicationScope)
             sleepJournalStore = DataStoreSleepJournalStore(this, applicationScope)
