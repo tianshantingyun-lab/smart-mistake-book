@@ -7,7 +7,6 @@ never as fabricated numbers (acceptance-audit 4.2 requirement).
 
 from __future__ import annotations
 
-import glob
 import hashlib
 import os
 import re
@@ -64,10 +63,28 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def apk_outputs() -> dict[str, Path]:
+DISPLAY_FLAVOR = {
+    "localFirst": "LOCAL_FIRST",
+    "strictOffline": "STRICT_OFFLINE",
+    "unknown": "UNKNOWN",
+}
+
+
+def display_flavor_key(tag: str) -> str:
+    """`<flavor>-<kind>` → the key prefix the template names.
+
+    upper() does not split camelCase, so the flavor must be mapped explicitly
+    (LOCAL_FIRST_DEBUG_..., not LOCALFIRST_DEBUG_...).
+    """
+    flavor, _, _ = tag.partition("-")
+    return DISPLAY_FLAVOR.get(flavor, flavor.upper())
+
+
+def artifact_outputs(subdir: str, suffix: str) -> dict[str, Path]:
+    """Build outputs under :app/build/outputs/<subdir>, tagged `<flavor>-<kind>`."""
     results: dict[str, Path] = {}
-    pattern = gradle_dir(":app") / "build" / "outputs" / "apk"
-    for path in sorted(pattern.rglob("*.apk")):
+    pattern = gradle_dir(":app") / "build" / "outputs" / subdir
+    for path in sorted(pattern.rglob(suffix)):
         name = path.name
         flavor = "localFirst" if "localfirst" in str(path).lower() or "local-first" in name else (
             "strictOffline" if "offline" in str(path).lower() or "strict-offline" in name else "unknown"
@@ -165,6 +182,19 @@ def kover_coverage(module: str) -> tuple[str, str]:
     return percentage("LINE"), percentage("BRANCH")
 
 
+def overall_status(job_status: str | None) -> str:
+    """The verdict, from the one thing that measures it.
+
+    JOB_STATUS is the CI job's own conclusion, produced by the workflow that runs
+    this script. With no such source — a local run, or a run from any other
+    harness — nothing was measured, so the module's rule applies and the verdict
+    says so instead of defaulting to a PASS over an all-NOT_MEASURED report.
+    """
+    if job_status is None:
+        return NOT_MEASURED
+    return "PASS" if job_status == "success" else "FAIL"
+
+
 def main() -> int:
     if not TEMPLATE.exists():
         print(f"template missing: {TEMPLATE}", file=sys.stderr)
@@ -223,7 +253,8 @@ def main() -> int:
         values[f"{prefix}_LINE_COVERAGE"] = line_pct
         values[f"{prefix}_BRANCH_COVERAGE"] = branch_pct
 
-    apks = apk_outputs()
+    apks = artifact_outputs("apk", "*.apk")
+    aabs = artifact_outputs("bundle", "*.aab")
     release_rows = {
         "RELEASE_LOCAL_FIRST_STATUS": NOT_MEASURED,
         "RELEASE_LOCAL_FIRST_APK_SIZE": NOT_MEASURED,
@@ -236,31 +267,25 @@ def main() -> int:
         "STRICT_OFFLINE_DEBUG_APK_SHA": NOT_MEASURED,
         "STRICT_OFFLINE_RELEASE_APK_SHA": NOT_MEASURED,
     }
-    aab_pattern = gradle_dir(":app") / "build" / "outputs" / "bundle"
-    aabs = {p.name: p.stat().st_size for p in aab_pattern.rglob("*.aab")}
-    # tag is "<flavor>-<kind>"; upper() does not split camelCase, so the
-    # display key must be mapped explicitly to match the template
-    # (LOCAL_FIRST_DEBUG_..., not LOCALFIRST_DEBUG_...).
-    display_flavor = {
-        "localFirst": "LOCAL_FIRST",
-        "strictOffline": "STRICT_OFFLINE",
-        "unknown": "UNKNOWN",
-    }
     for tag, path in apks.items():
-        flavor, _, kind = tag.partition("-")
-        flavor_key = display_flavor.get(flavor, flavor.upper())
+        flavor_key = display_flavor_key(tag)
+        kind = tag.rpartition("-")[2]
         release_rows[f"{flavor_key}_{kind.upper()}_APK_SHA"] = sha256(path)
         size_mb = path.stat().st_size / (1024 * 1024)
         if kind == "release":
             release_rows[f"RELEASE_{flavor_key}_STATUS"] = "OK"
             release_rows[f"RELEASE_{flavor_key}_APK_SIZE"] = f"{size_mb:.1f} MB"
-    if aabs:
-        first_aab = next(iter(aabs.values()))
-        release_rows.setdefault("AAB_SIZE_PLACEHOLDER", f"{first_aab / (1024 * 1024):.1f} MB")
+    # AAB size is measured like the APK sizes above; it has to land in the
+    # column the template names (RELEASE_<FLAVOR>_AAB_SIZE) or the row reports
+    # an artifact that was read as never measured.
+    for tag, path in aabs.items():
+        flavor_key = display_flavor_key(tag)
+        release_rows[f"RELEASE_{flavor_key}_AAB_SIZE"] = (
+            f"{path.stat().st_size / (1024 * 1024):.1f} MB"
+        )
     values.update(release_rows)
 
-    overall = "PASS" if os.environ.get("JOB_STATUS", "success") == "success" else "FAIL"
-    values["OVERALL_STATUS"] = overall
+    values["OVERALL_STATUS"] = overall_status(os.environ.get("JOB_STATUS"))
 
     # Known measurements first, then anything still unresolved in the
     # template is genuinely unmeasured. The sweep must run AFTER value
