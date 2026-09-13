@@ -19,8 +19,9 @@ def _write_epub(
     *,
     rights_text: str,
     chapter_text: str,
+    container_xml: str | None = None,
 ) -> None:
-    container = """<?xml version="1.0"?>
+    container = container_xml or """<?xml version="1.0"?>
 <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <rootfiles>
     <rootfile full-path="book.opf" media-type="application/oebps-package+xml"/>
@@ -133,6 +134,41 @@ class TeachingSourceAuditTest(unittest.TestCase):
             artifact["requiredTeachingMarkers"],
         )
         self.assertEqual(0, summary["formalKnowledgeCoverageContribution"])
+
+    def test_rejects_a_container_that_declares_an_entity_instead_of_expanding_it(self) -> None:
+        # 这两处原先靠 `XMLParser(resolve_entities=False)` 防实体展开，而那个关键字在
+        # Python 3.13 的 stdlib 里**不存在**——防线从未生效（一执行就 TypeError），
+        # 于是四个用例也从来没跑过。改成"拒绝带 DTD 的文档"之后，这条钉住**它真的会拒绝**：
+        # 若哪天有人把守卫换成默认解析，`&b;` 会被展开成 64 个字符而本条仍然"通过"，
+        # 所以夹具特意声明了嵌套实体（billion-laughs 的形状），断言的是**拒绝**而不是解析结果。
+        entity_container = """<?xml version="1.0"?>
+<!DOCTYPE container [
+  <!ENTITY a "AAAA">
+  <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;">
+]>
+<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="book.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "fixture.epub"
+            _write_epub(
+                path,
+                rights_text=f"This work uses {LICENSE_URI}",
+                chapter_text="The writing process is explained through an example.",
+                container_xml=entity_container,
+            )
+            payload = path.read_bytes()
+            fingerprint = hashlib.sha256(payload).hexdigest().upper()
+            register = {
+                "registerId": "test-source-register",
+                "sources": [_source(len(payload), fingerprint)],
+            }
+
+            with self.assertRaisesRegex(ValueError, "declares a DTD or entity"):
+                audit_manifest(root, _manifest(len(payload), fingerprint), register)
 
     def test_rejects_license_uri_outside_rights_document(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

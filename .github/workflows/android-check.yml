@@ -101,6 +101,12 @@ jobs:
         run: python3 tools/ci/check_file_size_gate.py
       - name: Room schema drift recheck
         run: git diff --exit-code -- core/database/schemas
+      - name: Repository tooling tests
+        # 这一批（tools/tests）此前**从来没在 CI 里跑过**：报告生成器的契约、检索质量门、
+        # 教学源清单审计的用例都只存在于本地。代价已经在别处显形——`epub_audit.py` 里
+        # 一句调用不存在的关键字，让四条用例一直红着而没人知道（守卫从不生效）。
+        # 接进来之后，它们才会在回归时自己响。
+        run: python3 -m unittest discover -s tools/tests -t tools
       - name: Generate machine-verifiable status report
         if: always()
         run: python3 tools/ci/generate_status.py
@@ -116,7 +122,10 @@ jobs:
           name: status-report
           path: docs/status.md
       - name: Commit status report (main pushes only)
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # `always()` 而不是 `success()`：原先只有绿的那次才提交，于是 main 上的 status.md
+        # 是一条**永远绿的铭牌**——FAIL 只进 artifact，从不落地成文件，读仓库的人永远看不到。
+        # 审计 N-31 的余项之一。提交内容包含本次判定，所以失败会如实留在历史里。
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

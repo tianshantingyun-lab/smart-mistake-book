@@ -90,18 +90,36 @@ def _safe_archive_name(name: str) -> None:
         raise ValueError(f"Unsafe EPUB archive entry: {name}")
 
 
+def _parse_untrusted_xml(data: bytes, *, invalid_message: str) -> ElementTree.Element:
+    """Parse XML taken from inside an untrusted EPUB, without resolving entities.
+
+    默认的 `ElementTree.fromstring` **会展开**内部实体——实测 `<!ENTITY b "&a;&a;">` 会展开成
+    16 个字符，嵌套声明于是可以放大成 billion-laughs。原先这两处写的是
+    `ElementTree.XMLParser(resolve_entities=False)`，而那个关键字在 Python 3.13 的 stdlib 里
+    **根本不存在**：这一行一执行就抛 `TypeError`，防线从未生效，调用它的四个用例也从来没跑过
+    （"存在但从不运行"这一族，与审计 R-13／N-31 同源）。
+
+    这里改成**拒绝带 DTD 的文档**：EPUB 的 container.xml 与 OPF 都不需要 DOCTYPE，需要放行的
+    情形并不存在，所以失败朝关闭的一侧倒。它消灭的失败与原来那句意图相同（不解析实体），
+    且不依赖任何随版本变化的关键字名。
+    """
+    if b"<!DOCTYPE" in data or b"<!ENTITY" in data:
+        raise ValueError("EPUB XML declares a DTD or entity; refusing to parse it")
+    try:
+        return ElementTree.fromstring(data)
+    except ElementTree.ParseError as error:
+        raise ValueError(invalid_message) from error
+
+
 def _rootfile_path(archive: zipfile.ZipFile) -> str:
     try:
         container = archive.read("META-INF/container.xml")
     except KeyError as error:
         raise ValueError("EPUB is missing META-INF/container.xml") from error
-    try:
-        root = ElementTree.fromstring(
-            container,
-            parser=ElementTree.XMLParser(resolve_entities=False),
-        )
-    except ElementTree.ParseError as error:
-        raise ValueError("EPUB container.xml is invalid") from error
+    root = _parse_untrusted_xml(
+        container,
+        invalid_message="EPUB container.xml is invalid",
+    )
     rootfile = root.find(
         ".//{urn:oasis:names:tc:opendocument:xmlns:container}rootfile"
     )
@@ -119,14 +137,13 @@ def _metadata(
     rootfile_path: str,
 ) -> tuple[str, str]:
     try:
-        package = ElementTree.fromstring(
-            archive.read(rootfile_path),
-            parser=ElementTree.XMLParser(resolve_entities=False),
-        )
+        package_bytes = archive.read(rootfile_path)
     except KeyError as error:
         raise ValueError(f"EPUB rootfile does not exist: {rootfile_path}") from error
-    except ElementTree.ParseError as error:
-        raise ValueError("EPUB package metadata is invalid") from error
+    package = _parse_untrusted_xml(
+        package_bytes,
+        invalid_message="EPUB package metadata is invalid",
+    )
     title = package.findtext(".//{http://purl.org/dc/elements/1.1/}title", "").strip()
     language = package.findtext(
         ".//{http://purl.org/dc/elements/1.1/}language",
