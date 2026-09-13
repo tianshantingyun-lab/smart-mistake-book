@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.database.PracticeUnitSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemRevisionSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.domain.BackupValidation
 import kotlinx.coroutines.async
@@ -39,12 +40,16 @@ import java.util.zip.ZipOutputStream
  * Runnable scenarios: truncated archive, checksum corruption, zip bomb
  * (compression ratio), too many entries, single-entry oversize, total
  * decompression oversize, pre-swap staged database validation failure,
- * duplicate restore request idempotency, and startup recovery after a
- * simulated process death (journal + generation artifacts crafted by hand).
+ * duplicate restore request idempotency, startup recovery after an
+ * interrupted swap (both the database half and the asset half), and
+ * "a committed restore must not be rolled back on the next launch".
  *
- * True process-death scenarios (killProcess mid-swap) are provided as
- * executable skeletons with explicit injection points; they are no-ops
- * unless the manual flag is enabled.
+ * **真进程死亡在本测试宿主里无法自动化**：instrumentation 跑在要被杀的那个进程里，
+ * `Process.killProcess(myPid())` 会把整轮测试连同 runner 一起杀掉，用例永远执行不到
+ * 断言。此前这里有三个把注入开关硬编码为 false 的 `@Test` 空体（审计
+ * `backup-skeleton-tests`），默认路径下不断言任何东西却作为 passed 计入用例数；
+ * 它们现在换成了有断言的**仿真等价物**——由生产代码留下的崩溃现场 ＋ 真实启动恢复。
+ * 仿真覆盖不到的唯一一环是"物理掉电后 fsync 是否真的落盘"，那需要真机断电实验。
  */
 @RunWith(AndroidJUnit4::class)
 class BackupRestoreInstrumentedTest {
@@ -570,58 +575,228 @@ class BackupRestoreInstrumentedTest {
     }
 
     // ------------------------------------------------------------------
-    // §10.4 process-death skeletons (execute manually with the flag below).
+    // §10.4 进程死亡：两次原子切换中途 / 提交之后
+    //
+    // 真进程死亡杀的是本测试所在的进程，断言永远执行不到，所以这里换成**仿真等价物**：
+    // 用生产代码（`RestoreJournal` ＋ 与 `doRestore` 相同的文件布局）摆出崩溃那一刻的
+    // 现场，再跑真实的 `BackupRestoreStartupRecovery`，断言它把现场收拾成什么样。
+    // 关键是现场的**两代内容必须可分辨**——两代一样的话，把回滚整个跳过也能通过。
     // ------------------------------------------------------------------
 
     /**
-     * Skeleton: process death BETWEEN the database rename and the asset
-     * rename. Injection point is marked below; with [KILL_FOR_REAL] = false
-     * the test exercises the equivalent simulated path instead of killing
-     * the instrumentation process.
+     * 死在 `Atomic switch #1`（数据库 rename）与 `#2`（资产 rename）之间。
+     *
+     * 此刻磁盘上：数据库已经是新一代，资产还是上一代，`.next` 建好未切。
+     * 下一次启动必须把数据库回滚到上一代，**并且不能顺手把没切的资产那一半删掉**。
      */
     @Test
-    fun processDeathBetweenDatabaseAndAssetSwapSkeleton() {
-        val killForReal = false // 注入点：手动置 true 后运行，进程将在切换中途被杀死
-        if (killForReal) {
-            // 注入点：等价于 restore() 中 `Atomic switch #1` 与 `Atomic switch #2`
-            // 之间调用 android.os.Process.killProcess(android.os.Process.myPid())。
-            // 下一次启动时 BackupRestoreStartupRecovery 必须把数据库回滚到 .prev 代，
-            // 且资产目录保持上一代。
-            android.os.Process.killProcess(android.os.Process.myPid())
+    fun startupRecoveryRollsBackDatabaseHalfSwapWithoutTouchingAssets() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dbName = StudyDatabaseFactory.DEFAULT_DATABASE_NAME
+        context.deleteDatabase(dbName)
+        val dbFile = context.getDatabasePath(dbName)
+        val databasesDir = dbFile.parentFile!!
+        val assetRoot = File(context.filesDir, ASSET_DIRECTORY)
+        val previousAssets = File(context.filesDir, "$ASSET_DIRECTORY.prev")
+        val nextAssets = File(context.filesDir, "$ASSET_DIRECTORY.next")
+        val previousDb = File(databasesDir, "$dbName.prev")
+        val nextDb = File(databasesDir, "$dbName.next")
+        val restoreId = "death-between-switches-${System.nanoTime()}"
+        val staging = File(context.cacheDir, "restore-$restoreId").apply { mkdirs() }
+        try {
+            // 上一代：已播种的活库 ＋ 活资产目录。
+            val database = StudyDatabaseFactory.open(context)
+            database.seedFixture(seed())
+            database.close()
+            assetRoot.mkdirs()
+            File(assetRoot, OLD_ASSET_NAME).writeBytes(byteArrayOf(1))
+
+            assertTrue("活库必须能被换成 .prev 代", dbFile.renameTo(previousDb))
+            dbFile.writeBytes(newGenerationDatabaseBytes(context))
+            nextAssets.mkdirs()
+            File(nextAssets, NEW_ASSET_NAME).writeBytes(byteArrayOf(2))
+            writeCrashJournal(
+                context = context,
+                restoreId = restoreId,
+                phase = RestorePhase.SWAPPING,
+                liveDatabasePath = dbFile,
+                previousDatabasePath = previousDb,
+                nextDatabasePath = nextDb,
+                liveAssetDir = assetRoot,
+                previousAssetDir = previousAssets,
+                nextAssetDir = nextAssets,
+                stagingDir = staging,
+            )
+
+            val outcome = BackupRestoreStartupRecovery.recoverOnStartup(context)
+
+            assertTrue("切换中途死亡必须回滚，实际: $outcome", outcome is RestoreStartupOutcome.RolledBack)
+            val reopened = StudyDatabaseFactory.open(context)
+            assertEquals(
+                "活库必须是上一代，而不是切换了一半的新一代",
+                OLD_GENERATION_MARKDOWN,
+                reopened.soleProblemMarkdown(),
+            )
+            reopened.close()
+            assertFalse(previousDb.exists())
+            assertFalse(nextDb.exists())
+            // 资产那一半本来就没切：活目录仍是上一代，回滚不该删掉它或换成 .next。
+            assertEquals(
+                listOf(OLD_ASSET_NAME),
+                assetRoot.listFiles().orEmpty().filter(File::isFile).map(File::getName).sorted(),
+            )
+            assertFalse(nextAssets.exists())
+            assertFalse("暂存目录必须被清掉", staging.exists())
+            assertFalse(
+                "恢复完成后日志必须消失，否则下一次启动会再回滚一次",
+                File(context.noBackupFilesDir, "restore-journal-$restoreId.json").exists(),
+            )
+        } finally {
+            context.deleteDatabase(dbName)
+            previousDb.delete()
+            nextDb.delete()
+            previousAssets.deleteRecursively()
+            nextAssets.deleteRecursively()
+            staging.deleteRecursively()
+            restoreArtifactsOf(context).forEach { it.delete() }
         }
-        // Default (no kill): the simulated equivalent is covered by
-        // startupRecoveryRollsBackGenerationAfterInterruptedSwap.
     }
 
     /**
-     * Skeleton: process death right AFTER the asset rename but BEFORE the
-     * VERIFYING phase completes. Injection point: kill immediately after
-     * `Atomic switch #2` in AndroidBackupRepository.doRestore. On next
-     * startup the coordinator sees phase SWAPPING in the journal and rolls
-     * the whole generation set back; when [KILL_FOR_REAL] is false this test
-     * only documents the expected behaviour.
+     * 死在 `Atomic switch #2`（资产 rename）之后、VERIFYING 完成之前。
+     *
+     * 此刻磁盘上两半都已经是新一代（`.prev` 两代都在）。下一次启动必须把**两代一起**
+     * 回滚：这一条是"回滚要同时管数据库和资产"的判据——只回滚数据库的实现会在
+     * 资产断言上红。
      */
     @Test
-    fun processDeathAfterSwapBeforeVerifySkeleton() {
-        val killForReal = false // 注入点：手动置 true 后运行
-        if (killForReal) {
-            android.os.Process.killProcess(android.os.Process.myPid())
+    fun startupRecoveryRollsBackBothGenerationsAfterDeathBetweenAssetSwapAndVerify() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dbName = StudyDatabaseFactory.DEFAULT_DATABASE_NAME
+        context.deleteDatabase(dbName)
+        val dbFile = context.getDatabasePath(dbName)
+        val databasesDir = dbFile.parentFile!!
+        val assetRoot = File(context.filesDir, ASSET_DIRECTORY)
+        val previousAssets = File(context.filesDir, "$ASSET_DIRECTORY.prev")
+        val nextAssets = File(context.filesDir, "$ASSET_DIRECTORY.next")
+        val previousDb = File(databasesDir, "$dbName.prev")
+        val nextDb = File(databasesDir, "$dbName.next")
+        val restoreId = "death-before-verify-${System.nanoTime()}"
+        val staging = File(context.cacheDir, "restore-$restoreId").apply { mkdirs() }
+        try {
+            val database = StudyDatabaseFactory.open(context)
+            database.seedFixture(seed())
+            database.close()
+            assetRoot.mkdirs()
+            File(assetRoot, OLD_ASSET_NAME).writeBytes(byteArrayOf(1))
+
+            // switch #1 ＋ #2 都做完了：数据库和资产都是新一代，两代的 .prev 都还在。
+            assertTrue(dbFile.renameTo(previousDb))
+            dbFile.writeBytes(newGenerationDatabaseBytes(context))
+            nextAssets.mkdirs()
+            File(nextAssets, NEW_ASSET_NAME).writeBytes(byteArrayOf(2))
+            assertTrue(assetRoot.renameTo(previousAssets))
+            assertTrue(nextAssets.renameTo(assetRoot))
+            writeCrashJournal(
+                context = context,
+                restoreId = restoreId,
+                phase = RestorePhase.VERIFYING,
+                liveDatabasePath = dbFile,
+                previousDatabasePath = previousDb,
+                nextDatabasePath = nextDb,
+                liveAssetDir = assetRoot,
+                previousAssetDir = previousAssets,
+                nextAssetDir = nextAssets,
+                stagingDir = staging,
+            )
+
+            val outcome = BackupRestoreStartupRecovery.recoverOnStartup(context)
+
+            assertTrue("VERIFYING 前死亡必须回滚，实际: $outcome", outcome is RestoreStartupOutcome.RolledBack)
+            val reopened = StudyDatabaseFactory.open(context)
+            assertEquals(OLD_GENERATION_MARKDOWN, reopened.soleProblemMarkdown())
+            reopened.close()
+            assertEquals(
+                "资产必须和数据库一起回到上一代",
+                listOf(OLD_ASSET_NAME),
+                assetRoot.listFiles().orEmpty().filter(File::isFile).map(File::getName).sorted(),
+            )
+            assertFalse(previousDb.exists())
+            assertFalse(previousAssets.exists())
+            assertFalse(nextDb.exists())
+            assertFalse(nextAssets.exists())
+            assertFalse(File(context.noBackupFilesDir, "restore-journal-$restoreId.json").exists())
+        } finally {
+            context.deleteDatabase(dbName)
+            previousDb.delete()
+            nextDb.delete()
+            previousAssets.deleteRecursively()
+            nextAssets.deleteRecursively()
+            staging.deleteRecursively()
+            restoreArtifactsOf(context).forEach { it.delete() }
         }
     }
 
     /**
-     * Skeleton: first launch failure after a completed swap. Injection point:
-     * force StudyDatabaseFactory.open to throw after a successful restore
-     * (e.g. incompatible schema injected via a test build); the startup
-     * recovery of the NEXT launch must find no journal (restore committed)
-     * and therefore must not roll back automatically — quarantine is a
-     * product decision surfaced through startupState instead.
+     * 恢复**成功提交**之后，下一次启动不得回滚它。
+     *
+     * 现状里没有任何用例断言这件事：`doRestore` 走完必须把日志清掉，否则下一次启动
+     * 会把刚恢复进来的数据当成"切换了一半"再回滚掉——用户看到的是"恢复成功、重启后
+     * 数据回到恢复前"，属于静默数据丢失。这里跑一次**真实**的恢复（不是仿真现场），
+     * 再断言：盘上没有日志、启动恢复无事可做、恢复进来的那一代还在。
      */
     @Test
-    fun firstLaunchFailureAfterCommittedSwapSkeleton() {
-        val simulateOpenFailure = false // 注入点：手动置 true 后运行
-        if (simulateOpenFailure) {
-            error("simulate Room open failure after committed restore swap")
+    fun committedRestoreLeavesNoJournalSoTheNextStartupDoesNotRollBack() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dbName = StudyDatabaseFactory.DEFAULT_DATABASE_NAME
+        context.deleteDatabase(dbName)
+        val dbFile = context.getDatabasePath(dbName)
+        val databasesDir = dbFile.parentFile!!
+        val previousDb = File(databasesDir, "$dbName.prev")
+        val nextDb = File(databasesDir, "$dbName.next")
+        val archive = File(context.filesDir, "committed-restore-${System.nanoTime()}.smbk")
+        try {
+            // 先让「新一代」成为活库，用它做一份归档；再把活库换回上一代，
+            // 这样"恢复成功"这件事是可分辨的（恢复前是上一代，恢复后是新一代）。
+            val first = StudyDatabaseFactory.open(context)
+            first.seedFixture(newGenerationSeed())
+            val repository = AndroidBackupRepository(context, first)
+            FileOutputStream(archive).use { output -> repository.create(output) }
+            repository.deleteAllData()
+            val second = StudyDatabaseFactory.open(context)
+            second.seedFixture(seed())
+            second.close()
+
+            val receipt = FileInputStream(archive).use { input -> repository.restore(input) }
+            assertTrue("归档里应当有一道题，实际: ${receipt.problemCount}", receipt.problemCount > 0)
+
+            val withoutJournal = restoreArtifactsOf(context)
+            assertTrue(
+                "提交成功的恢复不得留下任何恢复日志（本次实际留下: " +
+                    "${withoutJournal.map(File::getName)}）",
+                withoutJournal.isEmpty(),
+            )
+            assertFalse("提交成功后不得留下上一代残留", previousDb.exists())
+            assertFalse(nextDb.exists())
+
+            val outcome = BackupRestoreStartupRecovery.recoverOnStartup(context)
+            assertTrue(
+                "已提交的恢复必须被下一次启动放过，而不是再回滚一次，实际: $outcome",
+                outcome is RestoreStartupOutcome.NothingToRecover,
+            )
+            val reopened = StudyDatabaseFactory.open(context)
+            assertEquals(
+                "下一次启动之后，恢复进来的那一代必须还在",
+                NEW_GENERATION_MARKDOWN,
+                reopened.soleProblemMarkdown(),
+            )
+            reopened.close()
+        } finally {
+            context.deleteDatabase(dbName)
+            previousDb.delete()
+            nextDb.delete()
+            archive.delete()
+            restoreArtifactsOf(context).forEach { it.delete() }
         }
     }
 
@@ -629,7 +804,80 @@ class BackupRestoreInstrumentedTest {
     // Helpers
     // ------------------------------------------------------------------
 
-    /** Wraps a stream and sleeps per chunk so a restore runs slowly. */
+    /**
+     * 留下一条崩溃时的恢复日志——用**生产**的写入器 [RestoreJournal]，不是手写 JSON。
+     *
+     * 手写 JSON 只能证明"读取端认得这个格式"，证明不了"写入端写的就是这个格式"：
+     * 两边一旦漂移（改字段名、改写入时机），手写的那条照样绿，而真机上的启动恢复
+     * 会读不出日志、把切换了一半的库当成正常库打开。这里让写入端和读取端在同一个
+     * 用例里对上，剩下的差别只有"谁做的 rename"。
+     *
+     * 调用顺序与 `AndroidBackupRepository.doRestore` 一致：先记世代路径，再写相位。
+     */
+    private fun writeCrashJournal(
+        context: Context,
+        restoreId: String,
+        phase: RestorePhase,
+        liveDatabasePath: File,
+        previousDatabasePath: File,
+        nextDatabasePath: File,
+        liveAssetDir: File,
+        previousAssetDir: File,
+        nextAssetDir: File,
+        stagingDir: File,
+    ): RestoreJournal = RestoreJournal(context, restoreId).apply {
+        recordGenerationPaths(
+            liveDatabasePath = liveDatabasePath,
+            previousDatabasePath = previousDatabasePath,
+            nextDatabasePath = nextDatabasePath,
+            liveAssetDir = liveAssetDir,
+            previousAssetDir = previousAssetDir,
+            nextAssetDir = nextAssetDir,
+            stagingDir = stagingDir,
+        )
+        writePhase(phase)
+    }
+
+    /** 盘上残留的恢复日志（`BackupRestoreStartupRecovery` 真正会去扫的那一批）。 */
+    private fun restoreArtifactsOf(context: Context): List<File> =
+        context.noBackupFilesDir.listFiles().orEmpty()
+            .filter { it.isFile && it.name.startsWith("restore-journal-") }
+            .sortedBy(File::getName)
+
+    /**
+     * 造一份「新一代」数据库文件，返回它的字节。
+     *
+     * 两代内容必须**可分辨**：回滚用例要断了"活下来的是哪一代"。两代一模一样时，
+     * 连"把回滚整个跳过"都能通过——那样的用例是假的。
+     */
+    private suspend fun newGenerationDatabaseBytes(context: Context): ByteArray {
+        val name = "restore-new-generation-${System.nanoTime()}.db"
+        return try {
+            val database = StudyDatabaseFactory.open(context, name)
+            database.seedFixture(newGenerationSeed())
+            database.close()
+            context.getDatabasePath(name).readBytes()
+        } finally {
+            context.deleteDatabase(name)
+        }
+    }
+
+    /** 活库的题面——用来判定"现在活着的是哪一代"。 */
+    private suspend fun StudyDatabasePort.soleProblemMarkdown(): String =
+        libraryCatalogPage(
+            searchText = "",
+            subjectId = null,
+            sectionId = null,
+            knowledgePointId = null,
+            masteryId = null,
+            sort = "RECENTLY_CREATED",
+            offset = 0,
+            limit = 10,
+        ).single().problemMarkdown
+
+    /**
+     * Wraps a stream and sleeps per chunk so a restore runs slowly.
+     */
     private class ThrottledInputStream(
         delegate: InputStream,
     ) : java.io.FilterInputStream(delegate) {
@@ -722,7 +970,7 @@ class BackupRestoreInstrumentedTest {
                 problemId = "problem-backup",
                 revisionNumber = 1,
                 title = "备份恢复题",
-                problemMarkdown = "求函数最值。",
+                problemMarkdown = OLD_GENERATION_MARKDOWN,
                 questionDocumentSnapshot = null,
                 answerSpecId = null,
                 answerSpecSnapshot = null,
@@ -758,4 +1006,75 @@ class BackupRestoreInstrumentedTest {
             ),
         ),
     )
+
+    /**
+     * 「新一代」：与 [seed] 结构相同、内容可分辨的另一道题。
+     *
+     * 用在两处：造导出用的新一代库、以及判定回滚之后**活下来的是哪一代**。
+     * 题目 id 与指纹都与 [seed] 不同，避免两代在库里撞成同一行。
+     */
+    private fun newGenerationSeed() = StudySeedBundle(
+        problems = listOf(
+            ProblemSeedRecord(
+                problemId = "problem-restored",
+                canonicalFingerprint = "c".repeat(64),
+                subject = "PHYSICS",
+                createdAtEpochMillis = 2_000,
+            ),
+        ),
+        revisions = listOf(
+            ProblemRevisionSeedRecord(
+                revisionId = "revision-restored",
+                problemId = "problem-restored",
+                revisionNumber = 1,
+                title = "恢复进来的题",
+                problemMarkdown = NEW_GENERATION_MARKDOWN,
+                questionDocumentSnapshot = null,
+                answerSpecId = null,
+                answerSpecSnapshot = null,
+                answerVerificationStatus = "UNKNOWN",
+                sourceType = "TEST",
+                sourceReference = null,
+                contentFingerprint = "d".repeat(64),
+                createdAtEpochMillis = 2_000,
+            ),
+        ),
+        practiceUnits = listOf(
+            PracticeUnitSeedRecord(
+                practiceUnitId = "practice-restored",
+                problemId = "problem-restored",
+                problemRevisionId = "revision-restored",
+                unitKey = "unit:restored",
+                unitKind = "PROBLEM",
+                title = "恢复进来的题",
+                promptMarkdown = NEW_GENERATION_MARKDOWN,
+                estimatedSeconds = 180,
+                createdAtEpochMillis = 2_000,
+            ),
+        ),
+        errorBookEntries = listOf(
+            ErrorBookEntrySeedRecord(
+                entryId = "entry-restored",
+                practiceUnitId = "practice-restored",
+                problemId = "problem-restored",
+                currentRevisionId = "revision-restored",
+                sourceKey = null,
+                acceptedAtEpochMillis = 2_000,
+                updatedAtEpochMillis = 2_000,
+            ),
+        ),
+    )
 }
+
+/** 上一代题库的题面；[BackupRestoreInstrumentedTest.seed] 与断言共用一份。 */
+private const val OLD_GENERATION_MARKDOWN = "求函数最值。"
+
+/** 新一代题库的题面，必须与上一代可分辨。 */
+private const val NEW_GENERATION_MARKDOWN = "恢复后应当看到的新一代题。"
+
+/** 上一代资产文件与新一代资产文件——回滚用例靠这两个名字分辨活下来的是哪一代。 */
+private const val OLD_ASSET_NAME = "old-generation.asset"
+private const val NEW_ASSET_NAME = "new-generation.asset"
+
+/** `AndroidBackupRepository` 的资产根目录名（生产里是私有常量）。 */
+private const val ASSET_DIRECTORY = "source-assets"
