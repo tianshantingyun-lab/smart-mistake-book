@@ -100,7 +100,7 @@ object OptimalRetention {
         val horizon = horizonDays.toDouble()
         // 衰减取自**这一组参数**，与 `simulate` 已经在用的 `parameters` 同源（F-01 的第 ④ 处：
         // 同一个文件里 `nextRecallStability` 等已经正确转发了 `parameters`，只有这里没有）。
-        val decay = -parameters[20]
+        val decay = FsrsScheduleMath.decayOf(parameters)
         cards.forEach { card ->
             var stability = card.stabilityDays
             var elapsed = 0.0

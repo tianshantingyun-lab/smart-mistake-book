@@ -237,11 +237,13 @@ class FsrsProjectionBehaviorTest {
                 val regularInterval = FsrsScheduleMath.intervalDays(
                     memory.stabilityDays,
                     FsrsMemoryUpdateModel.DEFAULT_DESIRED_RETENTION,
+                    FsrsScheduleMath.DEFAULT_DECAY,
                 )
                 if (regularInterval >= 90) {
                     val maintenanceInterval = FsrsScheduleMath.intervalDays(
                         memory.stabilityDays,
                         LearningProjector.GRADUATION_TARGET_RETENTION,
+                        FsrsScheduleMath.DEFAULT_DECAY,
                     )
                     val scheduledInterval =
                         (memory.nextReviewAtEpochMillis - occurredAt) / DAY_MILLIS
@@ -304,6 +306,7 @@ class FsrsProjectionBehaviorTest {
                 val atFactoryDecay = FsrsScheduleMath.intervalDays(
                     memory.stabilityDays,
                     LearningProjector.GRADUATION_TARGET_RETENTION,
+                    FsrsScheduleMath.DEFAULT_DECAY,
                 )
                 assertNotEquals(
                     "夹具必须能分辨两种衰减，否则这条用例证明不了接线：S=${memory.stabilityDays}",
@@ -366,7 +369,7 @@ class FsrsProjectionBehaviorTest {
                     desired,
                     -fittedParameters[20],
                 )
-                val atFactory = FsrsScheduleMath.intervalDays(closing.state.stabilityDays, desired)
+                val atFactory = FsrsScheduleMath.intervalDays(closing.state.stabilityDays, desired, FsrsScheduleMath.DEFAULT_DECAY)
                 StraddleProbe(seedStabilityDays, closing, atFitted, atFactory)
             }
             .toList()

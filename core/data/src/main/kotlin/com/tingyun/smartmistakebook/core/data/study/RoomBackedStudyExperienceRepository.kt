@@ -132,7 +132,7 @@ class RoomBackedStudyExperienceRepository(
         } else {
             ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
         },
-        decay = -fsrsParameters[20],
+        decay = FsrsScheduleMath.decayOf(fsrsParameters),
     )
     private val reviewPlanner = ReviewPlanner()
     /**
@@ -151,7 +151,7 @@ class RoomBackedStudyExperienceRepository(
                 ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
             },
             // 与上面那条同源：排程用哪条曲线，规划就必须用哪条（F-01）。
-            decay = -fsrsParameters[20],
+            decay = FsrsScheduleMath.decayOf(fsrsParameters),
         ),
         durationModel = durationModel,
     )

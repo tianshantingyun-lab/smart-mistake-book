@@ -147,7 +147,7 @@ object SchedulingReplay {
             // 衰减必须来自**被评估的这组参数**（F-01 的第 ① 处）：这一行是损失函数唯一的
             // 可提取率来源，读默认值就等于 ∂loss/∂w20 ≡ 0——拟合永远不动那一位，
             // 却每轮多算两次损失（中心差分）。
-            val retrievability = FsrsScheduleMath.retention(elapsedDays, stability, -parameters[20])
+            val retrievability = FsrsScheduleMath.retention(elapsedDays, stability, FsrsScheduleMath.decayOf(parameters))
             predictions += retrievability to sample.isCorrect
             stability = if (sample.rating == FsrsRating.AGAIN) {
                 FsrsScheduleMath.nextForgetStability(difficulty, stability, retrievability, parameters)

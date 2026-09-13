@@ -60,24 +60,48 @@ object FsrsScheduleMath {
         require(parameters.all { it.isFinite() }) { "FSRS parameters must be finite" }
     }
 
+    /**
+     * 拟合参数里 `decay` 的**唯一**取法：第 20 号参数取负（`w20`）。
+     *
+     * **不要在别处手写 `-parameters[20]`**（审计 N-25）：这个下标曾经散在 main 的六处，
+     * 而"是 20 不是 19/21"这件事没有任何东西强制——写错一个数字就是**另一条曲线**，
+     * 且不会有任何断言变红，正是 F-01 的形状。
+     *
+     * 只做 O(1) 的长度检查、不调 [requireValid]：本函数会在投影循环里被逐条记忆调用，
+     * 而参数的合法性由入口处的 [requireValid] 负责（那条是真的遍历）。
+     */
+    fun decayOf(parameters: DoubleArray): Double {
+        require(parameters.size == PARAMETER_COUNT) {
+            "FSRS-6 requires exactly $PARAMETER_COUNT parameters"
+        }
+        return -parameters[20]
+    }
+
+    /**
+     * 出厂衰减。**只给"手上确实没有拟合参数"的场景**，而且调用方必须把它显式写出来
+     * ——三个取值函数都不再有默认值（审计 N-25）：默认值就是那个静默回退面，
+     * 下一个调用点少写一个实参，就会拿出厂曲线去算一组拟合参数的世界，而没有任何东西会红。
+     */
+    val DEFAULT_DECAY: Double = -DEFAULT_PARAMETERS[20]
+
     /** R(t,S) = (1 + FACTOR·t/S)^(−w20) with FACTOR = 0.9^(1/DECAY) − 1. */
-    fun retention(elapsedDays: Double, stabilityDays: Double, decay: Double = -DEFAULT_PARAMETERS[20]): Double {
+    fun retention(elapsedDays: Double, stabilityDays: Double, decay: Double): Double {
         require(stabilityDays > 0.0) { "Stability must be positive" }
         val factor = factor(decay)
         val clampedElapsed = elapsedDays.coerceAtLeast(0.0)
         return (1.0 + factor * clampedElapsed / stabilityDays).pow(decay).coerceIn(0.0, 1.0)
     }
 
-    fun factor(decay: Double = -DEFAULT_PARAMETERS[20]): Double = 0.9.pow(1.0 / decay) - 1.0
+    fun factor(decay: Double): Double = 0.9.pow(1.0 / decay) - 1.0
 
     /**
      * Interval inverse I(r*, S) = (S/FACTOR)·(r*^(1/DECAY) − 1), rounded to a
      * whole day with the py-fsrs `_next_interval` behavior (round to nearest,
      * at least one day, at most the maximum interval).
      *
-     * [decay] 必须由调用方从**它手里那组参数**取（`-parameters[20]`）。默认值只为
-     * "手上没有参数"的场景存在；用着拟合参数却读默认衰减，会让排期与拟合各用一条曲线
-     * （F-01，也是本函数原先的形态）。
+     * [decay] 必须由调用方从**它手里那组参数**取：用着拟合参数却读出厂衰减，会让排期与拟合
+     * 各用一条曲线（F-01，也是本函数原先的形态）。手上确实没有参数时传
+     * [DEFAULT_DECAY]——**显式**地传，没有可退的默认值（审计 N-25）。
      *
      * 一个值得知道的性质：`desiredRetention == 0.9` 时 `I` 恰好等于 `S`，与 [decay] 无关
      * ——因为 FACTOR 就是按 `R(S,S)=0.9` 定义的。所以这条衰减只在**保持率目标不是 0.9** 时才
@@ -86,7 +110,7 @@ object FsrsScheduleMath {
     fun intervalDays(
         stabilityDays: Double,
         desiredRetention: Double,
-        decay: Double = -DEFAULT_PARAMETERS[20],
+        decay: Double,
     ): Int {
         require(stabilityDays > 0.0) { "Stability must be positive" }
         require(desiredRetention in 0.0..1.0 && desiredRetention != 0.0 && desiredRetention != 1.0) {

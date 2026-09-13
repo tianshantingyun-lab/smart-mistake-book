@@ -57,7 +57,7 @@ class FsrsMemoryUpdateModel(
      * 算间隔"所必需的东西，所以排期侧任何拿这个模型算间隔的地方都必须用这里的值，
      * 而不是 `FsrsScheduleMath` 的出厂默认（F-01：那正是把拟合参数冻住的那一步）。
      */
-    internal val decay: Double get() = -parameters[20]
+    internal val decay: Double get() = FsrsScheduleMath.decayOf(parameters)
 
     init {
         FsrsScheduleMath.requireValid(parameters)

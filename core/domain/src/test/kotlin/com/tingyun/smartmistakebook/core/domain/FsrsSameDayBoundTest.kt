@@ -89,8 +89,8 @@ class FsrsSameDayBoundTest {
         )
         assertEquals(
             "间隔同理不动",
-            FsrsScheduleMath.intervalDays(before.stabilityDays, DESIRED_RETENTION),
-            FsrsScheduleMath.intervalDays(after.stabilityDays, DESIRED_RETENTION),
+            FsrsScheduleMath.intervalDays(before.stabilityDays, DESIRED_RETENTION, FsrsScheduleMath.DEFAULT_DECAY),
+            FsrsScheduleMath.intervalDays(after.stabilityDays, DESIRED_RETENTION, FsrsScheduleMath.DEFAULT_DECAY),
         )
     }
 
@@ -195,7 +195,7 @@ class FsrsSameDayBoundTest {
     }
 
     private fun intervalDaysOf(state: ProblemMemoryState): Int =
-        FsrsScheduleMath.intervalDays(state.stabilityDays, DESIRED_RETENTION)
+        FsrsScheduleMath.intervalDays(state.stabilityDays, DESIRED_RETENTION, FsrsScheduleMath.DEFAULT_DECAY)
 
     private fun memory(
         stabilityDays: Double,

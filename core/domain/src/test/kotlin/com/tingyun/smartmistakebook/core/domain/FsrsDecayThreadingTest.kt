@@ -129,6 +129,7 @@ class FsrsDecayThreadingTest {
         val intervalAtFactoryDecay = FsrsScheduleMath.intervalDays(
             atFitted.stabilityDays,
             DESIRED_RETENTION,
+            FsrsScheduleMath.DEFAULT_DECAY,
         )
 
         assertNotEquals(
