@@ -167,6 +167,82 @@ class LibrarySearchMigrationInstrumentedTest {
         }
     }
 
+    /**
+     * 从 v31 升级上来的库，**不额外调任何刷新**也要搜得到自己库里的题。
+     *
+     * 这条钉的是"索引惰性建立"这个设计的承重点。31→32 的迁移只回填了
+     * `library_search_content`（**未分词**），FTS 索引是空的；真正把它建起来的是
+     * `RoomLibrarySearchStore` 四个读入口里的 `refreshProjection()`——分页那条走
+     * `RefreshingPagingSource(beforeLoad = ::refreshProjection)`，计数／分页查询／facet
+     * 三条各自显式调一次。四个入口**少接任何一个**，用户看到的就是"搜索框里打什么都是空"。
+     *
+     * 为什么必须专门测这一条：本文件其余用例**全都显式调了
+     * `refreshLibrarySearchProjection()`**，所以入口掉线时它们一起绿也发现不了；
+     * 而这里是模拟升级的真实路径——只 `open()`，然后搜。
+     */
+    @Test
+    fun upgradedLibraryIsSearchableThroughTheProductionReadPathAlone() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "library-search-upgrade-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        try {
+            createDatabaseFromExportedSchema(context, databaseName, version = 31)
+            seedMinimalLibraryRow(context, databaseName, version = 31)
+
+            // 升级：只按生产路径打开（Room 跑完 31→44 的迁移链），不做任何显式刷新。
+            val store = StudyDatabaseFactory.open(context, databaseName)
+            assertEquals(STUDY_DATABASE_VERSION, store.readDatabaseVersion())
+            val dao = (store as RoomStudyDatabase).database.libraryFtsSearchDao()
+
+            val searchText = "迁移矩阵夹具"
+            val matchQuery = CjkTextTokenizer.matchExpression(searchText)
+
+            // 升级那一刻的现场：内容行已经回填（1 条），索引里一条都没有。
+            // 这不是顺带的观察——**它就是"索引惰性建立"这个设计的全部难点**：
+            // 这两个读数在这一刻必须**分叉**（有内容、没索引），`refreshProjection()` 的
+            // 首次引导分支才判得对。`countIndexed()` 一旦读成内容表的行数（`library_search_fts`
+            // 是 external-content 表，裸 `COUNT(*)` 会回落到内容表），分叉被抹平、引导分支
+            // 永不触发，下面那条检索就会永远返回 0，**怎么刷新都修不好**。
+            assertEquals("迁移应当回填内容行", 1, dao.countContent())
+            assertEquals("但索引里一条都不该有", 0, dao.countIndexed())
+
+            assertEquals(
+                "计数这条路（列表上方的结果数）必须搜得到",
+                1,
+                store.librarySearchCount(matchQuery, null, null, null, null),
+            )
+            assertEquals("第一次检索之后，索引必须已经补上", 1, dao.countIndexed())
+
+            val page = store.librarySearchPagingSource(
+                matchQuery = matchQuery,
+                subjectId = null,
+                sectionId = null,
+                knowledgePointId = null,
+                masteryId = null,
+                sort = "RECENTLY_CREATED",
+                tokens = CjkTextTokenizer.tokens(searchText),
+            ).load(PagingSource.LoadParams.Refresh(null, 10, false)) as PagingSource.LoadResult.Page
+            assertEquals(
+                "分页这条路（列表本身）必须搜得到",
+                listOf(SEEDED_ENTRY_ID),
+                page.data.map { it.entryId },
+            )
+
+            assertEquals(
+                "facet 这条路（筛选栏的计数）必须搜得到",
+                1,
+                store.librarySearchFacets(matchQuery, null, null, null, null, "SUBJECT").single().count,
+            )
+
+            // 空查询那条目录路一直不经过 FTS：用它把"题确实在库里"钉住，
+            // 免得上面三条红被读成"夹具根本没插进去"。
+            assertEquals(1, store.libraryCatalogCount("", null, null, null, null))
+            store.close()
+        } finally {
+            context.deleteDatabase(databaseName)
+        }
+    }
+
     private fun fixtureBundle() = StudySeedBundle(
         problems = listOf(
             ProblemSeedRecord(

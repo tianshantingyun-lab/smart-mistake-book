@@ -218,7 +218,24 @@ internal interface LibraryFtsSearchDao {
     @Query("SELECT COUNT(*) FROM library_search_content")
     suspend fun countContent(): Int
 
-    @Query("SELECT COUNT(*) FROM library_search_fts")
+    /**
+     * 已建索引的文档数——取 FTS 的**影子表** `_docsize`，**不是**
+     * `COUNT(*) FROM library_search_fts`。
+     *
+     * `library_search_fts` 是 external-content 表（`content=library_search_content`）：
+     * 对它做不带 MATCH 的全表扫描，SQLite 会回落到内容表取值，于是 `COUNT(*)` 数的是
+     * **内容行**而不是**索引行**。这两个数平常恰好相等，只在"内容已写、索引还是空的"
+     * 这一种状态上分叉——而 `refreshProjection()` 的首次引导分支判的正是这个条件。
+     *
+     * 分叉会造成的真实后果（2026-09-13 实测）：31→32 的迁移回填了内容行、但建不了索引
+     * （分词要在 Kotlin 里做），此时 `indexed` 被误算成内容行数 ⇒ 升级上来的库永远走
+     * "增量"分支、只去啃那个空的 outbox ⇒ **升级前就存在的题永久搜不到，且怎么刷新都修不好**。
+     *
+     * FTS4 会为 external-content 表维护 `_docsize`／`_segdir`／`_segments`／`_stat`
+     * 四个影子表（迁移后的库里四个都在，已实测），其中 `_docsize` 每个**已索引**文档一行，
+     * 是这里唯一能真正回答"索引里有几条"的读数。
+     */
+    @Query("SELECT COUNT(*) FROM library_search_fts_docsize")
     suspend fun countIndexed(): Int
 
     @Query("SELECT COUNT(*) FROM library_search_outbox")
