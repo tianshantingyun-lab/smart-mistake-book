@@ -109,4 +109,91 @@ class StartupInitializationTest {
         )
         assertTrue("取消不是失败，不该记失败日志：$logged", logged.isEmpty())
     }
+
+    // ------------------------------------------------------------------ 重试（N-21）
+
+    /**
+     * 审计 N-21：横幅上那个「重试」。
+     *
+     * 消灭的失败有两半，这一条钉住第一半——**它必须重跑失败的那一步**。
+     * 旧接线调的是 `refreshStudyExperience()` → `studyRepository.refresh()`（默认实现就是
+     * `initialize()`），知识包安装**从来没有被重跑过**：用户按了重试，看到的是同一句话。
+     */
+    @Test
+    fun aRetryRunsBothStepsAgain() = runBlocking {
+        var installs = 0
+        var initializations = 0
+
+        runStartupRetry(
+            installKnowledgeBase = { installs += 1 },
+            initializeProjection = { initializations += 1 },
+            publish = { },
+        )
+
+        assertEquals("重试必须重跑知识包安装——失败的那一步正是它", 1, installs)
+        assertEquals(1, initializations)
+    }
+
+    /**
+     * 第二半：**成功必须把横幅收回去**。这是与启动路径唯一的差别——
+     * 启动成功时不写状态（那时启动态本来就是 Ready，而"投影成功不得抹掉知识包失败"是对的），
+     * 但用户按过重试之后再成功，那条失败就是真的过去了。
+     */
+    @Test
+    fun aSuccessfulRetryPublishesReadySoTheBannerCanGoAway() = runBlocking {
+        val published = mutableListOf<StartupState>()
+
+        runStartupRetry(
+            installKnowledgeBase = { },
+            initializeProjection = { },
+            publish = { published += it },
+        )
+
+        assertEquals(
+            "成功必须发布 Ready：不发布就等于给用户一个永远不会消失的横幅",
+            listOf<StartupState>(StartupState.Ready),
+            published,
+        )
+    }
+
+    @Test
+    fun aFailingRetryPublishesThisAttemptsFailureNotTheOldOne() = runBlocking {
+        val published = mutableListOf<StartupState>()
+
+        runStartupRetry(
+            installKnowledgeBase = { error("knowledge pack missing") },
+            initializeProjection = { },
+            publish = { published += it },
+        )
+
+        val failure = published.single()
+        assertTrue("这一次失败的是知识包，就该说知识包：$published", failure is StartupState.RecoverableFailure)
+        assertTrue(
+            (failure as StartupState.RecoverableFailure).diagnosticId.startsWith("startup:knowledge:"),
+        )
+    }
+
+    @Test
+    fun aCancelledRetryPublishesNothing() {
+        val published = mutableListOf<StartupState>()
+
+        val thrown = runBlocking {
+            try {
+                runStartupRetry(
+                    installKnowledgeBase = { throw CancellationException("process shutting down") },
+                    initializeProjection = { error("取消之后不得继续下一段") },
+                    publish = { published += it },
+                )
+                null
+            } catch (failure: Throwable) {
+                failure
+            }
+        }
+
+        assertTrue(thrown is CancellationException)
+        assertTrue(
+            "被取消的那次尝试不是一次结论，不该发布任何状态：$published",
+            published.isEmpty(),
+        )
+    }
 }

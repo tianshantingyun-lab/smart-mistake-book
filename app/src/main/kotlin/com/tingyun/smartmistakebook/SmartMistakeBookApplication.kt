@@ -337,6 +337,26 @@ class SmartMistakeBookApplication : Application() {
         }
     }
 
+    /**
+     * 启动横幅上「重试」按下的那条路（审计 N-21）：重跑**与启动同一条**初始化，
+     * 并把这一次的结论写回 [startupState]——成功就收回横幅，失败就说这一次的失败。
+     *
+     * 与 [refreshStudyExperience] 分开，是因为两者是两件事：后者只是让仓储重发一次快照
+     * （`MainActivity` 的 `onStart` 用它），它既不重装知识包，也不该动启动态。
+     */
+    fun retryStartupInitialization() {
+        applicationScope.launch {
+            runStartupRetry(
+                installKnowledgeBase = { BundledKnowledgeBaseInstaller.install(database) },
+                initializeProjection = { studyRepository.initialize() },
+                publish = { state -> startupState.value = state },
+                logFailure = { description, error ->
+                    android.util.Log.e("SmartMistakeBook", description, error)
+                },
+            )
+        }
+    }
+
     val capabilities by lazy {
         FlavorCapabilityFactory.create()
     }

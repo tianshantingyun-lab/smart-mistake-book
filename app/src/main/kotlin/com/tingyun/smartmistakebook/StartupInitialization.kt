@@ -55,5 +55,31 @@ private suspend fun attempt(
     failure
 }
 
+/**
+ * **重试**：与启动**同一条**初始化，但这一次的结论**无论如何都要发布**（审计 N-21）。
+ *
+ * 与 [runStartupInitialization] 的差别只有这一条，而它正是那条缺陷的实质：
+ * 启动路径成功时不写状态（那时启动态本来就是 `Ready`，而"投影成功不得抹掉知识包失败"），
+ * 但用户**按了重试**之后再成功，那条失败就是真的过去了——不收回横幅，等于给了他一个
+ * 永远不可能消失的承诺。旧实现还有另一半错：重试调的 `refresh()` 只等于 `initialize()`，
+ * **失败的那一步（知识包安装）压根没重跑**。
+ *
+ * [publish] 收到的一定是"这一次的结论"：一个失败态或 [StartupState.Ready]，没有第三种。
+ * 取消向上抛且**不发布**——被取消的尝试不是一次结论。
+ */
+internal suspend fun runStartupRetry(
+    installKnowledgeBase: suspend () -> Unit,
+    initializeProjection: suspend () -> Unit,
+    publish: (StartupState) -> Unit,
+    logFailure: (String, Throwable) -> Unit = { _, _ -> },
+) {
+    val failure = runStartupInitialization(
+        installKnowledgeBase = installKnowledgeBase,
+        initializeProjection = initializeProjection,
+        logFailure = logFailure,
+    )
+    publish(failure ?: StartupState.Ready)
+}
+
 private const val LOG_KNOWLEDGE_INSTALL = "Bundled knowledge install failed"
 private const val LOG_PROJECTION_INITIALIZE = "Study projection initialize failed"

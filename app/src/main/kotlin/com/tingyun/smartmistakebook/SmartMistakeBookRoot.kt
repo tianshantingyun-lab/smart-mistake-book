@@ -317,7 +317,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             StartupStateBanner(
                 state = startupState,
                 onRetry = if (startupState.isRetryable) {
-                    { application.refreshStudyExperience() }
+                    // 重试必须重跑**失败的那一步**并把结论写回启动态（审计 N-21）：
+                    // 旧接线调的是 `refreshStudyExperience()`，那只重发快照——
+                    // 知识包安装压根没重跑，而横幅也永远不会消失。
+                    { application.retryStartupInitialization() }
                 } else {
                     null
                 },
