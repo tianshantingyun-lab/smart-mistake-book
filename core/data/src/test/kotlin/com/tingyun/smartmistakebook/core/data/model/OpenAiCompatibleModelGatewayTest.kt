@@ -36,6 +36,7 @@ import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_MAX_CLOCK_SKEW_MILLIS
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
+import com.tingyun.smartmistakebook.core.model.ModelTaskAssetPolicy
 import com.tingyun.smartmistakebook.core.model.ModelTaskContractRegistry
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -225,6 +226,54 @@ class OpenAiCompatibleModelGatewayTest {
                 ModelPromptPolicyVersions.currentFor(kind),
             )
         }
+    }
+
+    /**
+     * 「图片输入已验证就宣告」的那一组**不是手写清单的私事**：同一个事实在
+     * `ModelTaskContractRegistry` 里已经逐 kind 声明过（`assetPolicy`）。这条断言把两者
+     * 钉成同一件事——**只钉，不派生**。
+     *
+     * **为什么不按审查的建议把五条 `add(...)` 换成 `all().filter { it.assetPolicy != FORBIDDEN }`**：
+     * 那条推导把"这个 kind 带附件"当成"这个网关服务它"，两者**并不等价**。今天恰好一致，
+     * 但将来若有人注册一个本网关服务不了的带附件 kind，派生会**静默地把它宣告出去**
+     * （fail-open：请求真发到提供商那边才失败、还先烧掉一次派发），而手写清单是 fail-closed
+     * （不宣告＝请求在 capabilityFailure 被挡住，没有任何出网）。两害相权，生产侧保持显式，
+     * 用这条断言保证显式的那份**不会与注册表漂移**——两边的失效方向因此都能被抓到：
+     * 多一条（注册表说 FORBIDDEN、清单却带图）与少一条（注册表说带附件、清单却没有）都会红。
+     *
+     * 判据取自**两次宣告的差集**（图片已验证 − 未验证），而不是去读实现里的私有清单：
+     * 差集正是"只因为图片输入才被宣告的那几条"，也就是这一组本身。
+     */
+    @Test
+    fun theImageGatedKindsMatchTheRegistrysAssetPolicy() = runBlocking {
+        val imageGated = advertisedKinds(withImageInput = true) -
+            advertisedKinds(withImageInput = false)
+        val assetCarrying = ModelTaskContractRegistry.all()
+            .filter { it.assetPolicy != ModelTaskAssetPolicy.FORBIDDEN }
+            .map { it.kind }
+            .toSet()
+
+        assertEquals(
+            "「图片输入已验证才宣告」的那一组必须与注册表里 assetPolicy ≠ FORBIDDEN 的 kind " +
+                "逐条一致：多一条＝宣告了本网关服务不了的；少一条＝真实请求会被 " +
+                "capabilityFailure 静默拒掉（批 2 第 1 项就是这么丢掉 IMAGE_PIPELINE_CLASSIFY 的）",
+            assetCarrying,
+            imageGated,
+        )
+    }
+
+    private suspend fun advertisedKinds(withImageInput: Boolean): Set<ModelTaskKind> {
+        val verification = requireNotNull(CONFIGURATION.capabilityVerification).copy(
+            supportsImageInput = withImageInput,
+            supportsStructuredOutput = true,
+        )
+        return OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(
+                CONFIGURATION.copy(capabilityVerification = verification),
+            ),
+            assetSource = assetSource { _, _ -> asset() },
+            clock = { AUTHORIZATION_NOW },
+        ).capabilities().supportedTasks
     }
 
     /**
