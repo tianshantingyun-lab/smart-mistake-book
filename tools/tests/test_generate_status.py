@@ -61,10 +61,15 @@ class RenderedReportTest(unittest.TestCase):
         return generate_status.OUTPUT.read_text(encoding="utf-8")
 
     def verdict_of(self, rendered: str) -> str:
+        # Anchor on the heading *prefix* and pick the first bolded token after it,
+        # rather than assuming the heading line ends at "Status". The heading
+        # carries a scope qualifier (N-31) and the verdict stays findable if that
+        # qualifier is ever reworded.
         after = rendered.split("## Overall Status", 1)[1]
         for line in after.splitlines():
-            if line.strip():
-                return line.strip()
+            stripped = line.strip()
+            if stripped.startswith("**") and stripped.endswith("**"):
+                return stripped
         self.fail("the rendered report has no verdict line")
 
     def test_a_run_with_no_job_status_does_not_claim_a_pass(self):

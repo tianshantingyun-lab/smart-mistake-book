@@ -96,9 +96,15 @@
 | Hardcoded secrets | {{SECURITY_HARDCODED_SECRETS}} |
 | Dependency vulnerabilities | {{SECURITY_DEPENDENCY_VULNS}} |
 
-## Overall Status
+## Overall Status (this run)
 
 **{{OVERALL_STATUS}}**
+
+> 这一位只覆盖**本次 CI 实际执行过的门**（compilation / unit tests / lint / assemble / gates），
+> 不覆盖本表中仍为 `NOT_MEASURED` 的行（迁移矩阵、安全检查、宏基准与内存、AAB 体积等）——
+> 那些行在报告里从未被测量，因此**既不算通过、也不算不通过**。读这一位时请与上面各表一起读。
+(审计 N-31：此前的标题只写 `Overall Status`，读者会把它读成「所有门都绿了」，而同一页里
+六类行恒为 `NOT_MEASURED`；本行是为了让「没测」与「没过」分开。)
 
 ---
 
