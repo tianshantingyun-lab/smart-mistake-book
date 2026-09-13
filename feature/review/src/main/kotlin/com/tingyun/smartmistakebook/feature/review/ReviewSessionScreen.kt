@@ -469,7 +469,7 @@ private fun RecordedAttemptFeedback(
  * reveal 充当重教开场，学员随后的独立作答会被污染成"看答案后作答"，重教反而毁掉证据。
  */
 @Composable
-private fun ReTeachOpeningCard(
+internal fun ReTeachOpeningCard(
     opening: ReTeachOpening,
     onAcknowledge: () -> Unit,
 ) {

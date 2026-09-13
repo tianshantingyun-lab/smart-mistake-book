@@ -38,6 +38,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tingyun.smartmistakebook.core.domain.PrerequisiteRemediation
+import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRating
 import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
@@ -87,6 +88,17 @@ fun CapturedReviewSessionScreen(
      * 与 [ReviewSessionScreen] 同一处摆放、同一条规则：**不拦作答**，没有确认按钮。
      */
     prerequisiteRemediation: PrerequisiteRemediation? = null,
+    /**
+     * 开场重教（spec §2.16）：leech 卡先呈现针对错误认知的材料，**学员确认后才露出题干**。
+     *
+     * 为什么这个参数长在这里（审计 N-16／A3）：这条通道原先只由策展屏
+     * （[ReviewSessionScreen]）渲染，实拍题走的是**本屏**；于是即使数据层把材料查了出来，
+     * 生产里也从来没有这一步。§2.16 要求的是"leech 卡先重教再练"，不区分题的来源。
+     *
+     * 与 [prerequisiteRemediation] 的差别是**扣不扣题**：补救与题干并列、可直接作答；
+     * 重教是进入本次作答的必经步骤，所以这里 `return` 掉整个页面。
+     */
+    reTeachOpening: ReTeachOpening? = null,
     modifier: Modifier = Modifier,
 ) {
     val state: CapturedReviewSessionViewModel = viewModel(key = presentationId)
@@ -170,6 +182,17 @@ fun CapturedReviewSessionScreen(
         )
         Spacer(Modifier.height(12.dp))
         LocalModeLine(text = "第 $safeQueuePosition / $safeQueueSize 题 · 复做你保存的原题")
+        // 先重教、再练（spec §2.16）：与策展屏同一条规则——leech 卡在这里停住，**不露出题干**，
+        // 学员确认后才继续。于是"重教"不是一段可以划过去的说明，而是进入本次作答的必经步骤。
+        val opening = reTeachOpening
+        if (opening != null && !state.reTeachAcknowledged) {
+            PaperDivider(Modifier.padding(vertical = 18.dp))
+            ReTeachOpeningCard(
+                opening = opening,
+                onAcknowledge = state::acknowledgeReTeach,
+            )
+            return@RootPageColumn
+        }
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader(title = entry.title)
         Spacer(Modifier.height(12.dp))
@@ -316,6 +339,23 @@ internal class CapturedReviewSessionViewModel(
 
     internal var ratingResult by mutableStateOf<StudyReviewRatingSubmissionResult?>(null)
         private set
+
+    /**
+     * Spec §2.16 的"先重教再练"：leech 卡先展示针对错误认知的材料，学员确认后才露出题干。
+     *
+     * 与 [ReviewSessionViewModel] 同一个理由把状态放在 ViewModel 而不是 Composable 里——它要
+     * 穿过进程死亡（SavedStateHandle），否则重建后学员会被重新按回材料页，或反之绕过重教直接看题。
+     */
+    internal var reTeachAcknowledged by mutableStateOf(
+        savedStateHandle.get<Boolean>(RE_TEACH_ACKNOWLEDGED_KEY) ?: false,
+    )
+        private set
+
+    fun acknowledgeReTeach() {
+        if (reTeachAcknowledged) return
+        reTeachAcknowledged = true
+        savedStateHandle[RE_TEACH_ACKNOWLEDGED_KEY] = true
+    }
 
     private val presentationStartedAtEpochMillis: Long =
         savedStateHandle.get<Long>(PRESENTATION_STARTED_AT_KEY)
@@ -562,5 +602,6 @@ internal class CapturedReviewSessionViewModel(
         const val RESULT_PROGRESS_STATUS_KEY = "captured_review_result_status"
         const val RESULT_NEXT_PRACTICE_UNIT_ID_KEY = "captured_review_result_next_practice"
         const val RESULT_DISPATCHED_KEY = "captured_review_result_dispatched"
+        const val RE_TEACH_ACKNOWLEDGED_KEY = "captured_review_reteach_acknowledged"
     }
 }

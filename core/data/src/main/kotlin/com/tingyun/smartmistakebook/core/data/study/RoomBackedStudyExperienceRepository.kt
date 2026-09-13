@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
+import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRecord
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.database.ReviewAttemptWriteCommand
@@ -477,20 +478,35 @@ class RoomBackedStudyExperienceRepository(
      * on the overwhelming majority of cards that are not leeches. Both read the
      * same `isLeeched`, and the policy remains the tested authority on the gate.
      *
-     * Scope comes from the artifact's own `knowledgeNodeIds`, so the material can
-     * only ever belong to knowledge points this question is actually bound to. An
-     * artifact with no recorded scope yields no opening rather than a guessed one.
+     * **范围与科目都取自题库自身，不取自策展夹具**（审计 N-16／A3；与
+     * [prerequisiteRemediation] 在 `12877056` 拿到的修法同一条）。原实现以
+     * `teachingArtifact(practiceUnitId) ?: return null` 起手，而 `teachingArtifact` 在 release 里恒为
+     * null（[EmptyStudyFixtureSource]）——于是这条通道**只在 debug 的策展内容上存在**：学生真正
+     * 拍下来的题即使确实成了 leech，也永远拿不到开场重教。改成读 [currentKnowledgeScopeOf] 之后，
+     * 策展题与实拍题走同一条路，因为两者的绑定关系本来就都在同一个库里。
+     *
+     * 材料按**科目**分区检索，所以科目也取自这些 KC 自己的行。一道题若跨科目绑定，就逐个科目查、
+     * 按选择器给出的顺序合并，而不是拿"第一个"科目——那会静默漏掉另一半（[KnowledgePrerequisiteReader]
+     * 的同类注释：用错的科目去查会**静默返回空集**，看起来"没有材料"而不是查询出错）。
      */
     override suspend fun reTeachOpening(practiceUnitId: String): ReTeachOpening? {
         val memory = currentLearnerSnapshot().problemMemoryStates[practiceUnitId] ?: return null
         if (!memory.isLeeched) return null
-        val artifact = teachingArtifact(practiceUnitId) ?: return null
-        if (artifact.knowledgeNodeIds.isEmpty()) return null
-        val references = teachingReferences.referencesFor(
-            subject = artifact.subject,
-            knowledgeNodeIds = artifact.knowledgeNodeIds,
-            limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
-        )
+        val knowledgeNodeIds = currentKnowledgeScopeOf(practiceUnitId) ?: return null
+        val subjects = knowledgePrerequisites.graphFor(knowledgeNodeIds).nodesById
+            // graphFor 同时取回前置 KC 的行（关系指向集合之外），这里只要本题自己的那些。
+            .filterKeys { knowledgeNodeId -> knowledgeNodeId in knowledgeNodeIds }
+            .values
+            .map(KnowledgeNodeSeedRecord::subject)
+            .distinct()
+            .sorted()
+        val references = subjects.flatMap { subject ->
+            teachingReferences.referencesFor(
+                subject = subject,
+                knowledgeNodeIds = knowledgeNodeIds,
+                limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
+            )
+        }
         return ReTeachInjection.openingFor(memory, references)
     }
 

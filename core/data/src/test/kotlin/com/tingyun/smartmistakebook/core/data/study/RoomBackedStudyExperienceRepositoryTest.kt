@@ -1279,6 +1279,9 @@ class RoomBackedStudyExperienceRepositoryTest {
         val unitId = M1_LEECH_PRACTICE_UNIT_ID
         val database = FakeStudyDatabasePort().apply {
             publishLeechedMemory(unitId)
+            // 范围与科目现在都取自题库（审计 N-16）：KC 必须在知识库里存在，它的 `subject`
+            // 决定材料按哪个科目分区检索——原先这一步由策展件的 `subject` 代劳。
+            addKnowledgeNode(M1_LEECH_KNOWLEDGE_NODE_ID, displayName = "闭区间上的函数最值")
             addBoundTeachingMaterial(
                 materialId = "material:m1:explanation",
                 knowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
@@ -1309,6 +1312,70 @@ class RoomBackedStudyExperienceRepositoryTest {
             assertTrue(
                 requireNotNull(opening).markdown
                     .contains("只比较驻点而漏掉端点"),
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    @Test
+    fun aCapturedQuestionGetsItsReTeachOpeningFromTheLibraryAloneWithNoFixtureSource() = runBlocking {
+        // 审计 N-16：这条通道原先以 `teachingArtifact(practiceUnitId) ?: return null` 起手，
+        // 而 teachingArtifact 在 release 里恒为 null（EmptyStudyFixtureSource）——于是**只有**
+        // debug 的策展内容拿得到开场重教；学生真正拍下来的题即使确实已经成了 leech，也永远
+        // 看不到那一步（spec §2.16 的"先重教再练"在生产里从未发生过）。
+        //
+        // 这条用例把夹具**整个撤掉**（空夹具源 ＋ 不播种策展包），只留题库里真实存在的行：
+        // 错题行（带它的 KC 范围）、KC 节点、绑定的讲解材料、leech 的记忆状态。这正是 release
+        // 的形状。它在修好之前是红的——那时 reTeachOpening 返回 null。
+        val unitId = "unit-captured-reteach"
+        val database = FakeStudyDatabasePort().apply {
+            publishLeechedMemory(unitId)
+            addMistake(
+                MistakeRecord(
+                    entryId = "entry-captured-reteach",
+                    problemId = "problem-captured-reteach",
+                    problemRevisionId = "revision-captured-reteach",
+                    practiceUnitId = unitId,
+                    sourceKey = "capture:captured-reteach",
+                    subject = "MATH",
+                    title = "拍下来的一道题",
+                    problemMarkdown = "求该函数在闭区间上的最值。",
+                    status = "ACTIVE",
+                    createdAtEpochMillis = 1_000,
+                    nextReviewAtEpochMillis = null,
+                    retrievability = null,
+                    knowledgeNodeIds = setOf(M1_LEECH_KNOWLEDGE_NODE_ID),
+                ),
+            )
+            addKnowledgeNode(M1_LEECH_KNOWLEDGE_NODE_ID, displayName = "闭区间上的函数最值")
+            addBoundTeachingMaterial(
+                materialId = "material:captured:misconception",
+                knowledgeNodeId = M1_LEECH_KNOWLEDGE_NODE_ID,
+                type = "MISCONCEPTION_GUIDE",
+                content = "只比较驻点而漏掉端点，是闭区间最值最常见的错误。",
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(
+            database = database,
+            applicationScope = applicationScope,
+            initialFixture = null,
+            fixtureSource = EmptyStudyFixtureSource,
+        )
+
+        try {
+            repository.initialize()
+            val opening = repository.reTeachOpening(unitId)
+
+            assertNotNull(
+                "空夹具下，实拍 leech 题也必须拿得到开场重教：范围来自题库，不是策展内容",
+                opening,
+            )
+            assertEquals("material:captured:misconception", opening?.materialId)
+            assertTrue(
+                requireNotNull(opening).markdown.contains("只比较驻点而漏掉端点"),
             )
         } finally {
             repository.close()

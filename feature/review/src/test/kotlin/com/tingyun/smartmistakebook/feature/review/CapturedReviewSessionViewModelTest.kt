@@ -16,9 +16,25 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CapturedReviewSessionViewModelTest {
+
+    @Test
+    fun reTeachOpeningStaysAcknowledgedAcrossRecreation() {
+        // spec §2.16（审计 N-16）：实拍屏的重教确认也必须穿过进程死亡——与策展屏同一条理由。
+        // 只记在 Composable 的 remember 里，重建后学员会被重新按回材料页；反过来默认 True 则
+        // 绕过重教直接看到题目。两个方向都会让"先重教再练"这个顺序失效。
+        val handle = SavedStateHandle()
+        val viewModel = CapturedReviewSessionViewModel(handle)
+
+        assertFalse(viewModel.reTeachAcknowledged)
+        viewModel.acknowledgeReTeach()
+
+        assertTrue(viewModel.reTeachAcknowledged)
+        assertTrue(CapturedReviewSessionViewModel(handle).reTeachAcknowledged)
+    }
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun successfulSubmissionPersistsRecordedResult() = runTest {

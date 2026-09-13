@@ -124,13 +124,13 @@ internal fun ReviewSessionDestination(
         // revealAnswer — that path records a "saw the answer" event, which would
         // turn the student's next attempt into a post-reveal attempt.
         //
-        // 它仍然以 `artifact != null` 为门：这条通道的 KC 范围目前**仍取自策展件**
-        // （`RoomBackedStudyExperienceRepository.reTeachOpening`），实拍题拿不到范围，
-        // 放开这道门只会多一次必然返回 null 的查询。同一类问题登记在案，未在本批改动内。
-        val reTeachOpening = if (loadedArtifact != null) {
-            loadOptionalSessionCard { repository.reTeachOpening(requireNotNull(requestedId)) }
-        } else {
-            null
+        // 它的门与前置补救同一条：**"这道题读得出来"**，而不是 `artifact != null`
+        // （审计 N-16／A3）。原先它以策展件为门，而这条通道的 KC 范围当时也取自策展件——
+        // 两处一起把这条通道锁在 debug 的演示内容里：实拍题即使确实成了 leech 也永远
+        // 看不到 §2.16 的那一步。范围改读题库之后（`reTeachOpening`），门也必须跟着放开，
+        // 否则"数据层修好、装配层仍然拦着"，生产里还是什么都不会变。
+        val reTeachOpening = readableUnitId?.let { practiceUnitId ->
+            loadOptionalSessionCard { repository.reTeachOpening(practiceUnitId) }
         }
         // Spec §2.9 prerequisite remediation, same round trip. Independent of the
         // leech opening: a card can be both, and neither implies the other.
@@ -244,6 +244,9 @@ internal fun ReviewSessionDestination(
             // Spec §2.9：实拍题也要拿得到前置补救。这条参数是本批（批 2 第 3 项）新加的——
             // 在它之前，补救只在策展屏上渲染，而实拍题走的是本屏，于是生产里从不出现。
             prerequisiteRemediation = artifactLoad.prerequisiteRemediation,
+            // Spec §2.16：同一件事的第二半（审计 N-16）——重教也要在实拍屏上出现，否则
+            // "先重教再练"这条规则只在演示内容上成立。
+            reTeachOpening = artifactLoad.reTeachOpening,
             onSubmit = { submission ->
                 repository.submitReviewSelfReport(
                     sessionId = sessionId,
