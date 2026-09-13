@@ -384,29 +384,48 @@ object FsrsParameterOptimizer {
     )
 
     data class Result(
-        val parameters: DoubleArray,
         val mode: Mode,
         val trainLogLoss: Double,
         val validationLogLoss: Double,
         val sampleCount: Int,
         val optimizedParameterIndices: List<Int>,
         /**
-         * 候选是否被采纳（只有在留出尾段上严格优于 `incumbent` 才被采纳）。
+         * 这次拟合的**结论**。原先是一个 `adopted: Boolean = true`（审计 §13.5 的类型化）。
          *
-         * **这一位是唯一描述"结果"的字段**；它是 `false` 时 [parameters] 就是 `incumbent` 本身
-         * （什么都没换）。其余字段（[mode]、[trainLogLoss]、[validationLogLoss]、
-         * [optimizedParameterIndices]）一律描述**这次尝试**——"拟合了多少、拟合出来的损失是多少"，
-         * 与被拒与否无关。把其中一部分改成"结果口径"，会让"窄带只拟合了 w0..w5"这类事实
-         * 在恰好被拒时凭空消失，读者还得记住哪个字段属于哪一边。
+         * 布尔承载不了"没采纳 ⇒ [parameters] 就是现行组"这条不变量——它只能被三个出口**各自手抄**，
+         * 而默认值 `true` 让"新加一个出口时忘了写"变成"默认被采纳"，那正是 S-10 的形态
+         * （写回侧只看"有没有拟合过"）。现在没有默认值：每个出口都必须**指明**结论。
          *
-         * 这一位存在的理由是一个**具体的失败**（审计 S-10）：装配点原先只判
-         * `mode != INSUFFICIENT_DATA` 就无条件写回，而 [fit] 的择优基准是**出厂默认值**——
-         * 于是"比出厂默认好"就够写回。现行参数一旦来自更早一次更好的拟合，
-         * 一次新拟合就能**把已经更好的参数换掉**：数据越攒越多，留出损失反而悄悄变大，
-         * 而且没有任何地方记下这次退步。
+         * 其余字段（[mode]、[trainLogLoss]、[validationLogLoss]、[optimizedParameterIndices]）
+         * 一律描述**这次尝试**——"拟合了多少、拟合出来的损失是多少"，与被采纳与否无关。
+         * 把其中一部分改成"结果口径"，会让"窄带只拟合了 w0..w5"这类事实在恰好没被采纳时凭空消失，
+         * 读者还得记住哪个字段属于哪一边。
          */
-        val adopted: Boolean = true,
-    )
+        val decision: Decision,
+    ) {
+        /** 现行参数：没采纳时就是它（逐位相同），采纳时是这次拟合出来的那一组。 */
+        val parameters: DoubleArray get() = decision.parameters
+
+        /** 写回侧读的那一位。现在它是**推导**出来的，不可能与 [decision] 不一致。 */
+        val adopted: Boolean get() = decision is Decision.Adopted
+    }
+
+    /** 拟合的两种结论。载荷不同，所以它不是一位布尔。 */
+    sealed interface Decision {
+        val parameters: DoubleArray
+
+        /** 采纳：写回侧应当换上 [parameters]。 */
+        class Adopted(override val parameters: DoubleArray) : Decision
+
+        /**
+         * 没有采纳（样本不够 / 候选没有严格优于现行组）：保留 [incumbent]。
+         * **[parameters] 与 [incumbent] 是同一个数组**——"什么都没换"因此是构造出来的，
+         * 不是三个出口各抄一遍的约定。
+         */
+        class Rejected(val incumbent: DoubleArray) : Decision {
+            override val parameters: DoubleArray get() = incumbent
+        }
+    }
 
     enum class Mode { INSUFFICIENT_DATA, INITIAL_STABILITY_ONLY, FULL_FIT }
 
@@ -414,7 +433,7 @@ object FsrsParameterOptimizer {
         samples: List<ReviewSample>,
         /**
          * 当前生效的那组参数。候选必须在**同一段留出尾段**上严格优于它才被采纳；
-         * 否则原样返回它，并把 [Result.adopted] 置为 false。
+         * 否则原样返回它（[Result.adopted] 为 false，[Result.parameters] 与它逐位相同）。
          *
          * 默认值是出厂默认，于是"还没有拟合过"的首次调用与旧行为逐位相同。
          */
@@ -434,13 +453,12 @@ object FsrsParameterOptimizer {
             // 否则这一支会返回一组既不是 incumbent、也没被采纳的参数，读者得记住一个例外。
             // 装配点在 INSUFFICIENT_DATA 上直接返回 null（不写回），所以这对既有行为没有影响。
             return Result(
-                incumbent.copyOf(),
-                Mode.INSUFFICIENT_DATA,
-                Double.NaN,
-                Double.NaN,
-                predictableSampleCount,
-                emptyList(),
-                adopted = false,
+                mode = Mode.INSUFFICIENT_DATA,
+                trainLogLoss = Double.NaN,
+                validationLogLoss = Double.NaN,
+                sampleCount = predictableSampleCount,
+                optimizedParameterIndices = emptyList(),
+                decision = Decision.Rejected(incumbent),
             )
         }
         val baseIndices = if (predictableSampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
@@ -505,23 +523,22 @@ object FsrsParameterOptimizer {
         val incumbentValidationLoss = lossFor(cards, cutoff, incumbent, wantValidation = true)
         if (!(bestValidationLoss < incumbentValidationLoss - ADOPTION_MARGIN)) {
             return Result(
-                // 只有"该用哪组"是结果口径；其余字段照旧描述这次尝试（见 `adopted` 的注释）。
-                parameters = incumbent.copyOf(),
+                // 只有"该用哪组"是结论口径；其余字段照旧描述这次尝试（见 `decision` 的注释）。
                 mode = mode,
                 trainLogLoss = bestTrainLoss,
                 validationLogLoss = bestValidationLoss,
                 sampleCount = predictableSampleCount,
                 optimizedParameterIndices = fittedIndices,
-                adopted = false,
+                decision = Decision.Rejected(incumbent),
             )
         }
         return Result(
-            bestParams,
-            mode,
-            bestTrainLoss,
-            bestValidationLoss,
-            predictableSampleCount,
-            fittedIndices,
+            mode = mode,
+            trainLogLoss = bestTrainLoss,
+            validationLogLoss = bestValidationLoss,
+            sampleCount = predictableSampleCount,
+            optimizedParameterIndices = fittedIndices,
+            decision = Decision.Adopted(bestParams),
         )
     }
 
