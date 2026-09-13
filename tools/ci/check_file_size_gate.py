@@ -21,6 +21,12 @@ Baseline
 Levels are per source kind (main source is held tighter than tests):
   main source (path contains /src/main/):  warning 600, error 1000
   test       (src/test | src/androidTest): warning 900, error 1500
+
+Advisory rows carry a movement column (`+12 vs base (1040)`, or `new file`), so a
+reviewer can tell "this file was always that big" apart from "this branch made it
+bigger" without re-running git by hand. It is deliberately advisory and NOT a gate:
+a hard no-growth rule would also block legitimate additions to already-oversized
+files (audit R-12 is where that trade-off gets decided).
 """
 
 from __future__ import annotations
@@ -105,6 +111,9 @@ def main() -> int:
     if args.all:
         raw = git(["ls-files"])
         paths = [REPO / n for n in raw.splitlines() if n]
+        # No base in whole-tree mode: nothing to compare against, so the
+        # movement column is omitted rather than faked.
+        base = None
     else:
         base = base_ref(args)
         paths = changed_files(base)
@@ -122,23 +131,40 @@ def main() -> int:
             continue
         lines = line_count(path)
         soft, hard = THRESHOLDS[kind]
+        base_lines = base_line_count(base, path) if base else None
         if lines > hard:
-            if base_line_count(base, path) > hard:
-                # Already over the hard line before this change: backlog, not a
-                # newly introduced megafile. Keep it visible, but do not block.
-                warnings.append((lines, kind, path))
-            else:
+            if base_lines is not None and base_lines <= hard:
+                # Crossed the hard line in this change -> the thing the gate
+                # exists for. (Whole-tree mode has no base, so everything over
+                # the hard line there is backlog by definition -> warning.)
                 errors.append((lines, kind, path))
+            else:
+                # Already over the hard line before this change: backlog, not a
+                # newly introduced megafile. Keep it visible — and show which way
+                # it moved, so "it was always that big" can be told apart from
+                # "this branch just made it bigger" without re-running git by
+                # hand. Advisory only: a hard no-growth rule would also block
+                # legitimate additions to these files (audit R-12 is where that
+                # trade-off gets decided, not here).
+                warnings.append((lines, kind, path, base_lines))
         elif lines > soft:
-            warnings.append((lines, kind, path))
+            warnings.append((lines, kind, path, base_lines))
 
     for rows, label in ((warnings, "warning (advisory)"),
                         (errors, "error (build gate)")):
         if not rows:
             continue
         print(f"\n## oversized files: {label} ({len(rows)})")
-        for lines, kind, path in sorted(rows, reverse=True):
-            print(f"- {lines:>5} lines  [{kind}]  {path.relative_to(REPO)}")
+        for row in sorted(rows, key=lambda r: r[0], reverse=True):
+            lines, kind, path = row[0], row[1], row[2]
+            if len(row) > 3 and row[3] is not None:
+                base_lines = row[3]
+                movement = ("new file" if base_lines == 0
+                            else f"{lines - base_lines:+d} vs base ({base_lines})")
+                print(f"- {lines:>5} lines  [{kind}]  {movement}  "
+                      f"{path.relative_to(REPO)}")
+            else:
+                print(f"- {lines:>5} lines  [{kind}]  {path.relative_to(REPO)}")
 
     print(f"\nchecked {len(paths)} changed file(s); "
           f"{len(errors)} error, {len(warnings)} warning "
