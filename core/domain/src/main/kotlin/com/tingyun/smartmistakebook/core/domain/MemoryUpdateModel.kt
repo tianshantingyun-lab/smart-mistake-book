@@ -8,12 +8,6 @@ data class MemoryUpdateResult(
     val stabilityDays: Double,
     val difficulty: Double,
     val nextReviewAtEpochMillis: Long,
-    /**
-     * True when the update is a same-day (short-term) or otherwise sub-day
-     * refresh: the next review lands on the legacy ten-minute cadence instead
-     * of the interval inverse.
-     */
-    val shortTermReview: Boolean,
 )
 
 /**
@@ -115,7 +109,6 @@ class FsrsMemoryUpdateModel(
             nextReviewAtEpochMillis = nextReviewAt,
             // Learning steps are disabled (spec §2.15): every interval is at
             // least one whole day even for same-day reviews.
-            shortTermReview = false,
         )
     }
 
@@ -183,7 +176,6 @@ class LegacyExponentialMemoryUpdateModel(
             stabilityDays = stability,
             difficulty = from01(difficulty01),
             nextReviewAtEpochMillis = nextReviewAt,
-            shortTermReview = shortTermReview,
         )
     }
 

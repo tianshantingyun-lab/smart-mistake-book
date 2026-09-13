@@ -1133,8 +1133,6 @@ class LearningProjector(
         .sortedBy(AppliedTutorAnswerExposureRecord::eventSequence)
         .associateBy(AppliedTutorAnswerExposureRecord::outcomeId)
 
-    private fun safeAdd(value: Long, increment: Long): Long =
-        if (Long.MAX_VALUE - value < increment) Long.MAX_VALUE else value + increment
 
     /**
      * Generate predictions for audit trail. These are shadow predictions that

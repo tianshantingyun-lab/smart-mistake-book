@@ -26,7 +26,7 @@ class HLRPredictionAuditService(
         ) { "Conservative coefficient must be in 0..1" }
     }
 
-    /** Versioned identity shared with [HLRShadowModeManager] so audit rows stay joinable. */
+    /** Versioned identity for the audit rows this service produces. */
     val modelVersion: LearningModelVersion = LearningModelVersion(
         modelId = MODEL_ID,
         version = MODEL_VERSION_STRING,
