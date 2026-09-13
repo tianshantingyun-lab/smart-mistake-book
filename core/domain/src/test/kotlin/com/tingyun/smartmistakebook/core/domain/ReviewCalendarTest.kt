@@ -105,6 +105,34 @@ class ReviewCalendarTest {
         )
     }
 
+    /**
+     * 审计 N-26 的第 2 处：规划侧原先自己 `atZone(zone).toLocalDate()` 再 `atStartOfDay(zone)`，
+     * 于是"学习者的一天从哪一刻开始"多了一个定义点。现在它问 [ReviewCalendar]。
+     *
+     * 判别格是"本地午夜"与"UTC 午夜"的差：上海是 +08:00，本地 1 月 10 日 00:00 = 1 月 9 日 16:00 UTC。
+     * 写成 `epochDay * 86_400_000` 会得到 1 月 10 日 00:00 **UTC**（＝本地 08:00），
+     * 那条错值能通过下面两条"包含关系"断言，只会在第一条上露馅。
+     */
+    @Test
+    fun `the local day starts at the learner midnight not at utc midnight`() {
+        val at = localInstant(day = 10, hour = 23)
+        val localDay = ReviewCalendar.localEpochDayOf(at, shanghai)
+        val startOfDay = ReviewCalendar.localDayStartEpochMillis(localDay, shanghai)
+
+        assertEquals(
+            "本地日界必须是本地 00:00（上海＝前一日 16:00 UTC）",
+            ZonedDateTime.of(2026, 1, 10, 0, 0, 0, 0, shanghai).toInstant().toEpochMilli(),
+            startOfDay,
+        )
+        assertTrue("日界不得晚于该时刻", startOfDay <= at)
+        assertTrue("该时刻必须落在这一天之内", at < startOfDay + ReviewCalendar.DAY_MILLIS)
+        assertEquals(
+            "从日界再问一次，必须还是同一天（日与日起点是一件事的两半）",
+            localDay,
+            ReviewCalendar.localEpochDayOf(startOfDay, shanghai),
+        )
+    }
+
     private fun localInstant(day: Int, hour: Int): Long =
         ZonedDateTime.of(2026, 1, day, hour, 0, 0, 0, shanghai).toInstant().toEpochMilli()
 

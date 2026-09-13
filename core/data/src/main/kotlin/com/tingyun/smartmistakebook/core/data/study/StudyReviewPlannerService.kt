@@ -24,6 +24,7 @@ import com.tingyun.smartmistakebook.core.domain.PredictionAuditSink
 import com.tingyun.smartmistakebook.core.domain.ReviewCandidate
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanningRequest
 import com.tingyun.smartmistakebook.core.domain.ReviewPlanner
+import com.tingyun.smartmistakebook.core.domain.ReviewCalendar
 import com.tingyun.smartmistakebook.core.domain.ReviewPlannerV2
 import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.model.LearnerSnapshot
@@ -32,7 +33,6 @@ import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.model.TutorDifficultyTier
 import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
@@ -457,10 +457,14 @@ internal class StudyReviewPlannerService(
 
     fun planningContext(learnerSnapshot: LearnerSnapshot): PlanningContext {
         val referenceAt = maxOf(clock.millis(), learnerSnapshot.decisionWatermarkEpochMillis)
-        val localDate = Instant.ofEpochMilli(referenceAt).atZone(studyZoneId).toLocalDate()
-        val startOfDay = localDate.atStartOfDay(studyZoneId).toInstant().toEpochMilli()
+        // 日界与"这一天从哪一刻开始"都问 [ReviewCalendar]（审计 N-26 的第 2 处）：这里原先自己
+        // `atZone(studyZoneId).toLocalDate()` 再 `atStartOfDay(...)`，于是"学习者的一天"在规划侧
+        // 又长出第二个定义点——而它必须与读侧、写侧是同一个。（`LocalDate.ofEpochDay` 只是同一
+        // 个本地日的另一种表示，不含任何时区判断。）
+        val localEpochDay = ReviewCalendar.localEpochDayOf(referenceAt, studyZoneId)
+        val startOfDay = ReviewCalendar.localDayStartEpochMillis(localEpochDay, studyZoneId)
         return PlanningContext(
-            localDate = localDate,
+            localDate = LocalDate.ofEpochDay(localEpochDay),
             planningAtEpochMillis = maxOf(startOfDay, learnerSnapshot.decisionWatermarkEpochMillis),
         )
     }

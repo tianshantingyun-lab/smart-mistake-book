@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.domain
 
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 
 /**
@@ -70,4 +71,19 @@ object ReviewCalendar {
         localEpochDayOf(atEpochMillis, zoneId) -
             localEpochDayOf(previousReviewedAtEpochMillis, zoneId)
         ).toDouble().coerceAtLeast(0.0)
+
+    /**
+     * 某个**本地日**从哪一刻开始（UTC 毫秒）。
+     *
+     * 入参是 [localEpochDayOf] 给出的本地日序号，不是时刻：取"日"与取"日的起点"是同一件事的
+     * 两半，分开写就会出现两个"一天从哪开始"的定义（审计 N-26 的第 2 处就是这样长出来的——
+     * 规划侧原先自己 `atZone(zone).toLocalDate()` 再 `atStartOfDay(zone)`）。
+     *
+     * 注意它**不是** `epochDay * DAY_MILLIS`：那是 UTC 午夜；本地日界要按 [zoneId] 换算。
+     */
+    fun localDayStartEpochMillis(localEpochDay: Long, zoneId: ZoneId): Long =
+        LocalDate.ofEpochDay(localEpochDay)
+            .atStartOfDay(zoneId)
+            .toInstant()
+            .toEpochMilli()
 }
