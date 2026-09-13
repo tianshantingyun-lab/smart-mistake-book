@@ -32,6 +32,8 @@ import com.tingyun.smartmistakebook.core.ui.InkMuted
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
+import com.tingyun.smartmistakebook.core.ui.MASTERY_FAIR_THRESHOLD
+import com.tingyun.smartmistakebook.core.ui.MASTERY_STRONG_THRESHOLD
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
@@ -394,8 +396,13 @@ private fun recentPracticeLabel(summary: StudyKnowledgeSummary): String {
     return parts.joinToString("、").ifEmpty { "暂无记录" }
 }
 
-private fun forgettingRiskLabel(summary: StudyKnowledgeSummary): String = when {
-    summary.conservativeMasteryScore >= 0.7 -> "低"
-    summary.conservativeMasteryScore >= 0.4 -> "中"
+/**
+ * 遗忘风险档。切点与 `masteryBandLabel`（core:ui）**共用同一对常量**（审计 R-03）：措辞不同
+ * （这里是风险，那里是掌握），但同一张卡的两处结论必须一致——两处各写一份 `0.7/0.4`
+ * 时，改一处就会让同一张卡同时显示「较稳」与「风险 高」。
+ */
+internal fun forgettingRiskLabel(summary: StudyKnowledgeSummary): String = when {
+    summary.conservativeMasteryScore >= MASTERY_STRONG_THRESHOLD -> "低"
+    summary.conservativeMasteryScore >= MASTERY_FAIR_THRESHOLD -> "中"
     else -> "高"
 }
