@@ -26,7 +26,6 @@ import com.tingyun.smartmistakebook.feature.review.CapturedReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.tutor.SavedMistakeTutorRoute
 import com.tingyun.smartmistakebook.feature.tutor.buildTutorDebriefRequestForApp
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -107,20 +106,17 @@ internal fun ReviewSessionDestination(
         // 下面每处用 `?.let`/`if (x != null)` 都拿得到非空值，不需要再断言一遍。
         val readableUnitId = requestedId
             ?.takeIf { experience.status == StudyDataStatus.READY }
-        // 题干读取是**必需**的，所以它不像下面两张可选卡那样降级成 null：读失败要说出来
-        // （审计 N-12），而不是让 `isLoaded` 永远停在 false、界面永远停在「正在读取题目…」。
-        val loadedArtifact = try {
-            readableUnitId?.let { repository.teachingArtifact(it) }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (failure: Throwable) {
-            value = TeachingArtifactLoad(
-                practiceUnitId = requestedId,
-                isLoaded = true,
-                loadFailureDiagnosticId = teachingArtifactFailureDiagnosticId(failure),
-            )
-            return@produceState
-        }
+        // 题干读取走的是**抛不出异常**的通道（2026-09-13 一手复核，见审计 §12.5 N-12 的处置）：
+        // 生产里 `StudyExperienceRepository.teachingArtifact` 只有一种实现，
+        // `RoomBackedStudyExperienceRepository` 直接委托给 `fixtureSource`；而 `StudyFixtureSource`
+        // 的两种实现都是纯查表——release 侧 `EmptyStudyFixtureSource` 的函数体就是 `= null`，
+        // debug 侧是 `curatedQuestions().firstOrNull { … }?.teachingArtifact()`，不做 IO、不抛异常。
+        // 工厂也没有任何装饰层。
+        //
+        // 所以这里**不包"读失败"兜底**：那层兜底捕不到任何真实事件，却会把 N-12 记成"已修"
+        // ——机制建成、却没有能触发它的失败，正是这份审计反复点名的病。将来工件若改从库里读
+        // （那时才真的会失败），再按**届时的真实失败**重新设计失败态，而不是先摆一个空壳。
+        val loadedArtifact = readableUnitId?.let { repository.teachingArtifact(it) }
         currentCoroutineContext().ensureActive()
         // Spec §2.16 re-teach opening, loaded in the same round trip as the
         // artifact: only a leeched card yields one, so this stays a null lookup
@@ -183,8 +179,6 @@ internal fun ReviewSessionDestination(
             navController.popBackStack(Routes.Review, false)
         }
     }
-    // 绑成局部量，`when` 里就能直接智能转换——省掉"判完再 requireNotNull 断言一遍"那句。
-    val artifactLoadFailure = artifactLoad.loadFailureDiagnosticId
     when {
         destinationLifecycle != Lifecycle.State.RESUMED -> ReviewSessionGateMessage(
             "正在打开复习题…",
@@ -199,11 +193,8 @@ internal fun ReviewSessionDestination(
             ordinal == null || queueSize == null -> ReviewSessionGateMessage(
                 "正在确认本机复习会话…",
             )
-        // 读失败必须在「还在读」之前判掉（审计 N-12）：两者都可能让 `isLoaded` 为 false，
-        // 但只有这条说得出发生了什么、以及下一步做什么。
-        artifactLoadFailure != null -> ReviewSessionGateMessage(
-            teachingArtifactFailureMessage(artifactLoadFailure),
-        )
+        // 「读不出来」与「这道题本来就没有可读的题干」在这里**不是**两件事：实拍题没有策展件是
+        // 正常的，而读取本身抛不出异常（见上面那段复核）。所以只有"还没读完"这一条。
         !artifactLoad.isLoaded || artifactLoad.practiceUnitId != practiceUnitId ->
             ReviewSessionGateMessage("正在读取题目…")
         artifactLoad.artifact != null -> ReviewSessionScreen(

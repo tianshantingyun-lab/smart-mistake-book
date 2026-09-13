@@ -183,15 +183,6 @@ internal data class TeachingArtifactLoad(
     /** Spec §2.9: non-null when a prerequisite of this card is below ready. */
     val prerequisiteRemediation: PrerequisiteRemediation? = null,
     val isLoaded: Boolean = false,
-    /**
-     * 非 null 表示**这一次读取失败了**，而不是"这道题没有可读的题干"。
-     *
-     * 两者的区别就是这条维度存在的理由（审计 N-12）：`artifact == null` 是**正常**的
-     * ——实拍题本来就没有策展件；而读取过程抛异常是**故障**。此前两者共用 `isLoaded`，
-     * 于是故障的表现是 `isLoaded` 永远停在 false、界面永远停在「正在读取题目…」，
-     * 用户既看不到原因也没法继续。文案见 [teachingArtifactFailureMessage]。
-     */
-    val loadFailureDiagnosticId: String? = null,
 )
 
 private val rootDestinations = listOf(
