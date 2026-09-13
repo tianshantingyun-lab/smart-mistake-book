@@ -116,6 +116,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
+import com.tingyun.smartmistakebook.core.domain.FsrsScheduleMath
 import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
 import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
@@ -1798,16 +1799,85 @@ class RoomBackedStudyExperienceRepositoryTest {
         }
     }
 
+    /**
+     * N-27③（承 F-01）：**装配点那一环**——同一份投影、同一个时钟，只有拟合参数里的 `w20` 不同，
+     * 读侧报出的保持率就必须不同。domain 层的 `FsrsDecayThreadingTest` 证的是"各处公式读了 `decay`"；
+     * 这里证的是 **core:data 的装配真的把它接上了**（模型与两条曲线共用同一组参数），
+     * 也就是"拟合出来 → 读侧输出"这条链在生产路径上是通的。
+     *
+     * 观测点取**错题读侧**的 `retrievability`（`StudyExperienceMappers.toCatalogEntry` 用 repository
+     * 自己的 `forgettingCurve` 现算），**不取** `library_catalog` 视图——一手读视图 SQL，那一列是
+     * `NULL AS retrievability`，拿它断言会恒真。
+     *
+     * 夹具的 `t/S = 30/12 = 2.5`，这个取值必须说清：曲线在 `t = S` 处**与参数无关**（都恰好 0.9，
+     * 那正是 `FACTOR` 的定义点），所以 `t = S` 的夹具会让下面几条断言一起退化成同一个常量。
+     */
+    @Test
+    fun retrievabilityOnTheReadPathIsComputedFromTheFittedDecay() = runBlocking {
+        val defaulted = retrievabilityUnder(optimizedFsrsParameters = null)
+        val flatter = retrievabilityUnder(parametersWithDecay(0.4))
+
+        assertTrue(
+            "夹具必须真的落在曲线有判别力的位置上：elapsed>0 时 R 严格小于 1" +
+                "（两处都取到 1.0 的话，下面两条比的就是同一个常量）",
+            defaulted < 1.0,
+        )
+        assertEquals(
+            "闭式 (1 + FACTOR·t/S)^(−w20)，FACTOR = 0.9^(−1/w20) − 1；t=30、S=12、w20=0.1542（独立算得）",
+            0.826135877,
+            defaulted,
+            1e-6,
+        )
+        assertEquals(
+            "换成本地拟合出来的 w20=0.4，读侧必须跟着动（独立算得 0.798822641）——" +
+                "若装配点仍把衰减冻在出厂值，这一条是红的",
+            0.798822641,
+            flatter,
+            1e-6,
+        )
+    }
+
+    /**
+     * 读一次"错题读侧报出的保持率"：同一份夹具（一张卡、一条 30 天前的记忆态），
+     * 只有构造参数不同。`unit-v` 由 [FakeStudyDatabasePort.seedPriorMemoryForVisualIngest] 提供记忆态。
+     */
+    private suspend fun retrievabilityUnder(optimizedFsrsParameters: DoubleArray?): Double {
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(visualIngestMistake())
+            seedPriorMemoryForVisualIngest(
+                practiceUnitId = "unit-v",
+                lastReviewedAtEpochMillis = FIXED_NOW.toEpochMilli() - 30L * 86_400_000L,
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(
+            database = database,
+            applicationScope = applicationScope,
+            optimizedFsrsParameters = optimizedFsrsParameters,
+        )
+        try {
+            repository.initialize()
+            val entry = repository.snapshot.value.catalog.single { it.practiceUnitId == "unit-v" }
+            assertNotNull("记忆态在投影里，读侧就必须给出保持率", entry.retrievability)
+            return entry.retrievability!!
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /** 只把 `w20` 挪开，其余 20 位逐位相同：差异只可能来自衰减。 */
+    private fun parametersWithDecay(w20: Double): DoubleArray =
+        FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf().also { it[20] = w20 }
+
     private fun repository(
         database: StudyDatabasePort,
         applicationScope: CoroutineScope,
-        clock: Clock = Clock.fixed(
-            Instant.parse("2026-01-02T08:00:00Z"),
-            ZoneId.of("Asia/Shanghai"),
-        ),
+        clock: Clock = Clock.fixed(FIXED_NOW, ZoneId.of("Asia/Shanghai")),
         initialFixture: StudySeedBundle? = M1CuratedStudySeed.bundle(includeTutorMistake = false),
         fixtureSource: StudyFixtureSource = M1CuratedFixtureSource,
         schedulingSettingsStore: SchedulingSettingsStore? = null,
+        optimizedFsrsParameters: DoubleArray? = null,
     ) = RoomBackedStudyExperienceRepository(
         database = database,
         applicationScope = applicationScope,
@@ -1816,6 +1886,7 @@ class RoomBackedStudyExperienceRepositoryTest {
         initialFixture = initialFixture,
         fixtureSource = fixtureSource,
         schedulingSettingsStore = schedulingSettingsStore,
+        optimizedFsrsParameters = optimizedFsrsParameters,
     )
 
     private fun visualIngestMistake(
@@ -1926,6 +1997,14 @@ private const val FITTABLE_HISTORY_BASE_EPOCH_MILLIS = 1_700_000_000_000L
  * `optimizedParameters` 初值为 null ⇒ repository 取到的现行组是出厂默认，
  * 于是第一次拟合必然被采纳、第二次必然被拒。
  */
+/**
+ * The clock every fixture in this file is pinned to. A member, not an inline literal in
+ * the `repository(...)` default, because the retrievability fixture below has to place
+ * `lastReviewedAt` **relative to the same instant** — two copies of the literal would
+ * silently give that fixture a different elapsed time (and a different expected R).
+ */
+private val FIXED_NOW: Instant = Instant.parse("2026-01-02T08:00:00Z")
+
 private class RecordingSchedulingSettingsStore : SchedulingSettingsStore {
     private val parameters = MutableStateFlow<DoubleArray?>(null)
 
