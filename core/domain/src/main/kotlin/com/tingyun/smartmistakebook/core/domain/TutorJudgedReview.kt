@@ -68,6 +68,11 @@ enum class TutorJudgedReviewSettlementStatus {
     /**
      * 这一轮讲题既没有本地核对的检查题作答，模型也没给出判词——**不写任何证据、不推进队列**。
      * 该复习项保持到期，下次还会出现（产品裁定：无判定时保持阻塞，不伪造"本次未作答"记录）。
+     *
+     * 代价是知情的（`docs/scenario-registry.md` 的 ReviewSession 行）：没有可用模型时这类题
+     * 永远走不到 RECORDED，而生产线上的题都是无工件题 → 整条复习队列停在第 1 题。若将来要
+     * 加"本次先跳过"，它必须是零权重、不改记忆、该题保持到期的独立账本语义，**不得**复用
+     * `ANSWER_REVEALED`（它会被映射成 AGAIN 惩罚）。
      */
     NO_VERDICT,
 }

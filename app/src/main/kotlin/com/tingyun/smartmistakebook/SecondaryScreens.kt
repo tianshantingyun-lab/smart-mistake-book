@@ -109,6 +109,8 @@ internal fun CapabilityScreen(
     capabilityTester: ModelCapabilityTester?,
     onBack: () -> Unit,
     calibrationReportProvider: (suspend () -> CalibrationReport)? = null,
+    /** 来源校准（含讲题判定那档）；见 [SourceCalibrationSection]。 */
+    sourceCalibrationProvider: (suspend () -> List<com.tingyun.smartmistakebook.core.domain.SourceCalibration>)? = null,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
@@ -474,6 +476,11 @@ internal fun CapabilityScreen(
                     )
                 }
             }
+        if (sourceCalibrationProvider != null) {
+            SourceCalibrationSection(
+                provider = requireNotNull(sourceCalibrationProvider),
+            )
+        }
         }
     }
     // 确认框放在函数末尾（而非列内），因为它只在配置存在时可达：触发它的按钮本身

@@ -137,7 +137,11 @@
 - Liu 2024 的具体一致率数字：未获取（PDF 不可抓取）。
 - Carpenter & DeLosh 2006 / Yang 2018 / Bisra 2018 / Adesope 2017 / Settles & Meeder 2016：仅元数据级【P】，**摘要与效应量未读，勿引用具体数值**。
 - 未找到：自解释质量 ↔ 后续表现的直接相关系数实证；LLM 判分一致性元分析。
-- **校准计划（上线后）**：按 §4 先验落地后，用 `calibrateSources` 收集 ≥30 对"模型判正 → 该卡下一次真实作答的回忆率"样本，对照 ATTEMPT 基线；低于基线 ≥0.15 则人工降档（沿用 `SourceCalibration` 只建议不自动改的既有规则）。
+- **校准 runbook（现行）**：
+  1. **看哪里**：设置页「我的 → 模型能力」→「来源校准」（`SourceCalibrationSection`）。每行一个来源：正向报告次数、配到真实作答的对数、之后回忆率、真实作答基线，以及一行处置建议。`MODEL_JUDGED`（讲题判定）那一档还带一条说明：校准达标前不参与 FSRS 参数拟合。
+  2. **门槛**（`SourceCalibration` 常量，改门槛要连研究文档一起改）：配对数 `MIN_PAIRED_OUTCOMES = 30`；低于基线 `DOWNGRADE_MARGIN = 0.15` 才建议下调。
+  3. **两种结论各自的动作**：①与基线相当（且样本达标）→ 把 `MODEL_JUDGED` 从 `fittableReviewSamples` 的排除里放出，并在 `SchedulingEvaluation` 的注释与本节记录放行日期与依据样本数；②低于基线 ≥0.15 → **只降权重，不放出拟合**（改 `TutorJudgedReviewSettler.MODEL_JUDGED_EVIDENCE_WEIGHT` 与/或 `MODEL_JUDGED_*` 的映射档），并记下依据。
+  4. **绝不做**：不因“样本数够了”就自动放行；不把 `MODEL_JUDGED` 混进 `ATTEMPT` 来源（Anki 官方口径：混用评分会把历史间隔标尺整体拉偏）——这条由 `fittableReviewSamples` 的单一实现兜住，改它之前先读本文件 §4(iii)8。
 - 检索失败记录：arXiv API / Semantic Scholar 429；arXiv 搜索页超时；DuckDuckGo/Bing/Mojeek 反爬；Springer/Nature 跳 IdP；WebFetch 不支持 PDF；browser-use daemon 启动失败。
 
 ---

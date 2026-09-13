@@ -82,8 +82,11 @@ data class LearningEvidence(
 /**
  * 自评通道的合同（**已废止的写入方**，2026-09-13 起不再有新快照产生）。
  *
- * 保留对象与 `DatabaseContractValidator` 里的这一支，是因为**旧备份/旧库里的历史快照**
- * 在恢复或重放时仍要能通过校验；删掉它会让老数据无法恢复，属于数据安全风险。
+ * 保留对象与 `DatabaseContractValidator` 里的这一支，是为了"旧形状的快照仍然可写"：
+ * 现存数据库里还有大量自评快照，任何将来会重新落盘历史快照的迁移/回放、以及降级安装的
+ * 老版本写入，都不该因为它们形状过时而被拒。**注意：备份恢复不走这条校验**——恢复是
+ * 整库文件替换，只做 PRAGMA quick_check/foreign_key_check 与 Room 打开，不逐行校验合同
+ * （2026-09-14 核实，此前的注释把它写成了恢复依赖，是错的）。
  * 新写入路径一律走 `LocalModelJudgedContract`（见其 KDoc）。
  */
 object LocalReviewSelfReportContract {
