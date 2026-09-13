@@ -316,4 +316,23 @@ class FsrsScheduleMathTest {
 
         assertEquals(expected, FsrsScheduleMath.retention(20.0, 10.0, FsrsScheduleMath.DEFAULT_DECAY), 1e-12)
     }
+
+    /**
+     * **值钉**：`decay` 就是第 20 号参数取负（FSRS-6 的 `w20 = 0.1542`，出厂参数的最后一位）。
+     *
+     * 为什么必须用字面量而不是"拿 `decayOf` 算一遍再比"：后者是**关系**断言，下标写错时两边
+     * 一起动、照样绿——而"下标写错一位"正是这轮把六处手写收口到 `decayOf` 的原因（审计 N-25）。
+     * 判据只能是那个数本身。**邻近的 19 号是 0.0658**：失败信息里出现它，就说明读到了隔壁那一位。
+     *
+     * 同理，`FsrsDecayThreadingTest` 里那几处 `-parameters[20]` 是**故意**不改成 `decayOf` 的：
+     * 那条用例的判据就是"把下标挪开会怎样"，用被测函数去算期望值等于自己证明自己。
+     */
+    @Test
+    fun `decay is parameter twenty and not its neighbour`() {
+        assertEquals(
+            -0.1542,
+            FsrsScheduleMath.decayOf(FsrsScheduleMath.DEFAULT_PARAMETERS),
+            0.0,
+        )
+    }
 }
