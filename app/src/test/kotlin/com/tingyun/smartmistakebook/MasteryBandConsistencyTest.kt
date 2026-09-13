@@ -18,8 +18,34 @@ import org.junit.Test
  *
  * 判别性的那一格是**恰好等于切点**：`>= 0.7` 与 `> 0.7` 只在边界上不同，而"该说哪个词"
  * 的分歧也正是在边界上第一次显形。所以三条用例各钉一个边界而不是各钉一个区间中点。
+ *
+ * 但**只有边界还不够**——这一点是变异测试逼出来的：把 `forgettingRiskLabel` 改回
+ * 字面量 `0.7`（也就是 R-03 要消灭的那处漂移），下面三条边界用例**全绿**。因为探测点
+ * `MASTERY_STRONG_THRESHOLD - 0.0001` 是**从常量算出来的**：某一处写成更大的字面量时，
+ * 探测点跟着常量一起落在那个字面量的下方，两边同时换档，谁都不露馅。
+ * 所以补了 [theTwoLabelsAgreeAtEveryScoreOnTheGrid]：不推导探测点，直接扫整条 [0,1]。
  */
 class MasteryBandConsistencyTest {
+
+    /**
+     * 落在同一张卡上的两档，在**整条 `[0,1]` 上**都必须一致。
+     *
+     * 消灭的失败与三条边界用例相同，覆盖面不同：边界用例只抓得住"某一处写**小**"
+     * （探测点仍落在新阈值下方 → 两边换档不同步），网格扫描两侧都抓——
+     * 写成 0.75 时，`score = 0.70` 这一格会说「较稳」＋「中」。
+     */
+    @Test
+    fun theTwoLabelsAgreeAtEveryScoreOnTheGrid() {
+        for (step in 0..GRID_STEPS) {
+            val score = step / GRID_STEPS.toDouble()
+            val risk = forgettingRiskLabel(summaryAt(score))
+            assertEquals(
+                "分数 $score：掌握档说「${masteryBandLabel(score)}」，遗忘风险档却说「$risk」",
+                riskFor(masteryBandLabel(score)),
+                risk,
+            )
+        }
+    }
 
     @Test
     fun theStrongBoundaryAgreesBetweenMasteryAndForgettingRisk() {
@@ -66,4 +92,16 @@ class MasteryBandConsistencyTest {
         status = MasteryStatus.LEARNING,
         conservativeMasteryScore = mastery,
     )
+
+    /** 掌握档 → 同一个学生在「遗忘风险」那一列**必须**看到的词。 */
+    private fun riskFor(masteryLabel: String): String = when (masteryLabel) {
+        "较稳" -> "低"
+        "一般" -> "中"
+        else -> "高"
+    }
+
+    private companion object {
+        /** 网格步数：0.01 的粒度足以抓住任何 ≥0.01 的单侧阈值漂移。 */
+        const val GRID_STEPS = 100
+    }
 }
