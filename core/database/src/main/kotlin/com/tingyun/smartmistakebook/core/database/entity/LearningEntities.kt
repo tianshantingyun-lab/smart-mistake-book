@@ -351,7 +351,20 @@ internal data class AttemptEventEntity(
     val hintCount: Int = 0,
     @ColumnInfo(name = "revealed_before_answer", defaultValue = "0")
     val revealedBeforeAnswer: Int = 0,
-    /** Error-type channel columns (spec 7); populated from stage C onward. */
+    /**
+     * 错因通道（spec §7）的**占位列**，尚未接线：全仓**既无写入方也无读取方**
+     * （审计 R-09，一手逐处 grep 核实）。
+     *
+     * 原先这里写的是「populated from stage C onward」——那读起来像"它会被填上、可以拿来用"，
+     * 而这正是 R-09 点名的失效：**留着的列会被后来者当成可用信号**。所以把话说明白：
+     * 要用就先接线，别拿它当"已经有错因数据"。
+     *
+     * **删列不划算，触发条件写在这里**：删掉它们要走"建新表 → 拷数据 → 删旧表 → 改名"
+     * （`attempt_event` 是核心追加表，带外键与索引），而不是 `ALTER TABLE … DROP COLUMN`——
+     * 后者要 SQLite ≥ 3.35，而本工程 `minSdk 23`（SQLite 3.8）上会**直接崩**，
+     * 且迁移矩阵用例跑在新设备上，**抓不到这个崩溃**。所以：等 `attempt_event` 因别的原因
+     * 重建时顺手删（V10→14／V15→16 已有重建先例）。
+     */
     @ColumnInfo(name = "error_type")
     val errorType: String? = null,
     @ColumnInfo(name = "error_type_confidence")

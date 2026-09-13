@@ -41,6 +41,8 @@ internal val MASTERY_SCHEDULING_MIGRATION_35_36 = object : Migration(35, 36) {
         connection.execSQL(
             "ALTER TABLE attempt_event ADD COLUMN revealed_before_answer INTEGER NOT NULL DEFAULT 0",
         )
+        // 错因通道的占位列，至今无写入方与读取方；删列不划算的理由与触发条件写在
+        // `LearningEntities.attempt_event` 的字段注释里（审计 R-09）。
         connection.execSQL("ALTER TABLE attempt_event ADD COLUMN error_type TEXT")
         connection.execSQL("ALTER TABLE attempt_event ADD COLUMN error_type_confidence REAL")
         connection.execSQL(
