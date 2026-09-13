@@ -490,6 +490,9 @@ interface StudyExperienceRepository : AutoCloseable {
      * Replays the collected review_log under FSRS-6 and the legacy
      * exponential baseline (spec §2.20). Null before the harness sample
      * floor is met.
+     *
+     * **尚未接线（审计 R-07，2026-09-13 一手核实）**：全仓**生产零读者**——只有 androidTest 的替身在覆写它。
+     * 在接上之前，别把这个方法的存在读成「标定回路在跑」。接线的最低成本：把报告呈现给用户／导出（处置权在人，见 R-07）。
      */
     suspend fun evaluateSchedulingModels(): SchedulingEvaluationReport?
 
@@ -497,10 +500,18 @@ interface StudyExperienceRepository : AutoCloseable {
      * Per-source calibration (spec §2.5/A2): realized recall of the next
      * real attempt after each subjective positive report. Empty before the
      * paired-outcome floor is met; suggestions are advisory only.
+     *
+     * **尚未接线（审计 R-07，2026-09-13 一手核实）**：全仓**生产零读者**——只有 androidTest 的替身在覆写它。
+     * 在接上之前，别把这个方法的存在读成「标定回路在跑」。接线的最低成本：设置页里一条「来源校准」提示。
      */
     suspend fun sourceCalibrations(): List<SourceCalibration> = emptyList()
 
-    /** Per-planned-reason realized recall (spec §6 recalibration, advisory). */
+    /**
+     * Per-planned-reason realized recall (spec §6 recalibration, advisory).
+     *
+     * **尚未接线（审计 R-07，2026-09-13 一手核实）**：全仓**生产零读者**——只有 androidTest 的替身在覆写它。
+     * 在接上之前，别把这个方法的存在读成「标定回路在跑」。接线的最低成本：同上，排在来源校准旁边。
+     */
     suspend fun plannedReasonCalibrations(): List<PlannedReasonCalibration> = emptyList()
 
     /**
@@ -508,6 +519,9 @@ interface StudyExperienceRepository : AutoCloseable {
      * (research tutor-evidence-gate §4): rejection composition and
      * window-quota pressure from the collected chat evidence. Suggestions
      * only — constants change by human decision, never automatically.
+     *
+     * **尚未接线（审计 R-07，2026-09-13 一手核实）**：全仓**生产零读者**——只有 androidTest 的替身在覆写它。
+     * 在接上之前，别把这个方法的存在读成「标定回路在跑」。接线的最低成本：把报告列出到「门槛常量的复核清单」。
      */
     suspend fun chatEvidenceGateCalibration(): ChatEvidenceGateCalibration.GateCalibrationReport? = null
 

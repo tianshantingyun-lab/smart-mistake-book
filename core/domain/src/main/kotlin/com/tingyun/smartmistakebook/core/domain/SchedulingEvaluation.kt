@@ -101,6 +101,12 @@ data class SchedulingEvaluationReport(
      * Spec §2.20 go/no-go gate: FSRS-6 must beat the exponential baseline on
      * the same replayed evidence before it may stay enabled.
      */
+    /**
+     * **这个门今天不会响（审计 R-07，2026-09-13 一手核实）**：全仓**零读者**。也就是说
+     * spec §2.20 那句「FSRS-6 必须优于指数基线才允许继续启用」目前只是**算得出来**，
+     * 没有任何地方据它做决定（唯一的 kill switch 是人手动的 `SchedulingOptions.useFsrsScheduling`）。
+     * 接线的最低成本：在启动或设置路径读它一次并给出处置（回落到 LEGACY／提示用户）。
+     */
     val fsrsBeatsBaseline: Boolean
         get() = fsrs.isValidModel && baseline.isValidModel &&
             evaluationSampleCount >= MIN_EVALUATION_SAMPLES &&
