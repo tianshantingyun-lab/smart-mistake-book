@@ -122,8 +122,11 @@ class RoomBackedStudyExperienceRepository(
         ?: emptyMap()
     /**
      * 这一族 FSRS 参数**模型与曲线共用**（F-01）：拟合出来的衰减（`-w20`）必须同时抵达
-     * 排期与保持率估计。分开写两次 `optimizedFsrsParameters ?: …` 就是让两边有各走一条曲线的机会，
-     * 而那种不一致只会在用户看到"排期说还早、保持率说快忘光了"时才显形。
+     * 排期与保持率估计。拟合参数只在这里读一次（`optimizedFsrsParameters ?: …` 写两遍就是
+     * 让两边有各走一条参数的路），[ForgettingCurve] 也**只构造一个实例**、投影与规划共用它
+     * ——写两个构造调用，等于给"排期用一条曲线、保持率用另一条"留了条路，而那种不一致
+     * 只会在用户看到"排期说还早、保持率说快忘光了"时才显形。共享是安全的：那是个不可变类，
+     * 每次调用只读自己的 `algorithm` 与 `decay`。
      */
     private val fsrsParameters = optimizedFsrsParameters ?: FsrsScheduleMath.DEFAULT_PARAMETERS
     private val forgettingCurve = ForgettingCurve(
@@ -144,15 +147,8 @@ class RoomBackedStudyExperienceRepository(
      */
     private val durationModel = LogDurationModel()
     private val reviewPlannerV2 = ReviewPlannerV2(
-        forgettingCurve = ForgettingCurve(
-            algorithm = if (schedulingOptions.useFsrsScheduling) {
-                ForgettingCurveAlgorithm.FSRS6_POWER_LAW
-            } else {
-                ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
-            },
-            // 与上面那条同源：排程用哪条曲线，规划就必须用哪条（F-01）。
-            decay = FsrsScheduleMath.decayOf(fsrsParameters),
-        ),
+        // 与投影同一条曲线实例（F-01）：不同实例就有分叉的机会。
+        forgettingCurve = forgettingCurve,
         durationModel = durationModel,
     )
     private val learningProjector = LearningProjector(
