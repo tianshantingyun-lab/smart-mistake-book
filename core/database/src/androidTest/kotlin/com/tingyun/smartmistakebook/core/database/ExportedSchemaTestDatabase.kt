@@ -47,6 +47,123 @@ internal fun createDatabaseFromExportedSchema(
     }
 }
 
+/** 迁移矩阵夹具里那道题的 id（四张表共用一套，视图靠它们 join）。 */
+internal const val SEEDED_PROBLEM_ID = "matrix-problem"
+internal const val SEEDED_REVISION_ID = "matrix-revision"
+internal const val SEEDED_PRACTICE_UNIT_ID = "matrix-practice-unit"
+internal const val SEEDED_ENTRY_ID = "matrix-entry"
+
+/** 夹具题面；迁移之后必须**逐字**还在，否则内容被迁移改写了。 */
+internal const val SEEDED_PROBLEM_MARKDOWN = "迁移矩阵夹具题面。"
+
+/**
+ * 往「按某个已导出 schema 版本建出来的库」里写一行最小可检索的错题。
+ *
+ * 存在的理由（审计 `migration-matrix-empty-assertion`）：迁移矩阵此前只在**空库**上断言
+ * `libraryCatalogCount(...) == 0`，那句话对任何迁移都成立——**破坏性回退一条也测不出来**。
+ * 要测出"数据没有被迁移弄丢"，先得有数据。
+ *
+ * 列按**该版本自己的 `PRAGMA table_info`** 适配，而不是按当前版本的列名写死：1..44 里这四张
+ * 表的形状变过三次（`problem_revision.question_document_snapshot` 自 v3 起、
+ * `error_book_entry.user_note` 自 v44 起），写死列名会让老版本直接插不进去。
+ *
+ * 某个 **NOT NULL 且没有默认值**的列拿不到值时**当场抛**，而不是插一行残缺数据：
+ * 将来某版给这四张表加了必填列，要在这里补上，否则"迁移丢数据"和"夹具没插进去"这两种红
+ * 会长得一模一样，把人带向错误的方向。
+ */
+internal fun seedMinimalLibraryRow(context: Context, databaseName: String, version: Int) {
+    val values = mapOf(
+        "problem" to mapOf(
+            "problem_id" to SEEDED_PROBLEM_ID,
+            "canonical_fingerprint" to "a".repeat(64),
+            "subject" to "MATH",
+            "created_at_epoch_millis" to 1_000L,
+        ),
+        "problem_revision" to mapOf(
+            "revision_id" to SEEDED_REVISION_ID,
+            "problem_id" to SEEDED_PROBLEM_ID,
+            "revision_number" to 1,
+            "title" to "迁移矩阵夹具",
+            "problem_markdown" to SEEDED_PROBLEM_MARKDOWN,
+            "answer_verification_status" to "UNKNOWN",
+            "source_type" to "TEST",
+            "content_fingerprint" to "b".repeat(64),
+            "created_at_epoch_millis" to 1_000L,
+        ),
+        "practice_unit" to mapOf(
+            "practice_unit_id" to SEEDED_PRACTICE_UNIT_ID,
+            "problem_id" to SEEDED_PROBLEM_ID,
+            "problem_revision_id" to SEEDED_REVISION_ID,
+            "unit_key" to "unit:matrix",
+            "unit_kind" to "PROBLEM",
+            "title" to "迁移矩阵夹具",
+            "prompt_markdown" to SEEDED_PROBLEM_MARKDOWN,
+            "estimated_seconds" to 180,
+            "created_at_epoch_millis" to 1_000L,
+        ),
+        "error_book_entry" to mapOf(
+            "entry_id" to SEEDED_ENTRY_ID,
+            "practice_unit_id" to SEEDED_PRACTICE_UNIT_ID,
+            "problem_id" to SEEDED_PROBLEM_ID,
+            "current_revision_id" to SEEDED_REVISION_ID,
+            "status" to "ACTIVE",
+            "accepted_at_epoch_millis" to 1_000L,
+            "updated_at_epoch_millis" to 1_000L,
+        ),
+    )
+    val database = SQLiteDatabase.openDatabase(
+        context.getDatabasePath(databaseName).absolutePath,
+        null,
+        SQLiteDatabase.OPEN_READWRITE,
+    )
+    try {
+        // 顺序即依赖顺序：problem → revision → practice_unit → error_book_entry。
+        values.forEach { (table, columnValues) ->
+            insertAdaptedRow(database, version, table, columnValues)
+        }
+    } finally {
+        database.close()
+    }
+}
+
+/** 只写该版本**确实有**的列；必填列缺值就抛。 */
+private fun insertAdaptedRow(
+    database: SQLiteDatabase,
+    version: Int,
+    table: String,
+    values: Map<String, Any?>,
+) {
+    val columns = mutableListOf<String>()
+    val placeholders = mutableListOf<String>()
+    val arguments = mutableListOf<Any?>()
+    database.rawQuery("PRAGMA table_info(`$table`)", null).use { info ->
+        if (!info.moveToFirst()) error("v$version 的导出 schema 里没有表 $table")
+        do {
+            val name = info.getString(1)
+            val value = values[name]
+            if (value != null) {
+                columns += name
+                placeholders += "?"
+                arguments += value
+            } else if (info.getInt(NOT_NULL_COLUMN) != 0 && info.isNull(DEFAULT_VALUE_COLUMN)) {
+                error(
+                    "v$version 的 $table.$name 是 NOT NULL 且没有默认值，夹具却没给它值——" +
+                        "该版本给这张表加了必填列，需要在 seedMinimalLibraryRow 里补上",
+                )
+            }
+        } while (info.moveToNext())
+    }
+    database.execSQL(
+        "INSERT INTO `$table` (${columns.joinToString(", ") { "`$it`" }}) " +
+            "VALUES (${placeholders.joinToString(", ")})",
+        arguments.toTypedArray(),
+    )
+}
+
+/** `PRAGMA table_info` 的列序：1=name、2=type、3=notnull、4=dflt_value。 */
+private const val NOT_NULL_COLUMN = 3
+private const val DEFAULT_VALUE_COLUMN = 4
+
 
 /**
  * Structural schema equivalence: ALTER TABLE migrations append columns with
