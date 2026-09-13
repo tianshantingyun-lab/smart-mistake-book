@@ -18,6 +18,17 @@ package com.tingyun.smartmistakebook.core.domain
  *
  * Pure function over booleans; the persistence layer supplies whether the
  * item has options and whether an answer spec exists.
+ *
+ * **它是什么、不是什么（2026-09-14 标注）**：本对象是**路线政策的记录**，当前没有
+ * 生产调用方——真正做分派的是两个界面，各自读同一组事实：
+ * - `CHOICE_FLOW` → `ReviewSessionScreen`（机判选项存在时），判定走
+ *   `submitReviewChoice`，attempt 由 `MasteryEvidencePolicy` 定价；
+ * - `TUTOR_JUDGED_FLOW` → `CapturedReviewSessionScreen` 的「去讲题判定」
+ *   （以及有工件但无机判项时 `ReviewSessionScreen` 的同一入口），结算由
+ *   `TutorJudgedReviewSettler` 落 attempt；
+ * - `UNAVAILABLE` → 该界面显示"需要配置模型"的诚实提示，**不写证据、队列不推进**
+ *   （代价与裁定见 `docs/scenario-registry.md` 的 ReviewSession 行）。
+ * 改这里不会改变行为；要改行为改上面那两处，并把本文件的政策同步过来。
  */
 object PretestRouting {
 
@@ -102,8 +113,11 @@ object PretestRouting {
      */
     fun routeForNewItem(capabilities: ItemCapabilities): PretestSurface = when {
         capabilities.hasOptions -> PretestSurface.CHOICE_FLOW
-        capabilities.tutorAvailable && capabilities.hasAnswerSpec ->
-            PretestSurface.TUTOR_JUDGED_FLOW
+        // 讲题判定**不要求 answer spec**（2026-09-14 修正）：学生的开放式作答由模型
+        // 语义判断，本地只核对"引文是否真出现在学生说过的话里"。此前要求
+        // hasAnswerSpec 是沿用"判分要有答案键"的旧假设，而生产线上的无工件题永远没有
+        // answer spec——那会让每一道真实错题都落到 UNAVAILABLE。
+        capabilities.tutorAvailable -> PretestSurface.TUTOR_JUDGED_FLOW
         else -> PretestSurface.UNAVAILABLE
     }
 

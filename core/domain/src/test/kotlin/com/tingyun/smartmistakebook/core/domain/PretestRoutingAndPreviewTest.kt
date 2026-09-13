@@ -29,11 +29,23 @@ class PretestRoutingTest {
     }
 
     @Test
-    fun `free response without answer spec stays unavailable`() {
+    fun `free response without answer spec still routes to the tutor judge`() {
+        // 2026-09-14 修正：讲题判定不要求 answer spec——开放式作答由模型语义判断，
+        // 本地只核对引文。生产线上的真实错题都没有 answer spec，若这里退回
+        // UNAVAILABLE，每道错题都会变成复习不动的死项。
         val route = PretestRouting.routeForNewItem(
             ItemCapabilities(hasOptions = false, hasAnswerSpec = false, tutorAvailable = true),
         )
-        // 2026-09-13：自评兜底已拆。判定不了就如实停下——不写任何"学生自报"的对错证据。
+        assertEquals(PretestSurface.TUTOR_JUDGED_FLOW, route)
+        assertTrue(PretestRouting.producesRealAttempt(route))
+    }
+
+    @Test
+    fun `without a tutor the item is unavailable regardless of an answer spec`() {
+        val route = PretestRouting.routeForNewItem(
+            ItemCapabilities(hasOptions = false, hasAnswerSpec = true, tutorAvailable = false),
+        )
+        // 自评兜底已拆（2026-09-13）：既无机判也无判定就如实停下，不写任何"学生自报"的对错证据。
         assertEquals(PretestSurface.UNAVAILABLE, route)
         assertFalse(PretestRouting.producesRealAttempt(route))
     }
