@@ -180,7 +180,10 @@ class BundledKnowledgeBaseInstallerInstrumentedTest {
     private companion object {
         val SUPPORTED_SUBJECTS = SubjectKind.entries - SubjectKind.GENERAL
 
-        /** 与 `installTeachingMaterials` 的分批上限一致：夹具要正好停在批次边界上。 */
-        const val HALF_INSTALL_BATCH = 2_000
+        /**
+         * 夹具要正好停在**生产的分批边界**上，所以直接引用生产常量而不是再写一个 2_000
+         * （审计 N-29）：两处各写一份时，改分批会让这条用例悄悄不再测"半装"。
+         */
+        const val HALF_INSTALL_BATCH = BundledKnowledgeBaseInstaller.TEACHING_MATERIAL_BATCH_SIZE
     }
 }

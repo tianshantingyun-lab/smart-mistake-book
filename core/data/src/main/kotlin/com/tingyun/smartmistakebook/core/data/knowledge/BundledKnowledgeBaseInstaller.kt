@@ -16,6 +16,16 @@ import kotlinx.coroutines.sync.withLock
  * separate from practice units and therefore cannot become a question bank or review item.
  */
 object BundledKnowledgeBaseInstaller {
+    /**
+     * 教学材料导入的分批上限（受 DB 契约的单批 2048 条约束；bundled sidecar 总量超过它）。
+     *
+     * **提成常量而不是就地一个 `val`**：仪器化夹具的"装了一半"必须正好停在**同一个**边界上，
+     * 否则它测的就不是半装。两处各写一个 `2_000` 时，将来改分批会让夹具悄悄越界或不及，
+     * 而那条用例**依旧通过**——它断言的是"装进了 HALF_INSTALL_BATCH 条"，
+     * 这个数一旦与生产无关，就成了一句话在证明自己（审计 N-29）。
+     */
+    internal const val TEACHING_MATERIAL_BATCH_SIZE = 2_000
+
     private val installMutex = Mutex()
 
     suspend fun install(database: StudyDatabasePort) = installMutex.withLock {
@@ -75,7 +85,7 @@ object BundledKnowledgeBaseInstaller {
             //
             // 每次导入受 DB 契约单批上限约束（2048 条材料），bundled sidecar 总量超过它，
             // 因此按上限分批，每批携带各自材料、绑定与涉及的来源。
-            val maxPerBatch = 2_000
+            val maxPerBatch = TEACHING_MATERIAL_BATCH_SIZE
             val sourceById = pack.teachingSources.associateBy(KnowledgeSourceSeedRecord::sourceId)
             pack.teachingMaterials.chunked(maxPerBatch).forEach { batch ->
                 val batchIds = batch.mapTo(hashSetOf(), KnowledgeTeachingMaterialRecord::materialId)
