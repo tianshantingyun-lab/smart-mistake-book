@@ -103,11 +103,14 @@ internal fun ReviewSessionDestination(
     ) {
         val requestedId = displayedPracticeUnitId
         value = TeachingArtifactLoad(practiceUnitId = requestedId)
-        val readyToRead = requestedId != null && experience.status == StudyDataStatus.READY
+        // 一个可空局部量替掉"布尔门 ＋ 三处 requireNotNull(requestedId)"：可空性只表达一次，
+        // 下面每处用 `?.let`/`if (x != null)` 都拿得到非空值，不需要再断言一遍。
+        val readableUnitId = requestedId
+            ?.takeIf { experience.status == StudyDataStatus.READY }
         // 题干读取是**必需**的，所以它不像下面两张可选卡那样降级成 null：读失败要说出来
         // （审计 N-12），而不是让 `isLoaded` 永远停在 false、界面永远停在「正在读取题目…」。
         val loadedArtifact = try {
-            if (readyToRead) repository.teachingArtifact(requireNotNull(requestedId)) else null
+            readableUnitId?.let { repository.teachingArtifact(it) }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (failure: Throwable) {
@@ -136,14 +139,12 @@ internal fun ReviewSessionDestination(
         // Spec §2.9 prerequisite remediation, same round trip. Independent of the
         // leech opening: a card can be both, and neither implies the other.
         //
-        // 它的门是 `readyToRead` 而**不是** `artifact != null`（审计批 2 第 3 项／S-5）：
+        // 它的门是"这道题读得出来"而**不是** `artifact != null`（审计批 2 第 3 项／S-5）：
         // 实拍题没有策展件是**正常**的，而补救要的是题库里的 KC 范围与讲解材料——以策展件
         // 为门等于把这条通道整个锁在 debug 的演示内容里，生产里一张卡都拿不到补救。
         // 两张卡都走 loadOptionalSessionCard：这里抛出去会顺着组合的协程把会话带走（N-03）。
-        val prerequisiteRemediation = if (readyToRead) {
-            loadOptionalSessionCard { repository.prerequisiteRemediation(requireNotNull(requestedId)) }
-        } else {
-            null
+        val prerequisiteRemediation = readableUnitId?.let { practiceUnitId ->
+            loadOptionalSessionCard { repository.prerequisiteRemediation(practiceUnitId) }
         }
         value = TeachingArtifactLoad(
             practiceUnitId = requestedId,
@@ -182,6 +183,8 @@ internal fun ReviewSessionDestination(
             navController.popBackStack(Routes.Review, false)
         }
     }
+    // 绑成局部量，`when` 里就能直接智能转换——省掉"判完再 requireNotNull 断言一遍"那句。
+    val artifactLoadFailure = artifactLoad.loadFailureDiagnosticId
     when {
         destinationLifecycle != Lifecycle.State.RESUMED -> ReviewSessionGateMessage(
             "正在打开复习题…",
@@ -198,10 +201,8 @@ internal fun ReviewSessionDestination(
             )
         // 读失败必须在「还在读」之前判掉（审计 N-12）：两者都可能让 `isLoaded` 为 false，
         // 但只有这条说得出发生了什么、以及下一步做什么。
-        artifactLoad.loadFailureDiagnosticId != null -> ReviewSessionGateMessage(
-            teachingArtifactFailureMessage(
-                requireNotNull(artifactLoad.loadFailureDiagnosticId),
-            ),
+        artifactLoadFailure != null -> ReviewSessionGateMessage(
+            teachingArtifactFailureMessage(artifactLoadFailure),
         )
         !artifactLoad.isLoaded || artifactLoad.practiceUnitId != practiceUnitId ->
             ReviewSessionGateMessage("正在读取题目…")
