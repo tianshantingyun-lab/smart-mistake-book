@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
@@ -698,7 +699,7 @@ class RoomModelTaskRepository internal constructor(
             // （CapturedTutorSessionRoute 的 CreateTutorConversationCommand 同规则），
             // 供 MASTERY_UPDATE 的冷却/配额/审计按会话粒度工作。
             conversationId = (input as? TutorRespondInput)?.sessionId
-                ?.let { "tutor-conv:captured:$it" },
+                ?.let(TutorConversationIds::captured),
             // 裸 sessionId：NOTEBOOK_WRITE 用它 resolve 对应的 capture draft。
             // sessionId（"tutor-session-..."）≠ draftId（"draft-..."），写路径需
             // readTutorSession(sessionId) 拿 draftId 再 readProblemDraft(draftId)。

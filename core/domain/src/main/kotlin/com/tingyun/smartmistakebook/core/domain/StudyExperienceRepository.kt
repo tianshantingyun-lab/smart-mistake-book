@@ -426,6 +426,15 @@ interface StudyExperienceRepository : AutoCloseable {
     ): StudyReviewRatingSubmissionResult
 
     /**
+     * 讲题判定的结算：这道无工件题在讲题会话里被检查过之后，把判定落成复习 attempt 并推进队列。
+     * 判定合成（行为证据胜出）与定价（非独立、题目级 HARD/AGAIN）见 [TutorJudgedReviewSettlement]。
+     * 幂等：同一（复习会话, 队列项）重复调用只生效一次；没有判定时不写、不推进。
+     */
+    suspend fun settleTutorJudgedReview(
+        settlement: TutorJudgedReviewSettlement,
+    ): TutorJudgedReviewSettlementResult
+
+    /**
      * Persists the model's own teaching-focus output for one tutoring
      * session into the mastery database's advisory layer (three-store closed
      * loop, spec §5). Idempotent per session turn; silent by design.

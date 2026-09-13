@@ -48,6 +48,9 @@ import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResul
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementStatus
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementResult
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlement
 import com.tingyun.smartmistakebook.core.data.knowledge.KnowledgePrerequisiteReader
 import com.tingyun.smartmistakebook.core.data.knowledge.RoomTutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReadiness
@@ -215,6 +218,14 @@ class RoomBackedStudyExperienceRepository(
         reviewLogSink = reviewLogSink,
         writeContext = writeContext,
         submissionPreparer = submissionPreparer,
+        learnerSnapshot = { currentLearnerSnapshot() },
+    )
+    private val tutorJudgedReviewSettler = TutorJudgedReviewSettler(
+        database = database,
+        learnerId = learnerId,
+        durationModel = durationModel,
+        reviewLogSink = reviewLogSink,
+        writeContext = writeContext,
         learnerSnapshot = { currentLearnerSnapshot() },
     )
     private val advisoryStore = StudyAdvisoryStore(
@@ -743,6 +754,20 @@ class RoomBackedStudyExperienceRepository(
         submission: StudyReviewRatingSubmission,
     ): StudyReviewRatingSubmissionResult = runOperation {
         ratingSubmissionService.submit(sessionId, expectedStateVersion, submission)
+    }
+
+    override suspend fun settleTutorJudgedReview(
+        settlement: TutorJudgedReviewSettlement,
+    ): TutorJudgedReviewSettlementResult = runOperation {
+        val result = tutorJudgedReviewSettler.settle(settlement)
+        if (result.status == TutorJudgedReviewSettlementStatus.RECORDED) {
+            // 与其它复习写入一致：结算落库后刷新错题缓存，让界面看到推进后的会话指针。
+            val currentMistakes = database.observeMistakes().first()
+            latestMistakes = currentMistakes
+            initialized = true
+            publishReadySnapshot(currentMistakes)
+        }
+        result
     }
 
     override fun observeKnowledgeQuestionLattice(): Flow<List<KnowledgeQuestionLatticeRow>> =

@@ -979,6 +979,12 @@ internal class RoomStudyDatabase(
         command: PersistTutorSessionAnchorCommand,
     ): TutorSessionProblemAnchorRecord = database.tutorExposureDao().bindAnchor(command)
 
+    override suspend fun readLatestTutorSessionAnchor(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorRecord? = database.tutorExposureDao()
+        .readLatestAnchorForPracticeUnit(practiceUnitId, learnerId)
+
     override suspend fun reconcileTutorAnswerExposures(learnerId: String, limit: Int): Int =
         database.tutorExposureDao().reconcilePending(learnerId, limit)
 

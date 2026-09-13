@@ -1476,6 +1476,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     private var persistedLearnerSnapshot: PersistedLearnerSnapshot? = null
     var lastAttemptCommand: AttemptWriteCommand? = null
         private set
+
+    /** 已落库的 attempt 条数：结算"没有判定就不写"的反例要证明它确实没写。 */
+    val attemptCount: Int get() = attemptsBySubmission.size
     var lastEvidenceSnapshot: AssessmentEvidenceSnapshot? = null
         private set
     var seedCallCount: Int = 0
@@ -1773,7 +1776,21 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
 
-    override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
+    override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
+        recordedChatEvidence.filter { it.conversation_id == conversationId }
+
+    /**
+     * 讲题判定结算要读的锚定行：由它把"刚讲完的会话"与"复习队列当前这一项"对上。
+     * 默认 null（= 没讲过题），测试按需播种。
+     */
+    var tutorSessionAnchor: TutorSessionProblemAnchorRecord? = null
+
+    override suspend fun readLatestTutorSessionAnchor(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorRecord? = tutorSessionAnchor?.takeIf {
+        it.practiceUnitId == practiceUnitId
+    }
 
     override suspend fun lastAcceptedChatEvidenceAtForKc(learnerId: String, knowledgeNodeId: String): Long? = null
 
