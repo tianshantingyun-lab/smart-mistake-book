@@ -74,13 +74,24 @@ object FsrsScheduleMath {
      * Interval inverse I(r*, S) = (S/FACTOR)·(r*^(1/DECAY) − 1), rounded to a
      * whole day with the py-fsrs `_next_interval` behavior (round to nearest,
      * at least one day, at most the maximum interval).
+     *
+     * [decay] 必须由调用方从**它手里那组参数**取（`-parameters[20]`）。默认值只为
+     * "手上没有参数"的场景存在；用着拟合参数却读默认衰减，会让排期与拟合各用一条曲线
+     * （F-01，也是本函数原先的形态）。
+     *
+     * 一个值得知道的性质：`desiredRetention == 0.9` 时 `I` 恰好等于 `S`，与 [decay] 无关
+     * ——因为 FACTOR 就是按 `R(S,S)=0.9` 定义的。所以这条衰减只在**保持率目标不是 0.9** 时才
+     * 直接改变间隔；它仍会通过 [retention]→stability 那条路影响所有情形。
      */
-    fun intervalDays(stabilityDays: Double, desiredRetention: Double): Int {
+    fun intervalDays(
+        stabilityDays: Double,
+        desiredRetention: Double,
+        decay: Double = -DEFAULT_PARAMETERS[20],
+    ): Int {
         require(stabilityDays > 0.0) { "Stability must be positive" }
         require(desiredRetention in 0.0..1.0 && desiredRetention != 0.0 && desiredRetention != 1.0) {
             "Desired retention must be strictly between zero and one"
         }
-        val decay = -DEFAULT_PARAMETERS[20]
         val raw = (stabilityDays / factor(decay)) * (desiredRetention.pow(1.0 / decay) - 1.0)
         return raw.toFixedDays()
     }

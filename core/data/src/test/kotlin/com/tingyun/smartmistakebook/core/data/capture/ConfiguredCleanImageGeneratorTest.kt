@@ -1,18 +1,12 @@
 package com.tingyun.smartmistakebook.core.data.capture
 
+import com.tingyun.smartmistakebook.core.data.model.FakeModelAgentConsentStore
+import com.tingyun.smartmistakebook.core.data.model.FakeModelConfigurationStore
 import com.tingyun.smartmistakebook.core.data.model.ImageGenerationChannel
 import com.tingyun.smartmistakebook.core.data.model.ImageGenerationRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawResult
-import com.tingyun.smartmistakebook.core.domain.ModelApiKey
 import com.tingyun.smartmistakebook.core.domain.ModelCapabilityVerification
-import com.tingyun.smartmistakebook.core.domain.ModelConfigurationMutationResult
-import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
-import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
-import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
-import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -24,12 +18,34 @@ import org.junit.Test
  * Gating + channel-selection contract for the production clean-redraw generator.
  * The network POST itself is covered by OpenAiImageGenerationChannel's
  * MockWebServer tests; here a fake channel factory substitutes the network.
+ *
+ * 闸门本身的三条件由 `ImageCredentialGateTest` 覆盖（去手写与配图共用同一个
+ * `resolveImageCredential`）。这里补的是**这条通道确实走那个闸门**——
+ * 尤其是同意被撤销时它**不能**再去构造 channel（那一步就会出网）。
  */
 class ConfiguredCleanImageGeneratorTest {
 
     @Test
-    fun declinesWhenNetworkIsNotAllowed() = runBlocking {
-        val generator = generator(networkRequestsAllowed = false)
+    fun declinesWhenTheUserHasNotGrantedConsentAndNeverTouchesTheNetwork() = runBlocking {
+        var channelCalled = false
+        val generator = generator(
+            consentGranted = false,
+            channelFactory = ChannelFactory { _, _ ->
+                channelCalled = true
+                FakeRedrawChannel("cleaned-bytes", "image/png")
+            },
+        )
+
+        assertNull(generator.generateClean(bytes("a"), "image/jpeg"))
+        assertTrue(
+            "拒绝必须在构造 channel 之前发生——channel 一建就是要出网的",
+            !channelCalled,
+        )
+    }
+
+    @Test
+    fun declinesWhenThereIsNoConsentChannelAtAll() = runBlocking {
+        val generator = generator(consentStore = null)
 
         assertNull(generator.generateClean(bytes("a"), "image/jpeg"))
     }
@@ -51,7 +67,7 @@ class ConfiguredCleanImageGeneratorTest {
     @Test
     fun declinesWhenCapabilityTestDidNotVerifyImageInput() = runBlocking {
         val generator = generator(
-            capability = configuredCapability().copy(supportsImageInput = false),
+            capability = FakeModelConfigurationStore.configuredCapability(supportsImageInput = false),
         )
 
         assertNull(generator.generateClean(bytes("a"), "image/jpeg"))
@@ -85,8 +101,8 @@ class ConfiguredCleanImageGeneratorTest {
 
         val result = generator.generateClean(bytes("source"), "image/jpeg")
 
-        assertEquals("https://provider.test/v1", capturedBase)
-        assertEquals("Bearer test-secret", capturedAuthorization)
+        assertEquals(FakeModelConfigurationStore.BASE_URL, capturedBase)
+        assertEquals("Bearer ${FakeModelConfigurationStore.TEST_API_KEY}", capturedAuthorization)
         assertArrayEquals(bytes("cleaned-bytes"), result!!.bytes)
         assertEquals("image/png", result.mimeType)
     }
@@ -95,18 +111,19 @@ class ConfiguredCleanImageGeneratorTest {
 
     private fun generator(
         credentialAvailable: Boolean = true,
-        capability: ModelCapabilityVerification? = configuredCapability(),
-        networkRequestsAllowed: Boolean = true,
+        capability: ModelCapabilityVerification? = FakeModelConfigurationStore.configuredCapability(),
+        consentGranted: Boolean = true,
+        consentStore: FakeModelAgentConsentStore? = FakeModelAgentConsentStore(granted = consentGranted),
         channelFactory: ChannelFactory = ChannelFactory { _, _ ->
             FakeRedrawChannel("default", "image/png")
         },
     ) = ConfiguredCleanImageGenerator(
-        configurationStore = FakeStore(
+        configurationStore = FakeModelConfigurationStore(
+            snapshot = FakeModelConfigurationStore.configuration(capability = capability),
             credentialAvailable = credentialAvailable,
-            snapshot = configuration(capability = capability),
         ),
+        modelAgentConsentStore = consentStore,
         channelFactory = channelFactory,
-        networkRequestsAllowed = networkRequestsAllowed,
     )
 
     private class FakeRedrawChannel(
@@ -132,56 +149,5 @@ class ConfiguredCleanImageGeneratorTest {
         ): ImageGenerationChannel = factory(baseUrl, authorization)
     }
 
-    private class FakeStore(
-        private val credentialAvailable: Boolean,
-        snapshot: ModelConfigurationSnapshot,
-    ) : ModelConfigurationStore {
-        private val state = MutableStateFlow(snapshot)
-        override val configuration: Flow<ModelConfigurationSnapshot> = state
-        override suspend fun save(
-            update: ModelConfigurationUpdate,
-            apiKey: ModelApiKey,
-        ): ModelConfigurationMutationResult = error("not used")
-        override suspend fun rotateApiKey(apiKey: ModelApiKey): ModelConfigurationMutationResult =
-            error("not used")
-        override suspend fun readCredential(): ModelCredentialReadResult =
-            if (credentialAvailable) {
-                ModelCredentialReadResult.Available(
-                    state.value,
-                    ModelApiKey.from("test-secret".toCharArray()),
-                )
-            } else {
-                ModelCredentialReadResult.Missing
-            }
-        override suspend fun clear(): ModelConfigurationMutationResult = error("not used")
-    }
-
     private fun bytes(value: String) = value.toByteArray()
-
-    private companion object {
-        const val BASE_URL = "https://provider.test/v1"
-        const val MODEL_ID = "gpt-image-2"
-        const val GENERATION = "test-config-v1"
-
-        fun configuration(capability: ModelCapabilityVerification?) = ModelConfigurationSnapshot(
-            provider = "provider",
-            baseUrl = BASE_URL,
-            modelId = MODEL_ID,
-            isConfigured = true,
-            updatedAtEpochMillis = 1,
-            configurationVersion = GENERATION,
-            capabilityVerification = capability,
-        )
-
-        fun configuredCapability() = ModelCapabilityVerification(
-            provider = "provider",
-            baseUrl = BASE_URL,
-            modelId = MODEL_ID,
-            configurationVersion = GENERATION,
-            configurationUpdatedAtEpochMillis = 1,
-            supportsImageInput = true,
-            supportsStructuredOutput = true,
-            testedAtEpochMillis = 2,
-        )
-    }
 }

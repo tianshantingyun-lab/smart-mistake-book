@@ -287,8 +287,10 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         val understanding = call.understanding
         val knowledgeNodeId = call.terms.firstOrNull().orEmpty()
         val now = System.currentTimeMillis()
-        // 幂等 evidence_id：同 request 命名空间内同工具+知识点映射同 id——
-        // 重试不重复落库（Room IGNORE 兜底，见 masteryUpdateEvidenceId）。
+        // 幂等 evidence_id：同 request 命名空间内同工具+知识点映射同 id，
+        // 所以重发同一条证据既不重复落库、也不重复占用学习序列——判定在
+        // ChatEvidenceDao.insertAsLedgerEvents 里、且发生在**分配序列号之前**
+        // （见 masteryUpdateEvidenceId 与审计 S-1）。
         val evidenceId = masteryUpdateEvidenceId(
             namespace = context.evidenceIdNamespace,
             tool = call.tool,

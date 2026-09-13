@@ -135,6 +135,86 @@ class ChatEvidenceLedgerIntegrationTest {
     }
 
     @Test
+    fun retryingTheSameEvidenceIdIsANoOpThatDoesNotConsumeALedgerSequence() = runBlocking {
+        // 幂等（审计 S-1）：evidence_id 是**确定性幂等键**——模型工具环的重试与多轮
+        // 共用同一个 requestId 命名空间（RoomModelTaskRepository:691 传
+        // evidenceIdNamespace = requestId，RoomTutorToolRunner:290-296 派生 id），
+        // 所以同一条证据会被用同一个 id 重发。重发必须**静默 no-op**。
+        //
+        // 这条测试的形状刻意不是"重复写入不抛异常"——那只证明最浅的一层。
+        // 真正要钉住的是**序列号没有被吃掉**：学习序列是账本连续性的凭证，
+        // 分配了却没有对应的不可变事件行，读侧的严格 GAP 检测会把整本账判为损坏
+        // （ProjectionTransactionDao.loadLearningLedger）。所以下面同时断言
+        // 账本状态 COMPLETE、事件序列恰为 [1]、以及**下一条新证据拿到 2**。
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dbName = "chat-evidence-idempotent-${System.nanoTime()}.db"
+        context.deleteDatabase(dbName)
+        val db = StudyDatabaseFactory.open(context, dbName)
+        try {
+            val first = entry("node-algebra", "POSITIVE", 0.18, 1)
+            db.recordChatEvidence(listOf(first))
+
+            // 同一条证据、同一个 id 重发一次。
+            db.recordChatEvidence(listOf(first))
+
+            val ledger = db.loadLearningLedger("learner:local")
+            assertEquals(
+                "重发之后账本必须仍然完整——留下空号就等于把「重试」变成了「账本永久损坏」",
+                LearningLedgerReadStatus.COMPLETE,
+                ledger.status,
+            )
+            assertEquals(1, db.readChatEvidenceByConversation("conv-test").size)
+            val chatEvents = ledger.validPrefix.map { it.event }
+                .filterIsInstance<ChatEvidenceSubmitted>()
+            assertEquals(listOf(1L), chatEvents.map { it.eventSequence })
+
+            // 重发没有把序列号吃掉：下一条**新**证据必须拿到 2。
+            db.recordChatEvidence(listOf(entry("node-geometry", "NEGATIVE", 0.35, 2)))
+            val after = db.loadLearningLedger("learner:local")
+            assertEquals(LearningLedgerReadStatus.COMPLETE, after.status)
+            assertEquals(
+                listOf(1L, 2L),
+                after.validPrefix.map { it.event.eventSequence },
+            )
+        } finally {
+            db.close()
+            context.deleteDatabase(dbName)
+        }
+    }
+
+    @Test
+    fun aBatchContainingAnAlreadyRecordedEvidenceOnlyAllocatesForTheNewOnes() = runBlocking {
+        // 同一条幂等规则在**一批多条**上的形态：已在库的那条跳过，其余照常分配。
+        // 单独一条测试，是因为"只处理单元素重发"的实现也会让上面那条通过。
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dbName = "chat-evidence-idempotent-batch-${System.nanoTime()}.db"
+        context.deleteDatabase(dbName)
+        val db = StudyDatabaseFactory.open(context, dbName)
+        try {
+            db.recordChatEvidence(listOf(entry("node-algebra", "POSITIVE", 0.18, 1)))
+
+            db.recordChatEvidence(
+                listOf(
+                    entry("node-algebra", "POSITIVE", 0.18, 1), // 已在库 → 跳过
+                    entry("node-geometry", "NEGATIVE", 0.35, 2),
+                    entry("node-data", "POSITIVE", 0.18, 3),
+                ),
+            )
+
+            val ledger = db.loadLearningLedger("learner:local")
+            assertEquals(LearningLedgerReadStatus.COMPLETE, ledger.status)
+            assertEquals(
+                listOf(1L, 2L, 3L),
+                ledger.validPrefix.map { it.event.eventSequence },
+            )
+            assertEquals(3, db.readChatEvidenceByConversation("conv-test").size)
+        } finally {
+            db.close()
+            context.deleteDatabase(dbName)
+        }
+    }
+
+    @Test
     fun chatEvidenceEmptyLearnerReturnsEmptyLedger() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val dbName = "chat-evidence-empty-${System.nanoTime()}.db"

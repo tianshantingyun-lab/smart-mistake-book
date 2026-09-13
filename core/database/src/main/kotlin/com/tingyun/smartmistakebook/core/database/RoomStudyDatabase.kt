@@ -360,6 +360,7 @@ internal class RoomStudyDatabase(
                     basisRevisionId = row.basisRevisionId,
                     taxonomyVersion = row.taxonomyVersion,
                     acceptedAtEpochMillis = row.acceptedAtEpochMillis,
+                    isPseudoFallback = row.sourceType == PSEUDO_BINDING_SOURCE_TYPE,
                 )
             }
 

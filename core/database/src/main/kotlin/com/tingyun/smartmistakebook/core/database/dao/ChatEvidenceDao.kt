@@ -27,12 +27,27 @@ internal abstract class ChatEvidenceDao {    /**
      * a retried write of the same evidence (same request + tool + KC) must
      * silently no-op instead of failing the whole transaction on a PK clash.
      * Id derivation guarantees same id ⇒ same semantics.
+     *
+     * 但 IGNORE **只是最后一道兜底**，幂等的判定发生在
+     * [existingEvidenceIds]（见 [insertAsLedgerEvents]）——证据行的 PK 冲突可以
+     * 静默，**序列号与 outbox 行不行**（那是账本的连续性凭证）。
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertAll(entries: List<LearnerChatEvidenceEntity>)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     protected abstract suspend fun insertOutboxRows(rows: List<ProjectionOutboxEntity>)
+
+    /**
+     * 已落库的 evidence_id（幂等判定用）。判在**分配序列号之前**，理由见
+     * [insertAsLedgerEvents]。
+     *
+     * 只查 `evidence_id`、不带 learner 维度：证据表的 PK 就是 `evidence_id`
+     * （`LearnerChatEvidenceEntity` 的 `primaryKeys = ["evidence_id"]`），所以
+     * "是否重复"这件事本身与 learner 无关。
+     */
+    @Query("SELECT evidence_id FROM learner_chat_evidence WHERE evidence_id IN (:evidenceIds)")
+    protected abstract suspend fun existingEvidenceIds(evidenceIds: List<String>): List<String>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun initializeSequence(sequence: LearningSequenceEntity): Long
@@ -65,7 +80,26 @@ internal abstract class ChatEvidenceDao {    /**
             insertAll(rejected)
         }
         if (accepted.isEmpty()) return
-        val outboxRows = accepted.map { entry ->
+        // 幂等判定必须在**分配序列号之前**，否则重试会变成账本损坏：
+        // `allocateSequence` 一旦推进 `learning_sequence` 而对应的
+        // projection_outbox 行被 IGNORE 掉，账本里就留下一个**永久空号**，
+        // 读侧的严格连续性检查（`ProjectionTransactionDao.loadProjectionBatch`
+        // 的 GAP、`loadLearningLedger` 的 "Sequence N was allocated but has no
+        // immutable ledger event"）会把整本账判为损坏、投影从此停摆
+        // （审计 S-1）。所以在分配之前先把已存在的 evidence_id 整条摘掉。
+        //
+        // 顺带说明为什么不能只把 insertOutboxRows 的 ABORT 改成 IGNORE：
+        // 那正是上面那个空号的来源。保留 ABORT——修好之后它若再被触发，
+        // 说明的是一件**真的不该发生**的事（证据行不在而 outbox 行在），
+        // 静默放过等于把矛盾写进账本。
+        //
+        // 首次写入即不可变事实（ADR-0001 同源）：同 id 的重发既不覆盖也不
+        // "升级"（含"上次被门控拒写、这次门控放行"这种跨状态重发），否则
+        // 账本内容会随重试时机改变、重放不再确定。
+        val existing = existingEvidenceIds(accepted.map { it.evidence_id }).toSet()
+        val fresh = accepted.filterNot { it.evidence_id in existing }
+        if (fresh.isEmpty()) return
+        val outboxRows = fresh.map { entry ->
             val sequence = allocateSequence(entry.learner_id)
             val event = entry.toChatEvidenceModel(sequence)
             ProjectionOutboxEntity(
@@ -79,7 +113,7 @@ internal abstract class ChatEvidenceDao {    /**
                 createdAtEpochMillis = entry.created_at_epoch_millis,
             )
         }
-        insertAll(accepted)
+        insertAll(fresh)
         insertOutboxRows(outboxRows)
     }
 

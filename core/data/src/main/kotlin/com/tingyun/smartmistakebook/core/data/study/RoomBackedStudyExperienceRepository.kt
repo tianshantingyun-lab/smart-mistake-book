@@ -120,12 +120,19 @@ class RoomBackedStudyExperienceRepository(
     private val knowledgeNames = fixtureBundle?.knowledgeNodes
         ?.associate { it.knowledgeNodeId to it.displayName }
         ?: emptyMap()
+    /**
+     * 这一族 FSRS 参数**模型与曲线共用**（F-01）：拟合出来的衰减（`-w20`）必须同时抵达
+     * 排期与保持率估计。分开写两次 `optimizedFsrsParameters ?: …` 就是让两边有各走一条曲线的机会，
+     * 而那种不一致只会在用户看到"排期说还早、保持率说快忘光了"时才显形。
+     */
+    private val fsrsParameters = optimizedFsrsParameters ?: FsrsScheduleMath.DEFAULT_PARAMETERS
     private val forgettingCurve = ForgettingCurve(
         algorithm = if (schedulingOptions.useFsrsScheduling) {
             ForgettingCurveAlgorithm.FSRS6_POWER_LAW
         } else {
             ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
         },
+        decay = -fsrsParameters[20],
     )
     private val reviewPlanner = ReviewPlanner()
     /**
@@ -143,6 +150,8 @@ class RoomBackedStudyExperienceRepository(
             } else {
                 ForgettingCurveAlgorithm.LEGACY_EXPONENTIAL
             },
+            // 与上面那条同源：排程用哪条曲线，规划就必须用哪条（F-01）。
+            decay = -fsrsParameters[20],
         ),
         durationModel = durationModel,
     )
@@ -150,7 +159,7 @@ class RoomBackedStudyExperienceRepository(
         forgettingCurve = forgettingCurve,
         memoryUpdateModel = if (schedulingOptions.useFsrsScheduling) {
             FsrsMemoryUpdateModel(
-                parameters = optimizedFsrsParameters ?: FsrsScheduleMath.DEFAULT_PARAMETERS,
+                parameters = fsrsParameters,
                 desiredRetention = schedulingOptions.desiredRetention,
             )
         } else {
@@ -245,6 +254,7 @@ class RoomBackedStudyExperienceRepository(
         fixtureSource = fixtureSource,
         reviewPlanner = reviewPlanner,
         reviewPlannerV2 = reviewPlannerV2,
+        forgettingCurve = forgettingCurve,
         durationModel = durationModel,
         reviewLogSink = reviewLogSink,
         schedulingSettingsStore = schedulingSettingsStore,
@@ -366,7 +376,13 @@ class RoomBackedStudyExperienceRepository(
             }
             initialized = true
             try {
-                visualInteractionIngestor.ingestPending(latestMistakes)
+                // 上一次复习的时间戳与"这次复习距上次几天"同源：视觉证据的 review_log 行要写真实
+                // `delta_t`，而它只能从当前投影里取（审计 §8：这一处曾经恒传 null ⇒ delta_t 恒 0）。
+                visualInteractionIngestor.ingestPending(
+                    mistakes = latestMistakes,
+                    previousReviewedAtByUnit = currentLearnerSnapshot().problemMemoryStates
+                        .mapValues { (_, memory) -> memory.lastReviewedAtEpochMillis },
+                )
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: Throwable) {
@@ -537,7 +553,7 @@ class RoomBackedStudyExperienceRepository(
                 studyDay = prepared.command.studyDay,
                 sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.attempt.attemptId,
-                priorMemory = priorMemory,
+                previousReviewedAtEpochMillis = priorMemory?.lastReviewedAtEpochMillis,
                 scrollUpCount = submission.scrollUpCount,
                 awayMillis = submission.awayMillis,
                 // Answer changing (spec 2.14): every retry is one edit of
@@ -616,7 +632,7 @@ class RoomBackedStudyExperienceRepository(
                 studyDay = prepared.command.studyDay,
                 sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.attempt.attempt.attemptId,
-                priorMemory = priorMemory,
+                previousReviewedAtEpochMillis = priorMemory?.lastReviewedAtEpochMillis,
                 scrollUpCount = submission.scrollUpCount,
                 awayMillis = submission.awayMillis,
                 plannedReason = queueItem.reasonSnapshot.takeIf(String::isNotBlank),
@@ -707,7 +723,7 @@ class RoomBackedStudyExperienceRepository(
                 studyDay = prepared.command.studyDay,
                 sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
                 sourceId = writeResult.attempt.attempt.attemptId,
-                priorMemory = priorMemory,
+                previousReviewedAtEpochMillis = priorMemory?.lastReviewedAtEpochMillis,
                 scrollUpCount = submission.scrollUpCount,
                 interruptionCount = submission.interruptionCount,
                 awayMillis = submission.awayMillis,
@@ -958,7 +974,11 @@ class RoomBackedStudyExperienceRepository(
         val mistakes = database.observeMistakes().first()
         latestMistakes = mistakes
         initialized = true
-        val created = visualInteractionIngestor.ingestPending(mistakes)
+        val created = visualInteractionIngestor.ingestPending(
+            mistakes = mistakes,
+            previousReviewedAtByUnit = currentLearnerSnapshot().problemMemoryStates
+                .mapValues { (_, memory) -> memory.lastReviewedAtEpochMillis },
+        )
         if (created > 0) {
             publishReadySnapshot(latestMistakes)
         }

@@ -58,7 +58,7 @@ internal class StudyAnswerRevealService(
                 studyDay = writeContext.studyDayAt(request.occurredAtEpochMillis),
                 sourceKind = ReviewLogSink.SOURCE_KIND_ATTEMPT,
                 sourceId = writeResult.outcome.outcomeId,
-                priorMemory = priorMemory,
+                previousReviewedAtEpochMillis = priorMemory?.lastReviewedAtEpochMillis,
             )
         }
         return StudyAnswerRevealResult(

@@ -492,6 +492,11 @@ private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnaps
             if (verification.supportsImageInput) {
                 add(ModelTaskKind.CAPTURE_ASSESS)
                 add(ModelTaskKind.CAPTURE_PARSE)
+                // 与上面两条同门：它也要把题图发出去。漏掉它曾经是一条**静默失效**的生产路径
+                // ——`RoomCaptureWorkflowRepository.decideAndRedraw` 真的会发这条请求，
+                // 而这里的集合是 `RoomModelTaskRepository.capabilityFailure` 的判据，
+                // 于是「图里有几何图形才重绘」这一步在真网关上一律被拒、不崩也不提示（批 2 第 1 项）。
+                add(ModelTaskKind.IMAGE_PIPELINE_CLASSIFY)
                 add(ModelTaskKind.TUTOR_VISUAL_GENERATE)
                 add(ModelTaskKind.TUTOR_VISUAL_REVIEW)
             }

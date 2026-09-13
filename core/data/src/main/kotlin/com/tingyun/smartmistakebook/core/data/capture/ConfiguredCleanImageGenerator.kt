@@ -5,10 +5,11 @@ import com.tingyun.smartmistakebook.core.data.model.ImageRedrawRequest
 import com.tingyun.smartmistakebook.core.data.model.ImageRedrawResult
 import com.tingyun.smartmistakebook.core.data.model.OpenAiImageGenerationChannel
 import com.tingyun.smartmistakebook.core.data.model.resolveGuardedEdits
+import com.tingyun.smartmistakebook.core.data.model.resolveImageCredential
 import com.tingyun.smartmistakebook.core.domain.CleanImageGenerator
 import com.tingyun.smartmistakebook.core.domain.CleanImageResult
+import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
-import com.tingyun.smartmistakebook.core.domain.ModelCredentialReadResult
 import java.util.Arrays
 import kotlinx.coroutines.CancellationException
 
@@ -23,8 +24,10 @@ import kotlinx.coroutines.CancellationException
  * ([resolveGuardedEdits]), so a redraw can never be redirected to a private
  * address.
  *
- * Gating (a redraw is only attempted when adding to the mistake book):
- *  - no network-capable flavor            → decline (null)
+ * Gating (a redraw is only attempted when adding to the mistake book), all three
+ * decided by the shared [resolveImageCredential] gate so this path and the
+ * attached-figure path can never disagree:
+ *  - the user has not granted the global model-agent consent → decline (null)
  *  - no configured credential            → decline (null)
  *  - capability test never ran or did not verify image input → decline (null)
  *
@@ -34,27 +37,20 @@ import kotlinx.coroutines.CancellationException
  */
 internal class ConfiguredCleanImageGenerator(
     private val configurationStore: ModelConfigurationStore,
+    private val modelAgentConsentStore: ModelAgentConsentStore?,
     private val channelFactory: ChannelFactory = GuardedEditsChannelFactory,
-    private val networkRequestsAllowed: Boolean = true,
 ) : CleanImageGenerator {
 
     override suspend fun generateClean(
         originalBytes: ByteArray,
         mimeType: String,
     ): CleanImageResult? {
-        if (!networkRequestsAllowed) return null
-        val credential = when (val read = configurationStore.readCredential()) {
-            is ModelCredentialReadResult.Available -> read
-            ModelCredentialReadResult.Missing,
-            ModelCredentialReadResult.Unavailable,
-            -> return null
-        }
+        val credential = resolveImageCredential(configurationStore, modelAgentConsentStore)
+            ?: return null
         return credential.apiKey.use { apiKey ->
             val keyChars = apiKey.copyChars()
             try {
                 val configuration = credential.configuration
-                val verification = configuration.capabilityVerification
-                if (verification == null || !verification.supportsImageInput) return@use null
 
                 val channel = try {
                     channelFactory.create(
@@ -120,15 +116,15 @@ private object GuardedEditsChannelFactory : ConfiguredCleanImageGenerator.Channe
 /**
  * Public app-layer entry point. Returns a production clean-redraw generator over
  * the user's configured model credential, or a generator that always declines
- * when networking is not permitted by the current flavor.
+ * when the user has not granted the global model-agent consent.
  */
 object ConfiguredCleanImageGeneratorFactory {
     fun create(
         configurationStore: ModelConfigurationStore,
-        networkRequestsAllowed: Boolean,
+        modelAgentConsentStore: ModelAgentConsentStore?,
     ): CleanImageGenerator = ConfiguredCleanImageGenerator(
         configurationStore = configurationStore,
+        modelAgentConsentStore = modelAgentConsentStore,
         channelFactory = GuardedEditsChannelFactory,
-        networkRequestsAllowed = networkRequestsAllowed,
     )
 }

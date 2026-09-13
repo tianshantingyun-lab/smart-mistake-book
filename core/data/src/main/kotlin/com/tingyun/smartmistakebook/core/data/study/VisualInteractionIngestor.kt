@@ -32,14 +32,32 @@ internal class VisualInteractionIngestor(
 
     suspend fun ingestPending(
         mistakes: List<MistakeRecord>,
+        /**
+         * 每个被复习题**上一次复习发生的时间戳**（没有该单元就缺席）。`ReviewLogSink.record`
+         * 用它算 `delta_t`："距上一次复习过了几天"，而 `review_log` 正是 FSRS 参数优化器的
+         * 训练数据。传空表（或不传）会让每一条视觉证据都记下 `delta_t = 0`——优化器就此看到
+         * 一个"所有复习都挤在同一天"的世界，且不会有任何断言变红（审计 §8「视觉通道
+         * priorMemory 恒 null」）。给一个"空表"默认值，就是给下一个调用点一次静默复现它的
+         * 机会（模式 E：缺省值冒充真实信号）。
+         *
+         * 收**时间戳**而不是 `ProblemMemoryState`：排空内部要把"上一次复习"推进到刚刚写下的
+         * 那一行，而完整的状态对象要求 `nextReviewAt ≥ lastReviewedAt`，于是推进时只能给
+         * 无关字段编值。只收时间戳就没有可编的字段。
+         */
+        previousReviewedAtByUnit: Map<String, Long>,
     ): Int {
         var createdCount = 0
+        // 一轮里会**推进**的副本：同一次排空可能要补录同一个单元的多次视觉交互
+        // （相隔超过一小时的冷却、且都还没入过库），后一条的 `delta_t` 必须以**紧邻的前一条**
+        // 为界，而不是跨过它去读上一次投影——否则优化器会把"隔了两天"的第二次读成"隔了五天"。
+        // DAO 按 `attempted_at_epoch_millis ASC` 返回，所以顺序推进是对的。
+        val previousByUnit = previousReviewedAtByUnit.toMutableMap()
         mistakes
             .distinctBy(MistakeRecord::practiceUnitId)
             .forEach { mistake ->
                 database.readVisualInteractionAttempts(mistake.problemRevisionId)
                     .forEach { attempt ->
-                        if (ingestOne(attempt, mistake)) {
+                        if (ingestOne(attempt, mistake, previousByUnit)) {
                             createdCount += 1
                         }
                     }
@@ -56,6 +74,7 @@ internal class VisualInteractionIngestor(
     private suspend fun ingestOne(
         attempt: VisualInteractionAttemptRecord,
         mistake: MistakeRecord,
+        previousReviewedAtByUnit: MutableMap<String, Long>,
     ): Boolean {
         // Exploratory selects and UNDECIDABLE tool actions (draw/measure/reset)
         // carry no answer semantics and stay audit-only.
@@ -75,8 +94,29 @@ internal class VisualInteractionIngestor(
             .filter { binding -> binding.basisRevisionId == mistake.problemRevisionId }
             .sortedWith(compareBy({ it.acceptedAtEpochMillis }, { it.bindingId }))
         if (bindings.isEmpty()) return false
-        val taxonomyVersion = bindings.first().taxonomyVersion
-        val attributed = bindings.filter { it.taxonomyVersion == taxonomyVersion }
+        // Audit §5.3.6 / S-9 — two rules on the same pool:
+        //
+        // (1) Accepted classifications win outright. The placeholder binding is
+        //     the OLDEST row for any question that was reviewed before it was
+        //     classified, so leaving it in the pool hands every later visual
+        //     interaction to the subject-wide placeholder and the real knowledge
+        //     nodes never see it. It is used only while it is all the question
+        //     has. (1.4 stops NEW placeholder rows being written for a classified
+        //     question, but it cannot and should not remove the one that recorded
+        //     the question as unclassified at the time.)
+        // (2) The chosen group is the most recently accepted one, not the
+        //     earliest: a user correction writes a NEW group ("user-corrected-v1")
+        //     with a later accepted_at, while the earlier group survives as long
+        //     as attributions reference it (deleteUnreferencedKnowledgeBindings
+        //     retains exactly those), and §2.13 says the old knowledge node stops
+        //     receiving new evidence. Taking the earliest group would keep feeding
+        //     the node the user just corrected away from. Spec:
+        //     three-store-linkage-design.md §3.2「取 accepted_at 最新的
+        //     taxonomy_version 组」.
+        val classified = bindings.filterNot { it.isPseudoFallback }
+        val pool = classified.ifEmpty { bindings }
+        val taxonomyVersion = pool.last().taxonomyVersion
+        val attributed = pool.filter { it.taxonomyVersion == taxonomyVersion }
         val secondaryWeight = SECONDARY_VISUAL_ATTRIBUTION_WEIGHT_POOL /
             (attributed.size - 1).coerceAtLeast(1)
         val attributions = attributed.mapIndexed { index, binding ->
@@ -167,8 +207,15 @@ internal class VisualInteractionIngestor(
                 studyDay = writeContext.studyDayAt(attempt.attemptedAtEpochMillis),
                 sourceKind = ReviewLogSink.SOURCE_KIND_VISUAL,
                 sourceId = writeResult.attempt.attemptId,
-                priorMemory = null,
+                previousReviewedAtEpochMillis = previousReviewedAtByUnit[mistake.practiceUnitId],
             )
+            // 这一条刚刚成为该单元"最近的一次复习"：同一次排空里排在它后面的视觉证据
+            // 必须以它为界算 `delta_t`（否则会跨过它、读到上一次投影去，见 ingestPending 的注释）。
+            // 只在**本来就有**上一次复习时推进——没有它意味着这个单元在账本里还没有被投影过，
+            // 那是 FSRS 的"首次复习"情形，`delta_t = 0` 正是它的约定。
+            if (previousReviewedAtByUnit.containsKey(mistake.practiceUnitId)) {
+                previousReviewedAtByUnit[mistake.practiceUnitId] = attempt.attemptedAtEpochMillis
+            }
             return true
         }
         // A replay after the first successful sweep must not claim a new

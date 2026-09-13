@@ -21,6 +21,7 @@ import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -263,24 +264,50 @@ class LearningProjectorTest {
     }
 
     @Test
-    fun `full replay produces the same chat-evidence clock as incremental projection`() {
+    fun `full replay and incremental projection agree on the whole snapshot`() {
         // 升级路径依赖这条等价性：projector 版本 bump 会让已有库走
         // StudyProjectionDrainer 的全量重放（`replay`）而不是增量投影。若两条路
-        // 对 chat 证据算出不同的状态，老用户升级后拿到的就仍是修复前的旧值。
+        // 对同一份账本算出不同的状态，老用户升级后拿到的就仍是修复前的旧值。
+        //
+        // 断言是**整份快照 + 呈现状态表**，不是单个字段。这条测试此前只比
+        // `knowledgeMasteryStates`，于是 `problemMemoryStates`、`checkpoint`、
+        // `knownLedgerHeadSequence`、`generatedAtEpochMillis`、四张记录表以及
+        // `presentationProjectionStates` 上的任何分叉都逃得过去——而最后一张表
+        // 正是提交时 CAS 校验的对象（`ProjectionTransactionDao.kt:964`），
+        // 两条路一旦不一致，升级后的第一次增量提交就会被判 CAS 冲突。
+        //
+        // 两条路都**没有墙钟**：`replay` 从 0 起、`project` 承接上一版快照的
+        // `generatedAtEpochMillis`（空快照为 0），随后都取事件时间戳的最大值。
         val events = listOf(
-            attempt("attempt-1", 1, setOf("kc-a"), positiveEvidence()),
+            attempt("attempt-1", 1, setOf("kc-a", "kc-b"), positiveEvidence()),
             chatEvidence("chat-ev-1", 2, LearningEvidenceDirection.NEGATIVE, 0.35),
+            exposure("exposure-outcome-1", 3),
+            attempt("attempt-2", 4, setOf("kc-a"), negativeEvidence()),
         )
 
-        val incremental = projector.project(LearnerSnapshot.empty("learner-1"), events, 2).snapshot
-        val replayed = projector.replay("learner-1", events).snapshot
+        val incremental = projector.project(LearnerSnapshot.empty("learner-1"), events, 4)
+        val replayed = projector.replay("learner-1", events)
 
-        assertEquals(incremental.knowledgeMasteryStates, replayed.knowledgeMasteryStates)
+        assertEquals(replayed.snapshot, incremental.snapshot)
+        assertEquals(replayed.presentationProjectionStates, incremental.presentationProjectionStates)
+        assertEquals(
+            "两条路都必须把账本末条序列当作已知头",
+            4L,
+            replayed.snapshot.knownLedgerHeadSequence,
+        )
+        assertEquals(4L, replayed.snapshot.checkpoint.lastSequence)
+        assertEquals(
+            "时间线是事件时间戳的最大值，不是调用时刻",
+            4_000L,
+            replayed.snapshot.generatedAtEpochMillis,
+        )
         assertEquals(
             LearningEvidenceDirection.NEGATIVE.name,
-            replayed.knowledgeMasteryStates.getValue("kc-a").lastEvidenceDirection,
+            replayed.snapshot.knowledgeMasteryStates.getValue("kc-a").lastEvidenceDirection,
         )
-        assertEquals(2_000L, replayed.knowledgeMasteryStates.getValue("kc-a").lastEvidenceAtEpochMillis)
+        // 无修正账本上，只有 `replay` 能写这两个字段，而它写的正是"没有"。
+        assertNull(replayed.snapshot.correctionWatermarkEpochMillis)
+        assertTrue(replayed.snapshot.appliedCorrectionRecords.isEmpty())
     }
 
     @Test
@@ -391,6 +418,25 @@ class LearningProjectorTest {
         weight = weight,
         reasonMarkdown = "模型判断。",
         confidence = 0.9,
+        occurredAtEpochMillis = sequence * 1_000L,
+        eventSequence = sequence.toLong(),
+    )
+
+    /** 讲题栏曝光答案：只刷新记忆时钟、不二次衰减（spec §2.5/§2.6）。 */
+    private fun exposure(
+        outcomeId: String,
+        sequence: Int,
+        practiceUnitId: String = "unit-1",
+    ) = TutorAnswerExposureOutcome(
+        outcomeId = outcomeId,
+        exposureId = "exposure-$outcomeId",
+        sessionId = "tutor-session-1",
+        questionDocumentId = "question-document-1",
+        questionRevisionNumber = 1,
+        cycleOrdinal = 1,
+        turnOrdinal = 1,
+        problemRevisionId = "revision-1",
+        practiceUnitId = practiceUnitId,
         occurredAtEpochMillis = sequence * 1_000L,
         eventSequence = sequence.toLong(),
     )

@@ -83,9 +83,17 @@ internal class StudySchedulingCalibration(
         // Phone-safe bound: numeric-gradient fitting replays the history many
         // times, so optimization runs on the most recent window only.
         val samples = reviewLogSink.reviewSamples().takeLast(MAX_OPTIMIZE_SAMPLES)
-        val result = FsrsParameterOptimizer.optimize(samples)
+        // **现行参数就是这次拟合要挑战的那一组**：写回只在候选于同一段留出尾段上严格优于它时发生
+        // （审计 S-10）。原先这里只判 `mode != INSUFFICIENT_DATA` 就无条件写回，而拟合的择优基准
+        // 是出厂默认值——于是"比出厂默认好"就够写回，一次新拟合可以把已经更好的参数换掉。
+        val incumbent = store.optimizedParameters.first() ?: FsrsScheduleMath.DEFAULT_PARAMETERS
+        val result = FsrsParameterOptimizer.optimize(samples = samples, incumbent = incumbent)
         if (result.mode == FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA) return null
-        store.setOptimizedParameters(result.parameters)
+        // 只在**被采纳**时写：被拒的那次返回的就是 incumbent 本身，
+        // 照写一遍会白白产生一次 DataStore 写入与一次流发射。
+        if (result.adopted) {
+            store.setOptimizedParameters(result.parameters)
+        }
         return result
     }
 

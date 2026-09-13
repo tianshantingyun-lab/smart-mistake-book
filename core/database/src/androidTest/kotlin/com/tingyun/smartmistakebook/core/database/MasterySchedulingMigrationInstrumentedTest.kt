@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -122,6 +123,175 @@ class MasterySchedulingMigrationInstrumentedTest {
     }
 
     /**
+     * Audit §1.4 (D-2/S-3): the pseudo fallback is only legitimate for a
+     * question that carries no accepted binding.
+     *
+     * Three practice units pin the predicate from three sides, and each uses a
+     * subject no other state touches, so the pseudo node each one ends up with
+     * can only have come from its own call:
+     *
+     *  - unclassified (PHYSICS)  → fallback written, node materialized;
+     *  - classified (MATH)       → fallback refused, node STILL materialized;
+     *  - classified + legacy pseudo (CHEMISTRY, the realistic migration order:
+     *    the planner wrote a pseudo binding first, a real classification
+     *    arrived later) → refused, and no second pseudo row appears.
+     */
+    @Test
+    fun pseudoBindingIsWrittenOnlyForQuestionsWithNoAcceptedBinding() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val port = StudyDatabaseFactory.openInMemory(context)
+        try {
+            val bound = seedChain("bound", "MATH")
+            val mixed = seedChain("mixed", "CHEMISTRY")
+            val unbound = seedChain("unbound", "PHYSICS")
+            port.seedFixture(
+                StudySeedBundle(
+                    problems = bound.problems + mixed.problems + unbound.problems,
+                    revisions = bound.revisions + mixed.revisions + unbound.revisions,
+                    practiceUnits = bound.practiceUnits + mixed.practiceUnits + unbound.practiceUnits,
+                    errorBookEntries = bound.errorBookEntries +
+                        mixed.errorBookEntries +
+                        unbound.errorBookEntries,
+                    knowledgeNodes = listOf(
+                        KnowledgeNodeSeedRecord(
+                            knowledgeNodeId = "kc-real-math",
+                            stableCode = "kc-real-math",
+                            subject = "MATH",
+                            displayName = "已归类知识点",
+                            parentKnowledgeNodeId = null,
+                            taxonomyVersion = "math-graph-v3",
+                            createdAtEpochMillis = 500L,
+                            verificationStatus = "USER_CONFIRMED",
+                        ),
+                        KnowledgeNodeSeedRecord(
+                            knowledgeNodeId = "kc-real-chem",
+                            stableCode = "kc-real-chem",
+                            subject = "CHEMISTRY",
+                            displayName = "已归类知识点",
+                            parentKnowledgeNodeId = null,
+                            taxonomyVersion = "chem-graph-v1",
+                            createdAtEpochMillis = 500L,
+                            verificationStatus = "USER_CONFIRMED",
+                        ),
+                        // Pre-existing because the legacy pseudo binding below
+                        // foreign-keys onto it.
+                        KnowledgeNodeSeedRecord(
+                            knowledgeNodeId = "pseudo:CHEMISTRY",
+                            stableCode = "pseudo:CHEMISTRY",
+                            subject = "CHEMISTRY",
+                            displayName = PSEUDO_NODE_DISPLAY_NAME,
+                            parentKnowledgeNodeId = null,
+                            taxonomyVersion = PSEUDO_TAXONOMY_VERSION,
+                            createdAtEpochMillis = 100L,
+                        ),
+                    ),
+                    knowledgeBindings = listOf(
+                        KnowledgeBindingSeedRecord(
+                            bindingId = "binding-real-math",
+                            practiceUnitId = "unit-bound",
+                            knowledgeNodeId = "kc-real-math",
+                            basisRevisionId = "revision-bound",
+                            strength = 1.0,
+                            sourceType = "USER_CORRECTED",
+                            taxonomyVersion = "math-graph-v3",
+                            acceptedAtEpochMillis = 500L,
+                        ),
+                        // Older than the real binding: the planner created it
+                        // while the question was still unclassified.
+                        KnowledgeBindingSeedRecord(
+                            bindingId = "binding-pseudo-chem",
+                            practiceUnitId = "unit-mixed",
+                            knowledgeNodeId = "pseudo:CHEMISTRY",
+                            basisRevisionId = "revision-mixed",
+                            strength = 1.0,
+                            sourceType = PSEUDO_BINDING_SOURCE_TYPE,
+                            taxonomyVersion = "pseudo-plan-v1",
+                            acceptedAtEpochMillis = 100L,
+                        ),
+                        KnowledgeBindingSeedRecord(
+                            bindingId = "binding-real-chem",
+                            practiceUnitId = "unit-mixed",
+                            knowledgeNodeId = "kc-real-chem",
+                            basisRevisionId = "revision-mixed",
+                            strength = 1.0,
+                            sourceType = "USER_CORRECTED",
+                            taxonomyVersion = "chem-graph-v1",
+                            acceptedAtEpochMillis = 900L,
+                        ),
+                    ),
+                ),
+            )
+
+            // Classified question: the fallback is refused, so no pseudo row is
+            // written and the self-report snapshot stays attribution-free. An
+            // attribution-free snapshot is a state the contract already
+            // recognises (LocalReviewSelfReportContract).
+            assertNull(
+                port.ensurePseudoKnowledgeBinding(
+                    practiceUnitId = "unit-bound",
+                    problemRevisionId = "revision-bound",
+                    taxonomyVersion = "local-review-self-report-v1",
+                    subject = "MATH",
+                    acceptedAtEpochMillis = 1_000L,
+                ),
+            )
+            assertEquals(
+                listOf("binding-real-math"),
+                port.readPracticeUnitKnowledgeBindings("unit-bound").map { it.bindingId },
+            )
+            // Refusing the binding must not refuse the node: the planner names
+            // `pseudo:MATH` whenever this question's catalog projection is empty
+            // (the projection drops a binding once it stops matching the latest
+            // organization receipt and its KNOWLEDGE classification), which can
+            // happen while binding rows exist, and review_queue_knowledge_node
+            // foreign-keys onto it. Nothing else in this fixture touches MATH.
+            assertTrue(
+                "the refused call must still materialize pseudo:MATH",
+                port.readKnowledgeNodesByIds(setOf("pseudo:MATH"))
+                    .any { it.knowledgeNodeId == "pseudo:MATH" },
+            )
+
+            // Classified, but carrying a legacy pseudo row: still refused, and
+            // exactly the two pre-existing rows survive. A predicate that asked
+            // whether *all* bindings are pseudo, rather than whether any is a
+            // real one, would append a third row here.
+            assertNull(
+                port.ensurePseudoKnowledgeBinding(
+                    practiceUnitId = "unit-mixed",
+                    problemRevisionId = "revision-mixed",
+                    taxonomyVersion = "local-review-self-report-v1",
+                    subject = "CHEMISTRY",
+                    acceptedAtEpochMillis = 1_100L,
+                ),
+            )
+            assertEquals(
+                listOf("binding-pseudo-chem", "binding-real-chem"),
+                port.readPracticeUnitKnowledgeBindings("unit-mixed").map { it.bindingId },
+            )
+
+            // Unclassified question: unchanged, the fallback is still written.
+            val fallback = port.ensurePseudoKnowledgeBinding(
+                practiceUnitId = "unit-unbound",
+                problemRevisionId = "revision-unbound",
+                taxonomyVersion = "local-review-self-report-v1",
+                subject = "PHYSICS",
+                acceptedAtEpochMillis = 1_000L,
+            )
+            assertNotNull(fallback)
+            assertEquals("pseudo:PHYSICS", fallback!!.knowledgeNodeId)
+            assertEquals(
+                listOf(
+                    "pseudo-binding:unit-unbound:revision-unbound:" +
+                        "local-review-self-report-v1:pseudo:PHYSICS",
+                ),
+                port.readPracticeUnitKnowledgeBindings("unit-unbound").map { it.bindingId },
+            )
+        } finally {
+            port.close()
+        }
+    }
+
+    /**
      * The pseudo binding foreign-keys onto practice_unit, which chains up to
      * problem_revision and problem; seed the minimal content chain first.
      */
@@ -208,6 +378,64 @@ class MasterySchedulingMigrationInstrumentedTest {
             ),
         )
     }
+
+    /**
+     * A minimal problem -> revision -> practice_unit -> entry chain, so a
+     * binding has rows to foreign-key onto. `suffix` is what keeps several
+     * chains in one fixture set distinct; `subject` is what keeps their pseudo
+     * knowledge nodes distinct.
+     */
+    private fun seedChain(suffix: String, subject: String): StudySeedBundle = StudySeedBundle(
+        problems = listOf(
+            ProblemSeedRecord(
+                problemId = "problem-$suffix",
+                canonicalFingerprint = "fp-$suffix",
+                subject = subject,
+                createdAtEpochMillis = 0L,
+            ),
+        ),
+        revisions = listOf(
+            ProblemRevisionSeedRecord(
+                revisionId = "revision-$suffix",
+                problemId = "problem-$suffix",
+                revisionNumber = 1,
+                title = "伪KC边界题",
+                problemMarkdown = "求证。",
+                answerSpecId = null,
+                answerSpecSnapshot = null,
+                answerVerificationStatus = "USER_ASSERTED",
+                sourceType = "CAPTURE",
+                sourceReference = null,
+                contentFingerprint = "fp-$suffix-r1",
+                createdAtEpochMillis = 0L,
+            ),
+        ),
+        practiceUnits = listOf(
+            PracticeUnitSeedRecord(
+                practiceUnitId = "unit-$suffix",
+                problemId = "problem-$suffix",
+                problemRevisionId = "revision-$suffix",
+                unitKey = "unit-$suffix",
+                unitKind = "SINGLE",
+                title = "伪KC边界单元",
+                promptMarkdown = "求证。",
+                estimatedSeconds = 60,
+                createdAtEpochMillis = 0L,
+            ),
+        ),
+        errorBookEntries = listOf(
+            ErrorBookEntrySeedRecord(
+                entryId = "entry-$suffix",
+                practiceUnitId = "unit-$suffix",
+                problemId = "problem-$suffix",
+                currentRevisionId = "revision-$suffix",
+                sourceKey = "capture:$suffix",
+                status = "ACTIVE",
+                acceptedAtEpochMillis = 0L,
+                updatedAtEpochMillis = 0L,
+            ),
+        ),
+    )
 
     private fun seedV35MemoryRow(context: Context, databaseName: String) {
         val database = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(

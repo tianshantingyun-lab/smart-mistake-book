@@ -36,6 +36,7 @@ import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_MAX_CLOCK_SKEW_MILLIS
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
 import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
+import com.tingyun.smartmistakebook.core.model.ModelTaskContractRegistry
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
@@ -119,6 +120,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -167,8 +169,113 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(capabilities.supports(ModelTaskKind.TUTOR_LOBBY))
         assertTrue(capabilities.supports(ModelTaskKind.PROBLEM_CLASSIFY))
         assertFalse(capabilities.supports(ModelTaskKind.CAPTURE_ASSESS))
+        // IMAGE_PIPELINE_CLASSIFY 与 CAPTURE_* 同门：它也要把题图发出去，所以端点没通过图片探测时
+        // 一律不得宣告——挂在结构化输出那一组会在"不接受图片"的端点上造出"能判定图形"的假承诺。
+        assertFalse(capabilities.supports(ModelTaskKind.IMAGE_PIPELINE_CLASSIFY))
         assertFalse(capabilities.supportsImageInput)
         assertTrue(capabilities.supportsStructuredOutput)
+    }
+
+    /**
+     * 批 2 第 1 项：**配置完备的网关必须把它协议真的能服务的 kind 逐条宣告出来。**
+     *
+     * 消灭的失败（模式 B 的一个实例，且是**静默**的）：`IMAGE_PIPELINE_CLASSIFY` 在**生产**路径上
+     * 被真实调用——`RoomCaptureWorkflowRepository.decideAndRedraw` 用它决定"图里有几何图形才重绘"——
+     * 而真网关的 `supportedTasks` 里没有它。这个集合是
+     * `RoomModelTaskRepository.capabilityFailure` 的判据，于是那条请求被拒成
+     * `PROVIDER_CAPABILITY_MISSING`、`shouldRedraw` 恒假：不崩、不提示、没有任何断言会红。
+     * 更刺眼的是 **debug 假网关宣告了它**（`FakeModelGateway`），所以它只在真机上消失。
+     *
+     * **为什么是清单式断言**：要拦的正是"某一条静默掉了"。断言"非空"或"至少包含某几个"
+     * 都抓不到少一条，而清单每加一条都会逼人回答"这个网关要不要服务它"。
+     */
+    @Test
+    fun theConfiguredGatewayAdvertisesEveryKindItsProtocolCanServe() = runBlocking {
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val capabilities = gateway.capabilities()
+
+        assertEquals(
+            "配置完备（结构化输出 ＋ 图片输入）时该宣告的 kind 必须逐条对上：少一条就意味着" +
+                "那条请求在生产上会被 capabilityFailure 直接拒掉",
+            setOf(
+                ModelTaskKind.CAPTURE_ASSESS,
+                ModelTaskKind.CAPTURE_PARSE,
+                ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
+                ModelTaskKind.PROBLEM_CLASSIFY,
+                ModelTaskKind.KNOWLEDGE_QUIZ,
+                ModelTaskKind.TUTOR_LOBBY,
+                ModelTaskKind.TUTOR_PLAN,
+                ModelTaskKind.TUTOR_RESPOND,
+                ModelTaskKind.TUTOR_VISUAL_GENERATE,
+                ModelTaskKind.TUTOR_VISUAL_REVIEW,
+            ),
+            capabilities.supportedTasks,
+        )
+        // 宣告的每一条都必须真的能路由：注册表有契约、prompt 策略有版本。
+        // 缺任何一边，请求会在更晚的地方失败——那时用户已经等过一轮。
+        capabilities.supportedTasks.forEach { kind ->
+            ModelTaskContractRegistry.require(kind)
+            assertNotNull(
+                "宣告了 $kind 却没有 prompt 策略版本",
+                ModelPromptPolicyVersions.currentFor(kind),
+            )
+        }
+    }
+
+    /**
+     * **反向**：`ModelTaskKind` 的每一个取值都必须被显式归类——要么这个网关会宣告它，
+     * 要么它属于"这个网关不管"的那一组，而那一组逐个写了理由。
+     *
+     * 它守的是**下一个 kind**：新增一个枚举值会让这条断言立刻变红，直到有人回答
+     * "真网关要不要服务它"。`ModelPromptPolicyVersions.currentFor` 的穷尽 `when` 是同一招，
+     * 但那只覆盖"有没有 prompt 版本"，覆盖不到"网关会不会宣告它"——而这一批要找的正是后者。
+     */
+    @Test
+    fun everyTaskKindIsEitherAdvertisedOrExplicitlyOutOfScopeForThisGateway() {
+        val advertised = setOf(
+            ModelTaskKind.CAPTURE_ASSESS,
+            ModelTaskKind.CAPTURE_PARSE,
+            ModelTaskKind.IMAGE_PIPELINE_CLASSIFY,
+            ModelTaskKind.PROBLEM_CLASSIFY,
+            ModelTaskKind.KNOWLEDGE_QUIZ,
+            ModelTaskKind.TUTOR_LOBBY,
+            ModelTaskKind.TUTOR_PLAN,
+            ModelTaskKind.TUTOR_RESPOND,
+            ModelTaskKind.TUTOR_VISUAL_GENERATE,
+            ModelTaskKind.TUTOR_VISUAL_REVIEW,
+        )
+        val outOfScope = setOf(
+            // 只在"本机不出网"的提供方上才会跑（`buildTutorDebriefRequest` 的门），
+            // 而这个是出网网关：宣告它等于承诺一件永远不会被要求做的事（见 N-13，
+            // 那条通道整体不可达，属产品决策）。
+            ModelTaskKind.LEARNING_SUMMARIZE,
+            // 这三个连任务契约都还没有（`ModelTaskContractRegistry` 里没有它们，
+            // `ModelPromptPolicyVersions.currentFor` 也返回 null），
+            // 请求会在更早一步就被挡住，与网关宣告与否无关。
+            ModelTaskKind.PROBLEM_RELATE,
+            ModelTaskKind.TUTOR_EVALUATE,
+            ModelTaskKind.REVIEW_RERANK,
+        )
+
+        assertTrue(
+            "两组都必须只含枚举里真实存在的取值",
+            ModelTaskKind.entries.containsAll(advertised + outOfScope),
+        )
+        assertTrue(
+            "两组不得重叠：${advertised intersect outOfScope}",
+            (advertised intersect outOfScope).isEmpty(),
+        )
+        assertEquals(
+            "ModelTaskKind 的每个取值都必须被显式归类——新增一个枚举值会让这条变红，" +
+                "直到有人回答「真网关要不要服务它」",
+            ModelTaskKind.entries.toSet(),
+            advertised + outOfScope,
+        )
     }
 
     @Test

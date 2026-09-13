@@ -23,6 +23,14 @@ internal const val PSEUDO_NODE_DISPLAY_NAME = "未归类知识点"
 /** Taxonomy marker carried by pseudo knowledge nodes themselves. */
 internal const val PSEUDO_TAXONOMY_VERSION = "pseudo-node-v1"
 
+/**
+ * `source_type` of the spec §3.4 pseudo fallback binding. Every other binding
+ * source records an accepted classification fact; this one records the
+ * absence of one, so it is what "this question is genuinely unclassified"
+ * is recognised by.
+ */
+internal const val PSEUDO_BINDING_SOURCE_TYPE = "PSEUDO_FALLBACK"
+
 private const val KNOWLEDGE_NODE_QUERY_CHUNK_SIZE = 400
 
 /**
@@ -68,13 +76,40 @@ internal class RoomKnowledgeBaseStore(
                 ),
             )
         }
+        // Spec §3.4 + audit §1.4 (D-2/S-3): the fallback binding exists for a
+        // question that carries NO accepted binding. Once one exists, a pseudo
+        // attribution on top of it is a *false* attribution — the same evidence
+        // would also be counted against a knowledge node the question is not
+        // classified into. Attribution is a write-time immutable fact (§2.8.1),
+        // so this predicate belongs here, at the single choke point both
+        // unbound-evidence paths go through, and not in projection.
+        //
+        // Scoped to the practice unit rather than to one revision:
+        // `practice_unit_knowledge_binding` foreign-keys onto
+        // `practice_unit(practice_unit_id, problem_revision_id)`, so a binding is
+        // always anchored to the question's current revision anyway, and the
+        // narrower scope would only hide the ones that are not.
+        //
+        // Deliberately below the node materialization: `createReviewPlan` names
+        // `pseudo:<SUBJECT>` whenever the *catalog projection* of the question is
+        // empty, and that projection keeps a binding only while it still matches
+        // the latest organization receipt and its KNOWLEDGE classification
+        // (ProblemDao.mistakes) — so it can be empty while binding rows exist.
+        // `review_queue_knowledge_node` foreign-keys onto knowledge_node, so the
+        // node must exist whenever it may still be named.
+        if (
+            organizationDao.readKnowledgeBindingsForPracticeUnit(practiceUnitId)
+                .any { it.sourceType != PSEUDO_BINDING_SOURCE_TYPE }
+        ) {
+            return null
+        }
         val binding = PracticeUnitKnowledgeBindingEntity(
             bindingId = bindingId,
             practiceUnitId = practiceUnitId,
             knowledgeNodeId = knowledgeNodeId,
             basisRevisionId = problemRevisionId,
             strength = 1.0,
-            sourceType = "PSEUDO_FALLBACK",
+            sourceType = PSEUDO_BINDING_SOURCE_TYPE,
             taxonomyVersion = taxonomyVersion,
             acceptedAtEpochMillis = acceptedAtEpochMillis,
         )
@@ -87,6 +122,7 @@ internal class RoomKnowledgeBaseStore(
             basisRevisionId = persisted.basisRevisionId,
             taxonomyVersion = persisted.taxonomyVersion,
             acceptedAtEpochMillis = persisted.acceptedAtEpochMillis,
+            isPseudoFallback = true,
         )
     }
 
@@ -179,7 +215,11 @@ internal class RoomKnowledgeBaseStore(
         }
         if (dependentKnowledgeNodeIds.isEmpty()) return emptyList()
         return database.knowledgeNodeRelationDao()
-            .readForDependents(subject, dependentKnowledgeNodeIds)
+            .readForDependents(
+                subject = subject,
+                dependentKnowledgeNodeIds = dependentKnowledgeNodeIds,
+                relationType = StudyDbValue.KnowledgeRelationType.PREREQUISITE_OF,
+            )
             .map(KnowledgeNodeRelationEntity::toRecord)
     }
 

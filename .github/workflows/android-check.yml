@@ -44,11 +44,19 @@ jobs:
         # The flavor-named tasks only exist in :app; every other module's
         # unit tests are listed explicitly or they never run in CI. Pure-JVM
         # modules use `test`; Android library modules use the debug variant.
+        #
+        # 这份清单是手工维护的，两个方向都会出错，审计逐条核对时两边都碰到了：
+        #   · 漏了有测试的——`:core:ui`（3 个类、11 条）此前不在清单里，CI 从不运行它们；
+        #   · 列了没测试的——`:knowledge-production` 的 src/test 下 0 个测试文件，
+        #     那条任务在 CI 里什么都不跑（保留它无害，但它不构成任何覆盖）。
+        # 所以新增/删除模块时不要只照抄这一段，用
+        # `./gradlew test testDebugUnitTest --dry-run` 对照实际的测试源集核一遍。
         run: >
           ./gradlew testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest
           :core:domain:test :core:model:test :core:visual-runtime:test
           :quality:visual-benchmark:test :knowledge-production:test
           :core:data:testDebugUnitTest :core:database:testDebugUnitTest
+          :core:ui:testDebugUnitTest
           :core:export:testDebugUnitTest :core:visual-ui:testDebugUnitTest
           :feature:capture:testDebugUnitTest :feature:library:testDebugUnitTest
           :feature:tutor:testDebugUnitTest :feature:profile:testDebugUnitTest

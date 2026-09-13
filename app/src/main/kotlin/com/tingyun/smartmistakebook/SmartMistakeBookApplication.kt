@@ -229,10 +229,14 @@ class SmartMistakeBookApplication : Application() {
                 database = database,
                 // Clean redraw engine: reused by the save decision round once the
                 // model classifies the committed photo as figure-bearing.
+                // Consent = the user's global "model agent" toggle, the same switch
+                // the capture path reads — NOT the build-flavor capability bit
+                // (audit S-2: the flavor bit let a revoked consent still upload the
+                // original photo bytes to the provider).
                 cleanRedraw = modelConfigurationStore?.let { store ->
                     ConfiguredCleanImageGeneratorFactory.create(
                         configurationStore = store,
-                        networkRequestsAllowed = capabilities.networkRequestsAllowed,
+                        modelAgentConsentStore = modelAgentConsentStore,
                     )
                 },
                 cleanRedrawScope = applicationScope,
@@ -275,32 +279,28 @@ class SmartMistakeBookApplication : Application() {
             return
         }
         applicationScope.launch {
-            try {
-                BundledKnowledgeBaseInstaller.install(database)
-                studyRepository.initialize()
-                if (startupState.value is StartupState.Ready) {
-                    startupState.value = StartupState.Ready
-                }
-                // Silent FSRS parameter refit (spec §2.11): self-gated by the
-                // fsrs-rs data thresholds (>=64 samples for a full fit) and
-                // failure-proof; fitted parameters apply on the next launch.
-                applicationScope.launch {
-                    runCatching { studyRepository.optimizeSchedulingParameters() }
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (failure: Throwable) {
-                android.util.Log.e(
-                    "SmartMistakeBook",
-                    "Bundled knowledge install failed",
-                    failure,
-                )
-                startupState.value = StartupState.RecoverableFailure(
-                    title = "本地知识包尚未准备好",
-                    message = "错题和复习可以继续使用，自动分类会暂缓。",
-                    diagnosticId = "startup:knowledge:${failure.hashCode().toUInt()}",
-                    errorCategory = StartupErrorCategory.KNOWLEDGE_BASE,
-                )
+            // 知识包安装与投影初始化**分开归类**：合用一个 catch 会让任何投影/账本失败
+            // 都被说成「本地知识包尚未准备好」，并附上一句"可以继续使用"（审计 N-02）。
+            // 归属本身住在 `runStartupInitialization`，因此它有断言；文案与编号前缀见
+            // `StartupFailureMessages.kt`。
+            val failure = runStartupInitialization(
+                installKnowledgeBase = { BundledKnowledgeBaseInstaller.install(database) },
+                initializeProjection = { studyRepository.initialize() },
+                logFailure = { description, error ->
+                    android.util.Log.e("SmartMistakeBook", description, error)
+                },
+            )
+            if (failure != null) {
+                startupState.value = failure
+                return@launch
+            }
+            // 全部成功时不写状态：此时启动态已是 Ready，重写一次是空操作，
+            // 而投影成功也绝不能抹掉先前那条知识包失败。
+            // Silent FSRS parameter refit (spec §2.11): self-gated by the
+            // fsrs-rs data thresholds (>=64 samples for a full fit) and
+            // failure-proof; fitted parameters apply on the next launch.
+            applicationScope.launch {
+                runCatching { studyRepository.optimizeSchedulingParameters() }
             }
         }
     }

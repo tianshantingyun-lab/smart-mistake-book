@@ -110,23 +110,29 @@ fun knowledgeRecallRiskByNode(
     boundPracticeUnitIdsByNode: Map<String, List<String>>,
     memoryStates: Map<String, ProblemMemoryState>,
     nowEpochMillis: Long,
+    /**
+     * 读这条风险的曲线：它同时带来**口径**（`t` 是本地日历日）与**参数**（拟合出来的衰减）。
+     * 收一个配置好的曲线、而不是在这里自己算天数或自己取默认衰减，是这一处曾经出过两次错的
+     * 直接原因——它原先内联了一段"未取整的墙钟分数天"，于是同一张卡在这里与在错题详情上
+     * 是两个不同的 R（审计 F-02）；而且它读的是 `FsrsScheduleMath` 的**出厂**衰减，
+     * 与排期用的那条曲线不是同一条（审计 N-14）。
+     */
+    forgettingCurve: ForgettingCurve,
+    zoneId: java.time.ZoneId,
 ): Map<String, Double> = boundPracticeUnitIdsByNode.mapNotNull { (nodeId, unitIds) ->
     unitIds.asSequence()
         .mapNotNull { unitId -> memoryStates[unitId] }
         .filter { it.stabilityDays > 0.0 && it.lastReviewedAtEpochMillis > 0 }
         .map { memory ->
-            val elapsedDays = (nowEpochMillis - memory.lastReviewedAtEpochMillis)
-                .coerceAtLeast(0).toDouble() / DAY_MILLIS
-            FsrsScheduleMath.retention(
-                elapsedDays = elapsedDays,
-                stabilityDays = memory.stabilityDays,
-            )
+            forgettingCurve.estimateAt(
+                state = memory,
+                atEpochMillis = nowEpochMillis,
+                zoneId = zoneId,
+            ).probability
         }
         .minOrNull()
         ?.let { nodeId to it }
 }.toMap()
-
-private const val DAY_MILLIS = 86_400_000.0
 
 fun selectKnowledgeReviewQueue(
     planner: ReviewPlanner,

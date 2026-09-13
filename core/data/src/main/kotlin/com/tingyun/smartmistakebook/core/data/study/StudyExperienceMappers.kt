@@ -37,6 +37,7 @@ internal fun MistakeRecord.toCatalogEntry(
     resolvedKnowledgeNames: Map<String, String>,
     curatedProblemIds: Set<String>,
     forgettingCurve: ForgettingCurve,
+    zoneId: java.time.ZoneId,
     fixtureSource: StudyFixtureSource,
 ): StudyCatalogEntry {
     val memory = learnerSnapshot.problemMemoryStates[practiceUnitId]
@@ -63,7 +64,7 @@ internal fun MistakeRecord.toCatalogEntry(
         },
         masteryStatus = knowledgeStates.conservativeMasteryStatus(),
         nextReviewAtEpochMillis = memory?.nextReviewAtEpochMillis ?: nextReviewAtEpochMillis,
-        retrievability = memory?.let { forgettingCurve.retentionAt(it, atEpochMillis) }
+        retrievability = memory?.let { forgettingCurve.retentionAt(it, atEpochMillis, zoneId) }
             ?: retrievability,
         questionMemory = memory?.let { state ->
             StudyQuestionMemory(
@@ -73,7 +74,7 @@ internal fun MistakeRecord.toCatalogEntry(
                 answerRevealCount = state.answerRevealCount,
                 lastReviewedAtEpochMillis = state.lastReviewedAtEpochMillis,
                 nextReviewAtEpochMillis = state.nextReviewAtEpochMillis,
-                retrievabilityAtSnapshot = forgettingCurve.retentionAt(state, atEpochMillis),
+                retrievabilityAtSnapshot = forgettingCurve.retentionAt(state, atEpochMillis, zoneId),
                 projectionIsCurrent = learnerSnapshot.freshness == LearnerSnapshotFreshness.CURRENT &&
                     learnerSnapshot.projectionStatus == ProjectionStatus.CURRENT,
             )

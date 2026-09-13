@@ -23,6 +23,14 @@ class KnowledgeReviewQueueTest {
     private val planner = ReviewPlanner()
     private val now = 1_000_000_000_000L
 
+    /**
+     * 到期风险走**产线那条读侧曲线**（审计 F-02 / N-14）：FSRS-6 ＋ 出厂衰减，
+     * 与既有断言里的 `FsrsScheduleMath.retention(天数, 稳定度)` 同一个数。
+     * 时区固定 UTC：夹具的"上一次复习"正好是 24 小时前，两种口径在 UTC 下都是 1 天。
+     */
+    private val curve = ForgettingCurve(algorithm = ForgettingCurveAlgorithm.FSRS6_POWER_LAW)
+    private val zone = java.time.ZoneOffset.UTC
+
     private fun mastery(id: String, status: MasteryStatus): KnowledgeMasteryState = KnowledgeMasteryState(
         knowledgeNodeId = id,
         masteryScore = 0.95,
@@ -83,6 +91,8 @@ class KnowledgeReviewQueueTest {
             ),
             memoryStates = mapOf("unit-1" to memory),
             nowEpochMillis = now,
+            forgettingCurve = curve,
+            zoneId = zone,
         )
         // 一道稳定题的 R 很高（近 1），但仍是"已知记忆"。
         assertTrue(risks.getValue("kc-strong") > 0.9)
@@ -107,6 +117,8 @@ class KnowledgeReviewQueueTest {
             boundPracticeUnitIdsByNode = mapOf("kc-1" to listOf("unit-fresh", "unit-decayed")),
             memoryStates = mapOf("unit-fresh" to fresh, "unit-decayed" to decayed),
             nowEpochMillis = now,
+            forgettingCurve = curve,
+            zoneId = zone,
         )
         assertTrue(risks.getValue("kc-1") < 0.8)
     }

@@ -755,7 +755,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     attachedImageResolver = AttachedImageGeneratorFactory.create(
                         context = application,
                         configurationStore = configurationStore,
-                        networkRequestsAllowed = application.capabilities.networkRequestsAllowed,
+                        // 用户同意，不是变体位：见审计 S-2。原来这里传
+                        // `application.capabilities.networkRequestsAllowed`，
+                        // 于是关掉「模型智能体同意」也照样把原图发出去。
+                        modelAgentConsentStore = application.modelAgentConsentStore,
                         resolveCurrentSheetBytes = {
                             application.captureRepository.readTutorSessionSheetBytes(sessionId)
                         },

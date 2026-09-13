@@ -55,7 +55,11 @@ class HLRPredictionAuditService(
     }
 
     override fun projectEvidence(input: EvidenceProjectionInput): EvidenceProjection {
-        val estimate = forgettingCurve.estimateAt(input.memory, input.nowEpochMillis)
+        val estimate = forgettingCurve.estimateAt(
+            state = input.memory,
+            atEpochMillis = input.nowEpochMillis,
+            zoneId = java.time.ZoneId.of(input.timeZoneId),
+        )
         return EvidenceProjection(
             practiceUnitId = input.practiceUnitId,
             estimatedRetention = estimate.probability,

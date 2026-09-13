@@ -91,6 +91,7 @@ internal class StudySnapshotBuilder(
                     resolvedKnowledgeNames = resolvedKnowledgeNames,
                     curatedProblemIds = curatedProblemIds,
                     forgettingCurve = forgettingCurve,
+                    zoneId = studyZoneId,
                     fixtureSource = fixtureSource,
                 )
             },

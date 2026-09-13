@@ -74,6 +74,7 @@ import com.tingyun.smartmistakebook.core.model.AttachedImage
 import com.tingyun.smartmistakebook.core.model.AttachedImageKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.MISSING_TOOL_CONFIDENCE
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
@@ -491,7 +492,7 @@ internal fun JsonObject.toTutorToolRequests(
                     direction = call.optionalString("direction")?.let { enumValue<TutorEvidenceDirection>(it) },
                     understanding = call.optionalString("understanding")?.let { enumValue<TutorUnderstandingTier>(it) },
                     difficultyTier = call.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
-                    confidence = call.optionalDouble("confidence") ?: 0.8,
+                    confidence = call.optionalDouble("confidence") ?: MISSING_TOOL_CONFIDENCE,
                 )
             }
             ?: throw InvalidModelResponseException(),

@@ -111,15 +111,19 @@ internal fun ReviewSessionDestination(
         // for ordinary review. It is deliberately *not* fetched through
         // revealAnswer — that path records a "saw the answer" event, which would
         // turn the student's next attempt into a post-reveal attempt.
+        //
+        // Both optional cards below load through loadOptionalSessionCard: a
+        // failure in this produceState block would otherwise escape into the
+        // composition's coroutine and take the session down (audit N-03).
         val reTeachOpening = if (loadedArtifact != null) {
-            repository.reTeachOpening(requireNotNull(requestedId))
+            loadOptionalSessionCard { repository.reTeachOpening(requireNotNull(requestedId)) }
         } else {
             null
         }
         // Spec §2.9 prerequisite remediation, same round trip. Independent of the
         // leech opening: a card can be both, and neither implies the other.
         val prerequisiteRemediation = if (loadedArtifact != null) {
-            repository.prerequisiteRemediation(requireNotNull(requestedId))
+            loadOptionalSessionCard { repository.prerequisiteRemediation(requireNotNull(requestedId)) }
         } else {
             null
         }

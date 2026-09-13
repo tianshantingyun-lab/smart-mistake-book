@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.MISSING_TOOL_CONFIDENCE
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
@@ -168,6 +170,35 @@ class OpenAiNativeToolsProtocolTest {
         assertEquals(com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection.POSITIVE, call.direction)
         assertEquals(com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier.CONFIDENT, call.understanding)
         assertEquals(0.85, call.confidence, 1e-9)
+    }
+
+    /**
+     * 审计 §5.4.10（批 1 第 1.5 项）：provider 漏发 `confidence` 时，解析侧**不得**
+     * 替它补一个能过门的值。缺省必须表示"没判过"，由本地证据门去拒——
+     * 否则"模型没给置信度"会被写成一条正常的学习证据（模式 E：缺省值冒充真实信号）。
+     */
+    @Test
+    fun nativeToolCallWithoutConfidenceParsesBelowTheEvidenceGate() {
+        val envelope = toolCallEnvelope(
+            """
+            {"role":"assistant",
+             "content":"{\"intentDecision\":{\"intent\":\"CURRENT_QUESTION_HELP\",\"confidence\":0.9,\"explicitActionRequest\":false,\"memoryPreference\":\"UNCHANGED\",\"requestedLocalCapability\":\"NONE\"}}",
+             "tool_calls":[{"id":"call_1","type":"function",
+               "function":{"name":"MASTERY_UPDATE",
+                 "arguments":"{\"terms\":[\"knowledge-node-1\"],\"rationale\":\"学生明确说理解了配方法。\",\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\"}"}}]}
+            """.trimIndent(),
+        )
+        val output = OpenAiModelProtocol.parseResponse(
+            responseBody = envelope,
+            input = respondInput(),
+            modelVersion = "test-model-v1",
+        )
+        val call = (output as TutorToolRequestsOutput).calls.single()
+        assertEquals(MISSING_TOOL_CONFIDENCE, call.confidence, 0.0)
+        assertTrue(
+            "缺省置信度必须低于证据门，实得 ${call.confidence}",
+            call.confidence < MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD,
+        )
     }
 
     @Test

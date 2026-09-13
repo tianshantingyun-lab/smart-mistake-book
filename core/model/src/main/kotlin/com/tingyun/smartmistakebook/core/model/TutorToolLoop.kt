@@ -78,9 +78,11 @@ data class TutorToolCall(
     /**
      * Model's own confidence in its semantic judgment (0..1), MASTERY_UPDATE
      * only. The local gate thresholds it against
-     * [com.tingyun.smartmistakebook.core.domain.MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD].
+     * [com.tingyun.smartmistakebook.core.domain.MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD];
+     * callers that have no confidence to report must say so with
+     * [MISSING_TOOL_CONFIDENCE] rather than pick a number that clears the gate.
      */
-    val confidence: Double = 0.8,
+    val confidence: Double = MISSING_TOOL_CONFIDENCE,
 ) {
     init {
         require(rationale.isNotBlank() && rationale.length <= MAX_TOOL_RATIONALE_CHARS) {
@@ -268,3 +270,16 @@ private const val ROUTE_CONFIDENCE_THRESHOLD = TUTOR_TOOL_ROUTE_CONFIDENCE_THRES
 
 /** Upper bound on simultaneously declared tools for one dispatch (spec §2 core five). */
 const val MAX_TOOL_DECLARATIONS = 5
+
+/**
+ * Confidence attributed to a MASTERY_UPDATE whose caller did not state one.
+ *
+ * Deliberately `0.0`: an absent confidence is a **missing signal, not a strong
+ * one**, and the local evidence gate rejects anything below its threshold, so
+ * this value can never let unjudged evidence through. It used to be `0.8` —
+ * which happens to sit just above the gate's `0.7`, so a provider that dropped
+ * the field had its evidence written anyway (audit §5.4.10, failure mode E:
+ * a default impersonating a real signal). Every site that reads a confidence
+ * out of a provider response must use this constant rather than a literal.
+ */
+const val MISSING_TOOL_CONFIDENCE = 0.0

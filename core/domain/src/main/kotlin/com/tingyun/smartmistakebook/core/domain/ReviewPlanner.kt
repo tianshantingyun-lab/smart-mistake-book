@@ -113,6 +113,12 @@ data class ReviewPlanningRequest(
             "A planning request must not repeat a practice unit"
         }
     }
+
+    /**
+     * [timeZoneId] 的强类型形式，供读侧估计推出"本地第几天"（审计 F-02）。
+     * 解析**只在这里发生一次**：散在各处的 `ZoneId.of(...)` 迟早会有一处忘了传同一条。
+     */
+    val zoneId: java.time.ZoneId get() = java.time.ZoneId.of(timeZoneId)
 }
 
 /** Versioned, deterministic review queue planning under a strict time budget. */
@@ -128,7 +134,7 @@ class ReviewPlanner(
         }
         val now = request.planningAtEpochMillis
         val scored = request.candidates.mapNotNull { candidate ->
-            scoreCandidate(candidate, request.learnerSnapshot, now)
+            scoreCandidate(candidate, request.learnerSnapshot, now, request.zoneId)
         }
         val remaining = scored.toMutableList()
         val selected = mutableListOf<ScoredCandidate>()
@@ -213,6 +219,7 @@ class ReviewPlanner(
         candidate: ReviewCandidate,
         snapshot: LearnerSnapshot,
         now: Long,
+        zoneId: java.time.ZoneId,
     ): ScoredCandidate? {
         val memory = snapshot.problemMemoryStates[candidate.practiceUnitId]
         val masteryStates = candidate.knowledgeNodeIds.mapNotNull(snapshot.knowledgeMasteryStates::get)
@@ -226,7 +233,7 @@ class ReviewPlanner(
 
             memory.nextReviewAtEpochMillis <= now -> {
                 reasons += ReviewReason.DUE_RECALL_RISK
-                val estimate = forgettingCurve.estimateAt(memory, now)
+                val estimate = forgettingCurve.estimateAt(memory, now, zoneId)
                 if (estimate.clockAnomaly == ClockAnomaly.TIME_ROLLBACK) {
                     reasons += ReviewReason.CLOCK_ANOMALY
                 }
@@ -242,7 +249,7 @@ class ReviewPlanner(
             }
 
             else -> {
-                val estimate = forgettingCurve.estimateAt(memory, now)
+                val estimate = forgettingCurve.estimateAt(memory, now, zoneId)
                 if (estimate.clockAnomaly == ClockAnomaly.TIME_ROLLBACK) {
                     reasons += ReviewReason.CLOCK_ANOMALY
                     1.0
@@ -303,7 +310,7 @@ class ReviewPlanner(
         } || (
             ReviewReason.EXAM_PRIORITY in reasons &&
                 (memory?.let { memoryState ->
-                    forgettingCurve.estimateAt(memoryState, now)
+                    forgettingCurve.estimateAt(memoryState, now, zoneId)
                         .takeIf { it.clockAnomaly != ClockAnomaly.TIME_ROLLBACK }
                         ?.probability
                 } ?: 0.0) < EARLY_REVIEW_MAX_RETRIEVABILITY

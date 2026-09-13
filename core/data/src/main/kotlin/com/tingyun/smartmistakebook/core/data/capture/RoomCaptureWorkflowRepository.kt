@@ -413,7 +413,11 @@ class RoomCaptureWorkflowRepository internal constructor(
                     subjectIdOverride = subjectId,
                 ),
                 occurredAtEpochMillis = System.currentTimeMillis(),
-                agentConsentGranted = true,
+                // 传用户同意的**真值**，不是硬编码 true（审计 S-2 附带发现）：
+                // 网关在 `OpenAiCompatibleModelGateway.kt:601` 用 `check(...)` 做二次校验，
+                // 硬编码 true 会让那道闸门形同虚设——今天靠上面 `captureConsentGranted()`
+                // 的提前返回兜住，但任何绕过调用点直接构造请求的路径都不会被拦住。
+                agentConsentGranted = captureConsentGranted(),
             )
             val terminal = tasks.execute(classifyRequest).last()
             terminal.status == ModelTaskStatus.SUCCEEDED &&

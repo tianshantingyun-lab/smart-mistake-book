@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.domain.AttemptConfidenceAssessment
 import com.tingyun.smartmistakebook.core.domain.ConfidenceLevel
 import com.tingyun.smartmistakebook.core.domain.FsrsEvidenceRatingMapper
 import com.tingyun.smartmistakebook.core.domain.FsrsRating
+import com.tingyun.smartmistakebook.core.domain.ReviewCalendar
 import com.tingyun.smartmistakebook.core.domain.ReviewSample
 import com.tingyun.smartmistakebook.core.domain.SourceCalibration
 import com.tingyun.smartmistakebook.core.domain.SchedulingEvaluationHarness
@@ -17,7 +18,6 @@ import com.tingyun.smartmistakebook.core.domain.TimeOfDayCalibrator
 import com.tingyun.smartmistakebook.core.domain.TimeOfDayObservation
 import com.tingyun.smartmistakebook.core.domain.TimeOfDayProfile
 import com.tingyun.smartmistakebook.core.model.LearningEvidence
-import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import java.time.Instant
 import java.time.ZoneId
@@ -38,6 +38,16 @@ internal class ReviewLogSink(
     private val clock: java.time.Clock,
     private val studyZoneId: ZoneId,
 ) {
+    /**
+     * 写一行 `review_log`。
+     *
+     * [previousReviewedAtEpochMillis] 是**上一次复习发生的时间戳**，也就是 `delta_t` 的起点
+     * （不传或 ≤0 表示"没有上一次"，`delta_t` 记 0）。这里刻意只收时间戳、不收整个
+     * `ProblemMemoryState`：sink 需要的是那一个数，而调用方为了凑出一个完整的状态对象，
+     * 就不得不给别的不相关字段编值（审计批 3 施工中实际撞上过：排空内部要把"上一次复习"推进到
+     * 刚写下的那一行，而 `ProblemMemoryState` 要求 `nextReviewAt ≥ lastReviewedAt`，
+     * 于是只能凭空造一个下次复习日）。收时间戳就没有可编的字段。
+     */
     suspend fun record(
         practiceUnitId: String,
         evidence: LearningEvidence,
@@ -46,7 +56,7 @@ internal class ReviewLogSink(
         studyDay: StudyDayContext,
         sourceKind: String,
         sourceId: String,
-        priorMemory: ProblemMemoryState?,
+        previousReviewedAtEpochMillis: Long?,
         schedulingEligible: Boolean = true,
         scrollUpCount: Int = 0,
         editCount: Int = 0,
@@ -55,22 +65,22 @@ internal class ReviewLogSink(
         plannedReason: String? = null,
     ) {
         try {
-            val deltaDays = if (priorMemory == null || priorMemory.lastReviewedAtEpochMillis <= 0) {
+            val deltaDays = if (previousReviewedAtEpochMillis == null || previousReviewedAtEpochMillis <= 0) {
                 0.0
             } else {
                 // Calendar-day delta (learner-local), matching FSRS delta_t semantics: a review
                 // crossing local midnight is a new study day even under 24 wall-clock hours.
+                // 日界的定义只有一处（[ReviewCalendar]），本处不自己写那条规则。
                 //
-                // 上一复习的本地日**从它的时间戳按学习时区现算**，不读 `priorMemory.lastReviewedEpochDay`：
-                // 该字段是派生态，任何没显式写它的通道都会把默认的 UTC 日序留在状态里
+                // 上一复习的本地日**从它的时间戳按学习时区现算**，不接受调用方给的"第几天"：
+                // 那是派生态，任何没显式写它的通道都会把默认的 UTC 日序留在状态里
                 // （`projectTutorAnswerExposure` 曾如此，审计 AUDIT-ALGORITHM §3.7）。review_log
                 // 正是 FSRS 参数优化器的训练数据，被污染的 delta_t 会直接进入离线拟合，
                 // 所以这里必须与投影口径同源且不受写入方影响。
-                val previousEpochDay = java.time.Instant
-                    .ofEpochMilli(priorMemory.lastReviewedAtEpochMillis)
-                    .atZone(studyZoneId)
-                    .toLocalDate()
-                    .toEpochDay()
+                val previousEpochDay = ReviewCalendar.localEpochDayOf(
+                    epochMillis = previousReviewedAtEpochMillis,
+                    zoneId = studyZoneId,
+                )
                 (studyDay.epochDay - previousEpochDay)
                     .coerceAtLeast(0)
                     .toDouble()

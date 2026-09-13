@@ -17,8 +17,10 @@ import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
 import com.tingyun.smartmistakebook.core.model.StudyDayContext
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.abs
 import kotlin.math.exp
 
 /**
@@ -252,6 +254,212 @@ class FsrsProjectionBehaviorTest {
         throw AssertionError("graduation never scheduled a maintenance interval")
     }
 
+    /**
+     * F-01 的第 ⑤ 处（**接线**那一半）：毕业分支写给 `nextReviewAt` 的那一天必须按
+     * **投影器手里那个模型的衰减**算，而不是按 `FsrsScheduleMath` 的出厂默认。
+     *
+     * 上面那条毕业用例证明的是"毕业分支算得对"（两边都用出厂衰减，所以它两条曲线都能过）；
+     * 这一条把夹具换成**只有 `w20` 不同**的模型与曲线，于是它只在"接线真的发生了"时才成立。
+     * 夹具自带一条反向断言：若两种衰减算出的维护间隔相同，说明这一格分辨不出差异，用例作废。
+     */
+    @Test
+    fun `graduation maintenance follows the fitted decay of its model`() {
+        val fittedParameters = FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf().also { it[20] = 0.4 }
+        val fittedProjector = LearningProjector(
+            forgettingCurve = ForgettingCurve(
+                algorithm = ForgettingCurveAlgorithm.FSRS6_POWER_LAW,
+                decay = -fittedParameters[20],
+            ),
+            memoryUpdateModel = FsrsMemoryUpdateModel(parameters = fittedParameters),
+        )
+
+        var snapshot = LearnerSnapshot.empty("learner-1")
+        var sequence = 0L
+        var nextAt = 0L
+        for (index in 1..30) {
+            sequence += 1
+            val occurredAt = if (index == 1) 0 else nextAt
+            val result = fittedProjector.project(
+                snapshot,
+                listOf(attempt("a-$index", sequence, easyEvidence(), occurredAt = occurredAt)),
+                sequence,
+            )
+            snapshot = result.snapshot
+            val memory = snapshot.problemMemoryStates.getValue("unit-1")
+            nextAt = memory.nextReviewAtEpochMillis
+            if (memory.consecutiveCrossDaySuccess >= 3) {
+                val regularInterval = FsrsScheduleMath.intervalDays(
+                    memory.stabilityDays,
+                    FsrsMemoryUpdateModel.DEFAULT_DESIRED_RETENTION,
+                    -fittedParameters[20],
+                )
+                if (regularInterval < 90) continue
+
+                val scheduledInterval = (memory.nextReviewAtEpochMillis - occurredAt) / DAY_MILLIS
+                val atFittedDecay = FsrsScheduleMath.intervalDays(
+                    memory.stabilityDays,
+                    LearningProjector.GRADUATION_TARGET_RETENTION,
+                    -fittedParameters[20],
+                )
+                val atFactoryDecay = FsrsScheduleMath.intervalDays(
+                    memory.stabilityDays,
+                    LearningProjector.GRADUATION_TARGET_RETENTION,
+                )
+                assertNotEquals(
+                    "夹具必须能分辨两种衰减，否则这条用例证明不了接线：S=${memory.stabilityDays}",
+                    atFactoryDecay,
+                    atFittedDecay,
+                )
+                assertEquals(
+                    "维护间隔必须按模型的拟合衰减算，而不是按出厂默认",
+                    atFittedDecay.toLong(),
+                    scheduledInterval,
+                )
+                return
+            }
+        }
+        throw AssertionError("graduation never scheduled a maintenance interval")
+    }
+
+    /**
+     * F-01 的第 ⑤ 处（**闸门**那一半，与上面那条接线用例互补）：
+     * 判「常规间隔够不够 90 天」这一步也必须按**模型自己那组参数**的衰减算。
+     *
+     * 为什么它要单独一条，而且**必须把保持率目标设在 0.9 以外**：
+     * `intervalDays(S, 0.9, 任意衰减) == S`——FACTOR 就是按 `R(S,S)=0.9` 定义的，所以
+     * 目标保持率正好取 0.9 时间隔与衰减**恒等无关**（`FsrsScheduleMath.intervalDays` 的
+     * KDoc 里记着这条性质）。第一版的变异 M7（把闸门的衰减换回出厂默认）之所以一条都没打红，
+     * 不是因为哪条用例写得松，而是因为**闸门在生产默认值 0.9 下本来就分辨不出衰减**：
+     * 实测两种衰减都给出 89 天 / 93 天，逐位相同。
+     *
+     * 而 0.9 只是**默认值**，不是唯一取值：设置页把 `desiredRetention` 做成 0.7..0.97 的滑杆，
+     * 生产装配点（`RoomBackedStudyExperienceRepository`）把它原样交给这个模型。用户一旦拖动过
+     * 那根滑杆，闸门的衰减就开始决定"这次复习算不算毕业"。所以这条用例取 0.75
+     * （滑杆区间内的用户可达取值），并挑**两种衰减对闸门判断相反**的那一格：
+     * 拟合衰减说"还不够 90 天"、出厂衰减说"够了"。此时正确行为是**不毕业**，
+     * 写在 `nextReviewAt` 上的必须是常规间隔。
+     *
+     * 为什么不是 0.8——那是 `GRADUATION_TARGET_RETENTION`：闸门过与不过会写出**同一天**，
+     * 于是"闸门读了哪条曲线"又一次不可观测（这条用例的第二版就栽在这里）。所以目标保持率
+     * 必须同时避开 0.9 与 0.8 这两个"看不出差别"的取值，夹具里两条反向断言守的正是这件事。
+     */
+    @Test
+    fun `graduation gate follows the fitted decay of its model`() {
+        val fittedParameters = FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf().also { it[20] = 0.4 }
+        val fittedProjector = LearningProjector(
+            forgettingCurve = ForgettingCurve(
+                algorithm = ForgettingCurveAlgorithm.FSRS6_POWER_LAW,
+                decay = -fittedParameters[20],
+            ),
+            memoryUpdateModel = FsrsMemoryUpdateModel(
+                parameters = fittedParameters,
+                desiredRetention = GATE_DESIRED_RETENTION,
+            ),
+        )
+        val desired = GATE_DESIRED_RETENTION
+        val probes = generateSequence(1.0) { it * 1.02 }
+            .takeWhile { it <= 1_000_000.0 }
+            .map { seedStabilityDays ->
+                val closing = closingReview(fittedProjector, seedStabilityDays)
+                val atFitted = FsrsScheduleMath.intervalDays(
+                    closing.state.stabilityDays,
+                    desired,
+                    -fittedParameters[20],
+                )
+                val atFactory = FsrsScheduleMath.intervalDays(closing.state.stabilityDays, desired)
+                StraddleProbe(seedStabilityDays, closing, atFitted, atFactory)
+            }
+            .toList()
+        val straddle = probes.firstOrNull {
+            it.atFitted < GRADUATION_MIN_INTERVAL_DAYS && it.atFactory >= GRADUATION_MIN_INTERVAL_DAYS
+        } ?: throw AssertionError(
+            "夹具没找到「两种衰减对 $GRADUATION_MIN_INTERVAL_DAYS 天闸门判断相反」的记忆强度，" +
+                "这条用例在这种情况下证明不了闸门读的是哪条曲线。" +
+                "最后一次仍判「不够」的探针：${probes.lastOrNull { it.atFactory < GRADUATION_MIN_INTERVAL_DAYS }}；" +
+                "第一次判「够」的探针：${probes.firstOrNull { it.atFactory >= GRADUATION_MIN_INTERVAL_DAYS }}",
+        )
+        val closing = straddle.closing
+        val atFitted = straddle.atFitted
+        val atFactory = straddle.atFactory
+
+        val maintenance = FsrsScheduleMath.intervalDays(
+            closing.state.stabilityDays,
+            LearningProjector.GRADUATION_TARGET_RETENTION,
+            -fittedParameters[20],
+        )
+        assertTrue(
+            "夹具必须能分辨「毕业 / 不毕业」两种结果，否则断言等于没断：常规 $atFitted 天 vs 维护 $maintenance 天",
+            abs(atFitted - maintenance) > 2,
+        )
+        assertEquals(
+            "闸门没过时必须留在常规排期上（闸门按拟合衰减判：$atFitted 天，" +
+                "按出厂衰减会误判成 $atFactory 天而毕业）",
+            atFitted.toLong(),
+            (closing.state.nextReviewAtEpochMillis - closing.occurredAt) / DAY_MILLIS,
+        )
+    }
+
+    /**
+     * 从"差一次跨日成功就满毕业连胜"的状态出发，投影**那一次**成功的复习。
+     * 返回投影后的记忆状态与这次复习发生的时刻。
+     */
+    private fun closingReview(
+        projector: LearningProjector,
+        seedStabilityDays: Double,
+    ): ClosingReview {
+        val seedReviewedAt = 100L * DAY_MILLIS
+        val occurredAt = seedReviewedAt + 2 * DAY_MILLIS
+        val seeded = LearnerSnapshot.empty("learner-1").copy(
+            // 检查点必须与下面那条记忆状态的 checkpointSequence 对得上：
+            // `LearnerSnapshot` 自己会校验"每条记忆状态都来自同一个检查点"，
+            // 也会校验"账本头不早于检查点"。
+            knownLedgerHeadSequence = 1,
+            generatedAtEpochMillis = seedReviewedAt,
+            checkpoint = ProjectionCheckpoint(
+                lastSequence = 1,
+                projectorVersion = LearningProjector.VERSION,
+                projectedAtEpochMillis = seedReviewedAt,
+            ),
+            problemMemoryStates = mapOf(
+                "unit-1" to ProblemMemoryState(
+                    practiceUnitId = "unit-1",
+                    stabilityDays = seedStabilityDays,
+                    difficulty = 5.0,
+                    lastReviewedAtEpochMillis = seedReviewedAt,
+                    nextReviewAtEpochMillis = occurredAt,
+                    // 差一次跨日成功就满毕业连胜。
+                    consecutiveCrossDaySuccess = ProblemMemoryState.GRADUATION_SUCCESS_STREAK - 1,
+                    lastAttemptId = "attempt:seed",
+                    projectorVersion = LearningProjector.VERSION,
+                    checkpointSequence = 1,
+                ),
+            ),
+        )
+        val result = projector.project(
+            seeded,
+            // 序号必须是检查点之后的那一个：投影器按"已应用到哪一条"跳过事件，
+            // 用 1 会让这次复习被当成已投影过而整个跳过（下一次投影读到的还是播种状态）。
+            listOf(attempt("a-closing", 2, easyEvidence(), occurredAt = occurredAt)),
+            2,
+        )
+        return ClosingReview(result.snapshot.problemMemoryStates.getValue("unit-1"), occurredAt)
+    }
+
+    private data class ClosingReview(val state: ProblemMemoryState, val occurredAt: Long)
+
+    /** 一次"播种 → 投影一次收尾复习"的探针结果，用来找闸门判断相反的那一格。 */
+    private data class StraddleProbe(
+        val seedStabilityDays: Double,
+        val closing: ClosingReview,
+        val atFitted: Int,
+        val atFactory: Int,
+    ) {
+        override fun toString(): String =
+            "种子强度 ${"%.2f".format(seedStabilityDays)} → 记忆强度 " +
+                "${"%.2f".format(closing.state.stabilityDays)}，" +
+                "拟合衰减 $atFitted 天 / 出厂衰减 $atFactory 天"
+    }
+
     @Test
     fun `legacy kill switch keeps the audited exponential behavior`() {
         val result = legacyProjector.project(
@@ -373,5 +581,16 @@ class FsrsProjectionBehaviorTest {
 
     private companion object {
         const val DAY_MILLIS = 86_400_000L
+
+        /** 与 `LearningProjector` 的私有常量同值（那边不对外，这里按既有用例的做法写死）。 */
+        const val GRADUATION_MIN_INTERVAL_DAYS = 90
+
+        /**
+         * 闸门那条用例用的目标保持率：**故意同时避开 0.9 与 0.8**。
+         * 0.9 时间隔与衰减恒等无关（见该用例的注释），闸门读哪条曲线都看不出来；
+         * 0.8 是 `GRADUATION_TARGET_RETENTION`，"毕业"与"不毕业"会写出同一天，也看不出来。
+         * 0.75 落在设置页滑杆的 0.7..0.97 区间内，是用户真能设出来的值。
+         */
+        const val GATE_DESIRED_RETENTION = 0.75
     }
 }

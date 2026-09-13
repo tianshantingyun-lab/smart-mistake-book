@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.data.model
 import android.content.Context
 import android.net.Uri
 import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
+import com.tingyun.smartmistakebook.core.domain.ModelAgentConsentStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.model.AttachedImage
 
@@ -14,21 +15,24 @@ import com.tingyun.smartmistakebook.core.model.AttachedImage
  *
  * [resolveCurrentSheetBytes] must come from the caller — it supplies the current
  * question's problem-sheet bytes for a REDRAW_PROBLEM (never model-supplied).
- * Networking-declined / no credential / no image capability → returns a resolver
- * that always yields null (so no figure shows), mirroring the clean-redraw gate.
+ * No global model-agent consent (or no credential / no image capability) →
+ * returns a resolver that always yields null (so no figure shows), mirroring the
+ * clean-redraw gate. Consent is read through [resolveImageCredential], which is
+ * the shared gate for both figure paths (audit S-2: it used to read a build-flavor
+ * capability bit, so revoking consent did not stop the upload).
  */
 object AttachedImageGeneratorFactory {
     fun create(
         context: Context,
         configurationStore: ModelConfigurationStore?,
-        networkRequestsAllowed: Boolean,
+        modelAgentConsentStore: ModelAgentConsentStore?,
         resolveCurrentSheetBytes: suspend () -> ByteArray?,
     ): suspend (AttachedImage) -> String? {
         if (configurationStore == null) return { null }
         val vault = AndroidCanonicalAssetVault(context.applicationContext)
         val generator = AttachedImageGenerator(
             generate = { request ->
-                val credential = resolveImageCredential(configurationStore, networkRequestsAllowed)
+                val credential = resolveImageCredential(configurationStore, modelAgentConsentStore)
                     ?: throw ImageGenerationException("no usable model credential")
                 credential.apiKey.use { apiKey ->
                     val keyChars = apiKey.copyChars()

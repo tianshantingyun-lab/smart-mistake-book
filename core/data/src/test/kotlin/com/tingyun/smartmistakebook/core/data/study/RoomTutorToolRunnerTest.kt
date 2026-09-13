@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.data.study
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
+import com.tingyun.smartmistakebook.core.model.MISSING_TOOL_CONFIDENCE
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
@@ -76,6 +77,40 @@ class RoomTutorToolRunnerTest {
         assertEquals(TutorEvidenceDirection.POSITIVE.name, evidence.direction)
         assertEquals(MasteryWriteGate.WEIGHT_MASTERED_POSITIVE, evidence.weight, 1e-9)
         assertNull(evidence.rejected_reason)
+    }
+
+    /**
+     * 审计 §5.4.10（批 1 第 1.5 项）：**没给置信度**的 MASTERY_UPDATE 必须被证据门拒。
+     *
+     * 本用例故意**不传** `confidence`，走的就是 [TutorToolCall] 自己的缺省。
+     * 旧缺省 0.8 恰好越过门 0.7 —— 一条模型从未判断过的证据照常落库，
+     * 而且落库后与"模型很有把握"无法区分（模式 E：缺省值冒充真实信号）。
+     */
+    @Test
+    fun aMasteryUpdateThatStatesNoConfidenceIsRejectedByTheEvidenceGate() = runBlocking {
+        val port = anchoredPort()
+        assertTrue(
+            "缺省置信度必须低于证据门",
+            MISSING_TOOL_CONFIDENCE < MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD,
+        )
+
+        val outcome = RoomTutorToolRunner(port).run(
+            TutorToolCall(
+                tool = TutorToolName.MASTERY_UPDATE,
+                rationale = "学生说\"我把两边都乘以了2\"，随后独立写出\"因为斜率相等所以平行\"。",
+                terms = listOf("kc-monotonicity"),
+                direction = TutorEvidenceDirection.POSITIVE,
+                understanding = TutorUnderstandingTier.MASTERED,
+            ),
+            context(),
+        )
+
+        assertEquals(false, outcome.ok)
+        assertEquals("rejected:EVIDENCE_BELOW_CONFIDENCE", outcome.errorKind)
+        // 被拒 ≠ 删除：观察行仍落库（weight=0、带拒因），不静默丢弃。
+        val rejected = port.recordedChatEvidence.single()
+        assertEquals(0.0, rejected.weight, 1e-9)
+        assertEquals("EVIDENCE_BELOW_CONFIDENCE", rejected.rejected_reason)
     }
 
     @Test

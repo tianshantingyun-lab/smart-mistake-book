@@ -1,6 +1,8 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.ContentBlock
+import com.tingyun.smartmistakebook.core.model.MISSING_TOOL_CONFIDENCE
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
@@ -134,6 +136,32 @@ class TutorToolRequestDualParseTest {
         assertEquals(com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier.MASTERED, call.understanding)
         assertEquals(com.tingyun.smartmistakebook.core.model.TutorDifficultyTier.MEDIUM, call.difficultyTier)
         assertEquals(0.85, call.confidence, 1e-9)
+    }
+
+    /**
+     * 审计 §5.4.10（批 1 第 1.5 项）：结构化 `toolRequests` 路径上，provider 漏发
+     * `confidence` 时解析侧必须留一个**过不了门**的值。`0.8` 恰好越过 `0.7`，
+     * 于是"模型没判过置信度"被当成"模型很有把握"——这是模式 E。
+     */
+    @Test
+    fun masteryUpdateWithoutConfidenceParsesBelowTheEvidenceGate() {
+        val payload = json.parseToJsonElement("""
+            {"intentDecision":{"intent":"CURRENT_QUESTION_HELP","confidence":0.95,
+              "explicitActionRequest":false,"memoryPreference":"UNCHANGED",
+              "requestedLocalCapability":"NONE","lookupTerms":[]},
+             "toolRequests":[{"tool":"MASTERY_UPDATE","terms":["knowledge-node-1"],
+               "rationale":"学生说现在理解了配方法。",
+               "direction":"POSITIVE","understanding":"UNCERTAIN"}]}
+        """.trimIndent()).jsonObject
+
+        val output = OpenAiModelTaskAdapters.parse(payload, respondInput(), "test-model-v1")
+        assertTrue(output is TutorToolRequestsOutput)
+        val call = (output as TutorToolRequestsOutput).calls.single()
+        assertEquals(MISSING_TOOL_CONFIDENCE, call.confidence, 0.0)
+        assertTrue(
+            "缺省置信度必须低于证据门，实得 ${call.confidence}",
+            call.confidence < MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD,
+        )
     }
 
     @Test(expected = IllegalArgumentException::class)

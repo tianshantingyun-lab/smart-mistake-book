@@ -496,6 +496,8 @@ internal class RoomBatchImportRepository(
         // Under global agent consent an external, image-capable, structured-output provider runs
         // the boundary comparison without a per-job egress manifest; configure the model itself is
         // the consent. The request id is deterministic so a retried window reuses the same task.
+        // 传用户同意的**真值**而不是硬编码 true（审计 S-2 附带发现）：网关的二次校验
+        // （`OpenAiCompatibleModelGateway.kt:601`）读的正是这个字段，硬编码会让它形同虚设。
         return ModelTaskRequest(
             requestId = stableId("batch-page", "$jobId:$windowKey"),
             input = CaptureAssessmentInput(
@@ -507,7 +509,7 @@ internal class RoomBatchImportRepository(
                 followingSourceAssets = followingRefs,
             ),
             occurredAtEpochMillis = occurredAtEpochMillis,
-            agentConsentGranted = true,
+            agentConsentGranted = consentEnabled(),
         )
     }
 

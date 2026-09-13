@@ -74,6 +74,7 @@ import com.tingyun.smartmistakebook.core.model.TutorEvidencePointKind
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationStep
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
+import com.tingyun.smartmistakebook.core.model.MISSING_TOOL_CONFIDENCE
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
@@ -463,7 +464,7 @@ internal object OpenAiModelProtocol {
                 direction = arguments.optionalString("direction")?.let { enumValue<TutorEvidenceDirection>(it) },
                 understanding = arguments.optionalString("understanding")?.let { enumValue<TutorUnderstandingTier>(it) },
                 difficultyTier = arguments.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
-                confidence = arguments.optionalDouble("confidence") ?: 0.8,
+                confidence = arguments.optionalDouble("confidence") ?: MISSING_TOOL_CONFIDENCE,
             )
         }
         val intentDecision = responseContent

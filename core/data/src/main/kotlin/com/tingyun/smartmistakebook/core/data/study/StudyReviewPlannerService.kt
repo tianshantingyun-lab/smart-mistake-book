@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.database.ReviewPlanRecord
 import com.tingyun.smartmistakebook.core.database.ReviewQueueItemRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
+import com.tingyun.smartmistakebook.core.domain.ForgettingCurve
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewCandidate
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewQueueEntry
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReviewSessionPlan
@@ -54,6 +55,13 @@ internal class StudyReviewPlannerService(
     private val fixtureSource: StudyFixtureSource,
     private val reviewPlanner: ReviewPlanner,
     private val reviewPlannerV2: ReviewPlannerV2,
+    /**
+     * 产线那条读侧曲线（审计 F-02 / N-14）：知识点到期风险必须与排期用**同一条**
+     * 曲线、**同一个日界口径**，否则同一张卡在两个界面上有两个 R。
+     * 由装配点交进来，而不是在这里 `ForgettingCurve()` 造一个默认的——
+     * 默认实例读的是**出厂**衰减，而排期用的是拟合出来的那组。
+     */
+    private val forgettingCurve: ForgettingCurve,
     private val durationModel: LogDurationModel,
     private val reviewLogSink: ReviewLogSink,
     private val schedulingSettingsStore: SchedulingSettingsStore?,
@@ -520,6 +528,8 @@ internal class StudyReviewPlannerService(
             boundPracticeUnitIdsByNode = boundUnitsByNode,
             memoryStates = learnerSnapshot.problemMemoryStates,
             nowEpochMillis = planningContext.planningAtEpochMillis,
+            forgettingCurve = forgettingCurve,
+            zoneId = studyZoneId,
         )
         val selected = selectKnowledgeReviewQueue(
             planner = reviewPlanner,

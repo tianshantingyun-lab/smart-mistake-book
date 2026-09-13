@@ -130,6 +130,16 @@ data class PracticeUnitKnowledgeBindingRecord(
     val basisRevisionId: String,
     val taxonomyVersion: String,
     val acceptedAtEpochMillis: Long,
+    /**
+     * True for the spec §3.4 placeholder binding, which records that the
+     * question is NOT classified rather than what it is classified as.
+     *
+     * Deliberately has **no default**: a default would silently make every
+     * construction site—present and future—claim the row is an accepted
+     * classification, which is the "default impersonates a real signal" failure
+     * mode the audit singles out (模式 E).
+     */
+    val isPseudoFallback: Boolean,
 )
 
 

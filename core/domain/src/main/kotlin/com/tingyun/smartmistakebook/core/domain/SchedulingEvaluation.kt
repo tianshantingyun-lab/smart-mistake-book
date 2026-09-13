@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
@@ -35,10 +36,16 @@ data class ReviewSample(
      * collected learner-local delta when present, otherwise a wall-clock day
      * floor. Shared by every replay/optimizer path so the delta_t semantics
      * stay identical across models (spec §2.20 parity).
+     *
+     * **回退分支必须也是整天**（审计 F-02 的同类）：收集到的 `delta_t` 是本地日历日的**整数**，
+     * 而回退分支原先是未取整的分数天——同一列特征里混着两种刻度，等于给拟合喂进两种语义。
+     * FSRS-6 本来就是按天的模型（分数天是 FSRS-7 的能力，引文见 [ReviewCalendar] 的类注释），
+     * 所以这里取整日是**把实现修回它自己文档写的样子**，不是新口径。只有缺少 `delta_t` 的行
+     * （迁移前的旧行与夹具）会走到这一支。
      */
-    fun elapsedDaysSince(lastReviewedAt: Long): Double = deltaTDays ?: (
-        (reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS
-        ).coerceAtLeast(0.0)
+    fun elapsedDaysSince(lastReviewedAt: Long): Double = deltaTDays ?: floor(
+        (reviewedAtEpochMillis - lastReviewedAt).toDouble() / DAY_MILLIS,
+    ).coerceAtLeast(0.0)
 
     companion object {
         const val ATTEMPT_KIND = "ATTEMPT"
@@ -137,7 +144,10 @@ object SchedulingReplay {
                 lastReviewedAt = sample.reviewedAtEpochMillis
                 continue
             }
-            val retrievability = FsrsScheduleMath.retention(elapsedDays, stability)
+            // 衰减必须来自**被评估的这组参数**（F-01 的第 ① 处）：这一行是损失函数唯一的
+            // 可提取率来源，读默认值就等于 ∂loss/∂w20 ≡ 0——拟合永远不动那一位，
+            // 却每轮多算两次损失（中心差分）。
+            val retrievability = FsrsScheduleMath.retention(elapsedDays, stability, -parameters[20])
             predictions += retrievability to sample.isCorrect
             stability = if (sample.rating == FsrsRating.AGAIN) {
                 FsrsScheduleMath.nextForgetStability(difficulty, stability, retrievability, parameters)
@@ -380,12 +390,35 @@ object FsrsParameterOptimizer {
         val validationLogLoss: Double,
         val sampleCount: Int,
         val optimizedParameterIndices: List<Int>,
+        /**
+         * 候选是否被采纳（只有在留出尾段上严格优于 `incumbent` 才被采纳）。
+         *
+         * **这一位是唯一描述"结果"的字段**；它是 `false` 时 [parameters] 就是 `incumbent` 本身
+         * （什么都没换）。其余字段（[mode]、[trainLogLoss]、[validationLogLoss]、
+         * [optimizedParameterIndices]）一律描述**这次尝试**——"拟合了多少、拟合出来的损失是多少"，
+         * 与被拒与否无关。把其中一部分改成"结果口径"，会让"窄带只拟合了 w0..w5"这类事实
+         * 在恰好被拒时凭空消失，读者还得记住哪个字段属于哪一边。
+         *
+         * 这一位存在的理由是一个**具体的失败**（审计 S-10）：装配点原先只判
+         * `mode != INSUFFICIENT_DATA` 就无条件写回，而 [fit] 的择优基准是**出厂默认值**——
+         * 于是"比出厂默认好"就够写回。现行参数一旦来自更早一次更好的拟合，
+         * 一次新拟合就能**把已经更好的参数换掉**：数据越攒越多，留出损失反而悄悄变大，
+         * 而且没有任何地方记下这次退步。
+         */
+        val adopted: Boolean = true,
     )
 
     enum class Mode { INSUFFICIENT_DATA, INITIAL_STABILITY_ONLY, FULL_FIT }
 
     fun optimize(
         samples: List<ReviewSample>,
+        /**
+         * 当前生效的那组参数。候选必须在**同一段留出尾段**上严格优于它才被采纳；
+         * 否则原样返回它，并把 [Result.adopted] 置为 false。
+         *
+         * 默认值是出厂默认，于是"还没有拟合过"的首次调用与旧行为逐位相同。
+         */
+        incumbent: DoubleArray = FsrsScheduleMath.DEFAULT_PARAMETERS,
         iterations: Int = DEFAULT_ITERATIONS,
     ): Result {
         require(samples.isNotEmpty()) { "Optimization requires review samples" }
@@ -396,13 +429,18 @@ object FsrsParameterOptimizer {
         // data; count the predictable (long-run) samples instead.
         val predictableSampleCount = predictableSampleCount(samples)
         if (predictableSampleCount < MIN_SAMPLES_FOR_FITTING) {
+            // 样本不够拟合——**没有采纳任何东西**。返回 incumbent 而不是出厂默认，
+            // 是为了让 `adopted = false ⇒ parameters 就是 incumbent` 这条不变量在任何出口上都成立：
+            // 否则这一支会返回一组既不是 incumbent、也没被采纳的参数，读者得记住一个例外。
+            // 装配点在 INSUFFICIENT_DATA 上直接返回 null（不写回），所以这对既有行为没有影响。
             return Result(
-                FsrsScheduleMath.DEFAULT_PARAMETERS.copyOf(),
+                incumbent.copyOf(),
                 Mode.INSUFFICIENT_DATA,
                 Double.NaN,
                 Double.NaN,
                 predictableSampleCount,
                 emptyList(),
+                adopted = false,
             )
         }
         val baseIndices = if (predictableSampleCount < MIN_SAMPLES_FOR_FULL_FIT) {
@@ -457,6 +495,25 @@ object FsrsParameterOptimizer {
             Mode.INITIAL_STABILITY_ONLY
         } else {
             Mode.FULL_FIT
+        }
+        // 最后一道门：候选必须严格优于**现行参数**（`incumbent`），而不只是优于出厂默认。
+        //
+        // `fit` 的择优基准是出厂默认值，所以"这次拟合比出厂默认好"是**必然成立**的——
+        // 拿它当写回条件，等于没有条件：现行参数若是更早一次更好的拟合，这次就会被换掉。
+        // 用同一段留出尾段把两者比一次，代价是**一遍重放**（`lossFor`），
+        // 换来的是"写回只会让留出损失变小"这条可以被断言的不变量。
+        val incumbentValidationLoss = lossFor(cards, cutoff, incumbent, wantValidation = true)
+        if (!(bestValidationLoss < incumbentValidationLoss - ADOPTION_MARGIN)) {
+            return Result(
+                // 只有"该用哪组"是结果口径；其余字段照旧描述这次尝试（见 `adopted` 的注释）。
+                parameters = incumbent.copyOf(),
+                mode = mode,
+                trainLogLoss = bestTrainLoss,
+                validationLogLoss = bestValidationLoss,
+                sampleCount = predictableSampleCount,
+                optimizedParameterIndices = fittedIndices,
+                adopted = false,
+            )
         }
         return Result(
             bestParams,
@@ -581,6 +638,12 @@ object FsrsParameterOptimizer {
     /** Spec §2.11b: unlock w15/w16 only when validation loss improves by more than this fraction. */
     const val UNLOCK_W15_W16_GAIN_MARGIN = 0.02
     const val DEFAULT_ITERATIONS = 24
+
+    /**
+     * 采纳一次拟合所需的**最小留出损失改进**。与 [fit] 内部"这一轮比最好的一次更好"用的是同一个
+     * 阈值：两处不一致会让"改进"在两道门之间产生一段谁都不认的缝隙。
+     */
+    const val ADOPTION_MARGIN = 1e-9
     const val TRAIN_FRACTION = 0.8
     const val EARLY_STOP_PATIENCE = 5
     private const val EPSILON = 1e-4

@@ -65,7 +65,16 @@ data class EvidenceProjectionInput(
     val practiceUnitId: String,
     val memory: ProblemMemoryState,
     val nowEpochMillis: Long,
-)
+    /**
+     * 学习者时区（审计 F-02）：读侧的 `t` 是**本地日历日**差，"现在"与"上一次复习"
+     * 落在哪一天取决于它。没有默认值——默认一个 UTC 就是让调用方静默算错日界。
+     */
+    val timeZoneId: String,
+) {
+    init {
+        require(timeZoneId.isNotBlank()) { "Evidence projection time-zone id must not be blank" }
+    }
+}
 
 /** Neutral evidence projection consumed by callers that must not touch raw probabilities. */
 data class EvidenceProjection(

@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook
 
 import android.content.Intent
+import com.tingyun.smartmistakebook.core.domain.ReviewCalendar
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderDelivery
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderPreferences
 import com.tingyun.smartmistakebook.core.domain.ReviewReminderRepository
@@ -52,10 +53,7 @@ internal class ReviewReminderCoordinator(
         val zone = zoneId()
         val claimed = pendingCount > 0 && repository.claimNotificationDelivery(
             ReviewReminderDelivery(
-                localEpochDay = java.time.Instant.ofEpochMilli(now)
-                    .atZone(zone)
-                    .toLocalDate()
-                    .toEpochDay(),
+                localEpochDay = ReviewCalendar.localEpochDayOf(now, zone),
                 zoneId = zone.id,
             ),
         )

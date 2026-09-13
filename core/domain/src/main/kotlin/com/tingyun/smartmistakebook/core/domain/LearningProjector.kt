@@ -910,6 +910,9 @@ class LearningProjector(
             val regularIntervalDays = FsrsScheduleMath.intervalDays(
                 stability,
                 memoryUpdateModel.desiredRetention,
+                // 同一个模型的同一个衰减（F-01）：这里只用 `desiredRetention` 而不用它那组参数的
+                // 衰减，就会拿一条曲线判"够不够 90 天"、再拿另一条曲线算下一次复习日。
+                memoryUpdateModel.decay,
             )
             if (regularIntervalDays >= GRADUATION_MIN_INTERVAL_DAYS) {
                 nextReviewAt = forgettingCurve.reviewAtTargetRetention(
@@ -1199,7 +1202,7 @@ class LearningProjector(
      * 都来自**当前事件自身**（事件溯源的确定性输入），因此重放结果稳定。
      */
     private fun localEpochDayOf(epochMillis: Long, utcOffsetMinutes: Int): Long =
-        Math.floorDiv(epochMillis + utcOffsetMinutes.toLong() * 60_000L, DAY_MILLIS)
+        ReviewCalendar.localEpochDayOf(epochMillis, utcOffsetMinutes)
 
     companion object {
         const val VERSION = LearningCoreVersions.PROJECTION_COMPOSITE

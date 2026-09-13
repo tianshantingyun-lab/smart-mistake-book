@@ -4,9 +4,13 @@ import com.tingyun.smartmistakebook.core.model.ProblemMemoryState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.ZoneOffset
 
 class ForgettingCurveTest {
     private var now = 0L
+
+    /** 固定 UTC：这些夹具的时刻都落在整日边界上，两种口径在 UTC 下逐位相同。 */
+    private val zone = ZoneOffset.UTC
     private val curve = ForgettingCurve(EpochMillisClock { now })
 
     @Test
@@ -14,7 +18,7 @@ class ForgettingCurveTest {
         val state = memory(stabilityDays = 4.0, lastReviewedAt = DAY_MILLIS)
         now = DAY_MILLIS * 5
 
-        assertEquals(0.9, curve.retentionNow(state), 1e-9)
+        assertEquals(0.9, curve.retentionNow(state, zone), 1e-9)
     }
 
     @Test
@@ -22,7 +26,7 @@ class ForgettingCurveTest {
         val state = memory(stabilityDays = 2.0, lastReviewedAt = DAY_MILLIS * 5)
         now = DAY_MILLIS
 
-        assertEquals(1.0, curve.retentionNow(state), 0.0)
+        assertEquals(1.0, curve.retentionNow(state, zone), 0.0)
     }
 
     @Test
@@ -45,11 +49,11 @@ class ForgettingCurveTest {
         val state = memory(stabilityDays = 4.0, lastReviewedAt = DAY_MILLIS)
         now = DAY_MILLIS * 5
 
-        assertEquals(0.9, fsrsCurve.retentionNow(state), 1e-6)
+        assertEquals(0.9, fsrsCurve.retentionNow(state, zone), 1e-6)
     }
 
     @Test
-    fun `fsrs power law retention decays monotonically and floors whole days`() {
+    fun `fsrs power law retention decays monotonically and counts whole local days`() {
         val fsrsCurve = ForgettingCurve(
             EpochMillisClock { now },
             algorithm = ForgettingCurveAlgorithm.FSRS6_POWER_LAW,
@@ -57,13 +61,14 @@ class ForgettingCurveTest {
         val state = memory(stabilityDays = 3.0, lastReviewedAt = 0L)
         now = DAY_MILLIS / 2
 
-        // py-fsrs floors elapsed time to whole days: half a day past the last
-        // review is still day zero, so retention stays at one.
-        assertEquals(1.0, fsrsCurve.retentionNow(state), 0.0)
+        // FSRS-6 的 t 是整天数（口径见 ReviewCalendar）：半天之后仍落在同一个本地日，
+        // 所以还是第 0 天，保持率为一。**跨午夜的半天**才是分道扬镳的那一格，
+        // 由 FsrsConventionTest 专门钉住。
+        assertEquals(1.0, fsrsCurve.retentionNow(state, zone), 0.0)
         now = DAY_MILLIS * 30
-        val later = fsrsCurve.retentionNow(state)
+        val later = fsrsCurve.retentionNow(state, zone)
         now = DAY_MILLIS * 300
-        val muchLater = fsrsCurve.retentionNow(state)
+        val muchLater = fsrsCurve.retentionNow(state, zone)
 
         assertTrue(later > muchLater)
         assertTrue(muchLater > 0.0)

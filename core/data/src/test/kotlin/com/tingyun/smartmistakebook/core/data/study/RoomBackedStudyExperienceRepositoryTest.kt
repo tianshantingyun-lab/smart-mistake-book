@@ -516,6 +516,117 @@ class RoomBackedStudyExperienceRepositoryTest {
         }
     }
 
+    /**
+     * 审计 §8「视觉通道 `priorMemory` 恒 null」：视觉证据写进 `review_log` 的 `delta_t`
+     * 必须是**距上一次复习的真实天数**，不是 0。
+     *
+     * 为什么这条承重：`review_log` 正是 FSRS 参数优化器的训练数据。`delta_t ≡ 0` 的那批样本
+     * 会让拟合看到一个"所有复习都挤在同一天"的世界，而它们与真实的同日重复在特征空间里**混在一起**、
+     * 事后分不开（`ReviewLogSink` 里那段 KDoc 说的就是这件事）。
+     *
+     * 夹具只动一个变量：先把"上次复习"放在两天前，再让视觉交互发生在今天。
+     * 断言同时钉住两侧——`delta_t` 等于真实天数，**且不等于 0**（后者是修复前的现场）。
+     */
+    @Test
+    fun visualEvidenceRecordsTheRealGapSinceItsLastReview() = runBlocking {
+        val attemptAt = 3 * DAY_MILLIS + 1_500
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(visualIngestMistake())
+            addPracticeUnitKnowledgeBinding(visualIngestBinding())
+            addVisualInteractionAttempt(
+                visualAttemptRecord(
+                    attemptId = "visual-a",
+                    feasible = true,
+                    attemptedAtEpochMillis = attemptAt,
+                ),
+            )
+            seedPriorMemoryForVisualIngest(lastReviewedAtEpochMillis = 1_500)
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+
+            val entry = database.reviewLogEntries
+                .single { it.sourceKind == ReviewLogSink.SOURCE_KIND_VISUAL }
+            assertEquals(
+                "视觉证据的 delta_t 必须是距上次复习的真实天数（audit §8：曾经恒为 0）",
+                3.0,
+                entry.deltaTDays,
+                1e-9,
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
+     * 同一次排空里补录**两条**视觉证据（相隔超过一小时冷却、且都还没入过库）时，
+     * 后一条的 `delta_t` 必须按**紧邻的前一条**算。
+     *
+     * 为什么这是上面那条的余留而不是重复：上面那条钉的是"`priorMemory` 不再是 null"，
+     * 而 `priorMemory` 取自**排空开始前**的投影。一次排空里写下第二行时，第一行已经成了
+     * 这个单元最近的一次复习，但快照不会因为这次排空而更新——于是第二行会跨过第一行、
+     * 去读上一次投影，把"隔了两天"读成"隔了五天"。两种读数都不会让任何断言变红，
+     * 而它们都进 FSRS 优化器的训练集。
+     */
+    @Test
+    fun aSweepMeasuresEachRowFromTheRowJustBeforeIt() = runBlocking {
+        val firstAt = 3 * DAY_MILLIS + 1_500
+        val secondAt = 5 * DAY_MILLIS + 1_500
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(visualIngestMistake())
+            addPracticeUnitKnowledgeBinding(visualIngestBinding())
+            addVisualInteractionAttempt(
+                visualAttemptRecord(
+                    attemptId = "visual-a",
+                    feasible = true,
+                    attemptedAtEpochMillis = firstAt,
+                ),
+            )
+            addVisualInteractionAttempt(
+                visualAttemptRecord(
+                    attemptId = "visual-b",
+                    feasible = true,
+                    attemptedAtEpochMillis = secondAt,
+                ),
+            )
+            seedPriorMemoryForVisualIngest(lastReviewedAtEpochMillis = 1_500)
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            // 走 `ingestVisualInteractionAttempts` 而不是 `initialize()`：后者的排空是**静默降级**的
+            // （失败被吞掉，只留一个不完整的账本），在这条用例里会把"第二行为什么没写"藏起来。
+            repository.ingestVisualInteractionAttempts()
+
+            val visualEntries = database.reviewLogEntries
+                .filter { it.sourceKind == ReviewLogSink.SOURCE_KIND_VISUAL }
+                .sortedBy { it.reviewedAtEpochMillis }
+            assertEquals(
+                "两条视觉交互都必须进账本，否则后面的 delta_t 断言问的不是同一个问题：" +
+                    "已入账 ${database.recordedAttemptCount} 次，" +
+                    "review_log 行 ${visualEntries.map { "${it.sourceId}@${it.reviewedAtEpochMillis}/${it.deltaTDays}" }}",
+                2,
+                visualEntries.size,
+            )
+            assertEquals(
+                "第一条按上次复习算（第 3 天），第二条按紧邻的前一条算（第 5 天 − 第 3 天 = 2 天）",
+                listOf(3.0, 2.0),
+                visualEntries.map { it.deltaTDays },
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
+     * 下面这条用 [visualIngestMistake] 的默认时间戳（1_500），保持既有语义。
+     */
     @Test
     fun feasibleVisualAttemptIsIngestedOnceWithDirectKnowledgeAttribution() = runBlocking {
         val database = FakeStudyDatabasePort().apply {
@@ -556,6 +667,153 @@ class RoomBackedStudyExperienceRepositoryTest {
             assertEquals(EvidenceAttributionRole.PRIMARY, attribution.role)
             assertEquals(EvidenceAttributionCertainty.DIRECT, attribution.certainty)
             assertEquals("revision-v", attribution.basisRevisionId)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
+     * Audit §5.3.6 / S-9: a question that was put into a review plan before it
+     * was classified carries the placeholder binding with the OLDEST accepted
+     * timestamp, and the taxonomy group is picked from the earliest accepted
+     * row. The placeholder must not keep the accepted knowledge node from
+     * receiving the visual evidence.
+     */
+    @Test
+    fun visualEvidenceFollowsTheAcceptedBindingWhenAnOlderPlaceholderBindingExists() = runBlocking {
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(visualIngestMistake())
+            addPracticeUnitKnowledgeBinding(
+                visualIngestBinding(
+                    bindingId = "binding-pseudo",
+                    knowledgeNodeId = "pseudo:MATH",
+                    taxonomyVersion = "pseudo-plan-v1",
+                    acceptedAtEpochMillis = 100,
+                    isPseudoFallback = true,
+                ),
+            )
+            addPracticeUnitKnowledgeBinding(visualIngestBinding())
+            addVisualInteractionAttempt(
+                visualAttemptRecord(attemptId = "visual-shadowed", feasible = true),
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+
+            // initialize() already consumed the pending visual attempt
+            // (startup ingestion, audit §12).
+            val attribution = requireNotNull(
+                database.lastEvidenceSnapshot?.attributions?.singleOrNull(),
+            )
+            assertEquals("binding-v", attribution.bindingId)
+            assertEquals("knowledge:visual", attribution.knowledgeNodeId)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
+     * The other direction of the same rule (audit §5.3.6 / S-9): while the
+     * placeholder is all the question has, it is the only knowledge node the
+     * evidence can honestly land on — preferring accepted bindings must not
+     * turn a genuinely unclassified question into a skipped one.
+     */
+    @Test
+    fun visualEvidenceStaysOnThePlaceholderWhileItIsTheOnlyBinding() = runBlocking {
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(
+                visualIngestMistake(
+                    entryId = "entry-placeholder",
+                    practiceUnitId = "unit-placeholder",
+                    problemRevisionId = "revision-placeholder",
+                ),
+            )
+            addPracticeUnitKnowledgeBinding(
+                visualIngestBinding(
+                    bindingId = "binding-pseudo-only",
+                    practiceUnitId = "unit-placeholder",
+                    knowledgeNodeId = "pseudo:MATH",
+                    basisRevisionId = "revision-placeholder",
+                    taxonomyVersion = "pseudo-plan-v1",
+                    acceptedAtEpochMillis = 100,
+                    isPseudoFallback = true,
+                ),
+            )
+            addVisualInteractionAttempt(
+                visualAttemptRecord(
+                    attemptId = "visual-placeholder-only",
+                    feasible = true,
+                    problemRevisionId = "revision-placeholder",
+                ),
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+
+            val attribution = requireNotNull(
+                database.lastEvidenceSnapshot?.attributions?.singleOrNull(),
+            )
+            assertEquals("binding-pseudo-only", attribution.bindingId)
+            assertEquals("pseudo:MATH", attribution.knowledgeNodeId)
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
+    /**
+     * The "old accepted group" half of the same rule (audit §8.2 第三条；
+     * `three-store-linkage-design.md:93`「取 accepted_at 最新的 taxonomy_version 组」、
+     * spec §2.13「旧 KC 停止新证据」): a user correction writes a NEW binding group
+     * with a later accepted_at, and the earlier group survives as long as its
+     * attributions reference it
+     * (`ProblemOrganizationDao.deleteUnreferencedKnowledgeBindings` retains those),
+     * so the superseded group must stop receiving the evidence.
+     */
+    @Test
+    fun visualEvidenceFollowsTheCorrectedBindingNotTheSupersededGroup() = runBlocking {
+        val database = FakeStudyDatabasePort().apply {
+            addMistake(visualIngestMistake())
+            addPracticeUnitKnowledgeBinding(
+                visualIngestBinding(
+                    bindingId = "binding-superseded",
+                    knowledgeNodeId = "knowledge:superseded",
+                    taxonomyVersion = "local-policy-v1",
+                    acceptedAtEpochMillis = 800,
+                ),
+            )
+            addPracticeUnitKnowledgeBinding(
+                visualIngestBinding(
+                    bindingId = "binding-corrected",
+                    knowledgeNodeId = "knowledge:corrected",
+                    taxonomyVersion = "user-corrected-v1",
+                    acceptedAtEpochMillis = 900,
+                ),
+            )
+            addVisualInteractionAttempt(
+                visualAttemptRecord(attemptId = "visual-corrected", feasible = true),
+            )
+        }
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(database, applicationScope, initialFixture = null)
+
+        try {
+            repository.initialize()
+
+            val attribution = requireNotNull(
+                database.lastEvidenceSnapshot?.attributions?.singleOrNull(),
+            )
+            assertEquals("binding-corrected", attribution.bindingId)
+            assertEquals("knowledge:corrected", attribution.knowledgeNodeId)
+            assertEquals("user-corrected-v1", attribution.taxonomyVersion)
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -1386,15 +1644,21 @@ class RoomBackedStudyExperienceRepositoryTest {
     )
 
     private fun visualIngestBinding(
+        bindingId: String = "binding-v",
         practiceUnitId: String = "unit-v",
+        knowledgeNodeId: String = "knowledge:visual",
         basisRevisionId: String = "revision-v",
+        taxonomyVersion: String = "taxonomy-v1",
+        acceptedAtEpochMillis: Long = 900,
+        isPseudoFallback: Boolean = false,
     ) = PracticeUnitKnowledgeBindingRecord(
-        bindingId = "binding-v",
+        bindingId = bindingId,
         practiceUnitId = practiceUnitId,
-        knowledgeNodeId = "knowledge:visual",
+        knowledgeNodeId = knowledgeNodeId,
         basisRevisionId = basisRevisionId,
-        taxonomyVersion = "taxonomy-v1",
-        acceptedAtEpochMillis = 900,
+        taxonomyVersion = taxonomyVersion,
+        acceptedAtEpochMillis = acceptedAtEpochMillis,
+        isPseudoFallback = isPseudoFallback,
     )
 
     private fun visualAttemptRecord(
@@ -1403,6 +1667,7 @@ class RoomBackedStudyExperienceRepositoryTest {
         actionKind: String = "DragPoint",
         problemRevisionId: String = "revision-v",
         feedback: String = "操作判定记录",
+        attemptedAtEpochMillis: Long = 1_500,
     ) = VisualInteractionAttemptRecord(
         attemptId = attemptId,
         problemRevisionId = problemRevisionId,
@@ -1410,10 +1675,13 @@ class RoomBackedStudyExperienceRepositoryTest {
         actionPayload = "{}",
         feasible = feasible,
         feedback = feedback,
-        attemptedAtEpochMillis = 1_500,
+        attemptedAtEpochMillis = attemptedAtEpochMillis,
     )
 
     private companion object {
+        /** 视觉证据 `delta_t` 那条用例要把两次复习拉开整数个本地日。 */
+        const val DAY_MILLIS = 86_400_000L
+
         /** Curated M1 unit whose artifact carries a knowledge-node scope (spec §2.16 fixtures). */
         const val M1_LEECH_PRACTICE_UNIT_ID = "practice:m1:closed-interval-extrema:whole"
 
@@ -1637,6 +1905,48 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
                     projectedAtEpochMillis = 10L * 86_400_000L,
                 ),
                 generatedAtEpochMillis = 10L * 86_400_000L,
+            ),
+        )
+        learningLedgerHead.value = 1
+    }
+
+    /**
+     * Seeds one unit's memory state with a known [lastReviewedAtEpochMillis], so a test can
+     * pin the **gap** the next visual evidence is recorded against (audit §8: the visual
+     * channel used to pass `priorMemory = null`, and `ReviewLogSink` maps that to
+     * `deltaDays = 0.0`).
+     *
+     * Deliberately a member, not a test-local extension: `persistedLearnerSnapshot` is
+     * private to this fake, and `readCurrentLearnerSnapshot` reads exactly that field —
+     * there is no other seam that would make the prior review visible to the repository.
+     */
+    fun seedPriorMemoryForVisualIngest(
+        practiceUnitId: String = "unit-v",
+        lastReviewedAtEpochMillis: Long,
+    ) {
+        val prior = ProblemMemoryState(
+            practiceUnitId = practiceUnitId,
+            stabilityDays = 12.0,
+            difficulty = 5.5,
+            lastReviewedAtEpochMillis = lastReviewedAtEpochMillis,
+            nextReviewAtEpochMillis = lastReviewedAtEpochMillis,
+            lastAttemptId = "attempt:prior",
+            projectorVersion = LearningProjector.VERSION,
+            checkpointSequence = 1,
+        )
+        persistedLearnerSnapshot = PersistedLearnerSnapshot(
+            projectionName = "study-experience-v1",
+            stateVersion = 1,
+            knownLedgerHeadSequence = 1,
+            snapshot = LearnerSnapshot(
+                learnerId = "learner:local",
+                problemMemoryStates = mapOf(practiceUnitId to prior),
+                checkpoint = ProjectionCheckpoint(
+                    lastSequence = 1,
+                    projectorVersion = LearningProjector.VERSION,
+                    projectedAtEpochMillis = lastReviewedAtEpochMillis,
+                ),
+                generatedAtEpochMillis = lastReviewedAtEpochMillis,
             ),
         )
         learningLedgerHead.value = 1
@@ -2488,6 +2798,7 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
             basisRevisionId = problemRevisionId,
             taxonomyVersion = taxonomyVersion,
             acceptedAtEpochMillis = acceptedAtEpochMillis,
+            isPseudoFallback = true,
         )
     }
 
