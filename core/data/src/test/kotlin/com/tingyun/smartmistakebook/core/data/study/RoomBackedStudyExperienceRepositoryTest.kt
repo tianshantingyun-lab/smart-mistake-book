@@ -115,6 +115,9 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
+import com.tingyun.smartmistakebook.core.domain.ExamCalendarEntry
+import com.tingyun.smartmistakebook.core.domain.SchedulingOptions
+import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
@@ -1743,6 +1746,58 @@ class RoomBackedStudyExperienceRepositoryTest {
      * 把两个 KC 的掌握度写进当前投影（实现在 [FakeStudyDatabasePort.publishMastery]，
      * 那里才能碰到私有的投影字段）。
      */
+    /**
+     * `optimizeSchedulingParameters()` 的**写回闸门**（审计 S-10 的装配侧那一半，`P2`）。
+     *
+     * 消灭的失败：闸门写成 `if (result.mode != INSUFFICIENT_DATA) store.setOptimizedParameters(...)`
+     * 时，一次新拟合可以把**已经更好**的现行参数换掉——而"比出厂默认好"本来就是拟合的择优基准，
+     * 所以那个条件等于没有条件。S-10 修的是这个条件，而**修完之后闸门本身没有任何用例**：
+     * 拟一次、拟两次、被拒的那次写不写，全都没人钉。
+     *
+     * 这条走**真实装配**（真 repository ＋ 真优化器 ＋ 假设置存储），同一批历史拟两次：
+     *   - 第一次：现行组还是出厂默认，候选必然优于它 ⇒ 采纳 ⇒ 写 1 次；
+     *   - 第二次：现行组就是第一次那组，同一批数据不可能更优 ⇒ 拒绝 ⇒ **不得再写**。
+     *
+     * 第二条是要害（它让"无条件写回"的实现变红），第一条保证夹具真的走得到采纳那一支。
+     */
+    @Test
+    fun optimizeSchedulingParametersWritesBackOnlyWhenTheCandidateIsAdopted() = runBlocking {
+        val database = FakeStudyDatabasePort().apply { seedFittableReviewHistory(cardCount = 40) }
+        val settingsStore = RecordingSchedulingSettingsStore()
+        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val repository = repository(
+            database = database,
+            applicationScope = applicationScope,
+            initialFixture = null,
+            schedulingSettingsStore = settingsStore,
+        )
+        try {
+            val first = repository.optimizeSchedulingParameters()
+            assertNotNull(
+                "夹具必须真的喂到可拟合的数据量，否则这条用例根本走不到写回闸门那一支：" +
+                    "已经过 ${database.reviewLogEntries.size} 条 review_log",
+                first,
+            )
+            assertEquals(
+                "第一次：现行组是出厂默认，候选必然更优 ⇒ 被采纳 ⇒ 写回一次",
+                1,
+                settingsStore.writeCount,
+            )
+
+            val second = repository.optimizeSchedulingParameters()
+            assertNotNull(second)
+            assertEquals(
+                "第二次：同一批数据、现行组就是刚才那组 ⇒ 不可能更优 ⇒ 被拒 ⇒ 不得再写" +
+                    "（无条件写回的实现会在这里写第 2 次）",
+                1,
+                settingsStore.writeCount,
+            )
+        } finally {
+            repository.close()
+            applicationScope.cancel()
+        }
+    }
+
     private fun repository(
         database: StudyDatabasePort,
         applicationScope: CoroutineScope,
@@ -1752,6 +1807,7 @@ class RoomBackedStudyExperienceRepositoryTest {
         ),
         initialFixture: StudySeedBundle? = M1CuratedStudySeed.bundle(includeTutorMistake = false),
         fixtureSource: StudyFixtureSource = M1CuratedFixtureSource,
+        schedulingSettingsStore: SchedulingSettingsStore? = null,
     ) = RoomBackedStudyExperienceRepository(
         database = database,
         applicationScope = applicationScope,
@@ -1759,6 +1815,7 @@ class RoomBackedStudyExperienceRepositoryTest {
         studyZoneId = ZoneId.of("Asia/Shanghai"),
         initialFixture = initialFixture,
         fixtureSource = fixtureSource,
+        schedulingSettingsStore = schedulingSettingsStore,
     )
 
     private fun visualIngestMistake(
@@ -1860,6 +1917,38 @@ internal data class ResolvedPredictionOutcomeCall(
 
 /** 对齐 `RoomKnowledgeBaseStore.readKnowledgeNodeRelationsForDependents` 的 256 上限。 */
 private const val MAX_DEPENDENT_NODES_PER_QUERY = 256
+
+/** 可拟合历史的时间起点：只要远离 0，避免与别的夹具的时间戳撞上。 */
+private const val FITTABLE_HISTORY_BASE_EPOCH_MILLIS = 1_700_000_000_000L
+
+/**
+ * 记录**写回次数**的设置存储假件。这条用例只关心一件事：S-10 的写回闸门有没有写。
+ * `optimizedParameters` 初值为 null ⇒ repository 取到的现行组是出厂默认，
+ * 于是第一次拟合必然被采纳、第二次必然被拒。
+ */
+private class RecordingSchedulingSettingsStore : SchedulingSettingsStore {
+    private val parameters = MutableStateFlow<DoubleArray?>(null)
+
+    var writeCount = 0
+        private set
+
+    override val options: Flow<SchedulingOptions> = flowOf(SchedulingOptions())
+
+    override suspend fun setOptions(options: SchedulingOptions) = Unit
+
+    override val exams: Flow<List<ExamCalendarEntry>> = flowOf(emptyList())
+
+    override suspend fun addExam(entry: ExamCalendarEntry) = Unit
+
+    override suspend fun removeExam(entryId: String) = Unit
+
+    override val optimizedParameters: Flow<DoubleArray?> = parameters
+
+    override suspend fun setOptimizedParameters(parameters: DoubleArray?) {
+        writeCount += 1
+        this.parameters.value = parameters
+    }
+}
 
 internal class FakeStudyDatabasePort : StudyDatabasePort {
     private val mistakes = MutableStateFlow<List<MistakeRecord>>(emptyList())
@@ -2896,6 +2985,40 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun recordReviewLogEntries(entries: List<ReviewLogEntry>) {
         reviewLogEntries += entries
+    }
+
+    /**
+     * 喂一批**可拟合**的复习历史：每张卡在自己的起点后第 0／1／3／6 天各复习一次，评级全是 GOOD。
+     *
+     * `predictableSampleCount` 是按**时间戳**算跨天间隔的（`deltaTDays` 为空时走墙钟地板），
+     * 这里两条口径都给上、保持一致；40 张卡 × 3 个跨天间隔 ＝ **120 条可预测样本**，
+     * 稳稳越过 FULL_FIT 的门槛——这一点必须先成立，否则"写回闸门"的用例根本走不到那一支，
+     * 会变成一条永远走空分支的假用例。
+     */
+    fun seedFittableReviewHistory(cardCount: Int) {
+        val dayMillis = 24L * 60L * 60L * 1_000L
+        val days = listOf(0L, 1L, 3L, 6L)
+        repeat(cardCount) { card ->
+            var previousDay = 0L
+            days.forEachIndexed { index, day ->
+                val at = FITTABLE_HISTORY_BASE_EPOCH_MILLIS + card * dayMillis + day * dayMillis
+                reviewLogEntries += ReviewLogEntry(
+                    learnerId = "learner:local",
+                    practiceUnitId = "unit-optimize-$card",
+                    // review_log 的 rating 是 1-based（见 ReviewLogSink.ratingForOrdinal）：3 = GOOD。
+                    rating = 3,
+                    deltaTDays = (day - previousDay).toDouble(),
+                    durationMs = 30_000,
+                    reviewedAtEpochMillis = at,
+                    sourceKind = "ATTEMPT",
+                    sourceId = "optimize-$card-$index",
+                    evidenceWeight = 1.0,
+                    timeBucket = "MORNING",
+                    recordedAtEpochMillis = at,
+                )
+                previousDay = day
+            }
+        }
     }
 
     override suspend fun readReviewLogSamples(learnerId: String, limit: Int): List<ReviewLogSampleRecord> =
