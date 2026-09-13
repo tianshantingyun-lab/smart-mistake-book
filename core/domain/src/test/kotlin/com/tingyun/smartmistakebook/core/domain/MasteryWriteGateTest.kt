@@ -50,18 +50,40 @@ class MasteryWriteGateTest {
     }
 
     @Test
-    fun `confident positive needs no verifiable support`() {
-        // CONFIDENT is a dialogue self-report that is already discounted to
-        // 0.15, so it does not require verifiable support; only the MASTERED
-        // tier claims enough to need one.
-        val weight = assertAccepted(
+    fun `confident positive needs at least one verified anchor`() {
+        // 2026-09-13：正向底线。开放式作答的对错只能靠模型语义判断，本地唯一能机械
+        // 执行的可核查性就是"至少引用到一处学生真说过的话"；连一条都没有的正向不再入库
+        // （此前 CONFIDENT 档可以零锚通过，等于模型说了算）。
+        assertRejected(
             acceptedInput(
                 understanding = TutorUnderstandingTier.CONFIDENT,
                 hasObjectiveSupport = false,
                 evidenceAnchorCount = 0,
             ),
+            RejectReason.POSITIVE_WITHOUT_EVIDENCE_ANCHOR,
+        )
+        val weight = assertAccepted(
+            acceptedInput(
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = 1,
+            ),
         )
         assertEquals(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE, weight, 1e-9)
+    }
+
+    @Test
+    fun `negative evidence needs no anchor`() {
+        // 负向不受底线约束：下调误伤小，且"学生卡住了"常常没有可引用的正确表述。
+        val weight = assertAccepted(
+            acceptedInput(
+                direction = TutorEvidenceDirection.NEGATIVE,
+                understanding = TutorUnderstandingTier.STRUGGLING,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = 0,
+            ),
+        )
+        assertEquals(MasteryWriteGate.WEIGHT_STRUGGLING, weight, 1e-9)
     }
 
     @Test

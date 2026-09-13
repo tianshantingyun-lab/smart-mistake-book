@@ -32,6 +32,7 @@ import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
+import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
@@ -64,6 +65,8 @@ fun SavedMistakeTutorRoute(
     teachingReferenceRepository: TutorTeachingReferenceRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
+    conversations: TutorConversationRepository? = null,
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory? = null,
     onOpenModelSettings: () -> Unit,
@@ -128,6 +131,7 @@ fun SavedMistakeTutorRoute(
                 state = current,
                 modelTasks = modelTasks,
                 interactions = interactions,
+                conversations = conversations,
                 profile = profile,
                 learningMemory = learningMemory,
                 relatedKnowledgeNodeIds = requireNotNull(organization).knowledgeNodeIds,
@@ -180,6 +184,8 @@ internal fun SavedMistakeTutorContent(
     state: MistakeDetailState.Ready,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
+    conversations: TutorConversationRepository? = null,
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory?,
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
@@ -298,6 +304,7 @@ internal fun SavedMistakeTutorContent(
         profile = profile,
         modelTasks = modelTasks,
         interactions = interactions,
+        conversations = conversations,
         onOpenModelSettings = onOpenModelSettings,
         clock = clock,
         headerContent = {

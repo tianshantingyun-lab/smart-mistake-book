@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
@@ -25,6 +26,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -767,6 +769,48 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
             "独立答对 2 次 · 提示后答对 1 次 · 遗忘 3 次 · 看过答案 1 次",
         ).assertExists()
         composeRule.onNodeWithText("已到复习时间", substring = true).assertExists()
+    }
+
+    @Test
+    fun aStudentTextTurnIsPersistedBeforeDispatchSoTheLocalAnchorCheckCanSeeIt() {
+        // 写侧门控核对"模型有没有逐字引用学生的话"时读的是 tutor_message 的 STUDENT 行。
+        // 学生文字必须真的落库——否则纯文字（开放式）作答的语料恒为空，MASTERED 机械不可达，
+        // 提示词里"引文会被本地逐条比对"也形同虚设。
+        val session = session()
+        val modelTasks = ChatModelTaskRepository(session)
+        val interactions = RecordingTutorInteractions()
+        val recordedStudentMessages = mutableListOf<AppendTutorStudentMessageCommand>()
+        val exactMessage = "我觉得先把两边同时开方"
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = modelTasks,
+                    interactions = interactions,
+                    conversations = emptyConversations(recordedStudentMessages),
+                    profile = StudyProfileOverview(),
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_composer").performTextInput(exactMessage)
+        composeRule.onNodeWithTag("tutor_chat_send").assertIsEnabled().performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
+        }
+
+        val command = recordedStudentMessages.single()
+        assertEquals(TutorConversationIds.captured(session.sessionId), command.conversationId)
+        assertEquals(exactMessage, command.bodyMarkdown)
+        // 学生第 n 轮固定落在第 2n-1 条：序号由请求自身决定，恢复重放不会因"当前最大 +1"漂移。
+        assertEquals(1, command.ordinal)
+        assertTrue(command.messageId.startsWith("tutor-message:"))
     }
 
     @Test

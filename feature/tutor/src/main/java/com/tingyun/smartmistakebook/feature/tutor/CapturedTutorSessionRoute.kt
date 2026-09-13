@@ -1,11 +1,14 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,11 +42,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
@@ -95,6 +102,8 @@ import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
+import com.tingyun.smartmistakebook.core.ui.InkMuted
+import com.tingyun.smartmistakebook.core.ui.LocalImageLoadState
 import com.tingyun.smartmistakebook.core.ui.LocalModeLine
 import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
@@ -163,6 +172,7 @@ fun CapturedTutorSessionRoute(
         onRequestEnd = { showEndConfirmation = true },
         onRetryLoad = viewModel::reload,
         repository = repository,
+        conversations = conversations,
         modelTasks = modelTasks,
         interactions = interactions,
         profile = profile,
@@ -223,6 +233,8 @@ private fun CapturedTutorSessionContent(
     repository: CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
+    conversations: TutorConversationRepository? = null,
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry>,
     longTermWritesBlocked: Boolean,
@@ -249,6 +261,7 @@ private fun CapturedTutorSessionContent(
                 attachedImageResolver = attachedImageResolver,
                 modelTasks = modelTasks,
                 interactions = interactions,
+                conversations = conversations,
                 profile = profile,
                 catalogEntries = catalogEntries,
                 longTermWritesBlocked = longTermWritesBlocked,
@@ -350,6 +363,8 @@ internal fun ReadyCapturedSession(
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
+    conversations: TutorConversationRepository? = null,
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     longTermWritesBlocked: Boolean = false,
@@ -369,6 +384,7 @@ internal fun ReadyCapturedSession(
         visualSourceAssetsReader = visualSourceAssetsReader,
         attachedImageResolver = attachedImageResolver,
         interactions = interactions,
+        conversations = conversations,
         catalogEntries = catalogEntries,
         onLongTermWritesBlocked = onLongTermWritesBlocked,
         onRequestSave = { onSave(session) },
@@ -427,26 +443,11 @@ internal fun ReadyCapturedSession(
                 document = session.questionDocument.document,
                 choicesEnabled = false,
             )
-            OutlineActionChip(
-                text = if (sourceExpanded) "收起原图" else "查看原图",
-                onClick = { sourceExpanded = !sourceExpanded },
-                icon = Icons.Outlined.Image,
-                contentDescription = if (sourceExpanded) "收起拍题原图" else "查看拍题原图",
-                modifier = Modifier
-                    .padding(top = 14.dp)
-                    .testTag("captured_tutor_source_toggle"),
+            InlineSourceImage(
+                imageUri = session.sourceImageUri,
+                onClick = { sourceExpanded = true },
+                modifier = Modifier.padding(top = 14.dp),
             )
-            if (sourceExpanded) {
-                BoundedLocalImage(
-                    imageUri = session.sourceImageUri,
-                    contentDescription = "拍题原图",
-                    expanded = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp)
-                        .testTag("captured_tutor_source_image"),
-                )
-            }
             if (session.isEndedWithoutSave) EndedTutorSessionNotice()
         },
         trailingContent = {
@@ -486,6 +487,77 @@ internal fun ReadyCapturedSession(
         },
         modifier = modifier,
     )
+    if (sourceExpanded) {
+        SourceImageFullscreenDialog(
+            imageUri = session.sourceImageUri,
+            onDismiss = { sourceExpanded = false },
+        )
+    }
+}
+
+/** 题面下方的常驻原图缩略图：点开全屏对照；原图读不到时给占位而不是静默空白。 */
+@Composable
+private fun InlineSourceImage(
+    imageUri: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var loadState by remember { mutableStateOf(LocalImageLoadState.LOADING) }
+    Column(modifier = modifier) {
+        BoundedLocalImage(
+            imageUri = imageUri,
+            contentDescription = "拍题原图，点开看大图",
+            expanded = false,
+            onLoadStateChange = { loadState = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .clickable(onClick = onClick)
+                .testTag("captured_tutor_source_image"),
+        )
+        if (loadState == LocalImageLoadState.UNAVAILABLE) {
+            Text(
+                text = "原图暂时打不开",
+                color = InkMuted,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SourceImageFullscreenDialog(
+    imageUri: String,
+    onDismiss: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        var loadState by remember { mutableStateOf(LocalImageLoadState.LOADING) }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(onClick = onDismiss),
+        ) {
+            BoundedLocalImage(
+                imageUri = imageUri,
+                contentDescription = "拍题原图",
+                expanded = true,
+                onLoadStateChange = { loadState = it },
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .testTag("captured_tutor_source_image_full"),
+            )
+            if (loadState == LocalImageLoadState.UNAVAILABLE) {
+                Text(
+                    text = "原图暂时打不开",
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        }
+    }
 }
 
 @Composable

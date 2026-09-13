@@ -118,14 +118,16 @@ class RoomTutorToolRunnerTest {
     }
 
     @Test
-    fun confidentIsUnaffectedByTheAnchorGate() = runBlocking {
-        // 门只在 MASTERED 档加码：CONFIDENT 本就按对话自报折价到 0.15，
-        // 不再叠加证据锚要求（否则日常讲题全部写不进掌握度）。
+    fun confidentNeedsOneVerifiedAnchor() = runBlocking {
+        // 2026-09-13 起 CONFIDENT 不再豁免锚底线（开放式作答只能靠模型语义判断，
+        // 至少得引用到一处学生真说过的话）。有锚 → 照旧按 0.15 入库；
+        // 无锚 → 拒写（下方另一个用例覆盖）。
         val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把负号漏掉了")
 
         val outcome = RoomTutorToolRunner(port).run(
             masteryCall(
-                rationale = "学生独立完成了这一步。",
+                rationale = "学生说\"我把负号漏掉了\"，这次自己纠正了。",
                 understanding = TutorUnderstandingTier.CONFIDENT,
             ),
             context(),
@@ -197,11 +199,16 @@ class RoomTutorToolRunnerTest {
 
     @Test
     fun aCorrectCheckAnswerDoesNotBlockAPositiveClaim() = runBlocking {
+        // 答对了检查题不构成阻碍；但正向仍要有 ≥1 条已核实引文锚（2026-09-13 底线），
+        // 模型引用学生所选选项文本即满足——这是本会话真实存在过的文本。
         val port = anchoredPort()
         port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = true)
 
         val outcome = RoomTutorToolRunner(port).run(
-            masteryCall(rationale = "学生独立完成了这一步。", understanding = TutorUnderstandingTier.CONFIDENT),
+            masteryCall(
+                rationale = "学生选了\"选项 A\"，这一步独立完成。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
             sessionContext(),
         )
 
@@ -217,7 +224,10 @@ class RoomTutorToolRunnerTest {
         port.tutorTurnResponses += turnResponse(cycleOrdinal = 2, selectionWasCorrect = true)
 
         val outcome = RoomTutorToolRunner(port).run(
-            masteryCall(rationale = "学生独立完成了这一步。", understanding = TutorUnderstandingTier.CONFIDENT),
+            masteryCall(
+                rationale = "学生选了\"选项 A\"，这一步独立完成。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
             sessionContext(cycleOrdinal = 2),
         )
 
@@ -244,7 +254,10 @@ class RoomTutorToolRunnerTest {
 
     @Test
     fun withoutASessionThereIsNothingToCrossCheck() = runBlocking {
-        // 无会话上下文（Lobby 派遣）时没有客观作答可言，不引入新拒因。
+        // 无会话上下文（Lobby 派遣/测试直调）时没有会话语料，因此：
+        // ①不引入"客观作答冲突"这个拒因（那需要真的存在客观作答）；
+        // ②但空语料下任何正向都拿不到引文锚，按 2026-09-13 的正向底线拒写——
+        //   拒的是"无法核查"，不是"与行为证据冲突"。
         val port = anchoredPort()
         port.tutorTurnResponses += turnResponse(cycleOrdinal = 1, selectionWasCorrect = false)
 
@@ -253,7 +266,46 @@ class RoomTutorToolRunnerTest {
             context(),
         )
 
+        assertEquals(false, outcome.ok)
+        assertEquals("rejected:POSITIVE_WITHOUT_EVIDENCE_ANCHOR", outcome.errorKind)
+    }
+
+    // ---- 开放式（纯文字）作答：本地可核对性 ----
+
+    @Test
+    fun proseOnlySessionAcceptsAPositiveThatQuotesTheStudentVerbatim() = runBlocking {
+        // 开放式作答没有机判选项，对错只能靠模型语义判断；本地唯一能机械执行的要求是
+        // "引文必须真出现在学生说过的话里"。学生文字落库后这条要求才成立。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我觉得是先配方再开方")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我觉得是先配方再开方\"，这一步他自己想到了。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
+            context(),
+        )
+
         assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+    }
+
+    @Test
+    fun proseOnlySessionRejectsAPositiveThatQuotesNothingReal() = runBlocking {
+        // 反向：词句不在学生的原话里（改写/编造），本地核对抓得到 → 拒写。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我觉得是先配方再开方")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我很清楚这是余弦定理\"，思路完整。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
+            context(),
+        )
+
+        assertEquals(false, outcome.ok)
+        assertEquals("rejected:POSITIVE_WITHOUT_EVIDENCE_ANCHOR", outcome.errorKind)
     }
 
     // ---- 证据锚真实性核对（方向A）----
@@ -345,21 +397,31 @@ class RoomTutorToolRunnerTest {
     }
 
     @Test
-    fun theAnchorCheckDoesNotDowngradeLowerTiers() = runBlocking {
-        // 核对只加在 MASTERED 档：CONFIDENT 按对话自报折价 0.15，本就不要求锚。
-        // 若把核对推广到所有正向档，日常讲题会因引文改写而全部写不进掌握度。
+    fun lowerTiersNeedOneFaithfulQuoteNotAPerfectParaphrase() = runBlocking {
+        // 2026-09-13 起核对推广到所有正向档（底线 ≥1 条已核实锚）。标准是"逐字"，
+        // 不是"意思相近"：改写过的引文不算，忠实引用一处即可通过——日常讲题只要
+        // 模型真的引了学生的话就写得进去。
         val port = anchoredPort()
         port.tutorMessages += studentMessage("我把负号漏掉了")
 
-        val outcome = RoomTutorToolRunner(port).run(
+        val paraphrased = RoomTutorToolRunner(port).run(
             masteryCall(
                 rationale = "学生说\"我把符号问题处理好了\"。",
                 understanding = TutorUnderstandingTier.CONFIDENT,
             ),
             sessionContext(),
         )
+        assertEquals(false, paraphrased.ok)
+        assertEquals("rejected:POSITIVE_WITHOUT_EVIDENCE_ANCHOR", paraphrased.errorKind)
 
-        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+        val verbatim = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把负号漏掉了\"，现在自己找到了。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
+            sessionContext(),
+        )
+        assertTrue("expected accepted outcome but was $verbatim", verbatim.ok)
     }
 
     // ---- 掌握情况深挖：清单 / 聚焦 / 截断 / 扩展预算 ----

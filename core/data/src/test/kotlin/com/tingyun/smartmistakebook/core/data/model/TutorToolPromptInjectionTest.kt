@@ -151,6 +151,16 @@ class TutorToolPromptInjectionTest {
     }
 
     @Test
+    fun respondPromptAllowsOneOpenEndedCheckWithAVerbatimQuotationDuty() {
+        val prompt = OpenAiModelTaskAdapters.prompt(respond())
+        // 开放式检查：学生自己组织语言回答（不是选择题卡片），且不得在学生求助时反过来考他。
+        assertTrue("应允许一句开放式检查", prompt.contains("一句开放式检查"))
+        assertTrue("应禁止写成选择题/卡片", prompt.contains("不得写成选择题或卡片"))
+        assertTrue("不得在学生只是求助时考他", prompt.contains("不得在学生只是求助时反过来考他"))
+        assertTrue("应写明引文会被本地逐条比对", prompt.contains("引文会被本地逐条比对"))
+    }
+
+    @Test
     fun judgmentNormsAbsentWithoutMasteryUpdateDeclared() {
         val prompt = OpenAiModelTaskAdapters.prompt(
             respond(toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ)),

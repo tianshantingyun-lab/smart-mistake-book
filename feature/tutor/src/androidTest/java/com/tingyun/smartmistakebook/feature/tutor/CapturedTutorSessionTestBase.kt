@@ -259,7 +259,13 @@ abstract class CapturedTutorSessionTestBase {
         ) = error("No exposure write expected")
     }
 
-    protected fun emptyConversations(): TutorConversationRepository =
+    /**
+     * @param recordedStudentMessages 可选：把每次 `appendStudentMessage` 的命令记下来，
+     *   供"学生文字必须落库"的用例断言（写侧门控的引文核对依赖这些行）。
+     */
+    protected fun emptyConversations(
+        recordedStudentMessages: MutableList<AppendTutorStudentMessageCommand> = mutableListOf(),
+    ): TutorConversationRepository =
         object : TutorConversationRepository {
             private val snapshot = MutableStateFlow<TutorConversationSnapshot?>(null)
 
@@ -291,6 +297,7 @@ abstract class CapturedTutorSessionTestBase {
             override suspend fun appendStudentMessage(
                 command: AppendTutorStudentMessageCommand,
             ): TutorMessage {
+                recordedStudentMessages += command
                 val message = TutorMessage(
                     messageId = command.messageId,
                     conversationId = command.conversationId,

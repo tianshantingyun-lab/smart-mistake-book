@@ -562,20 +562,17 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             // 证据锚条数（档2，spec 2026-09-06 §1；档1 prompt 规范同源）。
             hasObjectiveSupport = false,
             // 只数**引文真出现在本会话文本里**的锚：档1 规范要求"逐字引用学生
-            // 原话"，仅数引号会让 `"因为""所以"` 这类编造凑够门槛。核对成本只在
-            // POSITIVE+MASTERED 时付——门的其他分支不消费这个值。
-            // 只数**引文真出现在本会话文本里**的锚：档1 规范要求"逐字引用学生
-            // 原话"，仅数引号会让 `"因为""所以"` 这类编造凑够门槛。核对成本只在
-            // 需要证据锚的档位才付——门的其他分支不消费这个值。
-            evidenceAnchorCount = if (direction == TutorEvidenceDirection.POSITIVE &&
-                understanding == TutorUnderstandingTier.MASTERED
-            ) {
+            // 原话"，仅数引号会让 `"因为""所以"` 这类编造凑够门槛。
+            // **正向各档都消费这个值**（MASTERED ≥2，其余正向 ≥1，2026-09-13 的正向底线），
+            // 因此不能只在 MASTERED 时核对——否则 CONFIDENT 会拿"引号数"冒充"已核实锚"，
+            // 编造的引文照样本进库。负向不消费，省掉这次回读。
+            evidenceAnchorCount = if (direction == TutorEvidenceDirection.POSITIVE) {
                 MasteryWriteGate.verifiedEvidenceAnchorCount(
                     rationale = call.rationale,
                     verifiableText = verifiableSessionText(context),
                 )
             } else {
-                MasteryWriteGate.evidenceAnchorCount(call.rationale)
+                0
             },
             // 反向的客观核对（研究 tutor-evidence-gate §3.2）：学生在本轮答错过
             // 模型自己出的检查题时，模型再判 POSITIVE 就是口头声明压过行为证据。

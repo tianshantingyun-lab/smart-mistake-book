@@ -90,6 +90,17 @@ object MasteryWriteGate {
     const val REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED = 2
 
     /**
+     * 任意正向判断都至少要有 1 条**已核实**引文锚（引文真的出现在学生会话文本里）。
+     *
+     * 消灭的失败：CONFIDENT/UNCERTAIN 档此前不校验锚，模型对着学生的开放式作答口头说句
+     * "他懂了"就能入库——提示词里"引文会被本地逐条比对"对纯文字作答形同虚设
+     * （学生会话文本此前根本不落库，见 `TutorRespondCommands.recordStudentTurnIfNeeded`）。
+     * 现在两处都补齐：语料真实存在，且任何正向都至少要引用到一处。
+     * 负向不受限（下调误伤小，与既有姿态一致）。
+     */
+    const val REQUIRED_EVIDENCE_ANCHORS_FOR_POSITIVE = 1
+
+    /**
      * 一条引用短于此长度不算证据锚。消灭的失败：学生一句空话（"懂了"/"会了"）
      * 被引号包住就凑够条数，使证据锚门形同虚设（档1 规范第 2 条正是禁止把
      * 口头声称当事实）。[I] 待产品数据校准。
@@ -186,6 +197,8 @@ object MasteryWriteGate {
         KNOWLEDGE_NODE_NOT_ANCHORED,
         /** claimed MASTERED/POSITIVE with no verifiable support on either route. */
         MASTERED_WITHOUT_EVIDENCE_ANCHOR,
+        /** 正向判断连一条已核实引文锚都没有（开放式作答的底线要求）。 */
+        POSITIVE_WITHOUT_EVIDENCE_ANCHOR,
         /** same KC already written within the cooldown window. */
         SAME_KC_IN_COOLDOWN,
         /** per-conversation write quota exhausted. */
@@ -293,6 +306,15 @@ object MasteryWriteGate {
             // 现改为双路可核查：本地客观作答（测验通道）或模型逐字证据锚（讲题
             // 通道）。两路都缺才拒——被拒证据落 rejected 观察行，不静默丢弃。
             return GateResult.Rejected(RejectReason.MASTERED_WITHOUT_EVIDENCE_ANCHOR)
+        }
+        if (input.direction == TutorEvidenceDirection.POSITIVE &&
+            !input.hasObjectiveSupport &&
+            input.evidenceAnchorCount < REQUIRED_EVIDENCE_ANCHORS_FOR_POSITIVE
+        ) {
+            // 正向底线：至少引用到一处学生真说过/真做过的东西。开放式作答的对错只能
+            // 靠模型语义判断，这条是本地唯一能机械执行的可核查性要求（研究 §4(iii)1：
+            // 无逐字证据锚 → 拒写）。拒写落观察行，不静默丢弃。
+            return GateResult.Rejected(RejectReason.POSITIVE_WITHOUT_EVIDENCE_ANCHOR)
         }
         val lastWrite = input.sameKcLastWriteAgoMillis
         if (lastWrite != null && lastWrite < SAME_KC_COOLDOWN_MILLIS) {

@@ -334,6 +334,8 @@ internal fun SavedMistakeTutorDestination(
                 application.tutorTeachingReferenceRepository,
             modelTasks = application.modelTaskRepository,
             interactions = application.tutorInteractionRepository,
+            // 学生文字要落进 tutor_message，写侧门控才能逐字核对模型引文（纯文字作答同理）。
+            conversations = application.tutorConversationRepository,
             onRecordTeachingFocus = { sessionId, practiceUnitId, labels ->
                 application.applicationScope.launch {
                     runCatching {
