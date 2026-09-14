@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.data.model
 
+import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_MAX_ASSET_BYTES
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -32,6 +33,7 @@ internal class OpenAiImageGenerationChannel(
 
     override suspend fun redrawClean(request: ImageRedrawRequest): ImageRedrawResult =
         withContext(Dispatchers.IO) {
+            requireSourceWithinEgressBound(request.photoBytes)
             val mediaType = request.photoMimeType.toMediaType()
             val body = MultipartBody.Builder().setType(MultipartBody.FORM)
                 .addFormDataPart("model", modelId)
@@ -71,6 +73,7 @@ internal class OpenAiImageGenerationChannel(
         val mimeType = requireNotNull(request.sourceImageMimeType) {
             "Image-to-image generation requires a source mime type"
         }
+        requireSourceWithinEgressBound(sourceBytes)
         val mediaType = mimeType.toMediaType()
         val body = MultipartBody.Builder().setType(MultipartBody.FORM)
             .addFormDataPart("model", modelId)
@@ -146,8 +149,25 @@ internal class OpenAiImageGenerationChannel(
     private val imageExt: String
         get() = "png" // multipart part name extension is cosmetic; mimeType drives decode
 
+    /**
+     * 发送前上界核对（2026-09-14）。这两条链发的是 **multipart 原始字节**（不是 base64，没有
+     * 4/3 膨胀），所以请求体 ≈ 源图字节 + 少量字段。源图来自规范资产（vault 导入上限 20 MiB），
+     * 因此今天必然低于传输上限 36 MiB——**但这两个数字分处不同文件，此前没有任何地方把耦合写明**：
+     * 来源上限一旦放宽，请求会在把整块字节读进内存、组完 multipart 之后才发现超限，白付一次内存
+     * 与一次注定失败的出网。这里按模型层既有的"单资产出网上限"钉住（24 MiB，与 36 MiB 之间留
+     * 字段与边界余量），失败即抛，调用方按"没有图"处理。
+     */
+    private fun requireSourceWithinEgressBound(sourceBytes: ByteArray) {
+        require(sourceBytes.size.toLong() <= IMAGE_EDITS_MAX_SOURCE_BYTES) {
+            "Image-to-image source exceeds the per-asset egress bound"
+        }
+    }
+
     companion object {
         const val DEFAULT_MODEL_ID = "gpt-image-2"
+
+        /** 单张输入图上限＝单资产出网上限；见 [requireSourceWithinEgressBound] 的算术说明。 */
+        internal const val IMAGE_EDITS_MAX_SOURCE_BYTES = MODEL_EGRESS_MAX_ASSET_BYTES
         private val JSON_MEDIA_TYPE = "application/json".toMediaType()
         private fun defaultClient() = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
