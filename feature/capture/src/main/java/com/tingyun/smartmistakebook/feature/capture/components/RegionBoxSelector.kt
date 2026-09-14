@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -136,7 +135,9 @@ internal fun RegionBoxSelectorDialog(
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.testTag("region_box_selector_hint"),
             )
-            BoxWithConstraints(
+            // 普通 Box：这里只用到外部传入的 pageWidth/pageHeight 定长宽比，
+            // BoxWithConstraints 的约束 scope 一句没用（CI lint 的硬门就是这条）。
+            Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
