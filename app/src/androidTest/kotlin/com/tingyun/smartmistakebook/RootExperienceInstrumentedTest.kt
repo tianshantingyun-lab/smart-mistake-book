@@ -9,6 +9,9 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.printToString
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
@@ -320,8 +323,17 @@ class RootExperienceInstrumentedTest {
 
     private fun waitForTag(tag: String) {
         awaitComposeIdle()
-        composeRule.waitUntil(timeoutMillis = 20_000) {
-            composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        try {
+            composeRule.waitUntil(timeoutMillis = 20_000) {
+                composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+            }
+        } catch (timeout: ComposeTimeoutException) {
+            // 超时时打印当时的语义树：否则只看到"等不到 tag"，不知道页面停在哪一态
+            // （2026-09-15 加，用于定位 mistake_detail_ready 类超时）。
+            composeRule.onRoot().printToString(maxDepth = 8).let { tree ->
+                System.err.println("waitForTag('$tag') timed out; semantics tree:" + "\n" + tree)
+            }
+            throw timeout
         }
     }
 
