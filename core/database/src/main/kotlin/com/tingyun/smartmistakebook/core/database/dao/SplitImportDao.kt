@@ -64,6 +64,17 @@ internal interface SplitImportDao {
     @Query("SELECT * FROM split_import_job WHERE job_id = :jobId")
     suspend fun readJob(jobId: String): SplitImportJobEntity?
 
+    @Query(
+        """
+        SELECT * FROM split_import_job
+        WHERE source_kind = 'BATCH' AND status = 'READY'
+          AND job_id LIKE 'split:' || :batchJobId || ':%'
+        ORDER BY updated_at_epoch_millis DESC, job_id DESC
+        LIMIT 1
+        """,
+    )
+    suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobEntity?
+
     @Query("SELECT * FROM split_import_job WHERE source_fingerprint = :sourceFingerprint")
     suspend fun readJobByFingerprint(sourceFingerprint: String): SplitImportJobEntity?
 

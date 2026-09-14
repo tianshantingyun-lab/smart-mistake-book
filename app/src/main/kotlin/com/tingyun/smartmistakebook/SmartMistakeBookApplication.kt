@@ -177,7 +177,8 @@ class SmartMistakeBookApplication : Application() {
             tutorTeachingReferenceRepository =
                 TutorTeachingReferenceRepositoryFactory.create(database)
             libraryCatalogRepository = LibraryCatalogRepositoryFactory.create(database)
-            splitImportRepository = SplitImportRepositoryFactory.create(database)
+            val roomSplitImportRepository = SplitImportRepositoryFactory.createConcrete(database)
+            splitImportRepository = roomSplitImportRepository
             reviewReminderRepository = DataStoreReviewReminderRepository(this, applicationScope)
             sleepJournalStore = DataStoreSleepJournalStore(this, applicationScope)
             registerActivityLifecycleCallbacks(
@@ -246,6 +247,9 @@ class SmartMistakeBookApplication : Application() {
                 // no round, original photo kept.
                 modelTasks = modelTaskRepository,
                 captureEgressAllowed = { modelConfigurationStore != null },
+                // Capture splits register a review job so a multi-question photo
+                // reaches the split-review page instead of stranding its drafts.
+                splitImports = roomSplitImportRepository,
             )
             batchImportRepository = BatchImportRepositoryFactory.create(
                 context = this,
@@ -253,7 +257,7 @@ class SmartMistakeBookApplication : Application() {
                 capture = captureRepository,
                 processingScope = applicationScope,
                 modelTasks = modelTaskRepository,
-                splitImports = SplitImportRepositoryFactory.createConcrete(database),
+                splitImports = roomSplitImportRepository,
                 // Batch page organization egresses page images; same single condition as the
                 // capture save path above (configured model).
                 modelEgressAllowed = { modelConfigurationStore != null },
@@ -331,7 +335,28 @@ class SmartMistakeBookApplication : Application() {
     }
 
     fun refreshStudyExperience() {
+        val currentStartup = startupState.value
+        if (currentStartup is StartupState.FatalFailure) {
+            // 数据库未初始化成功，无学习记录可刷新；onResume 每次都会调用这里。
+            return
+        }
         applicationScope.launch {
+            if (
+                currentStartup is StartupState.RecoverableFailure &&
+                currentStartup.errorCategory == StartupErrorCategory.KNOWLEDGE_BASE
+            ) {
+                // 知识包失败是横幅重试唯一有实效的场景：重新安装，成功则收起横幅。
+                try {
+                    BundledKnowledgeBaseInstaller.install(database)
+                    if (startupState.value == currentStartup) {
+                        startupState.value = StartupState.Ready
+                    }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Throwable) {
+                    // 保持失败横幅，学生可再次点击重试。
+                }
+            }
             try {
                 studyRepository.refresh()
             } catch (cancelled: CancellationException) {

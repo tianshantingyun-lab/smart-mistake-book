@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.ConfirmAndCommitProblemDraftFromWorkspaceCommand
 import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.ConsumeProblemDraftEditWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.CreateSplitImportJobCommand
 import com.tingyun.smartmistakebook.core.database.ConfirmTutorSessionFromWorkspaceCommand
 import com.tingyun.smartmistakebook.core.database.CreateProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.EndTutorSessionCommand
@@ -21,13 +22,16 @@ import com.tingyun.smartmistakebook.core.database.PendingCaptureDraftRecord
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.ReplaceProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.SaveProblemDraftEditWorkspaceCommand
+import com.tingyun.smartmistakebook.core.database.SplitImportQuestionSeed
 import com.tingyun.smartmistakebook.core.database.SplitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.TutorSessionRecord
+import com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftImportRequest
 import com.tingyun.smartmistakebook.core.domain.AppendCaptureDraftPageRequest
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftWorkspaceSnapshot
+import com.tingyun.smartmistakebook.core.domain.SplitRegionDraftsRequest
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftSplitResult
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
@@ -92,6 +96,8 @@ class RoomCaptureWorkflowRepository internal constructor(
      * only runs the model-decided redraw round when this returns true.
      */
     private val captureEgressAllowed: () -> Boolean = { false },
+    /** Split-review ledger; null in tests that never split. */
+    private val splitImports: RoomSplitImportRepository? = null,
 ) : CaptureWorkflowRepository {
     override fun observePendingCaptures(): Flow<List<PendingCaptureItem>> =
         database.observePendingCaptureDrafts().map { records ->
@@ -262,10 +268,12 @@ class RoomCaptureWorkflowRepository internal constructor(
                 replaced.status == StudyDbValue.ProblemDraftStatus.ABANDONED &&
                     replaced.updatedAtEpochMillis == request.occurredAtEpochMillis,
             ) { "Capture split replay does not match the completed operation" }
+            val splitDrafts = completed.filterNotNull().map { it.toSummary() }
             return@withContext CaptureDraftSplitResult(
                 created = false,
                 replacedDraftId = replaced.draftId,
-                splitDrafts = completed.filterNotNull().map { it.toSummary() },
+                splitDrafts = splitDrafts,
+                splitJobId = registerSplitJob(request, replaced, splitDrafts),
             )
         }
         require(completed.all { it == null }) { "Capture split is only partially present" }
@@ -302,10 +310,12 @@ class RoomCaptureWorkflowRepository internal constructor(
                     splitAtEpochMillis = request.occurredAtEpochMillis,
                 ),
             )
+            val splitDrafts = result.replacements.map { it.toSummary() }
             CaptureDraftSplitResult(
                 created = result.created,
                 replacedDraftId = replaced.draftId,
-                splitDrafts = result.replacements.map { it.toSummary() },
+                splitDrafts = splitDrafts,
+                splitJobId = registerSplitJob(request, replaced, splitDrafts),
             )
         } catch (failure: Exception) {
             croppedAssets.forEach { asset ->
@@ -314,6 +324,91 @@ class RoomCaptureWorkflowRepository internal constructor(
                 }
             }
             throw failure
+        }
+    }
+
+    /**
+     * Register the split-review job the review page reads. Runs after the draft
+     * split so each question row can carry its pre-created draft id; replay-safe
+     * because the deterministic fingerprint and job id reuse the stored job.
+     */
+    private suspend fun registerSplitJob(
+        request: SplitCaptureDraftRequest,
+        replaced: ProblemDraftRecord,
+        splitDrafts: List<CaptureDraftSummary>,
+    ): String? {
+        val splitImports = splitImports ?: return null
+        val jobId = "capture-split:" + request.requestId
+        val command = CreateSplitImportJobCommand(
+            jobId = jobId,
+            sourceKind = StudyDbValue.SplitImportSourceKind.SINGLE_PAGE,
+            sourceFingerprint = requestFingerprint(
+                "capture-split-job-v1",
+                request.requestId,
+                request.draftId,
+                request.assessmentRequestId,
+                request.occurredAtEpochMillis.toString(),
+            ),
+            sourceUri = Uri.fromFile(assetVault.resolve(replaced.sourceAsset)).toString(),
+            pageCount = 1,
+            createdAtEpochMillis = request.occurredAtEpochMillis,
+        )
+        val questions = request.regions.mapIndexed { index, region ->
+            SplitImportQuestionSeed(
+                left = region.left,
+                top = region.top,
+                right = region.right,
+                bottom = region.bottom,
+                pageIndex = 0,
+                prioritised = true,
+                splitDraftId = splitDrafts.getOrNull(index)?.draftId,
+            )
+        }
+        splitImports.createSplitJob(command, questions)
+        splitImports.markReady(jobId, questions.size, request.occurredAtEpochMillis)
+        return jobId
+    }
+
+    override suspend fun createSplitRegionDrafts(
+        request: SplitRegionDraftsRequest,
+    ): List<CaptureDraftSummary> = withContext(Dispatchers.IO) {
+        val source = database.readCanonicalSourceAsset(request.sourceAssetId)
+            ?: error("Split source asset no longer exists")
+        request.regions.mapIndexed { index, region ->
+            val draftId = stableId(
+                "batch-split-draft",
+                "${request.requestId}:${request.sourceAssetId}:$index:${region.fingerprintValue()}",
+            )
+            database.readProblemDraft(draftId)?.toSummary() ?: run {
+                val cropped = assetVault.crop(
+                    source = source,
+                    region = region,
+                    createdAtEpochMillis = request.occurredAtEpochMillis,
+                )
+                try {
+                    database.createProblemDraft(
+                        initialDraftCommand(
+                            draftId = draftId,
+                            sourceAsset = cropped,
+                            origin = request.origin.toDbValue(),
+                            occurredAtEpochMillis = request.occurredAtEpochMillis,
+                            requestFingerprint = requestFingerprint(
+                                "batch-split-draft-v1",
+                                request.requestId,
+                                request.sourceAssetId,
+                                index.toString(),
+                                region.fingerprintValue(),
+                                cropped.contentSha256,
+                            ),
+                        ),
+                    ).draft.toSummary()
+                } catch (failure: Exception) {
+                    if (database.readCanonicalSourceAsset(cropped.sourceAssetId) == null) {
+                        runCatching { assetVault.delete(cropped) }
+                    }
+                    throw failure
+                }
+            }
         }
     }
 
@@ -360,11 +455,7 @@ class RoomCaptureWorkflowRepository internal constructor(
             // with the original photo only.
             if (result.created) {
                 decideAndRedraw(
-                    original = originalFile,
-                    originalMimeType = draft.sourceAsset.mimeType,
-                    sourceAssetId = draft.sourceAsset.sourceAssetId,
-                    sourceWidth = draft.sourceAsset.width,
-                    sourceHeight = draft.sourceAsset.height,
+                    sourceAsset = draft.sourceAsset,
                     revisionId = result.receipt.problemRevisionId,
                     subjectId = draft.draftId,
                 )
@@ -373,12 +464,14 @@ class RoomCaptureWorkflowRepository internal constructor(
         }
 
     private suspend fun redrawAndAttachClean(
-        original: File,
-        originalMimeType: String,
+        sourceAsset: CanonicalSourceAssetRecord,
         revisionId: String,
     ) {
         val generator = cleanRedraw ?: return
-        val clean = generator.generateClean(original.readBytes(), originalMimeType) ?: return
+        // 读取时再核对一次：从"决定重绘"到真正出网之间文件仍可能被替换，这条链的字节
+        // 同样要在发送前过 vault.resolve 的逐位校验（失败即放弃重绘，题面保留原图）。
+        val original = runCatching { assetVault.resolve(sourceAsset) }.getOrElse { return }
+        val clean = generator.generateClean(original.readBytes(), sourceAsset.mimeType) ?: return
         attachCleanRedrawImage(
             problemRevisionId = revisionId,
             cleanImageBytes = clean.bytes,
@@ -392,11 +485,7 @@ class RoomCaptureWorkflowRepository internal constructor(
      * itself stays async via [cleanRedrawScope] when injected, else inline fail-closed.
      */
     private suspend fun decideAndRedraw(
-        original: File,
-        originalMimeType: String,
-        sourceAssetId: String,
-        sourceWidth: Int,
-        sourceHeight: Int,
+        sourceAsset: CanonicalSourceAssetRecord,
         revisionId: String,
         subjectId: String,
     ) {
@@ -406,9 +495,9 @@ class RoomCaptureWorkflowRepository internal constructor(
             val classifyRequest = ModelTaskRequest(
                 requestId = "save-decision:$revisionId",
                 input = ImagePipelineClassifyInput(
-                    sourceAssetId = sourceAssetId,
-                    imageWidth = sourceWidth,
-                    imageHeight = sourceHeight,
+                    sourceAssetId = sourceAsset.sourceAssetId,
+                    imageWidth = sourceAsset.width,
+                    imageHeight = sourceAsset.height,
                     subjectIdOverride = subjectId,
                 ),
                 occurredAtEpochMillis = System.currentTimeMillis(),
@@ -424,7 +513,7 @@ class RoomCaptureWorkflowRepository internal constructor(
             false
         }
         if (!shouldRedraw) return
-        scheduleCleanRedraw(original, originalMimeType, revisionId)
+        scheduleCleanRedraw(sourceAsset, revisionId)
     }
 
     override suspend fun attachCleanRedrawImage(
@@ -476,7 +565,14 @@ class RoomCaptureWorkflowRepository internal constructor(
             require(sessionId.isNotBlank()) { "Tutor session id must not be blank" }
             val session = database.readTutorSession(sessionId)?.toDomainTutorSession()
                 ?: return@withContext null
-            assetVault.readUriBytes(session.sourceImageUri)
+            // 出网前核对（2026-09-14）：题面字节必须与**规范记录**逐位一致。此前按
+            // session.sourceImageUri 直接读文件，是图片链上唯一还按"路径"取字节的地方——
+            // 磁盘上的文件被替换或损坏时，这些字节会被原样 POST 给模型；而其它出网路径
+            // 一律经 vault.resolve(record) 核对 sha256 与字节数后才读。
+            // 记录缺失或校验不过 → null：调用方按"没有图"处理，这条链本就 fail-closed。
+            val record = database.readProblemDraft(session.draftId)?.sourceAsset
+                ?: return@withContext null
+            runCatching { assetVault.resolve(record).readBytes() }.getOrNull()
         }
 
     override suspend fun readTutorVisualSourceAssets(
@@ -547,11 +643,7 @@ class RoomCaptureWorkflowRepository internal constructor(
             // mistake book; identical fail-closed semantics to library commits.
             if (summary.created) {
                 decideAndRedraw(
-                    original = assetVault.resolve(session.sourceAsset),
-                    originalMimeType = session.sourceAsset.mimeType,
-                    sourceAssetId = session.sourceAsset.sourceAssetId,
-                    sourceWidth = session.sourceAsset.width,
-                    sourceHeight = session.sourceAsset.height,
+                    sourceAsset = session.sourceAsset,
                     revisionId = summary.problemRevisionId,
                     subjectId = session.draftId,
                 )
@@ -565,20 +657,19 @@ class RoomCaptureWorkflowRepository internal constructor(
      * without one it runs inline (tests). Both paths are fail-closed.
      */
     private suspend fun scheduleCleanRedraw(
-        original: File,
-        originalMimeType: String,
+        sourceAsset: CanonicalSourceAssetRecord,
         revisionId: String,
     ) {
         val scope = cleanRedrawScope
         if (scope != null) {
             scope.launch {
                 runCatching {
-                    redrawAndAttachClean(original, originalMimeType, revisionId)
+                    redrawAndAttachClean(sourceAsset, revisionId)
                 }
             }
         } else {
             runCatching {
-                redrawAndAttachClean(original, originalMimeType, revisionId)
+                redrawAndAttachClean(sourceAsset, revisionId)
             }
         }
     }
@@ -865,6 +956,7 @@ object CaptureWorkflowRepositoryFactory {
         cleanRedrawScope: CoroutineScope? = null,
         modelTasks: ModelTaskRepository? = null,
         captureEgressAllowed: () -> Boolean = { false },
+        splitImports: RoomSplitImportRepository? = null,
     ): CaptureWorkflowRepository =
         RoomCaptureWorkflowRepository(
             database = database,
@@ -874,5 +966,6 @@ object CaptureWorkflowRepositoryFactory {
             cleanRedrawScope = cleanRedrawScope,
             modelTasks = modelTasks,
             captureEgressAllowed = captureEgressAllowed,
+            splitImports = splitImports,
         )
 }

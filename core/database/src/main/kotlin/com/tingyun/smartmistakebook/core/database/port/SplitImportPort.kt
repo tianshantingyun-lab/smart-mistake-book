@@ -15,6 +15,9 @@ interface SplitImportPort {
 
     suspend fun readSplitImportJob(jobId: String): SplitImportJobRecord?
 
+    /** Newest READY review job the batch job produced, or null when none. */
+    suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord?
+
     suspend fun createSplitImportJob(
         command: CreateSplitImportJobCommand,
         questions: List<SplitImportQuestionSeed>,

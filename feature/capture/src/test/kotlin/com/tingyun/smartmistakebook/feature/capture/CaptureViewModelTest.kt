@@ -243,6 +243,54 @@ class CaptureViewModelTest {
         }
 
     @Test
+    fun `capturing another question after a saved commit accepts a new import`() =
+        runTest(dispatcher.scheduler) {
+            val repository = FakeCaptureRepository(
+                importResults = ArrayDeque(
+                    listOf(
+                        Result.success(draftSummary("draft-1", 1)),
+                        Result.success(draftSummary("draft-2", 1)),
+                    ),
+                ),
+            )
+            val viewModel = CaptureViewModel(
+                savedStateHandle = SavedStateHandle(),
+                repository = repository,
+                modelTasks = FakeModelTasks(),
+                ioDispatcher = dispatcher,
+            )
+            viewModel.acceptSource(
+                uri = "file:///first.png",
+                source = CaptureInputSource.CAMERA,
+                origin = CaptureEntryOrigin.LIBRARY,
+                purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
+                requestId = "import-first",
+                occurredAtEpochMillis = 30,
+            )
+            advanceUntilIdle()
+            viewModel.confirm(workspaceIdentity(), CaptureEntryOrigin.LIBRARY)
+            advanceUntilIdle()
+            assertEquals(CaptureWorkflowPhase.SAVED, viewModel.uiState.value.workflow.phase)
+
+            viewModel.reset()
+
+            viewModel.acceptSource(
+                uri = "file:///second.png",
+                source = CaptureInputSource.CAMERA,
+                origin = CaptureEntryOrigin.LIBRARY,
+                purpose = CaptureAcquisitionPurpose.NEW_CAPTURE,
+                requestId = "import-second",
+                occurredAtEpochMillis = 60,
+            )
+            advanceUntilIdle()
+
+            assertEquals(CaptureWorkflowPhase.ASSESSING, viewModel.uiState.value.workflow.phase)
+            assertEquals("draft-2", viewModel.uiState.value.workflow.draftId)
+            assertNull(viewModel.uiState.value.workflow.savedEntryId)
+            assertEquals("import-second", viewModel.uiState.value.workflow.latestRequestId)
+        }
+
+    @Test
     fun `commit failure retries the exact persisted confirmation without a new draft`() =
         runTest(dispatcher.scheduler) {
             val repository = FakeCaptureRepository(

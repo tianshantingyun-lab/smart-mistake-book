@@ -63,7 +63,7 @@ import kotlinx.coroutines.launch
 fun BatchImportRoute(
     repository: BatchImportRepository,
     onOpenDraft: (String) -> Unit,
-    onSplitReady: () -> Unit = {},
+    onSplitReady: (String) -> Unit = {},
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -178,7 +178,7 @@ internal fun BatchImportContent(
     onResume: (String) -> Unit,
     onRetry: (String, Int) -> Unit,
     onSkip: (String, Int) -> Unit,
-    onSplitReady: () -> Unit = {},
+    onSplitReady: (String) -> Unit = {},
     isOrganizing: Boolean = false,
     onOrganize: (String) -> Unit = {},
     onOpenDraft: (String) -> Unit,
@@ -261,6 +261,14 @@ internal fun BatchImportContent(
                     Spacer(Modifier.height(12.dp))
                 }
             }
+            job.splitReadyJobId?.let { splitJobId ->
+                item("split_ready") {
+                    BatchSplitReadyCard(
+                        onOpen = { onSplitReady(splitJobId) },
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
             job.pages.forEachIndexed { index, page ->
                 item("page_${page.pageIndex}") {
                     BatchImportPageRow(
@@ -323,6 +331,43 @@ private fun BatchOrganizationCard(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun BatchSplitReadyCard(
+    onOpen: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().testTag("batch_import_split_ready"),
+        color = SmartColors.Paper,
+        shape = RoundedCornerShape(10.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SmartColors.Outline),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "有页面已自动分题",
+                color = SmartColors.Ink,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "分出的题目已裁好，去勾选要录入的题目，逐题确认存入错题本。",
+                color = SmartColors.InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            PrimaryActionButton(
+                text = "去勾选录入",
+                onClick = onOpen,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .testTag("batch_import_split_ready_open"),
+            )
         }
     }
 }

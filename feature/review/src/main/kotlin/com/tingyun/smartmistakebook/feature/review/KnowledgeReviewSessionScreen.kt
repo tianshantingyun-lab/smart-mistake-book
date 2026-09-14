@@ -221,7 +221,7 @@ private fun KnowledgeQuizContent(
             isCorrect = item.evaluateChoice(choice.id).isCorrect,
             selectedChoice = viewModel.selectedChoice,
             submittedChoice = viewModel.submittedChoice,
-            enabled = viewModel.submitStatus == KnowledgeQuizSubmitStatus.IDLE,
+            enabled = viewModel.submitStatus != KnowledgeQuizSubmitStatus.RECORDING,
             onSelect = viewModel::select,
             testTag = "knowledge_review_choice_${choice.id}",
         )
@@ -246,7 +246,7 @@ private fun KnowledgeQuizContent(
                 .fillMaxWidth()
                 .testTag("knowledge_review_submit"),
             enabled = viewModel.selectedChoice != null &&
-                viewModel.submitStatus == KnowledgeQuizSubmitStatus.IDLE,
+                viewModel.submitStatus != KnowledgeQuizSubmitStatus.RECORDING,
             contentDescription = if (viewModel.selectedChoice == null) {
                 "请先选择一个答案"
             } else {

@@ -106,7 +106,7 @@ internal fun TutorLobbyRoute(
         }
     }.collectAsState(initial = null)
     val conversationMessages = conversationSnapshot?.messages.orEmpty()
-    val persistedTasks by remember(modelTasks) {
+    val persistedTasks by remember(modelTasks, activeConversationId) {
         if (activeConversationId.isBlank()) {
             flowOf(emptyList())
         } else {
@@ -131,16 +131,21 @@ internal fun TutorLobbyRoute(
     var providerLoadFailed by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable(activeConversationId) { mutableStateOf("") }
     var sendError by remember { mutableStateOf<AppFailure?>(null) }
-    var sendInFlight by rememberSaveable { mutableStateOf(false) }
+    // 发送是本组合内的瞬时行为，不应跨进程/重建保留——残留 true 会永久锁死输入框。
+    var sendInFlight by remember { mutableStateOf(false) }
+    var resumingTaskId by remember { mutableStateOf<String?>(null) }
     var draftPersistJob by remember { mutableStateOf<Job?>(null) }
-    val hasActiveTask = conversationTasks.any { task ->
+    // 会话任务可能因离开页面被取消而停在非终态（协程已死、DB 无终态）：
+    // 这样的任务必须给出"继续回复"的恢复出口，否则输入框永久禁用。
+    val stalledTask = conversationTasks.lastOrNull { task ->
         task.status in setOf(
             ModelTaskStatus.WAITING_FOR_MODEL,
             ModelTaskStatus.QUEUED,
             ModelTaskStatus.RUNNING,
             ModelTaskStatus.STREAMING,
         )
-    } || sendInFlight
+    }
+    val hasActiveTask = stalledTask != null || sendInFlight || resumingTaskId != null
 
     LaunchedEffect(conversations) {
         if (activeConversationId.isNotBlank()) return@LaunchedEffect
@@ -175,6 +180,82 @@ internal fun TutorLobbyRoute(
         }
     }
 
+    fun resumeStalledTask() {
+        val task = stalledTask ?: return
+        val conversationId = activeConversationId
+        if (conversationId.isBlank() || resumingTaskId != null || sendInFlight) return
+        resumingTaskId = task.request.requestId
+        sendError = null
+        scope.launch {
+            try {
+                var terminalHandled = false
+                val replyTo = conversationMessages.lastOrNull {
+                    it.role == TutorMessageRole.STUDENT
+                }
+                val assistantOrdinal =
+                    (conversationSnapshot?.conversation?.lastTurnOrdinal ?: 0) + 1
+                modelTasks.execute(task.request).collect { current ->
+                    if (terminalHandled) return@collect
+                    val output = current.output as? TutorLobbyOutput
+                    when {
+                        current.status == ModelTaskStatus.SUCCEEDED && output != null -> {
+                            terminalHandled = true
+                            conversations.appendAssistantMessage(
+                                AppendTutorAssistantMessageCommand(
+                                    conversationId = conversationId,
+                                    messageId = "tutor-message:${UUID.randomUUID()}",
+                                    ordinal = assistantOrdinal,
+                                    replyToMessageId = replyTo?.messageId,
+                                    bodyMarkdown = output.messageMarkdown,
+                                    logicalOperationId = task.request.requestId,
+                                    status = TutorMessageStatus.SUCCEEDED,
+                                    createdAtEpochMillis = current.updatedAtEpochMillis,
+                                    completedAtEpochMillis = current.updatedAtEpochMillis,
+                                    errorCode = null,
+                                ),
+                            )
+                        }
+                        current.status in setOf(
+                            ModelTaskStatus.RETRYABLE_FAILURE,
+                            ModelTaskStatus.PERMANENT_FAILURE,
+                            ModelTaskStatus.CANCELLED,
+                        ) -> {
+                            terminalHandled = true
+                            conversations.appendAssistantMessage(
+                                AppendTutorAssistantMessageCommand(
+                                    conversationId = conversationId,
+                                    messageId = "tutor-message:${UUID.randomUUID()}",
+                                    ordinal = assistantOrdinal,
+                                    replyToMessageId = replyTo?.messageId,
+                                    bodyMarkdown = "这次回复没有准备好，你的消息已经保留。",
+                                    logicalOperationId = task.request.requestId,
+                                    status = TutorMessageStatus.FAILED,
+                                    createdAtEpochMillis = current.updatedAtEpochMillis,
+                                    completedAtEpochMillis = current.updatedAtEpochMillis,
+                                    errorCode = current.failure?.code?.name,
+                                ),
+                            )
+                        }
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (e: Exception) {
+                android.util.Log.e("TutorLobby", "Failed to resume stalled reply", e)
+                sendError = appFailure(
+                    code = AppFailureCode.NETWORK_UNAVAILABLE,
+                    title = "暂时没有恢复成功",
+                    message = "这条回复还没有完成，可以再试一次。",
+                    dataPreserved = true,
+                    retryability = Retryability.RETRYABLE,
+                    primaryAction = ActionType.RETRY,
+                )
+            } finally {
+                resumingTaskId = null
+            }
+        }
+    }
+
     fun startMessage(message: String, approvedAtEpochMillis: Long) {
         val currentProvider = provider
         if (currentProvider == null || !currentProvider.supports(ModelTaskKind.TUTOR_LOBBY)) {
@@ -203,26 +284,27 @@ internal fun TutorLobbyRoute(
         sendInFlight = true
         val occurredAt = System.currentTimeMillis()
         val currentConversationId = activeConversationId
-        if (currentConversationId.isNotBlank()) {
-            scope.launch {
-                conversations.clearDraft(
-                    ClearTutorConversationDraftCommand(
-                        conversationId = currentConversationId,
-                        occurredAtEpochMillis = occurredAt,
-                    ),
-                )
-            }
-        }
-        val studentOrdinal = (conversationSnapshot?.conversation?.lastTurnOrdinal ?: 0) + 1
-        val assistantOrdinal = studentOrdinal + 1
-        val logicalTurnOrdinal = ((conversationSnapshot?.conversation?.lastTurnOrdinal ?: 0) / 2) + 1
 
         draft = ""
         sendError = null
 
         scope.launch {
             try {
-                val conversationId = if (currentConversationId.isBlank()) {
+                // 活跃会话可能已被用户从历史页删除：先确认存在，不存在则静默
+                // 开新会话，消息照常发出——而不是向外键冲突抛错、谎称已保留。
+                val freshSnapshot = currentConversationId.takeIf { it.isNotBlank() }?.let {
+                    runCatching {
+                        conversations.observeConversation(it).first()
+                    }.getOrNull()
+                }
+                val conversationId: String
+                val lastTurnOrdinal: Int
+                val freshMessages: List<TutorMessage>
+                if (freshSnapshot != null) {
+                    conversationId = currentConversationId
+                    lastTurnOrdinal = freshSnapshot.conversation.lastTurnOrdinal
+                    freshMessages = freshSnapshot.messages
+                } else {
                     val created = conversations.createConversation(
                         CreateTutorConversationCommand(
                             conversationId = "tutor-conv:${UUID.randomUUID()}",
@@ -233,11 +315,22 @@ internal fun TutorLobbyRoute(
                             createdAtEpochMillis = occurredAt,
                         ),
                     )
-                    activeConversationId = created.conversationId
-                    created.conversationId
-                } else {
-                    currentConversationId
+                    conversationId = created.conversationId
+                    lastTurnOrdinal = created.lastTurnOrdinal
+                    freshMessages = emptyList()
+                    activeConversationId = conversationId
                 }
+                scope.launch {
+                    conversations.clearDraft(
+                        ClearTutorConversationDraftCommand(
+                            conversationId = conversationId,
+                            occurredAtEpochMillis = occurredAt,
+                        ),
+                    )
+                }
+                val studentOrdinal = lastTurnOrdinal + 1
+                val assistantOrdinal = studentOrdinal + 1
+                val logicalTurnOrdinal = (lastTurnOrdinal / 2) + 1
                 val messageId = "tutor-message:${UUID.randomUUID()}"
                 val logicalOperationId = "tutor-lobby-op:${UUID.randomUUID()}"
                 val studentMessage = conversations.appendStudentMessage(
@@ -255,7 +348,7 @@ internal fun TutorLobbyRoute(
                     conversationId = conversationId,
                     messageOrdinal = logicalTurnOrdinal,
                     studentMessage = message,
-                    priorMessages = conversationMessages.toLobbyHistory(),
+                    priorMessages = freshMessages.toLobbyHistory(),
                     occurredAtEpochMillis = occurredAt,
                     approvedAtEpochMillis = approvedAtEpochMillis,
                 )
@@ -400,6 +493,32 @@ internal fun TutorLobbyRoute(
                     message = message,
                     modifier = Modifier.padding(top = 12.dp),
                 )
+            }
+            if (stalledTask != null && resumingTaskId == null && !sendInFlight) {
+                item(key = "lobby-stalled") {
+                    Column(Modifier.padding(top = 12.dp)) {
+                        Text(
+                            text = "上一条回复没有完成",
+                            color = InkSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        OutlineActionChip(
+                            text = "继续回复",
+                            onClick = ::resumeStalledTask,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .testTag("tutor_lobby_resume"),
+                        )
+                    }
+                }
+            }
+            if (resumingTaskId != null) {
+                item(key = "lobby-resuming") {
+                    TutorPrompt(
+                        text = "正在回复…",
+                        modifier = Modifier.padding(top = 10.dp),
+                    )
+                }
             }
             if (sendInFlight) {
                 item(key = "lobby-sending") {

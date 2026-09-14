@@ -406,6 +406,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                     throw cancelled
                                 } catch (_: Exception) {
                                     // The shared repository snapshot exposes the fail-closed error state.
+                                    // 顺手刷一次数据：瞬时错误恢复后 ERROR 清除、概览回到真实状态。
+                                    runCatching { repository.refresh() }
                                 }
                             }
                         },
@@ -547,6 +549,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                 LibraryRoute(
                     entries = experience.catalog,
                     catalogRepository = application.libraryCatalogRepository,
+                    mistakeDetailRepository = application.mistakeDetailRepository,
                     onCapture = { navController.navigate(Routes.CaptureLibrary) },
                     onBatchImport = { navController.navigate(Routes.BatchImport) },
                     onExportVisible = { entryIds ->

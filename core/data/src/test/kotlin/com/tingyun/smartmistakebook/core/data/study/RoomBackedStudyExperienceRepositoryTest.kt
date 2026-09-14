@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
+import com.tingyun.smartmistakebook.core.database.dao.ArchivedEntrySummaryRow
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
@@ -1682,7 +1683,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun restoreErrorBookEntry(entryId: String, at: Long): Boolean =
         error("restore is outside this study-repository fake")
 
-    override fun observeArchivedErrorBookEntries(): Flow<List<String>> = flowOf(emptyList())
+    override fun observeArchivedErrorBookEntries(): Flow<List<ArchivedEntrySummaryRow>> =
+        flowOf(emptyList())
 
     override fun observeModelTask(requestId: String): Flow<ModelTaskSnapshot?> =
         MutableStateFlow(null)
@@ -2156,6 +2158,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         MutableStateFlow(emptyList())
 
     override suspend fun readSplitImportJob(jobId: String): SplitImportJobRecord? = null
+
+    override suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord? = null
 
     override suspend fun createSplitImportJob(
         command: CreateSplitImportJobCommand,

@@ -30,6 +30,7 @@ import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
@@ -67,8 +68,11 @@ fun SavedMistakeTutorRoute(
     interactions: TutorInteractionRepository,
     /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
     conversations: TutorConversationRepository? = null,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory? = null,
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit,
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
@@ -132,10 +136,13 @@ fun SavedMistakeTutorRoute(
                 modelTasks = modelTasks,
                 interactions = interactions,
                 conversations = conversations,
+                catalogEntries = catalogEntries,
                 profile = profile,
                 learningMemory = learningMemory,
                 relatedKnowledgeNodeIds = requireNotNull(organization).knowledgeNodeIds,
                 reviewedTeachingReferences = teachingReferences,
+                onOpenMistakeNotebook = onOpenMistakeNotebook,
+                onOpenProfile = onOpenProfile,
                 onOpenModelSettings = onOpenModelSettings,
                 onBack = onBack,
                 onRecordTeachingFocus = onRecordTeachingFocus,
@@ -186,10 +193,13 @@ internal fun SavedMistakeTutorContent(
     interactions: TutorInteractionRepository,
     /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
     conversations: TutorConversationRepository? = null,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory?,
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit = {},
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
@@ -305,6 +315,9 @@ internal fun SavedMistakeTutorContent(
         modelTasks = modelTasks,
         interactions = interactions,
         conversations = conversations,
+        catalogEntries = catalogEntries,
+        onOpenMistakeNotebook = onOpenMistakeNotebook,
+        onOpenProfile = onOpenProfile,
         onOpenModelSettings = onOpenModelSettings,
         clock = clock,
         headerContent = {

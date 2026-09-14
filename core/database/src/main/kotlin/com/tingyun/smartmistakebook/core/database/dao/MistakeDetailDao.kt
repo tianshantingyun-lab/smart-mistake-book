@@ -46,6 +46,12 @@ internal data class EntryRevisionRow(
     val currentRevisionId: String,
 )
 
+/** 归档条目摘要（id+标题）：错题本"已移出"入口的展示与恢复都要用。 */
+data class ArchivedEntrySummaryRow(
+    val entryId: String,
+    val title: String,
+)
+
 internal data class MistakeDetailSourceAssetRow(
     val role: String,
     @ColumnInfo(name = "source_asset_id")
@@ -169,15 +175,18 @@ internal abstract class MistakeDetailDao {
 
     @Query(
         """
-        SELECT entry_id
-        FROM error_book_entry
-        WHERE status = 'ARCHIVED'
-        ORDER BY updated_at_epoch_millis DESC
+        SELECT catalog.entry_id AS entryId, revision.title AS title
+        FROM error_book_entry AS catalog
+        JOIN problem_revision AS revision
+          ON revision.problem_id = catalog.problem_id
+         AND revision.revision_id = catalog.current_revision_id
+        WHERE catalog.status = 'ARCHIVED'
+        ORDER BY catalog.updated_at_epoch_millis DESC
         """,
     )
-    protected abstract fun observeArchivedEntryIds(): Flow<List<String>>
+    protected abstract fun observeArchivedEntryIds(): Flow<List<ArchivedEntrySummaryRow>>
 
-    open fun archivedEntries(): Flow<List<String>> = observeArchivedEntryIds()
+    open fun archivedEntries(): Flow<List<ArchivedEntrySummaryRow>> = observeArchivedEntryIds()
 
     @Query(
         """

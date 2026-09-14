@@ -41,6 +41,22 @@ internal class CaptureDraftStateCommands(
         clearWorkspace()
     }
 
+    /**
+     * Full reset behind "再录一道": the ViewModel workflow must leave SAVED too,
+     * or the next import is rejected by the state machine and the stale
+     * savedEntryId trips its init require (phase != SAVED).
+     */
+    fun resetForNextCapture(workflowReset: () -> Unit) {
+        resetDraft()
+        state.captureError = null
+        state.replacementCandidateUri = null
+        state.replacementInputSourceName = null
+        state.replacementRequestId = null
+        state.replacementOccurredAtEpochMillis = null
+        state.replacementError = null
+        workflowReset()
+    }
+
     fun applyWorkspace(restored: CaptureWorkspaceLocalSnapshot) {
         val effectiveState = parseOutput()?.capturedDocument?.let {
             restored.state.adoptModelCandidateIfPristine(it)
@@ -143,7 +159,10 @@ internal class CaptureDraftStateCommands(
         state.assessmentSourceAssetId = null
         state.assessmentOccurredAtEpochMillis = null
         state.assessmentRetryNonce = 0
+        state.userHint = ""
         state.splitRetryNonce = 0
+        state.manualSplitNonce = 0
+        state.splitPendingChoice = false
         state.splitError = null
         state.assessmentSnapshot = null
         state.pendingAssessmentRecoveryRequest = null

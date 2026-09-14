@@ -937,9 +937,11 @@ class RoomBackedStudyExperienceRepository(
     }
 
     private fun publishFailure(failure: Throwable) {
+        // 状态行向学生承诺"不会用空白结果替代已有记录"：ERROR 时保留最近一次
+        // 复习概览（含旧队列展示），只标记投影不再是最新的。
         _snapshot.value = _snapshot.value.copy(
             status = StudyDataStatus.ERROR,
-            review = StudyReviewOverview(),
+            review = _snapshot.value.review,
             profile = _snapshot.value.profile.copy(projectionIsCurrent = false),
             tutorPracticeUnitId = null,
             tutorDecision = null,

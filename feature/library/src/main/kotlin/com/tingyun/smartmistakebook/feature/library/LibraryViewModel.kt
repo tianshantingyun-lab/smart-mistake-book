@@ -244,6 +244,43 @@ internal class LibraryViewModel(
         }
     }
 
+    /**
+     * 导出候选必须与筛选结果同一口径：按当前筛选拉全量 id（上限内），
+     * 而不是 Paging 已加载的子集——否则按钮承诺的道数和导出文件不一致。
+     * 超出 [maxCount] 时返回空列表，由导出页提示缩小范围。
+     */
+    suspend fun collectExportCandidateIds(maxCount: Int): List<String> {
+        val repository = catalogRepository
+            ?: return uiState.visibleMistakes
+                .map { it.id }
+                .take(maxCount)
+        val domainQuery = LibraryQuery(
+            searchText = uiState.query,
+            subjectId = uiState.selections.subject,
+            sectionId = uiState.selections.chapter,
+            knowledgePointId = uiState.selections.knowledge,
+            masteryId = uiState.selections.mastery,
+        )
+        val total = repository.totalCount(domainQuery)
+        if (total == 0 || total > maxCount) return emptyList()
+        val ids = ArrayList<String>(total)
+        val pageSize = 200
+        while (ids.size < total) {
+            val page = repository.query(
+                query = domainQuery,
+                offset = ids.size,
+                limit = minOf(pageSize, total - ids.size),
+            )
+            if (page.items.isEmpty()) break
+            ids += page.items.map { it.entryId }
+        }
+        return ids
+    }
+
+    fun exportVisible(maxCount: Int, onResult: (List<String>) -> Unit) {
+        viewModelScope.launch { onResult(collectExportCandidateIds(maxCount)) }
+    }
+
     private companion object {
         const val QUERY_KEY = "library_query"
         const val ACTIVE_FACET_KEY = "library_active_facet"

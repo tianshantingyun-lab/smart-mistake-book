@@ -24,10 +24,41 @@ import org.junit.Test
 class CaptureDraftLifecyclePolicyTest {
     @Test
     fun resumeSkipsReloadWhenTheSameDraftImageIsAlreadyOnScreen() {
-        assertTrue(captureResumeShouldSkipLoad("draft-1", "draft-1", "file:///a.jpg"))
-        assertFalse(captureResumeShouldSkipLoad("draft-1", "draft-1", null))
-        assertFalse(captureResumeShouldSkipLoad("draft-1", "draft-2", "file:///a.jpg"))
+        assertTrue(
+            captureResumeShouldSkipLoad(
+                "draft-1",
+                "draft-1",
+                "file:///a.jpg",
+                listOf(sourcePageFixture()),
+            ),
+        )
+        assertFalse(
+            captureResumeShouldSkipLoad("draft-1", "draft-1", null, listOf(sourcePageFixture())),
+        )
+        assertFalse(
+            captureResumeShouldSkipLoad("draft-1", "draft-2", "file:///a.jpg", emptyList()),
+        )
     }
+
+    @Test
+    fun resumeDoesNotSkipWhenSourcePagesWereNeverRehydrated() {
+        // Rotation / settings detour: the Saver keeps draftId + image uri but
+        // never sourcePages; skipping here would strand the in-progress draft.
+        assertFalse(
+            captureResumeShouldSkipLoad("draft-1", "draft-1", "file:///a.jpg", emptyList()),
+        )
+    }
+
+    private fun sourcePageFixture() = CaptureSourcePage(
+        pageIndex = 0,
+        imageUri = "file:///a.jpg",
+        sourceAssetId = "asset-1",
+        sourceAssetSha256 = "a".repeat(64),
+        width = 10,
+        height = 10,
+        byteSize = 100,
+        createdAtEpochMillis = 1,
+    )
 
     @Test
     fun resumeAfterLoadDistinguishesMissingFailureAndTutorRedirect() {

@@ -2,9 +2,11 @@ package com.tingyun.smartmistakebook.feature.capture
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +30,7 @@ import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
+import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -45,7 +48,10 @@ internal fun CaptureModelTaskCard(
     onRetake: () -> Unit = {},
     onAddPage: () -> Unit = {},
     splitInProgress: Boolean = false,
+    splitPendingChoice: Boolean = false,
     splitError: String? = null,
+    onAutoSplit: () -> Unit = {},
+    onManualSplit: () -> Unit = {},
     onRetrySplit: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -137,6 +143,38 @@ internal fun CaptureModelTaskCard(
                     .padding(top = 10.dp)
                     .testTag("capture_model_retake_button"),
             )
+        }
+        if (assessmentDecision == CaptureAssessmentDecision.SPLIT &&
+            splitPendingChoice &&
+            !splitInProgress
+        ) {
+            Text(
+                text = "这一页里有多道题。可以让应用自动按题拆开，也可以自己在图上框出每道题的范围。",
+                modifier = Modifier.padding(top = 8.dp),
+                color = InkSecondary,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Row(
+                modifier = Modifier.padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                PrimaryActionButton(
+                    text = "自动拆分",
+                    onClick = onAutoSplit,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp)
+                        .testTag("capture_split_auto_button"),
+                )
+                OutlineActionChip(
+                    text = "手动框选",
+                    onClick = onManualSplit,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(46.dp)
+                        .testTag("capture_split_manual_button"),
+                )
+            }
         }
         if (assessmentDecision == CaptureAssessmentDecision.SPLIT && splitError != null) {
             OutlineActionChip(

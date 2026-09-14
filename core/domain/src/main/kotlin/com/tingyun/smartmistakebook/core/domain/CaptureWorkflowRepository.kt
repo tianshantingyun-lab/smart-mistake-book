@@ -400,6 +400,8 @@ data class CaptureDraftSplitResult(
     val created: Boolean,
     val replacedDraftId: String,
     val splitDrafts: List<CaptureDraftSummary>,
+    /** Split-import review job carrying the cut drafts; null when unregistered. */
+    val splitJobId: String? = null,
 ) {
     init {
         require(replacedDraftId.isNotBlank()) { "Replaced split draft id must not be blank" }
@@ -409,6 +411,15 @@ data class CaptureDraftSplitResult(
         }
     }
 }
+
+/** One auto-split region to turn into an openable draft (batch import path). */
+data class SplitRegionDraftsRequest(
+    val requestId: String,
+    val sourceAssetId: String,
+    val regions: List<NormalizedSourceRegion>,
+    val origin: CaptureEntryOrigin,
+    val occurredAtEpochMillis: Long,
+)
 
 data class AppendCaptureDraftPageRequest(
     val requestId: String,
@@ -619,6 +630,15 @@ interface CaptureWorkflowRepository {
     suspend fun replaceDraft(request: ReplaceCaptureDraftRequest): CaptureDraftSummary
 
     suspend fun splitDraft(request: SplitCaptureDraftRequest): CaptureDraftSplitResult
+
+    /**
+     * Pre-creates cropped per-region drafts for an auto-split page so the
+     * split-review job can link each question to an openable draft. Returns
+     * summaries in region order; repositories that cannot split return empty.
+     */
+    suspend fun createSplitRegionDrafts(
+        request: SplitRegionDraftsRequest,
+    ): List<CaptureDraftSummary> = emptyList()
 
     suspend fun confirmForTutoring(
         request: ConfirmCapturedProblemRequest,

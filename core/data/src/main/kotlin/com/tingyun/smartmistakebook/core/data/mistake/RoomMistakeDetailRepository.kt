@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.database.MistakeDetailRecord
 import com.tingyun.smartmistakebook.core.database.MistakeDetailSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRevisionSummaryRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.domain.ArchivedMistakeRef
 import com.tingyun.smartmistakebook.core.domain.MistakeDetail
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailIdentity
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
@@ -26,6 +27,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
@@ -46,7 +48,7 @@ internal fun interface MistakeRestorer {
 }
 
 internal fun interface ArchivedObserver {
-    fun observe(): Flow<List<String>>
+    fun observe(): Flow<List<com.tingyun.smartmistakebook.core.domain.ArchivedMistakeRef>>
 }
 
 internal fun interface ExactMistakeDetailRecordReader {
@@ -93,7 +95,7 @@ internal class RoomMistakeDetailRepository(
         return restorer.restore(entryId, at)
     }
 
-    override fun observeArchived(): Flow<List<String>> = archivedObserver.observe()
+    override fun observeArchived(): Flow<List<ArchivedMistakeRef>> = archivedObserver.observe()
     override suspend fun updateUserNote(
         entryId: String,
         note: String?,
@@ -283,7 +285,13 @@ object MistakeDetailRepositoryFactory {
             noteWriter = MistakeNoteWriter(database::updateErrorBookEntryNote),
             archiver = MistakeArchiver(database::archiveErrorBookEntry),
             restorer = MistakeRestorer(database::restoreErrorBookEntry),
-            archivedObserver = ArchivedObserver(database::observeArchivedErrorBookEntries),
+            archivedObserver = ArchivedObserver {
+                database.observeArchivedErrorBookEntries().map { rows ->
+                    rows.map { row ->
+                        ArchivedMistakeRef(entryId = row.entryId, title = row.title)
+                    }
+                }
+            },
         )
     }
 }

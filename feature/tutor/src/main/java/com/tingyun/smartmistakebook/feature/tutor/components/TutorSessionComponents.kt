@@ -155,7 +155,9 @@ internal fun TutorTaskContent(
             modifier = modifier,
             actionLabel = if (
                 !interactionEnabled || !executionMatchesCurrentProvider ||
-                (task.status != ModelTaskStatus.RETRYABLE_FAILURE && !requiresModelSettings)
+                (task.status != ModelTaskStatus.RETRYABLE_FAILURE &&
+                    task.status != ModelTaskStatus.PERMANENT_FAILURE &&
+                    !requiresModelSettings)
             ) {
                 null
             } else if (requiresModelSettings) {

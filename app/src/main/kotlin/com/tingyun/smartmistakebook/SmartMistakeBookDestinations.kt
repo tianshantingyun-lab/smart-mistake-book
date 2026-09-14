@@ -336,6 +336,13 @@ internal fun SavedMistakeTutorDestination(
             interactions = application.tutorInteractionRepository,
             // 学生文字要落进 tutor_message，写侧门控才能逐字核对模型引文（纯文字作答同理）。
             conversations = application.tutorConversationRepository,
+            catalogEntries = experience.catalog,
+            onOpenMistakeNotebook = {
+                navController.navigate(Routes.Library) { launchSingleTop = true }
+            },
+            onOpenProfile = {
+                navController.navigate(Routes.Profile) { launchSingleTop = true }
+            },
             onRecordTeachingFocus = { sessionId, practiceUnitId, labels ->
                 application.applicationScope.launch {
                     runCatching {

@@ -56,7 +56,11 @@ internal class CaptureScreenState {
     var assessmentSourceAssetId: String? by mutableStateOf(null)
     var assessmentOccurredAtEpochMillis: Long? by mutableStateOf(null)
     var assessmentRetryNonce: Int by mutableStateOf(0)
+    var userHint: String by mutableStateOf("")
     var splitRetryNonce: Int by mutableStateOf(0)
+    var manualSplitNonce: Int by mutableStateOf(0)
+    /** 评估判 SPLIT 后等待用户选择"自动拆分 / 手动框选"。 */
+    var splitPendingChoice: Boolean by mutableStateOf(false)
     var splitError: String? by mutableStateOf(null)
     var selectedSourcePageIndex: Int by mutableStateOf(0)
     var parseRequestId: String? by mutableStateOf(null)
@@ -121,7 +125,10 @@ internal class CaptureScreenState {
         "assessmentSourceAssetId" to assessmentSourceAssetId,
         "assessmentOccurredAtEpochMillis" to assessmentOccurredAtEpochMillis,
         "assessmentRetryNonce" to assessmentRetryNonce,
+        "userHint" to userHint,
         "splitRetryNonce" to splitRetryNonce,
+        "manualSplitNonce" to manualSplitNonce,
+        "splitPendingChoice" to splitPendingChoice,
         "splitError" to splitError,
         "selectedSourcePageIndex" to selectedSourcePageIndex,
         "parseRequestId" to parseRequestId,
@@ -161,7 +168,10 @@ internal class CaptureScreenState {
         assessmentSourceAssetId = saved["assessmentSourceAssetId"] as String?
         assessmentOccurredAtEpochMillis = saved["assessmentOccurredAtEpochMillis"] as Long?
         assessmentRetryNonce = saved["assessmentRetryNonce"] as Int
+        userHint = saved["userHint"] as String? ?: ""
         splitRetryNonce = saved["splitRetryNonce"] as Int
+        manualSplitNonce = saved["manualSplitNonce"] as Int
+        splitPendingChoice = saved["splitPendingChoice"] as Boolean
         splitError = saved["splitError"] as String?
         selectedSourcePageIndex = saved["selectedSourcePageIndex"] as Int
         parseRequestId = saved["parseRequestId"] as String?

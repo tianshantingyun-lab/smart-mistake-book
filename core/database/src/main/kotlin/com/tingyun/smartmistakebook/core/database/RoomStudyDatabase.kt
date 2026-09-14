@@ -5,6 +5,7 @@ import androidx.room3.RoomRawQuery
 import androidx.room3.withReadTransaction
 import androidx.room3.withWriteTransaction
 import com.tingyun.smartmistakebook.core.database.dao.MistakeRow
+import com.tingyun.smartmistakebook.core.database.dao.ArchivedEntrySummaryRow
 import com.tingyun.smartmistakebook.core.database.dao.CanonicalSourceAssetRow
 import com.tingyun.smartmistakebook.core.database.dao.ReviewLogSampleProjection
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeQuestionLatticeView
@@ -222,6 +223,11 @@ internal class RoomStudyDatabase(
     override suspend fun readSplitImportJob(jobId: String): SplitImportJobRecord? {
         require(jobId.isNotBlank())
         return splitImports.read(jobId)
+    }
+
+    override suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord? {
+        require(batchJobId.isNotBlank())
+        return splitImports.readLatestReadyBatchSplitJob(batchJobId)
     }
 
     override suspend fun createSplitImportJob(
@@ -1316,7 +1322,7 @@ internal class RoomStudyDatabase(
             changed
         }
 
-    override fun observeArchivedErrorBookEntries(): Flow<List<String>> =
+    override fun observeArchivedErrorBookEntries(): Flow<List<ArchivedEntrySummaryRow>> =
         database.mistakeDetailDao().archivedEntries()
 }
 
