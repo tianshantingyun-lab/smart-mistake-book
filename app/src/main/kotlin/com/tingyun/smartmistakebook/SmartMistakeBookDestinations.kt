@@ -20,6 +20,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
 import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
 import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlement
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementStatus
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.NetworkMode
@@ -68,7 +69,7 @@ internal fun ReviewSessionDestination(
         experience.review.scheduledPracticeUnitIds,
         displayedSessionId,
     ) {
-        if (experience.status != StudyDataStatus.READY) {
+        if (experience.status != StudyDataStatus.READY || displayedSessionId != null) {
             return@LaunchedEffect
         }
         val activeSessionId = experience.review.activeSessionId
@@ -81,23 +82,11 @@ internal fun ReviewSessionDestination(
             activeSessionVersion != null &&
             activePracticeUnitId != null
         ) {
-            // 对账（第2条）：讲题页里完成的判定结算也会推进同一个会话，这里必须跟上，
-            // 否则屏幕会拿着过期的 version/ordinal，下一次提交必撞 CAS。
-            // 原先只在首轮读一次 experience.review，所以只在页内自推进时才更新。
-            val queueSizeNow = experience.review.scheduledPracticeUnitIds.size
-            if (
-                displayedSessionId != activeSessionId ||
-                displayedSessionVersion != activeSessionVersion ||
-                displayedPracticeUnitId != activePracticeUnitId ||
-                displayedOrdinal != activeOrdinal ||
-                displayedQueueSize != queueSizeNow
-            ) {
-                displayedSessionId = activeSessionId
-                displayedSessionVersion = activeSessionVersion
-                displayedPracticeUnitId = activePracticeUnitId
-                displayedOrdinal = activeOrdinal
-                displayedQueueSize = queueSizeNow
-            }
+            displayedSessionId = activeSessionId
+            displayedSessionVersion = activeSessionVersion
+            displayedPracticeUnitId = activePracticeUnitId
+            displayedOrdinal = activeOrdinal
+            displayedQueueSize = experience.review.scheduledPracticeUnitIds.size
         } else {
             val restoredReviewRoot = navController.popBackStack(Routes.Review, false)
             if (!restoredReviewRoot) {
@@ -146,50 +135,6 @@ internal fun ReviewSessionDestination(
         )
     }
 
-    // 讲题判定的自动结算（第2条）：这道无工件题在讲题页被检查过之后，把判定落成 attempt
-    // 并推进队列。幂等（同一队列项只结算一次），没有判定时是 no-op，所以每次进入/账本
-    // 变化都可以放心地试一次；成功推进后上面的对账会把显示推进到下一项。
-    // 有机判工件的题不走这条通道（研究 §4(iii)8：可机器判分的题必须走客观通道）。
-    LaunchedEffect(
-        experience.status,
-        displayedSessionId,
-        displayedSessionVersion,
-        displayedPracticeUnitId,
-        displayedOrdinal,
-        artifactLoad.isLoaded,
-        artifactLoad.artifact,
-    ) {
-        if (experience.status != StudyDataStatus.READY) return@LaunchedEffect
-        val settleSessionId = displayedSessionId ?: return@LaunchedEffect
-        val settleVersion = displayedSessionVersion ?: return@LaunchedEffect
-        val settlePracticeUnitId = displayedPracticeUnitId ?: return@LaunchedEffect
-        val settleOrdinal = displayedOrdinal ?: return@LaunchedEffect
-        // 只有在"这道题没有机判选项"时才走讲题判定通道：机判项的答案必须走客观通道
-        // （研究 §4(iii)8）。无工件题（captured 分支）与有工件但无 assessment item 的
-        // 题（ReviewSessionScreen 的「去讲题判定」分支）都满足这个条件。
-        val hasMachineCheckableItem =
-            artifactLoad.artifact?.assessmentItems?.singleOrNull() != null
-        if (!artifactLoad.isLoaded ||
-            artifactLoad.practiceUnitId != settlePracticeUnitId ||
-            hasMachineCheckableItem
-        ) {
-            return@LaunchedEffect
-        }
-        runCatching {
-            repository.settleTutorJudgedReview(
-                TutorJudgedReviewSettlement(
-                    requestId = "tutor-judged-settle:$settleSessionId:$settleOrdinal",
-                    sessionId = settleSessionId,
-                    expectedStateVersion = settleVersion,
-                    practiceUnitId = settlePracticeUnitId,
-                    presentationId = "presentation:tutor-judged:$settleSessionId:$settleOrdinal",
-                    occurredAtEpochMillis = System.currentTimeMillis(),
-                ),
-            )
-        }
-    }
-
-
     val sessionId = displayedSessionId
     val sessionVersion = displayedSessionVersion
     val practiceUnitId = displayedPracticeUnitId
@@ -218,6 +163,59 @@ internal fun ReviewSessionDestination(
             navController.popBackStack(Routes.Review, false)
         }
     }
+
+    // 讲题判定的自动结算（第2条）：这道无工件题在讲题页被检查过之后，把判定落成 attempt
+    // 并推进队列。幂等（同一队列项只结算一次），没有判定时是 no-op，所以每次进入/账本
+    // 变化都可以放心地试一次。
+    //
+    // 推进**用结算自己的结果**（result 就是 StudyReviewAdvanceResult），不走"从 experience
+    // 快照对账"：快照要等账本/投影 Flow 才更新，照抄它会把刚推进的显示倒回上一题，或者
+    // 在它短暂重建时把整页弹走（RootExperience 的
+    // submittedReviewItemIsAlreadyAdvancedWhenUserLeavesBeforeNext 就是被这个坑红的）。
+    // 有机判工件的题不走这条通道（研究 §4(iii)8：可机器判分的题必须走客观通道）。
+    LaunchedEffect(
+        experience.status,
+        displayedSessionId,
+        displayedSessionVersion,
+        displayedPracticeUnitId,
+        displayedOrdinal,
+        artifactLoad.isLoaded,
+        artifactLoad.artifact,
+    ) {
+        if (experience.status != StudyDataStatus.READY) return@LaunchedEffect
+        val settleSessionId = displayedSessionId ?: return@LaunchedEffect
+        val settleVersion = displayedSessionVersion ?: return@LaunchedEffect
+        val settlePracticeUnitId = displayedPracticeUnitId ?: return@LaunchedEffect
+        val settleOrdinal = displayedOrdinal ?: return@LaunchedEffect
+        // 只有在"这道题没有机判选项"时才走讲题判定通道：机判项的答案必须走客观通道
+        // （研究 §4(iii)8）。无工件题（captured 分支）与有工件但无 assessment item 的
+        // 题（ReviewSessionScreen 的「去讲题判定」分支）都满足这个条件。
+        val hasMachineCheckableItem =
+            artifactLoad.artifact?.assessmentItems?.singleOrNull() != null
+        if (!artifactLoad.isLoaded ||
+            artifactLoad.practiceUnitId != settlePracticeUnitId ||
+            hasMachineCheckableItem
+        ) {
+            return@LaunchedEffect
+        }
+        val result = runCatching {
+            repository.settleTutorJudgedReview(
+                TutorJudgedReviewSettlement(
+                    requestId = "tutor-judged-settle:$settleSessionId:$settleOrdinal",
+                    sessionId = settleSessionId,
+                    expectedStateVersion = settleVersion,
+                    practiceUnitId = settlePracticeUnitId,
+                    presentationId = "presentation:tutor-judged:$settleSessionId:$settleOrdinal",
+                    occurredAtEpochMillis = System.currentTimeMillis(),
+                ),
+            )
+        }.getOrNull()
+        if (result != null && result.status == TutorJudgedReviewSettlementStatus.RECORDED) {
+            stageReviewAdvance(result)
+        }
+    }
+
+
     when {
         destinationLifecycle != Lifecycle.State.RESUMED -> ReviewSessionGateMessage(
             "正在打开复习题…",

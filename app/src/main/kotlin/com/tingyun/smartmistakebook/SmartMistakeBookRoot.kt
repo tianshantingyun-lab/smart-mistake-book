@@ -3,7 +3,6 @@ package com.tingyun.smartmistakebook
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -56,7 +55,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.data.model.AttachedImageGeneratorFactory
-import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.currentCapabilityVerification
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
@@ -102,88 +100,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-internal object Routes {
-    const val Review = "review"
-    const val Tutor = "tutor"
-    const val Library = "library"
-    const val Profile = "profile"
-    const val ReviewSession = "review/session"
-    const val KnowledgeReviewSession = "review/knowledge-session"
-    const val CaptureTutor = "capture/tutor"
-    const val CaptureLibrary = "capture/library"
-    const val BatchImport = "capture/batch"
-    const val LibraryBatchExport = "library/export"
-    const val CaptureResume = "capture/resume/{draftId}"
-    const val SplitReview = "capture/split-review?jobId={jobId}"
-    const val CapturedTutorSession = "tutor/captured/{sessionId}"
-    const val TutorHistory = "tutor/history"
-    const val TutorTextConversation = "tutor/lobby/{conversationId}"
-    const val MistakeDetail = "mistake/{itemId}"
-    const val MistakeTutor = "mistake/tutor/{entryId}/{problemId}/{problemRevisionId}"
-    const val MistakeExport =
-        "mistake/export/{entryId}/{problemId}/{problemRevisionId}"
-    const val Capability = "settings/capability"
-    const val LearningMastery = "profile/learning-mastery"
-    const val Privacy = "settings/privacy"
-    const val Reminder = "settings/reminder"
-    const val Scheduling = "settings/scheduling"
-    const val Storage = "settings/storage"
-
-    fun mistakeDetail(itemId: String): String = "mistake/${Uri.encode(itemId)}"
-
-    fun mistakeExport(key: MistakeRevisionKey): String = listOf(
-        "mistake",
-        "export",
-        encodeRevisionArgument(key.entryId),
-        encodeRevisionArgument(key.problemId),
-        encodeRevisionArgument(key.problemRevisionId),
-    ).joinToString("/")
-
-    fun mistakeTutor(key: MistakeRevisionKey): String = listOf(
-        "mistake",
-        "tutor",
-        encodeRevisionArgument(key.entryId),
-        encodeRevisionArgument(key.problemId),
-        encodeRevisionArgument(key.problemRevisionId),
-    ).joinToString("/")
-
-    fun decodeMistakeExportKey(
-        entryId: String?,
-        problemId: String?,
-        problemRevisionId: String?,
-    ): MistakeRevisionKey? = runCatching {
-        MistakeRevisionKey(
-            entryId = Uri.decode(entryId.orEmpty()),
-            problemId = Uri.decode(problemId.orEmpty()),
-            problemRevisionId = Uri.decode(problemRevisionId.orEmpty()),
-        )
-    }.getOrNull()
-
-    // Navigation decodes a path argument once; keep one encoded layer for the explicit boundary decode.
-    private fun encodeRevisionArgument(value: String): String = Uri.encode(Uri.encode(value))
-
-    fun capturedTutorSession(sessionId: String): String = "tutor/captured/${Uri.encode(sessionId)}"
-
-    fun tutorTextConversation(conversationId: String): String =
-        "tutor/lobby/${Uri.encode(conversationId)}"
-
-    fun captureResume(draftId: String): String = "capture/resume/${Uri.encode(draftId)}"
-
-    fun splitReview(jobId: String?): String =
-        if (jobId.isNullOrBlank()) {
-            "capture/split-review"
-        } else {
-            "capture/split-review?jobId=${Uri.encode(jobId)}"
-        }
-}
-
-private data class RootDestination(
-    val route: String,
-    val label: String,
-    val icon: ImageVector,
-    val testTag: String,
-)
-
 internal data class TeachingArtifactLoad(
     val practiceUnitId: String? = null,
     val artifact: VerifiedTeachingArtifact? = null,
@@ -192,6 +108,13 @@ internal data class TeachingArtifactLoad(
     /** Spec §2.9: non-null when a prerequisite of this card is below ready. */
     val prerequisiteRemediation: PrerequisiteRemediation? = null,
     val isLoaded: Boolean = false,
+)
+
+private data class RootDestination(
+    val route: String,
+    val label: String,
+    val icon: ImageVector,
+    val testTag: String,
 )
 
 private val rootDestinations = listOf(
