@@ -81,7 +81,7 @@ class RealProviderProtocolTest {
     }
 
     @Test
-    fun tutorLobbyFlow_rejectsImagesInLobby() {
+    fun tutorLobbyFlow_sendsApprovedMessageImages() {
         MockWebServer().use { server ->
             server.enqueue(
                 MockResponse()
@@ -114,8 +114,8 @@ class RealProviderProtocolTest {
             val recorded = server.takeRequest()
             val sentBody = recorded.body.readUtf8()
 
-            // Lobby should not send images even if provided
-            assertFalse("Lobby should not contain image_url", sentBody.contains("\"type\":\"image_url\""))
+            // 学生确认后 Lobby 消息可以携带已授权的图片（附图能力开放）。
+            assertTrue("Lobby message should contain image_url", sentBody.contains("\"type\":\"image_url\""))
         }
     }
 

@@ -17,6 +17,8 @@ data class TutorLobbyInput(
     val messageOrdinal: Int,
     val studentMessage: String,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
+    /** 本条消息附带的图片（学生主动选择，最多 9 张）；空表示纯文字。 */
+    val sourceImageAssetRefs: List<CaptureSourceAssetRef> = emptyList(),
     /** Non-empty enables the tool protocol for this dispatch (spec §3.1). */
     val toolDeclarations: List<TutorToolName> = emptyList(),
     /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
@@ -27,6 +29,10 @@ data class TutorLobbyInput(
 
     override val subjectId: String
         get() = conversationId
+
+    /** 消息带图时要求 provider 具备图片输入能力（Lobby 不在 agent-eligible 集合内，此位只驱动能力门）。 */
+    override val requestsImageBytes: Boolean
+        get() = sourceImageAssetRefs.isNotEmpty()
 
     init {
         conversationId.requireSafeModelText(
@@ -40,6 +46,17 @@ data class TutorLobbyInput(
             TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS,
             true,
         )
+        require(sourceImageAssetRefs.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS) {
+            "Tutor lobby message carries too many images"
+        }
+        require(sourceImageAssetRefs.map { it.assetId }.distinct().size == sourceImageAssetRefs.size) {
+            "Tutor lobby message image ids must be unique"
+        }
+        require(
+            sourceImageAssetRefs.map { it.pageIndex } == sourceImageAssetRefs.indices.toList(),
+        ) {
+            "Tutor lobby message image order must be contiguous from zero"
+        }
         require(priorMessages.size <= TutorRespondInput.MAX_PRIOR_MESSAGES) {
             "Tutor lobby contains too many prior messages"
         }

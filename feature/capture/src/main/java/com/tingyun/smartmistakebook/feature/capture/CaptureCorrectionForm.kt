@@ -83,6 +83,8 @@ internal fun CaptureCorrectionForm(
         CaptureCandidateKind.NONE
     },
     candidateUsable: Boolean = transcription.isNotBlank(),
+    /** 本构建不连接模型：本题面来自本地识别，展示口径与模型结果区分。 */
+    manualEntry: Boolean = false,
     entryGateOpen: Boolean = true,
     entryGateMessage: String = "",
     initialEditorExpanded: Boolean = false,
@@ -100,7 +102,7 @@ internal fun CaptureCorrectionForm(
     structuredEditorState: CaptureWorkspaceUiState? = null,
     onStructuredBlockChange: (ContentBlock) -> Unit = {},
 ) {
-    if (!candidateUsable) return
+    if (!candidateUsable && !manualEntry) return
 
     var editorExpanded by rememberSaveable { mutableStateOf(initialEditorExpanded) }
     val editingEnabled = !isSaving && !isRetryLocked
@@ -121,12 +123,16 @@ internal fun CaptureCorrectionForm(
             )
             Column(Modifier.padding(start = 10.dp)) {
                 Text(
-                    text = "题面可以直接使用",
+                    text = if (manualEntry) "核对并整理题面" else "题面可以直接使用",
                     color = Ink,
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    text = "题面已整理好，可以直接继续",
+                    text = if (manualEntry) {
+                        "本地识别可能有误差，确认无误后录入。"
+                    } else {
+                        "题面已整理好，可以直接继续"
+                    },
                     color = InkSecondary,
                     style = MaterialTheme.typography.bodySmall,
                 )

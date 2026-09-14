@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.database.ConfirmTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.ConfirmTutorSessionFromWorkspaceCommand
 import com.tingyun.smartmistakebook.core.database.EndTutorSessionCommand
 import com.tingyun.smartmistakebook.core.database.EndTutorSessionResult
+import com.tingyun.smartmistakebook.core.database.TutorMessageSourceAssetRecord
 import com.tingyun.smartmistakebook.core.database.PersistTutorAnswerExposureCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.database.PersistTutorMoveCommand
@@ -76,6 +77,9 @@ interface TutorWritePort {
         conversationId: String,
         updatedAtEpochMillis: Long,
     )
+
+    /** 学生消息附图的引用行（按消息分组装配；无人引用的资产由孤儿清理回收）。 */
+    suspend fun readTutorMessageSourceAssets(messageIds: List<String>): List<TutorMessageSourceAssetRecord>
 }
 
 /**

@@ -28,11 +28,14 @@ class CaptureScreenModelGateInstrumentedTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun buildWithoutModelEgressShowsTheSetupCallToAction() {
+    fun buildWithoutModelEgressOffersManualEntryInsteadOfADeadEnd() {
+        // 面向发布的 strictOffline 构建：本地识别 + 手动整理即可入库，
+        // 不再显示一个点进去也配置不了的"去设置"引导。
         composeModelGate(egressAllowed = false)
 
-        composeRule.onNodeWithTag("capture_model_setup_block").assertExists()
-        composeRule.onAllNodesWithTag("capture_model_task_card").assertCountEquals(0)
+        composeRule.onNodeWithTag("capture_manual_entry_notice").assertExists()
+        composeRule.onNodeWithTag("capture_commit_button").assertExists()
+        composeRule.onAllNodesWithTag("capture_model_setup_block").assertCountEquals(0)
     }
 
     @Test

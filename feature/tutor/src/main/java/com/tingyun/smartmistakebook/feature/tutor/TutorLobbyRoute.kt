@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,27 +11,40 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.tingyun.smartmistakebook.core.domain.LobbyImageDisclosureStore
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
@@ -38,6 +52,7 @@ import com.tingyun.smartmistakebook.core.domain.AppendTutorAssistantMessageComma
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.ClearTutorConversationDraftCommand
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
+import com.tingyun.smartmistakebook.core.domain.MAX_TUTOR_MESSAGE_IMAGES
 import com.tingyun.smartmistakebook.core.domain.SaveTutorConversationDraftCommand
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
@@ -58,6 +73,7 @@ import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.Retryability
 import com.tingyun.smartmistakebook.core.model.appFailure
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
+import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
 import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
@@ -69,8 +85,12 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
-import androidx.compose.foundation.layout.size
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.draw.clip
+import androidx.core.content.FileProvider
+import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -78,6 +98,17 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.UUID
+
+/** 输入框附件预览：本地 uri + 学生选择来源（用于发送前的顺序保持）。 */
+internal data class PendingLobbyImage(
+    val localUri: String,
+)
+
+/** 首次附图说明确认期间暂存的待发送内容（确认后继续发送）。 */
+internal data class PendingImageSend(
+    val message: String,
+    val approvedAtEpochMillis: Long,
+)
 
 @Composable
 internal fun TutorLobbyRoute(
@@ -91,6 +122,8 @@ internal fun TutorLobbyRoute(
     modelTasks: ModelTaskRepository,
     catalogEntries: List<StudyCatalogEntry>,
     profile: StudyProfileOverview,
+    imageIntake: LobbyMessageImageIntake? = null,
+    imageDisclosureStore: LobbyImageDisclosureStore? = null,
     initialConversationId: String? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -146,6 +179,53 @@ internal fun TutorLobbyRoute(
         )
     }
     val hasActiveTask = stalledTask != null || sendInFlight || resumingTaskId != null
+
+    // 消息附图（学生裁定：加号打开"拍照/相册"二选一，一次最多 9 张）。
+    val context = LocalContext.current
+    var pendingImages by remember { mutableStateOf<List<PendingLobbyImage>>(emptyList()) }
+    var attachMenuOpen by remember { mutableStateOf(false) }
+    // 首次附图的披露说明确认中暂存的待发送内容（确认后继续发送）。
+    var disclosureConfirmOpen by remember { mutableStateOf(false) }
+    var pendingImageSend by remember { mutableStateOf<PendingImageSend?>(null) }
+    var pendingCameraImageUri by remember { mutableStateOf<String?>(null) }
+    val lobbyImageEnabled = imageIntake != null && imageDisclosureStore != null
+
+    fun remainingImageSlots(): Int = MAX_TUTOR_MESSAGE_IMAGES - pendingImages.size
+
+    fun addPendingImages(uris: List<String>) {
+        if (uris.isEmpty()) return
+        pendingImages = (pendingImages + uris.map { PendingLobbyImage(it) })
+            .take(MAX_TUTOR_MESSAGE_IMAGES)
+    }
+
+    val lobbyCameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { saved ->
+        val uri = pendingCameraImageUri
+        pendingCameraImageUri = null
+        if (saved && uri != null) {
+            addPendingImages(listOf(uri))
+        }
+    }
+    val lobbyGalleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(MAX_TUTOR_MESSAGE_IMAGES),
+    ) { selected ->
+        addPendingImages(selected.take(remainingImageSlots()).map { it.toString() })
+    }
+
+    fun launchLobbyCamera() {
+        val directory = File(context.cacheDir, "captured_images").apply {
+            if (!isDirectory) mkdirs()
+        }
+        val file = File(directory, "lobby-${UUID.randomUUID()}.jpg")
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.capture.fileprovider",
+            file,
+        )
+        pendingCameraImageUri = uri.toString()
+        lobbyCameraLauncher.launch(uri)
+    }
 
     LaunchedEffect(conversations) {
         if (activeConversationId.isNotBlank()) return@LaunchedEffect
@@ -280,16 +360,45 @@ internal fun TutorLobbyRoute(
             )
             return
         }
-        if (sendInFlight) return
+        if (sendInFlight || resumingTaskId != null) return
+        val sentImages = pendingImages
+        if (sentImages.isNotEmpty() && currentProvider.supportsImageInput != true) {
+            sendError = appFailure(
+                code = AppFailureCode.PROVIDER_CAPABILITY_MISMATCH,
+                title = "当前模型不支持看图",
+                message = "去掉图片或更换支持图片的模型后再发送。",
+                dataPreserved = true,
+                primaryAction = ActionType.OPEN_SETTINGS,
+            )
+            return
+        }
         sendInFlight = true
         val occurredAt = System.currentTimeMillis()
         val currentConversationId = activeConversationId
 
-        draft = ""
-        sendError = null
-
         scope.launch {
             try {
+                // 首次附图需要学生先看一次发送范围说明；确认后长期记住，不再询问。
+                val store = imageDisclosureStore
+                val intake = imageIntake
+                if (sentImages.isNotEmpty() && store != null && !store.isAcknowledged()) {
+                    pendingImageSend = PendingImageSend(message, approvedAtEpochMillis)
+                    disclosureConfirmOpen = true
+                    sendInFlight = false
+                    return@launch
+                }
+                draft = ""
+                sendError = null
+                // 发送时登记：图片字节进私有资产库并拿到 egress 证明所需的哈希/尺寸。
+                val imageAssets = if (sentImages.isNotEmpty() && intake != null) {
+                    sentImages.map { pending ->
+                        intake.registerImage(pending.localUri, System.currentTimeMillis())
+                    }
+                } else {
+                    emptyList()
+                }
+                // 纯图消息给一句可读的兜底文本（消息体不能为空）。
+                val effectiveMessage = message.ifBlank { "请帮我看看这些图片。" }
                 // 活跃会话可能已被用户从历史页删除：先确认存在，不存在则静默
                 // 开新会话，消息照常发出——而不是向外键冲突抛错、谎称已保留。
                 val freshSnapshot = currentConversationId.takeIf { it.isNotBlank() }?.let {
@@ -338,19 +447,22 @@ internal fun TutorLobbyRoute(
                         conversationId = conversationId,
                         messageId = messageId,
                         ordinal = studentOrdinal,
-                        bodyMarkdown = message,
+                        bodyMarkdown = effectiveMessage,
                         logicalOperationId = logicalOperationId,
                         createdAtEpochMillis = occurredAt,
+                        sourceImageAssetIds = imageAssets.map { it.assetId },
                     ),
                 )
+                pendingImages = emptyList()
                 val request = buildTutorLobbyRequest(
                     provider = currentProvider,
                     conversationId = conversationId,
                     messageOrdinal = logicalTurnOrdinal,
-                    studentMessage = message,
+                    studentMessage = effectiveMessage,
                     priorMessages = freshMessages.toLobbyHistory(),
                     occurredAtEpochMillis = occurredAt,
                     approvedAtEpochMillis = approvedAtEpochMillis,
+                    imageAssets = imageAssets,
                 )
 
                 var terminalHandled = false
@@ -431,7 +543,8 @@ internal fun TutorLobbyRoute(
 
     fun submitDraft() {
         val message = draft.trim()
-        if (message.isBlank() || hasActiveTask || sendInFlight) return
+        val hasImages = pendingImages.isNotEmpty()
+        if ((message.isBlank() && !hasImages) || hasActiveTask || sendInFlight) return
         startMessage(message, System.currentTimeMillis())
     }
 
@@ -491,6 +604,7 @@ internal fun TutorLobbyRoute(
             ) { message ->
                 TutorLobbyMessageItem(
                     message = message,
+                    imageIntake = imageIntake,
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
@@ -588,6 +702,23 @@ internal fun TutorLobbyRoute(
                 onSend = ::submitDraft,
                 placeholder = "输入题目、困惑，或说你现在想做什么",
                 enabled = !hasActiveTask && !sendInFlight,
+                onOpenAttachMenu = if (lobbyImageEnabled) {
+                    { attachMenuOpen = true }
+                } else {
+                    null
+                },
+                attachmentPreview = if (pendingImages.isNotEmpty()) {
+                    {
+                        PendingImagesRow(
+                            images = pendingImages,
+                            onRemove = { index ->
+                                pendingImages = pendingImages.filterIndexed { i, _ -> i != index }
+                            },
+                        )
+                    }
+                } else {
+                    null
+                },
                 modifier = Modifier
                     .widthIn(max = SmartDimens.MaximumContentWidth)
                     .padding(
@@ -595,6 +726,169 @@ internal fun TutorLobbyRoute(
                         vertical = 8.dp,
                     ),
             )
+        }
+    }
+    if (attachMenuOpen) {
+        AlertDialog(
+            onDismissRequest = { attachMenuOpen = false },
+            title = { Text("添加图片") },
+            text = { Text("拍一张新照片，或从相册选择（最多 ${MAX_TUTOR_MESSAGE_IMAGES} 张）。") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        attachMenuOpen = false
+                        launchLobbyCamera()
+                    },
+                    modifier = Modifier.testTag("lobby_attach_camera"),
+                ) {
+                    Icon(Icons.Outlined.CameraAlt, contentDescription = null)
+                    Text("拍照", modifier = Modifier.padding(start = 6.dp))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        attachMenuOpen = false
+                        lobbyGalleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                        )
+                    },
+                    modifier = Modifier.testTag("lobby_attach_gallery"),
+                ) {
+                    Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
+                    Text("从相册选择", modifier = Modifier.padding(start = 6.dp))
+                }
+            },
+        )
+    }
+    if (disclosureConfirmOpen) {
+        AlertDialog(
+            onDismissRequest = {
+                disclosureConfirmOpen = false
+                pendingImageSend = null
+            },
+            title = { Text("发送图片给模型") },
+            text = {
+                Text(
+                    "图片会随这条消息交给你在“我的”里配置的模型，用于理解和回复。" +
+                        "只发送你本次选择的图片，不含其他学习记录。确认一次后不再逐次询问。",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        disclosureConfirmOpen = false
+                        val pending = pendingImageSend
+                        pendingImageSend = null
+                        scope.launch {
+                            imageDisclosureStore?.acknowledge()
+                            if (pending != null) {
+                                startMessage(pending.message, pending.approvedAtEpochMillis)
+                            }
+                        }
+                    },
+                    modifier = Modifier.testTag("lobby_image_disclosure_confirm"),
+                ) {
+                    Text("同意并发送")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        disclosureConfirmOpen = false
+                        pendingImageSend = null
+                    },
+                    modifier = Modifier.testTag("lobby_image_disclosure_cancel"),
+                ) {
+                    Text("取消")
+                }
+            },
+        )
+    }
+}
+
+/** 气泡内的消息图片行：从规范资产解析本地 uri 后内嵌渲染（微信式）。 */
+@Composable
+private fun LobbyMessageImagesRow(
+    assetIds: List<String>,
+    imageIntake: LobbyMessageImageIntake,
+) {
+    val uris by produceState<Map<String, String?>>(emptyMap(), assetIds, imageIntake) {
+        val resolved = buildMap {
+            for (assetId in assetIds) {
+                put(assetId, imageIntake.resolveImageUri(assetId))
+            }
+        }
+        value = resolved
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        assetIds.forEachIndexed { index, assetId ->
+            val uri = uris[assetId]
+            if (uri != null) {
+                BoundedLocalImage(
+                    imageUri = uri,
+                    contentDescription = "消息图片 ${index + 1}",
+                    expanded = false,
+                    collapsedMaxHeight = 140.dp,
+                    modifier = Modifier
+                        .size(width = 120.dp, height = 120.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .testTag("lobby_message_image_$index"),
+                )
+            } else {
+                Text(
+                    text = "图片暂时打不开",
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
+    }
+}
+
+/** 输入框上方的附件预览行（微信式）：缩略图 + 删除角标。 */
+@Composable
+private fun PendingImagesRow(
+    images: List<PendingLobbyImage>,
+    onRemove: (Int) -> Unit,
+) {
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SmartDimens.ContentHorizontalPadding, vertical = 4.dp)
+            .testTag("lobby_pending_images"),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(images.size) { index ->
+            Box {
+                BoundedLocalImage(
+                    imageUri = images[index].localUri,
+                    contentDescription = "待发送图片 ${index + 1}",
+                    expanded = false,
+                    collapsedMaxHeight = 72.dp,
+                    modifier = Modifier
+                        .size(width = 72.dp, height = 72.dp)
+                        .clip(RoundedCornerShape(10.dp)),
+                )
+                Surface(
+                    color = Paper,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(2.dp)
+                        .clickable { onRemove(index) }
+                        .testTag("lobby_pending_image_remove_$index"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "移除这张图片",
+                        tint = InkSecondary,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(2.dp),
+                    )
+                }
+            }
         }
     }
 }
@@ -685,6 +979,7 @@ private fun TutorLobbyTask(
 @Composable
 private fun TutorLobbyMessageItem(
     message: TutorMessage,
+    imageIntake: LobbyMessageImageIntake? = null,
     modifier: Modifier = Modifier,
 ) {
     if (message.role == TutorMessageRole.STUDENT) {
@@ -699,12 +994,22 @@ private fun TutorLobbyMessageItem(
                     .fillMaxWidth(0.86f)
                     .testTag("tutor_lobby_student_message"),
             ) {
-                Text(
-                    text = message.bodyMarkdown,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-                    color = Ink,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
+                    if (message.sourceImageAssetIds.isNotEmpty() && imageIntake != null) {
+                        LobbyMessageImagesRow(
+                            assetIds = message.sourceImageAssetIds,
+                            imageIntake = imageIntake,
+                        )
+                    }
+                    Text(
+                        text = message.bodyMarkdown,
+                        modifier = Modifier.padding(
+                            top = if (message.sourceImageAssetIds.isEmpty()) 0.dp else 8.dp,
+                        ),
+                        color = Ink,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
         }
         return

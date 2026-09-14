@@ -16,8 +16,13 @@ import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.UpdateTutorMessageStatusDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
+import com.tingyun.smartmistakebook.core.database.entity.TutorMessageSourceAssetEntity
+import com.tingyun.smartmistakebook.core.database.TutorMessageSourceAssetRecord
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+/** 学生消息附图上限（与 Lobby 契约一致）。 */
+internal const val MAX_STUDENT_MESSAGE_IMAGES = 9
 
 @Dao
 internal abstract class TutorConversationDao {
@@ -55,6 +60,37 @@ internal abstract class TutorConversationDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertMessage(entity: TutorMessageEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    protected abstract suspend fun insertMessageSourceAssetRows(
+        rows: List<TutorMessageSourceAssetEntity>,
+    ): List<Long>
+
+    @Query(
+        """
+        SELECT * FROM tutor_message_source_asset
+        WHERE message_id IN (:messageIds)
+        ORDER BY message_id ASC, ordinal ASC
+        """,
+    )
+    protected abstract suspend fun findMessageSourceAssets(
+        messageIds: List<String>,
+    ): List<TutorMessageSourceAssetEntity>
+
+    open suspend fun readMessageSourceAssets(
+        messageIds: List<String>,
+    ): List<TutorMessageSourceAssetRecord> =
+        if (messageIds.isEmpty()) {
+            emptyList()
+        } else {
+            findMessageSourceAssets(messageIds).map { row ->
+                TutorMessageSourceAssetRecord(
+                    messageId = row.messageId,
+                    sourceAssetId = row.sourceAssetId,
+                    ordinal = row.ordinal,
+                )
+            }
+        }
 
     @Query(
         """
@@ -209,8 +245,22 @@ internal abstract class TutorConversationDao {
         require(command.bodyMarkdown.isNotBlank())
         require(command.logicalOperationId.isNotBlank())
         require(command.createdAtEpochMillis >= 0L)
+        require(command.sourceImageAssetIds.size <= MAX_STUDENT_MESSAGE_IMAGES) {
+            "Tutor student message carries too many images"
+        }
         val entity = command.toEntity()
         if (insertMessage(entity) != -1L) {
+            if (command.sourceImageAssetIds.isNotEmpty()) {
+                insertMessageSourceAssetRows(
+                    command.sourceImageAssetIds.mapIndexed { index, assetId ->
+                        TutorMessageSourceAssetEntity(
+                            messageId = command.messageId,
+                            sourceAssetId = assetId,
+                            ordinal = index,
+                        )
+                    },
+                )
+            }
             touchConversation(
                 conversationId = command.conversationId,
                 ordinal = command.ordinal,

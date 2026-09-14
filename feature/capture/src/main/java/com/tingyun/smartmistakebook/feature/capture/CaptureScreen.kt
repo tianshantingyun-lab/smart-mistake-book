@@ -145,7 +145,15 @@ fun CaptureScreen(
             correctedStructuredCandidate ||
             finalConfirmationPending
         ) && (!assessmentBlocksEntry || finalConfirmationPending)
-    val entryGateOpen = candidateUsable
+    // strictOffline（本构建不连接模型）：没有模型解析输出可等，草稿就绪即可
+    // 用本地识别题面进入手动整理；题面校验通过就直接允许入库，不再等模型。
+    val manualEntryMode = !modelEgressAllowed
+    val manualWorkspaceReady = manualEntryMode &&
+        state.draftId != null &&
+        state.workspaceState != null
+    val manualCommitReady = manualEntryMode &&
+        captureCandidateIsUsable(state.workspaceState?.workingDocument)
+    val entryGateOpen = candidateUsable || manualCommitReady
 
     val draftState = remember { CaptureDraftStateCommands(state) }
 
@@ -697,7 +705,7 @@ fun CaptureScreen(
                     modifier = Modifier.padding(top = 10.dp),
                 )
             }
-            if (!candidateUsable) {
+            if (!candidateUsable && !manualWorkspaceReady) {
                 if (!captureModelReady) {
                     CaptureModelSetupBlock(
                         onOpenSettings = { afterWorkspaceFlush(onOpenModelSettings) },
@@ -749,7 +757,17 @@ fun CaptureScreen(
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
-            if (candidateUsable) {
+            if (candidateUsable || manualWorkspaceReady) {
+                if (manualEntryMode) {
+                    Text(
+                        text = "当前版本不连接模型：照片已用本地识别生成题面，请检查后手动整理录入。",
+                        modifier = Modifier
+                            .padding(top = 14.dp)
+                            .testTag("capture_manual_entry_notice"),
+                        color = InkMuted,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 CaptureCorrectionForm(
                 subject = state.workspaceState?.subject ?: state.selectedSubject,
                 title = state.workspaceState?.title ?: state.correctedTitle,
@@ -767,7 +785,8 @@ fun CaptureScreen(
                 recognitionBlockCount = structuredCandidate?.document?.blocks?.size
                     ?: state.recognitionBlockCount,
                 candidateKind = candidateKind,
-                candidateUsable = candidateUsable,
+                candidateUsable = candidateUsable || manualWorkspaceReady,
+                manualEntry = manualEntryMode,
                 entryGateOpen = entryGateOpen,
                 entryGateMessage = if (assessmentBlocksEntry) "请先补拍完整的一道题。" else "",
                 structuredProjectionEdited = state.workspaceState?.userEditedFields?.isNotEmpty() == true,

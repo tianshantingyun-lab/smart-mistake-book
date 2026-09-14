@@ -47,7 +47,20 @@ internal class RoomTutorConversationRepository(
             database.observeTutorConversation(conversationId)
                 .map { it?.toDomain() },
             database.observeTutorMessages(conversationId)
-                .map { records -> records.map(TutorMessageRecord::toDomain) },
+                .map { records ->
+                    val assetIdsByMessage = if (records.isEmpty()) {
+                        emptyMap()
+                    } else {
+                        database.readTutorMessageSourceAssets(records.map { it.messageId })
+                            .groupBy(
+                                keySelector = { link -> link.messageId },
+                                valueTransform = { link -> link.sourceAssetId },
+                            )
+                    }
+                    records.map { record ->
+                        record.toDomain(assetIdsByMessage[record.messageId].orEmpty())
+                    }
+                },
         ) { conversation, messages ->
             conversation?.let { TutorConversationSnapshot(conversation = it, messages = messages) }
         }
@@ -149,6 +162,7 @@ private fun AppendTutorStudentMessageCommand.toDatabase() =
         bodyMarkdown = bodyMarkdown,
         logicalOperationId = logicalOperationId,
         createdAtEpochMillis = createdAtEpochMillis,
+        sourceImageAssetIds = sourceImageAssetIds,
     )
 
 private fun AppendTutorAssistantMessageCommand.toDatabase() =
@@ -189,7 +203,9 @@ private fun TutorConversationRecord.toDomain() = TutorConversation(
     studentDraft = studentDraft,
 )
 
-private fun TutorMessageRecord.toDomain() = TutorMessage(
+private fun TutorMessageRecord.toDomain(
+    sourceImageAssetIds: List<String> = emptyList(),
+) = TutorMessage(
     messageId = messageId,
     conversationId = conversationId,
     ordinal = ordinal,
@@ -201,4 +217,5 @@ private fun TutorMessageRecord.toDomain() = TutorMessage(
     createdAtEpochMillis = createdAtEpochMillis,
     completedAtEpochMillis = completedAtEpochMillis,
     errorCode = errorCode,
+    sourceImageAssetIds = sourceImageAssetIds,
 )

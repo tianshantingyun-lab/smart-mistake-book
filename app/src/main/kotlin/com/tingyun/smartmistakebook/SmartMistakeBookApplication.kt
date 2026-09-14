@@ -10,6 +10,8 @@ import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFacto
 import com.tingyun.smartmistakebook.core.data.backup.BackupRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreStartupRecovery
 import com.tingyun.smartmistakebook.core.data.backup.RestoreRecoveryAttention
+import com.tingyun.smartmistakebook.core.data.tutor.DataStoreLobbyImageDisclosureStore
+import com.tingyun.smartmistakebook.core.data.tutor.LobbyMessageImageIntakeFactory
 import com.tingyun.smartmistakebook.core.data.backup.RestoreStartupOutcome
 import com.tingyun.smartmistakebook.core.data.backup.attentionRequired
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
@@ -48,6 +50,8 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
 import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryFactory
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.LobbyImageDisclosureStore
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.visual.VisualInteractionEventSink
@@ -115,6 +119,12 @@ class SmartMistakeBookApplication : Application() {
         private set
 
     lateinit var tutorConversationRepository: TutorConversationRepository
+
+    /** Lobby 消息附图的登记与解析（相机/相册选图 → 规范资产库）。 */
+    lateinit var lobbyMessageImageIntake: LobbyMessageImageIntake
+
+    /** 消息附图的首次一次性披露说明确认状态。 */
+    lateinit var lobbyImageDisclosureStore: LobbyImageDisclosureStore
         private set
 
     lateinit var tutorTeachingReferenceRepository: TutorTeachingReferenceRepository
@@ -174,6 +184,8 @@ class SmartMistakeBookApplication : Application() {
             mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)
             tutorInteractionRepository = TutorInteractionRepositoryFactory.create(database)
             tutorConversationRepository = TutorConversationRepositoryFactory.create(database)
+            lobbyMessageImageIntake = LobbyMessageImageIntakeFactory.create(this, database)
+            lobbyImageDisclosureStore = DataStoreLobbyImageDisclosureStore(this, applicationScope)
             tutorTeachingReferenceRepository =
                 TutorTeachingReferenceRepositoryFactory.create(database)
             libraryCatalogRepository = LibraryCatalogRepositoryFactory.create(database)

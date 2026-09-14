@@ -17,11 +17,14 @@ class ModelTaskContractRegistryTest {
     }
 
     @Test
-    fun tutorLobbyIsTextOnlyAndNeverDisclosesImages() {
+    fun tutorLobbyIsTextByDefaultAndImagesOnlyConditionally() {
         val contract = ModelTaskContractRegistry.require(ModelTaskKind.TUTOR_LOBBY)
 
-        assertEquals(ModelTaskAssetPolicy.FORBIDDEN, contract.assetPolicy)
+        // 附图能力开放（学生首次一次性说明）：资产条件性授权，
+        // 默认（无图）仍是纯文本最小披露。
+        assertEquals(ModelTaskAssetPolicy.CONTEXTUAL, contract.assetPolicy)
         assertEquals(ModelEgressPurpose.TUTORING, contract.egressPurpose)
+        assertEquals(ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE, contract.requiredDisclosures)
         assertFalse(
             ModelEgressDataClass.SANITIZED_IMAGE_BYTES in contract.requiredDisclosures,
         )

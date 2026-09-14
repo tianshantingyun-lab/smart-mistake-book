@@ -80,3 +80,36 @@ internal data class TutorMessageEntity(
     @ColumnInfo(name = "error_code")
     val errorCode: String?,
 )
+
+/**
+ * 学生消息附图的规范资产引用。独立 link 表让孤儿清理能按引用判定保留图片；
+ * 消息删除时级联删除引用，无人引用的资产由 OrphanAssetGc 清理。
+ */
+@Entity(
+    tableName = "tutor_message_source_asset",
+    primaryKeys = ["message_id", "ordinal"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TutorMessageEntity::class,
+            parentColumns = ["message_id"],
+            childColumns = ["message_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+        ForeignKey(
+            entity = CanonicalSourceAssetEntity::class,
+            parentColumns = ["source_asset_id"],
+            childColumns = ["source_asset_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [
+        Index(value = ["source_asset_id"]),
+    ],
+)
+internal data class TutorMessageSourceAssetEntity(
+    @ColumnInfo(name = "message_id")
+    val messageId: String,
+    @ColumnInfo(name = "source_asset_id")
+    val sourceAssetId: String,
+    val ordinal: Int,
+)

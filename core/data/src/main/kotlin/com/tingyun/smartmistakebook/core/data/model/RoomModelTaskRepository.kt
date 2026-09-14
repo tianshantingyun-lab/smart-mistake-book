@@ -634,6 +634,18 @@ class RoomModelTaskRepository internal constructor(
                 retryable = false,
             )
         }
+        val lobbyInput = request.input as? TutorLobbyInput
+        if (
+            lobbyInput != null &&
+            lobbyInput.sourceImageAssetRefs.isNotEmpty() &&
+            !provider.supportsImageInput
+        ) {
+            return ModelTaskFailure(
+                code = ModelFailureCode.PROVIDER_CAPABILITY_MISSING,
+                message = "当前模型不支持看图，请先更换支持图片的模型。",
+                retryable = false,
+            )
+        }
         return null
     }
 

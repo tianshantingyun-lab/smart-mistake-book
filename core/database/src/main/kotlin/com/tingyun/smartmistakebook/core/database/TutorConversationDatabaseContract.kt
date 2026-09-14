@@ -43,6 +43,15 @@ data class AppendTutorStudentMessageDatabaseCommand(
     val bodyMarkdown: String,
     val logicalOperationId: String,
     val createdAtEpochMillis: Long,
+    /** 本条消息附图的规范资产 id（按选择顺序）；空表示纯文字消息。 */
+    val sourceImageAssetIds: List<String> = emptyList(),
+)
+
+/** 学生消息附图的引用行（消息删除时级联删除）。 */
+data class TutorMessageSourceAssetRecord(
+    val messageId: String,
+    val sourceAssetId: String,
+    val ordinal: Int,
 )
 
 data class AppendTutorAssistantMessageDatabaseCommand(

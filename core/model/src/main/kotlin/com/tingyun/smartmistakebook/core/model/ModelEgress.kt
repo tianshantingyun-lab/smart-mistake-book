@@ -44,7 +44,7 @@ object ModelPromptPolicyVersions {
     const val TUTOR_RESPOND = "tutor-respond-v14-open-check"
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
-    const val TUTOR_LOBBY = "tutor-lobby-v4-book-boundary"
+    const val TUTOR_LOBBY = "tutor-lobby-v5-message-images"
     const val LEARNING_SUMMARIZE = "learning-summarize-v1-tutor-debrief"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
     const val KNOWLEDGE_QUIZ = "knowledge-quiz-v1-boundary-anchored"
@@ -200,14 +200,25 @@ data class ModelEgressManifest(
             val expectedDisclosure = when (tutoringKind) {
                 ModelTaskKind.TUTOR_PLAN -> tutorPlanDisclosureForSchema(schemaVersion)
                 ModelTaskKind.TUTOR_RESPOND -> tutorRespondDisclosureForSchema(schemaVersion)
-                ModelTaskKind.TUTOR_LOBBY -> TUTOR_LOBBY_DISCLOSURE
+                ModelTaskKind.TUTOR_LOBBY -> tutorLobbyDisclosureForSchema(
+                    schemaVersion = schemaVersion,
+                    includesImage = assets.isNotEmpty(),
+                )
                 ModelTaskKind.TUTOR_VISUAL_GENERATE ->
                     tutorVisualGenerateDisclosure(assets.any { it.selectedRegion != null })
                 ModelTaskKind.TUTOR_VISUAL_REVIEW ->
                     tutorVisualReviewDisclosure(assets.any { it.selectedRegion != null })
                 ModelTaskKind.KNOWLEDGE_QUIZ -> KNOWLEDGE_QUIZ_DISCLOSURE
             }
-            // TUTOR_LOBBY 保持纯文字；视觉任务按输入是否含图片决定披露。
+            if (tutoringKind == ModelTaskKind.TUTOR_LOBBY && assets.isNotEmpty()) {
+                require(schemaVersion >= LOBBY_IMAGE_SCHEMA_VERSION) {
+                    "Tutor lobby image egress requires egress manifest schema six"
+                }
+                require(assets.size <= MAX_LOBBY_IMAGE_ASSETS) {
+                    "Tutor lobby image scope exceeds the message budget"
+                }
+            }
+            // Lobby：无图时纯文本最小披露；有图时按 schema 六的图片披露集合。
             require(disclosedData == expectedDisclosure) {
                 "Tutor egress disclosure must exactly match the authorized tutoring task"
             }
@@ -233,8 +244,14 @@ data class ModelEgressManifest(
     }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 5
+        const val CURRENT_SCHEMA_VERSION = 6
         private const val MIN_SUPPORTED_SCHEMA_VERSION = 1
+
+        /** schema 6 起：学生一次性说明后，Lobby 可携带学生选择的消息配图。 */
+        internal const val LOBBY_IMAGE_SCHEMA_VERSION = 6
+
+        /** 一条消息最多附带的图片数（学生裁定）。 */
+        const val MAX_LOBBY_IMAGE_ASSETS = 9
 
         val SCHEMA_V1_DATA_CLASSES = setOf(
             ModelEgressDataClass.SANITIZED_IMAGE_BYTES,
@@ -321,6 +338,26 @@ data class ModelEgressManifest(
 
         val TUTOR_LOBBY_PROHIBITED_DATA =
             ModelEgressDataClass.entries.toSet() - TUTOR_LOBBY_DISCLOSURE
+
+        /** 附图消息的披露：在纯文本范围上追加图片类目（首次一次性说明后长期有效）。 */
+        val TUTOR_LOBBY_IMAGE_DISCLOSURE = TUTOR_LOBBY_DISCLOSURE + CAPTURE_IMAGE_DISCLOSURE
+
+        val TUTOR_LOBBY_IMAGE_PROHIBITED_DATA =
+            ModelEgressDataClass.entries.toSet() - TUTOR_LOBBY_IMAGE_DISCLOSURE
+
+        /**
+         * Lobby 披露按请求是否附图与 schema 版本选择：旧 schema 行读回时仍按纯文本
+         * 集合校验（assets 必须为空），新 schema 才允许图片类目。
+         */
+        internal fun tutorLobbyDisclosureForSchema(
+            schemaVersion: Int,
+            includesImage: Boolean,
+        ): Set<ModelEgressDataClass> =
+            if (includesImage && schemaVersion >= LOBBY_IMAGE_SCHEMA_VERSION) {
+                TUTOR_LOBBY_IMAGE_DISCLOSURE
+            } else {
+                TUTOR_LOBBY_DISCLOSURE
+            }
 
         private val TUTOR_VISUAL_GENERATE_BASE_DISCLOSURE = setOf(
             ModelEgressDataClass.SANITIZED_IMAGE_BYTES,
@@ -676,9 +713,40 @@ private fun ModelEgressManifest.requireAuthorizes(
         is TutorLobbyInput -> {
             require(schemaVersion >= 4) { "Tutor lobby requires egress manifest schema four" }
             require(purpose == ModelEgressPurpose.TUTORING)
-            require(assets.isEmpty()) { "Tutor lobby cannot disclose image assets" }
-            require(disclosedData == ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE)
-            require(prohibitedData == ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA)
+            val includesImage = input.sourceImageAssetRefs.isNotEmpty()
+            if (includesImage) {
+                require(schemaVersion >= ModelEgressManifest.LOBBY_IMAGE_SCHEMA_VERSION) {
+                    "Tutor lobby image egress requires egress manifest schema six"
+                }
+                require(input.sourceImageAssetRefs.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS) {
+                    "Tutor lobby image count exceeds the message budget"
+                }
+                require(assets.size == input.sourceImageAssetRefs.size) {
+                    "Lobby image scope changed"
+                }
+                input.sourceImageAssetRefs.forEach { source ->
+                    val grant = assets.singleOrNull { it.assetId == source.assetId }
+                        ?: error("Lobby image is outside egress scope")
+                    require(
+                        grant.sha256 == source.sha256 &&
+                            grant.width == source.width &&
+                            grant.height == source.height &&
+                            grant.selectedRegion == null &&
+                            source.selectedRegion == null,
+                    ) { "Lobby image changed after approval" }
+                }
+            } else {
+                require(assets.isEmpty()) { "Tutor lobby cannot disclose image assets" }
+            }
+            val expectedDisclosure = ModelEgressManifest.tutorLobbyDisclosureForSchema(
+                schemaVersion = schemaVersion,
+                includesImage = includesImage,
+            )
+            require(disclosedData == expectedDisclosure)
+            require(
+                prohibitedData ==
+                    ModelEgressManifest.dataClassUniverseForSchema(schemaVersion) - expectedDisclosure,
+            )
         }
 
         is ProblemOrganizationInput -> {

@@ -155,6 +155,9 @@ internal object OpenAiModelProtocol {
         // manifest authorized it (kept for legacy compatibility).
         is com.tingyun.smartmistakebook.core.model.TutorPlanInput,
         is com.tingyun.smartmistakebook.core.model.TutorRespondInput,
+        // Lobby messages may carry student-selected images after the first
+        // one-time disclosure confirmation.
+        is com.tingyun.smartmistakebook.core.model.TutorLobbyInput,
         -> true
         else -> false
     }

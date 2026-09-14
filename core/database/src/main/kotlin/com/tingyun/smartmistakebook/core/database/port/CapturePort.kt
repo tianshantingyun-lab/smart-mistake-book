@@ -20,4 +20,12 @@ interface CaptureReadPort {
 interface CaptureWritePort {
     suspend fun deleteUnreferencedCanonicalAssets(): Int
     suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord)
+
+    /**
+     * 登记一个已落盘（vault 校验通过）的规范资产行，供消息附图等新引用形态使用；
+     * 引用建立后由孤儿清理按引用判定保留。
+     */
+    suspend fun registerCanonicalSourceAsset(asset: CanonicalSourceAssetRecord) {
+        throw UnsupportedOperationException("This database does not register canonical assets")
+    }
 }

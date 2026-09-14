@@ -565,6 +565,7 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is ImagePipelineClassifyInput -> listOf(input.sourceAssetId)
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
+        is TutorLobbyInput -> input.sourceImageAssetRefs.sortedBy { it.pageIndex }.map { it.assetId }
         else -> emptyList()
     }
     if (assetIds.isEmpty()) return emptyList()

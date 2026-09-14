@@ -138,7 +138,9 @@ Updated from the remediation plan for the Android client on `main`.
   `CONTRIBUTING.md`, `PRIVACY-DATA-FLOW.md`, and `docs/current/` contract
   entry points.
 - P0 tutor cleanup: production route restored, temporary SimpleTutor route and
-  parallel image system removed, Lobby is text-only, FileProvider narrowed.
+  parallel image system removed, Lobby was text-only at P0 time — **superseded
+  2026-09-14**: 学生一次性确认后 Lobby 消息可携带学生选择的图片（≤9 张，schema v9 +
+  egress manifest v6，消息图片引用记入 `tutor_message_source_asset`），FileProvider narrowed.
 - PR-03 tutor persistence: Room v29 adds `tutor_conversation` and
   `tutor_message`; domain/data repository, stable IDs, Lobby sends persist the
   student message before dispatch, history list route is wired.

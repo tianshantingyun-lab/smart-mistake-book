@@ -81,6 +81,8 @@ data class TutorMessage(
     val createdAtEpochMillis: Long,
     val completedAtEpochMillis: Long?,
     val errorCode: String?,
+    /** 学生消息附图的规范资产 id（按选择顺序）；空表示纯文字消息。 */
+    val sourceImageAssetIds: List<String> = emptyList(),
 ) {
     init {
         require(messageId.isNotBlank()) { "Tutor message id must not be blank" }
@@ -151,6 +153,8 @@ data class AppendTutorStudentMessageCommand(
     val bodyMarkdown: String,
     val logicalOperationId: String,
     val createdAtEpochMillis: Long,
+    /** 附图的规范资产 id（按选择顺序，最多 9 张）；空表示纯文字消息。 */
+    val sourceImageAssetIds: List<String> = emptyList(),
 ) {
     init {
         require(conversationId.isNotBlank()) { "Tutor conversation id must not be blank" }
@@ -159,8 +163,17 @@ data class AppendTutorStudentMessageCommand(
         require(bodyMarkdown.isNotBlank()) { "Tutor message body must not be blank" }
         require(logicalOperationId.isNotBlank()) { "Tutor logical operation id must not be blank" }
         require(createdAtEpochMillis >= 0L) { "Tutor message creation time must not be negative" }
+        require(sourceImageAssetIds.size <= MAX_TUTOR_MESSAGE_IMAGES) {
+            "Tutor student message carries too many images"
+        }
+        require(sourceImageAssetIds.distinct().size == sourceImageAssetIds.size) {
+            "Tutor student message image ids must be unique"
+        }
     }
 }
+
+/** 学生消息附图上限（与 Lobby 契约一致）。 */
+const val MAX_TUTOR_MESSAGE_IMAGES = 9
 
 data class AppendTutorAssistantMessageCommand(
     val conversationId: String,

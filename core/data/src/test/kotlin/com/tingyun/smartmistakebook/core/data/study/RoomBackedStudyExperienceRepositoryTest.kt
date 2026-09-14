@@ -1861,6 +1861,10 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readTutorSession(sessionId: String): TutorSessionRecord? = null
 
+    override suspend fun readTutorMessageSourceAssets(
+        messageIds: List<String>,
+    ): List<com.tingyun.smartmistakebook.core.database.TutorMessageSourceAssetRecord> = emptyList()
+
     override suspend fun commitTutorSession(
         command: CommitTutorSessionCommand,
     ): CommitProblemDraftResult = error("Capture is outside this study-repository fake")

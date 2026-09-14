@@ -16,14 +16,19 @@ data class ModelTaskContract(
     val maxProviderDispatches: Int = ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES,
 ) {
     init {
-        require(kind != ModelTaskKind.TUTOR_LOBBY || assetPolicy == ModelTaskAssetPolicy.FORBIDDEN) {
-            "Tutor lobby is a text-only contract"
+        require(
+            kind != ModelTaskKind.TUTOR_LOBBY ||
+                assetPolicy == ModelTaskAssetPolicy.FORBIDDEN ||
+                assetPolicy == ModelTaskAssetPolicy.CONTEXTUAL,
+        ) {
+            "Tutor lobby is text-only or carries only student-selected message images"
         }
         require(kind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
             kind == ModelTaskKind.TUTOR_VISUAL_REVIEW ||
+            kind == ModelTaskKind.TUTOR_LOBBY ||
             assetPolicy != ModelTaskAssetPolicy.CONTEXTUAL
         ) {
-            "Only visual tutor tasks may conditionally authorize assets"
+            "Only visual tutor tasks and image-bearing lobby messages may authorize assets conditionally"
         }
         require(promptPolicyVersion == ModelPromptPolicyVersions.currentFor(kind)) {
             "Contract prompt policy is not the current policy for ${kind.name}"
@@ -83,9 +88,9 @@ object ModelTaskContractRegistry {
             kind = ModelTaskKind.TUTOR_LOBBY,
             egressPurpose = ModelEgressPurpose.TUTORING,
             promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_LOBBY,
-            assetPolicy = ModelTaskAssetPolicy.FORBIDDEN,
+            assetPolicy = ModelTaskAssetPolicy.CONTEXTUAL,
             requiredDisclosures = ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE,
-            prohibitedDisclosures = ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA,
+            prohibitedDisclosures = ModelEgressManifest.TUTOR_LOBBY_IMAGE_PROHIBITED_DATA,
         ),
         ModelTaskContract(
             kind = ModelTaskKind.TUTOR_PLAN,

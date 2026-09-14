@@ -38,7 +38,7 @@ import org.junit.Test
 class TutorE2EProtocolTest {
 
     @Test
-    fun lobbyNeverSendsImages_evenIfProvided() {
+    fun lobbySendsImages_whenProvidedByTheStudent() {
         MockWebServer().use { server ->
             server.enqueue(successResponse(tutorLobbyContent()))
             server.start()
@@ -58,7 +58,8 @@ class TutorE2EProtocolTest {
             postToServer(server, requestBody)
             val sentBody = server.takeRequest().body.readUtf8()
 
-            assertFalse("Lobby body must not contain image_url", sentBody.contains("image_url"))
+            // 附图能力开放后：学生确认过的图片随消息出网。
+            assertTrue("Lobby body must contain image_url", sentBody.contains("image_url"))
             assertTrue("Lobby body must contain student message", sentBody.contains("帮我看这道题"))
         }
     }

@@ -414,7 +414,9 @@ data class ModelTaskRequest(
         const val CONSENT_INTRODUCED_SCHEMA_VERSION = 7
         /** Schema at which the consent field was renamed to `agentConsentGranted`. */
         const val AGENT_CONSENT_SCHEMA_VERSION = 8
-        const val CURRENT_SCHEMA_VERSION = AGENT_CONSENT_SCHEMA_VERSION
+        /** Schema at which lobby messages may carry student-selected images. */
+        const val LOBBY_IMAGE_SCHEMA_VERSION = 9
+        const val CURRENT_SCHEMA_VERSION = LOBBY_IMAGE_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -646,7 +648,8 @@ object ModelTaskLogicalOperationFingerprint {
             append(
                 logicalOperationJson.encodeToString(ModelTaskInput.serializer(), input)
                     .withoutEmptyPageComparison(input)
-                    .withoutEmptyToolCarrier(input),
+                    .withoutEmptyToolCarrier(input)
+                    .withoutEmptyLobbyImageRefs(input),
             )
         }
 }
@@ -713,6 +716,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.LOBBY_IMAGE_SCHEMA_VERSION) {
+                        it.withoutEmptyLobbyImageRefs(input)
+                    } else {
+                        it
+                    }
+                }
         }
     }
 
@@ -759,6 +769,17 @@ private fun String.withoutAgentConsent(): String =
         .replace(",\"captureEgressConsentGranted\":true", "")
         .replace(",\"agentConsentGranted\":false", "")
         .replace(",\"agentConsentGranted\":true", "")
+
+/**
+ * 从 schema<9 行的指纹中排除 Lobby 消息图片键（schema 9 引入 `sourceImageAssetRefs`）。
+ * 旧 v8 行编码不含该键；strip 只影响空列表的补位（非空列表仅出现在 v9 行）。
+ */
+private fun String.withoutEmptyLobbyImageRefs(input: ModelTaskInput): String =
+    if (input is TutorLobbyInput) {
+        replace(",\"sourceImageAssetRefs\":[]", "")
+    } else {
+        this
+    }
 
 internal fun NormalizedSourceRegion.isValidModelRegion(): Boolean =
     left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite() &&

@@ -672,6 +672,14 @@ internal class RoomStudyDatabase(
         database.pendingCaptureDao().deleteUnreferencedCanonicalAssets()
 
     override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) {
+        insertCanonicalSourceAssetRow(asset)
+    }
+
+    override suspend fun registerCanonicalSourceAsset(asset: CanonicalSourceAssetRecord) {
+        insertCanonicalSourceAssetRow(asset)
+    }
+
+    private suspend fun insertCanonicalSourceAssetRow(asset: CanonicalSourceAssetRecord) {
         database.withRawConnection(isReadOnly = false) { connection ->
             connection.usePrepared(
                 "INSERT OR IGNORE INTO canonical_source_asset (" +
@@ -884,6 +892,11 @@ internal class RoomStudyDatabase(
     override suspend fun appendTutorStudentMessage(
         command: AppendTutorStudentMessageDatabaseCommand,
     ): TutorMessageRecord = database.tutorConversationDao().appendStudentMessage(command)
+
+    override suspend fun readTutorMessageSourceAssets(
+        messageIds: List<String>,
+    ): List<TutorMessageSourceAssetRecord> =
+        database.tutorConversationDao().readMessageSourceAssets(messageIds)
 
     override suspend fun appendTutorAssistantMessage(
         command: AppendTutorAssistantMessageDatabaseCommand,

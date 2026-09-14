@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Edit
@@ -59,6 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
+import com.tingyun.smartmistakebook.core.domain.LobbyImageDisclosureStore
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
@@ -115,6 +118,8 @@ fun TutorRoute(
     modelTasks: ModelTaskRepository,
     catalogEntries: List<StudyCatalogEntry>,
     capabilities: AppCapabilitySnapshot,
+    imageIntake: LobbyMessageImageIntake? = null,
+    imageDisclosureStore: LobbyImageDisclosureStore? = null,
     initialConversationId: String? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -130,6 +135,8 @@ fun TutorRoute(
             modelTasks = modelTasks,
             catalogEntries = catalogEntries,
             profile = profile,
+            imageIntake = imageIntake,
+            imageDisclosureStore = imageDisclosureStore,
             initialConversationId = initialConversationId,
             modifier = modifier,
         )
@@ -803,50 +810,69 @@ internal fun TutorComposer(
     modifier: Modifier = Modifier,
     placeholder: String = "输入你的推导、困惑或新问题",
     enabled: Boolean = true,
+    /**
+     * 非 null 时左侧按钮改为“+”并调用它打开添加菜单（Lobby 附图：相机/相册二选一）；
+     * null 时保持相机直跳拍题。
+     */
+    onOpenAttachMenu: (() -> Unit)? = null,
+    /** 输入框上方的附件预览行（微信式，可选）。 */
+    attachmentPreview: (@Composable () -> Unit)? = null,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 82.dp)
-            .testTag("tutor_draft_input"),
-        placeholder = { Text(placeholder) },
-        enabled = enabled,
-        minLines = 2,
-        maxLines = 3,
-        leadingIcon = {
-            IconButton(
-                onClick = onCapture,
-                enabled = enabled,
-                modifier = Modifier
-                    .size(48.dp)
-                    .testTag("tutor_attach_button"),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.PhotoCamera,
-                    contentDescription = "拍题或从相册选择题目图片",
-                    tint = Jade,
-                )
-            }
-        },
-        trailingIcon = {
-            IconButton(
-                onClick = onSend,
-                enabled = enabled && value.isNotBlank(),
-                modifier = Modifier
-                    .size(48.dp)
-                    .testTag("tutor_send_button"),
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "提交输入",
-                    tint = if (value.isBlank()) InkMuted else Jade,
-                )
-            }
-        },
-        shape = RoundedCornerShape(8.dp),
-    )
+    Column(modifier = modifier) {
+        attachmentPreview?.invoke()
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 82.dp)
+                .testTag("tutor_draft_input"),
+            placeholder = { Text(placeholder) },
+            enabled = enabled,
+            minLines = 2,
+            maxLines = 3,
+            leadingIcon = {
+                val opensAttachMenu = onOpenAttachMenu != null
+                IconButton(
+                    onClick = onOpenAttachMenu ?: onCapture,
+                    enabled = enabled,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .testTag("tutor_attach_button"),
+                ) {
+                    Icon(
+                        imageVector = if (opensAttachMenu) {
+                            Icons.Outlined.Add
+                        } else {
+                            Icons.Outlined.PhotoCamera
+                        },
+                        contentDescription = if (opensAttachMenu) {
+                            "添加图片：拍照或从相册选择"
+                        } else {
+                            "拍题或从相册选择题目图片"
+                        },
+                        tint = Jade,
+                    )
+                }
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = onSend,
+                    enabled = enabled && value.isNotBlank(),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .testTag("tutor_send_button"),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "提交输入",
+                        tint = if (value.isBlank()) InkMuted else Jade,
+                    )
+                }
+            },
+            shape = RoundedCornerShape(8.dp),
+        )
+    }
 }
 
 @Composable
