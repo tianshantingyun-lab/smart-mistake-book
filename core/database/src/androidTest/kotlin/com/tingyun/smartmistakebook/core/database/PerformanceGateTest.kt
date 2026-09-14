@@ -177,7 +177,7 @@ class PerformanceGateTest {
         // android.database.sqlite.SQLiteDatabase 打开同一文件，以 rawQuery 执行
         // EXPLAIN QUERY PLAN 并消费 Cursor；读取 detail 列（索引 3）与
         // 全表扫描断言语义保持不变。
-        database.useConnection(isReadOnly = true) { connection ->
+        database.withRawConnection(isReadOnly = true) { connection ->
             connection.usePrepared("SELECT 1") { statement -> statement.step() }
         }
         val plan = SQLiteDatabase.openDatabase(

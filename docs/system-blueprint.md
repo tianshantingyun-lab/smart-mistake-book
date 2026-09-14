@@ -952,9 +952,11 @@ PDF、系统打印、Markdown 和长图共用同一内容模型，不通过 UI �
 
 ### 12.8 备份与恢复
 
-便携备份是应用自定义加密归档，不依赖 Android 默认云备份。
+便携备份是应用自定义归档，不依赖 Android 默认云备份。
 
-Backup Manifest 至少包含：
+> **实现状态（2026-09-11 核对）：** 当前归档是**未加密**的 zip（`SmbkArchiveCodec`），完整性用逐文件 SHA-256 校验，manifest 为 `SmbkManifestV1`。§15.5 中"便携备份使用经审计的 AEAD"与本节清单中的"加密算法与 KDF 参数"是**目标态**，尚未落地；与 §15.5 末尾、§R 中"未经验证不得空口承诺加密"同属 M4 发布前的前置项。落地前不得对外宣称备份已加密。
+
+备份 Manifest 至少包含（**粗体**为尚未落地项）：
 
 - backupFormatVersion；
 - databaseSchemaVersion；
@@ -962,7 +964,7 @@ Backup Manifest 至少包含：
 - profileIds；
 - taxonomyVersions；
 - 文件清单、大小和 SHA-256；
-- 加密算法与 KDF 参数；
+- **加密算法与 KDF 参数**（目标态，当前归档无加密）；
 - 创建时间；
 - 是否包含原图和讲题历史。
 
@@ -1354,7 +1356,7 @@ policyVersion
 - 所有业务数据放 App 私有存储；
 - 设备文件级加密与 Android 沙箱作为基础边界；
 - API Key 与主密钥引用使用 Android Keystore；
-- 文件和便携备份使用经审计的 AEAD；
+- 文件和便携备份使用经审计的 AEAD（**目标态**：便携备份归档当前未加密，见 §12.8 实现状态）；
 - 密钥失效时要求重新输入，不回退成明文；
 - API Key 页、备份口令页和危险操作前支持设备重新认证。
 

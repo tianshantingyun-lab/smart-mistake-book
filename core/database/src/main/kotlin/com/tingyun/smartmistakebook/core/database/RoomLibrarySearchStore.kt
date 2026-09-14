@@ -163,7 +163,7 @@ internal class RoomLibrarySearchStore(
         val sortClause = when (sort) {
             "RECENTLY_CREATED" -> "catalog.created_at_epoch_millis DESC,\n    "
             "NEXT_REVIEW" -> "catalog.next_review_at_epoch_millis ASC,\n    "
-            "LEAST_MASTERED" -> "catalog.retrievability ASC,\n    "
+            "LEAST_MASTERED" -> "$LEAST_MASTERED_MASTERY_SQL ASC,\n    "
             else -> ""
         }
         if (limit != null) {
@@ -298,7 +298,7 @@ internal class RoomLibrarySearchStore(
      * IF NOT EXISTS keeps repeat calls cheap.
      */
     private suspend fun ensureSearchTriggers() {
-        database.useConnection(isReadOnly = false) { connection ->
+        database.withRawConnection(isReadOnly = false) { connection ->
         listOf(
             "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_library_search_fts_BEFORE_UPDATE " +
                 "BEFORE UPDATE ON `library_search_content` BEGIN " +

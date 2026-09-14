@@ -5,6 +5,7 @@ import androidx.room3.RoomRawQuery
 import androidx.room3.withReadTransaction
 import androidx.room3.withWriteTransaction
 import com.tingyun.smartmistakebook.core.database.dao.MistakeRow
+import com.tingyun.smartmistakebook.core.database.dao.ArchivedEntrySummaryRow
 import com.tingyun.smartmistakebook.core.database.dao.CanonicalSourceAssetRow
 import com.tingyun.smartmistakebook.core.database.dao.ReviewLogSampleProjection
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeQuestionLatticeView
@@ -18,6 +19,8 @@ import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredi
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeQuestionLatticeRecord
+import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 
 internal class RoomStudyDatabase(
@@ -28,6 +31,7 @@ internal class RoomStudyDatabase(
     private val problemOrganization = RoomProblemOrganizationStore(database)
     private val batchImports = RoomBatchImportStore(database)
     private val splitImports = RoomSplitImportStore(database)
+    private val masteryOverview = RoomMasteryOverviewStore(database)
     private val librarySearch = RoomLibrarySearchStore(database)
     private val knowledgeBase = RoomKnowledgeBaseStore(database, knowledgeResearchReviewStore)
     private val backupSupport = RoomBackupSupportStore(database)
@@ -228,6 +232,11 @@ internal class RoomStudyDatabase(
         return splitImports.read(jobId)
     }
 
+    override suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord? {
+        require(batchJobId.isNotBlank())
+        return splitImports.readLatestReadyBatchSplitJob(batchJobId)
+    }
+
     override suspend fun createSplitImportJob(
         command: CreateSplitImportJobCommand,
         questions: List<SplitImportQuestionSeed>,
@@ -388,9 +397,22 @@ internal class RoomStudyDatabase(
         database.problemDao().observeKnowledgeQuestionLattice(learnerId)
             .map { rows -> rows.map(KnowledgeQuestionLatticeView::toRecord) }
 
+    override suspend fun readSubjectMastery(
+        learnerId: String,
+        subject: String,
+    ): List<SubjectMasteryRecord> = masteryOverview.readSubjectMastery(learnerId, subject)
+
+    override suspend fun readMasteryAggregates(
+        learnerId: String,
+        knowledgeNodeIds: Set<String>,
+    ): List<MasteryAggregateRecord> = masteryOverview.readMasteryAggregates(learnerId, knowledgeNodeIds)
+
+    override suspend fun countReviewableKnowledgeNodes(subject: String): Int =
+        masteryOverview.countReviewableKnowledgeNodes(subject)
+
     override suspend fun readDatabaseVersion(): Int {
         var version = 0
-        database.useConnection(isReadOnly = true) { connection ->
+        database.withRawConnection(isReadOnly = true) { connection ->
             connection.usePrepared("PRAGMA user_version") { statement ->
                 if (statement.step()) {
                     version = statement.getLong(0).toInt()
@@ -658,7 +680,7 @@ internal class RoomStudyDatabase(
         database.pendingCaptureDao().deleteUnreferencedCanonicalAssets()
 
     override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) {
-        database.useConnection(isReadOnly = false) { connection ->
+        database.withRawConnection(isReadOnly = false) { connection ->
             connection.usePrepared(
                 "INSERT OR IGNORE INTO canonical_source_asset (" +
                     "source_asset_id, content_sha256, relative_path, mime_type, byte_size, " +
@@ -970,6 +992,12 @@ internal class RoomStudyDatabase(
     override suspend fun bindTutorSessionProblemAnchor(
         command: PersistTutorSessionAnchorCommand,
     ): TutorSessionProblemAnchorRecord = database.tutorExposureDao().bindAnchor(command)
+
+    override suspend fun readLatestTutorSessionAnchor(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorRecord? = database.tutorExposureDao()
+        .readLatestAnchorForPracticeUnit(practiceUnitId, learnerId)
 
     override suspend fun reconcileTutorAnswerExposures(learnerId: String, limit: Int): Int =
         database.tutorExposureDao().reconcilePending(learnerId, limit)
@@ -1302,7 +1330,7 @@ internal class RoomStudyDatabase(
             changed
         }
 
-    override fun observeArchivedErrorBookEntries(): Flow<List<String>> =
+    override fun observeArchivedErrorBookEntries(): Flow<List<ArchivedEntrySummaryRow>> =
         database.mistakeDetailDao().archivedEntries()
 }
 

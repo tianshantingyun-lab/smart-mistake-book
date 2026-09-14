@@ -473,7 +473,7 @@ internal fun JsonObject.toTutorRespond(
 
 internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS = setOf("intentDecision", "toolRequests")
 private val TUTOR_TOOL_CALL_WIRE_KEYS =
-    setOf("tool", "terms", "rationale", "direction", "understanding", "difficultyTier", "confidence")
+    setOf("tool", "terms", "rationale", "direction", "understanding", "difficultyTier", "confidence", "extendedResult")
 
 internal fun JsonObject.toTutorToolRequests(
     modelVersion: String,
@@ -493,6 +493,7 @@ internal fun JsonObject.toTutorToolRequests(
                     understanding = call.optionalString("understanding")?.let { enumValue<TutorUnderstandingTier>(it) },
                     difficultyTier = call.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
                     confidence = call.optionalDouble("confidence") ?: MISSING_TOOL_CONFIDENCE,
+                    extendedResult = call.optionalBoolean("extendedResult") ?: false,
                 )
             }
             ?: throw InvalidModelResponseException(),

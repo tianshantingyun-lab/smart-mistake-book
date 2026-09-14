@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
@@ -26,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import com.tingyun.smartmistakebook.core.model.TutorToolRoundResult
+import com.tingyun.smartmistakebook.core.model.tutorToolRoundResult
 import com.tingyun.smartmistakebook.core.model.tutorToolAuthorization
 import com.tingyun.smartmistakebook.core.data.study.RoomTutorToolRunner
 import com.tingyun.smartmistakebook.core.model.ModelTaskInput
@@ -272,6 +274,10 @@ class RoomModelTaskRepository internal constructor(
                     throw InvalidProviderProtocol("模型在工具配额用尽后仍未作答")
                 }
                 val authorization = tutorToolAuthorization(requests.intentDecision, declaredTools)
+                // 扩展结果预算每轮只放一次：一次读工具的结果最多 6k 字符，三个并发请求会在下一轮
+                // prompt 里堆到 18k。模型仍可对每次查询表达"需要更大预算"（语义），但放大几次由本地
+                // 定——与本项目"模型给语义、本地给数值"的划分一致。
+                var extendedResultUsed = false
                 val outcomes = requests.calls.map { call ->
                     // 写工具（MASTERY_UPDATE）的不变式：只能在"当前题"（Respond）派遣里执行——
                     // 它是本会话内唯一可落库的写工具，绝不能在没有题目上下文的 Lobby/其他轮次
@@ -288,12 +294,21 @@ class RoomModelTaskRepository internal constructor(
                             errorKind = "not_authorized",
                         )
                     } else {
-                        toolRunner.run(call, toolContext(roundRequest.input, roundRequest.requestId))
+                        val allowsExtendedResult = !extendedResultUsed
+                        val outcome = toolRunner.run(
+                            call,
+                            toolContext(roundRequest.input, roundRequest.requestId, allowsExtendedResult),
+                        )
+                        if (call.extendedResult && allowsExtendedResult) {
+                            extendedResultUsed = true
+                        }
+                        outcome
                     }
                 }
-                toolRoundResults = toolRoundResults + TutorToolRoundResult(
+                toolRoundResults = toolRoundResults + tutorToolRoundResult(
                     roundOrdinal = toolRoundsUsed,
                     outcomes = outcomes,
+                    extendedResultUsed = extendedResultUsed,
                 )
                 // 收敛声明集：保留本轮已声明且仍允许的工具（非空），配额由轮次守卫保证。
                 val converged = toolDeclarationsFor(roundRequest.input).toList()
@@ -671,14 +686,20 @@ class RoomModelTaskRepository internal constructor(
     }
 
 
-    private fun toolContext(input: ModelTaskInput, requestId: String): RoomTutorToolRunner.Context =
+    private fun toolContext(
+        input: ModelTaskInput,
+        requestId: String,
+        allowsExtendedResult: Boolean,
+    ): RoomTutorToolRunner.Context =
         RoomTutorToolRunner.Context(
             subject = (input as? TutorRespondInput)?.subject,
+            // 扩展结果预算的轮内裁决：见 execute 里每轮只放一次的守卫。
+            allowsExtendedResult = allowsExtendedResult,
             // 会话锚：讲题会话的 conversationId 由 sessionId 确定性推导
             // （CapturedTutorSessionRoute 的 CreateTutorConversationCommand 同规则），
             // 供 MASTERY_UPDATE 的冷却/配额/审计按会话粒度工作。
             conversationId = (input as? TutorRespondInput)?.sessionId
-                ?.let { "tutor-conv:captured:$it" },
+                ?.let(TutorConversationIds::captured),
             // 裸 sessionId：NOTEBOOK_WRITE 用它 resolve 对应的 capture draft。
             // sessionId（"tutor-session-..."）≠ draftId（"draft-..."），写路径需
             // readTutorSession(sessionId) 拿 draftId 再 readProblemDraft(draftId)。

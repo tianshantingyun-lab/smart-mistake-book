@@ -235,6 +235,47 @@ class ModelTasksTest {
     }
 
     @Test
+    fun fingerprintChangesWhenUserHintChanges() {
+        // 带说明重评的语义基础：hint 变化必须产生新指纹，同 hint 不重复评估。
+        val request = captureRequest()
+        val hinted = request.copy(
+            input = (request.input as CaptureAssessmentInput).copy(userHint = "只要第2、3题"),
+        )
+
+        assertNotEquals(ModelTaskFingerprint.of(request), ModelTaskFingerprint.of(hinted))
+    }
+
+    @Test
+    fun assessmentInputRejectsOverlongUserHint() {
+        val input = captureRequest().input as CaptureAssessmentInput
+
+        assertThrows(IllegalArgumentException::class.java) {
+            input.copy(userHint = "题".repeat(MAX_CAPTURE_USER_HINT_CHARS + 1))
+        }
+    }
+
+    @Test
+    fun assessmentInputDecodesLegacyJsonWithoutUserHint() {
+        // 旧版本落库的任务请求没有 userHint 字段，升级后必须能原样读回。
+        val legacyJson = """
+            {
+              "type": "capture_assessment",
+              "draftId": "draft-1",
+              "sourceAssetId": "asset-1",
+              "origin": "TUTOR",
+              "imageWidth": 1080,
+              "imageHeight": 1440,
+              "followingSourceAssets": []
+            }
+        """.trimIndent()
+
+        val decoded = ModelTaskCodec.decodeInput(legacyJson) as CaptureAssessmentInput
+
+        assertEquals(null, decoded.userHint)
+        assertEquals("draft-1", decoded.draftId)
+    }
+
+    @Test
     fun logicalOperationFingerprintIgnoresTransportAuthorizationProviderAndTime() {
         val original = captureRequest().copy(
             egressManifest = operationManifest(

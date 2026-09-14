@@ -195,6 +195,8 @@ class RootExperienceInstrumentedTest {
         composeRule.onNodeWithTag("profile_capability_setting").performClick()
         waitForTag("capability_screen")
         composeRule.onNodeWithTag("capability_clear").performScrollTo().performClick()
+        // 清除配置不可撤销，先过确认框。
+        composeRule.onNodeWithTag("capability_clear_confirm").performClick()
         waitForText("本机配置与密钥已清除。")
         navigateBackAndWait("root_profile")
         waitForText("配置大模型 API")

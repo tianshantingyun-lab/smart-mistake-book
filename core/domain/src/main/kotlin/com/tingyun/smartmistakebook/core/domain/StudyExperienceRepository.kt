@@ -247,120 +247,6 @@ sealed interface StudyReviewAdvanceResult {
     val nextPracticeUnitId: String?
 }
 
-/** A one-tap report about the student's own saved question, never a claim of verified correctness. */
-enum class StudyReviewSelfReport {
-    RECALL_COMPLETED,
-
-    /** Struggled through but got there unaided — feeds the HLR assisted-correct bucket. */
-    RECALLED_WITH_EFFORT,
-    NEEDS_HELP,
-}
-
-/**
- * Four-button review rating (spec §2.21): the review UI only asks "费劲吗？"
- * after a correct answer (Again is recorded automatically on a wrong answer),
- * but all four ratings are accepted so detail-page annotations and future
- * surfaces can submit any of them.
- */
-enum class StudyReviewRating {
-    AGAIN,
-    HARD,
-    GOOD,
-    EASY,
-}
-
-data class StudyReviewRatingSubmission(
-    val requestId: String,
-    val presentationId: String,
-    val practiceUnitId: String,
-    val rating: StudyReviewRating,
-    val durationSeconds: Int,
-    val occurredAtEpochMillis: Long,
-    /** Silent interaction signals (spec §2.14), collected without UI prompts. */
-    val scrollUpCount: Int = 0,
-    val interruptionCount: Int = 0,
-    val awayMillis: Long = 0,
-) {
-    init {
-        require(requestId.isNotBlank()) { "Rating request id must not be blank" }
-        require(scrollUpCount >= 0 && interruptionCount >= 0) {
-            "Interaction counts must not be negative"
-        }
-        require(awayMillis >= 0) { "Away time must not be negative" }
-        require(presentationId.isNotBlank()) { "Rating presentation id must not be blank" }
-        require(practiceUnitId.isNotBlank()) { "Rating practice unit id must not be blank" }
-        require(durationSeconds >= 0) { "Rating duration must not be negative" }
-        require(occurredAtEpochMillis >= 0) { "Rating time must not be negative" }
-    }
-}
-
-data class StudyReviewRatingSubmissionResult(
-    val attemptId: String,
-    val created: Boolean,
-    val rating: StudyReviewRating,
-    val evidenceReason: LearningEvidenceReason,
-    override val progress: StudyReviewSessionProgress,
-    override val nextPracticeUnitId: String?,
-    /** True when the anti-farming cooldown (spec §2.7) downgraded the report to observation-only. */
-    val evidenceSuppressedByCooldown: Boolean = false,
-) : StudyReviewAdvanceResult {
-    init {
-        require(attemptId.isNotBlank()) { "Rating attempt id must not be blank" }
-        require(
-            (progress.status == StudyReviewSessionStatus.COMPLETED) ==
-                (nextPracticeUnitId == null),
-        ) { "A completed review session must not expose a next practice unit" }
-        require(nextPracticeUnitId == null || nextPracticeUnitId.isNotBlank()) {
-            "Next review practice-unit id must not be blank"
-        }
-    }
-}
-
-data class StudyReviewSelfReportSubmission(
-    val requestId: String,
-    val presentationId: String,
-    val practiceUnitId: String,
-    val report: StudyReviewSelfReport,
-    val durationSeconds: Int,
-    val occurredAtEpochMillis: Long,
-    /** Silent interaction signals (spec §2.14), collected without UI prompts. */
-    val scrollUpCount: Int = 0,
-    val interruptionCount: Int = 0,
-    val awayMillis: Long = 0,
-) {
-    init {
-        require(requestId.isNotBlank()) { "Self-report request id must not be blank" }
-        require(scrollUpCount >= 0 && interruptionCount >= 0) {
-            "Interaction counts must not be negative"
-        }
-        require(awayMillis >= 0) { "Away time must not be negative" }
-        require(presentationId.isNotBlank()) { "Self-report presentation id must not be blank" }
-        require(practiceUnitId.isNotBlank()) { "Self-report practice unit id must not be blank" }
-        require(durationSeconds >= 0) { "Self-report duration must not be negative" }
-        require(occurredAtEpochMillis >= 0) { "Self-report time must not be negative" }
-    }
-}
-
-data class StudyReviewSelfReportSubmissionResult(
-    val attemptId: String,
-    val created: Boolean,
-    val report: StudyReviewSelfReport,
-    val evidenceReason: LearningEvidenceReason,
-    override val progress: StudyReviewSessionProgress,
-    override val nextPracticeUnitId: String?,
-) : StudyReviewAdvanceResult {
-    init {
-        require(attemptId.isNotBlank()) { "Self-report attempt id must not be blank" }
-        require(
-            (progress.status == StudyReviewSessionStatus.COMPLETED) ==
-                (nextPracticeUnitId == null),
-        ) { "A completed review session must not expose a next practice unit" }
-        require(nextPracticeUnitId == null || nextPracticeUnitId.isNotBlank()) {
-            "Next review practice-unit id must not be blank"
-        }
-    }
-}
-
 data class StudyAnswerRevealRequest(
     val requestId: String,
     val presentationId: String,
@@ -406,24 +292,14 @@ interface StudyExperienceRepository : AutoCloseable {
         submission: StudyChoiceSubmission,
     ): StudyReviewChoiceSubmissionResult
 
-    /** Records a conservative question-memory report and atomically advances the persisted queue. */
-    suspend fun submitReviewSelfReport(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewSelfReportSubmission,
-    ): StudyReviewSelfReportSubmissionResult
-
     /**
-     * Records a four-button review rating (spec §2.21) and atomically
-     * advances the persisted queue. Anti-farming cooldowns (spec §2.7)
-     * downgrade repeated subjective reports to observation-only rows in
-     * review_log while the session still advances.
+     * 讲题判定的结算：这道无工件题在讲题会话里被检查过之后，把判定落成复习 attempt 并推进队列。
+     * 判定合成（行为证据胜出）与定价（非独立、题目级 HARD/AGAIN）见 [TutorJudgedReviewSettlement]。
+     * 幂等：同一（复习会话, 队列项）重复调用只生效一次；没有判定时不写、不推进。
      */
-    suspend fun submitReviewRating(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewRatingSubmission,
-    ): StudyReviewRatingSubmissionResult
+    suspend fun settleTutorJudgedReview(
+        settlement: TutorJudgedReviewSettlement,
+    ): TutorJudgedReviewSettlementResult
 
     /**
      * Persists the model's own teaching-focus output for one tutoring

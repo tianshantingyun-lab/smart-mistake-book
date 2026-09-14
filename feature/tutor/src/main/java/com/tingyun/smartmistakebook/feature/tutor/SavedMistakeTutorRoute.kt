@@ -30,8 +30,10 @@ import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
+import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
@@ -64,8 +66,13 @@ fun SavedMistakeTutorRoute(
     teachingReferenceRepository: TutorTeachingReferenceRepository,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
+    conversations: TutorConversationRepository? = null,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory? = null,
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit,
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
@@ -128,10 +135,14 @@ fun SavedMistakeTutorRoute(
                 state = current,
                 modelTasks = modelTasks,
                 interactions = interactions,
+                conversations = conversations,
+                catalogEntries = catalogEntries,
                 profile = profile,
                 learningMemory = learningMemory,
                 relatedKnowledgeNodeIds = requireNotNull(organization).knowledgeNodeIds,
                 reviewedTeachingReferences = teachingReferences,
+                onOpenMistakeNotebook = onOpenMistakeNotebook,
+                onOpenProfile = onOpenProfile,
                 onOpenModelSettings = onOpenModelSettings,
                 onBack = onBack,
                 onRecordTeachingFocus = onRecordTeachingFocus,
@@ -180,10 +191,15 @@ internal fun SavedMistakeTutorContent(
     state: MistakeDetailState.Ready,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
+    /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
+    conversations: TutorConversationRepository? = null,
+    catalogEntries: List<StudyCatalogEntry> = emptyList(),
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory?,
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
     onBack: () -> Unit = {},
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
@@ -298,6 +314,10 @@ internal fun SavedMistakeTutorContent(
         profile = profile,
         modelTasks = modelTasks,
         interactions = interactions,
+        conversations = conversations,
+        catalogEntries = catalogEntries,
+        onOpenMistakeNotebook = onOpenMistakeNotebook,
+        onOpenProfile = onOpenProfile,
         onOpenModelSettings = onOpenModelSettings,
         clock = clock,
         headerContent = {

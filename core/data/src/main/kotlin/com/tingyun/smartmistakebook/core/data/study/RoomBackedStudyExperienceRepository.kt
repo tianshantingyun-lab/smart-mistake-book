@@ -35,8 +35,6 @@ import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorProblemReceipt
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmissionResult
@@ -46,9 +44,10 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
 import com.tingyun.smartmistakebook.core.domain.StudyKnowledgeCoverageOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementStatus
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementResult
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlement
 import com.tingyun.smartmistakebook.core.data.knowledge.KnowledgePrerequisiteReader
 import com.tingyun.smartmistakebook.core.data.knowledge.RoomTutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.KnowledgeReadiness
@@ -214,13 +213,12 @@ class RoomBackedStudyExperienceRepository(
         reviewLogSink = reviewLogSink,
         writeContext = writeContext,
     )
-    private val ratingSubmissionService = StudyRatingSubmissionService(
+    private val tutorJudgedReviewSettler = TutorJudgedReviewSettler(
         database = database,
         learnerId = learnerId,
         durationModel = durationModel,
         reviewLogSink = reviewLogSink,
         writeContext = writeContext,
-        submissionPreparer = submissionPreparer,
         learnerSnapshot = { currentLearnerSnapshot() },
     )
     private val advisoryStore = StudyAdvisoryStore(
@@ -727,90 +725,18 @@ class RoomBackedStudyExperienceRepository(
         )
     }
 
-    override suspend fun submitReviewSelfReport(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewSelfReportSubmission,
-    ): StudyReviewSelfReportSubmissionResult = runOperation {
-        require(sessionId.isNotBlank()) { "Review session id must not be blank" }
-        require(expectedStateVersion >= 0) { "Expected review-session version must not be negative" }
-        val reviewPlan = requireNotNull(
-            database.observeReviewPlanForSession(sessionId).first(),
-        ) { "No persisted review plan owns session $sessionId" }
-        requireNotNull(
-            (reviewPlan.activeSession ?: reviewPlan.latestSession)?.takeIf {
-                it.reviewSessionId == sessionId
-            },
-        ) { "Review session $sessionId does not belong to its persisted plan" }
-        val orderedQueue = reviewPlan.queue.sortedBy { it.ordinal }
-        val queueItem = requireNotNull(
-            orderedQueue.singleOrNull { it.ordinal.toLong() == expectedStateVersion },
-        ) { "Expected review-session version does not identify one planned queue item" }
-        require(queueItem.practiceUnitId == submission.practiceUnitId) {
-            "Review report belongs to another planned practice unit"
+    override suspend fun settleTutorJudgedReview(
+        settlement: TutorJudgedReviewSettlement,
+    ): TutorJudgedReviewSettlementResult = runOperation {
+        val result = tutorJudgedReviewSettler.settle(settlement)
+        if (result.status == TutorJudgedReviewSettlementStatus.RECORDED) {
+            // 与其它复习写入一致：结算落库后刷新错题缓存，让界面看到推进后的会话指针。
+            val currentMistakes = database.observeMistakes().first()
+            latestMistakes = currentMistakes
+            initialized = true
+            publishReadySnapshot(currentMistakes)
         }
-        val currentMistakes = database.observeMistakes().first()
-        val mistake = requireNotNull(
-            currentMistakes.singleOrNull { it.practiceUnitId == submission.practiceUnitId },
-        ) { "The planned saved question is no longer active" }
-        val prepared = submissionPreparer.prepareSelfReportSubmission(submission, mistake)
-        val priorMemory = currentLearnerSnapshot().problemMemoryStates
-            ?.get(submission.practiceUnitId)
-        database.saveAssessmentEvidenceSnapshot(prepared.evidenceSnapshot)
-        val writeResult = database.recordReviewAttempt(
-            ReviewAttemptWriteCommand(
-                attempt = prepared.command,
-                sessionId = sessionId,
-                expectedStateVersion = expectedStateVersion,
-                reviewQueueItemId = queueItem.reviewQueueItemId,
-                practiceUnitId = queueItem.practiceUnitId,
-            ),
-        )
-        if (writeResult.attempt.created) {
-            reviewLogSink.record(
-                practiceUnitId = submission.practiceUnitId,
-                evidence = prepared.command.evidence,
-                occurredAtEpochMillis = submission.occurredAtEpochMillis,
-                durationSeconds = submission.durationSeconds,
-                studyDay = prepared.command.studyDay,
-                sourceKind = ReviewLogSink.SOURCE_KIND_SELF_REPORT,
-                sourceId = writeResult.attempt.attempt.attemptId,
-                previousReviewedAtEpochMillis = priorMemory?.lastReviewedAtEpochMillis,
-                scrollUpCount = submission.scrollUpCount,
-                interruptionCount = submission.interruptionCount,
-                awayMillis = submission.awayMillis,
-            )
-        }
-        // L1 rollout: feed the observed duration (subject already loaded above).
-        durationModel.record(
-            learnerId = learnerId,
-            subjectId = mistake.subject,
-            itemType = null,
-            difficulty = 5.0, // unused dimension; kept for API stability
-            durationSeconds = submission.durationSeconds.toDouble().coerceAtLeast(1.0),
-        )
-        val progress = writeResult.advance.session.toProgress(orderedQueue.size)
-        latestMistakes = currentMistakes
-        initialized = true
-        publishReadySnapshot(latestMistakes)
-        StudyReviewSelfReportSubmissionResult(
-            attemptId = writeResult.attempt.attempt.attemptId,
-            created = writeResult.attempt.created,
-            report = submission.report,
-            evidenceReason = writeResult.attempt.attempt.evidence.reason,
-            progress = progress,
-            nextPracticeUnitId = orderedQueue
-                .getOrNull(progress.currentOrdinal)
-                ?.practiceUnitId,
-        )
-    }
-
-    override suspend fun submitReviewRating(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewRatingSubmission,
-    ): StudyReviewRatingSubmissionResult = runOperation {
-        ratingSubmissionService.submit(sessionId, expectedStateVersion, submission)
+        result
     }
 
     override fun observeKnowledgeQuestionLattice(): Flow<List<KnowledgeQuestionLatticeRow>> =
@@ -1082,9 +1008,11 @@ class RoomBackedStudyExperienceRepository(
     }
 
     private fun publishFailure(failure: Throwable) {
+        // 状态行向学生承诺"不会用空白结果替代已有记录"：ERROR 时保留最近一次
+        // 复习概览（含旧队列展示），只标记投影不再是最新的。
         _snapshot.value = _snapshot.value.copy(
             status = StudyDataStatus.ERROR,
-            review = StudyReviewOverview(),
+            review = _snapshot.value.review,
             profile = _snapshot.value.profile.copy(projectionIsCurrent = false),
             tutorPracticeUnitId = null,
             tutorDecision = null,

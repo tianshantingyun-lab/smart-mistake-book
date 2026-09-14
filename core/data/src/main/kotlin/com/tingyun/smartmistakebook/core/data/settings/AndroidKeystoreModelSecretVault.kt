@@ -27,6 +27,16 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
+/**
+ * The single Keystore alias this app owns for the model API key.
+ *
+ * Authored here and referenced by every reader/eraser of that alias — notably
+ * `AndroidBackupRepository.deleteAllData`, whose "delete everything" sweep must
+ * target the real alias. A second, independently written copy of this string in
+ * that sweep is exactly how the alias survived deletion once already.
+ */
+internal const val MODEL_SECRET_KEY_ALIAS = "smart_mistake_book_model_api_key_v2"
+
 internal data class ModelSecretBinding(
     val generationId: String,
     val provider: String,
@@ -76,7 +86,7 @@ internal suspend fun <T : Any> withContextClosingDiscarded(
 internal class AndroidKeystoreModelSecretVault(
     context: Context,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val keyAlias: String = DEFAULT_KEY_ALIAS,
+    private val keyAlias: String = MODEL_SECRET_KEY_ALIAS,
     secretFile: File = File(
         context.applicationContext.noBackupFilesDir,
         DEFAULT_SECRET_RELATIVE_PATH,
@@ -461,7 +471,6 @@ internal class AndroidKeystoreModelSecretVault(
         const val ANDROID_KEYSTORE = "AndroidKeyStore"
         const val CIPHER_TRANSFORMATION = "AES/GCM/NoPadding"
         const val SHA_256 = "SHA-256"
-        const val DEFAULT_KEY_ALIAS = "smart_mistake_book_model_api_key_v2"
         const val DEFAULT_SECRET_RELATIVE_PATH = "model-secrets/api-key-v2.bin"
         const val AES_KEY_BITS = 256
         const val GCM_TAG_BITS = 128

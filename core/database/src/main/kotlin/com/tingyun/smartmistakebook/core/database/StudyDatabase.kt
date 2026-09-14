@@ -17,6 +17,7 @@ import com.tingyun.smartmistakebook.core.database.dao.KnowledgeTeachingMaterialD
 import com.tingyun.smartmistakebook.core.database.dao.LearningDao
 import com.tingyun.smartmistakebook.core.database.dao.LibraryFtsSearchDao
 import com.tingyun.smartmistakebook.core.database.dao.LibraryQueryDao
+import com.tingyun.smartmistakebook.core.database.dao.MasteryOverviewDao
 import com.tingyun.smartmistakebook.core.database.dao.PredictionAuditDao
 import com.tingyun.smartmistakebook.core.database.dao.ModelTaskTransactionDao
 import com.tingyun.smartmistakebook.core.database.dao.MistakeDetailDao
@@ -251,6 +252,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
 
     abstract fun modelTaskTransactionDao(): ModelTaskTransactionDao
     abstract fun chatEvidenceDao(): ChatEvidenceDao
+
+    abstract fun masteryOverviewDao(): MasteryOverviewDao
 
     abstract fun tutorInteractionDao(): TutorInteractionDao
 

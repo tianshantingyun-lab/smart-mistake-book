@@ -56,6 +56,12 @@ internal class RoomSplitImportStore(
         return database.splitImportDao().readJobWithQuestions(jobId)?.toRecord()
     }
 
+    suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord? {
+        require(batchJobId.isNotBlank())
+        return database.splitImportDao().readLatestReadyBatchSplitJob(batchJobId)
+            ?.toRecord(emptyList())
+    }
+
     suspend fun updateSelected(
         jobId: String,
         questionOrdinal: Int,
@@ -157,7 +163,7 @@ private fun SplitImportQuestionSeed.toEntity(
     regionBottom = regionBottom(),
     selected = prioritised,
     confirmState = StudyDbValue.SplitImportConfirmState.PENDING,
-    splitDraftId = null,
+    splitDraftId = splitDraftId,
 )
 
 private fun SplitImportJobWithQuestions.toRecord() =

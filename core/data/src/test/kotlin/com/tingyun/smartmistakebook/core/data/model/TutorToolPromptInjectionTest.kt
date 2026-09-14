@@ -69,6 +69,14 @@ class TutorToolPromptInjectionTest {
         assertTrue(prompt.contains("读取这道题相关知识点讲解材料"))
         assertTrue(prompt.contains("检索错题本中匹配的错题"))
         assertTrue(prompt.contains("读取学生对相关知识的掌握情况"))
+        // 深挖能力的说明必须留在工具描述里：模型是靠这几句知道可以按知识点聚焦、
+        // 会拿到历史聚合、以及结果可能被截断的。少任何一句，工具就退回成"只会给
+        // 一份固定摘要"——而没有别的测试会因此变红。
+        assertTrue(prompt.contains("terms 留空＝返回本科目全部"))
+        assertTrue(prompt.contains("聚焦解析到的知识点"))
+        assertTrue(prompt.contains("结构化历史聚合"))
+        assertTrue(prompt.contains("会被截断并注明"))
+        assertTrue(prompt.contains("extendedResult 置 true"))
         assertTrue(prompt.contains("单轮最多申请 3 个互不相同工具"))
         assertTrue(prompt.contains("未在上方列出的工具不可申请"))
     }
@@ -140,6 +148,16 @@ class TutorToolPromptInjectionTest {
         assertTrue("POSITIVE 须指出残留疑点/防迎合", prompt.contains("残留疑点"))
         // 可观察 rubric——MASTERED 需独立做对+解释原理，非单次答对。
         assertTrue("MASTERED 需独立做对且能解释原理", prompt.contains("独立做对") && prompt.contains("解释原理"))
+    }
+
+    @Test
+    fun respondPromptAllowsOneOpenEndedCheckWithAVerbatimQuotationDuty() {
+        val prompt = OpenAiModelTaskAdapters.prompt(respond())
+        // 开放式检查：学生自己组织语言回答（不是选择题卡片），且不得在学生求助时反过来考他。
+        assertTrue("应允许一句开放式检查", prompt.contains("一句开放式检查"))
+        assertTrue("应禁止写成选择题/卡片", prompt.contains("不得写成选择题或卡片"))
+        assertTrue("不得在学生只是求助时考他", prompt.contains("不得在学生只是求助时反过来考他"))
+        assertTrue("应写明引文会被本地逐条比对", prompt.contains("引文会被本地逐条比对"))
     }
 
     @Test

@@ -1,7 +1,9 @@
 package com.tingyun.smartmistakebook.core.data.backup
 
 import android.content.Context
+import androidx.core.content.ContextCompat
 import com.tingyun.smartmistakebook.core.data.capture.AndroidCanonicalAssetVault
+import com.tingyun.smartmistakebook.core.data.settings.MODEL_SECRET_KEY_ALIAS
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.BackupOptions
@@ -367,7 +369,12 @@ class AndroidBackupRepository(
         val databaseBytes = databaseFile.length()
         val assetBytes = assetRoot.listFiles().orEmpty().filter { it.isFile }.sumOf(File::length)
         // SharedPreferences live under the app data root, NOT under filesDir.
-        val preferenceFiles = File(context.dataDir, "shared_prefs").listFiles().orEmpty()
+        // Context#getDataDir only exists from API 24 while minSdk is 23, so go
+        // through ContextCompat: on 23 it resolves the root from ApplicationInfo
+        // instead of throwing NoSuchMethodError on a delete-all path.
+        val preferenceFiles = ContextCompat.getDataDir(context)
+            ?.let { File(it, "shared_prefs") }
+            ?.listFiles().orEmpty()
             .filter { it.isFile }
             .toList()
         val preferenceBytes = preferenceFiles.sumOf(File::length)
@@ -422,12 +429,14 @@ class AndroidBackupRepository(
             0L
         }
 
-        // 8. Clear Keystore aliases for API keys
+        // 8. Clear the Keystore entry that protects the model API key. The
+        // alias is authored by the vault, so delete exactly that alias instead
+        // of re-deriving its name here — a second copy of the string is how the
+        // sweep previously missed the entry and left the key behind.
         try {
             val keyStore = java.security.KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-            val aliases = keyStore.aliases().toList()
-            aliases.filter { it.startsWith("smartmistakebook_") }.forEach { alias ->
-                keyStore.deleteEntry(alias)
+            if (keyStore.containsAlias(MODEL_SECRET_KEY_ALIAS)) {
+                keyStore.deleteEntry(MODEL_SECRET_KEY_ALIAS)
             }
         } catch (_: Exception) {
             // Keystore may not be accessible; continue cleanup

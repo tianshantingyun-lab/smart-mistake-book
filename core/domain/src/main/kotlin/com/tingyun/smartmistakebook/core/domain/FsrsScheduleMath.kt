@@ -267,6 +267,11 @@ object FsrsEvidenceRatingMapper {
             LearningEvidenceReason.CORRECT_AFTER_HINT,
             LearningEvidenceReason.CORRECT_ON_RETRY,
             -> FsrsRating.HARD
+            // 讲题判定：模型出探针 + 语义判词，判分者本身有误差（κ≈0.70），探针又构成协助，
+            // 因此**显式**钉在 Hard，不靠下面的 else 继承——否则将来改 reportedRatingFor 会
+            // 静默改变调度档。依据见 docs/research/model-judged-verdict-pricing.md §4(i)。
+            LearningEvidenceReason.MODEL_JUDGED_CORRECT -> FsrsRating.HARD
+            LearningEvidenceReason.MODEL_JUDGED_INCORRECT -> FsrsRating.AGAIN
             else -> reportedRatingFor(evidenceReason, weight)
         }
 
@@ -296,6 +301,8 @@ object FsrsEvidenceRatingMapper {
             LearningEvidenceReason.INCORRECT_ON_RETRY -> FsrsRating.AGAIN
             LearningEvidenceReason.INCORRECT_AFTER_REVEAL -> FsrsRating.AGAIN
             LearningEvidenceReason.ANSWER_REVEALED -> FsrsRating.AGAIN
+            LearningEvidenceReason.MODEL_JUDGED_CORRECT -> FsrsRating.HARD
+            LearningEvidenceReason.MODEL_JUDGED_INCORRECT -> FsrsRating.AGAIN
         }
 
     private const val WEIGHT_EPSILON = 1e-6

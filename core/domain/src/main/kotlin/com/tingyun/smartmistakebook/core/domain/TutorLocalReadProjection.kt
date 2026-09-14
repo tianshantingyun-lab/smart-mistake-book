@@ -4,13 +4,21 @@ import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import java.util.Locale
 
+/**
+ * 错题本检索的一条结果。
+ *
+ * 只有一个库在这里：错题本的目录条目。掌握情况**刻意不参与**——它由
+ * [TutorLearningProgressLookup] 那一路单独提供，因为"某题掌握得怎样"与"这个知识点你
+ * 掌握得怎样"是两个不同的问题（前者是目录元数据，后者需要知识点锚）。这条结果此前
+ * 还携带过 `masteryStatus`，但既没被渲染也没参与排序，纯粹是把两个库的形状混在一起
+ * 的残留，已移除。
+ */
 data class TutorMistakeLookupItem(
     val entryId: String,
     val title: String,
     val subject: String,
     val chapterLabels: List<String>,
     val knowledgeLabels: List<String>,
-    val masteryStatus: MasteryStatus,
 )
 
 data class TutorLearningProgressLookup(
@@ -46,7 +54,6 @@ object TutorLocalReadProjection {
                     subject = entry.subject,
                     chapterLabels = entry.chapterLabels.take(MAX_DISPLAY_LABELS),
                     knowledgeLabels = entry.knowledgeLabels.take(MAX_DISPLAY_LABELS),
-                    masteryStatus = entry.masteryStatus,
                 )
             }
             .toList()

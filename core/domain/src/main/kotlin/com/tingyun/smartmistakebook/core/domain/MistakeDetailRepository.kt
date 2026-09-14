@@ -41,7 +41,17 @@ interface MistakeDetailRepository {
 
     suspend fun restoreEntry(entryId: String, at: Long): Boolean = false
 
-    fun observeArchived(): Flow<List<String>> = flowOf(emptyList())
+    /** 归档条目摘要（id+标题）：错题本"已移出"入口的展示与恢复。 */
+    fun observeArchived(): Flow<List<ArchivedMistakeRef>> = flowOf(emptyList())
+}
+
+data class ArchivedMistakeRef(
+    val entryId: String,
+    val title: String,
+) {
+    init {
+        require(entryId.isNotBlank()) { "Archived entry id must not be blank" }
+    }
 }
 
 data class MistakeRevisionSummary(

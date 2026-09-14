@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -24,7 +25,7 @@ internal class CaptureModelTaskCommands(
     private val coordinator: CaptureModelTaskCoordinator,
     private val state: CaptureScreenState,
     private val draftState: CaptureDraftStateCommands,
-    private val onSplitReady: () -> Unit,
+    private val onSplitReady: (String) -> Unit,
     private val structuredProjection: () -> String,
     private val buildAssessmentRequest: (
         String, String, String, Int, Int, Long, Boolean,
@@ -62,11 +63,11 @@ internal class CaptureModelTaskCommands(
                 state.workflowInProgress = true
                 state.splitError = null
                 try {
-                    withContext(Dispatchers.IO) {
+                    val result = withContext(Dispatchers.IO) {
                         repository.splitDraft(captureSplitDraftRequest(decision))
                     }
                     draftState.resetDraft()
-                    onSplitReady()
+                    onSplitReady(result.splitJobId.orEmpty())
                 } catch (cancelled: kotlinx.coroutines.CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
@@ -75,6 +76,38 @@ internal class CaptureModelTaskCommands(
                     state.workflowInProgress = false
                 }
             }
+        }
+    }
+
+    /** 用户手动框选后的拆分：regions 来自框选，请求独立幂等键。 */
+    suspend fun manualSplit(regions: List<NormalizedSourceRegion>) {
+        val decision = captureSplitDecision(
+            snapshot = state.assessmentSnapshot,
+            draftId = state.draftId,
+            revisionNumber = state.draftRevisionNumber,
+            sourcePages = state.sourcePages,
+        )
+        if (decision !is CaptureSplitDecision.Run) return
+        state.workflowInProgress = true
+        state.splitError = null
+        state.splitPendingChoice = false
+        try {
+            val request = captureManualSplitDraftRequest(
+                decision = decision,
+                regions = regions,
+                nonce = ++state.manualSplitNonce,
+            )
+            val result = withContext(Dispatchers.IO) {
+                repository.splitDraft(request)
+            }
+            draftState.resetDraft()
+            onSplitReady(result.splitJobId.orEmpty())
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            state.splitError = CAPTURE_SPLIT_FAILED
+        } finally {
+            state.workflowInProgress = false
         }
     }
 

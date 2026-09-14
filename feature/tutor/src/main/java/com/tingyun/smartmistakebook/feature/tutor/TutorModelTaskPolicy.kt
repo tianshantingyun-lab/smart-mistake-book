@@ -588,6 +588,13 @@ internal fun visibleTutorContextMarkdown(
     response?.takeIf(TutorTurnResponse::hasChoicePayload)?.let { choice ->
         append("\n\n学生选择：").append(choice.selectedChoiceMarkdown)
         append("\n\n已显示反馈：").append(choice.feedbackMarkdown)
+        // 本地核对结果必须回灌给模型：对错是本地按 correctChoiceId 算出来的，
+        // 模型看不到它就会把自己事先写的反馈（可能写反）当事实，而写侧门控已经
+        // 按本地判定否决了它的 POSITIVE 声明——两边口径必须一致。
+        choice.selectionWasCorrect?.let { correct ->
+            append("\n\n系统核对：这道检查题学生")
+            append(if (correct) "答对了" else "答错了")
+        }
     }
     val sceneWasVisible = output.plan.diagnosticItem == null || response?.hasChoicePayload == true
     if (sceneWasVisible) {
@@ -659,10 +666,14 @@ private fun StudyProfileOverview.toTutorKnowledgeEvidence(
                 .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_EVIDENCE_MASS),
             independentCorrectObservationCount = summary.independentCorrectObservationCount
                 .coerceAtMost(TutorKnowledgeEvidence.MAX_DISCLOSED_OBSERVATIONS),
-            latestEvidenceRecency = summary.lastEvidenceAtEpochMillis
-                .toTutorEvidenceRecency(atEpochMillis),
-            latestIndependentErrorRecency = summary.lastIndependentErrorAtEpochMillis
-                .toTutorEvidenceRecency(atEpochMillis),
+            latestEvidenceRecency = TutorEvidenceRecency.of(
+                summary.lastEvidenceAtEpochMillis,
+                atEpochMillis,
+            ),
+            latestIndependentErrorRecency = TutorEvidenceRecency.of(
+                summary.lastIndependentErrorAtEpochMillis,
+                atEpochMillis,
+            ),
         )
     }
 }
@@ -675,18 +686,6 @@ private fun weaknessPriority(
     MasteryStatus.STALE -> 2
     MasteryStatus.UNKNOWN -> 3
     MasteryStatus.MASTERED -> 4
-}
-
-private fun Long?.toTutorEvidenceRecency(atEpochMillis: Long): TutorEvidenceRecency {
-    val eventAt = this ?: return TutorEvidenceRecency.UNKNOWN
-    if (eventAt > atEpochMillis) return TutorEvidenceRecency.UNKNOWN
-    val ageMillis = atEpochMillis - eventAt
-    return when {
-        ageMillis <= 7L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_7_DAYS
-        ageMillis <= 30L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_30_DAYS
-        ageMillis <= 90L * MILLIS_PER_DAY -> TutorEvidenceRecency.WITHIN_90_DAYS
-        else -> TutorEvidenceRecency.OLDER
-    }
 }
 
 private fun StringBuilder.appendLengthPrefixed(value: String?) {
@@ -704,7 +703,6 @@ private fun sha256Hex(value: String): String = MessageDigest.getInstance("SHA-25
 
 private const val MAX_WEAKNESS_EVIDENCE = 8
 private const val MAX_STRENGTH_EVIDENCE = 4
-private const val MILLIS_PER_DAY = 86_400_000L
 
 private fun StudyQuestionMemory.toTutorEvidence(atEpochMillis: Long): TutorQuestionLearningEvidence =
     TutorQuestionLearningEvidence(

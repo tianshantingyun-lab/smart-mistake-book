@@ -70,6 +70,17 @@ class CaptureScreenStateRestorationTest {
             composeRule.onAllNodesWithTag("capture_screen").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag("capture_screen").assertExists()
+
+        // sourcePages live outside the Saver; the rehydration path must rebuild
+        // them from the repository, or the restored screen strands on
+        // "正在准备这道题" with no editable source page.
+        composeRule.waitUntil(5_000) {
+            composeRule
+                .onAllNodesWithTag("capture_source_page_0")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithTag("capture_source_page_0").assertExists()
     }
 }
 

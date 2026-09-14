@@ -5,6 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -216,6 +217,45 @@ class SchedulingEvaluationHarnessTest {
         // w15 (hard penalty) and w16 (easy bonus) must stay out of the fitted set below the floor.
         assertTrue(15 !in result.optimizedParameterIndices)
         assertTrue(16 !in result.optimizedParameterIndices)
+    }
+
+    @Test
+    fun `model judged rows never feed the optimizer or the evaluation`() {
+        // 讲题判定是新的评分来源：校准达标前只允许进 calibrateSources 单列一源，
+        // 不许进 FSRS 参数拟合（口径见 docs/research/model-judged-verdict-pricing.md §4(iii)8）。
+        val judgedOnly = listOf(
+            sample("unit-1", DAY * 0, FsrsRating.GOOD, sourceKind = ReviewSample.MODEL_JUDGED_KIND),
+            sample("unit-1", DAY * 2, FsrsRating.GOOD, sourceKind = ReviewSample.MODEL_JUDGED_KIND),
+            sample("unit-1", DAY * 4, FsrsRating.AGAIN, sourceKind = ReviewSample.MODEL_JUDGED_KIND),
+        )
+
+        assertEquals(0, FsrsParameterOptimizer.predictableSampleCount(judgedOnly))
+
+        // 拟合样本被清空后，优化器必须停在数据不足档，而不是拿讲题判定行去拟合。
+        val optimizeResult = FsrsParameterOptimizer.optimize(judgedOnly)
+        assertEquals(FsrsParameterOptimizer.Mode.INSUFFICIENT_DATA, optimizeResult.mode)
+        assertEquals(0, optimizeResult.sampleCount)
+
+        // 评估同理：过滤后没有可评估样本，直接拒绝而不是静默用讲题判定行。
+        assertThrows(IllegalArgumentException::class.java) {
+            SchedulingEvaluationHarness.evaluate(judgedOnly)
+        }
+    }
+
+    @Test
+    fun `model judged positives still surface in source calibration`() {
+        val samples = listOf(
+            sample("unit-1", DAY * 0, FsrsRating.GOOD, sourceKind = ReviewSample.ATTEMPT_KIND),
+            sample("unit-1", DAY * 2, FsrsRating.GOOD, sourceKind = ReviewSample.MODEL_JUDGED_KIND),
+            sample("unit-1", DAY * 5, FsrsRating.AGAIN, sourceKind = ReviewSample.ATTEMPT_KIND),
+        )
+
+        val calibration = SchedulingEvaluationHarness.calibrateSources(samples)
+
+        val judged = calibration.single { it.sourceKind == ReviewSample.MODEL_JUDGED_KIND }
+        assertEquals(1, judged.positiveReportCount)
+        assertEquals(1, judged.nextAttemptCount)
+        assertEquals(0.0, judged.realizedRecallRate, 0.0)
     }
 
     private fun syntheticHistory(cardCount: Int = 12): List<ReviewSample> = (0 until cardCount).flatMap { card ->

@@ -33,6 +33,7 @@ internal suspend fun recognizeAndSplitBatchPage(
     sourceUri: String,
     draft: CaptureDraftSummary,
     database: StudyDatabasePort,
+    capture: com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository,
     occurrenceTime: Long,
@@ -75,6 +76,18 @@ internal suspend fun recognizeAndSplitBatchPage(
     if (!assessment.questionRegions.isUsableSplit()) {
         return BatchSplitOutcome.NotASplit
     }
+    // Each cut piece needs its own openable draft, or the review page could
+    // never confirm anything into the library. Replays reuse the same
+    // deterministic draft ids, so re-running a page does not duplicate work.
+    val splitDrafts = capture.createSplitRegionDrafts(
+        com.tingyun.smartmistakebook.core.domain.SplitRegionDraftsRequest(
+            requestId = "batch-split:$jobId:$pageIndex",
+            sourceAssetId = draft.sourceAssetId,
+            regions = assessment.questionRegions,
+            origin = com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin.LIBRARY,
+            occurredAtEpochMillis = occurrenceTime,
+        ),
+    )
     val job = splitImports.createSplitJob(
         CreateSplitImportJobCommand(
             jobId = "split:$jobId:$pageIndex",
@@ -84,7 +97,7 @@ internal suspend fun recognizeAndSplitBatchPage(
             pageCount = 1,
             createdAtEpochMillis = occurrenceTime,
         ),
-        questions = assessment.questionRegions.map { region ->
+        questions = assessment.questionRegions.mapIndexed { index, region ->
             SplitImportQuestionSeed(
                 left = region.left,
                 top = region.top,
@@ -92,6 +105,7 @@ internal suspend fun recognizeAndSplitBatchPage(
                 bottom = region.bottom,
                 pageIndex = 0,
                 prioritised = true,
+                splitDraftId = splitDrafts.getOrNull(index)?.draftId,
             )
         },
     )

@@ -16,6 +16,7 @@ internal fun captureAssessmentRequest(
     imageHeight: Int,
     occurredAtEpochMillis: Long,
     agentConsentGranted: Boolean,
+    userHint: String? = null,
 ): ModelTaskRequest = ModelTaskRequest(
     requestId = requestId,
     input = CaptureAssessmentInput(
@@ -24,6 +25,7 @@ internal fun captureAssessmentRequest(
         origin = origin,
         imageWidth = imageWidth,
         imageHeight = imageHeight,
+        userHint = userHint?.trim()?.takeIf { it.isNotEmpty() },
     ),
     occurredAtEpochMillis = occurredAtEpochMillis,
     agentConsentGranted = agentConsentGranted,

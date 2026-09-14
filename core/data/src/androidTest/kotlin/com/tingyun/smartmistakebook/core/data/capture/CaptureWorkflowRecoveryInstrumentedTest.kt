@@ -199,6 +199,22 @@ class CaptureWorkflowRecoveryInstrumentedTest : CaptureWorkflowTestBase() {
             first.splitDrafts.map { it.draftId }.toSet(),
             repository.observePendingCaptures().first().map { it.draftId }.toSet(),
         )
+        // The split-review ledger must carry the job with per-question draft
+        // links, or the review page has nothing to confirm and the drafts
+        // strand (P0-1 in the 2026-09-13 QA audit).
+        val splitJobId = requireNotNull(first.splitJobId) {
+            "A capture split must register a review job"
+        }
+        val reviewJob = database.readSplitImportJob(splitJobId)
+        checkNotNull(reviewJob)
+        assertEquals(
+            StudyDbValue.SplitImportStatus.READY,
+            reviewJob.status,
+        )
+        assertEquals(
+            first.splitDrafts.map { it.draftId },
+            reviewJob.questions.map { it.splitDraftId },
+        )
         val assetFilesAfterFirstSplit = File(context.filesDir, "source-assets")
             .listFiles()
             .orEmpty()
@@ -209,6 +225,7 @@ class CaptureWorkflowRecoveryInstrumentedTest : CaptureWorkflowTestBase() {
 
         assertFalse(replay.created)
         assertEquals(first.splitDrafts, replay.splitDrafts)
+        assertEquals(splitJobId, replay.splitJobId)
         assertEquals(
             assetFilesAfterFirstSplit,
             File(context.filesDir, "source-assets").listFiles().orEmpty().map { it.name }.toSet(),

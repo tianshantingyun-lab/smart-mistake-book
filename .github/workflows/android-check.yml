@@ -84,7 +84,20 @@ jobs:
       - name: Build knowledge-production module
         run: ./gradlew :knowledge-production:build --console=plain
       - name: Lint
-        run: ./gradlew lintLocalFirstDebug lintStrictOfflineDebug --console=plain
+        # App flavors plus every Android library module. `lint<Flavor>Debug`
+        # only matches :app (it is the only module with product flavors), so the
+        # libraries used to be linted nowhere: their NewApi/RestrictedApi
+        # findings accumulated unseen until a manual run surfaced them (KD-11,
+        # KD-12). List the modules explicitly — same reason the unit-test step
+        # lists them: a module that is not named is never checked.
+        run: >
+          ./gradlew lintLocalFirstDebug lintStrictOfflineDebug
+          :core:data:lintDebug :core:database:lintDebug :core:export:lintDebug
+          :core:ui:lintDebug :core:visual-ui:lintDebug
+          :feature:capture:lintDebug :feature:library:lintDebug
+          :feature:profile:lintDebug :feature:review:lintDebug
+          :feature:tutor:lintDebug
+          --console=plain
       - name: Unit-test coverage reports (feed the status report)
         # JVM modules use Kover; Android libraries use the AGP+Jacoco report
         # because Kover 0.9.1 cannot see AGP 9's built-in-Kotlin variants (KD-5).

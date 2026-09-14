@@ -30,8 +30,12 @@ import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import com.tingyun.smartmistakebook.core.model.CaptureAssessment
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentIssue
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentIssueCode
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentSeverity
 import com.tingyun.smartmistakebook.core.model.CapturePageRelation
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
@@ -497,6 +501,123 @@ class BatchImportRepositoryInstrumentedTest {
                 providerId = "fixture-page-relation",
                 providerDisplayName = "测试模型",
                 modelId = "fixture-v1",
+                supportedTasks = setOf(ModelTaskKind.CAPTURE_ASSESS),
+                supportsImageInput = true,
+                supportsStructuredOutput = true,
+                supportsStreaming = false,
+                executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+                providerConfigurationVersion = "fixture-config-v1",
+            )
+        }
+    }
+
+    /**
+     * Regression for the P0 where a batch auto-split built a review job whose
+     * questions carried no draft links (and no UI entry ever reached it): a
+     * page the model answers SPLIT for must now produce cropped per-question
+     * drafts, a READY review job whose questions link to those drafts, and a
+     * batch job surface that links the student into the review flow.
+     */
+    @Test
+    fun splitRecognitionPreparesOpenableDraftsAndSurfacesTheReviewJob() = runBlocking {
+        val selected = listOf(insertImage(), insertImage())
+        val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val modelTasks = ModelTaskRepositoryFactory.create(
+                database = database,
+                gateway = SplitRegionGateway(),
+            )
+            val repository = BatchImportRepositoryFactory.create(
+                context = context,
+                database = database,
+                capture = captureRepository(database),
+                processingScope = processingScope,
+                modelTasks = modelTasks,
+                splitImports = SplitImportRepositoryFactory.createConcrete(database),
+                modelEgressAllowed = { true },
+            )
+            val created = repository.createBatchImport(
+                CreateBatchImportRequest(
+                    requestId = "split-prepares-drafts",
+                    localUris = selected.map(Uri::toString),
+                    occurredAtEpochMillis = 2_000,
+                ),
+            )
+            val completed = withTimeout(30_000) {
+                repository.observeBatchImports().first { jobs ->
+                    jobs.firstOrNull()?.status == BatchImportStatus.COMPLETED
+                }.first()
+            }
+            assertEquals(
+                "Split must never fail a page: " + completed.pages.map { it.status },
+                2,
+                completed.pages.count { it.status == BatchImportPageStatus.READY },
+            )
+            val splitJobId = requireNotNull(completed.splitReadyJobId) {
+                "A batch with an auto-split page must surface the review job; " +
+                    "direct job 0 = " +
+                    database.readSplitImportJob("split:${created.jobId}:0").let { job ->
+                        job?.let { "${it.jobId}/${it.status}/${it.questions.map { q -> q.splitDraftId }}" } ?: "null"
+                    } +
+                    ", split model task = " +
+                    (database.readModelTask("batch-split:${created.jobId}:0")?.let { task ->
+                        "${task.status}/${task.failure?.message ?: "-"}"
+                    } ?: "null") +
+                    ", per-page statuses = " + completed.pages.map { it.status }
+            }
+            val reviewJob = checkNotNull(
+                SplitImportRepositoryFactory.createConcrete(database).readImport(splitJobId),
+            )
+            assertTrue(reviewJob.questions.isNotEmpty())
+            val linkedDraftIds = reviewJob.questions.map { checkNotNull(it.splitDraftId) }
+            assertEquals(
+                "Each question row must link a distinct openable draft",
+                linkedDraftIds.size,
+                linkedDraftIds.distinct().size,
+            )
+            linkedDraftIds.forEach { draftId ->
+                val resumable = checkNotNull(captureRepository(database).readPendingCapture(draftId))
+                assertTrue(resumable.sourcePages.isNotEmpty())
+            }
+        } finally {
+            processingScope.cancel()
+        }
+    }
+
+    private class SplitRegionGateway : ModelGateway {
+        override suspend fun capabilities(): ProviderCapabilitySnapshot = CAPABILITIES
+
+        override fun execute(execution: ModelGatewayExecution) = flow {
+            emit(ModelGatewayEvent.Started(CAPABILITIES))
+            emit(
+                ModelGatewayEvent.Completed(
+                    CaptureAssessmentOutput(
+                        CaptureAssessment(
+                            decision = CaptureAssessmentDecision.SPLIT,
+                            issues = listOf(
+                                CaptureAssessmentIssue(
+                                    code = CaptureAssessmentIssueCode.MULTIPLE_QUESTIONS,
+                                    severity = CaptureAssessmentSeverity.BLOCKING,
+                                    message = "页面上有多道互相独立的题",
+                                ),
+                            ),
+                            suggestedActions = emptyList(),
+                            modelVersion = "fixture/split-v1",
+                            questionRegions = listOf(
+                                NormalizedSourceRegion(0.05, 0.02, 0.95, 0.45),
+                                NormalizedSourceRegion(0.05, 0.50, 0.95, 0.95),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        private companion object {
+            val CAPABILITIES = ProviderCapabilitySnapshot(
+                providerId = "fixture-split-region",
+                providerDisplayName = "测试模型",
+                modelId = "fixture-split-v1",
                 supportedTasks = setOf(ModelTaskKind.CAPTURE_ASSESS),
                 supportsImageInput = true,
                 supportsStructuredOutput = true,

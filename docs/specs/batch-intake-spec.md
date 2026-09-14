@@ -48,7 +48,7 @@
 2. 低自信答对 → 已有 low-confidence-correct 降档通道的显式依据。
 
 **四源信号（按优先级，冲突取低——宁判低自信更早重做，安全方向）**：
-1. **学生自报**（四键评级隐含自信："很轻松"=HIGH、"很费劲"=LOW）——直接元认知，最高优先；
+1. ~~**学生自报**（四键评级隐含自信）~~——**2026-09-13 已废止**：不再采信学生自报对错/掌握，无工件题改走讲题判定（模型语义判词 + 本地核对，非独立定价）；
 2. **模型语义**（讲题对话 TutorUnderstandingTier：MASTERED/CONFIDENT=HIGH，UNCERTAIN/STRUGGLING=LOW）；
 3. **本地 UI 监测**（ReviewInteractionTracker 已采集）：`attentionFactor`（切屏/离开）低=分心、`scrollUpCount` 高=回看犹豫、`editCount` 高=自我纠疑；
 4. **客观推断**（无 1/2 时）：RT 相对个人基线的分位（TimeOfDayCalibrator RtBaseline——快答对=流畅，快答错=猜疑）+ 该 KC 保守掌握分。
@@ -67,7 +67,7 @@
 ## 6. 不做/后续
 - confidence-at-error 的采集字段（录入流程"做题自信度"提问）依赖前测流程上线后才有真实数据——先由前测作答的信号面代替；**当前已接线的信号面**：ReviewLogSink.confidenceAtErrorByPracticeUnit() 从 review_log 存储信号（切屏/离开/回看）判定每卡最近一次错误作答的自信档——流畅错误（attentionFactor≥0.88，允许一次短暂切屏，对齐 FREE_SWITCH_ALLOWANCE；零回看）= HIGH（hypercorrection 排序输入），分心（factor<0.7）或犹豫（回看≥3）= LOW（且客观分心时任何自信声明一律降到底 LOW），其余 MEDIUM
 - 题型→交错策略映射（纯事实类反转保护）留待分类数据积累
-- **L1 激活（已完成 2026-09-06）**：LogDurationModel 现由 repository 持有单一共用实例（planner 构造注入 + 引入决策共用）。①Record 点=四个真实作答提交（submitChoice/submitReviewChoice/submitReviewRating/submitReviewSelfReport，subject 从 mistake 查）；②桶键**降维为 (learnerId, subjectId)**（DifficultyBucketKey 只含两维——difficulty/itemType 在记录时与查询时漂移导致永不命中，已在 LogDurationModelTest 更新断言）；③Warm-up=initialize 时从 review_log ATTEMPT 样本回放（observedAttemptDurations，仅真实作答）
+- **L1 激活（已完成 2026-09-06）**：LogDurationModel 现由 repository 持有单一共用实例（planner 构造注入 + 引入决策共用）。①Record 点=真实作答提交（submitChoice / submitReviewChoice / 讲题判定结算 settleTutorJudgedReview；后两者 subject 从 mistake 查）——`submitReviewRating`/`submitReviewSelfReport` 于 2026-09-13 拆除；②桶键**降维为 (learnerId, subjectId)**（DifficultyBucketKey 只含两维——difficulty/itemType 在记录时与查询时漂移导致永不命中，已在 LogDurationModelTest 更新断言）；③Warm-up=initialize 时从 review_log ATTEMPT 样本回放（observedAttemptDurations，仅真实作答）
 - **P2/P3（已实现 2026-09-06）**：
   - P2 前测发起流：`PretestRouting`（三路路由 + fromScoringMode 装配 + producesRealAttempt）驱动；ReviewSessionScreen 的 NO_ASSESSMENT_ITEM 分支接入 TUTOR_JUDGED_FLOW 引导（"去讲题判定"按钮）→ app 根 navigate MistakeTutor（讲题会话判定首次作答）；LearningDao.findLatestAssessmentItemForPracticeUnit 装配查询已加
   - P3 计划预览：`previewBacklog`（逐日模拟 decide + unschedulableCount）+ `StudyReviewOverview.intakeBacklogCount/intakeMedianEstimateSeconds` + ReviewRoute IntakeBacklogPreview（"还有 N 道新题待学：每天约 X 题，约 M 天覆盖"）

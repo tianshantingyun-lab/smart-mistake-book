@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -30,12 +31,11 @@ import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
 import com.tingyun.smartmistakebook.core.domain.StudyReviewChoiceSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewOverview
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmission
-import com.tingyun.smartmistakebook.core.domain.StudyReviewRatingSubmissionResult
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmissionResult
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionProgress
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlement
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementResult
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlementStatus
+import org.junit.Assert.assertTrue
 import com.tingyun.smartmistakebook.core.model.LearningEvidenceReason
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import java.util.concurrent.ConcurrentHashMap
@@ -191,7 +191,7 @@ class RootTutorFailClosedInstrumentedTest {
     }
 
     @Test
-    fun savedCapturedQuestionReviewsTheExactOriginalWithoutInventingAnAnswer() {
+    fun savedCapturedQuestionOffersOnlyTheTutorJudgedReview() {
         repository.publishCapturedReviewReady()
 
         waitForText("1")
@@ -201,12 +201,18 @@ class RootTutorFailClosedInstrumentedTest {
         waitForText(CAPTURED_QUESTION_MARKDOWN)
         composeRule.onAllNodesWithText(TUTOR_TITLE, substring = false).assertCountEquals(0)
 
-        composeRule.onNodeWithTag("review_self_report_recalled").performClick()
-        waitUntil { repository.selfReports.size == 1 }
-        waitForText("今日复习已完成")
+        // 自评/评级通道已拆：不再有任何"由学生决定对错"的按钮，唯一作答面是讲题判定。
+        composeRule.onAllNodesWithTag("review_self_report_recalled").assertCountEquals(0)
+        composeRule.onAllNodesWithTag("review_self_report_effort").assertCountEquals(0)
+        composeRule.onAllNodesWithTag("review_self_report_stuck").assertCountEquals(0)
+        composeRule.onAllNodesWithTag("review_rating_easy").assertCountEquals(0)
 
-        assertEquals(CAPTURED_PRACTICE_UNIT_ID, repository.selfReports.single().practiceUnitId)
-        assertEquals(StudyReviewSelfReport.RECALL_COMPLETED, repository.selfReports.single().report)
+        composeRule.onNodeWithTag("captured_review_tutor_judged_button").performClick()
+        waitForTag("saved_mistake_tutor_screen")
+
+        // 结算被尝试过，但这次讲题还没有形成判定 → 队列不推进（不伪造记录）。
+        assertTrue(repository.settleCalls.isNotEmpty())
+        assertEquals(CAPTURED_PRACTICE_UNIT_ID, repository.settleCalls.first().practiceUnitId)
     }
 
     /**
@@ -242,12 +248,8 @@ class RootTutorFailClosedInstrumentedTest {
         // 题干同时还在：补救是**题干旁的上下文**，不是替代品（§2.9）。
         waitForText(CAPTURED_QUESTION_MARKDOWN)
         // 并且**不拦作答**：§2.16 的开场重教是必经步骤，§2.9 的补救不是。
-        composeRule.onNodeWithTag("review_self_report_recalled").performClick()
-        waitUntil { repository.selfReports.size == 1 }
-        assertEquals(
-            CAPTURED_PRACTICE_UNIT_ID,
-            repository.selfReports.single().practiceUnitId,
-        )
+        // 第 2 条之后作答走讲题判定，所以"不拦"体现在那条入口仍然可点（自评通道已拆除）。
+        composeRule.onNodeWithTag("captured_review_tutor_judged_button").assertIsDisplayed()
     }
 
     private fun navigateToTutor() {
@@ -351,7 +353,7 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
     val artifactRequests = CopyOnWriteArrayList<String>()
     val completedArtifactRequests = CopyOnWriteArrayList<String>()
     val submissions = CopyOnWriteArrayList<StudyChoiceSubmission>()
-    val selfReports = CopyOnWriteArrayList<StudyReviewSelfReportSubmission>()
+    val settleCalls = CopyOnWriteArrayList<TutorJudgedReviewSettlement>()
     val revealRequests = CopyOnWriteArrayList<StudyAnswerRevealRequest>()
 
     fun publishReady(practiceUnitId: String) {
@@ -469,11 +471,24 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         )
     }
 
-    override suspend fun submitReviewRating(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewRatingSubmission,
-    ): StudyReviewRatingSubmissionResult = error("Review is outside this root Tutor test")
+    override suspend fun settleTutorJudgedReview(
+        settlement: TutorJudgedReviewSettlement,
+    ): TutorJudgedReviewSettlementResult {
+        settleCalls += settlement
+        val review = mutableSnapshot.value.review
+        return TutorJudgedReviewSettlementResult(
+            status = TutorJudgedReviewSettlementStatus.NO_VERDICT,
+            progress = StudyReviewSessionProgress(
+                sessionId = settlement.sessionId,
+                planId = CAPTURED_REVIEW_PLAN_ID,
+                currentOrdinal = review.currentOrdinal,
+                queueSize = 1,
+                stateVersion = review.sessionStateVersion ?: 0,
+                status = com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus.ACTIVE,
+            ),
+            nextPracticeUnitId = settlement.practiceUnitId,
+        )
+    }
 
     override suspend fun recordTeachingFocus(
         sessionId: String,
@@ -514,44 +529,6 @@ private class ControllableStudyExperienceRepository : StudyExperienceRepository 
         expectedStateVersion: Long,
         submission: StudyChoiceSubmission,
     ): StudyReviewChoiceSubmissionResult = error("Review is outside this root Tutor test")
-
-    override suspend fun submitReviewSelfReport(
-        sessionId: String,
-        expectedStateVersion: Long,
-        submission: StudyReviewSelfReportSubmission,
-    ): StudyReviewSelfReportSubmissionResult {
-        selfReports += submission
-        val progress = StudyReviewSessionProgress(
-            sessionId = CAPTURED_REVIEW_SESSION_ID,
-            planId = CAPTURED_REVIEW_PLAN_ID,
-            currentOrdinal = 1,
-            queueSize = 1,
-            stateVersion = 1,
-            status = com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus.COMPLETED,
-        )
-        mutableSnapshot.value = mutableSnapshot.value.copy(
-            review = mutableSnapshot.value.review.copy(
-                activeSessionId = null,
-                currentOrdinal = 1,
-                sessionStateVersion = 1,
-                completedToday = true,
-            ),
-        )
-        return StudyReviewSelfReportSubmissionResult(
-            attemptId = "attempt:${submission.requestId}",
-            created = true,
-            report = submission.report,
-            evidenceReason = when (submission.report) {
-                StudyReviewSelfReport.RECALL_COMPLETED ->
-                    LearningEvidenceReason.SELF_REPORTED_RECALL
-                StudyReviewSelfReport.RECALLED_WITH_EFFORT ->
-                    LearningEvidenceReason.CORRECT_ON_RETRY
-                StudyReviewSelfReport.NEEDS_HELP -> LearningEvidenceReason.SELF_REPORTED_STUCK
-            },
-            progress = progress,
-            nextPracticeUnitId = null,
-        )
-    }
 
     override suspend fun revealAnswer(
         request: StudyAnswerRevealRequest,

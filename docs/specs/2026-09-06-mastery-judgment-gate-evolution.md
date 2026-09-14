@@ -117,8 +117,42 @@ Nelson & Dunlosky）；§4 参数表也早已列出这一行（"交叉核对：M
 
 **未验证**：本会话作答回读在真机 Room 上的整链端到端（需 instrumented/AVD）——单测用
 `FakeStudyDatabasePort` 覆盖了"读到的行 → 门"这一段，未覆盖"Room 的
-`observeTutorTurnResponses` 在同一事务视图下确实返回刚落的行"。**仍未实现**：档3
-（延迟复核）——机械校验查不出模型是否编造引用，这一边界未变。
+`observeTutorTurnResponses` 在同一事务视图下确实返回刚落的行"。**档3 仍未实现**：见 §2。
+
+## 1.5 补充（2026-09-11）：证据锚真实性核对
+
+**消灭的失败。** 档2 把"rationale 里有 ≥2 对引号"当成可核查性证明，但引号内容从不与
+会话原文比对：模型（或其上下文里被注入的题面文本）只要写出 `学生说"因为""所以"`
+就凑够 2 条锚，从而以 MASTERED 档（0.18）写入掌握度。档1 规范第 1 条要求的是
+"逐字引用学生原话或可观察行为"——本补充是这条规范在本地唯一可机械执行的部分。
+
+**改动。**
+| 层 | 变化 |
+|---|---|
+| domain `MasteryWriteGate` | 新增 `verifiedEvidenceAnchorCount(rationale, verifiableText)`：只数引文真出现在语料里的锚。折叠大小写与全部空白（Markdown 换行/缩进会切断引文；标点不折叠——标点差异是不忠实的真实信号）。空语料 → 0 锚，与"缺佐证不写高置信档"同姿态 |
+| data `RoomTutorToolRunner` | MASTERED+POSITIVE 分支改用核对版；语料 = 学生消息原文（`tutor_message` 的 `STUDENT` 行）∪ 本轮客观作答的所选选项文本。其余档位仍用机械计数——避免把日常讲题全部挡掉 |
+| model `ModelPromptPolicyVersions` | `TUTOR_RESPOND` v10 → **v11-verifiable-anchor**（prompt 变了，旧授权必须失效重确认） |
+| data `OpenAiModelTaskAdapters` | 判断规范第 1 条补明"引文必须真出现在本会话的学生消息或学生作答里，本地会逐条比对；改写、概括或编造的引文一律不算" |
+
+**有意不做。** 没有把 ASSISTANT 消息纳入语料——模型不能拿自己说过的话当证据佐证自己的
+判断（`assistantMessagesCannotCorroborateTheModelsOwnClaim` 锁定）。也没有把核对推广到
+CONFIDENT 等低档：那些档位本就按对话自报折价，加锚要求会让日常讲题写不进掌握度。
+
+**验收证据。**
+- `MasteryWriteGateTest` 22/22（`:core:domain:test`）——新增 3 例：编造引文不计、空语料不计、
+  折叠空白仍能匹配且标点差异不匹配、核对数不超过机械数。
+- `RoomTutorToolRunnerTest` 16/16（`:core:data:testDebugUnitTest`）——新增 4 例：编造锚即拒且
+  落观察行、逐字引文通过、学生作答也算语料、ASSISTANT 行不算语料、低档位不受影响。
+- **变异验证**：把 runner 的 `evidenceAnchorCount` 临时改回纯机械计数，
+  `:core:data:testDebugUnitTest` 恰好 3 例转红
+  （`masteredIsRejectedWhenTheQuotedAnchorsAreFabricated`、
+  `aVerbatimStudentChoiceCountsAsAnAnchorWithoutAnyMessage`、
+  `assistantMessagesCannotCorroborateTheModelsOwnClaim`），其余保持绿。
+- 回归：`:core:data:testDebugUnitTest` 377/377、`:core:domain:test` 382/382、
+  `:core:model:test` 299/299。
+
+**剩余边界。** 核对只能证明"引文确有其事"，不能证明"该引文确实支撑 MASTERED 判断"
+（引文真实但不足以推出掌握）。后者属语义判断，仍由档1 prompt 规范与档3 延迟复核承担。
 
 ## 2. 档3：MASTERED 永不单次判定——延迟复核通道
 

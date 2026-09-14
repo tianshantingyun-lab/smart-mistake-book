@@ -67,6 +67,19 @@ internal fun JsonObject.optionalInt(name: String): Int? =
 internal fun JsonObject.optionalDouble(name: String): Double? =
     (this[name] as? JsonPrimitive)?.doubleOrNull?.takeIf { it.isFinite() && it in 0.0..1.0 }
 
+/**
+ * An absent key yields null; a present key that is not a JSON boolean throws,
+ * mirroring [requiredBoolean] so a quoted `"true"` is never accepted as a flag.
+ */
+internal fun JsonObject.optionalBoolean(name: String): Boolean? {
+    val primitive = this[name] as? JsonPrimitive ?: return null
+    return when (primitive.content.takeUnless { primitive.isString }) {
+        "true" -> true
+        "false" -> false
+        else -> throw InvalidModelResponseException()
+    }
+}
+
 internal fun JsonObject.optionalFiniteDouble(name: String): Double? {
     val value = this[name] ?: return null
     if (value is JsonPrimitive && value.contentOrNull == null) return null

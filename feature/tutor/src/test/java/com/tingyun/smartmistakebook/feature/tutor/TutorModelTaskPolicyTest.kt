@@ -675,6 +675,57 @@ class TutorModelTaskPolicyTest {
     }
 
     @Test
+    fun visibleContextTellsTheModelTheLocallyJudgedCheckOutcome() {
+        // 对错由本地按 correctChoiceId 算出；模型必须看到它，否则会把自己事先写的
+        // 反馈（可能写反）当事实，而写侧门控已按本地判定否决了它的 POSITIVE 声明。
+        val output = TutorPlanOutput(
+            sessionId = "session-1",
+            draftRevisionNumber = 2,
+            questionDocumentId = "document-1",
+            plan = TutorTurnPlan(
+                openingMarkdown = "先看导数的符号。",
+                solutionMarkdown = "这是隐藏的完整讲解。",
+                alternateMethodMarkdown = "这是隐藏的另一种方法。",
+                difficultyReasonMarkdown = "关键在符号变化。",
+                targetedEvidenceLabels = emptyList(),
+                inferredKnowledgeLabels = listOf("导数"),
+            ),
+            modelVersion = "model-v1",
+        )
+        val answeredWrong = TutorTurnResponse(
+            sessionId = "session-1",
+            questionDocumentId = "document-1",
+            revisionNumber = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            diagnosticStemMarkdown = "这一步的依据是什么？",
+            selectedChoiceId = "choice-b",
+            selectedChoiceMarkdown = "因为符号变了",
+            selectionWasCorrect = false,
+            feedbackMarkdown = "再想想。",
+            requestedMove = null,
+            solutionRevealed = false,
+            submittedAtEpochMillis = 10,
+            updatedAtEpochMillis = 11,
+        )
+
+        val wrongContext = visibleTutorContextMarkdown(
+            output = output,
+            response = answeredWrong,
+            answerWasExposed = false,
+        )
+        assertTrue("系统核对：这道检查题学生答错了" in wrongContext)
+        assertFalse("隐藏的完整讲解" in wrongContext)
+
+        val rightContext = visibleTutorContextMarkdown(
+            output = output,
+            response = answeredWrong.copy(selectionWasCorrect = true),
+            answerWasExposed = false,
+        )
+        assertTrue("系统核对：这道检查题学生答对了" in rightContext)
+    }
+
+    @Test
     fun modelCannotAuthorizeAnswerExposureWithoutTheStudentsExactRequest() {
         assertFalse(respondInput("这一步为什么先求导？").studentAuthorizedSolutionRequest())
         assertFalse(respondInput("先不看答案，只给提示").studentAuthorizedSolutionRequest())

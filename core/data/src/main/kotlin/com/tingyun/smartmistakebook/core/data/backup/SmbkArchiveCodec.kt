@@ -12,8 +12,8 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
-import java.nio.file.Files
 import java.security.MessageDigest
+import java.util.UUID
 import java.util.zip.CRC32
 import java.util.zip.Inflater
 import java.util.zip.InflaterInputStream
@@ -182,7 +182,7 @@ internal object SmbkArchiveCodec {
      */
     fun validate(
         archive: InputStream,
-        scratchDir: File = Files.createTempDirectory("smbk-validate").toFile().also(File::deleteOnExit),
+        scratchDir: File = defaultScratchDirectory(),
         limits: SmbkResourceLimits = SmbkResourceLimits.DEFAULT,
     ): BackupValidation {
         require(scratchDir.isDirectory || scratchDir.mkdirs()) {
@@ -296,6 +296,19 @@ internal object SmbkArchiveCodec {
     // ------------------------------------------------------------------
     // Shared verification pipeline
     // ------------------------------------------------------------------
+
+    /**
+     * Scratch directory for a validation that did not name one.
+     *
+     * java.io rather than java.nio.file: `Files.createTempDirectory` is API 26
+     * while minSdk is 23, so it would throw NoSuchMethodError on a supported
+     * device. The name stays unique per call so two concurrent validations
+     * cannot share a spool file.
+     */
+    private fun defaultScratchDirectory(): File = File(
+        File(System.getProperty("java.io.tmpdir") ?: "."),
+        "smbk-validate-${UUID.randomUUID()}",
+    ).also(File::deleteOnExit)
 
     /** Copies the untrusted stream to [target], bounded by [SmbkResourceLimits.maxCompressedBytes]. */
     private fun spool(archive: InputStream, target: File, limits: SmbkResourceLimits): File {

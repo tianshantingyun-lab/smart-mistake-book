@@ -34,6 +34,14 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,8 +56,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
+import com.tingyun.smartmistakebook.core.domain.ArchivedMistakeRef
+import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.LibraryCatalogRepository
+import com.tingyun.smartmistakebook.core.ui.Ink
+import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
@@ -60,6 +73,7 @@ import com.tingyun.smartmistakebook.core.domain.LibraryCatalogItem
 import com.tingyun.smartmistakebook.core.domain.LibraryQuery
 import com.tingyun.smartmistakebook.core.ui.SmartColors
 import com.tingyun.smartmistakebook.core.ui.SubjectIcon
+import kotlinx.coroutines.launch
 
 @Composable
 fun LibraryRoute(
@@ -67,6 +81,7 @@ fun LibraryRoute(
     catalogRepository: LibraryCatalogRepository? = null,
     /** 分页源（审计 R-02）：由装配点交进来，feature 因此不必依赖 core:data。 */
     catalogPagingSource: ((LibraryQuery) -> PagingSource<Int, LibraryCatalogItem>)? = null,
+    mistakeDetailRepository: MistakeDetailRepository? = null,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
     onExportVisible: (List<String>) -> Unit,
@@ -88,6 +103,7 @@ fun LibraryRoute(
             entries.size
         },
         usePaging = catalogRepository != null,
+        mistakeDetailRepository = mistakeDetailRepository,
         onCapture = onCapture,
         onBatchImport = onBatchImport,
         onExportVisible = onExportVisible,
@@ -101,6 +117,7 @@ fun LibraryRoute(
 private fun LibraryContent(
     mistakeCount: Int,
     usePaging: Boolean,
+    mistakeDetailRepository: MistakeDetailRepository?,
     onCapture: () -> Unit,
     onBatchImport: () -> Unit,
     onExportVisible: (List<String>) -> Unit,
@@ -109,6 +126,7 @@ private fun LibraryContent(
     modifier: Modifier,
 ) {
     val uiState = viewModel.uiState
+    val scope = rememberCoroutineScope()
     val pagingItems = if (usePaging) viewModel.pagingData.collectAsLazyPagingItems() else null
     val visibleMistakeCount = if (pagingItems != null) pagingItems.itemCount else uiState.visibleMistakes.size
     val loading = usePaging && !uiState.loaded
@@ -157,6 +175,17 @@ private fun LibraryContent(
                 PaperDivider(Modifier.padding(vertical = 8.dp))
                 BatchImportEntryRow(onClick = onBatchImport)
                 PaperDivider(Modifier.padding(vertical = 8.dp))
+                ArchivedEntriesSection(
+                    repository = mistakeDetailRepository,
+                    onRestore = { entryId ->
+                        scope.launch {
+                            mistakeDetailRepository?.restoreEntry(
+                                entryId = entryId,
+                                at = System.currentTimeMillis(),
+                            )
+                        }
+                    },
+                )
                 if (emptyState != LibraryEmptyState.CATALOG_EMPTY) {
                     LibrarySearchField(
                         query = uiState.query,
@@ -191,13 +220,11 @@ private fun LibraryContent(
                         OutlineActionChip(
                             text = "导出当前 ${visibleMistakeCount} 道",
                             onClick = {
-                                onExportVisible(
-                                    if (pagingItems != null) {
-                                        pagingItems.itemSnapshotList.mapNotNull { it?.entryId }
-                                    } else {
-                                        uiState.visibleMistakes.map(LibraryMistake::id)
-                                    }
-                                )
+                                // 与按钮口径一致：按当前筛选拉全量 id，而不是
+                                // Paging 已加载的子集；超限时导出页会提示缩小范围。
+                                viewModel.exportVisible(
+                                    MAX_LIBRARY_BATCH_EXPORT_QUESTIONS,
+                                ) { ids -> onExportVisible(ids) }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -533,6 +560,65 @@ private fun EmptyLibraryResult(
                 onClick = onClear,
                 modifier = Modifier.testTag("library_clear_filters"),
             )
+        }
+    }
+}
+
+/**
+ * "已移出的题"折叠区：归档条目从列表/搜索消失后，这里给出唯一的恢复入口，
+ * 让详情页"之后可以恢复"的承诺真正可达。
+ */
+@Composable
+private fun ArchivedEntriesSection(
+    repository: MistakeDetailRepository?,
+    onRestore: (String) -> Unit,
+) {
+    if (repository == null) return
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val archived by produceState<List<ArchivedMistakeRef>>(emptyList(), repository) {
+        repository.observeArchived().collect { value = it }
+    }
+    if (archived.isEmpty()) return
+    Column(Modifier.fillMaxWidth()) {
+        OutlineActionChip(
+            text = "已移出的题（${archived.size}）",
+            onClick = { expanded = !expanded },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("library_archived_toggle"),
+        )
+        AnimatedVisibility(visible = expanded) {
+            Column(Modifier.padding(top = 8.dp)) {
+                archived.forEach { item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 48.dp)
+                            .padding(horizontal = 6.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = item.title,
+                                color = SmartColors.Ink,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        OutlineActionChip(
+                            text = "恢复",
+                            onClick = { onRestore(item.entryId) },
+                            modifier = Modifier.testTag("library_archived_restore"),
+                        )
+                    }
+                }
+                Text(
+                    text = "恢复后这道题会回到错题本列表和复习计划。",
+                    color = SmartColors.InkSecondary,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
         }
     }
 }

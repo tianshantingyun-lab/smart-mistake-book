@@ -49,6 +49,7 @@ internal data class CaptureResumeDraftApplication(
     val recognitionStateName: String,
     val recognitionConfidence: Double?,
     val recognitionBlockCount: Int,
+    val userHint: String,
     val tasks: CaptureResumeModelTaskSelection,
     val workspace: CaptureWorkspaceLocalSnapshot,
 )
@@ -82,6 +83,9 @@ internal fun captureResumeDraftApplication(
             .takeIf { values -> values.isNotEmpty() }
             ?.average(),
         recognitionBlockCount = draft.questionDocument.document.blocks.size,
+        userHint = (tasks.assessmentSnapshot?.request?.input
+            as? com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput)
+            ?.userHint.orEmpty(),
         tasks = tasks,
         workspace = restoreCaptureWorkspace(draft),
     )
@@ -134,7 +138,14 @@ internal class CaptureResumeCommands(
     }
 
     suspend fun loadResume(requestedDraftId: String) {
-        if (captureResumeShouldSkipLoad(requestedDraftId, state.draftId, state.receivedImageUri)) {
+        if (
+            captureResumeShouldSkipLoad(
+                requestedDraftId = requestedDraftId,
+                currentDraftId = state.draftId,
+                receivedImageUri = state.receivedImageUri,
+                sourcePages = state.sourcePages,
+            )
+        ) {
             state.resumeLoadStateName = CaptureResumeLoadState.READY.name
             return
         }
@@ -224,6 +235,7 @@ internal class CaptureResumeCommands(
         state.assessmentSourceAssetId = applied.tasks.assessmentSourceAssetId
         state.assessmentOccurredAtEpochMillis = applied.tasks.assessmentOccurredAtEpochMillis
         state.assessmentRetryNonce = 0
+        state.userHint = applied.userHint
         state.parseSnapshot = applied.tasks.parseSnapshot
         state.parseRequestId = applied.tasks.parseRequestId
         state.parseRetryNonce = 0

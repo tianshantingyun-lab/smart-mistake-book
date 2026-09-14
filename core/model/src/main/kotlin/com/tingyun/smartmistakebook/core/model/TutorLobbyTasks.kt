@@ -116,10 +116,22 @@ data class TutorLobbyOutput(
     }
 
     companion object {
+        /**
+         * Lobby 允许申请的本地能力，只有两条：什么都不申请，或检索错题本。
+         *
+         * **掌握情况读取被刻意排除**（`READ_LEARNING_PROGRESS`）：它是"某个知识点你
+         * 掌握得怎样"，没有当前题就没有锚点；而且它的产出无法归入
+         * `TUTOR_LOBBY_DISCLOSURE`（仅学生消息 + 会话上下文），任其进入就要放宽这条
+         * 通道的披露面。掌握情况读取因此只保留在有题上下文的地方——讲题会话的
+         * `MASTERY_READ` 工具。
+         *
+         * 这条枚举此前与 Lobby 提示词**互相矛盾**（枚举允许、提示词却写"本地不提供该
+         * 查询"），而没有测试会因此变红；`TutorLobbyCapabilityBoundaryTest` 现在锁住
+         * 它与提示词的一致性。
+         */
         val ALLOWED_LOCAL_CAPABILITIES = setOf(
             TutorRequestedLocalCapability.NONE,
             TutorRequestedLocalCapability.READ_MISTAKE_NOTEBOOK,
-            TutorRequestedLocalCapability.READ_LEARNING_PROGRESS,
         )
     }
 }

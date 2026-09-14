@@ -83,6 +83,21 @@ data class TutorToolCall(
      * [MISSING_TOOL_CONFIDENCE] rather than pick a number that clears the gate.
      */
     val confidence: Double = MISSING_TOOL_CONFIDENCE,
+    /**
+     * Asks for the larger result budget on this one call — MASTERY_READ only.
+     * A **semantic** request, not a number: the model says "this query may need
+     * more room" and the ceiling stays a local constant
+     * ([TutorToolOutcome.MAX_TOOL_RESULT_CHARS_EXTENDED]). Letting the model
+     * name a size would hand it control over how much learning data leaves the
+     * device — the same split every other numeric decision follows (the model
+     * supplies semantics, the local layer supplies numbers).
+     *
+     * Only MASTERY_READ may set it: it is the one read tool whose result grows
+     * with the learner's history. The round-level guard that at most one such
+     * call is honoured per round lives in the executor, because that is where
+     * the round's other calls are visible.
+     */
+    val extendedResult: Boolean = false,
 ) {
     init {
         require(rationale.isNotBlank() && rationale.length <= MAX_TOOL_RATIONALE_CHARS) {
@@ -104,6 +119,9 @@ data class TutorToolCall(
             require(terms.isNotEmpty()) {
                 "The $tool tool requires at least one lookup term"
             }
+        }
+        require(!extendedResult || tool == TutorToolName.MASTERY_READ) {
+            "Only MASTERY_READ may request an extended result budget"
         }
         if (tool == TutorToolName.MASTERY_UPDATE) {
             require(direction != null) {
@@ -135,14 +153,36 @@ data class TutorToolOutcome(
     init {
         summaryMarkdown.requireSafeModelText(
             label = "Tutor tool outcome summary",
-            maxChars = MAX_TOOL_RESULT_CHARS,
+            maxChars = MAX_TOOL_RESULT_CHARS_EXTENDED,
             allowLineBreaks = true,
         )
         require(ok || errorKind != null) { "A failed tool outcome must carry an error kind" }
     }
 
     companion object {
+        /**
+         * Default result budget every tool targets. A tool that emits more must
+         * have a reason recorded on it (today only `MASTERY_READ` does, and only
+         * for a call that asked for the extended budget).
+         */
         const val MAX_TOOL_RESULT_CHARS = 2_000
+
+        /**
+         * Absolute ceiling for one outcome, applied by [TutorToolOutcome]'s own
+         * validation. It is the larger value because a model-requested extended
+         * read is legitimate here; the pipeline still needs a hard bound so a
+         * mis-sized result can never silently inflate the next prompt.
+         *
+         * Sized so a full subject list stays inside it with room to spare: a
+         * subject carries on the order of a few hundred knowledge nodes *with*
+         * mastery state, and one compact line each fits well under this.
+         *
+         * The total-across-a-round budget is a separate question and stays
+         * unimplemented (spec §3.1 asks for ≤4k/round; the pipeline only bounds
+         * each outcome). The executor additionally honours at most one extended
+         * call per round, which is what keeps the worst case near `2·2k + 6k`.
+         */
+        const val MAX_TOOL_RESULT_CHARS_EXTENDED = 6_000
     }
 }
 
@@ -161,8 +201,116 @@ data class TutorToolRoundResult(
 
     companion object {
         const val MAX_TOOL_ROUNDS = 5
+
+        /**
+         * Total characters of tool results one round may add to the next prompt
+         * (spec model-intent-routing §3.1).
+         *
+         * The spec's 4k was written for a round of at most two calls, and the
+         * implementation allows three — so this is deliberately a cap on the
+         * *sum*, not a restatement of the per-call budget: three calls at the
+         * default 2k would otherwise add 6k with nothing bounding the total.
+         */
+        const val MAX_TOOL_ROUND_RESULT_CHARS = 4_000
+
+        /**
+         * Extra round budget granted when the round contains a call that asked
+         * for the extended result budget. Without this the 4k round cap would
+         * make a 6k single result unreachable, which would quietly cancel the
+         * extended budget the model is allowed to request.
+         */
+        const val EXTENDED_ROUND_RESULT_INCREMENT_CHARS = 4_000
     }
 }
+
+/**
+ * Builds the round result the next dispatch will carry, applying the round's
+ * result budget.
+ *
+ * The budget decision lives here rather than in the repository that assembles
+ * the round: which number applies, and how a round that asked for the extended
+ * budget differs, is policy — and policy belongs where it can be tested without
+ * a database. The repository keeps only the call.
+ */
+fun tutorToolRoundResult(
+    roundOrdinal: Int,
+    outcomes: List<TutorToolOutcome>,
+    extendedResultUsed: Boolean,
+): TutorToolRoundResult = TutorToolRoundResult(
+    roundOrdinal = roundOrdinal,
+    outcomes = budgetTutorToolOutcomes(
+        outcomes = outcomes,
+        budgetChars = TutorToolRoundResult.MAX_TOOL_ROUND_RESULT_CHARS +
+            if (extendedResultUsed) {
+                TutorToolRoundResult.EXTENDED_ROUND_RESULT_INCREMENT_CHARS
+            } else {
+                0
+            },
+    ),
+)
+
+/**
+ * Fits a round's outcomes into [budgetChars], in order.
+ *
+ * In order, not proportionally: the model asked for these queries in a
+ * sequence, so the earlier ones are the ones it wanted first. What does not fit
+ * is still reported — a silently shortened result reads as a complete one.
+ *
+ * Each step first sets aside enough for every *later* outcome to at least carry
+ * its "not sent" line. Without that reserve the round overshoots the very budget
+ * it is enforcing: admitting that a result was dropped costs characters too.
+ *
+ * A squeezed outcome keeps its `ok` and `errorKind`: those describe whether the
+ * tool ran, and shortening the text does not change that. Only the summary is
+ * rewritten, and always to something non-blank so the outcome stays valid.
+ */
+fun budgetTutorToolOutcomes(
+    outcomes: List<TutorToolOutcome>,
+    budgetChars: Int,
+): List<TutorToolOutcome> {
+    val minimumRoundCost = outcomes.size * (DROPPED_OUTCOME_SUMMARY.length + 1)
+    require(budgetChars >= minimumRoundCost) {
+        "A tool round budget of $budgetChars chars cannot report ${outcomes.size} outcomes"
+    }
+    var remaining = budgetChars
+    return outcomes.mapIndexed { index, outcome ->
+        val summary = outcome.summaryMarkdown
+        val laterReserve = (outcomes.size - index - 1) * (DROPPED_OUTCOME_SUMMARY.length + 1)
+        val availableForThis = remaining - laterReserve - 1
+        val truncatedFits = availableForThis >= TRUNCATED_OUTCOME_NOTE.length + MIN_TRUNCATED_PREFIX_CHARS
+        val replacement = when {
+            summary.length <= availableForThis -> null
+            truncatedFits ->
+                summary.take(availableForThis - TRUNCATED_OUTCOME_NOTE.length) + TRUNCATED_OUTCOME_NOTE
+            else -> DROPPED_OUTCOME_SUMMARY
+        }
+        val budgetedSummary = replacement ?: summary
+        remaining -= budgetedSummary.length + 1
+        if (replacement == null) outcome else outcome.copy(summaryMarkdown = replacement)
+    }
+}
+
+/**
+ * How much of a truncated outcome's own text must survive for the truncation to
+ * be worth doing at all: a two-character prefix followed by "已截断" tells the
+ * model nothing it can use, so at that point the dropped-summary line is the
+ * more honest answer.
+ */
+private const val MIN_TRUNCATED_PREFIX_CHARS = 12
+
+/**
+ * The model-visible marker appended to a result the round budget had to cut.
+ * Public because it is part of the budget's observable contract — a consumer
+ * that renders or asserts on tool results has to be able to recognise it
+ * without re-spelling the text and drifting from it.
+ */
+const val TRUNCATED_OUTCOME_NOTE = "…[本轮结果预算已用尽，本条已截断]"
+
+/**
+ * The model-visible stand-in for a result the round budget could not carry at
+ * all. Kept non-blank because a tool outcome's summary is required to be.
+ */
+const val DROPPED_OUTCOME_SUMMARY = "本轮结果预算已用尽，本条摘要未随请求发送。"
 
 /**
  * The model's request for a tool round: it must restate its intent decision so the

@@ -11,7 +11,11 @@ internal fun captureResumeShouldSkipLoad(
     requestedDraftId: String,
     currentDraftId: String?,
     receivedImageUri: String?,
-): Boolean = currentDraftId == requestedDraftId && receivedImageUri != null
+    sourcePages: List<CaptureSourcePage>,
+): Boolean =
+    currentDraftId == requestedDraftId &&
+        receivedImageUri != null &&
+        sourcePages.isNotEmpty()
 
 internal sealed interface CaptureResumeLoadedDecision {
     data object Missing : CaptureResumeLoadedDecision
@@ -173,6 +177,10 @@ internal fun captureParseTextAdoption(
 
 
 internal const val CAPTURE_RESTORED_IMAGE_MISSING = "刚才的照片已经不在了，请重新拍一张。"
+
+internal const val CAPTURE_RESUMED_DRAFT_MISSING = "这道题的草稿已经不在了，请重新拍一张。"
+
+internal const val CAPTURE_RESUMED_DRAFT_UNAVAILABLE = "这道题暂时打不开，可以重新进入；不行就重新拍一张。"
 
 internal sealed interface CaptureRestoredUriDecision {
     data object Keep : CaptureRestoredUriDecision

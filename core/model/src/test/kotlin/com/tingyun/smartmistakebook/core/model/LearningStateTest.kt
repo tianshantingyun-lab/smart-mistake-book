@@ -46,6 +46,28 @@ class LearningStateTest {
         assertEquals(-0.5, stuck.signedWeight, 0.0)
     }
 
+    @Test
+    fun `model judged verdicts remain non independent evidence`() {
+        // 判分者误差（LLM 判分与人类 κ≈0.70）与探针协助都不允许它们进独立档：
+        // isIndependent 驱动「可跳过」与「假掌握」判定，依据见
+        // docs/research/model-judged-verdict-pricing.md §0.1。
+        val correct = LearningEvidence(
+            direction = LearningEvidenceDirection.POSITIVE,
+            weight = 0.5,
+            reason = LearningEvidenceReason.MODEL_JUDGED_CORRECT,
+        )
+        val incorrect = LearningEvidence(
+            direction = LearningEvidenceDirection.NEGATIVE,
+            weight = 0.5,
+            reason = LearningEvidenceReason.MODEL_JUDGED_INCORRECT,
+        )
+
+        assertFalse(correct.isIndependent)
+        assertFalse(incorrect.isIndependent)
+        assertEquals(0.5, correct.signedWeight, 0.0)
+        assertEquals(-0.5, incorrect.signedWeight, 0.0)
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun `evidence direction cannot contradict its reason`() {
         LearningEvidence(

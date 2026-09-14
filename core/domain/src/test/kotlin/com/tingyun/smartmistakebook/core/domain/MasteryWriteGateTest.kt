@@ -50,18 +50,40 @@ class MasteryWriteGateTest {
     }
 
     @Test
-    fun `confident positive needs no verifiable support`() {
-        // CONFIDENT is a dialogue self-report that is already discounted to
-        // 0.15, so it does not require verifiable support; only the MASTERED
-        // tier claims enough to need one.
-        val weight = assertAccepted(
+    fun `confident positive needs at least one verified anchor`() {
+        // 2026-09-13：正向底线。开放式作答的对错只能靠模型语义判断，本地唯一能机械
+        // 执行的可核查性就是"至少引用到一处学生真说过的话"；连一条都没有的正向不再入库
+        // （此前 CONFIDENT 档可以零锚通过，等于模型说了算）。
+        assertRejected(
             acceptedInput(
                 understanding = TutorUnderstandingTier.CONFIDENT,
                 hasObjectiveSupport = false,
                 evidenceAnchorCount = 0,
             ),
+            RejectReason.POSITIVE_WITHOUT_EVIDENCE_ANCHOR,
+        )
+        val weight = assertAccepted(
+            acceptedInput(
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = 1,
+            ),
         )
         assertEquals(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE, weight, 1e-9)
+    }
+
+    @Test
+    fun `negative evidence needs no anchor`() {
+        // 负向不受底线约束：下调误伤小，且"学生卡住了"常常没有可引用的正确表述。
+        val weight = assertAccepted(
+            acceptedInput(
+                direction = TutorEvidenceDirection.NEGATIVE,
+                understanding = TutorUnderstandingTier.STRUGGLING,
+                hasObjectiveSupport = false,
+                evidenceAnchorCount = 0,
+            ),
+        )
+        assertEquals(MasteryWriteGate.WEIGHT_STRUGGLING, weight, 1e-9)
     }
 
     @Test
@@ -117,6 +139,63 @@ class MasteryWriteGateTest {
         // （含"懂了/会了"这类空话）不算锚，否则证据锚门形同虚设。
         assertEquals(0, MasteryWriteGate.evidenceAnchorCount("学生说\"懂了\"。"))
         assertEquals(1, MasteryWriteGate.evidenceAnchorCount("学生说\"我把负号漏掉了\"。"))
+    }
+
+    @Test
+    fun `verified anchors must actually appear in the session text`() {
+        // 消灭的失败：只数引号时，模型写 `"因为""所以"` 就能凑够 2 条锚并以
+        // MASTERED 档写入。核对后，只有真出现在学生文本里的引文才计数。
+        val session = "学生说：我把负号漏掉了。 随后独立写出：因为斜率相等所以平行。"
+        assertEquals(
+            2,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"我把负号漏掉了\"，随后\"因为斜率相等所以平行\"。",
+                verifiableText = session,
+            ),
+        )
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"我把正负号搞反了\"，随后\"因为截距相等所以平行\"。",
+                verifiableText = session,
+            ),
+        )
+    }
+
+    @Test
+    fun `verified anchors need a session corpus and fold whitespace and case`() {
+        // 没有可核查文本时，任何锚都得不到证实——与"缺佐证不写高置信档"同姿态。
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount("\"我把负号漏掉了\"", verifiableText = ""),
+        )
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount("\"我把负号漏掉了\"", verifiableText = "   "),
+        )
+        // Markdown 换行/缩进会把引文切断，逐字节比对会误杀合法引文；标点不折叠。
+        assertEquals(
+            1,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"因为斜率相等所以平行\"。",
+                verifiableText = "因为斜率相等\n    所以平行",
+            ),
+        )
+        assertEquals(
+            0,
+            MasteryWriteGate.verifiedEvidenceAnchorCount(
+                rationale = "学生说\"因为斜率相等所以平行\"。",
+                verifiableText = "因为斜率相等，所以平行",
+            ),
+        )
+    }
+
+    @Test
+    fun `verified count never exceeds the mechanical count`() {
+        val rationale = "学生说\"我把负号漏掉了\"，随后\"因为斜率相等所以平行\"。"
+        val session = "我把负号漏掉了"
+        assertEquals(2, MasteryWriteGate.evidenceAnchorCount(rationale))
+        assertEquals(1, MasteryWriteGate.verifiedEvidenceAnchorCount(rationale, session))
     }
 
     @Test

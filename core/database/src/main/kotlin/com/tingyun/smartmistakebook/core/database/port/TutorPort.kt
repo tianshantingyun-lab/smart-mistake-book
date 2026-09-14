@@ -113,6 +113,15 @@ interface TutorSessionPort {
     suspend fun bindTutorSessionProblemAnchor(
         command: PersistTutorSessionAnchorCommand,
     ): TutorSessionProblemAnchorRecord
+
+    /**
+     * 该学习者最近锚定到这道题的讲题会话（没有则 null）。讲题判定结算的入口读取：
+     * 由它拿到 tutorSessionId，再读该会话的客观作答与模型判词。
+     */
+    suspend fun readLatestTutorSessionAnchor(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorRecord? = null
 }
 
 /**

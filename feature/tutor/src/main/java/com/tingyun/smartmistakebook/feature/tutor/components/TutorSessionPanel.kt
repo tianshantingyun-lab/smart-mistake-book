@@ -112,6 +112,12 @@ internal fun TutorModelPanel(
         emptyList()
     },
     interactions: TutorInteractionRepository,
+    /**
+     * 学生会话的对话仓库：学生每一轮文字都要落进 `tutor_message`，供写侧门控
+     * 逐字核对模型引文（见 `TutorRespondCommands.recordStudentTurnIfNeeded`）。
+     * null 时该界面不落库，门控按空语料 fail-closed。
+     */
+    conversations: TutorConversationRepository? = null,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     onLongTermWritesBlocked: () -> Unit = {},
     onRequestSave: () -> Unit = {},
@@ -548,6 +554,7 @@ internal fun TutorModelPanel(
                 answerExposureKeys = { answerExposureKeys },
                 chatSending = { chatSending },
                 modelTasks = modelTasks,
+                conversations = conversations,
             ),
         )
     }

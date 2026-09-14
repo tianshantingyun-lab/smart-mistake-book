@@ -12,6 +12,7 @@ import com.tingyun.smartmistakebook.core.domain.SaveTutorDraftToLibraryUseCase
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
+import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.ActionType
 import com.tingyun.smartmistakebook.core.model.AppFailure
 import com.tingyun.smartmistakebook.core.model.AppFailureCode
@@ -94,7 +95,7 @@ internal class TutorSessionViewModel(
                     withContext(ioDispatcher) {
                         conversations.createConversation(
                             CreateTutorConversationCommand(
-                                conversationId = "tutor-conv:captured:$sessionId",
+                                conversationId = TutorConversationIds.captured(sessionId),
                                 anchorKind = TutorConversationAnchorKind.EPHEMERAL_DRAFT,
                                 anchorId = sessionId,
                                 anchorRevisionId =

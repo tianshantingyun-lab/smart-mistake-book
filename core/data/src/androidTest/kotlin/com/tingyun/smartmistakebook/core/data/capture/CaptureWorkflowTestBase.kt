@@ -58,6 +58,9 @@ abstract class CaptureWorkflowTestBase {
             database,
             AndroidCanonicalAssetVault(context),
             noTextRecognizer(),
+            splitImports = com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository(
+                database,
+            ),
         )
     }
 

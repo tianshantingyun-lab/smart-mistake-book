@@ -19,8 +19,10 @@ import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
 import com.tingyun.smartmistakebook.core.domain.StudyReviewAdvanceResult
+import com.tingyun.smartmistakebook.core.domain.TutorJudgedReviewSettlement
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.NetworkMode
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.feature.review.CapturedReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
@@ -66,7 +68,7 @@ internal fun ReviewSessionDestination(
         experience.review.scheduledPracticeUnitIds,
         displayedSessionId,
     ) {
-        if (experience.status != StudyDataStatus.READY || displayedSessionId != null) {
+        if (experience.status != StudyDataStatus.READY) {
             return@LaunchedEffect
         }
         val activeSessionId = experience.review.activeSessionId
@@ -79,11 +81,23 @@ internal fun ReviewSessionDestination(
             activeSessionVersion != null &&
             activePracticeUnitId != null
         ) {
-            displayedSessionId = activeSessionId
-            displayedSessionVersion = activeSessionVersion
-            displayedPracticeUnitId = activePracticeUnitId
-            displayedOrdinal = activeOrdinal
-            displayedQueueSize = experience.review.scheduledPracticeUnitIds.size
+            // 对账（第2条）：讲题页里完成的判定结算也会推进同一个会话，这里必须跟上，
+            // 否则屏幕会拿着过期的 version/ordinal，下一次提交必撞 CAS。
+            // 原先只在首轮读一次 experience.review，所以只在页内自推进时才更新。
+            val queueSizeNow = experience.review.scheduledPracticeUnitIds.size
+            if (
+                displayedSessionId != activeSessionId ||
+                displayedSessionVersion != activeSessionVersion ||
+                displayedPracticeUnitId != activePracticeUnitId ||
+                displayedOrdinal != activeOrdinal ||
+                displayedQueueSize != queueSizeNow
+            ) {
+                displayedSessionId = activeSessionId
+                displayedSessionVersion = activeSessionVersion
+                displayedPracticeUnitId = activePracticeUnitId
+                displayedOrdinal = activeOrdinal
+                displayedQueueSize = queueSizeNow
+            }
         } else {
             val restoredReviewRoot = navController.popBackStack(Routes.Review, false)
             if (!restoredReviewRoot) {
@@ -150,6 +164,50 @@ internal fun ReviewSessionDestination(
             isLoaded = true,
         )
     }
+
+    // 讲题判定的自动结算（第2条）：这道无工件题在讲题页被检查过之后，把判定落成 attempt
+    // 并推进队列。幂等（同一队列项只结算一次），没有判定时是 no-op，所以每次进入/账本
+    // 变化都可以放心地试一次；成功推进后上面的对账会把显示推进到下一项。
+    // 有机判工件的题不走这条通道（研究 §4(iii)8：可机器判分的题必须走客观通道）。
+    LaunchedEffect(
+        experience.status,
+        displayedSessionId,
+        displayedSessionVersion,
+        displayedPracticeUnitId,
+        displayedOrdinal,
+        artifactLoad.isLoaded,
+        artifactLoad.artifact,
+    ) {
+        if (experience.status != StudyDataStatus.READY) return@LaunchedEffect
+        val settleSessionId = displayedSessionId ?: return@LaunchedEffect
+        val settleVersion = displayedSessionVersion ?: return@LaunchedEffect
+        val settlePracticeUnitId = displayedPracticeUnitId ?: return@LaunchedEffect
+        val settleOrdinal = displayedOrdinal ?: return@LaunchedEffect
+        // 只有在"这道题没有机判选项"时才走讲题判定通道：机判项的答案必须走客观通道
+        // （研究 §4(iii)8）。无工件题（captured 分支）与有工件但无 assessment item 的
+        // 题（ReviewSessionScreen 的「去讲题判定」分支）都满足这个条件。
+        val hasMachineCheckableItem =
+            artifactLoad.artifact?.assessmentItems?.singleOrNull() != null
+        if (!artifactLoad.isLoaded ||
+            artifactLoad.practiceUnitId != settlePracticeUnitId ||
+            hasMachineCheckableItem
+        ) {
+            return@LaunchedEffect
+        }
+        runCatching {
+            repository.settleTutorJudgedReview(
+                TutorJudgedReviewSettlement(
+                    requestId = "tutor-judged-settle:$settleSessionId:$settleOrdinal",
+                    sessionId = settleSessionId,
+                    expectedStateVersion = settleVersion,
+                    practiceUnitId = settlePracticeUnitId,
+                    presentationId = "presentation:tutor-judged:$settleSessionId:$settleOrdinal",
+                    occurredAtEpochMillis = System.currentTimeMillis(),
+                ),
+            )
+        }
+    }
+
 
     val sessionId = displayedSessionId
     val sessionVersion = displayedSessionVersion
@@ -238,32 +296,16 @@ internal fun ReviewSessionDestination(
         capturedEntry != null -> CapturedReviewSessionScreen(
             onBack = onReviewBack,
             entry = capturedEntry,
-            presentationId = "presentation:review:$sessionId:$sessionVersion:$practiceUnitId",
             queuePosition = ordinal + 1,
             queueSize = queueSize,
-            // Spec §2.9：实拍题也要拿得到前置补救。这条参数是本批（批 2 第 3 项）新加的——
-            // 在它之前，补救只在策展屏上渲染，而实拍题走的是本屏，于是生产里从不出现。
+            // Spec §2.9／§2.16：补救与重教**不区分题的来源**（审计批 2 第 3 项／N-16）。
+            // 这两条与下面的讲题判定并存：重教是进入复习前的必经步骤，补救是题干旁的并列材料。
             prerequisiteRemediation = artifactLoad.prerequisiteRemediation,
-            // Spec §2.16：同一件事的第二半（审计 N-16）——重教也要在实拍屏上出现，否则
-            // "先重教再练"这条规则只在演示内容上成立。
             reTeachOpening = artifactLoad.reTeachOpening,
-            onSubmit = { submission ->
-                repository.submitReviewSelfReport(
-                    sessionId = sessionId,
-                    expectedStateVersion = sessionVersion,
-                    submission = submission,
-                )
-            },
-            onSubmitRating = { submission ->
-                repository.submitReviewRating(
-                    sessionId = sessionId,
-                    expectedStateVersion = sessionVersion,
-                    submission = submission,
-                )
-            },
-            onContinue = continueReview,
-            onNeedsTutor = { result ->
-                stageReviewAdvance(result)
+            // 无工件错题的唯一作答面是讲题判定；strictOffline 构建里没有模型可言，
+            // 如实说明而不是给一个走不通的按钮（该复习项保持到期）。
+            tutorJudgedAvailable = capabilities.networkMode != NetworkMode.STRICT_OFFLINE,
+            onOpenTutorJudge = {
                 navController.navigate(
                     Routes.mistakeTutor(
                         MistakeRevisionKey(
@@ -317,6 +359,15 @@ internal fun SavedMistakeTutorDestination(
                 application.tutorTeachingReferenceRepository,
             modelTasks = application.modelTaskRepository,
             interactions = application.tutorInteractionRepository,
+            // 学生文字要落进 tutor_message，写侧门控才能逐字核对模型引文（纯文字作答同理）。
+            conversations = application.tutorConversationRepository,
+            catalogEntries = experience.catalog,
+            onOpenMistakeNotebook = {
+                navController.navigate(Routes.Library) { launchSingleTop = true }
+            },
+            onOpenProfile = {
+                navController.navigate(Routes.Profile) { launchSingleTop = true }
+            },
             onRecordTeachingFocus = { sessionId, practiceUnitId, labels ->
                 application.applicationScope.launch {
                     runCatching {

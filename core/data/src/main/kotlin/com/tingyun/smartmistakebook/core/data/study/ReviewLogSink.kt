@@ -202,31 +202,6 @@ internal class ReviewLogSink(
             }
     }
 
-    /**
-     * Subjective evidence factor (spec §2.14 + §2.12): attention switches and
-     * away-time (Craik 1996), the personal time-of-day multiplier (May &
-     * Hasher 1998; >=30 samples per bucket, cold start neutral) and the
-     * response-time guess discount (Meyer 2010 via the RT baseline) all only
-     * ever shrink the weight of a subjective report.
-     */
-    suspend fun subjectiveSignalFactor(
-        occurredAtEpochMillis: Long,
-        durationSeconds: Int,
-        interruptionCount: Int,
-        awayMillis: Long,
-        isCorrect: Boolean,
-    ): Double {
-        val attention = AttentionSignal.attentionFactor(interruptionCount, awayMillis)
-        val profile = timeOfDayProfile()
-        val timeOfDay = profile
-            ?.multiplierFor(bucketSplit.bucketFor(localHourAt(occurredAtEpochMillis)))
-            ?: 1.0
-        val rtDiscount = profile
-            ?.let { TimeOfDayCalibrator.correctedWeight(1.0, isCorrect, durationSeconds * 1000L, it) }
-            ?: 1.0
-        return (attention * timeOfDay * rtDiscount).coerceIn(0.0, 1.0)
-    }
-
     /** RT guess discount alone, for real-attempt evidence (no time-of-day term). */
     suspend fun responseTimeDiscount(isCorrect: Boolean, durationMs: Long): Double =
         timeOfDayProfile()
@@ -293,6 +268,13 @@ internal class ReviewLogSink(
         const val SOURCE_KIND_ATTEMPT = "ATTEMPT"
         const val SOURCE_KIND_SELF_REPORT = "SELF_REPORT"
         const val SOURCE_KIND_VISUAL = "VISUAL"
+
+        /**
+         * 讲题判定结算的复习行（模型探针 + 本地核对 + 语义判词）。必须与
+         * [SOURCE_KIND_ATTEMPT] 分开：FSRS 参数拟合在校准达标前排除这一档
+         * （见 `SchedulingEvaluationHarness`），校准走 `calibrateSources` 单列一源。
+         */
+        const val SOURCE_KIND_MODEL_JUDGED = "MODEL_JUDGED"
 
         private const val AVOIDANCE_LOOKBACK_MILLIS = 30L * 24 * 60 * 60 * 1000
         private const val AVOIDANCE_MIN_OCCURRENCES = 2

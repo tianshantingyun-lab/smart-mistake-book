@@ -109,6 +109,8 @@ internal fun CapabilityScreen(
     capabilityTester: ModelCapabilityTester?,
     onBack: () -> Unit,
     calibrationReportProvider: (suspend () -> CalibrationReport)? = null,
+    /** 来源校准（含讲题判定那档）；见 [SourceCalibrationSection]。 */
+    sourceCalibrationProvider: (suspend () -> List<com.tingyun.smartmistakebook.core.domain.SourceCalibration>)? = null,
 ) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
@@ -127,6 +129,11 @@ internal fun CapabilityScreen(
     var apiKey by remember { mutableStateOf("") }
     var operation by remember { mutableStateOf(CapabilityOperation.IDLE) }
     var operationMessage by remember { mutableStateOf<String?>(null) }
+    /**
+     * 清除配置与密钥**无法撤销**：清掉之后 Provider/Base URL/模型名/API Key 全丢，
+     * 而密钥通常不在用户手边。删除全部数据那种更重的动作都有确认框，这里不能直清。
+     */
+    var confirmClear by remember { mutableStateOf(false) }
     val formEnabled = operation == CapabilityOperation.IDLE
     var calibrationReport by remember { mutableStateOf<CalibrationReport?>(null) }
     var calibrationUnavailable by remember { mutableStateOf(false) }
@@ -351,24 +358,7 @@ internal fun CapabilityScreen(
                 )
             }
             OutlinedButton(
-                onClick = {
-                    operation = CapabilityOperation.CLEARING
-                    operationMessage = null
-                    screenScope.launch {
-                        try {
-                            operationMessage = configurationStore.clear().toUserMessage(
-                                successMessage = "本机配置与密钥已清除。",
-                            )
-                            apiKey = ""
-                        } catch (cancelled: CancellationException) {
-                            throw cancelled
-                        } catch (_: Exception) {
-                            operationMessage = "本机安全存储发生异常，配置未清除。"
-                        } finally {
-                            operation = CapabilityOperation.IDLE
-                        }
-                    }
-                },
+                onClick = { confirmClear = true },
                 enabled = formEnabled &&
                     (configuration.isConfigured || configuration.provider.isNotBlank()),
                 modifier = Modifier
@@ -486,7 +476,60 @@ internal fun CapabilityScreen(
                     )
                 }
             }
+        if (sourceCalibrationProvider != null) {
+            SourceCalibrationSection(
+                provider = requireNotNull(sourceCalibrationProvider),
+            )
         }
+        }
+    }
+    // 确认框放在函数末尾（而非列内），因为它只在配置存在时可达：触发它的按钮本身
+    // 就在 `configurationStore != null` 的作用域里，这里把非空条件带上一并收窄。
+    if (confirmClear && configurationStore != null) {
+        AlertDialog(
+            onDismissRequest = { confirmClear = false },
+            title = { Text("清除本机配置与密钥？") },
+            text = {
+                Text(
+                    "会删除本机保存的 Provider、服务地址、模型名与 API Key，且无法撤销——" +
+                        "密钥需要重新输入。已保存的错题与学习记录不受影响。",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmClear = false
+                        operation = CapabilityOperation.CLEARING
+                        operationMessage = null
+                        screenScope.launch {
+                            try {
+                                operationMessage = configurationStore.clear().toUserMessage(
+                                    successMessage = "本机配置与密钥已清除。",
+                                )
+                                apiKey = ""
+                            } catch (cancelled: CancellationException) {
+                                throw cancelled
+                            } catch (_: Exception) {
+                                operationMessage = "本机安全存储发生异常，配置未清除。"
+                            } finally {
+                                operation = CapabilityOperation.IDLE
+                            }
+                        }
+                    },
+                    modifier = Modifier.testTag("capability_clear_confirm"),
+                ) {
+                    Text("确认清除")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { confirmClear = false },
+                    modifier = Modifier.testTag("capability_clear_cancel"),
+                ) {
+                    Text("取消")
+                }
+            },
+        )
     }
 }
 

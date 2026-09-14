@@ -44,6 +44,8 @@ data class SplitImportQuestionSeed(
     private val bottom: Double,
     val pageIndex: Int,
     val prioritised: Boolean = false,
+    /** Problem draft pre-created for this region, so review can open it on confirm. */
+    val splitDraftId: String? = null,
 ) {
     init {
         require(pageIndex >= 0) { "Split question page index must not be negative" }

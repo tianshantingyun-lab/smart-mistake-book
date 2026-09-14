@@ -63,6 +63,7 @@ private val SPLIT_IMPORT_TABLES = arrayOf(
 @Composable
 fun SplitImportReviewRoute(
     repository: SplitImportRepository,
+    initialJobId: String? = null,
     onOpenDraft: (String) -> Unit,
     onFinished: () -> Unit,
     modifier: Modifier = Modifier,
@@ -71,14 +72,13 @@ fun SplitImportReviewRoute(
     val jobs by repository.observeActiveImports().collectAsStateWithLifecycle(
         initialValue = emptyList(),
     )
-    var selectedJobId by remember { mutableStateOf<String?>(null) }
-    val job = jobs.firstOrNull { it.jobId == selectedJobId } ?: jobs.firstOrNull()
-        ?: return
-
-    if (job.status != SplitImportStatus.READY &&
-        job.status != SplitImportStatus.PREPARING
-    ) {
-        return
+    var selectedJobId by remember { mutableStateOf<String?>(initialJobId) }
+    val job = jobs.firstOrNull { it.jobId == selectedJobId }
+        ?: jobs.firstOrNull { it.jobId == initialJobId }
+        ?: jobs.firstOrNull()
+    val reviewableJob = job?.takeIf {
+        it.status == SplitImportStatus.READY ||
+            it.status == SplitImportStatus.PREPARING
     }
 
     RootPageLazyColumn(modifier = modifier.testTag("split_review_list")) {
@@ -109,17 +109,45 @@ fun SplitImportReviewRoute(
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
-                Text(
-                    text = "${job.questions.filter { it.selected }.size}/${job.questions.size}",
-                    color = JadeActive,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.testTag("split_review_count"),
-                )
+                if (reviewableJob != null) {
+                    Text(
+                        text = "${reviewableJob.questions.filter { it.selected }.size}/" +
+                            "${reviewableJob.questions.size}",
+                        color = JadeActive,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.testTag("split_review_count"),
+                    )
+                }
             }
             PaperDivider()
         }
-        job.sourceUri?.let { sourceUri ->
+        if (reviewableJob == null) {
+            item(key = "split_review_empty") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 44.dp)
+                        .testTag("split_review_empty"),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(
+                        "当前没有待确认的拆分结果",
+                        color = Ink,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        "分好的题目确认录入后会自动收起；可以从拍照或整卷导入重新发起。",
+                        color = InkSecondary,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+            item(key = "split_review_footer") { Spacer(Modifier.height(24.dp)) }
+            return@RootPageLazyColumn
+        }
+        reviewableJob.sourceUri?.let { sourceUri ->
             item(key = "split_review_source") {
                 SplitSourceImage(
                     sourceUri = sourceUri,
@@ -127,18 +155,18 @@ fun SplitImportReviewRoute(
                 Spacer(Modifier.height(10.dp))
             }
         }
-        job.questions.forEach { question ->
+        reviewableJob.questions.forEach { question ->
             item(key = "split_q_${question.questionOrdinal}") {
                 SplitQuestionCard(
                     ordinal = question.questionOrdinal,
                     selected = question.selected,
                     confirmed = question.confirmState != SplitImportConfirmState.PENDING,
-                    sourceUri = job.sourceUri,
+                    sourceUri = reviewableJob.sourceUri,
                     question = question,
                     onToggle = {
                         scope.launch {
                             repository.updateSelection(
-                                jobId = job.jobId,
+                                jobId = reviewableJob.jobId,
                                 questionOrdinal = question.questionOrdinal,
                                 selected = !question.selected,
                                 occurredAtEpochMillis = System.currentTimeMillis(),
@@ -152,18 +180,18 @@ fun SplitImportReviewRoute(
         item(key = "split_review_footer") {
             Spacer(Modifier.height(6.dp))
             PrimaryActionButton(
-                text = "录入所选（${job.questions.count { it.selected }}）",
-                enabled = job.questions.any { it.selected },
+                text = "录入所选（${reviewableJob.questions.count { it.selected }}）",
+                enabled = reviewableJob.questions.any { it.selected },
                 onClick = {
                     scope.launch {
-                        val confirmList = job.questions
+                        val confirmList = reviewableJob.questions
                             .filter { it.selected && it.confirmState == SplitImportConfirmState.PENDING }
                             .sortedBy { it.questionOrdinal }
                         for (question in confirmList) {
                             val draftId = question.splitDraftId
                             if (draftId != null) {
                                 repository.markConfirmed(
-                                    jobId = job.jobId,
+                                    jobId = reviewableJob.jobId,
                                     questionOrdinal = question.questionOrdinal,
                                     confirmState = SplitImportConfirmState.SAVED,
                                     splitDraftId = draftId,
@@ -175,7 +203,7 @@ fun SplitImportReviewRoute(
                         if (firstDraft != null) {
                             onOpenDraft(firstDraft)
                         } else {
-                            repository.complete(job.jobId, System.currentTimeMillis())
+                            repository.complete(reviewableJob.jobId, System.currentTimeMillis())
                         }
                     }
                 },

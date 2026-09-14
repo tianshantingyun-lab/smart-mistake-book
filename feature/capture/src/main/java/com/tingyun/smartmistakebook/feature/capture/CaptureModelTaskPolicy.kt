@@ -9,11 +9,13 @@ import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 
 internal const val CAPTURE_SPLIT_NEEDS_SINGLE_PAGE =
-    "这页暂时不能自动整理，原图已经保留。请先裁剪图片，只保留一道题再录入。"
+    "自动拆分只支持单页题目，这一页有多页。可以对单页使用自动拆分或手动框选。"
 internal const val CAPTURE_SPLIT_FAILED =
-    "这页还没整理好，原图已经保留。请先裁剪图片，只保留一道题再录入。"
+    "这次拆分没有完成，原图已经保留。可以重试，也可以改用手动框选每道题的范围。"
+internal const val CAPTURE_SPLIT_MANUAL_REGION_LIMIT = 12
 
 internal fun captureFailedTaskClearsAuthorization(status: ModelTaskStatus?): Boolean =
     status == ModelTaskStatus.RETRYABLE_FAILURE ||
@@ -71,6 +73,24 @@ internal fun captureSplitDraftRequest(
     assessmentRequestId = decision.snapshot.request.requestId,
     sourceAssetId = decision.page.sourceAssetId,
     regions = decision.assessment.questionRegions,
+    occurredAtEpochMillis = decision.snapshot.updatedAtEpochMillis,
+)
+
+/**
+ * 手动框选拆分请求：区域来自用户框选（按阅读顺序排序保证题号），
+ * 独立 requestId 携带 nonce，避免与自动拆分的幂等重放冲突。
+ */
+internal fun captureManualSplitDraftRequest(
+    decision: CaptureSplitDecision.Run,
+    regions: List<NormalizedSourceRegion>,
+    nonce: Int,
+): SplitCaptureDraftRequest = SplitCaptureDraftRequest(
+    requestId = "capture-split-manual:${decision.snapshot.request.requestId}:$nonce",
+    draftId = decision.draftId,
+    expectedRevisionNumber = decision.revisionNumber,
+    assessmentRequestId = decision.snapshot.request.requestId,
+    sourceAssetId = decision.page.sourceAssetId,
+    regions = regions.sortedWith(compareBy({ it.top }, { it.left })),
     occurredAtEpochMillis = decision.snapshot.updatedAtEpochMillis,
 )
 

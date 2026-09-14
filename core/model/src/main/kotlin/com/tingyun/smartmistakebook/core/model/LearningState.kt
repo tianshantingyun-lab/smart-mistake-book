@@ -19,6 +19,14 @@ enum class LearningEvidenceReason {
     SELF_REPORTED_STUCK,
     VISUAL_INTERACTION_SATISFIED,
     VISUAL_INTERACTION_VIOLATED,
+
+    /**
+     * 讲题判定的题目级结论（模型出探针、本地核对客观作答、模型给语义判词）。
+     * 非独立：判分者本身有误差（LLM 判分与人类判分 κ≈0.70），且探针构成协助——
+     * 定价与依据见 `docs/research/model-judged-verdict-pricing.md`。
+     */
+    MODEL_JUDGED_CORRECT,
+    MODEL_JUDGED_INCORRECT,
 }
 
 /** Signed evidence whose independence is derived from its reason, never supplied by a caller. */
@@ -41,6 +49,7 @@ data class LearningEvidence(
                 LearningEvidenceReason.CORRECT_ON_RETRY,
                 LearningEvidenceReason.SELF_REPORTED_RECALL,
                 LearningEvidenceReason.VISUAL_INTERACTION_SATISFIED,
+                LearningEvidenceReason.MODEL_JUDGED_CORRECT,
                 -> direction == LearningEvidenceDirection.POSITIVE
 
                 LearningEvidenceReason.INDEPENDENT_INCORRECT,
@@ -49,6 +58,7 @@ data class LearningEvidence(
                 LearningEvidenceReason.INCORRECT_AFTER_REVEAL,
                 LearningEvidenceReason.SELF_REPORTED_STUCK,
                 LearningEvidenceReason.VISUAL_INTERACTION_VIOLATED,
+                LearningEvidenceReason.MODEL_JUDGED_INCORRECT,
                 -> direction == LearningEvidenceDirection.NEGATIVE
 
                 LearningEvidenceReason.ANSWER_REVEALED ->
@@ -70,15 +80,44 @@ data class LearningEvidence(
 }
 
 /**
- * A locally fixed review control, not a mathematical answer key. Its snapshot deliberately carries
- * no knowledge attribution, so a student's one-tap report can adjust only this question's revisit
- * cadence and can never become knowledge-mastery evidence.
+ * 自评通道的合同（**已废止的写入方**，2026-09-13 起不再有新快照产生）。
+ *
+ * 保留对象与 `DatabaseContractValidator` 里的这一支，是为了"旧形状的快照仍然可写"：
+ * 现存数据库里还有大量自评快照，任何将来会重新落盘历史快照的迁移/回放、以及降级安装的
+ * 老版本写入，都不该因为它们形状过时而被拒。**注意：备份恢复不走这条校验**——恢复是
+ * 整库文件替换，只做 PRAGMA quick_check/foreign_key_check 与 Room 打开，不逐行校验合同
+ * （2026-09-14 核实，此前的注释把它写成了恢复依赖，是错的）。
+ * 新写入路径一律走 `LocalModelJudgedContract`（见其 KDoc）。
  */
 object LocalReviewSelfReportContract {
     const val ASSESSMENT_ITEM_ID_PREFIX = "local-review-self-report:"
     const val ANSWER_SPEC_ID = "local-review-self-report-v1"
     const val ITEM_FAMILY_ID = "local-review-self-report"
     const val TAXONOMY_VERSION = "local-review-self-report-v1"
+
+    fun matches(snapshot: AssessmentEvidenceSnapshot): Boolean =
+        snapshot.assessmentItemId.startsWith(ASSESSMENT_ITEM_ID_PREFIX) &&
+            snapshot.assessmentItemId.length > ASSESSMENT_ITEM_ID_PREFIX.length &&
+            snapshot.answerSpecId == ANSWER_SPEC_ID &&
+            snapshot.itemFamilyId == ITEM_FAMILY_ID &&
+            snapshot.sourceBundleId == null &&
+            snapshot.taxonomyVersion == TAXONOMY_VERSION &&
+            snapshot.calibration.support == CalibrationSupport.UNKNOWN &&
+            snapshot.attributions.isEmpty()
+}
+
+/**
+ * 讲题判定的题目级结算：模型出探针、本地核对客观作答、模型给语义判词，最终落成一次复习
+ * attempt。快照**故意不带知识归属**——这条通道只驱动题目级排期（FSRS/记忆状态），
+ * 知识点掌握度一律走模型判断的 chat-evidence 通道（`MasteryWriteGate`，≤0.15），
+ * 避免一次讲题会话对同一 KC 双写。依据见
+ * `docs/research/model-judged-verdict-pricing.md`。
+ */
+object LocalModelJudgedContract {
+    const val ASSESSMENT_ITEM_ID_PREFIX = "local-model-judged:"
+    const val ANSWER_SPEC_ID = "local-model-judged-v1"
+    const val ITEM_FAMILY_ID = "local-model-judged"
+    const val TAXONOMY_VERSION = "local-model-judged-v1"
 
     fun matches(snapshot: AssessmentEvidenceSnapshot): Boolean =
         snapshot.assessmentItemId.startsWith(ASSESSMENT_ITEM_ID_PREFIX) &&

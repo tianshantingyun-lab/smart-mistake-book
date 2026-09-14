@@ -12,8 +12,10 @@ searched, explained, re-practiced, scheduled, and migrated.
   pipeline, not a fake image-capable lobby.
 - Models propose local actions; only the user can save to the mistake book,
   update mastery, navigate, or delete.
-- A logical external operation has one stable identity and at most three
-  provider dispatches across retries and process recreation.
+- A logical external operation has one stable identity and at most
+  `ModelTaskRemoteDispatchPolicy.MAX_DISPATCHES` provider dispatches across
+  retries and process recreation (currently 6: five tool rounds plus one final
+  answer). Local execution never consumes this budget.
 - Process recreation requires an explicit user "continue" before any external
   send resumes.
 - No timestamp may be used to bypass idempotency conflicts.

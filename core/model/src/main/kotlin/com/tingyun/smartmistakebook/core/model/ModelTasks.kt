@@ -170,6 +170,7 @@ sealed interface ModelTaskInput {
 
 @Serializable
 @SerialName("capture_assessment")
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 data class CaptureAssessmentInput(
     val draftId: String,
     val sourceAssetId: String,
@@ -177,6 +178,10 @@ data class CaptureAssessmentInput(
     val imageWidth: Int,
     val imageHeight: Int,
     val followingSourceAssets: List<CaptureSourceAssetRef> = emptyList(),
+    /** 简短指向性说明（如"只要第2、3题"），只界定录入范围，不改其他规则。
+     *  NEVER 编码默认值：null 时必须省略字段，保住落库请求的指纹形状稳定。 */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val userHint: String? = null,
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.CAPTURE_ASSESS
@@ -194,6 +199,9 @@ data class CaptureAssessmentInput(
         require(draftId.isNotBlank()) { "Capture assessment draft id must not be blank" }
         require(sourceAssetId.isNotBlank()) { "Capture assessment asset id must not be blank" }
         require(imageWidth > 0 && imageHeight > 0) { "Capture assessment dimensions must be positive" }
+        require(userHint == null || userHint.length <= MAX_CAPTURE_USER_HINT_CHARS) {
+            "Capture user hint must stay within $MAX_CAPTURE_USER_HINT_CHARS characters"
+        }
         require(followingSourceAssets.size < MAX_CAPTURE_SOURCE_ASSETS) {
             "Capture page comparison has too many following pages"
         }
@@ -593,6 +601,9 @@ object ModelTaskCodec {
     fun encodeOutput(value: ModelTaskOutput): String =
         json.encodeToString(ModelTaskOutput.serializer(), value).bounded()
 
+    fun decodeInput(value: String): ModelTaskInput =
+        json.decodeFromString(ModelTaskInput.serializer(), value.bounded())
+
     fun decodeOutput(value: String): ModelTaskOutput =
         json.decodeFromString(ModelTaskOutput.serializer(), value.bounded())
 
@@ -782,6 +793,8 @@ internal const val MAX_CAPTURE_SOURCE_DIMENSION = 20_000
 internal const val MAX_CAPTURE_SOURCE_PIXELS = 100_000_000L
 private const val MAX_CAPTURE_TOTAL_PIXELS = 160_000_000L
 internal const val MAX_CAPTURE_SOURCE_ASSETS = 8
+/** 评估补充说明的长度上限（跨模块 UI 也要用它做输入限制）。 */
+const val MAX_CAPTURE_USER_HINT_CHARS = 120
 internal const val MAX_MESSAGE_CHARS = 500
 
 /**

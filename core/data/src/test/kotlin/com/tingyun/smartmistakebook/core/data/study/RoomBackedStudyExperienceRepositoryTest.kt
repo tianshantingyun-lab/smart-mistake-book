@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.data.M1CuratedStudySeed
 import com.tingyun.smartmistakebook.core.database.ReviewLogEntry
+import com.tingyun.smartmistakebook.core.database.dao.ArchivedEntrySummaryRow
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.database.ReviewLogSampleRecord
 import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteCommand
@@ -106,9 +107,11 @@ import com.tingyun.smartmistakebook.core.database.ReviewSessionRecord
 import com.tingyun.smartmistakebook.core.database.ReviewedKnowledgeCoverageRecord
 import com.tingyun.smartmistakebook.core.database.ReviseProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.SeedResult
+import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 import com.tingyun.smartmistakebook.core.database.port.ResolvedStudentModelPredictionRecord
 import com.tingyun.smartmistakebook.core.database.port.StudentModelPredictionRecord
+import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.database.port.VisualInteractionAttemptRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 
@@ -123,8 +126,6 @@ import com.tingyun.smartmistakebook.core.domain.SchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyChoiceSubmission
 import com.tingyun.smartmistakebook.core.domain.StudyReviewSessionStatus
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReport
-import com.tingyun.smartmistakebook.core.domain.StudyReviewSelfReportSubmission
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.AssessmentEvidenceSnapshot
 import com.tingyun.smartmistakebook.core.model.Attempt
@@ -362,77 +363,6 @@ class RoomBackedStudyExperienceRepositoryTest {
                 listOf("unit-z", "unit-a"),
                 repository.snapshot.value.review.scheduledPracticeUnitIds,
             )
-        } finally {
-            repository.close()
-            applicationScope.cancel()
-        }
-    }
-
-    @Test
-    fun capturedReviewSelfReportAttributesToPseudoKnowledgeNode() = runBlocking {
-        val database = FakeStudyDatabasePort().apply {
-            addMistake(
-                MistakeRecord(
-                    entryId = "captured-entry",
-                    problemId = "captured-problem",
-                    problemRevisionId = "captured-revision",
-                    practiceUnitId = "captured-practice-unit",
-                    sourceKey = "capture:photo-1",
-                    subject = "MATH",
-                    title = "函数原题",
-                    problemMarkdown = "求函数的单调区间。",
-                    status = "ACTIVE",
-                    createdAtEpochMillis = 1_000,
-                    nextReviewAtEpochMillis = null,
-                    retrievability = null,
-                    knowledgeNodeIds = setOf("knowledge:function-monotonicity"),
-                ),
-            )
-        }
-        val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
-        val repository = repository(database, applicationScope, initialFixture = null)
-
-        try {
-            repository.initialize()
-            assertEquals(
-                setOf("knowledge:function-monotonicity"),
-                database.savedPlans.single().queue.single().knowledgeNodeIds,
-            )
-            val started = requireNotNull(
-                repository.startOrResumeReviewSession("captured-start", 2_000),
-            )
-            val submission = StudyReviewSelfReportSubmission(
-                requestId = "captured-self-report",
-                presentationId = "captured-presentation",
-                practiceUnitId = "captured-practice-unit",
-                report = StudyReviewSelfReport.RECALL_COMPLETED,
-                durationSeconds = 15,
-                occurredAtEpochMillis = 3_000,
-            )
-
-            val first = repository.submitReviewSelfReport(
-                sessionId = started.sessionId,
-                expectedStateVersion = started.stateVersion,
-                submission = submission,
-            )
-            val replay = repository.submitReviewSelfReport(
-                sessionId = started.sessionId,
-                expectedStateVersion = started.stateVersion,
-                submission = submission,
-            )
-
-            assertEquals(LearningEvidenceReason.SELF_REPORTED_RECALL, first.evidenceReason)
-            assertEquals(StudyReviewSessionStatus.COMPLETED, first.progress.status)
-            assertTrue(first.created)
-            assertFalse(replay.created)
-            assertEquals(first.progress, replay.progress)
-            assertEquals(0.35, database.lastAttemptCommand?.evidence?.weight ?: -1.0, 0.0)
-            // Spec 3.4: the unbound question attributes its evidence to the
-            // subject-scoped pseudo KC through the pseudo binding.
-            val pseudoAttribution = database.lastEvidenceSnapshot?.attributions?.singleOrNull()
-            assertEquals("pseudo:MATH", pseudoAttribution?.knowledgeNodeId)
-            assertEquals(1.0, pseudoAttribution?.weight ?: -1.0, 0.0)
-            assertTrue(database.pseudoBindingCalls.all { it == "pseudo:MATH" })
         } finally {
             repository.close()
             applicationScope.cancel()
@@ -2194,6 +2124,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     private var persistedLearnerSnapshot: PersistedLearnerSnapshot? = null
     var lastAttemptCommand: AttemptWriteCommand? = null
         private set
+
+    /** 已落库的 attempt 条数：结算"没有判定就不写"的反例要证明它确实没写。 */
+    val attemptCount: Int get() = attemptsBySubmission.size
     var lastEvidenceSnapshot: AssessmentEvidenceSnapshot? = null
         private set
     var seedCallCount: Int = 0
@@ -2231,6 +2164,44 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
      * a blank corpus verifies zero anchors, which is the fail-closed posture.
      */
     val tutorMessages = mutableListOf<TutorMessageRecord>()
+
+    /**
+     * Subject-scoped mastery rows the `MASTERY_READ` tool reads, keyed by the
+     * subject the fake was told to serve. Empty by default: a fake that served
+     * rows without being told to would let a test pass while asserting nothing
+     * about what the tool actually read.
+     */
+    private val masteryBySubject = mutableMapOf<String, List<SubjectMasteryRecord>>()
+
+    /** Structured history aggregates the focused `MASTERY_READ` appends per node. */
+    val masteryAggregates = mutableListOf<MasteryAggregateRecord>()
+
+    /** How many reviewable knowledge nodes the fake's subject has in total. */
+    var reviewableKnowledgeNodeCount = 0
+
+    /**
+     * Knowledge nodes the keyword search may resolve, filtered by subject the
+     * way the real query is. Empty by default, so focus mode reports "nothing
+     * matched" unless a test says what the words should resolve to.
+     */
+    val recallCandidates = mutableListOf<KnowledgeNodeSeedRecord>()
+
+    fun publishSubjectMastery(subject: String, rows: List<SubjectMasteryRecord>) {
+        masteryBySubject[subject] = rows
+    }
+
+    override suspend fun readSubjectMastery(
+        learnerId: String,
+        subject: String,
+    ): List<SubjectMasteryRecord> = masteryBySubject[subject].orEmpty()
+
+    override suspend fun readMasteryAggregates(
+        learnerId: String,
+        knowledgeNodeIds: Set<String>,
+    ): List<MasteryAggregateRecord> =
+        masteryAggregates.filter { it.knowledgeNodeId in knowledgeNodeIds }
+
+    override suspend fun countReviewableKnowledgeNodes(subject: String): Int = reviewableKnowledgeNodeCount
 
     override suspend fun recordStudentModelPredictions(
         predictions: List<StudentModelPredictionRecord>,
@@ -2522,7 +2493,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun restoreErrorBookEntry(entryId: String, at: Long): Boolean =
         error("restore is outside this study-repository fake")
 
-    override fun observeArchivedErrorBookEntries(): Flow<List<String>> = flowOf(emptyList())
+    override fun observeArchivedErrorBookEntries(): Flow<List<ArchivedEntrySummaryRow>> =
+        flowOf(emptyList())
 
     override fun observeModelTask(requestId: String): Flow<ModelTaskSnapshot?> =
         MutableStateFlow(null)
@@ -2543,7 +2515,21 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun readChatEvidenceByLearner(learnerId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
 
-    override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> = emptyList()
+    override suspend fun readChatEvidenceByConversation(conversationId: String): List<com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity> =
+        recordedChatEvidence.filter { it.conversation_id == conversationId }
+
+    /**
+     * 讲题判定结算要读的锚定行：由它把"刚讲完的会话"与"复习队列当前这一项"对上。
+     * 默认 null（= 没讲过题），测试按需播种。
+     */
+    var tutorSessionAnchor: TutorSessionProblemAnchorRecord? = null
+
+    override suspend fun readLatestTutorSessionAnchor(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorRecord? = tutorSessionAnchor?.takeIf {
+        it.practiceUnitId == practiceUnitId
+    }
 
     override suspend fun lastAcceptedChatEvidenceAtForKc(learnerId: String, knowledgeNodeId: String): Long? = null
 
@@ -2842,7 +2828,12 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
-    ): List<KnowledgeNodeSeedRecord> = emptyList()
+    ): List<KnowledgeNodeSeedRecord> =
+        // Filtered by subject and truncated, but deliberately not matched against
+        // searchFeatures: resolution quality belongs to the real index and is
+        // covered by the instrumented test against Room. What these tests need is
+        // a deterministic "the words resolved to these nodes" answer.
+        recallCandidates.filter { it.subject == subject }.take(limit)
 
     override suspend fun readKnowledgeNodesByIds(ids: Set<String>):
         List<KnowledgeNodeSeedRecord> = knowledgeNodes.filter { it.knowledgeNodeId in ids }
@@ -2977,6 +2968,8 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         MutableStateFlow(emptyList())
 
     override suspend fun readSplitImportJob(jobId: String): SplitImportJobRecord? = null
+
+    override suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord? = null
 
     override suspend fun createSplitImportJob(
         command: CreateSplitImportJobCommand,

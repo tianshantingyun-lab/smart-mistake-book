@@ -56,13 +56,10 @@ class CapturedReviewPrerequisiteRemediationInstrumentedTest {
                 CapturedReviewSessionScreen(
                     onBack = {},
                     entry = entry,
-                    presentationId = "presentation:captured:remediation",
                     queuePosition = 1,
                     queueSize = 3,
-                    onSubmit = { error("the remediation must not block submission") },
-                    onSubmitRating = { error("not exercised") },
-                    onContinue = {},
-                    onNeedsTutor = {},
+                    tutorJudgedAvailable = true,
+                    onOpenTutorJudge = {},
                     prerequisiteRemediation = remediation,
                 )
             }
@@ -72,9 +69,10 @@ class CapturedReviewPrerequisiteRemediationInstrumentedTest {
         composeRule.onNodeWithTag("review_prereq_remediation").assertIsDisplayed()
         composeRule.onNodeWithTag("review_prereq_name").assertIsDisplayed()
         composeRule.onNodeWithText("先补前置：从图像读取单调性").assertIsDisplayed()
-        // 题干与自评作答入口**同时**可用——补救不是关卡。
+        // 题干与**作答入口**同时可用——补救不是关卡（第 2 条之后作答入口是讲题判定，
+        // 自评那一套已按产品裁定拆除；断言的性质没变，只是换了载体）。
         composeRule.onNodeWithText(stem).assertIsDisplayed()
-        composeRule.onNodeWithTag("review_self_report_recalled").assertIsDisplayed()
+        composeRule.onNodeWithTag("captured_review_tutor_judged_button").assertIsDisplayed()
     }
 
     @Test
@@ -84,13 +82,10 @@ class CapturedReviewPrerequisiteRemediationInstrumentedTest {
                 CapturedReviewSessionScreen(
                     onBack = {},
                     entry = entry,
-                    presentationId = "presentation:captured:no-remediation",
                     queuePosition = 1,
                     queueSize = 3,
-                    onSubmit = { error("not exercised") },
-                    onSubmitRating = { error("not exercised") },
-                    onContinue = {},
-                    onNeedsTutor = {},
+                    tutorJudgedAvailable = true,
+                    onOpenTutorJudge = {},
                     prerequisiteRemediation = null,
                 )
             }

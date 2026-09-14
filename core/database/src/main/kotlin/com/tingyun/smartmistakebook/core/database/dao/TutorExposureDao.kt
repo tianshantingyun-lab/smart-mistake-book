@@ -40,6 +40,30 @@ internal abstract class TutorExposureDao {
     @Query("SELECT * FROM tutor_session_problem_anchor WHERE session_id = :sessionId LIMIT 1")
     protected abstract suspend fun findAnchor(sessionId: String): TutorSessionProblemAnchorEntity?
 
+    /**
+     * 该学习者最近一次锚定到这道题的讲题会话。讲题判定结算靠它把"刚讲完的会话"
+     * 与"复习队列当前这一项"对上；anchor 表一直有数据，此前只有内部写路径能读到。
+     */
+    @Query(
+        """
+        SELECT * FROM tutor_session_problem_anchor
+        WHERE practice_unit_id = :practiceUnitId AND learner_id = :learnerId
+        ORDER BY anchored_at_epoch_millis DESC
+        LIMIT 1
+        """,
+    )
+    protected abstract suspend fun findLatestAnchorForPracticeUnit(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorEntity?
+
+    /** 结算用的公开读取：把锚定记录映射成端口记录，找不到返回 null。 */
+    open suspend fun readLatestAnchorForPracticeUnit(
+        practiceUnitId: String,
+        learnerId: String,
+    ): TutorSessionProblemAnchorRecord? =
+        findLatestAnchorForPracticeUnit(practiceUnitId, learnerId)?.toRecord()
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun insertExposure(exposure: TutorAnswerExposureEntity): Long
 

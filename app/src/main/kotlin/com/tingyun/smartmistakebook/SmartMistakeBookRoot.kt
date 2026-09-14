@@ -48,10 +48,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.data.model.AttachedImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
@@ -112,7 +114,7 @@ internal object Routes {
     const val BatchImport = "capture/batch"
     const val LibraryBatchExport = "library/export"
     const val CaptureResume = "capture/resume/{draftId}"
-    const val SplitReview = "capture/split-review"
+    const val SplitReview = "capture/split-review?jobId={jobId}"
     const val CapturedTutorSession = "tutor/captured/{sessionId}"
     const val TutorHistory = "tutor/history"
     const val TutorTextConversation = "tutor/lobby/{conversationId}"
@@ -166,6 +168,13 @@ internal object Routes {
         "tutor/lobby/${Uri.encode(conversationId)}"
 
     fun captureResume(draftId: String): String = "capture/resume/${Uri.encode(draftId)}"
+
+    fun splitReview(jobId: String?): String =
+        if (jobId.isNullOrBlank()) {
+            "capture/split-review"
+        } else {
+            "capture/split-review?jobId=${Uri.encode(jobId)}"
+        }
 }
 
 private data class RootDestination(
@@ -211,9 +220,22 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
     val context = LocalContext.current
     val activity = context.findActivity()
     val application = context.applicationContext as SmartMistakeBookApplication
+    val startupState by application.startupState.collectAsStateWithLifecycle()
+    if (startupState is StartupState.FatalFailure) {
+        // 数据库初始化失败时仓库等 lateinit 尚未就绪，任何触碰都会在组合期崩溃；
+        // 这里只渲染错误卡，让用户看到"应用数据无法打开"而不是闪退。
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Paper)
+                .statusBarsPadding(),
+        ) {
+            StartupStateBanner(state = startupState, onRetry = null)
+        }
+        return
+    }
     val repository = application.studyRepository
     val baseCapabilities = application.capabilities
-    val startupState by application.startupState.collectAsStateWithLifecycle()
     val configurationStore = application.modelConfigurationStore
     val modelConfiguration = if (configurationStore != null) {
         configurationStore.configuration
@@ -387,6 +409,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                                     throw cancelled
                                 } catch (_: Exception) {
                                     // The shared repository snapshot exposes the fail-closed error state.
+                                    // 顺手刷一次数据：瞬时错误恢复后 ERROR 清除、概览回到真实状态。
+                                    runCatching { repository.refresh() }
                                 }
                             }
                         },
@@ -529,6 +553,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     entries = experience.catalog,
                     catalogRepository = application.libraryCatalogRepository,
                     catalogPagingSource = application.libraryPagingSources::pagingSource,
+                    mistakeDetailRepository = application.mistakeDetailRepository,
                     onCapture = { navController.navigate(Routes.CaptureLibrary) },
                     onBatchImport = { navController.navigate(Routes.BatchImport) },
                     onExportVisible = { entryIds ->
@@ -641,8 +666,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                             launchSingleTop = true
                         }
                     },
-                    onSplitReady = {
-                        navController.navigate(Routes.SplitReview) {
+                    onSplitReady = { jobId ->
+                        navController.navigate(Routes.splitReview(jobId)) {
                             popUpTo(Routes.CaptureTutor) { inclusive = true }
                             launchSingleTop = true
                         }
@@ -669,8 +694,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                             launchSingleTop = true
                         }
                     },
-                    onSplitReady = {
-                        navController.navigate(Routes.SplitReview) {
+                    onSplitReady = { jobId ->
+                        navController.navigate(Routes.splitReview(jobId)) {
                             popUpTo(Routes.CaptureLibrary) { inclusive = true }
                             launchSingleTop = true
                         }
@@ -684,17 +709,27 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenDraft = { draftId ->
                         navController.navigate(Routes.captureResume(draftId))
                     },
-                    onSplitReady = {
-                        navController.navigate(Routes.SplitReview) {
+                    onSplitReady = { jobId ->
+                        navController.navigate(Routes.splitReview(jobId)) {
                             launchSingleTop = true
                         }
                     },
                     onBack = navController::popBackStack,
                 )
             }
-            composable(Routes.SplitReview) {
+            composable(
+                Routes.SplitReview,
+                arguments = listOf(
+                    navArgument("jobId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
+            ) { entry ->
                 SplitImportReviewRoute(
                     repository = application.splitImportRepository,
+                    initialJobId = entry.arguments?.getString("jobId"),
                     onOpenDraft = { draftId ->
                         navController.navigate(Routes.captureResume(draftId)) {
                             launchSingleTop = true
@@ -736,8 +771,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                             launchSingleTop = true
                         }
                     },
-                    onSplitReady = {
-                        navController.navigate(Routes.SplitReview) {
+                    onSplitReady = { jobId ->
+                        navController.navigate(Routes.splitReview(jobId)) {
                             popUpTo(Routes.CaptureResume) { inclusive = true }
                             launchSingleTop = true
                         }
@@ -831,6 +866,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     configurationStore = application.modelConfigurationStore,
                     capabilityTester = application.modelCapabilityTester,
                     calibrationReportProvider = { application.studyRepository.calibrationReport() },
+                    sourceCalibrationProvider = { application.studyRepository.sourceCalibrations() },
                     onBack = navController::popBackStack,
                 )
             }
@@ -849,7 +885,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             composable(Routes.Reminder) {
                 var suggestedReminderMinute by remember { mutableStateOf<Int?>(null) }
                 LaunchedEffect(Unit) {
-                    suggestedReminderMinute = application.studyRepository.suggestedReminderMinute()
+                    // 学习数据瞬时不可用时页面仍要能打开：只损失预填建议值。
+                    suggestedReminderMinute = runCatching {
+                        application.studyRepository.suggestedReminderMinute()
+                    }.getOrNull()
                 }
                 ReminderScreen(
                     repository = application.reviewReminderRepository,
@@ -868,7 +907,10 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     mutableStateOf<com.tingyun.smartmistakebook.core.domain.OptimalRetention.Recommendation?>(null)
                 }
                 LaunchedEffect(schedulingOptions) {
-                    retentionHint = application.studyRepository.recommendedDesiredRetention()
+                    // 参考值加载失败不显示（与"样本足够才显示"同一语义），页面保持可用。
+                    retentionHint = runCatching {
+                        application.studyRepository.recommendedDesiredRetention()
+                    }.getOrNull()
                 }
                 SchedulingSettingsScreen(
                     options = schedulingOptions,

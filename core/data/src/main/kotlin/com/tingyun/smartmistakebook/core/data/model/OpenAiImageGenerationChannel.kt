@@ -12,7 +12,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
-import java.util.Base64
+import okio.ByteString.Companion.decodeBase64
 import java.util.concurrent.TimeUnit
 
 /**
@@ -122,7 +122,11 @@ internal class OpenAiImageGenerationChannel(
         val parsed = json.decodeFromString<EditResponse>(text)
         val b64 = parsed.data.firstOrNull()?.b64Json
             ?: throw ImageGenerationException("no image in generation response")
-        val bytes = Base64.getDecoder().decode(b64)
+        // okio rather than java.util.Base64: that class is API 26 while minSdk
+        // is 23, and this decode runs on the image path every device can reach.
+        val bytes = b64.decodeBase64()
+            ?.toByteArray()
+            ?: throw ImageGenerationException("image payload is not valid base64")
         if (bytes.isEmpty() || bytes.size > ImageRedrawResult.MAX_OUTPUT_BYTES) {
             throw ImageGenerationException("invalid image size in generation response")
         }

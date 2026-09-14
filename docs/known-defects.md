@@ -1,7 +1,11 @@
 # Known Defects Register
 
-Fixed entries move to the commit history; this register only lists open
-items that block a gate or a release claim.
+Entries are numbered `KD-n` and marked in their heading as open or resolved.
+Resolved entries stay for provenance — they record the evidence that closed the
+defect and the condition that would reopen it — so the register is also the
+place to check whether a past symptom has a known disposition before reopening
+it as new. Only an entry without a `(resolved …)` marker blocks a gate or a
+release claim.
 
 ## 2026-09-09 audit fixes (closed, see commit history)
 
@@ -29,17 +33,29 @@ The full audit (`scratch/AUDIT-*-2026-09-09.md`) found and closed:
   marked `MODEL_CANDIDATE` and excluded from candidate queries. New
   `USER_CONFIRMED` tier. `7d4adc4`.
 
-Still open below.
+The entries below are numbered `KD-n`; those still without a `(resolved …)`
+marker are open. The batch above closed on 2026-09-09.
 
-## KD-2 (open) · Wall-clock p95 gate on CI runners
+## KD-2 (resolved 2026-08-30) · Wall-clock p95 gate on CI runners
 
-Resolved for the current thresholds on 2026-08-30: the mastery/recall p95
-budgets in `KnowledgeContextRetrievalInstrumentedTest` are now
-environment-aware — strict locally (150/250ms), 4x on GitHub runners
-(`CI=true`), which measured ~278ms p95. The deterministic index-usage
-query-plan assertions are unchanged. If a runner slowdown grows beyond the
-multiplied budget, revisit with a runner-relative bound or move the gate to
-the macrobenchmark module.
+**Symptom.** `KnowledgeContextRetrievalInstrumentedTest#largeSubjectRecallRemainsBoundedOnRoom`
+failed on CI: "Mastery snapshot read p95 was 278ms; samples=[278, 224, ...]".
+Passed locally (API-34 emulator, WHPX). Absolute wall-clock budgets on shared
+CI runners are environment-sensitive by construction; the deterministic parts
+of the test (index-usage query-plan assertions) all passed, so the divergence
+pointed at runner noise rather than a query regression.
+
+**Resolution.** The mastery/recall p95 budgets are environment-aware — strict
+locally (150/250ms), 4x on GitHub runners (`CI=true`), which covers the ~278ms
+p95 measured there. The multiplier travels as the `ciSlowRunner`
+instrumentation argument because runner environment variables do not propagate
+into the on-device test process (`System.getenv("CI")` is always null there);
+`android-check.yml` passes `-Pandroid.testInstrumentationRunnerArguments.ciSlowRunner=1`.
+The deterministic index-usage query-plan assertions are unchanged.
+
+**Reopen condition.** If a runner slowdown grows beyond the multiplied budget,
+revisit with a runner-relative bound or move the wall-clock gate to the
+macrobenchmark module, keeping the query-plan assertions here.
 
 ## KD-3 (resolved 2026-09-09) · Coverage rows for Android modules in status.md
 
@@ -50,7 +66,7 @@ described in KD-5: status.md now reports `:core:data` 53.9% / 39.1% and
 `:core:database` 5.2% / 6.9%.
 
 
-## KD-1 · Tutor external-authorization flow regression (instrumented) — NOT REPRODUCING ON CURRENT TREE (2026-09-06), CI green anchor still pending
+## KD-1 (resolved 2026-09-12) · Tutor external-authorization flow regression (instrumented)
 
 **Symptom.** 4 of 57 tests in `CapturedTutorSessionInstrumentedTest`
 (feature:tutor connected) fail deterministically on a fresh API-34 emulator:
@@ -100,30 +116,27 @@ run). All four previously-deterministic failures pass. Suspected fix carriers
 are the tool-loop hardening commits landed 2026-09-05/06 (`7cb373e` Lobby
 disclosure boundary + T6 write-tool anchoring, `9f267f0` T6 mastery_update
 chain, `5a940a1` deterministic evidence ids, `c19b330` indexed gate queries).
-Status: keep this entry open until CI posts one green `connected` run for
-:feature:tutor (the historical failures were CI-run-specific; local green
-twice + fresh install is strong but not a CI anchor). Bisection against
-25fb15a is no longer needed unless CI still fails.
 
-## KD-2 · Wall-clock p95 gate fails on CI runners (instrumented)
+**Closed 2026-09-12 — the CI anchor arrived.** Run
+[34693827527](https://github.com/tianshantingyun-lab/smart-mistake-book/actions/runs/34693827527)
+(commit `5e2c3a9`, push to main) posted a **fully green `instrumented` job**:
+`BUILD SUCCESSFUL` once, **0 `FAILED`** in the job log, and
+`:feature:tutor:connectedDebugAndroidTest` executed **46 tests with 0 failures**.
+That is exactly the closing condition this entry was holding for. `check` was
+green in the same run.
 
-**Symptom.** `KnowledgeContextRetrievalInstrumentedTest#largeSubjectRecallRemainsBoundedOnRoom`
-fails on CI: "Mastery snapshot read p95 was 278ms; samples=[278, 224, ...]".
-Passes locally (API-34 emulator, WHPX). Threshold: `MASTERY_READ_P95_BUDGET_MILLIS`
-(core/data androidTest, same file).
+One correction to the scope notes above: the entry says the suite "has not
+executed on CI" for 15+ runs because the job aborted at the first failing
+connected task. That was true before 2026-08-30, when the step gained
+`--continue` — after that the suites do run even when an earlier one fails, so
+the absence of a tutor anchor was about the run's overall redness, not about
+the suite being skipped.
 
-**Assessment.** Absolute wall-clock budgets on shared CI runners are
-environment-sensitive by construction; the deterministic parts of the test
-(index-usage query-plan assertions) all pass. Local green + CI red at ~280ms
-points at runner noise, not a query regression — but weakening the budget
-unilaterally is forbidden (test-rigor rules).
+**Reopen condition.** Any recurrence of the four named waitUntil/assertion
+failures on CI. They no longer reproduce on the current tree (local twice on
+2026-09-06, CI green on 2026-09-12), so a recurrence means a new cause.
 
-**Next steps.** Decide one of: (a) runner-relative bound (indexed vs scan
-ratio), (b) CI-multiplied budget via a gradle-injected property, or
-(c) move the wall-clock gate to the macrobenchmark module and keep query-plan
-assertions here. Requires the performance-budget owner's approval.
-
-## KD-4 (open) · Visual-ui device-acceptance test times out on CI software rendering
+## KD-4 (resolved 2026-09-12) · Visual-ui device-acceptance test timed out on CI software rendering
 
 **Symptom.** `TutorVisualComplexCircuitInstrumentedTest#complexCircuitSemanticRedrawPassesDeviceAcceptanceAndSavesStepScreenshots`
 fails on CI with `ComposeTimeoutException after 2000 ms` (idle-sync wait).
@@ -141,6 +154,52 @@ connected tasks (export/capture/tutor/library/app) still lack CI validation.
 **Mitigation (2026-08-30)**: the CI instrumented step now runs with `--continue`,
 so a visual-ui failure no longer aborts the remaining suites — every other
 module keeps getting validated while this defect stays open.
+
+**Reproduction attempt (2026-09-12) — not reproduced, and the hypothesis above
+is partly wrong.** The "hardware rendering locally vs software GL on CI" framing
+does not hold: the project's own `tools/start-emulator.ps1` already pins
+`-gpu swiftshader_indirect`, so local runs are software GL too. What differs is
+the CPU virtualisation (WHPX locally, KVM on the runner), not the GPU path.
+Tried, all green, cold install each time (AGP uninstalls the test APKs, so the
+Filament material cache was never warm):
+
+| Configuration | Result |
+|---|---|
+| swiftshader + 2 cores, this class only, 4 runs | 4/4 pass |
+| swiftshader + 2 cores, whole suite (6 tests, incl. the Filament toggle test) | pass |
+| swiftshader + **1 core** + 8 host CPU busy loops, whole suite | pass |
+
+Animations are not the difference either: `TutorAnimationPolicy` reads
+`Settings.Global.getFloat(ANIMATOR_DURATION_SCALE, 1f)`, and the setting is unset
+on this emulator, so it resolves to "enabled" — the same as a default runner.
+
+**Consequence.** Option (b) remains the right fix on its merits (a surface with
+its own render loop should not depend on implicit idle sync), but it cannot be
+validated from here: the failure is only observable on the CI runner, so a local
+pass would prove nothing and a local green would not close this entry. Apply (b)
+in a session that can watch a CI run, and record the CI outcome — do not close it
+on local evidence.
+
+**Outcome 2026-09-12 — the suite passed on CI, so the failure has no reproducing
+case.** Run
+[34693827527](https://github.com/tianshantingyun-lab/smart-mistake-book/actions/runs/34693827527)
+(commit `5e2c3a9`) ran `:core:visual-ui:connectedDebugAndroidTest` with
+**6 tests, 0 failures**, inside a fully green `instrumented` job (0 `FAILED`
+lines, one `BUILD SUCCESSFUL` for all nine suites). The test named in this entry
+was among them. This is the same bar that closed KD-1 — one green connected run
+on the runner where the failure lived.
+
+**No code change was made for this entry, and that is stated deliberately.** The
+green run does not prove an intermittent timing failure is permanently gone; it
+proves there is no longer a reproducing case, and the recorded disposition
+(options a/b/c) is not worth a blind change to a test that currently passes.
+Treat any recurrence as new evidence.
+
+**Reopen condition.** `ComposeTimeoutException after 2000 ms` on the
+complex-circuit acceptance test on CI. If it recurs, apply option (b) — explicit
+`waitUntil` on the specific condition instead of relying on implicit idle — and
+validate it against the run that reproduces it, since local runs (software GL,
+2 cores, and even 1 core under host load) do not.
 
 ## KD-5 (resolved 2026-09-09) · Android-library coverage was not collectible with Kover 0.9.1 + AGP 9
 
@@ -200,3 +259,279 @@ restoration semantics.
 no longer lists the path; `:feature:capture:testDebugUnitTest` 99/0;
 `:feature:capture:connectedDebugAndroidTest` 23/23 (incl.
 `CaptureScreenStateRestorationTest`); `:feature:capture:lintDebug` clean.
+
+## KD-7 (resolved 2026-09-11) · Mistake catalog read per-question memory from the pre-projection table
+
+**Symptom.** `ProblemDao.observeActiveMistakes()` and
+`findMistakeBySourceKey()` joined `problem_memory_state`, so every
+`next_review_at_epoch_millis` they returned was NULL in production. The
+`library_catalog` view had been moved onto `learner_problem_memory_state` back
+in migration 35 → 36; these two queries were missed, leaving the same fact
+read through two disagreeing paths (the view: real rows but `retrievability`
+NULL by design; these queries: an empty table).
+
+**Why it stayed invisible.** The only writer of `problem_memory_state` is
+`FixtureSeedDao`. Instrumented tests seed through `seedFixture`, so on device
+the join produced real values and every test passed; production has no fixture
+seed and returned NULL. `retrievability` is derived from stability plus "now"
+and is not stored on the projection, so it is now selected as `NULL` exactly
+like the view does, and readers keep computing it from the snapshot.
+
+**Resolution.** Both queries join `learner_problem_memory_state` with
+`projection_name = 'study-experience-v1'` (the same predicate and the same
+learner-from-the-row resolution the view uses). `MistakeRecord` and its
+consumers are unchanged — this was a read-path fix, not a field removal.
+
+**Verification that closed it.** New
+`MistakeMemoryProjectionInstrumentedTest` (3 cases) fails on the old join
+(2 of 3 red: both projection-backed assertions) and passes after the fix;
+`:core:database:connectedDebugAndroidTest` 151/151 and
+`:core:database:testDebugUnitTest` green.
+
+**Reopen condition.** Any catalog query that reads a per-question memory field
+from a denormalized table instead of the learner projection. The general hazard
+is that instrumented tests seed fixtures while production does not, so a
+fixture-only writer makes a broken join look healthy on device — prefer a real
+`commitProjection` in the test over fixture seeding when the assertion is about
+projected state. `retrievability` is intentionally NULL at the SQL layer; a UI
+consumer that needs it must go through `StudyExperienceMappers.toCatalogEntry`.
+
+## KD-8 (resolved 2026-09-12) · Delete-all-data left the model API key in the Keystore
+
+**Symptom.** `AndroidBackupRepository.deleteAllData()` swept the Keystore for
+aliases starting with `smartmistakebook_`, but the alias the vault actually
+writes is `smart_mistake_book_model_api_key_v2`. Nothing ever matched, so the
+entry survived "delete all data" — the ciphertext file and DataStore metadata
+were gone, so the key was unusable, but the Keystore entry was still there and
+the M4 gate ("delete-all leaves an empty app") was not met in the strict sense.
+
+**Cause.** The alias string had two independently written authorities: the vault
+(which creates and deletes it correctly via `clear()`) and this sweep, which
+re-derived the name and got it wrong.
+
+**Resolution.** `MODEL_SECRET_KEY_ALIAS` is now the one authored value in the
+vault file; the vault uses it and `deleteAllData` deletes exactly that alias
+instead of matching a prefix.
+
+**Verification that closed it.** New
+`BackupRestoreInstrumentedTest#deleteAllDataRemovesTheModelApiKeyKeystoreAlias`
+creates the alias through the production vault, asserts it exists, runs
+`deleteAllData()`, and asserts it is gone — red before the fix (the fixture
+assertion passed, the deletion assertion failed) and green after.
+`:core:data:connectedDebugAndroidTest` 98/98; `:core:data:testDebugUnitTest` 395/395.
+
+**Reopen condition.** Any second copy of a Keystore alias string. If the vault
+ever gains another alias or a migration path, add it to the sweep by referencing
+the constant, and extend the instrumented test to cover it.
+
+## KD-9 (resolved 2026-09-12) · Startup restore-recovery outcome was discarded
+
+**Symptom.** `SmartMistakeBookApplication` called
+`BackupRestoreStartupRecovery.recoverOnStartup(this)` and dropped the result. An
+interrupted restore that had to be **rolled back** (the restore silently did not
+take effect) or **quarantined** (rollback failed, artifacts moved aside) looked
+identical to a clean start: the student saw a normal book that was not the one
+they left, with no signal that anything happened.
+
+**Resolution.** `RestoreStartupOutcome.attentionRequired()` classifies outcomes
+by whether local data moved; the app maps the two that did — `RolledBack` and
+`Quarantined`/`Unreadable` — onto a `RecoverableFailure` applied after `Ready`,
+so the book stays usable and the student is told the restore did not land.
+`NothingToRecover` and `Cleaned` stay silent because the live generation was
+never touched. Copy lives in the app layer; only the classification is in
+`core:data`.
+
+**Verification that closed it.** `RestoreRecoveryAttentionTest` (5 cases,
+`:core:data:testDebugUnitTest`) pins the classification, including that exactly
+the two outcomes that move data are reported; both flavors assemble. The
+instrumented rollback path
+(`BackupRestoreInstrumentedTest#startupRecoveryRollsBackGenerationAfterInterruptedSwap`)
+still passes.
+
+**Reopen condition.** A new `RestoreStartupOutcome` variant will fail to compile
+in `attentionRequired()`, which is the intended forcing function — classify it
+as reporting or silent deliberately. Note the side effect on
+`OrphanAssetGcWorker`: it retries unless the state is `Ready`, so the sweep runs
+on a later launch rather than during this one.
+
+## KD-10 (resolved 2026-09-12) · "Least mastered" library sort was a no-op
+
+**Symptom.** `LibraryQueryDao` and `RoomLibrarySearchStore` ordered by
+`catalog.retrievability` for the `LEAST_MASTERED` sort, but the `library_catalog`
+view defines that column as `NULL AS retrievability`. Every row compared equal,
+so the sort silently fell through to `updated_at DESC`. The domain enum
+`LibrarySort.LEAST_MASTERED` therefore did nothing.
+
+**First assessment was wrong, and worth recording.** This was filed as blocked
+because the only fix I could see was exposing a numeric mastery column on the
+`@DatabaseView`, which needs a schema bump plus a re-exported `schemas/NN.json` —
+impossible locally (`copyRoomSchemas` is `NO-SOURCE`; hand-writing the JSON is
+forbidden). But the view *already* exposes the join, and the number is reachable
+from the catalog alias by correlation, so no schema change is involved at all.
+
+**Resolution.** All three sort sites order by the weakest
+`lower_bound_independent_correct` among the row's bound knowledge points — the
+same projection and learner the view's `mastery_id` facet already reads.
+`NULL` (no evidence) sorts first, matching the view's status ordering, which
+puts `unknown` first. The expression lives in two authored copies:
+
+- `LibraryCatalogSorts.kt` → `LEAST_MASTERED_MASTERY_SQL`, used by the FTS
+  store's runtime-built query;
+- a `private const val` of the same name in `LibraryQueryDao.kt`, used by both
+  `@Query` annotations.
+
+The second copy is forced by Room: a query assembled from a **cross-file**
+constant is rejected by KSP ("No property named value was found in annotation
+Query" — reproduced for both positional and `value =` concatenation), while a
+**same-file** constant compiles. Since textual sharing is unavailable, the sites
+are held together by behavior instead.
+
+**Verification that closed it.** New
+`LibraryLeastMasteredSortInstrumentedTest` (3 cases) seeds three entries whose
+mastery (`0.20 / 0.50 / 0.80`) is deliberately the **reverse** of their
+`updated_at` order, so a no-op sort still produces a total order — just the
+wrong one. Before the fix the DAO case read
+`expected [entry-weak, entry-middle, entry-strong] but was [entry-strong,
+entry-middle, entry-weak]`. Each path carries its own assertion, and a mutation
+check confirms they bind independently: restoring `catalog.retrievability` in
+the FTS store turns **only** the FTS case red, with the same reversed order.
+`:core:database:connectedDebugAndroidTest` 154/154 (was 151),
+`:core:database:testDebugUnitTest` 67/67, `:core:database:lintDebug` 0 errors,
+`:core:data` and `:feature:library` unit tests and lint green, both flavors
+assemble.
+
+**Reopen condition.** Any new `LEAST_MASTERED` sort site must carry both a copy
+of the expression and its own behavioral assertion — sharing the text is not
+available. Note the copy count is the symptom, not the guarantee: if the
+expression ever needs to change, change both copies and let the tests confirm
+both paths. The `pagingSource` `@Query` shares the DAO's same-file constant with
+`page`, so the DAO test covers both.
+
+## KD-11 (resolved 2026-09-12) · API-26 calls in code that must run on API 23
+
+**Symptom.** `minSdk` is 23, but three call sites used APIs that only exist from
+26, and core library desugaring does not cover them — `core:data` enables
+desugaring, and lint still reports these (lint *is* desugar-aware: the same
+report stays silent about the module's many `java.time` usages, which the
+desugared library does provide):
+
+- `OpenAiImageGenerationChannel.parseEditResponse` decoded provider images with
+  `java.util.Base64.getDecoder()`. **Reachable in production** — attached images
+  and the capture clean-redraw path both read this — so on an API 23–25 device
+  the decode threw `NoSuchMethodError`.
+- `SmbkArchiveCodec.validate` defaulted its scratch directory to
+  `Files.createTempDirectory(...)`. Production callers always pass a scratch
+  dir, so this was a latent trap rather than a live crash, but the default is
+  what the JVM unit tests exercise.
+- `TutorVisualMaterialRepository` moved the Filament material cache with
+  `Files.move(..., ATOMIC_MOVE)`. Dormant while
+  `TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED` is true, live the moment the
+  visual path is restored.
+
+**Resolution.** Each call was replaced with an API-23-safe equivalent that keeps
+the same semantics: okio's `decodeBase64()` (already how this module encodes, and
+it works in JVM tests); `File(System.getProperty("java.io.tmpdir"), "smbk-validate-<uuid>")`
+with the same per-call uniqueness and `deleteOnExit`; and a sibling-directory
+`renameTo` plus copy-and-delete fallback, which is what `ATOMIC_MOVE` was asking
+for since the staging file always sits next to the target. A fourth call site,
+`AndroidBackupRepository` reading `context.dataDir` (API 24), went through
+`ContextCompat.getDataDir` — also not desugarable, and on the delete-all path.
+
+**Verification that closed it.** `:core:data:lintDebug` and
+`:core:visual-ui:lintDebug` report **0 severity=Error** (they reported 4 and 1
+NewApi errors plus this severity before); `:core:data:testDebugUnitTest` 395/395
+(includes the archive codec, which uses the replaced default);
+`:core:visual-ui:testDebugUnitTest` 12/12; `:core:data:connectedDebugAndroidTest`
+98/98; both flavors assemble.
+
+**Reopen condition.** Any new `java.*`/`java.nio.file`/`java.time` call on a
+minSdk-23 module. To settle coverage, read the spec lint itself reads rather
+than guessing from the message: AGP unpacks
+`desugar_jdk_libs_configuration-<version>-desugar-lint.txt` under
+`.gradle/caches/<gradle-version>/transforms/<hash>/transformed/`. For
+`desugar_jdk_libs 2.0.3` it contains 237 `java/time` entries and **no**
+`java/nio/file/*` and no `Base64` — which is why `java.time` is safe here while
+these four calls were not. Lint's "or core library desugaring" wording is a
+heuristic (it appears for modules where desugaring is *off*); the spec file is
+the authority. Note the project uses plain `desugar_jdk_libs`, not the `_nio`
+variant that would add `java.nio.file`.
+**UNVERIFIED**: none of these paths were exercised on an API 23–25 device (only
+API 34 is available here); the change is justified by the desugar spec plus
+lint's API-level model, not by a device run.
+
+## KD-12 (resolved 2026-09-12) · Room's restricted `useConnection` is used cross-library-group
+
+**Symptom.** `:core:database:lintDebug` reported `RestrictedApi` (severity Error):
+`RoomDatabase.useConnection` is restricted to `androidx.room3`'s own library
+group, and this app calls it from `SmartMistakeBook.core`. Not one site but
+**seven, across three files** — `RoomBackupSupportStore` (4),
+`RoomStudyDatabase` (2), `RoomLibrarySearchStore` (1), plus one in
+`PerformanceGateTest`'s androidTest.
+
+**Impact.** Not a runtime defect — restricted APIs are a lint-level contract and
+those paths work (98/98 instrumented tests). It is a forward-compatibility risk:
+the API is outside Room's public surface, so an upgrade may change or remove it
+without notice.
+
+**Resolution.** The calls are legitimate — `PRAGMA wal_checkpoint(TRUNCATE)`,
+`PRAGMA user_version`, `PRAGMA foreign_keys` and `VACUUM INTO` have no DAO or
+query equivalent, and the backup, delete and FTS-trigger paths cannot be built
+without them. All eight sites now go through
+`RoomDatabase.withRawConnection(isReadOnly) { … }` in `RawConnectionAccess.kt`,
+which carries the single `@SuppressLint("RestrictedApi")` and the reason.
+
+A wrapper rather than a suppression per site or per file: the risk deserves
+exactly one reviewed decision, and a file- or class-level suppression would also
+have silently legalized a *different* restricted API added to those files later.
+With the exposure confined to one function, lint keeps working everywhere else;
+if Room ever exposes a supported raw-connection API, that one function changes.
+
+**Verification that closed it.** `:core:database:lintDebug` reports **0
+severity=Error** (it reported this class before); `:core:database:compileDebugAndroidTestKotlin`
+compiles; the module's instrumented suite still passes (:core:database 151/151).
+
+**Reopen condition.** A new direct `useConnection` call outside
+`RawConnectionAccess.kt` — lint will flag it, which is the intended forcing
+function. If Room's raw-connection API moves, this one function is the change.
+
+## KD-13 (resolved 2026-09-12) · Library-module lint is not gated, so its findings stay invisible
+
+**Symptom.** `.github/workflows/android-check.yml` ran
+`lintLocalFirstDebug lintStrictOfflineDebug`, and only `:app` declares the
+`localFirst`/`strictOffline` flavors — so ten Android library modules
+(`core:data`, `core:database`, `core:ui`, `core:visual-ui`, `core:export`, all
+five `feature:*`) were never linted in CI at all. Their `lintDebug` findings,
+including every error KD-11 had to fix, accumulated unseen.
+
+**How this was found.** KD-11 was discovered only because a manual
+`:core:data:lintDebug` run surfaced four `NewApi` errors that no gate had ever
+reported.
+
+**Resolution.** The workflow's Lint step now lists the ten library `lintDebug`
+tasks explicitly alongside the two app flavors, with the same reasoning the
+unit-test step already documents: a module that is not named is never checked.
+
+**Verification that closed it.** Every module was confirmed clean *before*
+wiring — `severity=Error` counts across all ten reports are 0 (warnings remain
+advisory: 7/0/3/1/0/5/6/0/3/16, and lint fails the build on errors, so the green
+run is itself evidence). The exact command the step will run was then executed
+locally as one invocation: `BUILD SUCCESSFUL`. The workflow still parses
+(19 steps in the `check` job, Lint step present).
+
+**CI confirmation (2026-09-12).** The step has now actually run on a runner: in
+run
+[34693827527](https://github.com/tianshantingyun-lab/smart-mistake-book/actions/runs/34693827527)
+the `check` job concluded **success** with the Lint step itself reported
+`success`, so the ten library modules are linted in CI from this commit on.
+Noted gap: `docs/status.md` (generated) still reports only the two app lint
+variants — `tools/ci/generate_status.py` reads the app lint XML paths, so the
+library results gate the build without appearing in the report. Extending the
+generator to include them is optional follow-up, not required for the gate.
+
+**Reopen condition.** A new `core`/`feature` module must be added to that task
+list. The step lists modules explicitly rather than using an umbrella task,
+which is the convention the Unit-tests step already documents — "the
+flavor-named tasks only exist in `:app`; every other module's … are listed
+explicitly or they never run in CI" — so the checked set stays reviewable. If a
+future finding class is decided to be acceptable rather than fixed, suppress it
+at the call site with the reason, the rule KD-12 followed.

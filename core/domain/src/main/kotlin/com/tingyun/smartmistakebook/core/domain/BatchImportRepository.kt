@@ -57,6 +57,8 @@ data class BatchImportJob(
     val pages: List<BatchImportPage>,
     val createdAtEpochMillis: Long,
     val updatedAtEpochMillis: Long,
+    /** Review job of the newest auto-split page, so the UI can link to it. */
+    val splitReadyJobId: String? = null,
 ) {
     init {
         require(jobId.isNotBlank()) { "Batch job id must not be blank" }

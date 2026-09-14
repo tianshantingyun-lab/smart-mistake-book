@@ -65,7 +65,6 @@ internal class RoomBatchImportRepository(
 ) : BatchImportRepository {
     private val processingMutex = Mutex()
     private val organizationMutex = Mutex()
-    private var splitReadyJobId: String? = null
 
     init {
         processingScope.launch {
@@ -93,8 +92,18 @@ internal class RoomBatchImportRepository(
     }
 
     override fun observeBatchImports(): Flow<List<BatchImportJob>> =
-        database.observeBatchImportJobs().map { jobs -> jobs.map(BatchImportJobRecord::toDomain) }
-            .flowOn(Dispatchers.IO)
+        database.observeBatchImportJobs().map { jobs ->
+            jobs.map { job ->
+                // Completed batches surface their newest ready auto-split review
+                // job so the page can link the student into the review flow.
+                val splitReadyJobId = if (job.status == StudyDbValue.BatchImportStatus.COMPLETED) {
+                    database.readLatestReadyBatchSplitJob(job.jobId)?.jobId
+                } else {
+                    null
+                }
+                job.toDomain(splitReadyJobId)
+            }
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun createBatchImport(request: CreateBatchImportRequest): BatchImportJob =
         createImport(
@@ -347,26 +356,27 @@ internal class RoomBatchImportRepository(
                     // Best-effort only: the page is already imported, so any
                     // split failure (unavailable provider, model error, an
                     // unusable region set) degrades to the plain page import.
+                    // The READY review job is surfaced through observeBatchImports.
                     try {
-                        val splitDir = recognizeAndSplitBatchPage(
+                        recognizeAndSplitBatchPage(
                             jobId = jobId,
                             pageIndex = page.pageIndex,
                             sourceUri = page.sourceUri,
                             draft = draft,
                             database = database,
+                            capture = capture,
                             modelTasks = modelTasks,
                             splitImports = splitProvider,
                             occurrenceTime = page.createdAtEpochMillis,
                             modelEgressAllowed = modelEgressAllowed,
                         )
-                        if (splitDir is BatchSplitOutcome.SplitReady) {
-                            splitReadyJobId = splitDir.jobId
-                        }
                     } catch (cancelled: CancellationException) {
                         throw cancelled
-                    } catch (_: Exception) {
-                        // Intentionally swallowed: split recognition must never
-                        // fail a page that already landed in the library.
+                    } catch (failure: Exception) {
+                        // Split must never fail a page that already landed in
+                        // the library; the failure stays best-effort but is
+                        // logged so a silently dead auto-split is diagnosable.
+                        android.util.Log.w("BatchSplit", "split recognition failed", failure)
                     }
                 }
                 if (!database.hasRetainedBatchImportSourceUri(page.sourceUri)) {
@@ -541,7 +551,7 @@ object BatchImportRepositoryFactory {
     )
 }
 
-private fun BatchImportJobRecord.toDomain() = BatchImportJob(
+private fun BatchImportJobRecord.toDomain(splitReadyJobId: String? = null) = BatchImportJob(
     jobId = jobId,
     status = when (status) {
         StudyDbValue.BatchImportStatus.PROCESSING -> BatchImportStatus.PROCESSING
@@ -552,6 +562,7 @@ private fun BatchImportJobRecord.toDomain() = BatchImportJob(
     pages = pages.map(BatchImportPageRecord::toDomain),
     createdAtEpochMillis = createdAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
+    splitReadyJobId = splitReadyJobId,
 )
 
 private fun BatchImportPageRecord.toDomain() = BatchImportPage(

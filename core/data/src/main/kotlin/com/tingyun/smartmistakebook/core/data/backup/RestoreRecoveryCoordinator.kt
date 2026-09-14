@@ -146,6 +146,47 @@ sealed interface RestoreStartupOutcome {
 }
 
 /**
+ * How much of a recovery outcome the student has to be told about.
+ *
+ * The startup sweep used to discard its result, so a restore that was rolled
+ * back — or worse, quarantined — looked exactly like a clean start: the student
+ * saw a normal book that silently was not the one they left. These are the
+ * outcomes where local data differs from what the student last saw, so the app
+ * must say so rather than stay quiet. The user-facing copy lives in the app
+ * layer; this only decides *whether* there is something to say.
+ */
+enum class RestoreRecoveryAttention {
+    /** Nothing the student needs to act on. */
+    NONE,
+
+    /** The restore did not take effect; the previous generation is live. */
+    RESTORE_REVERTED,
+
+    /** Recovery could not keep the data in place; artifacts were quarantined. */
+    DATA_QUARANTINED,
+}
+
+/**
+ * [NothingToRecover] and [Cleaned] leave the live generation untouched — the
+ * interrupted restore never reached the swap, so the student's data is exactly
+ * what they left. [RolledBack] already reverted to the previous generation:
+ * consistent, but the restore they asked for did not happen. [Quarantined] and
+ * [Unreadable] are the failure paths — the artifacts were moved aside, so the
+ * live data may be missing whatever that restore would have brought.
+ */
+fun RestoreStartupOutcome.attentionRequired(): RestoreRecoveryAttention = when (this) {
+    RestoreStartupOutcome.NothingToRecover,
+    is RestoreStartupOutcome.Cleaned,
+    -> RestoreRecoveryAttention.NONE
+
+    is RestoreStartupOutcome.RolledBack -> RestoreRecoveryAttention.RESTORE_REVERTED
+
+    is RestoreStartupOutcome.Quarantined,
+    is RestoreStartupOutcome.Unreadable,
+    -> RestoreRecoveryAttention.DATA_QUARANTINED
+}
+
+/**
  * Public startup entry point. The application MUST call this before opening
  * the study database so an interrupted restore can never leave a mixed
  * generation visible to Room.

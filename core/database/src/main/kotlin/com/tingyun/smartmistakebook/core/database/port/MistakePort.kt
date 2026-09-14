@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.database.port
 import com.tingyun.smartmistakebook.core.database.MistakeDetailRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRecord
 import com.tingyun.smartmistakebook.core.database.MistakeRevisionSummaryRecord
+import com.tingyun.smartmistakebook.core.database.dao.ArchivedEntrySummaryRow
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -58,5 +59,5 @@ interface MistakeReadPort {
 
     suspend fun restoreErrorBookEntry(entryId: String, at: Long): Boolean
 
-    fun observeArchivedErrorBookEntries(): Flow<List<String>>
+    fun observeArchivedErrorBookEntries(): Flow<List<ArchivedEntrySummaryRow>>
 }

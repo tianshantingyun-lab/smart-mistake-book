@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.feature.capture
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -39,11 +41,15 @@ import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowPhase
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CaptureWritingLayer
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.model.CaptureDraftEditorMode
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
+import com.tingyun.smartmistakebook.core.model.MAX_CAPTURE_USER_HINT_CHARS
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
@@ -66,7 +72,7 @@ fun CaptureScreen(
     onOpenModelSettings: () -> Unit,
     onTutorSessionReady: (sessionId: String) -> Unit,
     onLibraryEntryReady: (String) -> Unit,
-    onSplitReady: () -> Unit,
+    onSplitReady: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     resumeDraftId: String? = null,
@@ -151,8 +157,8 @@ fun CaptureScreen(
         draftState.retryParse()
     }
 
-    fun resetDraftState() {
-        draftState.resetDraft()
+    fun resetForNextCapture() {
+        draftState.resetForNextCapture(workflowViewModel::reset)
     }
 
     fun applyWorkspace(restored: CaptureWorkspaceLocalSnapshot) {
@@ -371,6 +377,34 @@ fun CaptureScreen(
         resumeCommands.loadResume(requestedDraftId)
     }
 
+    // Runtime-state rehydration for the fresh capture routes: sourcePages are
+    // deliberately outside the Saver, and only the resume route re-derives
+    // them. After a rotation or a detour to model settings, an in-progress
+    // draft would otherwise be stuck on "正在准备这道题" with no way forward.
+    LaunchedEffect(
+        resumeDraftId,
+        state.draftId,
+        state.committedEntryId,
+        state.sourcePages.size,
+    ) {
+        if (resumeDraftId != null) return@LaunchedEffect
+        val currentDraftId = state.draftId ?: return@LaunchedEffect
+        if (state.committedEntryId != null) return@LaunchedEffect
+        if (state.sourcePages.isNotEmpty()) return@LaunchedEffect
+        if (state.workflowInProgress) return@LaunchedEffect
+        resumeCommands.loadResume(currentDraftId)
+        when (state.resumeLoadStateName) {
+            CaptureResumeLoadState.MISSING.name -> {
+                state.draftId = null
+                state.receivedImageUri = null
+                state.captureError = CAPTURE_RESUMED_DRAFT_MISSING
+            }
+            CaptureResumeLoadState.SOURCE_UNAVAILABLE.name -> {
+                state.captureError = CAPTURE_RESUMED_DRAFT_UNAVAILABLE
+            }
+        }
+    }
+
     LaunchedEffect(state.draftId, state.workspaceHydratedDraftId) {
         val currentDraftId = state.draftId ?: return@LaunchedEffect
         resumeCommands.hydrateWorkspace(currentDraftId)
@@ -438,6 +472,7 @@ fun CaptureScreen(
                     imageHeight = height,
                     occurredAtEpochMillis = occurredAt,
                     agentConsentGranted = egressAllowed,
+                    userHint = state.userHint,
                 )
             },
             buildParseRequest = {
@@ -467,7 +502,33 @@ fun CaptureScreen(
         state.draftRevisionNumber,
         state.sourcePages,
     ) {
-        modelTaskCommands.maybeSplit()
+        when (
+            captureSplitDecision(
+                snapshot = state.assessmentSnapshot,
+                draftId = state.draftId,
+                revisionNumber = state.draftRevisionNumber,
+                sourcePages = state.sourcePages,
+            )
+        ) {
+            // 一页多题需要用户拍板拆分方式（自动/手动框选），不抢先执行。
+            is CaptureSplitDecision.Run -> state.splitPendingChoice = true
+            else -> modelTaskCommands.maybeSplit()
+        }
+    }
+
+    var manualSplitDialogOpen by remember { mutableStateOf(false) }
+    if (manualSplitDialogOpen) {
+        val selectedPage = state.sourcePages.getOrNull(state.selectedSourcePageIndex)
+        RegionBoxSelectorDialog(
+            imageUri = selectedPage?.imageUri ?: state.receivedImageUri.orEmpty(),
+            pageWidth = selectedPage?.width ?: 0,
+            pageHeight = selectedPage?.height ?: 0,
+            onConfirm = { regions ->
+                manualSplitDialogOpen = false
+                coroutineScope.launch { modelTaskCommands.manualSplit(regions) }
+            },
+            onDismiss = { manualSplitDialogOpen = false },
+        )
     }
 
     LaunchedEffect(modelTasks) {
@@ -603,7 +664,7 @@ fun CaptureScreen(
             CaptureCommittedCard(
                 onView = { onLibraryEntryReady(state.committedEntryId.orEmpty()) },
                 onCaptureAnother = {
-                    resetDraftState()
+                    resetForNextCapture()
                     state.receivedImageUri = null
                     state.receivedInputSource = null
                     launchCamera()
@@ -643,13 +704,32 @@ fun CaptureScreen(
                         modifier = Modifier.padding(top = 14.dp),
                     )
                 } else {
+                    CaptureUserHintField(
+                        hint = state.userHint,
+                        evaluatedHint = (state.assessmentSnapshot?.request?.input
+                            as? CaptureAssessmentInput)?.userHint,
+                        evaluatedTerminal = state.assessmentSnapshot?.status?.isTerminal == true,
+                        onHintChange = { state.userHint = it },
+                        onReassess = ::retryAssessmentProcessing,
+                        modifier = Modifier.padding(top = 14.dp),
+                    )
                     CaptureModelTaskCard(
                         snapshot = state.assessmentSnapshot,
                         parseSnapshot = state.parseSnapshot,
                         splitInProgress = state.workflowInProgress &&
                             assessmentDecision == CaptureAssessmentDecision.SPLIT,
+                        splitPendingChoice = state.splitPendingChoice,
                         splitError = state.splitError,
-                        onRetrySplit = { state.splitRetryNonce += 1 },
+                        onAutoSplit = {
+                            state.splitPendingChoice = false
+                            coroutineScope.launch { modelTaskCommands.maybeSplit() }
+                        },
+                        onManualSplit = { manualSplitDialogOpen = true },
+                        onRetrySplit = {
+                            state.splitPendingChoice = false
+                            state.splitRetryNonce += 1
+                            coroutineScope.launch { modelTaskCommands.maybeSplit() }
+                        },
                         onRetry = ::retryAssessmentProcessing,
                         onRetryParse = ::retryParseProcessing,
                         onRetake = ::requestRetake,
@@ -805,4 +885,49 @@ fun CaptureScreen(
     }
 
 
+}
+
+/**
+ * 评估阶段的可选指向说明：默认收起不打扰"拍完即走"；填写后随图交给模型界定录入范围。
+ * 说明相对已评估内容有变化且评估已出终态时，给出"按说明重新评估"。
+ */
+@Composable
+private fun CaptureUserHintField(
+    hint: String,
+    evaluatedHint: String?,
+    evaluatedTerminal: Boolean,
+    onHintChange: (String) -> Unit,
+    onReassess: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        if (!expanded) {
+            OutlineActionChip(
+                text = "补充说明（可选）",
+                onClick = { expanded = true },
+                modifier = Modifier.testTag("capture_user_hint_toggle"),
+            )
+            return@Column
+        }
+        OutlinedTextField(
+            value = hint,
+            onValueChange = { updated -> if (updated.length <= MAX_CAPTURE_USER_HINT_CHARS) onHintChange(updated) },
+            placeholder = { Text("例如：只要第 2、3 题；只录左半页的题") },
+            supportingText = { Text("简短说明要录入的范围，随图一起交给模型，可不填。") },
+            singleLine = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("capture_user_hint_field"),
+        )
+        if (evaluatedTerminal && evaluatedHint != hint.trim().takeIf { it.isNotEmpty() }) {
+            OutlineActionChip(
+                text = "按说明重新评估",
+                onClick = onReassess,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .testTag("capture_user_hint_reassess"),
+            )
+        }
+    }
 }

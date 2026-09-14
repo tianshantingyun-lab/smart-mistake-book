@@ -80,6 +80,15 @@ class SplitImportPortFake : SplitImportPort {
     override suspend fun readSplitImportJob(jobId: String): SplitImportJobRecord? =
         jobs[jobId]?.let { rebuild(it.jobId) }
 
+    override suspend fun readLatestReadyBatchSplitJob(batchJobId: String): SplitImportJobRecord? =
+        activeSnapshot()
+            .filter {
+                it.sourceKind == StudyDbValue.SplitImportSourceKind.BATCH &&
+                    it.status == StudyDbValue.SplitImportStatus.READY &&
+                    it.jobId.startsWith("split:$batchJobId:")
+            }
+            .maxByOrNull { it.updatedAtEpochMillis }
+
     override suspend fun createSplitImportJob(
         command: CreateSplitImportJobCommand,
         questions: List<SplitImportQuestionSeed>,

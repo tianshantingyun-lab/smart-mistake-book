@@ -294,8 +294,10 @@ internal object OpenAiModelProtocol {
 
     private fun nativeToolDescription(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): String = when (tool) {
         com.tingyun.smartmistakebook.core.model.TutorToolName.KNOWLEDGE_READ -> "读取当前题相关知识点讲解材料"
-        com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_READ -> "检索错题本中匹配的错题"
-        com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ -> "读取学生对相关知识的掌握情况"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_READ ->
+            "检索错题本中匹配的错题（只查错题库，不含掌握情况）"
+        com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ ->
+            "读取学生对相关知识的掌握情况（terms 留空＝本科目全部清单，填关键词＝聚焦并附历史聚合；不含错题条目）"
         com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE -> "提交一条学习证据（模型判 direction/understanding/confidence，权重本地定）"
         com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_WRITE -> "写入错题本（需学生明确命令，环内不可自主执行）"
     }
@@ -306,10 +308,12 @@ internal object OpenAiModelProtocol {
      * so the required array must exactly match the property set. MASTERY_UPDATE
      * adds the model-judged semantic fields the model layer's
      * [TutorToolCall] contract mandates (direction + understanding non-null);
+     * MASTERY_READ adds the extended-result flag it alone may set; the other
      * read tools stay minimal (terms + rationale).
      */
     private fun strictFunctionSchema(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): JsonObject {
         val masterySemantics = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE
+        val extendedResult = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ
         return buildJsonObject {
             put("type", "object")
             put(
@@ -337,6 +341,18 @@ internal object OpenAiModelProtocol {
                             put("description", "锚定理由：引用学生原话/行为")
                         },
                     )
+                    if (extendedResult) {
+                        put(
+                            "extendedResult",
+                            buildJsonObject {
+                                put("type", "boolean")
+                                put(
+                                    "description",
+                                    "本条查询可能需要更大的结果预算时置 true（本地决定实际上限）",
+                                )
+                            },
+                        )
+                    }
                     if (masterySemantics) {
                         put(
                             "direction",
@@ -389,6 +405,15 @@ internal object OpenAiModelProtocol {
                         add(JsonPrimitive("direction"))
                         add(JsonPrimitive("understanding"))
                         add(JsonPrimitive("confidence"))
+                    },
+                )
+            } else if (extendedResult) {
+                put(
+                    "required",
+                    buildJsonArray {
+                        add(JsonPrimitive("terms"))
+                        add(JsonPrimitive("rationale"))
+                        add(JsonPrimitive("extendedResult"))
                     },
                 )
             } else {
