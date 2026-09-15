@@ -389,7 +389,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     modelTasks = application.modelTaskRepository,
                     catalogEntries = experience.catalog,
                     imageIntake = application.lobbyMessageImageIntake,
-                    imageDisclosureStore = application.lobbyImageDisclosureStore,
                     modifier = Modifier.testTag("root_tutor"),
                 )
             }
@@ -467,7 +466,6 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     modelTasks = application.modelTaskRepository,
                     catalogEntries = experience.catalog,
                     imageIntake = application.lobbyMessageImageIntake,
-                    imageDisclosureStore = application.lobbyImageDisclosureStore,
                     initialConversationId = conversationId,
                     modifier = Modifier.testTag("root_tutor"),
                 )

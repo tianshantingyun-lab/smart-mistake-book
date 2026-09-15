@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.tingyun.smartmistakebook.core.domain.LobbyImageDisclosureStore
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
@@ -104,12 +103,6 @@ internal data class PendingLobbyImage(
     val localUri: String,
 )
 
-/** 首次附图说明确认期间暂存的待发送内容（确认后继续发送）。 */
-internal data class PendingImageSend(
-    val message: String,
-    val approvedAtEpochMillis: Long,
-)
-
 @Composable
 internal fun TutorLobbyRoute(
     onCapture: () -> Unit,
@@ -123,7 +116,6 @@ internal fun TutorLobbyRoute(
     catalogEntries: List<StudyCatalogEntry>,
     profile: StudyProfileOverview,
     imageIntake: LobbyMessageImageIntake? = null,
-    imageDisclosureStore: LobbyImageDisclosureStore? = null,
     initialConversationId: String? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -184,11 +176,8 @@ internal fun TutorLobbyRoute(
     val context = LocalContext.current
     var pendingImages by remember { mutableStateOf<List<PendingLobbyImage>>(emptyList()) }
     var attachMenuOpen by remember { mutableStateOf(false) }
-    // 首次附图的披露说明确认中暂存的待发送内容（确认后继续发送）。
-    var disclosureConfirmOpen by remember { mutableStateOf(false) }
-    var pendingImageSend by remember { mutableStateOf<PendingImageSend?>(null) }
     var pendingCameraImageUri by remember { mutableStateOf<String?>(null) }
-    val lobbyImageEnabled = imageIntake != null && imageDisclosureStore != null
+    val lobbyImageEnabled = imageIntake != null
 
     fun remainingImageSlots(): Int = MAX_TUTOR_MESSAGE_IMAGES - pendingImages.size
 
@@ -378,15 +367,9 @@ internal fun TutorLobbyRoute(
 
         scope.launch {
             try {
-                // 首次附图需要学生先看一次发送范围说明；确认后长期记住，不再询问。
-                val store = imageDisclosureStore
+                // 附图与拍照/讲题同口径：学生选择图片并点发送本身就是本次知情，
+                // 不再弹确认卡（配置模型 = 唯一条件）。
                 val intake = imageIntake
-                if (sentImages.isNotEmpty() && store != null && !store.isAcknowledged()) {
-                    pendingImageSend = PendingImageSend(message, approvedAtEpochMillis)
-                    disclosureConfirmOpen = true
-                    sendInFlight = false
-                    return@launch
-                }
                 draft = ""
                 sendError = null
                 // 发送时登记：图片字节进私有资产库并拿到 egress 证明所需的哈希/尺寸。
@@ -757,50 +740,6 @@ internal fun TutorLobbyRoute(
                 ) {
                     Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
                     Text("从相册选择", modifier = Modifier.padding(start = 6.dp))
-                }
-            },
-        )
-    }
-    if (disclosureConfirmOpen) {
-        AlertDialog(
-            onDismissRequest = {
-                disclosureConfirmOpen = false
-                pendingImageSend = null
-            },
-            title = { Text("发送图片给模型") },
-            text = {
-                Text(
-                    "图片会随这条消息交给你在“我的”里配置的模型，用于理解和回复。" +
-                        "只发送你本次选择的图片，不含其他学习记录。确认一次后不再逐次询问。",
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        disclosureConfirmOpen = false
-                        val pending = pendingImageSend
-                        pendingImageSend = null
-                        scope.launch {
-                            imageDisclosureStore?.acknowledge()
-                            if (pending != null) {
-                                startMessage(pending.message, pending.approvedAtEpochMillis)
-                            }
-                        }
-                    },
-                    modifier = Modifier.testTag("lobby_image_disclosure_confirm"),
-                ) {
-                    Text("同意并发送")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        disclosureConfirmOpen = false
-                        pendingImageSend = null
-                    },
-                    modifier = Modifier.testTag("lobby_image_disclosure_cancel"),
-                ) {
-                    Text("取消")
                 }
             },
         )

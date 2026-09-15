@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
-import com.tingyun.smartmistakebook.core.domain.LobbyImageDisclosureStore
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealRequest
 import com.tingyun.smartmistakebook.core.domain.StudyAnswerRevealResult
@@ -119,7 +118,6 @@ fun TutorRoute(
     catalogEntries: List<StudyCatalogEntry>,
     capabilities: AppCapabilitySnapshot,
     imageIntake: LobbyMessageImageIntake? = null,
-    imageDisclosureStore: LobbyImageDisclosureStore? = null,
     initialConversationId: String? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -136,7 +134,6 @@ fun TutorRoute(
             catalogEntries = catalogEntries,
             profile = profile,
             imageIntake = imageIntake,
-            imageDisclosureStore = imageDisclosureStore,
             initialConversationId = initialConversationId,
             modifier = modifier,
         )
