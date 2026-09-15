@@ -313,7 +313,7 @@ internal fun OrganizationCorrectionEditor(
                     scope.launch {
                         isSaving = true
                         try {
-                            organizationRepository.confirm(
+                            val confirmation = organizationRepository.confirm(
                                 requestId = requestId,
                                 selection = ProblemOrganizationSelection(
                                     classificationIndexes = classifications,
@@ -323,7 +323,12 @@ internal fun OrganizationCorrectionEditor(
                                 ),
                                 acceptedAtEpochMillis = System.currentTimeMillis(),
                             )
-                            onConfirmed()
+                            if (!confirmation.applied) {
+                                // 与离线校正一致：被策略拒绝时必须报失败，不能假成功。
+                                onFailure("这次修改没有写进去，请重新进入后再试")
+                            } else {
+                                onConfirmed()
+                            }
                         } catch (cancelled: CancellationException) {
                             throw cancelled
                         } catch (_: Exception) {

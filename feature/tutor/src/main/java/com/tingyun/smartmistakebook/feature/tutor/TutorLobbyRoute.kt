@@ -59,6 +59,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorMessage
 import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
 import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -158,6 +159,8 @@ internal fun TutorLobbyRoute(
     var sendError by remember { mutableStateOf<AppFailure?>(null) }
     // 发送是本组合内的瞬时行为，不应跨进程/重建保留——残留 true 会永久锁死输入框。
     var sendInFlight by remember { mutableStateOf(false) }
+    // 最近一次发送失败的消息文本：可重试失败的"重试"按钮据此重发。
+    var lastFailedMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var resumingTaskId by remember { mutableStateOf<String?>(null) }
     var draftPersistJob by remember { mutableStateOf<Job?>(null) }
     // 会话任务可能因离开页面被取消而停在非终态（协程已死、DB 无终态）：
@@ -327,6 +330,18 @@ internal fun TutorLobbyRoute(
 
     fun startMessage(message: String, approvedAtEpochMillis: Long) {
         val currentProvider = provider
+        if (currentProvider == null && !providerLoadFailed) {
+            // 首帧：模型能力还没读回来，别把它误报成"当前模型不能处理对话"。
+            sendError = appFailure(
+                code = AppFailureCode.TUTOR_PROVIDER_UNAVAILABLE,
+                title = "正在读取模型配置",
+                message = "模型配置还在读取中，稍等片刻再发送。",
+                dataPreserved = true,
+                retryability = Retryability.RETRYABLE,
+                primaryAction = ActionType.RETRY,
+            )
+            return
+        }
         if (currentProvider == null || !currentProvider.supports(ModelTaskKind.TUTOR_LOBBY)) {
             sendError = appFailure(
                 code = if (providerLoadFailed) {
@@ -362,6 +377,7 @@ internal fun TutorLobbyRoute(
             return
         }
         sendInFlight = true
+        if (message.isNotBlank()) lastFailedMessage = message
         val occurredAt = System.currentTimeMillis()
         val currentConversationId = activeConversationId
 
@@ -437,6 +453,7 @@ internal fun TutorLobbyRoute(
                     ),
                 )
                 pendingImages = emptyList()
+                lastFailedMessage = null
                 val request = buildTutorLobbyRequest(
                     provider = currentProvider,
                     conversationId = conversationId,
@@ -588,6 +605,7 @@ internal fun TutorLobbyRoute(
                 TutorLobbyMessageItem(
                     message = message,
                     imageIntake = imageIntake,
+                    onOpenCapabilitySettings = onOpenCapabilitySettings,
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
@@ -635,13 +653,27 @@ internal fun TutorLobbyRoute(
                         color = ErrorWarm,
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    OutlineActionChip(
-                        text = "检查模型设置",
-                        onClick = onOpenCapabilitySettings,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .testTag("tutor_lobby_open_model_settings"),
-                    )
+                    if (message.primaryAction?.actionType == ActionType.RETRY) {
+                        OutlineActionChip(
+                            text = "重试",
+                            onClick = {
+                                lastFailedMessage?.let { text ->
+                                    startMessage(text, System.currentTimeMillis())
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .testTag("tutor_lobby_retry_send"),
+                        )
+                    } else {
+                        OutlineActionChip(
+                            text = "检查模型设置",
+                            onClick = onOpenCapabilitySettings,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .testTag("tutor_lobby_open_model_settings"),
+                        )
+                    }
                 }
             }
         }
@@ -833,92 +865,10 @@ private fun PendingImagesRow(
 }
 
 @Composable
-private fun TutorLobbyTask(
-    task: ModelTaskSnapshot,
-    catalogEntries: List<StudyCatalogEntry>,
-    profile: StudyProfileOverview,
-    onOpenMistakeNotebook: () -> Unit,
-    onOpenProfile: () -> Unit,
-    onOpenCapabilitySettings: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val input = task.request.input as? TutorLobbyInput ?: return
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        // 用户消息气泡：图片+文字
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-            Surface(
-                color = JadeSoft.copy(alpha = 0.62f),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth(0.86f)
-                    .testTag("tutor_lobby_student_message"),
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
-                    Text(
-                        text = input.studentMessage,
-                        color = Ink,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-        }
-        val output = task.output as? TutorLobbyOutput
-        if (task.status == ModelTaskStatus.SUCCEEDED && output != null) {
-            TutorPrompt(
-                text = output.messageMarkdown,
-                modifier = Modifier.testTag("tutor_lobby_assistant_message"),
-            )
-            TutorLocalIntentPanel(
-                decision = output.intentDecision,
-                studentMessage = input.studentMessage,
-                catalogEntries = catalogEntries,
-                profile = profile,
-                onOpenMistakeNotebook = onOpenMistakeNotebook,
-                onOpenProfile = onOpenProfile,
-            )
-        } else if (
-            task.status == ModelTaskStatus.RETRYABLE_FAILURE ||
-            task.status == ModelTaskStatus.PERMANENT_FAILURE
-        ) {
-            Surface(
-                color = ErrorWarm.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, ErrorWarm.copy(alpha = 0.36f)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("tutor_lobby_task_failure"),
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = task.failure?.message ?: "这次回复暂时没有准备好。",
-                        color = InkSecondary,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    if (task.failure?.code?.requiresModelSettings() == true) {
-                        OutlineActionChip(
-                            text = "检查模型设置",
-                            onClick = onOpenCapabilitySettings,
-                            modifier = Modifier.padding(top = 8.dp),
-                        )
-                    }
-                }
-            }
-        } else {
-            TutorPrompt(
-                text = task.userMessage.ifBlank { "正在理解你的消息…" },
-                modifier = Modifier.testTag("tutor_lobby_task_progress"),
-            )
-        }
-    }
-}
-
-@Composable
 private fun TutorLobbyMessageItem(
     message: TutorMessage,
     imageIntake: LobbyMessageImageIntake? = null,
+    onOpenCapabilitySettings: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (message.role == TutorMessageRole.STUDENT) {
@@ -967,18 +917,56 @@ private fun TutorLobbyMessageItem(
                 .fillMaxWidth()
                 .testTag("tutor_lobby_task_failure"),
         ) {
-            Text(
-                text = message.bodyMarkdown,
-                modifier = Modifier.padding(12.dp),
-                color = InkSecondary,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = message.bodyMarkdown,
+                    color = InkSecondary,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                lobbyFailureReasonText(message.errorCode)?.let { reason ->
+                    Text(
+                        text = reason,
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .testTag("tutor_lobby_failure_reason"),
+                        color = InkSecondary,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                val failureCode = message.errorCode
+                    ?.let { raw -> runCatching { ModelFailureCode.valueOf(raw) }.getOrNull() }
+                if (failureCode?.requiresModelSettings() == true) {
+                    OutlineActionChip(
+                        text = "检查模型设置",
+                        onClick = onOpenCapabilitySettings,
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .testTag("tutor_lobby_failure_open_model_settings"),
+                    )
+                }
+            }
         }
         else -> TutorPrompt(
             text = message.bodyMarkdown,
             modifier = modifier.testTag("tutor_lobby_task_progress"),
         )
     }
+}
+
+/**
+ * Lobby 回复失败的补充说明（纯函数，便于单测）：把内部失败码翻译成学生能
+ * 行动的一句话；无需额外说明的失败返回 null（通用文案已足够）。
+ */
+internal fun lobbyFailureReasonText(errorCode: String?): String? = when (errorCode) {
+    "AUTHENTICATION_FAILED" -> "API Key 可能已失效，检查后重新发送。"
+    "PROVIDER_NOT_CONFIGURED", "MODEL_NOT_CONFIGURED" -> "当前还没有可用的模型配置。"
+    "PROVIDER_CAPABILITY_MISSING" -> "当前模型不支持这项对话能力。"
+    "TIMEOUT" -> "模型响应超时，可以再发一次。"
+    "NETWORK_UNAVAILABLE" -> "网络暂时不可用，可以稍后再试。"
+    "SERVICE_UNAVAILABLE" -> "模型服务暂时不可用，可以稍后再试。"
+    "RATE_LIMITED" -> "请求太频繁，稍等片刻再发。"
+    "INVALID_RESPONSE" -> "模型这次返回的内容无法使用，可以再发一次。"
+    else -> null
 }
 
 private fun List<TutorMessage>.toLobbyHistory(): List<TutorChatHistoryEntry> {

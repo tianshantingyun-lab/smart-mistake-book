@@ -155,6 +155,7 @@ class AndroidBackupRepository(
         val previousAssets = File(filesDir, "$ASSET_DIRECTORY.prev")
         val nextAssets = File(filesDir, "$ASSET_DIRECTORY.next")
         var swapStarted = false
+        var databaseClosed = false
 
         return try {
             // Phase 1: Validate and unpack (counting compressed bytes for zip-bomb ratio)
@@ -240,6 +241,7 @@ class AndroidBackupRepository(
             // Phase 4: Close the database and perform the atomic switch.
             journal.writePhase(RestorePhase.SWAPPING)
             database.close()
+            databaseClosed = true
             listOf(
                 File("${databaseFile.absolutePath}-wal"),
                 File("${databaseFile.absolutePath}-shm"),
@@ -331,6 +333,9 @@ class AndroidBackupRepository(
                         "恢复失败且回滚不完整，相关数据已隔离：${problems.joinToString("; ")}",
                         failure,
                     )
+                    if (databaseClosed) {
+                        throw BackupRestoreDatabaseClosedException(quarantined.message.orEmpty(), quarantined)
+                    }
                     throw quarantined
                 }
                 RestoreGenerationSupport.cleanup(context, entry)
@@ -340,6 +345,15 @@ class AndroidBackupRepository(
                 deleteGenerationArtifacts(previousDb, nextDb, previousAssets, nextAssets)
                 root.deleteRecursively()
                 journal.clear()
+            }
+            if (databaseClosed) {
+                // 文件已回滚到恢复前状态，但进程内连接已在 swap 前关闭；database
+                // 端口是构造注入到全部仓库的，无法热重开——如实告知用户必须重启，
+                // 而不是让其带着一个已关闭的连接继续操作。
+                throw BackupRestoreDatabaseClosedException(
+                    "恢复失败，已回到原来的数据。",
+                    failure,
+                )
             }
             throw failure
         }
@@ -750,6 +764,14 @@ internal data class CurrentState(
 )
 
 class BackupRestoreException(message: String, cause: Throwable? = null) :
+    Exception(message, cause)
+
+/**
+ * 恢复失败且进程内数据库连接已被关闭（swap 阶段之后失败、文件已回滚）。
+ * database 端口是构造注入到全部仓库的，进程内无法热重开——唯一的出路是
+ * 让用户完全退出并重新打开应用，因此单独成类型让 UI 给出可操作的提示。
+ */
+class BackupRestoreDatabaseClosedException(message: String, cause: Throwable? = null) :
     Exception(message, cause)
 
 /** Counts bytes read from the wrapped stream, used to detect zip bombs. */

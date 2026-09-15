@@ -241,5 +241,6 @@ private fun historySubtitle(conversation: TutorConversation): String {
         TutorConversationStatus.COMPLETED -> "已结束"
         TutorConversationStatus.ARCHIVED -> "已归档"
     }
-    return "$status · 共 ${conversation.lastTurnOrdinal} 条消息"
+    // 用真实消息行数，而不是 last_turn_ordinal 序号（讲题会话的序号有空洞会多报）。
+    return "$status · 共 ${conversation.messageCount} 条消息"
 }

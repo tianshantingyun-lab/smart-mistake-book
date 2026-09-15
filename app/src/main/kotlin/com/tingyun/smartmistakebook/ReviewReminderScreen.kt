@@ -190,6 +190,12 @@ internal fun ReminderScreen(
             color = Ink,
         )
         Text("选一个符合日常节奏的时间，也可以自定义。", color = InkSecondary)
+        Text(
+            "到点提醒由系统投递，省电模式下可能略有延迟。",
+            modifier = Modifier.padding(top = 2.dp),
+            color = InkSecondary,
+            style = MaterialTheme.typography.labelSmall,
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()

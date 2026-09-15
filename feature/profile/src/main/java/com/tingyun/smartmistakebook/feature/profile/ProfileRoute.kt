@@ -429,6 +429,8 @@ internal fun tutorCapabilitySubtitle(capabilities: AppCapabilitySnapshot): Strin
             } else {
                 "智能讲题已就绪 · 图片读取暂不可用"
             }
+        capabilities.remoteModelAuthenticationFailed ->
+            "API Key 可能已失效 · 查看测试结果"
         capabilities.remoteModelCapabilitiesTested ->
             "当前模型暂不兼容 · 查看测试结果"
         capabilities.remoteModelConfigured ->

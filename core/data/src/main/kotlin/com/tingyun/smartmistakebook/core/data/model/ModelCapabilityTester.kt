@@ -155,6 +155,8 @@ internal class OpenAiCompatibleModelCapabilityTester(
             configurationUpdatedAtEpochMillis = configuration.updatedAtEpochMillis,
             supportsImageInput = false,
             supportsStructuredOutput = false,
+            // 鉴权失败 ≠ 模型不兼容：界面据此显示"API Key 可能失效"。
+            authenticationFailed = true,
             testedAtEpochMillis = clock().coerceAtLeast(1L),
             testStartSequence = testStartSequence,
         )

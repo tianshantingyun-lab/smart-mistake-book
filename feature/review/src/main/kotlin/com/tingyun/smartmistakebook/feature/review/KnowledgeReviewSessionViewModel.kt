@@ -196,6 +196,19 @@ internal class KnowledgeReviewSessionViewModel(
     /** 进入下一知识点；若当前是末位则标记会话完成（Screen 负责返回首页）。 */
     fun continueToNext() {
         if (!canContinue && !completed) return
+        advance()
+    }
+
+    /**
+     * 跳过当前知识点（取题持续失败时的出口）：零权重——不写掌握度、节点保持到期，
+     * 只在本会话内前进，避免一个节点卡住整场复习。
+     */
+    fun skipCurrentNode() {
+        if (currentEntry == null) return
+        advance()
+    }
+
+    private fun advance() {
         currentIndex += 1
         savedStateHandle[CURRENT_INDEX_KEY] = currentIndex
         clearNodeState()
@@ -226,17 +239,20 @@ internal class KnowledgeReviewSessionViewModel(
     }
 
     private fun restoredLoadStatus(): KnowledgeQuizLoadStatus {
-        // 已提交的节点无需重建题目；未提交的节点回到 IDLE，由 Screen 重新走 loader。
+        // 已提交的节点无需重建题目。
         if (savedStateHandle.get<String>(SUBMITTED_CHOICE_KEY) != null) {
             return KnowledgeQuizLoadStatus.IDLE
         }
         val restored = savedStateHandle.get<String>(LOAD_STATUS_KEY)
             ?.let { runCatching { KnowledgeQuizLoadStatus.valueOf(it) }.getOrNull() }
             ?: KnowledgeQuizLoadStatus.IDLE
-        return if (restored == KnowledgeQuizLoadStatus.LOADING) {
-            KnowledgeQuizLoadStatus.FAILED
-        } else {
-            restored
+        return when (restored) {
+            // 重建后 currentItem 只存内存、必然丢失：LOADING/LOADED 都回到 IDLE，
+            // 由 Screen 重新走 loader（loader 先观察既有任务、再决定是否新派发）。
+            KnowledgeQuizLoadStatus.LOADING,
+            KnowledgeQuizLoadStatus.LOADED,
+            -> KnowledgeQuizLoadStatus.IDLE
+            else -> restored
         }
     }
 

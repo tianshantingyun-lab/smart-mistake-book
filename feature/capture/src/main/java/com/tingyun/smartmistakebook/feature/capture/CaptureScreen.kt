@@ -80,6 +80,8 @@ fun CaptureScreen(
     // that used to gate it was removed on 2026-09-13. Whether a round actually runs is
     // decided per-provider by captureModelReady below.
     modelEgressAllowed: Boolean = false,
+    /** 本机已保存过模型配置：设置引导据此区分"去配置"与"去完成能力测试"。 */
+    modelConfigured: Boolean = false,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -710,6 +712,7 @@ fun CaptureScreen(
                     CaptureModelSetupBlock(
                         onOpenSettings = { afterWorkspaceFlush(onOpenModelSettings) },
                         modifier = Modifier.padding(top = 14.dp),
+                        modelConfigured = modelConfigured,
                     )
                 } else {
                     CaptureUserHintField(

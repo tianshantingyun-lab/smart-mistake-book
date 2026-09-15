@@ -57,6 +57,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelConfigurationMutationResult
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationSnapshot
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationStore
 import com.tingyun.smartmistakebook.core.domain.ModelConfigurationUpdate
+import com.tingyun.smartmistakebook.core.data.backup.BackupRestoreDatabaseClosedException
 import com.tingyun.smartmistakebook.core.domain.BackupRepository
 import com.tingyun.smartmistakebook.core.domain.BackupValidation
 import com.tingyun.smartmistakebook.core.domain.StorageInventory
@@ -65,6 +66,7 @@ import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
 import com.tingyun.smartmistakebook.core.model.AppCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.CalibrationReport
 import com.tingyun.smartmistakebook.core.model.NetworkMode
+import com.tingyun.smartmistakebook.core.ui.ErrorWarm
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
@@ -505,6 +507,7 @@ internal fun CapabilityScreen(
                             try {
                                 operationMessage = configurationStore.clear().toUserMessage(
                                     successMessage = "本机配置与密钥已清除。",
+                                    storageUnavailableMessage = "本机安全存储暂不可用，配置未清除，密钥仍在。",
                                 )
                                 apiKey = ""
                             } catch (cancelled: CancellationException) {
@@ -537,6 +540,8 @@ internal fun capabilityVerificationSummary(configuration: ModelConfigurationSnap
     val verification = configuration.currentCapabilityVerification()
         ?: return "配置已安全保存在本机。使用前请测试图片与讲解能力；配置好模型后，拍照与讲题会直接交给模型。"
     return when {
+        verification.authenticationFailed ->
+            "上次测试没有通过鉴权：API Key 可能无效或已失效，请更新后重试。"
         verification.supportsImageInput && verification.supportsStructuredOutput ->
             "能力已测试：可以读取题图并稳定整理讲解。发送即处理，不再逐次询问。"
         verification.supportsStructuredOutput ->
@@ -627,12 +632,17 @@ internal fun StorageScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var inventory by remember { mutableStateOf<StorageInventory?>(null) }
+    var inventoryFailed by remember { mutableStateOf(false) }
+    var inventoryRetry by remember { mutableStateOf(0) }
     var operationMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var operationBusy by rememberSaveable { mutableStateOf(false) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(backupRepository) {
-        inventory = runCatching { backupRepository.inspect() }.getOrNull()
+    LaunchedEffect(backupRepository, inventoryRetry) {
+        val result = runCatching { backupRepository.inspect() }
+        inventory = result.getOrNull()
+        // 读取失败与"正在读取"必须分开：不能永远停在加载中文案。
+        inventoryFailed = result.isFailure
         OrphanAssetGc.enqueue(context)
     }
     val orphanGcInfos by remember(context) {
@@ -725,7 +735,12 @@ internal fun StorageScreen(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (failure: Exception) {
-                operationMessage = "恢复失败，已尝试保留原数据。${failure.message.orEmpty()}"
+                operationMessage = if (failure is BackupRestoreDatabaseClosedException) {
+                    // 文件已回滚，但连接已关闭且无法热重开：必须重启后才能继续使用。
+                    "恢复失败，已回到原来的数据。请完全退出并重新打开应用后再继续。"
+                } else {
+                    "恢复失败，已尝试保留原数据。${failure.message.orEmpty()}"
+                }
             } finally {
                 operationBusy = false
             }
@@ -781,15 +796,24 @@ internal fun StorageScreen(
         SectionHeader("本机存储")
         val current = inventory
         Text(
-            text = if (current == null) {
-                "正在读取本机占用…"
-            } else {
-                "学习记录 ${formatBytes(current.databaseBytes)} · 题图 ${formatBytes(current.assetBytes)} · 可清理临时文件 ${formatBytes(current.cleanableBytes)}"
+            text = when {
+                current != null ->
+                    "学习记录 ${formatBytes(current.databaseBytes)} · 题图 ${formatBytes(current.assetBytes)} · 可清理临时文件 ${formatBytes(current.cleanableBytes)}"
+                inventoryFailed -> "暂时读不到本机占用。"
+                else -> "正在读取本机占用…"
             },
             modifier = Modifier.padding(top = 10.dp),
-            color = InkSecondary,
+            color = if (inventoryFailed) ErrorWarm else InkSecondary,
             style = MaterialTheme.typography.bodyMedium,
         )
+        if (inventoryFailed && current == null) {
+            OutlinedButton(
+                onClick = { inventoryRetry += 1 },
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .testTag("storage_inventory_retry"),
+            ) { Text("重试读取") }
+        }
         PaperDivider(Modifier.padding(vertical = 18.dp))
         SectionHeader("完整备份")
         Text(
@@ -912,7 +936,11 @@ private fun formatBytes(bytes: Long): String = when {
     else -> "$bytes B"
 }
 
-private fun ModelConfigurationMutationResult.toUserMessage(successMessage: String): String = when (this) {
+private fun ModelConfigurationMutationResult.toUserMessage(
+    successMessage: String,
+    /** 失败文案随操作不同：保存失败是"未生效"，清除失败是"未清除、密钥仍在"。 */
+    storageUnavailableMessage: String = "本机安全存储暂不可用，配置未生效。",
+): String = when (this) {
     is ModelConfigurationMutationResult.Success -> successMessage
 
     is ModelConfigurationMutationResult.Rejected -> {
@@ -948,8 +976,7 @@ private fun ModelConfigurationMutationResult.toUserMessage(successMessage: Strin
     }
 
     ModelConfigurationMutationResult.MissingConfiguration -> "本机没有可更新的配置。"
-    ModelConfigurationMutationResult.StorageUnavailable ->
-        "本机安全存储暂不可用，配置未生效。"
+    ModelConfigurationMutationResult.StorageUnavailable -> storageUnavailableMessage
 }
 
 /** 设置界面里协议的中文标签（spec 2026-09-08-multi-protocol §3.2 显式协议选择）。 */

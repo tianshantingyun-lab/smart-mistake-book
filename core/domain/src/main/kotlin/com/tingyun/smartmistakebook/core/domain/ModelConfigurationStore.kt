@@ -43,6 +43,11 @@ data class ModelCapabilityVerification(
     val supportsImageInput: Boolean,
     val supportsStructuredOutput: Boolean,
     /**
+     * 上次测试是鉴权失败（401/403）而非能力不通过：界面要显示"API Key 可能失效"，
+     * 不能把密钥错误说成"模型不兼容"。旧记录缺省 false。
+     */
+    val authenticationFailed: Boolean = false,
+    /**
      * Whether the endpoint accepted a native OpenAI `tools` request in the probe.
      * Defaults to false for stored verifications written before this field existed
      * (Route A stays off until a fresh probe proves tools support).

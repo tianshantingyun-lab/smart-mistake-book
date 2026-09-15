@@ -65,6 +65,7 @@ import com.tingyun.smartmistakebook.core.domain.ReTeachOpening
 import com.tingyun.smartmistakebook.core.model.VerifiedTeachingArtifact
 import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
+import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.Paper
@@ -175,6 +176,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
             verifiedModelCapabilities?.supportsImageInput == true,
         remoteModelStructuredOutputVerified =
             verifiedModelCapabilities?.supportsStructuredOutput == true,
+        remoteModelAuthenticationFailed =
+            verifiedModelCapabilities?.authenticationFailed == true,
     )
     val applicationUiScope = rememberCoroutineScope()
     val experience by repository.snapshot.collectAsStateWithLifecycle()
@@ -526,23 +529,28 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     Unit
                 }
                 BackHandler(onBack = onKnowledgeBack)
-                val planState by produceState<KnowledgeReviewSessionPlan?>(
-                    initialValue = null,
+                var planRetryNonce by remember { mutableIntStateOf(0) }
+                val planState by produceState<KnowledgeReviewPlanState>(
+                    initialValue = KnowledgeReviewPlanState.Loading,
                     key1 = experience.status,
+                    key2 = planRetryNonce,
                 ) {
                     value = if (experience.status == StudyDataStatus.READY) {
                         try {
-                            repository.currentKnowledgeReviewPlan(
-                                requestId = "knowledge-review-plan:${UUID.randomUUID()}",
-                                occurredAtEpochMillis = System.currentTimeMillis(),
+                            KnowledgeReviewPlanState.Ready(
+                                repository.currentKnowledgeReviewPlan(
+                                    requestId = "knowledge-review-plan:${UUID.randomUUID()}",
+                                    occurredAtEpochMillis = System.currentTimeMillis(),
+                                ) ?: KnowledgeReviewSessionPlan(),
                             )
                         } catch (cancelled: CancellationException) {
                             throw cancelled
                         } catch (_: Exception) {
-                            null
+                            // 加载失败与"真的没有"是两种状态：失败给重试，不许误报"都已掌握"。
+                            KnowledgeReviewPlanState.Failed
                         }
                     } else {
-                        null
+                        KnowledgeReviewPlanState.Loading
                     }
                 }
                 val quizLoader = remember {
@@ -556,16 +564,29 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         ReviewSessionGateMessage("正在打开知识点复习…")
                     experience.status != StudyDataStatus.READY ->
                         ReviewSessionGateMessage("学习记录暂时不可用，知识点复习已暂停。")
-                    planState == null || planState!!.isEmpty ->
-                        ReviewSessionGateMessage("今天没有需要复习的知识点——都已掌握或尚未到期。")
-                    else -> KnowledgeReviewSessionScreen(
-                        plan = planState!!,
-                        onBack = onKnowledgeBack,
-                        loadQuiz = quizLoader::loadQuiz,
-                        submitAnswer = repository::submitKnowledgeQuizFeedback,
-                        onFinished = onKnowledgeBack,
-                        modifier = Modifier.testTag("root_knowledge_review_session"),
-                    )
+                    else -> when (val state = planState) {
+                        KnowledgeReviewPlanState.Loading ->
+                            ReviewSessionGateMessage("正在准备今天的知识点复习…")
+                        KnowledgeReviewPlanState.Failed -> ReviewSessionGateMessage(
+                            message = "今天的知识点复习暂时没有准备好。",
+                            onRetry = { planRetryNonce += 1 },
+                        )
+                        is KnowledgeReviewPlanState.Ready ->
+                            if (state.plan.isEmpty) {
+                                ReviewSessionGateMessage(
+                                    "今天没有需要复习的知识点——都已掌握或尚未到期。",
+                                )
+                            } else {
+                                KnowledgeReviewSessionScreen(
+                                    plan = state.plan,
+                                    onBack = onKnowledgeBack,
+                                    loadQuiz = quizLoader::loadQuiz,
+                                    submitAnswer = repository::submitKnowledgeQuizFeedback,
+                                    onFinished = onKnowledgeBack,
+                                    modifier = Modifier.testTag("root_knowledge_review_session"),
+                                )
+                            }
+                    }
                 }
             }
             composable(Routes.CaptureTutor) {
@@ -574,6 +595,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     modelEgressAllowed = baseCapabilities.networkRequestsAllowed,
+                    modelConfigured = modelConfiguration.isConfigured,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
@@ -602,6 +624,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     modelEgressAllowed = baseCapabilities.networkRequestsAllowed,
+                    modelConfigured = modelConfiguration.isConfigured,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
@@ -679,6 +702,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     repository = application.captureRepository,
                     modelTasks = application.modelTaskRepository,
                     modelEgressAllowed = baseCapabilities.networkRequestsAllowed,
+                    modelConfigured = modelConfiguration.isConfigured,
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
                     onTutorSessionReady = { sessionId ->
                         navController.navigate(Routes.capturedTutorSession(sessionId)) {
@@ -865,17 +889,39 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
 }
 
 @Composable
-internal fun ReviewSessionGateMessage(message: String) {
-    Text(
-        text = message,
+internal fun ReviewSessionGateMessage(
+    message: String,
+    onRetry: (() -> Unit)? = null,
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 26.dp, vertical = 24.dp)
-            .testTag("review_session_gate"),
-        color = InkSecondary,
-        fontSize = 15.sp,
-        fontWeight = FontWeight.Medium,
-    )
+            .padding(horizontal = 26.dp, vertical = 24.dp),
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier.testTag("review_session_gate"),
+            color = InkSecondary,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+        )
+        onRetry?.let { retry ->
+            OutlineActionChip(
+                text = "重试",
+                onClick = retry,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .testTag("review_session_gate_retry"),
+            )
+        }
+    }
+}
+
+/** 知识点复习计划的三态：加载中 / 拉取失败（可重试）/ 就绪（可能为空计划）。 */
+private sealed interface KnowledgeReviewPlanState {
+    data object Loading : KnowledgeReviewPlanState
+    data object Failed : KnowledgeReviewPlanState
+    data class Ready(val plan: KnowledgeReviewSessionPlan) : KnowledgeReviewPlanState
 }
 
 @Composable

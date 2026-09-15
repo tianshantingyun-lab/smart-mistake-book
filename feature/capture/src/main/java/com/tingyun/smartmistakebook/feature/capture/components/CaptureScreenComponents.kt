@@ -255,6 +255,8 @@ internal fun CaptureActions(
 internal fun CaptureModelSetupBlock(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 已保存过配置（只差能力测试）时给出下一步的准确指引。 */
+    modelConfigured: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -266,12 +268,16 @@ internal fun CaptureModelSetupBlock(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "配置好模型后，拍照题图才会交给模型整理",
+            text = if (modelConfigured) {
+                "模型已配置，还差一步能力测试；通过后拍照题图就会交给模型整理"
+            } else {
+                "配置好模型后，拍照题图才会交给模型整理"
+            },
             color = Ink,
             style = MaterialTheme.typography.bodyMedium,
         )
         OutlineActionChip(
-            text = "去设置",
+            text = if (modelConfigured) "去完成能力测试" else "去设置",
             onClick = onOpenSettings,
             modifier = Modifier.testTag("capture_model_setup_settings"),
         )
@@ -501,7 +507,7 @@ internal fun CaptureResumeStateCard(
                 CaptureResumeLoadState.REDIRECTING ->
                     "这道题已经准备好讲解，将回到原来的临时会话。"
                 CaptureResumeLoadState.MISSING ->
-                    "它可能已经存入错题本，返回后列表会自动更新。"
+                    "这道题可能已经处理过或不存在，返回后可以继续之前的步骤。"
                 CaptureResumeLoadState.SOURCE_UNAVAILABLE ->
                     "原图暂时无法打开，请返回后重新拍摄。"
                 CaptureResumeLoadState.NOT_REQUESTED,
@@ -513,7 +519,7 @@ internal fun CaptureResumeStateCard(
         )
         if (!isBusy) {
             OutlineActionChip(
-                text = "返回待处理题目",
+                text = "返回",
                 onClick = onBack,
                 modifier = Modifier
                     .fillMaxWidth()

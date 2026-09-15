@@ -125,6 +125,69 @@ class KnowledgeReviewSessionViewModelTest {
         }
     }
 
+    @Test
+    fun skippingAFailedNodeAdvancesWithoutRecordingAnything() {
+        val handle = SavedStateHandle().apply {
+            set(
+                KnowledgeReviewSessionViewModel.LOAD_STATUS_KEY,
+                KnowledgeQuizLoadStatus.FAILED.name,
+            )
+        }
+        val viewModel = KnowledgeReviewSessionViewModel(
+            savedStateHandle = handle,
+            plan = plan,
+        )
+
+        viewModel.skipCurrentNode()
+
+        // 跳过是零权重：不写判决、不回写掌握度，只是本会话内前进。
+        assertEquals("kc-fresh", viewModel.currentEntry?.knowledgeNodeId)
+        assertNull(viewModel.submittedChoice)
+        assertNull(viewModel.feedbackResult)
+        assertEquals(KnowledgeQuizLoadStatus.IDLE, viewModel.loadStatus)
+        assertEquals(KnowledgeQuizSubmitStatus.IDLE, viewModel.submitStatus)
+        assertFalse(viewModel.completed)
+    }
+
+    @Test
+    fun skippingTheLastNodeEndsTheSessionWithoutAVerdict() {
+        val handle = SavedStateHandle().apply {
+            set(KnowledgeReviewSessionViewModel.CURRENT_INDEX_KEY, 1)
+        }
+        val viewModel = KnowledgeReviewSessionViewModel(
+            savedStateHandle = handle,
+            plan = plan,
+        )
+
+        viewModel.skipCurrentNode()
+
+        assertNull(viewModel.currentEntry)
+        assertNull(viewModel.submittedChoice)
+    }
+
+    @Test
+    fun restoredLoadedStatusReopensTheLoadPathAfterProcessDeath() {
+        // 进程重建后 currentItem（只存内存）必然丢失：LOADING/LOADED 都回到 IDLE，
+        // 由 Screen 重新走 loader，而不是停在"已加载但无题"的空白分支。
+        listOf(
+            KnowledgeQuizLoadStatus.LOADING,
+            KnowledgeQuizLoadStatus.LOADED,
+        ).forEach { restored ->
+            val handle = SavedStateHandle().apply {
+                set(
+                    KnowledgeReviewSessionViewModel.LOAD_STATUS_KEY,
+                    restored.name,
+                )
+            }
+            val viewModel = KnowledgeReviewSessionViewModel(
+                savedStateHandle = handle,
+                plan = plan,
+            )
+
+            assertEquals(KnowledgeQuizLoadStatus.IDLE, viewModel.loadStatus)
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun correctAnswerRecordsVerdictAndAllowsContinue() = runTest {

@@ -201,6 +201,7 @@ private fun TutorConversationRecord.toDomain() = TutorConversation(
     updatedAtEpochMillis = updatedAtEpochMillis,
     lastTurnOrdinal = lastTurnOrdinal,
     studentDraft = studentDraft,
+    messageCount = messageCount,
 )
 
 private fun TutorMessageRecord.toDomain(

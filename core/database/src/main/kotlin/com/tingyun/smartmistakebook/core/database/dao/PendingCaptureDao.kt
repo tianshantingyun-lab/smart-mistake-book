@@ -48,6 +48,10 @@ internal interface PendingCaptureDao {
             WHERE draft_link.source_asset_id = asset.source_asset_id
         )
           AND NOT EXISTS (
+            SELECT 1 FROM problem_draft AS draft
+            WHERE draft.source_asset_id = asset.source_asset_id
+        )
+          AND NOT EXISTS (
             SELECT 1 FROM tutor_message_source_asset AS message_link
             WHERE message_link.source_asset_id = asset.source_asset_id
         )
@@ -66,6 +70,10 @@ internal interface PendingCaptureDao {
           AND NOT EXISTS (
             SELECT 1 FROM problem_draft_source_asset AS draft_link
             WHERE draft_link.source_asset_id = asset.source_asset_id
+        )
+          AND NOT EXISTS (
+            SELECT 1 FROM problem_draft AS draft
+            WHERE draft.source_asset_id = asset.source_asset_id
         )
           AND NOT EXISTS (
             SELECT 1 FROM tutor_message_source_asset AS message_link

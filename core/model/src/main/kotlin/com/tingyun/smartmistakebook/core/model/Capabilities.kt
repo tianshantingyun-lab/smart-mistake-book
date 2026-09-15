@@ -15,8 +15,8 @@ data class AppCapabilitySnapshot(
     val remoteModelCapabilitiesTested: Boolean = false,
     val remoteModelImageInputVerified: Boolean = false,
     val remoteModelStructuredOutputVerified: Boolean = false,
-    /** Global preference: run intelligent mistake organization automatically once a model is available. */
-    val organizationAutoRun: Boolean = true,
+    /** 上次能力测试是鉴权失败：文案要提示"API Key 可能失效"而不是"模型不兼容"。 */
+    val remoteModelAuthenticationFailed: Boolean = false,
 ) {
     val networkRequestsAllowed: Boolean
         get() = networkMode == NetworkMode.LOCAL_FIRST

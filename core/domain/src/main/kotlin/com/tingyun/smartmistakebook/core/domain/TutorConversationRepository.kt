@@ -41,6 +41,8 @@ data class TutorConversation(
     val updatedAtEpochMillis: Long,
     val lastTurnOrdinal: Int,
     val studentDraft: String? = null,
+    /** 真实消息行数（列表展示用；讲题会话的序号有空洞，不能当条数）。 */
+    val messageCount: Int = 0,
 ) {
     init {
         require(conversationId.isNotBlank()) { "Tutor conversation id must not be blank" }

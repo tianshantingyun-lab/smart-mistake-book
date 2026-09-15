@@ -68,8 +68,16 @@ class MistakeOrganizationInstrumentedTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun studentSeesExactDisclosureAndCanLeaveWithoutSending() {
+    fun studentSeesExactDisclosureAndOrganizationStartsAutomatically() {
         val organization = FakeOrganizationRepository()
+        var executeCalls = 0
+        val countingTasks = object : ModelTaskRepository by FakeModelTasks {
+            override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> {
+                executeCalls += 1
+                // 保持等待、不发射快照：本用例只验证"自动发起"，成败无关。
+                return flow { }
+            }
+        }
         composeRule.setContent {
             SmartMistakeBookTheme {
                 MistakeDetailContent(
@@ -77,12 +85,14 @@ class MistakeOrganizationInstrumentedTest {
                     onBack = {},
                     onExport = {},
                     organizationRepository = organization,
-                    modelTasks = FakeModelTasks,
+                    modelTasks = countingTasks,
                     profile = StudyProfileOverview(),
                 )
             }
         }
 
+        // 披露文案仍然展示；整理与拍照/讲题同口径：不再需要点"同意"，
+        // 准备完成即自动发起（发起即发送）。
         waitForTag("mistake_organization_consent")
         composeRule.captureLibraryQaScreenshot("mistake-organization-consent-current.png")
 
@@ -91,8 +101,10 @@ class MistakeOrganizationInstrumentedTest {
             "会把当前题面、1 道同科目题面发给测试模型，只用于整理板块、细化知识点和题目关系；不发送原图或学习记录。",
         ).assertExists()
         composeRule.onNodeWithText("API 密钥", substring = true).assertDoesNotExist()
-        composeRule.onNodeWithText("暂不整理").performClick()
-        composeRule.onNodeWithTag("mistake_organization_consent").assertDoesNotExist()
+        // 无需任何点击：模型调用被自动发起。
+        composeRule.waitUntil(timeoutMillis = 20_000) {
+            executeCalls >= 1
+        }
     }
 
     @Test
@@ -111,8 +123,7 @@ class MistakeOrganizationInstrumentedTest {
             }
         }
 
-        waitForTag("mistake_organization_consent")
-        composeRule.onNodeWithTag("mistake_organization_approve").performClick()
+        // 整理自动发起，无需点击"同意"。
         waitForTag("mistake_organization_applied")
 
         assertEquals("organization-test-0", organization.appliedRequestId)
@@ -333,8 +344,7 @@ class MistakeOrganizationInstrumentedTest {
             }
         }
 
-        waitForTag("mistake_organization_consent")
-        composeRule.onNodeWithTag("mistake_organization_approve").performClick()
+        // 整理自动发起，无需点击"同意"。
         waitForTag("mistake_organization_incomplete")
 
         composeRule.onNodeWithText("暂未整理完整").assertExists()
@@ -401,8 +411,7 @@ class MistakeOrganizationInstrumentedTest {
             }
         }
 
-        waitForTag("mistake_organization_consent")
-        composeRule.onNodeWithTag("mistake_organization_approve").performClick()
+        // 整理自动发起，无需点击"同意"。
         waitForTag("mistake_organization_apply_failure")
         composeRule.onNodeWithTag("mistake_organization_apply_retry").performClick()
         waitForTag("mistake_organization_applied")
@@ -437,8 +446,7 @@ class MistakeOrganizationInstrumentedTest {
             }
         }
 
-        waitForTag("mistake_organization_consent")
-        composeRule.onNodeWithTag("mistake_organization_approve").performClick()
+        // 整理自动发起，无需点击"同意"。
         waitForTag("mistake_organization_applied")
         composeRule.onNodeWithTag("mistake_organization_correct_toggle")
             .performScrollTo()

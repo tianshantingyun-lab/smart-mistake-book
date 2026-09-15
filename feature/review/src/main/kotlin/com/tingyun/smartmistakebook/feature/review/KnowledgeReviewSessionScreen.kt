@@ -124,6 +124,7 @@ fun KnowledgeReviewSessionScreen(
                 onRetry = {
                     viewModel.loadCurrentQuiz(loadQuiz)
                 },
+                onSkip = viewModel::skipCurrentNode,
                 onBack = onBack,
             )
             KnowledgeQuizLoadStatus.IDLE -> Unit
@@ -256,6 +257,25 @@ private fun KnowledgeQuizContent(
     }
 }
 
+/**
+ * 掌握度回写被门控拒收时的学生可读说明（纯函数，便于单测）：
+ * 拒收原因是内部枚举名，面向学生必须翻译成人话。
+ */
+internal fun knowledgeQuizRejectedReasonText(reason: String): String = when (reason) {
+    "INTENT_BELOW_ROUTE_CONFIDENCE" -> "这次的作答意图还不够明确，先只作为观察"
+    "EVIDENCE_BELOW_CONFIDENCE" -> "这次的把握还不够，先只作为观察"
+    "KNOWLEDGE_NODE_NOT_ANCHORED" -> "这道题还没有绑定到具体知识点，先只作为观察"
+    "MASTERED_WITHOUT_EVIDENCE_ANCHOR",
+    "POSITIVE_WITHOUT_EVIDENCE_ANCHOR",
+    -> "这次没有找到可核对的依据，先只作为观察"
+    "SAME_KC_IN_COOLDOWN" -> "这个知识点刚刚复习过，这次先只作为观察"
+    "CONVERSATION_QUOTA_EXHAUSTED" -> "本次复习的观察记录已经够了，这次先不计入"
+    "LEARNER_WINDOW_QUOTA_EXHAUSTED" -> "短时间内记录得比较多，这次先只作为观察"
+    "ATTENTION_BELOW_FLOOR" -> "这次作答投入得还不够，先只作为观察"
+    "CONTRADICTORY_SEMANTICS" -> "这次的判断前后不太一致，先只作为观察"
+    else -> "这次先只作为观察记录"
+}
+
 @Composable
 private fun KnowledgeQuizVerdict(result: KnowledgeQuizFeedbackResult) {
     val correct = result.isCorrect
@@ -289,7 +309,7 @@ private fun KnowledgeQuizVerdict(result: KnowledgeQuizFeedbackResult) {
                 )
                 result.rejectedReason?.let { reason ->
                     Text(
-                        text = "这次作答已记录为观察（$reason）。",
+                        text = knowledgeQuizRejectedReasonText(reason),
                         style = MaterialTheme.typography.bodySmall,
                         color = SmartColors.InkSecondary,
                     )
@@ -302,6 +322,7 @@ private fun KnowledgeQuizVerdict(result: KnowledgeQuizFeedbackResult) {
 @Composable
 private fun KnowledgeQuizLoadFailure(
     onRetry: () -> Unit,
+    onSkip: () -> Unit,
     onBack: () -> Unit,
 ) {
     Column(Modifier.fillMaxWidth()) {
@@ -316,6 +337,21 @@ private fun KnowledgeQuizLoadFailure(
             text = "重试出题",
             onClick = onRetry,
             modifier = Modifier.fillMaxWidth().testTag("knowledge_review_retry"),
+        )
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = onSkip,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("knowledge_review_skip"),
+        ) {
+            Text("跳过这个知识点")
+        }
+        Text(
+            text = "跳过不会记录本次结果，这个知识点保持到期，之后还会再遇到。",
+            modifier = Modifier.padding(top = 6.dp),
+            color = SmartColors.InkSecondary,
+            style = MaterialTheme.typography.labelSmall,
         )
         Spacer(Modifier.height(8.dp))
         OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {

@@ -60,15 +60,26 @@ class OrphanAssetGcWorker(
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val app = applicationContext as? SmartMistakeBookApplication
-            ?: return Result.retry()
+            ?: return retryOrFail()
         if (app.startupState.value !is StartupState.Ready) {
-            return Result.retry()
+            return retryOrFail()
         }
         return try {
             val removed = app.backupRepository.cleanupOrphanAssets()
             Result.success(workDataOf(OrphanAssetGc.REMOVED_COUNT_KEY to removed))
         } catch (_: Exception) {
-            Result.retry()
+            retryOrFail()
         }
+    }
+
+    /**
+     * 有限重试：超过上限转 FAILED，让存储页的"这次没清理完"状态行真正可达
+     * （无限 retry 会让界面永远显示"正在清理"而从不报结果）。
+     */
+    private fun retryOrFail(): Result =
+        if (runAttemptCount >= MAX_ATTEMPTS - 1) Result.failure() else Result.retry()
+
+    internal companion object {
+        const val MAX_ATTEMPTS = 3
     }
 }

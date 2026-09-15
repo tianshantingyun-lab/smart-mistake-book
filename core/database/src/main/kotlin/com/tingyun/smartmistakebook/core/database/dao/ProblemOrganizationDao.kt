@@ -316,6 +316,18 @@ internal interface ProblemOrganizationDao {
 
     @Query(
         """
+        SELECT DISTINCT dimension FROM problem_classification_binding
+        WHERE problem_id = :problemId
+          AND basis_revision_id = :problemRevisionId
+        """,
+    )
+    suspend fun readClassificationDimensions(
+        problemId: String,
+        problemRevisionId: String,
+    ): List<String>
+
+    @Query(
+        """
         SELECT DISTINCT acceptance_source FROM problem_classification_binding
         WHERE problem_id = :problemId
           AND basis_revision_id = :problemRevisionId

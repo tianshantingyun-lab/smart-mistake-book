@@ -219,7 +219,7 @@ internal fun MistakeOfflineCorrectionEditor(
                         isSaving = true
                         scope.launch {
                             try {
-                                organizationRepository.correctConfirmedOrganization(
+                                val confirmation = organizationRepository.correctConfirmedOrganization(
                                     key = key,
                                     selection = ProblemOrganizationSelection(
                                         classificationIndexes = emptySet(),
@@ -228,7 +228,14 @@ internal fun MistakeOfflineCorrectionEditor(
                                     ),
                                     correctedAtEpochMillis = System.currentTimeMillis(),
                                 )
-                                onConfirmed()
+                                isSaving = false
+                                if (!confirmation.applied) {
+                                    // 写入被策略拒绝（更权威的来源保留了原分类）：
+                                    // 不能报"已保存"而后台其实没改。
+                                    onFailure("这次修改没有写进去：这道题的整理结果来自更权威的来源，请重新进入后再试")
+                                } else {
+                                    onConfirmed()
+                                }
                             } catch (failure: Exception) {
                                 isSaving = false
                                 onFailure(failure.message ?: "保存失败，请重试")

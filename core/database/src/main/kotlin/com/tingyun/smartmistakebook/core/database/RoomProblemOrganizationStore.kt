@@ -91,6 +91,19 @@ internal class RoomProblemOrganizationStore(
             // reclassification must never erase accepted relations as a side effect.
             // Evidence attributions are immutable historical facts. Retain bindings they reference;
             // the replaceable classification table remains the authority for the current catalog.
+            // 全量替换的防御（fail-loud）：当前 CHAPTER/KNOWLEDGE 两维是唯一写入者；
+            // 一旦既有行出现其他维度（未来的错因/标签等），拒绝而不是静默清掉。
+            val existingDimensions = dao
+                .readClassificationDimensions(command.problemId, command.problemRevisionId)
+                .toSet()
+            val incomingDimensions = command.classifications
+                .mapTo(linkedSetOf()) { it.dimension }
+            if ((existingDimensions - incomingDimensions).isNotEmpty()) {
+                throw ImmutablePayloadConflictException(
+                    "problem_classification_dimensions",
+                    command.problemId,
+                )
+            }
             dao.deleteUnreferencedKnowledgeBindings(command.practiceUnitId, command.problemRevisionId)
             dao.deleteClassifications(command.problemId, command.problemRevisionId)
             if (command.replaceRelations) {

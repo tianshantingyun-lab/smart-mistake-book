@@ -50,6 +50,9 @@ internal abstract class TutorConversationDao {
         conversationId: String,
     ): TutorConversationEntity?
 
+    @Query("SELECT COUNT(*) FROM tutor_message WHERE conversation_id = :conversationId")
+    protected abstract suspend fun countMessageRows(conversationId: String): Int
+
     @Query(
         "SELECT * FROM tutor_message WHERE message_id = :messageId LIMIT 1",
     )
@@ -169,7 +172,17 @@ internal abstract class TutorConversationDao {
 
     fun observeRecent(limit: Int): Flow<List<TutorConversationRecord>> {
         require(limit > 0) { "Tutor conversation limit must be positive" }
-        return observeRecentEntities(limit).map { rows -> rows.map(TutorConversationEntity::toRecord) }
+        return observeRecentEntities(limit).map { rows ->
+            rows.map { entity ->
+                entity.toRecord(messageCount = countMessages(entity.conversationId))
+            }
+        }
+    }
+
+    /** 会话的真实消息行数：last_turn_ordinal 是序号语义（讲题会话有空洞），不能当条数用。 */
+    open suspend fun countMessages(conversationId: String): Int {
+        require(conversationId.isNotBlank()) { "Tutor conversation id must not be blank" }
+        return countMessageRows(conversationId)
     }
 
     fun observeMessages(conversationId: String): Flow<List<TutorMessageRecord>> {
@@ -446,7 +459,9 @@ private fun AppendTutorAssistantMessageDatabaseCommand.toEntity() = TutorMessage
     errorCode = errorCode,
 )
 
-internal fun TutorConversationEntity.toRecord() = TutorConversationRecord(
+internal fun TutorConversationEntity.toRecord(
+    messageCount: Int = 0,
+) = TutorConversationRecord(
     conversationId = conversationId,
     anchorKind = anchorKind,
     anchorId = anchorId,
@@ -457,6 +472,7 @@ internal fun TutorConversationEntity.toRecord() = TutorConversationRecord(
     updatedAtEpochMillis = updatedAtEpochMillis,
     lastTurnOrdinal = lastTurnOrdinal,
     studentDraft = studentDraft,
+    messageCount = messageCount,
 )
 
 internal fun TutorMessageEntity.toRecord() = TutorMessageRecord(

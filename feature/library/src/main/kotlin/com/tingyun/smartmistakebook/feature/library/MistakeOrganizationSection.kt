@@ -98,13 +98,15 @@ internal fun MistakeOrganizationSection(
     var error by remember(key) { mutableStateOf<AppFailure?>(null) }
     var isPreparing by rememberSaveable(key) { mutableStateOf(false) }
     var attempt by rememberSaveable(key) { mutableStateOf(0) }
-    // With organizationAutoRun the section runs automatically for a fresh
-    // revision; this stays as an explicit user-choice escape hatch only.
+    // 整理与拍照/讲题同口径：准备完成即自动发起（见下方 LaunchedEffect）；
+    // 这个标志只是学生主动取消后本次会话内的退路。
     var organizationDisabledByUser by rememberSaveable(key) { mutableStateOf(false) }
     var applyState by remember(key) {
         mutableStateOf<AutomaticOrganizationState>(AutomaticOrganizationState.Idle)
     }
     var applyRetry by rememberSaveable(key) { mutableStateOf(0) }
+    /** 已自动发起过执行的请求 id：自动只做一次，失败后留下手动重试。 */
+    var autoStartedRequestId by rememberSaveable(key) { mutableStateOf<String?>(null) }
     var correctionVisible by rememberSaveable(key) { mutableStateOf(false) }
     val confirmedFlow = remember(key, organizationRepository) {
         organizationRepository.observeConfirmed(key)
@@ -123,6 +125,7 @@ internal fun MistakeOrganizationSection(
         applyState = AutomaticOrganizationState.Idle
         correctionVisible = false
         organizationDisabledByUser = false
+        autoStartedRequestId = null
         message = null
         error = null
     }
@@ -416,6 +419,19 @@ internal fun MistakeOrganizationSection(
             applyState = applyState,
         ),
     )
+    // 整理与拍照/讲题同口径：准备完成即发起（发起即发送），不再逐次确认。
+    // 自动执行每个请求只做一次——失败后停在卡片上由用户手动重试；
+    // paused 的恢复请求保持手动"继续整理"（与"只显示一次继续"的边界一致）。
+    val autoStartRequestId = (surfaceState as? MistakeOrganizationSurfaceState.Consent)
+        ?.takeUnless { it.paused }
+        ?.let { preparation?.request?.requestId }
+    LaunchedEffect(autoStartRequestId) {
+        val requestId = autoStartRequestId ?: return@LaunchedEffect
+        if (autoStartedRequestId != requestId) {
+            autoStartedRequestId = requestId
+            startPreparedOrganization()
+        }
+    }
     when (val state = surfaceState) {
         MistakeOrganizationSurfaceState.CapabilityLoadFailed -> ModelCapabilityFailure(
             onRetry = { capabilityLoadAttempt += 1 },
@@ -869,7 +885,7 @@ private fun OrganizationConsentCard(
                             isPaused && isRunning -> "正在继续"
                             isPaused -> "继续整理"
                             isRunning -> "正在整理"
-                            else -> "同意并整理"
+                            else -> "开始整理"
                         },
                     )
                 }

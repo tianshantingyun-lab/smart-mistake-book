@@ -11,6 +11,8 @@ data class TutorConversationRecord(
     val updatedAtEpochMillis: Long,
     val lastTurnOrdinal: Int,
     val studentDraft: String?,
+    /** 真实消息行数（列表展示用；last_turn_ordinal 是序号语义，讲题会话有空洞）。 */
+    val messageCount: Int = 0,
 )
 
 data class TutorMessageRecord(
