@@ -84,6 +84,18 @@ interface KnowledgeReadPort {
     suspend fun readKnowledgeGroundingResolution(
         groundingKey: String,
     ): KnowledgeGroundingResolutionRecord?
+
+    companion object {
+        /**
+         * 一次取回的教学材料行数上界。**不是展示上限**——展示由调用方的字符预算决定
+         * （讲题侧是 `TutorPlanInput.MAX_TEACHING_REFERENCE_MARKDOWN_CHARS`）。
+         *
+         * 取值要保证"预算先于取数用尽"，否则这条上界会变成一条没人明说的条数门：
+         * 预算 20000 ÷ 内置包实测最短材料 64 字符 = 313，故 1024 留约 3 倍余量，
+         * 使约束始终落在预算上。
+         */
+        const val MAX_TEACHING_MATERIAL_CANDIDATES = 1_024
+    }
 }
 
 /**

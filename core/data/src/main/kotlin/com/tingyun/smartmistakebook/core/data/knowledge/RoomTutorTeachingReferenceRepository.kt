@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.data.knowledge
 import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialNodeBindingRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.port.KnowledgeReadPort
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.KnowledgeMaterialNodeRole
 import com.tingyun.smartmistakebook.core.model.KnowledgeTeachingMaterialType
@@ -15,17 +16,17 @@ class RoomTutorTeachingReferenceRepository(
     override suspend fun referencesFor(
         subject: String,
         knowledgeNodeIds: Set<String>,
-        limit: Int,
     ): List<TutorTeachingReference> {
         require(subject.isNotBlank())
         require(knowledgeNodeIds.all(String::isNotBlank))
-        require(limit in 1..TutorPlanInput.MAX_TEACHING_REFERENCES)
         if (knowledgeNodeIds.isEmpty()) return emptyList()
 
+        // 取数上界远高于预算能容纳的条数（见该常量的 KDoc），所以"返回多少条"由字符预算
+        // 决定，不由这里的取数决定——取数若成了实际约束，就等于又开了一条隐形的条数门。
         val materials = database.readKnowledgeTeachingMaterialsForNodes(
             subject = subject,
             knowledgeNodeIds = knowledgeNodeIds,
-            limit = limit,
+            limit = KnowledgeReadPort.MAX_TEACHING_MATERIAL_CANDIDATES,
         )
         if (materials.isEmpty()) return emptyList()
         val bindings = database.readKnowledgeTeachingMaterialNodeBindings(
@@ -36,7 +37,6 @@ class RoomTutorTeachingReferenceRepository(
             requestedKnowledgeNodeIds = knowledgeNodeIds,
             materials = materials,
             bindings = bindings,
-            limit = limit,
         )
     }
 }
@@ -85,27 +85,29 @@ internal object TutorTeachingReferenceSelector {
         requestedKnowledgeNodeIds: Set<String>,
         materials: List<KnowledgeTeachingMaterialRecord>,
         bindings: List<KnowledgeTeachingMaterialNodeBindingRecord>,
-        limit: Int,
     ): List<TutorTeachingReference> {
-        require(limit in 1..TutorPlanInput.MAX_TEACHING_REFERENCES)
         val bindingsByMaterial = bindings.groupBy(
             KnowledgeTeachingMaterialNodeBindingRecord::materialId,
         )
-        // 排序在这里做而不是只靠 SQL：DAO 的 `LIMIT` 决定哪些行进入字符预算（因此它的
-        // CASE 必须与本函数一致，见该查询的注释），而顺序的可测性与权威表达在这里。
+        // 排序在这里做而不是只靠 SQL：DAO 的取数顺序必须与本函数一致（该查询的注释说明
+        // 了这条约束），而顺序的可测性与权威表达在这里。
+        //
+        // 没有条数上限之后，顺序的作用从"谁能进预算"变成"进预算后以什么次序出现在提示词里"
+        // ——预算通常装得下（一题 5 个中位节点约 3800 字符，预算 20000），所以并列时的
+        // 次序不再决定谁被饿死；但它仍进请求指纹，因此必须与 DAO 的 ORDER BY 逐项对齐：
+        // 角色秩 → 类型优先级 → title → material_id。用 material_id（一个 SHA-256 派生值）
+        // 单独排序等于按哈希次序决定提示词里材料的先后。
         val ranked = materials.asSequence()
             .filter { material -> material.subject == subject }
             .mapNotNull { material ->
-                val matchedKnowledgeNodeIds = bindingsByMaterial[material.materialId]
+                val matchedBindings = bindingsByMaterial[material.materialId]
                     .orEmpty()
                     .filter { it.knowledgeNodeId in requestedKnowledgeNodeIds }
+                val matchedKnowledgeNodeIds = matchedBindings
                     .map(KnowledgeTeachingMaterialNodeBindingRecord::knowledgeNodeId)
                     .distinct()
                 if (matchedKnowledgeNodeIds.isEmpty()) return@mapNotNull null
-                val roleRank = bindingsByMaterial[material.materialId]
-                    .orEmpty()
-                    .filter { it.knowledgeNodeId in requestedKnowledgeNodeIds }
-                    .minOf { bindingRoleRank(it.role) }
+                val roleRank = matchedBindings.minOf { bindingRoleRank(it.role) }
                 val reference = TutorTeachingReference(
                     materialId = material.materialId,
                     subject = material.subject,
@@ -125,6 +127,7 @@ internal object TutorTeachingReferenceSelector {
                 compareBy(
                     { it.roleRank },
                     { it.typePriority },
+                    { it.reference.title },
                     { it.reference.materialId },
                 ),
             )
@@ -134,7 +137,7 @@ internal object TutorTeachingReferenceSelector {
         var remainingChars = TutorPlanInput.MAX_TEACHING_REFERENCE_MARKDOWN_CHARS
         val selected = mutableListOf<TutorTeachingReference>()
         ranked.forEach { reference ->
-            if (selected.size < limit && reference.markdownChars <= remainingChars) {
+            if (reference.markdownChars <= remainingChars) {
                 selected += reference
                 remainingChars -= reference.markdownChars
             }

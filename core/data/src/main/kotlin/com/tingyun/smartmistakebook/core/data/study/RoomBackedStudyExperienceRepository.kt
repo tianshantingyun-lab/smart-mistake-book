@@ -476,7 +476,6 @@ class RoomBackedStudyExperienceRepository(
         val references = teachingReferences.referencesFor(
             subject = artifact.subject,
             knowledgeNodeIds = artifact.knowledgeNodeIds,
-            limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
         )
         return ReTeachInjection.openingFor(memory, references)
     }
@@ -510,7 +509,6 @@ class RoomBackedStudyExperienceRepository(
         val references = teachingReferences.referencesFor(
             subject = prerequisiteNode.subject,
             knowledgeNodeIds = setOf(blocking.prerequisiteKnowledgeNodeId),
-            limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
         )
         return PrerequisiteRemediationPolicy.offer(
             prerequisiteName = prerequisiteNode.displayName,

@@ -108,7 +108,6 @@ fun SavedMistakeTutorRoute(
                 teachingReferenceRepository.referencesFor(
                     subject = ready.detail.identity.subject,
                     knowledgeNodeIds = confirmed.knowledgeNodeIds,
-                    limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
                 )
             } catch (cancelled: CancellationException) {
                 throw cancelled

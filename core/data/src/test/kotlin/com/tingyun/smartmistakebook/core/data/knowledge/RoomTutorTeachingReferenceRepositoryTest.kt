@@ -52,7 +52,6 @@ class RoomTutorTeachingReferenceRepositoryTest {
                 binding("derivation", "knowledge:math:monotonicity"),
                 binding("physics", "knowledge:physics:motion"),
             ),
-            limit = 4,
         )
 
         // 顺序由重教优先级策略给出，不是输入顺序——旧断言把传入顺序原样断言，因此对
@@ -80,7 +79,6 @@ class RoomTutorTeachingReferenceRepositoryTest {
             requestedKnowledgeNodeIds = setOf("knowledge:math:monotonicity"),
             materials = listOf(material("other")),
             bindings = listOf(binding("other", "knowledge:math:trigonometry")),
-            limit = 4,
         )
 
         assertTrue(selected.isEmpty())
@@ -105,7 +103,6 @@ class RoomTutorTeachingReferenceRepositoryTest {
                 binding("a-explanation", "knowledge:math:monotonicity"),
                 binding("z-guide", "knowledge:math:monotonicity"),
             ),
-            limit = 4,
         )
 
         assertEquals(
@@ -133,7 +130,6 @@ class RoomTutorTeachingReferenceRepositoryTest {
                 binding("a-solution", "knowledge:math:monotonicity"),
                 binding("z-derivation", "knowledge:math:monotonicity"),
             ),
-            limit = 4,
         )
 
         assertEquals(listOf("z-derivation", "a-solution"), selected.map { it.materialId })
@@ -160,28 +156,37 @@ class RoomTutorTeachingReferenceRepositoryTest {
                 binding("a-primary", "knowledge:math:monotonicity", KnowledgeMaterialNodeRole.PRIMARY),
                 binding("z-supporting", "knowledge:math:monotonicity", KnowledgeMaterialNodeRole.SUPPORTING),
             ),
-            limit = 4,
         )
 
         assertEquals(listOf("a-primary", "z-supporting"), selected.map { it.materialId })
     }
 
     @Test
-    fun `equally ranked materials fall back to the material id so the order is stable`() {
+    fun `equally ranked materials fall back to title then id so the order is stable`() {
         // 材料顺序进了 TutorModelTaskPolicy 的请求指纹，因此必须由内容决定而不是由行序决定：
         // 同样材料以任意顺序传入都要得到同一结果。
+        //
+        // 并列键是 **title 然后 material_id**，与 DAO 的 ORDER BY 逐项对齐。本用例刻意让两者
+        // 相反——按 id 排会得到 a-id-early 在前，按 title 排得到 z-id-late 在前——所以它抓得住
+        // "只用 id 兜底"那种写法：material_id 是 SHA-256 派生值，用它单独排序等于按哈希
+        // 决定提示词里材料的先后。
+        //
+        // 标题用 ASCII 而非中文：String 比较是 UTF-16 码元序，而中文的码点序与笔画/拼音序
+        // 无关（例如「乙」U+4E59 排在「甲」U+7532 之前）。用中文会让"谁在前"变成一个需要
+        // 查码表才能读懂的条件，测试表达的就成了别的意思。
+        val laterById = material("z-id-late", title = "material A")
+        val earlierById = material("a-id-early", title = "material B")
         val selected = TutorTeachingReferenceSelector.select(
             subject = "MATH",
             requestedKnowledgeNodeIds = setOf("knowledge:math:monotonicity"),
-            materials = listOf(material("m2"), material("m1")),
+            materials = listOf(earlierById, laterById),
             bindings = listOf(
-                binding("m2", "knowledge:math:monotonicity"),
-                binding("m1", "knowledge:math:monotonicity"),
+                binding("a-id-early", "knowledge:math:monotonicity"),
+                binding("z-id-late", "knowledge:math:monotonicity"),
             ),
-            limit = 4,
         )
 
-        assertEquals(listOf("m1", "m2"), selected.map { it.materialId })
+        assertEquals(listOf("z-id-late", "a-id-early"), selected.map { it.materialId })
     }
 
     private fun material(
@@ -189,12 +194,13 @@ class RoomTutorTeachingReferenceRepositoryTest {
         subject: String = "MATH",
         type: KnowledgeTeachingMaterialType = KnowledgeTeachingMaterialType.METHOD_MODEL,
         content: String = "方法说明。",
+        title: String = "资料 $id",
     ) = KnowledgeTeachingMaterialRecord(
         materialId = id,
         stableCode = "stable:$id",
         subject = subject,
         materialType = type.name,
-        title = "资料 $id",
+        title = title,
         summaryMarkdown = "摘要",
         applicabilityMarkdown = "适用于当前知识点。",
         contentMarkdown = content,

@@ -84,9 +84,6 @@ internal fun List<TutorTeachingReference>.requireValidTutorTeachingReferences(
     subject: String,
     label: String,
 ) {
-    require(size <= TutorPlanInput.MAX_TEACHING_REFERENCES) {
-        "$label disclosed too many teaching references"
-    }
     require(map(TutorTeachingReference::materialId).distinct().size == size) {
         "$label teaching-reference ids must be unique"
     }

@@ -90,12 +90,11 @@ class BundledKnowledgeBaseInstallerInstrumentedTest {
         val tutorReferences = RoomTutorTeachingReferenceRepository(database).referencesFor(
             subject = SubjectKind.MATH.name,
             knowledgeNodeIds = mathNodeIds,
-            limit = 4,
         )
         assertTrue("math tutor references should be retrievable", tutorReferences.isNotEmpty())
 
         val physicsNodes = database.readSubjectKnowledgeNodes(
-            SubjectKind.PHYSICS.name,
+            subject = SubjectKind.PHYSICS.name,
             limit = 256,
         )
         assertTrue(
@@ -103,7 +102,6 @@ class BundledKnowledgeBaseInstallerInstrumentedTest {
             RoomTutorTeachingReferenceRepository(database).referencesFor(
                 subject = SubjectKind.PHYSICS.name,
                 knowledgeNodeIds = physicsNodes.mapTo(hashSetOf()) { it.knowledgeNodeId },
-                limit = 4,
             ).isNotEmpty(),
         )
     }

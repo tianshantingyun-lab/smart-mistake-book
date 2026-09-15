@@ -31,7 +31,6 @@ class KnowledgeReviewQuizLoader(
         val teachingReferences = references.referencesFor(
             subject = entry.subject,
             knowledgeNodeIds = setOf(entry.knowledgeNodeId),
-            limit = TutorTeachingReferenceRepository.DEFAULT_LIMIT,
         )
         val material = teachingReferences.firstOrNull { reference ->
             entry.knowledgeNodeId in reference.knowledgeNodeIds

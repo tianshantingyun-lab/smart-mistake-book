@@ -284,7 +284,20 @@ data class TutorPlanInput(
 
     companion object {
         const val MAX_RELEVANT_EVIDENCE = 12
-        const val MAX_TEACHING_REFERENCES = 4
+
+        /**
+         * 讲解材料的**唯一**约束：总字符预算。**条数不设上限**。
+         *
+         * 此前还有一条 `MAX_TEACHING_REFERENCES = 4` 的条数上限，于是真正卡住内容的始终是它、
+         * 而不是预算：内置包 10356 条材料实测 `markdownChars` 中位数 195，4 条典型材料合计
+         * 约 780 字符，20000 的预算连 4% 都用不到——预算写了却从未生效，而"每节点最多 4 条"
+         * 却让 649 个超配节点的材料永远送不到模型。
+         *
+         * 去掉条数上限后预算才开始做真实工作。取值依据（同一份实测）：
+         * min 64 / p50 195 / p90 295 / p99 463 / max 1029。20000 可容纳约 103 条典型材料；
+         * 单节点材料字符合计最大 18885（"光合作用与细胞呼吸过程"节点 97 条），仍在预算内。
+         * 典型情形一题绑定 5 个中位节点约 3800 字符，余量充足。
+         */
         const val MAX_TEACHING_REFERENCE_MARKDOWN_CHARS = 20_000
         const val MAX_SUBJECT_CHARS = 32
         const val MAX_TURNS = 4

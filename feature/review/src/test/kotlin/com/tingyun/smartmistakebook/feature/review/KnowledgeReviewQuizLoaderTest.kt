@@ -120,10 +120,8 @@ class KnowledgeReviewQuizLoaderTest {
         override suspend fun referencesFor(
             subject: String,
             knowledgeNodeIds: Set<String>,
-            limit: Int,
         ): List<TutorTeachingReference> =
             references.filter { it.subject == subject && it.knowledgeNodeIds.any(knowledgeNodeIds::contains) }
-                .take(limit)
     }
 
     @Test

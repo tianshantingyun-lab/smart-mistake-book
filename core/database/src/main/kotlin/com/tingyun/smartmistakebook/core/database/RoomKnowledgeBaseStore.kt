@@ -13,6 +13,7 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSourceEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialNodeBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
+import com.tingyun.smartmistakebook.core.database.port.KnowledgeReadPort
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -192,7 +193,9 @@ internal class RoomKnowledgeBaseStore(
         require(knowledgeNodeIds.size <= 256) {
             "too many knowledge nodes were requested for teaching context"
         }
-        require(limit in 1..64) { "teaching-material limit is outside the supported range" }
+        require(limit in 1..KnowledgeReadPort.MAX_TEACHING_MATERIAL_CANDIDATES) {
+            "teaching-material limit is outside the supported range"
+        }
         if (knowledgeNodeIds.isEmpty()) return emptyList()
         return database.knowledgeTeachingMaterialDao()
             .readForKnowledgeNodes(subject, knowledgeNodeIds, limit)
