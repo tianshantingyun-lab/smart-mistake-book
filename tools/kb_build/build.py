@@ -698,6 +698,11 @@ class Builder:
         self._apply_prereq()
         self._repair_material_text()
         self._rebuild_topics()
+        # 树建完后再把 name 收敛成层内名：`_rebuild_topics` 产出的名字带完整路径，而路径
+        # 应由 parentSlug 表达。位置必须在最后——它依赖最终的父子关系，改名也不许影响
+        # 别的任何字段（slug 一个字节都不动）。
+        from kb_build import shorten_topic_names
+        shorten_topic_names.shorten(self.pack)
         return {"merge": len(merge_map), "deleted": len(deleted),
                 "new_points": len(self.new_points), "new_materials": len(self.new_materials)}
 

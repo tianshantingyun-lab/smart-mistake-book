@@ -98,7 +98,7 @@ class GateTest(unittest.TestCase):
              "unbound_materials", "ghost_aliases", "undeclared_prereq",
              "boundary_excerpt", "locator_boundary", "latex_damage", "control_chars",
              "chapter_uncovered_units", "chapter_locator_mismatch", "chapter_no_book",
-             "chapter_split_missing_override"},
+             "chapter_split_missing_override", "topic_name_carries_path"},
             set(metrics),
         )
         # 这几项是审计里逐一复核过的硬数字，门禁必须能复现

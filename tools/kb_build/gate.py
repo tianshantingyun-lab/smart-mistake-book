@@ -415,6 +415,17 @@ def evaluate() -> list[Metric]:
                 m11.detail.append(unit[:60])
     metrics.extend((m11, m12, m13, m14))
 
+    # 15) 主题名必须只承载本层信息，路径由树（parentSlug）表达。
+    # 改前 445 个 topic 里有 421 个的名字重复了父名全文，于是逐层展开时同一段文字会被
+    # 重复四遍——渐进式披露在数据层就不可表达。判定与转换共用一处（shorten_topic_names），
+    # 避免门与工具各写一份规则后漂移。
+    from kb_build import shorten_topic_names
+    offenders = shorten_topic_names.names_carrying_parent_path(pack)
+    m15 = Metric("topic_name_carries_path", "主题名重复了父名的路径")
+    m15.value = len(offenders)
+    m15.detail = offenders[:40]
+    metrics.append(m15)
+
     return metrics
 
 
