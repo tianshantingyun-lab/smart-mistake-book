@@ -426,6 +426,32 @@ def evaluate() -> list[Metric]:
     m15.detail = offenders[:40]
     metrics.append(m15)
 
+    # 16) 章层不挂知识点（规范 §2.1：章只作空壳分组，不挂知识点）。
+    # 深度按 parentSlug 计：册=0、章=1、主题=2、子主题=3。章层（深度 1）直接挂的
+    # 知识点 = 没归位到任何主题的残留。化学选择性必修2/3 集中违规（物质结构与性质
+    # 37、有机化学基础 108），数学/物理章层为 0。归位需语义判断（每个点归哪个主题），
+    # 不在此自动下移——本指标只让它可见、可跟踪。
+    m16 = Metric("chapter_layer_has_points", "章层直接挂了知识点（应归到主题）")
+    for subject in pack["subjects"]:
+        by_slug = {t["slug"]: t for t in subject["topics"]}
+        memo: dict[str, int] = {}
+
+        def depth(slug: str) -> int:
+            if slug in memo:
+                return memo[slug]
+            parent = by_slug[slug].get("parentSlug")
+            memo[slug] = 0 if parent is None or parent not in by_slug else 1 + depth(parent)
+            return memo[slug]
+
+        for topic in subject["topics"]:
+            if depth(topic["slug"]) == 1 and topic.get("knowledgePoints"):
+                m16.value += len(topic["knowledgePoints"])
+                if len(m16.detail) < 40:
+                    m16.detail.append(
+                        f"[{subject['subject']}] {topic['name'][:40]}: {len(topic['knowledgePoints'])} 点"
+                    )
+    metrics.append(m16)
+
     return metrics
 
 
