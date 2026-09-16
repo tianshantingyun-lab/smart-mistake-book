@@ -10510,7 +10510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光呼吸",
      "role": "PRIMARY"
     }
    ]
@@ -16680,7 +16680,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -17610,7 +17610,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
      "role": "PRIMARY"
     }
    ]
@@ -18255,7 +18255,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
      "role": "PRIMARY"
     }
    ]
@@ -18295,7 +18295,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
      "role": "PRIMARY"
     }
    ]
@@ -18395,7 +18395,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用",
      "role": "PRIMARY"
     }
    ]
@@ -19480,7 +19480,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的分化与全能性",
      "role": "PRIMARY"
     }
    ]
@@ -20920,7 +20920,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的双螺旋结构",
      "role": "PRIMARY"
     }
    ]
@@ -23620,7 +23620,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -24385,7 +24385,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
      "role": "PRIMARY"
     }
    ]
@@ -24950,7 +24950,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
      "role": "PRIMARY"
     }
    ]
@@ -24985,7 +24985,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
      "role": "PRIMARY"
     }
    ]
@@ -25025,7 +25025,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用",
      "role": "PRIMARY"
     }
    ]
@@ -27205,7 +27205,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫失调",
      "role": "PRIMARY"
     }
    ]
@@ -27420,7 +27420,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:神经递质",
      "role": "PRIMARY"
     }
    ]
@@ -27865,7 +27865,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量变化",
      "role": "PRIMARY"
     }
    ]
@@ -28090,7 +28090,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的演替",
      "role": "PRIMARY"
     }
    ]
@@ -30365,7 +30365,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:氨基酸",
      "role": "PRIMARY"
     }
    ]
@@ -30790,7 +30790,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的双螺旋结构",
      "role": "PRIMARY"
     }
    ]
@@ -31815,7 +31815,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞癌变",
      "role": "PRIMARY"
     }
    ]
@@ -32380,7 +32380,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
      "role": "PRIMARY"
     }
    ]
@@ -32770,7 +32770,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:探究酶的专一性-高效性相关实验",
      "role": "PRIMARY"
     }
    ]
@@ -32790,7 +32790,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:探究酶的专一性-高效性相关实验",
      "role": "PRIMARY"
     }
    ]
@@ -33700,7 +33700,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用",
      "role": "PRIMARY"
     }
    ]
@@ -34335,7 +34335,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
      "role": "PRIMARY"
     }
    ]
@@ -34895,7 +34895,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:精子的形成过程",
      "role": "PRIMARY"
     }
    ]
@@ -35395,7 +35395,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的分化与全能性",
      "role": "PRIMARY"
     }
    ]
@@ -35515,7 +35515,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的死亡",
      "role": "PRIMARY"
     }
    ]
@@ -37065,7 +37065,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的双螺旋结构",
      "role": "PRIMARY"
     }
    ]
@@ -37650,7 +37650,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的多样性和统一性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞癌变",
      "role": "PRIMARY"
     }
    ]
@@ -37670,7 +37670,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因突变",
      "role": "PRIMARY"
     }
    ]
