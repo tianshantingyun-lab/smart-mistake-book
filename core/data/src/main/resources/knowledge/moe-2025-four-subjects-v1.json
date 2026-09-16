@@ -34192,6 +34192,15 @@
        "prerequisiteSlugs": [
         "光合作用"
        ]
+      },
+      {
+       "slug": "光呼吸",
+       "name": "光呼吸",
+       "aliases": [],
+       "kind": "CONCEPT",
+       "boundary": "定位：生物学必修1 第五章第四节·光合作用·光合作用与能量转化。（见知识清单/教材）",
+       "sourceLocator": "人教版高中教材（2019）",
+       "prerequisiteSlugs": []
       }
      ]
     },

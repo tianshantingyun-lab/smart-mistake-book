@@ -995,7 +995,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞器的结构和功能",
      "role": "PRIMARY"
     }
    ]
@@ -1660,7 +1660,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞增殖",
      "role": "PRIMARY"
     }
    ]
@@ -1900,7 +1900,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞衰老",
      "role": "PRIMARY"
     }
    ]
@@ -2745,7 +2745,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸概念-实质和意义",
      "role": "PRIMARY"
     }
    ]
@@ -6500,7 +6500,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的结构",
      "role": "PRIMARY"
     }
    ]
@@ -17130,7 +17130,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -17150,7 +17150,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -17170,7 +17170,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -17190,7 +17190,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -17210,7 +17210,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -17230,7 +17230,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -17250,7 +17250,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -19230,7 +19230,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞衰老",
      "role": "PRIMARY"
     }
    ]
@@ -19815,7 +19815,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:原核细胞",
      "role": "PRIMARY"
     }
    ]
@@ -20290,7 +20290,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:病毒",
      "role": "PRIMARY"
     }
    ]
@@ -20545,7 +20545,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:主动运输",
      "role": "PRIMARY"
     }
    ]
@@ -23850,7 +23850,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:兴奋在神经纤维上的传导",
      "role": "PRIMARY"
     }
    ]
@@ -23905,7 +23905,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞免疫",
      "role": "PRIMARY"
     }
    ]
@@ -25035,7 +25035,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构",
      "role": "PRIMARY"
     }
    ]
@@ -25150,7 +25150,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的结构",
      "role": "PRIMARY"
     }
    ]
@@ -25320,7 +25320,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -25600,7 +25600,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp与adp的转化",
      "role": "PRIMARY"
     }
    ]
@@ -31470,7 +31470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:胚胎工程",
      "role": "PRIMARY"
     }
    ]
@@ -37650,7 +37650,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:渗透作用",
      "role": "PRIMARY"
     }
    ]
@@ -39210,7 +39210,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用的影响因素",
      "role": "PRIMARY"
     }
    ]
@@ -39350,7 +39350,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的作用",
      "role": "PRIMARY"
     }
    ]
@@ -39690,7 +39690,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸概念-实质和意义",
      "role": "PRIMARY"
     }
    ]
@@ -39770,7 +39770,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
      "role": "PRIMARY"
     }
    ]
@@ -39810,7 +39810,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸",
      "role": "PRIMARY"
     }
    ]
@@ -39970,7 +39970,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
      "role": "PRIMARY"
     }
    ]
@@ -40010,7 +40010,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
      "role": "PRIMARY"
     }
    ]
@@ -40070,7 +40070,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
      "role": "PRIMARY"
     }
    ]
@@ -40090,7 +40090,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -40110,7 +40110,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:暗反应",
      "role": "PRIMARY"
     }
    ]
@@ -40130,7 +40130,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用的影响因素",
      "role": "PRIMARY"
     }
    ]
@@ -40150,7 +40150,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
      "role": "PRIMARY"
     }
    ]
@@ -40170,7 +40170,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用的原理",
      "role": "PRIMARY"
     }
    ]
@@ -40190,7 +40190,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
      "role": "PRIMARY"
     }
    ]
@@ -40210,7 +40210,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光反应",
      "role": "PRIMARY"
     }
    ]
@@ -40230,7 +40230,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光反应",
      "role": "PRIMARY"
     }
    ]
@@ -40250,7 +40250,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用的原理",
      "role": "PRIMARY"
     }
    ]
@@ -40270,7 +40270,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用",
      "role": "PRIMARY"
     }
    ]
@@ -40290,7 +40290,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:叶绿体",
      "role": "PRIMARY"
     }
    ]
@@ -40310,7 +40310,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
      "role": "PRIMARY"
     }
    ]
@@ -40330,7 +40330,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
      "role": "PRIMARY"
     }
    ]
@@ -40350,7 +40350,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
      "role": "PRIMARY"
     }
    ]

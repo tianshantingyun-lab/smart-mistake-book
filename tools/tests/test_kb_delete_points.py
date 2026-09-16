@@ -66,7 +66,7 @@ class RealPackTest(unittest.TestCase):
     def test_shipped_point_count_is_2425(self):
         from kb_build import pack_io
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2327, dp._point_count(pack))
+        self.assertEqual(2328, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""

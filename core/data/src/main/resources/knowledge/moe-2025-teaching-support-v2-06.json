@@ -1536,7 +1536,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
      "role": "PRIMARY"
     }
    ]
@@ -1636,7 +1636,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
      "role": "PRIMARY"
     }
    ]
@@ -1676,7 +1676,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的本质",
      "role": "PRIMARY"
     }
    ]
@@ -1851,7 +1851,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸过程-物质和能量的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸",
      "role": "PRIMARY"
     }
    ]
