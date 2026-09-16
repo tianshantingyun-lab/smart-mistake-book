@@ -79,6 +79,34 @@ def delete(pack: dict, to_delete: dict[tuple[str, str], str]) -> tuple[int, int]
     return removed, dangling
 
 
+def _purge_table_refs(pack: dict) -> dict[str, int]:
+    """删除点会留下指向它的悬空引用（chapter_map / alias_map 等外部表）。
+
+    闭合影响面：删点必须同时清掉这些引用，否则 `load_chapter_map` 的
+    validate_chapter_map_slugs 会因"slug 不在包里"直接 raise，把整条门禁拖垮。
+    返回各表清除的行数。
+    """
+    known = {(s["subject"], k["slug"]) for s in pack["subjects"] for t in s["topics"]
+             for k in t.get("knowledgePoints") or []}
+    purged = {}
+    for name in ("chapter_map.csv", "alias_map.csv"):
+        path = tables.TABLES_DIR / name
+        if not path.exists():
+            continue
+        rows = list(csv.DictReader(open(path, encoding="utf-8")))
+        if not rows:
+            continue
+        cols = list(rows[0].keys())
+        kept = [r for r in rows if (r.get("subject", ""), r.get("slug", "")) in known]
+        removed = len(rows) - len(kept)
+        if removed:
+            with path.open("w", encoding="utf-8", newline="") as fh:
+                w = csv.DictWriter(fh, fieldnames=cols, lineterminator="\n")
+                w.writeheader(); w.writerows(kept)
+        purged[name] = removed
+    return purged
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="按表删除纯题干/残缺知识点")
     parser.add_argument("--write", action="store_true")
@@ -104,7 +132,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.write:
         pack_io.dump_json(pack, path)
-        print(f"→ 已写回 {path}")
+        purged = _purge_table_refs(pack)
+        purged_txt = "、".join(f"{k} {v}" for k, v in purged.items() if v) or "无"
+        print(f"→ 已写回 {path}；清除外部表悬空引用 {purged_txt}")
     return 0
 
 

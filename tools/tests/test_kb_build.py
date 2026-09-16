@@ -103,19 +103,19 @@ class GateTest(unittest.TestCase):
             set(metrics),
         )
         # 这几项是审计里逐一复核过的硬数字，门禁必须能复现。
-        # 2026-09-16 章层结构修复（删 42 题干残渣、2 点改名归位）后的当前快照：
-        #   unbound_points 998→956（删的残渣点本就无材料，共减 42）
-        #   ghost_aliases 847→849（改名 2 点后别名与节点名的关系变化）
-        #   boundary_excerpt 968→931（删的残渣点里有 37 个 boundary 命中摘录判据）
-        # starred_names 96→0：2026-09-16 去星修复后应为 0（此断言现为防星号回归的哨兵）
+        # 2026-09-16 章层结构修复 + 去星 + 删 106 纯标签碎片后的当前快照
+        # （这些 pin 随结构修复推进而变，每次改动在提交里说明来源）：
+        #   unbound_points 998→850（删的残渣/碎片点本就无材料）
+        #   ghost_aliases 847→873（改名+删点后别名关系重算）
+        #   boundary_excerpt 968→911（删的点里有 57 个 boundary 命中摘录判据）
+        # starred_names 96→0：去星修复后为 0，此断言现为防星号回归哨兵。
         self.assertEqual(0, metrics["starred_names"].value)
-        self.assertEqual(956, metrics["unbound_points"].value)
+        self.assertEqual(850, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        # ghost_aliases 随去星改名变动（改名后部分别名与节点名/绑定的关系重算）：849→878
-        self.assertEqual(878, metrics["ghost_aliases"].value)
+        self.assertEqual(873, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
-        self.assertEqual(931, metrics["boundary_excerpt"].value)
+        self.assertEqual(911, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
         self.assertEqual(589, metrics["locator_boundary"].value)

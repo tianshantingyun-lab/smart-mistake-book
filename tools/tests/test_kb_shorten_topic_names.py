@@ -138,7 +138,8 @@ class RealPackTest(unittest.TestCase):
         """没有章归属的知识点必须仍然看得见。
 
         改前它们藏在 `PHYSICS·综合·综合·综合` 这类名字里（相邻重复段），改名把那层噪音
-        抹平后，剩下的信号是**名字里带 `综合` 段的桶**——共 9 个 topic、105 个知识点。
+        抹平后，剩下的信号是**名字里带 `综合` 段的桶**——共 9 个 topic、93 个知识点
+        （删 106 碎片后从 105 降到 93，其中 12 个碎片点本就在综合桶里）。
         规范里写的 `跨册综合` 一个都没有，所以这些不是"合法的跨册归并"，是章表匹配事故。
 
         数字若变：下降＝章表修好了（好），上升＝又有知识点错挂（坏）。两种都该被看见。
@@ -150,7 +151,7 @@ class RealPackTest(unittest.TestCase):
             if st.SEPARATOR.join(["综合"]) in topic["name"].split(st.SEPARATOR)
         ]
         self.assertEqual(9, len(buckets), [t["name"] for t in buckets])
-        self.assertEqual(105, sum(len(t["knowledgePoints"]) for t in buckets))
+        self.assertEqual(93, sum(len(t["knowledgePoints"]) for t in buckets))
 
     def test_deep_topics_now_have_short_local_names(self):
         """最深一层的名字必须已经是层内名（改前 L4 是 26–28 字的全路径）。"""
