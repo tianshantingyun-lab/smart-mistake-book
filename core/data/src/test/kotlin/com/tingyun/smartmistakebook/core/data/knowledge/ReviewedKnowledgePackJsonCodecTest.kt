@@ -64,7 +64,10 @@ class ReviewedKnowledgePackJsonCodecTest {
         assertEquals(KnowledgeCoverageContract.CURRENT_BASELINE_ID, pack.coverage.baselineId)
         assertEquals(KnowledgeCoverageLevel.PARTIAL, pack.coverage.catalogLevel)
         assertEquals(setOf("MATH","PHYSICS","CHEMISTRY","BIOLOGY"), pack.nodes.mapTo(hashSetOf()) { it.subject })
-        assertEquals(3018, pack.nodes.size)
+        // 节点 = topic + 原子点。拓扑会随"章层点下移到主题层"结构修复而增长
+        // （每次新建主题 topic，原子点 2573 不变）。2026-09-16 有机化学基础 62 点下移
+        // 新增 10 个主题：445→455 topic，3018→3028 节点。
+        assertEquals(3028, pack.nodes.size)
         // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
         assertTrue(topicNodes.size >= 400)
