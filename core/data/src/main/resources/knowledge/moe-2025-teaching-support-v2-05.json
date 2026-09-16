@@ -840,7 +840,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
      "role": "PRIMARY"
     }
    ]
@@ -2200,7 +2200,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的结构及特点",
      "role": "PRIMARY"
     }
    ]
@@ -4320,7 +4320,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞衰老",
      "role": "PRIMARY"
     }
    ]
@@ -6720,7 +6720,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞器的结构和功能",
      "role": "PRIMARY"
     }
    ]
@@ -18470,7 +18470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有丝分裂",
      "role": "PRIMARY"
     }
    ]
@@ -19500,7 +19500,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律",
      "role": "PRIMARY"
     }
    ]
@@ -24175,7 +24175,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有丝分裂",
      "role": "PRIMARY"
     }
    ]
@@ -24620,7 +24620,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异",
      "role": "PRIMARY"
     }
    ]
@@ -24640,7 +24640,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异",
      "role": "PRIMARY"
     }
    ]
@@ -28230,7 +28230,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:精子的形成过程",
      "role": "PRIMARY"
     }
    ]
@@ -28250,7 +28250,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:同源染色体",
      "role": "PRIMARY"
     }
    ]
@@ -28310,7 +28310,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:受精作用",
      "role": "PRIMARY"
     }
    ]
@@ -28330,7 +28330,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:联会",
      "role": "PRIMARY"
     }
    ]
@@ -28370,7 +28370,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:精子的形成过程",
      "role": "PRIMARY"
     }
    ]
@@ -28450,7 +28450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异",
      "role": "PRIMARY"
     }
    ]
@@ -28490,7 +28490,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:受精作用",
      "role": "PRIMARY"
     }
    ]
@@ -38210,7 +38210,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂细胞中染色体-dna数量变化规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异",
      "role": "PRIMARY"
     }
    ]
