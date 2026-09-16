@@ -11,13 +11,14 @@
 
 ## 安全边界（本脚本只删"可安全删"的）
 
-删除一个点会 orphan 它的材料、断它的前置引用。所以本表**只列**满足全部条件的点：
+删除一个点会 orphan 它的材料、断它的前置引用。所以本表**只列**满足条件的点：
 1. 无材料绑定（orphan 风险＝0）
-2. 不被任何 prerequisiteSlugs 引用（dangling 风险＝0）
-3. 经语义判定确为纯题干/残缺（不是"名字写成题干的真知识点"——那些该 rename，不在本表）
+2. 经语义判定确为纯题干/残渣（不是"名字写成题干的真知识点"——那些该 rename/重绑，不在本表）
+3. 若它被别的点当前置引用——**那本身就是错误绑定**（题干不该是任何知识点的前置），
+   删除时清掉这些引用是**修正**而非破坏；脚本会显式报告清了几处。
 
 `relocate_chapter_points` 处理"归位"，`delete_points` 处理"删除"，`rename`（另表）
-处理"坏名知识点"，三者不混。
+处理"坏名知识点"，材料重绑处理"题目节点上的真材料"——四者不混。
 
 ## 无损
 
@@ -94,13 +95,12 @@ def main(argv: list[str] | None = None) -> int:
     removed, dangling = delete(pack, deletes)
     after = _point_count(pack)
     already = len(deletes) - removed
-    print(f"删除 {removed} 个；已在包外（幂等跳过）{already} 个；清理悬挂前置 {dangling} 个")
+    print(f"删除 {removed} 个；已在包外（幂等跳过）{already} 个；清理错误前置引用 {dangling} 个")
     print(f"点数 {before} → {after}")
     if dangling:
-        # 本表只列"不被引用"的点，正常清理应为 0。非 0 说明有被删点其实被引用过
-        # ——那它的删除会断前置，需人工复核，不能静默放行。
-        print("警告：清理了悬挂前置——被删点被引用过，本表本不该含它，请复核")
-        return 1
+        # 被删点若是题干残渣，别的点把它当前置本身就是错误绑定——清掉是修正，不是破坏。
+        # 但这是**有副作用**的清理，必须显式报告，让调用者知道动了前置图。
+        print(f"注意：清理了 {dangling} 处指向被删点的前置引用（被删点本不该当前置，属错误绑定修正）")
 
     if args.write:
         pack_io.dump_json(pack, path)

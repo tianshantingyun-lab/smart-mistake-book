@@ -63,10 +63,10 @@ class RealPackTest(unittest.TestCase):
         self.assertEqual(0, dp.delete(pack, deletes)[0])
         self.assertEqual(0, dp.delete(pack, deletes)[1], "不得清理悬挂前置")
 
-    def test_shipped_point_count_is_2542(self):
+    def test_shipped_point_count_is_2531(self):
         from kb_build import pack_io
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2542, dp._point_count(pack))
+        self.assertEqual(2531, dp._point_count(pack))
 
 
 if __name__ == "__main__":

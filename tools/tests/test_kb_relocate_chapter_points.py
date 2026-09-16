@@ -78,15 +78,16 @@ class RealPackTest(unittest.TestCase):
         reloc = rel.load_relocations()
         self.assertEqual(0, rel.relocate(pack, reloc))
 
-    def test_shipped_chapter_layer_is_33(self):
+    def test_shipped_chapter_layer_is_20(self):
         """成品章层挂点的当前快照。
 
-        167（原始）→ 64（有机化学基础 62 + 物质结构与性质 22 + 生物技术/实验 19 归位）
-        → 33（删 31 个无材料题干残渣）。剩余 33 = 需 rename 的坏名 + 有材料的题干名知识点
-        + 被前置引用的待清点——不是归位能解决的，走 rename/delete 通道。
+        167（原始）→ 64（归位真知识点）→ 33（删 31 无材料残渣）→ 20
+        （再删 11 个被错误前置引用的纯题干垃圾 + 2 点改名归位）。
+        剩余 20 = "题目被当成知识点"的节点（名字是题干、挂着材料解析）+ 2 个带★错挂
+        进化内容的点——它们是材料重绑/跨章问题，属绑定门（Phase 5），非归位能解决。
         """
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(33, rel.chapter_layer_count(pack))
+        self.assertEqual(20, rel.chapter_layer_count(pack))
 
     def test_new_themes_have_local_names(self):
         """下移新建的主题名必须是层内名（不含 ·），否则会重新引入 I-01 的冗余。"""
