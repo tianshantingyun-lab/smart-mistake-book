@@ -107,10 +107,12 @@ class GateTest(unittest.TestCase):
         #   unbound_points 998→956（删的残渣点本就无材料，共减 42）
         #   ghost_aliases 847→849（改名 2 点后别名与节点名的关系变化）
         #   boundary_excerpt 968→931（删的残渣点里有 37 个 boundary 命中摘录判据）
-        self.assertEqual(96, metrics["starred_names"].value)
+        # starred_names 96→0：2026-09-16 去星修复后应为 0（此断言现为防星号回归的哨兵）
+        self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(956, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(849, metrics["ghost_aliases"].value)
+        # ghost_aliases 随去星改名变动（改名后部分别名与节点名/绑定的关系重算）：849→878
+        self.assertEqual(878, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
         self.assertEqual(931, metrics["boundary_excerpt"].value)
@@ -131,8 +133,9 @@ class GateTest(unittest.TestCase):
             if textfix.is_locator_only(point.get("boundary") or "")
         }
         self.assertEqual(set(), excerpt_ids & locator_ids)
-        # 缺陷类指标修复前必须非零——否则门禁不是在测真东西
-        for key in ("bad_names", "starred_names", "duplicate_names", "unbound_points",
+        # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
+        # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
+        for key in ("bad_names", "duplicate_names", "unbound_points",
                     "unbound_materials", "ghost_aliases", "undeclared_prereq",
                     "boundary_excerpt", "locator_boundary", "latex_damage",
                     "control_chars", "chapter_locator_mismatch"):
