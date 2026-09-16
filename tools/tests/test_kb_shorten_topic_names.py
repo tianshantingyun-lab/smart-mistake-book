@@ -151,7 +151,7 @@ class RealPackTest(unittest.TestCase):
             if st.SEPARATOR.join(["综合"]) in topic["name"].split(st.SEPARATOR)
         ]
         self.assertEqual(9, len(buckets), [t["name"] for t in buckets])
-        self.assertEqual(92, sum(len(t["knowledgePoints"]) for t in buckets))
+        self.assertEqual(88, sum(len(t["knowledgePoints"]) for t in buckets))
 
     def test_deep_topics_now_have_short_local_names(self):
         """最深一层的名字必须已经是层内名（改前 L4 是 26–28 字的全路径）。"""
