@@ -286,6 +286,17 @@
 - **失败路径**：这是**当前唯一在产出新内容的机制**，但它不是可扩展的流水线——95 章的工作量对应 8 个手写文件。决定 D-2（补 998 个零材料节点）会立刻撞上这个形态的上限。
 - **证据**：`[本轮实测]`（清点代理列出文件与行号）。
 
+### C-09 · `node_actions` 表与成品包**不同坐标系**，build 全流程产出错乱 【P0】
+- **症状**：`node_actions.csv`（871 行：rename 439 / delete 324 / merge 108）里的 slug **大量对不上成品包**——实测 324 个 delete 的 slug **一个都不在成品包**里（`pack_io.iter_points` 找不到）。
+- **失败路径**：`build.py` 从成品包起步应用 `node_actions`，大部分操作 no-op（slug 对不上），但 `chapter_map` 重组 + 部分命中 + `_rebuild_topics` 的 theme 派生失败退回章层，**综合产出错乱的 staging**：总点 2573→2168，**章层挂点从成品的 167 恶化到 352**。即 build 出的 staging 比成品**更差**。
+- **根因**：`node_actions` 大概率基于**内容候选层**（`knowledge-research/candidates/`，13889 条，不同 slug 体系，被 gitignore）建，不是基于成品 2573。候选层 slug ≠ 成品 slug。
+- **含义**：
+  1. **build.py / node_actions 这条"生成链"当前不可用于成品**——它不是"成品的可复现生成器"，roundtrip 只保真格式、不保真业务逻辑。
+  2. 本轮结构修复因此**绕过 build，直接表驱动改成品**（`shorten_topic_names` / `relocate_chapter_points`），每个转换独立/幂等/无损/有门。
+  3. `node_actions` 要可用，需**基于成品 slug 重建**（对齐坐标系），或明确它只作用于候选层。
+- **证据**：`[本轮实测]` 324 delete slug 全不在成品；成品 167 章层 vs staging 352 章层。
+- **处置**：已绕过（直接改成品）。node_actions 的重建/作废**单列待决**——它牵涉"候选层→成品"的晋升链是否还存在。
+
 ---
 
 ## D. 检索层（8 条）
