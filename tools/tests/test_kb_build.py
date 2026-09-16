@@ -102,17 +102,19 @@ class GateTest(unittest.TestCase):
              "chapter_layer_has_points"},
             set(metrics),
         )
-        # 这几项是审计里逐一复核过的硬数字，门禁必须能复现
+        # 这几项是审计里逐一复核过的硬数字，门禁必须能复现。
+        # unbound_points 998→967：2026-09-16 删了 31 个无材料的题干残渣点（point_delete.csv），
+        # 它们本就无材料绑定，删除使"无材料知识点"减少 31。
         self.assertEqual(96, metrics["starred_names"].value)
-        self.assertEqual(998, metrics["unbound_points"].value)
+        self.assertEqual(967, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         self.assertEqual(847, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
         # 原文摘录（权利问题）——来源登记写明不得保存原文段落。
-        # 968 是"边界里带题目/答案形态特征"的条数（旧判据是"除定位外都算摘录"，
-        # 得到 1984，把真知识也算了进去）。
-        self.assertEqual(968, metrics["boundary_excerpt"].value)
+        # 942 是"边界里带题目/答案形态特征"的条数（旧判据"除定位外都算摘录"得 1984）。
+        # 从 968 降到 942：2026-09-16 删的 31 个题干残渣点里有 26 个的 boundary 命中此判据。
+        self.assertEqual(942, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
         self.assertEqual(589, metrics["locator_boundary"].value)
