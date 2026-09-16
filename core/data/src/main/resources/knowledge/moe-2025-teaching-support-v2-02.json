@@ -7420,7 +7420,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心加速度-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心加速度",
      "role": "PRIMARY"
     }
    ]
@@ -9470,7 +9470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的线框模型-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的线框模型",
      "role": "PRIMARY"
     }
    ]
@@ -9790,7 +9790,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动",
      "role": "PRIMARY"
     }
    ]
@@ -26290,7 +26290,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动",
      "role": "PRIMARY"
     }
    ]
@@ -30695,7 +30695,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动",
      "role": "PRIMARY"
     }
    ]
@@ -35950,7 +35950,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的线框模型-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的线框模型",
      "role": "PRIMARY"
     }
    ]
@@ -37825,7 +37825,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动",
      "role": "PRIMARY"
     }
    ]
