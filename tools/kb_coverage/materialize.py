@@ -42,7 +42,7 @@ from kb_coverage.office_extract import CHUNKS, load_chunks
 
 JUDGMENTS = Path(__file__).resolve().parent / "tables" / "material_judgments.csv"
 COLUMNS = ("chunk_rel", "chunk_id", "action", "node_slug", "type", "title",
-           "summary", "applicability", "content", "boundary", "note")
+           "summary", "applicability", "content", "boundary", "note", "midx")
 ROLES = ("PRIMARY",)
 TYPES = {"CONCEPT_EXPLANATION", "METHOD_MODEL", "WORKED_EXAMPLE",
          "COMPLETE_SOLUTION", "DERIVATION", "MISCONCEPTION_GUIDE", "REPRESENTATION_GUIDE"}
@@ -169,7 +169,7 @@ def write(judgments: list[dict]) -> dict:
         subject = ch["subject"]
         h = r["chunk_id"].split("-", 1)[0]
         idx = r["chunk_id"].rsplit("-", 1)[-1]
-        slug = f"ext-{SUBJ3[subject]}-{h}-{idx}"
+        slug = f"ext-{SUBJ3[subject]}-{h}-{idx}{(r.get('midx') or '').strip()}"
         assert SAFE_SLUG.match(slug), slug
         if slug in existing_slugs:
             continue  # 幂等：材料已实际入库（以 sidecar 实况为准，状态漂移也能自愈）

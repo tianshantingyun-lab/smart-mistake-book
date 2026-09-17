@@ -110,10 +110,11 @@ class GateTest(unittest.TestCase):
         #   2026-09-18 第一章综合主题 36 点跨章归位 + 6 同概念重复对合并（I-08）后：
         #   unbound_points 701→698（删 3 个零材料占位点）、ghost_aliases 852→849、
         #   boundary_excerpt 835→833、locator_boundary 585→581
+        #   集合基础 8 节点 + 命题节点入库材料后：unbound_points 698→697
         # starred_names 96→0、duplicate_names 118→0：已修复，见下方专门断言。
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(698, metrics["unbound_points"].value)
+        self.assertEqual(697, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         self.assertEqual(849, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
