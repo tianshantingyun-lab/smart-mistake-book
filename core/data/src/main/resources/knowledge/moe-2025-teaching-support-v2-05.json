@@ -3765,7 +3765,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
      "role": "PRIMARY"
     }
    ]
@@ -3805,7 +3805,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -3825,7 +3825,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -4700,7 +4700,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:内环境",
      "role": "PRIMARY"
     }
    ]
@@ -4760,7 +4760,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞学说",
      "role": "PRIMARY"
     }
    ]
@@ -4780,7 +4780,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞学说",
      "role": "PRIMARY"
     }
    ]
@@ -4820,7 +4820,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞学说",
      "role": "PRIMARY"
     }
    ]
@@ -4840,7 +4840,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞学说",
      "role": "PRIMARY"
     }
    ]
@@ -5800,7 +5800,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -5820,7 +5820,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -5840,7 +5840,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -5860,7 +5860,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -8450,7 +8450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -8470,7 +8470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -27370,7 +27370,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞学说",
      "role": "PRIMARY"
     }
    ]
@@ -27450,7 +27450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞学说",
      "role": "PRIMARY"
     }
    ]
@@ -29510,7 +29510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -29530,7 +29530,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -29550,7 +29550,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -29570,7 +29570,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -29870,7 +29870,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -29930,7 +29930,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -29970,7 +29970,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -30050,7 +30050,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
      "role": "PRIMARY"
     }
    ]
@@ -30110,7 +30110,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30130,7 +30130,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30170,7 +30170,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30190,7 +30190,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30210,7 +30210,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30230,7 +30230,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30250,7 +30250,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30270,7 +30270,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
      "role": "PRIMARY"
     }
    ]
@@ -30290,7 +30290,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -30330,7 +30330,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -30390,7 +30390,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -30410,7 +30410,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -30430,7 +30430,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -30450,7 +30450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -35450,7 +35450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞是基本的生命系统",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:线粒体",
      "role": "PRIMARY"
     }
    ]

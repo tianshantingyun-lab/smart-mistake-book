@@ -112,7 +112,7 @@ class GateTest(unittest.TestCase):
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(729, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(854, metrics["ghost_aliases"].value)
+        self.assertEqual(853, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
         self.assertEqual(849, metrics["boundary_excerpt"].value)
